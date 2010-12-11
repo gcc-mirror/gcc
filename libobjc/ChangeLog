@@ -1,3 +1,9 @@
+2010-12-11  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-private/module-abi-8.h (struct objc_symtab): Updated
+	description of sel_ref_cnt and refs.
+	* objc/deprecated/struct_objc_symtab.h (objc_symtab): Same change.
+	
 2010-12-06  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR target/40125
