@@ -1,3 +1,8 @@
+2010-12-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/46842
+	* gfortran.dg/array_function_6.f90: New test.
+
 2010-12-11  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/gnu-api-2-resolve-method.m: New.
