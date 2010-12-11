@@ -96,6 +96,13 @@ typedef enum
 { SUCCESS = 1, FAILURE }
 gfc_try;
 
+/* These are flags for identifying whether we are reading a character literal
+   between quotes or normal source code.  */
+   
+typedef enum
+{ NONSTRING = 0, INSTRING_WARN, INSTRING_NOWARN }
+gfc_instring;
+
 /* This is returned by gfc_notification_std to know if, given the flags
    that were given (-std=, -pedantic) we should issue an error, a warning
    or nothing.  */
@@ -113,6 +120,7 @@ typedef enum
 { MATCH_NO = 1, MATCH_YES, MATCH_ERROR }
 match;
 
+/* Used for different Fortran source forms in places like scanner.c.  */
 typedef enum
 { FORM_FREE, FORM_FIXED, FORM_UNKNOWN }
 gfc_source_form;
@@ -160,7 +168,6 @@ typedef enum
 }
 gfc_intrinsic_op;
 
-
 /* This macro is the number of intrinsic operators that exist.
    Assumptions are made about the numbering of the interface_op enums.  */
 #define GFC_INTRINSIC_OPS GFC_INTRINSIC_END
@@ -205,7 +212,6 @@ typedef enum
   ST_GET_FCN_CHARACTERISTICS, ST_NONE
 }
 gfc_statement;
-
 
 /* Types of interfaces that we can have.  Assignment interfaces are
    considered to be intrinsic operators.  */
@@ -2332,7 +2338,7 @@ gfc_char_t *gfc_char_to_widechar (const char *);
 #define gfc_get_wide_string(n) XCNEWVEC (gfc_char_t, n)
 
 void gfc_skip_comments (void);
-gfc_char_t gfc_next_char_literal (int);
+gfc_char_t gfc_next_char_literal (gfc_instring);
 gfc_char_t gfc_next_char (void);
 char gfc_next_ascii_char (void);
 gfc_char_t gfc_peek_char (void);

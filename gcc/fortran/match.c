@@ -118,12 +118,13 @@ match
 gfc_match_parens (void)
 {
   locus old_loc, where;
-  int count, instring;
+  int count;
+  gfc_instring instring;
   gfc_char_t c, quote;
 
   old_loc = gfc_current_locus;
   count = 0;
-  instring = 0;
+  instring = NONSTRING;
   quote = ' ';
 
   for (;;)
@@ -134,13 +135,13 @@ gfc_match_parens (void)
       if (quote == ' ' && ((c == '\'') || (c == '"')))
 	{
 	  quote = c;
-	  instring = 1;
+	  instring = INSTRING_WARN;
 	  continue;
 	}
       if (quote != ' ' && c == quote)
 	{
 	  quote = ' ';
-	  instring = 0;
+	  instring = NONSTRING;
 	  continue;
 	}
 
@@ -185,7 +186,7 @@ gfc_match_special_char (gfc_char_t *res)
 
   m = MATCH_YES;
 
-  switch ((c = gfc_next_char_literal (1)))
+  switch ((c = gfc_next_char_literal (INSTRING_WARN)))
     {
     case 'a':
       *res = '\a';
@@ -225,7 +226,7 @@ gfc_match_special_char (gfc_char_t *res)
 	{
 	  char buf[2] = { '\0', '\0' };
 
-	  c = gfc_next_char_literal (1);
+	  c = gfc_next_char_literal (INSTRING_WARN);
 	  if (!gfc_wide_fits_in_byte (c)
 	      || !gfc_check_digit ((unsigned char) c, 16))
 	    return MATCH_NO;
@@ -592,7 +593,7 @@ gfc_match_name_C (char *buffer)
 
   /* Get the next char (first possible char of name) and see if
      it's valid for C (either a letter or an underscore).  */
-  c = gfc_next_char_literal (1);
+  c = gfc_next_char_literal (INSTRING_WARN);
 
   /* If the user put nothing expect spaces between the quotes, it is valid
      and simply means there is no name= specifier and the name is the fortran
@@ -632,7 +633,7 @@ gfc_match_name_C (char *buffer)
       old_loc = gfc_current_locus;
       
       /* Get next char; param means we're in a string.  */
-      c = gfc_next_char_literal (1);
+      c = gfc_next_char_literal (INSTRING_WARN);
     } while (ISALNUM (c) || c == '_');
 
   buffer[i] = '\0';
