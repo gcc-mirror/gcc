@@ -1,3 +1,7 @@
+2010-12-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* gcc.dg/funcorder.c: Remove XFAIL for hppa*64*-*-*.
+
 2010-12-10  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/fobjc-std-1.m: Updated to test that class extensions
