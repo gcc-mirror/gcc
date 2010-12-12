@@ -3512,6 +3512,7 @@ handle_move_double (rtx operands[2],
 
   /* Normal case: do the two words, low-numbered first.  */
 
+  m68k_final_prescan_insn (NULL, operands, 2);
   handle_movsi (operands);
 
   /* Do the middle one of the three words for long double */
@@ -3522,6 +3523,7 @@ handle_move_double (rtx operands[2],
       if (addreg1)
 	handle_reg_adjust (addreg1, 4);
 
+      m68k_final_prescan_insn (NULL, middlehalf, 2);
       handle_movsi (middlehalf);
     }
 
@@ -3532,6 +3534,7 @@ handle_move_double (rtx operands[2],
     handle_reg_adjust (addreg1, 4);
 
   /* Do that word.  */
+  m68k_final_prescan_insn (NULL, latehalf, 2);
   handle_movsi (latehalf);
 
   /* Undo the adds we just did.  */
