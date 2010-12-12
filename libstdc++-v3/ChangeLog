@@ -1,3 +1,8 @@
+2010-12-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/util/testsuite_abi.cc (check_version): Don't push back
+	GLIBCXX_3.4.16, unused.
+
 2010-12-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* testsuite/lib/libstdc++.exp (v3-build_support): Delete
