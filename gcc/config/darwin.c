@@ -2968,6 +2968,8 @@ section *
 darwin_function_section (tree decl, enum node_frequency freq,
 			  bool startup, bool exit)
 {
+  if (!flag_reorder_functions)
+    return NULL;
   /* Startup code should go to startup subsection unless it is
      unlikely executed (this happens especially with function splitting
      where we can split away unnecesary parts of static constructors.  */
