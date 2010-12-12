@@ -7893,6 +7893,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	  /* Set up arguments.  */
 	  new_st->expr1->value.function.actual = gfc_get_actual_arglist ();
 	  new_st->expr1->value.function.actual->expr = gfc_get_variable_expr (code->expr1->symtree);
+	  new_st->expr1->value.function.actual->expr->where = code->loc;
 	  gfc_add_vptr_component (new_st->expr1->value.function.actual->expr);
 	  vtab = gfc_find_derived_vtab (body->ext.case_list->ts.u.derived);
 	  st = gfc_find_symtree (vtab->ns->sym_root, vtab->name);
