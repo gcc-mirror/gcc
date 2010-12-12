@@ -1,3 +1,11 @@
+2010-12-12  Jan Hubicka  <jh@suse.cz>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* varasm.c (default_function_section): Check flag_reorder_functions
+	and targetm.have_named_sections.
+	* config/darwin.c (darwin_function_section): Check
+	flag_reorder_functions.
+
 2010-12-12  Finn Thain  <fthain@telegraphics.com.au>
 
 	PR target/46179
