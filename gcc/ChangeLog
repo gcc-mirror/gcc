@@ -1,3 +1,9 @@
+2010-12-12  Finn Thain  <fthain@telegraphics.com.au>
+
+	PR target/46179
+	* config/m68k/m68k.c (handle_move_double): Insert calls to
+	m68k_final_prescan_insn to clean up @TLS operand syntax.
+
 2010-12-10  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/43023
@@ -524,7 +530,7 @@
 	blocks will be created. Update dominator info.
 	(sel_redirect_edge_and_branch): Update dominator info when
 	basic blocks do not become unreachable.
-	(sel_remove_loop_preheader): Update dominator info. 
+	(sel_remove_loop_preheader): Update dominator info.
 
 2010-12-07  Richard Guenther  <rguenther@suse.de>
 
