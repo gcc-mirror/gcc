@@ -537,7 +537,7 @@ show_expr (gfc_expr *p)
 	  fputs ("NOT ", dumpfile);
 	  break;
 	case INTRINSIC_PARENTHESES:
-	  fputs ("parens", dumpfile);
+	  fputs ("parens ", dumpfile);
 	  break;
 
 	default:
