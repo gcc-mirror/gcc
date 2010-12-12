@@ -1,3 +1,8 @@
+2010-12-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/46901
+	* typeck.c (convert_for_assignment): Fix typo in warning message.
+
 2010-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/46001
@@ -30,7 +35,7 @@
 	(cp_parser_objc_class_interface): Updated call to
 	cp_parser_objc_superclass_or_category.
 	(cp_parser_objc_class_implementation): Same change.
-	
+
 2010-12-09  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* call.c (print_conversion_rejection): Indent messages two spaces.
@@ -133,7 +138,7 @@
 	(cp/semantics.o): Same change.
 	(cp/typeck.o): Same change.
 	* config-lang.in (gtfiles): Added c-family/c-objc.h.
-	
+
 2010-12-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/46645
@@ -418,14 +423,14 @@
 
 2010-11-04  Nicola Pero  <nicola.pero@meta-innovation.com>
 
-	Fixed using the Objective-C 2.0 dot-syntax with class names.	
+	Fixed using the Objective-C 2.0 dot-syntax with class names.
 	* parser.c (cp_parser_primary_expression): Recognize Objective-C
 	2.0 dot-syntax with class names and process it.
 	(cp_parser_nonclass_name): Recognize Objective-C 2.0 dot-syntax
 	with class names.
 	(cp_parser_class_name): Same change.
 	(cp_parser_simple_type_specifier): Tidied comments.
-	
+
 2010-11-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/46298

@@ -7321,7 +7321,7 @@ convert_for_assignment (tree type, tree rhs,
 	      break;
 	    case ICR_CONVERTING:
 	      warning (OPT_Wmissing_format_attribute,
-		       "target of conversion might be might be a candidate "
+		       "target of conversion might be a candidate "
 		       "for a format attribute");
 	      break;
 	    case ICR_INIT:
