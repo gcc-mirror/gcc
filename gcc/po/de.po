@@ -1,20 +1,21 @@
 # German translation of gcc messages.
 # Copyright © 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
-# Karl Eichwalder <ke@suse.de>, 2002, 2003.
-# Roland Stigge <stigge@antcom.de>, 2003, 2004, 2005, 2006, 2007, 2008.
 # This file is distributed under the same license as the gcc package.
+# Karl Eichwalder <ke@suse.de>, 2002, 2003.
+# Roland Stigge <stigge@antcom.de>, 2003, 2004, 2005, 2006, 2007, 2008, 2010.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.3.0\n"
+"Project-Id-Version: gcc 4.6-b20101113\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-11-13 12:12+0000\n"
-"PO-Revision-Date: 2008-03-15 11:15+0100\n"
+"PO-Revision-Date: 2010-12-12 11:15+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
 
 #: c-decl.c:4635 c-typeck.c:5924 toplev.c:1464 c-family/c-pretty-print.c:423
 #: cp/error.c:611 cp/error.c:890
@@ -22,14 +23,13 @@ msgid "<anonymous>"
 msgstr "<anonym>"
 
 #: c-objc-common.c:173
-#, fuzzy
 msgid "({anonymous})"
-msgstr "<anonym>"
+msgstr "({anonym})"
 
 #: c-parser.c:879 cp/parser.c:20733
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected end of line"
-msgstr "Unerwartetes Modulende"
+msgstr "Zeilenende erwartet"
 
 #: c-parser.c:1678 c-parser.c:1692 c-parser.c:3875 c-parser.c:4313
 #: c-parser.c:4574 c-parser.c:4732 c-parser.c:4748 c-parser.c:4912
@@ -55,9 +55,9 @@ msgstr "%<(%> erwartet"
 
 #: c-parser.c:1727 c-parser.c:6062 c-parser.c:6103 c-parser.c:6185
 #: c-parser.c:6192 c-parser.c:6229 cp/parser.c:20344 cp/parser.c:20697
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<,%>"
-msgstr "%<{%> erwartet"
+msgstr "%<,%> erwartet"
 
 #: c-parser.c:1748 c-parser.c:2294 c-parser.c:2592 c-parser.c:2800
 #: c-parser.c:2958 c-parser.c:3007 c-parser.c:3066 c-parser.c:3190
@@ -71,25 +71,24 @@ msgstr "%<{%> erwartet"
 #: c-parser.c:8254 c-parser.c:8275 c-parser.c:8353 c-parser.c:8438
 #: c-parser.c:8554 c-parser.c:8636 c-parser.c:8969 c-parser.c:9086
 #: c-parser.c:9127 cp/parser.c:20727
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<)%>"
-msgstr "%<{%> erwartet"
+msgstr "%<)%> erwartet"
 
 #: c-parser.c:2883 c-parser.c:3663 c-parser.c:3697 c-parser.c:4966
 #: c-parser.c:6164 c-parser.c:6328 c-parser.c:6435 cp/parser.c:20691
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<]%>"
-msgstr "%<{%> erwartet"
+msgstr "%<]%> erwartet"
 
 #: c-parser.c:3043
-#, fuzzy
 msgid "expected %<;%>, %<,%> or %<)%>"
-msgstr "%<,%>, %<;%> oder %<}%> erwartet"
+msgstr "%<;%>, %<,%> oder %<)%> erwartet"
 
 #: c-parser.c:3526 cp/parser.c:20685 cp/parser.c:22283
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<}%>"
-msgstr "%<{%> erwartet"
+msgstr "%<}%> erwartet"
 
 #: c-parser.c:3816 c-parser.c:7416 c-parser.c:9370 c-parser.c:2161
 #: c-parser.c:2356 c-parser.c:7027 cp/parser.c:13461 cp/parser.c:20688
@@ -100,35 +99,34 @@ msgstr "%<{%> erwartet"
 #: c-parser.c:4035 c-parser.c:4044 c-parser.c:4870 c-parser.c:5211
 #: c-parser.c:7236 c-parser.c:7557 c-parser.c:7614 c-parser.c:8543
 #: cp/parser.c:20721 cp/parser.c:21539
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<:%>"
-msgstr "%<{%> erwartet"
+msgstr "%<:%> erwartet"
 
 #: c-parser.c:4568 cp/parser.c:20621
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<while%>"
-msgstr "%<{%> erwartet"
+msgstr "%<while%> erwartet"
 
 #: c-parser.c:5952
-#, fuzzy
 msgid "expected %<.%>"
-msgstr "%<{%> erwartet"
+msgstr "%<.%> erwartet"
 
 #: c-parser.c:6716 c-parser.c:6748 c-parser.c:6971 cp/parser.c:22069
 #: cp/parser.c:22142
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<@end%>"
-msgstr "%<{%> erwartet"
+msgstr "%<@end%> erwartet"
 
 #: c-parser.c:7377 cp/parser.c:20706
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<>%>"
-msgstr "%<{%> erwartet"
+msgstr "%<>%> erwartet"
 
 #: c-parser.c:8640 cp/parser.c:20730
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<,%> or %<)%>"
-msgstr "%<,%> oder %<;%> erwartet"
+msgstr "%<,%> oder %<)%> erwartet"
 
 #: c-parser.c:9067 c-parser.c:3720 cp/parser.c:20709
 #, gcc-internal-format
@@ -136,14 +134,13 @@ msgid "expected %<=%>"
 msgstr "%<=%> erwartet"
 
 #: c-parser.c:9427 c-parser.c:9417 cp/parser.c:24528
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<#pragma omp section%> or %<}%>"
-msgstr "%H%<#pragma omp section%> oder %<}%> erwartet"
+msgstr "%<#pragma omp section%> oder %<}%> erwartet"
 
 #: c-typeck.c:6567
-#, fuzzy
 msgid "(anonymous)"
-msgstr "<anonym>"
+msgstr "(anonym)"
 
 #: cfgrtl.c:2037
 msgid "flow control insn inside a basic block"
@@ -169,7 +166,7 @@ msgstr "interner GCC-Abbruch in %s, bei %s:%d"
 #: collect2.c:957
 #, c-format
 msgid "COLLECT_LTO_WRAPPER must be set"
-msgstr ""
+msgstr "COLLECT_LTO_WRAPPER muss gesetzt sein"
 
 #: collect2.c:1274
 #, c-format
@@ -192,25 +189,25 @@ msgid "collect2 version %s"
 msgstr "collect2-Version %s"
 
 #: collect2.c:1802
-#, fuzzy, c-format
+#, c-format
 msgid "%d constructor found\n"
 msgid_plural "%d constructors found\n"
-msgstr[0] "%d Konstruktor(en) gefunden\n"
-msgstr[1] "%d Konstruktor(en) gefunden\n"
+msgstr[0] "Einen Konstruktor gefunden\n"
+msgstr[1] "%d Konstruktoren gefunden\n"
 
 #: collect2.c:1806
-#, fuzzy, c-format
+#, c-format
 msgid "%d destructor found\n"
 msgid_plural "%d destructors found\n"
-msgstr[0] "%d Destruktor(en) gefunden\n"
-msgstr[1] "%d Destruktor(en) gefunden\n"
+msgstr[0] "Einen Destruktor gefunden\n"
+msgstr[1] "%d Destruktoren gefunden\n"
 
 #: collect2.c:1810
-#, fuzzy, c-format
+#, c-format
 msgid "%d frame table found\n"
 msgid_plural "%d frame tables found\n"
-msgstr[0] "%d Rahmentabelle(n) gefunden\n"
-msgstr[1] "%d Rahmentabelle(n) gefunden\n"
+msgstr[0] "Eine Rahmentabelle gefunden\n"
+msgstr[1] "%d Rahmentabellen gefunden\n"
 
 #: collect2.c:1964 lto-wrapper.c:213
 #, c-format
@@ -321,14 +318,14 @@ msgid "library lib%s not found"
 msgstr "Bibliothek lib%s nicht gefunden"
 
 #: diagnostic.c:136
-#, fuzzy, c-format
+#, c-format
 msgid "%s: all warnings being treated as errors\n"
-msgstr "%s: Warnungen als Fehler behandelt\n"
+msgstr "%s: Alle Warnungen werden als Fehler behandelt\n"
 
 #: diagnostic.c:141
-#, fuzzy, c-format
+#, c-format
 msgid "%s: some warnings being treated as errors\n"
-msgstr "%s: Warnungen als Fehler behandelt\n"
+msgstr "%s: Einige Warnungen werden als Fehler behandelt\n"
 
 #: diagnostic.c:219
 #, c-format
@@ -336,9 +333,9 @@ msgid "compilation terminated due to -Wfatal-errors.\n"
 msgstr "Kompilierung wegen -Wfatal-errors beendet.\n"
 
 #: diagnostic.c:229
-#, fuzzy, c-format
+#, c-format
 msgid "compilation terminated due to -fmax-errors=%u.\n"
-msgstr "Kompilierung wegen -Wfatal-errors beendet.\n"
+msgstr "Kompilierung wegen -fmax-errors=%u beendet.\n"
 
 #: diagnostic.c:240
 #, c-format
@@ -508,9 +505,8 @@ msgid "  --target-help            Display target specific command line options\n
 msgstr "  --target-help            Zielspezifische Kommandozeilenoptionen anzeigen\n"
 
 #: gcc.c:2917
-#, fuzzy
 msgid "  --help={target|optimizers|warnings|params|[^]{joined|separate|undocumented}}[,...]\n"
-msgstr "  --help={target|optimizers|warnings|undocumented|params}[,{[^]joined|[^]separate}]\n"
+msgstr "  --help={target|optimizers|warnings|params|[^]{joined|separate|undocumented}}[,...]\n"
 
 #: gcc.c:2918
 msgid "                           Display specific types of command line options\n"
@@ -521,9 +517,8 @@ msgid "  (Use '-v --help' to display command line options of sub-processes)\n"
 msgstr "  ('-v --help' zum Anzeigen der Kommandozeilenoptionen von Subprozessen verwenden)\n"
 
 #: gcc.c:2921
-#, fuzzy
 msgid "  --version                Display compiler version information\n"
-msgstr "  --help                   Diese Informationen anzeigen\n"
+msgstr "  --version                Compilerversionsinformation anzeigen\n"
 
 #: gcc.c:2922
 msgid "  -dumpspecs               Display all of the built in spec strings\n"
@@ -572,9 +567,8 @@ msgstr ""
 "                            anzeigen\n"
 
 #: gcc.c:2934
-#, fuzzy
 msgid "  -print-sysroot           Display the target libraries directory\n"
-msgstr "  -dumpmachine             Zielprozessor des Compilers anzeigen\n"
+msgstr "  -print-sysroot           Verzeichnis der Ziel-Bibliotheken anzeigen\n"
 
 #: gcc.c:2935
 msgid "  -print-sysroot-headers-suffix Display the sysroot suffix used to find headers\n"
@@ -609,15 +603,16 @@ msgid "  -save-temps              Do not delete intermediate files\n"
 msgstr "  -save-temps              Temporäre Dateien nicht löschen\n"
 
 #: gcc.c:2943
-#, fuzzy
 msgid "  -save-temps=<arg>        Do not delete intermediate files\n"
-msgstr "  -save-temps              Temporäre Dateien nicht löschen\n"
+msgstr "  -save-temps=<arg>        Temporäre Dateien nicht löschen\n"
 
 #: gcc.c:2944
 msgid ""
 "  -no-canonical-prefixes   Do not canonicalize paths when building relative\n"
 "                           prefixes to other gcc components\n"
 msgstr ""
+"  -no-canonical-prefixes   Pfade beim Erzeugen relativer Präfixe zu anderen\n"
+"                           GCC-Komponenten nicht kanonisieren\n"
 
 #: gcc.c:2947
 msgid "  -pipe                    Use pipes rather than intermediate files\n"
@@ -904,9 +899,9 @@ msgid "  -u, --unconditional-branches    Show unconditional branch counts too\n"
 msgstr "  -u, --unconditional-branches    Auch unbedingte Zweigzähler zeigen\n"
 
 #: gcov.c:431
-#, fuzzy, c-format
+#, c-format
 msgid "  -d, --display-progress          Display progress information\n"
-msgstr "  --help                   Diese Informationen anzeigen\n"
+msgstr "  -d, --display-progress          Fortschrittsinformationen anzeigen\n"
 
 #: gcov.c:432
 #, c-format
@@ -1133,18 +1128,16 @@ msgid "%s:cannot open source file\n"
 msgstr "%s: Quelldatei kann nicht geöffnet werden\n"
 
 #: gcse.c:4066
-#, fuzzy
 msgid "PRE disabled"
-msgstr "GCSE ausgeschaltet"
+msgstr "PRE ausgeschaltet"
 
 #: gcse.c:4616
 msgid "GCSE disabled"
 msgstr "GCSE ausgeschaltet"
 
 #: gcse.c:5137
-#, fuzzy
 msgid "const/copy propagation disabled"
-msgstr "Option -g ausgeschaltet"
+msgstr "Übertragung von const/copy ausgeschaltet"
 
 #: incpath.c:76
 #, c-format
@@ -1191,14 +1184,12 @@ msgid "'"
 msgstr "«"
 
 #: ipa-pure-const.c:155
-#, fuzzy
 msgid "function might be candidate for attribute %<%s%>"
-msgstr "%JFunktion könnte möglicher Kandidat für Attribut %<noreturn%> sein"
+msgstr "Funktion könnte Kandidat für Attribut %<%s%> sein"
 
 #: ipa-pure-const.c:156
-#, fuzzy
 msgid "function might be candidate for attribute %<%s%> if it is known to return normally"
-msgstr "%JFunktion könnte möglicher Kandidat für Attribut %<noreturn%> sein"
+msgstr "Funktion könnte Kandidat für Attribut %<%s%> sein, wenn sie als normal zurückkehrend bekannt ist"
 
 #: langhooks.c:381
 msgid "At top level:"
@@ -1246,14 +1237,14 @@ msgid "cannot optimize loop, the loop counter may overflow"
 msgstr "Schleife kann nicht optimiert werden, Schleifen-Zählvariable könnte überlaufen"
 
 #: lto-wrapper.c:222
-#, fuzzy, c-format
+#, c-format
 msgid "%s terminated with signal %d [%s], core dumped"
-msgstr "%s mit Signal %d [%s]%s beendet"
+msgstr "%s mit Signal %d [%s] beendet (Coredump)"
 
 #: lto-wrapper.c:225
-#, fuzzy, c-format
+#, c-format
 msgid "%s terminated with signal %d [%s]"
-msgstr "%s mit Signal %d [%s]%s beendet"
+msgstr "%s mit Signal %d [%s] beendet"
 
 #: lto-wrapper.c:230 collect2.c:1990
 #, gcc-internal-format
@@ -1263,42 +1254,42 @@ msgstr "%s gab Ende-Status %d zurück"
 #: lto-wrapper.c:246
 #, c-format
 msgid "deleting LTRANS file %s"
-msgstr ""
+msgstr "LTRANS-Datei %s wird gelöscht"
 
 #: lto-wrapper.c:268
-#, fuzzy, c-format
+#, c-format
 msgid "failed to open %s"
-msgstr "kann Datei »%s« nicht öffnen"
+msgstr "»%s« kann nicht geöffnet werden"
 
 #: lto-wrapper.c:273
-#, fuzzy, c-format
+#, c-format
 msgid "could not write to temporary file %s"
-msgstr "in temporäre Antwortdatei %s konnte nicht geschrieben werden"
+msgstr "in temporäre Datei %s konnte nicht geschrieben werden"
 
 #: lto-wrapper.c:312
-#, fuzzy, c-format
+#, c-format
 msgid "environment variable COLLECT_GCC must be set"
-msgstr "Umgebungsvariable DJGPP nicht definiert"
+msgstr "Umgebungsvariable COLLECT_GCC muss gesetzt sein"
 
 #: lto-wrapper.c:317
-#, fuzzy, c-format
+#, c-format
 msgid "environment variable COLLECT_GCC_OPTIONS must be set"
-msgstr "Umgebungsvariable DJGPP nicht definiert"
+msgstr "Umgebungsvariable COLLECT_GCC_OPTIONS muss gesetzt sein"
 
 #: lto-wrapper.c:326
 #, c-format
 msgid "malformed COLLECT_GCC_OPTIONS"
-msgstr ""
+msgstr "ungültige COLLECT_GCC_OPTIONS"
 
 #: lto-wrapper.c:471 lto-wrapper.c:629
-#, fuzzy, c-format
+#, c-format
 msgid "invalid LTO mode"
-msgstr "ungültiger %%j-Code"
+msgstr "ungültiger LTO-Modus"
 
 #: lto-wrapper.c:492
-#, fuzzy, c-format
+#, c-format
 msgid "fopen: %s"
-msgstr "fopen %s"
+msgstr "fopen: %s"
 
 #. What to print when a switch has no documentation.
 #: opts.c:325
@@ -1349,9 +1340,8 @@ msgid "The --param option recognizes the following as parameters"
 msgstr "Die Option »--param« erkennt die folgenden Parameter"
 
 #: opts.c:1563
-#, fuzzy
 msgid "The following options are specific to just the language "
-msgstr "Die folgenden Optionen sind sprachspezifisch "
+msgstr "Die folgenden Optionen sind nur spezifisch für die Sprache "
 
 #: opts.c:1565
 msgid "The following options are supported by the language "
@@ -1362,14 +1352,12 @@ msgid "The following options are not documented"
 msgstr "Die folgenden Optionen sind nicht dokumentiert"
 
 #: opts.c:1578
-#, fuzzy
 msgid "The following options take separate arguments"
-msgstr "Die folgenden Optionen sind nicht dokumentiert"
+msgstr "Die folgenden Optionen verwenden separate Argumente"
 
 #: opts.c:1580
-#, fuzzy
 msgid "The following options take joined arguments"
-msgstr "Die folgenden Optionen sind nicht dokumentiert"
+msgstr "Die folgenden Optionen verwenden gemeinsame Argumente"
 
 #: opts.c:1591
 msgid "The following options are language-related"
@@ -1378,30 +1366,29 @@ msgstr "Die folgenden Optionen sind sprachbezogen"
 #: opts.c:1759
 #, c-format
 msgid "warning: --help argument %.*s is ambiguous, please be more specific\n"
-msgstr ""
+msgstr "Warnung: Argument %.*s für --help ist mehrdeutig, bitte präzisieren\n"
 
 #: opts.c:1767
-#, fuzzy, c-format
+#, c-format
 msgid "warning: unrecognized argument to --help= option: %.*s\n"
-msgstr "Warnung: Argument für Schalter --help=: »%.*s« nicht erkannt\n"
+msgstr "Warnung: Argument für Option --help=: »%.*s« nicht erkannt\n"
 
 #: opts.c:2488
-#, fuzzy
 msgid "enabled by default"
-msgstr "»char« standardmäßig vorzeichenbehaftet machen"
+msgstr "standardmäßig aktiviert"
 
 #: plugin.c:790
 msgid "Event"
-msgstr ""
+msgstr "Ereignis"
 
 #: plugin.c:790
 msgid "Plugins"
-msgstr ""
+msgstr "Plugins"
 
 #: plugin.c:822
 #, c-format
 msgid "*** WARNING *** there are active plugins, do not report this as a bug unless you can reproduce it without enabling any plugins.\n"
-msgstr ""
+msgstr "*** WARNUNG *** es gibt aktive Plugins - bitte keine Fehler melden, wenn diese nicht ohne Plugins reproduziert werden können.\n"
 
 #: reload.c:3806
 msgid "unable to generate reloads for:"
@@ -1422,7 +1409,6 @@ msgid "VOIDmode on an output"
 msgstr "VOIDmode bei einer Ausgabe"
 
 #: reload1.c:8618
-#, fuzzy
 msgid "failure trying to reload:"
 msgstr "Neuladen gescheitert:"
 
@@ -1484,9 +1470,9 @@ msgid "%s%s%s %sversion %s (%s) compiled by CC, "
 msgstr "%s%s%s %sVersion %s (%s) kompiliert von CC, "
 
 #: toplev.c:1039
-#, fuzzy, c-format
+#, c-format
 msgid "GMP version %s, MPFR version %s, MPC version %s\n"
-msgstr "GMP-Version %s, MPFR-Version %s.\n"
+msgstr "GMP-Version %s, MPFR-Version %s, MPC-Version %s.\n"
 
 #: toplev.c:1041
 #, c-format
@@ -1524,14 +1510,12 @@ msgid "created and used with different settings of -fpie"
 msgstr "erzeugt und mit anderen Einstellungen von -fpie verwendet"
 
 #: tree-vrp.c:6793
-#, fuzzy
 msgid "assuming signed overflow does not occur when simplifying && or || to & or |"
-msgstr "Annahme, dass vorzeichenbehafteter Überlauf nicht auftritt, wenn Bereichsprüfung vereinfacht wird"
+msgstr "Annahme, dass vorzeichenbehafteter Überlauf nicht auftritt, wenn && oder || zu & oder | vereinfacht wird"
 
 #: tree-vrp.c:6797
-#, fuzzy
 msgid "assuming signed overflow does not occur when simplifying ==, != or ! to identity or ^"
-msgstr "Annahme, dass vorzeichenbehafteter Überlauf nicht auftritt, wenn Bereichsprüfung vereinfacht wird"
+msgstr "Annahme, dass vorzeichenbehafteter Überlauf nicht auftritt, wenn ==, != oder ! zu Identität oder ^ vereinfacht wird"
 
 #: cif-code.def:39
 msgid "function not considered for inlining"
@@ -1596,11 +1580,8 @@ msgstr "bei Optimierung nach Größe würde Codegröße wachsen"
 
 #. Inlining failed because of mismatched options or arguments.
 #: cif-code.def:81
-#, fuzzy
 msgid "target specific option mismatch"
-msgstr ""
-"\n"
-"Zielspezifische Optionen:\n"
+msgstr "Fehlzuordnung zielspezifischer Optionen"
 
 #: cif-code.def:82
 msgid "mismatched arguments"
@@ -1612,12 +1593,11 @@ msgstr "ursprünglich indirekter Funktionsaufruf kommt nicht als »inline« in B
 
 #: cif-code.def:90
 msgid "indirect function call with a yet undetermined callee"
-msgstr ""
+msgstr "Indirekter Funktionsaufruf mit noch unbekanntem Aufrufer"
 
 #: cif-code.def:92
-#, fuzzy
 msgid "function body can be overwriten at linktime"
-msgstr "Funktion kann nicht »inline« sein"
+msgstr "Funktionskörper kann zum Link-Zeitpunkt überschrieben werden"
 
 #. The remainder are real diagnostic types.
 #: diagnostic.def:33
@@ -1655,14 +1635,12 @@ msgstr "zur Fehlersuche: "
 #. These two would be re-classified as DK_WARNING or DK_ERROR, so the
 #. prefix does not matter.
 #: diagnostic.def:43
-#, fuzzy
 msgid "pedwarn: "
-msgstr "Warnung: "
+msgstr "Ped. Warnung: "
 
 #: diagnostic.def:44
-#, fuzzy
 msgid "permerror: "
-msgstr "Fehler: "
+msgstr "Perm. Fehler: "
 
 #: params.def:48
 msgid "The threshold ratio between current and hottest structure counts"
