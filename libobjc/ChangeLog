@@ -1,3 +1,8 @@
+2010-12-13  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* encoding.c (_darwin_rs6000_special_round_type_align): New.
+	(darwin_rs6000_special_round_type_align): Adjust to use new routine.
+
 2010-12-11  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* sendmsg.c (selector_resolveClassMethod): New.
