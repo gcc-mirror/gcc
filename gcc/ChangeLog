@@ -1,5 +1,13 @@
 2010-12-13  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/mn10300/linux.h (SIZE_TYPE, PTRDIFF_TYPE, WCHAR_TYPE,
+	WCHAR_TYPE_SIZE): Undefine.
+	* config/mn10300/mn10300.h (SIZE_TYPE, PTRDIFF_TYPE, WCHAR_TYPE,
+	WCHAR_TYPE_SIZE): Define.
+	* config.gcc (mn10300-*-*): Don't use svr4.h.
+
+2010-12-13  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/m68k/linux.h (DBX_REGISTER_NUMBER): Undefine and
 	redefine.
 	(SIZE_TYPE, PTRDIFF_TYPE, WCHAR_TYPE, WCHAR_TYPE_SIZE): Define.
