@@ -1,3 +1,9 @@
+2010-12-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (can_be_lower_p): New predicate.
+	(Loop_Statement_to_gnu): Do not generate the entry condition if we know
+	that it will be true.
+
 2010-12-03  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc-interface/lang.opt (k8): New option.
