@@ -151,7 +151,7 @@ static const double
 
 
 static int
-__kernel_rem_pio2 (double *x, double *y, int e0, int nx, int prec, const int32_t *ipio2)
+__quadmath_kernel_rem_pio2 (double *x, double *y, int e0, int nx, int prec, const int32_t *ipio2)
 {
 	int32_t jz,jx,jv,jp,jk,carry,n,iq[20],i,j,k,m,q0,ih;
 	double z,fw,f[20],fq[20],q[20];
@@ -500,7 +500,7 @@ static const __float128 c[] = {
 
 
 int32_t
-rem_pio2q (__float128 x, __float128 *y)
+__quadmath_rem_pio2q (__float128 x, __float128 *y)
 {
   __float128 z, w, t;
   double tx[8];
@@ -557,8 +557,9 @@ rem_pio2q (__float128 x, __float128 *y)
   tx [3] = (double)((lx >> 17) & 0xffffff);
   tx [4] = (double)((lx << 7) & 0xffffff);
 
-  n = __kernel_rem_pio2 (tx, tx + 5, exp, ((lx << 7) & 0xffffff) ? 5 : 4,
-			 3, two_over_pi);
+  n = __quadmath_kernel_rem_pio2 (tx, tx + 5, exp,
+				  ((lx << 7) & 0xffffff) ? 5 : 4,
+				  3, two_over_pi);
 
   /* The result is now stored in 3 double values, we need to convert it into
      two __float128 values.  */

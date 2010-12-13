@@ -58,7 +58,7 @@ sinq (__float128 x)
     /* |x| ~< pi/4 */
 	ix &= 0x7fffffffffffffffLL;
 	if(ix <= 0x3ffe921fb54442d1LL)
-	  return __kernel_sinq(x,z,0);
+	  return __quadmath_kernel_sinq(x,z,0);
 
     /* sin(Inf or NaN) is NaN */
 	else if (ix>=0x7fff000000000000LL) {
@@ -70,13 +70,13 @@ sinq (__float128 x)
 
     /* argument reduction needed */
 	else {
-	    n = rem_pio2q(x,y);
+	    n = __quadmath_rem_pio2q(x,y);
 	    switch(n&3) {
-		case 0: return  __kernel_sinq(y[0],y[1],1);
-		case 1: return  __kernel_cosq(y[0],y[1]);
-		case 2: return -__kernel_sinq(y[0],y[1],1);
+		case 0: return  __quadmath_kernel_sinq(y[0],y[1],1);
+		case 1: return  __quadmath_kernel_cosq(y[0],y[1]);
+		case 2: return -__quadmath_kernel_sinq(y[0],y[1],1);
 		default:
-			return -__kernel_cosq(y[0],y[1]);
+			return -__quadmath_kernel_cosq(y[0],y[1]);
 	    }
 	}
 }

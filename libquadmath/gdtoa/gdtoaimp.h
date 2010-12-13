@@ -472,51 +472,54 @@ extern void memcpy_D2A ANSI((void*, const void*, size_t));
 #define Bcopy(x,y) memcpy(&x->sign,&y->sign,y->wds*sizeof(ULong) + 2*sizeof(int))
 #endif /* NO_STRING_H */
 
-#define Balloc Balloc_D2A
-#define Bfree Bfree_D2A
-#define ULtoQ ULtoQ_D2A
-#define ULtof ULtof_D2A
-#define ULtod ULtod_D2A
-#define ULtodd ULtodd_D2A
-#define ULtox ULtox_D2A
-#define ULtoxL ULtoxL_D2A
-#define any_on any_on_D2A
-#define b2d b2d_D2A
-#define bigtens bigtens_D2A
-#define cmp cmp_D2A
-#define copybits copybits_D2A
-#define d2b d2b_D2A
-#define decrement decrement_D2A
-#define diff diff_D2A
-#define dtoa_result dtoa_result_D2A
-#define g__fmt g__fmt_D2A
-#define gethex gethex_D2A
-#define hexdig hexdig_D2A
-#define hexnan hexnan_D2A
-#define hi0bits(x) hi0bits_D2A((ULong)(x))
-#define i2b i2b_D2A
-#define increment increment_D2A
-#define lo0bits lo0bits_D2A
-#define lshift lshift_D2A
-#define match match_D2A
-#define mult mult_D2A
-#define multadd multadd_D2A
-#define nrv_alloc nrv_alloc_D2A
-#define pow5mult pow5mult_D2A
-#define quorem quorem_D2A
-#define ratio ratio_D2A
-#define rshift rshift_D2A
-#define rv_alloc rv_alloc_D2A
-#define s2b s2b_D2A
-#define set_ones set_ones_D2A
-#define strcp strcp_D2A
-#define strtoIg strtoIg_D2A
-#define sum sum_D2A
-#define tens tens_D2A
-#define tinytens tinytens_D2A
-#define tinytens tinytens_D2A
-#define trailz trailz_D2A
-#define ulp ulp_D2A
+#define Balloc __quadmath_Balloc_D2A
+#define Bfree __quadmath_Bfree_D2A
+#define ULtoQ __quadmath_ULtoQ_D2A
+#define ULtof __quadmath_ULtof_D2A
+#define ULtod __quadmath_ULtod_D2A
+#define ULtodd __quadmath_ULtodd_D2A
+#define ULtox __quadmath_ULtox_D2A
+#define ULtoxL __quadmath_ULtoxL_D2A
+#define any_on __quadmath_any_on_D2A
+#define b2d __quadmath_b2d_D2A
+#define bigtens __quadmath_bigtens_D2A
+#define cmp __quadmath_cmp_D2A
+#define copybits __quadmath_copybits_D2A
+#define d2b __quadmath_d2b_D2A
+#define decrement __quadmath_decrement_D2A
+#define diff __quadmath_diff_D2A
+#define dtoa_result __quadmath_dtoa_result_D2A
+#define g__fmt __quadmath_g__fmt_D2A
+#define gethex __quadmath_gethex_D2A
+#define hexdig __quadmath_hexdig_D2A
+#define hexnan __quadmath_hexnan_D2A
+#define hi0bits_D2A __quadmath_hi0bits_D2A
+#define hi0bits(x) __quadmath_hi0bits_D2A((ULong)(x))
+#define i2b __quadmath_i2b_D2A
+#define increment __quadmath_increment_D2A
+#define lo0bits __quadmath_lo0bits_D2A
+#define lshift __quadmath_lshift_D2A
+#define match __quadmath_match_D2A
+#define mult __quadmath_mult_D2A
+#define multadd __quadmath_multadd_D2A
+#define nrv_alloc __quadmath_nrv_alloc_D2A
+#define pow5mult __quadmath_pow5mult_D2A
+#define quorem __quadmath_quorem_D2A
+#define ratio __quadmath_ratio_D2A
+#define rshift __quadmath_rshift_D2A
+#define rv_alloc __quadmath_rv_alloc_D2A
+#define s2b __quadmath_s2b_D2A
+#define set_ones __quadmath_set_ones_D2A
+#ifdef NO_STRING_H
+#define strcp __quadmath_strcp_D2A
+#endif
+#define strtoIg __quadmath_strtoIg_D2A
+#define sum __quadmath_sum_D2A
+#define tens __quadmath_tens_D2A
+#define tinytens __quadmath_tinytens_D2A
+#define tinytens __quadmath_tinytens_D2A
+#define trailz __quadmath_trailz_D2A
+#define ulp __quadmath_ulp_D2A
 
  extern char *dtoa_result;
  extern CONST double bigtens[], tens[], tinytens[];
@@ -559,7 +562,9 @@ extern void memcpy_D2A ANSI((void*, const void*, size_t));
  extern char *rv_alloc ANSI((int));
  extern Bigint *s2b ANSI((CONST char*, int, int, ULong, int));
  extern Bigint *set_ones ANSI((Bigint*, int));
- extern char *strcp ANSI((char*, const char*));
+#ifdef NO_STRING_H
+ extern char *strcpy ANSI((char*, const char*));
+#endif
  extern int strtoIg ANSI((CONST char*, char**, FPI*, Long*, Bigint**, int*));
  extern Bigint *sum ANSI((Bigint*, Bigint*));
  extern int trailz ANSI((Bigint*));

@@ -27,10 +27,11 @@ Boston, MA 02110-1301, USA.  */
 
 
 // Prototypes for internal functions
-extern int32_t rem_pio2q (__float128, __float128 *);
-extern void __kernel_sincosq (__float128, __float128, __float128 *, __float128 *, int);
-extern __float128 __kernel_sinq (__float128, __float128, int);
-extern __float128 __kernel_cosq (__float128, __float128);
+extern int32_t __quadmath_rem_pio2q (__float128, __float128 *);
+extern void __quadmath_kernel_sincosq (__float128, __float128, __float128 *,
+				       __float128 *, int);
+extern __float128 __quadmath_kernel_sinq (__float128, __float128, int);
+extern __float128 __quadmath_kernel_cosq (__float128, __float128);
 
 
 
