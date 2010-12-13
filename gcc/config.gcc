@@ -2660,11 +2660,11 @@ xstormy16-*-elf)
 	extra_parts="crtbegin.o crtend.o"
 	;;
 xtensa*-*-elf*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h newlib-stdint.h xtensa/elf.h"
+	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h xtensa/elf.h"
 	tmake_file="xtensa/t-xtensa xtensa/t-elf"
 	;;
 xtensa*-*-linux*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h glibc-stdint.h xtensa/linux.h"
+	tm_file="${tm_file} dbxelf.h elfos.h linux.h glibc-stdint.h xtensa/linux.h"
 	tmake_file="${tmake_file} xtensa/t-xtensa xtensa/t-linux"
 	;;
 am33_2.0-*-linux*)
