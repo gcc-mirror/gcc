@@ -2234,10 +2234,10 @@ rx-*-elf*)
 	tmake_file="${tmake_file} rx/t-rx"
 	;;
 s390-*-linux*)
-	tm_file="s390/s390.h dbxelf.h elfos.h svr4.h linux.h glibc-stdint.h s390/linux.h"
+	tm_file="s390/s390.h dbxelf.h elfos.h linux.h glibc-stdint.h s390/linux.h"
 	;;
 s390x-*-linux*)
-	tm_file="s390/s390x.h s390/s390.h dbxelf.h elfos.h svr4.h linux.h glibc-stdint.h s390/linux.h"
+	tm_file="s390/s390x.h s390/s390.h dbxelf.h elfos.h linux.h glibc-stdint.h s390/linux.h"
 	tm_p_file=s390/s390-protos.h
 	md_file=s390/s390.md
 	extra_modes=s390/s390-modes.def
@@ -2245,7 +2245,7 @@ s390x-*-linux*)
 	tmake_file="${tmake_file} s390/t-linux64"
 	;;
 s390x-ibm-tpf*)
-        tm_file="s390/s390x.h s390/s390.h dbxelf.h elfos.h svr4.h s390/tpf.h"
+        tm_file="s390/s390x.h s390/s390.h dbxelf.h elfos.h s390/tpf.h"
         tm_p_file=s390/s390-protos.h
         md_file=s390/s390.md
         extra_modes=s390/s390-modes.def
