@@ -1,3 +1,9 @@
+2010-12-13  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/46841
+	* trans-expr.c (gfc_trans_subcomponent_assign): Handle array-valued
+	procedure pointer components.
+
 2010-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/46884
