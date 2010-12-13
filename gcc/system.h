@@ -190,6 +190,10 @@ extern int fprintf_unlocked (FILE *, const char *, ...);
 extern int errno;
 #endif
 
+#ifdef __cplusplus
+# include <cstring>
+#endif
+
 /* Some of glibc's string inlines cause warnings.  Plus we'd rather
    rely on (and therefore test) GCC's string builtins.  */
 #define __NO_STRING_INLINES
