@@ -1759,8 +1759,9 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
 	  tree op = gimple_op (stmt, i);
 	  /* Wrap all uses of non-automatic variables inside MEM_REFs
 	     so that we do not have to deal with type mismatches on
-	     merged symbols during IL read in.  */
-	  if (op)
+	     merged symbols during IL read in.  The first operand
+	     of GIMPLE_DEBUG must be a decl, not MEM_REF, though.  */
+	  if (op && (i || !is_gimple_debug (stmt)))
 	    {
 	      tree *basep = &op;
 	      while (handled_component_p (*basep))
