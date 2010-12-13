@@ -1,6 +1,14 @@
 2010-12-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:
+	2010-11-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/mips/iris.h [!IRIX_USING_GNU_LD]
+	(SUPPORTS_INIT_PRIORITY): Define.
+
+2010-12-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
 	2010-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (*-*-irix6*): Disable set_have_as_tls.

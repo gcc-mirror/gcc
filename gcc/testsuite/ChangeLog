@@ -1,3 +1,12 @@
+2010-12-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2010-11-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/prune.exp (prune_gcc_output): Ignore IRIX 6 linker multiline
+	warning.
+	* g++.dg/cpp/_Pragma1.C: Skip on mips-sgi-irix*.
+
 2010-12-09  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/46794

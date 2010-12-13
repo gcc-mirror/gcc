@@ -163,6 +163,11 @@ along with GCC; see the file COPYING3.  If not see
    library search directories.  */
 #define LINK_ELIMINATE_DUPLICATE_LDIRECTORIES 1
 
+/* The SGI linker doesn't understand constructor priorities.  */
+#ifndef IRIX_USING_GNU_LD
+#define SUPPORTS_INIT_PRIORITY 0
+#endif
+
 /* Add -g to mips.h default to avoid confusing gas with local symbols
    generated from stabs info.  */
 #undef NM_FLAGS
