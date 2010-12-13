@@ -1,3 +1,10 @@
+2010-12-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46873
+	PR c++/46877
+	* g++.dg/cpp0x/constexpr-ctor4.C: New.
+	* g++.dg/cpp0x/constexpr-ctor5.C: New.
+
 2010-12-13  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/46201

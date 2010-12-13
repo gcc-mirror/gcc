@@ -5483,49 +5483,43 @@ build_data_member_initialization (tree t, VEC(constructor_elt,gc) **vec)
     {
       member = TREE_OPERAND (t, 0);
       init = unshare_expr (TREE_OPERAND (t, 1));
-      if (TREE_CODE (member) == INDIRECT_REF)
-	{
-	  tree op = TREE_OPERAND (member, 0);
-	  STRIP_NOPS (op);
-	  gcc_assert (TREE_CODE (op) == ADDR_EXPR);
-	  op = TREE_OPERAND (op, 0);
-	  if (TREE_CODE (op) == COMPONENT_REF)
-	    /* Initializing a cv-qualified member; we just looked through
-	       the const_cast.  */
-	    member = op;
-	  else
-	    {
-	      /* Initializing an empty base; just skip it.  */
-	      gcc_assert (is_empty_class (TREE_TYPE (member)));
-	      return true;
-	    }
-	}
     }
   else
     {
-      tree memtype;
       gcc_assert (TREE_CODE (t) == CALL_EXPR);
       member = CALL_EXPR_ARG (t, 0);
-      memtype = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (member)));
-      if (TREE_CODE (member) == NOP_EXPR)
+      /* We don't use build_cplus_new here because it complains about
+	 abstract bases.  Leaving the call unwrapped means that it has the
+	 wrong type, but cxx_eval_constant_expression doesn't care.  */
+      init = unshare_expr (t);
+    }
+  if (TREE_CODE (member) == INDIRECT_REF)
+    member = TREE_OPERAND (member, 0);
+  if (TREE_CODE (member) == NOP_EXPR)
+    {
+      tree op = member;
+      STRIP_NOPS (op);
+      if (TREE_CODE (op) == ADDR_EXPR)
 	{
-	  /* We don't put out anything for an empty base.  */
-	  gcc_assert (is_empty_class (memtype));
-	  /* But if the constructor used isn't constexpr, leave in the call
-	     so we complain later.  */
-	  if (potential_constant_expression (t, tf_none))
-	    return true;
+	  gcc_assert (same_type_ignoring_top_level_qualifiers_p
+		      (TREE_TYPE (TREE_TYPE (op)),
+		       TREE_TYPE (TREE_TYPE (member))));
+	  /* Initializing a cv-qualified member; we need to look through
+	     the const_cast.  */
+	  member = op;
 	}
       else
 	{
-	  gcc_assert (TREE_CODE (member) == ADDR_EXPR);
-	  member = TREE_OPERAND (member, 0);
+	  /* We don't put out anything for an empty base.  */
+	  gcc_assert (is_empty_class (TREE_TYPE (TREE_TYPE (member))));
+	  /* But if the initializer isn't constexpr, leave it in so we
+	     complain later.  */
+	  if (potential_constant_expression (init, tf_none))
+	    return true;
 	}
-      /* We don't use build_cplus_new here because it complains about
-	 abstract bases.  T has the wrong type, but
-	 cxx_eval_constant_expression doesn't care.  */
-      init = unshare_expr (t);
     }
+  if (TREE_CODE (member) == ADDR_EXPR)
+    member = TREE_OPERAND (member, 0);
   if (TREE_CODE (member) == COMPONENT_REF)
     member = TREE_OPERAND (member, 1);
   CONSTRUCTOR_APPEND_ELT (*vec, member, init);

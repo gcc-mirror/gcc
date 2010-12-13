@@ -1,3 +1,10 @@
+2010-12-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46873
+	PR c++/46877
+	* semantics.c (build_data_member_initialization): Handle
+	cv-qualified data member.
+
 2010-12-13  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/45388
