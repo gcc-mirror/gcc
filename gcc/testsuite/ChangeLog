@@ -57,10 +57,6 @@
 	* objc.dg/gnu-api-2-resolve-method.m: New.
 	* obj-c++.dg/gnu-api-2-resolve-method.mm: New.	
 
-2010-12-10 Ahmad Sharif <asharif@google.com>
-
-	* gcc.target/i386/max-stack-align.c: New testcase.
-
 2010-12-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* gcc.dg/funcorder.c: Remove XFAIL for hppa*64*-*-*.
