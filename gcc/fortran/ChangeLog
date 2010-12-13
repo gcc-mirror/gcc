@@ -1,5 +1,11 @@
 2010-12-13  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/46201
+	* trans-expr.c (gfc_conv_procedure_call): Handle procedure pointer
+	components called on a dimensionful base object.
+
+2010-12-13  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/46841
 	* trans-expr.c (gfc_trans_subcomponent_assign): Handle array-valued
 	procedure pointer components.
