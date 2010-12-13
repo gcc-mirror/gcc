@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha on OSF/1.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 2001, 2002, 2003,
-   2004, 2007 Free Software Foundation, Inc.
+   2004, 2007, 2010 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.
@@ -184,6 +184,14 @@ __enable_execute_stack (void *addr)					\
   (TARGET_GAS								     \
    ? (((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | DW_EH_PE_sdata4) \
    : DW_EH_PE_aligned)
+
+/* The Tru64 UNIX assembler warns on .lcomm with SIZE 0, so use 1 in that
+   case.  */
+#undef ASM_OUTPUT_LOCAL
+#define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE,ROUNDED)	\
+( fputs ("\t.lcomm ", (FILE)),				\
+  assemble_name ((FILE), (NAME)),			\
+  fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED"\n", (SIZE) ? (SIZE) : 1))
 
 /* This is how we tell the assembler that a symbol is weak.  */
 
