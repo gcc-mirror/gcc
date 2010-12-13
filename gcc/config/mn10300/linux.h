@@ -84,3 +84,7 @@ extern int mn10300_protect_label;
     }						\
   while (0)           
 
+#undef SIZE_TYPE
+#undef PTRDIFF_TYPE
+#undef WCHAR_TYPE
+#undef WCHAR_TYPE_SIZE
