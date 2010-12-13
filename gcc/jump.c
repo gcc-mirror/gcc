@@ -193,7 +193,7 @@ mark_all_labels (rtx f)
   rtx prev_nonjump_insn = NULL;
 
   for (insn = f; insn; insn = NEXT_INSN (insn))
-    if (INSN_P (insn))
+    if (NONDEBUG_INSN_P (insn))
       {
 	mark_jump_label (PATTERN (insn), insn, 0);
 

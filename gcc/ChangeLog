@@ -1,5 +1,10 @@
 2010-12-13  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR debug/46576
+	* jump.c (mark_all_labels): Skip debug insns.
+
+2010-12-13  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR debug/46782
 	* cfgcleanup.c (try_forward_edges): Skip debug insns.
 
