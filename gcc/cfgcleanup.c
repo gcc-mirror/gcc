@@ -487,11 +487,17 @@ try_forward_edges (int mode, basic_block b)
 		    new_target = NULL;
 		  else
 		    {
+		      rtx last;
+
 		      if (new_locus)
 			locus = new_locus;
 
-		      new_locus = INSN_P (BB_END (target))
-				  ? INSN_LOCATOR (BB_END (target)) : 0;
+		      last = BB_END (target);
+		      if (DEBUG_INSN_P (last))
+			last = prev_nondebug_insn (last);
+
+		      new_locus = last && INSN_P (last)
+				  ? INSN_LOCATOR (last) : 0;
 
 		      if (new_locus && locus && !locator_eq (new_locus, locus))
 			new_target = NULL;

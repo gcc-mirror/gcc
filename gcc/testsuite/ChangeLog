@@ -1,3 +1,8 @@
+2010-12-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/46782
+	* gcc.dg/debug/pr46782.c: New.
+
 2010-12-12  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/46809

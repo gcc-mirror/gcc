@@ -1,3 +1,8 @@
+2010-12-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/46782
+	* cfgcleanup.c (try_forward_edges): Skip debug insns.
+
 2010-12-12  Jan Hubicka  <jh@suse.cz>
 	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
