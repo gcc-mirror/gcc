@@ -1,6 +1,13 @@
+2010-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/46884
+	* symbol.c (gfc_new_charlen): If old_cl is non-NULL, put it
+	at the ns->old_cl_list spot in the chain rather than at
+	ns->cl_list.
+
 2010-12-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
-	* dump-parse-tree.c (show_expr):  Add space for parens.
+	* dump-parse-tree.c (show_expr): Add space for parens.
 
 2010-12-12  Janus Weil  <janus@gcc.gnu.org>
 

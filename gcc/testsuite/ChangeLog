@@ -1,3 +1,8 @@
+2010-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/46884
+	* gfortran.dg/pr46884.f: New test.
+
 2010-12-13  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc.dg/gnu-encoding/struct-layout-encoding-1_generate.c:
