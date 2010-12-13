@@ -27,6 +27,12 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_VERSION
 #define TARGET_VERSION fputs (" (Xtensa GNU/Linux with ELF)", stderr);
 
+#undef SIZE_TYPE
+#define SIZE_TYPE "unsigned int"
+
+#undef PTRDIFF_TYPE
+#define PTRDIFF_TYPE "int"
+
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "long int"
 
@@ -59,6 +65,8 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Always enable "-fpic" for Xtensa Linux.  */
 #define XTENSA_ALWAYS_PIC 1
+
+#undef DBX_REGISTER_NUMBER
 
 #define MD_UNWIND_SUPPORT "config/xtensa/linux-unwind.h"
 

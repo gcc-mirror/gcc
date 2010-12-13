@@ -32,6 +32,12 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_VERSION
 #define TARGET_VERSION fputs (" (Xtensa/ELF)", stderr);
 
+#undef SIZE_TYPE
+#define SIZE_TYPE "unsigned int"
+
+#undef PTRDIFF_TYPE
+#define PTRDIFF_TYPE "int"
+
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "short unsigned int"
 
@@ -74,6 +80,8 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Do not force "-fpic" for this target.  */
 #define XTENSA_ALWAYS_PIC 0
+
+#undef DBX_REGISTER_NUMBER
 
 /* Search for headers in $tooldir/arch/include and for libraries and
    startfiles in $tooldir/arch/lib.  */

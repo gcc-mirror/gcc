@@ -1,3 +1,11 @@
+2010-12-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/xtensa/elf.h (SIZE_TYPE, PTRDIFF_TYPE): Define.
+	(DBX_REGISTER_NUMBER): Undefine.
+	* config/xtensa/linux.h (SIZE_TYPE, PTRDIFF_TYPE): Define.
+	(DBX_REGISTER_NUMBER): Undefine.
+	* config.gcc (xtensa*-*-elf*, xtensa*-*-linux*): Don't use svr4.h.
+
 2010-12-13  Jack Howarth <howarth@bromo.med.uc.edu>
 	    Joseph Myers <joseph@codesourcery.com>
 
