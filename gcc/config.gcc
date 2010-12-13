@@ -2585,7 +2585,7 @@ spu-*-elf*)
 	;;
 v850e1-*-*)
 	target_cpu_default="TARGET_CPU_v850e1"
-	tm_file="dbxelf.h elfos.h svr4.h newlib-stdint.h v850/v850.h"
+	tm_file="dbxelf.h elfos.h newlib-stdint.h v850/v850.h"
 	tm_p_file=v850/v850-protos.h
 	tmake_file=v850/t-v850e
 	md_file=v850/v850.md
@@ -2603,7 +2603,7 @@ v850e1-*-*)
 	;;
 v850e-*-*)
 	target_cpu_default="TARGET_CPU_v850e"
-	tm_file="dbxelf.h elfos.h svr4.h newlib-stdint.h v850/v850.h"
+	tm_file="dbxelf.h elfos.h newlib-stdint.h v850/v850.h"
 	tm_p_file=v850/v850-protos.h
 	tmake_file=v850/t-v850e
 	md_file=v850/v850.md
@@ -2621,7 +2621,7 @@ v850e-*-*)
 	;;
 v850-*-*)
 	target_cpu_default="TARGET_CPU_generic"
-	tm_file="dbxelf.h elfos.h svr4.h newlib-stdint.h ${tm_file}"
+	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
 	tmake_file=v850/t-v850
 	if test x$stabs = xyes
 	then

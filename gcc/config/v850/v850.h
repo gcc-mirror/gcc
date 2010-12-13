@@ -198,6 +198,18 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
 
    On the NEC V850, loads do sign extension, so make this default.  */
 #define DEFAULT_SIGNED_CHAR 1
+
+#undef  SIZE_TYPE
+#define SIZE_TYPE "unsigned int"
+
+#undef  PTRDIFF_TYPE
+#define PTRDIFF_TYPE "int"
+
+#undef  WCHAR_TYPE
+#define WCHAR_TYPE "long int"
+
+#undef  WCHAR_TYPE_SIZE
+#define WCHAR_TYPE_SIZE BITS_PER_WORD
 
 /* Standard register usage.  */
 
