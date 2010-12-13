@@ -1,3 +1,21 @@
+2010-12-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46625
+	* gdtoa/gdtoaimp.h: Mangle internal functions by
+	prefixing them with __quadmath. Don't use gdtoa's strcp(y).
+	* gdtoa/g_Qfmt.c (g_Qfmt): Use strcpy instead of strcp.
+	* gdtoa/misc.c (strcpy): Renamed from strcp and only use
+	if NO_STRING_H is set.
+	* quadmath-imp.h (__quadmath_rem_pio2q, __quadmath_kernel_sincosq
+	__quadmath_kernel_sinq, __quadmath_kernel_cosq): Added
+	__quadmath prefix to internal functions.
+	* math/cosq.c (cosq): Ditto.
+	* math/sinq.c (cosq): Ditto.
+	* math/tanq.c (tanq,__quadmath_kernel_tanq): Ditto.
+	* math/rem_pio2q.c (rem_pio2, __quadmath_kernel_rem_pio2): Ditto.
+	* math/sinq_kernel.c (__quadmath_kernel_sinq): Ditto.
+	* math/cosq_kernel.c (__quadmath_kernel_cosq): Ditto.
+
 2010-12-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46772
