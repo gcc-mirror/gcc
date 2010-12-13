@@ -2130,6 +2130,26 @@ can_equal_max_val_p (tree val, tree type, bool reverse)
   return can_equal_min_or_max_val_p (val, type, !reverse);
 }
 
+/* Return true if VAL1 can be lower than VAL2.  */
+
+static bool
+can_be_lower_p (tree val1, tree val2)
+{
+  if (TREE_CODE (val1) == NOP_EXPR)
+    val1 = TYPE_MIN_VALUE (TREE_TYPE (TREE_OPERAND (val1, 0)));
+
+  if (TREE_CODE (val1) != INTEGER_CST)
+    return true;
+
+  if (TREE_CODE (val2) == NOP_EXPR)
+    val2 = TYPE_MAX_VALUE (TREE_TYPE (TREE_OPERAND (val2, 0)));
+
+  if (TREE_CODE (val2) != INTEGER_CST)
+    return true;
+
+  return tree_int_cst_lt (val1, val2);
+}
+
 /* Subroutine of gnat_to_gnu to translate gnat_node, an N_Loop_Statement,
    to a GCC tree, which is returned.  */
 
@@ -2297,16 +2317,19 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 	LOOP_STMT_BOTTOM_COND_P (gnu_loop_stmt) = 1;
 
       /* If we use the BOTTOM_COND, we can turn the test into an inequality
-	 test but we have to add an ENTRY_COND to protect the empty loop.  */
+	 test but we may have to add ENTRY_COND to protect the empty loop.  */
       if (LOOP_STMT_BOTTOM_COND_P (gnu_loop_stmt))
 	{
 	  test_code = NE_EXPR;
-	  gnu_cond_expr
-	    = build3 (COND_EXPR, void_type_node,
-		      build_binary_op (LE_EXPR, boolean_type_node,
-				       gnu_low, gnu_high),
-		      NULL_TREE, alloc_stmt_list ());
-	  set_expr_location_from_node (gnu_cond_expr, gnat_loop_spec);
+	  if (can_be_lower_p (gnu_high, gnu_low))
+	    {
+	      gnu_cond_expr
+		= build3 (COND_EXPR, void_type_node,
+			  build_binary_op (LE_EXPR, boolean_type_node,
+					   gnu_low, gnu_high),
+			  NULL_TREE, alloc_stmt_list ());
+	      set_expr_location_from_node (gnu_cond_expr, gnat_loop_spec);
+	    }
 	}
 
       /* Open a new nesting level that will surround the loop to declare the
