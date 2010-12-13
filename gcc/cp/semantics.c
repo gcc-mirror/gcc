@@ -5485,9 +5485,20 @@ build_data_member_initialization (tree t, VEC(constructor_elt,gc) **vec)
       init = unshare_expr (TREE_OPERAND (t, 1));
       if (TREE_CODE (member) == INDIRECT_REF)
 	{
-	  /* Don't put out anything for an empty base.  */
-	  gcc_assert (is_empty_class (TREE_TYPE (member)));
-	  return true;
+	  tree op = TREE_OPERAND (member, 0);
+	  STRIP_NOPS (op);
+	  gcc_assert (TREE_CODE (op) == ADDR_EXPR);
+	  op = TREE_OPERAND (op, 0);
+	  if (TREE_CODE (op) == COMPONENT_REF)
+	    /* Initializing a cv-qualified member; we just looked through
+	       the const_cast.  */
+	    member = op;
+	  else
+	    {
+	      /* Initializing an empty base; just skip it.  */
+	      gcc_assert (is_empty_class (TREE_TYPE (member)));
+	      return true;
+	    }
 	}
     }
   else
