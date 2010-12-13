@@ -1,6 +1,18 @@
 2010-12-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:
+	2010-04-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/cpp/_Pragma1.C: Skip on alpha*-dec-osf*.
+	* g++.dg/eh/spbp.C: Likewise.
+	* g++.dg/other/pragma-ep-1.C: Properly define p, remove
+	superfluous casts.
+	* objc.dg/dwarf-1.m: Skip on  alpha*-dec-osf*.
+	* objc.dg/dwarf-2.m: Likewise.
+
+2010-12-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
 	2010-11-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/prune.exp (prune_gcc_output): Ignore IRIX 6 linker multiline

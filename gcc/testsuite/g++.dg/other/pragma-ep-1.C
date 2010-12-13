@@ -22,6 +22,6 @@ extern "C" int three(void);
 
 extern "C" int four(void);
 
-void *p[] = {
-  (void *) one, (void *) two, (void *) three, (void *) four
+int (*p[])(void) = {
+  one, two, three, four
 };
