@@ -1,3 +1,9 @@
+2010-12-13  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR target/46040
+	* config.gcc (arm*-*-linux-*eabi): Use bpabi-lib.h.
+	(arm*-*-uclinux*eabi, arm*-*-eabi*): Likewise.
+
 2010-12-13  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/v850/v850.h (SIZE_TYPE, PTRDIFF_TYPE, WCHAR_TYPE,
