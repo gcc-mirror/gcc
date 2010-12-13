@@ -1,3 +1,10 @@
+2010-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/46867
+	* var-tracking.c (emitted_notes, string_pointer_flags): Removed.
+	(emit_note_insn_var_location): Remove ENABLE_RTL_CHECKING verification.
+	(vt_emit_notes): Don't initialize and destroy emitted_notes.
+
 2010-12-13  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/45388

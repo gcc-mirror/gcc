@@ -7095,24 +7095,6 @@ vt_expand_loc_dummy (rtx loc, htab_t vars, bool *pcur_loc_changed)
   return ret;
 }
 
-#ifdef ENABLE_RTL_CHECKING
-/* Used to verify that cur_loc_changed updating is safe.  */
-static struct pointer_map_t *emitted_notes;
-
-/* Strip REG_POINTER from REGs and MEM_POINTER from MEMs in order to
-   avoid differences in commutative operand simplification.  */
-static rtx
-strip_pointer_flags (rtx x, const_rtx old_rtx ATTRIBUTE_UNUSED,
-		     void *data ATTRIBUTE_UNUSED)
-{
-  if (REG_P (x) && REG_POINTER (x))
-    return gen_rtx_REG (GET_MODE (x), REGNO (x));
-  if (MEM_P (x) && MEM_POINTER (x))
-    return gen_rtx_MEM (GET_MODE (x), XEXP (x, 0));
-  return NULL_RTX;
-}
-#endif
-
 /* Emit the NOTE_INSN_VAR_LOCATION for variable *VARP.  DATA contains
    additional parameters: WHERE specifies whether the note shall be emitted
    before or after instruction INSN.  */
@@ -7157,10 +7139,8 @@ emit_note_insn_var_location (void **varp, void *data)
       if (var->n_var_parts == 0)
 	var->cur_loc_changed = true;
     }
-#ifndef ENABLE_RTL_CHECKING
   if (!var->cur_loc_changed)
     goto clear;
-#endif
   for (i = 0; i < var->n_var_parts; i++)
     {
       enum machine_mode mode, wider_mode;
@@ -7301,36 +7281,6 @@ emit_note_insn_var_location (void **varp, void *data)
       note_vl = gen_rtx_VAR_LOCATION (VOIDmode, decl,
 				      parallel, (int) initialized);
     }
-
-#ifdef ENABLE_RTL_CHECKING
-  if (note_vl)
-    {
-      void **note_slot = pointer_map_insert (emitted_notes, decl);
-      rtx pnote = (rtx) *note_slot;
-      if (!var->cur_loc_changed && (pnote || PAT_VAR_LOCATION_LOC (note_vl)))
-	{
-	  rtx old_vl, new_vl;
-	  gcc_assert (pnote);
-	  old_vl = PAT_VAR_LOCATION_LOC (pnote);
-	  new_vl = PAT_VAR_LOCATION_LOC (note_vl);
-	  if (!rtx_equal_p (old_vl, new_vl))
-	    {
-	      /* There might be differences caused by REG_POINTER
-		 differences.  REG_POINTER affects
-		 swap_commutative_operands_p.  */
-	      old_vl = simplify_replace_fn_rtx (old_vl, NULL_RTX,
-						strip_pointer_flags, NULL);
-	      new_vl = simplify_replace_fn_rtx (new_vl, NULL_RTX,
-						strip_pointer_flags, NULL);
-	      gcc_assert (rtx_equal_p (old_vl, new_vl));
-	      PAT_VAR_LOCATION_LOC (note_vl) = new_vl;
-	    }
-	}
-      *note_slot = (void *) note_vl;
-    }
-  if (!var->cur_loc_changed)
-    goto clear;
-#endif
 
   if (where != EMIT_NOTE_BEFORE_INSN)
     {
@@ -7960,9 +7910,6 @@ vt_emit_notes (void)
   basic_block bb;
   dataflow_set cur;
 
-#ifdef ENABLE_RTL_CHECKING
-  emitted_notes = pointer_map_create ();
-#endif
   gcc_assert (!htab_elements (changed_variables));
 
   /* Free memory occupied by the out hash tables, as they aren't used
@@ -8022,9 +7969,6 @@ vt_emit_notes (void)
       VEC_free (rtx, heap, changed_values_stack);
     }
 
-#ifdef ENABLE_RTL_CHECKING
-  pointer_map_destroy (emitted_notes);
-#endif
   emit_notes = false;
 }
 
