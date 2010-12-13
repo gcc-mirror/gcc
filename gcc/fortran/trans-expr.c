@@ -3594,7 +3594,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
       if (!se->direct_byref)
 	{
-	  if (sym->attr.dimension || (comp && comp->attr.dimension))
+	  if ((sym->attr.dimension && !comp) || (comp && comp->attr.dimension))
 	    {
 	      if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
 		{
