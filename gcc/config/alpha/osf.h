@@ -218,3 +218,5 @@ __enable_execute_stack (void *addr)					\
 /* Handle #pragma extern_prefix.  Technically only needed for Tru64 5.x,
    but easier to manipulate preprocessor bits from here.  */
 #define TARGET_HANDLE_PRAGMA_EXTERN_PREFIX 1
+
+#define MD_UNWIND_SUPPORT "config/alpha/osf-unwind.h"

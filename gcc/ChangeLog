@@ -1,6 +1,20 @@
 2010-12-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:
+	2010-09-15  Olivier Hainque  <hainque@adacore.com>
+        	    Jose Ruiz  <ruiz@adacore.com>
+
+	* config/alpha/osf.h (MD_UNWIND_SUPPORT): Define.
+	* config/alpha/osf-unwind.h: New file.
+
+	2009-08-09  Olivier Hainque  <hainque@adacore.com>
+		    Douglas B Rupp  <rupp@gnat.com>
+
+	* config/alpha/alpha.h (DWARF_FRAME_REGNUM): Define.
+
+2010-12-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
 	2010-04-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/22224
