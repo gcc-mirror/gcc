@@ -1,5 +1,11 @@
 2010-12-13  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/v850/v850.h (SIZE_TYPE, PTRDIFF_TYPE, WCHAR_TYPE,
+	WCHAR_TYPE_SIZE): Define.
+	* config.gcc (v850e1-*-*, v850e-*-*, v850-*-*): Don't use svr4.h.
+
+2010-12-13  Joseph Myers  <joseph@codesourcery.com>
+
 	* config.gcc (s390-*-linux*, s390x-*-linux*, s390x-ibm-tpf*):
 	Don't use svr4.h.
 
