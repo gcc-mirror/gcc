@@ -3501,15 +3501,16 @@ update_pointer_to (tree old_type, tree new_type)
 	{
 	  TYPE_MAIN_VARIANT (t) = new_ptr;
 	  SET_TYPE_UNCONSTRAINED_ARRAY (t, new_type);
-	}
 
-      /* And show the original pointer NEW_PTR to the debugger.  This is the
-	 counterpart of the equivalent processing in gnat_pushdecl when the
-	 unconstrained array type is frozen after access types to it.  */
-      if (TYPE_NAME (ptr) && TREE_CODE (TYPE_NAME (ptr)) == TYPE_DECL)
-	{
-	  DECL_ORIGINAL_TYPE (TYPE_NAME (ptr)) = new_ptr;
-	  DECL_ARTIFICIAL (TYPE_NAME (ptr)) = 0;
+	  /* And show the original pointer NEW_PTR to the debugger.  This is
+	     the counterpart of the special processing for fat pointer types
+	     in gnat_pushdecl, but when the unconstrained array type is only
+	     frozen after access types to it.  */
+	  if (TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL)
+	    {
+	      DECL_ORIGINAL_TYPE (TYPE_NAME (t)) = new_ptr;
+	      DECL_ARTIFICIAL (TYPE_NAME (t)) = 0;
+	    }
 	}
 
       /* Now handle updating the allocation record, what the thin pointer

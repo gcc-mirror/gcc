@@ -3566,6 +3566,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		TYPE_DUMMY_P (gnu_array_type) = 1;
 
 		gnu_type = make_node (RECORD_TYPE);
+		/* Build a stub DECL to trigger the special processing for fat
+		   pointer types in gnat_pushdecl.  */
+		TYPE_NAME (gnu_type)
+		  = create_type_stub_decl
+		    (create_concat_name (gnat_desig_equiv, "XUP"), gnu_type);
 		SET_TYPE_UNCONSTRAINED_ARRAY (gnu_type, gnu_desig_type);
 		TYPE_POINTER_TO (gnu_desig_type) = gnu_type;
 
