@@ -1,5 +1,9 @@
 2010-12-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR lto/46879
+	* lto-streamer-out.c (output_gimple_stmt): Never replace first
+	GIMPLE_DEBUG argument with MEM_REF.
+
 	PR debug/46867
 	* var-tracking.c (emitted_notes, string_pointer_flags): Removed.
 	(emit_note_insn_var_location): Remove ENABLE_RTL_CHECKING verification.
