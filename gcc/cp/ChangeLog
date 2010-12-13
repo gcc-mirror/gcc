@@ -1,3 +1,9 @@
+2010-12-13  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/45388
+	* decl2.c (start_objects): Do not generate collect2 recognicable name
+	for static ctor.
+
 2010-12-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/46901
