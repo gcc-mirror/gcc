@@ -1496,10 +1496,13 @@ struct ipa_opt_pass_d pass_ipa_profile =
 /* Generate and emit a static constructor or destructor.  WHICH must
    be one of 'I' (for a constructor) or 'D' (for a destructor).  BODY
    is a STATEMENT_LIST containing GENERIC statements.  PRIORITY is the
-   initialization priority for this constructor or destructor.  */
+   initialization priority for this constructor or destructor. 
 
-void
-cgraph_build_static_cdtor (char which, tree body, int priority)
+   FINAL specify whether the externally visible name for collect2 should
+   be produced. */
+
+static void
+cgraph_build_static_cdtor_1 (char which, tree body, int priority, bool final)
 {
   static int counter = 0;
   char which_buf[16];
@@ -1508,7 +1511,12 @@ cgraph_build_static_cdtor (char which, tree body, int priority)
   /* The priority is encoded in the constructor or destructor name.
      collect2 will sort the names and arrange that they are called at
      program startup.  */
-  sprintf (which_buf, "%c_%.5d_%d", which, priority, counter++);
+  if (final)
+    sprintf (which_buf, "%c_%.5d_%d", which, priority, counter++);
+  else
+  /* Proudce sane name but one not recognizable by collect2, just for the
+     case we fail to inline the function.  */
+    sprintf (which_buf, "sub_%c_%.5d_%d", which, priority, counter++);
   name = get_file_function_name (which_buf);
 
   decl = build_decl (input_location, FUNCTION_DECL, name,
@@ -1528,7 +1536,7 @@ cgraph_build_static_cdtor (char which, tree body, int priority)
   DECL_ARTIFICIAL (decl) = 1;
   DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (decl) = 1;
   DECL_SAVED_TREE (decl) = body;
-  if (!targetm.have_ctors_dtors)
+  if (!targetm.have_ctors_dtors && final)
     {
       TREE_PUBLIC (decl) = 1;
       DECL_PRESERVE_P (decl) = 1;
@@ -1563,6 +1571,16 @@ cgraph_build_static_cdtor (char which, tree body, int priority)
   current_function_decl = NULL;
 }
 
+/* Generate and emit a static constructor or destructor.  WHICH must
+   be one of 'I' (for a constructor) or 'D' (for a destructor).  BODY
+   is a STATEMENT_LIST containing GENERIC statements.  PRIORITY is the
+   initialization priority for this constructor or destructor.  */
+
+void
+cgraph_build_static_cdtor (char which, tree body, int priority)
+{
+  cgraph_build_static_cdtor_1 (which, body, priority, false);
+}
 
 /* A vector of FUNCTION_DECLs declared as static constructors.  */
 static VEC(tree, heap) *static_ctors;
@@ -1648,7 +1666,7 @@ build_cdtor (bool ctor_p, VEC (tree, heap) *cdtors)
       gcc_assert (body != NULL_TREE);
       /* Generate a function to call all the function of like
 	 priority.  */
-      cgraph_build_static_cdtor (ctor_p ? 'I' : 'D', body, priority);
+      cgraph_build_static_cdtor_1 (ctor_p ? 'I' : 'D', body, priority, true);
     }
 }
 

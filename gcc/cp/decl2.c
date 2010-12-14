@@ -2691,7 +2691,7 @@ start_objects (int method_type, int initp)
 {
   tree body;
   tree fndecl;
-  char type[10];
+  char type[14];
 
   /* Make ctor or dtor function.  METHOD_TYPE may be 'I' or 'D'.  */
 
@@ -2705,10 +2705,10 @@ start_objects (int method_type, int initp)
       joiner = '_';
 #endif
 
-      sprintf (type, "%c%c%.5u", method_type, joiner, initp);
+      sprintf (type, "sub_%c%c%.5u", method_type, joiner, initp);
     }
   else
-    sprintf (type, "%c", method_type);
+    sprintf (type, "sub_%c", method_type);
 
   fndecl = build_lang_decl (FUNCTION_DECL,
 			    get_file_function_name (type),
