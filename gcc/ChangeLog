@@ -1,3 +1,16 @@
+2010-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46909
+	* gimple-fold.c (and_var_with_comparison_1): Save partial
+	result even in the is_and case, if both partial results
+	are the same, return it.
+	(or_var_with_comparison_1): Use is_or predicate instead of
+	innercode == TRUTH_OR_EXPR test.  Save partial result
+	even in the is_or case, if both partial results are the
+	same, return it.  In the !is_or case when both partial
+	results are the same, return the partial result instead
+	of boolean_true_node.
+
 2010-12-14  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/46667

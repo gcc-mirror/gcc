@@ -2008,14 +2008,11 @@ and_var_with_comparison_1 (gimple stmt,
 	  /* Handle the OR case, where we are redistributing:
 	     (inner1 OR inner2) AND (op2a code2 op2b)
 	     => (t OR (inner2 AND (op2a code2 op2b)))  */
-	  else
-	    {
-	      if (integer_onep (t))
-		return boolean_true_node;
-	      else
-		/* Save partial result for later.  */
-		partial = t;
-	    }
+	  else if (integer_onep (t))
+	    return boolean_true_node;
+
+	  /* Save partial result for later.  */
+	  partial = t;
 	}
       
       /* Compute the second partial result, (inner2 AND (op2a code op2b)) */
@@ -2036,6 +2033,10 @@ and_var_with_comparison_1 (gimple stmt,
 		return inner1;
 	      else if (integer_zerop (t))
 		return boolean_false_node;
+	      /* If both are the same, we can apply the identity
+		 (x AND x) == x.  */
+	      else if (partial && same_bool_result_p (t, partial))
+		return t;
 	    }
 
 	  /* Handle the OR case. where we are redistributing:
@@ -2445,7 +2446,7 @@ or_var_with_comparison_1 (gimple stmt,
 	     => (t OR inner2)
 	     If the partial result t is a constant, we win.  Otherwise
 	     continue on to try reassociating with the other inner test.  */
-	  if (innercode == TRUTH_OR_EXPR)
+	  if (is_or)
 	    {
 	      if (integer_onep (t))
 		return boolean_true_node;
@@ -2456,14 +2457,11 @@ or_var_with_comparison_1 (gimple stmt,
 	  /* Handle the AND case, where we are redistributing:
 	     (inner1 AND inner2) OR (op2a code2 op2b)
 	     => (t AND (inner2 OR (op2a code op2b)))  */
-	  else
-	    {
-	      if (integer_zerop (t))
-		return boolean_false_node;
-	      else
-		/* Save partial result for later.  */
-		partial = t;
-	    }
+	  else if (integer_zerop (t))
+	    return boolean_false_node;
+
+	  /* Save partial result for later.  */
+	  partial = t;
 	}
       
       /* Compute the second partial result, (inner2 OR (op2a code op2b)) */
@@ -2477,13 +2475,18 @@ or_var_with_comparison_1 (gimple stmt,
 	{
 	  /* Handle the OR case, where we are reassociating:
 	     (inner1 OR inner2) OR (op2a code2 op2b)
-	     => (inner1 OR t)  */
-	  if (innercode == TRUTH_OR_EXPR)
+	     => (inner1 OR t)
+	     => (t OR partial)  */
+	  if (is_or)
 	    {
 	      if (integer_zerop (t))
 		return inner1;
 	      else if (integer_onep (t))
 		return boolean_true_node;
+	      /* If both are the same, we can apply the identity
+		 (x OR x) == x.  */
+	      else if (partial && same_bool_result_p (t, partial))
+		return t;
 	    }
 	  
 	  /* Handle the AND case, where we are redistributing:
@@ -2500,13 +2503,13 @@ or_var_with_comparison_1 (gimple stmt,
 		     operand to the redistributed AND expression.  The
 		     interesting case is when at least one is true.
 		     Or, if both are the same, we can apply the identity
-		     (x AND x) == true.  */
+		     (x AND x) == x.  */
 		  if (integer_onep (partial))
 		    return t;
 		  else if (integer_onep (t))
 		    return partial;
 		  else if (same_bool_result_p (t, partial))
-		    return boolean_true_node;
+		    return t;
 		}
 	    }
 	}
