@@ -1,3 +1,10 @@
+2010-12-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* config.gcc (sparc-*-elf*, sparc-*-rtems*, sparc-*-linux*,
+	sparc-*-netbsdelf*, sparc*-*-solaris2*, sparc-wrs-vxworks,
+	sparc64-*-elf*, sparc64-*-rtems*, sparc64-*-linux*,
+	sparc64-*-netbsd*, sparc64-*-openbsd*): Don't use svr4.h.
+
 2010-12-14  Thomas Klein  <th.r.klein@web.de>
 
 	* config/arm/arm.c (arm_expand_prologue): Report the static stack
