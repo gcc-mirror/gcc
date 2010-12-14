@@ -1,5 +1,8 @@
 2010-12-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/46885
+	* gcc.dg/autopar/pr46885.c: New test.
+
 	PR tree-optimization/46909
 	* gcc.c-torture/execute/pr46909-1.c: New test.
 	* gcc.c-torture/execute/pr46909-2.c: New test.
