@@ -1,5 +1,15 @@
 2010-12-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR libstdc++/45133
+	* include/std/future (__basic_future::wait): Throw if not valid.
+	(__basic_future::wait_for): Likewise.
+	(__basic_future::wait_until): Likewise.
+	(__basic_future::_M_get_result): Likewise.
+	* testsuite/30_threads/future/members/45133.cc: New.
+	* testsuite/30_threads/shared_future/members/45133.cc: New.
+
+2010-12-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/46910
 	* include/bits/shared_ptr_base.h (_Sp_counted_deleter): Do not
 	derive from _Sp_counted_ptr.
