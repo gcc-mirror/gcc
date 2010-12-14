@@ -11162,7 +11162,7 @@ class Composite_literal_expression : public Parser_expression
   make_array(Type*, Expression_list*);
 
   Expression*
-  lower_map(Type*);
+  lower_map(Gogo*, Named_object*, Type*);
 
   // The type of the composite literal.
   Type* type_;
@@ -11191,7 +11191,7 @@ Composite_literal_expression::do_traverse(Traverse* traverse)
 // the type.
 
 Expression*
-Composite_literal_expression::do_lower(Gogo*, Named_object*, int)
+Composite_literal_expression::do_lower(Gogo* gogo, Named_object* function, int)
 {
   Type* type = this->type_;
 
@@ -11218,7 +11218,7 @@ Composite_literal_expression::do_lower(Gogo*, Named_object*, int)
   else if (type->array_type() != NULL)
     return this->lower_array(type);
   else if (type->map_type() != NULL)
-    return this->lower_map(type);
+    return this->lower_map(gogo, function, type);
   else
     {
       error_at(this->location(),
@@ -11477,7 +11477,8 @@ Composite_literal_expression::make_array(Type* type, Expression_list* vals)
 // Lower a map composite literal.
 
 Expression*
-Composite_literal_expression::lower_map(Type* type)
+Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
+					Type* type)
 {
   source_location location = this->location();
   if (this->vals_ != NULL)
@@ -11488,7 +11489,7 @@ Composite_literal_expression::lower_map(Type* type)
 	  return Expression::make_error(location);
 	}
 
-      for (Expression_list::const_iterator p = this->vals_->begin();
+      for (Expression_list::iterator p = this->vals_->begin();
 	   p != this->vals_->end();
 	   p += 2)
 	{
@@ -11497,6 +11498,16 @@ Composite_literal_expression::lower_map(Type* type)
 	      ++p;
 	      error_at((*p)->location(),
 		       "map composite literal must have keys for every value");
+	      return Expression::make_error(location);
+	    }
+	  // Make sure we have lowered the key; it may not have been
+	  // lowered in order to handle keys for struct composite
+	  // literals.  Lower it now to get the right error message.
+	  if ((*p)->unknown_expression() != NULL)
+	    {
+	      (*p)->unknown_expression()->clear_is_composite_literal_key();
+	      gogo->lower_expression(function, &*p);
+	      gcc_assert((*p)->is_error_expression());
 	      return Expression::make_error(location);
 	    }
 	}
