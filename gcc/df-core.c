@@ -1413,6 +1413,7 @@ df_get_bb_dirty (basic_block bb)
 void
 df_set_bb_dirty (basic_block bb)
 {
+  bb->flags |= BB_MODIFIED;
   if (df)
     {
       int p;
