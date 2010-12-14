@@ -1,3 +1,9 @@
+2010-12-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46937
+	* trans-types.c (create_fn_spec): "."-annotate derived types
+	with (proc-)pointer components.
+
 2010-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/46874

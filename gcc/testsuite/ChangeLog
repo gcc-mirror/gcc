@@ -1,3 +1,8 @@
+2010-12-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46937
+	* gfortran.dg/pointer_intent_4.f90: New.
+
 2010-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/46885
