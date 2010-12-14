@@ -1313,14 +1313,19 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no, tree id)
 	      push_struct_function(decl);
 
 	      tree closure_decl = this->closure_var_->get_tree(gogo, no);
+	      if (closure_decl == error_mark_node)
+		this->fndecl_ = error_mark_node;
+	      else
+		{
+		  DECL_ARTIFICIAL(closure_decl) = 1;
+		  DECL_IGNORED_P(closure_decl) = 1;
+		  TREE_USED(closure_decl) = 1;
+		  DECL_ARG_TYPE(closure_decl) = TREE_TYPE(closure_decl);
+		  TREE_READONLY(closure_decl) = 1;
 
-	      DECL_ARTIFICIAL(closure_decl) = 1;
-	      DECL_IGNORED_P(closure_decl) = 1;
-	      TREE_USED(closure_decl) = 1;
-	      DECL_ARG_TYPE(closure_decl) = TREE_TYPE(closure_decl);
-	      TREE_READONLY(closure_decl) = 1;
+		  DECL_STRUCT_FUNCTION(decl)->static_chain_decl = closure_decl;
+		}
 
-	      DECL_STRUCT_FUNCTION(decl)->static_chain_decl = closure_decl;
 	      pop_cfun();
 	    }
 	}
