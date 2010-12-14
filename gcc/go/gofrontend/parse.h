@@ -167,13 +167,13 @@ class Parse
   Type* pointer_type();
   Type* channel_type();
   Function_type* signature(Typed_identifier*, source_location);
-  Typed_identifier_list* parameters(bool* is_varargs);
+  bool parameters(Typed_identifier_list**, bool* is_varargs);
   Typed_identifier_list* parameter_list(bool* is_varargs);
   void parameter_decl(bool, Typed_identifier_list*, bool*, bool*);
-  Typed_identifier_list* result();
+  bool result(Typed_identifier_list**);
   source_location block();
   Type* interface_type();
-  bool method_spec(Typed_identifier_list*);
+  void method_spec(Typed_identifier_list*);
   void declaration();
   bool declaration_may_start_here();
   void decl(void (Parse::*)(void*), void*);

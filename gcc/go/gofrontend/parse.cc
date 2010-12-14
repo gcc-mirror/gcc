@@ -244,7 +244,10 @@ Parse::type()
     {
       source_location location = token->location();
       this->advance_token();
-      return this->signature(NULL, location);
+      Type* type = this->signature(NULL, location);
+      if (type == NULL)
+	return Type::make_error_type();
+      return type;
     }
   else if (token->is_keyword(KEYWORD_MAP))
     return this->map_type();
@@ -662,16 +665,25 @@ Parse::channel_type()
 // RECEIVER is the receiver if there is one, or NULL.  LOCATION is the
 // location of the start of the type.
 
+// This returns NULL on a parse error.
+
 Function_type*
 Parse::signature(Typed_identifier* receiver, source_location location)
 {
   bool is_varargs = false;
-  Typed_identifier_list* params = this->parameters(&is_varargs);
+  Typed_identifier_list* params;
+  bool params_ok = this->parameters(&params, &is_varargs);
 
   Typed_identifier_list* result = NULL;
   if (this->peek_token()->is_op(OPERATOR_LPAREN)
       || this->type_may_start_here())
-    result = this->result();
+    {
+      if (!this->result(&result))
+	return NULL;
+    }
+
+  if (!params_ok)
+    return NULL;
 
   Function_type* ret = Type::make_function_type(receiver, params, result,
 						location);
@@ -682,21 +694,28 @@ Parse::signature(Typed_identifier* receiver, source_location location)
 
 // Parameters     = "(" [ ParameterList [ "," ] ] ")" .
 
-Typed_identifier_list*
-Parse::parameters(bool* is_varargs)
+// This returns false on a parse error.
+
+bool
+Parse::parameters(Typed_identifier_list** pparams, bool* is_varargs)
 {
+  *pparams = NULL;
+
   if (!this->peek_token()->is_op(OPERATOR_LPAREN))
     {
       error_at(this->location(), "expected %<(%>");
-      return NULL;
+      return false;
     }
 
   Typed_identifier_list* params = NULL;
+  bool saw_error = false;
 
   const Token* token = this->advance_token();
   if (!token->is_op(OPERATOR_RPAREN))
     {
       params = this->parameter_list(is_varargs);
+      if (params == NULL)
+	saw_error = true;
       token = this->peek_token();
     }
 
@@ -707,7 +726,11 @@ Parse::parameters(bool* is_varargs)
   else
     this->advance_token();
 
-  return params;
+  if (saw_error)
+    return false;
+
+  *pparams = params;
+  return true;
 }
 
 // ParameterList  = ParameterDecl { "," ParameterDecl } .
@@ -717,11 +740,15 @@ Parse::parameters(bool* is_varargs)
 
 // We pick up an optional trailing comma.
 
+// This returns NULL if some error is seen.
+
 Typed_identifier_list*
 Parse::parameter_list(bool* is_varargs)
 {
   source_location location = this->location();
   Typed_identifier_list* ret = new Typed_identifier_list();
+
+  bool saw_error = false;
 
   // If we see an identifier and then a comma, then we don't know
   // whether we are looking at a list of identifiers followed by a
@@ -834,15 +861,16 @@ Parse::parameter_list(bool* is_varargs)
 	      else
 		{
 		  error_at(this->location(), "%<...%> only permits one name");
+		  saw_error = true;
 		  this->advance_token();
 		  type = this->type();
 		}
 	      for (size_t i = 0; i < ret->size(); ++i)
 		ret->set_type(i, type);
 	      if (!this->peek_token()->is_op(OPERATOR_COMMA))
-		return ret;
+		return saw_error ? NULL : ret;
 	      if (this->advance_token()->is_op(OPERATOR_RPAREN))
-		return ret;
+		return saw_error ? NULL : ret;
 	    }
 	  else
 	    {
@@ -865,6 +893,7 @@ Parse::parameter_list(bool* is_varargs)
 		    {
 		      error_at(p->location(), "expected %<%s%> to be a type",
 			       Gogo::message_name(p->name()).c_str());
+		      saw_error = true;
 		      type = Type::make_error_type();
 		    }
 		  tret->push_back(Typed_identifier("", type, p->location()));
@@ -873,7 +902,7 @@ Parse::parameter_list(bool* is_varargs)
 	      ret = tret;
 	      if (!just_saw_comma
 		  || this->peek_token()->is_op(OPERATOR_RPAREN))
-		return ret;
+		return saw_error ? NULL : ret;
 	    }
 	}
     }
@@ -883,13 +912,24 @@ Parse::parameter_list(bool* is_varargs)
   while (this->peek_token()->is_op(OPERATOR_COMMA))
     {
       if (is_varargs != NULL && *is_varargs)
-	error_at(this->location(), "%<...%> must be last parameter");
+	{
+	  error_at(this->location(), "%<...%> must be last parameter");
+	  saw_error = true;
+	}
       if (this->advance_token()->is_op(OPERATOR_RPAREN))
 	break;
       this->parameter_decl(parameters_have_names, ret, is_varargs, &mix_error);
     }
   if (mix_error)
-    error_at(location, "invalid named/anonymous mix");
+    {
+      error_at(location, "invalid named/anonymous mix");
+      saw_error = true;
+    }
+  if (saw_error)
+    {
+      delete ret;
+      return NULL;
+    }
   return ret;
 }
 
@@ -973,18 +1013,26 @@ Parse::parameter_decl(bool parameters_have_names,
 
 // Result         = Parameters | Type .
 
-Typed_identifier_list*
-Parse::result()
+// This returns false on a parse error.
+
+bool
+Parse::result(Typed_identifier_list** presults)
 {
   if (this->peek_token()->is_op(OPERATOR_LPAREN))
-    return this->parameters(NULL);
+    return this->parameters(presults, NULL);
   else
     {
       source_location location = this->location();
-      Typed_identifier_list* til = new Typed_identifier_list();
       Type* type = this->type();
+      if (type->is_error_type())
+	{
+	  *presults = NULL;
+	  return false;
+	}
+      Typed_identifier_list* til = new Typed_identifier_list();
       til->push_back(Typed_identifier("", type, location));
-      return til;
+      *presults = til;
+      return true;
     }
 }
 
@@ -1108,14 +1156,14 @@ Parse::interface_type()
 // MethodName         = identifier .
 // InterfaceTypeName  = TypeName .
 
-bool
+void
 Parse::method_spec(Typed_identifier_list* methods)
 {
   const Token* token = this->peek_token();
   if (!token->is_identifier())
     {
       error_at(this->location(), "expected identifier");
-      return false;
+      return;
     }
 
   std::string name = token->identifier();
@@ -1126,7 +1174,9 @@ Parse::method_spec(Typed_identifier_list* methods)
     {
       // This is a MethodName.
       name = this->gogo_->pack_hidden_name(name, is_exported);
-      Function_type* type = this->signature(NULL, location);
+      Type* type = this->signature(NULL, location);
+      if (type == NULL)
+	return;
       methods->push_back(Typed_identifier(name, type, location));
     }
   else
@@ -1148,15 +1198,13 @@ Parse::method_spec(Typed_identifier_list* methods)
 		 && !token->is_op(OPERATOR_SEMICOLON)
 		 && !token->is_op(OPERATOR_RCURLY))
 	    token = this->advance_token();
-	  return false;
+	  return;
 	}
       // This must be an interface type, but we can't check that now.
       // We check it and pull out the methods in
       // Interface_type::do_verify.
       methods->push_back(Typed_identifier("", type, location));
     }
-
-  return false;
 }
 
 // Declaration = ConstDecl | TypeDecl | VarDecl | FunctionDecl | MethodDecl .
@@ -1933,6 +1981,8 @@ Parse::function_decl()
   this->advance_token();
 
   Function_type* fntype = this->signature(rec, this->location());
+  if (fntype == NULL)
+    return;
 
   Named_object* named_object = NULL;
 
@@ -2462,6 +2512,11 @@ Parse::function_lit()
   hold_enclosing_vars.swap(this->enclosing_vars_);
 
   Function_type* type = this->signature(NULL, location);
+  if (type == NULL)
+    {
+      this->block();
+      return Expression::make_error(location);
+    }
 
   // For a function literal, the next token must be a '{'.  If we
   // don't see that, then we may have a type expression.

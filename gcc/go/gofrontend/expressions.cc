@@ -8662,8 +8662,7 @@ Call_result_expression::do_check_types(Gogo*)
       ok = false;
     }
   if (!ok)
-    error_at(this->location(),
-	     "number of results does not match number of values");
+    this->report_error(_("number of results does not match number of values"));
 }
 
 // Determine the type.  We have nothing to do here, but the 0 result
