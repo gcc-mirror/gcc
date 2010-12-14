@@ -23,13 +23,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "objc-private/common.h"
-#include "objc/objc-api.h"
+#include "objc/runtime.h"
 #include "objc/thr.h"
 #include "objc-private/hash.h"
-#include "objc-private/objc-list.h" 
+#include "objc-private/objc-list.h"
+#include "objc-private/module-abi-8.h"
 #include "objc-private/runtime.h"
 #include "objc-private/sarray.h"
-#include "objc/encoding.h"
 
 /* Initial selector hash table size. Value doesn't matter much.  */
 #define SELECTOR_HASH_SIZE 128
@@ -57,7 +57,7 @@ void __objc_init_selector_tables (void)
 void
 __objc_register_selectors_from_class (Class class)
 {
-  MethodList_t method_list;
+  struct objc_method_list * method_list;
 
   method_list = class->methods;
   while (method_list)
@@ -75,14 +75,14 @@ __objc_register_selectors_from_class (Class class)
    The name and type pointers in the method list must be permanent and
    immutable.  */
 void
-__objc_register_selectors_from_list (MethodList_t method_list)
+__objc_register_selectors_from_list (struct objc_method_list *method_list)
 {
   int i = 0;
 
   objc_mutex_lock (__objc_runtime_mutex);
   while (i < method_list->method_count)
     {
-      Method_t method = &method_list->method_list[i];
+      Method method = &method_list->method_list[i];
       if (method->method_name)
 	{
 	  method->method_name
@@ -93,15 +93,6 @@ __objc_register_selectors_from_list (MethodList_t method_list)
     }
   objc_mutex_unlock (__objc_runtime_mutex);
 }
-
-/* Temporary definition while we include objc/objc-api.h instead of
-   objc-private/module-abi-8.h.  It should go away once we include
-   module-abi-8.h.  */
-struct objc_method_description_list
-{
-  int count;
-  struct objc_method_description list[1];
-};
 
 /* The same as __objc_register_selectors_from_list, but works on a
    struct objc_method_description_list* instead of a struct
@@ -131,11 +122,11 @@ __objc_register_selectors_from_description_list
 /* Register instance methods as class methods for root classes.  */
 void __objc_register_instance_methods_to_class (Class class)
 {
-  MethodList_t method_list;
-  MethodList_t class_method_list;
+  struct objc_method_list *method_list;
+  struct objc_method_list *class_method_list;
   int max_methods_no = 16;
-  MethodList_t new_list;
-  Method_t curr_method;
+  struct objc_method_list *new_list;
+  Method curr_method;
 
   /* Only if a root class. */
   if (class->super_class)
@@ -156,7 +147,7 @@ void __objc_register_instance_methods_to_class (Class class)
       /* Iterate through the methods from this method list.  */
       for (i = 0; i < method_list->method_count; i++)
 	{
-	  Method_t mth = &method_list->method_list[i];
+	  Method mth = &method_list->method_list[i];
 	  if (mth->method_name
 	      && ! search_for_method_in_list (class_method_list,
 					      mth->method_name))
