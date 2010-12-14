@@ -6795,14 +6795,10 @@ Named_type::do_get_tree(Gogo* gogo)
       break;
 
     case TYPE_FUNCTION:
-      // GENERIC can't handle a pointer to a function type whose
-      // return type is a pointer to the function type itself.  It
-      // does into infinite loops when walking the types.
-      if (this->seen_
-	  && this->function_type()->results() != NULL
-	  && this->function_type()->results()->size() == 1
-	  && (this->function_type()->results()->front().type()->forwarded()
-	      == this))
+      // Don't recur infinitely if a function type refers to itself.
+      // Ideally we would build a circular data structure here, but
+      // GENERIC can't handle them.
+      if (this->seen_)
 	return ptr_type_node;
       this->seen_ = true;
       t = Type::get_named_type_tree(gogo, this->type_);
@@ -6813,9 +6809,10 @@ Named_type::do_get_tree(Gogo* gogo)
       break;
 
     case TYPE_POINTER:
-      // GENERIC can't handle a pointer type which points to itself.
-      // It goes into infinite loops when walking the types.
-      if (this->seen_ && this->points_to()->forwarded() == this)
+      // Don't recur infinitely if a pointer type refers to itself.
+      // Ideally we would build a circular data structure here, but
+      // GENERIC can't handle them.
+      if (this->seen_)
 	return ptr_type_node;
       this->seen_ = true;
       t = Type::get_named_type_tree(gogo, this->type_);
