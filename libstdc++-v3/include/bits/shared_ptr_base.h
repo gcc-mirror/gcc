@@ -318,7 +318,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // Support for custom deleter and/or allocator
   template<typename _Ptr, typename _Deleter, typename _Alloc, _Lock_policy _Lp>
-    class _Sp_counted_deleter : public _Sp_counted_ptr<_Ptr, _Lp>
+    class _Sp_counted_deleter : public _Sp_counted_base<_Lp>
     {
       typedef typename _Alloc::template
 	  rebind<_Sp_counted_deleter>::other _My_alloc_type;
@@ -334,21 +334,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	: _My_alloc_type(__a), _M_del(__d) { }
       };
 
-    protected:
-      typedef _Sp_counted_ptr<_Ptr, _Lp> _Base_type;
-
     public:
       // __d(__p) must not throw.
       _Sp_counted_deleter(_Ptr __p, _Deleter __d)
-      : _Base_type(__p), _M_del(__d, _Alloc()) { }
+      : _M_ptr(__p), _M_del(__d, _Alloc()) { }
 
       // __d(__p) must not throw.
       _Sp_counted_deleter(_Ptr __p, _Deleter __d, const _Alloc& __a)
-      : _Base_type(__p), _M_del(__d, __a) { }
+      : _M_ptr(__p), _M_del(__d, __a) { }
 
       virtual void
       _M_dispose() // nothrow
-      { _M_del._M_del(_Base_type::_M_ptr); }
+      { _M_del._M_del(_M_ptr); }
 
       virtual void
       _M_destroy() // nothrow
@@ -369,6 +366,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       }
 
     protected:
+      _Ptr             _M_ptr;  // copy constructor must not throw
       _My_Deleter      _M_del;  // copy constructor must not throw
     };
 
@@ -397,7 +395,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       {
 	void* __p = &_M_storage;
 	::new (__p) _Tp();  // might throw
-	_Base_type::_Base_type::_M_ptr = static_cast<_Tp*>(__p);
+	_Base_type::_M_ptr = static_cast<_Tp*>(__p);
       }
 
       template<typename... _Args>
@@ -407,7 +405,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	{
 	  void* __p = &_M_storage;
 	  ::new (__p) _Tp(std::forward<_Args>(__args)...);  // might throw
-	  _Base_type::_Base_type::_M_ptr = static_cast<_Tp*>(__p);
+	  _Base_type::_M_ptr = static_cast<_Tp*>(__p);
 	}
 
       // Override because the allocator needs to know the dynamic type

@@ -1,3 +1,12 @@
+2010-12-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/46910
+	* include/bits/shared_ptr_base.h (_Sp_counted_deleter): Do not
+	derive from _Sp_counted_ptr.
+	* testsuite/20_util/shared_ptr/cons/46910.cc: New.
+	* testsuite/20_util/shared_ptr/cons/43820.cc: Adjust.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust.
+
 2010-12-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/abi/post/solaris2.8/baseline_symbols.txt: Regenerate.
