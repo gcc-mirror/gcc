@@ -3951,6 +3951,10 @@ gimple_expand_cfg (void)
   crtl->preferred_stack_boundary = STACK_BOUNDARY;
   cfun->cfg->max_jumptable_ents = 0;
 
+  /* Resovle the function section.  Some targets, like ARM EABI rely on knowledge
+     of the function section at exapnsion time to predict distance of calls.  */
+  resolve_unique_section (current_function_decl, 0, flag_function_sections);
+
   /* Expand the variables recorded during gimple lowering.  */
   timevar_push (TV_VAR_EXPAND);
   start_sequence ();

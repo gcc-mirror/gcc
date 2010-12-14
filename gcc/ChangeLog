@@ -1,3 +1,9 @@
+2010-12-14  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/46667
+	* varasm.c (assemble_start_function): Do not call resolve_unique_section.
+	* cfgexpand.c (gimple_expand_cfg): Resolve it here.
+
 2010-12-14  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/46875

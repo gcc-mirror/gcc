@@ -1551,8 +1551,6 @@ assemble_start_function (tree decl, const char *fnname)
   if (CONSTANT_POOL_BEFORE_FUNCTION)
     output_constant_pool (fnname, decl);
 
-  resolve_unique_section (decl, 0, flag_function_sections);
-
   /* Make sure the not and cold text (code) sections are properly
      aligned.  This is necessary here in the case where the function
      has both hot and cold sections, because we don't want to re-set
