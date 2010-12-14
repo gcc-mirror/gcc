@@ -5938,9 +5938,8 @@ Expression::comparison_tree(Translate_context* context, Operator op,
       gcc_unreachable();
     }
 
-  if (left_type->is_string_type())
+  if (left_type->is_string_type() && right_type->is_string_type())
     {
-      gcc_assert(right_type->is_string_type());
       tree string_type = Type::make_string_type()->get_tree(context->gogo());
       static tree string_compare_decl;
       left_tree = Gogo::call_builtin(&string_compare_decl,
@@ -5954,13 +5953,12 @@ Expression::comparison_tree(Translate_context* context, Operator op,
 				     right_tree);
       right_tree = build_int_cst_type(integer_type_node, 0);
     }
-
-  if ((left_type->interface_type() != NULL
-       && right_type->interface_type() == NULL
-       && !right_type->is_nil_type())
-      || (left_type->interface_type() == NULL
-	  && !left_type->is_nil_type()
-	  && right_type->interface_type() != NULL))
+  else if ((left_type->interface_type() != NULL
+	    && right_type->interface_type() == NULL
+	    && !right_type->is_nil_type())
+	   || (left_type->interface_type() == NULL
+	       && !left_type->is_nil_type()
+	       && right_type->interface_type() != NULL))
     {
       // Comparing an interface value to a non-interface value.
       if (left_type->interface_type() == NULL)
