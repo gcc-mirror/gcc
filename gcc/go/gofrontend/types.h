@@ -2457,6 +2457,17 @@ class Named_type : public Type
   is_builtin() const
   { return this->location_ == BUILTINS_LOCATION; }
 
+  // Return the base type for this type.
+  Type*
+  named_base();
+
+  const Type*
+  named_base() const;
+
+  // Return whether this is an error type.
+  bool
+  is_named_error_type() const;
+
   // Add a method to this type.
   Named_object*
   add_method(const std::string& name, Function*);
