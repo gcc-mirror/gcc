@@ -293,8 +293,8 @@ sel_get_any_typed_uid (const char *name)
       s = (SEL) l->head;
       if (s->sel_types)
 	{
-	    objc_mutex_unlock (__objc_runtime_mutex);
-	    return s;
+	  objc_mutex_unlock (__objc_runtime_mutex);
+	  return s;
 	}
     }
 
