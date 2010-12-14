@@ -6148,7 +6148,8 @@ sel_is_loop_preheader_p (basic_block bb)
 static bool
 bb_has_removable_jump_to_p (basic_block jump_bb, basic_block dest_bb)
 {
-  if (!onlyjump_p (BB_END (jump_bb)))
+  if (!onlyjump_p (BB_END (jump_bb))
+      || tablejump_p (BB_END (jump_bb), NULL, NULL))
     return false;
 
   /* Several outgoing edges, abnormal edge or destination of jump is

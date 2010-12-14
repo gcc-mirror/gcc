@@ -604,7 +604,7 @@ print_pattern (char *buf, const_rtx x, int verbose)
       sprintf (buf, "asm {%s}", XSTR (x, 0));
       break;
     case ADDR_VEC:
-      break;
+      /* Fall through.  */
     case ADDR_DIFF_VEC:
       print_value (buf, XEXP (x, 0), verbose);
       break;
