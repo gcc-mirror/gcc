@@ -1,3 +1,13 @@
+2010-12-14  Kaushik Phatak <kaushik.phatak@kpitcummins.com>
+
+	* config/h8300/h8300.md (define_split) : Add condition for
+	"and with single_zero" splitter to handle 16-bit const operands.
+	* config/h8300/h8300.md (define_split) : Add condition for
+	"ior with single_one" splitter to handle 16-bit const operands.
+	* config/h8300/h8300.md (define_split) : Add condition for
+	"xor with single_one" splitter to handle 16-bit const operands.	
+	* testsuite/gcc.dg/h8300-bit-insn-ice.c: New.
+
 2010-12-13  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/45388
