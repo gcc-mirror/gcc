@@ -1,3 +1,13 @@
+2010-12-14  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c++/45330
+	* cp-tree.h (suggest_alternatives_for): Add location_t parameter.
+	* name-lookup.c (suggest_alternatives_for): Likewise.  Adjust.
+	* lex.c (unqualified_name_lookup_error): Adjust call to it.
+	* semantics.c (qualified_name_lookup_error): Move to...
+	* error.c (qualified_name_lookup_error): ...here.  Call.
+	suggest_alternatives_for.
+
 2010-12-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/46873

@@ -452,7 +452,7 @@ unqualified_name_lookup_error (tree name)
       if (!objc_diagnose_private_ivar (name))
 	{
 	  error ("%qD was not declared in this scope", name);
-	  suggest_alternatives_for (name);
+	  suggest_alternatives_for (location_of (name), name);
 	}
       /* Prevent repeated error messages by creating a VAR_DECL with
 	 this NAME in the innermost block scope.  */

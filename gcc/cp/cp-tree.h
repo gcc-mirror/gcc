@@ -4898,6 +4898,8 @@ extern void maybe_warn_variadic_templates       (void);
 extern void maybe_warn_cpp0x			(cpp0x_warn_str str);
 extern bool pedwarn_cxx98                       (location_t, int, const char *, ...) ATTRIBUTE_GCC_DIAG(3,4);
 extern location_t location_of                   (tree);
+extern void qualified_name_lookup_error		(tree, tree, tree,
+						 location_t);
 
 /* in except.c */
 extern void init_exception_processing		(void);
@@ -5286,8 +5288,6 @@ extern void finish_template_decl		(tree);
 extern tree finish_template_type		(tree, tree, int);
 extern tree finish_base_specifier		(tree, tree, bool);
 extern void finish_member_declaration		(tree);
-extern void qualified_name_lookup_error		(tree, tree, tree,
-						 location_t);
 extern tree finish_id_expression		(tree, tree, tree,
 						 cp_id_kind *,
 						 bool, bool, bool *,
@@ -5631,7 +5631,7 @@ extern void cxx_omp_finish_clause		(tree);
 extern bool cxx_omp_privatize_by_reference	(const_tree);
 
 /* in name-lookup.c */
-extern void suggest_alternatives_for (tree);
+extern void suggest_alternatives_for (location_t, tree);
 
 /* -- end of C++ */
 
