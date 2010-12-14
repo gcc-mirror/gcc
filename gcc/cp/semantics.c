@@ -2646,37 +2646,6 @@ finish_base_specifier (tree base, tree access, bool virtual_p)
   return result;
 }
 
-/* Issue a diagnostic that NAME cannot be found in SCOPE.  DECL is
-   what we found when we tried to do the lookup.
-   LOCATION is the location of the NAME identifier;
-   The location is used in the error message*/
-
-void
-qualified_name_lookup_error (tree scope, tree name,
-			     tree decl, location_t location)
-{
-  if (scope == error_mark_node)
-    ; /* We already complained.  */
-  else if (TYPE_P (scope))
-    {
-      if (!COMPLETE_TYPE_P (scope))
-	error_at (location, "incomplete type %qT used in nested name specifier",
-		  scope);
-      else if (TREE_CODE (decl) == TREE_LIST)
-	{
-	  error_at (location, "reference to %<%T::%D%> is ambiguous",
-		    scope, name);
-	  print_candidates (decl);
-	}
-      else
-	error_at (location, "%qD is not a member of %qT", name, scope);
-    }
-  else if (scope != global_namespace)
-    error_at (location, "%qD is not a member of %qD", name, scope);
-  else
-    error_at (location, "%<::%D%> has not been declared", name);
-}
-
 /* If FNS is a member function, a set of member functions, or a
    template-id referring to one or more member functions, return a
    BASELINK for FNS, incorporating the current access context.

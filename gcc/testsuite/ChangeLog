@@ -1,3 +1,8 @@
+2010-12-14  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c++/45330
+	* g++.dg/lookup/suggestions1.C: New test.
+
 2010-12-14  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46937
