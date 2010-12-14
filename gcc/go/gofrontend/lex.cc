@@ -542,7 +542,13 @@ Lex::next_token()
   while (true)
     {
       if (!this->require_line())
-	return this->make_eof_token();
+	{
+	  bool add_semi_at_eol = this->add_semi_at_eol_;
+	  this->add_semi_at_eol_ = false;
+	  if (add_semi_at_eol)
+	    return this->make_operator(OPERATOR_SEMICOLON, 1);
+	  return this->make_eof_token();
+	}
 
       const char* p = this->linebuf_ + this->lineoff_;
       const char* pend = this->linebuf_ + this->linesize_;
