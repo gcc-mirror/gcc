@@ -15816,6 +15816,10 @@ arm_expand_prologue (void)
 	}
     }
 
+  if (flag_stack_usage)
+    current_function_static_stack_size
+      = offsets->outgoing_args - offsets->saved_args;
+
   if (offsets->outgoing_args != offsets->saved_args + saved_regs)
     {
       /* This add can produce multiple insns for a large constant, so we
@@ -20627,6 +20631,10 @@ thumb1_expand_prologue (void)
   if (!frame_pointer_needed && CALLER_INTERWORKING_SLOT_SIZE > 0)
     emit_move_insn (gen_rtx_REG (Pmode, ARM_HARD_FRAME_POINTER_REGNUM),
 		    stack_pointer_rtx);
+
+  if (flag_stack_usage)
+    current_function_static_stack_size
+      = offsets->outgoing_args - offsets->saved_args;
 
   amount = offsets->outgoing_args - offsets->saved_regs;
   amount -= 4 * thumb1_extra_regs_pushed (offsets, true);
