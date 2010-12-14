@@ -133,6 +133,12 @@ sighandler (int sig)
     {
       sigset_t clear;
 
+      if (__sync_bool_compare_and_swap (&m->mallocing, 1, 1))
+	{
+	  fprintf (stderr, "caught signal while mallocing: %s\n", msg);
+	  __go_assert (0);
+	}
+
       /* The signal handler blocked signals; unblock them.  */
       i = sigfillset (&clear);
       __go_assert (i == 0);
