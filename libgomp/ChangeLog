@@ -1,3 +1,8 @@
+2010-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/46874
+	* libgomp.fortran/allocatable6.f90: New test.
+
 2010-12-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* acinclude.m4 (symvers_renaming): Also set if enable_symvers = no.
