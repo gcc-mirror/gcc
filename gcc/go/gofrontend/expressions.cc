@@ -10709,6 +10709,9 @@ Open_array_construction_expression::do_get_tree(Translate_context* context)
 {
   Type* element_type = this->type()->array_type()->element_type();
   tree element_type_tree = element_type->get_tree(context->gogo());
+  if (element_type_tree == error_mark_node)
+    return error_mark_node;
+
   tree values;
   tree length_tree;
   if (this->vals() == NULL || this->vals()->empty())
@@ -10792,6 +10795,8 @@ Open_array_construction_expression::do_get_tree(Translate_context* context)
   // Build a constructor for the open array.
 
   tree type_tree = this->type()->get_tree(context->gogo());
+  if (type_tree == error_mark_node)
+    return error_mark_node;
   gcc_assert(TREE_CODE(type_tree) == RECORD_TYPE);
 
   VEC(constructor_elt,gc)* init = VEC_alloc(constructor_elt, gc, 3);
@@ -10815,6 +10820,8 @@ Open_array_construction_expression::do_get_tree(Translate_context* context)
   elt->value = fold_convert(TREE_TYPE(field), length_tree);
 
   tree constructor = build_constructor(type_tree, init);
+  if (constructor == error_mark_node)
+    return error_mark_node;
   if (!is_in_function && is_constant_initializer)
     TREE_CONSTANT(constructor) = 1;
 
