@@ -795,9 +795,26 @@ lto_symtab_merge_cgraph_nodes_1 (void **slot, void *data ATTRIBUTE_UNUSED)
   for (e = prevailing->next; e; e = e->next)
     {
       if (e->node != NULL)
-	lto_cgraph_replace_node (e->node, prevailing->node);
+	{
+	  /* In case we prevail funcion by an alias, we can run into case
+	     that the alias has no cgraph node attached, since it was
+	     previously unused.  Create the node.  */
+	  if (!prevailing->node)
+	    {
+	      prevailing->node = cgraph_node (prevailing->decl);
+	      prevailing->node->alias = true;
+	    }
+	  lto_cgraph_replace_node (e->node, prevailing->node);
+	}
       if (e->vnode != NULL)
-	lto_varpool_replace_node (e->vnode, prevailing->vnode);
+	{
+	  if (!prevailing->vnode)
+	    {
+	      prevailing->vnode = varpool_node (prevailing->decl);
+	      prevailing->vnode->alias = true;
+	    }
+	  lto_varpool_replace_node (e->vnode, prevailing->vnode);
+	}
     }
 
   /* Drop all but the prevailing decl from the symtab.  */

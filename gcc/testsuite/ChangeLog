@@ -1,3 +1,10 @@
+2010-12-14  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/46940
+	PR lto/44463
+	* gcc.dg/lto/pr46940_0.c: New testcase.
+	* gcc.dg/lto/pr46940_1.c: New testcase.
+
 2010-12-14  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c++/45330
