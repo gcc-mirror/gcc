@@ -2647,12 +2647,18 @@ Parse::selector(Expression* left, bool* is_type_switch)
     {
       this->advance_token();
       Type* type = NULL;
-      if (is_type_switch == NULL
-	  || !this->peek_token()->is_keyword(KEYWORD_TYPE))
+      if (!this->peek_token()->is_keyword(KEYWORD_TYPE))
 	type = this->type();
       else
 	{
-	  *is_type_switch = true;
+	  if (is_type_switch != NULL)
+	    *is_type_switch = true;
+	  else
+	    {
+	      error_at(this->location(),
+		       "use of %<.(type)%> outside type switch");
+	      type = Type::make_error_type();
+	    }
 	  this->advance_token();
 	}
       if (!this->peek_token()->is_op(OPERATOR_RPAREN))
@@ -2866,7 +2872,7 @@ Parse::expression(Precedence precedence, bool may_be_sink,
       left = this->verify_not_sink(left);
       Expression* right = this->expression(right_precedence, false,
 					   may_be_composite_lit,
-					   is_type_switch);
+					   NULL);
       if (op == OPERATOR_CHANOP)
 	left = Expression::make_send(left, right, binop_location);
       else
@@ -2959,8 +2965,7 @@ Parse::unary_expr(bool may_be_sink, bool may_be_composite_lit,
 	  return Expression::make_type(this->type(), location);
 	}
 
-      Expression* expr = this->unary_expr(false, may_be_composite_lit,
-					  is_type_switch);
+      Expression* expr = this->unary_expr(false, may_be_composite_lit, NULL);
       if (expr->is_error_expression())
 	;
       else if (op == OPERATOR_MULT && expr->is_type_expression())
