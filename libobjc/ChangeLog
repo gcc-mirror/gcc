@@ -1,5 +1,21 @@
 2010-12-14  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objects.c (object_copy): Do not #undef as we are no longer
+	including objc/objc-api.h.
+	* selector.c: Include objc/runtime.h and
+	objc-private/module-abi-8.h.  Do not include objc/objc-api.h and
+	objc/encoding.h.  Updated
+	(__objc_register_selectors_from_class): Use struct
+	objc_method_list * instead of MethodList_t.
+	(__objc_register_selectors_from_list): Use Method instead of
+	Method_t.
+	(struct objc_method_description_list): Do not define here.
+	(__objc_register_instance_methods_to_class): Use struct
+	objc_method_list * instead of MethodList_t and Method instead of
+	Method_t.
+	
+2010-12-14  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* selector.c: Reindented some code and tidied up comments.  No
 	actual code changes.
 
