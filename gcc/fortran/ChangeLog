@@ -1,3 +1,9 @@
+2010-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/46874
+	* trans-openmp.c (gfc_trans_omp_array_reduction): Handle allocatable
+	dummy variables.
+
 2010-12-13  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/46201
