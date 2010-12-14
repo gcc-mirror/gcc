@@ -1,3 +1,8 @@
+2010-12-14  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* selector.c: Reindented some code and tidied up comments.  No
+	actual code changes.
+
 2010-12-13  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* encoding.c (_darwin_rs6000_special_round_type_align): New.
