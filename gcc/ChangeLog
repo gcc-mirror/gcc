@@ -1,5 +1,9 @@
 2010-12-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/46885
+	* tree-ssa-loop-manip.c (canonicalize_loop_ivs): Use gsi_last_bb
+	instead of gsi_last_nondebug_bb if bump_in_latch.
+
 	PR tree-optimization/46909
 	* gimple-fold.c (and_var_with_comparison_1): Save partial
 	result even in the is_and case, if both partial results
