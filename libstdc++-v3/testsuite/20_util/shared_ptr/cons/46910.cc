@@ -18,23 +18,29 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 20.9.11.2 Template class shared_ptr [util.smartptr.shared]
+// 20.9.10.2 Class template shared_ptr [util.smartptr.shared]
 
 #include <memory>
+#include <testsuite_hooks.h>
 
-// incomplete type
-struct X;
+// 20.9.10.2.1 shared_ptr constructors [util.smartptr.shared.const]
 
-// get an auto_ptr rvalue
-std::auto_ptr<X>&& ap();
+struct deleter;
 
-void test01()
+class A
 {
-  X* px = 0;
-  std::shared_ptr<X> p1(px);   // { dg-error "here" }
-  // { dg-error "incomplete" "" { target *-*-* } 763 }
+  ~A() = default;
+  friend struct deleter;
+};
 
-  std::shared_ptr<X> p9(ap());  // { dg-error "here" }
-  // { dg-error "incomplete" "" { target *-*-* } 855 }
+struct deleter
+{
+  void operator()(A* a) const;
+};
 
+void
+test01()
+{
+  std::shared_ptr<A> p(new A, deleter());
 }
+
