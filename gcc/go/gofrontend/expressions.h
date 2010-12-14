@@ -1384,6 +1384,12 @@ class Unknown_expression : public Parser_expression
   set_is_composite_literal_key()
   { this->is_composite_literal_key_ = true; }
 
+  // Note that this expression should no longer be treated as a
+  // composite literal key.
+  void
+  clear_is_composite_literal_key()
+  { this->is_composite_literal_key_ = false; }
+
  protected:
   Expression*
   do_lower(Gogo*, Named_object*, int);
