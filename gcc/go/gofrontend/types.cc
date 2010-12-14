@@ -53,9 +53,9 @@ Type::base()
   switch (this->classification_)
     {
     case TYPE_NAMED:
-      return static_cast<Named_type*>(this)->real_type()->base();
+      return this->named_type()->named_base();
     case TYPE_FORWARD:
-      return static_cast<Forward_declaration_type*>(this)->real_type()->base();
+      return this->forward_declaration_type()->real_type()->base();
     default:
       return this;
     }
@@ -67,13 +67,9 @@ Type::base() const
   switch (this->classification_)
     {
     case TYPE_NAMED:
-      return static_cast<const Named_type*>(this)->real_type()->base();
+      return this->named_type()->named_base();
     case TYPE_FORWARD:
-      {
-	const Forward_declaration_type* ftype =
-	  static_cast<const Forward_declaration_type*>(this);
-	return ftype->real_type()->base();
-      }
+      return this->forward_declaration_type()->real_type()->base();
     default:
       return this;
     }
@@ -224,7 +220,7 @@ Type::is_error_type() const
     case TYPE_ERROR:
       return true;
     case TYPE_NAMED:
-      return t->named_type()->real_type()->is_error_type();
+      return t->named_type()->is_named_error_type();
     default:
       return false;
     }
@@ -5502,10 +5498,23 @@ Interface_type::finalize_methods()
       const Typed_identifier* p = &this->methods_->at(from);
       if (!p->name().empty())
 	{
-	  if (from != to)
-	    this->methods_->set(to, *p);
+	  size_t i = 0;
+	  for (i = 0; i < to; ++i)
+	    {
+	      if (this->methods_->at(i).name() == p->name())
+		{
+		  error_at(p->location(), "duplicate method %qs",
+			   Gogo::message_name(p->name()).c_str());
+		  break;
+		}
+	    }
+	  if (i == to)
+	    {
+	      if (from != to)
+		this->methods_->set(to, *p);
+	      ++to;
+	    }
 	  ++from;
-	  ++to;
 	  continue;
 	}
       Interface_type* it = p->type()->interface_type();
@@ -6446,6 +6455,45 @@ std::string
 Named_type::message_name() const
 {
   return this->named_object_->message_name();
+}
+
+// Return the base type for this type.  We have to be careful about
+// circular type definitions, which are invalid but may be seen here.
+
+Type*
+Named_type::named_base()
+{
+  if (this->seen_)
+    return this;
+  this->seen_ = true;
+  Type* ret = this->type_->base();
+  this->seen_ = false;
+  return ret;
+}
+
+const Type*
+Named_type::named_base() const
+{
+  if (this->seen_)
+    return this;
+  this->seen_ = true;
+  const Type* ret = this->type_->base();
+  this->seen_ = false;
+  return ret;
+}
+
+// Return whether this is an error type.  We have to be careful about
+// circular type definitions, which are invalid but may be seen here.
+
+bool
+Named_type::is_named_error_type() const
+{
+  if (this->seen_)
+    return false;
+  this->seen_ = true;
+  bool ret = this->type_->is_error_type();
+  this->seen_ = false;
+  return ret;
 }
 
 // Add a method to this type.
