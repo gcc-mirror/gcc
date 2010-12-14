@@ -1296,7 +1296,8 @@ Tuple_type_guard_assignment_statement::do_lower(Gogo*, Block* enclosing)
   Type* expr_type = this->expr_->type();
   if (expr_type->interface_type() == NULL)
     {
-      this->report_error(_("type assertion only valid for interface types"));
+      if (!expr_type->is_error_type() && !this->type_->is_error_type())
+	this->report_error(_("type assertion only valid for interface types"));
       return Statement::make_error_statement(loc);
     }
 

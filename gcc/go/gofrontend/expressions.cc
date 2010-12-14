@@ -11620,24 +11620,29 @@ Type_guard_expression::do_check_types(Gogo*)
 	this->report_error(_("invalid unsafe.Pointer conversion"));
     }
   else if (expr_type->interface_type() == NULL)
-    this->report_error(_("type assertion only valid for interface types"));
+    {
+      if (!expr_type->is_error_type() && !this->type_->is_error_type())
+	this->report_error(_("type assertion only valid for interface types"));
+      this->set_is_error();
+    }
   else if (this->type_->interface_type() == NULL)
     {
       std::string reason;
       if (!expr_type->interface_type()->implements_interface(this->type_,
 							     &reason))
 	{
-	  if (reason.empty())
-	    this->report_error(_("impossible type assertion: "
-				 "type does not implement interface"));
-	  else
+	  if (!this->type_->is_error_type())
 	    {
-	      error_at(this->location(),
-		       ("impossible type assertion: "
-			"type does not implement interface (%s)"),
-		       reason.c_str());
-	      this->set_is_error();
+	      if (reason.empty())
+		this->report_error(_("impossible type assertion: "
+				     "type does not implement interface"));
+	      else
+		error_at(this->location(),
+			 ("impossible type assertion: "
+			  "type does not implement interface (%s)"),
+			 reason.c_str());
 	    }
+	  this->set_is_error();
 	}
     }
 }
