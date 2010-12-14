@@ -1,4 +1,9 @@
-2010-12-04  Jan Hubicka  <jh@suse.cz>
+2010-12-14  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/46875
+	* gcc.dg/pr46875.c: New.
+
+2010-12-14  Jan Hubicka  <jh@suse.cz>
 
 	* g++.dg/other/first-global.C: Update regexp to match new
 	names of ctors.
