@@ -3824,29 +3824,28 @@ Unary_expression::do_determine_type(const Type_context* context)
 void
 Unary_expression::do_check_types(Gogo*)
 {
+  Type* type = this->expr_->type();
+  if (type->is_error_type())
+    {
+      this->set_is_error();
+      return;
+    }
+
   switch (this->op_)
     {
     case OPERATOR_PLUS:
     case OPERATOR_MINUS:
-      {
-	Type* type = this->expr_->type();
-	if (type->integer_type() == NULL
-	    && type->float_type() == NULL
-	    && type->complex_type() == NULL
-	    && !type->is_error_type())
-	  this->report_error(_("expected numeric type"));
-      }
+      if (type->integer_type() == NULL
+	  && type->float_type() == NULL
+	  && type->complex_type() == NULL)
+	this->report_error(_("expected numeric type"));
       break;
 
     case OPERATOR_NOT:
     case OPERATOR_XOR:
-      {
-	Type* type = this->expr_->type();
-	if (type->integer_type() == NULL
-	    && !type->is_boolean_type()
-	    && !type->is_error_type())
-	  this->report_error(_("expected integer or boolean type"));
-      }
+      if (type->integer_type() == NULL
+	  && !type->is_boolean_type())
+	this->report_error(_("expected integer or boolean type"));
       break;
 
     case OPERATOR_AND:
@@ -3858,12 +3857,8 @@ Unary_expression::do_check_types(Gogo*)
 
     case OPERATOR_MULT:
       // Indirecting through a pointer.
-      {
-	Type* type = this->expr_->type();
-	if (type->points_to() == NULL
-	    && !type->is_error_type())
-	  this->report_error(_("expected pointer"));
-      }
+      if (type->points_to() == NULL)
+	this->report_error(_("expected pointer"));
       break;
 
     default:
@@ -5474,7 +5469,10 @@ Binary_expression::do_check_types(Gogo*)
   Type* left_type = this->left_->type();
   Type* right_type = this->right_->type();
   if (left_type->is_error_type() || right_type->is_error_type())
-    return;
+    {
+      this->set_is_error();
+      return;
+    }
 
   if (this->op_ == OPERATOR_EQEQ
       || this->op_ == OPERATOR_NOTEQ
