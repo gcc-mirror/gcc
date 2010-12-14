@@ -1,5 +1,13 @@
 2010-12-14  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc/Object.h: Moved all the methods, with the exception of
+	-class and -isEqual:, into ...
+	* objc/deprecated/Object.h: here.
+	* Object.m: Moved all the methods, with the exception of -class
+	and -isEqual: into the 'Deprecated' category.
+
+2010-12-14  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objects.c (object_copy): Do not #undef as we are no longer
 	including objc/objc-api.h.
 	* selector.c: Include objc/runtime.h and
