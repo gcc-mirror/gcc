@@ -107,10 +107,10 @@ remove_current_thread (void)
   if (list_entry->next != NULL)
     list_entry->next->prev = list_entry->prev;
 
+  runtime_MCache_ReleaseAll (mcache);
+
   i = pthread_mutex_unlock (&__go_thread_ids_lock);
   __go_assert (i == 0);
-
-  runtime_MCache_ReleaseAll (mcache);
 
   runtime_lock (&runtime_mheap);
   mstats.heap_alloc += mcache->local_alloc;
@@ -225,13 +225,12 @@ __go_go (void (*pfn) (void*), void *arg)
 
   newm->list_entry = list_entry;
 
+  newm->mcache = runtime_allocmcache ();
+
   /* Add the thread to the list of all threads, marked as tentative
      since it is not yet ready to go.  */
   i = pthread_mutex_lock (&__go_thread_ids_lock);
   __go_assert (i == 0);
-
-  /* We use __go_thread_ids_lock as a lock for mheap.cachealloc.  */
-  newm->mcache = runtime_allocmcache ();
 
   if (__go_all_thread_ids != NULL)
     __go_all_thread_ids->prev = list_entry;
