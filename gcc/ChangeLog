@@ -1,3 +1,10 @@
+2010-12-14  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/46940
+	PR lto/44463
+	* lto-symtab.c (lto_symtab_merge_cgraph_nodes_1): Construct nodes
+	for aliases when they are used.
+
 2010-12-14  Joseph Myers  <joseph@codesourcery.com>
 
 	* config.gcc (sparc-*-elf*, sparc-*-rtems*, sparc-*-linux*,
