@@ -640,7 +640,7 @@ Gogo::start_function(const std::string& name, Function_type* type,
 	}
     }
 
-  function->create_named_result_variables();
+  function->create_named_result_variables(this);
 
   const std::string* pname;
   std::string nested_name;
@@ -2473,7 +2473,7 @@ Function::Function(Function_type* type, Function* enclosing, Block* block,
 // Create the named result variables.
 
 void
-Function::create_named_result_variables()
+Function::create_named_result_variables(Gogo* gogo)
 {
   const Typed_identifier_list* results = this->type_->results();
   if (results == NULL
@@ -2490,10 +2490,17 @@ Function::create_named_result_variables()
        p != results->end();
        ++p, ++index)
     {
-      Result_variable* result = new Result_variable(p->type(), this,
-						    index);
-      Named_object* no = block->bindings()->add_result_variable(p->name(),
-								result);
+      std::string name = p->name();
+      if (Gogo::is_sink_name(name))
+	{
+	  static int unnamed_result_counter;
+	  char buf[100];
+	  snprintf(buf, sizeof buf, "_$%d", unnamed_result_counter);
+	  ++unnamed_result_counter;
+	  name = gogo->pack_hidden_name(buf, false);
+	}
+      Result_variable* result = new Result_variable(p->type(), this, index);
+      Named_object* no = block->bindings()->add_result_variable(name, result);
       this->named_results_->push_back(no);
     }
 }

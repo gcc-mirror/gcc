@@ -785,7 +785,7 @@ class Function
 
   // Create the named result variables in the outer block.
   void
-  create_named_result_variables();
+  create_named_result_variables(Gogo*);
 
   // Add a new field to the closure variable.
   void
