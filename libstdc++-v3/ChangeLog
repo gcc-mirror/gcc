@@ -1,3 +1,9 @@
+2010-12-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/46951
+	* testsuite/30_threads/future/members/45133.cc: Fix dg-options.
+	* testsuite/30_threads/shared_future/members/45133.cc: Likewise.
+
 2010-12-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/45133
