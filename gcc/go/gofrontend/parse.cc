@@ -3982,6 +3982,8 @@ Parse::type_case_clause(Named_object* switch_no, Type_case_clauses* clauses)
 	clauses->add(*p, true, false, NULL, location);
       clauses->add(types.back(), false, false, statements, location);
     }
+  else
+    clauses->add(Type::make_error_type(), false, false, statements, location);
 }
 
 // TypeSwitchCase  = "case" type | "default"
