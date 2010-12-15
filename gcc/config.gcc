@@ -2230,7 +2230,7 @@ rs6000-ibm-aix[6789].* | powerpc-ibm-aix[6789].*)
 	extra_headers=altivec.h
 	;;
 rx-*-elf*)
-	tm_file="dbxelf.h elfos.h svr4.h newlib-stdint.h ${tm_file} ../../libgcc/config/rx/rx-abi.h"
+	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file} ../../libgcc/config/rx/rx-abi.h"
 	tmake_file="${tmake_file} rx/t-rx"
 	;;
 s390-*-linux*)
