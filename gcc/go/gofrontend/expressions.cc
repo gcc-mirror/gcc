@@ -9628,7 +9628,13 @@ Field_reference_expression::do_get_tree(Translate_context* context)
     return error_mark_node;
   gcc_assert(TREE_CODE(TREE_TYPE(struct_tree)) == RECORD_TYPE);
   tree field = TYPE_FIELDS(TREE_TYPE(struct_tree));
-  gcc_assert(field != NULL_TREE);
+  if (field == NULL_TREE)
+    {
+      // This can happen for a type which refers to itself indirectly
+      // and then turns out to be erroneous.
+      gcc_assert(saw_errors());
+      return error_mark_node;
+    }
   for (unsigned int i = this->field_index_; i > 0; --i)
     {
       field = DECL_CHAIN(field);
