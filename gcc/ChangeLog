@@ -1,5 +1,11 @@
 2010-12-14  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR tree-optimization/46845
+	* sese.c (scalar_evolution_in_region): Handle scop parameters
+	before scev analysis.
+
+2010-12-14  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR tree-optimization/46928
 	* tree-data-ref.c (analyze_overlapping_iterations): Handle "A[p] == A[p]"
 	in data dependence analysis with p a parameter of the loop.
