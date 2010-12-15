@@ -9763,6 +9763,13 @@ grokdeclarator (const cp_declarator *declarator,
 
 		if (thread_p)
 		  DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
+
+		if (constexpr_p && !initialized)
+		  {
+		    error ("constexpr static data member %qD must have an "
+			   "initializer", decl);
+		    constexpr_p = false;
+		  }
 	      }
 	    else
 	      {

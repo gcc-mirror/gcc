@@ -1,3 +1,10 @@
+2010-12-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46930
+	* g++.dg/cpp0x/constexpr-decl.C: New.
+	* g++.dg/cpp0x/constexpr-ex1.C: Fix.
+	* g++.dg/cpp0x/constexpr-static5.C: Fix.
+
 2010-12-14  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/46940

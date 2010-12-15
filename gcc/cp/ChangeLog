@@ -1,3 +1,9 @@
+2010-12-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46930
+	* decl.c (grokdeclarator): Reject uninitialized constexpr
+	static data member.
+
 2010-12-14  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c++/45330
