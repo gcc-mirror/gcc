@@ -7564,7 +7564,7 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
 			   const std::string& name,
 			   source_location location)
 {
-  if (type->is_error_type())
+  if (type->deref()->is_error_type())
     return Expression::make_error(location);
 
   const Named_type* nt = type->named_type();
