@@ -7754,7 +7754,8 @@ Type::find_field_or_method(const Type* type,
       if (!pf->is_anonymous())
 	continue;
 
-      if (pf->type()->is_error_type() || pf->type()->is_undefined())
+      if (pf->type()->deref()->is_error_type()
+	  || pf->type()->deref()->is_undefined())
 	continue;
 
       Named_type* fnt = pf->type()->deref()->named_type();
@@ -7875,7 +7876,8 @@ Type::is_unexported_field_or_method(Gogo* gogo, const Type* type,
        ++pf)
     {
       if (pf->is_anonymous()
-	  && (!pf->type()->is_error_type() && !pf->type()->is_undefined()))
+	  && (!pf->type()->deref()->is_error_type()
+	      && !pf->type()->deref()->is_undefined()))
 	{
 	  Named_type* subtype = pf->type()->deref()->named_type();
 	  gcc_assert(subtype != NULL);
