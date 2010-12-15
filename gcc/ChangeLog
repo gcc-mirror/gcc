@@ -238,7 +238,7 @@
 
 2010-12-13  Alexandre Oliva  <aoliva@redhat.com>
 
-	PR debug/46576
+	PR debug/46756
 	* jump.c (mark_all_labels): Skip debug insns.
 
 2010-12-13  Alexandre Oliva  <aoliva@redhat.com>
