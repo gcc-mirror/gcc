@@ -1,3 +1,8 @@
+2010-12-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rx/rx.h (WCHAR_TYPE, WCHAR_TYPE_SIZE): Define.
+	* config.gcc (rx-*-elf*): Don't use svr4.h.
+
 2010-12-14  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/46845
