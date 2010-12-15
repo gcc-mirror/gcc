@@ -1,5 +1,11 @@
 2010-12-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc/message.h: Update comments, reindented code and moved
+	deprecated types and functions at the end of the file.  No code
+	changes.
+
+2010-12-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* ivars.c (class_addIvar): Use the 'size' argument instead of
 	trying to calculate it using objc_sizeof_type().
 	* objc/runtime.h (class_addIvar): Updated comments.
