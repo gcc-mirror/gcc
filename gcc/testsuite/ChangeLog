@@ -1,3 +1,8 @@
+2010-12-14  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/45948
+	* gcc.dg/tree-ssa/ldist-pr45948.c: New.
+
 2010-12-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/46930

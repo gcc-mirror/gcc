@@ -1,3 +1,12 @@
+2010-12-14  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/45948
+	* tree-loop-distribution.c (ssa_name_has_uses_outside_loop_p): New.
+	(stmt_has_scalar_dependences_outside_loop): New.
+	(stmt_generated_in_another_partition): New.
+	(add_scalar_computations_to_partition): New.
+	(rdg_build_partitions): Call add_scalar_computations_to_partition.
+
 2010-12-14  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/arc/arc.h (LIB_SPEC): Define.
