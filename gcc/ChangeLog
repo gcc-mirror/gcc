@@ -1,3 +1,38 @@
+2010-12-15  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/46053
+	PR middle-end/46287
+	PR middle-end/46242
+	* cgraph.h (cgraph_indirect_call_info): New field thunk_delta.
+	* gimple.h (gimple_fold_obj_type_ref): Declaration removed.
+	(gimple_fold_call): Declare.
+	(gimple_adjust_this_by_delta): Likewise.
+	* cgraph.c (cgraph_make_edge_direct): New parameter delta.  Updated
+	all users.
+	(cgraph_clone_edge): Create a copy of indirect_info also for direct
+	edges.
+	* cgraphunit.c (cgraph_redirect_edge_call_stmt_to_callee): Adjust this
+	parameters.
+	* gimple-fold.c (gimple_fold_obj_type_ref_known_binfo): Renamed to
+	gimple_get_virt_mehtod_for_binfo, new parameter delta.  Do not search
+	through thunks, in fact bail out if we encounter one, check that
+	BINFO_VIRTUALS is not NULL.
+	(gimple_adjust_this_by_delta): New function.
+	(gimple_fold_obj_type_ref): Removed.
+	(gimple_fold_obj_type_ref_call): New function.
+	(fold_gimple_call): Renamed to gimple_fold_call, made external.
+	Updated users.  Call gimple_fold_obj_type_ref_call instead of
+	gimple_fold_obj_type_ref.
+	* ipa-cp.c (ipcp_process_devirtualization_opportunities): Process
+	thunk deltas.
+	(ipcp_discover_new_direct_edges): Likewise.
+	* ipa-prop.c (ipa_make_edge_direct_to_target): New parameter delta.
+	Updated callers.
+	(ipa_write_indirect_edge_info): Stream thunk_delta.
+	(ipa_read_indirect_edge_info): Likewise.
+	* tree-ssa-ccp.c (ccp_fold_stmt): Use gimple_fold_call instead of
+	gimple_fold_obj_type_ref.
+
 2010-12-15  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/46649

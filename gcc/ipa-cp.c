@@ -1214,7 +1214,7 @@ ipcp_process_devirtualization_opportunities (struct cgraph_node *node)
     {
       int param_index, types_count, j;
       HOST_WIDE_INT token;
-      tree target;
+      tree target, delta;
 
       next_ie = ie->next_callee;
       if (!ie->indirect_info->polymorphic)
@@ -1231,7 +1231,8 @@ ipcp_process_devirtualization_opportunities (struct cgraph_node *node)
       for (j = 0; j < types_count; j++)
 	{
 	  tree binfo = VEC_index (tree, info->params[param_index].types, j);
-	  tree t = gimple_fold_obj_type_ref_known_binfo (token, binfo);
+	  tree d;
+	  tree t = gimple_get_virt_mehtod_for_binfo (token, binfo, &d, true);
 
 	  if (!t)
 	    {
@@ -1239,8 +1240,11 @@ ipcp_process_devirtualization_opportunities (struct cgraph_node *node)
 	      break;
 	    }
 	  else if (!target)
-	    target = t;
-	  else if (target != t)
+	    {
+	      target = t;
+	      delta = d;
+	    }
+	  else if (target != t || !tree_int_cst_equal (delta, d))
 	    {
 	      target = NULL_TREE;
 	      break;
@@ -1248,7 +1252,7 @@ ipcp_process_devirtualization_opportunities (struct cgraph_node *node)
 	}
 
       if (target)
-	ipa_make_edge_direct_to_target (ie, target);
+	ipa_make_edge_direct_to_target (ie, target, delta);
     }
 }
 
@@ -1288,6 +1292,7 @@ ipcp_discover_new_direct_edges (struct cgraph_node *node, int index, tree cst)
   for (ie = node->indirect_calls; ie; ie = next_ie)
     {
       struct cgraph_indirect_call_info *ici = ie->indirect_info;
+      tree target, delta = NULL_TREE;
 
       next_ie = ie->next_callee;
       if (ici->param_index != index)
@@ -1307,12 +1312,15 @@ ipcp_discover_new_direct_edges (struct cgraph_node *node, int index, tree cst)
 	    continue;
 	  gcc_assert (ie->indirect_info->anc_offset == 0);
 	  token = ie->indirect_info->otr_token;
-	  cst = gimple_fold_obj_type_ref_known_binfo (token, binfo);
-	  if (!cst)
+	  target = gimple_get_virt_mehtod_for_binfo (token, binfo, &delta,
+						     true);
+	  if (!target)
 	    continue;
 	}
+      else
+	target = cst;
 
-      ipa_make_edge_direct_to_target (ie, cst);
+      ipa_make_edge_direct_to_target (ie, target, delta);
     }
 }
 

@@ -1462,35 +1462,43 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 }
 
 /* If TARGET is an addr_expr of a function declaration, make it the destination
-   of an indirect edge IE and return the edge.  Otherwise, return NULL.  */
+   of an indirect edge IE and return the edge.  Otherwise, return NULL.  Delta,
+   if non-NULL, is an integer constant that must be added to this pointer
+   (first parameter).  */
 
 struct cgraph_edge *
-ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
+ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target, tree delta)
 {
   struct cgraph_node *callee;
 
-  if (TREE_CODE (target) != ADDR_EXPR)
-    return NULL;
-  target = TREE_OPERAND (target, 0);
+  if (TREE_CODE (target) == ADDR_EXPR)
+    target = TREE_OPERAND (target, 0);
   if (TREE_CODE (target) != FUNCTION_DECL)
     return NULL;
   callee = cgraph_node (target);
   if (!callee)
     return NULL;
   ipa_check_create_node_params ();
-  cgraph_make_edge_direct (ie, callee);
+
+  cgraph_make_edge_direct (ie, callee, delta);
   if (dump_file)
     {
       fprintf (dump_file, "ipa-prop: Discovered %s call to a known target "
-	       "(%s/%i -> %s/%i) for stmt ",
+	       "(%s/%i -> %s/%i), for stmt ",
 	       ie->indirect_info->polymorphic ? "a virtual" : "an indirect",
 	       cgraph_node_name (ie->caller), ie->caller->uid,
 	       cgraph_node_name (ie->callee), ie->callee->uid);
-
       if (ie->call_stmt)
 	print_gimple_stmt (dump_file, ie->call_stmt, 2, TDF_SLIM);
       else
 	fprintf (dump_file, "with uid %i\n", ie->lto_stmt_uid);
+
+      if (delta)
+	{
+	  fprintf (dump_file, "          Thunk delta is ");
+	  print_generic_expr (dump_file, delta, 0);
+	  fprintf (dump_file, "\n");
+	}
     }
 
   if (ipa_get_cs_argument_count (IPA_EDGE_REF (ie))
@@ -1518,7 +1526,7 @@ try_make_edge_direct_simple_call (struct cgraph_edge *ie,
   else
     return NULL;
 
-  return ipa_make_edge_direct_to_target (ie, target);
+  return ipa_make_edge_direct_to_target (ie, target, NULL_TREE);
 }
 
 /* Try to find a destination for indirect edge IE that corresponds to a
@@ -1530,7 +1538,7 @@ static struct cgraph_edge *
 try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 				   struct ipa_jump_func *jfunc)
 {
-  tree binfo, type, target;
+  tree binfo, type, target, delta;
   HOST_WIDE_INT token;
 
   if (jfunc->type == IPA_JF_KNOWN_TYPE)
@@ -1554,12 +1562,12 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
   type = ie->indirect_info->otr_type;
   binfo = get_binfo_at_offset (binfo, ie->indirect_info->anc_offset, type);
   if (binfo)
-    target = gimple_fold_obj_type_ref_known_binfo (token, binfo);
+    target = gimple_get_virt_mehtod_for_binfo (token, binfo, &delta, true);
   else
     return NULL;
 
   if (target)
-    return ipa_make_edge_direct_to_target (ie, target);
+    return ipa_make_edge_direct_to_target (ie, target, delta);
   else
     return NULL;
 }
@@ -2547,6 +2555,7 @@ ipa_write_indirect_edge_info (struct output_block *ob,
     {
       lto_output_sleb128_stream (ob->main_stream, ii->otr_token);
       lto_output_tree (ob, ii->otr_type, true);
+      lto_output_tree (ob, ii->thunk_delta, true);
     }
 }
 
@@ -2569,6 +2578,7 @@ ipa_read_indirect_edge_info (struct lto_input_block *ib,
     {
       ii->otr_token = (HOST_WIDE_INT) lto_input_sleb128 (ib);
       ii->otr_type = lto_input_tree (ib, data_in);
+      ii->thunk_delta = lto_input_tree (ib, data_in);
     }
 }
 
