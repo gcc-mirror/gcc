@@ -126,8 +126,8 @@
 
 2010-12-13  Alexandre Oliva  <aoliva@redhat.com>
 
-	PR debug/46576
-	* gfortran.dg/debug/pr46576.f: New.
+	PR debug/46756
+	* gfortran.dg/debug/pr46756.f: New.
 
 2010-12-13  Alexandre Oliva  <aoliva@redhat.com>
 
