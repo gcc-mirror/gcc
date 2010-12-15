@@ -1,3 +1,11 @@
+2010-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/46945
+	* trans-array.c (gfc_array_init_size): Perform stride overflow
+	checking and multiplication by element_size in size_type_node instead
+	of sizetype, return value with size_type_node type instead of
+	sometimes with sizetype and sometimes with gfc_array_index_type.
+
 2010-12-15  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* trans.c (gfc_allocate_with_status): Better error message for
