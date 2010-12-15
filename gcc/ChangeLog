@@ -1,3 +1,9 @@
+2010-12-15  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/46649
+	* sel-sched-ir.c (purge_empty_blocks): Unconditionally skip the first
+	basic block in the region.
+
 2010-12-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/stormy16/stormy16.h (LINK_SPEC, WCHAR_TYPE): Define.
