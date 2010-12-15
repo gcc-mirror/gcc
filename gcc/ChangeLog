@@ -1,3 +1,12 @@
+2010-12-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/sh/elf.h (LIB_SPEC): Define.
+	* config.gcc (sh-*-elf* | sh[12346l]*-*-elf* | sh-*-symbianelf* |
+	sh[12346l]*-*-symbianelf* | sh-*-linux* | sh[2346lbe]*-*-linux* |
+	sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* |
+	sh5l*-*-netbsd* | sh64-*-netbsd* | sh64l*-*-netbsd*, sh-*-rtems*,
+	sh-wrs-vxworks): Don't use svr4.h.
+
 2010-12-14  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/46940

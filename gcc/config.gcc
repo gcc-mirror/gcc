@@ -2289,12 +2289,7 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 	case ${with_endian} in
 	little*)	tm_file="sh/little.h ${tm_file}" ;;
 	esac
-	tm_file="${tm_file} dbxelf.h elfos.h"
-	case ${target} in
-	sh*-*-netbsd*)	;;
-	*)		tm_file="${tm_file} svr4.h" ;;
-	esac
-	tm_file="${tm_file} sh/elf.h"
+	tm_file="${tm_file} dbxelf.h elfos.h sh/elf.h"
 	case ${target} in
 	sh*-*-linux*)	tmake_file="${tmake_file} sh/t-linux"
 			tm_file="${tm_file} linux.h glibc-stdint.h sh/linux.h" ;;
@@ -2448,11 +2443,11 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 	;;
 sh-*-rtems*)
 	tmake_file="sh/t-sh sh/t-elf t-rtems sh/t-rtems"
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sh/elf.h sh/embed-elf.h sh/rtemself.h rtems.h newlib-stdint.h"
+	tm_file="${tm_file} dbxelf.h elfos.h sh/elf.h sh/embed-elf.h sh/rtemself.h rtems.h newlib-stdint.h"
 	;;
 sh-wrs-vxworks)
 	tmake_file="$tmake_file sh/t-sh sh/t-elf sh/t-vxworks"
-	tm_file="${tm_file} elfos.h svr4.h sh/elf.h sh/embed-elf.h vx-common.h vxworks.h sh/vxworks.h"
+	tm_file="${tm_file} elfos.h sh/elf.h sh/embed-elf.h vx-common.h vxworks.h sh/vxworks.h"
 	;;
 sparc-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h sparc/sysv4.h sparc/sp-elf.h"
