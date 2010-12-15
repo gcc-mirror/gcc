@@ -6109,6 +6109,9 @@ Expression::comparison_tree(Translate_context* context, Operator op,
 	}
     }
 
+  if (left_tree == error_mark_node || right_tree == error_mark_node)
+    return error_mark_node;
+
   tree ret = fold_build2(code, boolean_type_node, left_tree, right_tree);
   if (CAN_HAVE_LOCATION_P(ret))
     SET_EXPR_LOCATION(ret, location);
@@ -7380,6 +7383,9 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 	      gcc_unreachable();
 	  }
 
+	if (val_tree == error_mark_node)
+	  return error_mark_node;
+
 	tree type_tree = Type::lookup_integer_type("int")->get_tree(gogo);
 	if (type_tree == TREE_TYPE(val_tree))
 	  return val_tree;
@@ -7506,7 +7512,8 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 					       void_type_node,
 					       TREE_TYPE(arg),
 					       arg);
-		append_to_statement_list(call, &stmt_list);
+		if (call != error_mark_node)
+		  append_to_statement_list(call, &stmt_list);
 	      }
 	  }
 
@@ -7665,6 +7672,8 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 	arg1_tree = save_expr(arg1_tree);
 	tree arg1_val = at->value_pointer_tree(gogo, arg1_tree);
 	tree arg1_len = at->length_tree(gogo, arg1_tree);
+	if (arg1_val == error_mark_node || arg1_len == error_mark_node)
+	  return error_mark_node;
 
 	Type* arg2_type = arg2->type();
 	tree arg2_val;
@@ -7682,6 +7691,8 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 	    arg2_val = String_type::bytes_tree(gogo, arg2_tree);
 	    arg2_len = String_type::length_tree(gogo, arg2_tree);
 	  }
+	if (arg2_val == error_mark_node || arg2_len == error_mark_node)
+	  return error_mark_node;
 
 	arg1_len = save_expr(arg1_len);
 	arg2_len = save_expr(arg2_len);
@@ -7694,6 +7705,8 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 
 	Type* element_type = at->element_type();
 	tree element_type_tree = element_type->get_tree(gogo);
+	if (element_type_tree == error_mark_node)
+	  return error_mark_node;
 	tree element_size = TYPE_SIZE_UNIT(element_type_tree);
 	tree bytecount = fold_convert_loc(location, TREE_TYPE(element_size),
 					  len);
