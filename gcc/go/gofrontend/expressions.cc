@@ -8977,6 +8977,8 @@ Array_index_expression::do_get_tree(Translate_context* context)
   gcc_assert(array_type != NULL);
 
   tree type_tree = array_type->get_tree(gogo);
+  if (type_tree == error_mark_node)
+    return error_mark_node;
 
   tree array_tree = this->array_->get_tree(context);
   if (array_tree == error_mark_node)
@@ -8985,6 +8987,8 @@ Array_index_expression::do_get_tree(Translate_context* context)
   if (array_type->length() == NULL && !DECL_P(array_tree))
     array_tree = save_expr(array_tree);
   tree length_tree = array_type->length_tree(gogo, array_tree);
+  if (length_tree == error_mark_node)
+    return error_mark_node;
   length_tree = save_expr(length_tree);
   tree length_type = TREE_TYPE(length_tree);
 
@@ -9040,6 +9044,8 @@ Array_index_expression::do_get_tree(Translate_context* context)
 	  // Open array.
 	  tree values = array_type->value_pointer_tree(gogo, array_tree);
 	  tree element_type_tree = array_type->element_type()->get_tree(gogo);
+	  if (element_type_tree == error_mark_node)
+	    return error_mark_node;
 	  tree element_size = TYPE_SIZE_UNIT(element_type_tree);
 	  tree offset = fold_build2_loc(loc, MULT_EXPR, sizetype,
 					start_tree, element_size);
@@ -9052,6 +9058,8 @@ Array_index_expression::do_get_tree(Translate_context* context)
   // Array slice.
 
   tree capacity_tree = array_type->capacity_tree(gogo, array_tree);
+  if (capacity_tree == error_mark_node)
+    return error_mark_node;
   capacity_tree = fold_convert_loc(loc, length_type, capacity_tree);
 
   tree end_tree;
@@ -9085,6 +9093,8 @@ Array_index_expression::do_get_tree(Translate_context* context)
     }
 
   tree element_type_tree = array_type->element_type()->get_tree(gogo);
+  if (element_type_tree == error_mark_node)
+    return error_mark_node;
   tree element_size = TYPE_SIZE_UNIT(element_type_tree);
 
   tree offset = fold_build2_loc(loc, MULT_EXPR, sizetype,
@@ -9092,6 +9102,8 @@ Array_index_expression::do_get_tree(Translate_context* context)
 				element_size);
 
   tree value_pointer = array_type->value_pointer_tree(gogo, array_tree);
+  if (value_pointer == error_mark_node)
+    return error_mark_node;
 
   value_pointer = fold_build2_loc(loc, POINTER_PLUS_EXPR,
 				  TREE_TYPE(value_pointer),
