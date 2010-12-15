@@ -2646,7 +2646,7 @@ vax-*-openbsd*)
 	;;
 xstormy16-*-elf)
 	# For historical reasons, the target files omit the 'x'.
-	tm_file="dbxelf.h elfos.h svr4.h newlib-stdint.h stormy16/stormy16.h"
+	tm_file="dbxelf.h elfos.h newlib-stdint.h stormy16/stormy16.h"
 	tm_p_file=stormy16/stormy16-protos.h
 	md_file=stormy16/stormy16.md
 	out_file=stormy16/stormy16.c
