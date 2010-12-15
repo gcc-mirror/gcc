@@ -2513,10 +2513,7 @@ Parse::function_lit()
 
   Function_type* type = this->signature(NULL, location);
   if (type == NULL)
-    {
-      this->block();
-      return Expression::make_error(location);
-    }
+    type = Type::make_function_type(NULL, NULL, NULL, location);
 
   // For a function literal, the next token must be a '{'.  If we
   // don't see that, then we may have a type expression.
