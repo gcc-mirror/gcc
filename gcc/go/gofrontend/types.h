@@ -508,6 +508,12 @@ class Type
   static bool
   are_identical(const Type* lhs, const Type* rhs, std::string* reason);
 
+  // Return true if two types are identical when it comes to putting
+  // them in a hash table.  This differs from are_identical only in
+  // how error types are handled.
+  static bool
+  are_identical_for_hash_table(const Type*, const Type*);
+
   // Return true if two types are compatible for use in a binary
   // operation, other than a shift, comparison, or channel send.  This
   // is an equivalence relation.
@@ -1104,7 +1110,7 @@ class Type_identical
  public:
   bool
   operator()(const Type* t1, const Type* t2) const
-  { return Type::are_identical(t1, t2, NULL); }
+  { return Type::are_identical_for_hash_table(t1, t2); }
 };
 
 // An identifier with a type.
