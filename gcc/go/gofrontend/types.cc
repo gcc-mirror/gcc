@@ -4421,8 +4421,13 @@ Array_type::do_get_init_tree(Gogo* gogo, tree type_tree, bool is_clear)
       tree value = this->element_type_->get_init_tree(gogo, is_clear);
       if (value == NULL)
 	return NULL;
+      if (value == error_mark_node)
+	return error_mark_node;
 
       tree length_tree = this->get_length_tree(gogo);
+      if (length_tree == error_mark_node)
+	return error_mark_node;
+
       length_tree = fold_convert(sizetype, length_tree);
       tree range = build2(RANGE_EXPR, sizetype, size_zero_node,
 			  fold_build2(MINUS_EXPR, sizetype,
