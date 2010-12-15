@@ -1,5 +1,9 @@
 2010-12-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	Revert last change.
+
+2010-12-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* Makefile.am (liblto_plugin_la_DEPENDENCIES): Define.
 	(liblto_plugin_la_LIBADD): Use -L../libiberty/pic -liberty.
 	(liblto_plugin_la_LDFLAGS): Use -L../libiberty -liberty.
