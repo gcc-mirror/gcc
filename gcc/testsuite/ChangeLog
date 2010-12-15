@@ -1,3 +1,8 @@
+2010-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/46815
+	* g++.dg/guality/pr46815.C: New test.
+
 2010-12-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/42083
