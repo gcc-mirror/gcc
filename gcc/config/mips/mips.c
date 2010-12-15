@@ -11149,8 +11149,6 @@ mips_preferred_simd_mode (enum machine_mode mode ATTRIBUTE_UNUSED)
 
 /* Implement TARGET_INIT_LIBFUNCS.  */
 
-#include "config/gofast.h"
-
 static void
 mips_init_libfuncs (void)
 {
@@ -11209,9 +11207,6 @@ mips_init_libfuncs (void)
 			    "__mips16_floatunsidf");
 	}
     }
-  else
-    /* Register the gofast functions if selected using --enable-gofast.  */
-    gofast_maybe_init_libfuncs ();
 
   /* The MIPS16 ISA does not have an encoding for "sync", so we rely
      on an external non-MIPS16 routine to implement __sync_synchronize.  */

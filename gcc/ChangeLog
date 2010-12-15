@@ -1,3 +1,23 @@
+2010-12-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/tm.texi.in (US_SOFTWARE_GOFAST): Don't document.
+	* doc/tm.texi: Regenerate.
+	* system.h (US_SOFTWARE_GOFAST): Poison.
+	* config.gcc (enable_gofast): Don't handle.
+	* config/gofast.h: Remove.
+	* config/mips/t-gofast: Remove.
+	* config/fp-bit.c (US_SOFTWARE_GOFAST): Don't handle.
+	* config/fp-bit.h (US_SOFTWARE_GOFAST): Don't handle.
+	* config/mips/elforion.h: Don't mention GOFAST in comment.
+	* config/mips/mips.c: Don't include gofast.h.
+	(mips_init_libfuncs): Don't call gofast_maybe_init_libfuncs.
+	* config/mips/t-sr71k (dp-bit.c, fp-bit.c): Don't define
+	US_SOFTWARE_GOFAST.
+	* config/sparc/sparc.c: Don't include gofast.h.
+	(sparc_init_libfuncs): Don't call gofast_maybe_init_libfuncs.
+	* config/spu/t-spu-elf (dp-bit.c, fp-bit.c): Don't undefine
+	US_SOFTWARE_GOFAST.
+
 2010-12-14  Jan Hubicka  <jh@suse.cz>
 
 	* tree.c (get_file_function_name): Avoid using random seed on GLOBAL_sub_I
