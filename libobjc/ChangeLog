@@ -1,3 +1,8 @@
+2010-12-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* sendmsg.c: Reindented some code and tidied up comments.  No
+	actual code changes.
+	
 2010-12-14  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/Object.h: Moved all the methods, with the exception of
