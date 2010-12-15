@@ -1,5 +1,10 @@
 2010-12-14  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR tree-optimization/46845
+	* gcc.dg/graphite/id-pr46845.c: New.
+
+2010-12-14  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR tree-optimization/46928
 	* gcc.dg/tree-ssa/ldist-17.c: New.
 

@@ -801,13 +801,15 @@ scalar_evolution_in_region (sese region, loop_p loop, tree t)
   struct loop *def_loop;
   basic_block before = block_before_sese (region);
 
+  /* SCOP parameters.  */
+  if (TREE_CODE (t) == SSA_NAME
+      && !defined_in_sese_p (t, region))
+    return t;
+
   if (TREE_CODE (t) != SSA_NAME
       || loop_in_sese_p (loop, region))
     return instantiate_scev (before, loop,
 			     analyze_scalar_evolution (loop, t));
-
-  if (!defined_in_sese_p (t, region))
-    return t;
 
   def = SSA_NAME_DEF_STMT (t);
   def_loop = loop_containing_stmt (def);
