@@ -4006,6 +4006,7 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
   tree or_expr;
   tree thencase;
   tree elsecase;
+  tree cond;
   tree var;
   stmtblock_t thenblock;
   stmtblock_t elseblock;
@@ -4091,17 +4092,15 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
 			     fold_convert (gfc_array_index_type, 
 					   TYPE_MAX_VALUE (gfc_array_index_type)),
 					   size);
-      tmp = fold_build3_loc 
-	(input_location, COND_EXPR, integer_type_node,
-	 gfc_unlikely (fold_build2_loc (input_location, LT_EXPR, 
-					boolean_type_node, tmp, stride)),
-	 integer_one_node, integer_zero_node);
-      tmp = fold_build3_loc 
-	(input_location, COND_EXPR, integer_type_node,
-	 gfc_unlikely (fold_build2_loc (input_location, EQ_EXPR,
-					boolean_type_node, size, 
-					build_zero_cst (gfc_array_index_type))),
-	 integer_zero_node, tmp);
+      cond = gfc_unlikely (fold_build2_loc (input_location, LT_EXPR,
+					    boolean_type_node, tmp, stride));
+      tmp = fold_build3_loc (input_location, COND_EXPR, integer_type_node, cond,
+			     integer_one_node, integer_zero_node);
+      cond = gfc_unlikely (fold_build2_loc (input_location, EQ_EXPR,
+					    boolean_type_node, size,
+					    gfc_index_zero_node));
+      tmp = fold_build3_loc (input_location, COND_EXPR, integer_type_node, cond,
+			     integer_zero_node, tmp);
       tmp = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
 			     *overflow, tmp);
       *overflow = gfc_evaluate_now (tmp, pblock);
@@ -4154,31 +4153,29 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
      size of an element to get the total size.  */
   tmp = TYPE_SIZE_UNIT (gfc_get_element_type (type));
   /* Convert to size_t.  */
-  element_size = fold_convert (sizetype, tmp);
-  stride = fold_convert (sizetype, stride);
+  element_size = fold_convert (size_type_node, tmp);
+  stride = fold_convert (size_type_node, stride);
 
   /* First check for overflow. Since an array of type character can
      have zero element_size, we must check for that before
      dividing.  */
   tmp = fold_build2_loc (input_location, TRUNC_DIV_EXPR, 
-			 sizetype, 
-			 TYPE_MAX_VALUE (sizetype), element_size);
-  tmp = fold_build3_loc (input_location, COND_EXPR, integer_type_node,
-			 gfc_unlikely (fold_build2_loc (input_location, LT_EXPR, 
-							boolean_type_node, tmp, 
-							stride)),
+			 size_type_node,
+			 TYPE_MAX_VALUE (size_type_node), element_size);
+  cond = gfc_unlikely (fold_build2_loc (input_location, LT_EXPR,
+					boolean_type_node, tmp, stride));
+  tmp = fold_build3_loc (input_location, COND_EXPR, integer_type_node, cond,
 			 integer_one_node, integer_zero_node);
-  tmp = fold_build3_loc (input_location, COND_EXPR, integer_type_node,
-			 gfc_unlikely (fold_build2_loc (input_location, EQ_EXPR,
-							boolean_type_node, 
-							element_size, 
-							size_zero_node)),
+  cond = gfc_unlikely (fold_build2_loc (input_location, EQ_EXPR,
+					boolean_type_node, element_size,
+					build_int_cst (size_type_node, 0)));
+  tmp = fold_build3_loc (input_location, COND_EXPR, integer_type_node, cond,
 			 integer_zero_node, tmp);
   tmp = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
 			 *overflow, tmp);
   *overflow = gfc_evaluate_now (tmp, pblock);
 
-  size = fold_build2_loc (input_location, MULT_EXPR, sizetype,
+  size = fold_build2_loc (input_location, MULT_EXPR, size_type_node,
 			  stride, element_size);
 
   if (poffset != NULL)
@@ -4190,11 +4187,11 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
   if (integer_zerop (or_expr))
     return size;
   if (integer_onep (or_expr))
-    return gfc_index_zero_node;
+    return build_int_cst (size_type_node, 0);
 
   var = gfc_create_var (TREE_TYPE (size), "size");
   gfc_start_block (&thenblock);
-  gfc_add_modify (&thenblock, var, size_zero_node);
+  gfc_add_modify (&thenblock, var, build_int_cst (size_type_node, 0));
   thencase = gfc_finish_block (&thenblock);
 
   gfc_start_block (&elseblock);
