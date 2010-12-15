@@ -1,5 +1,6 @@
 /* { dg-do link } */
 /* { dg-require-effective-target lto } */
+/* { dg-require-linker-plugin "" } */
 /* { dg-options "-O1 -flto -fuse-linker-plugin" } */
 
 #define LABEL3(pfx, x) # pfx x

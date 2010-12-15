@@ -1,3 +1,8 @@
+2010-12-15  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR testsuite/46938
+	* gcc.dg/pr43157.c: Add dg-require-linker-plugin  directive.
+
 2010-12-14  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/46845
