@@ -1,5 +1,6 @@
 /* Header file for fp-bit.c.  */
-/* Copyright (C) 2000, 2002, 2003, 2006, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2000, 2002, 2003, 2006, 2009, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -217,101 +218,67 @@ typedef unsigned int UTItype __attribute__ ((mode (TI)));
 	typedef DItype intfrac;
 #endif /* FLOAT */
 
-#ifdef US_SOFTWARE_GOFAST
-#	ifdef TFLOAT
-#		error "GOFAST TFmode not supported"
-#	elif defined FLOAT
-#		define add 		fpadd
-#		define sub 		fpsub
-#		define multiply 	fpmul
-#		define divide 		fpdiv
-#		define compare 		fpcmp
-#		define _unord_f2	__unordsf2
-#		define usi_to_float 	__floatunsisf
-#		define si_to_float 	sitofp
-#		define float_to_si 	fptosi
-#		define float_to_usi 	fptoui
-#		define negate 		__negsf2
-#		define sf_to_df		fptodp
-#		define sf_to_tf		__extendsftf2
-#	else
-#		define add 		dpadd
-#		define sub 		dpsub
-#		define multiply 	dpmul
-#		define divide 		dpdiv
-#		define compare 		dpcmp
-#		define _unord_f2	__unorddf2
-#		define usi_to_float 	__floatunsidf
-#		define si_to_float 	litodp
-#		define float_to_si 	dptoli
-#		define float_to_usi 	dptoul
-#		define negate 		__negdf2
-#		define df_to_sf 	dptofp
-#		define df_to_tf 	__extenddftf2
-#	endif /* FLOAT */
+#ifdef TFLOAT
+#	define add 		__addtf3
+#	define sub 		__subtf3
+#	define multiply 	__multf3
+#	define divide 		__divtf3
+#	define compare 		__cmptf2
+#	define _eq_f2 		__eqtf2
+#	define _ne_f2 		__netf2
+#	define _gt_f2 		__gttf2
+#	define _ge_f2 		__getf2
+#	define _lt_f2 		__lttf2
+#	define _le_f2 		__letf2
+#	define _unord_f2	__unordtf2
+#	define usi_to_float 	__floatunsitf
+#	define si_to_float 	__floatsitf
+#	define float_to_si 	__fixtfsi
+#	define float_to_usi 	__fixunstfsi
+#	define negate 		__negtf2
+#	define tf_to_sf		__trunctfsf2
+#	define tf_to_df		__trunctfdf2
+#elif defined FLOAT
+#	define add 		__addsf3
+#	define sub 		__subsf3
+#	define multiply 	__mulsf3
+#	define divide 		__divsf3
+#	define compare 		__cmpsf2
+#	define _eq_f2 		__eqsf2
+#	define _ne_f2 		__nesf2
+#	define _gt_f2 		__gtsf2
+#	define _ge_f2 		__gesf2
+#	define _lt_f2 		__ltsf2
+#	define _le_f2 		__lesf2
+#	define _unord_f2	__unordsf2
+#	define usi_to_float 	__floatunsisf
+#	define si_to_float 	__floatsisf
+#	define float_to_si 	__fixsfsi
+#	define float_to_usi 	__fixunssfsi
+#	define negate 		__negsf2
+#	define sf_to_df		__extendsfdf2
+#	define sf_to_tf		__extendsftf2
 #else
-#	ifdef TFLOAT
-#		define add 		__addtf3
-#		define sub 		__subtf3
-#		define multiply 	__multf3
-#		define divide 		__divtf3
-#		define compare 		__cmptf2
-#		define _eq_f2 		__eqtf2
-#		define _ne_f2 		__netf2
-#		define _gt_f2 		__gttf2
-#		define _ge_f2 		__getf2
-#		define _lt_f2 		__lttf2
-#		define _le_f2 		__letf2
-#		define _unord_f2	__unordtf2
-#		define usi_to_float 	__floatunsitf
-#		define si_to_float 	__floatsitf
-#		define float_to_si 	__fixtfsi
-#		define float_to_usi 	__fixunstfsi
-#		define negate 		__negtf2
-#		define tf_to_sf		__trunctfsf2
-#		define tf_to_df		__trunctfdf2
-#	elif defined FLOAT
-#		define add 		__addsf3
-#		define sub 		__subsf3
-#		define multiply 	__mulsf3
-#		define divide 		__divsf3
-#		define compare 		__cmpsf2
-#		define _eq_f2 		__eqsf2
-#		define _ne_f2 		__nesf2
-#		define _gt_f2 		__gtsf2
-#		define _ge_f2 		__gesf2
-#		define _lt_f2 		__ltsf2
-#		define _le_f2 		__lesf2
-#		define _unord_f2	__unordsf2
-#		define usi_to_float 	__floatunsisf
-#		define si_to_float 	__floatsisf
-#		define float_to_si 	__fixsfsi
-#		define float_to_usi 	__fixunssfsi
-#		define negate 		__negsf2
-#		define sf_to_df		__extendsfdf2
-#		define sf_to_tf		__extendsftf2
-#	else
-#		define add 		__adddf3
-#		define sub 		__subdf3
-#		define multiply 	__muldf3
-#		define divide 		__divdf3
-#		define compare 		__cmpdf2
-#		define _eq_f2 		__eqdf2
-#		define _ne_f2 		__nedf2
-#		define _gt_f2 		__gtdf2
-#		define _ge_f2 		__gedf2
-#		define _lt_f2 		__ltdf2
-#		define _le_f2 		__ledf2
-#		define _unord_f2	__unorddf2
-#		define usi_to_float 	__floatunsidf
-#		define si_to_float 	__floatsidf
-#		define float_to_si 	__fixdfsi
-#		define float_to_usi 	__fixunsdfsi
-#		define negate 		__negdf2
-#		define df_to_sf		__truncdfsf2
-#		define df_to_tf		__extenddftf2
-#	endif /* FLOAT */
-#endif /* US_SOFTWARE_GOFAST */
+#	define add 		__adddf3
+#	define sub 		__subdf3
+#	define multiply 	__muldf3
+#	define divide 		__divdf3
+#	define compare 		__cmpdf2
+#	define _eq_f2 		__eqdf2
+#	define _ne_f2 		__nedf2
+#	define _gt_f2 		__gtdf2
+#	define _ge_f2 		__gedf2
+#	define _lt_f2 		__ltdf2
+#	define _le_f2 		__ledf2
+#	define _unord_f2	__unorddf2
+#	define usi_to_float 	__floatunsidf
+#	define si_to_float 	__floatsidf
+#	define float_to_si 	__fixdfsi
+#	define float_to_usi 	__fixunsdfsi
+#	define negate 		__negdf2
+#	define df_to_sf		__truncdfsf2
+#	define df_to_tf		__extenddftf2
+#endif /* FLOAT */
 
 #ifndef INLINE
 #define INLINE __inline__
@@ -437,8 +404,6 @@ extern int __fpcmp_parts (fp_number_type *, fp_number_type *);
 extern CMPtype compare (FLO_type, FLO_type);
 #endif
 
-#ifndef US_SOFTWARE_GOFAST
-
 #if defined(L_eq_sf) || defined(L_eq_df) || defined(L_eq_tf)
 extern CMPtype _eq_f2 (FLO_type, FLO_type);
 #endif
@@ -467,8 +432,6 @@ extern CMPtype _le_f2 (FLO_type, FLO_type);
 extern CMPtype _unord_f2 (FLO_type, FLO_type);
 #endif
 
-#endif /* ! US_SOFTWARE_GOFAST */
-
 #if defined(L_si_to_sf) || defined(L_si_to_df) || defined(L_si_to_tf)
 extern FLO_type si_to_float (SItype);
 #endif
@@ -477,10 +440,8 @@ extern FLO_type si_to_float (SItype);
 extern SItype float_to_si (FLO_type);
 #endif
 
-#if defined(L_sf_to_usi) || defined(L_df_to_usi) || defined(L_tf_to_usi)
-#if defined(US_SOFTWARE_GOFAST) || defined(L_tf_to_usi)
+#if defined(L_tf_to_usi)
 extern USItype float_to_usi (FLO_type);
-#endif
 #endif
 
 #if defined(L_usi_to_sf) || defined(L_usi_to_df) || defined(L_usi_to_tf)

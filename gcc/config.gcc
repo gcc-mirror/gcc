@@ -3562,13 +3562,7 @@ case ${target} in
 				tm_defines="TARGET_ENDIAN_DEFAULT=0 $tm_defines"
 				;;
 		esac
-		if test "x$enable_gofast" = xyes
-		then
-			tm_defines="US_SOFTWARE_GOFAST $tm_defines"
-			tmake_file="mips/t-gofast $tmake_file"
-		else
-			tmake_file="mips/t-mips $tmake_file"
-		fi
+		tmake_file="mips/t-mips $tmake_file"
 		;;
 
 	powerpc*-*-* | rs6000-*-*)

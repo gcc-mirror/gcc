@@ -8466,7 +8466,6 @@ sparc_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 }
 
 /* libfunc renaming.  */
-#include "config/gofast.h"
 
 static void
 sparc_init_libfuncs (void)
@@ -8560,8 +8559,6 @@ sparc_init_libfuncs (void)
 	  set_conv_libfunc (ufix_optab, DImode, DFmode, "__dtoul");
 	}
     }
-
-  gofast_maybe_init_libfuncs ();
 }
 
 #define def_builtin(NAME, CODE, TYPE) \

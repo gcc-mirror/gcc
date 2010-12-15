@@ -5250,26 +5250,6 @@ If this macro evaluates to @code{false} the comparison functions return
 in @file{libgcc.a}, you do not need to define this macro.
 @end defmac
 
-@cindex US Software GOFAST, floating point emulation library
-@cindex floating point emulation library, US Software GOFAST
-@cindex GOFAST, floating point emulation library
-@findex gofast_maybe_init_libfuncs
-@defmac US_SOFTWARE_GOFAST
-Define this macro if your system C library uses the US Software GOFAST
-library to provide floating point emulation.
-
-In addition to defining this macro, your architecture must set
-@code{TARGET_INIT_LIBFUNCS} to @code{gofast_maybe_init_libfuncs}, or
-else call that function from its version of that hook.  It is defined
-in @file{config/gofast.h}, which must be included by your
-architecture's @file{@var{cpu}.c} file.  See @file{sparc/sparc.c} for
-an example.
-
-If this macro is defined, the
-@code{TARGET_FLOAT_LIB_COMPARE_RETURNS_BOOL} target hook must return
-false for @code{SFmode} and @code{DFmode} comparisons.
-@end defmac
-
 @cindex @code{EDOM}, implicit usage
 @findex matherr
 @defmac TARGET_EDOM

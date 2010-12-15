@@ -1,6 +1,5 @@
-/* Definitions of target machine for GNU compiler.  MIPS ORION version with
-   GOFAST floating point library.
-   Copyright (C) 1994, 1998, 2007 Free Software Foundation, Inc.
+/* Definitions of target machine for GNU compiler.  MIPS ORION version.
+   Copyright (C) 1994, 1998, 2007, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
