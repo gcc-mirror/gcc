@@ -761,7 +761,7 @@ alpha*-dec-*vms*)
 	extra_options="${extra_options} vms/vms.opt"
 	;;
 arc-*-elf*)
-	tm_file="dbxelf.h elfos.h svr4.h newlib-stdint.h ${tm_file}"
+	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
 	extra_parts="crtinit.o crtfini.o"
 	;;
 arm-wrs-vxworks)
