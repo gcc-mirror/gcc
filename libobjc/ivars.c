@@ -296,7 +296,7 @@ class_addIvar (Class class_, const char * ivar_name, size_t size,
     else
       ivar->ivar_offset = class_->instance_size - misalignment + alignment;
     
-    class_->instance_size = ivar->ivar_offset + objc_sizeof_type (ivar->ivar_type);
+    class_->instance_size = ivar->ivar_offset + size;
   }
   
   return YES;

@@ -1,5 +1,11 @@
 2010-12-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* ivars.c (class_addIvar): Use the 'size' argument instead of
+	trying to calculate it using objc_sizeof_type().
+	* objc/runtime.h (class_addIvar): Updated comments.
+	
+2010-12-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* sendmsg.c: Reindented some code and tidied up comments.  No
 	actual code changes.
 	
