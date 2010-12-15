@@ -1,3 +1,8 @@
+2010-12-14  Jan Hubicka  <jh@suse.cz>
+
+	* tree.c (get_file_function_name): Avoid using random seed on GLOBAL_sub_I
+	and GLOBAL_sub_D.
+
 2010-12-15  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/46053
