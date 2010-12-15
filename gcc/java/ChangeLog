@@ -1,3 +1,8 @@
+2010-12-15  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* decl.c (java_init_decl_processing): Initialise integer_three_node.
+	* lang.c (put_decl_node): Handle nested function decls.
+
 2010-12-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* jcf-parse.c: Don't include assert.h.
