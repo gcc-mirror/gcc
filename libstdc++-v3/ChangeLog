@@ -1,3 +1,14 @@
+2010-12-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/ext/vstring.h (operator+(__versa_string<>&&,
+	const __versa_string<>&), operator+(const __versa_string<>&,
+	__versa_string<>&&), operator+(__versa_string<>&&,
+	__versa_string<>&&), operator+(const _CharT*,
+	__versa_string<>&&), operator+(_CharT, __versa_string<>&&),
+	operator+(__versa_string<>&&, const _CharT*),
+	operator+(__versa_string<>&&, _CharT)): Add.
+	* testsuite/ext/vstring/operators/1.cc: New.
+
 2010-12-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/46951
