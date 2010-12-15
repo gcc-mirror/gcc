@@ -86,6 +86,9 @@ along with GCC; see the file COPYING3.  If not see
 #define ENDFILE_SPEC \
   "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
 
+#undef LIB_SPEC
+#define LIB_SPEC "-lc"
+
 /* ASM_OUTPUT_CASE_LABEL is defined in elfos.h.  With it,
    a redundant .align was generated.  */
 #undef  ASM_OUTPUT_CASE_LABEL
