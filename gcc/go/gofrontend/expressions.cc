@@ -6722,7 +6722,7 @@ Builtin_call_expression::do_integer_constant_value(bool iota_is_constant,
       if (arg == NULL)
 	return false;
       Type* arg_type = arg->type();
-      if (arg_type->is_error_type())
+      if (arg_type->is_error_type() || arg_type->is_undefined())
 	return false;
       if (arg_type->is_abstract())
 	return false;
