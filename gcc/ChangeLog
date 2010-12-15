@@ -1,5 +1,11 @@
 2010-12-14  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR tree-optimization/46928
+	* tree-data-ref.c (analyze_overlapping_iterations): Handle "A[p] == A[p]"
+	in data dependence analysis with p a parameter of the loop.
+
+2010-12-14  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR tree-optimization/45948
 	* tree-loop-distribution.c (ssa_name_has_uses_outside_loop_p): New.
 	(stmt_has_scalar_dependences_outside_loop): New.

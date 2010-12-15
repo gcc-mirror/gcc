@@ -2653,7 +2653,8 @@ analyze_overlapping_iterations (tree chrec_a,
   /* If they are the same chrec, and are affine, they overlap
      on every iteration.  */
   else if (eq_evolutions_p (chrec_a, chrec_b)
-	   && evolution_function_is_affine_multivariate_p (chrec_a, lnn))
+	   && (evolution_function_is_affine_multivariate_p (chrec_a, lnn)
+	       || operand_equal_p (chrec_a, chrec_b, 0)))
     {
       dependence_stats.num_same_subscript_function++;
       *overlap_iterations_a = conflict_fn (1, affine_fn_cst (integer_zero_node));
@@ -2662,7 +2663,7 @@ analyze_overlapping_iterations (tree chrec_a,
     }
 
   /* If they aren't the same, and aren't affine, we can't do anything
-     yet. */
+     yet.  */
   else if ((chrec_contains_symbols (chrec_a)
 	    || chrec_contains_symbols (chrec_b))
 	   && (!evolution_function_is_affine_multivariate_p (chrec_a, lnn)
