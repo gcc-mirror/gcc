@@ -3375,6 +3375,7 @@ Struct_type::do_verify()
   Struct_field_list* fields = this->fields_;
   if (fields == NULL)
     return true;
+  bool ret = true;
   for (Struct_field_list::iterator p = fields->begin();
        p != fields->end();
        ++p)
@@ -3384,7 +3385,7 @@ Struct_type::do_verify()
 	{
 	  error_at(p->location(), "struct field type is incomplete");
 	  p->set_type(Type::make_error_type());
-	  return false;
+	  ret = false;
 	}
       else if (p->is_anonymous())
 	{
@@ -3396,7 +3397,7 @@ Struct_type::do_verify()
 	    }
 	}
     }
-  return true;
+  return ret;
 }
 
 // Whether this contains a pointer.
@@ -3758,13 +3759,16 @@ Struct_type::do_get_init_tree(Gogo* gogo, tree type_tree, bool is_clear)
   bool any_fields_set = false;
   VEC(constructor_elt,gc)* init = VEC_alloc(constructor_elt, gc,
 					    this->fields_->size());
-  Struct_field_list::const_iterator p = this->fields_->begin();
-  for (tree field = TYPE_FIELDS(type_tree);
-       field != NULL_TREE;
-       field = DECL_CHAIN(field), ++p)
+
+  tree field = TYPE_FIELDS(type_tree);
+  for (Struct_field_list::const_iterator p = this->fields_->begin();
+       p != this->fields_->end();
+       ++p, field = DECL_CHAIN(field))
     {
-      gcc_assert(p != this->fields_->end());
       tree value = p->type()->get_init_tree(gogo, is_clear);
+      if (value == error_mark_node)
+	return error_mark_node;
+      gcc_assert(field != NULL_TREE);
       if (value != NULL)
 	{
 	  constructor_elt* elt = VEC_quick_push(constructor_elt, init, NULL);
@@ -3775,7 +3779,7 @@ Struct_type::do_get_init_tree(Gogo* gogo, tree type_tree, bool is_clear)
 	    is_constant = false;
 	}
     }
-  gcc_assert(p == this->fields_->end());
+  gcc_assert(field == NULL_TREE);
 
   if (!any_fields_set)
     {
@@ -6891,7 +6895,9 @@ Named_type::do_get_tree(Gogo* gogo)
 	return this->named_tree_;
       t = make_node(RECORD_TYPE);
       this->named_tree_ = t;
-      this->type_->struct_type()->fill_in_tree(gogo, t);
+      t = this->type_->struct_type()->fill_in_tree(gogo, t);
+      if (t == error_mark_node)
+	return error_mark_node;
       break;
 
     case TYPE_ARRAY:
@@ -7728,6 +7734,9 @@ Type::find_field_or_method(const Type* type,
       if (!pf->is_anonymous())
 	continue;
 
+      if (pf->type()->is_error_type() || pf->type()->is_undefined())
+	continue;
+
       Named_type* fnt = pf->type()->deref()->named_type();
       gcc_assert(fnt != NULL);
 
@@ -7845,7 +7854,8 @@ Type::is_unexported_field_or_method(Gogo* gogo, const Type* type,
        pf != fields->end();
        ++pf)
     {
-      if (pf->is_anonymous())
+      if (pf->is_anonymous()
+	  && (!pf->type()->is_error_type() && !pf->type()->is_undefined()))
 	{
 	  Named_type* subtype = pf->type()->deref()->named_type();
 	  gcc_assert(subtype != NULL);
