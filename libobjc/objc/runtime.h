@@ -319,11 +319,10 @@ objc_EXPORT Ivar * class_copyIvarList (Class class_, unsigned int *numberOfRetur
    instance variables to classes already registered with the runtime.
    'size' is the size of the instance variable, 'alignment' the
    alignment, and 'type' the type encoding of the variable type.  You
-   can use objc_sizeof_type() (or sizeof()), objc_alignof_type() (or
-   __alignof__()) and @encode() to determine the right 'size',
-   'alignment' and 'type' for your instance variable.  For example, to
-   add an instance variable name "my_variable" and of type 'id', you
-   can use:
+   can use sizeof(), __alignof__() and @encode() to determine the
+   right 'size', 'alignment' and 'type' for your instance variable.
+   For example, to add an instance variable name "my_variable" and of
+   type 'id', you can use:
 
    class_addIvar (class, "my_variable", sizeof (id), __alignof__ (id), 
                   @encode (id));
