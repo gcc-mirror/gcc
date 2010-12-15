@@ -16,9 +16,9 @@ struct S {
     constexpr int twice();
     constexpr int t();		// { dg-message "used but never defined" }
 private:
-    static constexpr int val;  // constexpr variable
+    static constexpr int val = 7;  // constexpr variable
 };
-constexpr int S::val = 7;
+
 constexpr int S::twice() { return val + val; }
 constexpr S s = { };
 int x1 = s.twice();     // ok

@@ -3,10 +3,10 @@
 template <class T>
 struct A
 {
-  constexpr static T t;
+  constexpr static T t = T();	// { dg-error "literal" }
 };
 template <class T>
-constexpr T A<T>::t = T();	// { dg-error "not literal" }
+constexpr T A<T>::t;
 
 struct B
 {
