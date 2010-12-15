@@ -4201,6 +4201,8 @@ Traverse::~Traverse()
 bool
 Traverse::remember_type(const Type* type)
 {
+  if (type->is_error_type())
+    return true;
   gcc_assert((this->traverse_mask() & traverse_types) != 0
 	     || (this->traverse_mask() & traverse_expressions) != 0);
   // We only have to remember named types, as they are the only ones
