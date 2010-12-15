@@ -36,7 +36,7 @@ gfc_getmem (size_t n)
 
   p = xmalloc (n);
   if (p == NULL)
-    gfc_fatal_error ("Out of memory-- malloc() failed");
+    gfc_fatal_error ("Allocation would exceed memory limit -- malloc() failed");
   memset (p, 0, n);
   return p;
 }
