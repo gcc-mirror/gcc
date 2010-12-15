@@ -1,5 +1,12 @@
 2010-12-15  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	* trans.c (gfc_allocate_with_status): Better error message for
+	malloc() failure.
+	(gfc_call_realloc): Likewise.
+	* misc.c (gfc_getmem): Likewise.
+
+2010-12-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	PR fortran/28105
 	* trans.c (gfc_call_malloc): Improve comment.
 	(gfc_allocate_with_status): Remove size < 0 check.

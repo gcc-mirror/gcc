@@ -590,7 +590,7 @@ gfc_call_malloc (stmtblock_t * block, tree type, tree size)
         if (stat)
           *stat = LIBERROR_ALLOCATION;
         else
-	  runtime_error ("Out of memory");
+	  runtime_error ("Allocation would exceed memory limit");
       }
       return newmem;
     }  */
@@ -636,7 +636,7 @@ gfc_allocate_with_status (stmtblock_t * block, tree size, tree status)
 							   1)))));
 
   msg = gfc_build_addr_expr (pchar_type_node, gfc_build_localized_cstring_const
-						("Out of memory"));
+			     ("Allocation would exceed memory limit"));
   tmp = build_call_expr_loc (input_location,
 			 gfor_fndecl_os_error, 1, msg);
 
@@ -1003,7 +1003,7 @@ internal_realloc (void *mem, size_t size)
 {
   res = realloc (mem, size);
   if (!res && size != 0)
-    _gfortran_os_error ("Out of memory");
+    _gfortran_os_error ("Allocation would exceed memory limit");
 
   if (size == 0)
     return NULL;
@@ -1036,7 +1036,7 @@ gfc_call_realloc (stmtblock_t * block, tree mem, tree size)
   null_result = fold_build2_loc (input_location, TRUTH_AND_EXPR, boolean_type_node,
 				 null_result, nonzero);
   msg = gfc_build_addr_expr (pchar_type_node, gfc_build_localized_cstring_const
-						("Out of memory"));
+			     ("Allocation would exceed memory limit"));
   tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
 			 null_result,
 			 build_call_expr_loc (input_location,
