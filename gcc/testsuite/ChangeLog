@@ -1,3 +1,8 @@
+2010-12-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/42083
+	* g++.dg/cpp0x/lambda/lambda-ice2.C: New.
+
 2010-12-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gfortran.dg/debug/pr46756.f: Correct PR number.
