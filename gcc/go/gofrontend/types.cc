@@ -791,6 +791,9 @@ Type::get_tree(Gogo* gogo)
       || this->named_type() != NULL)
     return this->get_tree_without_hash(gogo);
 
+  if (this->is_error_type())
+    return error_mark_node;
+
   // To avoid confusing GIMPLE, we need to translate all identical Go
   // types to the same GIMPLE type.  We use a hash table to do that.
   // There is no need to use the hash table for named types, as named
@@ -806,6 +809,14 @@ Type::get_tree(Gogo* gogo)
     }
 
   tree t = this->get_tree_without_hash(gogo);
+
+  // Don't store errors in the hash table.  This type might be a
+  // pointer to an error type or something like that.  Since error
+  // types are identical to everything else, that could cause us to
+  // return error_mark_node for pointers to any type, which will then
+  // confuse us later.
+  if (t == error_mark_node)
+    return error_mark_node;
 
   if (ins.first->second == NULL_TREE)
     ins.first->second = t;
