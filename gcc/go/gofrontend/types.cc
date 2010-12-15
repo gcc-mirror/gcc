@@ -393,6 +393,38 @@ Type::are_identical(const Type* t1, const Type* t2, std::string* reason)
     }
 }
 
+// Return true if two types are identical when it comes to storing
+// them in a hash table.  This differs from Type::are_identical with
+// regard to how we handle error types.  We want to treat error types
+// as identical to other types when it comes to reporting
+// compatibility errors, but we want to treat them as different when
+// it comes to storing them in a hash table.
+
+bool
+Type::are_identical_for_hash_table(const Type* t1, const Type *t2)
+{
+  if (t1 == NULL || t2 == NULL)
+    return t1 == t2;
+
+  t1 = t1->forwarded();
+  t2 = t2->forwarded();
+
+  if (t1 == t2)
+    return true;
+
+  // Undefined forward declarations are only equal to themselves.
+  if (t1->forward_declaration_type() != NULL
+      || t2->forward_declaration_type() != NULL)
+    return false;
+
+  // The error type is only equal to the error type.
+  if (t1->is_error_type() || t2->is_error_type())
+    return t1->is_error_type() && t2->is_error_type();
+
+  // Otherwise we can use the usual identity check.
+  return Type::are_identical(t1, t2, NULL);
+}
+
 // Return true if it's OK to have a binary operation with types LHS
 // and RHS.  This is not used for shifts or comparisons.
 
@@ -809,14 +841,6 @@ Type::get_tree(Gogo* gogo)
     }
 
   tree t = this->get_tree_without_hash(gogo);
-
-  // Don't store errors in the hash table.  This type might be a
-  // pointer to an error type or something like that.  Since error
-  // types are identical to everything else, that could cause us to
-  // return error_mark_node for pointers to any type, which will then
-  // confuse us later.
-  if (t == error_mark_node)
-    return error_mark_node;
 
   if (ins.first->second == NULL_TREE)
     ins.first->second = t;
