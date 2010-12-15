@@ -1,3 +1,10 @@
+2010-12-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/28105
+	* trans.c (gfc_call_malloc): Improve comment.
+	(gfc_allocate_with_status): Remove size < 0 check.
+	(gfc_call_realloc): Likewise.
+
 2010-12-14  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46937
