@@ -91,25 +91,40 @@ objc_EXPORT IMP objc_msg_lookup (id receiver, SEL op);
 /* Structure used when a message is send to a class's super class.
    The compiler generates one of these structures and passes it to
    objc_msg_lookup_super() when a [super method] call is compiled.  */
+
+/* In the traditional API, the super class field is called 'class' in
+   Objective-C and 'super_class' in Objective-C++.  In the new API
+   (objc/runtime.h) it is always called 'super_class'.  We detect the
+   "traditional API" by the fact that the objc/objc-api.h header
+   include guards are defined, which means objc/objc-api.h has been
+   included.  This works because objc/message.h does not exist in the
+   Traditional API and is only read because objc-api.h itself includes
+   it.  */
+#ifdef __objc_api_INCLUDE_GNU
+/* Traditional API.  */
 typedef struct objc_super
 {
   id    self;       /* Id of the object sending the message. */
-
-  /* The new version of the API will always use 'super_class'.  TODO:
-     Use class only if objc-api.h is included, otherwise always use
-     super_class.  */
 #ifdef __cplusplus
   Class super_class;
 #else
   Class class;        /* Object's super class. */
 #endif
 } Super, *Super_t;
+#else
+/* Modern API.  */
+struct objc_super
+{
+  id    self;        /* The receiver of the message.  */
+  Class super_class; /* The superclass of the receiver.  */
+};
+#endif
 
 /* This is used by the compiler instead of objc_msg_lookup () when
    compiling a call to 'super', such as [super method].  This requires
    sending a message to super->self, but looking up the method as if
    super->self was in class super->super_class.  */
-objc_EXPORT IMP objc_msg_lookup_super (Super_t super, SEL sel);
+objc_EXPORT IMP objc_msg_lookup_super (struct objc_super *super, SEL sel);
 
 /* Hooks for method forwarding.  They make it easy to substitute the
    built-in forwarding with one based on a library, such as ffi, that

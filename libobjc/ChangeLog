@@ -1,5 +1,15 @@
 2010-12-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc/message.h (objc_super): When using the modern API, do not
+	define Super and Super_t, and always use 'super_class' for the
+	super class field.	
+	(objc_msg_lookup_super): Updated prototype to use 'struct
+	objc_super *' instead of 'Super_t'.
+	* sendmsg.c (objc_msg_lookup_super): Updated prototype to use
+	'struct objc_super *' instead of 'Super_t'.
+
+2010-12-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc/message.h: Update comments, reindented code and moved
 	deprecated types and functions at the end of the file.  No code
 	changes.

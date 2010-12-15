@@ -445,7 +445,7 @@ objc_msg_lookup (id receiver, SEL op)
 }
 
 IMP
-objc_msg_lookup_super (Super_t super, SEL sel)
+objc_msg_lookup_super (struct objc_super *super, SEL sel)
 {
   if (super->self)
     return get_imp (super->class, sel);
