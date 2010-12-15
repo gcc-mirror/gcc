@@ -301,16 +301,19 @@ Type::do_traverse(Traverse*)
   return TRAVERSE_CONTINUE;
 }
 
-// Return whether two types are identical.  If REASON is not NULL,
-// optionally set *REASON to the reason the types are not identical.
+// Return whether two types are identical.  If ERRORS_ARE_IDENTICAL,
+// then return true for all erroneous types; this is used to avoid
+// cascading errors.  If REASON is not NULL, optionally set *REASON to
+// the reason the types are not identical.
 
 bool
-Type::are_identical(const Type* t1, const Type* t2, std::string* reason)
+Type::are_identical(const Type* t1, const Type* t2, bool errors_are_identical,
+		    std::string* reason)
 {
   if (t1 == NULL || t2 == NULL)
     {
-      // Something is wrong.  Return true to avoid cascading errors.
-      return true;
+      // Something is wrong.
+      return errors_are_identical ? true : t1 == t2;
     }
 
   // Skip defined forward declarations.
@@ -320,15 +323,18 @@ Type::are_identical(const Type* t1, const Type* t2, std::string* reason)
   if (t1 == t2)
     return true;
 
-  // An undefined forward declaration is an error, so we return true
-  // to avoid cascading errors.
+  // An undefined forward declaration is an error.
   if (t1->forward_declaration_type() != NULL
       || t2->forward_declaration_type() != NULL)
-    return true;
+    return errors_are_identical;
 
   // Avoid cascading errors with error types.
   if (t1->is_error_type() || t2->is_error_type())
-    return true;
+    {
+      if (errors_are_identical)
+	return true;
+      return t1->is_error_type() && t2->is_error_type();
+    }
 
   // Get a good reason for the sink type.  Note that the sink type on
   // the left hand side of an assignment is handled in are_assignable.
@@ -368,61 +374,36 @@ Type::are_identical(const Type* t1, const Type* t2, std::string* reason)
     case TYPE_FUNCTION:
       return t1->function_type()->is_identical(t2->function_type(),
 					       false,
+					       errors_are_identical,
 					       reason);
 
     case TYPE_POINTER:
-      return Type::are_identical(t1->points_to(), t2->points_to(), reason);
+      return Type::are_identical(t1->points_to(), t2->points_to(),
+				 errors_are_identical, reason);
 
     case TYPE_STRUCT:
-      return t1->struct_type()->is_identical(t2->struct_type());
+      return t1->struct_type()->is_identical(t2->struct_type(),
+					     errors_are_identical);
 
     case TYPE_ARRAY:
-      return t1->array_type()->is_identical(t2->array_type());
+      return t1->array_type()->is_identical(t2->array_type(),
+					    errors_are_identical);
 
     case TYPE_MAP:
-      return t1->map_type()->is_identical(t2->map_type());
+      return t1->map_type()->is_identical(t2->map_type(),
+					  errors_are_identical);
 
     case TYPE_CHANNEL:
-      return t1->channel_type()->is_identical(t2->channel_type());
+      return t1->channel_type()->is_identical(t2->channel_type(),
+					      errors_are_identical);
 
     case TYPE_INTERFACE:
-      return t1->interface_type()->is_identical(t2->interface_type());
+      return t1->interface_type()->is_identical(t2->interface_type(),
+						errors_are_identical);
 
     default:
       gcc_unreachable();
     }
-}
-
-// Return true if two types are identical when it comes to storing
-// them in a hash table.  This differs from Type::are_identical with
-// regard to how we handle error types.  We want to treat error types
-// as identical to other types when it comes to reporting
-// compatibility errors, but we want to treat them as different when
-// it comes to storing them in a hash table.
-
-bool
-Type::are_identical_for_hash_table(const Type* t1, const Type *t2)
-{
-  if (t1 == NULL || t2 == NULL)
-    return t1 == t2;
-
-  t1 = t1->forwarded();
-  t2 = t2->forwarded();
-
-  if (t1 == t2)
-    return true;
-
-  // Undefined forward declarations are only equal to themselves.
-  if (t1->forward_declaration_type() != NULL
-      || t2->forward_declaration_type() != NULL)
-    return false;
-
-  // The error type is only equal to the error type.
-  if (t1->is_error_type() || t2->is_error_type())
-    return t1->is_error_type() && t2->is_error_type();
-
-  // Otherwise we can use the usual identity check.
-  return Type::are_identical(t1, t2, NULL);
 }
 
 // Return true if it's OK to have a binary operation with types LHS
@@ -431,7 +412,7 @@ Type::are_identical_for_hash_table(const Type* t1, const Type *t2)
 bool
 Type::are_compatible_for_binop(const Type* lhs, const Type* rhs)
 {
-  if (Type::are_identical(lhs, rhs, NULL))
+  if (Type::are_identical(lhs, rhs, true, NULL))
     return true;
 
   // A constant of abstract bool type may be mixed with any bool type.
@@ -513,14 +494,14 @@ Type::are_assignable(const Type* lhs, const Type* rhs, std::string* reason)
     }
 
   // Identical types are assignable.
-  if (Type::are_identical(lhs, rhs, reason))
+  if (Type::are_identical(lhs, rhs, true, reason))
     return true;
 
   // The types are assignable if they have identical underlying types
   // and either LHS or RHS is not a named type.
   if (((lhs->named_type() != NULL && rhs->named_type() == NULL)
        || (rhs->named_type() != NULL && lhs->named_type() == NULL))
-      && Type::are_identical(lhs->base(), rhs->base(), reason))
+      && Type::are_identical(lhs->base(), rhs->base(), true, reason))
     return true;
 
   // The types are assignable if LHS is an interface type and RHS
@@ -547,6 +528,7 @@ Type::are_assignable(const Type* lhs, const Type* rhs, std::string* reason)
       && (lhs->named_type() == NULL || rhs->named_type() == NULL)
       && Type::are_identical(lhs->channel_type()->element_type(),
 			     rhs->channel_type()->element_type(),
+			     true,
 			     reason))
     return true;
 
@@ -609,7 +591,7 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
   // The types are convertible if they have identical underlying
   // types.
   if ((lhs->named_type() != NULL || rhs->named_type() != NULL)
-      && Type::are_identical(lhs->base(), rhs->base(), reason))
+      && Type::are_identical(lhs->base(), rhs->base(), true, reason))
     return true;
 
   // The types are convertible if they are both unnamed pointer types
@@ -622,6 +604,7 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
 	  || rhs->points_to()->named_type() != NULL)
       && Type::are_identical(lhs->points_to()->base(),
 			     rhs->points_to()->base(),
+			     true,
 			     reason))
     return true;
 
@@ -2352,7 +2335,7 @@ bool
 Function_type::is_valid_redeclaration(const Function_type* t,
 				      std::string* reason) const
 {
-  if (!this->is_identical(t, false, reason))
+  if (!this->is_identical(t, false, true, reason))
     return false;
 
   // A redeclaration of a function is required to use the same names
@@ -2436,6 +2419,7 @@ Function_type::is_valid_redeclaration(const Function_type* t,
 
 bool
 Function_type::is_identical(const Function_type* t, bool ignore_receiver,
+			    bool errors_are_identical,
 			    std::string* reason) const
 {
   if (!ignore_receiver)
@@ -2450,7 +2434,8 @@ Function_type::is_identical(const Function_type* t, bool ignore_receiver,
 	}
       if (r1 != NULL)
 	{
-	  if (!Type::are_identical(r1->type(), r2->type(), reason))
+	  if (!Type::are_identical(r1->type(), r2->type(), errors_are_identical,
+				   reason))
 	    {
 	      if (reason != NULL && !reason->empty())
 		*reason = "receiver: " + *reason;
@@ -2481,7 +2466,8 @@ Function_type::is_identical(const Function_type* t, bool ignore_receiver,
 	      return false;
 	    }
 
-	  if (!Type::are_identical(p1->type(), p2->type(), NULL))
+	  if (!Type::are_identical(p1->type(), p2->type(),
+				   errors_are_identical, NULL))
 	    {
 	      if (reason != NULL)
 		*reason = _("different parameter types");
@@ -2525,7 +2511,8 @@ Function_type::is_identical(const Function_type* t, bool ignore_receiver,
 	      return false;
 	    }
 
-	  if (!Type::are_identical(res1->type(), res2->type(), NULL))
+	  if (!Type::are_identical(res1->type(), res2->type(),
+				   errors_are_identical, NULL))
 	    {
 	      if (reason != NULL)
 		*reason = _("different result types");
@@ -3445,7 +3432,8 @@ Struct_type::do_has_pointer() const
 // Whether this type is identical to T.
 
 bool
-Struct_type::is_identical(const Struct_type* t) const
+Struct_type::is_identical(const Struct_type* t,
+			  bool errors_are_identical) const
 {
   const Struct_field_list* fields1 = this->fields();
   const Struct_field_list* fields2 = t->fields();
@@ -3461,7 +3449,8 @@ Struct_type::is_identical(const Struct_type* t) const
       if (pf1->field_name() != pf2->field_name())
 	return false;
       if (pf1->is_anonymous() != pf2->is_anonymous()
-	  || !Type::are_identical(pf1->type(), pf2->type(), NULL))
+	  || !Type::are_identical(pf1->type(), pf2->type(),
+				  errors_are_identical, NULL))
 	return false;
       if (!pf1->has_tag())
 	{
@@ -4142,9 +4131,10 @@ Type::make_struct_type(Struct_field_list* fields,
 // Whether two array types are identical.
 
 bool
-Array_type::is_identical(const Array_type* t) const
+Array_type::is_identical(const Array_type* t, bool errors_are_identical) const
 {
-  if (!Type::are_identical(this->element_type(), t->element_type(), NULL))
+  if (!Type::are_identical(this->element_type(), t->element_type(),
+			   errors_are_identical, NULL))
     return false;
 
   Expression* l1 = this->length();
@@ -4960,10 +4950,12 @@ Map_type::do_verify()
 // Whether two map types are identical.
 
 bool
-Map_type::is_identical(const Map_type* t) const
+Map_type::is_identical(const Map_type* t, bool errors_are_identical) const
 {
-  return (Type::are_identical(this->key_type(), t->key_type(), NULL)
-	  && Type::are_identical(this->val_type(), t->val_type(), NULL));
+  return (Type::are_identical(this->key_type(), t->key_type(),
+			      errors_are_identical, NULL)
+	  && Type::are_identical(this->val_type(), t->val_type(),
+				 errors_are_identical, NULL));
 }
 
 // Hash code.
@@ -5248,9 +5240,11 @@ Channel_type::do_hash_for_method(Gogo* gogo) const
 // Whether this type is the same as T.
 
 bool
-Channel_type::is_identical(const Channel_type* t) const
+Channel_type::is_identical(const Channel_type* t,
+			   bool errors_are_identical) const
 {
-  if (!Type::are_identical(this->element_type(), t->element_type(), NULL))
+  if (!Type::are_identical(this->element_type(), t->element_type(),
+			   errors_are_identical, NULL))
     return false;
   return (this->may_send_ == t->may_send_
 	  && this->may_receive_ == t->may_receive_);
@@ -5666,7 +5660,8 @@ Interface_type::is_unexported_method(Gogo* gogo, const std::string& name) const
 // Whether this type is identical with T.
 
 bool
-Interface_type::is_identical(const Interface_type* t) const
+Interface_type::is_identical(const Interface_type* t,
+			     bool errors_are_identical) const
 {
   // We require the same methods with the same types.  The methods
   // have already been sorted.
@@ -5681,7 +5676,8 @@ Interface_type::is_identical(const Interface_type* t) const
       if (p1 == this->methods()->end())
 	return false;
       if (p1->name() != p2->name()
-	  || !Type::are_identical(p1->type(), p2->type(), NULL))
+	  || !Type::are_identical(p1->type(), p2->type(),
+				  errors_are_identical, NULL))
 	return false;
     }
   if (p1 != this->methods()->end())
@@ -5720,7 +5716,7 @@ Interface_type::is_compatible_for_assign(const Interface_type* t,
 	}
 
       std::string subreason;
-      if (!Type::are_identical(p->type(), m->type(), &subreason))
+      if (!Type::are_identical(p->type(), m->type(), true, &subreason))
 	{
 	  if (reason != NULL)
 	    {
@@ -5855,7 +5851,7 @@ Interface_type::implements_interface(const Type* t, std::string* reason) const
       Function_type* m_fn_type = m->type()->function_type();
       gcc_assert(p_fn_type != NULL && m_fn_type != NULL);
       std::string subreason;
-      if (!p_fn_type->is_identical(m_fn_type, true, &subreason))
+      if (!p_fn_type->is_identical(m_fn_type, true, true, &subreason))
 	{
 	  if (reason != NULL)
 	    {

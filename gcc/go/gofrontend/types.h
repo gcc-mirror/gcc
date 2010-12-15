@@ -503,16 +503,13 @@ class Type
   verify()
   { return this->do_verify(); }
 
-  // Return true if two types are identical.  If this returns false,
+  // Return true if two types are identical.  If ERRORS_ARE_IDENTICAL,
+  // returns that an erroneous type is identical to any other type;
+  // this is used to avoid cascading errors.  If this returns false,
   // and REASON is not NULL, it may set *REASON.
   static bool
-  are_identical(const Type* lhs, const Type* rhs, std::string* reason);
-
-  // Return true if two types are identical when it comes to putting
-  // them in a hash table.  This differs from are_identical only in
-  // how error types are handled.
-  static bool
-  are_identical_for_hash_table(const Type*, const Type*);
+  are_identical(const Type* lhs, const Type* rhs, bool errors_are_identical,
+		std::string* reason);
 
   // Return true if two types are compatible for use in a binary
   // operation, other than a shift, comparison, or channel send.  This
@@ -1110,7 +1107,7 @@ class Type_identical
  public:
   bool
   operator()(const Type* t1, const Type* t2) const
-  { return Type::are_identical_for_hash_table(t1, t2); }
+  { return Type::are_identical(t1, t2, false, NULL); }
 };
 
 // An identifier with a type.
@@ -1583,7 +1580,7 @@ class Function_type : public Type
   // Whether this type is the same as T.
   bool
   is_identical(const Function_type* t, bool ignore_receiver,
-	       std::string*) const;
+	       bool errors_are_identical, std::string*) const;
 
   // Record that this is a varargs function.
   void
@@ -1890,7 +1887,7 @@ class Struct_type : public Type
 
   // Whether this type is identical with T.
   bool
-  is_identical(const Struct_type* t) const;
+  is_identical(const Struct_type* t, bool errors_are_identical) const;
 
   // Whether this struct type has any hidden fields.  This returns
   // true if any fields have hidden names, or if any non-pointer
@@ -2009,7 +2006,7 @@ class Array_type : public Type
 
   // Whether this type is identical with T.
   bool
-  is_identical(const Array_type* t) const;
+  is_identical(const Array_type* t, bool errors_are_identical) const;
 
   // Whether this type has any hidden fields.
   bool
@@ -2126,7 +2123,7 @@ class Map_type : public Type
 
   // Whether this type is identical with T.
   bool
-  is_identical(const Map_type* t) const;
+  is_identical(const Map_type* t, bool errors_are_identical) const;
 
   // Import a map type.
   static Map_type*
@@ -2212,7 +2209,7 @@ class Channel_type : public Type
 
   // Whether this type is identical with T.
   bool
-  is_identical(const Channel_type* t) const;
+  is_identical(const Channel_type* t, bool errors_are_identical) const;
 
   // Import a channel type.
   static Channel_type*
@@ -2315,7 +2312,7 @@ class Interface_type : public Type
   // Whether this type is identical with T.  REASON is as in
   // implements_interface.
   bool
-  is_identical(const Interface_type* t) const;
+  is_identical(const Interface_type* t, bool errors_are_identical) const;
 
   // Whether we can assign T to this type.  is_identical is known to
   // be false.

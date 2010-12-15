@@ -6172,7 +6172,7 @@ Bound_method_expression::do_check_types(Gogo*)
 		     ? this->expr_type_
 		     : this->expr_->type());
       etype = etype->deref();
-      if (!Type::are_identical(rtype, etype, NULL))
+      if (!Type::are_identical(rtype, etype, true, NULL))
 	this->report_error(_("method type does not match object type"));
     }
 }
@@ -6849,7 +6849,7 @@ Builtin_call_expression::do_complex_constant_value(mpfr_t real, mpfr_t imag,
       bool ret = false;
       Type* itype;
       if (args->back()->float_constant_value(i, &itype)
-	  && Type::are_identical(rtype, itype, NULL))
+	  && Type::are_identical(rtype, itype, false, NULL))
 	{
 	  mpfr_set(real, r, GMP_RNDN);
 	  mpfr_set(imag, i, GMP_RNDN);
@@ -7228,7 +7228,7 @@ Builtin_call_expression::do_check_types(Gogo*)
 	    break;
 	  }
 
-	if (!Type::are_identical(e1, e2, NULL))
+	if (!Type::are_identical(e1, e2, true, NULL))
 	  this->report_error(_("element types must be the same"));
       }
       break;
@@ -7282,7 +7282,7 @@ Builtin_call_expression::do_check_types(Gogo*)
 		 || args->back()->type()->is_error_type())
 	  this->set_is_error();
 	else if (!Type::are_identical(args->front()->type(),
-				      args->back()->type(), NULL))
+				      args->back()->type(), true, NULL))
 	  this->report_error(_("cmplx arguments must have identical types"));
 	else if (args->front()->type()->float_type() == NULL)
 	  this->report_error(_("cmplx arguments must have "
@@ -8085,7 +8085,7 @@ Call_expression::is_compatible_varargs_argument(Named_object* function,
   Array_type* param_at = param_type->array_type();
   if (param_at != NULL
       && Type::are_identical(var_at->element_type(),
-			     param_at->element_type(), NULL))
+			     param_at->element_type(), true, NULL))
     return true;
   error_at(arg->location(), "... mismatch: passing ...T as ...");
   *issued_error = true;
