@@ -402,7 +402,9 @@ put_decl_node (tree node, int verbosity)
                  if verbosity is higher than 1.  */
               && verbosity >= 1)
 	    {
-	      put_decl_node (TYPE_NAME (DECL_CONTEXT (node)),
+	      put_decl_node (TREE_CODE (DECL_CONTEXT (node)) == FUNCTION_DECL
+			     ? DECL_CONTEXT (node)
+			     : TYPE_NAME (DECL_CONTEXT (node)),
                                verbosity);
 	      put_decl_string (".", 1);
 	    }

@@ -614,6 +614,7 @@ java_init_decl_processing (void)
   integer_zero_node = build_int_cst (NULL_TREE, 0);
   integer_one_node = build_int_cst (NULL_TREE, 1);
   integer_two_node = build_int_cst (NULL_TREE, 2);
+  integer_three_node = build_int_cst (NULL_TREE, 3);
   integer_four_node = build_int_cst (NULL_TREE, 4);
   integer_minus_one_node = build_int_cst (NULL_TREE, -1);
 
