@@ -1,4 +1,4 @@
-C PR debug/46576, reduced from ../20010519-1.f
+C PR debug/46756, reduced from ../20010519-1.f
 C { dg-do compile }
 C { dg-options "-O -fcompare-debug" }
       LOGICAL QDISK,QDW,QCMPCT
