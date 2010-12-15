@@ -2134,6 +2134,8 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
 {
   tree decl = gimple_call_fndecl (e->call_stmt);
   gimple new_stmt;
+  gimple_stmt_iterator gsi;
+  bool gsi_computed = false;
 #ifdef ENABLE_CHECKING
   struct cgraph_node *node;
 #endif
@@ -2166,9 +2168,26 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
 	}
     }
 
+  if (e->indirect_info && e->indirect_info->thunk_delta
+      && integer_nonzerop (e->indirect_info->thunk_delta)
+      && (!e->callee->clone.combined_args_to_skip
+	  || !bitmap_bit_p (e->callee->clone.combined_args_to_skip, 0)))
+    {
+      if (cgraph_dump_file)
+	{
+	  fprintf (cgraph_dump_file, "          Thunk delta is ");
+	  print_generic_expr (cgraph_dump_file,
+			      e->indirect_info->thunk_delta, 0);
+	  fprintf (cgraph_dump_file, "\n");
+	}
+      gsi = gsi_for_stmt (e->call_stmt);
+      gsi_computed = true;
+      gimple_adjust_this_by_delta (&gsi, e->indirect_info->thunk_delta);
+      e->indirect_info->thunk_delta = NULL_TREE;
+    }
+
   if (e->callee->clone.combined_args_to_skip)
     {
-      gimple_stmt_iterator gsi;
       int lp_nr;
 
       new_stmt
@@ -2180,7 +2199,8 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
 	  && TREE_CODE (gimple_vdef (new_stmt)) == SSA_NAME)
 	SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
 
-      gsi = gsi_for_stmt (e->call_stmt);
+      if (!gsi_computed)
+	gsi = gsi_for_stmt (e->call_stmt);
       gsi_replace (&gsi, new_stmt, false);
       /* We need to defer cleaning EH info on the new statement to
          fixup-cfg.  We may not have dominator information at this point

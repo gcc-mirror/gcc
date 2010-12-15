@@ -2316,16 +2316,8 @@ ccp_fold_stmt (gimple_stmt_iterator *gsi)
 	  {
 	    tree expr = OBJ_TYPE_REF_EXPR (callee);
 	    OBJ_TYPE_REF_EXPR (callee) = valueize_op (expr);
-	    if (TREE_CODE (OBJ_TYPE_REF_EXPR (callee)) == ADDR_EXPR)
-	      {
-		tree t;
-		t = gimple_fold_obj_type_ref (callee, NULL_TREE);
-		if (t)
-		  {
-		    gimple_call_set_fn (stmt, t);
-		    changed = true;
-		  }
-	      }
+	    if (gimple_fold_call (gsi, false))
+	      changed = true;
 	    OBJ_TYPE_REF_EXPR (callee) = expr;
 	  }
 

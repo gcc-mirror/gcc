@@ -860,7 +860,7 @@ cgraph_set_call_stmt (struct cgraph_edge *e, gimple new_stmt)
 	 indirect call into a direct one.  */
       struct cgraph_node *new_callee = cgraph_node (decl);
 
-      cgraph_make_edge_direct (e, new_callee);
+      cgraph_make_edge_direct (e, new_callee, NULL);
     }
 
   push_cfun (DECL_STRUCT_FUNCTION (e->caller->decl));
@@ -1195,12 +1195,15 @@ cgraph_redirect_edge_callee (struct cgraph_edge *e, struct cgraph_node *n)
 }
 
 /* Make an indirect EDGE with an unknown callee an ordinary edge leading to
-   CALLEE.  */
+   CALLEE.  DELTA, if non-NULL, is an integer constant that is to be added to
+   the this pointer (first parameter).  */
 
 void
-cgraph_make_edge_direct (struct cgraph_edge *edge, struct cgraph_node *callee)
+cgraph_make_edge_direct (struct cgraph_edge *edge, struct cgraph_node *callee,
+			 tree delta)
 {
   edge->indirect_unknown_callee = 0;
+  edge->indirect_info->thunk_delta = delta;
 
   /* Get the edge out of the indirect edge list. */
   if (edge->prev_callee)
@@ -2116,8 +2119,16 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
 	}
     }
   else
-    new_edge = cgraph_create_edge (n, e->callee, call_stmt, count, freq,
-				   e->loop_nest + loop_nest);
+    {
+      new_edge = cgraph_create_edge (n, e->callee, call_stmt, count, freq,
+				     e->loop_nest + loop_nest);
+      if (e->indirect_info)
+	{
+	  new_edge->indirect_info
+	    = ggc_alloc_cleared_cgraph_indirect_call_info ();
+	  *new_edge->indirect_info = *e->indirect_info;
+	}
+    }
 
   new_edge->inline_failed = e->inline_failed;
   new_edge->indirect_inlining_edge = e->indirect_inlining_edge;

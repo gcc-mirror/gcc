@@ -388,6 +388,9 @@ struct GTY(()) cgraph_indirect_call_info
   HOST_WIDE_INT otr_token;
   /* Type of the object from OBJ_TYPE_REF_OBJECT. */
   tree otr_type;
+  /* Delta by which must be added to this parameter.  For polymorphic calls
+     only.  */
+  tree thunk_delta;
   /* Index of the parameter that is called.  */
   int param_index;
   /* ECF flags determined from the caller.  */
@@ -575,7 +578,7 @@ struct cgraph_node * cgraph_clone_node (struct cgraph_node *, tree, gcov_type, i
 					int, bool, VEC(cgraph_edge_p,heap) *);
 
 void cgraph_redirect_edge_callee (struct cgraph_edge *, struct cgraph_node *);
-void cgraph_make_edge_direct (struct cgraph_edge *, struct cgraph_node *);
+void cgraph_make_edge_direct (struct cgraph_edge *, struct cgraph_node *, tree);
 
 struct cgraph_asm_node *cgraph_add_asm_node (tree);
 

@@ -1446,17 +1446,26 @@ gimple_get_relevant_ref_binfo (tree ref, tree known_binfo)
     }
 }
 
-/* Fold a OBJ_TYPE_REF expression to the address of a function. TOKEN is
-   integer form of OBJ_TYPE_REF_TOKEN of the reference expression.  KNOWN_BINFO
-   carries the binfo describing the true type of OBJ_TYPE_REF_OBJECT(REF).  */
+/* Return a declaration of a function which an OBJ_TYPE_REF references. TOKEN
+   is integer form of OBJ_TYPE_REF_TOKEN of the reference expression.
+   KNOWN_BINFO carries the binfo describing the true type of
+   OBJ_TYPE_REF_OBJECT(REF).  If a call to the function must be accompanied
+   with a this adjustment, the constant which should be added to this pointer
+   is stored to *DELTA.  If REFUSE_THUNKS is true, return NULL if the function
+   is a thunk (other than a this adjustment which is dealt with by DELTA). */
 
 tree
-gimple_fold_obj_type_ref_known_binfo (HOST_WIDE_INT token, tree known_binfo)
+gimple_get_virt_mehtod_for_binfo (HOST_WIDE_INT token, tree known_binfo,
+				  tree *delta, bool refuse_thunks)
 {
   HOST_WIDE_INT i;
-  tree v, fndecl, delta;
+  tree v, fndecl;
+  struct cgraph_node *node;
 
   v = BINFO_VIRTUALS (known_binfo);
+  /* If there is no virtual methods leave the OBJ_TYPE_REF alone.  */
+  if (!v)
+    return NULL_TREE;
   i = 0;
   while (i != token)
     {
@@ -1466,62 +1475,91 @@ gimple_fold_obj_type_ref_known_binfo (HOST_WIDE_INT token, tree known_binfo)
     }
 
   fndecl = TREE_VALUE (v);
-  delta = TREE_PURPOSE (v);
-  gcc_assert (host_integerp (delta, 0));
+  node = cgraph_get_node_or_alias (fndecl);
+  if (refuse_thunks
+      && (!node
+    /* Bail out if it is a thunk declaration.  Since simple this_adjusting
+       thunks are represented by a constant in TREE_PURPOSE of items in
+       BINFO_VIRTUALS, this is a more complicate type which we cannot handle as
+       yet.
 
-  if (integer_nonzerop (delta))
-    {
-      struct cgraph_node *node = cgraph_get_node (fndecl);
-      HOST_WIDE_INT off = tree_low_cst (delta, 0);
-
-      if (!node)
-        return NULL;
-      for (node = node->same_body; node; node = node->next)
-        if (node->thunk.thunk_p && off == node->thunk.fixed_offset)
-          break;
-      if (node)
-        fndecl = node->decl;
-      else
-        return NULL;
-     }
+       FIXME: Remove the following condition once we are able to represent
+       thunk information on call graph edges.  */
+	  || (node->same_body_alias && node->thunk.thunk_p)))
+    return NULL_TREE;
 
   /* When cgraph node is missing and function is not public, we cannot
      devirtualize.  This can happen in WHOPR when the actual method
      ends up in other partition, because we found devirtualization
      possibility too late.  */
-  if (!can_refer_decl_in_current_unit_p (fndecl))
-    return NULL;
-  return build_fold_addr_expr (fndecl);
+  if (!can_refer_decl_in_current_unit_p (TREE_VALUE (v)))
+    return NULL_TREE;
+
+  *delta = TREE_PURPOSE (v);
+  gcc_checking_assert (host_integerp (*delta, 0));
+  return fndecl;
 }
 
+/* Generate code adjusting the first parameter of a call statement determined
+   by GSI by DELTA.  */
 
-/* Fold a OBJ_TYPE_REF expression to the address of a function.  If KNOWN_TYPE
-   is not NULL_TREE, it is the true type of the outmost encapsulating object if
-   that comes from a pointer SSA_NAME.  If the true outmost encapsulating type
-   can be determined from a declaration OBJ_TYPE_REF_OBJECT(REF), it is used
-   regardless of KNOWN_TYPE (which thus can be NULL_TREE).  */
-
-tree
-gimple_fold_obj_type_ref (tree ref, tree known_type)
+void
+gimple_adjust_this_by_delta (gimple_stmt_iterator *gsi, tree delta)
 {
+  gimple call_stmt = gsi_stmt (*gsi);
+  tree parm, tmp;
+  gimple new_stmt;
+
+  delta = fold_convert (sizetype, delta);
+  gcc_assert (gimple_call_num_args (call_stmt) >= 1);
+  parm = gimple_call_arg (call_stmt, 0);
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (parm)));
+  tmp = create_tmp_var (TREE_TYPE (parm), NULL);
+  add_referenced_var (tmp);
+
+  tmp = make_ssa_name (tmp, NULL);
+  new_stmt = gimple_build_assign_with_ops (POINTER_PLUS_EXPR, tmp, parm, delta);
+  SSA_NAME_DEF_STMT (tmp) = new_stmt;
+  gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
+  gimple_call_set_arg (call_stmt, 0, tmp);
+}
+
+/* Fold a call statement to OBJ_TYPE_REF to a direct call, if possible.  GSI
+   determines the statement, generating new statements is allowed only if
+   INPLACE is false.  Return true iff the statement was changed.  */
+
+static bool
+gimple_fold_obj_type_ref_call (gimple_stmt_iterator *gsi, bool inplace)
+{
+  gimple stmt = gsi_stmt (*gsi);
+  tree ref = gimple_call_fn (stmt);
   tree obj = OBJ_TYPE_REF_OBJECT (ref);
-  tree known_binfo = known_type ? TYPE_BINFO (known_type) : NULL_TREE;
-  tree binfo;
+  tree binfo, fndecl, delta;
+  HOST_WIDE_INT token;
 
   if (TREE_CODE (obj) == ADDR_EXPR)
     obj = TREE_OPERAND (obj, 0);
-
-  binfo = gimple_get_relevant_ref_binfo (obj, known_binfo);
-  if (binfo)
-    {
-      HOST_WIDE_INT token = tree_low_cst (OBJ_TYPE_REF_TOKEN (ref), 1);
-      /* If there is no virtual methods leave the OBJ_TYPE_REF alone.  */
-      if (!BINFO_VIRTUALS (binfo))
-	return NULL_TREE;
-      return gimple_fold_obj_type_ref_known_binfo (token, binfo);
-    }
   else
-    return NULL_TREE;
+    return false;
+
+  binfo = gimple_get_relevant_ref_binfo (obj, NULL_TREE);
+  if (!binfo)
+    return false;
+  token = tree_low_cst (OBJ_TYPE_REF_TOKEN (ref), 1);
+  fndecl = gimple_get_virt_mehtod_for_binfo (token, binfo, &delta,
+					     !DECL_P (obj));
+  if (!fndecl)
+    return false;
+
+  if (integer_nonzerop (delta))
+    {
+      if (inplace)
+        return false;
+      gimple_adjust_this_by_delta (gsi, delta);
+    }
+
+  gimple_call_set_fndecl (stmt, fndecl);
+  return true;
 }
 
 /* Attempt to fold a call statement referenced by the statement iterator GSI.
@@ -1529,8 +1567,8 @@ gimple_fold_obj_type_ref (tree ref, tree known_type)
    simplifies to a constant value. Return true if any changes were made.
    It is assumed that the operands have been previously folded.  */
 
-static bool
-fold_gimple_call (gimple_stmt_iterator *gsi, bool inplace)
+bool
+gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 {
   gimple stmt = gsi_stmt (*gsi);
 
@@ -1556,18 +1594,8 @@ fold_gimple_call (gimple_stmt_iterator *gsi, bool inplace)
          copying EH region info to the new node.  Easier to just do it
          here where we can just smash the call operand.  */
       callee = gimple_call_fn (stmt);
-      if (TREE_CODE (callee) == OBJ_TYPE_REF
-          && TREE_CODE (OBJ_TYPE_REF_OBJECT (callee)) == ADDR_EXPR)
-        {
-          tree t;
-
-          t = gimple_fold_obj_type_ref (callee, NULL_TREE);
-          if (t)
-            {
-              gimple_call_set_fn (stmt, t);
-              return true;
-            }
-        }
+      if (TREE_CODE (callee) == OBJ_TYPE_REF)
+	return gimple_fold_obj_type_ref_call (gsi, inplace);
     }
 
   return false;
@@ -1621,7 +1649,7 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace)
 		changed = true;
 	      }
 	  }
-      changed |= fold_gimple_call (gsi, inplace);
+      changed |= gimple_fold_call (gsi, inplace);
       break;
 
     case GIMPLE_ASM:

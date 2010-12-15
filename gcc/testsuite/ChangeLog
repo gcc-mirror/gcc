@@ -1,3 +1,15 @@
+2010-12-15  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/46053
+	PR middle-end/46287
+	PR middle-end/46242
+	* g++.dg/ipa/pr46053.C: New test.
+	* g++.dg/ipa/pr46287-1.C: Likewise.
+	* g++.dg/ipa/pr46287-2.C: Likewise.
+	* g++.dg/ipa/pr46287-3.C: Likewise.
+	* g++.dg/torture/covariant-1.C: Likewise.
+	* g++.dg/torture/pr46287.C: Likewise.
+
 2010-12-15  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/46649

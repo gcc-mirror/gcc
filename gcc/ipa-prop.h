@@ -430,7 +430,8 @@ bool ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 					VEC (cgraph_edge_p, heap) **new_edges);
 
 /* Indirect edge and binfo processing.  */
-struct cgraph_edge *ipa_make_edge_direct_to_target (struct cgraph_edge *, tree);
+struct cgraph_edge *ipa_make_edge_direct_to_target (struct cgraph_edge *, tree,
+						    tree);
 
 
 /* Debugging interface.  */
