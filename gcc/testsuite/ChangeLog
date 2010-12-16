@@ -1,3 +1,8 @@
+2010-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt13.adb: New test.
+	* gnat.dg/opt13_pkg.ad[sb]: New helper.
+
 2010-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/43655
