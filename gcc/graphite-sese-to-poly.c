@@ -1971,6 +1971,7 @@ build_scop_drs (scop_p scop)
   for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
     if (VEC_empty (data_reference_p, GBB_DATA_REFS (PBB_BLACK_BOX (pbb))))
       {
+	free_gimple_bb (PBB_BLACK_BOX (pbb));
 	VEC_ordered_remove (poly_bb_p, SCOP_BBS (scop), i);
 	i--;
       }

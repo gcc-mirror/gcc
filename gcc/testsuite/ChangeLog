@@ -1,3 +1,8 @@
+2010-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46966
+	* gcc.dg/graphite/pr46966.c: New test.
+
 2010-12-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt13.adb: New test.
