@@ -1,3 +1,15 @@
+2010-12-13  Andrew John Hughes  <ahughes@redhat.com>
+
+	PR libgcj/46774
+	* libjava/java/security/VMAccessController.java:
+	(DEFAULT_CONTEXT): Create ProtectionDomain with
+	four argument constructor (arguments are the same
+	as those implied by the two argument constructor).
+	(getContext()): Create ProtectionDomain instances
+	with four argument constructor using a null Principal
+	array (as before) but including the classloader, which
+	was always null before.
+
 2010-12-06  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR target/40125
