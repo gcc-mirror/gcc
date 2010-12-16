@@ -6887,11 +6887,17 @@ Named_type::do_get_tree(Gogo* gogo)
       break;
 
     case TYPE_FUNCTION:
-      // Don't recur infinitely if a function type refers to itself.
-      // Ideally we would build a circular data structure here, but
-      // GENERIC can't handle them.
+      // GENERIC can't handle a pointer to a function type whose
+      // return type is a pointer to the function type itself.  It
+      // does into infinite loops when walking the types.
       if (this->seen_)
-	return ptr_type_node;
+	{
+	  Function_type* fntype = this->type_->function_type();
+	  if (fntype->results() != NULL
+	      && fntype->results()->size() == 1
+	      && fntype->results()->front().type()->forwarded() == this)
+	    return ptr_type_node;
+	}
       this->seen_ = true;
       t = Type::get_named_type_tree(gogo, this->type_);
       this->seen_ = false;
