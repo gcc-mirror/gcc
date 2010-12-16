@@ -204,6 +204,7 @@ static tree sh_handle_renesas_attribute (tree *, tree, tree, int, bool *);
 static void sh_print_operand (FILE *, rtx, int);
 static void sh_print_operand_address (FILE *, rtx);
 static bool sh_print_operand_punct_valid_p (unsigned char code);
+static bool sh_asm_output_addr_const_extra (FILE *file, rtx x);
 static void sh_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void sh_insert_attributes (tree, tree *);
 static const char *sh_check_pch_target_flags (int);
@@ -372,7 +373,9 @@ static const struct default_options sh_option_optimization_table[] =
 #define TARGET_PRINT_OPERAND_ADDRESS sh_print_operand_address
 #undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
 #define TARGET_PRINT_OPERAND_PUNCT_VALID_P sh_print_operand_punct_valid_p
-
+#undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
+#define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA sh_asm_output_addr_const_extra
+ 
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE sh_output_function_epilogue
 
@@ -1452,6 +1455,115 @@ sh_print_operand_punct_valid_p (unsigned char code)
 {
   return (code == '.' || code == '#' || code == '@' || code == ','
           || code == '$' || code == '\'' || code == '>');
+}
+
+/* Implement TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA.  */
+
+static bool
+sh_asm_output_addr_const_extra (FILE *file, rtx x)
+{
+  if (GET_CODE (x) == UNSPEC)
+    {
+      switch (XINT (x, 1))
+	{
+	case UNSPEC_DATALABEL:
+	  fputs ("datalabel ", file);
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  break;
+	case UNSPEC_PIC:
+	  /* GLOBAL_OFFSET_TABLE or local symbols, no suffix.  */
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  break;
+	case UNSPEC_GOT:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@GOT", file);
+	  break;
+	case UNSPEC_GOTOFF:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@GOTOFF", file);
+	  break;
+	case UNSPEC_PLT:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@PLT", file);
+	  break;
+	case UNSPEC_GOTPLT:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@GOTPLT", file);
+	  break;
+	case UNSPEC_DTPOFF:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@DTPOFF", file);
+	  break;
+	case UNSPEC_GOTTPOFF:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@GOTTPOFF", file);
+	  break;
+	case UNSPEC_TPOFF:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("@TPOFF", file);
+	  break;
+	case UNSPEC_CALLER:
+	  {
+	    char name[32];
+	    /* LPCS stands for Label for PIC Call Site.  */
+	    targetm.asm_out.generate_internal_label (name, "LPCS",
+						     INTVAL (XVECEXP (x, 0, 0)));
+	    assemble_name (file, name);
+	  }
+	  break;
+	case UNSPEC_EXTRACT_S16:
+	case UNSPEC_EXTRACT_U16:
+	  {
+	    rtx val, shift;
+
+	    val = XVECEXP (x, 0, 0);
+	    shift = XVECEXP (x, 0, 1);
+	    fputc ('(', file);
+	    if (shift != const0_rtx)
+	        fputc ('(', file);
+	    if (GET_CODE (val) == CONST
+	        || GET_RTX_CLASS (GET_CODE (val)) != RTX_OBJ)
+	      {
+		fputc ('(', file);
+		output_addr_const (file, val);
+		fputc (')', file);
+	      }
+	    else
+	      output_addr_const (file, val);
+	    if (shift != const0_rtx)
+	      {
+		fputs (" >> ", file);
+		output_addr_const (file, shift);
+		fputc (')', file);
+	      }
+	    fputs (" & 65535)", file);
+	  }
+	  break;
+	case UNSPEC_SYMOFF:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputc ('-', file);
+	  if (GET_CODE (XVECEXP (x, 0, 1)) == CONST)
+	    {
+	      fputc ('(', file);
+	      output_addr_const (file, XVECEXP (x, 0, 1));
+	      fputc (')', file);
+	    }
+	  else
+	    output_addr_const (file, XVECEXP (x, 0, 1));
+	  break;
+	case UNSPEC_PCREL_SYMOFF:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs ("-(", file);
+	  output_addr_const (file, XVECEXP (x, 0, 1));
+	  fputs ("-.)", file);
+	  break;
+	default:
+	  return false;
+	}
+      return true;
+    }
+  else
+    return false;
 }
 
 
