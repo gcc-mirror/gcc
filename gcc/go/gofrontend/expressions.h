@@ -1235,7 +1235,10 @@ class Call_expression : public Expression
   Expression*
   do_copy()
   {
-    return Expression::make_call(this->fn_->copy(), this->args_->copy(),
+    return Expression::make_call(this->fn_->copy(),
+				 (this->args_ == NULL
+				  ? NULL
+				  : this->args_->copy()),
 				 this->is_varargs_, this->location());
   }
 
