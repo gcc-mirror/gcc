@@ -1812,7 +1812,13 @@ Thunk_statement::simplify_statement(Gogo* gogo, Block* block)
 
   Call_expression* ce = this->call_->call_expression();
   Function_type* fntype = ce->get_function_type();
-  if (fntype == NULL || this->is_simple(fntype))
+  if (fntype == NULL)
+    {
+      gcc_assert(saw_errors());
+      this->set_is_error();
+      return false;
+    }
+  if (this->is_simple(fntype))
     return false;
 
   Expression* fn = ce->fn();
