@@ -1,3 +1,11 @@
+2010-12-16  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR target/46883
+	* config/arm/arm.md
+	(zero_extendhisi2 for register input splitter): Change
+	"register_operand" to "s_register_operand".
+	(zero_extendqisi2 for register input splitter): Same.
+
 2010-12-16  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/46939

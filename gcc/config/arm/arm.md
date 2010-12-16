@@ -4137,8 +4137,8 @@
 })
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(zero_extend:SI (match_operand:HI 1 "register_operand" "")))]
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(zero_extend:SI (match_operand:HI 1 "s_register_operand" "")))]
   "!TARGET_THUMB2 && !arm_arch6"
   [(set (match_dup 0) (ashift:SI (match_dup 2) (const_int 16)))
    (set (match_dup 0) (lshiftrt:SI (match_dup 0) (const_int 16)))]
@@ -4244,8 +4244,8 @@
 })
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(zero_extend:SI (match_operand:QI 1 "register_operand" "")))]
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(zero_extend:SI (match_operand:QI 1 "s_register_operand" "")))]
   "!arm_arch6"
   [(set (match_dup 0) (ashift:SI (match_dup 2) (const_int 24)))
    (set (match_dup 0) (lshiftrt:SI (match_dup 0) (const_int 24)))]
