@@ -28,7 +28,8 @@ int main(void)
 {
   bool test __attribute__((unused)) = true;
 
-  std::pair<junk*,ptrdiff_t>  results = std::get_temporary_buffer<junk>(5);
+  typedef std::pair<junk*, std::ptrdiff_t> pair_type;
+  pair_type results = std::get_temporary_buffer<junk>(5);
 
   if (results.second != 0)
   {

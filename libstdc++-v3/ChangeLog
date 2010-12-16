@@ -1,3 +1,55 @@
+2010-11-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/util/testsuite_iterators.h: Guard move.h includes.
+	* testsuite/util/testsuite_allocator.h: Same.
+
+	* testsuite/20_util/temporary_buffer.cc: Use typedef, qualify.
+
+	* testsuite/ext/pb_ds/regression/hash_data_map_rand.cc: Define
+	PB_DS_REGRESSION in the source file.
+	* testsuite/ext/pb_ds/regression/trie_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/list_update_no_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/tree_no_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/list_update_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/hash_no_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/priority_queue_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/tree_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/trie_no_data_map_rand.cc: Same.
+
+	* testsuite/21_strings/c_strings/wchar_t/3_neg.cc: Move to this.
+	Use _neg suffix.
+	* testsuite/21_strings/c_strings/wchar_t/3.cc: ...from this.
+	* testsuite/21_strings/c_strings/char/3_neg.cc: Same.
+	* testsuite/21_strings/c_strings/char/3.cc: Same.
+	* testsuite/ext/slist/23781_neg.cc: Same.
+	* testsuite/ext/slist/23781.cc: Same.
+	* testsuite/ext/profile/mutex_extensions.cc: Same.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Same.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/43820.cc: Same.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/43820_neg.cc: Same.
+	* testsuite/tr1/6_containers/tuple/comparison_operators/35480_neg.cc:
+	Same.
+	* testsuite/tr1/6_containers/tuple/comparison_operators/35480.cc: Same.
+	* testsuite/23_containers/multimap/23781_neg.cc: Same.
+	* testsuite/23_containers/multimap/23781.cc: Same.
+	* testsuite/23_containers/set/23781_neg.cc: Same.
+	* testsuite/23_containers/set/23781.cc: Same.
+	* testsuite/23_containers/multiset/23781_neg.cc: Same.
+	* testsuite/23_containers/multiset/23781.cc: Same.
+	* testsuite/23_containers/list/23781_neg.cc: Same.
+	* testsuite/23_containers/list/23781.cc: Same.
+	* testsuite/23_containers/map/23781_neg.cc: Same.
+	* testsuite/23_containers/map/23781.cc: Same.
+	* testsuite/20_util/duration/cons/dr974_neg.cc: Same.
+	* testsuite/20_util/duration/cons/dr974.cc: Same.
+	* testsuite/20_util/tuple/comparison_operators/35480_neg.cc: Same.
+	* testsuite/20_util/tuple/comparison_operators/35480.cc: Same.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Same.
+	* testsuite/20_util/shared_ptr/cons/43820.cc: Same.
+	* testsuite/20_util/unique_ptr/cons/pointer_array_convertible_neg.cc:
+	Same.
+	* testsuite/20_util/unique_ptr/cons/pointer_array_convertible.cc: Same.
+
 2010-12-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/ext/vstring.h (operator+(__versa_string<>&&,

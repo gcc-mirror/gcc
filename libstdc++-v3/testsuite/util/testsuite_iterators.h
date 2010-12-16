@@ -30,7 +30,10 @@
 
 #include <testsuite_hooks.h>
 #include <bits/stl_iterator_base_types.h>
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
 #include <bits/move.h>
+#endif
 
 #ifndef _TESTSUITE_ITERATORS
 #define _TESTSUITE_ITERATORS
