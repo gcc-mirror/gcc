@@ -16937,7 +16937,9 @@ cp_parser_class_specifier (cp_parser* parser)
 	break;
       }
 
-    if (want_semicolon)
+    /* If we don't have a type, then something is very wrong and we
+       shouldn't try to do anything clever.  */
+    if (TYPE_P (type) && want_semicolon)
       {
 	cp_token_position prev
 	  = cp_lexer_previous_token_position (parser->lexer);

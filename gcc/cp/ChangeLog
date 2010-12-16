@@ -1,3 +1,8 @@
+2010-12-15  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c++/46852
+	* parser.c (cp_parser_class_specifier): Check for TYPE_P.
+
 2010-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/46815
