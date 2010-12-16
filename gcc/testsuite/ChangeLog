@@ -1,3 +1,8 @@
+2010-12-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR lto/46976
+	* gcc.dg/lto/pr46940_1.c (main): Return 0.
+
 2010-12-16  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR target/46883
