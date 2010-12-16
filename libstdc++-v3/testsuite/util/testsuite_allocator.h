@@ -29,7 +29,10 @@
 
 #include <tr1/unordered_map>
 #include <cassert>
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
 #include <bits/move.h>
+#endif
 
 namespace __gnu_test
 {
