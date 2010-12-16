@@ -1,3 +1,8 @@
+2010-12-15  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c++/46852
+	* g++.dg/pr46852.C: New test.
+
 2010-12-16  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/46939
