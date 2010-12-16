@@ -77,6 +77,7 @@ static sreal real_zero, real_one, real_almost_one, real_br_prob_base,
 static void combine_predictions_for_insn (rtx, basic_block);
 static void dump_prediction (FILE *, enum br_predictor, int, basic_block, int);
 static void predict_paths_leading_to (basic_block, enum br_predictor, enum prediction);
+static void predict_paths_leading_to_edge (edge, enum br_predictor, enum prediction);
 static bool can_predict_insn_p (const_rtx);
 
 /* Information we hold about each branch predictor.
@@ -1558,8 +1559,8 @@ apply_return_prediction (void)
       {
 	pred = return_prediction (PHI_ARG_DEF (phi, i), &direction);
 	if (pred != PRED_NO_PREDICTION)
-	  predict_paths_leading_to (gimple_phi_arg_edge (phi, i)->src, pred,
-				    direction);
+	  predict_paths_leading_to_edge (gimple_phi_arg_edge (phi, i), pred,
+				         direction);
       }
 }
 
@@ -1805,8 +1806,8 @@ predict_paths_for_bb (basic_block cur, basic_block bb,
       edge_iterator ei2;
       bool found = false;
 
-      /* Ignore abnormals, we predict them as not taken anyway.  */
-      if (e->flags & (EDGE_EH | EDGE_FAKE | EDGE_ABNORMAL))
+      /* Ignore fake edges and eh, we predict them as not taken anyway.  */
+      if (e->flags & (EDGE_EH | EDGE_FAKE))
 	continue;
       gcc_assert (bb == cur || dominated_by_p (CDI_POST_DOMINATORS, cur, bb));
 
@@ -1814,7 +1815,7 @@ predict_paths_for_bb (basic_block cur, basic_block bb,
 	 and does not lead to BB.  */
       FOR_EACH_EDGE (e2, ei2, e->src->succs)
 	if (e2 != e
-	    && !(e2->flags & (EDGE_EH | EDGE_FAKE | EDGE_ABNORMAL))
+	    && !(e2->flags & (EDGE_EH | EDGE_FAKE))
 	    && !dominated_by_p (CDI_POST_DOMINATORS, e2->dest, bb))
 	  {
 	    found = true;
@@ -1843,6 +1844,31 @@ predict_paths_leading_to (basic_block bb, enum br_predictor pred,
 			  enum prediction taken)
 {
   predict_paths_for_bb (bb, bb, pred, taken);
+}
+
+/* Like predict_paths_leading_to but take edge instead of basic block.  */
+
+static void
+predict_paths_leading_to_edge (edge e, enum br_predictor pred,
+			       enum prediction taken)
+{
+  bool has_nonloop_edge = false;
+  edge_iterator ei;
+  edge e2;
+
+  basic_block bb = e->src;
+  FOR_EACH_EDGE (e2, ei, bb->succs)
+    if (e2->dest != e->src && e2->dest != e->dest
+	&& !(e->flags & (EDGE_EH | EDGE_FAKE))
+	&& !dominated_by_p (CDI_POST_DOMINATORS, e->src, e2->dest))
+      {
+	has_nonloop_edge = true;
+	break;
+      }
+  if (!has_nonloop_edge)
+    predict_paths_for_bb (bb, bb, pred, taken);
+  else
+    predict_edge_def (e, pred, taken);
 }
 
 /* This is used to carry information about basic blocks.  It is

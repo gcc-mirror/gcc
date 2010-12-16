@@ -1,3 +1,8 @@
+2010-12-16  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/46939
+	* gcc.target/i386/pr46939.c: New testcase.
+
 2010-12-15  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/46404

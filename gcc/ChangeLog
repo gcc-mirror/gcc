@@ -1,3 +1,10 @@
+2010-12-16  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/46939
+	* predic.c (predict_paths_leading_to_edge): New function.
+	(apply_return_prediction): Use it.
+	(predict_paths_for_bb): Do not special case abnormals.
+
 2010-12-16  Joseph Myers  <joseph@codesourcery.com>
 
 	* config.gcc (powerpc-*-lynxos*): Don't add lynx.opt to
