@@ -505,6 +505,8 @@ Expression::convert_interface_to_interface(Translate_context* context,
 				     lhs_type_descriptor,
 				     TREE_TYPE(rhs_type_descriptor),
 				     rhs_type_descriptor);
+      if (call == error_mark_node)
+	return error_mark_node;
       // This will panic if the interface conversion fails.
       TREE_NOTHROW(assert_interface_decl) = 0;
       elt->value = fold_convert_loc(location, TREE_TYPE(field), call);
@@ -535,6 +537,8 @@ Expression::convert_interface_to_interface(Translate_context* context,
 				     lhs_type_descriptor,
 				     TREE_TYPE(rhs_type_descriptor),
 				     rhs_type_descriptor);
+      if (call == error_mark_node)
+	return error_mark_node;
       // This will panic if the interface conversion fails.
       TREE_NOTHROW(convert_interface_decl) = 0;
       elt->value = fold_convert_loc(location, TREE_TYPE(field), call);
@@ -599,6 +603,8 @@ Expression::convert_interface_to_type(Translate_context* context,
 				 rhs_type_descriptor,
 				 TREE_TYPE(rhs_inter_descriptor),
 				 rhs_inter_descriptor);
+  if (call == error_mark_node)
+    return error_mark_node;
   // This call will panic if the conversion is invalid.
   TREE_NOTHROW(check_interface_type_decl) = 0;
 
@@ -6012,6 +6018,8 @@ Expression::comparison_tree(Translate_context* context, Operator op,
 					 descriptor,
 					 ptr_type_node,
 					 arg);
+	  if (left_tree == error_mark_node)
+	    return error_mark_node;
 	  // This can panic if the type is not comparable.
 	  TREE_NOTHROW(empty_interface_value_compare_decl) = 0;
 	}
@@ -6029,6 +6037,8 @@ Expression::comparison_tree(Translate_context* context, Operator op,
 					 descriptor,
 					 ptr_type_node,
 					 arg);
+	  if (left_tree == error_mark_node)
+	    return error_mark_node;
 	  // This can panic if the type is not comparable.
 	  TREE_NOTHROW(interface_value_compare_decl) = 0;
 	}
@@ -6054,6 +6064,8 @@ Expression::comparison_tree(Translate_context* context, Operator op,
 					 left_tree,
 					 TREE_TYPE(right_tree),
 					 right_tree);
+	  if (left_tree == error_mark_node)
+	    return error_mark_node;
 	  // This can panic if the type is uncomparable.
 	  TREE_NOTHROW(empty_interface_compare_decl) = 0;
 	}
@@ -6070,6 +6082,8 @@ Expression::comparison_tree(Translate_context* context, Operator op,
 					 left_tree,
 					 TREE_TYPE(right_tree),
 					 right_tree);
+	  if (left_tree == error_mark_node)
+	    return error_mark_node;
 	  // This can panic if the type is uncomparable.
 	  TREE_NOTHROW(interface_compare_decl) = 0;
 	}
@@ -7415,6 +7429,8 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 						   "__go_print_space",
 						   0,
 						   void_type_node);
+		    if (call == error_mark_node)
+		      return error_mark_node;
 		    append_to_statement_list(call, &stmt_list);
 		  }
 
@@ -7513,8 +7529,9 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 					       void_type_node,
 					       TREE_TYPE(arg),
 					       arg);
-		if (call != error_mark_node)
-		  append_to_statement_list(call, &stmt_list);
+		if (call == error_mark_node)
+		  return error_mark_node;
+		append_to_statement_list(call, &stmt_list);
 	      }
 	  }
 
@@ -7526,6 +7543,8 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 					   "__go_print_nl",
 					   0,
 					   void_type_node);
+	    if (call == error_mark_node)
+	      return error_mark_node;
 	    append_to_statement_list(call, &stmt_list);
 	  }
 
@@ -7552,6 +7571,8 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 				       void_type_node,
 				       TREE_TYPE(arg_tree),
 				       arg_tree);
+	if (call == error_mark_node)
+	  return error_mark_node;
 	// This function will throw an exception.
 	TREE_NOTHROW(panic_fndecl) = 0;
 	// This function will not return.
@@ -7604,6 +7625,8 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 				      0,
 				      empty_tree);
 	  }
+	if (call == error_mark_node)
+	  return error_mark_node;
 	return fold_build3_loc(location, COND_EXPR, empty_tree, arg_tree,
 			       call, empty_nil_tree);
       }
@@ -9404,6 +9427,8 @@ String_index_expression::do_get_tree(Translate_context* context)
 				    start_tree,
 				    length_type,
 				    end_tree);
+      if (ret == error_mark_node)
+	return error_mark_node;
       // This will panic if the bounds are out of range for the
       // string.
       TREE_NOTHROW(strslice_fndecl) = 0;
@@ -9573,6 +9598,8 @@ Map_index_expression::get_value_pointer(Translate_context* context,
 				 (insert
 				  ? boolean_true_node
 				  : boolean_false_node));
+  if (call == error_mark_node)
+    return error_mark_node;
   // This can panic on a map of interface type if the interface holds
   // an uncomparable or unhashable type.
   TREE_NOTHROW(map_index_fndecl) = 0;
@@ -11129,6 +11156,8 @@ Map_construction_expression::do_get_tree(Translate_context* context)
 				 TYPE_SIZE_UNIT(TREE_TYPE(val_field)),
 				 const_ptr_type_node,
 				 fold_convert(const_ptr_type_node, valaddr));
+  if (call == error_mark_node)
+    return error_mark_node;
 
   tree ret;
   if (make_tmp == NULL)

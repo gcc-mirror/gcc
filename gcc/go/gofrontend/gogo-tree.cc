@@ -341,7 +341,8 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
 				 void_type_node,
 				 build_pointer_type(root_list_type),
 				 build_fold_addr_expr(decl));
-  append_to_statement_list(call, init_stmt_list);
+  if (call != error_mark_node)
+    append_to_statement_list(call, init_stmt_list);
 }
 
 // Build the decl for the initialization function.
@@ -1684,7 +1685,8 @@ Function::build_defer_wrapper(Gogo* gogo, Named_object* named_function,
 				 void_type_node,
 				 ptr_type_node,
 				 this->defer_stack(end_loc));
-  append_to_statement_list(call, &stmt_list);
+  if (call != error_mark_node)
+    append_to_statement_list(call, &stmt_list);
 
   tree retval = this->return_value(gogo, named_function, end_loc, &stmt_list);
   tree set;
@@ -1723,7 +1725,8 @@ Function::build_defer_wrapper(Gogo* gogo, Named_object* named_function,
 				    void_type_node,
 				    ptr_type_node,
 				    this->defer_stack(end_loc));
-  TREE_NOTHROW(undefer_fndecl) = 0;
+  if (undefer_fndecl != NULL_TREE)
+    TREE_NOTHROW(undefer_fndecl) = 0;
 
   tree defer = Gogo::call_builtin(&check_fndecl,
 				  end_loc,
@@ -2867,6 +2870,8 @@ Gogo::runtime_error(int code, source_location location)
 				void_type_node,
 				integer_type_node,
 				build_int_cst(integer_type_node, code));
+  if (ret == error_mark_node)
+    return error_mark_node;
   // The runtime error function panics and does not return.
   TREE_NOTHROW(runtime_error_fndecl) = 0;
   TREE_THIS_VOLATILE(runtime_error_fndecl) = 1;
@@ -2904,6 +2909,8 @@ Gogo::send_on_channel(tree channel, tree val, bool blocking, bool for_select,
 					(for_select
 					 ? boolean_true_node
 					 : boolean_false_node));
+	  if (ret == error_mark_node)
+	    return error_mark_node;
 	  // This can panic if there are too many operations on a
 	  // closed channel.
 	  TREE_NOTHROW(send_small_fndecl) = 0;
@@ -2922,6 +2929,8 @@ Gogo::send_on_channel(tree channel, tree val, bool blocking, bool for_select,
 					channel,
 					uint64_type_node,
 					val);
+	  if (ret == error_mark_node)
+	    return error_mark_node;
 	  // This can panic if there are too many operations on a
 	  // closed channel.
 	  TREE_NOTHROW(send_nonblocking_small_fndecl) = 0;
@@ -2967,6 +2976,8 @@ Gogo::send_on_channel(tree channel, tree val, bool blocking, bool for_select,
 				    (for_select
 				     ? boolean_true_node
 				     : boolean_false_node));
+	  if (call == error_mark_node)
+	    return error_mark_node;
 	  // This can panic if there are too many operations on a
 	  // closed channel.
 	  TREE_NOTHROW(send_big_fndecl) = 0;
@@ -2984,6 +2995,8 @@ Gogo::send_on_channel(tree channel, tree val, bool blocking, bool for_select,
 				    channel,
 				    ptr_type_node,
 				    val);
+	  if (call == error_mark_node)
+	    return error_mark_node;
 	  // This can panic if there are too many operations on a
 	  // closed channel.
 	  TREE_NOTHROW(send_nonblocking_big_fndecl) = 0;
@@ -3025,6 +3038,8 @@ Gogo::receive_from_channel(tree type_tree, tree channel, bool for_select,
 				     (for_select
 				      ? boolean_true_node
 				      : boolean_false_node));
+      if (call == error_mark_node)
+	return error_mark_node;
       // This can panic if there are too many operations on a closed
       // channel.
       TREE_NOTHROW(receive_small_fndecl) = 0;
@@ -3057,6 +3072,8 @@ Gogo::receive_from_channel(tree type_tree, tree channel, bool for_select,
 				     (for_select
 				      ? boolean_true_node
 				      : boolean_false_node));
+      if (call == error_mark_node)
+	return error_mark_node;
       // This can panic if there are too many operations on a closed
       // channel.
       TREE_NOTHROW(receive_big_fndecl) = 0;
@@ -3114,6 +3131,8 @@ Gogo::make_trampoline(tree fnaddr, tree closure, source_location location)
 			      ptr_type_node,
 			      fold_convert_loc(location, ptr_type_node,
 					       closure));
+  if (x == error_mark_node)
+    return error_mark_node;
 
   x = save_expr(x);
 
