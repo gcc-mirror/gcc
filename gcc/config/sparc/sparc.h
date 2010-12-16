@@ -228,21 +228,25 @@ extern enum cmodel sparc_cmodel;
 /* Note that TARGET_CPU_v9 is assumed to start the list of 64-bit
    capable cpu's.  */
 #define TARGET_CPU_sparc	0
-#define TARGET_CPU_v7		0	/* alias for previous */
-#define TARGET_CPU_sparclet	1
-#define TARGET_CPU_sparclite	2
-#define TARGET_CPU_v8		3	/* generic v8 implementation */
-#define TARGET_CPU_supersparc	4
-#define TARGET_CPU_hypersparc   5
-#define TARGET_CPU_sparc86x	6
+#define TARGET_CPU_v7		0	/* alias */
+#define TARGET_CPU_cypress	0       /* alias */
+#define TARGET_CPU_v8		1	/* generic v8 implementation */
+#define TARGET_CPU_supersparc	2
+#define TARGET_CPU_hypersparc	3
+#define TARGET_CPU_leon		4
+#define TARGET_CPU_sparclite	5
+#define TARGET_CPU_f930		5       /* alias */
+#define TARGET_CPU_f934		5       /* alias */
 #define TARGET_CPU_sparclite86x	6
-#define TARGET_CPU_v9		7	/* generic v9 implementation */
-#define TARGET_CPU_sparcv9	7	/* alias */
-#define TARGET_CPU_sparc64	7	/* alias */
-#define TARGET_CPU_ultrasparc	8
-#define TARGET_CPU_ultrasparc3	9
-#define TARGET_CPU_niagara	10
-#define TARGET_CPU_niagara2	11
+#define TARGET_CPU_sparclet	7
+#define TARGET_CPU_tsc701	7       /* alias */
+#define TARGET_CPU_v9		8	/* generic v9 implementation */
+#define TARGET_CPU_sparcv9	8	/* alias */
+#define TARGET_CPU_sparc64	8	/* alias */
+#define TARGET_CPU_ultrasparc	9
+#define TARGET_CPU_ultrasparc3	10
+#define TARGET_CPU_niagara	11
+#define TARGET_CPU_niagara2	12
 
 #if TARGET_CPU_DEFAULT == TARGET_CPU_v9 \
  || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc \
@@ -299,6 +303,11 @@ extern enum cmodel sparc_cmodel;
 #define ASM_CPU32_DEFAULT_SPEC "-Asparclite"
 #endif
 
+#if TARGET_CPU_DEFAULT == TARGET_CPU_sparclite86x
+#define CPP_CPU32_DEFAULT_SPEC "-D__sparclite86x__"
+#define ASM_CPU32_DEFAULT_SPEC "-Asparclite"
+#endif
+
 #if TARGET_CPU_DEFAULT == TARGET_CPU_supersparc
 #define CPP_CPU32_DEFAULT_SPEC "-D__supersparc__ -D__sparc_v8__"
 #define ASM_CPU32_DEFAULT_SPEC ""
@@ -309,9 +318,9 @@ extern enum cmodel sparc_cmodel;
 #define ASM_CPU32_DEFAULT_SPEC ""
 #endif
 
-#if TARGET_CPU_DEFAULT == TARGET_CPU_sparclite86x
-#define CPP_CPU32_DEFAULT_SPEC "-D__sparclite86x__"
-#define ASM_CPU32_DEFAULT_SPEC "-Asparclite"
+#if TARGET_CPU_DEFAULT == TARGET_CPU_leon
+#define CPP_CPU32_DEFAULT_SPEC "-D__leon__ -D__sparc_v8__"
+#define ASM_CPU32_DEFAULT_SPEC ""
 #endif
 
 #endif
@@ -360,10 +369,11 @@ extern enum cmodel sparc_cmodel;
 %{mcpu=sparclet:-D__sparclet__} %{mcpu=tsc701:-D__sparclet__} \
 %{mcpu=sparclite:-D__sparclite__} \
 %{mcpu=f930:-D__sparclite__} %{mcpu=f934:-D__sparclite__} \
+%{mcpu=sparclite86x:-D__sparclite86x__} \
 %{mcpu=v8:-D__sparc_v8__} \
 %{mcpu=supersparc:-D__supersparc__ -D__sparc_v8__} \
 %{mcpu=hypersparc:-D__hypersparc__ -D__sparc_v8__} \
-%{mcpu=sparclite86x:-D__sparclite86x__} \
+%{mcpu=leon:-D__leon__ -D__sparc_v8__} \
 %{mcpu=v9:-D__sparc_v9__} \
 %{mcpu=ultrasparc:-D__sparc_v9__} \
 %{mcpu=ultrasparc3:-D__sparc_v9__} \
@@ -526,10 +536,11 @@ enum processor_type {
   PROCESSOR_CYPRESS,
   PROCESSOR_V8,
   PROCESSOR_SUPERSPARC,
+  PROCESSOR_HYPERSPARC,
+  PROCESSOR_LEON,
   PROCESSOR_SPARCLITE,
   PROCESSOR_F930,
   PROCESSOR_F934,
-  PROCESSOR_HYPERSPARC,
   PROCESSOR_SPARCLITE86X,
   PROCESSOR_SPARCLET,
   PROCESSOR_TSC701,

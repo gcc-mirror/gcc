@@ -129,6 +129,30 @@ struct processor_costs hypersparc_costs = {
 };
 
 static const
+struct processor_costs leon_costs = {
+  COSTS_N_INSNS (1), /* int load */
+  COSTS_N_INSNS (1), /* int signed load */
+  COSTS_N_INSNS (1), /* int zeroed load */
+  COSTS_N_INSNS (1), /* float load */
+  COSTS_N_INSNS (1), /* fmov, fneg, fabs */
+  COSTS_N_INSNS (1), /* fadd, fsub */
+  COSTS_N_INSNS (1), /* fcmp */
+  COSTS_N_INSNS (1), /* fmov, fmovr */
+  COSTS_N_INSNS (1), /* fmul */
+  COSTS_N_INSNS (15), /* fdivs */
+  COSTS_N_INSNS (15), /* fdivd */
+  COSTS_N_INSNS (23), /* fsqrts */
+  COSTS_N_INSNS (23), /* fsqrtd */
+  COSTS_N_INSNS (5), /* imul */
+  COSTS_N_INSNS (5), /* imulX */
+  0, /* imul bit factor */
+  COSTS_N_INSNS (5), /* idiv */
+  COSTS_N_INSNS (5), /* idivX */
+  COSTS_N_INSNS (1), /* movcc/movr */
+  0, /* shift penalty */
+};
+
+static const
 struct processor_costs sparclet_costs = {
   COSTS_N_INSNS (3), /* int load */
   COSTS_N_INSNS (3), /* int signed load */
@@ -698,19 +722,20 @@ sparc_option_override (void)
     { NULL, (enum cmodel) 0 }
   };
   const struct code_model *cmodel;
-  /* Map TARGET_CPU_DEFAULT to value for -m{arch,tune}=.  */
+  /* Map TARGET_CPU_DEFAULT to value for -m{cpu,tune}=.  */
   static struct cpu_default {
     const int cpu;
     const char *const name;
   } const cpu_default[] = {
     /* There must be one entry here for each TARGET_CPU value.  */
     { TARGET_CPU_sparc, "cypress" },
-    { TARGET_CPU_sparclet, "tsc701" },
-    { TARGET_CPU_sparclite, "f930" },
     { TARGET_CPU_v8, "v8" },
-    { TARGET_CPU_hypersparc, "hypersparc" },
-    { TARGET_CPU_sparclite86x, "sparclite86x" },
     { TARGET_CPU_supersparc, "supersparc" },
+    { TARGET_CPU_hypersparc, "hypersparc" },
+    { TARGET_CPU_leon, "leon" },
+    { TARGET_CPU_sparclite, "f930" },
+    { TARGET_CPU_sparclite86x, "sparclite86x" },
+    { TARGET_CPU_sparclet, "tsc701" },
     { TARGET_CPU_v9, "v9" },
     { TARGET_CPU_ultrasparc, "ultrasparc" },
     { TARGET_CPU_ultrasparc3, "ultrasparc3" },
@@ -731,28 +756,32 @@ sparc_option_override (void)
     { "v8",         PROCESSOR_V8, MASK_ISA, MASK_V8 },
     /* TI TMS390Z55 supersparc */
     { "supersparc", PROCESSOR_SUPERSPARC, MASK_ISA, MASK_V8 },
-    { "sparclite",  PROCESSOR_SPARCLITE, MASK_ISA, MASK_SPARCLITE },
-    /* The Fujitsu MB86930 is the original sparclite chip, with no fpu.
-       The Fujitsu MB86934 is the recent sparclite chip, with an fpu.  */
-    { "f930",       PROCESSOR_F930, MASK_ISA|MASK_FPU, MASK_SPARCLITE },
-    { "f934",       PROCESSOR_F934, MASK_ISA, MASK_SPARCLITE|MASK_FPU },
     { "hypersparc", PROCESSOR_HYPERSPARC, MASK_ISA, MASK_V8|MASK_FPU },
+    /* LEON */
+    { "leon",       PROCESSOR_LEON, MASK_ISA, MASK_V8|MASK_FPU },
+    { "sparclite",  PROCESSOR_SPARCLITE, MASK_ISA, MASK_SPARCLITE },
+    /* The Fujitsu MB86930 is the original sparclite chip, with no FPU.  */
+    { "f930",       PROCESSOR_F930, MASK_ISA|MASK_FPU, MASK_SPARCLITE },
+    /* The Fujitsu MB86934 is the recent sparclite chip, with an FPU.  */
+    { "f934",       PROCESSOR_F934, MASK_ISA, MASK_SPARCLITE|MASK_FPU },
     { "sparclite86x",  PROCESSOR_SPARCLITE86X, MASK_ISA|MASK_FPU,
       MASK_SPARCLITE },
     { "sparclet",   PROCESSOR_SPARCLET, MASK_ISA, MASK_SPARCLET },
     /* TEMIC sparclet */
     { "tsc701",     PROCESSOR_TSC701, MASK_ISA, MASK_SPARCLET },
     { "v9",         PROCESSOR_V9, MASK_ISA, MASK_V9 },
-    /* TI ultrasparc I, II, IIi */
-    { "ultrasparc", PROCESSOR_ULTRASPARC, MASK_ISA, MASK_V9
-    /* Although insns using %y are deprecated, it is a clear win on current
-       ultrasparcs.  */
-    						    |MASK_DEPRECATED_V8_INSNS},
-    /* TI ultrasparc III */
-    /* ??? Check if %y issue still holds true in ultra3.  */
-    { "ultrasparc3", PROCESSOR_ULTRASPARC3, MASK_ISA, MASK_V9|MASK_DEPRECATED_V8_INSNS},
+    /* UltraSPARC I, II, IIi */
+    { "ultrasparc", PROCESSOR_ULTRASPARC, MASK_ISA,
+    /* Although insns using %y are deprecated, it is a clear win.  */
+      MASK_V9|MASK_DEPRECATED_V8_INSNS},
+    /* UltraSPARC III */
+    /* ??? Check if %y issue still holds true.  */
+    { "ultrasparc3", PROCESSOR_ULTRASPARC3, MASK_ISA,
+      MASK_V9|MASK_DEPRECATED_V8_INSNS},
     /* UltraSPARC T1 */
-    { "niagara", PROCESSOR_NIAGARA, MASK_ISA, MASK_V9|MASK_DEPRECATED_V8_INSNS},
+    { "niagara", PROCESSOR_NIAGARA, MASK_ISA,
+      MASK_V9|MASK_DEPRECATED_V8_INSNS},
+    /* UltraSPARC T2 */
     { "niagara2", PROCESSOR_NIAGARA, MASK_ISA, MASK_V9},
     { 0, (enum processor_type) 0, 0, 0 }
   };
@@ -906,6 +935,9 @@ sparc_option_override (void)
     case PROCESSOR_HYPERSPARC:
     case PROCESSOR_SPARCLITE86X:
       sparc_costs = &hypersparc_costs;
+      break;
+    case PROCESSOR_LEON:
+      sparc_costs = &leon_costs;
       break;
     case PROCESSOR_SPARCLET:
     case PROCESSOR_TSC701:
