@@ -1,3 +1,11 @@
+2010-12-16  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/46924
+	* graphite-sese-to-poly.c (detect_commutative_reduction): Do not
+	detect reductions outside the current SESE region.
+	* sese.h (stmt_in_sese_p): New.
+	(defined_in_sese_p): Call stmt_in_sese_p.
+
 2010-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/46966

@@ -2858,12 +2858,12 @@ initial_value_for_loop_phi (gimple phi)
   return NULL_TREE;
 }
 
-/* Detect commutative and associative scalar reductions starting at
-   the loop closed phi node STMT.  Return the phi node of the
-   reduction cycle, or NULL.  */
+/* Detect commutative and associative scalar reductions belonging to
+   the SCOP starting at the loop closed phi node STMT.  Return the phi
+   node of the reduction cycle, or NULL.  */
 
 static gimple
-detect_commutative_reduction (gimple stmt, VEC (gimple, heap) **in,
+detect_commutative_reduction (scop_p scop, gimple stmt, VEC (gimple, heap) **in,
 			      VEC (gimple, heap) **out)
 {
   if (scalar_close_phi_node_p (stmt))
@@ -2880,7 +2880,10 @@ detect_commutative_reduction (gimple stmt, VEC (gimple, heap) **in,
       gcc_assert (gimple_phi_num_args (stmt) == 1);
 
       def = SSA_NAME_DEF_STMT (arg);
-      loop_phi = detect_commutative_reduction (def, in, out);
+      if (!stmt_in_sese_p (def, SCOP_REGION (scop)))
+	return NULL;
+
+      loop_phi = detect_commutative_reduction (scop, def, in, out);
 
       if (loop_phi)
 	{
@@ -3019,7 +3022,7 @@ rewrite_commutative_reductions_out_of_ssa_close_phi (scop_p scop,
   VEC (gimple, heap) *in = VEC_alloc (gimple, heap, 10);
   VEC (gimple, heap) *out = VEC_alloc (gimple, heap, 10);
 
-  detect_commutative_reduction (close_phi, &in, &out);
+  detect_commutative_reduction (scop, close_phi, &in, &out);
   res = VEC_length (gimple, in) > 0;
   if (res)
     translate_scalar_reduction_to_array (scop, in, out);
