@@ -1,3 +1,9 @@
+2010-12-16  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/t-spu-elf (LIB2_SIDITI_CONV_FUNC): Define.
+	* config/spu/spu.h (MIN_UNITS_PER_WORD): Do not define.
+	(LIBGCC2_UNITS_PER_WORD): Define if not already defined.
+
 2010-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/46893
