@@ -2162,7 +2162,6 @@ powerpc-*-lynxos*)
 	tmake_file="t-lynx rs6000/t-lynx"
 	extra_options="${extra_options} rs6000/sysv4.opt lynx.opt"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-	extra_options="${extra_options} lynx.opt"
 	thread_file=lynx
 	gnu_ld=yes
 	gas=yes
