@@ -1,3 +1,31 @@
+2010-12-16  Konrad Eisele  <konrad@gaisler.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	Support for LEON processor
+	* config.gcc (sparc-*-elf*): Deal with sparc-leon specifically.
+	(sparc-*-linux*): Likewise.
+	(sparc-*-rtems*): Remove Solaris left-overs.
+	(sparc*-*-*): Remove obsolete sparc86x setting.
+	(sparc-leon*): Default to --with-cpu=v8 and --with-tune=leon.
+	* doc/invoke.texi (SPARC Options): Document -mcpu/-mtune=leon.
+	* config/sparc/sparc.h (TARGET_CPU_leon): Define.
+	(TARGET_CPU_sparc86x): Delete.
+	(TARGET_CPU_cypress): Define as alias to TARGET_CPU_v7.
+	(TARGET_CPU_f930): Define as alias to TARGET_CPU_sparclite.
+	(TARGET_CPU_f934): Likewise.
+	(TARGET_CPU_tsc701): Define as alias to TARGET_CPU_sparclet.
+	(CPP_CPU_SPEC): Add entry for -mcpu=leon.
+	(enum processor_type): Add PROCESSOR_LEON.  Reorganize.
+	* config/sparc/sparc.c (leon_costs): New cost array.
+	(sparc_option_override): Add entry for TARGET_CPU_leon and -mcpu=leon.
+	Initialize cost array to leon_costs if -mtune=leon.
+	* config/sparc/sparc.md (cpu attribute): Add leon.  Reorganize.
+	Include leon.md scheduling description.
+	* config/sparc/leon.md: New file.
+	* config/sparc/t-elf: Do not assemble Solaris startup files.
+	* config/sparc/t-leon: New file.
+	* config/sparc/t-leon3: Likewise.
+
 2010-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/43655

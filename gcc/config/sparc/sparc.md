@@ -104,9 +104,14 @@
    cypress,
    v8,
    supersparc,
-   sparclite,f930,f934,
-   hypersparc,sparclite86x,
-   sparclet,tsc701,
+   hypersparc,
+   leon,
+   sparclite,
+   f930,
+   f934,
+   sparclite86x,
+   sparclet,
+   tsc701,
    v9,
    ultrasparc,
    ultrasparc3,
@@ -339,6 +344,7 @@
 (include "cypress.md")
 (include "supersparc.md")
 (include "hypersparc.md")
+(include "leon.md")
 (include "sparclet.md")
 (include "ultra1_2.md")
 (include "ultra3.md")
