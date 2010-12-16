@@ -8655,6 +8655,9 @@ Call_result_expression::do_traverse(Traverse* traverse)
 Type*
 Call_result_expression::do_type()
 {
+  if (this->classification() == EXPRESSION_ERROR)
+    return Type::make_error_type();
+
   // THIS->CALL_ can be replaced with a temporary reference due to
   // Call_expression::do_must_eval_in_order when there is an error.
   Call_expression* ce = this->call_->call_expression();
@@ -8668,34 +8671,25 @@ Call_result_expression::do_type()
   for (unsigned int i = 0; i < this->index_; ++i)
     {
       if (pr == results->end())
-	return Type::make_error_type();
+	break;
       ++pr;
     }
   if (pr == results->end())
-    return Type::make_error_type();
+    {
+      this->report_error(_("number of results does not match "
+			   "number of values"));
+      return Type::make_error_type();
+    }
   return pr->type();
 }
 
-// Check the type.  This is where we give an error if we're trying to
-// extract too many values from a call.
+// Check the type.  Just make sure that we trigger the warning in
+// do_type.
 
 void
 Call_result_expression::do_check_types(Gogo*)
 {
-  bool ok = true;
-  Call_expression* ce = this->call_->call_expression();
-  if (ce != NULL)
-    ok = this->index_ < ce->result_count();
-  else
-    {
-      // This can happen when the call returns a single value but we
-      // are asking for the second result.
-      if (this->call_->is_error_expression())
-	return;
-      ok = false;
-    }
-  if (!ok)
-    this->report_error(_("number of results does not match number of values"));
+  this->type();
 }
 
 // Determine the type.  We have nothing to do here, but the 0 result
