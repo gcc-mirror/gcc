@@ -1,5 +1,21 @@
 2010-12-15  Nathan Froyd  <froydnj@codesourcery.com>
 
+	PR c++/39859
+	PR c++/44522
+	PR c++/44523
+	* parser.c (struct cp_parser): Add colon_corrects_to_scope_p field.
+	(cp_parser_new): Initialize it.
+	(cp_parser_nested_name_specifier_opt): Auto-correct colons to
+	scopes if we are able to.
+	(cp_parser_question_colon_clause): Disallow colon correction.
+	(cp_parser_label_for_labeled_statement): Likewise.
+	(cp_parser_range_for): Likewise.
+	(cp_parser_enum_specifier): Likewise.
+	(cp_parser_class_head): Likewise.
+	(cp_parser_member_declaration): Likewise.
+
+2010-12-15  Nathan Froyd  <froydnj@codesourcery.com>
+
 	PR c++/46852
 	* parser.c (cp_parser_class_specifier): Check for TYPE_P.
 
