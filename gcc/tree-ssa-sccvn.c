@@ -1063,6 +1063,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
       size2 = TREE_INT_CST_LOW (gimple_call_arg (def_stmt, 2)) * 8;
       if ((unsigned HOST_WIDE_INT)size2 / 8
 	  == TREE_INT_CST_LOW (gimple_call_arg (def_stmt, 2))
+	  && maxsize2 != -1
 	  && operand_equal_p (base, base2, 0)
 	  && offset2 <= offset
 	  && offset2 + size2 >= offset + maxsize)
@@ -1086,7 +1087,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
       HOST_WIDE_INT offset2, size2, maxsize2;
       base2 = get_ref_base_and_extent (gimple_assign_lhs (def_stmt),
 				       &offset2, &size2, &maxsize2);
-      if (operand_equal_p (base, base2, 0)
+      if (maxsize2 != -1
+	  && operand_equal_p (base, base2, 0)
 	  && offset2 <= offset
 	  && offset2 + size2 >= offset + maxsize)
 	{
@@ -1116,7 +1118,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
       /* See if the assignment kills REF.  */
       base2 = get_ref_base_and_extent (gimple_assign_lhs (def_stmt),
 				       &offset2, &size2, &maxsize2);
-      if (!operand_equal_p (base, base2, 0)
+      if (maxsize2 == -1
+	  || !operand_equal_p (base, base2, 0)
 	  || offset2 > offset
 	  || offset2 + size2 < offset + maxsize)
 	return (void *)-1;
