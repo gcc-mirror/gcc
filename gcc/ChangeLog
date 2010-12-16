@@ -1,3 +1,8 @@
+2010-12-16  Richard Guenther  <rguenther@suse.de>
+
+	* DEV-PHASE: Set back to prerelease.
+	* BASE-VER: Bump to 4.5.3.
+
 2010-12-16  Release Manager
 
 	* GCC 4.5.2 released.
