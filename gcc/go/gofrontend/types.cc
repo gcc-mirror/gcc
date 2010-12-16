@@ -5094,6 +5094,8 @@ Map_type::do_make_expression_tree(Translate_context* context,
 				context->gogo()->map_descriptor(this),
 				sizetype,
 				expr_tree);
+  if (ret == error_mark_node)
+    return error_mark_node;
   // This can panic if the capacity is out of range.
   TREE_NOTHROW(new_map_fndecl) = 0;
 
@@ -5344,6 +5346,8 @@ Channel_type::do_make_expression_tree(Translate_context* context,
 				element_size_tree,
 				sizetype,
 				expr_tree);
+  if (ret == error_mark_node)
+    return error_mark_node;
   // This can panic if the capacity is out of range.
   TREE_NOTHROW(new_channel_fndecl) = 0;
 

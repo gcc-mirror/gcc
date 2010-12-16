@@ -4216,6 +4216,8 @@ Select_clauses::get_tree(Translate_context* context,
 				 chans_arg,
 				 pointer_boolean_type_tree,
 				 is_sends_arg);
+  if (call == error_mark_node)
+    return error_mark_node;
 
   tree stmt_list = NULL_TREE;
 
