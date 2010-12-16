@@ -7069,7 +7069,8 @@ Builtin_call_expression::check_one_arg()
       return false;
     }
   if (args->front()->is_error_expression()
-      || args->front()->type()->is_error_type())
+      || args->front()->type()->is_error_type()
+      || args->front()->type()->is_undefined())
     {
       this->set_is_error();
       return false;
