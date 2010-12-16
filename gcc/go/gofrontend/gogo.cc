@@ -1472,7 +1472,8 @@ Check_types_traverse::constant(Named_object* named_object, bool)
       && !ctype->is_boolean_type()
       && !ctype->is_string_type())
     {
-      error_at(constant->location(), "invalid constant type");
+      if (!ctype->is_error_type())
+	error_at(constant->location(), "invalid constant type");
       constant->set_error();
     }
   else if (!constant->expr()->is_constant())

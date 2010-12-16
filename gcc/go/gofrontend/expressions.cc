@@ -2292,7 +2292,7 @@ class Const_expression : public Expression
  public:
   Const_expression(Named_object* constant, source_location location)
     : Expression(EXPRESSION_CONST_REFERENCE, location),
-      constant_(constant), type_(NULL)
+      constant_(constant), type_(NULL), seen_(false)
   { }
 
   const std::string&
@@ -2350,6 +2350,9 @@ class Const_expression : public Expression
   // The type of this reference.  This is used if the constant has an
   // abstract type.
   Type* type_;
+  // Used to prevent infinite recursion when a constant incorrectly
+  // refers to itself.
+  mutable bool seen_;
 };
 
 // Lower a constant expression.  This is where we convert the
@@ -2387,6 +2390,9 @@ bool
 Const_expression::do_integer_constant_value(bool iota_is_constant, mpz_t val,
 					    Type** ptype) const
 {
+  if (this->seen_)
+    return false;
+
   Type* ctype;
   if (this->type_ != NULL)
     ctype = this->type_;
@@ -2396,8 +2402,13 @@ Const_expression::do_integer_constant_value(bool iota_is_constant, mpz_t val,
     return false;
 
   Expression* e = this->constant_->const_value()->expr();
+
+  this->seen_ = true;
+
   Type* t;
   bool r = e->integer_constant_value(iota_is_constant, val, &t);
+
+  this->seen_ = false;
 
   if (r
       && ctype != NULL
@@ -2413,6 +2424,9 @@ Const_expression::do_integer_constant_value(bool iota_is_constant, mpz_t val,
 bool
 Const_expression::do_float_constant_value(mpfr_t val, Type** ptype) const
 {
+  if (this->seen_)
+    return false;
+
   Type* ctype;
   if (this->type_ != NULL)
     ctype = this->type_;
@@ -2421,9 +2435,14 @@ Const_expression::do_float_constant_value(mpfr_t val, Type** ptype) const
   if (ctype != NULL && ctype->float_type() == NULL)
     return false;
 
+  this->seen_ = true;
+
   Type* t;
   bool r = this->constant_->const_value()->expr()->float_constant_value(val,
 									&t);
+
+  this->seen_ = false;
+
   if (r && ctype != NULL)
     {
       if (!Float_expression::check_constant(val, ctype, this->location()))
@@ -2440,6 +2459,9 @@ bool
 Const_expression::do_complex_constant_value(mpfr_t real, mpfr_t imag,
 					    Type **ptype) const
 {
+  if (this->seen_)
+    return false;
+
   Type* ctype;
   if (this->type_ != NULL)
     ctype = this->type_;
@@ -2448,10 +2470,15 @@ Const_expression::do_complex_constant_value(mpfr_t real, mpfr_t imag,
   if (ctype != NULL && ctype->complex_type() == NULL)
     return false;
 
+  this->seen_ = true;
+
   Type *t;
   bool r = this->constant_->const_value()->expr()->complex_constant_value(real,
 									  imag,
 									  &t);
+
+  this->seen_ = false;
+
   if (r && ctype != NULL)
     {
       if (!Complex_expression::check_constant(real, imag, ctype,
@@ -2470,13 +2497,32 @@ Const_expression::do_type()
 {
   if (this->type_ != NULL)
     return this->type_;
+
+  if (this->seen_)
+    {
+      this->report_error(_("constant refers to itself"));
+      this->type_ = Type::make_error_type();
+      return this->type_;
+    }
+
+  this->seen_ = true;
+
   Named_constant* nc = this->constant_->const_value();
   Type* ret = nc->type();
+
   if (ret != NULL)
-    return ret;
+    {
+      this->seen_ = false;
+      return ret;
+    }
+
   // During parsing, a named constant may have a NULL type, but we
   // must not return a NULL type here.
-  return nc->expr()->type();
+  ret = nc->expr()->type();
+
+  this->seen_ = false;
+
+  return ret;
 }
 
 // Set the type of the const reference.
