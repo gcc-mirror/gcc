@@ -782,6 +782,12 @@ Tuple_assignment_statement::do_lower(Gogo*, Block* enclosing)
     {
       gcc_assert(prhs != this->rhs_->end());
 
+      if ((*plhs)->is_error_expression()
+	  || (*plhs)->type()->is_error_type()
+	  || (*prhs)->is_error_expression()
+	  || (*prhs)->type()->is_error_type())
+	continue;
+
       if ((*plhs)->is_sink_expression())
 	{
 	  b->add_statement(Statement::make_statement(*prhs));
@@ -802,6 +808,12 @@ Tuple_assignment_statement::do_lower(Gogo*, Block* enclosing)
        plhs != this->lhs_->end();
        ++plhs, ++prhs)
     {
+      if ((*plhs)->is_error_expression()
+	  || (*plhs)->type()->is_error_type()
+	  || (*prhs)->is_error_expression()
+	  || (*prhs)->type()->is_error_type())
+	continue;
+
       if ((*plhs)->is_sink_expression())
 	continue;
 
