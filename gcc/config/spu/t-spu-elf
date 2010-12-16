@@ -61,6 +61,10 @@ fp-bit.c: $(srcdir)/config/fp-bit.c $(srcdir)/config/spu/t-spu-elf
 	echo '#define FLOAT' > fp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
 
+# Build TImode conversion routines to support Fortran 128-bit
+# integer data types.
+LIB2_SIDITI_CONV_FUNCS=yes
+
 # Don't let CTOR_LIST end up in sdata section.
 CRTSTUFF_T_CFLAGS =
 

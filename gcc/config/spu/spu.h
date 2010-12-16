@@ -65,9 +65,16 @@ extern GTY(()) int spu_tune;
 
 #define UNITS_PER_WORD (BITS_PER_WORD/BITS_PER_UNIT)
 
-/* We never actually change UNITS_PER_WORD, but defining this causes
-   libgcc to use some different sizes of types when compiling. */
-#define MIN_UNITS_PER_WORD 4
+/* When building libgcc, we need to assume 4 words per units even
+   though UNITS_PER_WORD is 16, because the SPU has basically a 32-bit
+   instruction set although register size is 128 bits.  In particular,
+   this causes libgcc to contain __divdi3 instead of __divti3 etc.
+   However, we allow this default to be re-defined on the command
+   line, so that we can use the LIB2_SIDITI_CONV_FUNCS mechanism
+   to get (in addition) TImode versions of some routines.  */
+#ifndef LIBGCC2_UNITS_PER_WORD
+#define LIBGCC2_UNITS_PER_WORD 4
+#endif
 
 #define POINTER_SIZE 32
 
