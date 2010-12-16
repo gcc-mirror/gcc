@@ -1700,6 +1700,9 @@ typedef struct GTY(()) cp_parser {
      a local class.  */
   bool in_function_body;
 
+  /* TRUE if we can auto-correct a colon to a scope operator.  */
+  bool colon_corrects_to_scope_p;
+
   /* If non-NULL, then we are parsing a construct where new type
      definitions are not permitted.  The string stored here will be
      issued as an error message if a type is defined.  */
@@ -3244,6 +3247,9 @@ cp_parser_new (void)
   /* We are not parsing a function body.  */
   parser->in_function_body = false;
 
+  /* We can correct until told otherwise.  */
+  parser->colon_corrects_to_scope_p = true;
+
   /* The unparsed function queue is empty.  */
   push_unparsed_function_queues (parser);
 
@@ -4553,6 +4559,16 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	     template-id), nor a `::', then we are not looking at a
 	     nested-name-specifier.  */
 	  token = cp_lexer_peek_nth_token (parser->lexer, 2);
+
+	  if (token->type == CPP_COLON
+	      && parser->colon_corrects_to_scope_p
+	      && cp_lexer_peek_nth_token (parser->lexer, 3)->type == CPP_NAME)
+	    {
+	      error_at (token->location,
+			"found %<:%> in nested-name-specifier, expected %<::%>");
+	      token->type = CPP_SCOPE;
+	    }
+
 	  if (token->type != CPP_SCOPE
 	      && !cp_parser_nth_token_starts_template_argument_list_p
 		  (parser, 2))
@@ -6955,12 +6971,15 @@ cp_parser_question_colon_clause (cp_parser* parser, tree logical_or_expr)
     }
   else
     {
+      bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
+      parser->colon_corrects_to_scope_p = false;
       /* Parse the expression.  */
       c_inhibit_evaluation_warnings += logical_or_expr == truthvalue_false_node;
       expr = cp_parser_expression (parser, /*cast_p=*/false, NULL);
       c_inhibit_evaluation_warnings +=
 	((logical_or_expr == truthvalue_true_node)
 	 - (logical_or_expr == truthvalue_false_node));
+      parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
     }
 
   /* The next token should be a `:'.  */
@@ -8153,6 +8172,7 @@ cp_parser_label_for_labeled_statement (cp_parser* parser)
 {
   cp_token *token;
   tree label = NULL_TREE;
+  bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
 
   /* The next token should be an identifier.  */
   token = cp_lexer_peek_token (parser->lexer);
@@ -8163,6 +8183,7 @@ cp_parser_label_for_labeled_statement (cp_parser* parser)
       return;
     }
 
+  parser->colon_corrects_to_scope_p = false;
   switch (token->keyword)
     {
     case RID_CASE:
@@ -8241,6 +8262,8 @@ cp_parser_label_for_labeled_statement (cp_parser* parser)
       else
 	cplus_decl_attributes (&label, attrs, 0);
     }
+
+  parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
 }
 
 /* Parse an expression-statement.
@@ -8710,7 +8733,9 @@ cp_parser_range_for (cp_parser *parser)
   cp_declarator *declarator;
   const char *saved_message;
   tree attributes, pushed_scope;
+  bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
 
+  parser->colon_corrects_to_scope_p = false;
   cp_parser_parse_tentatively (parser);
   /* New types are not allowed in the type-specifier-seq for a
      range-based for loop.  */
@@ -8727,7 +8752,8 @@ cp_parser_range_for (cp_parser *parser)
   if (cp_parser_error_occurred (parser))
     {
       cp_parser_abort_tentative_parse (parser);
-      return NULL_TREE;
+      stmt = NULL_TREE;
+      goto out;
     }
   /* Parse the declarator.  */
   declarator = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
@@ -8774,6 +8800,8 @@ cp_parser_range_for (cp_parser *parser)
     /* Convert the range-based for loop into a normal for-statement. */
     stmt = cp_convert_range_for (stmt, range_decl, range_expr);
 
+ out:
+  parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
   return stmt;
 }
 
@@ -13343,6 +13371,9 @@ cp_parser_enum_specifier (cp_parser* parser)
   bool is_anonymous = false;
   tree underlying_type = NULL_TREE;
   cp_token *type_start_token = NULL;
+  bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
+
+  parser->colon_corrects_to_scope_p = false;
 
   /* Parse tentatively so that we can back up if we don't find a
      enum-specifier.  */
@@ -13470,7 +13501,10 @@ cp_parser_enum_specifier (cp_parser* parser)
 	{
 	  cp_parser_error (parser, "expected %<{%>");
 	  if (has_underlying_type)
-	    return NULL_TREE;
+	    {
+	      type = NULL_TREE;
+	      goto out;
+	    }
 	}
       /* An opaque-enum-specifier must have a ';' here.  */
       if ((scoped_enum_p || underlying_type)
@@ -13478,7 +13512,10 @@ cp_parser_enum_specifier (cp_parser* parser)
 	{
 	  cp_parser_error (parser, "expected %<;%> or %<{%>");
 	  if (has_underlying_type)
-	    return NULL_TREE;
+	    {
+	      type = NULL_TREE;
+	      goto out;
+	    }
 	}
     }
 
@@ -13622,6 +13659,8 @@ cp_parser_enum_specifier (cp_parser* parser)
 	  pop_nested_namespace (nested_name_specifier);
 	}
     }
+ out:
+  parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
   return type;
 }
 
@@ -17087,6 +17126,7 @@ cp_parser_class_head (cp_parser* parser,
   bool qualified_p = false;
   bool invalid_nested_name_p = false;
   bool invalid_explicit_specialization_p = false;
+  bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
   tree pushed_scope = NULL_TREE;
   unsigned num_templates;
   cp_token *type_start_token = NULL, *nested_name_specifier_token_start = NULL;
@@ -17095,6 +17135,7 @@ cp_parser_class_head (cp_parser* parser,
   /* Assume no template parameter lists will be used in defining the
      type.  */
   num_templates = 0;
+  parser->colon_corrects_to_scope_p = false;
 
   *bases = NULL_TREE;
 
@@ -17234,7 +17275,8 @@ cp_parser_class_head (cp_parser* parser,
   if (!cp_parser_next_token_starts_class_definition_p (parser))
     {
       cp_parser_error (parser, "expected %<{%> or %<:%>");
-      return error_mark_node;
+      type = error_mark_node;
+      goto out;
     }
 
   /* At this point, we're going ahead with the class-specifier, even
@@ -17245,13 +17287,15 @@ cp_parser_class_head (cp_parser* parser,
     {
       cp_parser_error (parser,
 		       "global qualification of class name is invalid");
-      return error_mark_node;
+      type = error_mark_node;
+      goto out;
     }
   else if (invalid_nested_name_p)
     {
       cp_parser_error (parser,
 		       "qualified name does not name a class");
-      return error_mark_node;
+      type = error_mark_node;
+      goto out;
     }
   else if (nested_name_specifier)
     {
@@ -17454,6 +17498,8 @@ cp_parser_class_head (cp_parser* parser,
   if (type)
     DECL_SOURCE_LOCATION (TYPE_NAME (type)) = type_start_token->location;
   *attributes_p = attributes;
+ out:
+  parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
   return type;
 }
 
@@ -17582,6 +17628,7 @@ cp_parser_member_declaration (cp_parser* parser)
   cp_token *decl_spec_token_start = NULL;
   cp_token *initializer_token_start = NULL;
   int saved_pedantic;
+  bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
 
   /* Check for the `__extension__' keyword.  */
   if (cp_parser_extension_opt (parser, &saved_pedantic))
@@ -17640,8 +17687,10 @@ cp_parser_member_declaration (cp_parser* parser)
       return;
     }
 
+  parser->colon_corrects_to_scope_p = false;
+
   if (cp_parser_using_declaration (parser, /*access_declaration=*/true))
-    return;
+    goto out;
 
   /* Parse the decl-specifier-seq.  */
   decl_spec_token_start = cp_lexer_peek_token (parser->lexer);
@@ -17654,7 +17703,7 @@ cp_parser_member_declaration (cp_parser* parser)
   /* Check for an invalid type-name.  */
   if (!decl_specifiers.any_type_specifiers_p
       && cp_parser_parse_and_diagnose_invalid_type_name (parser))
-    return;
+    goto out;
   /* If there is no declarator, then the decl-specifier-seq should
      specify a type.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
@@ -17824,7 +17873,7 @@ cp_parser_member_declaration (cp_parser* parser)
 		  if (cp_lexer_next_token_is (parser->lexer,
 					      CPP_SEMICOLON))
 		    cp_lexer_consume_token (parser->lexer);
-		  return;
+		  goto out;
 		}
 
 	      if (declares_class_or_enum & 2)
@@ -17903,7 +17952,7 @@ cp_parser_member_declaration (cp_parser* parser)
 		  /* If the next token is a semicolon, consume it.  */
 		  if (token->type == CPP_SEMICOLON)
 		    cp_lexer_consume_token (parser->lexer);
-		  return;
+		  goto out;
 		}
 	      else
 		if (declarator->kind == cdk_function)
@@ -17958,11 +18007,13 @@ cp_parser_member_declaration (cp_parser* parser)
 	    }
 
 	  if (assume_semicolon)
-	    return;
+	    goto out;
 	}
     }
 
   cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
+ out:
+  parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
 }
 
 /* Parse a pure-specifier.

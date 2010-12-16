@@ -1,5 +1,13 @@
 2010-12-15  Nathan Froyd  <froydnj@codesourcery.com>
 
+	PR c++/39859
+	PR c++/44522
+	PR c++/44523
+	* g++.dg/parse/colon-autocorrect-1.C: New testcase.
+	* g++.dg/parse/colon-autocorrect-2.C: New testcase.
+
+2010-12-15  Nathan Froyd  <froydnj@codesourcery.com>
+
 	PR c++/46852
 	* g++.dg/pr46852.C: New test.
 
