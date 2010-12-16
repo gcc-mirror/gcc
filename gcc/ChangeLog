@@ -1,3 +1,14 @@
+2010-12-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/darwin.opt (dylinker, headerpad_max_install_names,
+	keep_private_externs, nofixprebinding, nomultidefs, noprebind,
+	noseglinkedit, object, prebind, prebind_all_twolevel_modules,
+	preload, private_bundle, pthread, seglinkedit, twolevel_namespace,
+	twolevel_namespace_hints, whatsloaded, whyload, y, Mach, X): New
+	Driver options.
+	* config/darwin.h (LINK_SPEC): Remove '*' after
+	headerpad_max_install_names.
+
 2010-12-16  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/46924
