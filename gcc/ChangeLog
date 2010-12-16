@@ -1,3 +1,9 @@
+2010-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/46893
+	* cfgexpand.c (expand_debug_expr): If GET_MODE (op0) is VOIDmode,
+	use TYPE_MODE (TREE_TYPE (tem)) instead of mode1.
+
 2010-12-16  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR target/46883

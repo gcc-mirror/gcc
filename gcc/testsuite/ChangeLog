@@ -1,3 +1,8 @@
+2010-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/46893
+	* gcc.dg/pr46893.c: New test.
+
 2010-12-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR lto/46976
