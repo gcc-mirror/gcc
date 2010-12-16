@@ -1,3 +1,9 @@
+2010-12-16  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/sh/sh.h (OUTPUT_ADDR_CONST_EXTRA): Remove.
+	* config/sh/sh.c (sh_asm_output_addr_const_extra): New function.
+	(TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA): Define.
+
 2010-12-16  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/t-spu-elf (LIB2_SIDITI_CONV_FUNC): Define.
