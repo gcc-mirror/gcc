@@ -1,3 +1,8 @@
+2010-12-16  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/46404
+	* gcc.dg/graphite/pr46404-1.c: New.
+
 2010-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/46893

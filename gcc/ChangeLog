@@ -1,3 +1,8 @@
+2010-12-16  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/46404
+	* graphite-clast-to-gimple.c (gloog): Call scev_reset.
+
 2010-12-16  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/sh/sh.h (OUTPUT_ADDR_CONST_EXTRA): Remove.
