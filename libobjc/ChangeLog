@@ -1,3 +1,20 @@
+2010-12-16  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* sendmsg.c: Include objc/runtime.h instead of objc/objc-api.h.
+	Include objc-private/module-abi-8.h and objc-private/selector.h
+	instead of objc/encoding.h.
+	(objc_msg_lookup_super): Use super->super_class instead of
+	super->class.
+	(method_get_first_argument, method_get_next_argument): Declare
+	locally.
+	(class_get_instance_method): Declare before using.
+	(objc_msg_sendv): Use 'struct objc_method' instead of 'Method'.
+	(__objc_init_dispatch_tables, __objc_send_initialize): Use
+	sel_registerName() instead of sel_register_name().
+	(__objc_forward): Use sel_getName() instead of sel_get_name().
+	(objc_get_uninstalled_dtable): Use 'void' as argument.
+	* objc-private/selector.h: New.
+
 2010-12-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/message.h (objc_super): When using the modern API, do not
