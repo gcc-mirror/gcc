@@ -1,3 +1,8 @@
+2010-12-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* config.gcc (powerpc-*-lynxos*): Don't add lynx.opt to
+	extra_options twice.
+
 2010-12-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/tm.texi.in (US_SOFTWARE_GOFAST): Don't document.
