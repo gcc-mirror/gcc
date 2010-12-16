@@ -1,3 +1,8 @@
+2010-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/43655
+	* g++.dg/opt/pr43655.C: New test.
+
 2010-12-16  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/46404
