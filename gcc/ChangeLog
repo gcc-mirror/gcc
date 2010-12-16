@@ -1,3 +1,8 @@
+2010-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Always punt if the call to
+	get_ref_base_and_extent returns -1 as the max size.
+
 2010-12-16  Konrad Eisele  <konrad@gaisler.com>
             Eric Botcazou  <ebotcazou@adacore.com>
 
