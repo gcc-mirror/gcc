@@ -1,3 +1,8 @@
+2010-12-16  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/46976
+	* gcc.dg/lto/pr46940_0.c: Fix commit.
+
 2010-12-15  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c++/39859
