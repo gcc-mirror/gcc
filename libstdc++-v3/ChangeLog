@@ -1,5 +1,16 @@
 2010-12-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/basic_string.h (operator+(basic_string<>&&,
+	const basic_string<>&), operator+(const basic_string<>&,
+	basic_string<>&&), operator+(basic_string<>&&, basic_string<>&&),
+	operator+(const _CharT*, basic_string<>&&), operator+(_CharT,
+	basic_string<>&&), operator+(basic_string<>&&, const _CharT*),
+	operator+(basic_string<>&&, _CharT)): Add.
+	* testsuite/21_strings/basic_string/operators/char/3.cc: New.
+	* testsuite/21_strings/basic_string/operators/wchar_t/3.cc: Likewise.
+
+2010-12-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* aclocal.m4: Regenerate.
 	* Makefile.in: Likewise.
 	* testsuite/Makefile.in: Likewise.
