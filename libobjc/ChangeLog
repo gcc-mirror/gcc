@@ -1,3 +1,36 @@
+2010-12-17  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* init.c: Include objc/runtime.h and objc-private/module-abi-8.h
+	instead of objc/objc-api.h.
+	(init_check_module_version): Take a 'struct objc_module *'
+	argument instead of 'Module_t'.  Use 'struct objc_module *'
+	instead of 'Module_t'.
+	(__objc_created_classes_tree): Take a 'struct objc_module *'
+	argument instead of 'Module_t'; use 'struct objc_symtab *' instead
+	of 'Symtab_t'.
+	(__objc_call_callback): Take a 'struct objc_module *' argument
+	instead of 'Module_t'; use 'struct objc_symtab *' instead of
+	'Symtab_t' and 'struct objc_category *' instead of 'Category_t'.
+	(_objc_load_callback): Take a 'struct objc_category *' argument
+	instead of 'Category *'.
+	(class_superclass_of_class): Use objc_getClass() instead of
+	objc_lookup_class().
+	(create_tree_of_subclasses_inherited_from): Same change (also, use
+	an explicit 'if' instead of '?').
+	(objc_init_statics): Same change.
+	(objc_send_load): Same change.
+	(__objc_init_protocol): same change.
+	(__objc_send_message_in_list): Take a 'struct objc_method_list *'
+	argument instead of 'MethodList_t'.  Use 'struct objc_method *'
+	instead of 'Method_t'.
+	(__objc_send_load): Use 'struct objc_method_list *' instead of
+	'MethodList_t'.  Use sel_registerName() instead of
+	sel_register_name().
+	(__objc_exec_class): Take a 'struct objc_module *' argument
+	instead of 'Module_t'.  Use 'struct objc_symtab *' instead of
+	'Symtab_t'.  Use objc_getClass() instead of objc_lookup_class().
+	Use 'struct objc_category *' instead of 'Category_t'.
+	
 2010-12-16  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* sendmsg.c: Include objc/runtime.h instead of objc/objc-api.h.
