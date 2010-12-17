@@ -1,3 +1,8 @@
+2010-12-17  Richard Henderson  <rth@redhat.com>
+
+	* regcprop.c (find_oldest_value_reg): Continue search instead of
+	failing if an element in the copy chain is of the wrong regclass.
+
 2010-12-17  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR c/20385

@@ -457,7 +457,7 @@ find_oldest_value_reg (enum reg_class cl, rtx reg, struct value_data *vd)
       rtx new_rtx;
 
       if (!in_hard_reg_set_p (reg_class_contents[cl], mode, i))
-	return NULL_RTX;
+	continue;
 
       new_rtx = maybe_mode_change (oldmode, vd->e[regno].mode, mode, i, regno);
       if (new_rtx)
