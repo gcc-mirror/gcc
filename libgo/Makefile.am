@@ -319,6 +319,7 @@ runtime_files = \
 	runtime/go-closed.c \
 	runtime/go-construct-map.c \
 	runtime/go-convert-interface.c \
+	runtime/go-copy.c \
 	runtime/go-defer.c \
 	runtime/go-deferred-recover.c \
 	runtime/go-eface-compare.c \

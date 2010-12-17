@@ -129,10 +129,10 @@ am__libgo_la_SOURCES_DIST = runtime/go-append.c runtime/go-assert.c \
 	runtime/go-chan-cap.c runtime/go-chan-len.c \
 	runtime/go-check-interface.c runtime/go-close.c \
 	runtime/go-closed.c runtime/go-construct-map.c \
-	runtime/go-convert-interface.c runtime/go-defer.c \
-	runtime/go-deferred-recover.c runtime/go-eface-compare.c \
-	runtime/go-eface-val-compare.c runtime/go-getgoroot.c \
-	runtime/go-go.c runtime/go-gomaxprocs.c \
+	runtime/go-convert-interface.c runtime/go-copy.c \
+	runtime/go-defer.c runtime/go-deferred-recover.c \
+	runtime/go-eface-compare.c runtime/go-eface-val-compare.c \
+	runtime/go-getgoroot.c runtime/go-go.c runtime/go-gomaxprocs.c \
 	runtime/go-int-array-to-string.c runtime/go-int-to-string.c \
 	runtime/go-interface-compare.c \
 	runtime/go-interface-val-compare.c runtime/go-lock-os-thread.c \
@@ -174,8 +174,8 @@ am__objects_3 = go-append.lo go-assert.lo go-assert-interface.lo \
 	go-byte-array-to-string.lo go-breakpoint.lo go-caller.lo \
 	go-can-convert-interface.lo go-chan-cap.lo go-chan-len.lo \
 	go-check-interface.lo go-close.lo go-closed.lo \
-	go-construct-map.lo go-convert-interface.lo go-defer.lo \
-	go-deferred-recover.lo go-eface-compare.lo \
+	go-construct-map.lo go-convert-interface.lo go-copy.lo \
+	go-defer.lo go-deferred-recover.lo go-eface-compare.lo \
 	go-eface-val-compare.lo go-getgoroot.lo go-go.lo \
 	go-gomaxprocs.lo go-int-array-to-string.lo go-int-to-string.lo \
 	go-interface-compare.lo go-interface-val-compare.lo \
@@ -685,6 +685,7 @@ runtime_files = \
 	runtime/go-closed.c \
 	runtime/go-construct-map.c \
 	runtime/go-convert-interface.c \
+	runtime/go-copy.c \
 	runtime/go-defer.c \
 	runtime/go-deferred-recover.c \
 	runtime/go-eface-compare.c \
@@ -1892,6 +1893,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-closed.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-construct-map.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-convert-interface.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-copy.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-defer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-deferred-recover.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-eface-compare.Plo@am__quote@
@@ -2108,6 +2110,13 @@ go-convert-interface.lo: runtime/go-convert-interface.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-convert-interface.c' object='go-convert-interface.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-convert-interface.lo `test -f 'runtime/go-convert-interface.c' || echo '$(srcdir)/'`runtime/go-convert-interface.c
+
+go-copy.lo: runtime/go-copy.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-copy.lo -MD -MP -MF $(DEPDIR)/go-copy.Tpo -c -o go-copy.lo `test -f 'runtime/go-copy.c' || echo '$(srcdir)/'`runtime/go-copy.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-copy.Tpo $(DEPDIR)/go-copy.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-copy.c' object='go-copy.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-copy.lo `test -f 'runtime/go-copy.c' || echo '$(srcdir)/'`runtime/go-copy.c
 
 go-defer.lo: runtime/go-defer.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-defer.lo -MD -MP -MF $(DEPDIR)/go-defer.Tpo -c -o go-defer.lo `test -f 'runtime/go-defer.c' || echo '$(srcdir)/'`runtime/go-defer.c
