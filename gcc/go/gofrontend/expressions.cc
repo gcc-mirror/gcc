@@ -7785,9 +7785,23 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 				    bytecount, element_size);
 	bytecount = fold_convert_loc(location, size_type_node, bytecount);
 
-	tree call = build_call_expr_loc(location,
-					built_in_decls[BUILT_IN_MEMMOVE],
-					3, arg1_val, arg2_val, bytecount);
+	arg1_val = fold_convert_loc(location, ptr_type_node, arg1_val);
+	arg2_val = fold_convert_loc(location, ptr_type_node, arg2_val);
+
+	static tree copy_fndecl;
+	tree call = Gogo::call_builtin(&copy_fndecl,
+				       location,
+				       "__go_copy",
+				       3,
+				       void_type_node,
+				       ptr_type_node,
+				       arg1_val,
+				       ptr_type_node,
+				       arg2_val,
+				       size_type_node,
+				       bytecount);
+	if (call == error_mark_node)
+	  return error_mark_node;
 
 	return fold_build2_loc(location, COMPOUND_EXPR, TREE_TYPE(len),
 			       call, len);
@@ -7800,12 +7814,29 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 	Expression* arg1 = args->front();
 	Expression* arg2 = args->back();
 
+	Array_type* at = arg1->type()->array_type();
+	Type* element_type = at->element_type();
+
 	tree arg1_tree = arg1->get_tree(context);
 	tree arg2_tree = arg2->get_tree(context);
 	if (arg1_tree == error_mark_node || arg2_tree == error_mark_node)
 	  return error_mark_node;
 
-	tree descriptor_tree = arg1->type()->type_descriptor_pointer(gogo);
+	Array_type* at2 = arg2->type()->array_type();
+	arg2_tree = save_expr(arg2_tree);
+	tree arg2_val = at2->value_pointer_tree(gogo, arg2_tree);
+	tree arg2_len = at2->length_tree(gogo, arg2_tree);
+	if (arg2_val == error_mark_node || arg2_len == error_mark_node)
+	  return error_mark_node;
+	arg2_val = fold_convert_loc(location, ptr_type_node, arg2_val);
+	arg2_len = fold_convert_loc(location, size_type_node, arg2_len);
+
+	tree element_type_tree = element_type->get_tree(gogo);
+	if (element_type_tree == error_mark_node)
+	  return error_mark_node;
+	tree element_size = TYPE_SIZE_UNIT(element_type_tree);
+	element_size = fold_convert_loc(location, size_type_node,
+					element_size);
 
 	// We rebuild the decl each time since the slice types may
 	// change.
@@ -7813,14 +7844,16 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 	return Gogo::call_builtin(&append_fndecl,
 				  location,
 				  "__go_append",
-				  3,
+				  4,
 				  TREE_TYPE(arg1_tree),
-				  TREE_TYPE(descriptor_tree),
-				  descriptor_tree,
 				  TREE_TYPE(arg1_tree),
 				  arg1_tree,
-				  TREE_TYPE(arg2_tree),
-				  arg2_tree);
+				  ptr_type_node,
+				  arg2_val,
+				  size_type_node,
+				  arg2_len,
+				  size_type_node,
+				  element_size);
       }
 
     case BUILTIN_REAL:
