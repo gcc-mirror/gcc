@@ -83,6 +83,11 @@ crti.o%s \
    -m i386nto \
    %{!shared: --dynamic-linker /usr/lib/ldqnx.so.2}"
 
+#undef	LIB_SPEC
+#define LIB_SPEC "%{!shared:%{!symbolic:-lc}}"
+
+#undef  ASM_SPEC
+#define ASM_SPEC ""
 
 #undef SIZE_TYPE
 #define SIZE_TYPE "unsigned int"
@@ -99,3 +104,5 @@ crti.o%s \
 #define NO_IMPLICIT_EXTERN_C 1
 
 #define TARGET_POSIX_IO
+
+#undef DBX_REGISTER_NUMBER

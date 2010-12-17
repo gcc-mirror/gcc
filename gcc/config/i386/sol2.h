@@ -176,4 +176,10 @@ along with GCC; see the file COPYING3.  If not see
 #define LIBGCC2_TF_CEXT q
 #define TF_SIZE 113
 
+#undef  SIZE_TYPE
+#define SIZE_TYPE "unsigned int"
+
+#undef  PTRDIFF_TYPE
+#define PTRDIFF_TYPE "int"
+
 #define MD_UNWIND_SUPPORT "config/i386/sol2-unwind.h"
