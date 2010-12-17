@@ -1,3 +1,8 @@
+2010-12-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46670
+	* g++.dg/cpp0x/constexpr-null1.C: New.
+
 2010-12-17  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* gcc.c-torture/compile/20101217-1.c: New test.
