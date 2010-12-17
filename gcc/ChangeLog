@@ -1,3 +1,9 @@
+2010-12-17  Dodji Seketeli  <dodji@redhat.com>
+
+	* dwarf2out.c (gen_type_die_with_usage): Do not try to emit debug
+    	info for a redundant typedef that has DECL_ORIGINAL_TYPE set. Use
+    	that underlying type instead.
+
 2010-12-16  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/44563 

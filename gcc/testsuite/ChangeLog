@@ -1,3 +1,8 @@
+2010-12-17  Dodji Seketeli  <dodji@redhat.com>
+
+	* g++.dg/debug/dwarf2/self-ref-1.C: New test.
+	* g++.dg/debug/dwarf2/self-ref-2.C: Likewise.
+
 2010-12-16  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/46924
