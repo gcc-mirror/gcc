@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,19 +31,29 @@ package body Processing is
    type Number is mod 2**16;
    --  16 bits unsigned number for number of characters
 
+   EMH : constant Number := 8;
+   --  Code for the Module Header section
+
    GSD : constant Number := 10;
    --  Code for the Global Symbol Definition section
 
    C_SYM : constant Number := 1;
    --  Code for a Symbol subsection
 
-   V_DEF_Mask  : constant Number := 2**1;
-   V_NORM_Mask : constant Number := 2**6;
+   V_DEF_Mask  : constant Number := 2 ** 1;
+   V_NORM_Mask : constant Number := 2 ** 6;
+   --  Comments ???
 
    B : Byte;
 
    Number_Of_Characters : Natural := 0;
    --  The number of characters of each section
+
+   Native_Format : Boolean;
+   --  True if records are decoded by the system (like on VMS)
+
+   Has_Pad : Boolean;
+   --  If true, a pad byte must be skipped before reading the next record
 
    --  The following variables are used by procedure Process when reading an
    --  object file.
@@ -114,25 +124,82 @@ package body Processing is
 
       Success := True;
 
+      --  Check the file format in case of cross-tool
+
+      Get (Code);
+      Get (Number_Of_Characters);
+      Get (Dummy);
+
+      if Code = Dummy and then Number_Of_Characters = Natural (EMH) then
+
+         --  Looks like a cross tool
+
+         Native_Format := False;
+         Number_Of_Characters := Natural (Dummy) - 4;
+         Has_Pad := (Number_Of_Characters mod 2) = 1;
+
+      elsif Code = EMH then
+         Native_Format := True;
+         Number_Of_Characters := Number_Of_Characters - 6;
+         Has_Pad := False;
+
+      else
+         Put_Line ("file """ & Object_File & """ is not an object file");
+         Close (File);
+         Success := False;
+         return;
+      end if;
+
+      --  Skip the EMH section
+
+      for J in 1 .. Number_Of_Characters loop
+         Read (File, B);
+      end loop;
+
       --  Get the different sections one by one from the object file
 
       while not End_Of_File (File) loop
 
+         if not Native_Format then
+
+            --  Skip pad byte if present
+
+            if Has_Pad then
+               Get (B);
+            end if;
+
+            --  Skip record length
+
+            Get (Dummy);
+         end if;
+
          Get (Code);
          Get (Number_Of_Characters);
+
+         if not Native_Format then
+            if Natural (Dummy) /= Number_Of_Characters then
+
+               --  Format error
+
+               raise Constraint_Error;
+            end if;
+
+            Has_Pad := (Number_Of_Characters mod 2) = 1;
+         end if;
+
+         --  The header is 4 bytes length
+
          Number_Of_Characters := Number_Of_Characters - 4;
 
          --  If this is not a Global Symbol Definition section, skip to the
          --  next section.
 
          if Code /= GSD then
-
             for J in 1 .. Number_Of_Characters loop
                Read (File, B);
             end loop;
 
          else
-
             --  Skip over the next 4 bytes
 
             Get (Dummy);
@@ -149,10 +216,10 @@ package body Processing is
                Number_Of_Characters := Number_Of_Characters - 8;
                Nchars := Nchars - 8;
 
-               --  If this is a symbol and the V_DEF flag is set, get the
-               --  symbol.
+               --  If this is a symbol and the V_DEF flag is set, get symbol
 
                if Code = C_SYM and then ((Flags and V_DEF_Mask) /= 0) then
+
                   --  First, reach the symbol length
 
                   for J in 1 .. 25 loop
@@ -169,6 +236,7 @@ package body Processing is
                   for J in 1 .. Nchars loop
                      Read (File, B);
                      Number_Of_Characters := Number_Of_Characters - 1;
+
                      if Length > 0 then
                         LSymb := LSymb + 1;
                         Symbol (LSymb) := B;
@@ -204,7 +272,6 @@ package body Processing is
 
                         if (Flags and V_NORM_Mask) = 0 then
                            S_Data.Kind := Data;
-
                         else
                            S_Data.Kind := Proc;
                         end if;
@@ -225,7 +292,7 @@ package body Processing is
                   end loop;
                end if;
 
-               --  Exit the GSD section when number of characters reaches 0
+               --  Exit the GSD section when number of characters reaches zero
 
                exit when Number_Of_Characters = 0;
             end loop;

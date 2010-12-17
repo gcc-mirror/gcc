@@ -76,7 +76,7 @@ sub missing {
     for $f (sort keys %listed) {
 	if ($f =~ /(.*)\.c$/) {
 	    $base = $1;
-	    if (! $listed{"$base.o"}) {
+	    if (! $listed{"./$base.o"}) {
 		print "O $f\n";
 	    }
 	}
@@ -264,7 +264,7 @@ sub deps {
 	    }
 	    @deps = sort { &locals_first($a,$b) } keys %scanned;
 	    $obj = $f;
-	    $obj =~ s/\.c$/.o/;
+	    $obj =~ s/\.c$/.\$(objext)/;
 	    $obj = "./$obj:";
 	    if ($#deps >= 0) {
 		print OUT "$obj \$(srcdir)/$f";

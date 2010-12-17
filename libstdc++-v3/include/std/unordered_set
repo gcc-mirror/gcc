@@ -44,6 +44,7 @@
 #include <bits/functional_hash.h>
 #include <bits/hashtable.h>
 #include <bits/unordered_set.h>
+#include <bits/range_access.h>
 
 #ifdef _GLIBCXX_DEBUG
 # include <debug/unordered_set>

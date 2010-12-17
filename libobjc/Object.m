@@ -22,13 +22,12 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "objc-private/common.h"
 #include <stdarg.h>
 #include <errno.h>
 #include "objc/Object.h"
 #include "objc/Protocol.h"
 #include "objc/objc-api.h"
-
-#define MAX_CLASS_NAME_LEN 256
 
 @implementation Object
 
@@ -173,14 +172,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 + (BOOL)instancesRespondTo:(SEL)aSel
 {
-  return class_get_instance_method(self, aSel)!=METHOD_NULL;
+  return class_get_instance_method(self, aSel) != (Method_t)0;
 }
 
 - (BOOL)respondsTo:(SEL)aSel
 {
   return ((object_is_instance(self)
            ?class_get_instance_method(self->isa, aSel)
-           :class_get_class_method(self->isa, aSel))!=METHOD_NULL);
+           :class_get_class_method(self->isa, aSel)) != (Method_t)0);
 }
 
 + (IMP)instanceMethodFor:(SEL)aSel
@@ -345,6 +344,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   class_set_version(self, aVersion);
   return self;
 }
+@end
+
+/* The following methods were deprecated in GCC 4.6.0 and will be
+   removed in the next GCC release.
+*/
+
+@implementation Object (Deprecated)
 
 + (int)streamVersion: (TypedStream*)aStream
 {

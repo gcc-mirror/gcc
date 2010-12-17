@@ -15,5 +15,5 @@ void f(struct a * b, __SIZE_TYPE__ i)
   c[i] = 1;
 }
 
-/* { dg-final { scan-tree-dump-times "t\\\[i.*\\\] =.* 1;" 1 "forwprop1" } } */
+/* { dg-final { scan-tree-dump-times "t\\\[i.*\\\].* = 1;" 1 "forwprop1" } } */
 /* { dg-final { cleanup-tree-dump "forwprop1" } } */

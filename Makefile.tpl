@@ -160,6 +160,8 @@ BUILD_EXPORTS = \
 	CXXFLAGS="$(CXXFLAGS_FOR_BUILD)"; export CXXFLAGS; \
 	GCJ="$(GCJ_FOR_BUILD)"; export GCJ; \
 	GFORTRAN="$(GFORTRAN_FOR_BUILD)"; export GFORTRAN; \
+	GOC="$(GOC_FOR_BUILD)"; export GOC; \
+	GOCFLAGS="$(GOCFLAGS_FOR_BUILD)"; export GOCFLAGS; \
 	DLLTOOL="$(DLLTOOL_FOR_BUILD)"; export DLLTOOL; \
 	LD="$(LD_FOR_BUILD)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_BUILD)"; export LDFLAGS; \
@@ -196,6 +198,7 @@ HOST_EXPORTS = \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	GCJ="$(GCJ)"; export GCJ; \
 	GFORTRAN="$(GFORTRAN)"; export GFORTRAN; \
+	GOC="$(GOC)"; export GOC; \
 	AR="$(AR)"; export AR; \
 	AS="$(AS)"; export AS; \
 	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
@@ -238,6 +241,7 @@ POSTSTAGE1_CXX_EXPORT = \
 POSTSTAGE1_CXX_EXPORT = \
 	CXX="$(STAGE_CC_WRAPPER) $$r/$(HOST_SUBDIR)/prev-gcc/g++$(exeext) \
 	  -B$$r/$(HOST_SUBDIR)/prev-gcc/ -B$(build_tooldir)/bin/ -nostdinc++ \
+	  -B$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/src/.libs \
 	  -I$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/include/$(TARGET_SUBDIR) \
 	  -I$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/include \
 	  -I$$s/libstdc++-v3/libsupc++ \
@@ -275,6 +279,7 @@ BASE_TARGET_EXPORTS = \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
 	GCJ="$(GCJ_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export GCJ; \
 	GFORTRAN="$(GFORTRAN_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export GFORTRAN; \
+	GOC="$(GOC_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export GOC; \
 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
 	LD="$(COMPILER_LD_FOR_TARGET)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
@@ -341,6 +346,7 @@ CXX_FOR_BUILD = @CXX_FOR_BUILD@
 DLLTOOL_FOR_BUILD = @DLLTOOL_FOR_BUILD@
 GCJ_FOR_BUILD = @GCJ_FOR_BUILD@
 GFORTRAN_FOR_BUILD = @GFORTRAN_FOR_BUILD@
+GOC_FOR_BUILD = @GOC_FOR_BUILD@
 LDFLAGS_FOR_BUILD = @LDFLAGS_FOR_BUILD@
 LD_FOR_BUILD = @LD_FOR_BUILD@
 NM_FOR_BUILD = @NM_FOR_BUILD@
@@ -403,6 +409,7 @@ LDFLAGS = @LDFLAGS@
 LIBCFLAGS = $(CFLAGS)
 CXXFLAGS = @CXXFLAGS@
 LIBCXXFLAGS = $(CXXFLAGS) -fno-implicit-templates
+GOCFLAGS = $(CFLAGS)
 
 TFLAGS =
 
@@ -468,6 +475,7 @@ CXX_FOR_TARGET=$(STAGE_CC_WRAPPER) @CXX_FOR_TARGET@
 RAW_CXX_FOR_TARGET=$(STAGE_CC_WRAPPER) @RAW_CXX_FOR_TARGET@
 GCJ_FOR_TARGET=$(STAGE_CC_WRAPPER) @GCJ_FOR_TARGET@
 GFORTRAN_FOR_TARGET=$(STAGE_CC_WRAPPER) @GFORTRAN_FOR_TARGET@
+GOC_FOR_TARGET=$(STAGE_CC_WRAPPER) @GOC_FOR_TARGET@
 DLLTOOL_FOR_TARGET=@DLLTOOL_FOR_TARGET@
 LD_FOR_TARGET=@LD_FOR_TARGET@
 
@@ -489,6 +497,7 @@ CXXFLAGS_FOR_TARGET = @CXXFLAGS_FOR_TARGET@
 LIBCFLAGS_FOR_TARGET = $(CFLAGS_FOR_TARGET)
 LIBCXXFLAGS_FOR_TARGET = $(CXXFLAGS_FOR_TARGET) -fno-implicit-templates
 LDFLAGS_FOR_TARGET = 
+GOCFLAGS_FOR_TARGET = -O2 -g
 
 FLAGS_FOR_TARGET = @FLAGS_FOR_TARGET@
 SYSROOT_CFLAGS_FOR_TARGET = @SYSROOT_CFLAGS_FOR_TARGET@
@@ -512,7 +521,7 @@ all:
 ###
 
 # This is the list of directories that may be needed in RPATH_ENVVAR
-# so that prorgams built for the target machine work.
+# so that programs built for the target machine work.
 TARGET_LIB_PATH = [+ FOR target_modules +][+
   IF lib_path +]$(TARGET_LIB_PATH_[+module+])[+ ENDIF lib_path +][+
   ENDFOR target_modules +]$(HOST_LIB_PATH_gcc)
@@ -542,6 +551,26 @@ HOST_LIB_PATH_[+module+] = \
 @endif [+module+]
 [+ ENDIF lib_path +][+ ENDFOR host_modules +]
 
+CXX_FOR_TARGET_FLAG_TO_PASS = \
+	"CXX_FOR_TARGET=$(CXX_FOR_TARGET)"
+@if target-libstdc++-v3
+# CXX_FOR_TARGET is tricky to get right for target libs that require a
+# functional C++ compiler.  When we recurse, if we expand
+# CXX_FOR_TARGET before configuring libstdc++-v3, we won't get
+# libstdc++ include flags from the script.  Instead, we get an
+# -funconfigured-* word, so that we'll get errors if this invalid C++
+# command line is used for anything, but also so that we can use the
+# word to decide whether or not to pass on this CXX_FOR_TARGET.  If we
+# don't pass it on, sub-make will use the default definition, that
+# re-expands it at the time of use, so we'll get it right when we need
+# it.  One potential exception is the expansion of CXX_FOR_TARGET
+# passed down as part of CXX within TARGET_FLAGS, but this wouldn't
+# really work, for C++ host programs can't depend on the current-stage
+# C++ target library.
+CXX_FOR_TARGET_FLAG_TO_PASS = \
+	$(shell if echo "$(CXX_FOR_TARGET)" | grep " -funconfigured-" > /dev/null; then :; else echo '"CXX_FOR_TARGET=$(CXX_FOR_TARGET)"'; fi)
+@endif target-libstdc++-v3
+
 # Flags to pass down to all sub-makes.
 BASE_FLAGS_TO_PASS =[+ FOR flags_to_pass +][+ IF optional +] \
 	"`echo '[+flag+]=$([+flag+])' | sed -e s'/[^=][^=]*=$$/XFOO=/'`"[+ ELSE optional +] \
@@ -549,6 +578,7 @@ BASE_FLAGS_TO_PASS =[+ FOR flags_to_pass +][+ IF optional +] \
 	"STAGE[+id+]_CFLAGS=$(STAGE[+id+]_CFLAGS)" \
 	"STAGE[+id+]_CXXFLAGS=$(STAGE[+id+]_CXXFLAGS)" \
 	"STAGE[+id+]_TFLAGS=$(STAGE[+id+]_TFLAGS)"[+ ENDFOR bootstrap-stage +] \
+	$(CXX_FOR_TARGET_FLAG_TO_PASS) \
 	"TFLAGS=$(TFLAGS)" \
 	"CONFIG_SHELL=$(SHELL)" \
 	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" 
@@ -566,6 +596,7 @@ EXTRA_HOST_FLAGS = \
 	'DLLTOOL=$(DLLTOOL)' \
 	'GCJ=$(GCJ)' \
 	'GFORTRAN=$(GFORTRAN)' \
+	'GOC=$(GOC)' \
 	'LD=$(LD)' \
 	'LIPO=$(LIPO)' \
 	'NM=$(NM)' \
@@ -614,6 +645,8 @@ EXTRA_TARGET_FLAGS = \
 	'DLLTOOL=$$(DLLTOOL_FOR_TARGET)' \
 	'GCJ=$$(GCJ_FOR_TARGET) $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
 	'GFORTRAN=$$(GFORTRAN_FOR_TARGET) $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
+	'GOC=$$(GOC_FOR_TARGET) $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
+	'GOCFLAGS=$$(GOCFLAGS_FOR_TARGET)' \
 	'LD=$(COMPILER_LD_FOR_TARGET)' \
 	'LDFLAGS=$$(LDFLAGS_FOR_TARGET)' \
 	'LIBCFLAGS=$$(LIBCFLAGS_FOR_TARGET)' \
@@ -876,6 +909,26 @@ install.all: install-no-fixedincludes
 .PHONY: install-no-fixedincludes
 install-no-fixedincludes: installdirs install-host-nogcc \
 	install-target gcc-no-fixedincludes
+
+.PHONY: install-strip
+install-strip:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) installdirs install-strip-host install-strip-target
+
+.PHONY: install-strip-host
+install-strip-host: [+
+  FOR host_modules +] \
+    maybe-install-strip-[+module+][+
+  ENDFOR host_modules +]
+
+.PHONY: install-strip-target
+install-strip-target: [+
+  FOR target_modules +] \
+    maybe-install-strip-target-[+module+][+
+  ENDFOR target_modules +]
+
 
 ### other supporting targets
 
@@ -1162,6 +1215,23 @@ install-[+module+]: installdirs
 [+ ENDIF no_install +]
 @endif [+module+]
 
+.PHONY: install-strip-[+module+] maybe-install-strip-[+module+]
+maybe-install-strip-[+module+]:
+@if [+module+]
+maybe-install-strip-[+module+]: install-strip-[+module+]
+[+ IF no_install +]
+install-strip-[+module+]:
+[+ ELSE install +]
+install-strip-[+module+]: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/[+module+] && \
+	  $(MAKE) $(FLAGS_TO_PASS) [+extra_make_flags+] install-strip)
+[+ ENDIF no_install +]
+@endif [+module+]
+
 # Other targets (info, dvi, pdf, etc.)
 [+ FOR recursive_targets +]
 .PHONY: maybe-[+make_target+]-[+module+] [+make_target+]-[+module+]
@@ -1274,6 +1344,28 @@ ENDIF raw_cxx +]
 [+ ENDIF no_install +]
 @endif target-[+module+]
 
+.PHONY: install-strip-target-[+module+] maybe-install-strip-target-[+module+]
+maybe-install-strip-target-[+module+]:
+@if target-[+module+]
+maybe-install-strip-target-[+module+]: install-strip-target-[+module+]
+[+ IF no_install +]
+# Dummy target for uninstallable.
+install-strip-target-[+module+]:
+[+ ELSE install +]
+install-strip-target-[+module+]: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \[+
+IF raw_cxx +]
+	$(RAW_CXX_TARGET_EXPORTS) \[+
+ELSE normal_cxx +]
+	$(NORMAL_TARGET_EXPORTS) \[+
+ENDIF raw_cxx +]
+	(cd $(TARGET_SUBDIR)/[+module+] && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS) [+extra_make_flags+] install-strip)
+[+ ENDIF no_install +]
+@endif target-[+module+]
+
 # Other targets (info, dvi, pdf, etc.)
 [+ FOR recursive_targets +]
 .PHONY: maybe-[+make_target+]-target-[+module+] [+make_target+]-target-[+module+]
@@ -1339,7 +1431,7 @@ check-gcc-[+language+]:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) [+gcc-check-target+]);
-check-[+language+]: check-gcc-[+language+][+ IF lib-check-target +] [+ lib-check-target +][+ ENDIF lib-check-target +]
+check-[+language+]: check-gcc-[+language+][+ FOR lib-check-target +] [+ lib-check-target +][+ ENDFOR lib-check-target +]
 [+ ENDFOR languages +]
 
 # Install the gcc headers files, but not the fixed include files,

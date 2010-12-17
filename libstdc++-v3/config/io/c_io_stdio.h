@@ -1,6 +1,6 @@
 // Underlying io library details -*- C++ -*-
 
-// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2009
+// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -34,7 +34,6 @@
 #define _GLIBCXX_CXX_IO_H 1
 
 #include <cstdio>
-#include <cstddef>
 #include <bits/gthr.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)

@@ -14,4 +14,4 @@
      close (42)
      if (c /= 'abcde') call abort ()
      end
-! { dg-warning ".*descriptor" "" 10}
+

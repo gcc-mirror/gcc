@@ -37,22 +37,46 @@
 #endif
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-#  if defined(_GLIBCXX_INCLUDE_AS_TR1)
-#    error C++0x header cannot be included from TR1 header
-#  endif
-#  if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
-#    include <tr1_impl/cfenv>
-#  else
-#    define _GLIBCXX_INCLUDE_AS_CXX0X
-#    define _GLIBCXX_BEGIN_NAMESPACE_TR1
-#    define _GLIBCXX_END_NAMESPACE_TR1
-#    define _GLIBCXX_TR1
-#    include <tr1_impl/cfenv>
-#    undef _GLIBCXX_TR1
-#    undef _GLIBCXX_END_NAMESPACE_TR1
-#    undef _GLIBCXX_BEGIN_NAMESPACE_TR1
-#    undef _GLIBCXX_INCLUDE_AS_CXX0X
-#  endif
-#endif
+
+#if _GLIBCXX_USE_C99_FENV_TR1
+
+#undef feclearexcept
+#undef fegetexceptflag
+#undef feraiseexcept
+#undef fesetexceptflag
+#undef fetestexcept
+#undef fegetround
+#undef fesetround
+#undef fegetenv
+#undef feholdexcept
+#undef fesetenv
+#undef feupdateenv
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
+  // types
+  using ::fenv_t;
+  using ::fexcept_t;
+
+  // functions
+  using ::feclearexcept;
+  using ::fegetexceptflag;
+  using ::feraiseexcept;
+  using ::fesetexceptflag;
+  using ::fetestexcept;
+
+  using ::fegetround;
+  using ::fesetround;
+
+  using ::fegetenv;
+  using ::feholdexcept;
+  using ::fesetenv;
+  using ::feupdateenv;
+
+_GLIBCXX_END_NAMESPACE
+
+#endif // _GLIBCXX_USE_C99_FENV_TR1
+
+#endif // __GXX_EXPERIMENTAL_CXX0X__
 
 #endif // _GLIBCXX_FENV_H

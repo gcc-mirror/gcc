@@ -3325,8 +3325,13 @@ first<Duo>
 #
 --format=gnu-v3 --no-params
 _Z3fooIiFvdEiEvv
-void foo<int, void ()(double), int>()
-foo<int, void ()(double), int>
+void foo<int, void (double), int>()
+foo<int, void (double), int>
+#
+--format=gnu-v3 --no-params
+_Z1fIFvvEEvv
+void f<void ()>()
+f<void ()>
 #
 --format=gnu-v3 --no-params
 _ZN1N1fE
@@ -3605,8 +3610,8 @@ std::_Alloc_traits<std::basic_string<char, std::string_char_traits<char>, libcw:
 #
 --format=gnu-v3 --no-params
 _GLOBAL__I__Z2fnv
-global constructors keyed to _Z2fnv
-global constructors keyed to _Z2fnv
+global constructors keyed to fn()
+global constructors keyed to fn()
 #
 --format=gnu-v3 --no-params
 _Z1rM1GFivEMS_KFivES_M1HFivES1_4whatIKS_E5what2IS8_ES3_
@@ -4047,8 +4052,43 @@ prot.lock.update
 --format=gnat
 prot__lock__update_E6s
 prot.lock.update
+# Controlled types
+--format=gnat
+gnat__sockets__sockets_library_controllerDF__2
+gnat.sockets.sockets_library_controller.Finalize
+--format=gnat
+system__partition_interface__racw_stub_typeDA
+system.partition_interface.racw_stub_type.Adjust
+# Stream operations
+--format=gnat
+gnat__wide_wide_string_split__slice_setSR__2
+gnat.wide_wide_string_split.slice_set'Read
+--format=gnat
+ada__real_time__timing_events__events__listSW__2Xnn
+ada.real_time.timing_events.events.list'Write
+--format=gnat
+system__finalization_root__root_controlledSI
+system.finalization_root.root_controlled'Input
+--format=gnat
+ada__finalization__limited_controlledSO__2
+ada.finalization.limited_controlled'Output
+# Tagged types
+--format=gnat
+ada__synchronous_task_control___size__2
+ada.synchronous_task_control'Size
+--format=gnat
+ada__real_time__timing_events__events___alignment__2Xnn
+ada.real_time.timing_events.events'Alignment
+--format=gnat
+system__finalization_root___assign__2
+system.finalization_root.":="
 #
 # Used to crash the demangler.
 --format=gnu-v3
 DFA
 DFA
+#
+# http://sourceware.org/bugzilla/show_bug.cgi?id=11572
+--format=auto
+_ZN3Psi7VariantIIcPKcEE5visitIIRZN11VariantTest9TestVisit11test_methodEvEUlS2_E0_RZNS6_11test_methodEvEUlcE1_RZNS6_11test_methodEvEUlNS_4NoneEE_EEENS_13VariantDetail19SelectVisitorResultIIDpT_EE4typeEDpOSG_
+Psi::VariantDetail::SelectVisitorResult<VariantTest::TestVisit::test_method()::{lambda(char const*)#2}&, VariantTest::TestVisit::test_method()::{lambda(char)#3}&, VariantTest::TestVisit::test_method()::{lambda(Psi::None)#1}&>::type Psi::Variant<char, char const*>::visit<VariantTest::TestVisit::test_method()::{lambda(char const*)#2}&, VariantTest::TestVisit::test_method()::{lambda(char)#3}&, VariantTest::TestVisit::test_method()::{lambda(Psi::None)#1}&>((VariantTest::TestVisit::test_method()::{lambda(Psi::None)#1}&&&)...)

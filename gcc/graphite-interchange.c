@@ -1,7 +1,7 @@
 /* Interchange heuristics and transform for loop interchange on
    polyhedral representation.
 
-   Copyright (C) 2009 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@amd.com> and
    Harsha Jagasia <harsha.jagasia@amd.com>.
 
@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "diagnostic.h"
 #include "tree-flow.h"
-#include "toplev.h"
 #include "tree-dump.h"
 #include "timevar.h"
 #include "cfgloop.h"
@@ -46,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 
 #ifdef HAVE_cloog
-#include "cloog/cloog.h"
 #include "ppl_c.h"
 #include "sese.h"
 #include "graphite-ppl.h"
@@ -321,7 +319,7 @@ pdr_stride_in_loop (mpz_t stride, graphite_dim_t depth, poly_dr_p pdr)
     {
       char *str;
       void (*gmp_free) (void *, size_t);
-      
+
       fprintf (dump_file, "\nStride in BB_%d, DR_%d, depth %d:",
 	       pbb_index (pbb), PDR_ID (pdr), (int) depth);
       str = mpz_get_str (0, 10, stride);
@@ -350,11 +348,11 @@ memory_strides_in_loop_1 (lst_p loop, graphite_dim_t depth, mpz_t strides)
   mpz_init (s);
   mpz_init (n);
 
-  for (j = 0; VEC_iterate (lst_p, LST_SEQ (loop), j, l); j++)
+  FOR_EACH_VEC_ELT (lst_p, LST_SEQ (loop), j, l)
     if (LST_LOOP_P (l))
       memory_strides_in_loop_1 (l, depth, strides);
     else
-      for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (LST_PBB (l)), i, pdr); i++)
+      FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (LST_PBB (l)), i, pdr)
 	{
 	  pdr_stride_in_loop (s, depth, pdr);
 	  mpz_set_si (n, PDR_NB_REFS (pdr));
@@ -478,7 +476,7 @@ lst_interchange_profitable_p (lst_p loop1, lst_p loop2)
   memory_strides_in_loop (loop1, lst_depth (loop1), d1);
   memory_strides_in_loop (loop2, lst_depth (loop2), d2);
 
-  res = value_lt (d1, d2);
+  res = mpz_cmp (d1, d2) < 0;
 
   mpz_clear (d1);
   mpz_clear (d2);
@@ -527,7 +525,7 @@ lst_apply_interchange (lst_p lst, int depth1, int depth2)
       int i;
       lst_p l;
 
-      for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+      FOR_EACH_VEC_ELT (lst_p, LST_SEQ (lst), i, l)
 	lst_apply_interchange (l, depth1, depth2);
     }
   else
@@ -673,7 +671,7 @@ lst_interchange_select_inner (scop_p scop, lst_p outer_father, int outer,
 
   loop1 = VEC_index (lst_p, LST_SEQ (outer_father), outer);
 
-  for (inner = 0; VEC_iterate (lst_p, LST_SEQ (inner_father), inner, loop2); inner++)
+  FOR_EACH_VEC_ELT (lst_p, LST_SEQ (inner_father), inner, loop2)
     if (LST_LOOP_P (loop2)
 	&& (lst_try_interchange_loops (scop, loop1, loop2)
 	    || lst_interchange_select_inner (scop, outer_father, outer, loop2)))
@@ -709,7 +707,7 @@ lst_interchange_select_outer (scop_p scop, lst_p loop, int outer)
     }
 
   if (LST_LOOP_P (loop))
-    for (i = 0; VEC_iterate (lst_p, LST_SEQ (loop), i, l); i++)
+    FOR_EACH_VEC_ELT (lst_p, LST_SEQ (loop), i, l)
       if (LST_LOOP_P (l))
 	res |= lst_interchange_select_outer (scop, l, i);
 

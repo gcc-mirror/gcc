@@ -3,7 +3,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-O -fPIC" } */
-/* { dg-require-effective-target tls_native } */
+/* { dg-require-effective-target tls } */
 /* { dg-require-effective-target fpic } */
 
 extern void *memset(void *s, int c, __SIZE_TYPE__ n);

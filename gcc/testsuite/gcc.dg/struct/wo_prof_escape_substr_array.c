@@ -30,5 +30,5 @@ main ()
 }
 
 /*--------------------------------------------------------------------------*/
-/* { dg-final { scan-ipa-dump "is a field in the structure" "ipa_struct_reorg" } } */
+/* { dg-final { scan-ipa-dump "is a field in the structure" "ipa_struct_reorg" { xfail *-*-* } } } */
 /* { dg-final { cleanup-ipa-dump "*" } } */

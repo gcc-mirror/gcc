@@ -8,6 +8,6 @@
 
 vector float *f (volatile vector float *a)
 {
-  return a;  /* { dg-warning "discards qualifiers" } */
+  return a;  /* { dg-warning "discards 'volatile' qualifier" } */
 }
 

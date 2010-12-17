@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "tm.h"			/* For SHIFT_COUNT_TRUNCATED.  */
 #include "tree.h"
 
 /* We know that A1 + B1 = SUM1, using 2's complement arithmetic and ignoring
@@ -67,71 +67,6 @@ decode (HOST_WIDE_INT *words, unsigned HOST_WIDE_INT *low,
 {
   *low = words[0] + words[1] * BASE;
   *hi = words[2] + words[3] * BASE;
-}
-
-/* Force the double-word integer L1, H1 to be within the range of the
-   integer type TYPE.  Stores the properly truncated and sign-extended
-   double-word integer in *LV, *HV.  Returns true if the operation
-   overflows, that is, argument and result are different.  */
-
-int
-fit_double_type (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
-		 unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv, const_tree type)
-{
-  unsigned HOST_WIDE_INT low0 = l1;
-  HOST_WIDE_INT high0 = h1;
-  unsigned int prec = TYPE_PRECISION (type);
-  int sign_extended_type;
-
-  /* Size types *are* sign extended.  */
-  sign_extended_type = (!TYPE_UNSIGNED (type)
-			|| (TREE_CODE (type) == INTEGER_TYPE
-			    && TYPE_IS_SIZETYPE (type)));
-
-  /* First clear all bits that are beyond the type's precision.  */
-  if (prec >= 2 * HOST_BITS_PER_WIDE_INT)
-    ;
-  else if (prec > HOST_BITS_PER_WIDE_INT)
-    h1 &= ~((HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT));
-  else
-    {
-      h1 = 0;
-      if (prec < HOST_BITS_PER_WIDE_INT)
-	l1 &= ~((HOST_WIDE_INT) (-1) << prec);
-    }
-
-  /* Then do sign extension if necessary.  */
-  if (!sign_extended_type)
-    /* No sign extension */;
-  else if (prec >= 2 * HOST_BITS_PER_WIDE_INT)
-    /* Correct width already.  */;
-  else if (prec > HOST_BITS_PER_WIDE_INT)
-    {
-      /* Sign extend top half? */
-      if (h1 & ((unsigned HOST_WIDE_INT)1
-		<< (prec - HOST_BITS_PER_WIDE_INT - 1)))
-	h1 |= (HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT);
-    }
-  else if (prec == HOST_BITS_PER_WIDE_INT)
-    {
-      if ((HOST_WIDE_INT)l1 < 0)
-	h1 = -1;
-    }
-  else
-    {
-      /* Sign extend bottom half? */
-      if (l1 & ((unsigned HOST_WIDE_INT)1 << (prec - 1)))
-	{
-	  h1 = -1;
-	  l1 |= (HOST_WIDE_INT)(-1) << prec;
-	}
-    }
-
-  *lv = l1;
-  *hv = h1;
-
-  /* If the value didn't fit, signal overflow.  */
-  return l1 != low0 || h1 != high0;
 }
 
 /* Add two doubleword integers with doubleword result.
@@ -782,12 +717,36 @@ double_int_mul (double_int a, double_int b)
   return ret;
 }
 
+/* Returns A * B. If the operation overflows according to UNSIGNED_P,
+   *OVERFLOW is set to nonzero.  */
+
+double_int
+double_int_mul_with_sign (double_int a, double_int b,
+                          bool unsigned_p, int *overflow)
+{
+  double_int ret;
+  *overflow = mul_double_with_sign (a.low, a.high, b.low, b.high,
+                                    &ret.low, &ret.high, unsigned_p);
+  return ret;
+}
+
 /* Returns A + B.  */
 
 double_int
 double_int_add (double_int a, double_int b)
 {
   double_int ret;
+  add_double (a.low, a.high, b.low, b.high, &ret.low, &ret.high);
+  return ret;
+}
+
+/* Returns A - B.  */
+
+double_int
+double_int_sub (double_int a, double_int b)
+{
+  double_int ret;
+  neg_double (b.low, b.high, &b.low, &b.high);
   add_double (a.low, a.high, b.low, b.high, &ret.low, &ret.high);
   return ret;
 }
@@ -902,6 +861,18 @@ double_int_setbit (double_int a, unsigned bitpos)
     a.high |= (HOST_WIDE_INT) 1 <<  (bitpos - HOST_BITS_PER_WIDE_INT);
  
   return a;
+}
+
+/* Count trailing zeros in A.  */
+int
+double_int_ctz (double_int a)
+{
+  unsigned HOST_WIDE_INT w = a.low ? a.low : (unsigned HOST_WIDE_INT) a.high;
+  unsigned bits = a.low ? 0 : HOST_BITS_PER_WIDE_INT;
+  if (!w)
+    return HOST_BITS_PER_DOUBLE_INT;
+  bits += ctz_hwi (w);
+  return bits;
 }
 
 /* Shift A left by COUNT places keeping only PREC bits of result.  Shift

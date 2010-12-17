@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_int } */
+/* { dg-add-options quad_vectors } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -7,8 +8,8 @@
 
 /* Unaligned stores.  */
 
-int ia[N+1];
-short sa[N+1];
+int ia[N+2];
+short sa[N+2];
 
 int main1 (int n)
 {

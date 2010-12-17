@@ -1,5 +1,5 @@
 ; Options for the Java front end.
-; Copyright (C) 2003, 2005, 2007, 2009 Free Software Foundation, Inc.
+; Copyright (C) 2003, 2005, 2007, 2009, 2010 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -24,6 +24,59 @@
 Language
 Java
 
+-CLASSPATH
+Java Separate Alias(fclasspath=)
+
+-all-warnings
+Java Alias(Wall)
+
+-bootclasspath
+Java Separate Alias(fbootclasspath=)
+
+-classpath
+Java Separate Alias(fclasspath=)
+
+-dependencies
+Java Alias(M)
+
+-encoding
+Java Separate Alias(fencoding=)
+
+-extdirs
+Java Separate Alias(fextdirs=)
+
+-include-directory
+Java Separate Alias(I)
+
+-include-directory=
+Java Joined Alias(I)
+
+-output-class-directory
+Java Separate Alias(foutput-class-dir=)
+
+-output-class-directory=
+Java Joined Alias(foutput-class-dir=)
+
+-resource
+Java Separate Alias(fcompile-resource=)
+
+-resource=
+Java Joined Alias(fcompile-resource=)
+
+-user-dependencies
+Java Alias(MM)
+
+C
+Driver
+; Java driver option in fact distinct from C-family option with the same name.
+
+CLASSPATH
+Java Separate Alias(fclasspath=)
+
+D
+Driver Joined Separate
+; Java driver option similar to C-family option.
+
 I
 Java Joined Separate
 ; Documented for C
@@ -33,7 +86,7 @@ Java
 ; Documented for C
 
 MD_
-Java Undocumented
+Java Undocumented RejectDriver
 ; Documented for C
 
 MF
@@ -45,7 +98,7 @@ Java
 ; Documented for C
 
 MMD_
-Java Undocumented
+Java Undocumented RejectDriver
 ; Documented for C
 
 MP
@@ -61,7 +114,7 @@ Java
 ; Documented for C
 
 Wdeprecated
-Java Var(warn_deprecated) VarExists
+Java Var(warn_deprecated)
 ; Documented for C
 
 Wextraneous-semicolon
@@ -76,8 +129,24 @@ Wredundant-modifiers
 Java Var(flag_redundant)
 Warn if modifiers are specified when not necessary
 
+bootclasspath
+Java Separate Alias(fbootclasspath=)
+
+classpath
+Java Separate Alias(fclasspath=)
+
+d
+Java Separate SeparateAlias Alias(foutput-class-dir=)
+; Different from language-independent -d with joined argument.
+
+encoding
+Java Separate Alias(fencoding=)
+
+extdirs
+Driver Separate
+
 fCLASSPATH=
-Java JoinedOrMissing RejectNegative
+Java JoinedOrMissing RejectNegative Alias(fclasspath=)
 --CLASSPATH	Deprecated; use --classpath instead
 
 faux-classpath
@@ -135,6 +204,9 @@ Java Joined RejectNegative
 fextdirs=
 Java Joined RejectNegative
 --extdirs=<path>	Set the extension directory path
+
+fmain=
+Driver JoinedOrMissing RejectNegative
 
 fsource-filename=
 Java Joined Undocumented 
@@ -208,8 +280,11 @@ ftarget=
 Java Joined
 Set the target VM version
 
+s-bc-abi
+Driver
+
 version
-Java
+Java RejectDriver
 
 ;
 ; Warnings handled by ecj.

@@ -22,13 +22,11 @@
 #include <forward_list>
 #include <testsuite_hooks.h>
 
-bool test __attribute__((unused)) = true;
-
-// This test verifies the following.
-//
 void
 test01()
 {
+  bool test __attribute__((unused)) = true;
+
   std::forward_list<double> fld;
   VERIFY(fld.empty() == true);
 
@@ -38,8 +36,14 @@ test01()
   fld.resize(0);
   VERIFY(fld.empty() == true);
 
+#if defined(_GLIBCXX_DEBUG) || defined(_GLIBCXX_PROFILE)
+  using std::_GLIBCXX_STD_D::_Fwd_list_node;
+#else
+  using std::_Fwd_list_node;
+#endif
+
   VERIFY( (fld.max_size()
-	   == std::allocator<std::_Fwd_list_node<double> >().max_size()) );
+	   == std::allocator<_Fwd_list_node<double> >().max_size()) );
 }
 
 int

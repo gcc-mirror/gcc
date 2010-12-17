@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -132,7 +132,7 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
    begin
       if HT.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (container is busy)";
+           "attempt to tamper with cursors (container is busy)";
       end if;
 
       while HT.Length > 0 loop
@@ -478,7 +478,7 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
 
       if Source.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (container is busy)";
+           "attempt to tamper with cursors (container is busy)";
       end if;
 
       Clear (Target);
@@ -619,7 +619,7 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
 
       if HT.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (container is busy)";
+           "attempt to tamper with cursors (container is busy)";
       end if;
 
       Rehash : declare

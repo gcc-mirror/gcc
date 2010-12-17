@@ -1,6 +1,7 @@
 /* PR debug/41893 */
-/* { dg-do compile } */
-/* { dg-options "-combine -fwhole-program -O" } */
+/* { dg-do link } */
+/* { dg-require-effective-target lto } */
+/* { dg-options "-flto -fwhole-program -O" } */
 /* { dg-additional-sources "pr41893-2.c" } */
 
 struct S { int v; };
@@ -11,3 +12,5 @@ func1 (void)
 {
   struct S *p = &s;
 }
+
+int main() { return 0; }

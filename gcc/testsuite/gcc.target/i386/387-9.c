@@ -1,7 +1,6 @@
 /* Verify that 387 fsincos instruction is generated.  */
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
-/* { dg-options "-O -funsafe-math-optimizations -march=i686" } */
+/* { dg-options "-O -funsafe-math-optimizations -mfpmath=387 -mfancy-math-387" } */
 
 extern double sin (double);
 extern double cos (double);

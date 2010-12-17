@@ -28,8 +28,8 @@
 
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   namespace
   {
     extern "C" void*
@@ -95,6 +95,7 @@ namespace std
       __throw_system_error(__e);
     }
   }
-}
+
+_GLIBCXX_END_NAMESPACE
 
 #endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1

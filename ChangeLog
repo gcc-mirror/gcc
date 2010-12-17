@@ -1,3 +1,313 @@
+2010-11-29  Andreas Schwab  <schwab@redhat.com>
+
+	* configure.ac: Move comment to remove extra space in last argument
+	of GCC_TARGET_TOOL.
+
+2010-11-26  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR other/46020
+	* configure.ac (CXX_FOR_TARGET): Add -funconfigured-libstdc++-v3.
+	* Makefile.def (CXX_FOR_TARGET): Removed from flags_to_pass.
+	* Makefile.tpl (CXX_FOR_TARGET_FLAG_TO_PASS): New.
+	(BASE_FLAGS_TO_PASS): Use it.
+	* configure: Rebuilt.
+	* Makefile.in: Rebuilt.
+
+2010-11-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR binutils/12258
+	* configure.ac: Correct comments for --enable-gold/--enable-ld.
+	Properly check default linker.
+	* configure: Regnerated.
+
+2010-11-23  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: For --enable-gold, handle value `default' instead of
+	`both*'.   New configure option --{en,dis}able-ld.
+	* configure: Regenerate.
+
+2010-11-20  Ian Lance Taylor  <iant@google.com>
+
+	* configure.ac: Only disable a language library if no language needs
+	it.  Don't let --disable-libgcj uncondtionally disable libffi.
+	* configure: Rebuild.
+
+2010-11-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in: Regenerate.
+
+	PR other/46202
+	* configure.ac: Fix just-built in-tree STRIP name to be
+	binutils/strip-new.
+	* configure: Regenerate.
+	* Makefile.def (install-strip-gcc, install-strip-binutils)
+	(install-strip-opcodes, install-strip-ld, install-strip-itcl)
+	(install-strip-sid): Mirror dependencies on non-strip variants
+	of these targets on the respective -strip prerequisites.
+	* Makefile.tpl (install-strip, install-strip-host)
+	(install-strip-target): New targets.
+	(install-strip-[+module+], install-strip-target-[+module+]):
+	New targets.
+	* Makefile.in: Regenerate.
+
+2010-11-19  Ian Lance Taylor  <iant@google.com>
+	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure.ac: Add target-libgo to target_libraries.  Set
+	and substitute GOC_FOR_BUILD and GOC_FOR_TARGET.
+	* Makefile.tpl (BUILD_EXPORTS): Add GOC and GOCFLAGS.
+	(HOST_EXPORTS): Add GOC.
+	(BASE_TARGET_EXPORTS): Add GOC.
+	(GOC_FOR_BUILD, GOCFLAGS, GOC_FOR_TARGET): New variables.
+	(GOCFLAGS_FOR_TARGET): New variable.
+	(EXTRA_HOST_FLAGS): Add GOC.
+	(EXTRA_TARGET_FLAGS): Add GOC and GOCFLAGS.
+	* Makefile.def (target_modules): Add libgo.
+	(flags_to_pass): Add GOC_FOR_TARGET and GOCFLAGS_FOR_TARGET.
+	(dependencies): Add dependency from configure-target-libgo to
+	configure-target-libffi and all-target-libstdc++-v3.  Add
+	dependencies from all-target-libgo to all-target-libffi.
+	(languages): Add go.
+	* configure: Rebuild.
+	* Makefile.in: Rebuild.
+
+2010-11-19  Ian Lance Taylor  <iant@google.com>
+
+	* config-ml.in: Add Go support: treat GOC and GOCFLAGS like other
+	compiler/flag environment variables.
+
+2010-11-18  Ian Lance Taylor  <iant@google.com>
+
+	* configure.ac: Check for lang_requires_boot_languages in
+	config-lang.in files.
+	* configure: Rebuild.
+
+2010-11-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/32049
+	* Makefile.def: Add libquadmath; build it with language=fortran.
+	* configure.ac: Add libquadmath.
+	* Makefile.tpl: Handle multiple libs in check-[+language+].
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2010-11-16  Tom Tromey  <tromey@redhat.com>
+
+	* MAINTAINERS: Moved myself to reviewers section.
+
+2010-11-15  Zdenek Dvorak  <ook@ucw.cz>
+
+	* MAINTAINERS: Moved myself to reviewers section.
+
+2010-11-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* MAINTAINERS (Various Maintainers): Add self for build machinery.
+	(Write After Approval): Remove self.
+
+2010-11-15  Andreas Schwab  <schwab@redhat.com>
+
+	* configure.ac: Fix spelling in option names.
+	* configure: Regenerated.
+
+2010-11-13  Georg-Johann Lay  <georgjohann@web.de>
+
+	PR bootstrap/39622
+	* configure.ac (FLAGS_FOR_TARGET): Add include-fixed path.
+	* configure: Regenerated.
+
+2010-11-13  Kaveh R. Ghazi  <ghazi@gcc.gnu.org>
+
+	* MAINTAINERS: Update my email address.
+
+2010-11-12  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* configure: Regenerate.
+
+2010-11-12  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* configure: Regenerate.
+
+2010-11-12  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* configure: Regenerate.
+
+2010-11-12  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* configure: Regenerate.
+
+2010-11-11  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+
+	* configure.ac: Support official CLooG.org versions.
+	* configure: Regenerate.
+	* config/cloog.m4: New.
+
+2010-11-10  François Dumont  <francois.cppdevs@free.fr>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2010-11-09  David Edelsohn  <dje.gcc@gmail.com>
+
+	* MAINTAINERS: Update my email address.
+
+2010-11-04  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* configure.ac (*-*-darwin*): Use mh-darwin for all Darwin variants.
+	* configure: Regenerate.
+
+2010-11-03  Ian Lance Taylor  <iant@google.com>
+	    Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR lto/46273
+	* configure.ac: Remove libelf tests.  Build lto-plugin on ELF always
+	and on other supported platforms whenever LTO is enabled.
+	* configure: Rebuild.
+
+2010-11-02  Alan Modra  <amodra@gmail.com>
+
+	PR binutils/12110
+	* configure.ac: Error when source path contains spaces.
+	* configure: Regenerate.
+
+2010-10-23  James E. Wilson  <wilson@codesourcery.com>
+
+	* MAINTAINERS: Update my email address.
+
+2010-10-20  Ian Lance Taylor  <iant@google.com>
+
+	* Makefile.def (target_modules): Set lib_path to src/.libs for
+	libstdc++-v3 module.
+	* Makefile.tpl: Fix typo in TARGET_LIB_PATH comment.
+	* Makefile.in: Rebuild.
+
+2010-10-18  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* MAINTAINERS (Reviewers): Add myself for gengtype/GTY.
+	(Write After Approval): Remove myself.
+
+2010-10-15  Tristan Gingold  <gingold@adacore.com>
+
+	* MAINTAINERS (OS Port Maintainers): Add myself for VMS.
+
+2010-10-14  Douglas Rupp  <rupp@gnat.com>
+
+	* MAINTAINERS (OS Port Maintainers): Add myself for VMS.
+
+2010-10-07  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* configure.ac (build_lto_plugin): New shell variable.
+	(--enable-lto): Turn on by default for all non-ELF platforms that
+	have had LTO support added so far.  Set build_lto_plugin appropriately
+	for both ELF and non-ELF.
+	(configdirs): Add lto-plugin or not based on build_lto_plugin.
+	* configure: Regenerate.
+
+2010-10-07  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	Sync from src:
+	* configure.ac (v850 support): Remove target-libgloss from
+	noconfigdirs.
+	* configure: Regenerate.
+
+2010-10-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/45326
+	PR bootstrap/45174
+	* configure.ac: Honor initial values of $build_configargs,
+	$host_configargs, $target_configargs.  Mark the precious, so
+	environment settings get recorded.
+	* configure: Regenerate.
+
+2010-09-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/45796
+	* Makefile.def (info-gcc, dvi-gcc, pdf-gcc, html-gcc):
+	Depend on all-build-libiberty.
+	* Makefile.in: Regenerate.
+
+2010-09-30  Michael Eager  <eager@eagercon.com>
+
+	* configure.ac (microblaze): Add target-libssp to noconfigdirs.
+	* configure: Regenerate.
+
+2010-09-28  Michael Eager  <eager@eagercon.com>
+
+	* MAINTAINERS (CPU Port Maintainers): Add myself for MicroBlaze port.
+
+2010-06-27  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/44621
+	* configure.ac: Fix unportable shell quoting.
+	* configure: Regenerate.
+
+2010-09-21  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* configure.ac (enable-lto): Add Darwin to the list of supported lto
+	targets and amend comment.
+	* configure: Regenerate.
+
+2010-09-15  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2010-09-03  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	* configure.ac: Enable LTO by default on Darwin.
+	* configure: Regenerate.
+
+2010-09-02  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2010-09-01  Ian Bolton  <ian.bolton@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2010-08-25  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* MAINTAINERS (OS Port Maintainers): Remove myself from windows
+	ports
+
+2010-07-28  David Yuste  <david.yuste@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2010-07-26  Naveen.H.S  <naveen.S@kpitcummins.com>
+
+	* configure.ac: Support all v850 targets.
+	* configure: Regenerate.
+
+2010-07-23  Marc Glisse <marc.glisse@normalesup.org>
+
+	PR bootstrap/44455
+	* configure.ac (extra_mpfr_configure_flags): Copy from
+	extra_mpc_gmp_configure_flags.
+	* configure: Re-generated.
+
+2010-07-22  Andi Kleen  <ak@linux.intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2010-07-22  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2010-07-20  Jeffrey Yasskin  <jyasskin@google.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2010-07-17  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR target/44862
+	* Makefile.tpl (POSTSTAGE1_CXX_EXPORT):
+	Provide -B option to allow for link spec %s substitutions for
+	libstdc++.a on darwin.
+	* Makefile.in: Regenerate.
+
+2010-07-10  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* MAINTAINERS (Reviewers): Update my e-mail address
+
 2010-06-10  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.def (configure-gcc): Depend on all-libelf.

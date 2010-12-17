@@ -1,5 +1,5 @@
 /* Definitions of Toshiba Media Processor
-   Copyright (C) 2001, 2002, 2003, 2005, 2006, 2007, 2009 Free
+   Copyright (C) 2001, 2002, 2003, 2005, 2006, 2007, 2009, 2010 Free
    Software Foundation, Inc.  Contributed by Red Hat, Inc.
 
 This file is part of GCC.
@@ -18,14 +18,12 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include <stdio.h>
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "rtl.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "c-family/c-pragma.h"
 #include "cpplib.h"
 #include "hard-reg-set.h"
@@ -37,6 +35,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 
 enum cw_which { CW_AVAILABLE, CW_CALL_SAVED };
+
+/* This is normally provided by rtl.h but we can't include that file
+   here.  It's safe to copy the definition here because we're only
+   using it internally; the value isn't passed to functions outside
+   this file.  */
+#ifndef INVALID_REGNUM
+#define INVALID_REGNUM                    (~(unsigned int) 0)
+#endif
 
 static enum cpp_ttype
 mep_pragma_lex (tree *valp)
@@ -200,8 +206,8 @@ mep_pragma_coprocessor_which (enum cw_which cw_which)
     }
 
   /* Fix up register class hierarchy.  */
-  save_register_info ();
-  reinit_regs ();
+  mep_save_register_info ();
+  mep_reinit_regs ();
 
   if (cfun == 0)
     {
@@ -262,20 +268,34 @@ mep_pragma_coprocessor_subclass (void)
   enum cpp_ttype type;
   HARD_REG_SET set;
   int class_letter;
-  enum reg_class class;
+  enum reg_class rclass;
 
   type = mep_pragma_lex (&val);
   if (type != CPP_CHAR)
     goto syntax_error;
   class_letter = tree_low_cst (val, 1);
   if (class_letter >= 'A' && class_letter <= 'D')
-    class = class_letter - 'A' + USER0_REGS;
+    switch (class_letter)
+      {
+      case 'A':
+	rclass = USER0_REGS;
+	break;
+      case 'B':
+	rclass = USER1_REGS;
+	break;
+      case 'C':
+	rclass = USER2_REGS;
+	break;
+      case 'D':
+	rclass = USER3_REGS;
+	break;
+      }
   else
     {
       error ("#pragma GCC coprocessor subclass letter must be in [ABCD]");
       return;
     }
-  if (reg_class_size[class] > 0)
+  if (reg_class_size[rclass] > 0)
     {
       error ("#pragma GCC coprocessor subclass '%c' already defined",
 	     class_letter);
@@ -290,8 +310,8 @@ mep_pragma_coprocessor_subclass (void)
     return;
 
   /* Fix up register class hierarchy.  */
-  COPY_HARD_REG_SET (reg_class_contents[class], set);
-  init_regs ();
+  COPY_HARD_REG_SET (reg_class_contents[rclass], set);
+  mep_init_regs ();
   return;
 
  syntax_error:

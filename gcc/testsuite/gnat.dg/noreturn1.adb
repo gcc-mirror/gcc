@@ -1,4 +1,4 @@
--- { dg-compile }
+-- { dg-do compile }
 
 package body Noreturn1 is
 

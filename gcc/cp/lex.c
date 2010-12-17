@@ -229,8 +229,9 @@ cxx_init (void)
    CTOR_INITIALIZER,	TRY_BLOCK,	HANDLER,
    EH_SPEC_BLOCK,	USING_STMT,	TAG_DEFN,
    IF_STMT,		CLEANUP_STMT,	FOR_STMT,
-   WHILE_STMT,		DO_STMT,	BREAK_STMT,
-   CONTINUE_STMT,	SWITCH_STMT,	EXPR_STMT
+   RANGE_FOR_STMT,	WHILE_STMT,	DO_STMT,
+   BREAK_STMT,		CONTINUE_STMT,	SWITCH_STMT,
+   EXPR_STMT
   };
 
   memset (&statement_code_p, 0, sizeof (statement_code_p));
@@ -451,7 +452,8 @@ unqualified_name_lookup_error (tree name)
     }
   else
     {
-      error ("%qD was not declared in this scope", name);
+      if (!objc_diagnose_private_ivar (name))
+        error ("%qD was not declared in this scope", name);
       /* Prevent repeated error messages by creating a VAR_DECL with
 	 this NAME in the innermost block scope.  */
       if (current_function_decl)
@@ -510,13 +512,25 @@ unqualified_fn_lookup_error (tree name)
   return unqualified_name_lookup_error (name);
 }
 
+/* Wrapper around build_lang_decl_loc(). Should gradually move to
+   build_lang_decl_loc() and then rename build_lang_decl_loc() back to
+   build_lang_decl().  */
+
 tree
 build_lang_decl (enum tree_code code, tree name, tree type)
 {
+  return build_lang_decl_loc (input_location, code, name, type);
+}
+
+/* Build a decl from CODE, NAME, TYPE declared at LOC, and then add
+   DECL_LANG_SPECIFIC info to the result.  */
+
+tree
+build_lang_decl_loc (location_t loc, enum tree_code code, tree name, tree type)
+{
   tree t;
 
-  t = build_decl (input_location,
-		  code, name, type);
+  t = build_decl (loc, code, name, type);
   retrofit_lang_decl (t);
 
   return t;

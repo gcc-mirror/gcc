@@ -626,13 +626,13 @@ _mm_cvtpi16_ps (__m64 __A)
   __sign = __builtin_ia32_pcmpgtw ((__v4hi)0LL, (__v4hi)__A);
 
   /* Convert the four words to doublewords.  */
-  __hisi = (__v2si) __builtin_ia32_punpckhwd ((__v4hi)__A, __sign);
   __losi = (__v2si) __builtin_ia32_punpcklwd ((__v4hi)__A, __sign);
+  __hisi = (__v2si) __builtin_ia32_punpckhwd ((__v4hi)__A, __sign);
 
   /* Convert the doublewords to floating point two at a time.  */
   __zero = (__v4sf) _mm_setzero_ps ();
-  __ra = __builtin_ia32_cvtpi2ps (__zero, __hisi);
-  __rb = __builtin_ia32_cvtpi2ps (__ra, __losi);
+  __ra = __builtin_ia32_cvtpi2ps (__zero, __losi);
+  __rb = __builtin_ia32_cvtpi2ps (__ra, __hisi);
 
   return (__m128) __builtin_ia32_movlhps (__ra, __rb);
 }
@@ -645,13 +645,13 @@ _mm_cvtpu16_ps (__m64 __A)
   __v4sf __zero, __ra, __rb;
 
   /* Convert the four words to doublewords.  */
-  __hisi = (__v2si) __builtin_ia32_punpckhwd ((__v4hi)__A, (__v4hi)0LL);
   __losi = (__v2si) __builtin_ia32_punpcklwd ((__v4hi)__A, (__v4hi)0LL);
+  __hisi = (__v2si) __builtin_ia32_punpckhwd ((__v4hi)__A, (__v4hi)0LL);
 
   /* Convert the doublewords to floating point two at a time.  */
   __zero = (__v4sf) _mm_setzero_ps ();
-  __ra = __builtin_ia32_cvtpi2ps (__zero, __hisi);
-  __rb = __builtin_ia32_cvtpi2ps (__ra, __losi);
+  __ra = __builtin_ia32_cvtpi2ps (__zero, __losi);
+  __rb = __builtin_ia32_cvtpi2ps (__ra, __hisi);
 
   return (__m128) __builtin_ia32_movlhps (__ra, __rb);
 }

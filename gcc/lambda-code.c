@@ -1167,7 +1167,7 @@ gcc_tree_to_linear_expression (int depth, tree expr,
       {
 	tree iv, invar;
 	size_t i;
-	for (i = 0; VEC_iterate (tree, outerinductionvars, i, iv); i++)
+	FOR_EACH_VEC_ELT (tree, outerinductionvars, i, iv)
 	  if (iv != NULL)
 	    {
 	      if (SSA_NAME_VAR (iv) == SSA_NAME_VAR (expr))
@@ -1181,7 +1181,7 @@ gcc_tree_to_linear_expression (int depth, tree expr,
 		  LLE_DENOMINATOR (lle) = 1;
 		}
 	    }
-	for (i = 0; VEC_iterate (tree, invariants, i, invar); i++)
+	FOR_EACH_VEC_ELT (tree, invariants, i, invar)
 	  if (invar != NULL)
 	    {
 	      if (SSA_NAME_VAR (invar) == SSA_NAME_VAR (expr))
@@ -1542,7 +1542,7 @@ gcc_loopnest_to_lambda_loopnest (struct loop *loop_nest,
 
   ret = lambda_loopnest_new (depth, 2 * depth, lambda_obstack);
 
-  for (i = 0; VEC_iterate (lambda_loop, loops, i, newloop); i++)
+  FOR_EACH_VEC_ELT (lambda_loop, loops, i, newloop)
     LN_LOOPS (ret)[i] = newloop;
 
  fail:
@@ -1837,7 +1837,7 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
   /* Rewrite uses of the old ivs so that they are now specified in terms of
      the new ivs.  */
 
-  for (i = 0; VEC_iterate (tree, old_ivs, i, oldiv); i++)
+  FOR_EACH_VEC_ELT (tree, old_ivs, i, oldiv)
     {
       imm_use_iterator imm_iter;
       use_operand_p use_p;
@@ -2641,7 +2641,7 @@ lambda_transform_legal_p (lambda_trans_matrix trans,
   distres = lambda_vector_new (nb_loops);
 
   /* For each distance vector in the dependence graph.  */
-  for (i = 0; VEC_iterate (ddr_p, dependence_relations, i, ddr); i++)
+  FOR_EACH_VEC_ELT (ddr_p, dependence_relations, i, ddr)
     {
       /* Don't care about relations for which we know that there is no
 	 dependence, nor about read-read (aka. output-dependences):
@@ -2710,7 +2710,7 @@ lambda_collect_parameters (VEC (data_reference_p, heap) *datarefs,
   struct pointer_set_t *parameter_set = pointer_set_create ();
   data_reference_p data_reference;
 
-  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, data_reference); i++)
+  FOR_EACH_VEC_ELT (data_reference_p, datarefs, i, data_reference)
     for (j = 0; j < DR_NUM_DIMENSIONS (data_reference); j++)
       lambda_collect_parameters_from_af (DR_ACCESS_FN (data_reference, j),
 					 parameter_set, parameters);
@@ -2862,7 +2862,7 @@ lambda_compute_access_matrices (VEC (data_reference_p, heap) *datarefs,
   data_reference_p dataref;
   unsigned ix;
 
-  for (ix = 0; VEC_iterate (data_reference_p, datarefs, ix, dataref); ix++)
+  FOR_EACH_VEC_ELT (data_reference_p, datarefs, ix, dataref)
     if (!build_access_matrix (dataref, parameters, nest, lambda_obstack))
       return false;
 

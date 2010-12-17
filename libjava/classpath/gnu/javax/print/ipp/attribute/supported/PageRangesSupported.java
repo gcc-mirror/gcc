@@ -37,36 +37,36 @@ exception statement from your version. */
 
 package gnu.javax.print.ipp.attribute.supported;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.EnumSyntax;
 import javax.print.attribute.SupportedValuesAttribute;
-
 
 /**
  * <code>PageRangesSupported</code> is a boolean typed
  * attribute indicating (as EnumSyntax) if page ranges
  * are supported.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class PageRangesSupported extends EnumSyntax
   implements SupportedValuesAttribute
 {
   /** Page ranges are not supported. */
-  public static final PageRangesSupported NOT_SUPPORTED = 
+  public static final PageRangesSupported NOT_SUPPORTED =
     new PageRangesSupported(0);
-  
+
   /** Page ranges are supported. */
-  public static final PageRangesSupported SUPPORTED = 
+  public static final PageRangesSupported SUPPORTED =
     new PageRangesSupported(1);
 
   private static final String[] stringTable = { "not-supported", "supported" };
-  
+
   private static final PageRangesSupported[] enumValueTable = { NOT_SUPPORTED,
                                                                 SUPPORTED };
-  
+
   /**
    * Constructs a <code>PageRangesSupported</code> object.
-   * 
+   *
    * @param value the enum value
    */
   protected PageRangesSupported(int value)
@@ -79,7 +79,7 @@ public final class PageRangesSupported extends EnumSyntax
    *
    * @return The class <code>PageRangesSupported</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return PageRangesSupported.class;
   }
@@ -93,7 +93,7 @@ public final class PageRangesSupported extends EnumSyntax
   {
     return "page-ranges-supported";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.

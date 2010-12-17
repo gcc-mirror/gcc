@@ -52,7 +52,7 @@ union df_ref_d;
 #define DF_LIVE    2      /* Live Registers & Uninitialized Registers */
 #define DF_RD      3      /* Reaching Defs. */
 #define DF_CHAIN   4      /* Def-Use and/or Use-Def Chains. */
-#define DF_BYTE_LR 5      /* Subreg tracking lr.  */
+#define DF_WORD_LR 5      /* Subreg tracking lr.  */
 #define DF_NOTE    6      /* REG_DEF and REG_UNUSED notes. */
 #define DF_MD      7      /* Multiple Definitions. */
 
@@ -66,16 +66,8 @@ enum df_flow_dir
     DF_BACKWARD
   };
 
-/* Used in the byte scanning to determine if may or must info is to be
-   returned.  */
-enum df_mm
-  {
-    DF_MM_MAY,
-    DF_MM_MUST
-  };
-
 /* Descriminator for the various df_ref types.  */
-enum df_ref_class {DF_REF_BASE, DF_REF_ARTIFICIAL, DF_REF_REGULAR, DF_REF_EXTRACT};
+enum df_ref_class {DF_REF_BASE, DF_REF_ARTIFICIAL, DF_REF_REGULAR};
 
 /* The first of these us a set of a registers.  The remaining three
    are all uses of a register (the mem_load and mem_store relate to
@@ -410,26 +402,12 @@ struct df_regular_ref
   rtx *loc;
 };
 
-
-/* A df_ref_extract is just a df_ref with a width and offset field at
-   the end of it.  It is used to hold this information if the ref was
-   wrapped by a SIGN_EXTRACT or a ZERO_EXTRACT and to pass this info
-   to passes that wish to process partial regs precisely.  */
-struct df_extract_ref
-{
-  struct df_regular_ref base;
-  int width;
-  int offset;
-  enum machine_mode mode;
-};
-
 /* Union of the different kinds of defs/uses placeholders.  */
 union df_ref_d
 {
   struct df_base_ref base;
   struct df_regular_ref regular_ref;
   struct df_artificial_ref artificial_ref;
-  struct df_extract_ref extract_ref;
 };
 typedef union df_ref_d *df_ref;
 
@@ -624,7 +602,7 @@ struct df_d
 #define DF_RD_BB_INFO(BB) (df_rd_get_bb_info((BB)->index))
 #define DF_LR_BB_INFO(BB) (df_lr_get_bb_info((BB)->index))
 #define DF_LIVE_BB_INFO(BB) (df_live_get_bb_info((BB)->index))
-#define DF_BYTE_LR_BB_INFO(BB) (df_byte_lr_get_bb_info((BB)->index))
+#define DF_WORD_LR_BB_INFO(BB) (df_word_lr_get_bb_info((BB)->index))
 #define DF_MD_BB_INFO(BB) (df_md_get_bb_info((BB)->index))
 
 /* Most transformations that wish to use live register analysis will
@@ -641,8 +619,8 @@ struct df_d
 /* These macros are used by passes that are not tolerant of
    uninitialized variables.  This intolerance should eventually
    be fixed.  */
-#define DF_BYTE_LR_IN(BB) (&DF_BYTE_LR_BB_INFO(BB)->in)
-#define DF_BYTE_LR_OUT(BB) (&DF_BYTE_LR_BB_INFO(BB)->out)
+#define DF_WORD_LR_IN(BB) (&DF_WORD_LR_BB_INFO(BB)->in)
+#define DF_WORD_LR_OUT(BB) (&DF_WORD_LR_BB_INFO(BB)->out)
 
 /* Macros to access the elements within the ref structure.  */
 
@@ -653,7 +631,7 @@ struct df_d
 #define DF_REF_REAL_LOC(REF) (GET_CODE (*((REF)->regular_ref.loc)) == SUBREG \
                                ? &SUBREG_REG (*((REF)->regular_ref.loc)) : ((REF)->regular_ref.loc))
 #define DF_REF_REG(REF) ((REF)->base.reg)
-#define DF_REF_LOC(REF) ((DF_REF_CLASS(REF) == DF_REF_REGULAR || DF_REF_CLASS(REF) == DF_REF_EXTRACT) ? \
+#define DF_REF_LOC(REF) (DF_REF_CLASS(REF) == DF_REF_REGULAR ? \
 			 (REF)->regular_ref.loc : NULL)
 #define DF_REF_BB(REF) (DF_REF_IS_ARTIFICIAL(REF) ? \
                         (REF)->artificial_ref.bb : BLOCK_FOR_INSN (DF_REF_INSN(REF)))
@@ -859,9 +837,11 @@ struct df_live_bb_info
 
 
 /* Live registers, a backwards dataflow problem.  These bitmaps are
-indexed by the df_byte_lr_offset array which is indexed by pseudo.  */
+   indexed by 2 * regno for each pseudo and have two entries for each
+   pseudo.  Only pseudos that have a size of 2 * UNITS_PER_WORD are
+   meaningfully tracked.  */
 
-struct df_byte_lr_bb_info
+struct df_word_lr_bb_info
 {
   /* Local sets to describe the basic blocks.  */
   bitmap_head def;   /* The set of registers set in this block
@@ -883,7 +863,7 @@ extern struct df_d *df;
 #define df_lr      (df->problems_by_index[DF_LR])
 #define df_live    (df->problems_by_index[DF_LIVE])
 #define df_chain   (df->problems_by_index[DF_CHAIN])
-#define df_byte_lr (df->problems_by_index[DF_BYTE_LR])
+#define df_word_lr (df->problems_by_index[DF_WORD_LR])
 #define df_note    (df->problems_by_index[DF_NOTE])
 #define df_md      (df->problems_by_index[DF_MD])
 
@@ -917,7 +897,6 @@ extern void df_simple_dataflow (enum df_flow_dir, df_init_function,
 extern void df_mark_solutions_dirty (void);
 extern bool df_get_bb_dirty (basic_block);
 extern void df_set_bb_dirty (basic_block);
-extern void df_set_bb_dirty_nonlr (basic_block);
 extern void df_compact_blocks (void);
 extern void df_bb_replace (int, basic_block);
 extern void df_bb_delete (int);
@@ -933,7 +912,7 @@ extern df_ref df_find_use (rtx, rtx);
 extern bool df_reg_used (rtx, rtx);
 extern void df_worklist_dataflow (struct dataflow *,bitmap, int *, int);
 extern void df_print_regset (FILE *file, bitmap r);
-extern void df_print_byte_regset (FILE *file, bitmap r);
+extern void df_print_word_regset (FILE *file, bitmap r);
 extern void df_dump (FILE *);
 extern void df_dump_region (FILE *);
 extern void df_dump_start (FILE *);
@@ -972,13 +951,12 @@ extern void df_live_verify_transfer_functions (void);
 extern void df_live_add_problem (void);
 extern void df_live_set_all_dirty (void);
 extern void df_chain_add_problem (unsigned int);
-extern void df_byte_lr_add_problem (void);
-extern int df_byte_lr_get_regno_start (unsigned int);
-extern int df_byte_lr_get_regno_len (unsigned int);
-extern void df_byte_lr_simulate_defs (rtx, bitmap);
-extern void df_byte_lr_simulate_uses (rtx, bitmap);
-extern void df_byte_lr_simulate_artificial_refs_at_top (basic_block, bitmap);
-extern void df_byte_lr_simulate_artificial_refs_at_end (basic_block, bitmap);
+extern void df_word_lr_add_problem (void);
+extern bool df_word_lr_mark_ref (df_ref, bool, bitmap);
+extern bool df_word_lr_simulate_defs (rtx, bitmap);
+extern void df_word_lr_simulate_uses (rtx, bitmap);
+extern void df_word_lr_simulate_artificial_refs_at_top (basic_block, bitmap);
+extern void df_word_lr_simulate_artificial_refs_at_end (basic_block, bitmap);
 extern void df_note_add_problem (void);
 extern void df_md_add_problem (void);
 extern void df_md_simulate_artificial_defs_at_top (basic_block, bitmap);
@@ -1001,8 +979,8 @@ extern void df_grow_reg_info (void);
 extern void df_grow_insn_info (void);
 extern void df_scan_blocks (void);
 extern df_ref df_ref_create (rtx, rtx *, rtx,basic_block,
-				     enum df_ref_type, int ref_flags,
-				     int, int, enum machine_mode);
+			     enum df_ref_type, int ref_flags);
+extern void df_uses_create (rtx *, rtx, int);
 extern void df_ref_remove (df_ref);
 extern struct df_insn_info * df_insn_create_insn_record (rtx);
 extern void df_insn_delete (basic_block, unsigned int);
@@ -1028,11 +1006,6 @@ extern void df_set_regs_ever_live (unsigned int, bool);
 extern void df_compute_regs_ever_live (bool);
 extern bool df_read_modify_subreg_p (rtx);
 extern void df_scan_verify (void);
-
-/* Functions defined in df-byte-scan.c.  */
-extern bool df_compute_accessed_bytes (df_ref, enum df_mm,
-				       unsigned int *, unsigned int *);
-
 
 /* Get basic block info.  */
 
@@ -1081,11 +1054,11 @@ df_live_get_bb_info (unsigned int index)
     return NULL;
 }
 
-static inline struct df_byte_lr_bb_info *
-df_byte_lr_get_bb_info (unsigned int index)
+static inline struct df_word_lr_bb_info *
+df_word_lr_get_bb_info (unsigned int index)
 {
-  if (index < df_byte_lr->block_info_size)
-    return &((struct df_byte_lr_bb_info *) df_byte_lr->block_info)[index];
+  if (index < df_word_lr->block_info_size)
+    return &((struct df_word_lr_bb_info *) df_word_lr->block_info)[index];
   else
     return NULL;
 }

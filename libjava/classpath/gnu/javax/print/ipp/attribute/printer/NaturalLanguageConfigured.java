@@ -1,4 +1,4 @@
-/* NaturalLanguageConfigured.java -- 
+/* NaturalLanguageConfigured.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -43,19 +43,19 @@ import gnu.javax.print.ipp.attribute.NaturalLanguageSyntax;
 import javax.print.attribute.Attribute;
 
 /**
- * NaturalLanguageConfigured attribute as described in RFC 2911 
+ * NaturalLanguageConfigured attribute as described in RFC 2911
  * section 4.4.19 provides the natural language which is configured
  * by the server to be used in the name and text syntax attribute types.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class NaturalLanguageConfigured extends NaturalLanguageSyntax 
+public final class NaturalLanguageConfigured extends NaturalLanguageSyntax
   implements Attribute
 {
 
   /**
    * Creates a <code>NaturalLanguageConfigured</code> object.
-   * 
+   *
    * @param value the charset string value.
    */
   public NaturalLanguageConfigured(String value)
@@ -68,7 +68,7 @@ public final class NaturalLanguageConfigured extends NaturalLanguageSyntax
    *
    * @return The class <code>NaturalLanguageConfigured</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return NaturalLanguageConfigured.class;
   }

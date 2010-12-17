@@ -58,16 +58,13 @@ UPC_PTS_OBJ = upc-pts-$(UPC_PTS_REP).o
 UPC_OBJS = c-family/stub-objc.o upc/upc-act.o upc/upc-gimplify.o \
            upc/upc-lang.o upc/$(UPC_PTS_OBJ) upc/upc-gasp.o
 
-cc1upc-dummy$(exeext): $(UPC_OBJS) $(C_AND_OBJC_OBJS) dummy-checksum.o $(BACKEND) \
-                $(LIBDEPS)
-	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-		$(UPC_OBJS) $(C_AND_OBJC_OBJS) dummy-checksum.o \
-		$(BACKEND) $(LIBS) $(BACKENDLIBS)
+cc1upc-checksum.c : build/genchecksum$(build_exeext) checksum-options \
+        $(UPC_OBJS) $(C_AND_OBJC_OBJS) $(BACKEND) $(LIBDEPS)
+	build/genchecksum$(build_exeext) $(UPC_OBJS) $(C_AND_OBJC_OBJS) \
+        $(BACKEND) $(LIBDEPS) checksum-options > cc1upc-checksum.c.tmp && \
+	$(srcdir)/../move-if-change cc1upc-checksum.c.tmp cc1upc-checksum.c
 
-cc1upc-checksum.c : cc1upc-dummy$(exeext) build/genchecksum$(build_exeext)
-	build/genchecksum$(build_exeext) cc1upc-dummy$(exeext) > $@
-
-cc1upc-checksum.o : cc1upc-checksum.c
+cc1upc-checksum.o : cc1upc-checksum.c $(CONFIG_H) $(SYSTEM_H)
 
 cc1upc$(exeext): $(UPC_OBJS) $(C_AND_OBJC_OBJS) cc1upc-checksum.o $(BACKEND) $(LIBDEPS)
 	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \

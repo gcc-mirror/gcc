@@ -1,6 +1,6 @@
 /* CPP Library.
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2003, 2004, 2006, 2007 Free Software Foundation, Inc.
+   1999, 2000, 2003, 2004, 2006, 2007, 2010 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -58,16 +58,16 @@ const struct default_include cpp_include_defaults[]
     /* Pick up GNU C++ backward and deprecated include files.  */
     { GPLUSPLUS_BACKWARD_INCLUDE_DIR, "G++", 1, 1, 0, 0 },
 #endif
+#ifdef GCC_INCLUDE_DIR
+    /* This is the dir for gcc's private headers.  */
+    { GCC_INCLUDE_DIR, "GCC", 0, 0, 0, 0 },
+#endif
 #ifdef LOCAL_INCLUDE_DIR
     /* /usr/local/include comes before the fixincluded header files.  */
     { LOCAL_INCLUDE_DIR, 0, 0, 1, 1, 0 },
 #endif
 #ifdef PREFIX_INCLUDE_DIR
     { PREFIX_INCLUDE_DIR, 0, 0, 1, 0, 0 },
-#endif
-#ifdef GCC_INCLUDE_DIR
-    /* This is the dir for gcc's private headers.  */
-    { GCC_INCLUDE_DIR, "GCC", 0, 0, 0, 0 },
 #endif
 #ifdef FIXED_INCLUDE_DIR
     /* This is the dir for fixincludes.  */
@@ -127,7 +127,7 @@ cpp_relocated (void)
   if (relocated == -1)
     {
       /* Check if the toolchain was relocated?  */
-      GET_ENVIRONMENT (gcc_exec_prefix, "GCC_EXEC_PREFIX");
+      gcc_exec_prefix = getenv ("GCC_EXEC_PREFIX");
       if (gcc_exec_prefix)
        relocated = 1;
       else

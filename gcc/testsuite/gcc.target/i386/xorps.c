@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-Os -msse2" } */
-/* { dg-require-effective-target sse2 } */
 
 typedef float __m128 __attribute__ ((vector_size (16)));
 

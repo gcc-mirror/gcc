@@ -1,0 +1,2 @@
+# Add support for the introduction of 128-bit long double.
+SHLIB_MAPFILES += $(srcdir)/config/i386/libgcc-bsd.ver

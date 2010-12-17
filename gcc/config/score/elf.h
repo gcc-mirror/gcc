@@ -1,5 +1,5 @@
 /* elf.h for Sunplus S+CORE processor
-   Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2010 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -95,6 +95,3 @@
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC            "crtend%O%s crtn%O%s"
-
-/* We support #pragma.  */
-#define HANDLE_SYSV_PRAGMA      1

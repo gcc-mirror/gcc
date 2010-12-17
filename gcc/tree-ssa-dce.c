@@ -433,6 +433,7 @@ find_obviously_necessary_stmts (struct edge_list *el)
   gimple_stmt_iterator gsi;
   edge e;
   gimple phi, stmt;
+  int flags;
 
   FOR_EACH_BB (bb)
     {
@@ -454,9 +455,8 @@ find_obviously_necessary_stmts (struct edge_list *el)
 
   /* Pure and const functions are finite and thus have no infinite loops in
      them.  */
-  if ((TREE_READONLY (current_function_decl)
-       || DECL_PURE_P (current_function_decl))
-      && !DECL_LOOPING_CONST_OR_PURE_P (current_function_decl))
+  flags = flags_from_decl_or_type (current_function_decl);
+  if ((flags & (ECF_CONST|ECF_PURE)) && !(flags & ECF_LOOPING_CONST_OR_PURE))
     return;
 
   /* Prevent the empty possibly infinite loops from being removed.  */
@@ -499,6 +499,9 @@ ref_may_be_aliased (tree ref)
 {
   while (handled_component_p (ref))
     ref = TREE_OPERAND (ref, 0);
+  if (TREE_CODE (ref) == MEM_REF
+      && TREE_CODE (TREE_OPERAND (ref, 0)) == ADDR_EXPR)
+    ref = TREE_OPERAND (TREE_OPERAND (ref, 0), 0);
   return !(DECL_P (ref)
 	   && !may_be_aliased (ref));
 }
@@ -1404,6 +1407,8 @@ perform_tree_ssa_dce (bool aggressive)
 {
   struct edge_list *el = NULL;
   bool something_changed = 0;
+
+  calculate_dominance_info (CDI_DOMINATORS);
 
   /* Preheaders are needed for SCEV to work.
      Simple lateches and recorded exits improve chances that loop will

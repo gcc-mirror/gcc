@@ -4,9 +4,12 @@
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
 /* { dg-do run } */
 /* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
+/* { dg-additional-sources "../objc-obj-c++-shared/Object1.m" } */
+
 #include "../objc-obj-c++-shared/Object1.h"
 #include "../objc-obj-c++-shared/next-mapping.h"
-//#include <objc/objc.h>
+#include <stdio.h>
+#include <stdlib.h>
 #ifdef __NEXT_RUNTIME__
 #include <objc/objc-runtime.h>
 #define METHOD Method
@@ -48,7 +51,20 @@ int main(void) {
   cls = objc_get_class("ArrayTest");
 
   meth = class_get_instance_method(cls, @selector(str:with:and:));
-  scan_initial("r*%u@%u:%u*%u*%u[4i]%u");
+
+  /* Here we have the complication that 'enum Enum' could be encoded
+     as 'i' on __NEXT_RUNTIME_, and (most likely) as 'I' on the GNU
+     runtime.  So we get the @encode(enum Enum), then put it into the
+     string in place of the traditional 'i'.
+  */
+  /* scan_initial("r*%u@%u:%u*%u*%u[4i]%u"); */
+  {
+    char pattern[1024];
+
+    sprintf (pattern, "r*%%u@%%u:%%u*%%u*%%u[4%s]%%u", @encode(enum Enum));
+    scan_initial(pattern);
+  }
+
   CHECK_IF(offs3 == offs2 + sizeof(signed char *) && offs4 == offs3 + sizeof(unsigned char *));
   CHECK_IF(totsize == offs4 + sizeof(enum Enum *));
   meth = class_get_instance_method(cls, @selector(meth1:with:with:));
@@ -57,5 +73,3 @@ int main(void) {
   CHECK_IF(totsize == offs4 + sizeof(int *));                                           
   return 0;
 }
-
-#include "../objc-obj-c++-shared/Object1-implementation.h"

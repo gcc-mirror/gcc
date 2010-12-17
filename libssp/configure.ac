@@ -72,23 +72,40 @@ if test x$ssp_hidden = xyes; then
 fi
 
 AC_MSG_CHECKING([whether symbol versioning is supported])
-cat > conftest.map <<EOF
-FOO_1.0 {
-  global: *foo*; bar; local: *;
-};
-EOF
-save_LDFLAGS="$LDFLAGS"
-LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
 if test x$gcc_no_link = xyes; then
   # If we cannot link, we cannot build shared libraries, so do not use
   # symbol versioning.
   ssp_use_symver=no
 else
-  AC_TRY_LINK([int foo;],[],[ssp_use_symver=yes],[ssp_use_symver=no])
+  save_LDFLAGS="$LDFLAGS"
+  LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
+  cat > conftest.map <<EOF
+FOO_1.0 {
+  global: *foo*; bar; local: *;
+};
+EOF
+  AC_TRY_LINK([int foo;],[],[ssp_use_symver=gnu],[ssp_use_symver=no])
+  if test x$ssp_use_symver = xno; then
+    case "$target_os" in
+      solaris2*)
+        LDFLAGS="$save_LDFLAGS"
+        LDFLAGS="$LDFLAGS -fPIC -shared -Wl,-M,./conftest.map"
+        # Sun ld cannot handle wildcards and treats all entries as undefined.
+        cat > conftest.map <<EOF
+FOO_1.0 {
+  global: foo; local: *;
+};
+EOF
+        AC_TRY_LINK([int foo;],[],[ssp_use_symver=sun],[ssp_use_symver=no])
+    	;;
+    esac
+  fi
+  LDFLAGS="$save_LDFLAGS"
 fi
-LDFLAGS="$save_LDFLAGS"
 AC_MSG_RESULT($ssp_use_symver)
-AM_CONDITIONAL(LIBSSP_USE_SYMVER, [test "x$ssp_use_symver" = xyes])
+AM_CONDITIONAL(LIBSSP_USE_SYMVER, [test "x$ssp_use_symver" != xno])
+AM_CONDITIONAL(LIBSSP_USE_SYMVER_GNU, [test "x$ssp_use_symver" = xgnu])
+AM_CONDITIONAL(LIBSSP_USE_SYMVER_SUN, [test "x$ssp_use_symver" = xsun])
 
 AC_CHECK_HEADERS(alloca.h malloc.h paths.h syslog.h string.h unistd.h fcntl.h stdio.h limits.h)
 
@@ -98,7 +115,7 @@ if test x$gcc_no_link = xyes; then
   AC_DEFINE(HAVE_STRNCPY)
   AC_DEFINE(HAVE_STRNCAT)
 else
-  AC_CHECK_FUNCS(mempcpy strncpy strncat)
+  AC_CHECK_FUNCS(memmove mempcpy strncpy strncat)
 fi
 
 AC_MSG_CHECKING([whether vsnprintf is usable])

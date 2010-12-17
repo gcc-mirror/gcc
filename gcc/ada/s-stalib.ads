@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,11 +33,11 @@
 --  are required to be part of every Ada program. A special mechanism is
 --  required to ensure that these are loaded, since it may be the case in
 --  some programs that the only references to these required packages are
---  from C code or from code generated directly by Gigi, an in both cases
+--  from C code or from code generated directly by Gigi, and in both cases
 --  the binder is not aware of such references.
 
 --  System.Standard_Library also includes data that must be present in every
---  program, in particular the definitions of all the standard and also some
+--  program, in particular data for all the standard exceptions, and also some
 --  subprograms that must be present in every program.
 
 --  The binder unconditionally includes s-stalib.ali, which ensures that this

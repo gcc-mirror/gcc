@@ -34,10 +34,6 @@ munaligned-doubles
 Target Report Mask(UNALIGNED_DOUBLES)
 Assume possible double misalignment
 
-mimpure-text
-Target Report
-Pass -assert pure-text to linker
-
 mapp-regs
 Target Report Mask(APP_REGS)
 Use ABI reserved registers

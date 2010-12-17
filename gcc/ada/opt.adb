@@ -50,6 +50,7 @@ package body Opt is
       Assume_No_Invalid_Values_Config       := Assume_No_Invalid_Values;
       Check_Policy_List_Config              := Check_Policy_List;
       Debug_Pragmas_Enabled_Config          := Debug_Pragmas_Enabled;
+      Default_Pool_Config                   := Default_Pool;
       Dynamic_Elaboration_Checks_Config     := Dynamic_Elaboration_Checks;
       Exception_Locations_Suppressed_Config := Exception_Locations_Suppressed;
       Extensions_Allowed_Config             := Extensions_Allowed;
@@ -61,6 +62,7 @@ package body Opt is
       Optimize_Alignment_Config             := Optimize_Alignment;
       Persistent_BSS_Mode_Config            := Persistent_BSS_Mode;
       Polling_Required_Config               := Polling_Required;
+      Short_Descriptors_Config              := Short_Descriptors;
       Use_VADS_Size_Config                  := Use_VADS_Size;
 
       --  Reset the indication that Optimize_Alignment was set locally, since
@@ -82,6 +84,7 @@ package body Opt is
       Assume_No_Invalid_Values       := Save.Assume_No_Invalid_Values;
       Check_Policy_List              := Save.Check_Policy_List;
       Debug_Pragmas_Enabled          := Save.Debug_Pragmas_Enabled;
+      Default_Pool                   := Save.Default_Pool;
       Dynamic_Elaboration_Checks     := Save.Dynamic_Elaboration_Checks;
       Exception_Locations_Suppressed := Save.Exception_Locations_Suppressed;
       Extensions_Allowed             := Save.Extensions_Allowed;
@@ -94,6 +97,7 @@ package body Opt is
       Optimize_Alignment_Local       := Save.Optimize_Alignment_Local;
       Persistent_BSS_Mode            := Save.Persistent_BSS_Mode;
       Polling_Required               := Save.Polling_Required;
+      Short_Descriptors              := Save.Short_Descriptors;
       Use_VADS_Size                  := Save.Use_VADS_Size;
    end Restore_Opt_Config_Switches;
 
@@ -109,6 +113,7 @@ package body Opt is
       Save.Assume_No_Invalid_Values       := Assume_No_Invalid_Values;
       Save.Check_Policy_List              := Check_Policy_List;
       Save.Debug_Pragmas_Enabled          := Debug_Pragmas_Enabled;
+      Save.Default_Pool                   := Default_Pool;
       Save.Dynamic_Elaboration_Checks     := Dynamic_Elaboration_Checks;
       Save.Exception_Locations_Suppressed := Exception_Locations_Suppressed;
       Save.Extensions_Allowed             := Extensions_Allowed;
@@ -121,6 +126,7 @@ package body Opt is
       Save.Optimize_Alignment_Local       := Optimize_Alignment_Local;
       Save.Persistent_BSS_Mode            := Persistent_BSS_Mode;
       Save.Polling_Required               := Polling_Required;
+      Save.Short_Descriptors              := Short_Descriptors;
       Save.Use_VADS_Size                  := Use_VADS_Size;
    end Save_Opt_Config_Switches;
 
@@ -189,10 +195,12 @@ package body Opt is
          Use_VADS_Size               := Use_VADS_Size_Config;
       end if;
 
+      Default_Pool                   := Default_Pool_Config;
       Exception_Locations_Suppressed := Exception_Locations_Suppressed_Config;
       Fast_Math                      := Fast_Math_Config;
       Optimize_Alignment             := Optimize_Alignment_Config;
       Polling_Required               := Polling_Required_Config;
+      Short_Descriptors              := Short_Descriptors_Config;
    end Set_Opt_Config_Switches;
 
    ---------------
@@ -223,6 +231,7 @@ package body Opt is
       Tree_Read_Bool (Assertions_Enabled);
       Tree_Read_Int  (Int (Check_Policy_List));
       Tree_Read_Bool (Debug_Pragmas_Enabled);
+      Tree_Read_Int  (Int (Default_Pool));
       Tree_Read_Bool (Enable_Overflow_Checks);
       Tree_Read_Bool (Full_List);
 
@@ -288,6 +297,7 @@ package body Opt is
       Tree_Write_Bool (Assertions_Enabled);
       Tree_Write_Int  (Int (Check_Policy_List));
       Tree_Write_Bool (Debug_Pragmas_Enabled);
+      Tree_Write_Int  (Int (Default_Pool));
       Tree_Write_Bool (Enable_Overflow_Checks);
       Tree_Write_Bool (Full_List);
       Tree_Write_Int  (Int (Version_String'Length));

@@ -1,4 +1,4 @@
-#   Copyright (C) 1997, 1999, 2000, 2002, 2004, 2007, 2008
+#   Copyright (C) 1997, 1999, 2000, 2002, 2004, 2007, 2008, 2010
 #   Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
@@ -38,6 +38,9 @@ proc prune_gcc_output { text } {
     regsub -all "(^|\n)\[^\n\]*: Additional NOP may be necessary to workaround Itanium processor A/B step errata" $text "" text
     regsub -all "(^|\n)\[^\n*\]*: Assembler messages:\[^\n\]*" $text "" text
 
+    # Ignore second line of IRIX 6 linker multiline message.
+    regsub -all "(^|\n)\[ \t\]*that might degrade performance on an older version \\(rev. 2.2\\) R4000 processor.\[^\n\]*" $text "" text
+
     # Ignore harmless VTA note.
     regsub -all "(^|\n)\[^\n\]*: note: variable tracking size limit exceeded with -fvar-tracking-assignments, retrying without\[^\n\]*" $text "" text
 
@@ -48,6 +51,9 @@ proc prune_gcc_output { text } {
     # that don't have crt0.o.
     regsub -all "(^|\n)\[^\n\]*file path prefix \[^\n\]* never used" $text "" text
     regsub -all "(^|\n)\[^\n\]*linker input file unused since linking not done" $text "" text
+
+    # Ignore harmless warnings from Xcode 3.2.x.
+    regsub -all "(^|\n)\[^\n\]*ld: warning: can't add line info to anonymous symbol\[^\n\]*" $text "" text
 
     #send_user "After:$text\n"
 

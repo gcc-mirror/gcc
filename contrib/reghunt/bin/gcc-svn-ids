@@ -63,8 +63,8 @@ fi
 ID="$1"
 
 case ${FROM_KIND} in
-index)  LINE="`awk -F '|' -v id="${ID}" '{if ($1 == id) print }' < ${LIST}`";;
-rev)    LINE="`awk -F '|' -v id="${ID}" '{if ($2 == id) print }' < ${LIST}`";;
+index)  LINE=`awk -F '|' -v id="${ID}" '{if ($1 == id) print }' < ${LIST}`;;
+rev)    LINE=`awk -F '|' -v id="${ID}" '{if ($2 == id) print }' < ${LIST}`;;
 *)      errmsg "unrecognized FROM kind: ${FROM_KIND}";
         usage;;
 esac

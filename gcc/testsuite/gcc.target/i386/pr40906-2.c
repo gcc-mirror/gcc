@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target ilp32 } */
-/* { dg-options "-O2 -fomit-frame-pointer -mpush-args -mno-accumulate-outgoing-args -m128bit-long-double" } */
+/* { dg-options "-O2 -Wno-psabi -fomit-frame-pointer -fno-asynchronous-unwind-tables -mpush-args -mno-accumulate-outgoing-args -m128bit-long-double" } */
 
 void abort (void);
 

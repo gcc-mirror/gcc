@@ -714,8 +714,8 @@ package body Prep is
    procedure List_Symbols (Foreword : String) is
       Order : array (0 ..  Integer (Symbol_Table.Last (Mapping)))
                  of Symbol_Id;
-      --  After alphabetical sorting, this array stores the indices of
-      --  the symbols in the order they are displayed.
+      --  After alphabetical sorting, this array stores the indexes of the
+      --  symbols in the order they are displayed.
 
       function Lt (Op1, Op2 : Natural) return Boolean;
       --  Comparison routine for sort call
@@ -1034,8 +1034,8 @@ package body Prep is
       Modified            : Boolean := False;
 
       procedure Output (From, To : Source_Ptr);
-      --  Output the characters with indices From .. To in the buffer
-      --  to the output file.
+      --  Output the characters with indexes From .. To in the buffer to the
+      --  output file.
 
       procedure Output_Line (From, To : Source_Ptr);
       --  Output a line or the end of a line from the buffer to the output

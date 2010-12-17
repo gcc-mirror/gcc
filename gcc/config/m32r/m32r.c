@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on the Renesas M32R cpu.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -34,6 +34,7 @@
 #include "expr.h"
 #include "function.h"
 #include "recog.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "ggc.h"
 #include "integrate.h"
@@ -62,10 +63,12 @@ enum m32r_sdata m32r_sdata = M32R_SDATA_DEFAULT;
 
 /* Forward declaration.  */
 static bool  m32r_handle_option (size_t, const char *, int);
+static void  m32r_option_override (void);
 static void  init_reg_tables (void);
 static void  block_move_call (rtx, rtx, rtx);
 static int   m32r_is_insn (rtx);
 static rtx   m32r_legitimize_address (rtx, rtx, enum machine_mode);
+static bool  m32r_mode_dependent_address_p (const_rtx);
 static tree  m32r_handle_model_attribute (tree *, tree, tree, int, bool *);
 static void  m32r_print_operand (FILE *, rtx, int);
 static void  m32r_print_operand_address (FILE *, rtx);
@@ -81,15 +84,24 @@ static int    m32r_issue_rate (void);
 static void m32r_encode_section_info (tree, rtx, int);
 static bool m32r_in_small_data_p (const_tree);
 static bool m32r_return_in_memory (const_tree, const_tree);
+static rtx m32r_function_value (const_tree, const_tree, bool);
+static rtx m32r_libcall_value (enum machine_mode, const_rtx);
+static bool m32r_function_value_regno_p (const unsigned int);
 static void m32r_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
 static void init_idents (void);
 static bool m32r_rtx_costs (rtx, int, int, int *, bool speed);
+static int m32r_memory_move_cost (enum machine_mode, reg_class_t, bool);
 static bool m32r_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				    const_tree, bool);
 static int m32r_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				   tree, bool);
+static rtx m32r_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+			      const_tree, bool);
+static void m32r_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+				       const_tree, bool);
 static bool m32r_can_eliminate (const int, const int);
+static void m32r_conditional_register_usage (void);
 static void m32r_trampoline_init (rtx, tree, rtx);
 
 /* M32R specific attributes.  */
@@ -101,6 +113,13 @@ static const struct attribute_spec m32r_attribute_table[] =
   { "model",     1, 1, true,  false, false, m32r_handle_model_attribute },
   { NULL,        0, 0, false, false, false, NULL }
 };
+
+static const struct default_options m32r_option_optimization_table[] =
+  {
+    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fregmove, NULL, 1 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
 
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ATTRIBUTE_TABLE
@@ -108,6 +127,8 @@ static const struct attribute_spec m32r_attribute_table[] =
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS m32r_legitimize_address
+#undef TARGET_MODE_DEPENDENT_ADDRESS_P
+#define TARGET_MODE_DEPENDENT_ADDRESS_P m32r_mode_dependent_address_p
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
@@ -138,12 +159,19 @@ static const struct attribute_spec m32r_attribute_table[] =
 #define TARGET_DEFAULT_TARGET_FLAGS TARGET_CPU_DEFAULT
 #undef  TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION m32r_handle_option
+#undef  TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE m32r_option_override
+#undef  TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE m32r_option_optimization_table
 
 #undef  TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO m32r_encode_section_info
 #undef  TARGET_IN_SMALL_DATA_P
 #define TARGET_IN_SMALL_DATA_P m32r_in_small_data_p
 
+
+#undef  TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST m32r_memory_move_cost
 #undef  TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS m32r_rtx_costs
 #undef  TARGET_ADDRESS_COST
@@ -153,6 +181,14 @@ static const struct attribute_spec m32r_attribute_table[] =
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
 #undef  TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY m32r_return_in_memory
+
+#undef TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE m32r_function_value
+#undef TARGET_LIBCALL_VALUE
+#define TARGET_LIBCALL_VALUE m32r_libcall_value
+#undef TARGET_FUNCTION_VALUE_REGNO_P
+#define TARGET_FUNCTION_VALUE_REGNO_P m32r_function_value_regno_p
+
 #undef  TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS m32r_setup_incoming_varargs
 #undef  TARGET_MUST_PASS_IN_STACK
@@ -161,9 +197,16 @@ static const struct attribute_spec m32r_attribute_table[] =
 #define TARGET_PASS_BY_REFERENCE m32r_pass_by_reference
 #undef  TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES m32r_arg_partial_bytes
+#undef  TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG m32r_function_arg
+#undef  TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE m32r_function_arg_advance
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE m32r_can_eliminate
+
+#undef TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE m32r_conditional_register_usage
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT m32r_trampoline_init
@@ -219,7 +262,7 @@ m32r_handle_option (size_t code, const char *arg, int value)
     }
 }
 
-/* Called by OVERRIDE_OPTIONS to initialize various things.  */
+/* Called by m32r_option_override to initialize various things.  */
 
 void
 m32r_init (void)
@@ -232,8 +275,17 @@ m32r_init (void)
   m32r_punct_chars['@'] = 1; /* ??? no longer used */
 
   /* Provide default value if not specified.  */
-  if (!g_switch_set)
+  if (!global_options_set.x_g_switch_value)
     g_switch_value = SDATA_DEFAULT_SIZE;
+}
+
+static void
+m32r_option_override (void)
+{
+  /* These need to be done at start up.
+     It's convenient to do them here.  */
+  m32r_init ();
+  SUBTARGET_OVERRIDE_OPTIONS;
 }
 
 /* Vectors to keep interesting information about registers where it can easily
@@ -486,7 +538,7 @@ m32r_in_small_data_p (const_tree decl)
 	{
 	  int size = int_size_in_bytes (TREE_TYPE (decl));
 
-	  if (size > 0 && (unsigned HOST_WIDE_INT) size <= g_switch_value)
+	  if (size > 0 && size <= g_switch_value)
 	    return true;
 	}
     }
@@ -1166,12 +1218,100 @@ m32r_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   return words * UNITS_PER_WORD;
 }
 
+/* The ROUND_ADVANCE* macros are local to this file.  */
+/* Round SIZE up to a word boundary.  */
+#define ROUND_ADVANCE(SIZE) \
+  (((SIZE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+
+/* Round arg MODE/TYPE up to the next word boundary.  */
+#define ROUND_ADVANCE_ARG(MODE, TYPE) \
+  ((MODE) == BLKmode				\
+   ? ROUND_ADVANCE ((unsigned int) int_size_in_bytes (TYPE))	\
+   : ROUND_ADVANCE ((unsigned int) GET_MODE_SIZE (MODE)))
+
+/* Round CUM up to the necessary point for argument MODE/TYPE.  */
+#define ROUND_ADVANCE_CUM(CUM, MODE, TYPE) (CUM)
+
+/* Return boolean indicating arg of type TYPE and mode MODE will be passed in
+   a reg.  This includes arguments that have to be passed by reference as the
+   pointer to them is passed in a reg if one is available (and that is what
+   we're given).
+   This macro is only used in this file.  */
+#define PASS_IN_REG_P(CUM, MODE, TYPE) \
+  (ROUND_ADVANCE_CUM ((CUM), (MODE), (TYPE)) < M32R_MAX_PARM_REGS)
+
+/* Determine where to put an argument to a function.
+   Value is zero to push the argument on the stack,
+   or a hard register in which to store the argument.
+
+   MODE is the argument's machine mode.
+   TYPE is the data type of the argument (as a tree).
+    This is null for libcalls where that information may
+    not be available.
+   CUM is a variable of type CUMULATIVE_ARGS which gives info about
+    the preceding args and about the function being called.
+   NAMED is nonzero if this argument is a named parameter
+    (otherwise it is an extra parameter matching an ellipsis).  */
+/* On the M32R the first M32R_MAX_PARM_REGS args are normally in registers
+   and the rest are pushed.  */
+
+static rtx
+m32r_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		   const_tree type ATTRIBUTE_UNUSED,
+		   bool named ATTRIBUTE_UNUSED)
+{
+  return (PASS_IN_REG_P (*cum, mode, type)
+	  ? gen_rtx_REG (mode, ROUND_ADVANCE_CUM (*cum, mode, type))
+	  : NULL_RTX);
+}
+
+/* Update the data in CUM to advance over an argument
+   of mode MODE and data type TYPE.
+   (TYPE is null for libcalls where that information may not be available.)  */
+
+static void
+m32r_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			   const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  *cum = (ROUND_ADVANCE_CUM (*cum, mode, type)
+	  + ROUND_ADVANCE_ARG (mode, type));
+}
+
 /* Worker function for TARGET_RETURN_IN_MEMORY.  */
 
 static bool
 m32r_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
   return m32r_pass_by_reference (NULL, TYPE_MODE (type), type, false);
+}
+
+/* Worker function for TARGET_FUNCTION_VALUE.  */
+
+static rtx
+m32r_function_value (const_tree valtype,
+		const_tree fn_decl_or_type ATTRIBUTE_UNUSED,
+		bool outgoing ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (TYPE_MODE (valtype), 0);
+}
+
+/* Worker function for TARGET_LIBCALL_VALUE.  */
+
+static rtx
+m32r_libcall_value (enum machine_mode mode,
+		const_rtx fun ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (mode, 0);
+}
+
+/* Worker function for TARGET_FUNCTION_VALUE_REGNO_P.
+
+  ??? What about r1 in DI/DF values.  */
+
+static bool
+m32r_function_value_regno_p (const unsigned int regno)
+{
+  return (regno == 0);
 }
 
 /* Do any needed setup for a variadic function.  For the M32R, we must
@@ -1253,6 +1393,22 @@ m32r_issue_rate (void)
 }
 
 /* Cost functions.  */
+
+/* Implement TARGET_HANDLE_OPTION.
+
+   Memory is 3 times as expensive as registers.
+   ??? Is that the right way to look at it?  */
+
+static int
+m32r_memory_move_cost (enum machine_mode mode,
+		       reg_class_t rclass ATTRIBUTE_UNUSED,
+		       bool in ATTRIBUTE_UNUSED)
+{
+  if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
+    return 6;
+  else
+    return 12;
+}
 
 static bool
 m32r_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *total,
@@ -1432,7 +1588,7 @@ m32r_compute_frame_size (int size)	/* # of var. bytes allocated.  */
 {
   unsigned int regno;
   unsigned int total_size, var_size, args_size, pretend_size, extra_size;
-  unsigned int reg_size, frame_size;
+  unsigned int reg_size;
   unsigned int gmask;
   enum m32r_function_type fn_type;
   int interrupt_p;
@@ -1474,7 +1630,7 @@ m32r_compute_frame_size (int size)	/* # of var. bytes allocated.  */
      handler will do the right thing if this changes total_size.  */
   total_size = M32R_STACK_ALIGN (total_size);
 
-  frame_size = total_size - (pretend_size + reg_size);
+  /* frame_size = total_size - (pretend_size + reg_size); */
 
   /* Save computed information.  */
   current_frame_info.total_size   = total_size;
@@ -1822,7 +1978,6 @@ m32r_legitimize_pic_address (rtx orig, rtx reg)
   if (GET_CODE (orig) == SYMBOL_REF || GET_CODE (orig) == LABEL_REF)
     {
       rtx pic_ref, address;
-      rtx insn;
       int subregs = 0;
 
       if (reg == 0)
@@ -1852,12 +2007,7 @@ m32r_legitimize_pic_address (rtx orig, rtx reg)
 
       emit_insn (gen_addsi3 (address, address, pic_offset_table_rtx));
       pic_ref = gen_const_mem (Pmode, address);
-      insn = emit_move_insn (reg, pic_ref);
-#if 0
-      /* Put a REG_EQUAL note on this insn, so that it can be optimized
-         by loop.  */
-      set_unique_reg_note (insn, REG_EQUAL, orig);
-#endif
+      emit_move_insn (reg, pic_ref);
       return reg;
     }
   else if (GET_CODE (orig) == CONST)
@@ -1911,6 +2061,17 @@ m32r_legitimize_address (rtx x, rtx orig_x ATTRIBUTE_UNUSED,
   else
     return x;
 }
+
+/* Worker function for TARGET_MODE_DEPENDENT_ADDRESS_P.  */
+
+static bool
+m32r_mode_dependent_address_p (const_rtx addr)
+{
+  if (GET_CODE (addr) == LO_SUM)
+    return true;
+
+  return false;
+}
 
 /* Nested function support.  */
 
@@ -1932,7 +2093,7 @@ m32r_file_start (void)
 
   if (flag_verbose_asm)
     fprintf (asm_out_file,
-	     "%s M32R/D special options: -G " HOST_WIDE_INT_PRINT_UNSIGNED "\n",
+	     "%s M32R/D special options: -G %d\n",
 	     ASM_COMMENT_START, g_switch_value);
 
   if (TARGET_LITTLE_ENDIAN)
@@ -2679,4 +2840,14 @@ m32r_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 		       LCT_NORMAL, VOIDmode, 3, XEXP (m_tramp, 0), Pmode,
 		       gen_int_mode (TRAMPOLINE_SIZE, SImode), SImode,
 		       GEN_INT (3), SImode);
+}
+
+static void
+m32r_conditional_register_usage (void)
+{
+  if (flag_pic)
+    {
+      fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
+      call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
+    }
 }

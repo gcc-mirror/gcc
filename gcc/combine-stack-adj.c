@@ -1,7 +1,7 @@
 /* Combine stack adjustments.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
-   Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -57,7 +57,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "df.h"
 #include "except.h"
-#include "toplev.h"
 #include "reload.h"
 #include "timevar.h"
 #include "tree-pass.h"
@@ -546,7 +545,7 @@ combine_stack_adjustments_for_block (basic_block bb)
 static bool
 gate_handle_stack_adjustments (void)
 {
-  return (optimize > 0);
+  return flag_combine_stack_adjustments;
 }
 
 static unsigned int
@@ -555,7 +554,7 @@ rest_of_handle_stack_adjustments (void)
   cleanup_cfg (flag_crossjumping ? CLEANUP_CROSSJUMP : 0);
 
   /* This is kind of a heuristic.  We need to run combine_stack_adjustments
-     even for machines with possibly nonzero RETURN_POPS_ARGS
+     even for machines with possibly nonzero TARGET_RETURN_POPS_ARGS
      and ACCUMULATE_OUTGOING_ARGS.  We expect that only ports having
      push instructions will have popping returns.  */
 #ifndef PUSH_ROUNDING

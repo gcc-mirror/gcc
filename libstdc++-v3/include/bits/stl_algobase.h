@@ -257,27 +257,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return __a;
     }
 
-
-  // If _Iterator has a base returns it otherwise _Iterator is returned
-  // untouched
-  template<typename _Iterator, bool _HasBase>
-    struct _Iter_base
-    {
-      typedef _Iterator iterator_type;
-      static iterator_type
-      _S_base(_Iterator __it)
-      { return __it; }
-    };
-
-  template<typename _Iterator>
-    struct _Iter_base<_Iterator, true>
-    {
-      typedef typename _Iterator::iterator_type iterator_type;
-      static iterator_type
-      _S_base(_Iterator __it)
-      { return __it.base(); }
-    };
-
   // If _Iterator is a __normal_iterator return its base (a plain pointer,
   // normally) otherwise return it untouched.  See copy, fill, ... 
   template<typename _Iterator>
@@ -966,13 +945,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_requires_partitioned_lower(__first, __last, __val);
 
       _DistanceType __len = std::distance(__first, __last);
-      _DistanceType __half;
-      _ForwardIterator __middle;
 
       while (__len > 0)
 	{
-	  __half = __len >> 1;
-	  __middle = __first;
+	  _DistanceType __half = __len >> 1;
+	  _ForwardIterator __middle = __first;
 	  std::advance(__middle, __half);
 	  if (*__middle < __val)
 	    {

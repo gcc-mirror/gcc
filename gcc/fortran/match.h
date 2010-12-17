@@ -31,6 +31,7 @@ extern gfc_symbol *gfc_new_block;
    separate.  */
 extern gfc_st_label *gfc_statement_label;
 
+extern int gfc_matching_ptr_assignment;
 extern int gfc_matching_procptr_assignment;
 extern bool gfc_matching_prefix;
 

@@ -51,12 +51,15 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../../compile \
 	../../config.rpath ../../config.sub ../../depcomp \
 	../../install-sh ../../ltmain.sh ../../missing \
 	../../mkinstalldirs ../../ylwrap AUTHORS COPYING ChangeLog \
-	INSTALL NEWS TODO compile config.guess config.sub depcomp \
-	install-sh ltcf-c.sh ltcf-cxx.sh ltcf-gcj.sh ltconfig \
+	INSTALL NEWS TODO compile config.guess config.rpath config.sub \
+	depcomp install-sh ltcf-c.sh ltcf-cxx.sh ltcf-gcj.sh ltconfig \
 	ltmain.sh missing mkinstalldirs
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
 	$(top_srcdir)/../../config/lead-dot.m4 \
+	$(top_srcdir)/../../config/lib-ld.m4 \
+	$(top_srcdir)/../../config/lib-link.m4 \
+	$(top_srcdir)/../../config/lib-prefix.m4 \
 	$(top_srcdir)/../../config/multi.m4 \
 	$(top_srcdir)/../../config/no-executables.m4 \
 	$(top_srcdir)/../../config/override.m4 \
@@ -75,9 +78,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
 	$(top_srcdir)/m4/ax_create_stdint_h.m4 \
 	$(top_srcdir)/m4/ax_func_which_gethostbyname_r.m4 \
 	$(top_srcdir)/m4/gcc_attribute.m4 $(top_srcdir)/m4/iconv.m4 \
-	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
-	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/pkg.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \

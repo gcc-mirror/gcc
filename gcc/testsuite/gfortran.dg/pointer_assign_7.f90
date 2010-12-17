@@ -18,7 +18,7 @@ type(face_t), pointer :: face
 allocate(face)
 allocate(blu)
 
-face%bla => blu  ! { dg-error "Pointer assignment to non-POINTER" }
+face%bla => blu  ! { dg-error "Non-POINTER in pointer association context" }
 
 end program
 

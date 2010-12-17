@@ -124,7 +124,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       list(list&& __x)
-      : _Base(std::forward<list>(__x))
+      : _Base(std::move(__x))
       { 
         __profcxx_list_construct(this); 
         __profcxx_list_construct2(this); 

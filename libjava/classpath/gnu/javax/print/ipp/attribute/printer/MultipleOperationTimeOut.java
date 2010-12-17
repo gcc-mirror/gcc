@@ -1,4 +1,4 @@
-/* MultipleOperationTimeOut.java -- 
+/* MultipleOperationTimeOut.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -46,10 +46,10 @@ import javax.print.attribute.IntegerSyntax;
  * 4.4.31 provides the minimum time ins second a printer object waits
  * before time out and recovery. The printer object waits e.g. for
  * additional SendDocument or SendUri operations.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class MultipleOperationTimeOut extends IntegerSyntax 
+public final class MultipleOperationTimeOut extends IntegerSyntax
   implements Attribute
 {
 
@@ -68,7 +68,7 @@ public final class MultipleOperationTimeOut extends IntegerSyntax
    *
    * @return The class <code>MultipleOperationTimeOut</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return MultipleOperationTimeOut.class;
   }

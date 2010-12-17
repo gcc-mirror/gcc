@@ -1,5 +1,5 @@
 /* Prototypes for alpha.c functions used in the md file & elsewhere.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2009
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 extern int alpha_next_sequence_number;
 
 extern void literal_section (void);
-extern void override_options (void);
 extern int zap_mask (HOST_WIDE_INT);
 extern int direct_return (void);
 
@@ -75,7 +74,6 @@ extern void print_operand_address (FILE *, rtx);
 extern void alpha_initialize_trampoline (rtx, rtx, rtx, int, int, int);
 
 extern rtx alpha_va_arg (tree, tree);
-extern rtx function_arg (CUMULATIVE_ARGS, enum machine_mode, tree, int);
 extern rtx function_value (const_tree, const_tree, enum machine_mode);
 
 extern void alpha_start_function (FILE *, const char *, tree);

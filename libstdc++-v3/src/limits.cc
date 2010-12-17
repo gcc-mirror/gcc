@@ -34,6 +34,8 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
+#define const _GLIBCXX_USE_CONSTEXPR
+
   const bool __numeric_limits_base::is_specialized;
   const int  __numeric_limits_base::digits;
   const int  __numeric_limits_base::digits10;
@@ -509,6 +511,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   const bool numeric_limits<char32_t>::traps;
   const bool numeric_limits<char32_t>::tinyness_before;
   const float_round_style numeric_limits<char32_t>::round_style;
+
+#undef const
 
 _GLIBCXX_END_NAMESPACE
 

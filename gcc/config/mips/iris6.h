@@ -146,10 +146,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef DEFAULT_SIGNED_CHAR
 #define DEFAULT_SIGNED_CHAR 0
 
-#define WORD_SWITCH_TAKES_ARG(STR)			\
-  (DEFAULT_WORD_SWITCH_TAKES_ARG (STR)			\
-   || strcmp (STR, "rpath") == 0)
-
 #define TARGET_OS_CPP_BUILTINS()				\
   do								\
     {								\
@@ -314,6 +310,11 @@ along with GCC; see the file COPYING3.  If not see
 /* A linker error can empirically be avoided by removing duplicate
    library search directories.  */
 #define LINK_ELIMINATE_DUPLICATE_LDIRECTORIES 1
+
+/* The SGI linker doesn't understand constructor priorities.  */
+#ifndef IRIX_USING_GNU_LD
+#define SUPPORTS_INIT_PRIORITY 0
+#endif
 
 /* Add -g to mips.h default to avoid confusing gas with local symbols
    generated from stabs info.  */

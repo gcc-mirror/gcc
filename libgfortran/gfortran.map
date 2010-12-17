@@ -528,6 +528,7 @@ GFORTRAN_1.0 {
     _gfortran_pow_r10_i16;
     _gfortran_pow_r10_i8;
     _gfortran_pow_r16_i16;
+    _gfortran_pow_r16_i4;
     _gfortran_pow_r16_i8;
     _gfortran_pow_r4_i16;
     _gfortran_pow_r4_i8;
@@ -1069,6 +1070,8 @@ GFORTRAN_1.1 {
     _gfortran_erfc_scaled_r16;
     _gfortran_erfc_scaled_r4;
     _gfortran_erfc_scaled_r8;
+    _gfortran_execute_command_line_i4;
+    _gfortran_execute_command_line_i8;
     _gfortran_pack_char4;
     _gfortran_pack_s_char4;
     _gfortran_reshape_char4;
@@ -1105,8 +1108,52 @@ GFORTRAN_1.3 {
 
 GFORTRAN_1.4 {
   global:
+    _gfortran_bessel_jn_r4;
+    _gfortran_bessel_jn_r8;
+    _gfortran_bessel_jn_r10;
+    _gfortran_bessel_jn_r16;
+    _gfortran_bessel_yn_r4;
+    _gfortran_bessel_yn_r8;
+    _gfortran_bessel_yn_r10;
+    _gfortran_bessel_yn_r16;
     _gfortran_error_stop_numeric;
+    _gfortran_iall_i1;
+    _gfortran_iall_i2;
+    _gfortran_iall_i4;
+    _gfortran_iall_i8;
+    _gfortran_iall_i16;
+    _gfortran_iany_i1;
+    _gfortran_iany_i2;
+    _gfortran_iany_i4;
+    _gfortran_iany_i8;
+    _gfortran_iany_i16;
+    _gfortran_iparity_i1;
+    _gfortran_iparity_i2;
+    _gfortran_iparity_i4;
+    _gfortran_iparity_i8;
+    _gfortran_iparity_i16;
+    _gfortran_norm2_r4;
+    _gfortran_norm2_r8;
+    _gfortran_norm2_r10;
+    _gfortran_norm2_r16;
+    _gfortran_parity_l1;
+    _gfortran_parity_l2;
+    _gfortran_parity_l4;
+    _gfortran_parity_l8;
+    _gfortran_parity_l16;
     _gfortran_selected_real_kind2008;
+    _gfortran_stop_numeric_f08;
+    _gfortran_transfer_array_write;
+    _gfortran_transfer_character_write;
+    _gfortran_transfer_character_wide_write;
+    _gfortran_transfer_complex_write;
+    _gfortran_transfer_complex128;
+    _gfortran_transfer_complex128_write;
+    _gfortran_transfer_integer_write;
+    _gfortran_transfer_logical_write;
+    _gfortran_transfer_real_write;
+    _gfortran_transfer_real128;
+    _gfortran_transfer_real128_write;
 } GFORTRAN_1.3; 
 
 F2C_1.0 {

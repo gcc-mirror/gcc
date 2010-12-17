@@ -1,6 +1,6 @@
 /* FR30 specific functions.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2007, 2008, 2009
-   Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2007, 2008, 2009,
+   2010 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
    This file is part of GCC.
@@ -39,6 +39,8 @@
 #include "obstack.h"
 #include "except.h"
 #include "function.h"
+#include "df.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "tm_p.h"
 #include "target.h"
@@ -118,10 +120,18 @@ static void fr30_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 static bool fr30_must_pass_in_stack (enum machine_mode, const_tree);
 static int fr30_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				   tree, bool);
+static rtx fr30_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+			      const_tree, bool);
+static void fr30_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+				       const_tree, bool);
 static bool fr30_frame_pointer_required (void);
+static rtx fr30_function_value (const_tree, const_tree, bool);
+static rtx fr30_libcall_value (enum machine_mode, const_rtx);
+static bool fr30_function_value_regno_p (const unsigned int);
 static bool fr30_can_eliminate (const int, const int);
 static void fr30_asm_trampoline_template (FILE *);
 static void fr30_trampoline_init (rtx, tree, rtx);
+static int fr30_num_arg_regs (enum machine_mode, const_tree);
 
 #define FRAME_POINTER_MASK 	(1 << (FRAME_POINTER_REGNUM))
 #define RETURN_POINTER_MASK 	(1 << (RETURN_POINTER_REGNUM))
@@ -141,6 +151,13 @@ static void fr30_trampoline_init (rtx, tree, rtx);
 #if UNITS_PER_WORD == 4
 #define WORD_ALIGN(SIZE) (((SIZE) + 3) & ~3)
 #endif
+
+/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
+static const struct default_options fr30_option_optimization_table[] =
+  {
+    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
 
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ASM_ALIGNED_HI_OP
@@ -154,6 +171,17 @@ static void fr30_trampoline_init (rtx, tree, rtx);
 #define TARGET_PASS_BY_REFERENCE hook_pass_by_reference_must_pass_in_stack
 #undef  TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES fr30_arg_partial_bytes
+#undef  TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG fr30_function_arg
+#undef  TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE fr30_function_arg_advance
+
+#undef TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE fr30_function_value
+#undef TARGET_LIBCALL_VALUE
+#define TARGET_LIBCALL_VALUE fr30_libcall_value
+#undef TARGET_FUNCTION_VALUE_REGNO_P
+#define TARGET_FUNCTION_VALUE_REGNO_P fr30_function_value_regno_p
 
 #undef  TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS fr30_setup_incoming_varargs
@@ -170,6 +198,12 @@ static void fr30_trampoline_init (rtx, tree, rtx);
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE fr30_asm_trampoline_template
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT fr30_trampoline_init
+
+#undef TARGET_EXCEPT_UNWIND_INFO
+#define TARGET_EXCEPT_UNWIND_INFO sjlj_except_unwind_info
+
+#undef TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE fr30_option_optimization_table
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -680,6 +714,34 @@ fr30_print_operand (FILE *file, rtx x, int code)
 }
 
 /*}}}*/
+
+/* Implements TARGET_FUNCTION_VALUE.  */
+
+static rtx
+fr30_function_value (const_tree valtype,
+		     const_tree fntype_or_decli ATTRIBUTE_UNUSED,
+		     bool outgoing ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (TYPE_MODE (valtype), RETURN_VALUE_REGNUM);
+}
+
+/* Implements TARGET_LIBCALL_VALUE.  */
+
+static rtx
+fr30_libcall_value (enum machine_mode mode,
+		    const_rtx fun ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (mode, RETURN_VALUE_REGNUM);
+}
+
+/* Implements TARGET_FUNCTION_VALUE_REGNO_P.  */
+
+static bool
+fr30_function_value_regno_p (const unsigned int regno)
+{
+  return (regno == RETURN_VALUE_REGNUM);
+}
+
 /*{{{  Function arguments */ 
 
 /* Return true if we should pass an argument on the stack rather than
@@ -697,8 +759,8 @@ fr30_must_pass_in_stack (enum machine_mode mode, const_tree type)
 
 /* Compute the number of word sized registers needed to hold a
    function argument of mode INT_MODE and tree type TYPE.  */
-int
-fr30_num_arg_regs (enum machine_mode mode, tree type)
+static int
+fr30_num_arg_regs (enum machine_mode mode, const_tree type)
 {
   int size;
 
@@ -740,6 +802,33 @@ fr30_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     return 0;
   
   return (FR30_NUM_ARG_REGS - *cum) * UNITS_PER_WORD;
+}
+
+static rtx
+fr30_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		   const_tree type, bool named)
+{
+  if (!named
+      || fr30_must_pass_in_stack (mode, type)
+      || *cum >= FR30_NUM_ARG_REGS)
+    return NULL_RTX;
+  else
+    return gen_rtx_REG (mode, *cum + FIRST_ARG_REGNUM);
+}
+
+/* A C statement (sans semicolon) to update the summarizer variable CUM to
+   advance past an argument in the argument list.  The values MODE, TYPE and
+   NAMED describe that argument.  Once this is done, the variable CUM is
+   suitable for analyzing the *following* argument with `FUNCTION_ARG', etc.
+
+   This macro need not do anything if the argument in question was passed on
+   the stack.  The compiler knows how to track the amount of stack space used
+   for arguments without any special help.  */
+static void
+fr30_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			   const_tree type, bool named)
+{
+  *cum += named * fr30_num_arg_regs (mode, type);
 }
 
 /*}}}*/
@@ -843,9 +932,8 @@ fr30_move_double (rtx * operands)
       else if (src_code == MEM)
 	{
 	  rtx addr = XEXP (src, 0);
-	  int dregno = REGNO (dest);
-	  rtx dest0 = operand_subword (dest, 0, TRUE, mode);;
-	  rtx dest1 = operand_subword (dest, 1, TRUE, mode);;
+	  rtx dest0 = operand_subword (dest, 0, TRUE, mode);
+	  rtx dest1 = operand_subword (dest, 1, TRUE, mode);
 	  rtx new_mem;
 	  
 	  gcc_assert (GET_CODE (addr) == REG);

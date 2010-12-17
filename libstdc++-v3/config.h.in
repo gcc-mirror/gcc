@@ -349,6 +349,10 @@
 /* Define if strxfrm_l is available in <string.h>. */
 #undef HAVE_STRXFRM_L
 
+/* Define to 1 if the target runtime linker supports binding the same symbol
+   to different versions. */
+#undef HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT
+
 /* Define to 1 if you have the <sys/filio.h> header file. */
 #undef HAVE_SYS_FILIO_H
 
@@ -709,8 +713,14 @@
 /* Define if the compiler is configured for setjmp/longjmp exceptions. */
 #undef _GLIBCXX_SJLJ_EXCEPTIONS
 
-/* Define if EOF == -1, SEEK_CUR == 1, SEEK_END == 2. */
-#undef _GLIBCXX_STDIO_MACROS
+/* Define to the value of the EOF integer constant. */
+#undef _GLIBCXX_STDIO_EOF
+
+/* Define to the value of the SEEK_CUR integer constant. */
+#undef _GLIBCXX_STDIO_SEEK_CUR
+
+/* Define to the value of the SEEK_END integer constant. */
+#undef _GLIBCXX_STDIO_SEEK_END
 
 /* Define to use symbol versioning in the shared library. */
 #undef _GLIBCXX_SYMVER
@@ -723,6 +733,9 @@
 
 /* Define to use GNU namespace versioning in the shared library. */
 #undef _GLIBCXX_SYMVER_GNU_NAMESPACE
+
+/* Define to use Sun versioning in the shared library. */
+#undef _GLIBCXX_SYMVER_SUN
 
 /* Define if C99 functions or macros from <wchar.h>, <math.h>, <complex.h>,
    <stdio.h>, and <stdlib.h> can be used or exposed. */

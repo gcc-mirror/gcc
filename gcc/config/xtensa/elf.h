@@ -1,6 +1,6 @@
 /* Xtensa/Elf configuration.
    Derived from the configuration for GCC for Intel i386 running Linux.
-   Copyright (C) 2001, 2003, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003, 2006, 2007, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -98,5 +98,3 @@ do \
 	      "GCC", PREFIX_PRIORITY_LAST, 0, 0); \
   } \
 while (0)
-
-#define HANDLE_PRAGMA_PACK_PUSH_POP 1

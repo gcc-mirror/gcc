@@ -22,13 +22,39 @@ toolexeclib_LTLIBRARIES = libgomp.la
 nodist_toolexeclib_HEADERS = libgomp.spec
 
 if LIBGOMP_BUILD_VERSIONED_SHLIB
+if LIBGOMP_BUILD_VERSIONED_SHLIB_GNU
+if LIBGOMP_BUILD_VERSIONED_SHLIB_SOL2
+libgomp_version_script = -Wl,--version-script,libgomp.map-sol2
+libgomp_version_dep = libgomp.map-sol2
+libgomp.map-sol2 : $(top_srcdir)/libgomp.map
+	sed -e '/^#ifdef HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT/,/^#endif/d' $< \
+	 > $@ || (rm -f $@ ; exit 1)
+else
 libgomp_version_script = -Wl,--version-script,$(top_srcdir)/libgomp.map
+libgomp_version_dep = $(top_srcdir)/libgomp.map
+endif
+endif
+if LIBGOMP_BUILD_VERSIONED_SHLIB_SUN
+libgomp_version_script = -Wl,-M,libgomp.map-sun
+libgomp_version_dep = libgomp.map-sun
+libgomp.map-sun : $(top_srcdir)/libgomp.map \
+		$(top_srcdir)/../contrib/make_sunver.pl \
+		$(libgomp_la_OBJECTS) $(libgomp_la_LIBADD)
+	perl $(top_srcdir)/../contrib/make_sunver.pl \
+	  $(top_srcdir)/libgomp.map \
+	  $(libgomp_la_OBJECTS:%.lo=.libs/%.o) \
+	 `echo $(libgomp_la_LIBADD) | \
+	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
+	 > $@ || (rm -f $@ ; exit 1)
+endif
 else
 libgomp_version_script =
+libgomp_version_dep =
 endif
 libgomp_version_info = -version-info $(libtool_VERSION)
 libgomp_la_LDFLAGS = $(libgomp_version_info) $(libgomp_version_script) \
         -no-undefined -bindir "$(bindir)"
+libgomp_la_DEPENDENCIES = $(libgomp_version_dep)
 libgomp_la_LINK = $(LINK) $(libgomp_la_LDFLAGS)
 
 libgomp_la_SOURCES = alloc.c barrier.c critical.c env.c error.c iter.c \

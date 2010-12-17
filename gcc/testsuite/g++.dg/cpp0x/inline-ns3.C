@@ -1,3 +1,5 @@
+// { dg-options -std=c++0x }
+
 namespace C
 {
   void f();

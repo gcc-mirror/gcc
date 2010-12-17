@@ -37,11 +37,6 @@ svn -q export $SVNROOT/trunk/$GETTHIS doc
 cd doc
 rm -f Makefile
 
-# build a compressed copy of the HTML, preserve directory structure
-for file in `find . -name "*.html" -print`; do
-    gzip --best < $file > $file.gz
-done
-
 # copy the tree to the onlinedocs area, preserve directory structure
 #find . -depth -print | cpio -pdv $WWWDIR
 find . -depth -print | cpio -pd $WWWDIR > /dev/null 2>&1

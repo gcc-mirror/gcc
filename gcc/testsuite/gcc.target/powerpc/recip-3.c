@@ -1,4 +1,4 @@
-/* { dg-do compile { target { powerpc*-*-* } } } */
+/* { dg-do compile { target { { powerpc*-*-* } && { ! powerpc*-apple-darwin* } } } } */
 /* { dg-options "-O2 -mrecip -ffast-math -mcpu=power7" } */
 /* { dg-final { scan-assembler-times "xsrsqrtedp" 1 } } */
 /* { dg-final { scan-assembler-times "xsmsub.dp" 1 } } */

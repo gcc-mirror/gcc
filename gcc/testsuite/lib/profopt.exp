@@ -328,6 +328,10 @@ proc profopt-execute { src } {
 	lappend options "additional_flags=$option $extra_flags $feedback_option"
 	set optstr "$option $feedback_option"
 	set comp_output [${tool}_target_compile "$src" "$execname2" "executable" $options]
+
+	# Prune warnings we know are unwanted.
+	set comp_output [prune_warnings $comp_output]
+
 	if ![${tool}_check_compile "$testcase compilation" $optstr $execname2 $comp_output] {
  	    unresolved "$testcase execution,   $optstr"
 	    continue

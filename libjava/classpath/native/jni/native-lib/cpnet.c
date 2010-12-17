@@ -578,9 +578,10 @@ jint cpnet_addMembership (JNIEnv *env UNUSED, jint fd, cpnet_address *addr)
 {
   struct ip_mreq req;
   int ret;
+  struct sockaddr_in *sockaddr = (struct sockaddr_in *)addr->data;
   
   memset(&req, 0, sizeof(req));
-  req.imr_multiaddr = ((struct sockaddr_in *)addr->data)->sin_addr;
+  req.imr_multiaddr = sockaddr->sin_addr;
   req.imr_interface.s_addr = INADDR_ANY;
   ret = setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &req, sizeof(req));
   if (ret != 0)
@@ -593,9 +594,10 @@ jint cpnet_dropMembership (JNIEnv *env UNUSED, jint fd, cpnet_address *addr)
 {
   struct ip_mreq req;
   int ret;
+  struct sockaddr_in *sockaddr = (struct sockaddr_in *)addr->data;
   
   memset(&req, 0, sizeof(req));
-  req.imr_multiaddr = ((struct sockaddr_in *)addr->data)->sin_addr;
+  req.imr_multiaddr = sockaddr->sin_addr;
   req.imr_interface.s_addr = INADDR_ANY;
   ret = setsockopt(fd, IPPROTO_IP, IP_DROP_MEMBERSHIP, &req, sizeof(req));
   if (ret != 0)

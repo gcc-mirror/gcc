@@ -1,4 +1,4 @@
-/* GeneratedNaturalLanguageSupported.java -- 
+/* GeneratedNaturalLanguageSupported.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -40,24 +40,25 @@ package gnu.javax.print.ipp.attribute.supported;
 
 import gnu.javax.print.ipp.attribute.NaturalLanguageSyntax;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.SupportedValuesAttribute;
 
 /**
- * GeneratedNaturalLanguageSupported attribute as described 
+ * GeneratedNaturalLanguageSupported attribute as described
  * in RFC 2911 section 4.4.20 provides the natural languages
- * which are supported by the IPP implementation to be used 
+ * which are supported by the IPP implementation to be used
  * in the name and text syntax attribute types.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class GeneratedNaturalLanguageSupported 
-  extends NaturalLanguageSyntax 
+public final class GeneratedNaturalLanguageSupported
+  extends NaturalLanguageSyntax
   implements SupportedValuesAttribute
 {
 
   /**
    * Creates a <code>GeneratedNaturalLanguageSupported</code> object.
-   * 
+   *
    * @param value the charset string value.
    */
   public GeneratedNaturalLanguageSupported(String value)
@@ -70,7 +71,7 @@ public final class GeneratedNaturalLanguageSupported
    *
    * @return The class <code>GeneratedNaturalLanguageSupported</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return GeneratedNaturalLanguageSupported.class;
   }

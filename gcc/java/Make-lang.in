@@ -57,7 +57,7 @@ JAVA_TARGET_INDEPENDENT_BIN_TOOLS = jcf-dump
 .PHONY: java
 
 jvspec.o: $(srcdir)/java/jvspec.c $(SYSTEM_H) coretypes.h $(TM_H) \
-  $(GCC_H) $(CONFIG_H) java/jcf.h java/javaop.h
+  $(GCC_H) $(CONFIG_H) java/jcf.h java/javaop.h $(OPTS_H)
 	(SHLIB_LINK='$(SHLIB_LINK)'; \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
 		$(INCLUDES) $(srcdir)/java/jvspec.c $(OUTPUT_OPTION))
@@ -65,7 +65,7 @@ jvspec.o: $(srcdir)/java/jvspec.c $(SYSTEM_H) coretypes.h $(TM_H) \
 # Create the compiler driver for $(XGCJ).
 $(XGCJ)$(exeext): $(GCC_OBJS) jvspec.o java/jcf-path.o version.o \
 	   prefix.o intl.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
-	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) \
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) \
 	  jvspec.o java/jcf-path.o prefix.o intl.o \
 	  version.o $(EXTRA_GCC_OBJS) $(LIBS)
 
@@ -101,18 +101,18 @@ jvspec.o-warn = -Wno-error
 jc1$(exeext): $(JAVA_OBJS) $(BACKEND) $(C_STUB_OBJS) \
                 $(LIBDEPS) attribs.o
 	rm -f $@
-	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 		$(JAVA_OBJS) $(C_STUB_OBJS) \
 		$(BACKEND) $(ZLIB) $(LIBICONV) $(LIBS) attribs.o $(BACKENDLIBS)
 
 jcf-dump$(exeext): $(JCFDUMP_OBJS) $(LIBDEPS)
 	rm -f $@
-	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(JCFDUMP_OBJS) \
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(JCFDUMP_OBJS) \
 		$(CPPLIBS) $(ZLIB) $(LDEXP_LIB) $(LIBS)
 
 jvgenmain$(exeext): $(JVGENMAIN_OBJS) $(LIBDEPS)
 	rm -f $@
-	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(JVGENMAIN_OBJS) \
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(JVGENMAIN_OBJS) \
 		$(LIBS)
 
 #
@@ -273,7 +273,7 @@ java/jcf-dump.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(JAVA_TREE_H) \
   java/jcf-dump.c java/jcf-reader.c java/jcf.h java/javaop.h java/javaop.def \
   version.h $(GGC_H) intl.h java/zipfile.h
 java/boehm.o: java/boehm.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  $(TREE_H) $(JAVA_TREE_H) java/parse.h toplev.h
+  $(TREE_H) $(JAVA_TREE_H) java/parse.h
 java/builtins.o: java/builtins.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(JAVA_TREE_H) $(GGC_H) $(FLAGS_H) $(OPTABS_H) $(EXPR_H) langhooks.h \
   gt-java-builtins.h
@@ -291,7 +291,7 @@ java/except.o: java/except.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h $(REAL_H) \
   toplev.h $(SYSTEM_H) coretypes.h
 java/expr.o: java/expr.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h $(REAL_H) \
   java/javaop.h java/java-opcodes.h \
-  java/java-except.h java/java-except.h java/parse.h toplev.h \
+  java/java-except.h java/java-except.h java/parse.h \
   $(SYSTEM_H) coretypes.h $(TM_H) $(GGC_H) gt-java-expr.h $(TARGET_H) \
   tree-iterator.h
 java/jcf-depend.o: java/jcf-depend.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
@@ -303,20 +303,21 @@ java/jcf-parse.o: java/jcf-parse.c $(CONFIG_H) $(JAVA_TREE_H) $(FLAGS_H) \
 java/jvgenmain.o: java/jvgenmain.c $(CONFIG_H) $(JAVA_TREE_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) intl.h
 java/lang.o: java/lang.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h input.h \
-  toplev.h $(SYSTEM_H) coretypes.h $(TM_H) $(DIAGNOSTIC_H) \
-  langhooks.h $(LANGHOOKS_DEF_H) gt-java-lang.h opts.h options.h
+  $(SYSTEM_H) coretypes.h $(TM_H) $(DIAGNOSTIC_H) \
+  langhooks.h $(LANGHOOKS_DEF_H) gt-java-lang.h $(OPTS_H) $(OPTIONS_H) \
+  $(TARGET_H)
 java/mangle.o: java/mangle.c $(CONFIG_H) java/jcf.h $(JAVA_TREE_H) $(SYSTEM_H) \
-  coretypes.h $(TM_H) toplev.h $(GGC_H) gt-java-mangle.h $(LANGHOOKS_DEF_H)
+  coretypes.h $(TM_H) $(GGC_H) gt-java-mangle.h $(LANGHOOKS_DEF_H)
 java/mangle_name.o: java/mangle_name.c $(CONFIG_H) java/jcf.h $(JAVA_TREE_H) \
-  $(SYSTEM_H) coretypes.h toplev.h $(GGC_H)
+  $(SYSTEM_H) coretypes.h $(GGC_H)
 java/resource.o: java/resource.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(JAVA_TREE_H) java/jcf.h java/parse.h toplev.h output.h $(GGC_H) \
   $(TARGET_H) $(FUNCTION_H) gt-java-resource.h
 java/typeck.o: java/typeck.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
-  toplev.h $(SYSTEM_H) coretypes.h $(GGC_H) $(REAL_H)
+  $(SYSTEM_H) coretypes.h $(GGC_H) $(REAL_H)
 java/win32-host.o: java/win32-host.c $(CONFIG_H) $(SYSTEM_H) coretypes.h java/jcf.h
 java/verify-glue.o: java/verify-glue.c $(CONFIG_H) $(SYSTEM_H) $(JAVA_TREE_H) \
-  coretypes.h java/verify.h toplev.h
+  coretypes.h java/verify.h
 java/verify-impl.o: java/verify-impl.c $(CONFIG_H) java/verify.h $(SYSTEM_H) \
   coretypes.h  java/jcf.h $(JAVA_TREE_H)
 java/zextract.o: java/zextract.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \

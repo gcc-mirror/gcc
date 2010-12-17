@@ -1,0 +1,2 @@
+# Makefile fragment to support -fsplit-stack for x86.
+LIB2ADD_ST += $(srcdir)/config/i386/morestack.S

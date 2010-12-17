@@ -21,7 +21,7 @@ Boston, MA 02111-1307, USA.  */
 /* This is the contribution to the `default_compilers' array in gcc.c for
    upc.  */
 
-  {".upc", "@upc", 0, 1, 1},
+  {".upc", "@upc", 0, 0, 0},
   {"@upc",
    /* cc1upc has an integrated ISO C preprocessor.  We should invoke the
       external preprocessor if -save-temps or -traditional is given.  */
@@ -33,9 +33,9 @@ Boston, MA 02111-1307, USA.  */
 	    cc1upc -fpreprocessed %{save-temps:%b.mi} %{!save-temps:%g.mi} %(upc_options) %(cc1_options)}\
 	%{!save-temps:%{!no-integrated-cpp:\
 	    cc1upc %(cpp_unique_options) %(upc_options) %(cc1_options)}}\
-        %{!fsyntax-only:%(invoke_as)}}}}", 0, 1, 1},
-  {".upci", "@upc-cpp-output", 0, 1, 1},
+        %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
+  {".upci", "@upc-cpp-output", 0, 0, 0},
   {"@upc-cpp-output",
      "%{!M:%{!MM:%{!E:cc1upc -fpreprocessed %i %(cc1_options)\
      -lang-upc\
-     %{!fsyntax-only:%(invoke_as)}}}}", 0, 1, 1},
+     %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},

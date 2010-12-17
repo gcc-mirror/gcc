@@ -1,5 +1,5 @@
 /* Definitions for Renesas M32R running Linux-based GNU systems using ELF.
-   Copyright (C) 2003, 2004, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2006, 2007, 2010 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -22,10 +22,6 @@
 /* A lie, I guess, but the general idea behind linux/ELF is that we are
    supposed to be outputting something that will assemble under SVr4.
    This gets us pretty close.  */
-
-#define HANDLE_SYSV_PRAGMA
-
-#undef  HANDLE_PRAGMA_PACK
 
 #undef  TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (M32R GNU/Linux with ELF)");

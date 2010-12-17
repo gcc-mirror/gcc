@@ -260,6 +260,8 @@ gfc_arith_done_1 (void)
 
   for (rp = gfc_real_kinds; rp->kind; rp++)
     mpfr_clears (rp->epsilon, rp->huge, rp->tiny, rp->subnormal, NULL);
+
+  mpfr_free_cache ();
 }
 
 
@@ -2258,7 +2260,7 @@ hollerith2representation (gfc_expr *result, gfc_expr *src)
 {
   int src_len, result_len;
 
-  src_len = src->representation.length;
+  src_len = src->representation.length - src->ts.u.pad;
   result_len = gfc_target_expr_size (result);
 
   if (src_len > result_len)

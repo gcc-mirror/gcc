@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -214,11 +214,13 @@ package body Lib.Load is
         Expected_Unit    => Spec_Name,
         Fatal_Error      => True,
         Generate_Code    => False,
+        Has_Allocator    => False,
         Has_RACW         => False,
         Is_Compiler_Unit => False,
         Ident_String     => Empty,
         Loading          => False,
         Main_Priority    => Default_Main_Priority,
+        Main_CPU         => Default_Main_CPU,
         Munit_Index      => 0,
         Serial_Number    => 0,
         Source_Index     => No_Source_File,
@@ -318,11 +320,13 @@ package body Lib.Load is
            Expected_Unit    => No_Unit_Name,
            Fatal_Error      => False,
            Generate_Code    => False,
+           Has_Allocator    => False,
            Has_RACW         => False,
            Is_Compiler_Unit => False,
            Ident_String     => Empty,
            Loading          => True,
            Main_Priority    => Default_Main_Priority,
+           Main_CPU         => Default_Main_CPU,
            Munit_Index      => 0,
            Serial_Number    => 0,
            Source_Index     => Main_Source_File,
@@ -344,7 +348,8 @@ package body Lib.Load is
       Subunit           : Boolean;
       Corr_Body         : Unit_Number_Type := No_Unit;
       Renamings         : Boolean          := False;
-      With_Node         : Node_Id          := Empty) return Unit_Number_Type
+      With_Node         : Node_Id          := Empty;
+      PMES              : Boolean          := False) return Unit_Number_Type
    is
       Calling_Unit : Unit_Number_Type;
       Uname_Actual : Unit_Name_Type;
@@ -352,10 +357,11 @@ package body Lib.Load is
       Unump        : Unit_Number_Type;
       Fname        : File_Name_Type;
       Src_Ind      : Source_File_Index;
-
-   --  Start of processing for Load_Unit
+      Save_PMES    : constant Boolean := Parsing_Main_Extended_Source;
 
    begin
+      Parsing_Main_Extended_Source := PMES;
+
       --  If renamings are allowed and we have a child unit name, then we
       --  must first load the parent to deal with finding the real name.
       --  Retain the with_clause that names the child, so that if it is
@@ -372,6 +378,7 @@ package body Lib.Load is
               With_Node  => With_Node);
 
          if Unump = No_Unit then
+            Parsing_Main_Extended_Source := Save_PMES;
             return No_Unit;
          end if;
 
@@ -513,7 +520,6 @@ package body Lib.Load is
       --  See if we already have an entry for this unit
 
       Unum := Main_Unit;
-
       while Unum <= Units.Last loop
          exit when Uname_Actual = Units.Table (Unum).Unit_Name;
          Unum := Unum + 1;
@@ -553,10 +559,12 @@ package body Lib.Load is
                   end if;
 
                   Write_Dependency_Chain;
-                  return No_Unit;
+                  Unum := No_Unit;
+                  goto Done;
 
                else
-                  return No_Unit;
+                  Unum := No_Unit;
+                  goto Done;
                end if;
             end if;
          end loop;
@@ -601,7 +609,8 @@ package body Lib.Load is
                Load_Stack.Decrement_Last;
             end if;
 
-            return No_Unit;
+            Unum := No_Unit;
+            goto Done;
          end if;
 
          if Debug_Flag_L then
@@ -611,7 +620,7 @@ package body Lib.Load is
          end if;
 
          Load_Stack.Decrement_Last;
-         return Unum;
+         goto Done;
 
       --  Unit is not already in table, so try to open the file
 
@@ -642,11 +651,13 @@ package body Lib.Load is
               Expected_Unit    => Uname_Actual,
               Fatal_Error      => False,
               Generate_Code    => False,
+              Has_Allocator    => False,
               Has_RACW         => False,
               Is_Compiler_Unit => False,
               Ident_String     => Empty,
               Loading          => True,
               Main_Priority    => Default_Main_Priority,
+              Main_CPU         => Default_Main_CPU,
               Munit_Index      => 0,
               Serial_Number    => 0,
               Source_Index     => Src_Ind,
@@ -658,12 +669,22 @@ package body Lib.Load is
             --  Parse the new unit
 
             declare
-               Save_Index : constant Nat := Multiple_Unit_Index;
+               Save_Index : constant Nat     := Multiple_Unit_Index;
+               Save_PMES  : constant Boolean := Parsing_Main_Extended_Source;
+
             begin
                Multiple_Unit_Index := Get_Unit_Index (Uname_Actual);
                Units.Table (Unum).Munit_Index := Multiple_Unit_Index;
                Initialize_Scanner (Unum, Source_Index (Unum));
+
+               if Calling_Unit = Main_Unit and then Subunit then
+                  Parsing_Main_Extended_Source := True;
+               end if;
+
                Discard_List (Par (Configuration_Pragmas => False));
+
+               Parsing_Main_Extended_Source := Save_PMES;
+
                Multiple_Unit_Index := Save_Index;
                Set_Loading (Unum, False);
             end;
@@ -680,7 +701,8 @@ package body Lib.Load is
                Error_Msg
                  ("\incorrect spec in file { must be removed first!",
                   Load_Msg_Sloc);
-               return No_Unit;
+               Unum := No_Unit;
+               goto Done;
             end if;
 
             --  If loaded unit had a fatal error, then caller inherits it!
@@ -697,7 +719,7 @@ package body Lib.Load is
 
             --  All done, return unit number
 
-            return Unum;
+            goto Done;
 
          --  Case of file not found
 
@@ -751,9 +773,16 @@ package body Lib.Load is
                Units.Decrement_Last;
             end if;
 
-            return No_Unit;
+            Unum := No_Unit;
+            goto Done;
          end if;
       end if;
+
+      --  Here to exit, with result in Unum
+
+      <<Done>>
+      Parsing_Main_Extended_Source := Save_PMES;
+      return Unum;
    end Load_Unit;
 
    --------------------------

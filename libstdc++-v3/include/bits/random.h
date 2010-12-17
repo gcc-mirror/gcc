@@ -28,10 +28,13 @@
  *  You should not attempt to use it directly.
  */
 
+#ifndef _RANDOM_H
+#define _RANDOM_H 1
+
 #include <vector>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // [26.4] Random number generation
 
   /**
@@ -166,12 +169,12 @@ namespace std
       typedef _UIntType result_type;
 
       /** The multiplier. */
-      static const result_type multiplier   = __a;
+      static constexpr result_type multiplier   = __a;
       /** An increment. */
-      static const result_type increment    = __c;
+      static constexpr result_type increment    = __c;
       /** The modulus. */
-      static const result_type modulus      = __m;
-      static const result_type default_seed = 1u;
+      static constexpr result_type modulus      = __m;
+      static constexpr result_type default_seed = 1u;
 
       /**
        * @brief Constructs a %linear_congruential_engine random number
@@ -222,26 +225,20 @@ namespace std
        *
        * The minimum depends on the @p __c parameter: if it is zero, the
        * minimum generated must be > 0, otherwise 0 is allowed.
-       *
-       * @todo This should be constexpr.
        */
-      result_type
-      min() const
+      static constexpr result_type
+      min()
       { return __c == 0u ? 1u : 0u; }
 
       /**
        * @brief Gets the largest possible value in the output range.
-       *
-       * @todo This should be constexpr.
        */
-      result_type
-      max() const
+      static constexpr result_type
+      max()
       { return __m - 1u; }
 
       /**
        * @brief Discard a sequence of random numbers.
-       *
-       * @todo Look for a faster way to do discard.
        */
       void
       discard(unsigned long long __z)
@@ -399,20 +396,20 @@ namespace std
       typedef _UIntType result_type;
 
       // parameter values
-      static const size_t      word_size                 = __w;
-      static const size_t      state_size                = __n;
-      static const size_t      shift_size                = __m;
-      static const size_t      mask_bits                 = __r;
-      static const result_type xor_mask                  = __a;
-      static const size_t      tempering_u               = __u;
-      static const result_type tempering_d               = __d;
-      static const size_t      tempering_s               = __s;
-      static const result_type tempering_b               = __b;
-      static const size_t      tempering_t               = __t;
-      static const result_type tempering_c               = __c;
-      static const size_t      tempering_l               = __l;
-      static const result_type initialization_multiplier = __f;
-      static const result_type default_seed = 5489u;
+      static constexpr size_t      word_size                 = __w;
+      static constexpr size_t      state_size                = __n;
+      static constexpr size_t      shift_size                = __m;
+      static constexpr size_t      mask_bits                 = __r;
+      static constexpr result_type xor_mask                  = __a;
+      static constexpr size_t      tempering_u               = __u;
+      static constexpr result_type tempering_d               = __d;
+      static constexpr size_t      tempering_s               = __s;
+      static constexpr result_type tempering_b               = __b;
+      static constexpr size_t      tempering_t               = __t;
+      static constexpr result_type tempering_c               = __c;
+      static constexpr size_t      tempering_l               = __l;
+      static constexpr result_type initialization_multiplier = __f;
+      static constexpr result_type default_seed = 5489u;
 
       // constructors and member function
       explicit
@@ -441,26 +438,20 @@ namespace std
 
       /**
        * @brief Gets the smallest possible value in the output range.
-       *
-       * @todo This should be constexpr.
        */
-      result_type
-      min() const
+      static constexpr result_type
+      min()
       { return 0; };
 
       /**
        * @brief Gets the largest possible value in the output range.
-       *
-       * @todo This should be constexpr.
        */
-      result_type
-      max() const
+      static constexpr result_type
+      max()
       { return __detail::_Shift<_UIntType, __w>::__value - 1; }
 
       /**
        * @brief Discard a sequence of random numbers.
-       *
-       * @todo Look for a faster way to do discard.
        */
       void
       discard(unsigned long long __z)
@@ -605,10 +596,10 @@ namespace std
       typedef _UIntType result_type;
 
       // parameter values
-      static const size_t      word_size    = __w;
-      static const size_t      short_lag    = __s;
-      static const size_t      long_lag     = __r;
-      static const result_type default_seed = 19780503u;
+      static constexpr size_t      word_size    = __w;
+      static constexpr size_t      short_lag    = __s;
+      static constexpr size_t      long_lag     = __r;
+      static constexpr result_type default_seed = 19780503u;
 
       /**
        * @brief Constructs an explicitly seeded % subtract_with_carry_engine
@@ -657,27 +648,21 @@ namespace std
       /**
        * @brief Gets the inclusive minimum value of the range of random
        * integers returned by this generator.
-       *
-       * @todo This should be constexpr.
        */
-      result_type
-      min() const
+      static constexpr result_type
+      min()
       { return 0; }
 
       /**
        * @brief Gets the inclusive maximum value of the range of random
        * integers returned by this generator.
-       *
-       * @todo This should be constexpr.
        */
-      result_type
-      max() const
+      static constexpr result_type
+      max()
       { return __detail::_Shift<_UIntType, __w>::__value - 1; }
 
       /**
        * @brief Discard a sequence of random numbers.
-       *
-       * @todo Look for a faster way to do discard.
        */
       void
       discard(unsigned long long __z)
@@ -791,8 +776,8 @@ namespace std
       typedef typename _RandomNumberEngine::result_type result_type;
 
       // parameter values
-      static const size_t block_size = __p;
-      static const size_t used_block = __r;
+      static constexpr size_t block_size = __p;
+      static constexpr size_t used_block = __r;
 
       /**
        * @brief Constructs a default %discard_block_engine engine.
@@ -891,26 +876,20 @@ namespace std
 
       /**
        * @brief Gets the minimum value in the generated random number range.
-       *
-       * @todo This should be constexpr.
        */
-      result_type
-      min() const
-      { return _M_b.min(); }
+      static constexpr result_type
+      min()
+      { return _RandomNumberEngine::min(); }
 
       /**
        * @brief Gets the maximum value in the generated random number range.
-       *
-       * @todo This should be constexpr.
        */
-      result_type
-      max() const
-      { return _M_b.max(); }
+      static constexpr result_type
+      max()
+      { return _RandomNumberEngine::max(); }
 
       /**
        * @brief Discard a sequence of random numbers.
-       *
-       * @todo Look for a faster way to do discard.
        */
       void
       discard(unsigned long long __z)
@@ -1106,26 +1085,20 @@ namespace std
 
       /**
        * @brief Gets the minimum value in the generated random number range.
-       *
-       * @todo This should be constexpr.
        */
-      result_type
-      min() const
+      static constexpr result_type
+      min()
       { return 0U; }
 
       /**
        * @brief Gets the maximum value in the generated random number range.
-       *
-       * @todo This should be constexpr.
        */
-      result_type
-      max() const
+      static constexpr result_type
+      max()
       { return __detail::_Shift<_UIntType, __w>::__value - 1; }
 
       /**
        * @brief Discard a sequence of random numbers.
-       *
-       * @todo Look for a faster way to do discard.
        */
       void
       discard(unsigned long long __z)
@@ -1240,7 +1213,7 @@ namespace std
       /** The type of the generated random value. */
       typedef typename _RandomNumberEngine::result_type result_type;
 
-      static const size_t table_size = __k;
+      static constexpr size_t table_size = __k;
 
       /**
        * @brief Constructs a default %shuffle_order_engine engine.
@@ -1342,26 +1315,20 @@ namespace std
 
       /**
        * Gets the minimum value in the generated random number range.
-       *
-       * @todo This should be constexpr.
        */
-      result_type
-      min() const
-      { return _M_b.min(); }
+      static constexpr result_type
+      min()
+      { return _RandomNumberEngine::min(); }
 
       /**
        * Gets the maximum value in the generated random number range.
-       *
-       * @todo This should be constexpr.
        */
-      result_type
-      max() const
-      { return _M_b.max(); }
+      static constexpr result_type
+      max()
+      { return _RandomNumberEngine::max(); }
 
       /**
        * Discard a sequence of random numbers.
-       *
-       * @todo Look for a faster way to do discard.
        */
       void
       discard(unsigned long long __z)
@@ -4695,7 +4662,7 @@ namespace std
 
 	param_type()
 	: _M_prob(), _M_cp()
-	{ _M_initialize(); }
+	{ }
 
 	template<typename _InputIterator>
 	  param_type(_InputIterator __wbegin,
@@ -4711,9 +4678,13 @@ namespace std
 	  param_type(size_t __nw, double __xmin, double __xmax,
 		     _Func __fw);
 
+	// See: http://cpp-next.com/archive/2010/10/implicit-move-must-go/
+	param_type(const param_type&) = default;
+	param_type& operator=(const param_type&) = default;
+
 	std::vector<double>
 	probabilities() const
-	{ return _M_prob; }
+	{ return _M_prob.empty() ? std::vector<double>(1, 1.0) : _M_prob; }
 
 	friend bool
 	operator==(const param_type& __p1, const param_type& __p2)
@@ -4764,7 +4735,10 @@ namespace std
        */
       std::vector<double>
       probabilities() const
-      { return _M_param.probabilities(); }
+      {
+	return _M_param._M_prob.empty()
+	  ? std::vector<double>(1, 1.0) : _M_param._M_prob;
+      }
 
       /**
        * @brief Returns the parameter set of the distribution.
@@ -4793,7 +4767,10 @@ namespace std
        */
       result_type
       max() const
-      { return this->_M_param._M_prob.size() - 1; }
+      {
+	return _M_param._M_prob.empty()
+	  ? result_type(0) : result_type(_M_param._M_prob.size() - 1);
+      }
 
       /**
        * @brief Generating functions.
@@ -4887,7 +4864,7 @@ namespace std
 
 	param_type()
 	: _M_int(), _M_den(), _M_cp()
-	{ _M_initialize(); }
+	{ }
 
 	template<typename _InputIteratorB, typename _InputIteratorW>
 	  param_type(_InputIteratorB __bfirst,
@@ -4901,13 +4878,26 @@ namespace std
 	  param_type(size_t __nw, _RealType __xmin, _RealType __xmax,
 		     _Func __fw);
 
+	// See: http://cpp-next.com/archive/2010/10/implicit-move-must-go/
+	param_type(const param_type&) = default;
+	param_type& operator=(const param_type&) = default;
+
 	std::vector<_RealType>
 	intervals() const
-	{ return _M_int; }
+	{
+	  if (_M_int.empty())
+	    {
+	      std::vector<_RealType> __tmp(2);
+	      __tmp[1] = _RealType(1);
+	      return __tmp;
+	    }
+	  else
+	    return _M_int;
+	}
 
 	std::vector<double>
 	densities() const
-	{ return _M_den; }
+	{ return _M_den.empty() ? std::vector<double>(1, 1.0) : _M_den; }
 
 	friend bool
 	operator==(const param_type& __p1, const param_type& __p2)
@@ -4964,14 +4954,26 @@ namespace std
        */
       std::vector<_RealType>
       intervals() const
-      { return _M_param.intervals(); }
+      {
+	if (_M_param._M_int.empty())
+	  {
+	    std::vector<_RealType> __tmp(2);
+	    __tmp[1] = _RealType(1);
+	    return __tmp;
+	  }
+	else
+	  return _M_param._M_int;
+      }
 
       /**
        * @brief Returns a vector of the probability densities.
        */
       std::vector<double>
       densities() const
-      { return _M_param.densities(); }
+      {
+	return _M_param._M_den.empty()
+	  ? std::vector<double>(1, 1.0) : _M_param._M_den;
+      }
 
       /**
        * @brief Returns the parameter set of the distribution.
@@ -4993,14 +4995,20 @@ namespace std
        */
       result_type
       min() const
-      { return this->_M_param._M_int.front(); }
+      {
+	return _M_param._M_int.empty()
+	  ? result_type(0) : _M_param._M_int.front();
+      }
 
       /**
        * @brief Returns the least upper bound value of the distribution.
        */
       result_type
       max() const
-      { return this->_M_param._M_int.back(); }
+      {
+	return _M_param._M_int.empty()
+	  ? result_type(1) : _M_param._M_int.back();
+      }
 
       /**
        * @brief Generating functions.
@@ -5095,7 +5103,7 @@ namespace std
 
 	param_type()
 	: _M_int(), _M_den(), _M_cp(), _M_m()
-	{ _M_initialize(); }
+	{ }
 
 	template<typename _InputIteratorB, typename _InputIteratorW>
 	  param_type(_InputIteratorB __bfirst,
@@ -5109,13 +5117,26 @@ namespace std
 	  param_type(size_t __nw, _RealType __xmin, _RealType __xmax,
 		     _Func __fw);
 
+	// See: http://cpp-next.com/archive/2010/10/implicit-move-must-go/
+	param_type(const param_type&) = default;
+	param_type& operator=(const param_type&) = default;
+
 	std::vector<_RealType>
 	intervals() const
-	{ return _M_int; }
+	{
+	  if (_M_int.empty())
+	    {
+	      std::vector<_RealType> __tmp(2);
+	      __tmp[1] = _RealType(1);
+	      return __tmp;
+	    }
+	  else
+	    return _M_int;
+	}
 
 	std::vector<double>
 	densities() const
-	{ return _M_den; }
+	{ return _M_den.empty() ? std::vector<double>(2, 1.0) : _M_den; }
 
 	friend bool
 	operator==(const param_type& __p1, const param_type& __p2)
@@ -5174,7 +5195,16 @@ namespace std
        */
       std::vector<_RealType>
       intervals() const
-      { return _M_param.intervals(); }
+      {
+	if (_M_param._M_int.empty())
+	  {
+	    std::vector<_RealType> __tmp(2);
+	    __tmp[1] = _RealType(1);
+	    return __tmp;
+	  }
+	else
+	  return _M_param._M_int;
+      }
 
       /**
        * @brief Return a vector of the probability densities of the
@@ -5182,7 +5212,10 @@ namespace std
        */
       std::vector<double>
       densities() const
-      { return _M_param.densities(); }
+      {
+	return _M_param._M_den.empty()
+	  ? std::vector<double>(2, 1.0) : _M_param._M_den;
+      }
 
       /**
        * @brief Returns the parameter set of the distribution.
@@ -5204,14 +5237,20 @@ namespace std
        */
       result_type
       min() const
-      { return this->_M_param._M_int.front(); }
+      {
+	return _M_param._M_int.empty()
+	  ? result_type(0) : _M_param._M_int.front();
+      }
 
       /**
        * @brief Returns the least upper bound value of the distribution.
        */
       result_type
       max() const
-      { return this->_M_param._M_int.back(); }
+      {
+	return _M_param._M_int.empty()
+	  ? result_type(1) : _M_param._M_int.back();
+      }
 
       /**
        * @brief Generating functions.
@@ -5337,6 +5376,6 @@ namespace std
   /* @} */ // group random_utilities
 
   /* @} */ // group random
+_GLIBCXX_END_NAMESPACE
 
-}
-
+#endif

@@ -30,10 +30,6 @@ m45
 Target Report Mask(45)
 Generate code for an 11/45
 
-mabshi
-Target Report Mask(ABSHI_BUILTIN)
-Use 16-bit abs patterns
-
 mac0
 Target Report Mask(AC0)
 Return floating-point results in ac0 (fr0 in Unix assembler syntax)

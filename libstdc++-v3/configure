@@ -623,6 +623,10 @@ GLIBCXX_LDBL_COMPAT_FALSE
 GLIBCXX_LDBL_COMPAT_TRUE
 ENABLE_VISIBILITY_FALSE
 ENABLE_VISIBILITY_TRUE
+ENABLE_SYMVERS_SOL2_FALSE
+ENABLE_SYMVERS_SOL2_TRUE
+ENABLE_SYMVERS_SUN_FALSE
+ENABLE_SYMVERS_SUN_TRUE
 ENABLE_SYMVERS_DARWIN_FALSE
 ENABLE_SYMVERS_DARWIN_TRUE
 ENABLE_SYMVERS_GNU_NAMESPACE_FALSE
@@ -633,6 +637,7 @@ ENABLE_SYMVERS_FALSE
 ENABLE_SYMVERS_TRUE
 port_specific_symbol_files
 SYMVER_FILE
+CXXFILT
 LTLIBICONV
 LIBICONV
 OPT_LDFLAGS
@@ -644,8 +649,6 @@ ENABLE_PARALLEL_TRUE
 GLIBCXX_BUILD_DEBUG_FALSE
 GLIBCXX_BUILD_DEBUG_TRUE
 DEBUG_FLAGS
-GLIBCXX_C_HEADERS_EXTRA_FALSE
-GLIBCXX_C_HEADERS_EXTRA_TRUE
 GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE
 GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE
 GLIBCXX_C_HEADERS_C_GLOBAL_FALSE
@@ -852,7 +855,8 @@ CXX
 CXXFLAGS
 CCC
 CPP
-CXXCPP'
+CXXCPP
+CXXFILT'
 
 
 # Initialize some variables set by options.
@@ -1488,14 +1492,16 @@ Optional Features:
                           [default=auto]
   --enable-libstdcxx-pch  build pre-compiled libstdc++ headers
                           [default=$is_hosted]
-  --enable-cstdio=PACKAGE use target-specific I/O package [default=stdio]
+  --enable-cstdio[=PACKAGE]
+                          use target-specific I/O package [default=stdio]
   --enable-clocale[=MODEL]
                           use MODEL for target locale package [default=auto]
   --enable-nls            use Native Language Support (default)
-  --enable-libstdcxx-allocator=KIND
+  --enable-libstdcxx-allocator[=KIND]
                           use KIND for target std::allocator base
                           [default=auto]
-  --enable-cheaders=KIND  construct "C" headers for g++ [default=$c_model]
+  --enable-cheaders[=KIND]
+                          construct "C" headers for g++ [default=$c_model]
   --enable-long-long      enable template specializations for 'long long'
                           [default=yes]
   --enable-wchar_t        enable template specializations for 'wchar_t'
@@ -1512,12 +1518,13 @@ Optional Features:
   --enable-fully-dynamic-string
                           do not put empty strings in per-process static
                           memory [default=no]
-  --enable-libstdcxx-time=KIND
+  --enable-libstdcxx-time[=KIND]
                           use KIND for check type [default=no]
   --enable-tls            Use thread-local storage [default=yes]
   --disable-rpath         do not hardcode runtime library paths
   --enable-linux-futex    use the Linux futex system call [default=default]
-  --enable-symvers=STYLE  enables symbol versioning of the shared library
+  --enable-symvers[=STYLE]
+                          enables symbol versioning of the shared library
                           [default=yes]
   --enable-visibility     enables visibility safe usage [default=yes]
   --enable-version-specific-runtime-libs
@@ -1553,6 +1560,8 @@ Some influential environment variables:
   CXXFLAGS    C++ compiler flags
   CPP         C preprocessor
   CXXCPP      C++ preprocessor
+  CXXFILT     Location of GNU c++filt. Defaults to the first GNU version of
+              `c++filt', `gc++filt' on PATH.
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -2193,60 +2202,6 @@ fi
 
 } # ac_fn_cxx_check_header_mongrel
 
-# ac_fn_c_check_type LINENO TYPE VAR INCLUDES
-# -------------------------------------------
-# Tests whether TYPE exists after having included INCLUDES, setting cache
-# variable VAR accordingly.
-ac_fn_c_check_type ()
-{
-  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
-$as_echo_n "checking for $2... " >&6; }
-if { as_var=$3; eval "test \"\${$as_var+set}\" = set"; }; then :
-  $as_echo_n "(cached) " >&6
-else
-  eval "$3=no"
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$4
-int
-main ()
-{
-if (sizeof ($2))
-	 return 0;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$4
-int
-main ()
-{
-if (sizeof (($2)))
-	    return 0;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-
-else
-  eval "$3=yes"
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-eval ac_res=\$$3
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-  eval $as_lineno_stack; test "x$as_lineno_stack" = x && { as_lineno=; unset as_lineno;}
-
-} # ac_fn_c_check_type
-
 # ac_fn_c_compute_int LINENO EXPR VAR INCLUDES
 # --------------------------------------------
 # Tries to find the compile-time value of EXPR in a program that includes
@@ -2424,6 +2379,60 @@ rm -f conftest.val
   return $ac_retval
 
 } # ac_fn_c_compute_int
+
+# ac_fn_c_check_type LINENO TYPE VAR INCLUDES
+# -------------------------------------------
+# Tests whether TYPE exists after having included INCLUDES, setting cache
+# variable VAR accordingly.
+ac_fn_c_check_type ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
+$as_echo_n "checking for $2... " >&6; }
+if { as_var=$3; eval "test \"\${$as_var+set}\" = set"; }; then :
+  $as_echo_n "(cached) " >&6
+else
+  eval "$3=no"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+int
+main ()
+{
+if (sizeof ($2))
+	 return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+int
+main ()
+{
+if (sizeof (($2)))
+	    return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+else
+  eval "$3=yes"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+eval ac_res=\$$3
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  eval $as_lineno_stack; test "x$as_lineno_stack" = x && { as_lineno=; unset as_lineno;}
+
+} # ac_fn_c_check_type
 cat >config.log <<_ACEOF
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
@@ -11460,7 +11469,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11463 "configure"
+#line 11472 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11566,7 +11575,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11569 "configure"
+#line 11578 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14906,7 +14915,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 14909 "configure"
+#line 14918 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15274,7 +15283,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15277 "configure"
+#line 15286 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15311,7 +15320,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15314 "configure"
+#line 15323 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15348,7 +15357,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15351 "configure"
+#line 15360 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15386,7 +15395,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15389 "configure"
+#line 15398 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15462,7 +15471,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15465 "configure"
+#line 15474 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -16062,11 +16071,6 @@ $as_echo "$as_me: \"C\" header strategy set to $enable_cheaders" >&6;}
   if test $enable_cheaders = c_global; then
      c_compatibility=yes
   fi
-
-  if test $enable_cheaders = c_global || test $enable_cheaders = c_std; then
-     c_extra=yes
-  fi
-
 
 
 
@@ -18668,45 +18672,73 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-# For common values of EOF, SEEK_CUR, SEEK_END.
+# For the EOF, SEEK_CUR, and SEEK_END integer constants.
 
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for EOF == -1, SEEK_CUR == 1, SEEK_END == 2" >&5
-$as_echo_n "checking for EOF == -1, SEEK_CUR == 1, SEEK_END == 2... " >&6; }
-  if test "${glibcxx_cv_stdio_macros+set}" = set; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for the value of EOF" >&5
+$as_echo_n "checking for the value of EOF... " >&6; }
+if test "${glibcxx_cv_stdio_eof+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdio.h>
-int
-main ()
-{
-#if ((EOF != -1) || (SEEK_CUR != 1) || (SEEK_END != 2))
-	            unusual values...
-	          #endif
+  if ac_fn_c_compute_int "$LINENO" "EOF" "glibcxx_cv_stdio_eof"        "#include <stdio.h>"; then :
 
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  glibcxx_cv_stdio_macros=yes
 else
-  glibcxx_cv_stdio_macros=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-
+  as_fn_error "computing EOF failed" "$LINENO" 5
 fi
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_stdio_macros" >&5
-$as_echo "$glibcxx_cv_stdio_macros" >&6; }
-  if test x"$glibcxx_cv_stdio_macros" = x"yes"; then
 
-$as_echo "#define _GLIBCXX_STDIO_MACROS 1" >>confdefs.h
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_stdio_eof" >&5
+$as_echo "$glibcxx_cv_stdio_eof" >&6; }
 
-  fi
+cat >>confdefs.h <<_ACEOF
+#define _GLIBCXX_STDIO_EOF $glibcxx_cv_stdio_eof
+_ACEOF
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for the value of SEEK_CUR" >&5
+$as_echo_n "checking for the value of SEEK_CUR... " >&6; }
+if test "${glibcxx_cv_stdio_seek_cur+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+  if ac_fn_c_compute_int "$LINENO" "SEEK_CUR" "glibcxx_cv_stdio_seek_cur"        "#include <stdio.h>"; then :
+
+else
+  as_fn_error "computing SEEK_CUR failed" "$LINENO" 5
+fi
+
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_stdio_seek_cur" >&5
+$as_echo "$glibcxx_cv_stdio_seek_cur" >&6; }
+
+cat >>confdefs.h <<_ACEOF
+#define _GLIBCXX_STDIO_SEEK_CUR $glibcxx_cv_stdio_seek_cur
+_ACEOF
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for the value of SEEK_END" >&5
+$as_echo_n "checking for the value of SEEK_END... " >&6; }
+if test "${glibcxx_cv_stdio_seek_end+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+  if ac_fn_c_compute_int "$LINENO" "SEEK_END" "glibcxx_cv_stdio_seek_end"        "#include <stdio.h>"; then :
+
+else
+  as_fn_error "computing SEEK_END failed" "$LINENO" 5
+fi
+
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_stdio_seek_end" >&5
+$as_echo "$glibcxx_cv_stdio_seek_end" >&6; }
+
+cat >>confdefs.h <<_ACEOF
+#define _GLIBCXX_STDIO_SEEK_END $glibcxx_cv_stdio_seek_end
+_ACEOF
 
 
 
@@ -25538,7 +25570,7 @@ rm -f core conftest.err conftest.$ac_objext \
 	CFLAGS="$chktls_save_CFLAGS"
 	if test "X$thread_CFLAGS" != Xfailed; then
 	  CFLAGS="$thread_CFLAGS $chktls_save_CFLAGS"
-	  if test "$cross_compiling" = yes; then :
+ 	  	  	  	  	  	  if test "$cross_compiling" = yes; then :
   { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
 as_fn_error "cannot run test program while cross compiling
@@ -44476,7 +44508,7 @@ rm -f core conftest.err conftest.$ac_objext \
 	CFLAGS="$chktls_save_CFLAGS"
 	if test "X$thread_CFLAGS" != Xfailed; then
 	  CFLAGS="$thread_CFLAGS $chktls_save_CFLAGS"
-	  if test "$cross_compiling" = yes; then :
+ 	  	  	  	  	  	  if test "$cross_compiling" = yes; then :
   { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
 as_fn_error "cannot run test program while cross compiling
@@ -50561,7 +50593,7 @@ rm -f core conftest.err conftest.$ac_objext \
 	CFLAGS="$chktls_save_CFLAGS"
 	if test "X$thread_CFLAGS" != Xfailed; then
 	  CFLAGS="$thread_CFLAGS $chktls_save_CFLAGS"
-	  if test "$cross_compiling" = yes; then :
+ 	  	  	  	  	  	  if test "$cross_compiling" = yes; then :
   { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
 as_fn_error "cannot run test program while cross compiling
@@ -58017,8 +58049,7 @@ _ACEOF
 $as_echo_n "checking for type equivalent to int8_t... " >&6; }
   case "$ac_cv_sizeof_char" in
     1) acx_cv_type_int8_t=char ;;
-    *) { as_fn_set_status please report a bug
-as_fn_error "no 8-bit type" "$LINENO" 5; }
+    *) as_fn_error "no 8-bit type, please report a bug" "$LINENO" 5
   esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_type_int8_t" >&5
 $as_echo "$acx_cv_type_int8_t" >&6; }
@@ -58028,8 +58059,7 @@ $as_echo_n "checking for type equivalent to int16_t... " >&6; }
   case "$ac_cv_sizeof_int:$ac_cv_sizeof_short" in
     2:*) acx_cv_type_int16_t=int ;;
     *:2) acx_cv_type_int16_t=short ;;
-    *) { as_fn_set_status please report a bug
-as_fn_error "no 16-bit type" "$LINENO" 5; }
+    *) as_fn_error "no 16-bit type, please report a bug" "$LINENO" 5
   esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_type_int16_t" >&5
 $as_echo "$acx_cv_type_int16_t" >&6; }
@@ -58039,8 +58069,7 @@ $as_echo_n "checking for type equivalent to int32_t... " >&6; }
   case "$ac_cv_sizeof_int:$ac_cv_sizeof_long" in
     4:*) acx_cv_type_int32_t=int ;;
     *:4) acx_cv_type_int32_t=long ;;
-    *) { as_fn_set_status please report a bug
-as_fn_error "no 32-bit type" "$LINENO" 5; }
+    *) as_fn_error "no 32-bit type, please report a bug" "$LINENO" 5
   esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_type_int32_t" >&5
 $as_echo "$acx_cv_type_int32_t" >&6; }
@@ -58067,8 +58096,7 @@ $as_echo_n "checking for type equivalent to intptr_t... " >&6; }
     2) acx_cv_type_intptr_t=int16_t ;;
     4) acx_cv_type_intptr_t=int32_t ;;
     8) acx_cv_type_intptr_t=int64_t ;;
-    *) { as_fn_set_status please report a bug
-as_fn_error "no equivalent for intptr_t" "$LINENO" 5; }
+    *) as_fn_error "no equivalent for intptr_t, please report a bug" "$LINENO" 5
   esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_type_intptr_t" >&5
 $as_echo "$acx_cv_type_intptr_t" >&6; }
@@ -58082,12 +58110,53 @@ ac_config_commands="$ac_config_commands include/gstdint.h"
 
 # This depends on GLIBCXX CHECK_LINKER_FEATURES, but without it assumes no.
 
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GNU c++filt" >&5
+$as_echo_n "checking for GNU c++filt... " >&6; }
+if test "${ac_cv_path_CXXFILT+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -z "$CXXFILT"; then
+  ac_path_CXXFILT_found=false
+  # Loop through the user's path and test for each of PROGNAME-LIST
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_prog in c++filt gc++filt; do
+    for ac_exec_ext in '' $ac_executable_extensions; do
+      ac_path_CXXFILT="$as_dir/$ac_prog$ac_exec_ext"
+      { test -f "$ac_path_CXXFILT" && $as_test_x "$ac_path_CXXFILT"; } || continue
+# Check for GNU $ac_path_CXXFILT
+case `"$ac_path_CXXFILT" --version 2>&1` in
+*GNU*)
+  ac_cv_path_CXXFILT=$ac_path_CXXFILT && ac_path_CXXFILT_found=:;;
+esac
+
+      $ac_path_CXXFILT_found && break 3
+    done
+  done
+  done
+IFS=$as_save_IFS
+  if test -z "$ac_cv_path_CXXFILT"; then
+    :
+  fi
+else
+  ac_cv_path_CXXFILT=$CXXFILT
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_path_CXXFILT" >&5
+$as_echo "$ac_cv_path_CXXFILT" >&6; }
+  CXXFILT=$ac_cv_path_CXXFILT
+
+
 
  # Check whether --enable-symvers was given.
 if test "${enable_symvers+set}" = set; then :
   enableval=$enable_symvers;
       case "$enableval" in
-       yes|no|gnu|gnu-versioned-namespace|darwin|darwin-export) ;;
+       yes|no|gnu|gnu-versioned-namespace|darwin|darwin-export|sun) ;;
        *) as_fn_error "Unknown argument to enable/disable symvers" "$LINENO" 5 ;;
                           esac
 
@@ -58099,6 +58168,9 @@ fi
 
 # If we never went through the GLIBCXX_CHECK_LINKER_FEATURES macro, then we
 # don't know enough about $LD to do tricks...
+
+# Sun style symbol versions needs GNU c++filt for make_sunver.pl to work
+# with extern "C++" in version scripts.
 
 
 # Turn a 'yes' into a suitable default.
@@ -58117,6 +58189,23 @@ if test x$enable_symvers = xyes ; then
       case ${target_os} in
         darwin*)
 	  enable_symvers=darwin ;;
+	# Sun symbol versioning exists since Solaris 2.5.
+	solaris2.[5-9]* | solaris2.1[0-9]*)
+	  # make_sunver.pl needs GNU c++filt to support extern "C++" in
+	  # version scripts, so disable symbol versioning if none can be
+	  # found.
+	  if test -z "$ac_cv_path_CXXFILT"; then
+	    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === You have requested Sun symbol versioning, but" >&5
+$as_echo "$as_me: WARNING: === You have requested Sun symbol versioning, but" >&2;}
+	    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === no GNU c++filt could  be found." >&5
+$as_echo "$as_me: WARNING: === no GNU c++filt could  be found." >&2;}
+	    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === Symbol versioning will be disabled." >&5
+$as_echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
+	    enable_symvers=no
+	  else
+	    enable_symvers=sun
+	  fi
+	  ;;
         *)
           enable_symvers=no ;;
       esac
@@ -58129,8 +58218,29 @@ if test x$enable_symvers = xdarwin-export ; then
     enable_symvers=darwin
 fi
 
+# Check if 'sun' was requested on non-Solaris 2 platforms.
+if test x$enable_symvers = xsun ; then
+  case ${target_os} in
+    solaris2*)
+      # All fine.
+      ;;
+    *)
+      # Unlikely to work.
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === You have requested Sun symbol versioning, but" >&5
+$as_echo "$as_me: WARNING: === You have requested Sun symbol versioning, but" >&2;}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === you are not targetting Solaris 2." >&5
+$as_echo "$as_me: WARNING: === you are not targetting Solaris 2." >&2;}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === Symbol versioning will be disabled." >&5
+$as_echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
+      enable_symvers=no
+      ;;
+  esac
+fi
+
 # Check to see if 'gnu' can win.
-if test $enable_symvers = gnu || test $enable_symvers = gnu-versioned-namespace; then
+if test $enable_symvers = gnu ||
+  test $enable_symvers = gnu-versioned-namespace ||
+  test $enable_symvers = sun; then
   # Check to see if libgcc_s exists, indicating that shared libgcc is possible.
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for shared libgcc" >&5
 $as_echo_n "checking for shared libgcc... " >&6; }
@@ -58207,6 +58317,8 @@ $as_echo "$as_me: WARNING: === you are not building a shared libgcc_s." >&2;}
       { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === Symbol versioning will be disabled." >&5
 $as_echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
       enable_symvers=no
+  elif test $with_gnu_ld != yes && test $enable_symvers = sun; then
+    : All interesting versions of Sun ld support sun style symbol versioning.
   elif test $with_gnu_ld != yes ; then
     # just fail for now
     { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === You have requested GNU symbol versioning, but" >&5
@@ -58257,6 +58369,12 @@ $as_echo "#define _GLIBCXX_SYMVER_GNU_NAMESPACE 1" >>confdefs.h
 $as_echo "#define _GLIBCXX_SYMVER_DARWIN 1" >>confdefs.h
 
     ;;
+  sun)
+    SYMVER_FILE=config/abi/pre/gnu.ver
+
+$as_echo "#define _GLIBCXX_SYMVER_SUN 1" >>confdefs.h
+
+    ;;
 esac
 
 if test x$enable_symvers != xno ; then
@@ -58303,8 +58421,25 @@ fi
 
 
 
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: versioning on shared library symbols is $enable_symvers" >&5
 $as_echo "$as_me: versioning on shared library symbols is $enable_symvers" >&6;}
+
+if test $enable_symvers != no ; then
+   case ${target_os} in
+     # The Solaris 2 runtime linker doesn't support the GNU extension of
+     # binding the same symbol to different versions
+     solaris2*)
+       symvers_renaming=no  ;;
+     # Other platforms with GNU symbol versioning (GNU/Linux, more?) do.
+     *)
+
+$as_echo "#define HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT 1" >>confdefs.h
+
+       symvers_renaming=yes  ;;
+    esac
+fi
+
 
 # Now, set up compatibility support, if any.
 # In addition, need this to deal with std::size_t mangling in
@@ -58848,15 +58983,6 @@ else
 fi
 
 
-    if test $c_extra = yes; then
-  GLIBCXX_C_HEADERS_EXTRA_TRUE=
-  GLIBCXX_C_HEADERS_EXTRA_FALSE='#'
-else
-  GLIBCXX_C_HEADERS_EXTRA_TRUE='#'
-  GLIBCXX_C_HEADERS_EXTRA_FALSE=
-fi
-
-
     if test $enable_libstdcxx_debug = yes; then
   GLIBCXX_BUILD_DEBUG_TRUE=
   GLIBCXX_BUILD_DEBUG_FALSE='#'
@@ -58908,6 +59034,24 @@ fi
 else
   ENABLE_SYMVERS_DARWIN_TRUE='#'
   ENABLE_SYMVERS_DARWIN_FALSE=
+fi
+
+
+    if test $enable_symvers = sun; then
+  ENABLE_SYMVERS_SUN_TRUE=
+  ENABLE_SYMVERS_SUN_FALSE='#'
+else
+  ENABLE_SYMVERS_SUN_TRUE='#'
+  ENABLE_SYMVERS_SUN_FALSE=
+fi
+
+
+    if test $symvers_renaming = no; then
+  ENABLE_SYMVERS_SOL2_TRUE=
+  ENABLE_SYMVERS_SOL2_FALSE='#'
+else
+  ENABLE_SYMVERS_SOL2_TRUE='#'
+  ENABLE_SYMVERS_SOL2_FALSE=
 fi
 
 
@@ -59296,10 +59440,6 @@ if test -z "${GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE}" && test -z "${GLIBCXX_C_HEA
   as_fn_error "conditional \"GLIBCXX_C_HEADERS_COMPATIBILITY\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${GLIBCXX_C_HEADERS_EXTRA_TRUE}" && test -z "${GLIBCXX_C_HEADERS_EXTRA_FALSE}"; then
-  as_fn_error "conditional \"GLIBCXX_C_HEADERS_EXTRA\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
 if test -z "${GLIBCXX_BUILD_DEBUG_TRUE}" && test -z "${GLIBCXX_BUILD_DEBUG_FALSE}"; then
   as_fn_error "conditional \"GLIBCXX_BUILD_DEBUG\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -59322,6 +59462,14 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_SYMVERS_DARWIN_TRUE}" && test -z "${ENABLE_SYMVERS_DARWIN_FALSE}"; then
   as_fn_error "conditional \"ENABLE_SYMVERS_DARWIN\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ENABLE_SYMVERS_SUN_TRUE}" && test -z "${ENABLE_SYMVERS_SUN_FALSE}"; then
+  as_fn_error "conditional \"ENABLE_SYMVERS_SUN\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ENABLE_SYMVERS_SOL2_TRUE}" && test -z "${ENABLE_SYMVERS_SOL2_FALSE}"; then
+  as_fn_error "conditional \"ENABLE_SYMVERS_SOL2\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_VISIBILITY_TRUE}" && test -z "${ENABLE_VISIBILITY_FALSE}"; then

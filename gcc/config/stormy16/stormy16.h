@@ -53,8 +53,6 @@
   while (0)
 
 #define TARGET_VERSION fprintf (stderr, " (xstormy16 cpu core)");
-
-#define CAN_DEBUG_WITHOUT_FP
 
 /* Storage Layout.  */
 
@@ -328,8 +326,6 @@ enum reg_class
 
 #define PUSH_ROUNDING(BYTES) (((BYTES) + 1) & ~1)
 
-#define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, STACK_SIZE) 0
-
 
 /* Function Arguments in Registers.  */
 
@@ -341,18 +337,12 @@ enum reg_class
     + 1) 							\
    / 2)
 
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-	xstormy16_function_arg (CUM, MODE, TYPE, NAMED)
-
 /* For this platform, the value of CUMULATIVE_ARGS is the number of words
    of arguments that have been passed in registers so far.  */
 #define CUMULATIVE_ARGS int
 
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
   (CUM) = 0
-
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
-  ((CUM) = xstormy16_function_arg_advance (CUM, MODE, TYPE, NAMED))
 
 #define FUNCTION_ARG_REGNO_P(REGNO)					\
   ((REGNO) >= FIRST_ARGUMENT_REGISTER 					\
@@ -597,5 +587,3 @@ enum reg_class
 #define FUNCTION_MODE HImode
 
 #define NO_IMPLICIT_EXTERN_C
-
-#define HANDLE_SYSV_PRAGMA 1

@@ -20,7 +20,7 @@ contains
     class is (myType)
       x%a = 42.
       r3 =  43.
-      g = 44.             ! { dg-error "Cannot assign to variable" }
+      g = 44.             ! { dg-error "variable definition context" }
     end select
   end subroutine
 
@@ -30,7 +30,7 @@ contains
       real :: r2
       r1 = 45.
       r2 = 46.
-      g = 47.             ! { dg-error "Cannot assign to variable" }
+      g = 47.             ! { dg-error "variable definition context" }
     end block
   end subroutine
 

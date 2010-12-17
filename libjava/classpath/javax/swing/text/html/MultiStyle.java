@@ -51,7 +51,7 @@ import javax.swing.text.Style;
  * 
  * @author Roman Kennke (kennke@aicas.com)
  */
-public class MultiStyle
+class MultiStyle
   extends MultiAttributeSet
   implements Style
 {
@@ -118,7 +118,7 @@ public class MultiStyle
     attributes.removeAttribute(name);
   }
 
-  public void removeAttributes(Enumeration names)
+  public void removeAttributes(Enumeration<?> names)
   {
     attributes.removeAttribute(names);
   }

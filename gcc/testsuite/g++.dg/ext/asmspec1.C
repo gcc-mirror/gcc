@@ -3,6 +3,6 @@
 
 struct A
 {
-  int i __asm__(int);         // { dg-error "before" }
-  static int j __asm__(int);  // { dg-error "before" }
+  int i __asm__(int);         // { dg-error "expected" }
+  static int j __asm__(int);  // { dg-error "expected" }
 };

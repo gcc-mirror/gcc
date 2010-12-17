@@ -1,5 +1,5 @@
 /* IRA hard register and memory cost calculation for allocnos or pseudos.
-   Copyright (C) 2006, 2007, 2008, 2009
+   Copyright (C) 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "recog.h"
 #include "reload.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "target.h"
 #include "params.h"
 #include "ira-int.h"
@@ -67,31 +67,24 @@ struct costs
   int cost[1];
 };
 
-/* Initialized once.  It is a maximal possible size of the allocated
-   struct costs.  */
-static int max_struct_costs_size;
-
-/* Allocated and initialized once, and used to initialize cost values
-   for each insn.  */
-static struct costs *init_cost;
-
-/* Allocated once, and used for temporary purposes.  */
-static struct costs *temp_costs;
-
-/* Allocated once, and used for the cost calculation.  */
-static struct costs *op_costs[MAX_RECOG_OPERANDS];
-static struct costs *this_op_costs[MAX_RECOG_OPERANDS];
+#define max_struct_costs_size \
+  (this_target_ira_int->x_max_struct_costs_size)
+#define init_cost \
+  (this_target_ira_int->x_init_cost)
+#define temp_costs \
+  (this_target_ira_int->x_temp_costs)
+#define op_costs \
+  (this_target_ira_int->x_op_costs)
+#define this_op_costs \
+  (this_target_ira_int->x_this_op_costs)
+#define cost_classes \
+  (this_target_ira_int->x_cost_classes)
 
 /* Costs of each class for each allocno or pseudo.  */
 static struct costs *costs;
 
 /* Accumulated costs of each class for each allocno.  */
 static struct costs *total_allocno_costs;
-
-/* Classes used for cost calculation.  They may be different on
-   different iterations of the cost calculations or in different
-   optimization modes.  */
-static enum reg_class *cost_classes;
 
 /* The size of the previous array.  */
 static int cost_classes_num;
@@ -137,11 +130,11 @@ static int frequency;
    TO_P is FALSE) a register of class RCLASS in mode MODE.  X must not
    be a pseudo register.  */
 static int
-copy_cost (rtx x, enum machine_mode mode, enum reg_class rclass, bool to_p,
+copy_cost (rtx x, enum machine_mode mode, reg_class_t rclass, bool to_p,
 	   secondary_reload_info *prev_sri)
 {
   secondary_reload_info sri;
-  enum reg_class secondary_class = NO_REGS;
+  reg_class_t secondary_class = NO_REGS;
 
   /* If X is a SCRATCH, there is actually nothing to move since we are
      assuming optimal allocation.  */
@@ -149,7 +142,7 @@ copy_cost (rtx x, enum machine_mode mode, enum reg_class rclass, bool to_p,
     return 0;
 
   /* Get the class we will actually use for a reload.  */
-  rclass = PREFERRED_RELOAD_CLASS (x, rclass);
+  rclass = targetm.preferred_reload_class (x, rclass);
 
   /* If we need a secondary reload for an intermediate, the cost is
      that to load the input into the intermediate register, then to
@@ -162,7 +155,8 @@ copy_cost (rtx x, enum machine_mode mode, enum reg_class rclass, bool to_p,
     {
       if (!move_cost[mode])
         init_move_cost (mode);
-      return (move_cost[mode][secondary_class][rclass] + sri.extra_cost
+      return (move_cost[mode][(int) secondary_class][(int) rclass]
+	      + sri.extra_cost
 	      + copy_cost (x, mode, secondary_class, to_p, &sri));
     }
 
@@ -170,12 +164,14 @@ copy_cost (rtx x, enum machine_mode mode, enum reg_class rclass, bool to_p,
      the cost to move between the register classes, and use 2 for
      everything else (constants).  */
   if (MEM_P (x) || rclass == NO_REGS)
-    return sri.extra_cost + ira_memory_move_cost[mode][rclass][to_p != 0];
+    return sri.extra_cost
+	   + ira_memory_move_cost[mode][(int) rclass][to_p != 0];
   else if (REG_P (x))
     {
       if (!move_cost[mode])
         init_move_cost (mode);
-      return (sri.extra_cost + move_cost[mode][REGNO_REG_CLASS (REGNO (x))][rclass]);
+      return (sri.extra_cost
+	      + move_cost[mode][REGNO_REG_CLASS (REGNO (x))][(int) rclass]);
     }
   else
     /* If this is a constant, we may eventually want to call rtx_cost
@@ -208,8 +204,7 @@ copy_cost (rtx x, enum machine_mode mode, enum reg_class rclass, bool to_p,
 static void
 record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		    enum machine_mode *modes, const char **constraints,
-		    rtx insn, struct costs **op_costs,
-		    enum reg_class *pref)
+		    rtx insn, enum reg_class *pref)
 {
   int alt;
   int i, j, k;
@@ -943,7 +938,7 @@ record_address_regs (enum machine_mode mode, rtx x, int context,
 
 /* Calculate the costs of insn operands.  */
 static void
-record_operand_costs (rtx insn, struct costs **op_costs, enum reg_class *pref)
+record_operand_costs (rtx insn, enum reg_class *pref)
 {
   const char *constraints[MAX_RECOG_OPERANDS];
   enum machine_mode modes[MAX_RECOG_OPERANDS];
@@ -996,11 +991,11 @@ record_operand_costs (rtx insn, struct costs **op_costs, enum reg_class *pref)
 	xconstraints[i+1] = constraints[i];
 	record_reg_classes (recog_data.n_alternatives, recog_data.n_operands,
 			    recog_data.operand, modes,
-			    xconstraints, insn, op_costs, pref);
+			    xconstraints, insn, pref);
       }
   record_reg_classes (recog_data.n_alternatives, recog_data.n_operands,
 		      recog_data.operand, modes,
-		      constraints, insn, op_costs, pref);
+		      constraints, insn, pref);
 }
 
 
@@ -1045,7 +1040,7 @@ scan_one_insn (rtx insn)
 			   0, MEM, SCRATCH, frequency * 2);
     }
 
-  record_operand_costs (insn, op_costs, pref);
+  record_operand_costs (insn, pref);
 
   /* Now add the cost for each operand to the total costs for its
      allocno.  */
@@ -1793,15 +1788,14 @@ ira_tune_allocno_costs_and_cover_classes (void)
       if (min_cost != INT_MAX)
 	ALLOCNO_COVER_CLASS_COST (a) = min_cost;
 
-      /* Some targets allow pseudos to be allocated to unaligned
-         sequences of hard registers.  However, selecting an unaligned
-         sequence can unnecessarily restrict later allocations.  So
-         increase the cost of unaligned hard regs to encourage the use
-         of aligned hard regs.  */
+      /* Some targets allow pseudos to be allocated to unaligned sequences
+	 of hard registers.  However, selecting an unaligned sequence can
+	 unnecessarily restrict later allocations.  So increase the cost of
+	 unaligned hard regs to encourage the use of aligned hard regs.  */
       {
-	int nregs, index;
+	const int nregs = ira_reg_class_nregs[cover_class][ALLOCNO_MODE (a)];
 
-	if ((nregs = ira_reg_class_nregs[cover_class][ALLOCNO_MODE (a)]) > 1)
+	if (nregs > 1)
 	  {
 	    ira_allocate_and_set_costs
 	      (&ALLOCNO_HARD_REG_COSTS (a), cover_class,
@@ -1809,10 +1803,10 @@ ira_tune_allocno_costs_and_cover_classes (void)
 	    reg_costs = ALLOCNO_HARD_REG_COSTS (a);
 	    for (j = n - 1; j >= 0; j--)
 	      {
-		if (j % nregs != 0)
+		regno = ira_non_ordered_class_hard_regs[cover_class][j];
+		if ((regno % nregs) != 0)
 		  {
-		    regno = ira_non_ordered_class_hard_regs[cover_class][j];
-		    index = ira_class_hard_reg_index[cover_class][regno];
+		    int index = ira_class_hard_reg_index[cover_class][regno];
 		    ira_assert (index != -1);
 		    reg_costs[index] += ALLOCNO_FREQ (a);
 		  }

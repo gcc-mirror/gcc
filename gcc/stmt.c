@@ -41,7 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "libfuncs.h"
 #include "recog.h"
 #include "machmode.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "output.h"
 #include "ggc.h"
 #include "langhooks.h"
@@ -686,13 +686,14 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
   for (tail = clobbers; tail; tail = TREE_CHAIN (tail))
     {
       const char *regname;
+      int nregs;
 
       if (TREE_VALUE (tail) == error_mark_node)
 	return;
       regname = TREE_STRING_POINTER (TREE_VALUE (tail));
 
-      i = decode_reg_name (regname);
-      if (i >= 0 || i == -4)
+      i = decode_reg_name_and_count (regname, &nregs);
+      if (i == -4)
 	++nclobbers;
       else if (i == -2)
 	error ("unknown register name %qs in %<asm%>", regname);
@@ -700,14 +701,21 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
       /* Mark clobbered registers.  */
       if (i >= 0)
         {
-	  /* Clobbering the PIC register is an error.  */
-	  if (i == (int) PIC_OFFSET_TABLE_REGNUM)
-	    {
-	      error ("PIC register %qs clobbered in %<asm%>", regname);
-	      return;
-	    }
+	  int reg;
 
-	  SET_HARD_REG_BIT (clobbered_regs, i);
+	  for (reg = i; reg < i + nregs; reg++)
+	    {
+	      ++nclobbers;
+
+	      /* Clobbering the PIC register is an error.  */
+	      if (reg == (int) PIC_OFFSET_TABLE_REGNUM)
+		{
+		  error ("PIC register clobbered by %qs in %<asm%>", regname);
+		  return;
+		}
+
+	      SET_HARD_REG_BIT (clobbered_regs, reg);
+	    }
 	}
     }
 
@@ -774,6 +782,10 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
     }
 
   /* Second pass evaluates arguments.  */
+
+  /* Make sure stack is consistent for asm goto.  */
+  if (nlabels > 0)
+    do_pending_stack_adjust ();
 
   ninout = 0;
   for (i = 0, tail = outputs; tail; tail = TREE_CHAIN (tail), i++)
@@ -1028,7 +1040,8 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
       for (tail = clobbers; tail; tail = TREE_CHAIN (tail))
 	{
 	  const char *regname = TREE_STRING_POINTER (TREE_VALUE (tail));
-	  int j = decode_reg_name (regname);
+	  int reg, nregs;
+	  int j = decode_reg_name_and_count (regname, &nregs);
 	  rtx clobbered_reg;
 
 	  if (j < 0)
@@ -1050,30 +1063,39 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 	      continue;
 	    }
 
-	  /* Use QImode since that's guaranteed to clobber just one reg.  */
-	  clobbered_reg = gen_rtx_REG (QImode, j);
-
-	  /* Do sanity check for overlap between clobbers and respectively
-	     input and outputs that hasn't been handled.  Such overlap
-	     should have been detected and reported above.  */
-	  if (!clobber_conflict_found)
+	  for (reg = j; reg < j + nregs; reg++)
 	    {
-	      int opno;
+	      /* Use QImode since that's guaranteed to clobber just
+	       * one reg.  */
+	      clobbered_reg = gen_rtx_REG (QImode, reg);
 
-	      /* We test the old body (obody) contents to avoid tripping
-		 over the under-construction body.  */
-	      for (opno = 0; opno < noutputs; opno++)
-		if (reg_overlap_mentioned_p (clobbered_reg, output_rtx[opno]))
-		  internal_error ("asm clobber conflict with output operand");
+	      /* Do sanity check for overlap between clobbers and
+		 respectively input and outputs that hasn't been
+		 handled.  Such overlap should have been detected and
+		 reported above.  */
+	      if (!clobber_conflict_found)
+		{
+		  int opno;
 
-	      for (opno = 0; opno < ninputs - ninout; opno++)
-		if (reg_overlap_mentioned_p (clobbered_reg,
-					     ASM_OPERANDS_INPUT (obody, opno)))
-		  internal_error ("asm clobber conflict with input operand");
+		  /* We test the old body (obody) contents to avoid
+		     tripping over the under-construction body.  */
+		  for (opno = 0; opno < noutputs; opno++)
+		    if (reg_overlap_mentioned_p (clobbered_reg,
+						 output_rtx[opno]))
+		      internal_error
+			("asm clobber conflict with output operand");
+
+		  for (opno = 0; opno < ninputs - ninout; opno++)
+		    if (reg_overlap_mentioned_p (clobbered_reg,
+						 ASM_OPERANDS_INPUT (obody,
+								     opno)))
+		      internal_error
+			("asm clobber conflict with input operand");
+		}
+
+	      XVECEXP (body, 0, i++)
+		= gen_rtx_CLOBBER (VOIDmode, clobbered_reg);
 	    }
-
-	  XVECEXP (body, 0, i++)
-	    = gen_rtx_CLOBBER (VOIDmode, clobbered_reg);
 	}
 
       if (nlabels > 0)
@@ -1594,8 +1616,11 @@ expand_value_return (rtx val)
       tree type = TREE_TYPE (decl);
       int unsignedp = TYPE_UNSIGNED (type);
       enum machine_mode old_mode = DECL_MODE (decl);
-      enum machine_mode mode = promote_function_mode (type, old_mode,
-						      &unsignedp, funtype, 1);
+      enum machine_mode mode;
+      if (DECL_BY_REFERENCE (decl))
+        mode = promote_function_mode (type, old_mode, &unsignedp, funtype, 2);
+      else
+        mode = promote_function_mode (type, old_mode, &unsignedp, funtype, 1);
 
       if (mode != old_mode)
 	val = convert_modes (mode, old_mode, val, unsignedp);
@@ -1735,7 +1760,7 @@ expand_return (tree retval)
 	     xbitpos for the destination store (right justified).  */
 	  store_bit_field (dst, bitsize, xbitpos % BITS_PER_WORD, word_mode,
 			   extract_bit_field (src, bitsize,
-					      bitpos % BITS_PER_WORD, 1,
+					      bitpos % BITS_PER_WORD, 1, false,
 					      NULL_RTX, word_mode, word_mode));
 	}
 
@@ -1830,7 +1855,7 @@ expand_nl_goto_receiver (void)
        decrementing fp by STARTING_FRAME_OFFSET.  */
     emit_move_insn (virtual_stack_vars_rtx, hard_frame_pointer_rtx);
 
-#if ARG_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+#if !HARD_FRAME_POINTER_IS_ARG_POINTER
   if (fixed_regs[ARG_POINTER_REGNUM])
     {
 #ifdef ELIMINABLE_REGS
@@ -2071,7 +2096,7 @@ add_case_node (struct case_node *head, tree type, tree low, tree high,
 
 /* By default, enable case bit tests on targets with ashlsi3.  */
 #ifndef CASE_USE_BIT_TESTS
-#define CASE_USE_BIT_TESTS  (optab_handler (ashl_optab, word_mode)->insn_code \
+#define CASE_USE_BIT_TESTS  (optab_handler (ashl_optab, word_mode) \
 			     != CODE_FOR_nothing)
 #endif
 
@@ -2096,19 +2121,21 @@ struct case_bit_test
 static
 bool lshift_cheap_p (void)
 {
-  static bool init = false;
-  static bool cheap = true;
+  static bool init[2] = {false, false};
+  static bool cheap[2] = {true, true};
 
-  if (!init)
+  bool speed_p = optimize_insn_for_speed_p ();
+
+  if (!init[speed_p])
     {
       rtx reg = gen_rtx_REG (word_mode, 10000);
       int cost = rtx_cost (gen_rtx_ASHIFT (word_mode, const1_rtx, reg), SET,
-      			   optimize_insn_for_speed_p ());
-      cheap = cost < COSTS_N_INSNS (3);
-      init = true;
+      			   speed_p);
+      cheap[speed_p] = cost < COSTS_N_INSNS (3);
+      init[speed_p] = true;
     }
 
-  return cheap;
+  return cheap[speed_p];
 }
 
 /* Comparison function for qsort to order bit tests by decreasing
@@ -2224,6 +2251,25 @@ emit_case_bit_tests (tree index_type, tree index_expr, tree minval,
 #define HAVE_tablejump 0
 #endif
 
+/* Return true if a switch should be expanded as a bit test.
+   INDEX_EXPR is the index expression, RANGE is the difference between
+   highest and lowest case, UNIQ is number of unique case node targets
+   not counting the default case and COUNT is the number of comparisons
+   needed, not counting the default case.  */
+bool
+expand_switch_using_bit_tests_p (tree index_expr, tree range,
+				 unsigned int uniq, unsigned int count)
+{
+  return (CASE_USE_BIT_TESTS
+	  && ! TREE_CONSTANT (index_expr)
+	  && compare_tree_int (range, GET_MODE_BITSIZE (word_mode)) < 0
+	  && compare_tree_int (range, 0) > 0
+	  && lshift_cheap_p ()
+	  && ((uniq == 1 && count >= 3)
+	      || (uniq == 2 && count >= 5)
+	      || (uniq == 3 && count >= 6)));
+}
+
 /* Terminate a case (Pascal/Ada) or switch (C) statement
    in which ORIG_INDEX is the expression to be tested.
    If ORIG_TYPE is not NULL, it is the original ORIG_INDEX
@@ -2334,11 +2380,8 @@ expand_case (gimple stmt)
 	  /* If we have not seen this label yet, then increase the
 	     number of unique case node targets seen.  */
 	  lab = label_rtx (n->code_label);
-	  if (!bitmap_bit_p (label_bitmap, CODE_LABEL_NUMBER (lab)))
-	    {
-	      bitmap_set_bit (label_bitmap, CODE_LABEL_NUMBER (lab));
-	      uniq++;
-	    }
+	  if (bitmap_set_bit (label_bitmap, CODE_LABEL_NUMBER (lab)))
+	    uniq++;
 	}
 
       BITMAP_FREE (label_bitmap);
@@ -2361,14 +2404,7 @@ expand_case (gimple stmt)
       /* Try implementing this switch statement by a short sequence of
 	 bit-wise comparisons.  However, we let the binary-tree case
 	 below handle constant index expressions.  */
-      if (CASE_USE_BIT_TESTS
-	  && ! TREE_CONSTANT (index_expr)
-	  && compare_tree_int (range, GET_MODE_BITSIZE (word_mode)) < 0
-	  && compare_tree_int (range, 0) > 0
-	  && lshift_cheap_p ()
-	  && ((uniq == 1 && count >= 3)
-	      || (uniq == 2 && count >= 5)
-	      || (uniq == 3 && count >= 6)))
+      if (expand_switch_using_bit_tests_p (index_expr, range, uniq, count))
 	{
 	  /* Optimize the case where all the case values fit in a
 	     word without having to subtract MINVAL.  In this case,

@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "cp-tree.h"
-#include "toplev.h"
 #include "flags.h"
 #include "diagnostic.h"
 #include "tree-diagnostic.h"
@@ -86,6 +85,7 @@ static void dump_scope (tree, int);
 static void dump_template_parms (tree, int, int);
 static int get_non_default_template_args_count (tree, int);
 static const char *function_category (tree);
+static void maybe_print_constexpr_context (diagnostic_context *);
 static void maybe_print_instantiation_context (diagnostic_context *);
 static void print_instantiation_full_context (diagnostic_context *);
 static void print_instantiation_partial_context (diagnostic_context *,
@@ -304,7 +304,7 @@ dump_template_bindings (tree parms, tree args, VEC(tree,gc)* typenames)
       parms = TREE_CHAIN (parms);
     }
 
-  for (i = 0; VEC_iterate (tree, typenames, i, t); ++i)
+  FOR_EACH_VEC_ELT (tree, typenames, i, t)
     {
       if (need_comma)
 	pp_separate_with_comma (cxx_pp);
@@ -498,6 +498,10 @@ dump_type (tree t, int flags)
       pp_cxx_left_paren (cxx_pp);
       dump_expr (DECLTYPE_TYPE_EXPR (t), flags & ~TFF_EXPR_IN_PARENS);
       pp_cxx_right_paren (cxx_pp);
+      break;
+
+    case NULLPTR_TYPE:
+      pp_string (cxx_pp, "std::nullptr_t");
       break;
 
     default:
@@ -728,6 +732,7 @@ dump_type_prefix (tree t, int flags)
     case DECLTYPE_TYPE:
     case TYPE_PACK_EXPANSION:
     case FIXED_POINT_TYPE:
+    case NULLPTR_TYPE:
       dump_type (t, flags);
       pp_base (cxx_pp)->padding = pp_before;
       break;
@@ -830,6 +835,7 @@ dump_type_suffix (tree t, int flags)
     case DECLTYPE_TYPE:
     case TYPE_PACK_EXPANSION:
     case FIXED_POINT_TYPE:
+    case NULLPTR_TYPE:
       break;
 
     default:
@@ -861,6 +867,9 @@ dump_simple_decl (tree t, tree type, int flags)
 {
   if (flags & TFF_DECL_SPECIFIERS)
     {
+      if (TREE_CODE (t) == VAR_DECL
+	  && DECL_DECLARED_CONSTEXPR_P (t))
+	pp_cxx_ws_string (cxx_pp, "constexpr");
       dump_type_prefix (type, flags & ~TFF_UNQUALIFIED_NAME);
       pp_maybe_space (cxx_pp);
     }
@@ -889,6 +898,18 @@ dump_decl (tree t, int flags)
 {
   if (t == NULL_TREE)
     return;
+
+  /* If doing Objective-C++, give Objective-C a chance to demangle
+     Objective-C method names.  */
+  if (c_dialect_objc ())
+    {
+      const char *demangled = objc_maybe_printable_name (t, flags);
+      if (demangled)
+	{
+	  pp_string (cxx_pp, demangled);
+	  return;
+	}
+    }
 
   switch (TREE_CODE (t))
     {
@@ -1247,7 +1268,7 @@ dump_function_decl (tree t, int flags)
   tree exceptions;
   VEC(tree,gc) *typenames = NULL;
 
-  if (LAMBDA_FUNCTION_P (t))
+  if (DECL_NAME (t) && LAMBDA_FUNCTION_P (t))
     {
       /* A lambda's signature is essentially its "type", so defer.  */
       gcc_assert (LAMBDA_TYPE_P (DECL_CONTEXT (t)));
@@ -1288,12 +1309,16 @@ dump_function_decl (tree t, int flags)
   else if (TREE_CODE (fntype) == METHOD_TYPE)
     cname = TREE_TYPE (TREE_VALUE (parmtypes));
 
-  if (!(flags & TFF_DECL_SPECIFIERS))
-    /* OK */;
-  else if (DECL_STATIC_FUNCTION_P (t))
-    pp_cxx_ws_string (cxx_pp, "static");
-  else if (DECL_VIRTUAL_P (t))
-    pp_cxx_ws_string (cxx_pp, "virtual");
+  if (flags & TFF_DECL_SPECIFIERS)
+    {
+      if (DECL_STATIC_FUNCTION_P (t))
+	pp_cxx_ws_string (cxx_pp, "static");
+      else if (DECL_VIRTUAL_P (t))
+	pp_cxx_ws_string (cxx_pp, "virtual");
+
+      if (DECL_DECLARED_CONSTEXPR_P (STRIP_TEMPLATE (t)))
+	pp_cxx_ws_string (cxx_pp, "constexpr");
+    }
 
   /* Print the return type?  */
   if (show_return)
@@ -1949,8 +1974,21 @@ dump_expr (tree t, int flags)
     case VIEW_CONVERT_EXPR:
       {
 	tree op = TREE_OPERAND (t, 0);
+	tree ttype = TREE_TYPE (t);
+	tree optype = TREE_TYPE (op);
 
-	if (!same_type_p (TREE_TYPE (op), TREE_TYPE (t)))
+	if (TREE_CODE (ttype) != TREE_CODE (optype)
+	    && POINTER_TYPE_P (ttype)
+	    && POINTER_TYPE_P (optype)
+	    && same_type_p (TREE_TYPE (optype),
+			    TREE_TYPE (ttype)))
+	  {
+	    if (TREE_CODE (ttype) == REFERENCE_TYPE)
+	      dump_unary_op ("*", t, flags);
+	    else
+	      dump_unary_op ("&", t, flags);
+	  }
+	else if (!same_type_p (TREE_TYPE (op), TREE_TYPE (t)))
 	  {
 	    /* It is a cast, but we cannot tell whether it is a
 	       reinterpret or static cast. Use the C style notation.  */
@@ -2125,6 +2163,14 @@ dump_expr (tree t, int flags)
 	dump_type (TREE_OPERAND (t, 0), flags);
       else
 	dump_expr (TREE_OPERAND (t, 0), flags);
+      pp_cxx_right_paren (cxx_pp);
+      break;
+
+    case AT_ENCODE_EXPR:
+      pp_cxx_ws_string (cxx_pp, "@encode");
+      pp_cxx_whitespace (cxx_pp);
+      pp_cxx_left_paren (cxx_pp);
+      dump_type (TREE_OPERAND (t, 0), flags);
       pp_cxx_right_paren (cxx_pp);
       break;
 
@@ -2422,7 +2468,9 @@ location_of (tree t)
   else if (TREE_CODE (t) == OVERLOAD)
     t = OVL_FUNCTION (t);
 
-  return DECL_SOURCE_LOCATION (t);
+  if (DECL_P (t))
+    return DECL_SOURCE_LOCATION (t);
+  return EXPR_LOC_OR_HERE (t);
 }
 
 /* Now the interfaces from error et al to dump_type et al. Each takes an
@@ -2589,6 +2637,7 @@ cp_diagnostic_starter (diagnostic_context *context,
   diagnostic_report_current_module (context);
   cp_print_error_function (context, diagnostic);
   maybe_print_instantiation_context (context);
+  maybe_print_constexpr_context (context);
   pp_base_set_prefix (context->printer, diagnostic_build_prefix (context,
 								 diagnostic));
 }
@@ -2909,6 +2958,31 @@ print_instantiation_context (void)
   diagnostic_flush_buffer (global_dc);
 }
 
+/* Report what constexpr call(s) we're trying to expand, if any.  */
+
+void
+maybe_print_constexpr_context (diagnostic_context *context)
+{
+  VEC(tree,heap) *call_stack = cx_error_context ();
+  unsigned ix;
+  tree t;
+
+  FOR_EACH_VEC_ELT (tree, call_stack, ix, t)
+    {
+      expanded_location xloc = expand_location (EXPR_LOCATION (t));
+      const char *s = expr_as_string (t, 0);
+      if (context->show_column)
+	pp_verbatim (context->printer,
+		     _("%s:%d:%d:   in constexpr expansion of %qs"),
+		     xloc.file, xloc.line, xloc.column, s);
+      else
+	pp_verbatim (context->printer,
+		     _("%s:%d:   in constexpr expansion of %qs"),
+		     xloc.file, xloc.line, s);
+      pp_base_newline (context->printer);
+    }
+}
+
 /* Called from output_format -- during diagnostic message processing --
    to handle C++ specific format specifier with the following meanings:
    %A   function argument-list.
@@ -3027,6 +3101,11 @@ maybe_warn_cpp0x (cpp0x_warn_str str)
       case CPP0X_DEFAULTED_DELETED:
 	pedwarn (input_location, 0,
 		 "defaulted and deleted functions "
+		 "only available with -std=c++0x or -std=gnu++0x");
+	break;
+      case CPP0X_INLINE_NAMESPACES:
+	pedwarn (input_location, OPT_pedantic,
+		 "inline namespaces "
 		 "only available with -std=c++0x or -std=gnu++0x");
 	break;	
       default:

@@ -1,4 +1,4 @@
-/* DocumentFormatSupported.java -- 
+/* DocumentFormatSupported.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -40,21 +40,22 @@ package gnu.javax.print.ipp.attribute.supported;
 
 import java.util.Locale;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.SupportedValuesAttribute;
 import javax.print.attribute.TextSyntax;
 
 /**
  * <code>DocumentFormatSupported</code> specifies the supported document
  * formats of a printer. Printer are supplying a set of this attribute.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class DocumentFormatSupported extends TextSyntax 
+public final class DocumentFormatSupported extends TextSyntax
   implements SupportedValuesAttribute
 {
 
   /**
-   * Creates a <code>DocumentFormatSupported</code> object with the 
+   * Creates a <code>DocumentFormatSupported</code> object with the
    * given value and locale.
    *
    * @param value the value for this syntax
@@ -73,7 +74,7 @@ public final class DocumentFormatSupported extends TextSyntax
    *
    * @return The class <code>DocumentFormatSupported</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return DocumentFormatSupported.class;
   }

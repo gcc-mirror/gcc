@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime Thread Interface
-   Copyright (C) 1996, 1997, 2009 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Galen C. Hunt (gchunt@cs.rochester.edu)
 
 This file is part of GCC.
@@ -22,9 +22,27 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "objc-private/common.h"
+#include "objc-private/error.h"
+#define _LIBOBJC
+/* The line below is needed for declarations of functions such as
+   pthread_mutexattr_settype, without which gthr-posix.h may fail to
+   compile within libobjc.  Unfortunately, this breaks compilation on
+   Tru64 UNIX V4.0F, so disable it there.  */
+#ifndef __osf__
+#define _XOPEN_SOURCE 500
+#endif
+#include "config.h"
+#include "tconfig.h"
+#include "coretypes.h"
+#include "tm.h"
+#include "defaults.h"
+#include "objc/thr.h"
+#include "objc/runtime.h"
+#include "objc-private/runtime.h"
+#include <gthr.h>
 
 #include <stdlib.h>
-#include "objc/runtime.h"
 
 /* Global exit status. */
 int __objc_thread_exit_status = 0;
@@ -60,6 +78,13 @@ objc_thread_callback objc_set_thread_callback (objc_thread_callback func)
   These functions are utilized by the frontend, but they are not
   considered part of the public interface.
   */
+
+/* Initialize the threads subsystem. */
+int
+__objc_init_thread_system(void)
+{
+  return __gthread_objc_init_thread_system ();
+}
 
 /*
   First function called in a thread, starts everything else.
@@ -104,12 +129,16 @@ __objc_thread_detach_function (struct __objc_thread_start_state *istate)
     if ((imp = (id (*) (id, SEL, id))objc_msg_lookup (object, selector)))
 	(*imp) (object, selector, argument);
     else
-      objc_error (object, OBJC_ERR_UNIMPLEMENTED,
-		  "objc_thread_detach called with bad selector.\n");
+      {
+	/* FIXME: Should we abort here ? */
+	_objc_abort ("objc_thread_detach called with bad selector.\n");
+      }
   }
   else
-    objc_error (nil, OBJC_ERR_BAD_STATE,
-	        "objc_thread_detach called with NULL state.\n");
+    {
+      /* FIXME: Should we abort here ? */
+      _objc_abort ("objc_thread_detach called with NULL state.\n");
+    }
 
   /* Exit the thread */
   objc_thread_exit ();
@@ -152,8 +181,8 @@ objc_thread_detach (SEL selector, id object, id argument)
   objc_mutex_lock (__objc_runtime_mutex);
 
   /* Call the backend to spawn the thread */
-  if ((thread_id = __objc_thread_detach ((void *)__objc_thread_detach_function,
-					 istate)) == NULL)
+  if ((thread_id = __gthread_objc_thread_detach ((void *)__objc_thread_detach_function,
+						 istate)) == NULL)
     {
       /* failed! */
       objc_mutex_unlock (__objc_runtime_mutex);
@@ -173,7 +202,7 @@ int
 objc_thread_set_priority (int priority)
 {
   /* Call the backend */
-  return __objc_thread_set_priority (priority);
+  return __gthread_objc_thread_set_priority (priority);
 }
 
 /* Return the current thread's priority. */
@@ -181,7 +210,7 @@ int
 objc_thread_get_priority (void)
 {
   /* Call the backend */
-  return __objc_thread_get_priority ();
+  return __gthread_objc_thread_get_priority ();
 }
 
 /*
@@ -193,7 +222,7 @@ void
 objc_thread_yield (void)
 {
   /* Call the backend */
-  __objc_thread_yield ();
+  __gthread_objc_thread_yield ();
 }
 
 /*
@@ -209,7 +238,7 @@ objc_thread_exit (void)
   objc_mutex_unlock (__objc_runtime_mutex);
 
   /* Call the backend to terminate the thread */
-  return __objc_thread_exit ();
+  return __gthread_objc_thread_exit ();
 }
 
 /*
@@ -220,7 +249,7 @@ objc_thread_t
 objc_thread_id (void)
 {
   /* Call the backend */
-  return __objc_thread_id ();
+  return __gthread_objc_thread_id ();
 }
 
 /*
@@ -231,7 +260,7 @@ int
 objc_thread_set_data (void *value)
 {
   /* Call the backend */
-  return __objc_thread_set_data (value);
+  return __gthread_objc_thread_set_data (value);
 }
 
 /*
@@ -241,7 +270,7 @@ void *
 objc_thread_get_data (void)
 {
   /* Call the backend */
-  return __objc_thread_get_data ();
+  return __gthread_objc_thread_get_data ();
 }
 
 /* Frontend mutex functions */
@@ -260,7 +289,7 @@ objc_mutex_allocate (void)
     return NULL;
 
   /* Call backend to create the mutex */
-  if (__objc_mutex_allocate (mutex))
+  if (__gthread_objc_mutex_allocate (mutex))
     {
       /* failed! */
       objc_free (mutex);
@@ -293,7 +322,7 @@ objc_mutex_deallocate (objc_mutex_t mutex)
   depth = objc_mutex_lock (mutex);
 
   /* Call backend to destroy mutex */
-  if (__objc_mutex_deallocate (mutex))
+  if (__gthread_objc_mutex_deallocate (mutex))
     return -1;
 
   /* Free the mutex structure */
@@ -320,12 +349,12 @@ objc_mutex_lock (objc_mutex_t mutex)
     return -1;
 
   /* If we already own the lock then increment depth */
-  thread_id = __objc_thread_id ();
+  thread_id = __gthread_objc_thread_id ();
   if (mutex->owner == thread_id)
     return ++mutex->depth;
 
   /* Call the backend to lock the mutex */
-  status = __objc_mutex_lock (mutex);
+  status = __gthread_objc_mutex_lock (mutex);
 
   /* Failed? */
   if (status)
@@ -352,12 +381,12 @@ objc_mutex_trylock (objc_mutex_t mutex)
     return -1;
 
   /* If we already own the lock then increment depth */ 
-  thread_id = __objc_thread_id ();
+  thread_id = __gthread_objc_thread_id ();
   if (mutex->owner == thread_id)
     return ++mutex->depth;
     
   /* Call the backend to try to lock the mutex */
-  status = __objc_mutex_trylock (mutex);
+  status = __gthread_objc_mutex_trylock (mutex);
 
   /* Failed? */
   if (status)
@@ -387,7 +416,7 @@ objc_mutex_unlock (objc_mutex_t mutex)
     return -1;
 
   /* If another thread owns the lock then abort */
-  thread_id = __objc_thread_id ();
+  thread_id = __gthread_objc_thread_id ();
   if (mutex->owner != thread_id)
     return -1;
 
@@ -400,7 +429,7 @@ objc_mutex_unlock (objc_mutex_t mutex)
   mutex->owner = NULL;
 
   /* Have the backend unlock the mutex */
-  status = __objc_mutex_unlock (mutex);
+  status = __gthread_objc_mutex_unlock (mutex);
 
   /* Failed? */
   if (status)
@@ -426,7 +455,7 @@ objc_condition_allocate (void)
     return NULL;
 
   /* Call the backend to create the condition mutex */
-  if (__objc_condition_allocate (condition))
+  if (__gthread_objc_condition_allocate (condition))
     {
       /* failed! */
       objc_free (condition);
@@ -452,7 +481,7 @@ objc_condition_deallocate (objc_condition_t condition)
     return -1;
 
   /* Call the backend to destroy */
-  if (__objc_condition_deallocate (condition))
+  if (__gthread_objc_condition_deallocate (condition))
     return -1;
 
   /* Free the condition mutex structure */
@@ -479,7 +508,7 @@ objc_condition_wait (objc_condition_t condition, objc_mutex_t mutex)
     return -1;
 
   /* Make sure we are owner of mutex */
-  thread_id = __objc_thread_id ();
+  thread_id = __gthread_objc_thread_id ();
   if (mutex->owner != thread_id)
     return -1;
 
@@ -492,7 +521,7 @@ objc_condition_wait (objc_condition_t condition, objc_mutex_t mutex)
   mutex->owner = (objc_thread_t)NULL;
 
   /* Call the backend to wait */
-  __objc_condition_wait (condition, mutex);
+  __gthread_objc_condition_wait (condition, mutex);
 
   /* Make ourselves owner of the mutex */
   mutex->owner = thread_id;
@@ -514,7 +543,7 @@ objc_condition_broadcast (objc_condition_t condition)
   if (! condition)
     return -1;
 
-  return __objc_condition_broadcast (condition);
+  return __gthread_objc_condition_broadcast (condition);
 }
 
 /*
@@ -530,7 +559,7 @@ objc_condition_signal (objc_condition_t condition)
   if (! condition)
     return -1;
 
-  return __objc_condition_signal (condition);
+  return __gthread_objc_condition_signal (condition);
 }
 
 /* Make the objc thread system aware that a thread which is managed

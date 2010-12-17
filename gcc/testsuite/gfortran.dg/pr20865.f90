@@ -8,5 +8,5 @@
 
   integer :: i, st
   st(i) = (i*i+2)
-  call tt(st) ! { dg-error "Statement function .* is not allowed as an actual argument" }
+  call tt(st) ! { dg-error "Statement function .* is not allowed as an actual argument|Invalid procedure argument" }
   end

@@ -62,12 +62,14 @@ extern bool hook_pass_by_reference_must_pass_in_stack
 extern bool hook_callee_copies_named
   (CUMULATIVE_ARGS *ca, enum machine_mode, const_tree, bool);
 
-extern void default_unwind_emit (FILE *, rtx);
 extern void default_print_operand (FILE *, rtx, int);
 extern void default_print_operand_address (FILE *, rtx);
 extern bool default_print_operand_punct_valid_p (unsigned char);
+extern bool default_asm_output_addr_const_extra (FILE *, rtx);
 
 extern bool default_scalar_mode_supported_p (enum machine_mode);
+extern bool targhook_words_big_endian (void);
+extern bool targhook_float_words_big_endian (void);
 extern bool default_decimal_float_supported_p (void);
 extern bool default_fixed_point_supported_p (void);
 
@@ -77,7 +79,7 @@ extern tree default_builtin_vectorized_function (tree, tree, tree);
 
 extern tree default_builtin_vectorized_conversion (unsigned int, tree, tree);
 
-extern int default_builtin_vectorization_cost (enum vect_cost_for_stmt);
+extern int default_builtin_vectorization_cost (enum vect_cost_for_stmt, tree, int);
 
 extern tree default_builtin_reciprocal (unsigned int, bool, bool);
 
@@ -86,6 +88,8 @@ extern bool
 default_builtin_support_vector_misalignment (enum machine_mode mode,
 					     const_tree,
 					     int, bool);
+extern enum machine_mode default_preferred_simd_mode (enum machine_mode mode);
+extern unsigned int default_autovectorize_vector_sizes (void);
 
 /* These are here, and not in hooks.[ch], because not all users of
    hooks.h include tm.h, and thus we don't have CUMULATIVE_ARGS.  */
@@ -101,6 +105,14 @@ extern int hook_int_CUMULATIVE_ARGS_mode_tree_bool_0
   (CUMULATIVE_ARGS *, enum machine_mode, tree, bool);
 extern const char *hook_invalid_arg_for_unprototyped_fn
   (const_tree, const_tree, const_tree);
+extern void default_function_arg_advance
+  (CUMULATIVE_ARGS *, enum machine_mode, const_tree, bool);
+extern rtx default_function_arg
+  (CUMULATIVE_ARGS *, enum machine_mode, const_tree, bool);
+extern rtx default_function_incoming_arg
+  (CUMULATIVE_ARGS *, enum machine_mode, const_tree, bool);
+extern unsigned int default_function_arg_boundary (enum machine_mode,
+						   const_tree);
 extern bool hook_bool_const_rtx_commutative_p (const_rtx, int);
 extern rtx default_function_value (const_tree, const_tree, bool);
 extern rtx default_libcall_value (enum machine_mode, const_rtx);
@@ -108,13 +120,15 @@ extern bool default_function_value_regno_p (const unsigned int);
 extern rtx default_internal_arg_pointer (void);
 extern rtx default_static_chain (const_tree, bool);
 extern void default_trampoline_init (rtx, tree, rtx);
-extern enum reg_class default_branch_target_register_class (void);
+extern int default_return_pops_args (tree, tree, int);
+extern reg_class_t default_branch_target_register_class (void);
 #ifdef IRA_COVER_CLASSES
-extern const enum reg_class *default_ira_cover_classes (void);
+extern const reg_class_t *default_ira_cover_classes (void);
 #endif
-extern enum reg_class default_secondary_reload (bool, rtx, enum reg_class,
-						enum machine_mode,
-						secondary_reload_info *);
+extern reg_class_t default_secondary_reload (bool, rtx, reg_class_t,
+					     enum machine_mode,
+					     secondary_reload_info *);
+extern void default_target_option_override (void);
 extern void hook_void_bitmap (bitmap);
 extern bool default_handle_c_option (size_t, const char *, int);
 extern int default_reloc_rw_mask (void);
@@ -139,7 +153,26 @@ extern bool default_addr_space_subset_p (addr_space_t, addr_space_t);
 extern rtx default_addr_space_convert (rtx, tree, tree);
 extern unsigned int default_case_values_threshold (void);
 extern bool default_have_conditional_execution (void);
-extern int default_memory_move_cost (enum machine_mode, enum reg_class, bool);
-extern int default_register_move_cost (enum machine_mode, enum reg_class,
-				       enum reg_class);
+extern int default_memory_move_cost (enum machine_mode, reg_class_t, bool);
+extern int default_register_move_cost (enum machine_mode, reg_class_t,
+				       reg_class_t);
 
+extern bool default_profile_before_prologue (void);
+extern reg_class_t default_preferred_reload_class (rtx, reg_class_t);
+extern reg_class_t default_preferred_output_reload_class (rtx, reg_class_t);
+extern bool default_class_likely_spilled_p (reg_class_t);
+
+extern enum unwind_info_type default_debug_unwind_info (void);
+extern enum unwind_info_type default_except_unwind_info (struct gcc_options *);
+extern enum unwind_info_type dwarf2_except_unwind_info (struct gcc_options *);
+extern enum unwind_info_type sjlj_except_unwind_info (struct gcc_options *);
+
+extern int default_label_align_after_barrier_max_skip (rtx);
+extern int default_loop_align_max_skip (rtx);
+extern int default_label_align_max_skip (rtx);
+extern int default_jump_align_max_skip (rtx);
+extern section * default_function_section(tree decl, enum node_frequency freq,
+					  bool startup, bool exit);
+extern enum machine_mode default_get_reg_raw_mode(int);
+
+extern const struct default_options empty_optimization_table[];

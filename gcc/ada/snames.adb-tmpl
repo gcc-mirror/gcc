@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -368,7 +368,7 @@ package body Snames is
       return Get_Name_Table_Byte (N) /= 0
         and then (Ada_Version >= Ada_95
                   or else N not in Ada_95_Reserved_Words)
-        and then (Ada_Version >= Ada_05
+        and then (Ada_Version >= Ada_2005
                   or else N not in Ada_2005_Reserved_Words);
    end Is_Keyword_Name;
 

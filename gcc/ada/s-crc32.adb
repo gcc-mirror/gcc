@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2009, Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2010, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -130,7 +130,6 @@ package body System.CRC32 is
 
    procedure Update (C : in out CRC32; Value : Character) is
       V : constant CRC32 := CRC32 (Character'Pos (Value));
-
    begin
       C := Shift_Right (C, 8) xor Table (V xor (C and 16#0000_00FF#));
    end Update;

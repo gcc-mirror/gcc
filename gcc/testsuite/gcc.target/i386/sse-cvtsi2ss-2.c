@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target lp64 } */
+/* { dg-require-effective-target sse } */
 /* { dg-options "-O2 -msse" } */
 
 #ifndef CHECK_H

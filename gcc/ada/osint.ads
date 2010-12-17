@@ -94,6 +94,23 @@ package Osint is
    --  this call converts the given string to canonical all lower case form,
    --  so that two file names compare equal if they refer to the same file.
 
+   function Get_Env_Vars_Case_Sensitive return Int;
+   pragma Import (C, Get_Env_Vars_Case_Sensitive,
+                  "__gnat_get_env_vars_case_sensitive");
+   Env_Vars_Case_Sensitive : constant Boolean :=
+                                 Get_Env_Vars_Case_Sensitive /= 0;
+   --  Set to indicate whether the operating system convention is for
+   --  environment variable names to be case sensitive (e.g., in Unix, set
+   --  True), or non case sensitive (e.g., in Windows, set False).
+
+   procedure Canonical_Case_Env_Var_Name (S : in out String);
+   --  Given an environment variable name, converts it to canonical case form.
+   --  For systems where environment variable names are case sensitive, this
+   --  procedure has no effect. If environment variable names are not case
+   --  sensitive, then this call converts the given string to canonical all
+   --  lower case form, so that two environment variable names compare equal if
+   --  they refer to the same environment variable.
+
    function Number_Of_Files return Int;
    --  Gives the total number of filenames found on the command line
 

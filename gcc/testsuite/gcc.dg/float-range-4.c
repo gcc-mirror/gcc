@@ -1,5 +1,5 @@
 /* PR 23572 : warnings for out of range floating-point constants.  */
-/* { dg-compile } */
+/* { dg-do compile } */
 /* { dg-options "-Wno-overflow -std=c99" } */
 /* { dg-skip-if "No Inf support" { spu-*-* } } */
 #include <math.h>

@@ -1,4 +1,4 @@
-/* DocumentFormatDefault.java -- 
+/* DocumentFormatDefault.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -49,16 +49,16 @@ import javax.print.attribute.TextSyntax;
 /**
  * <code>DocumentFormatDefault</code> specifies the default document
  * format of a printer.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  *
  */
-public final class DocumentFormatDefault extends TextSyntax 
+public final class DocumentFormatDefault extends TextSyntax
   implements DefaultValueAttribute
 {
 
   /**
-   * Creates a <code>DocumentFormatDefault</code> object with the 
+   * Creates a <code>DocumentFormatDefault</code> object with the
    * given value and locale.
    *
    * @param value the value for this syntax
@@ -77,7 +77,7 @@ public final class DocumentFormatDefault extends TextSyntax
    *
    * @return The class <code>DocumentFormatDefault</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return DocumentFormatDefault.class;
   }
@@ -95,12 +95,12 @@ public final class DocumentFormatDefault extends TextSyntax
   /**
    * Returns the equally enum of the standard attribute class
    * of this DefaultValuesAttribute enum.
-   * 
+   *
    * @return The enum of the standard attribute class.
    */
-  public Attribute getAssociatedAttribute() 
+  public Attribute getAssociatedAttribute()
   {
     return new DocumentFormat(getValue(), getLocale());
   }
-  
+
 }

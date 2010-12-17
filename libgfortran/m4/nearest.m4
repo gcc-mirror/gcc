@@ -27,7 +27,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 include(`mtype.m4')dnl
 
-`#if defined (HAVE_'real_type`) && defined (HAVE_COPYSIGN'Q`) && defined (HAVE_NEXTAFTER'Q`)
+mathfunc_macro
+
+`#if defined (HAVE_'real_type`) && 'hasmathfunc(copysign) && hasmathfunc(nextafter)`
 
 extern 'real_type` nearest_r'kind` ('real_type` s, 'real_type` dir);
 export_proto(nearest_r'kind`);
@@ -35,15 +37,15 @@ export_proto(nearest_r'kind`);
 'real_type`
 nearest_r'kind` ('real_type` s, 'real_type` dir)
 {
-  dir = copysign'q` (__builtin_inf'q` (), dir);
+  dir = MATHFUNC(copysign) (MATHFUNC(__builtin_inf) (), dir);
   if (FLT_EVAL_METHOD != 0)
     {
       /* ??? Work around glibc bug on x86.  */
-      volatile 'real_type` r = nextafter'q` (s, dir);
+      volatile 'real_type` r = MATHFUNC(nextafter) (s, dir);
       return r;
     }
   else
-    return nextafter'q` (s, dir);
+    return MATHFUNC(nextafter) (s, dir);
 }
 
 #endif'

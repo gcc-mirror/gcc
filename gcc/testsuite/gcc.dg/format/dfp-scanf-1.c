@@ -3,7 +3,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target dfp } */
 /* { dg-options "-Wformat" } */
-
+/* { dg-skip-if "No scanf/printf dfp support" { *-*-mingw* } } */
 
 #include "format.h"
 
@@ -43,44 +43,44 @@ voo (_Decimal32 *x, _Decimal64 *y, _Decimal128 *z, int *i, unsigned int *j,
 
   /* Check warnings for type mismatches.  */
 
-  scanf ("%Hf", y);	/* { dg-warning "expects type" "bad use of %H" } */
-  scanf ("%HF", y);	/* { dg-warning "expects type" "bad use of %H" } */
-  scanf ("%He", y);	/* { dg-warning "expects type" "bad use of %H" } */
-  scanf ("%HE", y);	/* { dg-warning "expects type" "bad use of %H" } */
-  scanf ("%Hg", y);	/* { dg-warning "expects type" "bad use of %H" } */
-  scanf ("%HG", y);	/* { dg-warning "expects type" "bad use of %H" } */
-  scanf ("%Hf", z);	/* { dg-warning "expects type" "bad use of %H" } */
-  scanf ("%HF", z);	/* { dg-warning "expects type" "bad use of %H" } */
-  scanf ("%He", z);	/* { dg-warning "expects type" "bad use of %H" } */
-  scanf ("%HE", z);	/* { dg-warning "expects type" "bad use of %H" } */
-  scanf ("%Hg", z);	/* { dg-warning "expects type" "bad use of %H" } */
-  scanf ("%HG", z);	/* { dg-warning "expects type" "bad use of %H" } */
+  scanf ("%Hf", y);	/* { dg-warning "expects argument" "bad use of %H" } */
+  scanf ("%HF", y);	/* { dg-warning "expects argument" "bad use of %H" } */
+  scanf ("%He", y);	/* { dg-warning "expects argument" "bad use of %H" } */
+  scanf ("%HE", y);	/* { dg-warning "expects argument" "bad use of %H" } */
+  scanf ("%Hg", y);	/* { dg-warning "expects argument" "bad use of %H" } */
+  scanf ("%HG", y);	/* { dg-warning "expects argument" "bad use of %H" } */
+  scanf ("%Hf", z);	/* { dg-warning "expects argument" "bad use of %H" } */
+  scanf ("%HF", z);	/* { dg-warning "expects argument" "bad use of %H" } */
+  scanf ("%He", z);	/* { dg-warning "expects argument" "bad use of %H" } */
+  scanf ("%HE", z);	/* { dg-warning "expects argument" "bad use of %H" } */
+  scanf ("%Hg", z);	/* { dg-warning "expects argument" "bad use of %H" } */
+  scanf ("%HG", z);	/* { dg-warning "expects argument" "bad use of %H" } */
 
-  scanf ("%Df", x);	/* { dg-warning "expects type" "bad use of %D" } */
-  scanf ("%DF", x);	/* { dg-warning "expects type" "bad use of %D" } */
-  scanf ("%De", x);	/* { dg-warning "expects type" "bad use of %D" } */
-  scanf ("%DE", x);	/* { dg-warning "expects type" "bad use of %D" } */
-  scanf ("%Dg", x);	/* { dg-warning "expects type" "bad use of %D" } */
-  scanf ("%DG", x);	/* { dg-warning "expects type" "bad use of %D" } */
-  scanf ("%Df", z);	/* { dg-warning "expects type" "bad use of %D" } */
-  scanf ("%DF", z);	/* { dg-warning "expects type" "bad use of %D" } */
-  scanf ("%De", z);	/* { dg-warning "expects type" "bad use of %D" } */
-  scanf ("%DE", z);	/* { dg-warning "expects type" "bad use of %D" } */
-  scanf ("%Dg", z);	/* { dg-warning "expects type" "bad use of %D" } */
-  scanf ("%DG", z);	/* { dg-warning "expects type" "bad use of %D" } */
+  scanf ("%Df", x);	/* { dg-warning "expects argument" "bad use of %D" } */
+  scanf ("%DF", x);	/* { dg-warning "expects argument" "bad use of %D" } */
+  scanf ("%De", x);	/* { dg-warning "expects argument" "bad use of %D" } */
+  scanf ("%DE", x);	/* { dg-warning "expects argument" "bad use of %D" } */
+  scanf ("%Dg", x);	/* { dg-warning "expects argument" "bad use of %D" } */
+  scanf ("%DG", x);	/* { dg-warning "expects argument" "bad use of %D" } */
+  scanf ("%Df", z);	/* { dg-warning "expects argument" "bad use of %D" } */
+  scanf ("%DF", z);	/* { dg-warning "expects argument" "bad use of %D" } */
+  scanf ("%De", z);	/* { dg-warning "expects argument" "bad use of %D" } */
+  scanf ("%DE", z);	/* { dg-warning "expects argument" "bad use of %D" } */
+  scanf ("%Dg", z);	/* { dg-warning "expects argument" "bad use of %D" } */
+  scanf ("%DG", z);	/* { dg-warning "expects argument" "bad use of %D" } */
 
-  scanf ("%DDf", x);	/* { dg-warning "expects type" "bad use of %DD" } */
-  scanf ("%DDF", x);	/* { dg-warning "expects type" "bad use of %DD" } */
-  scanf ("%DDe", x);	/* { dg-warning "expects type" "bad use of %DD" } */
-  scanf ("%DDE", x);	/* { dg-warning "expects type" "bad use of %DD" } */
-  scanf ("%DDg", x);	/* { dg-warning "expects type" "bad use of %DD" } */
-  scanf ("%DDG", x);	/* { dg-warning "expects type" "bad use of %DD" } */
-  scanf ("%DDf", y);	/* { dg-warning "expects type" "bad use of %DD" } */
-  scanf ("%DDF", y);	/* { dg-warning "expects type" "bad use of %DD" } */
-  scanf ("%DDe", y);	/* { dg-warning "expects type" "bad use of %DD" } */
-  scanf ("%DDE", y);	/* { dg-warning "expects type" "bad use of %DD" } */
-  scanf ("%DDg", y);	/* { dg-warning "expects type" "bad use of %DD" } */
-  scanf ("%DDG", y);	/* { dg-warning "expects type" "bad use of %DD" } */
+  scanf ("%DDf", x);	/* { dg-warning "expects argument" "bad use of %DD" } */
+  scanf ("%DDF", x);	/* { dg-warning "expects argument" "bad use of %DD" } */
+  scanf ("%DDe", x);	/* { dg-warning "expects argument" "bad use of %DD" } */
+  scanf ("%DDE", x);	/* { dg-warning "expects argument" "bad use of %DD" } */
+  scanf ("%DDg", x);	/* { dg-warning "expects argument" "bad use of %DD" } */
+  scanf ("%DDG", x);	/* { dg-warning "expects argument" "bad use of %DD" } */
+  scanf ("%DDf", y);	/* { dg-warning "expects argument" "bad use of %DD" } */
+  scanf ("%DDF", y);	/* { dg-warning "expects argument" "bad use of %DD" } */
+  scanf ("%DDe", y);	/* { dg-warning "expects argument" "bad use of %DD" } */
+  scanf ("%DDE", y);	/* { dg-warning "expects argument" "bad use of %DD" } */
+  scanf ("%DDg", y);	/* { dg-warning "expects argument" "bad use of %DD" } */
+  scanf ("%DDG", y);	/* { dg-warning "expects argument" "bad use of %DD" } */
 
   /* Check for warnings for bad use of H, D, and DD length specifiers.  */
 

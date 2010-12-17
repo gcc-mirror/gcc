@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=armv5" } */
+/* { dg-options "-O2 -march=armv5te" } */
 
 
 int

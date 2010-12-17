@@ -137,6 +137,15 @@ namespace __gnu_debug
 	Returns true if both iterators are nonsingular and reference
 	the same sequence. */
     _GLIBCXX_PURE bool _M_can_compare(const _Safe_iterator_base& __x) const throw ();
+
+    /** Invalidate the iterator, making it singular. */
+    void
+    _M_invalidate()
+    { _M_version = 0; }
+
+    /** Reset all member variables */
+    void
+    _M_reset() throw ();
   };
 
   /**
@@ -214,6 +223,22 @@ namespace __gnu_debug
     void
     _M_invalidate_all() const
     { if (++_M_version == 0) _M_version = 1; }
+
+    /** Attach an iterator to this sequence. */
+    void
+    _M_attach(_Safe_iterator_base* __it, bool __constant);
+
+    /** Likewise but not thread safe. */
+    void
+    _M_attach_single(_Safe_iterator_base* __it, bool __constant) throw ();
+
+    /** Detach an iterator from this sequence */
+    void
+    _M_detach(_Safe_iterator_base* __it);
+
+    /** Likewise but not thread safe. */
+    void
+    _M_detach_single(_Safe_iterator_base* __it) throw ();
   };
 } // namespace __gnu_debug
 

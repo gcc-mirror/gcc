@@ -1,4 +1,4 @@
-/* AttributesNaturalLanguage.java -- 
+/* AttributesNaturalLanguage.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -49,23 +49,23 @@ import javax.print.attribute.Attribute;
  * <p>
  * This operation attribute identifies the natural language used
  * by any text and name attribute supplied by the client in the request.
- * The printer object should use this natural language for the response 
+ * The printer object should use this natural language for the response
  * to this request.
  * </p>
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class AttributesNaturalLanguage extends NaturalLanguageSyntax 
+public final class AttributesNaturalLanguage extends NaturalLanguageSyntax
   implements Attribute
 {
-  
+
   /** Defines the default language EN */
-  public static final AttributesNaturalLanguage EN = 
+  public static final AttributesNaturalLanguage EN =
     new AttributesNaturalLanguage("en");
 
   /**
    * Creates a <code>AttributesNaturalLanguage</code> object.
-   * 
+   *
    * @param value the language string value.
    */
   public AttributesNaturalLanguage(String value)
@@ -78,7 +78,7 @@ public final class AttributesNaturalLanguage extends NaturalLanguageSyntax
    *
    * @return The class <code>AttributesNaturalLanguage</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return AttributesNaturalLanguage.class;
   }

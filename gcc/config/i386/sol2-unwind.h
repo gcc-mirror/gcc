@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for AMD x86-64 and x86.
-   Copyright (C) 2009 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -26,6 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    state data appropriately.  See unwind-dw2.c for the structs.  */
 
 #include <ucontext.h>
+#include <sys/frame.h>
 
 #ifdef __x86_64__
 
@@ -39,7 +40,7 @@ x86_64_fallback_frame_state (struct _Unwind_Context *context,
   mcontext_t *mctx;
   long new_cfa;
 
-  if (/* Solaris 2.10
+  if (/* Solaris 10+
 	------------
 	<__sighndlr+0>:      push   %rbp
 	<__sighndlr+1>:      mov    %rsp,%rbp
@@ -47,15 +48,41 @@ x86_64_fallback_frame_state (struct _Unwind_Context *context,
 	<__sighndlr+6>:      leaveq           <--- PC
 	<__sighndlr+7>:      retq  */
       *(unsigned long *)(pc - 6) == 0xc3c9d1ffe5894855)
-    /* We need to move up four frames (the kernel frame, the signal frame,
-       the call_user_handler frame and the __sighndlr frame).  Two of them
-       have the minimum stack frame size (kernel and __sighndlr frames),
-       the signal frame has a stack frame size of 32 and there is another
-       with a stack frame size of 112 bytes (the call_user_handler frame).
-       The ucontext_t structure is after this offset.  */
+
+    /* We need to move up three frames:
+
+		<signal handler>	<-- context->cfa
+		__sighndlr
+		call_user_handler
+		sigacthandler
+		<kernel>
+
+       context->cfa points into the frame after the saved frame pointer and
+       saved pc (struct frame).
+
+       The ucontext_t structure is in the kernel frame after the signal
+       number and a siginfo_t *.  Since the frame sizes vary even within
+       Solaris 10 updates, we need to walk the stack to get there.  */
     {
-      int off = 16 + 16 + 32 + 112;
-      mctx = &((ucontext_t *) (context->cfa + off))->uc_mcontext;
+      struct frame *fp = (struct frame *) context->cfa - 1;
+      struct handler_args {
+	int signo;
+	siginfo_t *sip;
+	ucontext_t ucontext;
+      } *handler_args;
+      ucontext_t *ucp;
+
+      /* Next frame: __sighndlr frame pointer.  */
+      fp = (struct frame *) fp->fr_savfp;
+      /* call_user_handler frame pointer.  */
+      fp = (struct frame *) fp->fr_savfp;
+      /* sigacthandler frame pointer.  */
+      fp = (struct frame *) fp->fr_savfp;
+
+      /* The argument area precedes the struct frame.  */
+      handler_args = (struct handler_args *) (fp + 1);
+      ucp = &handler_args->ucontext;
+      mctx = &ucp->uc_mcontext;
     }
   else
     return _URC_END_OF_STACK;
@@ -117,8 +144,8 @@ x86_fallback_frame_state (struct _Unwind_Context *context,
   mcontext_t *mctx;
   long new_cfa;
 
-  if (/* Solaris 2.8 - single thread
-	-------------------------
+  if (/* Solaris 8 - single-threaded
+	----------------------------
 	<sigacthandler+17>:  mov    0x10(%ebp),%esi
 	<sigacthandler+20>:  push   %esi
 	<sigacthandler+21>:  pushl  0xc(%ebp)
@@ -135,7 +162,7 @@ x86_fallback_frame_state (struct _Unwind_Context *context,
        && *(unsigned long *)(pc - 4)  == 0x8814ff00
        && *(unsigned long *)(pc - 0)  == 0x560cc483)
 
-      || /* Solaris 2.8 - multi thread
+      || /* Solaris 8 - multi-threaded
 	   ---------------------------
 	   <__sighndlr+0>:      push   %ebp
 	   <__sighndlr+1>:      mov    %esp,%ebp
@@ -149,8 +176,26 @@ x86_fallback_frame_state (struct _Unwind_Context *context,
 	  && *(unsigned long *)(pc - 7)  == 0x0875ff0c
 	  && *(unsigned long *)(pc - 3)  == 0xc91455ff)
 
-      || /* Solaris 2.10
-	   ------------
+      || /* Solaris 9 - single-threaded
+	   ----------------------------
+           <sigacthandler+16>:    mov    0x244(%ebx),%ecx
+	   <sigacthandler+22>:    mov    0x8(%ebp),%eax
+	   <sigacthandler+25>:    mov    (%ecx,%eax,4),%ecx
+	   <sigacthandler+28>:    pushl  0x10(%ebp)
+	   <sigacthandler+31>:    pushl  0xc(%ebp)
+	   <sigacthandler+34>:    push   %eax
+	   <sigacthandler+35>:    call   *%ecx
+	   <sigacthandler+37>:    add    $0xc,%esp	<--- PC
+	   <sigacthandler+40>:    pushl  0x10(%ebp) */
+         (*(unsigned long *)(pc - 21) == 0x2448b8b
+	  && *(unsigned long *)(pc - 17) == 0x458b0000
+	  && *(unsigned long *)(pc - 13) == 0x810c8b08
+	  && *(unsigned long *)(pc - 9)  == 0xff1075ff
+	  && *(unsigned long *)(pc - 5)  == 0xff500c75
+	  && *(unsigned long *)(pc - 1)  == 0xcc483d1)
+
+      || /* Solaris 9 - multi-threaded, Solaris 10
+	   ---------------------------------------
 	   <__sighndlr+0>:      push   %ebp
 	   <__sighndlr+1>:      mov    %esp,%ebp
 	   <__sighndlr+3>:      pushl  0x10(%ebp)
@@ -164,7 +209,43 @@ x86_fallback_frame_state (struct _Unwind_Context *context,
 	  && *(unsigned long *)(pc - 11) == 0x75ff1075
 	  && *(unsigned long *)(pc - 7)  == 0x0875ff0c
 	  && *(unsigned long *)(pc - 3)  == 0x831455ff
-	  && *(unsigned long *)(pc + 1)  == 0xc3c90cc4))
+	  && *(unsigned long *)(pc + 1)  == 0xc3c90cc4)
+
+      || /* Solaris 11 before snv_125
+	   --------------------------
+	  <__sighndlr+0>       	push   %ebp
+	  <__sighndlr+1>       	mov    %esp,%ebp
+	  <__sighndlr+4>      	pushl  0x10(%ebp)
+	  <__sighndlr+6>      	pushl  0xc(%ebp)
+	  <__sighndlr+9>      	pushl  0x8(%ebp)
+	  <__sighndlr+12>      	call   *0x14(%ebp)
+	  <__sighndlr+15>	add    $0xc,%esp
+	  <__sighndlr+18>      	leave                <--- PC
+	  <__sighndlr+19>      	ret  */
+	 (*(unsigned long *)(pc - 18) == 0xffec8b55
+	  && *(unsigned long *)(pc - 14) == 0x7fff107f
+	  && *(unsigned long *)(pc - 10)  == 0x0875ff0c
+	  && *(unsigned long *)(pc - 6)  == 0x83145fff
+	  && *(unsigned long *)(pc - 1)  == 0xc3c90cc4)
+
+      || /* Solaris 11 since snv_125
+	   -------------------------
+	  <__sighndlr+0>       	push   %ebp
+	  <__sighndlr+1>       	mov    %esp,%ebp
+	  <__sighndlr+3>       	and    $0xfffffff0,%esp
+	  <__sighndlr+6>       	sub    $0x4,%esp
+	  <__sighndlr+9>      	pushl  0x10(%ebp)
+	  <__sighndlr+12>      	pushl  0xc(%ebp)
+	  <__sighndlr+15>      	pushl  0x8(%ebp)
+	  <__sighndlr+18>      	call   *0x14(%ebp)
+	  <__sighndlr+21>      	leave                <--- PC
+	  <__sighndlr+22>      	ret  */
+	 (*(unsigned long *)(pc - 21) == 0x83ec8b55
+	  && *(unsigned long *)(pc - 17) == 0xec83f0e4
+	  && *(unsigned long *)(pc - 13)  == 0x1075ff04
+	  && *(unsigned long *)(pc - 9)  == 0xff0c75ff
+	  && *(unsigned long *)(pc - 5)  == 0x55ff0875
+	  && (*(unsigned long *)(pc - 1) & 0x00ffffff) == 0x00c3c914))
     {
       struct handler_args {
 	int signo;

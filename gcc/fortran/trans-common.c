@@ -98,7 +98,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "toplev.h"	/* For exact_log2.  */
 #include "output.h"	/* For decl_default_tls_model.  */
 #include "gfortran.h"
 #include "trans.h"
@@ -322,6 +321,7 @@ build_field (segment_info *h, tree union_type, record_layout_info rli)
     {
       tree new_type;
       TREE_THIS_VOLATILE (field) = 1;
+      TREE_SIDE_EFFECTS (field) = 1;
       new_type = build_qualified_type (TREE_TYPE (field), TYPE_QUAL_VOLATILE);
       TREE_TYPE (field) = new_type;
     }
@@ -432,7 +432,7 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
 	     what C will do.  */
 	  tree field = NULL_TREE;
 	  field = TYPE_FIELDS (TREE_TYPE (decl));
-	  if (TREE_CHAIN (field) == NULL_TREE)
+	  if (DECL_CHAIN (field) == NULL_TREE)
 	    DECL_ALIGN (decl) = TYPE_ALIGN (TREE_TYPE (field));
 	}
       DECL_USER_ALIGN (decl) = 0;
@@ -608,7 +608,7 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
     {
       is_init = true;
       *field_link = field;
-      field_link = &TREE_CHAIN (field);
+      field_link = &DECL_CHAIN (field);
     }
 
   for (s = head; s; s = s->next)
@@ -617,7 +617,7 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
 
       /* Link the field into the type.  */
       *field_link = s->field;
-      field_link = &TREE_CHAIN (s->field);
+      field_link = &DECL_CHAIN (s->field);
 
       /* Has initial value.  */
       if (s->sym->value)
@@ -649,8 +649,10 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
 	      {
 		/* Add the initializer for this field.  */
 		tmp = gfc_conv_initializer (s->sym->value, &s->sym->ts,
-		    TREE_TYPE (s->field), s->sym->attr.dimension,
-		    s->sym->attr.pointer || s->sym->attr.allocatable);
+					    TREE_TYPE (s->field),
+					    s->sym->attr.dimension,
+					    s->sym->attr.pointer
+					    || s->sym->attr.allocatable, false);
 
 		CONSTRUCTOR_APPEND_ELT (v, s->field, tmp);
 	      }
@@ -701,8 +703,9 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
 	gfc_add_decl_to_function (var_decl);
 
       SET_DECL_VALUE_EXPR (var_decl,
-			   fold_build3 (COMPONENT_REF, TREE_TYPE (s->field),
-					decl, s->field, NULL_TREE));
+			   fold_build3_loc (input_location, COMPONENT_REF,
+					    TREE_TYPE (s->field),
+					    decl, s->field, NULL_TREE));
       DECL_HAS_VALUE_EXPR_P (var_decl) = 1;
       GFC_DECL_COMMON_OR_EQUIV (var_decl) = 1;
 

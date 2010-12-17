@@ -64,12 +64,14 @@ namespace
   }
 }
 
-namespace std
-{
-  const error_category* const future_category = &__future_category_instance();
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
+  const error_category& future_category()
+  { return __future_category_instance(); }
 
   future_error::~future_error() throw() { }
 
   const char* 
   future_error::what() const throw() { return _M_code.message().c_str(); }
-}
+
+_GLIBCXX_END_NAMESPACE

@@ -157,7 +157,7 @@ package Targparm is
    Run_Time_Name_On_Target : Name_Id := No_Name;
    --  Set to appropriate names table entry Id value if a Run_Time_Name
    --  string constant is defined in system.ads. This name is used only
-   --  for the configurable run-time case, and is used to parametrize
+   --  for the configurable run-time case, and is used to parameterize
    --  messages that complain about non-supported run-time features.
    --  The name should contain only letters A-Z, digits 1-9, spaces,
    --  and underscores.

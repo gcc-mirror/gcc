@@ -1,5 +1,5 @@
 /* Invalid __thread specifiers.  */
-/* { dg-require-effective-target tls_native } */
+/* { dg-require-effective-target tls } */
 
 __thread extern int g1;		/* { dg-error "'__thread' before 'extern'" } */
 __thread static int g2;		/* { dg-error "'__thread' before 'static'" } */

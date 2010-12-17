@@ -82,7 +82,7 @@ namespace __profile
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       set(set&& __x)
-      : _Base(std::forward<set>(__x))
+      : _Base(std::move(__x))
       { }
 
       set(initializer_list<value_type> __l,
@@ -188,18 +188,32 @@ namespace __profile
 					 __res.second);
       }
 
-      iterator
-      insert(iterator __position, const value_type& __x)
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      std::pair<iterator, bool>
+      insert(value_type&& __x)
       {
-	return iterator(_Base::insert(__position, __x));
+	typedef typename _Base::iterator _Base_iterator;
+	std::pair<_Base_iterator, bool> __res
+	  = _Base::insert(std::move(__x));
+	return std::pair<iterator, bool>(iterator(__res.first),
+					 __res.second);
       }
+#endif
+
+      iterator
+      insert(const_iterator __position, const value_type& __x)
+      { return iterator(_Base::insert(__position, __x)); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      iterator
+      insert(const_iterator __position, value_type&& __x)
+      { return iterator(_Base::insert(__position, std::move(__x))); }
+#endif
 
       template <typename _InputIterator>
         void
         insert(_InputIterator __first, _InputIterator __last)
-        {
-	  _Base::insert(__first, __last);
-	}
+        { _Base::insert(__first, __last); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       void
@@ -209,8 +223,8 @@ namespace __profile
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       iterator
-      erase(iterator __position)
-      { return _Base::erase(__position); }
+      erase(const_iterator __position)
+      { return iterator(_Base::erase(__position)); }
 #else
       void
       erase(iterator __position)
@@ -232,30 +246,17 @@ namespace __profile
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       iterator
-      erase(iterator __first, iterator __last)
-      {
-	// _GLIBCXX_RESOLVE_LIB_DEFECTS
-	// 151. can't currently clear() empty container
-	while (__first != __last)
-	  this->erase(__first++);
-	return __last;
-      }
+      erase(const_iterator __first, const_iterator __last)
+      { return iterator(_Base::erase(__first, __last)); }
 #else
       void
       erase(iterator __first, iterator __last)
-      {
-	// _GLIBCXX_RESOLVE_LIB_DEFECTS
-	// 151. can't currently clear() empty container
-	while (__first != __last)
-	  this->erase(__first++);
-      }
+      { _Base::erase(__first, __last); }
 #endif
 
       void
       swap(set& __x)
-      {
-	_Base::swap(__x);
-      }
+      { _Base::swap(__x); }
 
       void
       clear()

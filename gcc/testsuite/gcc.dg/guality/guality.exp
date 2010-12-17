@@ -43,6 +43,7 @@ if {[check_guality "
   }
 "]} {
   gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.c]] ""
+  gcc-dg-runtest [lsort [glob $srcdir/c-c++-common/guality/*.c]] "-Wc++-compat"
 }
 
 if [info exists guality_gdb_name] {

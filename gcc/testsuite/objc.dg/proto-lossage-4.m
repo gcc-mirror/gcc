@@ -3,36 +3,38 @@
 /* Author: Ziemowit Laski <zlaski@apple.com>.  */
 /* { dg-do compile } */
 
+#include <stdint.h>
+
 /* One-line substitute for objc/objc.h */
 typedef struct objc_object { struct objc_class *class_pointer; } *id;
 
 @protocol Proto
-- (long)someValue;
+- (intptr_t)someValue;
 @end
 
 @interface Obj
-- (long)anotherValue;
+- (intptr_t)anotherValue;
 @end
 
 long foo(void) {
-  long receiver = 2;
+  intptr_t receiver = 2;
   Obj *objrcvr;
   Obj <Proto> *objrcvr2;
 
   /* NB: Since 'receiver' is an invalid ObjC message receiver, the compiler
      should warn but then search for methods as if we were messaging 'id'.  */
 
-  receiver += [receiver someValue]; /* { dg-warning "invalid receiver type .long int." } */
-  receiver += [receiver anotherValue]; /* { dg-warning "invalid receiver type .long int." } */
+  receiver += [receiver someValue]; /* { dg-warning "invalid receiver type .intptr_t." } */
+  receiver += [receiver anotherValue]; /* { dg-warning "invalid receiver type .intptr_t." } */
 
   receiver += [(Obj *)receiver someValue]; /* { dg-warning ".Obj. may not respond to .\\-someValue." } */
-/* { dg-warning "assignment makes integer from pointer without a cast" "" { target *-*-* } 28 } */
+/* { dg-warning "assignment makes integer from pointer without a cast" "" { target *-*-* } 30 } */
 
   receiver += [(Obj *)receiver anotherValue];
   receiver += [(Obj <Proto> *)receiver someValue];
   receiver += [(Obj <Proto> *)receiver anotherValue];
   receiver += [objrcvr someValue]; /* { dg-warning ".Obj. may not respond to .\\-someValue." } */
-/* { dg-warning "assignment makes integer from pointer without a cast" "" { target *-*-* } 34 } */
+/* { dg-warning "assignment makes integer from pointer without a cast" "" { target *-*-* } 36 } */
 
   receiver += [objrcvr anotherValue];
   receiver += [(Obj <Proto> *)objrcvr someValue];
@@ -40,7 +42,7 @@ long foo(void) {
   receiver += [objrcvr2 someValue];
   receiver += [objrcvr2 anotherValue];
   receiver += [(Obj *)objrcvr2 someValue]; /* { dg-warning ".Obj. may not respond to .\\-someValue." } */
-/* { dg-warning "assignment makes integer from pointer without a cast" "" { target *-*-* } 42 } */
+/* { dg-warning "assignment makes integer from pointer without a cast" "" { target *-*-* } 44 } */
 
   receiver += [(Obj *)objrcvr2 anotherValue];
 

@@ -1,7 +1,7 @@
 /* { dg-require-effective-target vect_int } */
+/* { dg-add-options quad_vectors } */
 
 #include <stdarg.h>
-#include <stdio.h>
 #include "tree-vect.h"
 
 #define N 8 

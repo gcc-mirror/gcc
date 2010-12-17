@@ -1,0 +1,4 @@
+This directory contains headers that are private to the runtime and
+that are only included while the runtime is being compiled.  They are
+not installed, so developers using the library can't actually even see
+them.

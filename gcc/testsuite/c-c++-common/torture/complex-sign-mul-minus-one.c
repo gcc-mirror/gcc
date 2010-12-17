@@ -36,7 +36,9 @@
 void
 check_mul_float (void)
 {
+#ifndef __SPU__
   CHECK_MUL (float, __builtin_copysignf, 0.0f, 0.0if, 1.0f);
+#endif
 }
 
 void

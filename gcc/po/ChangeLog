@@ -1,3 +1,77 @@
+2010-11-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* es.po: Update.
+
+2010-11-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* sv.po: Update.
+
+2010-11-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* exgettext: Handle UnknownError.
+
+2010-11-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* sv.po: Update.
+
+2010-11-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* be.po, da.po, de.po, el.po, es.po, fi.po, fr.po, id.po, ja.po,
+	nl.po, ru.po, sr.po, sv.po, tr.po, vi.po, zh_CN.po, zh_TW.po:
+	Update.
+
+2010-11-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.pot: Regenerate.
+
+2010-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.pot: Regenerate.
+
+2010-11-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.pot: Regenerate.
+
+2010-11-09  Ian Lance Taylor  <iant@google.com>
+
+	* exgettext: Look for .cc files.  Look in subdirectories of
+	language subdirectories.
+	* EXCLUDES: Update comment.
+
+2010-10-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.pot: Regenerate.
+
+2010-10-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* EXCLUDES: Add read-md.c.
+
+2010-10-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* exgettext: Only handle Warn when followed by '('.
+
+2010-10-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* vi.po: Update.
+
+2010-10-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* vi.po: New.
+
+2010-09-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* exgettext: Handle {} in operand of MissingArgError.  Handle
+	Warn.
+
+2010-07-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* exgettext: Also extract MissingArgError texts from .opt files.
+
+2010-06-29  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR other/44034
+	* EXCLUDES: Add genhooks.c.
+
 2010-05-01  Joseph Myers  <joseph@codesourcery.com>
 
 	* sv.po: Update.

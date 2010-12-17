@@ -75,7 +75,7 @@ static GTY(()) bool sdbout_initialized;
 #include "insn-config.h"
 #include "reload.h"
 #include "output.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "tm_p.h"
 #include "gsyms.h"
 #include "langhooks.h"
@@ -344,7 +344,8 @@ const struct gcc_debug_hooks sdb_debug_hooks =
   debug_nothing_rtx_rtx,	         /* copy_call_info */
   debug_nothing_uid,		         /* virtual_call */
   debug_nothing_tree_tree,		 /* set_name */
-  0                                      /* start_end_main_source_file */
+  0,                                     /* start_end_main_source_file */
+  TYPE_SYMTAB_IS_POINTER                 /* tree_type_symtab_field */
 };
 
 /* Return a unique string to name an anonymous type.  */
@@ -494,6 +495,7 @@ plain_type_1 (tree type, int level)
   switch (TREE_CODE (type))
     {
     case VOID_TYPE:
+    case NULLPTR_TYPE:
       return T_VOID;
     case BOOLEAN_TYPE:
     case INTEGER_TYPE:
@@ -1483,7 +1485,7 @@ sdbout_finish (const char *main_filename ATTRIBUTE_UNUSED)
   size_t i;
   tree decl;
 
-  for (i = 0; VEC_iterate (tree, deferred_global_decls, i, decl); i++)
+  FOR_EACH_VEC_ELT (tree, deferred_global_decls, i, decl)
     sdbout_symbol (decl, 0);
 }
 
@@ -1701,47 +1703,6 @@ sdbout_init (const char *input_file_name ATTRIBUTE_UNUSED)
     sdbout_symbol (TREE_VALUE (t), 0);
   preinit_symbols = 0;
 }
-
-#else  /* SDB_DEBUGGING_INFO */
-
-/* This should never be used, but its address is needed for comparisons.  */
-const struct gcc_debug_hooks sdb_debug_hooks =
-{
-  0,		/* init */
-  0,		/* finish */
-  0,		/* assembly_start */
-  0,		/* define */
-  0,		/* undef */
-  0,		/* start_source_file */
-  0,		/* end_source_file */
-  0,		/* begin_block */
-  0,		/* end_block */
-  0,		/* ignore_block */
-  0,		/* source_line */
-  0,		/* begin_prologue */
-  0,		/* end_prologue */
-  0,		/* begin_epilogue */
-  0,		/* end_epilogue */
-  0,		/* begin_function */
-  0,		/* end_function */
-  0,		/* function_decl */
-  0,		/* global_decl */
-  0,		/* type_decl */
-  0,		/* imported_module_or_decl */
-  0,		/* deferred_inline_function */
-  0,		/* outlining_inline_function */
-  0,		/* label */
-  0,		/* handle_pch */
-  0,		/* var_location */
-  0,		/* switch_text_section */
-  0,		/* direct_call */
-  0,		/* virtual_call_token */
-  0,	        /* copy_call_info */
-  0,		/* virtual_call */
-  0,		/* set_name */
-  0		/* start_end_main_source_file */
-};
-
 
 #endif /* SDB_DEBUGGING_INFO */
 

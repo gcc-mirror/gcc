@@ -30,10 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include <signal.h>
-#if ! defined( SIGCHLD ) && defined( SIGCLD )
-#  define SIGCHLD SIGCLD
-#endif
 
 /* TARGET_64BIT may be defined to use driver specific functionality. */
 #undef TARGET_64BIT
@@ -822,7 +818,7 @@ static void
 prefix_from_env (const char *env, struct path_prefix *pprefix)
 {
   const char *p;
-  GET_ENVIRONMENT (p, env);
+  p = getenv (env);
 
   if (p)
     prefix_from_string (p, pprefix);
@@ -942,20 +938,28 @@ maybe_run_lto_and_relink (char **lto_ld_argv, char **object_lst,
     {
       char **lto_c_argv;
       const char **lto_c_ptr;
-      const char **p, **q, **r;
-      const char **lto_o_ptr;
+      char **p;
+      char **lto_o_ptr;
       struct lto_object *list;
       char *lto_wrapper = getenv ("COLLECT_LTO_WRAPPER");
       struct pex_obj *pex;
       const char *prog = "lto-wrapper";
+      int lto_ld_argv_size = 0;
+      char **out_lto_ld_argv;
+      int out_lto_ld_argv_size;
+      size_t num_files;
 
       if (!lto_wrapper)
-	fatal ("COLLECT_LTO_WRAPPER must be set.");
+	fatal ("COLLECT_LTO_WRAPPER must be set");
 
       num_lto_c_args++;
 
       /* There is at least one object file containing LTO info,
-         so we need to run the LTO back end and relink.  */
+         so we need to run the LTO back end and relink.
+
+	 To do so we build updated ld arguments with first
+	 LTO object replaced by all partitions and other LTO
+	 objects removed.  */
 
       lto_c_argv = (char **) xcalloc (sizeof (char *), num_lto_c_args);
       lto_c_ptr = CONST_CAST2 (const char **, char **, lto_c_argv);
@@ -973,7 +977,7 @@ maybe_run_lto_and_relink (char **lto_ld_argv, char **object_lst,
       {
 	int c;
 	FILE *stream;
-	size_t i, num_files;
+	size_t i;
 	char *start, *end;
 
 	stream = pex_read_output (pex, 0);
@@ -1007,55 +1011,50 @@ maybe_run_lto_and_relink (char **lto_ld_argv, char **object_lst,
       do_wait (prog, pex);
       pex = NULL;
 
+      /* Compute memory needed for new LD arguments.  At most number of original arguemtns
+	 plus number of partitions.  */
+      for (lto_ld_argv_size = 0; lto_ld_argv[lto_ld_argv_size]; lto_ld_argv_size++)
+	;
+      out_lto_ld_argv = XCNEWVEC(char *, num_files + lto_ld_argv_size + 1);
+      out_lto_ld_argv_size = 0;
+
       /* After running the LTO back end, we will relink, substituting
 	 the LTO output for the object files that we submitted to the
 	 LTO. Here, we modify the linker command line for the relink.  */
-      p = CONST_CAST2 (const char **, char **, lto_ld_argv);
-      lto_o_ptr = CONST_CAST2 (const char **, char **, lto_o_files);
 
+      /* Copy all arguments until we find first LTO file.  */
+      p = lto_ld_argv;
       while (*p != NULL)
         {
           for (list = lto_objects.first; list; list = list->next)
-            {
-              if (*p == list->name) /* Note test for pointer equality!  */
-                {
-                  /* Excise argument from linker command line.  */
-                  if (*lto_o_ptr)
-                    {
-                      /* Replace first argument with LTO output file.  */
-                      *p++ = *lto_o_ptr++;
-                    }
-                  else
-                    {
-                      /* Move following arguments one position earlier,
-                         overwriting the current argument.  */
-                      q = p;
-                      r = p + 1;
-                      while (*r != NULL)
-                        *q++ = *r++;
-                      *q = NULL;
-                    }
-
-                  /* No need to continue searching the LTO object list.  */
-                  break;
-                }
-            }
-
-          /* If we didn't find a match, move on to the next argument.
-             Otherwise, P has been set to the correct argument position
-             at which to continue.  */
-          if (!list) ++p;
+            if (*p == list->name) /* Note test for pointer equality!  */
+	      break;
+	  if (list)
+	    break;
+	  out_lto_ld_argv[out_lto_ld_argv_size++] = *p++;
         }
 
-      /* The code above assumes we will never have more lto output files than
-	 input files.  Otherwise, we need to resize lto_ld_argv.  Check this
-	 assumption.  */
-      if (*lto_o_ptr)
-	fatal ("too many lto output files");
+      /* Now insert all LTO partitions.  */
+      lto_o_ptr = lto_o_files;
+      while (*lto_o_ptr)
+	out_lto_ld_argv[out_lto_ld_argv_size++] = *lto_o_ptr++;
+
+      /* ... and copy the rest.  */
+      while (*p != NULL)
+        {
+          for (list = lto_objects.first; list; list = list->next)
+            if (*p == list->name) /* Note test for pointer equality!  */
+	      break;
+	  if (!list)
+	    out_lto_ld_argv[out_lto_ld_argv_size++] = *p;
+	  p++;
+        }
+      out_lto_ld_argv[out_lto_ld_argv_size++] = 0;
 
       /* Run the linker again, this time replacing the object files
          optimized by the LTO with the temporary file generated by the LTO.  */
-      fork_execute ("ld", lto_ld_argv);
+      fork_execute ("ld", out_lto_ld_argv);
+      free (lto_ld_argv);
 
       maybe_unlink_list (lto_o_files);
     }
@@ -1147,8 +1146,6 @@ main (int argc, char **argv)
   int num_c_args;
   char **old_argv;
 
-  bool use_verbose = false;
-
   old_argv = argv;
   expandargv (&argc, &argv);
   if (argv != old_argv)
@@ -1193,29 +1190,24 @@ main (int argc, char **argv)
 
   /* Parse command line early for instances of -debug.  This allows
      the debug flag to be set before functions like find_a_file()
-     are called.  We also look for the -flto or -fwhopr flag to know
+     are called.  We also look for the -flto or -flto-partition=none flag to know
      what LTO mode we are in.  */
   {
     int i;
+    bool no_partition = false;
 
     for (i = 1; argv[i] != NULL; i ++)
       {
 	if (! strcmp (argv[i], "-debug"))
 	  debug = true;
-        else if (! strcmp (argv[i], "-flto") && ! use_plugin)
-	  {
-	    use_verbose = true;
-	    lto_mode = LTO_MODE_LTO;
-	  }
-        else if (! strncmp (argv[i], "-fwhopr", 7) && ! use_plugin)
-	  {
-	    use_verbose = true;
-	    lto_mode = LTO_MODE_WHOPR;
-	  }
+        else if (! strcmp (argv[i], "-flto-partition=none"))
+	  no_partition = true;
+        else if ((! strncmp (argv[i], "-flto=", 6)
+		  || ! strcmp (argv[i], "-flto")) && ! use_plugin)
+	  lto_mode = LTO_MODE_WHOPR;
         else if (! strcmp (argv[i], "-plugin"))
 	  {
 	    use_plugin = true;
-	    use_verbose = true;
 	    lto_mode = LTO_MODE_NONE;
 	  }
 #ifdef COLLECT_EXPORT_LIST
@@ -1236,6 +1228,8 @@ main (int argc, char **argv)
 #endif
       }
     vflag = debug;
+    if (no_partition)
+      lto_mode = LTO_MODE_LTO;
   }
 
 #ifndef DEFAULT_A_OUT_NAME
@@ -1428,11 +1422,6 @@ main (int argc, char **argv)
 	      *c_ptr++ = xstrdup (q);
 	    }
 	}
-      if (use_verbose && *q == '-' && q[1] == 'v' && q[2] == 0)
-	{
-	  /* Turn on trace in collect2 if needed.  */
-	  vflag = true;
-	}
     }
   obstack_free (&temporary_obstack, temporary_firstobj);
   *c_ptr++ = "-fno-profile-arcs";
@@ -1482,8 +1471,7 @@ main (int argc, char **argv)
 	      break;
 
             case 'f':
-	      if (strcmp (arg, "-flto") == 0
-		  || strncmp (arg, "-fwhopr", 7) == 0)
+	      if (strncmp (arg, "-flto", 5) == 0)
 		{
 #ifdef ENABLE_LTO
 		  /* Do not pass LTO flag to the linker. */
@@ -1695,16 +1683,16 @@ main (int argc, char **argv)
 
   if (helpflag)
     {
-      fprintf (stderr, "Usage: collect2 [options]\n");
-      fprintf (stderr, " Wrap linker and generate constructor code if needed.\n");
-      fprintf (stderr, " Options:\n");
-      fprintf (stderr, "  -debug          Enable debug output\n");
-      fprintf (stderr, "  --help          Display this information\n");
-      fprintf (stderr, "  -v, --version   Display this program's version number\n");
-      fprintf (stderr, "Overview: http://gcc.gnu.org/onlinedocs/gccint/Collect2.html\n");
-      fprintf (stderr, "Report bugs: %s\n", bug_report_url);
-
-      collect_exit (0);
+      printf ("Usage: collect2 [options]\n");
+      printf (" Wrap linker and generate constructor code if needed.\n");
+      printf (" Options:\n");
+      printf ("  -debug          Enable debug output\n");
+      printf ("  --help          Display this information\n");
+      printf ("  -v, --version   Display this program's version number\n");
+      printf ("\n");
+      printf ("Overview: http://gcc.gnu.org/onlinedocs/gccint/Collect2.html\n");
+      printf ("Report bugs: %s\n", bug_report_url);
+      printf ("\n");
     }
 
   if (debug)

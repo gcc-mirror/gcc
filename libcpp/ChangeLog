@@ -1,3 +1,102 @@
+2010-11-17  Ian Lance Taylor  <iant@google.com>
+
+	PR bootstrap/45538
+	* configure.ac: Use AC_USE_SYSTEM_EXTENSIONS.  Remove switch of
+	AC_LANG based on ENABLE_BUILD_WITH_CXX.
+
+2010-11-16  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR preprocessor/17349
+	* lex.c (save_comment): Handle in argument passing c++
+	comments special.
+
+2010-11-02  Ian Lance Taylor  <iant@google.com>
+
+	* configure.ac: Use AC_SYS_LARGEFILE.
+	* configure: Rebuild.
+	* config.in: Rebuild.
+
+2010-10-19  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* line-map.h (source_location): Remove obsolete comment
+	mentioning location_s.
+
+2010-09-29  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR preprocessor/45362
+	* directives.c (cpp_pop_definition): Make static.
+	(do_pragma_push_macro): Reworked to store text
+	definition.
+	(do_pragma_pop_macro): Add free text definition.
+	(cpp_push_definition): Removed.
+	* include/cpplib.h (cpp_push_definition): Removed.
+	(cpp_pop_definition): Likewise.
+	* internal.h (def_pragma_macro): Remove member 'value'
+	and add new members 'definition', 'line',
+	'syshdr', 'sued' and 'is_undef'.
+	* pch.c (_cpp_restore_pushed_macros): Rework to work
+	on text definition and store additional macro flags.
+	(_cpp_save_pushed_macros): Likewise.
+
+2010-09-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (cpp_options): Rename warn_deprecated,
+	warn_traditional, warn_long_long and pedantic.
+	* directives.c (directive_diagnostics, _cpp_handle_directive):
+	Update names of cpp_options members.
+	* expr.c (cpp_classify_number, eval_token): Update names of
+	cpp_options members.
+	* init.c (cpp_create_reader, post_options): Update names of
+	cpp_options members.
+	* internal.h (CPP_PEDANTIC, CPP_WTRADITIONAL): Update names of
+	cpp_options members.
+	* macro.c (parse_params): Update names of cpp_options members.
+
+2010-09-15  Ian Lance Taylor  <iant@google.com>
+
+	* init.c: Fix type name in comment.
+
+2010-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/45457
+	* expr.c (parse_defined): Call pfile->cb.user_builtin_macro hook if
+	needed.
+	* directives.c (do_ifdef, do_ifndef): Likewise.
+
+2010-08-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* system.h [HAVE_INTTYPES_H]: Include inttypes.h.
+
+2010-08-24  Richard Henderson  <rth@redhat.com>
+
+	PR bootstrap/45376
+	* configure.ac (HAVE_SSE4): New check.
+	* configure, config.in: Rebuild.
+	* lex.c (search_line_sse42): Omit if !HAVE_SSE4.
+
+2010-08-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lex.c [__sun__ && __svr4__]: Disable init_vectorized_lexer
+	etc. on Solaris 2/x86.
+
+2010-08-21  Richard Henderson  <rth@redhat.com>
+	    Andi Kleen <ak@linux.intel.com>
+	    David S. Miller  <davem@davemloft.net>
+
+	* configure.ac (AC_C_BIGENDIAN, AC_TYPE_UINTPTR_T): New tests.
+	(ssize_t): Check via AC_TYPE_SSIZE_T instead of AC_CHECK_TYPE.
+	(ptrdiff_t): Check via AC_CHECK_TYPE.
+	* config.in, configure: Rebuild.
+	* system.h: Include stdint.h, if available.
+	* lex.c (WORDS_BIGENDIAN): Provide default.
+	(acc_char_mask_misalign, acc_char_replicate, acc_char_cmp,
+	acc_char_index, search_line_acc_char, repl_chars, search_line_mmx,
+	search_line_sse2, search_line_sse42, init_vectorized_lexer,
+	search_line_fast): New.
+	(_cpp_clean_line): Use search_line_fast.  Restructure the fast
+	loop to make it clear when we're leaving the loop.  Stay in the
+	fast loop for non-trigraph '?'.
+
 2010-06-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/cpplib.h (struct cpp_callbacks): Add user_builtin_macro

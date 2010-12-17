@@ -24,7 +24,18 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#include "objc/runtime.h"
+#include "objc-private/common.h"
+#include "objc-private/error.h"
+#include "objc/objc-api.h"
+#include "objc/thr.h"
+#include "objc-private/hash.h"
+#include "objc-private/objc-list.h" 
+#include "objc-private/runtime.h"
+#include "objc-private/objc-sync.h" /* For __objc_sync_init() */
+#include "objc-private/protocols.h" /* For __objc_protocols_init(),
+				       __objc_protocols_add_protocol()
+				       __objc_protocols_register_selectors() */
+#include "objc-private/accessors.h" /* For __objc_accessors_init() */
 
 /* The version number of this runtime.  This must match the number 
    defined in gcc (objc-act.c).  */
@@ -40,7 +51,17 @@ static struct objc_list *unclaimed_proto_list = 0; 	/* !T:MUTEX */
 /* List of unresolved static instances.  */
 static struct objc_list *uninitialized_statics = 0; 	/* !T:MUTEX */
 
-/* Global runtime "write" mutex.  */
+/* Global runtime "write" mutex.  Having a single mutex prevents
+   deadlocks, but reduces concurrency.  To improve concurrency, some
+   groups of functions in the runtime have their own separate mutex
+   (eg, __class_table_lock in class.c); to avoid deadlocks, these
+   routines must make sure that they never acquire any other lock
+   while holding their own local lock.  Ie, they should lock, execute
+   some C code that does not perform any calls to other runtime
+   functions which may potentially lock different locks, then unlock.
+   If they need to perform any calls to other runtime functions that
+   may potentially lock other locks, then they should use the global
+   __objc_runtime_mutex.  */
 objc_mutex_t __objc_runtime_mutex = 0;
 
 /* Number of threads that are alive.  */
@@ -51,6 +72,9 @@ static void init_check_module_version (Module_t);
 
 /* Assign isa links to protos.  */
 static void __objc_init_protocols (struct objc_protocol_list *protos);
+
+/* Assign isa link to a protocol, and register it.  */
+static void __objc_init_protocol (struct objc_protocol *protocol);
 
 /* Add protocol to class.  */
 static void __objc_class_add_protocols (Class, struct objc_protocol_list *);
@@ -421,8 +445,7 @@ class_is_subclass_of_class (Class class, Class superclass)
    their superclasses are not yet known to the runtime.  */
 static struct objc_list *unresolved_classes = 0;
 
-/* Extern function used to reference the Object and NXConstantString
-   classes.  */
+/* Extern function used to reference the Object class.  */
 
 extern void __objc_force_linking (void);
 
@@ -455,27 +478,43 @@ objc_init_statics (void)
 	  Class class = objc_lookup_class (statics->class_name);
 
 	  if (! class)
-	    module_initialized = 0;
-	  /* Actually, the static's class_pointer will be NULL when we
-             haven't been here before.  However, the comparison is to be
-             reminded of taking into account class posing and to think about
-             possible semantics...  */
-	  else if (class != statics->instances[0]->class_pointer)
 	    {
+	      /* It is unfortunate that this will cause all the
+		 statics initialization to be done again (eg, if we
+		 already initialized constant strings, and are now
+		 initializing protocols, setting module_initialized to
+		 0 would cause constant strings to be initialized
+		 again).  It would be good to be able to track if we
+		 have already initialized some of them.  */
+	      module_initialized = 0;
+	    }
+	  else
+	    {
+	      /* Note that if this is a list of Protocol objects, some
+		 of them may have been initialized already (because
+		 they were attached to classes or categories, and the
+		 class/category loading code automatically fixes them
+		 up), and some of them may not.  We really need to go
+		 through the whole list to be sure!  Protocols are
+		 also special because we want to register them and
+		 register all their selectors.  */
 	      id *inst;
 
-	      for (inst = &statics->instances[0]; *inst; inst++)
+	      if (strcmp (statics->class_name, "Protocol") == 0)
 		{
-		  (*inst)->class_pointer = class;
-
-		  /* ??? Make sure the object will not be freed.  With
-                     refcounting, invoke `-retain'.  Without refcounting, do
-                     nothing and hope that `-free' will never be invoked.  */
-
-		  /* ??? Send the object an `-initStatic' or something to
-                     that effect now or later on?  What are the semantics of
-                     statically allocated instances, besides the trivial
-                     NXConstantString, anyway?  */
+		  /* Protocols are special, because not only we want
+		     to fix up their class pointers, but we also want
+		     to register them and their selectors with the
+		     runtime.  */
+		  for (inst = &statics->instances[0]; *inst; inst++)
+		    __objc_init_protocol ((struct objc_protocol *)*inst);
+		}
+	      else
+		{
+		  /* Other static instances (typically constant strings) are
+		     easier as we just fix up their class pointers.  */
+		  for (inst = &statics->instances[0]; *inst; inst++)		  
+		    (*inst)->class_pointer = class;
 		}
 	    }
 	}
@@ -543,6 +582,9 @@ __objc_exec_class (Module_t module)
       __objc_load_methods = objc_hash_new (128, 
 					   (hash_func_type)objc_hash_ptr,
 					   objc_compare_ptrs);
+      __objc_protocols_init ();
+      __objc_accessors_init ();
+      __objc_sync_init ();
       previous_constructors = 1;
     }
 
@@ -582,23 +624,7 @@ __objc_exec_class (Module_t module)
 	 In some cases it isn't and this crashes the program.  */
       class->subclass_list = NULL;
 
-      /* Store the class in the class table and assign class numbers.  */
-      __objc_add_class_to_hash (class);
-
-      /* Register all of the selectors in the class and meta class.  */
-      __objc_register_selectors_from_class (class);
-      __objc_register_selectors_from_class ((Class) class->class_pointer);
-
-      /* Install the fake dispatch tables */
-      __objc_install_premature_dtable (class);
-      __objc_install_premature_dtable (class->class_pointer);
-
-      /* Register the instance methods as class methods, this is
-	 only done for root classes.  */
-      __objc_register_instance_methods_to_class (class);
-
-      if (class->protocols)
-	__objc_init_protocols (class->protocols);
+      __objc_init_class (class);
 
       /* Check to see if the superclass is known in this point. If it's not
 	 add the class to the unresolved_classes list.  */
@@ -730,11 +756,9 @@ objc_send_load (void)
 	return;
     }
 
-  /* Special check to allow creating and sending messages to constant
-     strings in +load methods. If these classes are not yet known,
-     even if all the other classes are known, delay sending of +load.  */
-  if (! objc_lookup_class ("NXConstantString") ||
-      ! objc_lookup_class ("Object"))
+  /* Special check.  If 'Object', which is used by meta-classes, has
+     not been loaded yet, delay sending of +load.  */
+  if (! objc_lookup_class ("Object"))
     return;
 
   /* Iterate over all modules in the __objc_module_list and call on
@@ -818,17 +842,74 @@ init_check_module_version (Module_t module)
 {
   if ((module->version != OBJC_VERSION) || (module->size != sizeof (Module)))
     {
-      int code;
+      _objc_abort ("Module %s version %d doesn't match runtime %d\n",
+		   module->name, (int)module->version, OBJC_VERSION);
+    }
+}
 
-      if (module->version > OBJC_VERSION)
-	code = OBJC_ERR_OBJC_VERSION;
-      else if (module->version < OBJC_VERSION)
-	code = OBJC_ERR_GCC_VERSION;
-      else
-	code = OBJC_ERR_MODULE_SIZE;
+/* __objc_init_class must be called with __objc_runtime_mutex already locked.  */
+void
+__objc_init_class (Class class)
+{
+  /* Store the class in the class table and assign class numbers.  */
+  __objc_add_class_to_hash (class);
+  
+  /* Register all of the selectors in the class and meta class.  */
+  __objc_register_selectors_from_class (class);
+  __objc_register_selectors_from_class ((Class) class->class_pointer);
 
-      objc_error (nil, code, "Module %s version %d doesn't match runtime %d\n",
-		  module->name, (int)module->version, OBJC_VERSION);
+  /* Install the fake dispatch tables */
+  __objc_install_premature_dtable (class);
+  __objc_install_premature_dtable (class->class_pointer);
+
+  /* Register the instance methods as class methods, this is only done
+     for root classes.  */
+  __objc_register_instance_methods_to_class (class);
+
+  if (class->protocols)
+    __objc_init_protocols (class->protocols);
+}
+
+/* __objc_init_protocol must be called with __objc_runtime_mutex
+   already locked, and the "Protocol" class already registered.  */
+static void
+__objc_init_protocol (struct objc_protocol *protocol)
+{
+  static Class proto_class = 0;
+
+  if (! proto_class)
+    proto_class = objc_get_class ("Protocol");
+
+  if (((size_t)protocol->class_pointer) == PROTOCOL_VERSION)
+    {
+      /* Assign class pointer */
+      protocol->class_pointer = proto_class;
+      
+      /* Register all the selectors in the protocol with the runtime.
+	 This both registers the selectors with the right types, and
+	 it also fixes up the 'struct objc_method' structures inside
+	 the protocol so that each method_name (a char * as compiled
+	 by the compiler) is replaced with the appropriate runtime
+	 SEL.  */
+      if (protocol->class_methods)
+	__objc_register_selectors_from_description_list (protocol->class_methods);
+
+      if (protocol->instance_methods)
+	__objc_register_selectors_from_description_list (protocol->instance_methods);
+
+      /* Register the protocol in the hashtable or protocols by
+	 name.  */
+      __objc_protocols_add_protocol (protocol->protocol_name, protocol);
+      
+      /* Init super protocols */
+      __objc_init_protocols (protocol->protocol_list);
+    }
+  else if (protocol->class_pointer != proto_class)
+    {
+      _objc_abort ("Version %d doesn't match runtime protocol version %d\n",
+		   (int) ((char *) protocol->class_pointer
+			  - (char *) 0),
+		   PROTOCOL_VERSION);
     }
 }
 
@@ -860,22 +941,7 @@ __objc_init_protocols (struct objc_protocol_list *protos)
   for (i = 0; i < protos->count; i++)
     {
       struct objc_protocol *aProto = protos->list[i];
-      if (((size_t)aProto->class_pointer) == PROTOCOL_VERSION)
-	{
-	  /* assign class pointer */
-	  aProto->class_pointer = proto_class;
-
-	  /* init super protocols */
-	  __objc_init_protocols (aProto->protocol_list);
-	}
-      else if (protos->list[i]->class_pointer != proto_class)
-	{
-	  objc_error (nil, OBJC_ERR_PROTOCOL_VERSION,
-		     "Version %d doesn't match runtime protocol version %d\n",
-		     (int) ((char *) protos->list[i]->class_pointer
-			    - (char *) 0),
-		     PROTOCOL_VERSION);
-	}
+      __objc_init_protocol (aProto);
     }
 
   objc_mutex_unlock (__objc_runtime_mutex);

@@ -120,7 +120,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow-inline.h"
 #include "langhooks.h"
 #include "hashtab.h"
-#include "toplev.h"
 #include "flags.h"
 #include "ggc.h"
 #include "debug.h"
@@ -218,7 +217,7 @@ collect_data_for_malloc_call (gimple stmt, struct malloc_call_data *m_data)
    initial address and index of each dimension.  */
 struct access_site_info
 {
-  /* The statement (INDIRECT_REF or POINTER_PLUS_EXPR).  */
+  /* The statement (MEM_REF or POINTER_PLUS_EXPR).  */
   gimple stmt;
 
   /* In case of POINTER_PLUS_EXPR, what is the offset.  */
@@ -334,7 +333,7 @@ struct ssa_acc_in_tree
   /* The variable whose accesses in the tree we are looking for.  */
   tree ssa_var;
   /* The tree and code inside it the ssa_var is accessed, currently
-     it could be an INDIRECT_REF or CALL_EXPR.  */
+     it could be an MEM_REF or CALL_EXPR.  */
   enum tree_code t_code;
   tree t_tree;
   /* The place in the containing tree.  */
@@ -413,33 +412,18 @@ mtt_info_eq (const void *mtt1, const void *mtt2)
 static bool
 may_flatten_matrices_1 (gimple stmt)
 {
-  tree t;
-
   switch (gimple_code (stmt))
     {
     case GIMPLE_ASSIGN:
-      if (!gimple_assign_cast_p (stmt))
+    case GIMPLE_CALL:
+      if (!gimple_has_lhs (stmt))
 	return true;
-
-      t = gimple_assign_rhs1 (stmt);
-      while (CONVERT_EXPR_P (t))
+      if (TREE_CODE (TREE_TYPE (gimple_get_lhs (stmt))) == VECTOR_TYPE)
 	{
-	  if (TREE_TYPE (t) && POINTER_TYPE_P (TREE_TYPE (t)))
-	    {
-	      tree pointee;
-
-	      pointee = TREE_TYPE (t);
-	      while (POINTER_TYPE_P (pointee))
-		pointee = TREE_TYPE (pointee);
-	      if (TREE_CODE (pointee) == VECTOR_TYPE)
-		{
-		  if (dump_file)
-		    fprintf (dump_file,
-			     "Found vector type, don't flatten matrix\n");
-		  return false;
-		}
-	    }
-	  t = TREE_OPERAND (t, 0);
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "Found vector type, don't flatten matrix\n");
+	  return false;
 	}
       break;
     case GIMPLE_ASM:
@@ -602,7 +586,7 @@ mark_min_matrix_escape_level (struct matrix_info *mi, int l, gimple s)
 /* Find if the SSA variable is accessed inside the
    tree and record the tree containing it.
    The only relevant uses are the case of SSA_NAME, or SSA inside
-   INDIRECT_REF, PLUS_EXPR, POINTER_PLUS_EXPR, MULT_EXPR.  */
+   MEM_REF, PLUS_EXPR, POINTER_PLUS_EXPR, MULT_EXPR.  */
 static void
 ssa_accessed_in_tree (tree t, struct ssa_acc_in_tree *a)
 {
@@ -613,7 +597,7 @@ ssa_accessed_in_tree (tree t, struct ssa_acc_in_tree *a)
       if (t == a->ssa_var)
 	a->var_found = true;
       break;
-    case INDIRECT_REF:
+    case MEM_REF:
       if (SSA_VAR_P (TREE_OPERAND (t, 0))
 	  && TREE_OPERAND (t, 0) == a->ssa_var)
 	a->var_found = true;
@@ -660,7 +644,7 @@ ssa_accessed_in_assign_rhs (gimple stmt, struct ssa_acc_in_tree *a)
       tree op1, op2;
 
     case SSA_NAME:
-    case INDIRECT_REF:
+    case MEM_REF:
     CASE_CONVERT:
     case VIEW_CONVERT_EXPR:
       ssa_accessed_in_tree (gimple_assign_rhs1 (stmt), a);
@@ -905,9 +889,7 @@ analyze_transpose (void **slot, void *data ATTRIBUTE_UNUSED)
     {
       if (mi->access_l)
 	{
-	  for (i = 0;
-	       VEC_iterate (access_site_info_p, mi->access_l, i, acc_info);
-	       i++)
+	  FOR_EACH_VEC_ELT (access_site_info_p, mi->access_l, i, acc_info)
 	    free (acc_info);
 	  VEC_free (access_site_info_p, heap, mi->access_l);
 
@@ -984,7 +966,7 @@ get_index_from_offset (tree offset, gimple def_stmt)
 
 /* update MI->dimension_type_size[CURRENT_INDIRECT_LEVEL] with the size
    of the type related to the SSA_VAR, or the type related to the
-   lhs of STMT, in the case that it is an INDIRECT_REF.  */
+   lhs of STMT, in the case that it is an MEM_REF.  */
 static void
 update_type_size (struct matrix_info *mi, gimple stmt, tree ssa_var,
 		  int current_indirect_level)
@@ -992,9 +974,9 @@ update_type_size (struct matrix_info *mi, gimple stmt, tree ssa_var,
   tree lhs;
   HOST_WIDE_INT type_size;
 
-  /* Update type according to the type of the INDIRECT_REF expr.   */
+  /* Update type according to the type of the MEM_REF expr.   */
   if (is_gimple_assign (stmt)
-      && TREE_CODE (gimple_assign_lhs (stmt)) == INDIRECT_REF)
+      && TREE_CODE (gimple_assign_lhs (stmt)) == MEM_REF)
     {
       lhs = gimple_assign_lhs (stmt);
       gcc_assert (POINTER_TYPE_P
@@ -1073,7 +1055,7 @@ analyze_accesses_for_call_stmt (struct matrix_info *mi, tree ssa_var,
 	 at this level because in this case we cannot calculate the
 	 address correctly.  */
       if ((lhs_acc.var_found && rhs_acc.var_found
-	   && lhs_acc.t_code == INDIRECT_REF)
+	   && lhs_acc.t_code == MEM_REF)
 	  || (!rhs_acc.var_found && !lhs_acc.var_found))
 	{
 	  mark_min_matrix_escape_level (mi, current_indirect_level, use_stmt);
@@ -1087,7 +1069,7 @@ analyze_accesses_for_call_stmt (struct matrix_info *mi, tree ssa_var,
 	{
 	  int l = current_indirect_level + 1;
 
-	  gcc_assert (lhs_acc.t_code == INDIRECT_REF);
+	  gcc_assert (lhs_acc.t_code == MEM_REF);
 	  mark_min_matrix_escape_level (mi, l, use_stmt);
 	  return current_indirect_level;
 	}
@@ -1213,7 +1195,7 @@ analyze_accesses_for_assign_stmt (struct matrix_info *mi, tree ssa_var,
      at this level because in this case we cannot calculate the
      address correctly.  */
   if ((lhs_acc.var_found && rhs_acc.var_found
-       && lhs_acc.t_code == INDIRECT_REF)
+       && lhs_acc.t_code == MEM_REF)
       || (!rhs_acc.var_found && !lhs_acc.var_found))
     {
       mark_min_matrix_escape_level (mi, current_indirect_level, use_stmt);
@@ -1227,7 +1209,7 @@ analyze_accesses_for_assign_stmt (struct matrix_info *mi, tree ssa_var,
     {
       int l = current_indirect_level + 1;
 
-      gcc_assert (lhs_acc.t_code == INDIRECT_REF);
+      gcc_assert (lhs_acc.t_code == MEM_REF);
 
       if (!(gimple_assign_copy_p (use_stmt)
 	    || gimple_assign_cast_p (use_stmt))
@@ -1248,7 +1230,7 @@ analyze_accesses_for_assign_stmt (struct matrix_info *mi, tree ssa_var,
      is used.  */
   if (rhs_acc.var_found)
     {
-      if (rhs_acc.t_code != INDIRECT_REF
+      if (rhs_acc.t_code != MEM_REF
 	  && rhs_acc.t_code != POINTER_PLUS_EXPR && rhs_acc.t_code != SSA_NAME)
 	{
 	  mark_min_matrix_escape_level (mi, current_indirect_level, use_stmt);
@@ -1256,7 +1238,7 @@ analyze_accesses_for_assign_stmt (struct matrix_info *mi, tree ssa_var,
 	}
       /* If the access in the RHS has an indirection increase the
          indirection level.  */
-      if (rhs_acc.t_code == INDIRECT_REF)
+      if (rhs_acc.t_code == MEM_REF)
 	{
 	  if (record_accesses)
 	    record_access_alloc_site_info (mi, use_stmt, NULL_TREE,
@@ -1309,7 +1291,7 @@ analyze_accesses_for_assign_stmt (struct matrix_info *mi, tree ssa_var,
 	}
       /* If we are storing this level of indirection mark it as
          escaping.  */
-      if (lhs_acc.t_code == INDIRECT_REF || TREE_CODE (lhs) != SSA_NAME)
+      if (lhs_acc.t_code == MEM_REF || TREE_CODE (lhs) != SSA_NAME)
 	{
 	  int l = current_indirect_level;
 
@@ -1369,8 +1351,8 @@ analyze_matrix_accesses (struct matrix_info *mi, tree ssa_var,
     return;
 
 /* Now go over the uses of the SSA_NAME and check how it is used in
-   each one of them.  We are mainly looking for the pattern INDIRECT_REF,
-   then a POINTER_PLUS_EXPR, then INDIRECT_REF etc.  while in between there could
+   each one of them.  We are mainly looking for the pattern MEM_REF,
+   then a POINTER_PLUS_EXPR, then MEM_REF etc.  while in between there could
    be any number of copies and casts.  */
   gcc_assert (TREE_CODE (ssa_var) == SSA_NAME);
 
@@ -1856,7 +1838,7 @@ transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 		    gimple new_stmt;
 
 		    gcc_assert (gimple_assign_rhs_code (acc_info->stmt)
-				== INDIRECT_REF);
+				== MEM_REF);
 		    /* Emit convert statement to convert to type of use.  */
 		    tmp = create_tmp_var (TREE_TYPE (lhs), "new");
 		    add_referenced_var (tmp);
@@ -1878,10 +1860,10 @@ transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 	  continue;
 	}
       code = gimple_assign_rhs_code (acc_info->stmt);
-      if (code == INDIRECT_REF
+      if (code == MEM_REF
 	  && acc_info->level < min_escape_l - 1)
 	{
-	  /* Replace the INDIRECT_REF with NOP (cast) usually we are casting
+	  /* Replace the MEM_REF with NOP (cast) usually we are casting
 	     from "pointer to type" to "type".  */
 	  tree t =
 	    build1 (NOP_EXPR, TREE_TYPE (gimple_assign_rhs1 (acc_info->stmt)),
@@ -2206,7 +2188,6 @@ transform_allocation_sites (void **slot, void *data ATTRIBUTE_UNUSED)
   for (i = 1; i < mi->min_indirect_level_escape; i++)
     {
       gimple_stmt_iterator gsi;
-      gimple use_stmt1 = NULL;
 
       gimple call_stmt = mi->malloc_for_level[i];
       gcc_assert (is_gimple_call (call_stmt));
@@ -2216,17 +2197,9 @@ transform_allocation_sites (void **slot, void *data ATTRIBUTE_UNUSED)
       gsi = gsi_for_stmt (call_stmt);
       /* Remove the call stmt.  */
       gsi_remove (&gsi, true);
-      /* remove the type cast stmt.  */
-      FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter,
-			     gimple_call_lhs (call_stmt))
-      {
-	use_stmt1 = use_stmt;
-	gsi = gsi_for_stmt (use_stmt);
-	gsi_remove (&gsi, true);
-      }
       /* Remove the assignment of the allocated area.  */
       FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter,
-			     gimple_get_lhs (use_stmt1))
+			     gimple_call_lhs (call_stmt))
       {
 	gsi = gsi_for_stmt (use_stmt);
 	gsi_remove (&gsi, true);

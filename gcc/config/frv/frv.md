@@ -345,7 +345,7 @@
 ;; enumeration in frv-protos.h.
 
 (define_attr "cpu" "generic,fr550,fr500,fr450,fr405,fr400,fr300,simple,tomcat"
-  (const (symbol_ref "frv_cpu_type")))
+  (const (symbol_ref "(enum attr_cpu) frv_cpu_type")))
 
 ;; Attribute is "yes" for branches and jumps that span too great a distance
 ;; to be implemented in the most natural way.  Such instructions will use
@@ -360,7 +360,7 @@
   (const_string "unknown"))
 
 (define_attr "acc_group" "none,even,odd"
-  (symbol_ref "frv_acc_group (insn)"))
+  (symbol_ref "(enum attr_acc_group) frv_acc_group (insn)"))
 
 ;; Scheduling and Packing Overview
 ;; -------------------------------
@@ -1895,10 +1895,8 @@
     }
   else
     {
-      operands[4] = GEN_INT ((((unsigned HOST_WIDE_INT)INTVAL (op1) >> 16)
-			      >> 16) ^ ((unsigned HOST_WIDE_INT)1 << 31)
-			     - ((unsigned HOST_WIDE_INT)1 << 31));
-      operands[5] = GEN_INT (trunc_int_for_mode (INTVAL (op1), SImode));
+      operands[4] = gen_int_mode ((INTVAL (op1) >> 16) >> 16, SImode);
+      operands[5] = gen_int_mode (INTVAL (op1), SImode);
     }
 }")
 
@@ -3276,21 +3274,21 @@
    (set_attr "type" "fsmul")])
 
 ;; Multiplication with addition/subtraction
-(define_insn "*muladdsf4"
+(define_insn "fmasf4"
   [(set (match_operand:SF 0 "fpr_operand" "=f")
-	(plus:SF (mult:SF (match_operand:SF 1 "fpr_operand" "%f")
-			  (match_operand:SF 2 "fpr_operand" "f"))
-		 (match_operand:SF 3 "fpr_operand" "0")))]
+	(fma:SF (match_operand:SF 1 "fpr_operand" "f")
+		(match_operand:SF 2 "fpr_operand" "f")
+		(match_operand:SF 3 "fpr_operand" "0")))]
   "TARGET_HARD_FLOAT && TARGET_MULADD"
   "fmadds %1,%2,%0"
   [(set_attr "length" "4")
    (set_attr "type" "fsmadd")])
 
-(define_insn "*mulsubsf4"
+(define_insn "fmssf4"
   [(set (match_operand:SF 0 "fpr_operand" "=f")
-	(minus:SF (mult:SF (match_operand:SF 1 "fpr_operand" "%f")
-			   (match_operand:SF 2 "fpr_operand" "f"))
-		  (match_operand:SF 3 "fpr_operand" "0")))]
+	(fma:SF (match_operand:SF 1 "fpr_operand" "f")
+		(match_operand:SF 2 "fpr_operand" "f")
+		(neg:SF (match_operand:SF 3 "fpr_operand" "0"))))]
   "TARGET_HARD_FLOAT && TARGET_MULADD"
   "fmsubs %1,%2,%0"
   [(set_attr "length" "4")

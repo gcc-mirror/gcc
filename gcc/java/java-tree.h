@@ -112,64 +112,11 @@ struct JCF;
 /* The virtual offset symbol table. Used by the runtime to fill out
    the otable. */
 
-extern int flag_filelist_file;
-
-/* When nonzero, permit the use of the assert keyword.  */
-
-extern int flag_assert;
-
-/* When nonzero, assume all native functions are implemented with
-   JNI, not CNI.  */
-
-extern int flag_jni;
-
-/* When nonzero, always check for a non gcj generated classes archive.  */
-
-extern int flag_force_classes_archive_check;
-
 /* Resource name.  */
 extern const char *resource_name;
 
 /* Turned to 1 if -Wall was encountered. See lang.c for their meanings.  */
 extern int flag_wall;
-extern int flag_redundant;
-
-/* When nonzero, warn when source file is newer than matching class
-   file.  */
-extern int flag_newer;
-
-/* When nonzero, call a library routine to do integer divisions. */
-extern int flag_use_divide_subroutine;
-
-/* When nonzero, use atomic builtins. */
-extern int flag_use_atomic_builtins;
-
-/* When nonzero, generate code for the Boehm GC.  */
-extern int flag_use_boehm_gc;
-
-/* When nonzero, assume the runtime uses a hash table to map an
-   object to its synchronization structure.  */
-extern int flag_hash_synchronization;
-
-/* When nonzero, generate checks for references to NULL.  */
-extern int flag_check_references;
-
-/* Used through STATIC_CLASS_INIT_OPT_P to check whether static
-   initialization optimization should be performed.  */
-extern int flag_optimize_sci;
-
-/* Generate instances of Class at runtime.  */
-extern int flag_indirect_classes;
-
-/* When nonzero, use offset tables for virtual method calls
-   in order to improve binary compatibility. */
-extern int flag_indirect_dispatch;
-
-/* When zero, don't generate runtime array store checks. */
-extern int flag_store_check;
-
-/* When nonzero, generate only a limited set of class meta-data. */
-extern int flag_reduced_reflection;
 
 /* The Java .class file that provides main_class;  the main input file. */
 extern GTY(()) struct JCF * current_jcf;
@@ -992,7 +939,7 @@ struct GTY((variable_size)) lang_type {
 /* Defined in java-except.h  */
 struct eh_range;
 
-extern void java_parse_file (int);
+extern void java_parse_file (void);
 extern tree java_type_for_mode (enum machine_mode, int);
 extern tree java_type_for_size (unsigned int, int);
 extern tree java_truthvalue_conversion (tree);
@@ -1461,7 +1408,7 @@ extern tree *type_map;
   if (TYPE_FIELDS (RTYPE) == NULL_TREE)	\
     TYPE_FIELDS (RTYPE) = _field; 	\
   else					\
-    TREE_CHAIN(FIELD) = _field;		\
+    DECL_CHAIN(FIELD) = _field;		\
   DECL_CONTEXT (_field) = (RTYPE);	\
   DECL_ARTIFICIAL (_field) = 1;		\
   FIELD = _field; }
@@ -1485,7 +1432,7 @@ extern tree *type_map;
   do \
     { \
       constructor_elt *_elt___ = VEC_last (constructor_elt, V); \
-      tree _next___ = TREE_CHAIN (_elt___->index); \
+      tree _next___ = DECL_CHAIN (_elt___->index); \
       gcc_assert (!DECL_NAME (_elt___->index)); \
       _elt___->value = VALUE; \
       CONSTRUCTOR_APPEND_ELT (V, _next___, NULL); \
@@ -1499,7 +1446,7 @@ extern tree *type_map;
   do \
     { \
       constructor_elt *_elt___ = VEC_last (constructor_elt, V); \
-      tree _next___ = TREE_CHAIN (_elt___->index); \
+      tree _next___ = DECL_CHAIN (_elt___->index); \
       gcc_assert (strcmp (IDENTIFIER_POINTER (DECL_NAME (_elt___->index)), \
 			  NAME) == 0); \
       _elt___->value = VALUE; \

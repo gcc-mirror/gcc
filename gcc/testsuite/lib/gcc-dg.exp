@@ -1,5 +1,5 @@
-#   Copyright (C) 1997, 1999, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009
-#   Free Software Foundation, Inc.
+#   Copyright (C) 1997, 1999, 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+#   2010 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -70,8 +70,8 @@ if [info exists ADDITIONAL_TORTURE_OPTIONS] {
 set LTO_TORTURE_OPTIONS ""
 if [check_effective_target_lto] {
     set LTO_TORTURE_OPTIONS [list \
-	{ -O2 -flto } \
-	{ -O2 -fwhopr }
+	{ -O2 -flto -flto-partition=none } \
+	{ -O2 -flto }
     ]
 }
 
@@ -407,6 +407,8 @@ proc cleanup-coverage-files { } {
     # that stores the filename of the testcase in a local variable "name".
     # A cleaner solution would require a new DejaGnu release.
     upvar 2 name testcase
+    # The name might include a list of options; extract the file name.
+    set testcase [lindex $testcase 0]
     remove-build-file "[file rootname [file tail $testcase]].gc??"
 
     # Clean up coverage files for additional source files.
@@ -423,6 +425,8 @@ proc cleanup-repo-files { } {
     # that stores the filename of the testcase in a local variable "name".
     # A cleaner solution would require a new DejaGnu release.
     upvar 2 name testcase
+    # The name might include a list of options; extract the file name.
+    set testcase [lindex $testcase 0]
     remove-build-file "[file rootname [file tail $testcase]].o"
     remove-build-file "[file rootname [file tail $testcase]].rpo"
 
@@ -454,6 +458,24 @@ proc cleanup-tree-dump { suffix } {
 # SUFFIX is the ipa dump file suffix pattern.
 proc cleanup-ipa-dump { suffix } {
   cleanup-dump "\[0-9\]\[0-9\]\[0-9\]i.$suffix"
+}
+
+# Remove a stack usage file for the current test.
+proc cleanup-stack-usage { } {
+    # This assumes that we are two frames down from dg-test or some other proc
+    # that stores the filename of the testcase in a local variable "name".
+    # A cleaner solution would require a new DejaGnu release.
+    upvar 2 name testcase
+    # The name might include a list of options; extract the file name.
+    set testcase [lindex $testcase 0]
+    remove-build-file "[file rootname [file tail $testcase]].su"
+
+    # Clean up files for additional source files.
+    if [info exists additional_sources] {
+	foreach srcfile $additional_sources {
+	    remove-build-file "[file rootname [file tail $srcfile]].su"
+	}
+    }
 }
 
 # Remove all dump files with the provided suffix.
@@ -498,6 +520,8 @@ proc cleanup-saved-temps { args } {
     # that stores the filename of the testcase in a local variable "name".
     # A cleaner solution would require a new DejaGnu release.
     upvar 2 name testcase
+    # The name might include a list of options; extract the file name.
+    set testcase [lindex $testcase 0]
     foreach suffix $suffixes {
 	remove-build-file "[file rootname [file tail $testcase]]$suffix"
 	# -fcompare-debug dumps

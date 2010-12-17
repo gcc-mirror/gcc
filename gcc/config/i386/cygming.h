@@ -33,8 +33,22 @@ along with GCC; see the file COPYING3.  If not see
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 #endif
 
-#undef TARGET_64BIT_MS_ABI
-#define TARGET_64BIT_MS_ABI (!cfun ? ix86_abi == MS_ABI : TARGET_64BIT && cfun->machine->call_abi == MS_ABI)
+#undef TARGET_SEH
+#define TARGET_SEH  (TARGET_64BIT_MS_ABI && flag_unwind_tables)
+
+/* Win64 with SEH cannot represent DRAP stack frames.  Disable its use.
+   Force the use of different mechanisms to allocate aligned local data.  */
+#undef MAX_STACK_ALIGNMENT
+#define MAX_STACK_ALIGNMENT  (TARGET_SEH ? 128 : MAX_OFILE_ALIGNMENT)
+
+/* Support hooks for SEH.  */
+#undef  TARGET_ASM_UNWIND_EMIT
+#define TARGET_ASM_UNWIND_EMIT  i386_pe_seh_unwind_emit
+#undef  TARGET_ASM_UNWIND_EMIT_BEFORE_INSN
+#define TARGET_ASM_UNWIND_EMIT_BEFORE_INSN  false
+#undef  TARGET_ASM_FUNCTION_END_PROLOGUE
+#define TARGET_ASM_FUNCTION_END_PROLOGUE  i386_pe_seh_end_prologue
+#define SUBTARGET_ASM_UNWIND_INIT  i386_pe_seh_init
 
 #undef DEFAULT_ABI
 #define DEFAULT_ABI (TARGET_64BIT ? MS_ABI : SYSV_ABI)
@@ -70,29 +84,47 @@ along with GCC; see the file COPYING3.  If not see
   (TARGET_64BIT ? dbx64_register_map[(n)]		\
 		: svr4_dbx_register_map[(n)])
 
+/* The MS_ABI changes the set of call-used registers.  */
+#undef DWARF_FRAME_REGISTERS
+#define DWARF_FRAME_REGISTERS (TARGET_64BIT ? 33 : 17)
+
 #ifdef HAVE_GAS_PE_SECREL32_RELOC
 /* Use section relative relocations for debugging offsets.  Unlike
    other targets that fake this by putting the section VMA at 0, PE
    won't allow it.  */
 #define ASM_OUTPUT_DWARF_OFFSET(FILE, SIZE, LABEL, SECTION)	\
   do {								\
-    if (SIZE != 4 && (!TARGET_64BIT || SIZE != 8))		\
-      abort ();							\
-								\
-    fputs ("\t.secrel32\t", FILE);				\
-    assemble_name (FILE, LABEL);				\
+    switch (SIZE)						\
+      {								\
+      case 4:							\
+	fputs ("\t.secrel32\t", FILE);				\
+	assemble_name (FILE, LABEL);				\
+	break;							\
+      case 8:							\
+	/* This is a hack.  There is no 64-bit section relative	\
+	   relocation.  However, the COFF format also does not	\
+	   support 64-bit file offsets; 64-bit applications are	\
+	   limited to 32-bits of code+data in any one module.	\
+	   Fake the 64-bit offset by zero-extending it.  */	\
+	fputs ("\t.secrel32\t", FILE);				\
+	assemble_name (FILE, LABEL);				\
+	fputs ("\n\t.long\t0", FILE);				\
+	break;							\
+      default:							\
+	gcc_unreachable ();					\
+      }								\
   } while (0)
 #endif
 
 #define TARGET_EXECUTABLE_SUFFIX ".exe"
-
-#include <stdio.h>
 
 #define TARGET_OS_CPP_BUILTINS()					\
   do									\
     {									\
 	if (!TARGET_64BIT)						\
 	  builtin_define ("_X86_=1");					\
+	if (TARGET_SEH)							\
+	  builtin_define ("__SEH__");				\
 	builtin_assert ("system=winnt");				\
 	builtin_define ("__stdcall=__attribute__((__stdcall__))");	\
 	builtin_define ("__fastcall=__attribute__((__fastcall__))");	\
@@ -144,9 +176,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef LONG_TYPE_SIZE
 #define LONG_TYPE_SIZE 32
 
-/* Enable parsing of #pragma pack(push,<n>) and #pragma pack(pop).  */
-#define HANDLE_PRAGMA_PACK_PUSH_POP 1
-
 union tree_node;
 #define TREE union tree_node *
 
@@ -270,15 +299,12 @@ do {						\
    properly.  If we are generating SDB debugging information, this
    will happen automatically, so we only need to handle other cases.  */
 #undef ASM_DECLARE_FUNCTION_NAME
-#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
-  do									\
-    {									\
-      i386_pe_maybe_record_exported_symbol (DECL, NAME, 0);		\
-      if (write_symbols != SDB_DEBUG)					\
-	i386_pe_declare_function_type (FILE, NAME, TREE_PUBLIC (DECL));	\
-      ASM_OUTPUT_LABEL (FILE, NAME);					\
-    }									\
-  while (0)
+#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
+  i386_pe_start_function (FILE, NAME, DECL)
+
+#undef ASM_DECLARE_FUNCTION_SIZE
+#define ASM_DECLARE_FUNCTION_SIZE(FILE,NAME,DECL) \
+  i386_pe_end_function (FILE, NAME, DECL)
 
 /* Add an external function to the list of functions to be declared at
    the end of the file.  */
@@ -298,6 +324,12 @@ do {						\
 #undef ASM_OUTPUT_ALIGNED_BSS
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
   asm_output_aligned_bss ((FILE), (DECL), (NAME), (SIZE), (ALIGN))
+
+/* Put all *tf routines in libgcc.  */
+#undef LIBGCC2_HAS_TF_MODE
+#define LIBGCC2_HAS_TF_MODE 1
+#define LIBGCC2_TF_CEXT q
+#define TF_SIZE 113
 
 /* Output function declarations at the end of the file.  */
 #undef TARGET_ASM_FILE_END
@@ -428,6 +460,9 @@ do {						\
 #define TARGET_VALID_DLLIMPORT_ATTRIBUTE_P i386_pe_valid_dllimport_attribute_p
 #define TARGET_CXX_ADJUST_CLASS_AT_DEFINITION i386_pe_adjust_class_at_definition
 #define TARGET_MANGLE_DECL_ASSEMBLER_NAME i386_pe_mangle_decl_assembler_name
+
+/* Static stack checking is supported by means of probes.  */
+#define STACK_CHECK_STATIC_BUILTIN 1
 
 #undef TREE
 

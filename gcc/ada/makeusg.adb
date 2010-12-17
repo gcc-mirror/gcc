@@ -196,6 +196,21 @@ begin
    Write_Str ("  -v       Display reasons for all (re)compilations");
    Write_Eol;
 
+   --  Line for -vl
+
+   Write_Str ("  -vl      Verbose output (low verbosity)");
+   Write_Eol;
+
+   --  Line for -vm
+
+   Write_Str ("  -vm      Verbose output (medium verbosity)");
+   Write_Eol;
+
+   --  Line for -vh
+
+   Write_Str ("  -vh      Equivalent to -v (high verbosity)");
+   Write_Eol;
+
    --  Line for -vPx
 
    Write_Str ("  -vPx     Specify verbosity when parsing GNAT Project Files");
@@ -311,6 +326,13 @@ begin
    --  Line for --subdirs=
 
    Write_Str ("  --subdirs=dir real obj/lib/exec dirs are subdirs");
+   Write_Eol;
+
+   --  Line for --source-info=
+
+   Write_Str ("  ");
+   Write_Str (Makeutl.Source_Info_Option);
+   Write_Str ("file specify a source info file");
    Write_Eol;
 
    --  Line for --unchecked-shared-lib-imports

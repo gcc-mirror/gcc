@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #include "coretypes.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "tree.h"
 #include "tree-pass.h"
@@ -179,7 +180,7 @@ add_new_plugin (const char* plugin_name)
     {
       plugin = (struct plugin_name_args *) *slot;
       if (strcmp (plugin->full_name, plugin_name))
-        error ("Plugin %s was specified with different paths:\n%s\n%s",
+        error ("plugin %s was specified with different paths:\n%s\n%s",
                plugin->base_name, plugin->full_name, plugin_name);
       return;
     }
@@ -225,7 +226,7 @@ parse_plugin_arg_opt (const char *arg)
         {
           if (key_parsed)
             {
-              error ("Malformed option -fplugin-arg-%s (multiple '=' signs)",
+              error ("malformed option -fplugin-arg-%s (multiple '=' signs)",
 		     arg);
               return;
             }
@@ -241,7 +242,7 @@ parse_plugin_arg_opt (const char *arg)
 
   if (!key_start)
     {
-      error ("Malformed option -fplugin-arg-%s (missing -<key>[=<value>])",
+      error ("malformed option -fplugin-arg-%s (missing -<key>[=<value>])",
              arg);
       return;
     }
@@ -303,7 +304,7 @@ parse_plugin_arg_opt (const char *arg)
       plugin->argv[plugin->argc - 1].value = value;
     }
   else
-    error ("Plugin %s should be specified before -fplugin-arg-%s "
+    error ("plugin %s should be specified before -fplugin-arg-%s "
            "in the command line", name, arg);
 
   /* We don't need the plugin's name anymore. Just release it.  */
@@ -423,7 +424,7 @@ register_callback (const char *plugin_name,
       default:
 	if (event < PLUGIN_EVENT_FIRST_DYNAMIC || event >= event_last)
 	  {
-	    error ("Unknown callback event registered by plugin %s",
+	    error ("unknown callback event registered by plugin %s",
 		   plugin_name);
 	    return;
 	  }
@@ -451,7 +452,7 @@ register_callback (const char *plugin_name,
           struct callback_info *new_callback;
           if (!callback)
             {
-              error ("Plugin %s registered a null callback function "
+              error ("plugin %s registered a null callback function "
 		     "for event %s", plugin_name, plugin_event_name[event]);
               return;
             }
@@ -571,7 +572,7 @@ try_init_one_plugin (struct plugin_name_args *plugin)
   dl_handle = dlopen (plugin->full_name, RTLD_NOW | RTLD_GLOBAL);
   if (!dl_handle)
     {
-      error ("Cannot load plugin %s\n%s", plugin->full_name, dlerror ());
+      error ("cannot load plugin %s\n%s", plugin->full_name, dlerror ());
       return false;
     }
 
@@ -589,7 +590,7 @@ try_init_one_plugin (struct plugin_name_args *plugin)
 
   if ((err = dlerror ()) != NULL)
     {
-      error ("Cannot find %s in plugin %s\n%s", str_plugin_init_func_name,
+      error ("cannot find %s in plugin %s\n%s", str_plugin_init_func_name,
              plugin->full_name, err);
       return false;
     }
@@ -597,7 +598,7 @@ try_init_one_plugin (struct plugin_name_args *plugin)
   /* Call the plugin-provided initialization routine with the arguments.  */
   if ((*plugin_init) (plugin, &gcc_version))
     {
-      error ("Fail to initialize plugin %s", plugin->full_name);
+      error ("fail to initialize plugin %s", plugin->full_name);
       return false;
     }
 
@@ -829,7 +830,7 @@ warn_if_plugins (void)
 /* Likewise, as a callback from the diagnostics code.  */
 
 void
-plugins_internal_error_function (struct diagnostic_context *context ATTRIBUTE_UNUSED,
+plugins_internal_error_function (diagnostic_context *context ATTRIBUTE_UNUSED,
 				 const char *msgid ATTRIBUTE_UNUSED,
 				 va_list *ap ATTRIBUTE_UNUSED)
 {

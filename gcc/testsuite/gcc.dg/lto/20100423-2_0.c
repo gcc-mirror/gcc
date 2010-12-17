@@ -1,5 +1,5 @@
 /* { dg-lto-do link } */
-/* { dg-lto-options {{-O2 -flto} {-O2 -fwhopr} {-O3 -flto} {-O3 -fwhopr}} } */
+/* { dg-lto-options {{-O2 -flto -flto-partition=none} {-O2 -flto -flto-partition=1to1} {-O3 -flto -flto-partition=none} {-O3 -flto -flto-partition=1to1}} } */
 
 #include <stdio.h>
 

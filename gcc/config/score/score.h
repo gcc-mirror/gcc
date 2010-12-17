@@ -1,5 +1,5 @@
 /* score.h for Sunplus S+CORE processor
-   Copyright (C) 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Sunnorth.
 
    This file is part of GCC.
@@ -19,11 +19,6 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "score-conv.h"
-
-/* Controlling the Compilation Driver.  */
-#undef SWITCH_TAKES_ARG
-#define SWITCH_TAKES_ARG(CHAR) \
-  (DEFAULT_SWITCH_TAKES_ARG (CHAR) || (CHAR) == 'G')
 
 #undef CPP_SPEC
 #define CPP_SPEC                 "%{mscore3:-D__score3__} %{G*}"
@@ -98,23 +93,10 @@
 #define TARGET_VERSION \
       fprintf (stderr, "Sunplus S+core rev=%s", SCORE_GCC_VERSION);
 
-#define OVERRIDE_OPTIONS       score_override_options ()
-
-/* Show we can debug even without a frame pointer.  */
-#define CAN_DEBUG_WITHOUT_FP
-
 /* Target machine storage layout.  */
 #define BITS_BIG_ENDIAN        0
 #define BYTES_BIG_ENDIAN       (TARGET_LITTLE_ENDIAN == 0)
 #define WORDS_BIG_ENDIAN       (TARGET_LITTLE_ENDIAN == 0)
-
-/* Define this to set the endianness to use in libgcc2.c, which can
-   not depend on target_flags.  */
-#if defined(__scorele__)
-#define LIBGCC2_WORDS_BIG_ENDIAN       0
-#else
-#define LIBGCC2_WORDS_BIG_ENDIAN       1
-#endif
 
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD                 4
@@ -235,8 +217,8 @@
 
    Regarding coprocessor registers: without evidence to the contrary,
    it's best to assume that each coprocessor register has a unique
-   use.  This can be overridden, in, e.g., override_options() or
-   CONDITIONAL_REGISTER_USAGE should the assumption be inappropriate
+   use.  This can be overridden, in, e.g., TARGET_OPTION_OVERRIDE or
+   TARGET_CONDITIONAL_REGISTER_USAGE should the assumption be inappropriate
    for a particular target.  */
 
 /* Control Registers, use mfcr/mtcr insn
@@ -322,13 +304,6 @@
 
 /* Macro to conditionally modify fixed_regs/call_used_regs.  */
 #define PIC_OFFSET_TABLE_REGNUM          29
-
-#define CONDITIONAL_REGISTER_USAGE                     \
-{                                                      \
-   if (!flag_pic)                                      \
-     fixed_regs[PIC_OFFSET_TABLE_REGNUM] =             \
-     call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 0;      \
-}
 
 #define HARD_REGNO_NREGS(REGNO, MODE) \
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
@@ -438,7 +413,7 @@ enum reg_class
    register REGNO.  In general there is more that one such class;
    choose a class which is "minimal", meaning that no smaller class
    also contains the register.  */
-#define REGNO_REG_CLASS(REGNO)         score_reg_class (REGNO)
+#define REGNO_REG_CLASS(REGNO) (enum reg_class) score_reg_class (REGNO)
 
 /* The following macro defines cover classes for Integrated Register
    Allocator.  Cover classes is a set of non-intersected register
@@ -581,24 +556,7 @@ extern enum reg_class score_char_to_class[256];
    `crtl->outgoing_args_size'.  */
 #define OUTGOING_REG_PARM_STACK_SPACE(FNTYPE) 1
 
-#define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, STACK_SIZE) 0
-
 /* Passing Arguments in Registers  */
-/* Determine where to put an argument to a function.
-   Value is zero to push the argument on the stack,
-   or a hard register in which to store the argument.
-
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
-   CUM is a variable of type CUMULATIVE_ARGS which gives info about
-    the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).  */
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-  score_function_arg (&CUM, MODE, TYPE, NAMED)
-
 /* A C type for declaring a variable that is used as the first argument of
    `FUNCTION_ARG' and other related values.  For some target machines, the
    type `int' suffices and can hold the number of bytes of argument so far.  */
@@ -616,12 +574,6 @@ typedef struct score_args
    For a library call, FNTYPE is 0.  */
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, n_named_args) \
   score_init_cumulative_args (&CUM, FNTYPE, LIBNAME)
-
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be available.)  */
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED) \
-  score_function_arg_advance (&CUM, MODE, TYPE, NAMED)
 
 /* 1 if N is a possible register number for function argument passing.
    We have no FP argument registers when soft-float.  When FP registers

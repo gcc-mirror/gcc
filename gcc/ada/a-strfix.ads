@@ -102,6 +102,15 @@ package Ada.Strings.Fixed is
    procedure Find_Token
      (Source : String;
       Set    : Maps.Character_Set;
+      From   : Positive;
+      Test   : Membership;
+      First  : out Positive;
+      Last   : out Natural);
+   pragma Ada_2012 (Find_Token);
+
+   procedure Find_Token
+     (Source : String;
+      Set    : Maps.Character_Set;
       Test   : Membership;
       First  : out Positive;
       Last   : out Natural);

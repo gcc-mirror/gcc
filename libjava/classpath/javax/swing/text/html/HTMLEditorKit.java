@@ -1454,7 +1454,7 @@ public class HTMLEditorKit
         try
           {
             styleSheet = new StyleSheet();
-            Class c = HTMLEditorKit.class;
+            Class<?> c = HTMLEditorKit.class;
             InputStream in = c.getResourceAsStream(DEFAULT_CSS);
             InputStreamReader r = new InputStreamReader(in);
             styleSheet.loadRules(r,  null);

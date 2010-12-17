@@ -33,7 +33,7 @@ int main()
     template void foo<int, fun, int>();
   */
   //demangle("_Z3fooIiPFidEiEvv", "void foo<int, int (*)(double), int>(void)");
-  verify_demangle("_Z3fooIiFvdEiEvv", "void foo<int, void ()(double), int>()");
+  verify_demangle("_Z3fooIiFvdEiEvv", "void foo<int, void (double), int>()");
 
   return 0;
 }

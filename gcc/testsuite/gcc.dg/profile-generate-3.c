@@ -1,5 +1,5 @@
 /* { dg-do link } */
-/* { dg-require-profiling "-fprofile-generate=." } */
+/* { dg-require-profiling "" } */
 /* { dg-options "-fprofile-generate=." } */
 
 int

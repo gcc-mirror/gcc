@@ -55,7 +55,7 @@ public class CniPrintStream
   boolean sawArray;
 
   // All the classes referenced by this header.
-  HashSet allClasses = new HashSet();
+  HashSet<String> allClasses = new HashSet<String>();
 
   String[] previousPackage = new String[0];
 
@@ -245,7 +245,7 @@ public class CniPrintStream
         out.println();
       }
 
-    String[] classes = (String[]) allClasses.toArray(new String[0]);
+    String[] classes = allClasses.toArray(new String[0]);
     Arrays.sort(classes);
 
     boolean first = true;

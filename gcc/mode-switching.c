@@ -1,6 +1,6 @@
 /* CPU mode switching
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008,
-   2009 Free Software Foundation, Inc.
+   2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -387,7 +387,7 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 	    gcc_assert (!nregs
 			|| forced_late_switch
 			|| short_block
-			|| !(CLASS_LIKELY_SPILLED_P
+			|| !(targetm.class_likely_spilled_p
 			     (REGNO_REG_CLASS (ret_start)))
 			|| (nregs
 			    != hard_regno_nregs[ret_start][GET_MODE (ret_reg)])
@@ -445,7 +445,7 @@ optimize_mode_switching (void)
   int i, j;
   int n_entities;
   int max_num_modes = 0;
-  bool emited = false;
+  bool emited ATTRIBUTE_UNUSED = false;
   basic_block post_entry ATTRIBUTE_UNUSED, pre_exit ATTRIBUTE_UNUSED;
 
   for (e = N_ENTITIES - 1, n_entities = 0; e >= 0; e--)
@@ -518,9 +518,7 @@ optimize_mode_switching (void)
 	      }
 	  }
 
-	  for (insn = BB_HEAD (bb);
-	       insn != NULL && insn != NEXT_INSN (BB_END (bb));
-	       insn = NEXT_INSN (insn))
+	  FOR_BB_INSNS (bb, insn)
 	    {
 	      if (INSN_P (insn))
 		{

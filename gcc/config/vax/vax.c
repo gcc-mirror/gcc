@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for VAX.
    Copyright (C) 1987, 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002,
-   2004, 2005, 2006, 2007, 2008, 2009
+   2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "flags.h"
 #include "debug.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "tm-preds.h"
 #include "tm-constrs.h"
@@ -45,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "target-def.h"
 
+static void vax_option_override (void);
 static bool vax_legitimate_address_p (enum machine_mode, rtx, bool);
 static void vax_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void vax_file_start (void);
@@ -54,10 +56,15 @@ static void vax_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 static int vax_address_cost_1 (rtx);
 static int vax_address_cost (rtx, bool);
 static bool vax_rtx_costs (rtx, int, int, int *, bool);
+static rtx vax_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+			     const_tree, bool);
+static void vax_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+				      const_tree, bool);
 static rtx vax_struct_value_rtx (tree, int);
 static rtx vax_builtin_setjmp_frame_value (void);
 static void vax_asm_trampoline_template (FILE *);
 static void vax_trampoline_init (rtx, tree, rtx);
+static int vax_return_pops_args (tree, tree, int);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -90,6 +97,11 @@ static void vax_trampoline_init (rtx, tree, rtx);
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
 
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG vax_function_arg
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE vax_function_arg_advance
+
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX vax_struct_value_rtx
 
@@ -106,17 +118,26 @@ static void vax_trampoline_init (rtx, tree, rtx);
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE vax_asm_trampoline_template
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT vax_trampoline_init
+#undef TARGET_RETURN_POPS_ARGS
+#define TARGET_RETURN_POPS_ARGS vax_return_pops_args
+
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE vax_option_override
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Set global variables as needed for the options enabled.  */
 
-void
-override_options (void)
+static void
+vax_option_override (void)
 {
   /* We're VAX floating point, not IEEE floating point.  */
   if (TARGET_G_FLOAT)
     REAL_MODE_FORMAT (DFmode) = &vax_g_format;
+
+#ifdef SUBTARGET_OVERRIDE_OPTIONS
+  SUBTARGET_OVERRIDE_OPTIONS;
+#endif
 }
 
 /* Generate the assembly code for function entry.  FILE is a stdio
@@ -2068,3 +2089,55 @@ vax_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
   emit_insn (gen_sync_istream ());
 }
 
+/* Value is the number of bytes of arguments automatically
+   popped when returning from a subroutine call.
+   FUNDECL is the declaration node of the function (as a tree),
+   FUNTYPE is the data type of the function (as a tree),
+   or for a library call it is an identifier node for the subroutine name.
+   SIZE is the number of bytes of arguments passed on the stack.
+
+   On the VAX, the RET insn pops a maximum of 255 args for any function.  */
+
+static int
+vax_return_pops_args (tree fundecl ATTRIBUTE_UNUSED,
+		      tree funtype ATTRIBUTE_UNUSED, int size)
+{
+  return size > 255 * 4 ? 0 : size;
+}
+
+/* Define where to put the arguments to a function.
+   Value is zero to push the argument on the stack,
+   or a hard register in which to store the argument.
+
+   MODE is the argument's machine mode.
+   TYPE is the data type of the argument (as a tree).
+    This is null for libcalls where that information may
+    not be available.
+   CUM is a variable of type CUMULATIVE_ARGS which gives info about
+    the preceding args and about the function being called.
+   NAMED is nonzero if this argument is a named parameter
+    (otherwise it is an extra parameter matching an ellipsis).  */
+
+/* On the VAX all args are pushed.  */
+
+static rtx
+vax_function_arg (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+		  enum machine_mode mode ATTRIBUTE_UNUSED,
+		  const_tree type ATTRIBUTE_UNUSED,
+		  bool named ATTRIBUTE_UNUSED)
+{
+  return NULL_RTX;
+}
+
+/* Update the data in CUM to advance over an argument of mode MODE and
+   data type TYPE.  (TYPE is null for libcalls where that information
+   may not be available.)  */
+
+static void
+vax_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			  const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  *cum += (mode != BLKmode
+	   ? (GET_MODE_SIZE (mode) + 3) & ~3
+	   : (int_size_in_bytes (type) + 3) & ~3);
+}

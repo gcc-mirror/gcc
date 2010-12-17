@@ -12,7 +12,7 @@ END SUBROUTINE test
 
 PROGRAM main
   IMPLICIT NONE
-  CALL test ('abc') ! String is too short.
+  CALL test ('abc') ! { dg-warning "Character length of actual argument shorter" }
 END PROGRAM main
 
 ! { dg-output "shorter than the declared one for dummy argument 'str' \\(3/5\\)" }

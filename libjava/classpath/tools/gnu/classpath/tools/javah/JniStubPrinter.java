@@ -87,7 +87,7 @@ public class JniStubPrinter
     out.print(klass.name.replace('/', '_'));
     out.println(".h>");
 
-    Iterator i = klass.methods.iterator();
+    Iterator<?> i = klass.methods.iterator();
     while (i.hasNext())
       {
         MethodNode method = (MethodNode) i.next();

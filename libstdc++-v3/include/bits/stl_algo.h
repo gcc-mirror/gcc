@@ -2403,13 +2403,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 						__val, __comp);
 
       _DistanceType __len = std::distance(__first, __last);
-      _DistanceType __half;
-      _ForwardIterator __middle;
 
       while (__len > 0)
 	{
-	  __half = __len >> 1;
-	  __middle = __first;
+	  _DistanceType __half = __len >> 1;
+	  _ForwardIterator __middle = __first;
 	  std::advance(__middle, __half);
 	  if (__comp(*__middle, __val))
 	    {
@@ -2450,13 +2448,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_requires_partitioned_upper(__first, __last, __val);
 
       _DistanceType __len = std::distance(__first, __last);
-      _DistanceType __half;
-      _ForwardIterator __middle;
 
       while (__len > 0)
 	{
-	  __half = __len >> 1;
-	  __middle = __first;
+	  _DistanceType __half = __len >> 1;
+	  _ForwardIterator __middle = __first;
 	  std::advance(__middle, __half);
 	  if (__val < *__middle)
 	    __len = __half;
@@ -2503,13 +2499,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 						__val, __comp);
 
       _DistanceType __len = std::distance(__first, __last);
-      _DistanceType __half;
-      _ForwardIterator __middle;
 
       while (__len > 0)
 	{
-	  __half = __len >> 1;
-	  __middle = __first;
+	  _DistanceType __half = __len >> 1;
+	  _ForwardIterator __middle = __first;
 	  std::advance(__middle, __half);
 	  if (__comp(__val, *__middle))
 	    __len = __half;
@@ -2558,13 +2552,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_requires_partitioned_upper(__first, __last, __val);      
 
       _DistanceType __len = std::distance(__first, __last);
-      _DistanceType __half;
-      _ForwardIterator __middle, __left, __right;
-
+ 
       while (__len > 0)
 	{
-	  __half = __len >> 1;
-	  __middle = __first;
+	  _DistanceType __half = __len >> 1;
+	  _ForwardIterator __middle = __first;
 	  std::advance(__middle, __half);
 	  if (*__middle < __val)
 	    {
@@ -2576,9 +2568,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    __len = __half;
 	  else
 	    {
-	      __left = std::lower_bound(__first, __middle, __val);
+	      _ForwardIterator __left = std::lower_bound(__first, __middle,
+							 __val);
 	      std::advance(__first, __len);
-	      __right = std::upper_bound(++__middle, __first, __val);
+	      _ForwardIterator __right = std::upper_bound(++__middle, __first,
+							  __val);
 	      return pair<_ForwardIterator, _ForwardIterator>(__left, __right);
 	    }
 	}
@@ -2605,8 +2599,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _ForwardIterator, typename _Tp, typename _Compare>
     pair<_ForwardIterator, _ForwardIterator>
     equal_range(_ForwardIterator __first, _ForwardIterator __last,
-		const _Tp& __val,
-		_Compare __comp)
+		const _Tp& __val, _Compare __comp)
     {
       typedef typename iterator_traits<_ForwardIterator>::value_type
 	_ValueType;
@@ -2625,13 +2618,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 						__val, __comp);
 
       _DistanceType __len = std::distance(__first, __last);
-      _DistanceType __half;
-      _ForwardIterator __middle, __left, __right;
 
       while (__len > 0)
 	{
-	  __half = __len >> 1;
-	  __middle = __first;
+	  _DistanceType __half = __len >> 1;
+	  _ForwardIterator __middle = __first;
 	  std::advance(__middle, __half);
 	  if (__comp(*__middle, __val))
 	    {
@@ -2643,9 +2634,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    __len = __half;
 	  else
 	    {
-	      __left = std::lower_bound(__first, __middle, __val, __comp);
+	      _ForwardIterator __left = std::lower_bound(__first, __middle,
+							 __val, __comp);
 	      std::advance(__first, __len);
-	      __right = std::upper_bound(++__middle, __first, __val, __comp);
+	      _ForwardIterator __right = std::upper_bound(++__middle, __first,
+							  __val, __comp);
 	      return pair<_ForwardIterator, _ForwardIterator>(__left, __right);
 	    }
 	}
@@ -4133,7 +4126,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	   typename _UniformRandomNumberGenerator>
     void
     shuffle(_RandomAccessIterator __first, _RandomAccessIterator __last,
-	    _UniformRandomNumberGenerator& __g)
+	    _UniformRandomNumberGenerator&& __g)
     {
       // concept requirements
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<

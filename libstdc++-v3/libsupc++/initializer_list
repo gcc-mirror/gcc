@@ -57,24 +57,44 @@ namespace std
       size_type			_M_len;
 
       // The compiler can call a private constructor.
-      initializer_list(const_iterator __a, size_type __l)
+      constexpr initializer_list(const_iterator __a, size_type __l)
       : _M_array(__a), _M_len(__l) { }
 
     public:
-      initializer_list() : _M_array(0), _M_len(0) { }
+      constexpr initializer_list() : _M_array(0), _M_len(0) { }
 
       // Number of elements.
-      size_type
-      size() const { return _M_len; }
+      constexpr size_type
+      size() { return _M_len; }
 
       // First element.
-      const_iterator
-      begin() const { return _M_array; }
+      constexpr const_iterator
+      begin() { return _M_array; }
 
       // One past the last element.
-      const_iterator
-      end() const { return begin() + size(); }
+      constexpr const_iterator
+      end() { return begin() + size(); }
   };
+
+  /**
+   *  @brief  Return an iterator pointing to the first element of
+   *          the initilizer_list.
+   *  @param  il  Initializer list.
+   */
+  template<class _Tp>
+    constexpr const _Tp*
+    begin(initializer_list<_Tp> __ils)
+    { return __ils.begin(); }
+
+  /**
+   *  @brief  Return an iterator pointing to one past the last element
+   *          of the initilizer_list.
+   *  @param  il  Initializer list.
+   */
+  template<class _Tp>
+    constexpr const _Tp*
+    end(initializer_list<_Tp> __ils)
+    { return __ils.end(); }
 }
 
 #pragma GCC visibility pop

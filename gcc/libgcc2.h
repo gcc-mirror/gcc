@@ -35,17 +35,6 @@ extern void __clear_cache (char *, char *);
 extern void __eprintf (const char *, const char *, unsigned int, const char *)
   __attribute__ ((__noreturn__));
 
-/* Permit the tm.h file to select the endianness to use just for this
-   file.  This is used when the endianness is determined when the
-   compiler is run.  */
-
-#ifndef LIBGCC2_WORDS_BIG_ENDIAN
-#define LIBGCC2_WORDS_BIG_ENDIAN WORDS_BIG_ENDIAN
-#endif
-
-#ifndef LIBGCC2_DOUBLE_TYPE_SIZE
-#define LIBGCC2_DOUBLE_TYPE_SIZE DOUBLE_TYPE_SIZE
-#endif
 #ifndef LIBGCC2_LONG_DOUBLE_TYPE_SIZE
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE LONG_DOUBLE_TYPE_SIZE
 #endif
@@ -57,7 +46,7 @@ extern void __eprintf (const char *, const char *, unsigned int, const char *)
 #ifndef LIBGCC2_HAS_DF_MODE
 #define LIBGCC2_HAS_DF_MODE \
   (BITS_PER_UNIT == 8 \
-   && (LIBGCC2_DOUBLE_TYPE_SIZE == 64 \
+   && (__SIZEOF_DOUBLE__ * __CHAR_BIT__ == 64 \
        || LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 64))
 #endif
 
@@ -81,7 +70,7 @@ extern void __eprintf (const char *, const char *, unsigned int, const char *)
 
 #ifndef DF_SIZE
 #if LIBGCC2_HAS_DF_MODE
-#if LIBGCC2_DOUBLE_TYPE_SIZE == 64
+#if __SIZEOF_DOUBLE__ * __CHAR_BIT__ == 64
 #define DF_SIZE DBL_MANT_DIG
 #elif LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 64
 #define DF_SIZE LDBL_MANT_DIG
@@ -140,7 +129,7 @@ typedef unsigned int UHItype	__attribute__ ((mode (HI)));
 /* These typedefs are usually forbidden on dsp's with UNITS_PER_WORD 1.  */
 typedef 	 int SItype	__attribute__ ((mode (SI)));
 typedef unsigned int USItype	__attribute__ ((mode (SI)));
-#if LONG_LONG_TYPE_SIZE > 32
+#if __SIZEOF_LONG_LONG__ > 4
 /* These typedefs are usually forbidden on archs with UNITS_PER_WORD 2.  */
 typedef		 int DItype	__attribute__ ((mode (DI)));
 typedef unsigned int UDItype	__attribute__ ((mode (DI)));
@@ -342,7 +331,7 @@ extern cmp_return_type __ucmpdi2 (DWtype, DWtype);
 #if MIN_UNITS_PER_WORD > 1
 extern SItype __bswapsi2 (SItype);
 #endif
-#if LONG_LONG_TYPE_SIZE > 32
+#if __SIZEOF_LONG_LONG__ > 4
 extern DItype __bswapdi2 (DItype);
 #endif
 
@@ -410,9 +399,9 @@ extern TCtype __multc3 (TFtype, TFtype, TFtype, TFtype);
 #define int bogus_type
 
 /* DWstructs are pairs of Wtype values in the order determined by
-   LIBGCC2_WORDS_BIG_ENDIAN.  */
+   __BYTE_ORDER__.  */
 
-#if LIBGCC2_WORDS_BIG_ENDIAN
+#if __BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__
   struct DWstruct {Wtype high, low;};
 #else
   struct DWstruct {Wtype low, high;};

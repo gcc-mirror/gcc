@@ -1,5 +1,5 @@
 /* Interface for the Object class for Objective-C.
-   Copyright (C) 1993, 1994, 1995, 2009 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -33,9 +33,23 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 extern "C" {
 #endif
 
+/* The Object class is a minimal (but fully functional) root class
+   included with the runtime.
+
+   It is mostly for testing the runtime; very handy in configure
+   tests, and when writing language/runtime testcases.
+
+   Because Objective-C allows multiple root classes, a Foundation
+   library (such as GNUstep Base) is expected to provide its own root
+   class (typically called NSObject), fully integrated with the
+   library's own high-level features.  If you are using such a
+   Foundation library, you should most likely use its root class for
+   everything and ignore Object.
+*/
+
 /*
- * All classes are derived from Object.  As such,
- * this is the overhead tacked onto those objects.
+  All classes are derived from Object.  As such,
+  this is the overhead tacked onto those objects.
  */
 @interface Object
 {
@@ -116,13 +130,9 @@ extern "C" {
         /* Archiving */
 + (int)version;
 + setVersion:(int)aVersion;
-+ (int)streamVersion: (TypedStream*)aStream;
-
-- read: (TypedStream*)aStream;
-- write: (TypedStream*)aStream;
-- awake;
-
 @end
+
+#include "deprecated/Object.h"
 
 #ifdef __cplusplus
 }

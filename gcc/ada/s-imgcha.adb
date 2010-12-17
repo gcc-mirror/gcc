@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -157,5 +157,24 @@ package body System.Img_Char is
          P := 3;
       end if;
    end Image_Character;
+
+   ------------------------
+   -- Image_Character_05 --
+   ------------------------
+
+   procedure Image_Character_05
+     (V : Character;
+      S : in out String;
+      P : out Natural)
+   is
+      pragma Assert (S'First = 1);
+   begin
+      if V = Character'Val (16#00AD#) then
+         P := 11;
+         S (1 .. P) := "SOFT_HYPHEN";
+      else
+         Image_Character (V, S, P);
+      end if;
+   end Image_Character_05;
 
 end System.Img_Char;

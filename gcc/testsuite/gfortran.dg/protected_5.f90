@@ -49,9 +49,9 @@ end module good2
 program main
   use good2
   implicit none
-  t%j = 15             ! { dg-error "Assigning to PROTECTED variable" }
-  nullify(t%p)         ! { dg-error "Assigning to PROTECTED variable" }
-  allocate(t%array(15))! { dg-error "Assigning to PROTECTED variable" }
+  t%j = 15             ! { dg-error "variable definition context" }
+  nullify(t%p)         ! { dg-error "pointer association context" }
+  allocate(t%array(15))! { dg-error "variable definition context" }
 end program main
 
 ! { dg-final { cleanup-modules "good1 good2 bad1 bad2" } }

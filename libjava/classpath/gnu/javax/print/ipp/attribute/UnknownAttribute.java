@@ -1,4 +1,4 @@
-/* UnknownAttribute.java -- 
+/* UnknownAttribute.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -49,7 +49,7 @@ import javax.print.attribute.Attribute;
 /**
  * UnknownAttribute holds all the parsed Attribute information.
  * It provides methods to get the value-tag, name and value.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class UnknownAttribute implements Attribute
@@ -61,7 +61,7 @@ public final class UnknownAttribute implements Attribute
   /**
    * Creates a <code>UnknownAttribute</code> object with the given values.
    *
-   * @param tag the value tag 
+   * @param tag the value tag
    * @param name the attribute name
    * @param value the byte[] with the value
    */
@@ -77,7 +77,7 @@ public final class UnknownAttribute implements Attribute
    *
    * @return The class <code>UnknownAttribute</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return UnknownAttribute.class;
   }
@@ -91,18 +91,18 @@ public final class UnknownAttribute implements Attribute
   {
     return name;
   }
-  
+
   /**
    * Returns the value tag
    * @return The tag.
-   * 
+   *
    * @see gnu.javax.print.ipp.IppValueTag
    */
   public byte getValueTag()
   {
     return tag;
   }
-  
+
   /**
    * Returns the name of the attribute.
    * @return The name.
@@ -111,7 +111,7 @@ public final class UnknownAttribute implements Attribute
   {
     return name;
   }
-  
+
   /**
    * Returns the attribute value origin byte array.
    * @return The value.
@@ -120,7 +120,7 @@ public final class UnknownAttribute implements Attribute
   {
     return value;
   }
-  
+
   /**
    * Returns the attribute value decoded as String.
    * @return The value as String.
@@ -129,7 +129,7 @@ public final class UnknownAttribute implements Attribute
   {
     return new String(value);
   }
-  
+
   /**
    * Returns the attribute value decoded as int.
    * @return The value as int.
@@ -138,7 +138,7 @@ public final class UnknownAttribute implements Attribute
   {
     return IppUtilities.convertToInt(value);
   }
-    
+
   /**
    * Returns the attribute value decoded as an URI.
    * @return The value as URI.
@@ -159,7 +159,7 @@ public final class UnknownAttribute implements Attribute
    * Provides a string representation for some default
    * tag types (e.g. int, rangeofinteger, string, uri).
    * For other more complex types "No conversion found."
-   * is returned. 
+   * is returned.
    */
   public String toString()
   {
@@ -168,9 +168,9 @@ public final class UnknownAttribute implements Attribute
       case IppValueTag.INTEGER:
         return "" + getAttributeValueAsInt();
       case IppValueTag.RANGEOFINTEGER:
-        int lower = IppUtilities.convertToInt(value[0], value[1], 
+        int lower = IppUtilities.convertToInt(value[0], value[1],
                                               value[2], value[3]);
-        int upper = IppUtilities.convertToInt(value[4], value[5], 
+        int upper = IppUtilities.convertToInt(value[4], value[5],
                                               value[6], value[7]);
         return lower + "-" + upper;
       case IppValueTag.URI:
@@ -186,5 +186,5 @@ public final class UnknownAttribute implements Attribute
       default:
         return "No conversion found.";
       }
-  }  
+  }
 }

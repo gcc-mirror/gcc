@@ -6,7 +6,7 @@ subroutine sub(i, j, err)
    integer, intent(in), allocatable :: i(:)
    integer, allocatable :: m(:)
    integer n
-   deallocate(i)                    ! { dg-error "Cannot deallocate" "" }
-   deallocate(m, stat=j)            ! { dg-error "cannot be" "" }
-   deallocate(m,stat=n,errmsg=err)  ! { dg-error "cannot be" "" }
+   deallocate(i)                    ! { dg-error "variable definition context" }
+   deallocate(m, stat=j)            ! { dg-error "variable definition context" }
+   deallocate(m,stat=n,errmsg=err)  ! { dg-error "variable definition context" }
 end subroutine sub

@@ -20,7 +20,7 @@ struct eight {char x[8];};
 struct A
 {
     A();
-    A(const volatile A&&);
+    A(const volatile A&&);	// { dg-error "argument 1" }
 };
 
                A    source();
@@ -39,9 +39,9 @@ five  sink_5_12345(               A&&);  // { dg-message "note" }
 int test5_12345()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_12345(v_source());   // { dg-error "no match" }
     sink_5_12345(cv_source());  // { dg-error "no match" }
     return 0;
@@ -56,9 +56,9 @@ six   sink_5_12346(const          A&&);  // { dg-message "note" }
 int test5_12346()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_12346(v_source());   // { dg-error "no match" }
     sink_5_12346(cv_source());  // { dg-error "no match" }
     return 0;
@@ -73,9 +73,9 @@ seven sink_5_12347(volatile       A&&);  // { dg-message "note" }
 int test5_12347()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_12347(cv_source());  // { dg-error "no match" }
     return 0;
 }
@@ -89,9 +89,9 @@ six   sink_5_12356(const          A&&);  // { dg-message "note" }
 int test5_12356()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_12356(cva);          // { dg-error "no match" }
     sink_5_12356(v_source());   // { dg-error "no match" }
     sink_5_12356(cv_source());  // { dg-error "no match" }
@@ -107,9 +107,9 @@ seven sink_5_12357(volatile       A&&);  // { dg-message "note" }
 int test5_12357()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_12357(cva);          // { dg-error "no match" }
     sink_5_12357(cv_source());  // { dg-error "no match" }
     return 0;
@@ -124,9 +124,9 @@ eight sink_5_12358(const volatile A&&); // { dg-message "" }
 int test5_12358()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_12358(cva);		// { dg-error "lvalue" }
     return 0;
 }
@@ -140,9 +140,9 @@ seven sink_5_12367(volatile       A&&);  // { dg-message "note" }
 int test5_12367()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_12367(cva);          // { dg-error "no match" }
     sink_5_12367(source());     // { dg-error "ambiguous" }
     sink_5_12367(cv_source());  // { dg-error "no match" }
@@ -158,9 +158,9 @@ eight sink_5_12368(const volatile A&&); // { dg-message "" }
 int test5_12368()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_12368(cva);		// { dg-error "lvalue" }
     return 0;
 }
@@ -174,9 +174,9 @@ eight sink_5_12378(const volatile A&&); // { dg-message "" }
 int test5_12378()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_12378(cva);		// { dg-error "lvalue" }
     return 0;
 }
@@ -190,9 +190,9 @@ six   sink_5_12456(const          A&&);  // { dg-message "note" }
 int test5_12456()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_12456(v_source());   // { dg-error "no match" }
     sink_5_12456(cv_source());  // { dg-error "no match" }
     return 0;
@@ -207,9 +207,9 @@ seven sink_5_12457(volatile       A&&);  // { dg-message "note" }
 int test5_12457()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_12457(cv_source());  // { dg-error "no match" }
     return 0;
 }
@@ -223,9 +223,9 @@ seven sink_5_12467(volatile       A&&);  // { dg-message "note" }
 int test5_12467()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_12467(source());     // { dg-error "ambiguous" }
     sink_5_12467(cv_source());  // { dg-error "no match" }
     return 0;
@@ -240,9 +240,9 @@ seven sink_5_12567(volatile       A&&);  // { dg-message "" }
 int test5_12567()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_12567(va);		// { dg-error "lvalue" }
     sink_5_12567(cva);          // { dg-error "no match" }
     sink_5_12567(cv_source());  // { dg-error "no match" }
@@ -258,9 +258,9 @@ eight sink_5_12568(const volatile A&&); // { dg-message "" }
 int test5_12568()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_12568(va);		// { dg-error "lvalue" }
     sink_5_12568(cva);		// { dg-error "lvalue" }
     return 0;
@@ -275,9 +275,9 @@ eight sink_5_12578(const volatile A&&); // { dg-message "" }
 int test5_12578()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_12578(va);		// { dg-error "lvalue" }
     sink_5_12578(cva);		// { dg-error "lvalue" }
     return 0;
@@ -292,9 +292,9 @@ eight sink_5_12678(const volatile A&&);  // { dg-message "" }
 int test5_12678()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_12678(va);		// { dg-error "lvalue" }
     sink_5_12678(cva);		// { dg-error "lvalue" }
     sink_5_12678(source());  // { dg-error "ambiguous" }
@@ -310,9 +310,9 @@ six   sink_5_13456(const          A&&);  // { dg-message "note" }
 int test5_13456()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_13456(v_source());   // { dg-error "no match" }
     sink_5_13456(cv_source());  // { dg-error "no match" }
     return 0;
@@ -327,9 +327,9 @@ seven sink_5_13457(volatile       A&&);  // { dg-message "note" }
 int test5_13457()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_13457(c_source());   // { dg-error "no match" }
     sink_5_13457(cv_source());  // { dg-error "no match" }
     return 0;
@@ -344,9 +344,9 @@ seven sink_5_13467(volatile       A&&);  // { dg-message "note" }
 int test5_13467()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_13467(source());     // { dg-error "ambiguous" }
     sink_5_13467(cv_source());  // { dg-error "no match" }
     return 0;
@@ -361,9 +361,9 @@ seven sink_5_13567(volatile       A&&);  // { dg-message "note" }
 int test5_13567()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_13567(ca);		// { dg-error "lvalue" }
     sink_5_13567(cva);          // { dg-error "no match" }
     sink_5_13567(cv_source());  // { dg-error "no match" }
@@ -379,9 +379,9 @@ eight sink_5_13568(const volatile A&&); // { dg-message "" }
 int test5_13568()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_13568(ca);		// { dg-error "lvalue" }
     sink_5_13568(cva);		// { dg-error "lvalue" }
     return 0;
@@ -396,9 +396,9 @@ eight sink_5_13578(const volatile A&&); // { dg-message "" }
 int test5_13578()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_13578(ca);		// { dg-error "lvalue" }
     sink_5_13578(cva);		// { dg-error "lvalue" }
     return 0;
@@ -413,9 +413,9 @@ eight sink_5_13678(const volatile A&&);  // { dg-message "" }
 int test5_13678()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_13678(ca);		// { dg-error "lvalue" }
     sink_5_13678(cva);		// { dg-error "lvalue" }
     sink_5_13678(source());  // { dg-error "ambiguous" }
@@ -431,9 +431,9 @@ seven sink_5_14567(volatile       A&&);  // { dg-message "note" }
 int test5_14567()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_14567(cv_source());  // { dg-error "no match" }
     return 0;
 }
@@ -447,9 +447,9 @@ eight sink_5_14678(const volatile A&&);  // { dg-message "note" }
 int test5_14678()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_14678(source());  // { dg-error "ambiguous" }
     return 0;
 }
@@ -463,9 +463,9 @@ eight sink_5_15678(const volatile A&&); // { dg-message "" }
 int test5_15678()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_15678(ca);		// { dg-error "lvalue" }
     sink_5_15678(va);		// { dg-error "lvalue" }
     sink_5_15678(cva);		// { dg-error "lvalue" }
@@ -481,9 +481,9 @@ six   sink_5_23456(const          A&&);  // { dg-message "note" }
 int test5_23456()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_23456(a);            // { dg-error "ambiguous" }
     sink_5_23456(v_source());   // { dg-error "no match" }
     sink_5_23456(cv_source());  // { dg-error "no match" }
@@ -499,9 +499,9 @@ seven sink_5_23457(volatile       A&&);  // { dg-message "note" }
 int test5_23457()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_23457(a);            // { dg-error "ambiguous" }
     sink_5_23457(cv_source());  // { dg-error "no match" }
     return 0;
@@ -516,9 +516,9 @@ eight sink_5_23458(const volatile A&&);  // { dg-message "note" }
 int test5_23458()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_23458(a);  // { dg-error "ambiguous" }
     return 0;
 }
@@ -532,9 +532,9 @@ seven sink_5_23467(volatile       A&&);  // { dg-message "note" }
 int test5_23467()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_23467(a);            // { dg-error "ambiguous" }
     sink_5_23467(source());     // { dg-error "ambiguous" }
     sink_5_23467(cv_source());  // { dg-error "no match" }
@@ -550,9 +550,9 @@ eight sink_5_23468(const volatile A&&);  // { dg-message "note" }
 int test5_23468()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_23468(a);  // { dg-error "ambiguous" }
    return 0;
 }
@@ -566,9 +566,9 @@ eight sink_5_23478(const volatile A&&);  // { dg-message "note" }
 int test5_23478()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_23478(a);  // { dg-error "ambiguous" }
     return 0;
 }
@@ -582,9 +582,9 @@ seven sink_5_23567(volatile       A&&);  // { dg-message "note" }
 int test5_23567()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_23567(a);            // { dg-error "ambiguous" }
     sink_5_23567(cva);          // { dg-error "no match" }
     sink_5_23567(cv_source());  // { dg-error "no match" }
@@ -600,9 +600,9 @@ eight sink_5_23568(const volatile A&&);  // { dg-message "" }
 int test5_23568()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_23568(cva); // { dg-error "lvalue" }
     sink_5_23568(a);  // { dg-error "ambiguous" }
     return 0;
@@ -617,9 +617,9 @@ eight sink_5_23578(const volatile A&&);  // { dg-message "" }
 int test5_23578()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_23578(cva); // { dg-error "lvalue" }
     sink_5_23578(a);  // { dg-error "ambiguous" }
     return 0;
@@ -634,9 +634,9 @@ eight sink_5_23678(const volatile A&&);  // { dg-message "" }
 int test5_23678()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_23678(a);         // { dg-error "ambiguous" }
     sink_5_23678(cva);	     // { dg-error "lvalue" }
     sink_5_23678(source());  // { dg-error "ambiguous" }
@@ -652,9 +652,9 @@ seven sink_5_24567(volatile       A&&);  // { dg-message "note" }
 int test5_24567()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_24567(cv_source());  // { dg-error "no match" }
     return 0;
 }
@@ -668,9 +668,9 @@ eight sink_5_24678(const volatile A&&);  // { dg-message "note" }
 int test5_24678()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_24678(source());  // { dg-error "ambiguous" }
     return 0;
 }
@@ -684,9 +684,9 @@ eight sink_5_25678(const volatile A&&); // { dg-message "" }
 int test5_25678()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_25678(va);		// { dg-error "lvalue" }
     sink_5_25678(cva);		// { dg-error "lvalue" }
     return 0;
@@ -701,9 +701,9 @@ seven sink_5_34567(volatile       A&&);  // { dg-message "note" }
 int test5_34567()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_34567(cv_source());  // { dg-error "no match" }
     return 0;
 }
@@ -717,9 +717,9 @@ eight sink_5_34678(const volatile A&&);  // { dg-message "note" }
 int test5_34678()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_34678(source());  // { dg-error "ambiguous" }
     return 0;
 }
@@ -733,9 +733,9 @@ eight sink_5_35678(const volatile A&&); // { dg-message "" }
 int test5_35678()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_5_35678(ca);		// { dg-error "lvalue" }
     sink_5_35678(cva);		// { dg-error "lvalue" }
     return 0;

@@ -48,7 +48,7 @@ package body Sem_Aux is
       --  If this is first subtype, or is a base type, then there is no
       --  ancestor subtype, so we return Empty to indicate this fact.
 
-      if Is_First_Subtype (Typ) or else Typ = Base_Type (Typ) then
+      if Is_First_Subtype (Typ) or else Is_Base_Type (Typ) then
          return Empty;
       end if;
 
@@ -204,8 +204,7 @@ package body Sem_Aux is
 
    begin
       pragma Assert
-        (Has_Discriminants (Typ)
-          or else Has_Unknown_Discriminants (Typ));
+        (Has_Discriminants (Typ) or else Has_Unknown_Discriminants (Typ));
 
       Ent := First_Entity (Typ);
 
@@ -538,6 +537,25 @@ package body Sem_Aux is
       end if;
    end Is_Derived_Type;
 
+   -----------------------
+   -- Is_Generic_Formal --
+   -----------------------
+
+   function Is_Generic_Formal (E : Entity_Id) return Boolean is
+      Kind : Node_Kind;
+   begin
+      if No (E) then
+         return False;
+      else
+         Kind := Nkind (Parent (E));
+         return
+           Nkind_In (Kind, N_Formal_Object_Declaration,
+                           N_Formal_Package_Declaration,
+                           N_Formal_Type_Declaration)
+             or else Is_Formal_Subprogram (E);
+      end if;
+   end Is_Generic_Formal;
+
    ---------------------------
    -- Is_Indefinite_Subtype --
    ---------------------------
@@ -570,24 +588,55 @@ package body Sem_Aux is
       end if;
    end Is_Indefinite_Subtype;
 
-   --------------------------------
-   -- Is_Inherently_Limited_Type --
-   --------------------------------
+   -------------------------------
+   -- Is_Immutably_Limited_Type --
+   -------------------------------
 
-   function Is_Inherently_Limited_Type (Ent : Entity_Id) return Boolean is
+   function Is_Immutably_Limited_Type (Ent : Entity_Id) return Boolean is
       Btype : constant Entity_Id := Base_Type (Ent);
 
    begin
+      if Is_Limited_Record (Btype) then
+         return True;
+
+      elsif Ekind (Btype) = E_Limited_Private_Type
+        and then Nkind (Parent (Btype)) = N_Formal_Type_Declaration
+      then
+         return not In_Package_Body (Scope ((Btype)));
+      end if;
+
       if Is_Private_Type (Btype) then
-         declare
-            Utyp : constant Entity_Id := Underlying_Type (Btype);
-         begin
-            if No (Utyp) then
+
+         --  AI05-0063: A type derived from a limited private formal type is
+         --  not immutably limited in a generic body.
+
+         if Is_Derived_Type (Btype)
+           and then Is_Generic_Type (Etype (Btype))
+         then
+            if not Is_Limited_Type (Etype (Btype)) then
                return False;
+
+            --  A descendant of a limited formal type is not immutably limited
+            --  in the generic body, or in the body of a generic child.
+
+            elsif Ekind (Scope (Etype (Btype))) = E_Generic_Package then
+               return not In_Package_Body (Scope (Btype));
+
             else
-               return Is_Inherently_Limited_Type (Utyp);
+               return False;
             end if;
-         end;
+
+         else
+            declare
+               Utyp : constant Entity_Id := Underlying_Type (Btype);
+            begin
+               if No (Utyp) then
+                  return False;
+               else
+                  return Is_Immutably_Limited_Type (Utyp);
+               end if;
+            end;
+         end if;
 
       elsif Is_Concurrent_Type (Btype) then
          return True;
@@ -601,11 +650,8 @@ package body Sem_Aux is
          --  handled as build in place even though they might return objects
          --  of a type that is not inherently limited.
 
-         if Is_Limited_Record (Btype) then
-            return True;
-
-         elsif Is_Class_Wide_Type (Btype) then
-            return Is_Inherently_Limited_Type (Root_Type (Btype));
+         if Is_Class_Wide_Type (Btype) then
+            return Is_Immutably_Limited_Type (Root_Type (Btype));
 
          else
             declare
@@ -622,7 +668,7 @@ package body Sem_Aux is
                   --  limited intefaces.
 
                   if not Is_Interface (Etype (C))
-                    and then Is_Inherently_Limited_Type (Etype (C))
+                    and then Is_Immutably_Limited_Type (Etype (C))
                   then
                      return True;
                   end if;
@@ -635,12 +681,12 @@ package body Sem_Aux is
          end if;
 
       elsif Is_Array_Type (Btype) then
-         return Is_Inherently_Limited_Type (Component_Type (Btype));
+         return Is_Immutably_Limited_Type (Component_Type (Btype));
 
       else
          return False;
       end if;
-   end Is_Inherently_Limited_Type;
+   end Is_Immutably_Limited_Type;
 
    ---------------------
    -- Is_Limited_Type --
@@ -721,6 +767,46 @@ package body Sem_Aux is
          return False;
       end if;
    end Is_Limited_Type;
+
+   ----------------------
+   -- Nearest_Ancestor --
+   ----------------------
+
+   function Nearest_Ancestor (Typ : Entity_Id) return Entity_Id is
+         D : constant Node_Id := Declaration_Node (Typ);
+
+   begin
+      --  If we have a subtype declaration, get the ancestor subtype
+
+      if Nkind (D) = N_Subtype_Declaration then
+         if Nkind (Subtype_Indication (D)) = N_Subtype_Indication then
+            return Entity (Subtype_Mark (Subtype_Indication (D)));
+         else
+            return Entity (Subtype_Indication (D));
+         end if;
+
+      --  If derived type declaration, find who we are derived from
+
+      elsif Nkind (D) = N_Full_Type_Declaration
+        and then Nkind (Type_Definition (D)) = N_Derived_Type_Definition
+      then
+         declare
+            DTD : constant Entity_Id := Type_Definition (D);
+            SI  : constant Entity_Id := Subtype_Indication (DTD);
+         begin
+            if Is_Entity_Name (SI) then
+               return Entity (SI);
+            else
+               return Entity (Subtype_Mark (SI));
+            end if;
+         end;
+
+      --  Otherwise, nothing useful to return, return Empty
+
+      else
+         return Empty;
+      end if;
+   end Nearest_Ancestor;
 
    ---------------------------
    -- Nearest_Dynamic_Scope --

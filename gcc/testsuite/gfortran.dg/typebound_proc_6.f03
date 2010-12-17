@@ -59,7 +59,7 @@ MODULE testmod
     PROCEDURE, NOPASS :: pure2 => proc_sub ! { dg-error "must also be PURE" }
     PROCEDURE, NOPASS :: nonpure => proc_pure ! Ok, overridden not pure.
     PROCEDURE, NOPASS :: elemental1 => proc_elemental ! Ok, both elemental.
-    PROCEDURE, NOPASS :: elemental2 => proc_nonelem ! { dg-error "must also be ELEMENTAL" }
+    PROCEDURE, NOPASS :: elemental2 => proc_nonelem ! { dg-error "must also be" }
     PROCEDURE, NOPASS :: nonelem1 => proc_nonelem ! Ok, non elemental.
     PROCEDURE, NOPASS :: nonelem2 => proc_elemental ! { dg-error "must not be ELEMENTAL" }
 

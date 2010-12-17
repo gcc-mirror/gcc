@@ -242,16 +242,16 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
 #if _GLIBCXX_USE_C99_CHECK || _GLIBCXX_USE_C99_DYNAMIC
   extern "C" long double
-    (wcstold)(const wchar_t * restrict, wchar_t ** restrict) throw ();
+    (wcstold)(const wchar_t * __restrict, wchar_t ** __restrict) throw ();
 #endif
 #if !_GLIBCXX_USE_C99_DYNAMIC
   using ::wcstold;
 #endif
 #if _GLIBCXX_USE_C99_LONG_LONG_CHECK || _GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
   extern "C" long long int
-    (wcstoll)(const wchar_t * restrict, wchar_t ** restrict, int) throw ();
+    (wcstoll)(const wchar_t * __restrict, wchar_t ** __restrict, int) throw ();
   extern "C" unsigned long long int
-    (wcstoull)(const wchar_t * restrict, wchar_t ** restrict, int) throw ();
+    (wcstoull)(const wchar_t * __restrict, wchar_t ** __restrict, int) throw ();
 #endif
 #if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
   using ::wcstoll;
@@ -273,22 +273,34 @@ _GLIBCXX_END_NAMESPACE
 #endif //_GLIBCXX_USE_WCHAR_T
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-#  if defined(_GLIBCXX_INCLUDE_AS_TR1)
-#    error C++0x header cannot be included from TR1 header
-#  endif
-#  if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
-#    include <tr1_impl/cwchar>
-#  else
-#    define _GLIBCXX_INCLUDE_AS_CXX0X
-#    define _GLIBCXX_BEGIN_NAMESPACE_TR1
-#    define _GLIBCXX_END_NAMESPACE_TR1
-#    define _GLIBCXX_TR1
-#    include <tr1_impl/cwchar>
-#    undef _GLIBCXX_TR1
-#    undef _GLIBCXX_END_NAMESPACE_TR1
-#    undef _GLIBCXX_BEGIN_NAMESPACE_TR1
-#    undef _GLIBCXX_INCLUDE_AS_CXX0X
-#  endif
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
+#if _GLIBCXX_HAVE_WCSTOF
+  using std::wcstof;
 #endif
+#if _GLIBCXX_HAVE_VFWSCANF
+  using std::vfwscanf;
+#endif
+#if _GLIBCXX_HAVE_VSWSCANF
+  using std::vswscanf;
+#endif
+#if _GLIBCXX_HAVE_VWSCANF
+  using std::vwscanf;
+#endif
+
+#if _GLIBCXX_USE_C99
+  using std::wcstold;
+  using std::wcstoll;
+  using std::wcstoull;
+#endif
+
+_GLIBCXX_END_NAMESPACE
+
+#endif // _GLIBCXX_USE_WCHAR_T
+
+#endif // __GXX_EXPERIMENTAL_CXX0X__
 
 #endif

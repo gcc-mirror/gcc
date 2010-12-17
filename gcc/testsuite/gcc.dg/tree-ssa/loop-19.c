@@ -6,10 +6,10 @@
 
 /* { dg-do compile { target { i?86-*-* || { x86_64-*-* || powerpc_hard_double } } } } */
 /* { dg-require-effective-target nonpic } */
-/* { dg-options "-O3 -fdump-tree-optimized" } */
+/* { dg-options "-O3 -fno-prefetch-loop-arrays -fdump-tree-optimized" } */
 
 # define N      2000000
-static double   a[N],c[N];
+double   a[N],c[N];
 void tuned_STREAM_Copy()
 {
   int j;

@@ -35,6 +35,24 @@ proc dg-require-debug-mode { args } {
     return
 }
 
+proc dg-require-profile-mode { args } {
+    if { ![ check_v3_target_profile_mode ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+    return
+}
+
+proc dg-require-normal-mode { args } {
+    if { ![ check_v3_target_normal_mode ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+    return
+}
+
 proc dg-require-parallel-mode { args } {
     if { ![ check_v3_target_parallel_mode ] } {
 	upvar dg-do-what dg-do-what
@@ -54,7 +72,7 @@ proc dg-require-fileio { args } {
 }
 
 proc dg-require-namedlocale { args } {
-    if { ![ check_v3_target_namedlocale ] } {
+    if { ![ check_v3_target_namedlocale [lindex $args 1] ] } {
 	upvar dg-do-what dg-do-what
 	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
 	return

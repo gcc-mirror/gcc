@@ -1,7 +1,8 @@
-<section id="std.util.memory.auto_ptr" xreflabel="auto_ptr">
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="std.util.memory.auto_ptr" xreflabel="auto_ptr">
 <?dbhtml filename="auto_ptr.html"?>
 
-<sectioninfo>
+<info><title>auto_ptr</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -10,12 +11,12 @@
       auto_ptr
     </keyword>
   </keywordset>
-</sectioninfo>
+</info>
 
-<title>auto_ptr</title>
 
-<section id="auto_ptr.limitations">
-<title>Limitations</title>
+
+<section xml:id="auto_ptr.limitations"><info><title>Limitations</title></info>
+
 
    <para>Explaining all of the fun and delicious things that can
    happen with misuse of the <classname>auto_ptr</classname> class
@@ -81,8 +82,8 @@
    </para>
 </section>
 
-<section id="auto_ptr.using">
-<title>Use in Containers</title>
+<section xml:id="auto_ptr.using"><info><title>Use in Containers</title></info>
+
 
   <para>
   </para>

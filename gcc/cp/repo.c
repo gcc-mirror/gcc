@@ -43,7 +43,7 @@ static FILE *open_repo_file (const char *);
 static char *afgets (FILE *);
 static FILE *reopen_repo_file_for_write (void);
 
-static GTY(()) tree pending_repo;
+static GTY(()) VEC(tree,gc) *pending_repo;
 static char *repo_name;
 
 static const char *old_args, *old_dir, *old_main;
@@ -224,7 +224,7 @@ reopen_repo_file_for_write (void)
 
   if (repo_file == 0)
     {
-      error ("can't create repository information file %qs", repo_name);
+      error ("can%'t create repository information file %qs", repo_name);
       flag_use_repository = 0;
     }
 
@@ -236,9 +236,10 @@ reopen_repo_file_for_write (void)
 void
 finish_repo (void)
 {
-  tree t;
+  tree val;
   char *dir, *args;
   FILE *repo_file;
+  unsigned ix;
 
   if (!flag_use_repository || flag_compare_debug)
     return;
@@ -266,9 +267,8 @@ finish_repo (void)
       fprintf (repo_file, "\n");
     }
 
-  for (t = pending_repo; t; t = TREE_CHAIN (t))
+  FOR_EACH_VEC_ELT_REVERSE (tree, pending_repo, ix, val)
     {
-      tree val = TREE_VALUE (t);
       tree name = DECL_ASSEMBLER_NAME (val);
       char type = IDENTIFIER_REPO_CHOSEN (name) ? 'C' : 'O';
       fprintf (repo_file, "%c %s\n", type, IDENTIFIER_POINTER (name));
@@ -319,7 +319,7 @@ repo_emit_p (tree decl)
 	 available.  Still record them into *.rpo files, so if they
 	 weren't actually emitted and collect2 requests them, they can
 	 be provided.  */
-      if (DECL_INTEGRAL_CONSTANT_VAR_P (decl)
+      if (decl_maybe_constant_var_p (decl)
 	  && DECL_CLASS_SCOPE_P (decl))
 	ret = 2;
     }
@@ -352,7 +352,7 @@ repo_emit_p (tree decl)
   if (!DECL_REPO_AVAILABLE_P (decl))
     {
       DECL_REPO_AVAILABLE_P (decl) = 1;
-      pending_repo = tree_cons (NULL_TREE, decl, pending_repo);
+      VEC_safe_push (tree, gc, pending_repo, decl);
     }
 
   return IDENTIFIER_REPO_CHOSEN (DECL_ASSEMBLER_NAME (decl)) ? 1 : ret;

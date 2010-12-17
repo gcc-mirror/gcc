@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1992-2009, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2010, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1268,7 +1268,7 @@ package body System.Tasking.Rendezvous is
 
          if Old_State /= Entry_Call.State
            and then Entry_Call.State = Now_Abortable
-           and then Entry_Call.Mode > Simple_Call
+           and then Entry_Call.Mode /= Simple_Call
            and then Entry_Call.Self /= Self_ID
 
          --  Asynchronous_Call or Conditional_Call

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-std=c99" } */
+/* { dg-options "-std=c99 -Wno-overflow" } */
 
 /* N1150 6: Constants.
    C99 6.4.4.2: Floating constants.  */

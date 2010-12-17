@@ -79,12 +79,18 @@ GNATRTL_TASKING_OBJS= \
 # Objects needed for non-tasking.
 GNATRTL_NONTASKING_OBJS= \
   a-assert$(objext) \
+  a-btgbso$(objext) \
   a-calari$(objext) \
   a-calcon$(objext) \
   a-caldel$(objext) \
   a-calend$(objext) \
   a-calfor$(objext) \
   a-catizo$(objext) \
+  a-cbhama$(objext) \
+  a-cbhase$(objext) \
+  a-cborse$(objext) \
+  a-cbdlli$(objext) \
+  a-cborma$(objext) \
   a-cdlili$(objext) \
   a-cgaaso$(objext) \
   a-cgarso$(objext) \
@@ -94,6 +100,8 @@ GNATRTL_NONTASKING_OBJS= \
   a-charac$(objext) \
   a-chlat1$(objext) \
   a-chlat9$(objext) \
+  a-chtgbo$(objext) \
+  a-chtgbk$(objext) \
   a-chtgke$(objext) \
   a-chtgop$(objext) \
   a-chzla1$(objext) \
@@ -114,6 +122,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-comlin$(objext) \
   a-contai$(objext) \
   a-convec$(objext) \
+  a-cobove$(objext) \
   a-coorma$(objext) \
   a-coormu$(objext) \
   a-coorse$(objext) \
@@ -158,6 +167,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-llitio$(objext) \
   a-lliwti$(objext) \
   a-llizti$(objext) \
+  a-locale$(objext) \
   a-ncelfu$(objext) \
   a-ngcefu$(objext) \
   a-ngcoty$(objext) \
@@ -178,6 +188,8 @@ GNATRTL_NONTASKING_OBJS= \
   a-nuflra$(objext) \
   a-numaux$(objext) \
   a-numeri$(objext) \
+  a-rbtgbo$(objext) \
+  a-rbtgbk$(objext) \
   a-rbtgso$(objext) \
   a-scteio$(objext) \
   a-secain$(objext) \
@@ -227,8 +239,9 @@ GNATRTL_NONTASKING_OBJS= \
   a-stzsup$(objext) \
   a-stzunb$(objext) \
   a-suenco$(objext) \
-  a-suewen$(objext) \
-  a-suezen$(objext) \
+  a-suenst$(objext) \
+  a-suewst$(objext) \
+  a-suezst$(objext) \
   a-suteio$(objext) \
   a-swbwha$(objext) \
   a-swfwha$(objext) \
@@ -267,6 +280,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-tiunio$(objext) \
   a-unccon$(objext) \
   a-uncdea$(objext) \
+  a-wichha$(objext) \
   a-wichun$(objext) \
   a-widcha$(objext) \
   a-witeio$(objext) \
@@ -291,6 +305,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-wwboio$(objext) \
   a-wwunio$(objext) \
   a-zchara$(objext) \
+  a-zchhan$(objext) \
   a-zchuni$(objext) \
   a-zrstfi$(objext) \
   a-ztcoau$(objext) \
@@ -501,6 +516,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-mastop$(objext) \
   s-memcop$(objext) \
   s-memory$(objext) \
+  s-multip$(objext) \
   s-os_lib$(objext) \
   s-osprim$(objext) \
   s-pack03$(objext) \

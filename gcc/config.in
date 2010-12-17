@@ -229,6 +229,12 @@
 #endif
 
 
+/* Define if your assembler supports DSPR1 mult. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_DSPR1_MULT
+#endif
+
+
 /* Define if your assembler supports .dtprelword. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_DTPRELWORD
@@ -315,7 +321,7 @@
 #endif
 
 
-/* Define true if the assembler supports 'rep <insn>, lock <insn>'. */
+/* Define if the assembler supports 'rep <insn>, lock <insn>'. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_IX86_REP_LOCK_PREFIX
 #endif
@@ -449,7 +455,7 @@
 #endif
 
 
-/* Define if your assembler supports thread-local storage. */
+/* Define if your assembler and linker support thread-local storage. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_TLS
 #endif
@@ -826,24 +832,6 @@
 #endif
 
 
-/* Define to 1 if you have the `elf_getshdrstrndx' function. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_ELF_GETSHDRSTRNDX
-#endif
-
-
-/* Define to 1 if you have the `elf_getshstrndx' function. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_ELF_GETSHSTRNDX
-#endif
-
-
-/* Define if elf_getshstrndx has gABI conformant return values. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_ELF_GETSHSTRNDX_GABI
-#endif
-
-
 /* Define to 1 if you have the <fcntl.h> header file. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_FCNTL_H
@@ -936,22 +924,13 @@
 
 
 /* Define 0/1 if your assembler supports CFI directives. */
-#ifndef USED_FOR_TARGET
 #undef HAVE_GAS_CFI_DIRECTIVE
-#endif
-
 
 /* Define 0/1 if your assembler supports .cfi_personality. */
-#ifndef USED_FOR_TARGET
 #undef HAVE_GAS_CFI_PERSONALITY_DIRECTIVE
-#endif
-
 
 /* Define 0/1 if your assembler supports .cfi_sections. */
-#ifndef USED_FOR_TARGET
 #undef HAVE_GAS_CFI_SECTIONS_DIRECTIVE
-#endif
-
 
 /* Define if your assembler supports the .loc discriminator sub-directive. */
 #ifndef USED_FOR_TARGET
@@ -1065,6 +1044,12 @@
 /* Define if using GNU as. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_GNU_AS
+#endif
+
+
+/* Define if your system supports gnu indirect functions. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GNU_INDIRECT_FUNCTION
 #endif
 
 
@@ -1263,12 +1248,6 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_MEMORY_H
-#endif
-
-
-/* Define to 1 if you have the `mincore' function. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_MINCORE
 #endif
 
 
@@ -1543,15 +1522,28 @@
 #endif
 
 
-/* Define if libelf is in use. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_libelf
-#endif
-
-
 /* Define as const if the declaration of iconv() needs const. */
 #ifndef USED_FOR_TARGET
 #undef ICONV_CONST
+#endif
+
+
+/* Define to the linker flags to use for -pthread. */
+#ifndef USED_FOR_TARGET
+#undef LIB_THREAD_LDFLAGS_SPEC
+#endif
+
+
+/* Define to the library containing __tls_get_addr/___tls_get_addr. */
+#ifndef USED_FOR_TARGET
+#undef LIB_TLS_SPEC
+#endif
+
+
+/* Define to the name of the LTO plugin DSO that must be passed to the
+   linker's -plugin=LIB option. */
+#ifndef USED_FOR_TARGET
+#undef LTOPLUGINSONAME
 #endif
 
 
@@ -1847,6 +1839,18 @@
 #  undef WORDS_BIGENDIAN
 # endif
 #endif
+
+/* Number of bits in a file offset, on hosts where this is settable. */
+#ifndef USED_FOR_TARGET
+#undef _FILE_OFFSET_BITS
+#endif
+
+
+/* Define for large files, on AIX-style hosts. */
+#ifndef USED_FOR_TARGET
+#undef _LARGE_FILES
+#endif
+
 
 /* Define to 1 if on MINIX. */
 #ifndef USED_FOR_TARGET

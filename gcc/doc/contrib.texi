@@ -80,7 +80,7 @@ Janne Blomqvist for contributions to GNU Fortran.
 Segher Boessenkool for various fixes.
 
 @item
-Hans-J. Boehm for his @uref{http://www.hpl.hp.com/personal/Hans_Boehm/gc/,,
+Hans-J. Boehm for his @uref{http://www.hpl.hp.com/@/personal/@/Hans_Boehm/@/gc/,,
 garbage collector}, IA-64 libffi port, and other Java work.
 
 @item
@@ -237,6 +237,9 @@ architecture, libio maintenance, and early math work.
 
 @item
 Zdenek Dvorak for a new loop unroller and various fixes.
+
+@item
+Michael Eager for his work on the Xilinx MicroBlaze port.
 
 @item
 Richard Earnshaw for his ongoing work with the ARM@.

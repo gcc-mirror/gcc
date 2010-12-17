@@ -72,5 +72,5 @@ int main (int argc, char *argv[])
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "= B::foo"  "optimized"  } } */
+/* { dg-final { scan-tree-dump "= B::.*foo"  "optimized"  } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

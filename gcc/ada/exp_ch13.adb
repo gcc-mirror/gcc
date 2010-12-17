@@ -127,6 +127,16 @@ package body Exp_Ch13 is
                   else
                      Set_Expression (Decl, Empty);
                   end if;
+
+               --  An object declaration to which an address clause applies
+               --  has a delayed freeze, but the address expression itself
+               --  must be elaborated at the point it appears. If the object
+               --  is controlled, additional checks apply elsewhere.
+
+               elsif Nkind (Decl) = N_Object_Declaration
+                 and then not Needs_Constant_Address (Decl, Typ)
+               then
+                  Remove_Side_Effects (Exp);
                end if;
             end;
 
@@ -210,6 +220,31 @@ package body Exp_Ch13 is
       Delete         : Boolean := False;
 
    begin
+      --  If there are delayed aspect specifications, we insert them just
+      --  before the freeze node. They are already analyzed so we don't need
+      --  to reanalyze them (they were analyzed before the type was frozen),
+      --  but we want them in the tree for the back end, and so that the
+      --  listing from sprint is clearer on where these occur logically.
+
+      if Has_Delayed_Aspects (E) then
+         declare
+            Aitem : Node_Id;
+            Ritem : Node_Id;
+
+         begin
+            Ritem := First_Rep_Item (E);
+            while Present (Ritem) loop
+               if Nkind (Ritem) = N_Aspect_Specification then
+                  Aitem := Aspect_Rep_Item (Ritem);
+                  pragma Assert (Is_Delayed_Aspect (Aitem));
+                  Insert_Before (N, Aitem);
+               end if;
+
+               Next_Rep_Item (Ritem);
+            end loop;
+         end;
+      end if;
+
       --  Processing for objects with address clauses
 
       if Is_Object (E) and then Present (Address_Clause (E)) then
@@ -378,6 +413,8 @@ package body Exp_Ch13 is
       if Delete then
          Rewrite (N, Make_Null_Statement (Sloc (N)));
       end if;
+
+      --  Pop scope if we installed one for the analysis
 
       if In_Other_Scope then
          if Ekind (Current_Scope) = E_Package then

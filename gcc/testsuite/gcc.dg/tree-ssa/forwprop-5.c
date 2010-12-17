@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-forwprop1 -w" } */
+/* { dg-options "-O1 -fdump-tree-optimized -w" } */
+/* { dg-options "-O1 -fdump-tree-optimized -w -msse" { target { i?86-*-* x86_64-*-* } } } */
 
 #define vector __attribute__((vector_size(16) ))
 struct VecClass
@@ -11,11 +12,9 @@ vector float foo( vector float v )
 {
     vector float x = v;
     x = x + x;
-    struct VecClass y = *(struct VecClass*)&x;
-    return y.v;
+    struct VecClass disappear = *(struct VecClass*)&x;
+    return disappear.v;
 }
 
-/* We should be able to convert the cast to a VCE in forwprop1. */
-/* { dg-final { scan-tree-dump-times "VIEW_CONVERT_EXPR" 1 "forwprop1"} } */
-/* { dg-final { cleanup-tree-dump "forwprop1" } } */
-
+/* { dg-final { scan-tree-dump-times "disappear" 0 "optimized"} } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

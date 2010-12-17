@@ -292,17 +292,16 @@ package Prj is
 
    Makefile_Dependency_Suffix : constant String := ".d";
    ALI_Dependency_Suffix      : constant String := ".ali";
-
    Switches_Dependency_Suffix : constant String := ".cswi";
 
-   Binder_Exchange_Suffix     : constant String := ".bexch";
+   Binder_Exchange_Suffix : constant String := ".bexch";
    --  Suffix for binder exchange files
 
-   Library_Exchange_Suffix     : constant String := ".lexch";
+   Library_Exchange_Suffix : constant String := ".lexch";
    --  Suffix for library exchange files
 
    type Name_List_Index is new Nat;
-   No_Name_List            : constant Name_List_Index := 0;
+   No_Name_List : constant Name_List_Index := 0;
 
    type Name_Node is record
       Name : Name_Id         := No_Name;
@@ -664,6 +663,9 @@ package Prj is
    --  Structure to define source data
 
    type Source_Data is record
+      Initialized : Boolean := False;
+      --  Set to True when Source_Data is completely initialized
+
       Project : Project_Id := No_Project;
       --  Project of the source
 
@@ -706,6 +708,13 @@ package Prj is
       --  is duplicated several times when there are several units in the same
       --  file). Index is 0 if there is either no unit or a single one, and
       --  starts at 1 when there are multiple units
+
+      Compilable : Yes_No_Unknown := Unknown;
+      --  Updated at the first call to Is_Compilable. Yes if source file is
+      --  compilable.
+
+      In_The_Queue : Boolean := False;
+      --  True if the source has been put in the queue
 
       Locally_Removed : Boolean := False;
       --  True if the source has been "excluded"
@@ -766,12 +775,20 @@ package Prj is
       Naming_Exception : Boolean := False;
       --  True if the source has an exceptional name
 
+      Duplicate_Unit : Boolean := False;
+      --  True when a duplicate unit has been reported for this source
+
       Next_In_Lang : Source_Id := No_Source;
       --  Link to another source of the same language in the same project
+
+      Next_With_File_Name : Source_Id := No_Source;
+      --  Link to another source with the same base file name
+
    end record;
 
    No_Source_Data : constant Source_Data :=
-                      (Project                => No_Project,
+                      (Initialized            => False,
+                       Project                => No_Project,
                        Location               => No_Location,
                        Source_Dir_Rank        => 0,
                        Language               => No_Language_Index,
@@ -782,6 +799,8 @@ package Prj is
                        Unit                   => No_Unit_Index,
                        Index                  => 0,
                        Locally_Removed        => False,
+                       Compilable             => Unknown,
+                       In_The_Queue           => False,
                        Replaced_By            => No_Source,
                        File                   => No_File,
                        Display_File           => No_File,
@@ -800,7 +819,18 @@ package Prj is
                        Switches_Path          => No_Path,
                        Switches_TS            => Empty_Time_Stamp,
                        Naming_Exception       => False,
-                       Next_In_Lang           => No_Source);
+                       Duplicate_Unit         => False,
+                       Next_In_Lang           => No_Source,
+                       Next_With_File_Name    => No_Source);
+
+   package Source_Files_Htable is new Simple_HTable
+     (Header_Num => Header_Num,
+      Element    => Source_Id,
+      No_Element => No_Source,
+      Key        => File_Name_Type,
+      Hash       => Hash,
+      Equal      => "=");
+   --  Mapping of source file names to source ids
 
    package Source_Paths_Htable is new Simple_HTable
      (Header_Num => Header_Num,
@@ -820,6 +850,7 @@ package Prj is
       Equal      => "=");
 
    type Verbosity is (Default, Medium, High);
+   pragma Ordered (Verbosity);
    --  Verbosity when parsing GNAT Project Files
    --    Default is default (very quiet, if no errors).
    --    Medium is more verbose.
@@ -899,9 +930,12 @@ package Prj is
    type Response_File_Format is
      (None,
       GNU,
-      GCC,
       Object_List,
-      Option_List);
+      Option_List,
+      GCC,
+      GCC_GNU,
+      GCC_Object_List,
+      GCC_Option_List);
    --  The format of the different response files
 
    type Project_Configuration is record
@@ -939,7 +973,7 @@ package Prj is
       Map_File_Option : Name_Id := No_Name;
       --  Option to use when invoking the linker to build a map file
 
-      Minimum_Linker_Options : Name_List_Index := No_Name_List;
+      Trailing_Linker_Required_Switches : Name_List_Index := No_Name_List;
       --  The minimum options for the linker driver. Specified in the
       --  configuration.
 
@@ -1038,7 +1072,8 @@ package Prj is
                                Executable_Suffix             => No_Name,
                                Linker                        => No_Path,
                                Map_File_Option               => No_Name,
-                               Minimum_Linker_Options        => No_Name_List,
+                               Trailing_Linker_Required_Switches =>
+                                 No_Name_List,
                                Linker_Executable_Option      => No_Name_List,
                                Linker_Lib_Dir_Option         => No_Name,
                                Linker_Lib_Name_Option        => No_Name,
@@ -1329,6 +1364,14 @@ package Prj is
    -- Project_Tree_Data --
    -----------------------
 
+   package Replaced_Source_HTable is new Simple_HTable
+     (Header_Num => Header_Num,
+      Element    => File_Name_Type,
+      No_Element => No_File,
+      Key        => File_Name_Type,
+      Hash       => Hash,
+      Equal      => "=");
+
    type Private_Project_Tree_Data is private;
    --  Data for a project tree that is used only by the Project Manager
 
@@ -1343,13 +1386,29 @@ package Prj is
          Packages          : Package_Table.Instance;
          Projects          : Project_List;
 
-         Units_HT          : Units_Htable.Instance;
-         --  Unit name to Unit_Index (and from there so Source_Id)
+         Replaced_Sources : Replaced_Source_HTable.Instance;
+         --  The list of sources that have been replaced by sources with
+         --  different file names.
 
-         Source_Paths_HT   : Source_Paths_Htable.Instance;
+         Replaced_Source_Number : Natural := 0;
+         --  The number of entries in Replaced_Sources
+
+         Units_HT : Units_Htable.Instance;
+         --  Unit name to Unit_Index (and from there to Source_Id)
+
+         Source_Files_HT : Source_Files_Htable.Instance;
+         --  Base source file names to Source_Id list.
+
+         Source_Paths_HT : Source_Paths_Htable.Instance;
          --  Full path to Source_Id
 
-         Private_Part      : Private_Project_Tree_Data;
+         Source_Info_File_Name : String_Access := null;
+         --  The name of the source info file, if specified by the builder
+
+         Source_Info_File_Exists : Boolean := False;
+         --  True when a source info file has been successfully read
+
+         Private_Part : Private_Project_Tree_Data;
       end record;
    --  Data for a project tree
 
@@ -1386,13 +1445,17 @@ package Prj is
       Imported_First : Boolean := False);
    --  Call Action for each project imported directly or indirectly by project
    --  By, as well as extended projects.
+   --
    --  The order of processing depends on Imported_First:
-   --  If False, Action is called according to the order of importation: if A
-   --  imports B, directly or indirectly, Action will be called for A before
-   --  it is called for B. If two projects import each other directly or
-   --  indirectly (using at least one "limited with"), it is not specified
-   --  for which of these two projects Action will be called first.
-   --  The order is reversed if Imported_First is True.
+   --
+   --    If False, Action is called according to the order of importation: if A
+   --    imports B, directly or indirectly, Action will be called for A before
+   --    it is called for B. If two projects import each other directly or
+   --    indirectly (using at least one "limited with"), it is not specified
+   --    for which of these two projects Action will be called first.
+   --
+   --    The order is reversed if Imported_First is True
+   --
    --  With_State may be used by Action to choose a behavior or to report some
    --  global result.
 

@@ -1,5 +1,6 @@
 /* Timing variables for measuring compiler performance.
-   Copyright (C) 2000, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003, 2004, 2005, 2007, 2010
+   Free Software Foundation, Inc.
    Contributed by Alex Samuel <samuel@codesourcery.com>
 
 This file is part of GCC.
@@ -20,12 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
-#ifdef HAVE_SYS_TIMES_H
-# include <sys/times.h>
-#endif
-#ifdef HAVE_SYS_RESOURCE_H
-#include <sys/resource.h>
-#endif
 #include "timevar.h"
 
 #ifndef HAVE_CLOCK_T

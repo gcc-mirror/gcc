@@ -42,7 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "diagnostic.h"
 #include "tree-flow.h"
-#include "toplev.h"
 #include "tree-dump.h"
 #include "timevar.h"
 #include "cfgloop.h"
@@ -55,11 +54,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "sese.h"
 #include "predict.h"
+#include "dbgcnt.h"
 
 #ifdef HAVE_cloog
 
 #include "cloog/cloog.h"
 #include "ppl_c.h"
+#include "graphite-cloog-compat.h"
 #include "graphite-ppl.h"
 #include "graphite.h"
 #include "graphite-poly.h"
@@ -190,7 +191,7 @@ print_graphite_statistics (FILE* file, VEC (scop_p, heap) *scops)
 
   scop_p scop;
 
-  for (i = 0; VEC_iterate (scop_p, scops, i, scop); i++)
+  FOR_EACH_VEC_ELT (scop_p, scops, i, scop)
     print_graphite_scop_statistics (file, scop);
 }
 
@@ -199,6 +200,8 @@ print_graphite_statistics (FILE* file, VEC (scop_p, heap) *scops)
 static bool
 graphite_initialize (void)
 {
+  int ppl_initialized;
+
   if (number_of_loops () <= 1
       /* FIXME: This limit on the number of basic blocks of a function
 	 should be removed when the SCOP detection is faster.  */
@@ -210,8 +213,13 @@ graphite_initialize (void)
       return false;
     }
 
+  scev_reset ();
   recompute_all_dominators ();
   initialize_original_copy_tables ();
+
+  ppl_initialized = ppl_initialize ();
+  gcc_assert (ppl_initialized == 0);
+
   cloog_initialize ();
 
   if (dump_file && dump_flags)
@@ -236,6 +244,7 @@ graphite_finalize (bool need_cfg_cleanup_p)
     }
 
   cloog_finalize ();
+  ppl_finalize ();
   free_original_copy_tables ();
 
   if (dump_file && dump_flags)
@@ -253,6 +262,7 @@ graphite_transform_loops (void)
   bool need_cfg_cleanup_p = false;
   VEC (scop_p, heap) *scops = NULL;
   htab_t bb_pbb_mapping;
+  sbitmap reductions;
 
   if (!graphite_initialize ())
     return;
@@ -266,14 +276,32 @@ graphite_transform_loops (void)
     }
 
   bb_pbb_mapping = htab_create (10, bb_pbb_map_hash, eq_bb_pbb_map, free);
+  reductions = sbitmap_alloc (last_basic_block * 2);
+  sbitmap_zero (reductions);
 
-  for (i = 0; VEC_iterate (scop_p, scops, i, scop); i++)
-    build_poly_scop (scop);
+  FOR_EACH_VEC_ELT (scop_p, scops, i, scop)
+    if (dbg_cnt (graphite_scop))
+      rewrite_commutative_reductions_out_of_ssa (SCOP_REGION (scop),
+						 reductions);
 
-  for (i = 0; VEC_iterate (scop_p, scops, i, scop); i++)
+  FOR_EACH_VEC_ELT (scop_p, scops, i, scop)
+    if (dbg_cnt (graphite_scop))
+      {
+	rewrite_reductions_out_of_ssa (scop);
+	rewrite_cross_bb_scalar_deps_out_of_ssa (scop);
+	build_scop_bbs (scop, reductions);
+      }
+
+  sbitmap_free (reductions);
+
+  FOR_EACH_VEC_ELT (scop_p, scops, i, scop)
+    if (dbg_cnt (graphite_scop))
+      build_poly_scop (scop);
+
+  FOR_EACH_VEC_ELT (scop_p, scops, i, scop)
     if (POLY_SCOP_P (scop)
 	&& apply_poly_transforms (scop)
-	&& gloog (scop, scops, bb_pbb_mapping))
+	&& gloog (scop, bb_pbb_mapping))
       need_cfg_cleanup_p = true;
 
   htab_delete (bb_pbb_mapping);

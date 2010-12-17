@@ -1,5 +1,5 @@
 /* Definitions for the Blackfin port.
-   Copyright (C) 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Analog Devices.
 
    This file is part of GCC.
@@ -71,10 +71,6 @@ extern unsigned int bfin_workarounds;
 
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION fprintf (stderr, " (BlackFin bfin)")
-
-/* Run-time compilation parameters selecting different hardware subsets.  */
-
-extern int target_flags;
 
 /* Predefinition in the preprocessor for this target machine */
 #ifndef TARGET_CPU_CPP_BUILTINS
@@ -252,7 +248,7 @@ extern int target_flags;
    Defined in svr4.h.  */
 #undef  ASM_SPEC
 #define ASM_SPEC "\
-%{G*} %{v} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
+%{v} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
     %{mno-fdpic:-mnopic} %{mfdpic}"
 
 #define LINK_SPEC "\
@@ -262,7 +258,6 @@ extern int target_flags;
 %{static:-dn -Bstatic} \
 %{shared:-G -Bdynamic} \
 %{symbolic:-Bsymbolic} \
-%{G*} \
 %{YP,*} \
 %{Qy:} %{!Qn:-Qy} \
 -init __init -fini __fini "
@@ -276,17 +271,6 @@ extern int target_flags;
 #define MAX_LIBRARY_ID 255
 
 extern const char *bfin_library_id_string;
-
-/* Sometimes certain combinations of command options do not make
-   sense on a particular target machine.  You can define a macro
-   `OVERRIDE_OPTIONS' to take account of this.  This macro, if
-   defined, is executed once just after all the command options have
-   been parsed.
- 
-   Don't use this macro to turn on various extra optimizations for
-   `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.  */
- 
-#define OVERRIDE_OPTIONS override_options ()
 
 #define FUNCTION_MODE    SImode
 #define Pmode            SImode
@@ -513,19 +497,6 @@ extern const char *bfin_library_id_string;
   REG_CC, REG_ARGP,						  \
   REG_LT0, REG_LT1, REG_LC0, REG_LC1, REG_LB0, REG_LB1		  \
 }
-
-/* Macro to conditionally modify fixed_regs/call_used_regs.  */
-#define CONDITIONAL_REGISTER_USAGE			\
-  {							\
-    conditional_register_usage();                       \
-    if (TARGET_FDPIC)					\
-      call_used_regs[FDPIC_REGNO] = 1;			\
-    if (!TARGET_FDPIC && flag_pic)			\
-      {							\
-	fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;	\
-	call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;	\
-      }							\
-  }
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.
@@ -762,15 +733,6 @@ enum reg_class
    registers.  */
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 
-#define CLASS_LIKELY_SPILLED_P(CLASS) \
-    ((CLASS) == PREGS_CLOBBERED \
-     || (CLASS) == PROLOGUE_REGS \
-     || (CLASS) == P0REGS \
-     || (CLASS) == D0REGS \
-     || (CLASS) == D1REGS \
-     || (CLASS) == D2REGS \
-     || (CLASS) == CCREGS)
-
 /* Do not allow to store a value in REG_CC for any mode */
 /* Do not allow to store value in pregs if mode is not SI*/
 #define HARD_REGNO_MODE_OK(REGNO, MODE) hard_regno_mode_ok((REGNO), (MODE))
@@ -840,22 +802,6 @@ typedef struct {
   int call_cookie;		/* Do special things for this call */
 } CUMULATIVE_ARGS;
 
-/* Define where to put the arguments to a function.
-   Value is zero to push the argument on the stack,
-   or a hard register in which to store the argument.
-
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
-   CUM is a variable of type CUMULATIVE_ARGS which gives info about
-    the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).  */
-
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-  (function_arg (&CUM, MODE, TYPE, NAMED))
-
 #define FUNCTION_ARG_REGNO_P(REGNO) function_arg_regno_p (REGNO)
 
 
@@ -864,14 +810,6 @@ typedef struct {
    For a library call, FNTYPE is 0.  */
 #define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT, N_NAMED_ARGS)	\
   (init_cumulative_args (&CUM, FNTYPE, LIBNAME))
-
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be available.)  */
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
-  (function_arg_advance (&CUM, MODE, TYPE, NAMED))
-
-#define RETURN_POPS_ARGS(FDECL, FUNTYPE, STKSIZE) 0
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,15 +28,18 @@ package Sem_Ch6 is
 
    type Conformance_Type is
      (Type_Conformant, Mode_Conformant, Subtype_Conformant, Fully_Conformant);
+   pragma Ordered (Conformance_Type);
    --  Conformance type used in conformance checks between specs and bodies,
    --  and for overriding. The literals match the RM definitions of the
-   --  corresponding terms.
+   --  corresponding terms. This is an ordered type, since each conformance
+   --  type is stronger than the ones preceding it.
 
    procedure Analyze_Abstract_Subprogram_Declaration (N : Node_Id);
    procedure Analyze_Extended_Return_Statement       (N : Node_Id);
    procedure Analyze_Function_Call                   (N : Node_Id);
    procedure Analyze_Operator_Symbol                 (N : Node_Id);
    procedure Analyze_Parameter_Association           (N : Node_Id);
+   procedure Analyze_Parameterized_Expression        (N : Node_Id);
    procedure Analyze_Procedure_Call                  (N : Node_Id);
    procedure Analyze_Simple_Return_Statement         (N : Node_Id);
    procedure Analyze_Subprogram_Declaration          (N : Node_Id);
@@ -183,9 +186,14 @@ package Sem_Ch6 is
      (Tagged_Type : Entity_Id;
       Iface_Prim  : Entity_Id;
       Prim        : Entity_Id) return Boolean;
-   --  Returns true if both primitives have a matching name and they are also
-   --  type conformant. Special management is done for functions returning
-   --  interfaces.
+   --  Returns true if both primitives have a matching name (including support
+   --  for names of inherited private primitives --which have suffix 'P'), they
+   --  are type conformant, and Prim is defined in the scope of Tagged_Type.
+   --  Special management is done for functions returning interfaces.
+
+   procedure List_Inherited_Pre_Post_Aspects (E : Entity_Id);
+   --  E is the entity for a subprogram or generic subprogram spec. This call
+   --  lists all inherited Pre/Post aspects if List_Inherited_Pre_Post is True.
 
    function Mode_Conformant (New_Id, Old_Id : Entity_Id) return Boolean;
    --  Determine whether two callable entities (subprograms, entries,

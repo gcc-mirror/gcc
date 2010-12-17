@@ -55,6 +55,9 @@ namespace __debug
       typedef _GLIBCXX_STD_D::unordered_map<_Key, _Tp, _Hash,
 					    _Pred, _Alloc> _Base;
       typedef __gnu_debug::_Safe_sequence<unordered_map> _Safe_base;
+      typedef typename _Base::const_iterator _Base_const_iterator;
+      typedef typename _Base::iterator _Base_iterator;
+      typedef __gnu_debug::_Equal_to<_Base_const_iterator> _Equal;
 
     public:
       typedef typename _Base::size_type       size_type;
@@ -65,9 +68,9 @@ namespace __debug
       typedef typename _Base::key_type        key_type;
       typedef typename _Base::value_type      value_type;
 
-      typedef __gnu_debug::_Safe_iterator<typename _Base::iterator,
+      typedef __gnu_debug::_Safe_iterator<_Base_iterator,
 					  unordered_map> iterator;
-      typedef __gnu_debug::_Safe_iterator<typename _Base::const_iterator,
+      typedef __gnu_debug::_Safe_iterator<_Base_const_iterator,
 					  unordered_map> const_iterator;
 
       explicit
@@ -78,12 +81,14 @@ namespace __debug
       : _Base(__n, __hf, __eql, __a) { }
 
       template<typename _InputIterator>
-        unordered_map(_InputIterator __f, _InputIterator __l, 
-		      size_type __n = 10,
+        unordered_map(_InputIterator __first, _InputIterator __last, 
+		      size_type __n = 0,
 		      const hasher& __hf = hasher(), 
 		      const key_equal& __eql = key_equal(), 
 		      const allocator_type& __a = allocator_type())
-	: _Base(__gnu_debug::__check_valid_range(__f, __l), __l, __n,
+	: _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
+								     __last)),
+		__gnu_debug::__base(__last), __n,
 		__hf, __eql, __a), _Safe_base() { }
 
       unordered_map(const unordered_map& __x) 
@@ -93,10 +98,10 @@ namespace __debug
       : _Base(__x), _Safe_base() { }
 
       unordered_map(unordered_map&& __x)
-      : _Base(std::forward<unordered_map>(__x)), _Safe_base() { }
+      : _Base(std::move(__x)), _Safe_base() { }
 
       unordered_map(initializer_list<value_type> __l,
-		    size_type __n = 10,
+		    size_type __n = 0,
 		    const hasher& __hf = hasher(),
 		    const key_equal& __eql = key_equal(),
 		    const allocator_type& __a = allocator_type())
@@ -175,18 +180,39 @@ namespace __debug
       std::pair<iterator, bool>
       insert(const value_type& __obj)
       {
-	typedef std::pair<typename _Base::iterator, bool> __pair_type;
-	__pair_type __res = _Base::insert(__obj);
+	std::pair<_Base_iterator, bool> __res = _Base::insert(__obj);
 	return std::make_pair(iterator(__res.first, this), __res.second);
       }
 
       iterator
-      insert(const_iterator, const value_type& __obj)
+      insert(const_iterator __hint, const value_type& __obj)
       {
-	typedef std::pair<typename _Base::iterator, bool> __pair_type;
-	__pair_type __res = _Base::insert(__obj);
-	return iterator(__res.first, this);
+	__glibcxx_check_insert(__hint);
+	return iterator(_Base::insert(__hint.base(), __obj), this);
       }
+
+      template<typename _Pair, typename = typename
+	       std::enable_if<std::is_convertible<_Pair,
+						  value_type>::value>::type>
+        std::pair<iterator, bool>
+        insert(_Pair&& __obj)
+        {
+	  std::pair<_Base_iterator, bool> __res =
+	    _Base::insert(std::forward<_Pair>(__obj));
+	  return std::make_pair(iterator(__res.first, this), __res.second);
+	}
+
+      template<typename _Pair, typename = typename
+	       std::enable_if<std::is_convertible<_Pair,
+						  value_type>::value>::type>
+        iterator
+        insert(const_iterator __hint, _Pair&& __obj)
+        {
+	  __glibcxx_check_insert(__hint);
+	  return iterator(_Base::insert(__hint.base(),
+					std::forward<_Pair>(__obj)),
+			  this);
+	}
 
       void
       insert(std::initializer_list<value_type> __l)
@@ -197,7 +223,8 @@ namespace __debug
         insert(_InputIterator __first, _InputIterator __last)
         {
 	  __glibcxx_check_valid_range(__first, __last);
-	  _Base::insert(__first, __last);
+	  _Base::insert(__gnu_debug::__base(__first),
+			__gnu_debug::__base(__last));
 	}
 
       iterator
@@ -211,9 +238,8 @@ namespace __debug
       std::pair<iterator, iterator>
       equal_range(const key_type& __key)
       {
-	typedef typename _Base::iterator _Base_iterator;
-	typedef std::pair<_Base_iterator, _Base_iterator> __pair_type;
-	__pair_type __res = _Base::equal_range(__key);
+	std::pair<_Base_iterator, _Base_iterator> __res =
+	  _Base::equal_range(__key);
 	return std::make_pair(iterator(__res.first, this),
 			      iterator(__res.second, this));
       }
@@ -221,9 +247,8 @@ namespace __debug
       std::pair<const_iterator, const_iterator>
       equal_range(const key_type& __key) const
       {
-	typedef typename _Base::const_iterator _Base_iterator;
-	typedef std::pair<_Base_iterator, _Base_iterator> __pair_type;
-	__pair_type __res = _Base::equal_range(__key);
+	std::pair<_Base_const_iterator, _Base_const_iterator> __res =
+	  _Base::equal_range(__key);
 	return std::make_pair(const_iterator(__res.first, this),
 			      const_iterator(__res.second, this));
       }
@@ -232,10 +257,11 @@ namespace __debug
       erase(const key_type& __key)
       {
 	size_type __ret(0);
-	iterator __victim(_Base::find(__key), this);
-	if (__victim != end())
+	_Base_iterator __victim(_Base::find(__key));
+	if (__victim != _Base::end())
 	  {
-	    this->erase(__victim);
+	    this->_M_invalidate_if(_Equal(__victim));
+	    _Base::erase(__victim);
 	    __ret = 1;
 	  }
 	return __ret;
@@ -245,7 +271,7 @@ namespace __debug
       erase(const_iterator __it)
       {
 	__glibcxx_check_erase(__it);
-	__it._M_invalidate();
+	this->_M_invalidate_if(_Equal(__it.base()));
 	return iterator(_Base::erase(__it.base()), this);
       }
 
@@ -253,11 +279,15 @@ namespace __debug
       erase(const_iterator __first, const_iterator __last)
       {
 	__glibcxx_check_erase_range(__first, __last);
-	for (const_iterator __tmp = __first; __tmp != __last;)
-	{
-	  const_iterator __victim = __tmp++;
-	  __victim._M_invalidate();
-	}
+	for (_Base_const_iterator __tmp = __first.base();
+	     __tmp != __last.base(); ++__tmp)
+	  {
+	    _GLIBCXX_DEBUG_VERIFY(__tmp != _Base::end(),
+				  _M_message(__gnu_debug::__msg_valid_range)
+				  ._M_iterator(__first, "first")
+				  ._M_iterator(__last, "last"));
+	    this->_M_invalidate_if(_Equal(__tmp));
+	  }
 	return iterator(_Base::erase(__first.base(),
 				     __last.base()), this);
       }
@@ -272,9 +302,8 @@ namespace __debug
       void
       _M_invalidate_all()
       {
-	typedef typename _Base::const_iterator _Base_const_iterator;
 	typedef __gnu_debug::_Not_equal_to<_Base_const_iterator> _Not_equal;
-	this->_M_invalidate_if(_Not_equal(_M_base().end()));
+	this->_M_invalidate_if(_Not_equal(_Base::end()));
       }
     };
 
@@ -314,6 +343,9 @@ namespace __debug
       typedef _GLIBCXX_STD_D::unordered_multimap<_Key, _Tp, _Hash,
 						 _Pred, _Alloc> _Base;
       typedef __gnu_debug::_Safe_sequence<unordered_multimap> _Safe_base;
+      typedef typename _Base::const_iterator _Base_const_iterator;
+      typedef typename _Base::iterator _Base_iterator;
+      typedef __gnu_debug::_Equal_to<_Base_const_iterator> _Equal;
 
     public:
       typedef typename _Base::size_type       size_type;
@@ -324,9 +356,9 @@ namespace __debug
       typedef typename _Base::key_type        key_type;
       typedef typename _Base::value_type      value_type;
 
-      typedef __gnu_debug::_Safe_iterator<typename _Base::iterator,
+      typedef __gnu_debug::_Safe_iterator<_Base_iterator,
 					  unordered_multimap> iterator;
-      typedef __gnu_debug::_Safe_iterator<typename _Base::const_iterator,
+      typedef __gnu_debug::_Safe_iterator<_Base_const_iterator,
 					  unordered_multimap> const_iterator;
 
       explicit
@@ -337,12 +369,14 @@ namespace __debug
       : _Base(__n, __hf, __eql, __a) { }
 
       template<typename _InputIterator>
-        unordered_multimap(_InputIterator __f, _InputIterator __l, 
-			   size_type __n = 10,
+        unordered_multimap(_InputIterator __first, _InputIterator __last, 
+			   size_type __n = 0,
 			   const hasher& __hf = hasher(), 
 			   const key_equal& __eql = key_equal(), 
 			   const allocator_type& __a = allocator_type())
-	: _Base(__gnu_debug::__check_valid_range(__f, __l), __l, __n,
+	: _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
+								     __last)),
+		__gnu_debug::__base(__last), __n,
 		__hf, __eql, __a), _Safe_base() { }
 
       unordered_multimap(const unordered_multimap& __x) 
@@ -352,10 +386,10 @@ namespace __debug
       : _Base(__x), _Safe_base() { }
 
       unordered_multimap(unordered_multimap&& __x) 
-      : _Base(std::forward<unordered_multimap>(__x)), _Safe_base() { }
+      : _Base(std::move(__x)), _Safe_base() { }
 
       unordered_multimap(initializer_list<value_type> __l,
-			 size_type __n = 10,
+			 size_type __n = 0,
 			 const hasher& __hf = hasher(),
 			 const key_equal& __eql = key_equal(),
 			 const allocator_type& __a = allocator_type())
@@ -436,8 +470,30 @@ namespace __debug
       { return iterator(_Base::insert(__obj), this); }
 
       iterator
-      insert(const_iterator, const value_type& __obj)
-      { return iterator(_Base::insert(__obj), this); }
+      insert(const_iterator __hint, const value_type& __obj)
+      {
+	__glibcxx_check_insert(__hint);
+	return iterator(_Base::insert(__hint.base(), __obj), this);
+      }
+
+      template<typename _Pair, typename = typename
+	       std::enable_if<std::is_convertible<_Pair,
+						  value_type>::value>::type>
+        iterator
+        insert(_Pair&& __obj)
+        { return iterator(_Base::insert(std::forward<_Pair>(__obj)), this); }
+
+      template<typename _Pair, typename = typename
+	       std::enable_if<std::is_convertible<_Pair,
+						  value_type>::value>::type>
+	iterator
+	insert(const_iterator __hint, _Pair&& __obj)
+	{
+	  __glibcxx_check_insert(__hint);
+	  return iterator(_Base::insert(__hint.base(),
+					std::forward<_Pair>(__obj)),
+			  this);
+	}
 
       void
       insert(std::initializer_list<value_type> __l)
@@ -448,7 +504,8 @@ namespace __debug
         insert(_InputIterator __first, _InputIterator __last)
         {
 	  __glibcxx_check_valid_range(__first, __last);
-	  _Base::insert(__first, __last);
+	  _Base::insert(__gnu_debug::__base(__first),
+			__gnu_debug::__base(__last));
 	}
 
       iterator
@@ -462,9 +519,8 @@ namespace __debug
       std::pair<iterator, iterator>
       equal_range(const key_type& __key)
       {
-	typedef typename _Base::iterator _Base_iterator;
-	typedef std::pair<_Base_iterator, _Base_iterator> __pair_type;
-	__pair_type __res = _Base::equal_range(__key);
+	std::pair<_Base_iterator, _Base_iterator> __res =
+	  _Base::equal_range(__key);
 	return std::make_pair(iterator(__res.first, this),
 			      iterator(__res.second, this));
       }
@@ -472,9 +528,8 @@ namespace __debug
       std::pair<const_iterator, const_iterator>
       equal_range(const key_type& __key) const
       {
-	typedef typename _Base::const_iterator _Base_iterator;
-	typedef std::pair<_Base_iterator, _Base_iterator> __pair_type;
-	__pair_type __res = _Base::equal_range(__key);
+	std::pair<_Base_const_iterator, _Base_const_iterator> __res =
+	  _Base::equal_range(__key);
 	return std::make_pair(const_iterator(__res.first, this),
 			      const_iterator(__res.second, this));
       }
@@ -483,11 +538,13 @@ namespace __debug
       erase(const key_type& __key)
       {
 	size_type __ret(0);
-	iterator __victim(_Base::find(__key), this);
-	if (__victim != end())
+	std::pair<_Base_iterator, _Base_iterator> __pair =
+	  _Base::equal_range(__key);
+	for (_Base_iterator __victim = __pair.first; __victim != __pair.second;)
 	  {
-	    this->erase(__victim);
-	    __ret = 1;
+	    this->_M_invalidate_if(_Equal(__victim));
+	    _Base::erase(__victim++);
+	    ++__ret;
 	  }
 	return __ret;
       }
@@ -496,7 +553,7 @@ namespace __debug
       erase(const_iterator __it)
       {
 	__glibcxx_check_erase(__it);
-	__it._M_invalidate();
+	this->_M_invalidate_if(_Equal(__it.base()));
 	return iterator(_Base::erase(__it.base()), this);
       }
 
@@ -504,11 +561,15 @@ namespace __debug
       erase(const_iterator __first, const_iterator __last)
       {
 	__glibcxx_check_erase_range(__first, __last);
-	for (const_iterator __tmp = __first; __tmp != __last;)
-	{
-	  const_iterator __victim = __tmp++;
-	  __victim._M_invalidate();
-	}
+	for (_Base_const_iterator __tmp = __first.base();
+	     __tmp != __last.base(); ++__tmp)
+	  {
+	    _GLIBCXX_DEBUG_VERIFY(__tmp != _Base::end(),
+				  _M_message(__gnu_debug::__msg_valid_range)
+				  ._M_iterator(__first, "first")
+				  ._M_iterator(__last, "last"));
+	    this->_M_invalidate_if(_Equal(__tmp));
+	  }
 	return iterator(_Base::erase(__first.base(),
 				     __last.base()), this);
       }
@@ -523,9 +584,8 @@ namespace __debug
       void
       _M_invalidate_all()
       {
-	typedef typename _Base::const_iterator _Base_const_iterator;
 	typedef __gnu_debug::_Not_equal_to<_Base_const_iterator> _Not_equal;
-	this->_M_invalidate_if(_Not_equal(_M_base().end()));
+	this->_M_invalidate_if(_Not_equal(_Base::end()));
       }
     };
 

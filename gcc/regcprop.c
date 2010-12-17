@@ -34,7 +34,7 @@
 #include "function.h"
 #include "recog.h"
 #include "flags.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "obstack.h"
 #include "timevar.h"
 #include "tree-pass.h"
@@ -946,7 +946,14 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 
     did_replacement:
       if (changed)
-	anything_changed = true;
+	{
+	  anything_changed = true;
+
+	  /* If something changed, perhaps further changes to earlier
+	     DEBUG_INSNs can be applied.  */
+	  if (vd->n_debug_insn_changes)
+	    note_uses (&PATTERN (insn), cprop_find_used_regs, vd);
+	}
 
       /* Clobber call-clobbered registers.  */
       if (CALL_P (insn))

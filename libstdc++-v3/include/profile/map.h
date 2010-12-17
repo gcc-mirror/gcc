@@ -94,7 +94,7 @@ namespace __profile
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       map(map&& __x)
-      : _Base(std::forward<map>(__x))
+      : _Base(std::move(__x))
       { }
 
       map(initializer_list<value_type> __l,
@@ -219,6 +219,15 @@ namespace __profile
         return _Base::operator[](__k);
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      mapped_type&
+      operator[](key_type&& __k)
+      {
+        __profcxx_map_to_unordered_map_find(this, size());
+        return _Base::operator[](std::move(__k));
+      }
+#endif
+
       mapped_type&
       at(const key_type& __k)
       {
@@ -245,24 +254,61 @@ namespace __profile
       }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename _Pair, typename = typename
+	       std::enable_if<std::is_convertible<_Pair,
+						  value_type>::value>::type>
+        std::pair<iterator, bool>
+        insert(_Pair&& __x)
+        {
+	  __profcxx_map_to_unordered_map_insert(this, size(), 1);
+	  typedef typename _Base::iterator _Base_iterator;
+	  std::pair<_Base_iterator, bool> __res
+	    = _Base::insert(std::forward<_Pair>(__x));
+	  return std::pair<iterator, bool>(iterator(__res.first),
+					   __res.second);
+	}
+#endif
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
       void
       insert(std::initializer_list<value_type> __list)
       { 
         size_type size_before = size();
         _Base::insert(__list); 
         __profcxx_map_to_unordered_map_insert(this, size_before, 
-                                                size() - size_before);
+					      size() - size_before);
       }
 #endif
 
       iterator
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      insert(const_iterator __position, const value_type& __x)
+#else
       insert(iterator __position, const value_type& __x)
+#endif
       {
         size_type size_before = size();
-	return iterator(_Base::insert(__position, __x));
+	iterator __i = iterator(_Base::insert(__position, __x));
         __profcxx_map_to_unordered_map_insert(this, size_before, 
-                                                size() - size_before);
+					      size() - size_before);
+	return __i;
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename _Pair, typename = typename
+	       std::enable_if<std::is_convertible<_Pair,
+						  value_type>::value>::type>
+        iterator
+        insert(const_iterator __position, _Pair&& __x)
+        {
+	  size_type size_before = size();
+	  iterator __i
+	    = iterator(_Base::insert(__position, std::forward<_Pair>(__x)));
+	  __profcxx_map_to_unordered_map_insert(this, size_before, 
+						size() - size_before);
+	  return __i;
+      }
+#endif
 
       template<typename _InputIterator>
         void
@@ -276,7 +322,7 @@ namespace __profile
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       iterator
-      erase(iterator __position)
+      erase(const_iterator __position)
       {
 	iterator __i = _Base::erase(__position);
         __profcxx_map_to_unordered_map_erase(this, size(), 1);
@@ -306,31 +352,18 @@ namespace __profile
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       iterator
-      erase(iterator __first, iterator __last)
-      {
-	// _GLIBCXX_RESOLVE_LIB_DEFECTS
-	// 151. can't currently clear() empty container
-	while (__first != __last)
-	  this->erase(__first++);
-	return __last;
-      }
+      erase(const_iterator __first, const_iterator __last)
+      { return iterator(_Base::erase(__first, __last)); }
 #else
       void
       erase(iterator __first, iterator __last)
-      {
-	// _GLIBCXX_RESOLVE_LIB_DEFECTS
-	// 151. can't currently clear() empty container
-	while (__first != __last)
-	  this->erase(__first++);
-      }
+      { _Base::erase(__first, __last); }
 #endif
 
       void
 
       swap(map& __x)
-      {
-	_Base::swap(__x);
-      }
+      { _Base::swap(__x); }
 
       void
       clear()

@@ -96,9 +96,26 @@
 #endif  /* GLIBC_MUTEX_INIT_CHECK */
 
 
+#if defined( IRIX_PTHREAD_INIT_CHECK )
+#define PTHREAD_MUTEX_INITIALIZER	{ { 0 } }
+#define PTHREAD_COND_INITIALIZER	{ { 0 } }
+#define PTHREAD_RWLOCK_INITIALIZER	{ { 0 } }
+#endif  /* IRIX_PTHREAD_INIT_CHECK */
+
+
 #if defined( PTHREAD_INCOMPLETE_STRUCT_ARGUMENT_CHECK )
 extern int __sigsetjmp (struct __jmp_buf_tag *__env, int __savemask);
 #endif  /* PTHREAD_INCOMPLETE_STRUCT_ARGUMENT_CHECK */
+
+
+#if defined( SOLARIS_COND_INIT_CHECK )
+#pragma ident	"@(#)pthread.h	1.29	01/07/07 SMI"
+#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)
+#define	PTHREAD_COND_INITIALIZER	{{{0}, 0, 0x4356}, 0}	/* = DEFAULTCV */
+#else
+#define	PTHREAD_COND_INITIALIZER	{{{0}, 0, 0x4356}, {0}}	/* = DEFAULTCV */
+#endif
+#endif  /* SOLARIS_COND_INIT_CHECK */
 
 
 #if defined( SOLARIS_MUTEX_INIT_2_CHECK )
@@ -109,9 +126,9 @@ extern int __sigsetjmp (struct __jmp_buf_tag *__env, int __savemask);
 #define PTHREAD_MUTEX_INITIALIZER	{{{0},0}, {{{0}}}, {0}}
 #endif
 #if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)
-#define PTHREAD_COND_INITIALIZER	{{{0}, 0}, 0}	/* DEFAULTCV */
+#define PTHREAD_COND_INITIALIZER	{{{0}, 0, 0x4356}, 0}	/* DEFAULTCV */
 #else
-#define PTHREAD_COND_INITIALIZER	{{{0}, 0}, {0}}	/* DEFAULTCV */
+#define PTHREAD_COND_INITIALIZER	{{{0}, 0, 0x4356}, {0}}	/* DEFAULTCV */
 #endif
 #if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)
 #define	PTHREAD_MUTEX_INITIALIZER		/* = DEFAULTMUTEX */	\

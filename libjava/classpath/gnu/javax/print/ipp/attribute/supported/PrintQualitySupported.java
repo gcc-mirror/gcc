@@ -42,6 +42,7 @@ import gnu.javax.print.ipp.IppUtilities;
 import java.util.Iterator;
 import java.util.Set;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.EnumSyntax;
 import javax.print.attribute.SupportedValuesAttribute;
 import javax.print.attribute.standard.PrintQuality;
@@ -50,33 +51,33 @@ import javax.print.attribute.standard.PrintQuality;
 /**
  * <code>PrintQualitySupported</code> provides the
  * supported values for the print-quality attribute.
- *  
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class PrintQualitySupported extends EnumSyntax
   implements SupportedValuesAttribute
 {
   /** Draft quality of the printer. */
-  public static final PrintQualitySupported DRAFT = 
+  public static final PrintQualitySupported DRAFT =
     new PrintQualitySupported(3);
-  
+
   /** Normal quality of the printer. */
-  public static final PrintQualitySupported NORMAL = 
+  public static final PrintQualitySupported NORMAL =
     new PrintQualitySupported(4);
-  
+
   /** High quality of the printer. */
-  public static final PrintQualitySupported HIGH = 
+  public static final PrintQualitySupported HIGH =
     new PrintQualitySupported(5);
 
   private static final String[] stringTable = { "draft", "normal", "high" };
-  
-  private static final PrintQualitySupported[] enumValueTable = { DRAFT, 
-                                                                  NORMAL, 
+
+  private static final PrintQualitySupported[] enumValueTable = { DRAFT,
+                                                                  NORMAL,
                                                                   HIGH };
-  
+
   /**
    * Constructs a <code>PrintQualitySupported</code> object.
-   * 
+   *
    * @param value the value of the enum
    */
   protected PrintQualitySupported(int value)
@@ -89,7 +90,7 @@ public final class PrintQualitySupported extends EnumSyntax
    *
    * @return The class <code>PrintQualitySupported</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return PrintQualitySupported.class;
   }
@@ -103,7 +104,7 @@ public final class PrintQualitySupported extends EnumSyntax
   {
     return "print-quality-supported";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.
@@ -124,7 +125,7 @@ public final class PrintQualitySupported extends EnumSyntax
   {
     return enumValueTable;
   }
-  
+
   /**
    * Returns the lowest used value by the enumerations of this class.
    * .
@@ -134,38 +135,35 @@ public final class PrintQualitySupported extends EnumSyntax
   {
     return 3;
   }
-  
+
   /**
    * Returns the equally enum of the standard attribute class
    * of this SupportedValuesAttribute enum.
-   * 
+   *
    * @return The enum of the standard attribute class.
    */
-  public PrintQuality getAssociatedAttribute() 
+  public PrintQuality getAssociatedAttribute()
   {
     return (PrintQuality) IppUtilities.getEnumAttribute(
                           "print-quality", new Integer(getValue()));
   }
-  
+
   /**
    * Constructs an array from a set of -supported attributes.
    * @param set set to process
    * @return The constructed array.
-   * 
+   *
    * @see #getAssociatedAttribute()
    */
-  public static PrintQuality[] getAssociatedAttributeArray(Set set) 
+  public static PrintQuality[] getAssociatedAttributeArray(Set<Attribute> set)
   {
-    PrintQualitySupported tmp;
-    PrintQuality[] result = new PrintQuality[set.size()];      
-    Iterator it = set.iterator();
+    PrintQuality[] result = new PrintQuality[set.size()];
     int j = 0;
-    while (it.hasNext())
+    for (Attribute tmp : set)
       {
-        tmp = (PrintQualitySupported) it.next();
-        result[j] = tmp.getAssociatedAttribute();
+        result[j] = ((PrintQualitySupported) tmp).getAssociatedAttribute();
         j++;
-      }            
+      }
     return result;
   }
 }

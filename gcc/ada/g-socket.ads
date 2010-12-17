@@ -478,13 +478,14 @@ package GNAT.Sockets is
    --  more data can be transmitted. Neither transmission nor reception can be
    --  performed with Shut_Read_Write.
 
-   type Port_Type is new Natural;
-   --  Classical port definition. No_Port provides a special value to
-   --  denote uninitialized port. Any_Port provides a special value
-   --  enabling all ports.
+   type Port_Type is range 0 .. 16#ffff#;
+   --  TCP/UDP port number
 
    Any_Port : constant Port_Type;
-   No_Port  : constant Port_Type;
+   --  All ports
+
+   No_Port : constant Port_Type;
+   --  Uninitialized port number
 
    type Inet_Addr_Type (Family : Family_Type := Family_Inet) is private;
    --  An Internet address depends on an address family (IPv4 contains 4 octets
@@ -975,8 +976,8 @@ package GNAT.Sockets is
       Count  : out Ada.Streams.Stream_Element_Count;
       Flags  : Request_Flag_Type := No_Request_Flag);
    --  Transmit data gathered from the set of vector elements Vector to a
-   --  socket. Count is set to the count of transmitted stream elements.
-   --  Flags allow control over transmission.
+   --  socket. Count is set to the count of transmitted stream elements. Flags
+   --  allow control over transmission.
 
    procedure Set_Socket_Option
      (Socket : Socket_Type;
@@ -987,10 +988,9 @@ package GNAT.Sockets is
    procedure Shutdown_Socket
      (Socket : Socket_Type;
       How    : Shutmode_Type := Shut_Read_Write);
-   --  Shutdown a connected socket. If How is Shut_Read, further receives will
-   --  be disallowed. If How is Shut_Write, further sends will be disallowed.
-   --  If how is Shut_Read_Write, further sends and receives will be
-   --  disallowed.
+   --  Shutdown a connected socket. If How is Shut_Read further receives will
+   --  be disallowed. If How is Shut_Write further sends will be disallowed.
+   --  If How is Shut_Read_Write further sends and receives will be disallowed.
 
    type Stream_Access is access all Ada.Streams.Root_Stream_Type'Class;
    --  Same interface as Ada.Streams.Stream_IO
@@ -1010,9 +1010,9 @@ package GNAT.Sockets is
 
    procedure Free is new Ada.Unchecked_Deallocation
      (Ada.Streams.Root_Stream_Type'Class, Stream_Access);
-   --  Destroy a stream created by one of the Stream functions above,
-   --  releasing the corresponding resources. The user is responsible for
-   --  calling this subprogram when the stream is not needed anymore.
+   --  Destroy a stream created by one of the Stream functions above, releasing
+   --  the corresponding resources. The user is responsible for calling this
+   --  subprogram when the stream is not needed anymore.
 
    type Socket_Set_Type is limited private;
    --  This type allows to manipulate sets of sockets. It allows to wait for
@@ -1058,16 +1058,18 @@ package GNAT.Sockets is
    --  can block the full process (not just the calling thread).
    --
    --  Check_Selector provides the very same behaviour. The only difference is
-   --  that it does not watch for exception events. Note that on some
-   --  platforms it is kept process blocking on purpose. The timeout parameter
-   --  allows the user to have the behaviour he wants. Abort_Selector allows
-   --  to safely abort a blocked Check_Selector call. A special socket
-   --  is opened by Create_Selector and included in each call to
-   --  Check_Selector. Abort_Selector causes an event to occur on this
-   --  descriptor in order to unblock Check_Selector. Note that each call to
-   --  Abort_Selector will cause exactly one call to Check_Selector to return
-   --  with Aborted status. The special socket created by Create_Selector is
-   --  closed when Close_Selector is called.
+   --  that it does not watch for exception events. Note that on some platforms
+   --  it is kept process blocking on purpose. The timeout parameter allows the
+   --  user to have the behaviour he wants. Abort_Selector allows to safely
+   --  abort a blocked Check_Selector call. A special socket is opened by
+   --  Create_Selector and included in each call to Check_Selector.
+   --
+   --  Abort_Selector causes an event to occur on this descriptor in order to
+   --  unblock Check_Selector. Note that each call to Abort_Selector will cause
+   --  exactly one call to Check_Selector to return with Aborted status. The
+   --  special socket created by Create_Selector is closed when Close_Selector
+   --  is called.
+   --
    --  A typical case where it is useful to abort a Check_Selector operation is
    --  the situation where a change to the monitored sockets set must be made.
 
@@ -1098,9 +1100,9 @@ package GNAT.Sockets is
    --  R_Socket_Set and W_Socket_Set (even if they denote the same set of
    --  Sockets), or some event may be lost.
    --
-   --  Socket_Error is raised when the select(2) system call returns an
-   --  error condition, or when a read error occurs on the signalling socket
-   --  used for the implementation of Abort_Selector.
+   --  Socket_Error is raised when the select(2) system call returns an error
+   --  condition, or when a read error occurs on the signalling socket used for
+   --  the implementation of Abort_Selector.
 
    procedure Check_Selector
      (Selector     : Selector_Type;

@@ -1,4 +1,4 @@
-/* NaturalLanguageSyntax.java -- 
+/* NaturalLanguageSyntax.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -41,13 +41,13 @@ package gnu.javax.print.ipp.attribute;
 import java.io.Serializable;
 
 /**
- * <code>NaturalLanguageSyntax</code> is the abstract base class of all 
- * attribute classes which provide a natural language (US-ASCII) 
+ * <code>NaturalLanguageSyntax</code> is the abstract base class of all
+ * attribute classes which provide a natural language (US-ASCII)
  * string as value.
  *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public abstract class NaturalLanguageSyntax 
+public abstract class NaturalLanguageSyntax
   implements Cloneable, Serializable
 {
   private final String value;
@@ -64,7 +64,7 @@ public abstract class NaturalLanguageSyntax
   {
     if (value == null)
       throw new NullPointerException("value may not be null");
-    
+
     this.value = value;
   }
 
@@ -100,14 +100,14 @@ public abstract class NaturalLanguageSyntax
     if (! (obj instanceof NaturalLanguageSyntax))
       return false;
 
-    NaturalLanguageSyntax tmp = (NaturalLanguageSyntax) obj;    
+    NaturalLanguageSyntax tmp = (NaturalLanguageSyntax) obj;
     return value.equals(tmp.getValue());
   }
 
   /**
    * Returns a string representing the object. The returned
    * string is the underlying text value of this object.
-   * 
+   *
    * @return The string representation.
    */
   public String toString()

@@ -19,11 +19,11 @@ program test
 contains
   subroutine a(p)
     integer, pointer,intent(in) :: p
-    p => null(p)! { dg-error "Cannot assign to INTENT\\(IN\\) variable" }
-    nullify(p)  ! { dg-error "Cannot assign to INTENT\\(IN\\) variable" }
-    allocate(p) ! { dg-error "Cannot allocate INTENT\\(IN\\) variable" }
-    call c(p)   ! { dg-error "is INTENT\\(IN\\) while interface specifies INTENT\\(INOUT\\)" }
-    deallocate(p) ! { dg-error "Cannot deallocate INTENT\\(IN\\) variable" }
+    p => null(p)! { dg-error "pointer association context" }
+    nullify(p)  ! { dg-error "pointer association context" }
+    allocate(p) ! { dg-error "pointer association context" }
+    call c(p)   ! { dg-error "pointer association context" }
+    deallocate(p) ! { dg-error "pointer association context" }
   end subroutine
   subroutine c(p)
     integer, pointer, intent(inout) :: p
@@ -32,10 +32,10 @@ contains
   subroutine b(t)
     type(myT),intent(in) :: t
     t%jp = 5
-    t%jp => null(t%jp)  ! { dg-error "Cannot assign to INTENT\\(IN\\) variable" }
-    nullify(t%jp) ! { dg-error "Cannot assign to INTENT\\(IN\\) variable" }
-    t%j = 7 ! { dg-error "Cannot assign to INTENT\\(IN\\) variable" }
-    allocate(t%jp) ! { dg-error "Cannot allocate INTENT\\(IN\\) variable" }
-    deallocate(t%jp) ! { dg-error "Cannot deallocate INTENT\\(IN\\) variable" }
+    t%jp => null(t%jp)  ! { dg-error "pointer association context" }
+    nullify(t%jp) ! { dg-error "pointer association context" }
+    t%j = 7 ! { dg-error "variable definition context" }
+    allocate(t%jp) ! { dg-error "pointer association context" }
+    deallocate(t%jp) ! { dg-error "pointer association context" }
   end subroutine b
 end program

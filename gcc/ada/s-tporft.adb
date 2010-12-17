@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 2002-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,8 @@ with System.Task_Info;
 
 with System.Soft_Links;
 --  used to initialize TSD for a C thread, in function Self
+
+with System.Multiprocessors;
 
 separate (System.Task_Primitives.Operations)
 function Register_Foreign_Thread (Thread : Thread_Id) return Task_Id is
@@ -63,8 +65,8 @@ begin
    System.Tasking.Initialize_ATCB
      (Self_Id, null, Null_Address, Null_Task,
       Foreign_Task_Elaborated'Access,
-      System.Priority'First, Task_Info.Unspecified_Task_Info, 0, Self_Id,
-      Succeeded);
+      System.Priority'First, System.Multiprocessors.Not_A_Specific_CPU,
+      Task_Info.Unspecified_Task_Info, 0, Self_Id, Succeeded);
    Unlock_RTS;
    pragma Assert (Succeeded);
 
@@ -86,16 +88,18 @@ begin
 
    Self_Id.Deferral_Level := 0;
 
+   --  We do not provide an alternate stack for foreign threads
+
+   Self_Id.Common.Task_Alternate_Stack := Null_Address;
+
    System.Soft_Links.Create_TSD (Self_Id.Common.Compiler_Data);
 
    --  ???
-   --  The following call is commented out to avoid dependence on
-   --  the System.Tasking.Initialization package.
-   --  It seems that if we want Ada.Task_Attributes to work correctly
-   --  for C threads we will need to raise the visibility of this soft
-   --  link to System.Soft_Links.
-   --  We are putting that off until this new functionality is otherwise
-   --  stable.
+   --  The following call is commented out to avoid dependence on the
+   --  System.Tasking.Initialization package. It seems that if we want
+   --  Ada.Task_Attributes to work correctly for C threads we will need to
+   --  raise the visibility of this soft link to System.Soft_Links. We are
+   --  putting that off until this new functionality is otherwise stable.
 
    --  System.Tasking.Initialization.Initialize_Attributes_Link.all (T);
 

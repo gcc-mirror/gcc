@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O -mfpmath=sse -msse2" } */
-/* { dg-require-effective-target sse2 } */
+
 /* The fact that t1 and t2 are uninitialized is critical.  With them
    uninitialized, the register allocator is free to put them in the same
    hard register, which results in

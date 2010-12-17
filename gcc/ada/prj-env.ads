@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,6 +25,9 @@
 
 --  This package implements services for Project-aware tools, mostly related
 --  to the environment (configuration pragma files, path files, mapping files).
+
+with GNAT.Dynamic_HTables;
+with GNAT.OS_Lib;
 
 package Prj.Env is
 
@@ -142,9 +145,9 @@ package Prj.Env is
      (Project : Project_Id;
       In_Tree : Project_Tree_Ref);
    --  Iterate through all the source directories of a project, including those
-   --  of imported or modified projects.
-   --  Only returns those directories that potentially contain Ada sources (ie
-   --  ignore projects that have no Ada sources
+   --  of imported or modified projects. Only returns those directories that
+   --  potentially contain Ada sources (ie ignore projects that have no Ada
+   --  sources
 
    generic
       with procedure Action (Path : String);
@@ -152,4 +155,73 @@ package Prj.Env is
    --  Iterate through all the object directories of a project, including
    --  those of imported or modified projects.
 
+   ------------------
+   -- Project Path --
+   ------------------
+
+   type Project_Search_Path is private;
+   --  An abstraction of the project path. This object provides subprograms to
+   --  search for projects on the path (and caches the results for more
+   --  efficiency).
+
+   procedure Free (Self : in out Project_Search_Path);
+   --  Free the memory used by Self
+
+   procedure Add_Directories
+     (Self : in out Project_Search_Path;
+      Path : String);
+   --  Add one or more directories to the path. Directories added with this
+   --  procedure are added in order after the current directory and before the
+   --  path given by the environment variable GPR_PROJECT_PATH. A value of "-"
+   --  will remove the default project directory from the project path.
+   --
+   --  Calls to this subprogram must be performed before the first call to
+   --  Find_Project below, or PATH will be added at the end of the search
+   --  path.
+
+   procedure Get_Path
+     (Self : in out Project_Search_Path;
+      Path : out String_Access);
+   --  Return the current value of the project path, either the value set
+   --  during elaboration of the package or, if procedure Set_Project_Path has
+   --  been called, the value set by the last call to Set_Project_Path.
+   --  The returned value must not be modified.
+
+   procedure Set_Path
+     (Self : in out Project_Search_Path; Path : String);
+   --  Override the value of the project path.
+   --  This also removes the implicit default search directories
+
+   procedure Find_Project
+     (Self               : in out Project_Search_Path;
+      Project_File_Name  : String;
+      Directory          : String;
+      Path               : out Namet.Path_Name_Type);
+   --  Search for a the project with the given name either in Directory (which
+   --  often will be the directory contain the project we are currently parsing
+   --  and which we found a reference to another project), or in the project
+   --  path. Extra_Project_Path contains additional directories to search.
+   --
+   --  Project_File_Name can optionally contain directories, and the extension
+   --  (.gpr) for the file name is optional.
+   --
+   --  Returns No_Name if no such project was found
+
+private
+   package Projects_Paths is new GNAT.Dynamic_HTables.Simple_HTable
+     (Header_Num => Header_Num,
+      Element    => Path_Name_Type,
+      No_Element => No_Path,
+      Key        => Name_Id,
+      Hash       => Hash,
+      Equal      => "=");
+
+   type Project_Search_Path is record
+      Path : GNAT.OS_Lib.String_Access;
+      --  As a special case, if the first character is '#:" or this variable is
+      --  unset, this means that the PATH has not been fully initialized yet
+      --  (although subprograms above will properly take care of that).
+
+      Cache : Projects_Paths.Instance;
+   end record;
 end Prj.Env;

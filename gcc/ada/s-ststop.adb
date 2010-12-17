@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2009, Free Software Foundation, Inc.           --
+--          Copyright (C) 2008-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -216,7 +216,7 @@ package body System.Strings.Stream_Ops is
                Rem_Size : constant Natural :=
                             Block_Size mod Default_Block_Size;
 
-               --  String indices
+               --  String indexes
 
                Low  : Positive := Item'First;
                High : Positive := Low + C_In_Default_Block - 1;
@@ -338,7 +338,7 @@ package body System.Strings.Stream_Ops is
                Rem_Size : constant Natural :=
                             Block_Size mod Default_Block_Size;
 
-               --  String indices
+               --  String indexes
 
                Low  : Positive := Item'First;
                High : Positive := Low + C_In_Default_Block - 1;

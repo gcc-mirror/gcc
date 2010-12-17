@@ -1,3 +1,187 @@
+2010-11-13  Kai Tietz  <kai.tietz@onevision.com>
+
+	* lto-plugin.c (add_output_files): Fix memory leak.
+
+2010-11-11  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR bootstrap/46397
+	PR bootstrap/46362
+	* configure.ac: Add AC_TYPE_INT64_T test.
+	* config.h.in: Regenerate.
+	* configure: Likewise.
+	* lto-plugin.c (debug): Use char not bool.
+	(nop): Likewise.
+	(check_1): Rename from check, and use int not bool for gate argument.
+	(check): Macro wrapper for the above to coerce gate argument into
+	boolean-valued integer in case it has pointer type.
+	(parse_table_entry): Use 0 not false.
+	(claim_file_handler): Avoid use of PRIx64 by splitting 64-bit size
+	into two 32-bit parts and printing as hex ints.
+
+2010-11-03  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR lto/46291
+	* lto-plugin.c (claim_file_handler): Don't close file descriptor.
+
+2010-11-03  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR lto/46273
+	* lto-plugin.h: Delete.
+	* lto-plugin-elf.c: Likewise.
+	* lto-plugin-coff.c: Likewise.
+	* configure.ac: Don't use libelf, don't source config.gcc.
+	(LIBELFLIBS): Delete.
+	(LIBELFINC): Delete.
+	(LTO_FORMAT): Delete.
+	(SYM_STYLE): Add AC_DEFINE var, set based on $target.
+	(config.h): Add AC_CONFIG_HEADERS directive.
+	* Makefile.am (LIBELFLIBS): Delete.
+	(LIBELFINC): Delete.
+	(LTO_FORMAT): Delete.
+	(DEFS): Import.
+	(AM_CPPFLAGS): Use it.  Don't use LIBELFINC.
+	(liblto_plugin_la_SOURCES): Don't use LTO_FORMAT, don't include
+	any object-format-specific source file in the link.
+	(liblto_plugin_la_LIBADD): Don't use LIBELFLIBS.
+	* config.h.in: Generate.
+	* configure: Regenerate.
+	* Makefile.in: Likewise.
+	* lto-plugin.c (O_BINARY): Definition moved here from lto-plugin.h.
+	(LTO_SEGMENT_NAME): New definition.
+	(LTO_SECTION_PREFIX): Definition moved here from lto-plugin.h.
+	(LTO_SECTION_PREFIX_LEN): New definition.
+	(struct sym_aux): Struct definition moved here from lto-plugin.h.
+	(struct plugin_symtab): Likewise.
+	(struct plugin_objfile): Likewise.
+	(struct plugin_objfile): New struct def.
+	(enum symbol_style): New enum type.
+	(add_symbols): Make static.
+	(claimed_files): Likewise.
+	(num_claimed_files): Likewise.
+	(sym_style): New global.
+	(check): Make static.
+	(parse_table_entry): Likewise.  Respect sym_style when extracting
+	symbol from symtab entry.
+	(translate): Make static.
+	(resolve_conflicts): Likewise.
+	(process_symtab): New function, per-section callback version of
+	old object-format-specific handling from deleted lto-plugin-elf.c.
+	(claim_file_handler): Convert ELF-specific version from deleted
+	lto-plugin-elf.c to simple_object interface and move here.
+	(process_options): Allow new '-sym-style=' option.
+	(onload): Don't call deleted onload_format_checks hook.
+
+2010-10-11  Kai Tietz  <kai.tietz@onevision.com>
+
+	* lto-plugin.c (dump_symtab): Correct printf argument type.
+	(finish_conflict_resolution): Initialize resolution.
+
+2010-10-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/45951
+	* configure.ac: Add AC_CANONICAL_SYSTEM.
+	* configure: Regenerated.
+
+2010-10-07  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* configure.ac: Source config.gcc to determine lto_binary_reader.
+	(LTO_FORMAT): New AC_SUBST variable inferred from lto_binary_reader.
+	* Makefile.am (LTO_FORMAT): Import.
+	(liblto_plugin_la_SOURCES): Add object format dependent module
+	defined by LTO_FORMAT.
+	(liblto_plugin_la_LIBADD): Allow for both PIC and non-PIC libiberty,
+	and work around libtool warning.
+	* configure: Regenerate.
+	* Makefile.in: Likewise.
+	* lto-plugin.c (struct sym_aux): Move to new lto-plugin.h.
+	(struct sym_aux): Likewise.
+	(struct plugin_symtab): Likewise.
+	(struct plugin_file_info): Likewise.
+	(LTO_SECTION_PREFIX): Likewise.
+	(add_symbols):  Make non-static.
+	(claimed_files): Likewise.
+	(num_claimed_files): Likewise.
+	(check): Likewise.
+	(parse_table_entry): Likewise.
+	(translate): Likewise.
+	(resolve_conflicts): Likewise.
+	(process_symtab): Move to new lto-plugin-elf.c object format dependent
+	source file.
+	(claim_file_handler): Likewise, and make non-static.
+	(onload): Call new onload_format_checks function.
+	* lto-plugin.h: New file.
+	(LTO_SECTION_PREFIX): Move here.
+	(struct sym_aux): Likewise.
+	(struct plugin_symtab): Likewise.
+	(struct plugin_file_info): Likewise.
+	(claim_file_handler): Add new function prototype.
+	(onload_format_checks): Likewise.
+	(check): Declare extern.
+	(translate): Likewise.
+	(parse_table_entry): Likewise.
+	(resolve_conflicts): Likewise.
+	(add_symbols):  Likewise.
+	(claimed_files): Likewise.
+	(num_claimed_files): Likewise.
+	* lto-plugin-elf.c (process_symtab): Move here.
+	(claim_file_handler): Likewise, and make non-static.
+	(onload_format_checks): New function factored out from onload.
+	* lto-plugin-coff.c (claim_file_handler): New function stub.
+	(onload_format_checks): Likewise.
+
+2010-08-05  Andi Kleen  <ak@linux.intel.com>
+
+	* lto-plugin.c: Include <hashtab.h>
+	(sym_aux): Add next_conflict field to save conflict chains.
+	(plugin_file_info): Add conflicts symtab.
+	(parse_table_entry): Initialize aux->next_conflict.
+	(process_symtab): Increment found.
+	(dump_symtab): Add.
+	(finish_conflict_resolution): Add.
+	(free_symtab): Add.
+	(write_resolution): Remove symbols loop and move into
+	dump_symtab. Call dump_symtab for main symbol and conflicts table.
+	Call free_symtab to free conflicts table.
+	(SWAP): Add.
+	(eq_sym): Add.
+	(hash_sym): Add.
+	(symbol_strength): Add.
+	(resolve_conflicts): Add.
+	(claim_file_handler): Add n variable. Check return value of
+	process_symtab. Call resolve_conflicts.
+
+2010-07-27  Andi Kleen <ak@linux.intel.com>
+
+	* lto-plugin.c (translate): Remove debug fprintf.
+
+2010-07-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/45042
+	* lto-plugin.c (translate): Cast to unsigned long.
+
+2010-07-23   Andi Kleen <ak@linux.intel.com>
+
+	PR lto/44992
+	* lto-plugin.c (sym_aux): Add.
+	(plugin_symtab): Remove slots. Add aux and id.
+	(parse_table_entry): Change to use aux instead of slots.
+	(LTO_SECTION_PREFIX): Add.
+	(translate): Improve buffer allocation. Change to append
+	symbols to existing out buffer.
+	(get_section): Remove.
+	(process_symtab): Add.
+	(free_2): Free symtab->aux.
+	(write_resolution): Handle aux instead of slots.
+	Print sub id to resolution file.
+	(claim_file_handler): Clear lto_file. Replace get_symtab/translate
+	calls with call to process_symtab.
+
+2010-07-22  Richard Guenther  <rguenther@suse.de>
+
+	* Makefile.am: New copy_lto_plugin rule to install the plugin
+	into ../gcc.
+	* Makefile.in: Regenerated.
+
 2010-05-21  Richard Guenther  <rguenther@suse.de>
 
 	* lto-plugin.c (write_resolution): Do not assert syms is non-NULL.

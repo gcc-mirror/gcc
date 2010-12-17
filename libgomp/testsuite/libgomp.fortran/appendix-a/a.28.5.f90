@@ -1,4 +1,9 @@
 ! { dg-do compile }
+! { dg-options "-w" }
+!
+! "-w" added as libgomp/testsuite seemingly cannot parse with
+! dg-warning Fortran's output. Fortran warns for "call sub1(a)"
+! that there is a "Rank mismatch in argument 'x'".
 
       SUBROUTINE SUB1(X)
         DIMENSION X(10)

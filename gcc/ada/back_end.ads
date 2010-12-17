@@ -35,7 +35,7 @@ package Back_End is
       Declarations_Only,
       --  Partial back end operation with no object file generation. In this
       --  mode the only useful action performed by gigi is to process all
-      --  declarations issuing any error messages (in partcicular those to
+      --  declarations issuing any error messages (in particular those to
       --  do with rep clauses), and to back annotate representation info.
 
       Skip);

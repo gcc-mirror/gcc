@@ -1,7 +1,8 @@
-<sect1 id="manual.intro.setup.prereq" xreflabel="Prerequisites">
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="manual.intro.setup.prereq" xreflabel="Prerequisites">
 <?dbhtml filename="prerequisites.html"?>
 
-<sect1info>
+<info><title>Prerequisites</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -10,17 +11,17 @@
       Prerequisites
     </keyword>
   </keywordset>
-</sect1info>
+</info>
 
-<title>Prerequisites</title>
+
 
 <para>
   Because libstdc++ is part of GCC, the primary source for
    installation instructions is
-   <ulink url="http://gcc.gnu.org/install/">the GCC install page</ulink>.
+   <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/install/">the GCC install page</link>.
    In particular, list of prerequisite software needed to build the library
-   <ulink url="http://gcc.gnu.org/install/prerequisites.html">
-   starts with those requirements.</ulink> The same pages also list
+   <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/install/prerequisites.html">
+   starts with those requirements.</link> The same pages also list
    the tools you will need if you wish to modify the source.
 </para>
 
@@ -31,8 +32,8 @@
    <para>As of GCC 4.0.1 the minimum version of binutils required to build
       libstdc++ is <code>2.15.90.0.1.1</code>. You can get snapshots
       (as well as releases) of binutils from
-      <ulink url="ftp://sources.redhat.com/pub/binutils/">
-      ftp://sources.redhat.com/pub/binutils</ulink>.
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="ftp://sources.redhat.com/pub/binutils/">
+      ftp://sources.redhat.com/pub/binutils</link>.
       Older releases of libstdc++ do not require such a recent version,
       but to take full advantage of useful space-saving features and
       bug-fixes you should use a recent binutils whenever possible.
@@ -92,14 +93,14 @@ ta_IN               UTF-8
 zh_TW               BIG5
 </programlisting>
 
-      <para>Failure to have the underlying "C" library locale
-      information installed will mean that C++ named locales for the
-      above regions will not work: because of this, the libstdc++
-      testsuite will skip the named locale tests. If this isn't an
-      issue, don't worry about it. If named locales are needed, the
-      underlying locale information must be installed. Note that
-      rebuilding libstdc++ after the "C" locales are installed is not
-      necessary.
+      <para>Failure to have installed the underlying "C" library
+      locale information for any of the above regions means that
+      the corresponding C++ named locale will not work:  because of
+      this, the libstdc++ testsuite will skip named locale tests
+      which need missing information.  If this isn't an issue, don't
+      worry about it.  If a named locale is needed, the underlying
+      locale information must be installed.  Note that rebuilding
+      libstdc++ after "C" locales are installed is not necessary.
       </para>
 
       <para>
@@ -156,4 +157,4 @@ zh_TW               BIG5
       </varlistentry>
    </variablelist>
 
-</sect1>
+</section>

@@ -1,11 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -lm" } */
 /* { dg-options "-O2 -msse2 -mfpmath=sse" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
-/* { dg-require-effective-target sse2 { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
-
-#ifdef __i386__
-#include "cpuid.h"
-#endif
+/* { dg-require-effective-target sse2_runtime { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 
 extern double fabs (double);
 extern void abort (void);
@@ -262,16 +258,6 @@ main ()
 
   double roots[7];
   int nroots;
-
-#ifdef __i386__
-  unsigned int eax, ebx, ecx, edx;
-
-  if (!__get_cpuid (1, &eax, &ebx, &ecx, &edx))
-    return 0;
-
-  if (!(edx & bit_SSE2))
-    return 0;
-#endif
 
   nroots = sbisect (6, sseq, 0.0, 10000000.0, 5, 1, roots);
   if (nroots != 4)

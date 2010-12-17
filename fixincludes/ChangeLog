@@ -1,3 +1,34 @@
+2010-11-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR other/46202
+	* Makefile.in (install-strip): New phony target.
+	(all, check, install): Also mark as phony.
+
+2010-11-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* inclhack.def (irix_pthread_init): New fix.
+	* fixincl.x: Regenerate.
+	* tests/base/pthread.h [IRIX_PTHREAD_INIT_CHECK]: New test.
+
+2010-10-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR c++/46024
+	* inclhack.def (solaris_sys_va_list): New fix.
+	* fixincl.x: Regenerate.
+	* tests/base/sys/va_list.h: New test.
+
+2010-09-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* inclhack.def (hpux_htonl): Allow trailing whitespace in select.
+	* fixincl.x: Regenerate.
+
+2010-07-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* inclhack.def (solaris_cond_init): New fix.
+	* fixincl.x: Regenerate.
+	* tests/base/pthread.h [SOLARIS_COND_INIT_CHECK]: New test.
+	[SOLARIS_MUTEX_INIT_2_CHECK]: Adapt.
+
 2010-06-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* inclhack.def (solaris__restrict, solaris_complex_cxx): New fixes

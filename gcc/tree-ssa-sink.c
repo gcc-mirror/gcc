@@ -190,8 +190,12 @@ is_hidden_global_store (gimple stmt)
 	    return true;
 
 	}
-      else if (INDIRECT_REF_P (lhs))
+      else if (INDIRECT_REF_P (lhs)
+	       || TREE_CODE (lhs) == MEM_REF
+	       || TREE_CODE (lhs) == TARGET_MEM_REF)
 	return ptr_deref_may_alias_global_p (TREE_OPERAND (lhs, 0));
+      else if (CONSTANT_CLASS_P (lhs))
+	return true;
       else
 	gcc_unreachable ();
     }
@@ -423,6 +427,12 @@ statement_sink_location (gimple stmt, basic_block frombb,
     return false;
   if (sinkbb == frombb || sinkbb->loop_depth > frombb->loop_depth
       || sinkbb->loop_father != frombb->loop_father)
+    return false;
+
+  /* If the latch block is empty, don't make it non-empty by sinking
+     something into it.  */
+  if (sinkbb == frombb->loop_father->latch
+      && empty_block_p (sinkbb))
     return false;
 
   /* Move the expression to a post dominator can't reduce the number of

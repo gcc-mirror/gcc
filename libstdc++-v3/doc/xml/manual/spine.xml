@@ -1,19 +1,15 @@
-<?xml version='1.0'?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
-[ ]>
-
-<book id="manual-index">
+<book xmlns="http://docbook.org/ns/docbook" version="5.0" xml:id="manual-index">
 <?dbhtml dir="manual"?>
 <?dbhtml filename="spine.html"?>
-<title>The GNU C++ Library</title>
 
-<bookinfo>
+  <title>The GNU C++ Library Manual</title>
+
+<info>
   <copyright>
     <year>2009</year>
     <year>2010</year>
     <holder>
-      <ulink url="http://www.fsf.org">FSF</ulink>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.fsf.org">FSF</link>
     </holder>
   </copyright>
   <legalnotice>
@@ -21,117 +17,101 @@
       <link linkend="manual.intro.status.license">License</link>
     </para>
   </legalnotice>
-</bookinfo>
+</info>
 
 <!-- Part 01 : Intro -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="intro.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="intro.xml">
 </xi:include>
 
 <!-- Part 02 : Standard Contents -->
-<part id="manual.std" xreflabel="Standard Contents">
-<title>
-  Standard Contents
-</title>
+<part xml:id="manual.std" xreflabel="Standard Contents">
+<info>
+  <title>
+    Standard Contents
+  </title>
+</info>
+
 
 <!-- Chapter 01 : Support -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="support.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="support.xml">
 </xi:include>
 
 
 <!-- Chapter 02 : Diagnostics -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="diagnostics.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="diagnostics.xml">
 </xi:include>
 
 <!-- Chapter 03 : Utilities -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="utilities.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="utilities.xml">
 </xi:include>
 
 <!-- Chapter 04 : Strings -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="strings.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="strings.xml">
 </xi:include>
 
 <!-- Chapter 05 : Localization -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="localization.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="localization.xml">
 </xi:include>
 
 <!-- Chapter 06 : Containers -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="containers.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="containers.xml">
 </xi:include>
 
 <!-- Chapter 07 : Iterators -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="iterators.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="iterators.xml">
 </xi:include>
 
 <!-- Chapter 08 : Algorithms -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="algorithms.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="algorithms.xml">
 </xi:include>
 
 <!-- Chapter 09 : Numerics -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="numerics.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="numerics.xml">
 </xi:include>
 
 <!-- Chapter 10 : Input Output -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="io.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="io.xml">
 </xi:include>
 
 <!-- Chapter 11 : Atomics -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="atomics.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="atomics.xml">
 </xi:include>
 
 <!-- Chapter 12 : Concurrency -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="concurrency.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="concurrency.xml">
 </xi:include>
 
 </part>
 
 <!-- Part 03 : Extensions -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="extensions.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="extensions.xml">
 </xi:include>
 
 
 <!-- Part 04 : Appendices -->
-<part id="appendix" xreflabel="Appendices">
-<title>
+<part xml:id="appendix" xreflabel="Appendices"><info><title>
   Appendices
-</title>
+</title></info>
+
 
 <!-- Appendix A -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="appendix_contributing.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="appendix_contributing.xml">
 </xi:include>
 
 <!-- Appendix B -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="appendix_porting.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="appendix_porting.xml">
 </xi:include>
 
 <!-- Appendix C -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="appendix_free.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="appendix_free.xml">
 </xi:include>
 
 <!-- Appendix D -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="../gnu/gpl-3.0.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="../gnu/gpl-3.0.xml">
 </xi:include>
 
 <!-- Appendix E -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="../gnu/fdl-1.3.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="../gnu/fdl-1.3.xml">
 </xi:include>
 
 </part>

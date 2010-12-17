@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,11 +29,13 @@ with Types; use Types;
 
 package Exp_Ch6 is
 
-   procedure Expand_N_Function_Call            (N : Node_Id);
-   procedure Expand_N_Subprogram_Body          (N : Node_Id);
-   procedure Expand_N_Subprogram_Body_Stub     (N : Node_Id);
-   procedure Expand_N_Subprogram_Declaration   (N : Node_Id);
-   procedure Expand_N_Procedure_Call_Statement (N : Node_Id);
+   procedure Expand_N_Extended_Return_Statement (N : Node_Id);
+   procedure Expand_N_Function_Call             (N : Node_Id);
+   procedure Expand_N_Procedure_Call_Statement  (N : Node_Id);
+   procedure Expand_N_Simple_Return_Statement   (N : Node_Id);
+   procedure Expand_N_Subprogram_Body           (N : Node_Id);
+   procedure Expand_N_Subprogram_Body_Stub      (N : Node_Id);
+   procedure Expand_N_Subprogram_Declaration    (N : Node_Id);
 
    procedure Expand_Call (N : Node_Id);
    --  This procedure contains common processing for Expand_N_Function_Call,

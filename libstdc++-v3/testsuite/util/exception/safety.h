@@ -52,13 +52,13 @@ namespace __gnu_test
 	  __s += "\n";
 	  __s += "random number generated is: ";
 	  char buf[40];
-	  __builtin_sprintf(buf, "%lu", random);
+	  __builtin_sprintf(buf, "%lu", (unsigned long)random);
 	  __s += buf;
 	  __s += " on range [";
-	  __builtin_sprintf(buf, "%lu", distribution.min());
+	  __builtin_sprintf(buf, "%lu", (unsigned long)distribution.min());
 	  __s += buf;
 	  __s += ", ";
-	  __builtin_sprintf(buf, "%lu", distribution.max());
+	  __builtin_sprintf(buf, "%lu", (unsigned long)distribution.max());
 	  __s += buf;
 	  __s += "]\n";
 	  std::__throw_out_of_range(__s.c_str());
@@ -251,12 +251,86 @@ namespace __gnu_test
       struct erase_base
       {
 	typedef typename _Tp::iterator 			iterator;
+	typedef typename _Tp::const_iterator		const_iterator;
 
-	iterator (_Tp::* _F_erase_point)(iterator);
-	iterator (_Tp::* _F_erase_range)(iterator, iterator);
+	iterator (_Tp::* _F_erase_point)(const_iterator);
+	iterator (_Tp::* _F_erase_range)(const_iterator, const_iterator);
 
 	erase_base()
 	: _F_erase_point(&_Tp::erase), _F_erase_range(&_Tp::erase) { }
+      };
+
+    // Specializations, old C++03 signatures.
+    template<typename _Tp1, typename _Tp2, typename _Tp3>
+      struct erase_base<std::basic_string<_Tp1, _Tp2, _Tp3>>
+      {
+	typedef std::basic_string<_Tp1, _Tp2, _Tp3>     container_type;
+	typedef typename container_type::iterator 	iterator;
+
+	iterator (container_type::* _F_erase_point)(iterator);
+	iterator (container_type::* _F_erase_range)(iterator, iterator);
+
+	erase_base()
+	: _F_erase_point(&container_type::erase),
+	  _F_erase_range(&container_type::erase) { }
+      };
+
+    template<typename _Tp1, typename _Tp2, typename _Tp3,
+	     template <typename, typename, typename> class _Tp4>
+      struct erase_base<__gnu_cxx::__versa_string<_Tp1, _Tp2, _Tp3, _Tp4>>
+      {
+	typedef __gnu_cxx::__versa_string<_Tp1, _Tp2, _Tp3, _Tp4>
+	                                                container_type;
+	typedef typename container_type::iterator 	iterator;
+
+	iterator (container_type::* _F_erase_point)(iterator);
+	iterator (container_type::* _F_erase_range)(iterator, iterator);
+
+	erase_base()
+	: _F_erase_point(&container_type::erase),
+	  _F_erase_range(&container_type::erase) { }
+      };
+
+    template<typename _Tp1, typename _Tp2>
+      struct erase_base<std::deque<_Tp1, _Tp2>>
+      {
+	typedef std::deque<_Tp1, _Tp2> 		        container_type;
+	typedef typename container_type::iterator 	iterator;
+
+	iterator (container_type::* _F_erase_point)(iterator);
+	iterator (container_type::* _F_erase_range)(iterator, iterator);
+
+	erase_base()
+	: _F_erase_point(&container_type::erase),
+	  _F_erase_range(&container_type::erase) { }
+      };
+
+    template<typename _Tp1, typename _Tp2>
+      struct erase_base<std::list<_Tp1, _Tp2>>
+      {
+	typedef std::list<_Tp1, _Tp2> 		        container_type;
+	typedef typename container_type::iterator 	iterator;
+
+	iterator (container_type::* _F_erase_point)(iterator);
+	iterator (container_type::* _F_erase_range)(iterator, iterator);
+
+	erase_base()
+	: _F_erase_point(&container_type::erase),
+	  _F_erase_range(&container_type::erase) { }
+      };
+
+    template<typename _Tp1, typename _Tp2>
+      struct erase_base<std::vector<_Tp1, _Tp2>>
+      {
+	typedef std::vector<_Tp1, _Tp2>		        container_type;
+	typedef typename container_type::iterator 	iterator;
+
+	iterator (container_type::* _F_erase_point)(iterator);
+	iterator (container_type::* _F_erase_range)(iterator, iterator);
+
+	erase_base()
+	: _F_erase_point(&container_type::erase),
+	  _F_erase_range(&container_type::erase) { }
       };
 
     // Specialization, as forward_list has erase_after.
@@ -265,90 +339,25 @@ namespace __gnu_test
       {
 	typedef std::forward_list<_Tp1, _Tp2> 		container_type;
 	typedef typename container_type::iterator 	iterator;
-	typedef typename container_type::const_iterator 	const_iterator;
+	typedef typename container_type::const_iterator const_iterator;
 
-	void (container_type::* _F_erase_point)(const_iterator);
-	void (container_type::* _F_erase_range)(const_iterator, const_iterator);
+	iterator (container_type::* _F_erase_point)(const_iterator);
+	iterator (container_type::* _F_erase_range)(const_iterator,
+						    const_iterator);
 
 	erase_base()
 	: _F_erase_point(&container_type::erase_after),
 	  _F_erase_range(&container_type::erase_after) { }
       };
 
-    // Specializations for the unordered containers.
-    template<typename _Tp1, typename _Tp2, typename _Tp3,
-	     typename _Tp4, typename _Tp5>
-      struct erase_base<std::unordered_map<_Tp1, _Tp2, _Tp3, _Tp4, _Tp5>>
-      {
-	typedef std::unordered_map<_Tp1, _Tp2, _Tp3, _Tp4, _Tp5>
-	                                                container_type;
-	typedef typename container_type::iterator 	iterator;
-	typedef typename container_type::const_iterator const_iterator;
+    template<typename _Tp,
+	     bool = traits<_Tp>::has_erase::value,
+	     bool = traits<_Tp>::has_erase_after::value>
+      struct erase_point;
 
-	iterator (container_type::* _F_erase_point)(const_iterator);
-	iterator (container_type::* _F_erase_range)(const_iterator,
-						    const_iterator);
-
-	erase_base()
-	: _F_erase_point(&container_type::erase),
-	  _F_erase_range(&container_type::erase) { }
-      };
-
-    template<typename _Tp1, typename _Tp2, typename _Tp3,
-	     typename _Tp4, typename _Tp5>
-      struct erase_base<std::unordered_multimap<_Tp1, _Tp2, _Tp3,
-						_Tp4, _Tp5>>
-      {
-	typedef std::unordered_multimap<_Tp1, _Tp2, _Tp3, _Tp4, _Tp5>
-	                                                container_type;
-	typedef typename container_type::iterator 	iterator;
-	typedef typename container_type::const_iterator const_iterator;
-
-	iterator (container_type::* _F_erase_point)(const_iterator);
-	iterator (container_type::* _F_erase_range)(const_iterator,
-						    const_iterator);
-
-	erase_base()
-	: _F_erase_point(&container_type::erase),
-	  _F_erase_range(&container_type::erase) { }
-      };
-
-    template<typename _Tp1, typename _Tp2, typename _Tp3, typename _Tp4>
-      struct erase_base<std::unordered_set<_Tp1, _Tp2, _Tp3, _Tp4>>
-      {
-	typedef std::unordered_set<_Tp1, _Tp2, _Tp3, _Tp4>
-	                                                container_type;
-	typedef typename container_type::iterator 	iterator;
-	typedef typename container_type::const_iterator const_iterator;
-
-	iterator (container_type::* _F_erase_point)(const_iterator);
-	iterator (container_type::* _F_erase_range)(const_iterator,
-						    const_iterator);
-
-	erase_base()
-	: _F_erase_point(&container_type::erase),
-	  _F_erase_range(&container_type::erase) { }
-      };
-
-    template<typename _Tp1, typename _Tp2, typename _Tp3, typename _Tp4>
-      struct erase_base<std::unordered_multiset<_Tp1, _Tp2, _Tp3, _Tp4>>
-      {
-	typedef std::unordered_multiset<_Tp1, _Tp2, _Tp3, _Tp4>
-	                                                container_type;
-	typedef typename container_type::iterator 	iterator;
-	typedef typename container_type::const_iterator const_iterator;
-
-	iterator (container_type::* _F_erase_point)(const_iterator);
-	iterator (container_type::* _F_erase_range)(const_iterator,
-						    const_iterator);
-
-	erase_base()
-	: _F_erase_point(&container_type::erase),
-	  _F_erase_range(&container_type::erase) { }
-      };
-
-    template<typename _Tp, bool = traits<_Tp>::has_erase::value>
-      struct erase_point : public erase_base<_Tp>
+    // Specialization for most containers.
+    template<typename _Tp>
+      struct erase_point<_Tp, true, false> : public erase_base<_Tp>
       {
 	using erase_base<_Tp>::_F_erase_point;
 
@@ -374,17 +383,51 @@ namespace __gnu_test
 	}
       };
 
+    // Specialization for forward_list.
+    template<typename _Tp>
+      struct erase_point<_Tp, false, true> : public erase_base<_Tp>
+      {
+	using erase_base<_Tp>::_F_erase_point;
+
+	void
+	operator()(_Tp& __container)
+	{
+	  try
+	    {
+	      // NB: Should be equivalent to size() member function, but
+	      // computed with begin() and end().
+	      const size_type sz = std::distance(__container.begin(),
+						 __container.end());
+
+	      // NB: Lowest common denominator: use forward iterator operations.
+	      auto i = __container.before_begin();
+	      std::advance(i, generate(sz));
+
+	      // Makes it easier to think of this as __container.erase(i)
+	      (__container.*_F_erase_point)(i);
+	    }
+	  catch(const __gnu_cxx::forced_error&)
+	    { throw; }
+	}
+      };
+
     // Specialization, empty.
     template<typename _Tp>
-      struct erase_point<_Tp, false>
+      struct erase_point<_Tp, false, false>
       {
 	void
 	operator()(_Tp&) { }
       };
 
 
-    template<typename _Tp, bool = traits<_Tp>::has_erase::value>
-      struct erase_range : public erase_base<_Tp>
+    template<typename _Tp,
+	     bool = traits<_Tp>::has_erase::value,
+	     bool = traits<_Tp>::has_erase_after::value>
+      struct erase_range;
+
+    // Specialization for most containers.
+    template<typename _Tp>
+      struct erase_range<_Tp, true, false> : public erase_base<_Tp>
       {
 	using erase_base<_Tp>::_F_erase_range;
 
@@ -410,9 +453,37 @@ namespace __gnu_test
 	}
       };
 
+    // Specialization for forward_list.
+    template<typename _Tp>
+      struct erase_range<_Tp, false, true> : public erase_base<_Tp>
+      {
+	using erase_base<_Tp>::_F_erase_range;
+
+	void
+	operator()(_Tp& __container)
+	{
+	  try
+	    {
+	      const size_type sz = std::distance(__container.begin(),
+						 __container.end());
+	      size_type s1 = generate(sz);
+	      size_type s2 = generate(sz);
+	      auto i1 = __container.before_begin();
+	      auto i2 = __container.before_begin();
+	      std::advance(i1, std::min(s1, s2));
+	      std::advance(i2, std::max(s1, s2));
+
+	      // Makes it easier to think of this as __container.erase(i1, i2).
+	      (__container.*_F_erase_range)(i1, i2);
+	    }
+	  catch(const __gnu_cxx::forced_error&)
+	    { throw; }
+	}
+      };
+
     // Specialization, empty.
     template<typename _Tp>
-      struct erase_range<_Tp, false>
+      struct erase_range<_Tp, false, false>
       {
 	void
 	operator()(_Tp&) { }
@@ -564,11 +635,52 @@ namespace __gnu_test
       struct insert_base
       {
 	typedef typename _Tp::iterator 			iterator;
+	typedef typename _Tp::const_iterator    	const_iterator;
 	typedef typename _Tp::value_type 		value_type;
 
-	iterator (_Tp::* _F_insert_point)(iterator, const value_type&);
+	iterator (_Tp::* _F_insert_point)(const_iterator, const value_type&);
 
 	insert_base() : _F_insert_point(&_Tp::insert) { }
+      };
+
+    // Specializations, old C++03 signatures.
+    template<typename _Tp1, typename _Tp2>
+      struct insert_base<std::deque<_Tp1, _Tp2>>
+      {
+	typedef std::deque<_Tp1, _Tp2> 	                container_type;
+	typedef typename container_type::iterator 	iterator;
+	typedef typename container_type::value_type 	value_type;
+
+	iterator (container_type::* _F_insert_point)(iterator,
+						     const value_type&);
+
+	insert_base() : _F_insert_point(&container_type::insert) { }
+      };
+
+    template<typename _Tp1, typename _Tp2>
+      struct insert_base<std::list<_Tp1, _Tp2>>
+      {
+	typedef std::list<_Tp1, _Tp2>    	        container_type;
+	typedef typename container_type::iterator 	iterator;
+	typedef typename container_type::value_type 	value_type;
+
+	iterator (container_type::* _F_insert_point)(iterator,
+						     const value_type&);
+
+	insert_base() : _F_insert_point(&container_type::insert) { }
+      };
+
+    template<typename _Tp1, typename _Tp2>
+      struct insert_base<std::vector<_Tp1, _Tp2>>
+      {
+	typedef std::vector<_Tp1, _Tp2> 	        container_type;
+	typedef typename container_type::iterator 	iterator;
+	typedef typename container_type::value_type 	value_type;
+
+	iterator (container_type::* _F_insert_point)(iterator,
+						     const value_type&);
+
+	insert_base() : _F_insert_point(&container_type::insert) { }
       };
 
     // Specialization, as string insertion has a different signature.
@@ -584,6 +696,7 @@ namespace __gnu_test
 	insert_base() : _F_insert_point(&container_type::insert) { }
       };
 
+    // Likewise for __versa_string.
     template<typename _Tp1, typename _Tp2, typename _Tp3,
 	     template <typename, typename, typename> class _Tp4>
       struct insert_base<__gnu_cxx::__versa_string<_Tp1, _Tp2, _Tp3, _Tp4>>
@@ -598,7 +711,7 @@ namespace __gnu_test
 	insert_base() : _F_insert_point(&container_type::insert) { }
       };
 
-    // Specialization, as forward_list insertion has a different signature.
+    // Specialization, as forward_list has insert_after.
     template<typename _Tp1, typename _Tp2>
       struct insert_base<std::forward_list<_Tp1, _Tp2>>
       {
@@ -613,72 +726,14 @@ namespace __gnu_test
 	insert_base() : _F_insert_point(&container_type::insert_after) { }
       };
 
-    // Likewise for the unordered containers.
-    template<typename _Tp1, typename _Tp2, typename _Tp3,
-	     typename _Tp4, typename _Tp5>
-      struct insert_base<std::unordered_map<_Tp1, _Tp2, _Tp3, _Tp4, _Tp5>>
-      {
-	typedef std::unordered_map<_Tp1, _Tp2, _Tp3, _Tp4, _Tp5>
-	                                                container_type;
-	typedef typename container_type::iterator 	iterator;
-	typedef typename container_type::const_iterator const_iterator;
-	typedef typename container_type::value_type 	value_type;
+    template<typename _Tp,
+	     bool = traits<_Tp>::has_insert::value,
+	     bool = traits<_Tp>::has_insert_after::value>
+      struct insert_point;
 
-	iterator (container_type::* _F_insert_point)(const_iterator,
-						     const value_type&);
-
-	insert_base() : _F_insert_point(&container_type::insert) { }
-      };
-
-    template<typename _Tp1, typename _Tp2, typename _Tp3,
-	     typename _Tp4, typename _Tp5>
-      struct insert_base<std::unordered_multimap<_Tp1, _Tp2, _Tp3,
-						 _Tp4, _Tp5>>
-      {
-	typedef std::unordered_multimap<_Tp1, _Tp2, _Tp3, _Tp4, _Tp5>
-	                                                container_type;
-	typedef typename container_type::iterator 	iterator;
-	typedef typename container_type::const_iterator const_iterator;
-	typedef typename container_type::value_type 	value_type;
-
-	iterator (container_type::* _F_insert_point)(const_iterator,
-						     const value_type&);
-
-	insert_base() : _F_insert_point(&container_type::insert) { }
-      };
-
-    template<typename _Tp1, typename _Tp2, typename _Tp3, typename _Tp4>
-      struct insert_base<std::unordered_set<_Tp1, _Tp2, _Tp3, _Tp4>>
-      {
-	typedef std::unordered_set<_Tp1, _Tp2, _Tp3, _Tp4>
-	                                                container_type;
-	typedef typename container_type::iterator 	iterator;
-	typedef typename container_type::const_iterator const_iterator;
-	typedef typename container_type::value_type 	value_type;
-
-	iterator (container_type::* _F_insert_point)(const_iterator,
-						     const value_type&);
-
-	insert_base() : _F_insert_point(&container_type::insert) { }
-      };
-
-    template<typename _Tp1, typename _Tp2, typename _Tp3, typename _Tp4>
-      struct insert_base<std::unordered_multiset<_Tp1, _Tp2, _Tp3, _Tp4>>
-      {
-	typedef std::unordered_multiset<_Tp1, _Tp2, _Tp3, _Tp4>
-	                                                container_type;
-	typedef typename container_type::iterator 	iterator;
-	typedef typename container_type::const_iterator const_iterator;
-	typedef typename container_type::value_type 	value_type;
-
-	iterator (container_type::* _F_insert_point)(const_iterator,
-						     const value_type&);
-
-	insert_base() : _F_insert_point(&container_type::insert) { }
-      };
-
-    template<typename _Tp, bool = traits<_Tp>::has_insert::value>
-      struct insert_point : public insert_base<_Tp>
+    // Specialization for most containers.
+    template<typename _Tp>
+      struct insert_point<_Tp, true, false> : public insert_base<_Tp>
       {
 	typedef _Tp 				       	container_type;
 	typedef typename container_type::value_type 	value_type;
@@ -718,9 +773,51 @@ namespace __gnu_test
  	}
       };
 
+    // Specialization for forward_list.
+    template<typename _Tp>
+      struct insert_point<_Tp, false, true> : public insert_base<_Tp>
+      {
+	typedef _Tp 				       	container_type;
+	typedef typename container_type::value_type 	value_type;
+	using insert_base<_Tp>::_F_insert_point;
+
+	void
+	operator()(_Tp& __test)
+	{
+	  try
+	    {
+	      const value_type cv = generate_unique<value_type>();
+	      const size_type sz = std::distance(__test.begin(), __test.end());
+	      size_type s = generate(sz);
+	      auto i = __test.before_begin();
+	      std::advance(i, s);
+	      (__test.*_F_insert_point)(i, cv);
+	    }
+	  catch(const __gnu_cxx::forced_error&)
+	    { throw; }
+	}
+
+	// Assumes containers start out equivalent.
+	void
+	operator()(_Tp& __control, _Tp& __test)
+	{
+	  try
+	    {
+	      const value_type cv = generate_unique<value_type>();
+	      const size_type sz = std::distance(__test.begin(), __test.end());
+	      size_type s = generate(sz);
+	      auto i = __test.before_begin();
+	      std::advance(i, s);
+	      (__test.*_F_insert_point)(i, cv);
+	    }
+	  catch(const __gnu_cxx::forced_error&)
+	    { throw; }
+ 	}
+      };
+
     // Specialization, empty.
     template<typename _Tp>
-      struct insert_point<_Tp, false>
+      struct insert_point<_Tp, false, false>
       {
 	void
 	operator()(_Tp&) { }

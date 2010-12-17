@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2009, AdaCore                     --
+--                     Copyright (C) 1998-2010, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -719,11 +719,10 @@ package body GNAT.Directory_Operations is
       Recursive : Boolean := False)
    is
       C_Dir_Name  : constant String := Dir_Name & ASCII.NUL;
-      Current_Dir : constant Dir_Name_Str := Get_Current_Dir;
       Last        : Integer;
       Str         : String (1 .. Filename_Max);
       Success     : Boolean;
-      Working_Dir : Dir_Type;
+      Current_Dir : Dir_Type;
 
    begin
       --  Remove the directory only if it is empty
@@ -736,51 +735,40 @@ package body GNAT.Directory_Operations is
       --  Remove directory and all files and directories that it may contain
 
       else
-         --  Substantial comments needed. See RH for revision 1.50 ???
+         Open (Current_Dir, Dir_Name);
 
-         begin
-            Change_Dir (Dir_Name);
-            Open (Working_Dir, ".");
+         loop
+            Read (Current_Dir, Str, Last);
+            exit when Last = 0;
 
-            loop
-               Read (Working_Dir, Str, Last);
-               exit when Last = 0;
+            if GNAT.OS_Lib.Is_Directory
+                 (Dir_Name & Dir_Separator &  Str (1 .. Last))
+            then
+               if Str (1 .. Last) /= "."
+                 and then
+                   Str (1 .. Last) /= ".."
+               then
+                  --  Recursive call to remove a subdirectory and all its
+                  --  files.
 
-               if GNAT.OS_Lib.Is_Directory (Str (1 .. Last)) then
-                  if Str (1 .. Last) /= "."
-                       and then
-                     Str (1 .. Last) /= ".."
-                  then
-                     Remove_Dir (Str (1 .. Last), True);
-                  end if;
-
-               else
-                  GNAT.OS_Lib.Delete_File (Str (1 .. Last), Success);
-
-                  if not Success then
-                     Change_Dir (Current_Dir);
-                     raise Directory_Error;
-                  end if;
+                  Remove_Dir
+                    (Dir_Name & Dir_Separator &  Str (1 .. Last),
+                     True);
                end if;
-            end loop;
 
-            Change_Dir (Current_Dir);
-            Close (Working_Dir);
-            Remove_Dir (Dir_Name);
+            else
+               GNAT.OS_Lib.Delete_File
+                 (Dir_Name & Dir_Separator &  Str (1 .. Last),
+                  Success);
 
-         exception
-            when others =>
+               if not Success then
+                  raise Directory_Error;
+               end if;
+            end if;
+         end loop;
 
-               --  An exception occurred. We must make sure the current working
-               --  directory is unchanged.
-
-               Change_Dir (Current_Dir);
-
-               --  What if the Change_Dir raises an exception itself, shouldn't
-               --  that be protected? ???
-
-               raise;
-         end;
+         Close (Current_Dir);
+         Remove_Dir (Dir_Name);
       end if;
    end Remove_Dir;
 

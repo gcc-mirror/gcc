@@ -1,7 +1,8 @@
 dnl Available from the GNU Autoconf Macro Archive at:
 dnl http://www.gnu.org/software/ac-archive/htmldoc/ac_prog_java_works.html
 dnl
-AC_DEFUN([AC_PROG_JAVA_WORKS], [
+AC_DEFUN_ONCE([AC_PROG_JAVA_WORKS], [
+AC_REQUIRE([AC_PROG_JAVA])
 AC_CHECK_PROG(uudecode, uudecode$EXEEXT, yes)
 if test x$uudecode = xyes; then
 AC_CACHE_CHECK([if uudecode can decode base 64 file], ac_cv_prog_uudecode_base64, [
@@ -45,9 +46,6 @@ if test x$ac_cv_prog_uudecode_base64 != xyes; then
         if test x$ac_cv_prog_javac_works = xno; then
                 AC_MSG_ERROR([Cannot compile java source. $JAVAC does not work properly])
         fi
-        if test x$ac_cv_prog_javac_works = x; then
-                AC_PROG_JAVAC
-        fi
 fi
 AC_CACHE_CHECK(if $JAVA works, ac_cv_prog_java_works, [
 JAVA_TEST=Test.java
@@ -63,6 +61,7 @@ public static void main (String args[]) {
 EOF
 changequote([, ])dnl
 if test x$ac_cv_prog_uudecode_base64 != xyes; then
+   	AC_REQUIRE([AC_PROG_JAVAC_WORKS])
         if AC_TRY_COMMAND($JAVAC $JAVACFLAGS $JAVA_TEST) && test -s $CLASS_TEST; then
                 :
         else
@@ -86,8 +85,8 @@ AC_PROVIDE([$0])dnl
 dnl Available from the GNU Autoconf Macro Archive at:
 dnl http://www.gnu.org/software/ac-archive/htmldoc/ac_try_compile_java.html
 dnl
-AC_DEFUN([AC_TRY_COMPILE_JAVA],[
-AC_REQUIRE([AC_PROG_JAVAC])dnl
+AC_DEFUN_ONCE([AC_TRY_COMPILE_JAVA],[
+AC_REQUIRE([AC_PROG_JAVAC_WORKS])dnl
 cat << \EOF > Test.java
 /* [#]line __oline__ "configure" */
 ifelse([$1], , , [import $1;])

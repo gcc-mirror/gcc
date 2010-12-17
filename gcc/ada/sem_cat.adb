@@ -206,6 +206,17 @@ package body Sem_Cat is
            and then In_Package_Body (Unit_Entity)
          then
             null;
+
+         --  Special case: Remote_Types can depend on Preelaborated per
+         --  Ada 2005 AI 0206.
+
+         elsif Unit_Category = Remote_Types
+           and then Is_Preelaborated (Depended_Entity)
+         then
+            null;
+
+         --  All other cases, we do have an error
+
          else
             Err := True;
          end if;
@@ -215,10 +226,19 @@ package body Sem_Cat is
 
       if Err then
 
-         --  These messages are warnings in GNAT mode, to allow it to be
-         --  judiciously turned off. Otherwise it is a real error.
+         --  These messages are warnings in GNAT mode or if the -gnateP switch
+         --  was set. Otherwise these are real errors for real illegalities.
 
-         Error_Msg_Warn := GNAT_Mode;
+         --  The reason we suppress these errors in GNAT mode is that the run-
+         --  time has several instances of violations of the categorization
+         --  errors (e.g. Pure units withing Preelaborate units. All these
+         --  violations are harmless in the cases where we intend them, and
+         --  we suppress the warnings with Warnings (Off). In cases where we
+         --  do not intend the violation, warnings are errors in GNAT mode
+         --  anyway, so we will still get an error.
+
+         Error_Msg_Warn :=
+           Treat_Categorization_Errors_As_Warnings or GNAT_Mode;
 
          --  Don't give error if main unit is not an internal unit, and the
          --  unit generating the message is an internal unit. This is the
@@ -387,7 +407,7 @@ package body Sem_Cat is
       --  currently visible.
 
       return Present (Rep_Item)
-        and then (Ada_Version < Ada_05
+        and then (Ada_Version < Ada_2005
                    or else At_Any_Place
                    or else not Is_Hidden (Entity (Rep_Item)));
    end Has_Stream_Attribute_Definition;
@@ -768,7 +788,7 @@ package body Sem_Cat is
 
             --  This test is skipped in Ada 2005 (see AI-366)
 
-            if Ada_Version < Ada_05
+            if Ada_Version < Ada_2005
               and then Comes_From_Source (T)
               and then In_Pure_Unit
               and then not In_Subprogram_Task_Protected_Unit
@@ -965,7 +985,7 @@ package body Sem_Cat is
       --  Don't need this check in Ada 2005 mode, where this is all taken
       --  care of by the mechanism for Preelaborable Initialization.
 
-      if Ada_Version >= Ada_05 then
+      if Ada_Version >= Ada_2005 then
          return;
       end if;
 
@@ -1146,7 +1166,7 @@ package body Sem_Cat is
                      --  marked with this pragma in the predefined library are
                      --  not treated specially.
 
-                     if Ada_Version < Ada_05 then
+                     if Ada_Version < Ada_2005 then
                         Error_Msg_N
                           ("private object not allowed in preelaborated unit",
                            N);
@@ -1179,7 +1199,7 @@ package body Sem_Cat is
                         then
                            Error_Msg_Sloc := Sloc (Ent);
 
-                           if Ada_Version >= Ada_05 then
+                           if Ada_Version >= Ada_2005 then
                               Error_Msg_NE
                                 ("\would be legal if pragma Preelaborable_" &
                                  "Initialization given for & #", N, Ent);
@@ -1322,6 +1342,12 @@ package body Sem_Cat is
 
    begin
       Desig_Type := Etype (Designated_Type (T));
+
+      --  No action needed for concurrent types
+
+      if Is_Concurrent_Type (Desig_Type) then
+         return;
+      end if;
 
       Primitive_Subprograms := Primitive_Operations (Desig_Type);
 
@@ -1598,7 +1624,7 @@ package body Sem_Cat is
                Base_Under_Type := Base_Type (Underlying_Type
                                               (Base_Param_Type));
 
-               if (Ada_Version < Ada_05
+               if (Ada_Version < Ada_2005
                      and then
                        (No (TSS (Base_Param_Type, TSS_Stream_Read))
                           or else
@@ -1608,7 +1634,7 @@ package body Sem_Cat is
                           or else
                         No (TSS (Base_Under_Type, TSS_Stream_Write))))
                  or else
-                   (Ada_Version >= Ada_05
+                   (Ada_Version >= Ada_2005
                       and then
                         (No (TSS (Base_Param_Type, TSS_Stream_Read))
                            or else
@@ -1628,7 +1654,7 @@ package body Sem_Cat is
                      Error_Node := Param_Spec;
                   end if;
 
-                  if Ada_Version >= Ada_05 then
+                  if Ada_Version >= Ada_2005 then
                      Error_Msg_N
                        ("limited parameter in 'R'C'I unit "
                           & "must have visible read/write attributes ",
@@ -1743,8 +1769,8 @@ package body Sem_Cat is
    --  Start of processing for Validate_Remote_Access_Object_Type_Declaration
 
    begin
-      --  We are called from Analyze_Type_Declaration, and the Nkind of the
-      --  given node is N_Access_To_Object_Definition.
+      --  We are called from Analyze_Full_Type_Declaration, and the Nkind of
+      --  the given node is N_Access_To_Object_Definition.
 
       if not Comes_From_Source (T)
         or else (not In_RCI_Declaration (Parent (T))
@@ -1992,7 +2018,7 @@ package body Sem_Cat is
                      "non-remote access type", U_Typ);
                end if;
 
-               if Ada_Version >= Ada_05 then
+               if Ada_Version >= Ada_2005 then
                   Error_Msg_N
                     ("\must have visible Read and Write attribute " &
                      "definition clauses (RM E.2.2(8))", U_Typ);
@@ -2044,7 +2070,7 @@ package body Sem_Cat is
    --  Start of processing for Validate_SP_Access_Object_Type_Decl
 
    begin
-      --  We are called from Sem_Ch3.Analyze_Type_Declaration, and the
+      --  We are called from Sem_Ch3.Analyze_Full_Type_Declaration, and the
       --  Nkind of the given entity is N_Access_To_Object_Definition.
 
       if not Comes_From_Source (T)

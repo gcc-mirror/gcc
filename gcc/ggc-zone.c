@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "rtl.h"
 #include "tm_p.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "flags.h"
 #include "ggc.h"
 #include "ggc-internal.h"
@@ -42,22 +42,10 @@ along with GCC; see the file COPYING3.  If not see
    file open.  Prefer either to valloc.  */
 #ifdef HAVE_MMAP_ANON
 # undef HAVE_MMAP_DEV_ZERO
-
-# include <sys/mman.h>
-# ifndef MAP_FAILED
-#  define MAP_FAILED -1
-# endif
-# if !defined (MAP_ANONYMOUS) && defined (MAP_ANON)
-#  define MAP_ANONYMOUS MAP_ANON
-# endif
 # define USING_MMAP
 #endif
 
 #ifdef HAVE_MMAP_DEV_ZERO
-# include <sys/mman.h>
-# ifndef MAP_FAILED
-#  define MAP_FAILED -1
-# endif
 # define USING_MMAP
 #endif
 
@@ -801,9 +789,7 @@ zone_allocate_marks (void)
 	  n++;
 #endif
 	}
-#ifdef ENABLE_CHECKING
-      gcc_assert (n == zone->n_small_pages);
-#endif
+      gcc_checking_assert (n == zone->n_small_pages);
     }
 
   /* We don't collect the PCH zone, but we do have to mark it
@@ -2428,10 +2414,10 @@ ggc_pch_write_object (struct ggc_pch_data *d,
 		      size_t size, bool is_string ATTRIBUTE_UNUSED)
 {
   if (fseek (f, (size_t) newx - d->orig_base + d->start_offset, SEEK_SET) != 0)
-    fatal_error ("can't seek PCH file: %m");
+    fatal_error ("can%'t seek PCH file: %m");
 
   if (fwrite (x, size, 1, f) != 1)
-    fatal_error ("can't write PCH file: %m");
+    fatal_error ("can%'t write PCH file: %m");
 }
 
 void
@@ -2439,14 +2425,14 @@ ggc_pch_finish (struct ggc_pch_data *d, FILE *f)
 {
   /* Write out the allocation bitmap.  */
   if (fseek (f, d->start_offset + d->d.total, SEEK_SET) != 0)
-    fatal_error ("can't seek PCH file: %m");
+    fatal_error ("can%'t seek PCH file: %m");
 
   if (fwrite (d->alloc_bits, d->alloc_size, 1, f) != 1)
-    fatal_error ("can't write PCH file: %m");
+    fatal_error ("can%'t write PCH file: %m");
 
   /* Done with the PCH, so write out our footer.  */
   if (fwrite (&d->d, sizeof (d->d), 1, f) != 1)
-    fatal_error ("can't write PCH file: %m");
+    fatal_error ("can%'t write PCH file: %m");
 
   free (d->alloc_bits);
   free (d);
@@ -2465,7 +2451,7 @@ ggc_pch_read (FILE *f, void *addr)
   char *p;
 
   if (fread (&d, sizeof (d), 1, f) != 1)
-    fatal_error ("can't read PCH file: %m");
+    fatal_error ("can%'t read PCH file: %m");
 
   alloc_size = CEIL (d.total, BYTES_PER_ALLOC_BIT * 8);
   alloc_size = ROUND_UP (alloc_size, MAX_ALIGNMENT);
@@ -2477,7 +2463,7 @@ ggc_pch_read (FILE *f, void *addr)
 
   /* We've just read in a PCH file.  So, every object that used to be
      allocated is now free.  */
-#ifdef 0 && GATHER_STATISTICS
+#ifdef GATHER_STATISTICS
   zone_allocate_marks ();
   ggc_prune_overhead_list ();
   zone_free_marks ();

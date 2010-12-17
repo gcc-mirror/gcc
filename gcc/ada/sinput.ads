@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -471,6 +471,10 @@ package Sinput is
    --  ASCII.NUL, with Name_Length indicating the length not including the
    --  terminating Nul.
 
+   function Build_Location_String (Loc : Source_Ptr) return String;
+   --  Functional form returning a string, which does not include a terminating
+   --  null character. The contents of Name_Buffer is destroyed.
+
    function Get_Column_Number (P : Source_Ptr) return Column_Number;
    --  The ones-origin column number of the specified Source_Ptr value is
    --  determined and returned. Tab characters if present are assumed to
@@ -486,6 +490,11 @@ package Sinput is
    --  reference pragma itself, then No_Line is returned. If no source
    --  reference pragmas have been encountered, the value returned is
    --  the same as the physical line number.
+
+   function Get_Logical_Line_Number_Img
+     (P : Source_Ptr) return String;
+   --  Same as above function, but returns the line number as a string of
+   --  decimal digits, with no leading space. Destroys Name_Buffer.
 
    function Get_Physical_Line_Number
      (P : Source_Ptr) return Physical_Line_Number;

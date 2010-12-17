@@ -36,7 +36,7 @@
     %{nostdinc*} %{nostdlib*}\
     -dumpbase %{.adb:%b.adb}%{.ads:%b.ads}%{!.adb:%{!.ads:%b.ada}}\
     %{c|S:%{o*:-auxbase-strip %*}%{!o*:-auxbase %b}}%{!c:%{!S:-auxbase %b}} \
-    %{O*} %{W*} %{w} %{p} %{pg:-p} %{a} %{d*} %{f*}\
+    %{O*} %{W*} %{w} %{p} %{pg:-p} %{d*} %{f*}\
     %{coverage:-fprofile-arcs -ftest-coverage} "
    "%{gnatea:-gnatez} %{g*&m*} "
 #if defined(TARGET_VXWORKS_RTP)

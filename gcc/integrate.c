@@ -1,6 +1,6 @@
 /* Procedure integration for GCC.
    Copyright (C) 1988, 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
@@ -38,7 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "integrate.h"
 #include "except.h"
 #include "function.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "intl.h"
 #include "params.h"
 #include "ggc.h"
@@ -111,7 +111,7 @@ set_block_origin_self (tree stmt)
 
 	for (local_decl = BLOCK_VARS (stmt);
 	     local_decl != NULL_TREE;
-	     local_decl = TREE_CHAIN (local_decl))
+	     local_decl = DECL_CHAIN (local_decl))
 	  set_decl_origin_self (local_decl);	/* Potential recursion.  */
       }
 
@@ -147,7 +147,7 @@ set_decl_origin_self (tree decl)
 	{
 	  tree arg;
 
-	  for (arg = DECL_ARGUMENTS (decl); arg; arg = TREE_CHAIN (arg))
+	  for (arg = DECL_ARGUMENTS (decl); arg; arg = DECL_CHAIN (arg))
 	    DECL_ABSTRACT_ORIGIN (arg) = arg;
 	  if (DECL_INITIAL (decl) != NULL_TREE
 	      && DECL_INITIAL (decl) != error_mark_node)
@@ -172,7 +172,7 @@ set_block_abstract_flags (tree stmt, int setting)
 
   for (local_decl = BLOCK_VARS (stmt);
        local_decl != NULL_TREE;
-       local_decl = TREE_CHAIN (local_decl))
+       local_decl = DECL_CHAIN (local_decl))
     set_decl_abstract_flags (local_decl, setting);
 
   for (i = 0; i < BLOCK_NUM_NONLOCALIZED_VARS (stmt); i++)
@@ -203,7 +203,7 @@ set_decl_abstract_flags (tree decl, int setting)
     {
       tree arg;
 
-      for (arg = DECL_ARGUMENTS (decl); arg; arg = TREE_CHAIN (arg))
+      for (arg = DECL_ARGUMENTS (decl); arg; arg = DECL_CHAIN (arg))
 	DECL_ABSTRACT (arg) = setting;
       if (DECL_INITIAL (decl) != NULL_TREE
 	  && DECL_INITIAL (decl) != error_mark_node)

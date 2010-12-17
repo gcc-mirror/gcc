@@ -1,7 +1,8 @@
 // -*- C++ -*-
 // Testing utilities for the rvalue reference.
 //
-// Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,34 +28,29 @@
 namespace __gnu_test
 {
 
-  //  This class is designed to test libstdc++'s template-based rvalue
-  //  reference support. It should fail at compile-time if there is an attempt
-  //  to copy it (although see note just below).
-  class rvalstruct
+  // This class is designed to test libstdc++'s template-based rvalue
+  // reference support. It should fail at compile-time if there is an
+  // attempt to copy it.
+  struct rvalstruct
   {
-    bool
-    operator=(const rvalstruct&);
-
-    rvalstruct(const rvalstruct&);
-
-  public:
     int val;
     bool valid;
 
-    rvalstruct() : valid(false)
+    rvalstruct() : val(0), valid(true)
     { }
 
     rvalstruct(int inval) : val(inval), valid(true)
     { }
-    
+
     rvalstruct&
     operator=(int newval)
     { 
-      VERIFY(valid == false);
-      val = newval; 
+      val = newval;
       valid = true;
       return *this;
     }
+
+    rvalstruct(const rvalstruct&) = delete;
 
     rvalstruct(rvalstruct&& in)
     { 
@@ -63,6 +59,9 @@ namespace __gnu_test
       in.valid = false;
       valid = true;
     }
+
+    rvalstruct&
+    operator=(const rvalstruct&) = delete;
 
     rvalstruct&
     operator=(rvalstruct&& in)
@@ -75,11 +74,11 @@ namespace __gnu_test
     }
   };
 
-  bool 
+  inline bool 
   operator==(const rvalstruct& lhs, const rvalstruct& rhs)
   { return lhs.val == rhs.val; }
 
-  bool
+  inline bool
   operator<(const rvalstruct& lhs, const rvalstruct& rhs)
   { return lhs.val < rhs.val; }
 
@@ -156,15 +155,15 @@ namespace __gnu_test
 
   int copycounter::copycount = 0;
   
-  bool 
+  inline bool
   operator==(const copycounter& lhs, const copycounter& rhs)
   { return lhs.val == rhs.val; }
 
-  bool
+  inline bool
   operator<(const copycounter& lhs, const copycounter& rhs)
   { return lhs.val < rhs.val; }
 
-  void
+  inline void
   swap(copycounter& lhs, copycounter& rhs)
   {  
     VERIFY(lhs.valid && rhs.valid);
@@ -174,5 +173,22 @@ namespace __gnu_test
   }
   
 } // namespace __gnu_test
+
+namespace std
+{
+  template<typename _Tp> struct hash;
+
+  /// std::hash specialization for type_index.
+  template<>
+    struct hash<__gnu_test::rvalstruct>
+    {
+      typedef size_t                    result_type;
+      typedef __gnu_test::rvalstruct  argument_type;
+
+      size_t
+      operator()(const __gnu_test::rvalstruct& __rvs) const
+      { return __rvs.val; }
+    };
+}
 
 #endif // _GLIBCXX_TESTSUITE_TR1_H

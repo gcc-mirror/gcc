@@ -177,6 +177,11 @@ begin
    Write_Switch_Char ("eD?");
    Write_Line ("Define or redefine preprocessing symbol, e.g. -gnateDsym=val");
 
+   --  Line for -gnateE switch
+
+   Write_Switch_Char ("eE");
+   Write_Line ("Generate extra information in exception messages");
+
    --  Line for -gnatef switch
 
    Write_Switch_Char ("ef");
@@ -201,6 +206,11 @@ begin
 
    Write_Switch_Char ("ep=?");
    Write_Line ("Specify preprocessing data file, e.g. -gnatep=prep.data");
+
+   --  Line for -gnateP switch
+
+   Write_Switch_Char ("eP");
+   Write_Line ("Pure/Prelaborate errors generate warnings rather than errors");
 
    --  Line for -gnateS switch
 
@@ -279,7 +289,7 @@ begin
    --  Line for -gnatn switch
 
    Write_Switch_Char ("n");
-   Write_Line ("Inlining of subprograms (apply pragma Inline across units)");
+   Write_Line ("Enable pragma Inline (both within and across units)");
 
    --  Line for -gnatN switch
 
@@ -420,8 +430,10 @@ begin
    Write_Line ("        F*   turn off warnings for unreferenced formal");
    Write_Line ("        g*+  turn on warnings for unrecognized pragma");
    Write_Line ("        G    turn off warnings for unrecognized pragma");
-   Write_Line ("        h    turn on warnings for hiding variable");
-   Write_Line ("        H*   turn off warnings for hiding variable");
+   Write_Line ("        h    turn on warnings for hiding declarations");
+   Write_Line ("        H*   turn off warnings for hiding declarations");
+   Write_Line ("        .h   turn on warnings for holes in records");
+   Write_Line ("        .H*  turn off warnings for holes in records");
    Write_Line ("        i*+  turn on warnings for implementation unit");
    Write_Line ("        I    turn off warnings for implementation unit");
    Write_Line ("        .i   turn on warnings for overlapping actuals");
@@ -436,6 +448,8 @@ begin
                                                   "elaboration pragma");
    Write_Line ("        L*   turn off warnings for missing " &
                                                   "elaboration pragma");
+   Write_Line ("        .l*  turn on info messages for inherited aspects");
+   Write_Line ("        .L   turn off info messages for inherited aspects");
    Write_Line ("        m+   turn on warnings for variable assigned " &
                                                   "but not read");
    Write_Line ("        M*   turn off warnings for variable assigned " &
@@ -466,10 +480,14 @@ begin
    Write_Line ("        .r+  turn on warnings for object renaming function");
    Write_Line ("        .R*  turn off warnings for object renaming function");
    Write_Line ("        s    suppress all info/warnings");
+   Write_Line ("        .s   turn on warnings for overridden size clause");
+   Write_Line ("        .S*  turn off warnings for overridden size clause");
    Write_Line ("        t    turn on warnings for tracking deleted code");
    Write_Line ("        T*   turn off warnings for tracking deleted code");
    Write_Line ("        u+   turn on warnings for unused entity");
    Write_Line ("        U*   turn off warnings for unused entity");
+   Write_Line ("        .u   turn on warnings for unordered enumeration");
+   Write_Line ("        .U*  turn off warnings for unordered enumeration");
    Write_Line ("        v*+  turn on warnings for unassigned variable");
    Write_Line ("        V    turn off warnings for unassigned variable");
    Write_Line ("        .v*+ turn on info messages for reverse bit order");
@@ -592,7 +610,7 @@ begin
 
    Write_Switch_Char ("05");
 
-   if Ada_Version_Default = Ada_05 then
+   if Ada_Version_Default = Ada_2005 then
       Write_Line ("Ada 2005 mode (default)");
    else
       Write_Line ("Enforce Ada 2005 restrictions");
@@ -602,7 +620,7 @@ begin
 
    Write_Switch_Char ("12");
 
-   if Ada_Version_Default = Ada_12 then
+   if Ada_Version_Default = Ada_2012 then
       Write_Line ("Ada 2012 mode (default)");
    else
       Write_Line ("Allow Ada 2012 extensions");

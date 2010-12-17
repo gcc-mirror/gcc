@@ -16,7 +16,9 @@ int motion_test1(int data, int data_0, int data_3, int v)
 	return v * t * u;
 }
 /* We should eliminate one computation of data_0 + data_3 along the 
-   main path, and one computation of v * i along the main path, causing 
-   two eliminations. */
-/* { dg-final { scan-tree-dump-times "Eliminated: 2" 1 "pre"} } */
+   main path.  We cannot re-associate v * t * u due to undefined
+   signed overflow so we do not eliminate one computation of v * i along
+   the main path. */
+/* { dg-final { scan-tree-dump-times "Eliminated: 2" 1 "pre" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "pre" } } */
 /* { dg-final { cleanup-tree-dump "pre" } } */

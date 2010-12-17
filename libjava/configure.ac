@@ -394,7 +394,8 @@ NATIVE=yes
 # Which gcj and host gcj (for ecjx) do we use?
 which_gcj=default
 host_exeext=${ac_exeext}
-GCJ_FOR_ECJX=
+GCJ_FOR_ECJX='$(GCJ)'
+GCC_FOR_ECJX='$(CXX)'
 built_gcc_dir="`cd ${builddotdot}/../../${host_subdir}/gcc && ${PWDCMD-pwd}`"
 if test -n "${with_cross_host}"; then
   # We are being configured with a cross compiler. We can't
@@ -402,6 +403,7 @@ if test -n "${with_cross_host}"; then
   NATIVE=no
   cross_host_exeext=
   GCJ_FOR_ECJX="${with_cross_host}-gcj"
+  GCC_FOR_ECJX="${with_cross_host}-gcc"
   case "${with_cross_host}" in
      *mingw* | *cygwin*)
          cross_host_exeext=.exe
@@ -467,6 +469,7 @@ JAVAC="$GCJ -C"
 export JAVAC
 
 AC_SUBST(GCJ_FOR_ECJX)
+AC_SUBST(GCC_FOR_ECJX)
 AC_SUBST(GCJH)
 AC_SUBST(host_exeext)
 
@@ -928,6 +931,16 @@ arm*linux*eabi)
     ;;
 esac
 
+LIBMATHSPEC=
+# extra LD Flags which are required for targets
+case "${host}" in
+*-*-darwin*)
+     ;;
+*)
+     LIBMATHSPEC=-lm
+     ;;
+esac
+
 # Check for --no-merge-exidx-entries, an ARM-specific linker option.
 AC_CACHE_CHECK([for --no-merge-exidx-entries], [libgcj_cv_exidx],
   [saved_ldflags="$LDFLAGS"
@@ -953,6 +966,7 @@ fi
 AC_SUBST(extra_ldflags_libjava)
 AC_SUBST(extra_ldflags)
 AC_SUBST(LIBSTDCXXSPEC)
+AC_SUBST(LIBMATHSPEC)
 
 AC_SUBST(LIBGCJTESTSPEC)
 
@@ -1063,6 +1077,23 @@ case "$THREADS" in
 	# boehm-gc needs some functions from librt, so link that too.
 	THREADLIBS='-lpthread -lrt'
 	THREADSPEC='-lpthread -lrt'
+	;;
+     *-*-solaris2.8)
+	# Always use alternate thread library on Solaris 8.  Need libthread
+	# for TLS support.
+	# Need -Wl,-R to get it through libtool ...
+	THREADLIBS='-L/usr/lib/lwp$(MULTISUBDIR) -Wl,-R -Wl,/usr/lib/lwp$(MULTISUBDIR) -lpthread -lthread'
+	# ... while ld only accepts -R.
+	THREADSPEC='-L/usr/lib/lwp%{m64:/64} -R/usr/lib/lwp%{m64:/64} -lpthread -lthread'
+        ;;
+     *-*-solaris2.9)
+	# As on Solaris 8, need libthread for TLS support.
+	THREADLIBS='-lpthread -lthread'
+	THREADSPEC='-lpthread -lthread'
+	;;
+     *-*-darwin*)
+	# Don't set THREADLIBS or THREADSPEC as Darwin already
+	# provides pthread via libSystem.
 	;;
      *)
 	THREADLIBS=-lpthread
@@ -1432,6 +1463,8 @@ else
 	    # libgcj.spec is used, so override here
 	    SYSTEMSPEC="$SYSTEMSPEC %{!mabi=64:-ldl}"
 	  ;;
+	  *-*-darwin*)
+	  ;;
 	  *)
             AC_CHECK_LIB(dl, main, SYSTEMSPEC="$SYSTEMSPEC -ldl")
 	  ;;
@@ -1680,8 +1713,8 @@ case "${host}" in
  i?86-*-linux*)
     SIGNAL_HANDLER=include/i386-signal.h
     ;;
- sparc*-sun-solaris*)
-    SIGNAL_HANDLER=include/sparc-signal.h
+ *-*-solaris2*)
+    SIGNAL_HANDLER=include/solaris-signal.h
     ;;
 # ia64-*)
 #    SYSDEP_SOURCES=sysdep/ia64.c
@@ -1767,13 +1800,28 @@ AC_CACHE_CHECK([whether ld supports anonymous version scripts],
   [libjava_cv_anon_version_script],
   [save_CFLAGS="$CFLAGS"; save_LDFLAGS="$LDFLAGS"
    libjava_cv_anon_version_script=no
-   CFLAGS="$CFLAGS -fPIC"; LDFLAGS="$LDFLAGS -shared -Wl,--version-script,conftest.map"
+   CFLAGS="$CFLAGS -fPIC";
+   LDFLAGS="$LDFLAGS -shared -Wl,--version-script,conftest.map"
    echo '{ global: globalsymb*; local: *; };' > conftest.map
    AC_TRY_LINK(void globalsymbol (void) {} void localsymbol (void) {},,
-	       [libjava_cv_anon_version_script=yes], [])
+	       [libjava_cv_anon_version_script=gnu], [])
+   if test x$libjava_cv_anon_version_script = xno; then
+     case "$target_os" in
+       solaris2*)
+         LDFLAGS="$save_LDFLAGS"
+         LDFLAGS="$LDFLAGS -shared -Wl,-M,conftest.map"
+         # Sun ld doesn't understand wildcards here.
+         echo '{ global: globalsymbol; local: *; };' > conftest.map
+         AC_TRY_LINK(void globalsymbol (void) {} void localsymbol (void) {},,
+	 	     [libjava_cv_anon_version_script=sun], [])
+         ;;
+     esac
+   fi
    CFLAGS="$save_CFLAGS"; LDFLAGS="$save_LDFLAGS"
   ])
-AM_CONDITIONAL(ANONVERSCRIPT, test "$libjava_cv_anon_version_script" = yes)
+AM_CONDITIONAL(ANONVERSCRIPT, test "$libjava_cv_anon_version_script" != no)
+AM_CONDITIONAL(ANONVERSCRIPT_GNU, test "$libjava_cv_anon_version_script" = gnu)
+AM_CONDITIONAL(ANONVERSCRIPT_SUN, test "$libjava_cv_anon_version_script" = sun)
 
 # Check if linker supports static linking on a per library basis
 LD_START_STATIC_SPEC=

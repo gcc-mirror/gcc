@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,7 +54,7 @@ package Sinput.P is
    --  the file cannot possibly be a legal subunit. This function does NOT do a
    --  complete parse of the file, or build a tree. It is used in gnatmake and
    --  gprbuild to decide if a body without a spec in a project file needs to
-   --  be compiled or not.
+   --  be compiled or not. Returns False if X = No_Source_File.
 
    type Saved_Project_Scan_State is limited private;
    --  Used to save project scan state in following two routines

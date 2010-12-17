@@ -293,6 +293,7 @@ public class DefaultMutableTreeNode
    *
    * @return an enumeration of tree nodes
    */
+  @SuppressWarnings("unchecked") // Required for API compatibility
   public Enumeration children()
   {
     if (children.size() == 0)
@@ -320,7 +321,7 @@ public class DefaultMutableTreeNode
    */
   public TreeNode getChildAt(int index)
   {
-    return (TreeNode) children.elementAt(index);
+    return children.elementAt(index);
   }
 
   /**
@@ -717,6 +718,7 @@ public class DefaultMutableTreeNode
    *
    * @return Enumeration
    */
+  @SuppressWarnings("unchecked") // Required for API compatibility
   public Enumeration preorderEnumeration()
   {
     return new PreorderEnumeration(this);
@@ -727,6 +729,7 @@ public class DefaultMutableTreeNode
    *
    * @return Enumeration
    */
+  @SuppressWarnings("unchecked") // Required for API compatibility
   public Enumeration postorderEnumeration()
   {
     return new PostorderEnumeration(this);
@@ -737,6 +740,7 @@ public class DefaultMutableTreeNode
    *
    * @return Enumeration
    */
+  @SuppressWarnings("unchecked") // Required for API compatibility
   public Enumeration breadthFirstEnumeration()
   {
     return new BreadthFirstEnumeration(this);
@@ -747,6 +751,7 @@ public class DefaultMutableTreeNode
    *
    * @return Enumeration
    */
+  @SuppressWarnings("unchecked") // Required for API compatibility
   public Enumeration depthFirstEnumeration()
   {
     return postorderEnumeration();
@@ -759,6 +764,7 @@ public class DefaultMutableTreeNode
    *
    * @return Enumeration
    */
+  @SuppressWarnings("unchecked") // Required for API compatibility
   public Enumeration pathFromAncestorEnumeration(TreeNode node)
   {
     if (node == null)
@@ -806,7 +812,7 @@ public class DefaultMutableTreeNode
    */
   public TreeNode getFirstChild()
   {
-    return (TreeNode) children.firstElement();
+    return children.firstElement();
   }
 
   /**
@@ -818,7 +824,7 @@ public class DefaultMutableTreeNode
    */
   public TreeNode getLastChild()
   {
-    return (TreeNode) children.lastElement();
+    return children.lastElement();
   }
 
   /**
@@ -1036,7 +1042,7 @@ public class DefaultMutableTreeNode
   public int getLeafCount()
   {
     int count = 0;
-    Enumeration e = depthFirstEnumeration();
+    Enumeration<?> e = depthFirstEnumeration();
 
     while (e.hasMoreElements())
       {

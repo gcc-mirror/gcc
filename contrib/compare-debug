@@ -59,8 +59,10 @@ trap 'rm -f "$1.$suf1" "$2.$suf2"' 0 1 2 15
 
 case `uname -s` in
 Darwin)
-  ld -S -x -r -no_uuid "$1" -o "$1.$suf1"
-  ld -S -x -r -no_uuid "$2" -o "$2.$suf2"
+  # The strip command on darwin does not remove all debug info.
+  # Fortunately, we can use ld to do it instead.
+  ld -S -r -no_uuid "$1" -o "$1.$suf1"
+  ld -S -r -no_uuid "$2" -o "$2.$suf2"
   ;;
 *)
   cp "$1" "$1.$suf1"

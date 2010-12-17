@@ -23,15 +23,14 @@
 // <http://www.gnu.org/licenses/>.
 
 /**
- * @file bits/regex_error
+ * @file bits/regex_error.h
  * @brief Error and exception objects for the std regex library.
  *
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
  */
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
 
 namespace regex_constants
 {
@@ -156,5 +155,4 @@ namespace regex_constants
   __throw_regex_error(regex_constants::error_type __ecode)
   { throw regex_error(__ecode); }
 
-} // namespace std
-
+_GLIBCXX_END_NAMESPACE

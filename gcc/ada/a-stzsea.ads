@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -111,6 +111,14 @@ private package Ada.Strings.Wide_Wide_Search is
    function Count
      (Source : Wide_Wide_String;
       Set    : Wide_Wide_Maps.Wide_Wide_Character_Set) return Natural;
+
+   procedure Find_Token
+     (Source : Wide_Wide_String;
+      Set    : Wide_Wide_Maps.Wide_Wide_Character_Set;
+      From   : Positive;
+      Test   : Membership;
+      First  : out Positive;
+      Last   : out Natural);
 
    procedure Find_Token
      (Source : Wide_Wide_String;

@@ -601,6 +601,7 @@ in hand, using @code{same_type_p}.
 @tindex TYPE_DECL
 @tindex VAR_DECL
 @tindex PARM_DECL
+@tindex DEBUG_EXPR_DECL
 @tindex FIELD_DECL
 @tindex NAMESPACE_DECL
 @tindex RESULT_DECL
@@ -725,6 +726,11 @@ actually be used when a value is passed to this function.  It may be a
 wider type than the @code{TREE_TYPE} of the parameter; for example, the
 ordinary type might be @code{short} while the @code{DECL_ARG_TYPE} is
 @code{int}.
+
+@item DEBUG_EXPR_DECL
+Used to represent an anonymous debug-information temporary created to
+hold an expression as it is optimized away, so that its value can be
+referenced in debug bind statements.
 
 @item FIELD_DECL
 These nodes represent non-static data members.  The @code{DECL_SIZE} and
@@ -1116,6 +1122,7 @@ target system bytes are not the same width as host system bytes.
 @subsection References to storage
 @tindex ADDR_EXPR
 @tindex INDIRECT_REF
+@tindex MEM_REF
 @tindex ARRAY_REF
 @tindex ARRAY_RANGE_REF
 @tindex TARGET_MEM_REF
@@ -1175,6 +1182,13 @@ the address of the temporary is used.
 These nodes are used to represent the object pointed to by a pointer.
 The operand is the pointer being dereferenced; it will always have
 pointer or reference type.
+
+@item MEM_REF
+These nodes are used to represent the object pointed to by a pointer
+offset by a constant.
+The first operand is the pointer being dereferenced; it will always have
+pointer or reference type.  The second operand is a pointer constant.
+Its type is specifying the type to be used for type-based alias analysis.
 
 @item COMPONENT_REF
 These nodes represent non-static data member accesses.  The first

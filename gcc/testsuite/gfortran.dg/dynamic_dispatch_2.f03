@@ -12,16 +12,14 @@ module m
     procedure, pass :: make_integer
     procedure, pass :: prod => i_m_j
     generic, public :: extract => real, make_integer
-    generic, public :: base_extract => real, make_integer
   end type t1
 
   type, extends(t1) :: t2
     integer :: j = 99
   contains
     procedure, pass :: real => make_real2
-    procedure, pass :: make_integer_2
+    procedure, pass :: make_integer => make_integer_2
     procedure, pass :: prod => i_m_j_2
-    generic, public :: extract => real, make_integer_2
   end type t2
 contains
   subroutine make_real (arg, arg2)
@@ -79,8 +77,6 @@ end module m
   if (i .ne. 42) call abort
   call a%extract (2, i)
   if (i .ne. 84) call abort
-  call a%base_extract (2, i)
-  if (i .ne. 84) call abort
 
   a => c                                   ! extension in module
   call a%real(r)
@@ -89,16 +85,12 @@ end module m
   if (i .ne. 99) call abort
   call a%extract (3, i)
   if (i .ne. 297) call abort
-  call a%base_extract (3, i)
-  if (i .ne. 126) call abort
 
   a => d                                   ! extension in main
   call a%real(r)
   if (r .ne. real (42)) call abort
   call a%prod(i)
   if (i .ne. 42) call abort
-  call a%extract (4, i)
-  if (i .ne. 168) call abort
   call a%extract (4, i)
   if (i .ne. 168) call abort
 end

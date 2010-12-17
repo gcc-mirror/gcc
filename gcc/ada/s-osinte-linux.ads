@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---          Copyright (C) 1995-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -490,11 +490,24 @@ package System.OS_Interface is
      (thread     : pthread_t;
       cpusetsize : size_t;
       cpuset     : access cpu_set_t) return int;
-   pragma Import (C, pthread_setaffinity_np, "__gnat_pthread_setaffinity_np");
+   pragma Import (C, pthread_setaffinity_np, "pthread_setaffinity_np");
+   pragma Weak_External (pthread_setaffinity_np);
+   --  Use a weak symbol because this function may be available or not,
+   --  depending on the version of the system.
+
+   function pthread_attr_setaffinity_np
+     (attr       : access pthread_attr_t;
+      cpusetsize : size_t;
+      cpuset     : access cpu_set_t) return int;
+   pragma Import (C, pthread_attr_setaffinity_np,
+                    "pthread_attr_setaffinity_np");
+   pragma Weak_External (pthread_attr_setaffinity_np);
+   --  Use a weak symbol because this function may be available or not,
+   --  depending on the version of the system.
 
 private
 
-   type sigset_t is array (0 .. 127) of Interfaces.C.unsigned_char;
+   type sigset_t is array (0 .. 127) of unsigned_char;
    pragma Convention (C, sigset_t);
    for sigset_t'Alignment use Interfaces.C.unsigned_long'Alignment;
 
@@ -543,8 +556,12 @@ private
 
    type pthread_mutex_t is new System.Linux.pthread_mutex_t;
 
+   type unsigned_long_long_t is mod 2 ** 64;
+   --  Interfaces.C.Extensions isn't preelaborated so cannot be with-ed
+
    type pthread_cond_t is array (0 .. 47) of unsigned_char;
    pragma Convention (C, pthread_cond_t);
+   for pthread_cond_t'Alignment use unsigned_long_long_t'Alignment;
 
    type pthread_key_t is new unsigned;
 

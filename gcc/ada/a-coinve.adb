@@ -619,7 +619,7 @@ package body Ada.Containers.Indefinite_Vectors is
    begin
       if Container.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (vector is busy)";
+           "attempt to tamper with cursors (vector is busy)";
       end if;
 
       while Container.Last >= Index_Type'First loop
@@ -720,7 +720,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
       if Container.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (vector is busy)";
+           "attempt to tamper with cursors (vector is busy)";
       end if;
 
       --  We first calculate what's available for deletion starting at
@@ -911,7 +911,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
       if Container.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (vector is busy)";
+           "attempt to tamper with cursors (vector is busy)";
       end if;
 
       --  Elements in an indefinite vector are allocated, so we must iterate
@@ -1182,7 +1182,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
          if Source.Busy > 0 then
             raise Program_Error with
-              "attempt to tamper with elements (vector is busy)";
+              "attempt to tamper with cursors (vector is busy)";
          end if;
 
          I := Target.Last;  -- original value (before Set_Length)
@@ -1258,7 +1258,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
          if Container.Lock > 0 then
             raise Program_Error with
-              "attempt to tamper with cursors (vector is locked)";
+              "attempt to tamper with elements (vector is locked)";
          end if;
 
          Sort (Container.Elements.EA (Index_Type'First .. Container.Last));
@@ -1491,7 +1491,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
       if Container.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (vector is busy)";
+           "attempt to tamper with cursors (vector is busy)";
       end if;
 
       if New_Length <= Container.Elements.EA'Length then
@@ -2210,7 +2210,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
       if Container.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (vector is busy)";
+           "attempt to tamper with cursors (vector is busy)";
       end if;
 
       if New_Length <= Container.Elements.EA'Length then
@@ -2500,7 +2500,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
       if Source.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (Source is busy)";
+           "attempt to tamper with cursors (Source is busy)";
       end if;
 
       Clear (Target);  --  Checks busy-bit
@@ -2711,7 +2711,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
       if Container.Lock > 0 then
          raise Program_Error with
-           "attempt to tamper with cursors (vector is locked)";
+           "attempt to tamper with elements (vector is locked)";
       end if;
 
       declare
@@ -2742,7 +2742,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
       if Container.Lock > 0 then
          raise Program_Error with
-           "attempt to tamper with cursors (vector is locked)";
+           "attempt to tamper with elements (vector is locked)";
       end if;
 
       declare
@@ -2812,7 +2812,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
             if Container.Busy > 0 then
                raise Program_Error with
-                 "attempt to tamper with elements (vector is busy)";
+                 "attempt to tamper with cursors (vector is busy)";
             end if;
 
             declare
@@ -2943,7 +2943,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
             if Container.Busy > 0 then
                raise Program_Error with
-                 "attempt to tamper with elements (vector is busy)";
+                 "attempt to tamper with cursors (vector is busy)";
             end if;
 
             declare
@@ -2998,7 +2998,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
       if Container.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (vector is busy)";
+           "attempt to tamper with cursors (vector is busy)";
       end if;
 
       --  We now allocate a new internal array, having a length different from
@@ -3042,7 +3042,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
       if Container.Lock > 0 then
          raise Program_Error with
-           "attempt to tamper with cursors (vector is locked)";
+           "attempt to tamper with elements (vector is locked)";
       end if;
 
       declare
@@ -3207,7 +3207,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
       if Container.Lock > 0 then
          raise Program_Error with
-           "attempt to tamper with cursors (vector is locked)";
+           "attempt to tamper with elements (vector is locked)";
       end if;
 
       declare

@@ -50,9 +50,10 @@ extern void ffi_call_unix64 (void *args, unsigned long bytes, unsigned flags,
    gcc/config/i386/i386.c. Do *not* change one without the other.  */
 
 /* Register class used for passing given 64bit part of the argument.
-   These represent classes as documented by the PS ABI, with the exception
-   of SSESF, SSEDF classes, that are basically SSE class, just gcc will
-   use SF or DFmode move instead of DImode to avoid reformating penalties.
+   These represent classes as documented by the PS ABI, with the
+   exception of SSESF, SSEDF classes, that are basically SSE class,
+   just gcc will use SF or DFmode move instead of DImode to avoid
+   reformatting penalties.
 
    Similary we play games with INTEGERSI_CLASS to use cheaper SImode moves
    whenever possible (upper half does contain padding).  */
@@ -377,7 +378,7 @@ ffi_prep_cif_machdep (ffi_cif *cif)
 	  if (align < 8)
 	    align = 8;
 
-	  bytes = ALIGN(bytes, align);
+	  bytes = ALIGN (bytes, align);
 	  bytes += cif->arg_types[i]->size;
 	}
       else
@@ -389,7 +390,7 @@ ffi_prep_cif_machdep (ffi_cif *cif)
   if (ssecount)
     flags |= 1 << 11;
   cif->flags = flags;
-  cif->bytes = bytes;
+  cif->bytes = ALIGN (bytes, 8);
 
   return FFI_OK;
 }

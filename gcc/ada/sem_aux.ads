@@ -159,26 +159,50 @@ package Sem_Aux is
    --  Determines if the given entity Ent is a derived type. Result is always
    --  false if argument is not a type.
 
+   function Is_Generic_Formal (E : Entity_Id) return Boolean;
+   --  Determine whether E is a generic formal parameter. In particular this is
+   --  used to set the visibility of generic formals of a generic package
+   --  declared with a box or with partial parametrization.
+
    function Is_Indefinite_Subtype (Ent : Entity_Id) return Boolean;
    --  Ent is any entity. Determines if given entity is an unconstrained array
    --  type or subtype, a discriminated record type or subtype with no initial
    --  discriminant values or a class wide type or subtype and returns True if
    --  so. False for other type entities, or any entities that are not types.
 
-   function Is_Inherently_Limited_Type (Ent : Entity_Id) return Boolean;
+   function Is_Immutably_Limited_Type (Ent : Entity_Id) return Boolean;
    --  Ent is any entity. True for a type that is "inherently" limited (i.e.
    --  cannot become nonlimited). From the Ada 2005 RM-7.5(8.1/2), "a type with
    --  a part that is of a task, protected, or explicitly limited record type".
    --  These are the types that are defined as return-by-reference types in Ada
    --  95 (see RM95-6.5(11-16)). In Ada 2005, these are the types that require
    --  build-in-place for function calls. Note that build-in-place is allowed
-   --  for other types, too.
+   --  for other types, too. This is also used for idenfitying pure procedures
+   --  whose calls should not be eliminated (RM 10.2.1(18/2)).
 
    function Is_Limited_Type (Ent : Entity_Id) return Boolean;
    --  Ent is any entity. Returns true if Ent is a limited type (limited
    --  private type, limited interface type, task type, protected type,
    --  composite containing a limited component, or a subtype of any of
    --  these types).
+
+   function Nearest_Ancestor (Typ : Entity_Id) return Entity_Id;
+   --  Given a subtype Typ, this function finds out the nearest ancestor from
+   --  which constraints and predicates are inherited. There is no simple link
+   --  for doing this, consider:
+   --
+   --     subtype R is Integer range 1 .. 10;
+   --     type T is new R;
+   --
+   --  In this case the nearest ancestor is R, but the Etype of T'Base will
+   --  point to R'Base, so we have to go rummaging in the declarations to get
+   --  this information. It is used for making sure we freeze this before we
+   --  freeze Typ, and also for retrieving inherited predicate information.
+   --  For the case of base types or first subtypes, there is no useful entity
+   --  to return, so Empty is returned.
+   --
+   --  Note: this is similar to Ancestor_Subtype except that it also deals
+   --  with the case of derived types.
 
    function Nearest_Dynamic_Scope (Ent : Entity_Id) return Entity_Id;
    --  This is similar to Enclosing_Dynamic_Scope except that if Ent is itself

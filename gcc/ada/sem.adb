@@ -67,7 +67,7 @@ package body Sem is
    --  Controls debugging printouts for Walk_Library_Items
 
    Outer_Generic_Scope : Entity_Id := Empty;
-   --  Global reference to the outer scope that is generic. In a non- generic
+   --  Global reference to the outer scope that is generic. In a non-generic
    --  context, it is empty. At the moment, it is only used for avoiding
    --  freezing of external references in generics.
 
@@ -237,10 +237,10 @@ package body Sem is
             Analyze_Formal_Object_Declaration (N);
 
          when N_Formal_Package_Declaration =>
-            Analyze_Formal_Package (N);
+            Analyze_Formal_Package_Declaration (N);
 
          when N_Formal_Subprogram_Declaration =>
-            Analyze_Formal_Subprogram (N);
+            Analyze_Formal_Subprogram_Declaration (N);
 
          when N_Formal_Type_Declaration =>
             Analyze_Formal_Type_Declaration (N);
@@ -252,7 +252,7 @@ package body Sem is
             Analyze_Freeze_Entity (N);
 
          when N_Full_Type_Declaration =>
-            Analyze_Type_Declaration (N);
+            Analyze_Full_Type_Declaration (N);
 
          when N_Function_Call =>
             Analyze_Function_Call (N);
@@ -301,6 +301,9 @@ package body Sem is
 
          when N_Integer_Literal =>
             Analyze_Integer_Literal (N);
+
+         when N_Iterator_Specification =>
+            Analyze_Iterator_Specification (N);
 
          when N_Itype_Reference =>
             Analyze_Itype_Reference (N);
@@ -437,6 +440,9 @@ package body Sem is
          when N_Parameter_Association =>
             Analyze_Parameter_Association (N);
 
+         when N_Parameterized_Expression =>
+            Analyze_Parameterized_Expression (N);
+
          when N_Pragma =>
             Analyze_Pragma (N);
 
@@ -462,10 +468,13 @@ package body Sem is
             Analyze_Protected_Definition (N);
 
          when N_Protected_Type_Declaration =>
-            Analyze_Protected_Type (N);
+            Analyze_Protected_Type_Declaration (N);
 
          when N_Qualified_Expression =>
             Analyze_Qualified_Expression (N);
+
+         when N_Quantified_Expression =>
+            Analyze_Quantified_Expression (N);
 
          when N_Raise_Statement =>
             Analyze_Raise_Statement (N);
@@ -502,10 +511,10 @@ package body Sem is
             Analyze_Selective_Accept (N);
 
          when N_Single_Protected_Declaration =>
-            Analyze_Single_Protected (N);
+            Analyze_Single_Protected_Declaration (N);
 
          when N_Single_Task_Declaration =>
-            Analyze_Single_Task (N);
+            Analyze_Single_Task_Declaration (N);
 
          when N_Slice =>
             Analyze_Slice (N);
@@ -547,7 +556,7 @@ package body Sem is
             Analyze_Task_Definition (N);
 
          when N_Task_Type_Declaration =>
-            Analyze_Task_Type (N);
+            Analyze_Task_Type_Declaration (N);
 
          when N_Terminate_Alternative =>
             Analyze_Terminate_Alternative (N);
@@ -633,6 +642,7 @@ package body Sem is
            N_Access_Function_Definition             |
            N_Access_Procedure_Definition            |
            N_Access_To_Object_Definition            |
+           N_Aspect_Specification                   |
            N_Case_Expression_Alternative            |
            N_Case_Statement_Alternative             |
            N_Compilation_Unit_Aux                   |
@@ -1452,16 +1462,18 @@ package body Sem is
          end if;
 
          --  Do analysis, and then append the compilation unit onto the
-         --  Comp_Unit_List, if appropriate. This is done after analysis, so
-         --  if this unit depends on some others, they have already been
-         --  appended. We ignore bodies, except for the main unit itself. We
-         --  have also to guard against ill-formed subunits that have an
-         --  improper context.
+         --  Comp_Unit_List, if appropriate. This is done after analysis,
+         --  so if this unit depends on some others, they have already been
+         --  appended. We ignore bodies, except for the main unit itself, and
+         --  for subprogram bodies that act as specs. We have also to guard
+         --  against ill-formed subunits that have an improper context.
 
          Do_Analyze;
 
          if Present (Comp_Unit)
            and then Nkind (Unit (Comp_Unit)) in N_Proper_Body
+           and then (Nkind (Unit (Comp_Unit)) /= N_Subprogram_Body
+                       or else not Acts_As_Spec (Comp_Unit))
            and then not In_Extended_Main_Source_Unit (Comp_Unit)
          then
             null;
@@ -1536,6 +1548,22 @@ package body Sem is
       --  This is needed because the spec of the main unit may appear in the
       --  context of some other unit. We do not want this to force processing
       --  of the main body before all other units have been processed.
+      --
+      --  Another circularity pattern occurs when the main unit is a child unit
+      --  and the body of an ancestor has a with-clause of the main unit or on
+      --  one of its children. In both cases the body in question has a with-
+      --  clause on the main unit, and must be excluded from the traversal. In
+      --  some convoluted cases this may lead to a CodePeer error because the
+      --  spec of a subprogram declared in an instance within the parent will
+      --  not be seen in the main unit.
+
+      function Depends_On_Main (CU : Node_Id) return Boolean;
+      --  The body of a unit that is withed by the spec of the main unit may in
+      --  turn have a with_clause on that spec. In that case do not traverse
+      --  the body, to prevent loops. It can also happen that the main body has
+      --  a with_clause on a child, which of course has an implicit with on its
+      --  parent. It's OK to traverse the child body if the main spec has been
+      --  processed, otherwise we also have a circularity to avoid.
 
       procedure Do_Action (CU : Node_Id; Item : Node_Id);
       --  Calls Action, with some validity checks
@@ -1555,6 +1583,39 @@ package body Sem is
       --  that may be present, together with their  context. The spec of main
       --  is processed wherever it appears in the list of units, while the body
       --  is processed as the last unit in the list.
+
+      ---------------------
+      -- Depends_On_Main --
+      ---------------------
+
+      function Depends_On_Main (CU : Node_Id) return Boolean is
+         CL  : Node_Id;
+         MCU : constant Node_Id := Unit (Main_CU);
+
+      begin
+         CL := First (Context_Items (CU));
+
+         --  Problem does not arise with main subprograms
+
+         if
+           not Nkind_In (MCU, N_Package_Body, N_Package_Declaration)
+         then
+            return False;
+         end if;
+
+         while Present (CL) loop
+            if Nkind (CL) = N_With_Clause
+              and then Library_Unit (CL) = Main_CU
+              and then not Done (Get_Cunit_Unit_Number (Library_Unit (CL)))
+            then
+               return True;
+            end if;
+
+            Next (CL);
+         end loop;
+
+         return False;
+      end Depends_On_Main;
 
       ---------------
       -- Do_Action --
@@ -1730,6 +1791,7 @@ package body Sem is
       procedure Do_Unit_And_Dependents (CU : Node_Id; Item : Node_Id) is
          Unit_Num  : constant Unit_Number_Type := Get_Cunit_Unit_Number (CU);
          Child     : Node_Id;
+         Body_U    : Unit_Number_Type;
          Parent_CU : Node_Id;
 
          procedure Do_Withed_Units is new Walk_Withs (Do_Withed_Unit);
@@ -1758,8 +1820,11 @@ package body Sem is
                   if CU = Library_Unit (Main_CU) then
                      Process_Bodies_In_Context (CU);
 
-                     --  If main is a child unit, examine context of parent
-                     --  units to see if they include instantiated units.
+                     --  If main is a child unit, examine parent unit contexts
+                     --  to see if they include instantiated units. Also, if
+                     --  the parent itself is an instance, process its body
+                     --  because it may contain subprograms that are called
+                     --  in the main unit.
 
                      if Is_Child_Unit (Cunit_Entity (Main_Unit)) then
                         Child := Cunit_Entity (Main_Unit);
@@ -1768,6 +1833,20 @@ package body Sem is
                              Cunit
                                (Get_Cunit_Entity_Unit_Number (Scope (Child)));
                            Process_Bodies_In_Context (Parent_CU);
+
+                           if Nkind (Unit (Parent_CU)) = N_Package_Body
+                             and then
+                               Nkind (Original_Node (Unit (Parent_CU)))
+                                 = N_Package_Instantiation
+                             and then
+                               not Seen (Get_Cunit_Unit_Number (Parent_CU))
+                           then
+                              Body_U := Get_Cunit_Unit_Number (Parent_CU);
+                              Seen (Body_U) := True;
+                              Do_Action (Parent_CU, Unit (Parent_CU));
+                              Done (Body_U) := True;
+                           end if;
+
                            Child := Scope (Child);
                         end loop;
                      end if;
@@ -1792,46 +1871,6 @@ package body Sem is
 
          procedure Do_Withed_Units is new Walk_Withs (Do_Withed_Unit);
 
-         function Depends_On_Main (CU : Node_Id) return Boolean;
-         --  The body of a unit that is withed by the spec of the main unit
-         --  may in turn have a with_clause on that spec. In that case do not
-         --  traverse the body, to prevent loops. It can also happen that the
-         --  main body as a with_clause on a child, which of course has an
-         --  implicit with on its parent. It's ok to traverse the child body
-         --  if the main spec has been processed, otherwise we also have a
-         --  circularity to avoid.
-
-         ---------------------
-         -- Depends_On_Main --
-         ---------------------
-
-         function Depends_On_Main (CU : Node_Id) return Boolean is
-            CL : Node_Id;
-
-         begin
-            CL := First (Context_Items (CU));
-
-            --  Problem does not arise with main subprograms.
-
-            if Nkind (Unit (Main_CU)) /= N_Package_Body then
-               return False;
-            end if;
-
-            while Present (CL) loop
-               if Nkind (CL) = N_With_Clause
-                 and then Library_Unit (CL) = Library_Unit (Main_CU)
-                 and then
-                   not Done (Get_Cunit_Unit_Number (Library_Unit (CL)))
-               then
-                  return True;
-               end if;
-
-               Next (CL);
-            end loop;
-
-            return False;
-         end Depends_On_Main;
-
       --  Start of processing for Process_Bodies_In_Context
 
       begin
@@ -1843,7 +1882,8 @@ package body Sem is
 
                --  If we are processing the spec of the main unit, load bodies
                --  only if the with_clause indicates that it forced the loading
-               --  of the body for a generic instantiation.
+               --  of the body for a generic instantiation. Note that bodies of
+               --  parents that are instances have been loaded already.
 
                if Present (Body_CU)
                  and then Body_CU /= Cunit (Main_Unit)
@@ -1911,8 +1951,9 @@ package body Sem is
       Cur := First_Elmt (Comp_Unit_List);
       while Present (Cur) loop
          declare
-            CU : constant Node_Id := Node (Cur);
-            N  : constant Node_Id := Unit (CU);
+            CU  : constant Node_Id := Node (Cur);
+            N   : constant Node_Id := Unit (CU);
+            Par : Entity_Id;
 
          begin
             pragma Assert (Nkind (CU) = N_Compilation_Unit);
@@ -1928,10 +1969,16 @@ package body Sem is
                --  a package, the original file carries the body, and the spec
                --  appears as a later entry in the units list.
 
-               --  Otherwise Bodies appear in the list only because of inlining
-               --  or instantiations, and they are processed only if relevant
-               --  to the main unit. The main unit itself is processed
-               --  separately after all other specs.
+               --  Otherwise bodies appear in the list only because of inlining
+               --  or instantiations, and they are processed only if relevant.
+               --  The flag Withed_Body on a context clause indicates that a
+               --  unit contains an instantiation that may be needed later,
+               --  and therefore the body that contains the generic body (and
+               --  its context)  must be traversed immediately after the
+               --  corresponding spec (see Do_Unit_And_Dependents).
+
+               --  The main unit itself is processed separately after all other
+               --  specs, and relevant bodies are examined in Process_Main.
 
                when N_Subprogram_Body =>
                   if Acts_As_Spec (N) then
@@ -1949,10 +1996,26 @@ package body Sem is
                         Unit (Library_Unit (Main_CU)));
                   end if;
 
-               --  It's a spec, process it, and the units it depends on
+                  --  It's a spec, process it, and the units it depends on,
+                  --  unless it is a descendent of the main unit.  This can
+                  --  happen when the body of a parent depends on some other
+                  --  descendent.
 
                when others =>
-                  Do_Unit_And_Dependents (CU, N);
+                  Par := Scope (Defining_Entity (Unit (CU)));
+
+                  if Is_Child_Unit (Defining_Entity (Unit (CU))) then
+                     while Present (Par)
+                       and then Par /= Standard_Standard
+                       and then Par /= Cunit_Entity (Main_Unit)
+                     loop
+                        Par := Scope (Par);
+                     end loop;
+                  end if;
+
+                  if Par /= Cunit_Entity (Main_Unit) then
+                     Do_Unit_And_Dependents (CU, N);
+                  end if;
             end case;
          end;
 
@@ -1965,18 +2028,53 @@ package body Sem is
       if not Done (Main_Unit) then
          Do_Main := True;
 
-         declare
+         Process_Main : declare
             Parent_CU : Node_Id;
             Body_CU   : Node_Id;
             Body_U    : Unit_Number_Type;
             Child     : Entity_Id;
 
+            function Is_Subunit_Of_Main (U : Node_Id) return Boolean;
+            --  If the main unit has subunits, their context may include
+            --  bodies that are needed in the body of main. We must examine
+            --  the context of the subunits, which are otherwise not made
+            --  explicit in the main unit.
+
+            ------------------------
+            -- Is_Subunit_Of_Main --
+            ------------------------
+
+            function Is_Subunit_Of_Main (U : Node_Id) return Boolean is
+               Lib : Node_Id;
+            begin
+               if No (U) then
+                  return False;
+               else
+                  Lib := Library_Unit (U);
+                  return Nkind (Unit (U)) = N_Subunit
+                    and then
+                      (Lib = Cunit (Main_Unit)
+                        or else Is_Subunit_Of_Main (Lib));
+               end if;
+            end Is_Subunit_Of_Main;
+
+         --  Start of processing for Process_Main
+
          begin
             Process_Bodies_In_Context (Main_CU);
+
+            for Unit_Num in Done'Range loop
+               if Is_Subunit_Of_Main (Cunit (Unit_Num)) then
+                  Process_Bodies_In_Context (Cunit (Unit_Num));
+               end if;
+            end loop;
 
             --  If the main unit is a child unit, parent bodies may be present
             --  because they export instances or inlined subprograms. Check for
             --  presence of these, which are not present in context clauses.
+            --  Note that if the parents are instances, their bodies have been
+            --  processed before the main spec, because they may be needed
+            --  therein, so the following loop only affects non-instances.
 
             if Is_Child_Unit (Cunit_Entity (Main_Unit)) then
                Child := Cunit_Entity (Main_Unit);
@@ -1987,6 +2085,7 @@ package body Sem is
 
                   if Present (Body_CU)
                     and then not Seen (Get_Cunit_Unit_Number (Body_CU))
+                    and then not Depends_On_Main (Body_CU)
                   then
                      Body_U := Get_Cunit_Unit_Number (Body_CU);
                      Seen (Body_U) := True;
@@ -2000,7 +2099,7 @@ package body Sem is
 
             Do_Action (Main_CU, Unit (Main_CU));
             Done (Main_Unit) := True;
-         end;
+         end Process_Main;
       end if;
 
       if Debug_Unit_Walk then
@@ -2097,6 +2196,8 @@ package body Sem is
       pragma Assert (Nkind (CU) = N_Compilation_Unit);
 
       Context_Item : Node_Id;
+      Lib_Unit     : Node_Id;
+      Body_CU      : Node_Id;
 
    begin
       Context_Item := First (Context_Items (CU));
@@ -2105,7 +2206,32 @@ package body Sem is
            and then (Include_Limited
                      or else not Limited_Present (Context_Item))
          then
-            Action (Library_Unit (Context_Item));
+            Lib_Unit := Library_Unit (Context_Item);
+            Action (Lib_Unit);
+
+            --  If the context item indicates that a package body is needed
+            --  because of an instantiation in CU, traverse the body now, even
+            --  if CU is not related to the main unit. If the generic itself
+            --  appears in a package body, the context item is this body, and
+            --  it already appears in the traversal order, so we only need to
+            --  examine the case of a context item being a package declaration.
+
+            if Present (Withed_Body (Context_Item))
+              and then Nkind (Unit (Lib_Unit)) = N_Package_Declaration
+              and then Present (Corresponding_Body (Unit (Lib_Unit)))
+            then
+               Body_CU :=
+                 Parent
+                   (Unit_Declaration_Node
+                     (Corresponding_Body (Unit (Lib_Unit))));
+
+               --  A body may have an implicit with on its own spec, in which
+               --  case we must ignore this context item to prevent looping.
+
+               if Unit (CU) /= Unit (Body_CU) then
+                  Action (Body_CU);
+               end if;
+            end if;
          end if;
 
          Context_Item := Next (Context_Item);

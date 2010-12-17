@@ -51,12 +51,12 @@ import javax.print.attribute.AttributeSet;
 
 /**
  * The platform default implementation based on CUPS.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public class CupsPrintServiceLookup extends PrintServiceLookup
-{  
-  private CupsServer server; 
+{
+  private CupsServer server;
 
   /**
    * Default constructor checking security access.
@@ -67,14 +67,14 @@ public class CupsPrintServiceLookup extends PrintServiceLookup
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
       sm.checkPrintJobAccess();
-     
+
     // use the localhost cups server
     server = new CupsServer(null, null);
   }
 
   /**
    * This is the printer marked as default in CUPS.
-   * 
+   *
    * @return The default lookup service or
    * <code>null</code> if there is no default.
    */
@@ -83,21 +83,21 @@ public class CupsPrintServiceLookup extends PrintServiceLookup
     try
       {
         return server.getDefaultPrinter();
-      }   
+      }
     catch (IppException e)
       {
         // if discovery fails treat as if there is none
         return null;
-      }    
+      }
   }
-  
+
   /**
   * All printers and printer classes of the CUPS server are checked.
   * If flavors or attributes are null the constraint is not used.
-  * 
+  *
   * @param flavors the document flavors which have to be supported.
   * @param attributes the attributes which have to be supported.
-  * 
+  *
   * @return The multidoc print services of the implementing lookup service
   * for the given parameters, or an array of length 0 if none is available.
   */
@@ -105,49 +105,49 @@ public class CupsPrintServiceLookup extends PrintServiceLookup
       AttributeSet attributes)
   {
     ArrayList result = new ArrayList();
-    PrintService[] services = getPrintServices();   
-    
+    PrintService[] services = getPrintServices();
+
     for (int i=0; i < services.length; i++)
       {
         if (checkMultiDocPrintService(flavors, attributes, services[i]))
-          result.add(services[i]);  
+          result.add(services[i]);
       }
-    
+
     return (MultiDocPrintService[]) result.toArray(
       new MultiDocPrintService[result.size()]);
   }
 
   /**
    * These are all printers and printer classes of the CUPS server.
-   * 
-   * @return All known print services regardless of supported features, 
+   *
+   * @return All known print services regardless of supported features,
    * or an array of length 0 if none is available.
    */
   public PrintService[] getPrintServices()
   {
     ArrayList result = new ArrayList();
-    
+
     try
       {
         result.addAll(server.getAllPrinters());
         result.addAll(server.getAllClasses());
       }
     catch (IppException e)
-      {       
+      {
         // ignore as this method cannot throw exceptions
         // if print service discovery fails - bad luck
       }
     return (PrintService[]) result.toArray(new PrintService[result.size()]);
   }
-  
-  
+
+
   /**
    * All printers and printer classes of the CUPS server are checked.
    * If flavor or attributes are null the constraint is not used.
-   * 
+   *
    * @param flavor the document flavor which has to be supported.
    * @param attributes the attributes which have to be supported.
-   * 
+   *
    * @return The print services of the implementing lookup service
    * for the given parameters, or an array of length 0 if none is available.
    */
@@ -156,25 +156,25 @@ public class CupsPrintServiceLookup extends PrintServiceLookup
   {
     ArrayList result = new ArrayList();
     PrintService[] services = getPrintServices();
-    
+
     for (int i=0; i < services.length; i++)
       {
         if (checkPrintService(flavor, attributes, services[i]))
           result.add(services[i]);
       }
-    
+
     return (PrintService[]) result.toArray(new PrintService[result.size()]);
   }
-  
+
   /**
    * Checks the given print service - own method so it can be used also
    * to check application registered print services from PrintServiceLookup.
-   * 
+   *
    * @param flavor the document flavor which has to be supported.
    * @param attributes the attributes which have to be supported.
    * @param service the service to check
-   * 
-   * @return <code>true</code> if all constraints match, <code>false</code> 
+   *
+   * @return <code>true</code> if all constraints match, <code>false</code>
    * otherwise.
    */
   public boolean checkPrintService(DocFlavor flavor, AttributeSet attributes,
@@ -185,7 +185,7 @@ public class CupsPrintServiceLookup extends PrintServiceLookup
       {
         if (attributes == null || attributes.size() == 0)
           return allAttributesSupported;
-       
+
         Attribute[] atts = attributes.toArray();
         for (int i = 0; i < atts.length; i++)
           {
@@ -197,29 +197,29 @@ public class CupsPrintServiceLookup extends PrintServiceLookup
           }
         return allAttributesSupported;
       }
-    
+
     return false;
   }
-  
+
   /**
    * Checks the given print service - own method so it can be used also
    * to check application registered print services from PrintServiceLookup.
-   * 
+   *
    * @param flavors the document flavors which have to be supported.
    * @param attributes the attributes which have to be supported.
    * @param service the service to check
-   * 
-   * @return <code>true</code> if all constraints match, <code>false</code> 
+   *
+   * @return <code>true</code> if all constraints match, <code>false</code>
    * otherwise.
    */
-  public boolean checkMultiDocPrintService(DocFlavor[] flavors, 
+  public boolean checkMultiDocPrintService(DocFlavor[] flavors,
     AttributeSet attributes, PrintService service)
-  {    
+  {
     if (service instanceof MultiDocPrintService)
-      { 
+      {
         boolean allFlavorsSupported = true;
         boolean allAttributesSupported = true;
-        
+
         if (flavors == null || flavors.length != 0)
           allFlavorsSupported = true;
         else
@@ -233,7 +233,7 @@ public class CupsPrintServiceLookup extends PrintServiceLookup
                   }
               }
           }
-        
+
         if (attributes == null || attributes.size() == 0)
           allAttributesSupported = true;
         else
@@ -249,11 +249,11 @@ public class CupsPrintServiceLookup extends PrintServiceLookup
                   }
               }
           }
-        
+
         if (allAttributesSupported && allFlavorsSupported)
           return true;
-      }     
-    
+      }
+
     return false;
   }
 

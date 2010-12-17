@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -58,6 +58,11 @@ package body Stylesw is
                      "S" &  -- check separate lines after THEN or ELSE
                      "u" &  -- check no unnecessary blank lines
                      "x";   -- check extra parentheses around conditionals
+
+   --  Note: we intend GNAT_Style to also include the following, but we do
+   --  not yet have the whole tool suite clean with respect to this.
+
+   --                "B" &  -- check boolean operators
 
    -------------------------------
    -- Reset_Style_Check_Options --

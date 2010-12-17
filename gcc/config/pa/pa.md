@@ -5982,7 +5982,7 @@
 	(neg:DF (match_operand:DF 1 "register_operand" "")))]
   "!TARGET_SOFT_FLOAT"
 {
-  if (TARGET_PA_20 || flag_unsafe_math_optimizations)
+  if (TARGET_PA_20 || !flag_signed_zeros)
     emit_insn (gen_negdf2_fast (operands[0], operands[1]));
   else
     emit_insn (gen_negdf2_slow (operands[0], operands[1]));
@@ -6026,7 +6026,7 @@
 	(neg:SF (match_operand:SF 1 "register_operand" "")))]
   "!TARGET_SOFT_FLOAT"
 {
-  if (TARGET_PA_20 || flag_unsafe_math_optimizations)
+  if (TARGET_PA_20 || !flag_signed_zeros)
     emit_insn (gen_negsf2_fast (operands[0], operands[1]));
   else
     emit_insn (gen_negsf2_slow (operands[0], operands[1]));
@@ -6090,64 +6090,44 @@
 ;; PA 2.0 floating point instructions
 
 ; fmpyfadd patterns
-(define_insn ""
+(define_insn "fmadf4"
   [(set (match_operand:DF 0 "register_operand" "=f")
-	(plus:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
-			  (match_operand:DF 2 "register_operand" "f"))
-		 (match_operand:DF 3 "register_operand" "f")))]
+	(fma:DF (match_operand:DF 1 "register_operand" "f")
+		(match_operand:DF 2 "register_operand" "f")
+		(match_operand:DF 3 "register_operand" "f")))]
   "TARGET_PA_20 && ! TARGET_SOFT_FLOAT"
   "fmpyfadd,dbl %1,%2,%3,%0"
   [(set_attr "type" "fpmuldbl")
    (set_attr "length" "4")])
 
-(define_insn ""
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(plus:DF (match_operand:DF 1 "register_operand" "f")
-		 (mult:DF (match_operand:DF 2 "register_operand" "f")
-			  (match_operand:DF 3 "register_operand" "f"))))]
-  "TARGET_PA_20 && ! TARGET_SOFT_FLOAT"
-  "fmpyfadd,dbl %2,%3,%1,%0"
-  [(set_attr "type" "fpmuldbl")
-   (set_attr "length" "4")])
-
-(define_insn ""
+(define_insn "fmasf4"
   [(set (match_operand:SF 0 "register_operand" "=f")
-	(plus:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
-			  (match_operand:SF 2 "register_operand" "f"))
-		 (match_operand:SF 3 "register_operand" "f")))]
+	(fma:SF (match_operand:SF 1 "register_operand" "f")
+		(match_operand:SF 2 "register_operand" "f")
+		(match_operand:SF 3 "register_operand" "f")))]
   "TARGET_PA_20 && ! TARGET_SOFT_FLOAT"
   "fmpyfadd,sgl %1,%2,%3,%0"
   [(set_attr "type" "fpmulsgl")
    (set_attr "length" "4")])
 
-(define_insn ""
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(plus:SF (match_operand:SF 1 "register_operand" "f")
-		 (mult:SF (match_operand:SF 2 "register_operand" "f")
-			  (match_operand:SF 3 "register_operand" "f"))))]
-  "TARGET_PA_20 && ! TARGET_SOFT_FLOAT"
-  "fmpyfadd,sgl %2,%3,%1,%0"
-  [(set_attr "type" "fpmulsgl")
-   (set_attr "length" "4")])
-
 ; fmpynfadd patterns
-(define_insn ""
+(define_insn "fnmadf4"
   [(set (match_operand:DF 0 "register_operand" "=f")
-	(minus:DF (match_operand:DF 1 "register_operand" "f")
-		  (mult:DF (match_operand:DF 2 "register_operand" "f")
-			   (match_operand:DF 3 "register_operand" "f"))))]
+	(fma:DF (neg:DF (match_operand:DF 1 "register_operand" "f"))
+		(match_operand:DF 2 "register_operand" "f")
+		(match_operand:DF 3 "register_operand" "f")))]
   "TARGET_PA_20 && ! TARGET_SOFT_FLOAT"
-  "fmpynfadd,dbl %2,%3,%1,%0"
+  "fmpynfadd,dbl %1,%2,%3,%0"
   [(set_attr "type" "fpmuldbl")
    (set_attr "length" "4")])
 
-(define_insn ""
+(define_insn "fnmasf4"
   [(set (match_operand:SF 0 "register_operand" "=f")
-	(minus:SF (match_operand:SF 1 "register_operand" "f")
-		  (mult:SF (match_operand:SF 2 "register_operand" "f")
-			   (match_operand:SF 3 "register_operand" "f"))))]
+	(fma:SF (neg:SF (match_operand:SF 1 "register_operand" "f"))
+		(match_operand:SF 2 "register_operand" "f")
+		(match_operand:SF 3 "register_operand" "f")))]
   "TARGET_PA_20 && ! TARGET_SOFT_FLOAT"
-  "fmpynfadd,sgl %2,%3,%1,%0"
+  "fmpynfadd,sgl %1,%2,%3,%0"
   [(set_attr "type" "fpmulsgl")
    (set_attr "length" "4")])
 
@@ -6167,267 +6147,6 @@
   "fnegabs,sgl %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
-
-;; Generating a fused multiply sequence is a win for this case as it will
-;; reduce the latency for the fused case without impacting the plain
-;; multiply case.
-;;
-;; Similar possibilities exist for fnegabs, shadd and other insns which
-;; perform two operations with the result of the first feeding the second.
-(define_insn ""
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(plus:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
-			  (match_operand:DF 2 "register_operand" "f"))
-		 (match_operand:DF 3 "register_operand" "f")))
-   (set (match_operand:DF 4 "register_operand" "=&f")
-	(mult:DF (match_dup 1) (match_dup 2)))]
-  "(! TARGET_SOFT_FLOAT && TARGET_PA_20
-    && ! (reg_overlap_mentioned_p (operands[4], operands[1])
-          || reg_overlap_mentioned_p (operands[4], operands[2])))"
-  "#"
-  [(set_attr "type" "fpmuldbl")
-   (set_attr "length" "8")])
-
-;; We want to split this up during scheduling since we want both insns
-;; to schedule independently.
-(define_split
-  [(set (match_operand:DF 0 "register_operand" "")
-	(plus:DF (mult:DF (match_operand:DF 1 "register_operand" "")
-			  (match_operand:DF 2 "register_operand" ""))
-		 (match_operand:DF 3 "register_operand" "")))
-   (set (match_operand:DF 4 "register_operand" "")
-	(mult:DF (match_dup 1) (match_dup 2)))]
-  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
-  [(set (match_dup 4) (mult:DF (match_dup 1) (match_dup 2)))
-   (set (match_dup 0) (plus:DF (mult:DF (match_dup 1) (match_dup 2))
-			       (match_dup 3)))]
-  "")
-
-(define_insn ""
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(plus:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
-			  (match_operand:SF 2 "register_operand" "f"))
-		 (match_operand:SF 3 "register_operand" "f")))
-   (set (match_operand:SF 4 "register_operand" "=&f")
-	(mult:SF (match_dup 1) (match_dup 2)))]
-  "(! TARGET_SOFT_FLOAT && TARGET_PA_20
-    && ! (reg_overlap_mentioned_p (operands[4], operands[1])
-          || reg_overlap_mentioned_p (operands[4], operands[2])))"
-  "#"
-  [(set_attr "type" "fpmuldbl")
-   (set_attr "length" "8")])
-
-;; We want to split this up during scheduling since we want both insns
-;; to schedule independently.
-(define_split
-  [(set (match_operand:SF 0 "register_operand" "")
-	(plus:SF (mult:SF (match_operand:SF 1 "register_operand" "")
-			  (match_operand:SF 2 "register_operand" ""))
-		 (match_operand:SF 3 "register_operand" "")))
-   (set (match_operand:SF 4 "register_operand" "")
-	(mult:SF (match_dup 1) (match_dup 2)))]
-  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
-  [(set (match_dup 4) (mult:SF (match_dup 1) (match_dup 2)))
-   (set (match_dup 0) (plus:SF (mult:SF (match_dup 1) (match_dup 2))
-			       (match_dup 3)))]
-  "")
-
-;; Negating a multiply can be faked by adding zero in a fused multiply-add
-;; instruction.
-(define_insn ""
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(neg:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
-			 (match_operand:DF 2 "register_operand" "f"))))]
-  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
-  "fmpynfadd,dbl %1,%2,%%fr0,%0"
-  [(set_attr "type" "fpmuldbl")
-   (set_attr "length" "4")])
-
-(define_insn ""
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(neg:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
-			 (match_operand:SF 2 "register_operand" "f"))))]
-  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
-  "fmpynfadd,sgl %1,%2,%%fr0,%0"
-  [(set_attr "type" "fpmuldbl")
-   (set_attr "length" "4")])
-
-(define_insn ""
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(neg:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
-			 (match_operand:DF 2 "register_operand" "f"))))
-   (set (match_operand:DF 3 "register_operand" "=&f")
-	(mult:DF (match_dup 1) (match_dup 2)))]
-  "(! TARGET_SOFT_FLOAT && TARGET_PA_20
-    && ! (reg_overlap_mentioned_p (operands[3], operands[1])
-          || reg_overlap_mentioned_p (operands[3], operands[2])))"
-  "#"
-  [(set_attr "type" "fpmuldbl")
-   (set_attr "length" "8")])
-
-(define_split
-  [(set (match_operand:DF 0 "register_operand" "")
-	(neg:DF (mult:DF (match_operand:DF 1 "register_operand" "")
-			 (match_operand:DF 2 "register_operand" ""))))
-   (set (match_operand:DF 3 "register_operand" "")
-	(mult:DF (match_dup 1) (match_dup 2)))]
-  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
-  [(set (match_dup 3) (mult:DF (match_dup 1) (match_dup 2)))
-   (set (match_dup 0) (neg:DF (mult:DF (match_dup 1) (match_dup 2))))]
-  "")
-
-(define_insn ""
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(neg:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
-			 (match_operand:SF 2 "register_operand" "f"))))
-   (set (match_operand:SF 3 "register_operand" "=&f")
-	(mult:SF (match_dup 1) (match_dup 2)))]
-  "(! TARGET_SOFT_FLOAT && TARGET_PA_20
-    && ! (reg_overlap_mentioned_p (operands[3], operands[1])
-          || reg_overlap_mentioned_p (operands[3], operands[2])))"
-  "#"
-  [(set_attr "type" "fpmuldbl")
-   (set_attr "length" "8")])
-
-(define_split
-  [(set (match_operand:SF 0 "register_operand" "")
-	(neg:SF (mult:SF (match_operand:SF 1 "register_operand" "")
-			 (match_operand:SF 2 "register_operand" ""))))
-   (set (match_operand:SF 3 "register_operand" "")
-	(mult:SF (match_dup 1) (match_dup 2)))]
-  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
-  [(set (match_dup 3) (mult:SF (match_dup 1) (match_dup 2)))
-   (set (match_dup 0) (neg:SF (mult:SF (match_dup 1) (match_dup 2))))]
-  "")
-
-;; Now fused multiplies with the result of the multiply negated.
-(define_insn ""
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(plus:DF (neg:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
-				  (match_operand:DF 2 "register_operand" "f")))
-		 (match_operand:DF 3 "register_operand" "f")))]
-  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
-  "fmpynfadd,dbl %1,%2,%3,%0"
-  [(set_attr "type" "fpmuldbl")
-   (set_attr "length" "4")])
-
-(define_insn ""
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(plus:SF (neg:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
-			 (match_operand:SF 2 "register_operand" "f")))
-		 (match_operand:SF 3 "register_operand" "f")))]
-  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
-  "fmpynfadd,sgl %1,%2,%3,%0"
-  [(set_attr "type" "fpmuldbl")
-   (set_attr "length" "4")])
-
-(define_insn ""
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(plus:DF (neg:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
-				  (match_operand:DF 2 "register_operand" "f")))
-		 (match_operand:DF 3 "register_operand" "f")))
-   (set (match_operand:DF 4 "register_operand" "=&f")
-	(mult:DF (match_dup 1) (match_dup 2)))]
-  "(! TARGET_SOFT_FLOAT && TARGET_PA_20
-    && ! (reg_overlap_mentioned_p (operands[4], operands[1])
-          || reg_overlap_mentioned_p (operands[4], operands[2])))"
-  "#"
-  [(set_attr "type" "fpmuldbl")
-   (set_attr "length" "8")])
-
-(define_split
-  [(set (match_operand:DF 0 "register_operand" "")
-	(plus:DF (neg:DF (mult:DF (match_operand:DF 1 "register_operand" "")
-				  (match_operand:DF 2 "register_operand" "")))
-		 (match_operand:DF 3 "register_operand" "")))
-   (set (match_operand:DF 4 "register_operand" "")
-	(mult:DF (match_dup 1) (match_dup 2)))]
-  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
-  [(set (match_dup 4) (mult:DF (match_dup 1) (match_dup 2)))
-   (set (match_dup 0) (plus:DF (neg:DF (mult:DF (match_dup 1) (match_dup 2)))
-			       (match_dup 3)))]
-  "")
-
-(define_insn ""
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(plus:SF (neg:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
-				  (match_operand:SF 2 "register_operand" "f")))
-		 (match_operand:SF 3 "register_operand" "f")))
-   (set (match_operand:SF 4 "register_operand" "=&f")
-	(mult:SF (match_dup 1) (match_dup 2)))]
-  "(! TARGET_SOFT_FLOAT && TARGET_PA_20
-    && ! (reg_overlap_mentioned_p (operands[4], operands[1])
-          || reg_overlap_mentioned_p (operands[4], operands[2])))"
-  "#"
-  [(set_attr "type" "fpmuldbl")
-   (set_attr "length" "8")])
-
-(define_split
-  [(set (match_operand:SF 0 "register_operand" "")
-	(plus:SF (neg:SF (mult:SF (match_operand:SF 1 "register_operand" "")
-				  (match_operand:SF 2 "register_operand" "")))
-		 (match_operand:SF 3 "register_operand" "")))
-   (set (match_operand:SF 4 "register_operand" "")
-	(mult:SF (match_dup 1) (match_dup 2)))]
-  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
-  [(set (match_dup 4) (mult:SF (match_dup 1) (match_dup 2)))
-   (set (match_dup 0) (plus:SF (neg:SF (mult:SF (match_dup 1) (match_dup 2)))
-			       (match_dup 3)))]
-  "")
-
-(define_insn ""
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(minus:DF (match_operand:DF 3 "register_operand" "f")
-		  (mult:DF (match_operand:DF 1 "register_operand" "f")
-			   (match_operand:DF 2 "register_operand" "f"))))
-   (set (match_operand:DF 4 "register_operand" "=&f")
-	(mult:DF (match_dup 1) (match_dup 2)))]
-  "(! TARGET_SOFT_FLOAT && TARGET_PA_20
-    && ! (reg_overlap_mentioned_p (operands[4], operands[1])
-          || reg_overlap_mentioned_p (operands[4], operands[2])))"
-  "#"
-  [(set_attr "type" "fpmuldbl")
-   (set_attr "length" "8")])
-
-(define_split
-  [(set (match_operand:DF 0 "register_operand" "")
-	(minus:DF (match_operand:DF 3 "register_operand" "")
-		  (mult:DF (match_operand:DF 1 "register_operand" "")
-			   (match_operand:DF 2 "register_operand" ""))))
-   (set (match_operand:DF 4 "register_operand" "")
-	(mult:DF (match_dup 1) (match_dup 2)))]
-  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
-  [(set (match_dup 4) (mult:DF (match_dup 1) (match_dup 2)))
-   (set (match_dup 0) (minus:DF (match_dup 3)
-				(mult:DF (match_dup 1) (match_dup 2))))]
-  "")
-
-(define_insn ""
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(minus:SF (match_operand:SF 3 "register_operand" "f")
-		  (mult:SF (match_operand:SF 1 "register_operand" "f")
-			   (match_operand:SF 2 "register_operand" "f"))))
-   (set (match_operand:SF 4 "register_operand" "=&f")
-	(mult:SF (match_dup 1) (match_dup 2)))]
-  "(! TARGET_SOFT_FLOAT && TARGET_PA_20
-    && ! (reg_overlap_mentioned_p (operands[4], operands[1])
-          || reg_overlap_mentioned_p (operands[4], operands[2])))"
-  "#"
-  [(set_attr "type" "fpmuldbl")
-   (set_attr "length" "8")])
-
-(define_split
-  [(set (match_operand:SF 0 "register_operand" "")
-	(minus:SF (match_operand:SF 3 "register_operand" "")
-		  (mult:SF (match_operand:SF 1 "register_operand" "")
-			   (match_operand:SF 2 "register_operand" ""))))
-   (set (match_operand:SF 4 "register_operand" "")
-	(mult:SF (match_dup 1) (match_dup 2)))]
-  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
-  [(set (match_dup 4) (mult:SF (match_dup 1) (match_dup 2)))
-   (set (match_dup 0) (minus:SF (match_dup 3)
-				(mult:SF (match_dup 1) (match_dup 2))))]
-  "")
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -6465,6 +6184,74 @@
   "! TARGET_SOFT_FLOAT && TARGET_PA_20"
   [(set (match_dup 2) (abs:SF (match_dup 1)))
    (set (match_dup 0) (neg:SF (abs:SF (match_dup 1))))]
+  "")
+
+;; Negating a multiply can be faked by adding zero in a fused multiply-add
+;; instruction if we can ignore the sign of zero.
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(neg:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
+			 (match_operand:DF 2 "register_operand" "f"))))]
+  "!TARGET_SOFT_FLOAT && TARGET_PA_20 && !flag_signed_zeros"
+  "fmpynfadd,dbl %1,%2,%%fr0,%0"
+  [(set_attr "type" "fpmuldbl")
+   (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(neg:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
+			 (match_operand:SF 2 "register_operand" "f"))))]
+  "!TARGET_SOFT_FLOAT && TARGET_PA_20 && !flag_signed_zeros"
+  "fmpynfadd,sgl %1,%2,%%fr0,%0"
+  [(set_attr "type" "fpmuldbl")
+   (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(neg:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
+			 (match_operand:DF 2 "register_operand" "f"))))
+   (set (match_operand:DF 3 "register_operand" "=&f")
+	(mult:DF (match_dup 1) (match_dup 2)))]
+  "(!TARGET_SOFT_FLOAT && TARGET_PA_20 && !flag_signed_zeros
+    && ! (reg_overlap_mentioned_p (operands[3], operands[1])
+          || reg_overlap_mentioned_p (operands[3], operands[2])))"
+  "#"
+  [(set_attr "type" "fpmuldbl")
+   (set_attr "length" "8")])
+
+(define_split
+  [(set (match_operand:DF 0 "register_operand" "")
+	(neg:DF (mult:DF (match_operand:DF 1 "register_operand" "")
+			 (match_operand:DF 2 "register_operand" ""))))
+   (set (match_operand:DF 3 "register_operand" "")
+	(mult:DF (match_dup 1) (match_dup 2)))]
+  "!TARGET_SOFT_FLOAT && TARGET_PA_20 && !flag_signed_zeros"
+  [(set (match_dup 3) (mult:DF (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (neg:DF (mult:DF (match_dup 1) (match_dup 2))))]
+  "")
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(neg:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
+			 (match_operand:SF 2 "register_operand" "f"))))
+   (set (match_operand:SF 3 "register_operand" "=&f")
+	(mult:SF (match_dup 1) (match_dup 2)))]
+  "(!TARGET_SOFT_FLOAT && TARGET_PA_20 && !flag_signed_zeros
+    && ! (reg_overlap_mentioned_p (operands[3], operands[1])
+          || reg_overlap_mentioned_p (operands[3], operands[2])))"
+  "#"
+  [(set_attr "type" "fpmuldbl")
+   (set_attr "length" "8")])
+
+(define_split
+  [(set (match_operand:SF 0 "register_operand" "")
+	(neg:SF (mult:SF (match_operand:SF 1 "register_operand" "")
+			 (match_operand:SF 2 "register_operand" ""))))
+   (set (match_operand:SF 3 "register_operand" "")
+	(mult:SF (match_dup 1) (match_dup 2)))]
+  "!TARGET_SOFT_FLOAT && TARGET_PA_20&& !flag_signed_zeros"
+  [(set (match_dup 3) (mult:SF (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (neg:SF (mult:SF (match_dup 1) (match_dup 2))))]
   "")
 
 ;;- Shift instructions
@@ -7073,10 +6860,10 @@
   /* Restore the frame pointer.  The virtual_stack_vars_rtx is saved
      instead of the hard_frame_pointer_rtx in the save area.  As a
      result, an extra instruction is needed to adjust for the offset
-     of the virtual stack variables and the frame pointer.  */
+     of the virtual stack variables and the hard frame pointer.  */
   if (GET_CODE (fp) != REG)
     fp = force_reg (Pmode, fp);
-  emit_move_insn (virtual_stack_vars_rtx, fp);
+  emit_move_insn (hard_frame_pointer_rtx, plus_constant (fp, -8));
 
   emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
 
@@ -8517,15 +8304,10 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 
   /* Restore the frame pointer.  The virtual_stack_vars_rtx is saved
      instead of the hard_frame_pointer_rtx in the save area.  We need
-     to adjust for the offset between these two values when we have
-     a nonlocal_goto pattern.  When we don't have a nonlocal_goto
-     pattern, the receiver performs the adjustment.  */
-#ifdef HAVE_nonlocal_goto
-  if (HAVE_nonlocal_goto)
-    emit_move_insn (virtual_stack_vars_rtx, force_reg (Pmode, fp));
-  else
-#endif
-    emit_move_insn (hard_frame_pointer_rtx, fp);
+     to adjust for the offset between these two values.  */
+  if (GET_CODE (fp) != REG)
+    fp = force_reg (Pmode, fp);
+  emit_move_insn (hard_frame_pointer_rtx, plus_constant (fp, -8));
 
   /* This bit is the same as expand_builtin_longjmp.  */
   emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
@@ -9528,7 +9310,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
     {
       addr = gen_rtx_PLUS (word_mode, stack_pointer_rtx,
 			   GEN_INT (TARGET_64BIT ? -8 : -4));
-      emit_move_insn (gen_rtx_MEM (word_mode, addr), frame_pointer_rtx);
+      emit_move_insn (gen_rtx_MEM (word_mode, addr), hard_frame_pointer_rtx);
     }
   if (!TARGET_64BIT && flag_pic)
     {
@@ -9544,89 +9326,38 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
    (match_operand 2 "const_int_operand" "")]
   "TARGET_PA_20"
 {
-  int locality = INTVAL (operands[2]);
-
-  gcc_assert (locality >= 0 && locality <= 3);
-
-  /* Change operand[0] to a MEM as we don't have the infrastructure
-     to output all the supported address modes for ldw/ldd when we use
-     the address directly.  However, we do have it for MEMs.  */
-  operands[0] = gen_rtx_MEM (QImode, operands[0]);
-
-  /* If the address isn't valid for the prefetch, replace it.  */
-  if (locality)
-    {
-      if (!prefetch_nocc_operand (operands[0], QImode))
-	operands[0]
-	  = replace_equiv_address (operands[0],
-				   copy_to_mode_reg (Pmode,
-						     XEXP (operands[0], 0)));
-      emit_insn (gen_prefetch_nocc (operands[0], operands[1], operands[2]));
-    }
-  else
-    {
-      if (!prefetch_cc_operand (operands[0], QImode))
-	operands[0]
-	  = replace_equiv_address (operands[0],
-				   copy_to_mode_reg (Pmode,
-						     XEXP (operands[0], 0)));
-      emit_insn (gen_prefetch_cc (operands[0], operands[1], operands[2]));
-    }
+  operands[0] = copy_addr_to_reg (operands[0]);
+  emit_insn (gen_prefetch_20 (operands[0], operands[1], operands[2]));
   DONE;
 })
 
-(define_insn "prefetch_cc"
-  [(prefetch (match_operand:QI 0 "prefetch_cc_operand" "RW")
+(define_insn "prefetch_20"
+  [(prefetch (match_operand 0 "pmode_register_operand" "r")
 	     (match_operand:SI 1 "const_int_operand" "n")
 	     (match_operand:SI 2 "const_int_operand" "n"))]
-  "TARGET_PA_20 && operands[2] == const0_rtx"
+  "TARGET_PA_20"
 {
-  /* The SL cache-control completor indicates good spatial locality but
+  /* The SL cache-control completer indicates good spatial locality but
      poor temporal locality.  The ldw instruction with a target of general
      register 0 prefetches a cache line for a read.  The ldd instruction
      prefetches a cache line for a write.  */
-  static const char * const instr[2] = {
-    "ldw%M0,sl %0,%%r0",
-    "ldd%M0,sl %0,%%r0"
-  };
-  int read_or_write = INTVAL (operands[1]);
-
-  gcc_assert (read_or_write >= 0 && read_or_write <= 1);
-
-  return instr [read_or_write];
-}
-  [(set_attr "type" "load")
-   (set_attr "length" "4")])
-
-(define_insn "prefetch_nocc"
-  [(prefetch (match_operand:QI 0 "prefetch_nocc_operand" "A,RQ")
-	     (match_operand:SI 1 "const_int_operand" "n,n")
-	     (match_operand:SI 2 "const_int_operand" "n,n"))]
-  "TARGET_PA_20 && operands[2] != const0_rtx"
-{
-  /* The ldw instruction with a target of general register 0 prefetches
-     a cache line for a read.  The ldd instruction prefetches a cache line
-     for a write.  */
   static const char * const instr[2][2] = {
     {
-      "ldw RT'%A0,%%r0",
-      "ldd RT'%A0,%%r0",
+      "ldw,sl 0(%0),%%r0",
+      "ldd,sl 0(%0),%%r0"
     },
     {
-      "ldw%M0 %0,%%r0",
-      "ldd%M0 %0,%%r0",
+      "ldw 0(%0),%%r0",
+      "ldd 0(%0),%%r0"
     }
   };
-  int read_or_write = INTVAL (operands[1]);
+  int read_or_write = INTVAL (operands[1]) == 0 ? 0 : 1;
+  int locality = INTVAL (operands[2]) == 0 ? 0 : 1;
 
-  gcc_assert (which_alternative == 0 || which_alternative == 1);
-  gcc_assert (read_or_write >= 0 && read_or_write <= 1);
-
-  return instr [which_alternative][read_or_write];
+  return instr [locality][read_or_write];
 }
   [(set_attr "type" "load")
    (set_attr "length" "4")])
-
 
 ;; TLS Support
 (define_insn "tgd_load"

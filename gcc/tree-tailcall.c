@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "langhooks.h"
 #include "dbgcnt.h"
+#include "target.h"
 
 /* The file implements the tail recursion elimination.  It is also used to
    analyze the tail calls in general, passing the results to the rtl level
@@ -151,7 +152,8 @@ suitable_for_tail_call_opt_p (void)
   /* If we are using sjlj exceptions, we may need to add a call to
      _Unwind_SjLj_Unregister at exit of the function.  Which means
      that we cannot do any sibcall transformations.  */
-  if (USING_SJLJ_EXCEPTIONS && current_function_has_exception_handlers ())
+  if (targetm.except_unwind_info (&global_options) == UI_SJLJ
+      && current_function_has_exception_handlers ())
     return false;
 
   /* Any function that calls setjmp might have longjmp called from
@@ -164,7 +166,7 @@ suitable_for_tail_call_opt_p (void)
      but not in all cases.  See PR15387 and PR19616.  Revisit for 4.1.  */
   for (param = DECL_ARGUMENTS (current_function_decl);
        param;
-       param = TREE_CHAIN (param))
+       param = DECL_CHAIN (param))
     if (TREE_ADDRESSABLE (param))
       return false;
 
@@ -252,7 +254,7 @@ static bool
 process_assignment (gimple stmt, gimple_stmt_iterator call, tree *m,
 		    tree *a, tree *ass_var)
 {
-  tree op0, op1, non_ass_var;
+  tree op0, op1 = NULL_TREE, non_ass_var = NULL_TREE;
   tree dest = gimple_assign_lhs (stmt);
   enum tree_code code = gimple_assign_rhs_code (stmt);
   enum gimple_rhs_class rhs_class = get_gimple_rhs_class (code);
@@ -278,8 +280,20 @@ process_assignment (gimple stmt, gimple_stmt_iterator call, tree *m,
       return true;
     }
 
-  if (rhs_class != GIMPLE_BINARY_RHS)
-    return false;
+  switch (rhs_class)
+    {
+    case GIMPLE_BINARY_RHS:
+      op1 = gimple_assign_rhs2 (stmt);
+
+      /* Fall through.  */
+
+    case GIMPLE_UNARY_RHS:
+      op0 = gimple_assign_rhs1 (stmt);
+      break;
+
+    default:
+      return false;
+    }
 
   /* Accumulator optimizations will reverse the order of operations.
      We can only do that for floating-point types if we're assuming
@@ -288,20 +302,9 @@ process_assignment (gimple stmt, gimple_stmt_iterator call, tree *m,
     if (FLOAT_TYPE_P (TREE_TYPE (DECL_RESULT (current_function_decl))))
       return false;
 
-  /* We only handle the code like
-
-     x = call ();
-     y = m * x;
-     z = y + a;
-     return z;
-
-     TODO -- Extend it for cases where the linear transformation of the output
-     is expressed in a more complicated way.  */
-
-  op0 = gimple_assign_rhs1 (stmt);
-  op1 = gimple_assign_rhs2 (stmt);
-
-  if (op0 == *ass_var
+  if (rhs_class == GIMPLE_UNARY_RHS)
+    ;
+  else if (op0 == *ass_var
       && (non_ass_var = independent_of_stmt_p (op1, stmt, call)))
     ;
   else if (op1 == *ass_var
@@ -322,8 +325,32 @@ process_assignment (gimple stmt, gimple_stmt_iterator call, tree *m,
       *ass_var = dest;
       return true;
 
-      /* TODO -- Handle other codes (NEGATE_EXPR, MINUS_EXPR,
-	 POINTER_PLUS_EXPR).  */
+    case NEGATE_EXPR:
+      if (FLOAT_TYPE_P (TREE_TYPE (op0)))
+        *m = build_real (TREE_TYPE (op0), dconstm1);
+      else
+        *m = build_int_cst (TREE_TYPE (op0), -1);
+
+      *ass_var = dest;
+      return true;
+
+    case MINUS_EXPR:
+      if (*ass_var == op0)
+        *a = fold_build1 (NEGATE_EXPR, TREE_TYPE (non_ass_var), non_ass_var);
+      else
+        {
+          if (FLOAT_TYPE_P (TREE_TYPE (non_ass_var)))
+            *m = build_real (TREE_TYPE (non_ass_var), dconstm1);
+          else
+            *m = build_int_cst (TREE_TYPE (non_ass_var), -1);
+
+          *a = fold_build1 (NEGATE_EXPR, TREE_TYPE (non_ass_var), non_ass_var);
+        }
+
+      *ass_var = dest;
+      return true;
+
+      /* TODO -- Handle POINTER_PLUS_EXPR.  */
 
     default:
       return false;
@@ -423,7 +450,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 
       for (param = DECL_ARGUMENTS (func), idx = 0;
 	   param && idx < gimple_call_num_args (call);
-	   param = TREE_CHAIN (param), idx ++)
+	   param = DECL_CHAIN (param), idx ++)
 	{
 	  arg = gimple_call_arg (call, idx);
 	  if (param != arg)
@@ -505,20 +532,22 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 
       if (tmp_a)
 	{
+	  tree type = TREE_TYPE (tmp_a);
 	  if (a)
-	    a = fold_build2 (PLUS_EXPR, TREE_TYPE (tmp_a), a, tmp_a);
+	    a = fold_build2 (PLUS_EXPR, type, fold_convert (type, a), tmp_a);
 	  else
 	    a = tmp_a;
 	}
       if (tmp_m)
 	{
+	  tree type = TREE_TYPE (tmp_m);
 	  if (m)
-	    m = fold_build2 (MULT_EXPR, TREE_TYPE (tmp_m), m, tmp_m);
+	    m = fold_build2 (MULT_EXPR, type, fold_convert (type, m), tmp_m);
 	  else
 	    m = tmp_m;
 
 	  if (a)
-	    a = fold_build2 (MULT_EXPR, TREE_TYPE (tmp_m), a, tmp_m);
+	    a = fold_build2 (MULT_EXPR, type, fold_convert (type, a), tmp_m);
 	}
     }
 
@@ -808,7 +837,7 @@ eliminate_tail_call (struct tailcall *t)
   for (param = DECL_ARGUMENTS (current_function_decl),
 	 idx = 0, gsi = gsi_start_phis (first);
        param;
-       param = TREE_CHAIN (param), idx++)
+       param = DECL_CHAIN (param), idx++)
     {
       if (!arg_needs_copy_p (param))
 	continue;
@@ -965,7 +994,7 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
 	  /* Copy the args if needed.  */
 	  for (param = DECL_ARGUMENTS (current_function_decl);
 	       param;
-	       param = TREE_CHAIN (param))
+	       param = DECL_CHAIN (param))
 	    if (arg_needs_copy_p (param))
 	      {
 		tree name = gimple_default_def (cfun, param);

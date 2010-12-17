@@ -31,8 +31,7 @@ void test01()
   // assign
   std::future<int>& p1 = get();
   std::future<int>& p2 = get();
-  p1 = p2;
+  p1 = p2;			// { dg-error "deleted" }
 }
 
-// { dg-error "used here" "" { target *-*-* } 34 }
-// { dg-error "deleted function" "" { target *-*-* } 581 }
+// { dg-prune-output "include" }

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GCC,
    for SPARC running in an embedded environment using the ELF file format.
-   Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -45,15 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Don't set the target flags, this is done by the linker script */
 #undef LIB_SPEC
 #define LIB_SPEC ""
-
-/* This defines which switch letters take arguments.
-   It is as in svr4.h but with -R added.  */
-#undef SWITCH_TAKES_ARG
-#define SWITCH_TAKES_ARG(CHAR) \
-  (DEFAULT_SWITCH_TAKES_ARG(CHAR) \
-   || (CHAR) == 'R' \
-   || (CHAR) == 'h' \
-   || (CHAR) == 'z')
 
 #undef  LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX  "."

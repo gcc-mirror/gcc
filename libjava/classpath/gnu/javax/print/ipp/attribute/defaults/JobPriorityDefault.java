@@ -1,4 +1,4 @@
-/* JobPriorityDefault.java -- 
+/* JobPriorityDefault.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -47,13 +47,13 @@ import javax.print.attribute.standard.JobPriority;
 /**
  * JobPriorityDefault attribute provides the default value of
  * the printer object for the job-priority attribute.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class JobPriorityDefault extends IntegerSyntax
   implements DefaultValueAttribute
 {
-  
+
   /**
    * Creates a <code>JobPriorityDefault</code> object.
    *
@@ -74,7 +74,7 @@ public final class JobPriorityDefault extends IntegerSyntax
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
@@ -90,7 +90,7 @@ public final class JobPriorityDefault extends IntegerSyntax
    *
    * @return The class <code>JobPriorityDefault</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return JobPriorityDefault.class;
   }
@@ -104,14 +104,14 @@ public final class JobPriorityDefault extends IntegerSyntax
   {
     return "job-priority-default";
   }
-  
+
   /**
    * Returns the equally enum of the standard attribute class
    * of this DefaultValuesAttribute enum.
-   * 
+   *
    * @return The enum of the standard attribute class.
    */
-  public Attribute getAssociatedAttribute() 
+  public Attribute getAssociatedAttribute()
   {
     return new JobPriority(getValue());
   }

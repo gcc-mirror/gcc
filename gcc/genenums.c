@@ -56,6 +56,7 @@ main (int argc, char **argv)
   puts ("   from the machine description file.  */\n");
   puts ("#include \"config.h\"\n");
   puts ("#include \"system.h\"\n");
+  puts ("#include \"insn-constants.h\"\n");
 
   traverse_enum_types (print_enum_type, 0);
 

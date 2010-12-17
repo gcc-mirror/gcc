@@ -1,4 +1,4 @@
-/* CupsServer.java -- 
+/* CupsServer.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -58,25 +58,25 @@ import java.util.Set;
  * compatible server. It mainly consists of its URI and optional
  * user and password combination if access is restricted.
  * <p>
- * It provides methods for retrival of valid CUPS printer uris 
+ * It provides methods for retrival of valid CUPS printer uris
  * that are used to construct IppPrintService objects.
  * </p>
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public class CupsServer
 {
-  /** 
+  /**
    * The URI of the CUPS server.
    * This is something like: http://localhost:631
    */
   private transient URI uri;
-  
+
   /**
    * The optional username.
    */
   private transient String username;
-  
+
   /**
    * The optional password for the user.
    */
@@ -84,11 +84,11 @@ public class CupsServer
 
   /**
    * Creates a <code>CupsServer</code> object which
-   * tries to connect to a cups server. 
+   * tries to connect to a cups server.
    *
    * If <code>gnu.javax.print.server</code> is explicitly set, then
    * that hostname will be used. Otherwise it will default to localhost.
-   * 
+   *
    * @param username the username
    * @param password the password for the username.
    */
@@ -100,13 +100,13 @@ public class CupsServer
     this.uri = null;
     try
       {
-	String serv = System.getProperty("gnu.javax.print.server");
-	if( serv != null )
-	  this.uri = new URI("http://"+serv+":631");
+        String serv = System.getProperty("gnu.javax.print.server");
+        if( serv != null )
+          this.uri = new URI("http://"+serv+":631");
       }
     catch(URISyntaxException use)
       {
-	throw new RuntimeException("gnu.javax.print.CupsServer value is not a valid hostname.");
+        throw new RuntimeException("gnu.javax.print.CupsServer value is not a valid hostname.");
       }
     catch(SecurityException se)
       {
@@ -114,20 +114,20 @@ public class CupsServer
 
     try
       {
-	if( this.uri == null )
-	  this.uri = new URI("http://localhost:631");
+        if( this.uri == null )
+          this.uri = new URI("http://localhost:631");
       }
     catch (URISyntaxException e)
       {
         // does not happen
       }
   }
- 
+
   /**
    * Creates a <code>CupsServer</code> object which
    * tries to connect to a running cups server on the
    * given URI.
-   * 
+   *
    * @param uri the URI of the server.
    * @param username the username
    * @param password the password for the username.
@@ -138,75 +138,75 @@ public class CupsServer
     this.username = username;
     this.password = password;
   }
-  
+
   /**
    * Requests the default printer from this CUPS server.
    * This is always returned as IppPrintService.
-   * 
+   *
    * @return The default printer.
    * @throws IppException if problems during request/response processing occur.
    */
   public IppPrintService getDefaultPrinter() throws IppException
-  {   
+  {
     IppResponse response = null;
-   
+
     try
       {
-        IppRequest request = new IppRequest(uri, username, password);    
-        request.setOperationID((short)CupsIppOperation.CUPS_GET_DEFAULT);        
-        request.setOperationAttributeDefaults();    
-        
-        RequestedAttributes requestedAttrs 
+        IppRequest request = new IppRequest(uri, username, password);
+        request.setOperationID((short)CupsIppOperation.CUPS_GET_DEFAULT);
+        request.setOperationAttributeDefaults();
+
+        RequestedAttributes requestedAttrs
          = new RequestedAttributes("printer-uri-supported");
         request.addOperationAttribute(requestedAttrs);
-        
+
         response = request.send();
-      }   
+      }
     catch (IOException e)
       {
         throw new IppException("IOException in IPP request/response.", e);
-      }    
-        
+      }
+
     Map printerAttributes = (Map) response.getPrinterAttributes().get(0);
     Set uris = (Set) printerAttributes.get(PrinterUriSupported.class);
     PrinterUriSupported uri = (PrinterUriSupported) uris.toArray()[0];
-    
-    IppPrintService service 
+
+    IppPrintService service
       = new CupsPrintService(uri.getURI(), username, password);
-    
+
     return service;
   }
-  
+
   /**
    * Requests all printers from this CUPS server.
-   * 
+   *
    * @return The list of available printers.
    * @throws IppException if problems during request/response processing occur.
    */
   public List getAllPrinters() throws IppException
-  {   
+  {
     IppResponse response = null;
-   
+
     try
       {
-        IppRequest request = new IppRequest(uri, username, password);    
-        request.setOperationID((short)CupsIppOperation.CUPS_GET_PRINTERS);        
+        IppRequest request = new IppRequest(uri, username, password);
+        request.setOperationID((short)CupsIppOperation.CUPS_GET_PRINTERS);
         request.setOperationAttributeDefaults();
-        
-        RequestedAttributes requestedAttrs 
+
+        RequestedAttributes requestedAttrs
           = new RequestedAttributes("printer-uri-supported");
         request.addOperationAttribute(requestedAttrs);
-        
+
         response = request.send();
-      }   
+      }
     catch (IOException e)
       {
         throw new IppException("IOException in IPP request/response.", e);
-      }    
+      }
 
     List prAttr = response.getPrinterAttributes();
     List services = new ArrayList();
-    
+
     for (int i=0; i < prAttr.size(); i++)
       {
         Map printerAttributes = (Map) prAttr.get(i);
@@ -224,50 +224,50 @@ public class CupsServer
             // do nothing, we only catch the IppException which could be
             // thrown during instantiation as single printers may be discovered
             // correctly but not usable due to other security restrictions
-          }       
-      }    
-                     
+          }
+      }
+
     return services;
   }
-  
+
   /**
    * Requests all classes from this CUPS server. Classes in cups are
-   * collections of printers. This means jobs directed to a class 
+   * collections of printers. This means jobs directed to a class
    * are forwarded to the first available printer of the collection.
-   * 
+   *
    * @return The list of available classes.
    * @throws IppException if problems during request/response processing occur.
    */
   public List getAllClasses() throws IppException
-  {   
+  {
     IppResponse response = null;
-   
+
     try
       {
-        IppRequest request = new IppRequest(uri, username, password);    
-        request.setOperationID((short)CupsIppOperation.CUPS_GET_CLASSES);        
+        IppRequest request = new IppRequest(uri, username, password);
+        request.setOperationID((short)CupsIppOperation.CUPS_GET_CLASSES);
         request.setOperationAttributeDefaults();
-        
-        RequestedAttributes requestedAttrs 
+
+        RequestedAttributes requestedAttrs
           = new RequestedAttributes("printer-uri-supported");
         request.addOperationAttribute(requestedAttrs);
-        
+
         response = request.send();
-      }   
+      }
     catch (IOException e)
       {
         throw new IppException("IOException in IPP request/response.", e);
-      }    
-    
+      }
+
     List prAttr = response.getPrinterAttributes();
-    List services = new ArrayList();   
-    
+    List services = new ArrayList();
+
     for (int i=0; i < prAttr.size(); i++)
       {
         Map printerAttributes = (Map) prAttr.get(i);
         Set uris = (Set) printerAttributes.get(PrinterUriSupported.class);
         PrinterUriSupported uri = (PrinterUriSupported) uris.toArray()[0];
-        
+
         try
           {
             CupsPrintService cups = new CupsPrintService(uri.getURI(),
@@ -279,9 +279,9 @@ public class CupsServer
             // do nothing, we only catch the IppException which could be
             // thrown during instantiation as single printers may be discovered
             // correctly but not usable due to other security restrictions
-          }        
-      }    
-                     
+          }
+      }
+
     return services;
   }
 

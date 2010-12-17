@@ -81,6 +81,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "output.h"
 #include "dbxout.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "tm_p.h"
 #include "ggc.h"
@@ -288,9 +289,12 @@ static const char *base_input_file;
 #endif
 
 /* A C expression for the integer offset value of an argument (N_PSYM)
-   having address X (an RTX).  The nominal offset is OFFSET.  */
+   having address X (an RTX).  The nominal offset is OFFSET.
+   Note that we use OFFSET + 0 here to avoid the self-assign warning
+   when the macro is called in a context like
+   number = DEBUGGER_ARG_OFFSET(number, X)  */
 #ifndef DEBUGGER_ARG_OFFSET
-#define DEBUGGER_ARG_OFFSET(OFFSET, X) (OFFSET)
+#define DEBUGGER_ARG_OFFSET(OFFSET, X) (OFFSET + 0)
 #endif
 
 /* This obstack holds the stab string currently being constructed.  We
@@ -380,7 +384,8 @@ const struct gcc_debug_hooks dbx_debug_hooks =
   debug_nothing_rtx_rtx,	         /* copy_call_info */
   debug_nothing_uid,		         /* virtual_call */
   debug_nothing_tree_tree,		 /* set_name */
-  0                                      /* start_end_main_source_file */
+  0,                                     /* start_end_main_source_file */
+  TYPE_SYMTAB_IS_ADDRESS                 /* tree_type_symtab_field */
 };
 #endif /* DBX_DEBUGGING_INFO  */
 
@@ -419,7 +424,8 @@ const struct gcc_debug_hooks xcoff_debug_hooks =
   debug_nothing_rtx_rtx,	         /* copy_call_info */
   debug_nothing_uid,		         /* virtual_call */
   debug_nothing_tree_tree,	         /* set_name */
-  0                                      /* start_end_main_source_file */
+  0,                                     /* start_end_main_source_file */
+  TYPE_SYMTAB_IS_ADDRESS                 /* tree_type_symtab_field */
 };
 #endif /* XCOFF_DEBUGGING_INFO  */
 
@@ -1098,7 +1104,7 @@ dbxout_init (const char *input_file_name)
 static void
 dbxout_typedefs (tree syms)
 {
-  for (; syms != NULL_TREE; syms = TREE_CHAIN (syms))
+  for (; syms != NULL_TREE; syms = DECL_CHAIN (syms))
     {
       if (TREE_CODE (syms) == TYPE_DECL)
 	{
@@ -1422,7 +1428,7 @@ dbxout_type_fields (tree type)
 
   /* Output the name, type, position (in bits), size (in bits) of each
      field that we can support.  */
-  for (tem = TYPE_FIELDS (type); tem; tem = TREE_CHAIN (tem))
+  for (tem = TYPE_FIELDS (type); tem; tem = DECL_CHAIN (tem))
     {
       /* If one of the nodes is an error_mark or its type is then
 	 return early.  */
@@ -1565,7 +1571,7 @@ dbxout_type_methods (tree type)
 	 These differ in the types of the arguments.  */
       for (last = NULL_TREE;
 	   fndecl && (last == NULL_TREE || DECL_NAME (fndecl) == DECL_NAME (last));
-	   fndecl = TREE_CHAIN (fndecl))
+	   fndecl = DECL_CHAIN (fndecl))
 	/* Output the name of the field (after overloading), as
 	   well as the name of the field before overloading, along
 	   with its parameter list */
@@ -1673,16 +1679,7 @@ static void
 dbxout_type (tree type, int full)
 {
   static int anonymous_type_number = 0;
-  bool vector_type = false;
   tree tem, main_variant, low, high;
-
-  if (TREE_CODE (type) == VECTOR_TYPE)
-    {
-      /* The frontend feeds us a representation for the vector as a struct
-	 containing an array.  Pull out the array type.  */
-      type = TREE_TYPE (TYPE_FIELDS (TYPE_DEBUG_REPRESENTATION_TYPE (type)));
-      vector_type = true;
-    }
 
   if (TREE_CODE (type) == INTEGER_TYPE)
     {
@@ -1868,6 +1865,7 @@ dbxout_type (tree type, int full)
   switch (TREE_CODE (type))
     {
     case VOID_TYPE:
+    case NULLPTR_TYPE:
     case LANG_TYPE:
       /* For a void type, just define it as itself; i.e., "5=5".
 	 This makes us consider it defined
@@ -2016,9 +2014,6 @@ dbxout_type (tree type, int full)
 	  break;
 	}
 
-      if (use_gnu_debug_info_extensions && vector_type)
-	stabstr_S ("@V;");
-
       /* Output "a" followed by a range type definition
 	 for the index type of the array
 	 followed by a reference to the target-type.
@@ -2041,6 +2036,22 @@ dbxout_type (tree type, int full)
 	  stabstr_C ('a');
 	  dbxout_range_type (tem, TYPE_MIN_VALUE (tem), TYPE_MAX_VALUE (tem));
 	}
+
+      dbxout_type (TREE_TYPE (type), 0);
+      break;
+
+    case VECTOR_TYPE:
+      /* Make vectors look like an array.  */
+      if (use_gnu_debug_info_extensions)
+	stabstr_S ("@V;");
+
+      /* Output "a" followed by a range type definition
+	 for the index type of the array
+	 followed by a reference to the target-type.
+	 ar1;0;N;M for a C array of type M and size N+1.  */
+      stabstr_C ('a');
+      dbxout_range_type (integer_type_node, size_zero_node,
+			 size_int (TYPE_VECTOR_SUBPARTS (type) - 1));
 
       dbxout_type (TREE_TYPE (type), 0);
       break;
@@ -2497,10 +2508,9 @@ output_used_types (void)
       htab_traverse (cfun->used_types_hash, output_used_types_helper, &types);
 
       /* Sort by UID to prevent dependence on hash table ordering.  */
-      qsort (VEC_address (tree, types), VEC_length (tree, types),
-	     sizeof (tree), output_types_sort);
+      VEC_qsort (tree, types, output_types_sort);
 
-      for (i = 0; VEC_iterate (tree, types, i, type); i++)
+      FOR_EACH_VEC_ELT (tree, types, i, type)
 	debug_queue_symbol (type);
 
       VEC_free (tree, heap, types);
@@ -2814,7 +2824,7 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
 	  && DECL_INITIAL (decl) != 0
 	  && host_integerp (DECL_INITIAL (decl), 0)
 	  && ! TREE_ASM_WRITTEN (decl)
-	  && (DECL_CONTEXT (decl) == NULL_TREE
+	  && (DECL_FILE_SCOPE_P (decl)
 	      || TREE_CODE (DECL_CONTEXT (decl)) == BLOCK
 	      || TREE_CODE (DECL_CONTEXT (decl)) == NAMESPACE_DECL)
 	  && TREE_PUBLIC (decl) == 0)
@@ -3007,7 +3017,7 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
 	       || (REG_P (XEXP (home, 0))
 		   && REGNO (XEXP (home, 0)) != HARD_FRAME_POINTER_REGNUM
 		   && REGNO (XEXP (home, 0)) != STACK_POINTER_REGNUM
-#if ARG_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+#if !HARD_FRAME_POINTER_IS_ARG_POINTER
 		   && REGNO (XEXP (home, 0)) != ARG_POINTER_REGNUM
 #endif
 		   )))
@@ -3306,7 +3316,7 @@ dbxout_syms (tree syms)
       comm_prev = comm_new;
 
       result += dbxout_symbol (syms, 1);
-      syms = TREE_CHAIN (syms);
+      syms = DECL_CHAIN (syms);
     }
 
   if (comm_prev != NULL)
@@ -3333,7 +3343,7 @@ dbxout_parms (tree parms)
   ++debug_nesting;
   emit_pending_bincls_if_required ();
 
-  for (; parms; parms = TREE_CHAIN (parms))
+  for (; parms; parms = DECL_CHAIN (parms))
     if (DECL_NAME (parms)
 	&& TREE_TYPE (parms) != error_mark_node
 	&& DECL_RTL_SET_P (parms)
@@ -3421,7 +3431,7 @@ dbxout_parms (tree parms)
 		 && REG_P (XEXP (DECL_RTL (parms), 0))
 		 && REGNO (XEXP (DECL_RTL (parms), 0)) != HARD_FRAME_POINTER_REGNUM
 		 && REGNO (XEXP (DECL_RTL (parms), 0)) != STACK_POINTER_REGNUM
-#if ARG_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+#if !HARD_FRAME_POINTER_IS_ARG_POINTER
 		 && REGNO (XEXP (DECL_RTL (parms), 0)) != ARG_POINTER_REGNUM
 #endif
 		 )
@@ -3535,7 +3545,7 @@ dbxout_reg_parms (tree parms)
 {
   ++debug_nesting;
 
-  for (; parms; parms = TREE_CHAIN (parms))
+  for (; parms; parms = DECL_CHAIN (parms))
     if (DECL_NAME (parms) && PARM_PASSED_IN_MEMORY (parms))
       {
 	/* Report parms that live in registers during the function

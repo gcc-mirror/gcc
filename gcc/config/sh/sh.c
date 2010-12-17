@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "output.h"
 #include "insn-attr.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "recog.h"
 #include "integrate.h"
@@ -181,6 +182,9 @@ static rtx find_barrier (int, rtx, rtx);
 static int noncall_uses_reg (rtx, rtx, rtx *);
 static rtx gen_block_redirect (rtx, int, int);
 static void sh_reorg (void);
+static void sh_option_override (void);
+static void sh_option_init_struct (struct gcc_options *);
+static void sh_option_default_params (void);
 static void output_stack_adjust (int, rtx, int, HARD_REG_SET *, bool);
 static rtx frame_insn (rtx);
 static rtx push (int);
@@ -204,6 +208,7 @@ static bool sh_print_operand_punct_valid_p (unsigned char code);
 static void sh_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void sh_insert_attributes (tree, tree *);
 static const char *sh_check_pch_target_flags (int);
+static int sh_register_move_cost (enum machine_mode, reg_class_t, reg_class_t);
 static int sh_adjust_cost (rtx, rtx, rtx, int);
 static int sh_issue_rate (void);
 static int sh_dfa_new_cycle (FILE *, int, rtx, int, int, int *sort_p);
@@ -225,7 +230,7 @@ static int sh_variable_issue (FILE *, int, rtx, int);
 static bool sh_function_ok_for_sibcall (tree, tree);
 
 static bool sh_cannot_modify_jumps_p (void);
-static enum reg_class sh_target_reg_class (void);
+static reg_class_t sh_target_reg_class (void);
 static bool sh_optimize_target_register_callee_saved (bool);
 static bool sh_ms_bitfield_layout_p (const_tree);
 
@@ -250,6 +255,7 @@ static int sh_pr_n_sets (void);
 static rtx sh_allocate_initial_value (rtx);
 static bool sh_legitimate_address_p (enum machine_mode, rtx, bool);
 static rtx sh_legitimize_address (rtx, rtx, enum machine_mode);
+static rtx sh_delegitimize_address (rtx);
 static int shmedia_target_regs_stack_space (HARD_REG_SET *);
 static int shmedia_reserve_space_for_target_registers_p (int, HARD_REG_SET *);
 static int shmedia_target_regs_stack_adjust (HARD_REG_SET *);
@@ -260,6 +266,7 @@ static struct save_entry_s *sh5_schedule_saves (HARD_REG_SET *,
 
 static rtx sh_struct_value_rtx (tree, int);
 static rtx sh_function_value (const_tree, const_tree, bool);
+static bool sh_function_value_regno_p (const unsigned int);
 static rtx sh_libcall_value (enum machine_mode, const_rtx);
 static bool sh_return_in_memory (const_tree, const_tree);
 static rtx sh_builtin_saveregs (void);
@@ -281,12 +288,17 @@ static bool sh_callee_copies (CUMULATIVE_ARGS *, enum machine_mode,
 			      const_tree, bool);
 static int sh_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 			         tree, bool);
+static void sh_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+				     const_tree, bool);
+static rtx sh_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+			    const_tree, bool);
 static bool sh_scalar_mode_supported_p (enum machine_mode);
 static int sh_dwarf_calling_convention (const_tree);
 static void sh_encode_section_info (tree, rtx, int);
 static int sh2a_function_vector_p (tree);
 static void sh_trampoline_init (rtx, tree, rtx);
 static rtx sh_trampoline_adjust_address (rtx);
+static void sh_conditional_register_usage (void);
 
 static const struct attribute_spec sh_attribute_table[] =
 {
@@ -312,6 +324,23 @@ static const struct attribute_spec sh_attribute_table[] =
 #endif
   { NULL,                0, 0, false, false, false, NULL }
 };
+
+/* Set default optimization options.  */
+static const struct default_options sh_option_optimization_table[] =
+  {
+    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    { OPT_LEVELS_1_PLUS_SPEED_ONLY, OPT_mdiv_, "inv:minlat", 1 },
+    { OPT_LEVELS_SIZE, OPT_mdiv_, SH_DIV_STR_FOR_SIZE, 1 },
+    { OPT_LEVELS_0_ONLY, OPT_mdiv_, "", 1 },
+    { OPT_LEVELS_SIZE, OPT_mcbranchdi, NULL, 0 },
+    /* We can't meaningfully test TARGET_SHMEDIA here, because -m
+       options haven't been parsed yet, hence we'd read only the
+       default.  sh_target_reg_class will return NO_REGS if this is
+       not SHMEDIA, so it's OK to always set
+       flag_branch_target_load_optimize.  */
+    { OPT_LEVELS_2_PLUS, OPT_fbranch_target_load_optimize, NULL, 1 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
@@ -323,11 +352,20 @@ static const struct attribute_spec sh_attribute_table[] =
 #undef TARGET_ASM_UNALIGNED_SI_OP
 #define TARGET_ASM_UNALIGNED_SI_OP "\t.ualong\t"
 
-/* These are NULLed out on non-SH5 in OVERRIDE_OPTIONS.  */
+/* These are NULLed out on non-SH5 in TARGET_OPTION_OVERRIDE.  */
 #undef TARGET_ASM_UNALIGNED_DI_OP
 #define TARGET_ASM_UNALIGNED_DI_OP "\t.uaquad\t"
 #undef TARGET_ASM_ALIGNED_DI_OP
 #define TARGET_ASM_ALIGNED_DI_OP "\t.quad\t"
+
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE sh_option_override
+#undef TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE sh_option_optimization_table
+#undef TARGET_OPTION_INIT_STRUCT
+#define TARGET_OPTION_INIT_STRUCT sh_option_init_struct
+#undef TARGET_OPTION_DEFAULT_PARAMS
+#define TARGET_OPTION_DEFAULT_PARAMS sh_option_default_params
 
 #undef TARGET_PRINT_OPERAND
 #define TARGET_PRINT_OPERAND sh_print_operand
@@ -354,6 +392,9 @@ static const struct attribute_spec sh_attribute_table[] =
 #define TARGET_DEFAULT_TARGET_FLAGS TARGET_DEFAULT
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION sh_handle_option
+
+#undef TARGET_REGISTER_MOVE_COST
+#define TARGET_REGISTER_MOVE_COST sh_register_move_cost
 
 #undef TARGET_INSERT_ATTRIBUTES
 #define TARGET_INSERT_ATTRIBUTES sh_insert_attributes
@@ -420,6 +461,9 @@ static const struct attribute_spec sh_attribute_table[] =
 #undef TARGET_SCHED_INIT
 #define TARGET_SCHED_INIT sh_md_init
 
+#undef TARGET_DELEGITIMIZE_ADDRESS
+#define TARGET_DELEGITIMIZE_ADDRESS sh_delegitimize_address
+
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS sh_legitimize_address
 
@@ -471,6 +515,8 @@ static const struct attribute_spec sh_attribute_table[] =
 
 #undef TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE sh_function_value
+#undef TARGET_FUNCTION_VALUE_REGNO_P
+#define TARGET_FUNCTION_VALUE_REGNO_P sh_function_value_regno_p
 #undef TARGET_LIBCALL_VALUE
 #define TARGET_LIBCALL_VALUE sh_libcall_value
 #undef TARGET_STRUCT_VALUE_RTX
@@ -494,6 +540,10 @@ static const struct attribute_spec sh_attribute_table[] =
 #define TARGET_CALLEE_COPIES sh_callee_copies
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES sh_arg_partial_bytes
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG sh_function_arg
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE sh_function_arg_advance
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST sh_build_builtin_va_list
@@ -538,6 +588,9 @@ static const struct attribute_spec sh_attribute_table[] =
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD sh_secondary_reload
+
+#undef TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE sh_conditional_register_usage
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	sh_legitimate_address_p
@@ -673,53 +726,34 @@ sh_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED,
     }
 }
 
-/* Set default optimization options.  */
-void
-sh_optimization_options (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
+/* Implement TARGET_OPTION_INIT_STRUCT.  */
+static void
+sh_option_init_struct (struct gcc_options *opts)
 {
-  if (level)
-    {
-      if (!size)
-	sh_div_str = "inv:minlat";
-    }
-  if (size)
-    {
-      target_flags |= MASK_SMALLCODE;
-      sh_div_str = SH_DIV_STR_FOR_SIZE ;
-    }
-  else
-    TARGET_CBRANCHDI4 = 1;
-  /* We can't meaningfully test TARGET_SHMEDIA here, because -m options
-     haven't been parsed yet, hence we'd read only the default.
-     sh_target_reg_class will return NO_REGS if this is not SHMEDIA, so
-     it's OK to always set flag_branch_target_load_optimize.  */
-  if (level > 1)
-    {
-      flag_branch_target_load_optimize = 1;
-      if (!size)
-	target_flags |= MASK_SAVE_ALL_TARGET_REGS;
-    }
-  /* Likewise, we can't meaningfully test TARGET_SH2E / TARGET_IEEE
-     here, so leave it to OVERRIDE_OPTIONS to set
-    flag_finite_math_only.  We set it to 2 here so we know if the user
-    explicitly requested this to be on or off.  */
-  flag_finite_math_only = 2;
-  /* If flag_schedule_insns is 1, we set it to 2 here so we know if
-     the user explicitly requested this to be on or off.  */
-  if (flag_schedule_insns > 0)
-    flag_schedule_insns = 2;
-
-  set_param_value ("simultaneous-prefetches", 2);
+  /* We can't meaningfully test TARGET_SH2E / TARGET_IEEE
+     here, so leave it to TARGET_OPTION_OVERRIDE to set
+     flag_finite_math_only.  We set it to 2 here so we know if the user
+     explicitly requested this to be on or off.  */
+  opts->x_flag_finite_math_only = 2;
 }
 
-/* Implement OVERRIDE_OPTIONS macro.  Validate and override various
-   options, and do some machine dependent initialization.  */
-void
-sh_override_options (void)
+/* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
+static void
+sh_option_default_params (void)
+{
+  set_default_param_value (PARAM_SIMULTANEOUS_PREFETCHES, 2);
+}
+
+/* Implement TARGET_OPTION_OVERRIDE macro.  Validate and override 
+   various options, and do some machine dependent initialization.  */
+static void
+sh_option_override (void)
 {
   int regno;
 
   SUBTARGET_OVERRIDE_OPTIONS;
+  if (optimize > 1 && !optimize_size)
+    target_flags |= MASK_SAVE_ALL_TARGET_REGS;
   if (flag_finite_math_only == 2)
     flag_finite_math_only
       = !flag_signaling_nans && TARGET_SH2E && ! TARGET_IEEE;
@@ -892,11 +926,12 @@ sh_override_options (void)
          <http://gcc.gnu.org/ml/gcc-patches/2005-10/msg00816.html>.  */
       else if (flag_exceptions)
 	{
-	  if (flag_schedule_insns == 1)
+	  if (flag_schedule_insns && global_options_set.x_flag_schedule_insns)
 	    warning (0, "ignoring -fschedule-insns because of exception handling bug");
 	  flag_schedule_insns = 0;
 	}
-      else if (flag_schedule_insns == 2)
+      else if (flag_schedule_insns
+	       && !global_options_set.x_flag_schedule_insns)
 	flag_schedule_insns = 0;
     }
 
@@ -954,7 +989,7 @@ sh_override_options (void)
      SH2 .. SH5 : align to cache line start.  */
   if (align_functions == 0)
     align_functions
-      = TARGET_SMALLCODE ? FUNCTION_BOUNDARY/8 : (1 << CACHE_LOG);
+      = optimize_size ? FUNCTION_BOUNDARY/8 : (1 << CACHE_LOG);
   /* The linker relaxation code breaks when a function contains
      alignments that are larger than that at the start of a
      compilation unit.  */
@@ -972,6 +1007,10 @@ sh_override_options (void)
 
   if (sh_fixed_range_str)
     sh_fix_range (sh_fixed_range_str);
+
+  /* This target defaults to strict volatile bitfields.  */
+  if (flag_strict_volatile_bitfields < 0)
+    flag_strict_volatile_bitfields = 1;
 }
 
 /* Print the operand address in x to the stream.  */
@@ -1514,7 +1553,7 @@ expand_block_move (rtx *operands)
 	  emit_insn (gen_block_move_real_i4 (func_addr_rtx));
 	  return 1;
 	}
-      else if (! TARGET_SMALLCODE)
+      else if (! optimize_size)
 	{
 	  const char *entry_name;
 	  rtx func_addr_rtx = gen_reg_rtx (Pmode);
@@ -1553,7 +1592,7 @@ expand_block_move (rtx *operands)
 
   /* This is the same number of bytes as a memcpy call, but to a different
      less common function name, so this will occasionally use more space.  */
-  if (! TARGET_SMALLCODE)
+  if (! optimize_size)
     {
       rtx func_addr_rtx = gen_reg_rtx (Pmode);
       int final_switch, while_loop;
@@ -2934,21 +2973,21 @@ multcosts (rtx x ATTRIBUTE_UNUSED)
        Using a multiply first and splitting it later if it's a loss
        doesn't work because of different sign / zero extension semantics
        of multiplies vs. shifts.  */
-    return TARGET_SMALLCODE ? 2 : 3;
+    return optimize_size ? 2 : 3;
 
   if (TARGET_SH2)
     {
       /* We have a mul insn, so we can never take more than the mul and the
 	 read of the mac reg, but count more because of the latency and extra
 	 reg usage.  */
-      if (TARGET_SMALLCODE)
+      if (optimize_size)
 	return 2;
       return 3;
     }
 
   /* If we're aiming at small code, then just count the number of
      insns in a multiply call sequence.  */
-  if (TARGET_SMALLCODE)
+  if (optimize_size)
     return 5;
 
   /* Otherwise count all the insns in the routine we'd be calling too.  */
@@ -4619,7 +4658,7 @@ find_barrier (int num_mova, rtx mova, rtx from)
       /* For the SH1, we generate alignments even after jumps-around-jumps.  */
       else if (JUMP_P (from)
 	       && ! TARGET_SH2
-	       && ! TARGET_SMALLCODE)
+	       && ! optimize_size)
 	new_align = 4;
 
       /* There is a possibility that a bf is transformed into a bf/s by the
@@ -5217,13 +5256,13 @@ barrier_align (rtx barrier_or_label)
       pat = PATTERN (prev);
       /* If this is a very small table, we want to keep the alignment after
 	 the table to the minimum for proper code alignment.  */
-      return ((TARGET_SMALLCODE
+      return ((optimize_size
 	       || ((unsigned) XVECLEN (pat, 1) * GET_MODE_SIZE (GET_MODE (pat))
 		   <= (unsigned) 1 << (CACHE_LOG - 2)))
 	      ? 1 << TARGET_SHMEDIA : align_jumps_log);
     }
 
-  if (TARGET_SMALLCODE)
+  if (optimize_size)
     return 0;
 
   if (! TARGET_SH2 || ! optimize)
@@ -6402,9 +6441,50 @@ push_regs (HARD_REG_SET *mask, int interrupt_handler)
 
   /* Push banked registers last to improve delay slot opportunities.  */
   if (interrupt_handler)
-    for (i = FIRST_BANKED_REG; i <= LAST_BANKED_REG; i++)
-      if (TEST_HARD_REG_BIT (*mask, i))
-	push (i);
+    {
+      bool use_movml = false;
+
+      if (TARGET_SH2A)
+	{
+	  unsigned int count = 0;
+
+	  for (i = FIRST_BANKED_REG; i <= LAST_BANKED_REG; i++)
+	    if (TEST_HARD_REG_BIT (*mask, i))
+	      count++;
+	    else
+	      break;
+
+	  /* Use movml when all banked registers are pushed.  */
+	  if (count == LAST_BANKED_REG - FIRST_BANKED_REG + 1)
+	    use_movml = true;
+	}
+
+      if (use_movml)
+	{
+	  rtx x, mem, reg, set;
+	  rtx sp_reg = gen_rtx_REG (SImode, STACK_POINTER_REGNUM);
+
+	  /* We must avoid scheduling multiple store insn with another
+	     insns.  */
+	  emit_insn (gen_blockage ());
+	  x = gen_movml_push_banked (sp_reg);
+	  x = frame_insn (x);
+	  for (i = FIRST_BANKED_REG; i <= LAST_BANKED_REG; i++)
+	    {
+	      mem = gen_rtx_MEM (SImode, plus_constant (sp_reg, i * 4));
+	      reg = gen_rtx_REG (SImode, i);
+	      add_reg_note (x, REG_CFA_OFFSET, gen_rtx_SET (SImode, mem, reg));
+	    }
+
+	  set = gen_rtx_SET (SImode, sp_reg, plus_constant (sp_reg, - 32));
+	  add_reg_note (x, REG_CFA_ADJUST_CFA, set);
+	  emit_insn (gen_blockage ());
+	}
+      else
+	for (i = FIRST_BANKED_REG; i <= LAST_BANKED_REG; i++)
+	  if (TEST_HARD_REG_BIT (*mask, i))
+	    push (i);
+    }
 
   /* Don't push PR register for an ISR with RESBANK attribute assigned.  */
   if (TEST_HARD_REG_BIT (*mask, PR_REG) && !sh_cfun_resbank_handler_p ())
@@ -6792,6 +6872,7 @@ sh_expand_prologue (void)
   int d_rounding = 0;
   int save_flags = target_flags;
   int pretend_args;
+  int stack_usage;
   tree sp_switch_attr
     = lookup_attribute ("sp_switch", DECL_ATTRIBUTES (current_function_decl));
 
@@ -6804,10 +6885,11 @@ sh_expand_prologue (void)
       && (NPARM_REGS(SImode)
 	  > crtl->args.info.arg_count[(int) SH_ARG_INT]))
     pretend_args = 0;
-  /* Dwarf2 module doesn't expect frame related insns here.  */
+
   output_stack_adjust (-pretend_args
 		       - crtl->args.info.stack_regs * 8,
-		       stack_pointer_rtx, 0, NULL, false);
+		       stack_pointer_rtx, 0, NULL, true);
+  stack_usage = pretend_args + crtl->args.info.stack_regs * 8;
 
   if (TARGET_SHCOMPACT && flag_pic && crtl->args.info.call_cookie)
     /* We're going to use the PIC register to load the address of the
@@ -6860,13 +6942,13 @@ sh_expand_prologue (void)
 	  for (i = 0; i < NPARM_REGS(SImode); i++)
 	    {
 	      int rn = NPARM_REGS(SImode) + FIRST_PARM_REG - i - 1;
-	      rtx insn;
 
 	      if (i >= (NPARM_REGS(SImode)
 			- crtl->args.info.arg_count[(int) SH_ARG_INT]
 			))
 		break;
-	      insn = push (rn);
+	      push (rn);
+	      stack_usage += GET_MODE_SIZE (SImode);
 	    }
 	}
     }
@@ -6939,6 +7021,7 @@ sh_expand_prologue (void)
 
       output_stack_adjust (-(save_size + d_rounding), stack_pointer_rtx,
 			   0, NULL, true);
+      stack_usage += save_size + d_rounding;
 
       sh5_schedule_saves (&live_regs_mask, &schedule, offset_base);
       tmp_pnt = schedule.temps;
@@ -7090,7 +7173,10 @@ sh_expand_prologue (void)
       gcc_assert (entry->offset == d_rounding);
     }
   else
-    push_regs (&live_regs_mask, current_function_interrupt);
+    {
+      push_regs (&live_regs_mask, current_function_interrupt);
+      stack_usage += d;
+    }
 
   if (flag_pic && df_regs_ever_live_p (PIC_OFFSET_TABLE_REGNUM))
     emit_insn (gen_GOTaddr2picreg ());
@@ -7114,6 +7200,7 @@ sh_expand_prologue (void)
 
   output_stack_adjust (-rounded_frame_size (d) + d_rounding,
 		       stack_pointer_rtx, 0, NULL, true);
+  stack_usage += rounded_frame_size (d) - d_rounding;
 
   if (frame_pointer_needed)
     frame_insn (GEN_MOV (hard_frame_pointer_rtx, stack_pointer_rtx));
@@ -7127,6 +7214,9 @@ sh_expand_prologue (void)
 		      "__GCC_shcompact_incoming_args", SFUNC_GOT);
       emit_insn (gen_shcompact_incoming_args ());
     }
+
+  if (flag_stack_usage)
+    current_function_static_stack_size = stack_usage;
 }
 
 void
@@ -7231,7 +7321,7 @@ sh_expand_epilogue (bool sibcall_p)
 	{
 	  enum machine_mode mode = (enum machine_mode) entry->mode;
 	  int reg = entry->reg;
-	  rtx reg_rtx, mem_rtx, post_inc = NULL_RTX, insn;
+	  rtx reg_rtx, mem_rtx, post_inc = NULL_RTX;
 
 	  offset = offset_base + entry->offset;
 	  reg_rtx = gen_rtx_REG (mode, reg);
@@ -7304,7 +7394,7 @@ sh_expand_epilogue (bool sibcall_p)
 	  if ((reg == PR_REG || SPECIAL_REGISTER_P (reg))
 	      && mem_rtx != post_inc)
 	    {
-	      insn = emit_move_insn (r0, mem_rtx);
+	      emit_move_insn (r0, mem_rtx);
 	      mem_rtx = r0;
 	    }
 	  else if (TARGET_REGISTER_P (reg))
@@ -7313,13 +7403,13 @@ sh_expand_epilogue (bool sibcall_p)
 
 	      /* Give the scheduler a bit of freedom by using up to
 		 MAX_TEMPS registers in a round-robin fashion.  */
-	      insn = emit_move_insn (tmp_reg, mem_rtx);
+	      emit_move_insn (tmp_reg, mem_rtx);
 	      mem_rtx = tmp_reg;
 	      if (*++tmp_pnt < 0)
 		tmp_pnt = schedule.temps;
 	    }
 
-	  insn = emit_move_insn (reg_rtx, mem_rtx);
+	  emit_move_insn (reg_rtx, mem_rtx);
 	}
 
       gcc_assert (entry->offset + offset_base == d + d_rounding);
@@ -7343,9 +7433,37 @@ sh_expand_epilogue (bool sibcall_p)
 	 delay slot. RTE switches banks before the ds instruction.  */
       if (current_function_interrupt)
 	{
-	  for (i = LAST_BANKED_REG; i >= FIRST_BANKED_REG; i--)
-	    if (TEST_HARD_REG_BIT (live_regs_mask, i))
-	      pop (i);
+	  bool use_movml = false;
+
+	  if (TARGET_SH2A)
+	    {
+	      unsigned int count = 0;
+
+	      for (i = FIRST_BANKED_REG; i <= LAST_BANKED_REG; i++)
+		if (TEST_HARD_REG_BIT (live_regs_mask, i))
+		  count++;
+		else
+		  break;
+
+	      /* Use movml when all banked register are poped.  */
+	      if (count == LAST_BANKED_REG - FIRST_BANKED_REG + 1)
+		use_movml = true;
+	    }
+
+	  if (use_movml)
+	    {
+	      rtx sp_reg = gen_rtx_REG (SImode, STACK_POINTER_REGNUM);
+
+	      /* We must avoid scheduling multiple load insn with another
+		 insns.  */
+	      emit_insn (gen_blockage ());
+	      emit_insn (gen_movml_pop_banked (sp_reg));
+	      emit_insn (gen_blockage ());
+	    }
+	  else
+	    for (i = LAST_BANKED_REG; i >= FIRST_BANKED_REG; i--)
+	      if (TEST_HARD_REG_BIT (live_regs_mask, i))
+		pop (i);
 
 	  last_reg = FIRST_PSEUDO_REGISTER - LAST_BANKED_REG - 1;
 	}
@@ -7687,13 +7805,13 @@ sh_build_builtin_va_list (void)
   DECL_FIELD_CONTEXT (f_next_fp_limit) = record;
   DECL_FIELD_CONTEXT (f_next_stack) = record;
 
-  TREE_CHAIN (record) = type_decl;
+  TYPE_STUB_DECL (record) = type_decl;
   TYPE_NAME (record) = type_decl;
   TYPE_FIELDS (record) = f_next_o;
-  TREE_CHAIN (f_next_o) = f_next_o_limit;
-  TREE_CHAIN (f_next_o_limit) = f_next_fp;
-  TREE_CHAIN (f_next_fp) = f_next_fp_limit;
-  TREE_CHAIN (f_next_fp_limit) = f_next_stack;
+  DECL_CHAIN (f_next_o) = f_next_o_limit;
+  DECL_CHAIN (f_next_o_limit) = f_next_fp;
+  DECL_CHAIN (f_next_fp) = f_next_fp_limit;
+  DECL_CHAIN (f_next_fp_limit) = f_next_stack;
 
   layout_type (record);
 
@@ -7725,10 +7843,10 @@ sh_va_start (tree valist, rtx nextarg)
     }
 
   f_next_o = TYPE_FIELDS (va_list_type_node);
-  f_next_o_limit = TREE_CHAIN (f_next_o);
-  f_next_fp = TREE_CHAIN (f_next_o_limit);
-  f_next_fp_limit = TREE_CHAIN (f_next_fp);
-  f_next_stack = TREE_CHAIN (f_next_fp_limit);
+  f_next_o_limit = DECL_CHAIN (f_next_o);
+  f_next_fp = DECL_CHAIN (f_next_o_limit);
+  f_next_fp_limit = DECL_CHAIN (f_next_fp);
+  f_next_stack = DECL_CHAIN (f_next_fp_limit);
 
   next_o = build3 (COMPONENT_REF, TREE_TYPE (f_next_o), valist, f_next_o,
 		   NULL_TREE);
@@ -7787,7 +7905,7 @@ find_sole_member (tree type)
 {
   tree field, member = NULL_TREE;
 
-  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+  for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     {
       if (TREE_CODE (field) != FIELD_DECL)
 	continue;
@@ -7830,10 +7948,10 @@ sh_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
       tree member;
 
       f_next_o = TYPE_FIELDS (va_list_type_node);
-      f_next_o_limit = TREE_CHAIN (f_next_o);
-      f_next_fp = TREE_CHAIN (f_next_o_limit);
-      f_next_fp_limit = TREE_CHAIN (f_next_fp);
-      f_next_stack = TREE_CHAIN (f_next_fp_limit);
+      f_next_o_limit = DECL_CHAIN (f_next_o);
+      f_next_fp = DECL_CHAIN (f_next_o_limit);
+      f_next_fp_limit = DECL_CHAIN (f_next_fp);
+      f_next_stack = DECL_CHAIN (f_next_fp_limit);
 
       next_o = build3 (COMPONENT_REF, TREE_TYPE (f_next_o), valist, f_next_o,
 		       NULL_TREE);
@@ -7886,7 +8004,7 @@ sh_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
       lab_false = create_artificial_label (UNKNOWN_LOCATION);
       lab_over = create_artificial_label (UNKNOWN_LOCATION);
 
-      valist = build1 (INDIRECT_REF, ptr_type_node, addr);
+      valist = build_simple_mem_ref (addr);
 
       if (pass_as_float)
 	{
@@ -8039,12 +8157,13 @@ sh_dwarf_register_span (rtx reg)
 static enum machine_mode
 sh_promote_function_mode (const_tree type, enum machine_mode mode,
 			  int *punsignedp, const_tree funtype,
-			  int for_return ATTRIBUTE_UNUSED)
+			  int for_return)
 {
   if (sh_promote_prototypes (funtype))
     return promote_mode (type, mode, punsignedp);
   else
-    return mode;
+    return default_promote_function_mode (type, mode, punsignedp, funtype,
+					  for_return);
 }
 
 static bool
@@ -8162,10 +8281,9 @@ sh_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    NPARM_REGS words is at least partially passed in a register unless
    its data type forbids.  */
 
-
-rtx
+static rtx
 sh_function_arg (CUMULATIVE_ARGS *ca, enum machine_mode mode,
-		 tree type, int named)
+		 const_tree type, bool named)
 {
   if (! TARGET_SH5 && mode == VOIDmode)
     return GEN_INT (ca->renesas_abi ? 1 : 0);
@@ -8251,17 +8369,17 @@ sh_function_arg (CUMULATIVE_ARGS *ca, enum machine_mode mode,
    (TYPE is null for libcalls where that information may not be
    available.)  */
 
-void
+static void
 sh_function_arg_advance (CUMULATIVE_ARGS *ca, enum machine_mode mode,
-			 tree type, int named)
+			 const_tree type, bool named)
 {
   if (ca->force_mem)
     ca->force_mem = 0;
   else if (TARGET_SH5)
     {
-      tree type2 = (ca->byref && type
-		    ? TREE_TYPE (type)
-		    : type);
+      const_tree type2 = (ca->byref && type
+			  ? TREE_TYPE (type)
+			  : type);
       enum machine_mode mode2 = (ca->byref && type
 				 ? TYPE_MODE (type2)
 				 : mode);
@@ -8444,9 +8562,9 @@ sh_libcall_value (enum machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
   return gen_rtx_REG (mode, BASE_RETURN_VALUE_REG (mode));
 }
 
-/* Worker function for FUNCTION_VALUE_REGNO_P.  */
+/* Return true if N is a possible register number of function value.  */
 
-bool
+static bool
 sh_function_value_regno_p (const unsigned int regno)
 {
   return ((regno) == FIRST_RET_REG 
@@ -9763,6 +9881,45 @@ sh_legitimize_reload_address (rtx *p, enum machine_mode mode, int opnum,
   return true;
 }
 
+/* In the name of slightly smaller debug output, and to cater to
+   general assembler lossage, recognize various UNSPEC sequences
+   and turn them back into a direct symbol reference.  */
+
+static rtx
+sh_delegitimize_address (rtx orig_x)
+{
+  rtx x, y;
+
+  orig_x = delegitimize_mem_from_attrs (orig_x);
+
+  x = orig_x;
+  if (MEM_P (x))
+    x = XEXP (x, 0);
+  if (GET_CODE (x) == CONST)
+    {
+      y = XEXP (x, 0);
+      if (GET_CODE (y) == UNSPEC)
+	{
+	  if (XINT (y, 1) == UNSPEC_GOT
+	      || XINT (y, 1) == UNSPEC_GOTOFF)
+	    return XVECEXP (y, 0, 0);
+	  else if (TARGET_SHMEDIA
+		   && (XINT (y, 1) == UNSPEC_EXTRACT_S16
+		       || XINT (y, 1) == UNSPEC_EXTRACT_U16))
+	    {
+	      rtx offset = XVECEXP (y, 0, 1);
+
+	      x = gen_rtx_PLUS (Pmode, XVECEXP (y, 0, 0), offset);
+	      if (MEM_P (orig_x))
+		x = replace_equiv_address_nv (orig_x, x);
+	      return x;
+	    }
+	}
+    }
+
+  return orig_x;
+}
+
 /* Mark the use of a constant in the literal table. If the constant
    has multiple labels, make it unique.  */
 static rtx
@@ -10519,7 +10676,7 @@ sh_cannot_modify_jumps_p (void)
   return (TARGET_SHMEDIA && (reload_in_progress || reload_completed));
 }
 
-static enum reg_class
+static reg_class_t
 sh_target_reg_class (void)
 {
   return TARGET_SHMEDIA ? TARGET_REGS : NO_REGS;
@@ -11307,9 +11464,9 @@ sh_mark_label (rtx address, int nuses)
    uses this information.  Hence, the general register <-> floating point
    register information here is not used for SFmode.  */
 
-int
+static int
 sh_register_move_cost (enum machine_mode mode,
-		       enum reg_class srcclass, enum reg_class dstclass)
+		       reg_class_t srcclass, reg_class_t dstclass)
 {
   if (dstclass == T_REGS || dstclass == PR_REGS)
     return 10;
@@ -11420,9 +11577,9 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
     {
       tree ptype = build_pointer_type (TREE_TYPE (funtype));
 
-      FUNCTION_ARG_ADVANCE (cum, Pmode, ptype, 1);
+      sh_function_arg_advance (&cum, Pmode, ptype, true);
     }
-  this_rtx = FUNCTION_ARG (cum, Pmode, ptr_type_node, 1);
+  this_rtx = sh_function_arg (&cum, Pmode, ptr_type_node, true);
 
   /* For SHcompact, we only have r0 for a scratch register: r1 is the
      static chain pointer (even if you can't have nested virtual functions
@@ -11452,7 +11609,7 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 	    break;
 	  }
       if (scratch1 == scratch0)
-	error ("Need a second call-clobbered general purpose register");
+	error ("need a second call-clobbered general purpose register");
       for (i = FIRST_TARGET_REG; i <= LAST_TARGET_REG; i++)
 	if (call_used_regs[i] && ! fixed_regs[i])
 	  {
@@ -11460,7 +11617,7 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 	    break;
 	  }
       if (scratch2 == scratch0)
-	error ("Need a call-clobbered target register");
+	error ("need a call-clobbered target register");
     }
 
   this_value = plus_constant (this_rtx, delta);
@@ -12158,10 +12315,12 @@ shmedia_prepare_call_address (rtx fnaddr, int is_sibcall)
   return fnaddr;
 }
 
-enum reg_class
-sh_secondary_reload (bool in_p, rtx x, enum reg_class rclass,
+reg_class_t
+sh_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 		     enum machine_mode mode, secondary_reload_info *sri)
 {
+  enum reg_class rclass = (enum reg_class) rclass_i;
+
   if (in_p)
     {
       if (REGCLASS_HAS_FP_REG (rclass)
@@ -12259,6 +12418,54 @@ sh_secondary_reload (bool in_p, rtx x, enum reg_class rclass,
     return GENERAL_REGS;
   return NO_REGS;
 }
+
+static void
+sh_conditional_register_usage (void)
+{
+  int regno;
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno ++)
+    if (! VALID_REGISTER_P (regno))
+      fixed_regs[regno] = call_used_regs[regno] = 1;
+  /* R8 and R9 are call-clobbered on SH5, but not on earlier SH ABIs.  */
+  if (TARGET_SH5)
+    {
+      call_used_regs[FIRST_GENERAL_REG + 8]
+	= call_used_regs[FIRST_GENERAL_REG + 9] = 1;
+      call_really_used_regs[FIRST_GENERAL_REG + 8]
+	= call_really_used_regs[FIRST_GENERAL_REG + 9] = 1;
+    }
+  if (TARGET_SHMEDIA)
+    {
+      regno_reg_class[FIRST_GENERAL_REG] = GENERAL_REGS;
+      CLEAR_HARD_REG_SET (reg_class_contents[FP0_REGS]);
+      regno_reg_class[FIRST_FP_REG] = FP_REGS;
+    }
+  if (flag_pic)
+    {
+      fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
+      call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
+    }
+  /* Renesas saves and restores mac registers on call.  */
+  if (TARGET_HITACHI && ! TARGET_NOMACSAVE)
+    {
+      call_really_used_regs[MACH_REG] = 0;
+      call_really_used_regs[MACL_REG] = 0;
+    }
+  for (regno = FIRST_FP_REG + (TARGET_LITTLE_ENDIAN != 0);
+       regno <= LAST_FP_REG; regno += 2)
+    SET_HARD_REG_BIT (reg_class_contents[DF_HI_REGS], regno);
+  if (TARGET_SHMEDIA)
+    {
+      for (regno = FIRST_TARGET_REG; regno <= LAST_TARGET_REG; regno ++)
+	if (! fixed_regs[regno] && call_really_used_regs[regno])
+	  SET_HARD_REG_BIT (reg_class_contents[SIBCALL_REGS], regno);
+    }
+  else
+    for (regno = FIRST_GENERAL_REG; regno <= LAST_GENERAL_REG; regno++)
+      if (! fixed_regs[regno] && call_really_used_regs[regno])
+	SET_HARD_REG_BIT (reg_class_contents[SIBCALL_REGS], regno);
+}
+
 
 enum sh_divide_strategy_e sh_div_strategy = SH_DIV_STRATEGY_DEFAULT;
 

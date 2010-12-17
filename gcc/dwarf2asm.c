@@ -798,8 +798,8 @@ static GTY((param1_is (char *), param2_is (tree))) splay_tree indirect_pool;
 
 static GTY(()) int dw2_const_labelno;
 
-#if defined(HAVE_GAS_HIDDEN) && defined(SUPPORTS_ONE_ONLY)
-# define USE_LINKONCE_INDIRECT 1
+#if defined(HAVE_GAS_HIDDEN)
+# define USE_LINKONCE_INDIRECT (SUPPORTS_ONE_ONLY)
 #else
 # define USE_LINKONCE_INDIRECT 0
 #endif

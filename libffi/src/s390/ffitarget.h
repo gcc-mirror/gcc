@@ -28,7 +28,9 @@
 #define LIBFFI_TARGET_H
 
 #if defined (__s390x__)
+#ifndef S390X
 #define S390X
+#endif
 #endif
 
 /* ---- System specific configurations ----------------------------------- */

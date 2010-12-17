@@ -6,7 +6,7 @@
 
 #pragma interface
 
-#include <javax/xml/stream/util/ReaderDelegate.h>
+#include <javax/xml/stream/util/StreamReaderDelegate.h>
 #include <gcj/array.h>
 
 extern "Java"
@@ -69,7 +69,7 @@ extern "Java"
   }
 }
 
-class gnu::xml::stream::XIncludeFilter : public ::javax::xml::stream::util::ReaderDelegate
+class gnu::xml::stream::XIncludeFilter : public ::javax::xml::stream::util::StreamReaderDelegate
 {
 
 public: // actually package-private
@@ -111,7 +111,7 @@ public: // actually package-private
   static ::java::lang::String * getParameter(::java::lang::String *, ::java::lang::String *);
   static ::java::lang::String * XINCLUDE_NS_URI;
   static const jint SHOW_FLAGS = 221;
-  ::java::lang::String * __attribute__((aligned(__alignof__( ::javax::xml::stream::util::ReaderDelegate)))) systemId;
+  ::java::lang::String * __attribute__((aligned(__alignof__( ::javax::xml::stream::util::StreamReaderDelegate)))) systemId;
   jboolean namespaceAware;
   jboolean validating;
   jboolean expandERefs;

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    MIPS SDE version.
-   Copyright (C) 2003, 2004, 2007, 2008, 2009
+   Copyright (C) 2003, 2004, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -41,13 +41,6 @@ along with GCC; see the file COPYING3.  If not see
   /* Make sure that an endian option is always present.  This makes	\
      things like LINK_SPEC easier to write.  */				\
   "%{!EB:%{!EL:%(endian_spec)}}",					\
-									\
-  /* -mcode-xonly is a traditional alias for -mcode-readable=pcrel and	\
-     -mno-data-in-code is a traditional alias for -mcode-readable=no.	\
-     The latter trumps the former.  */					\
-  "%{mno-data-in-code: -mcode-readable=no}",				\
-  "%{!mcode-readable=no: %{mcode-xonly: -mcode-readable=pcrel}}",	\
-  "%<mno-data-in-code %<mcode-xonly",					\
 									\
   /* Configuration-independent MIPS rules.  */				\
   BASE_DRIVER_SELF_SPECS				
@@ -100,9 +93,6 @@ along with GCC; see the file COPYING3.  If not see
 #define SIZE_TYPE "long unsigned int"
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE "long int"
-
-/* Enable parsing of #pragma pack(push,<n>) and #pragma pack(pop).  */
-#define HANDLE_PRAGMA_PACK_PUSH_POP 1
 
 /* Use standard ELF-style local labels (not '$' as on early Irix).  */
 #undef LOCAL_LABEL_PREFIX

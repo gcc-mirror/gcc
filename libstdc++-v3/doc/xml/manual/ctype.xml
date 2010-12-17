@@ -1,7 +1,8 @@
-<section id="std.localization.facet.ctype" xreflabel="ctype">
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="std.localization.facet.ctype" xreflabel="ctype">
 <?dbhtml filename="ctype.html"?>
 
-<sectioninfo>
+<info><title>ctype</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -10,15 +11,15 @@
       ctype
     </keyword>
   </keywordset>
-</sectioninfo>
+</info>
 
-<title>ctype</title>
 
-<section id="facet.ctype.impl">
-<title>Implementation</title>
 
-  <section>
-    <title>Specializations</title>
+<section xml:id="facet.ctype.impl"><info><title>Implementation</title></info>
+
+
+  <section><info><title>Specializations</title></info>
+    
 
 <para>
 For the required specialization codecvt&lt;wchar_t, char, mbstate_t&gt; ,
@@ -60,8 +61,8 @@ characters.
   </section>
 </section>
 
-<section id="facet.ctype.future">
-<title>Future</title>
+<section xml:id="facet.ctype.future"><info><title>Future</title></info>
+
 
 
 <itemizedlist>
@@ -117,21 +118,15 @@ characters.
 </section>
 
 
-<bibliography id="facet.ctype.biblio">
-<title>Bibliography</title>
+<bibliography xml:id="facet.ctype.biblio"><info><title>Bibliography</title></info>
+
 
   <biblioentry>
-    <title>
+    <citetitle>
       The GNU C Library
-    </title>
-    <author>
-      <surname>McGrath</surname>
-      <firstname>Roland</firstname>
-    </author>
-    <author>
-      <surname>Drepper</surname>
-      <firstname>Ulrich</firstname>
-    </author>
+    </citetitle>
+    <author><personname><surname>McGrath</surname><firstname>Roland</firstname></personname></author>
+    <author><personname><surname>Drepper</surname><firstname>Ulrich</firstname></personname></author>
     <copyright>
       <year>2007</year>
       <holder>FSF</holder>
@@ -140,23 +135,20 @@ characters.
   </biblioentry>
 
   <biblioentry>
-    <title>
+    <citetitle>
       Correspondence
-    </title>
-    <author>
-      <surname>Drepper</surname>
-      <firstname>Ulrich</firstname>
-    </author>
+    </citetitle>
+    <author><personname><surname>Drepper</surname><firstname>Ulrich</firstname></personname></author>
     <copyright>
       <year>2002</year>
-      <holder></holder>
+      <holder/>
     </copyright>
   </biblioentry>
 
   <biblioentry>
-    <title>
+    <citetitle>
       ISO/IEC 14882:1998 Programming languages - C++
-    </title>
+    </citetitle>
     <copyright>
       <year>1998</year>
       <holder>ISO</holder>
@@ -164,9 +156,9 @@ characters.
   </biblioentry>
 
   <biblioentry>
-    <title>
+    <citetitle>
       ISO/IEC 9899:1999 Programming languages - C
-    </title>
+    </citetitle>
     <copyright>
       <year>1999</year>
       <holder>ISO</holder>
@@ -174,13 +166,12 @@ characters.
   </biblioentry>
 
   <biblioentry>
-    <biblioid class="uri">
-      <ulink url="http://www.unix.org/version3/ieee_std.html">
-	<citetitle>
-	  The Open Group Base Specifications, Issue 6 (IEEE Std. 1003.1-2004)
-	</citetitle>
-      </ulink>
-    </biblioid>
+    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.unix.org/version3/ieee_std.html" class="uri">
+      </biblioid>
+      <citetitle>
+	The Open Group Base Specifications, Issue 6 (IEEE Std. 1003.1-2004)
+      </citetitle>
+
     <copyright>
       <year>1999</year>
       <holder>
@@ -189,13 +180,10 @@ characters.
   </biblioentry>
 
   <biblioentry>
-    <title>
+    <citetitle>
       The C++ Programming Language, Special Edition
-    </title>
-    <author>
-      <surname>Stroustrup</surname>
-      <firstname>Bjarne</firstname>
-    </author>
+    </citetitle>
+    <author><personname><surname>Stroustrup</surname><firstname>Bjarne</firstname></personname></author>
     <copyright>
       <year>2000</year>
       <holder>Addison Wesley, Inc.</holder>
@@ -209,20 +197,14 @@ characters.
   </biblioentry>
 
   <biblioentry>
-    <title>
+    <citetitle>
       Standard C++ IOStreams and Locales
-    </title>
+    </citetitle>
     <subtitle>
       Advanced Programmer's Guide and Reference
     </subtitle>
-    <author>
-      <surname>Langer</surname>
-      <firstname>Angelika</firstname>
-    </author>
-    <author>
-      <surname>Kreft</surname>
-      <firstname>Klaus</firstname>
-    </author>
+    <author><personname><surname>Langer</surname><firstname>Angelika</firstname></personname></author>
+    <author><personname><surname>Kreft</surname><firstname>Klaus</firstname></personname></author>
     <copyright>
       <year>2000</year>
       <holder>Addison Wesley Longman, Inc.</holder>

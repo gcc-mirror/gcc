@@ -23,6 +23,10 @@ extern "Java"
   {
     namespace xml
     {
+      namespace namespace$
+      {
+          class QName;
+      }
       namespace stream
       {
           class Location;
@@ -35,16 +39,21 @@ class gnu::xml::stream::NamespaceImpl : public ::gnu::xml::stream::XMLEventImpl
 {
 
 public: // actually protected
-  NamespaceImpl(::javax::xml::stream::Location *, ::java::lang::String *, ::java::lang::String *);
+  NamespaceImpl(::javax::xml::stream::Location *, ::java::lang::String *, ::java::lang::String *, jboolean);
 public:
   virtual jint getEventType();
   virtual ::java::lang::String * getPrefix();
   virtual ::java::lang::String * getNamespaceURI();
+  virtual jboolean isSpecified();
+  virtual ::javax::xml::namespace$::QName * getName();
+  virtual ::java::lang::String * getDTDType();
+  virtual ::java::lang::String * getValue();
   virtual jboolean isDefaultNamespaceDeclaration();
   virtual void writeAsEncodedUnicode(::java::io::Writer *);
 public: // actually protected
   ::java::lang::String * __attribute__((aligned(__alignof__( ::gnu::xml::stream::XMLEventImpl)))) prefix;
   ::java::lang::String * uri;
+  jboolean specified;
 public:
   static ::java::lang::Class class$;
 };

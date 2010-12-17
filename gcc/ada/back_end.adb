@@ -26,6 +26,7 @@
 with Atree;     use Atree;
 with Debug;     use Debug;
 with Elists;    use Elists;
+with Errout;    use Errout;
 with Lib;       use Lib;
 with Osint;     use Osint;
 with Opt;       use Opt;
@@ -117,6 +118,17 @@ package body Back_End is
          File_Info_Array (J).File_Name        := Full_Debug_Name (J);
          File_Info_Array (J).Num_Source_Lines := Num_Source_Lines (J);
       end loop;
+
+      if Generate_SCIL then
+         Error_Msg_N ("'S'C'I'L generation not available", Cunit (Main_Unit));
+
+         if CodePeer_Mode
+           or else (Mode /= Generate_Object
+                     and then not Back_Annotate_Rep_Info)
+         then
+            return;
+         end if;
+      end if;
 
       gigi
         (gnat_root          => Int (Cunit (Main_Unit)),

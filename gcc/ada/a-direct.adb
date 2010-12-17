@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,10 +39,10 @@ with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with Ada.Characters.Handling;    use Ada.Characters.Handling;
 
-with System.CRTL;                use System.CRTL;
-with System.OS_Lib;              use System.OS_Lib;
-with System.Regexp;              use System.Regexp;
-
+with System.CRTL;    use System.CRTL;
+with System.OS_Lib;  use System.OS_Lib;
+with System.Regexp;  use System.Regexp;
+with System.File_IO; use System.File_IO;
 with System;
 
 package body Ada.Directories is
@@ -301,8 +301,9 @@ package body Ada.Directories is
       Target_Name : String;
       Form        : String := "")
    is
-      pragma Unreferenced (Form);
-      Success : Boolean;
+      Success  : Boolean;
+      Mode     : Copy_Mode := Overwrite;
+      Preserve : Attribute := None;
 
    begin
       --  First, the invalid cases
@@ -322,10 +323,69 @@ package body Ada.Directories is
          raise Use_Error with "target """ & Target_Name & """ is a directory";
 
       else
-         --  The implementation uses System.OS_Lib.Copy_File, with parameters
-         --  suitable for all platforms.
+         if Form'Length > 0 then
+            declare
+               Formstr : String (1 .. Form'Length + 1);
+               V1, V2  : Natural;
 
-         Copy_File (Source_Name, Target_Name, Success, Overwrite, None);
+            begin
+               --  Acquire form string, setting required NUL terminator
+
+               Formstr (1 .. Form'Length) := Form;
+               Formstr (Formstr'Last) := ASCII.NUL;
+
+               --  Convert form string to lower case
+
+               for J in Formstr'Range loop
+                  if Formstr (J) in 'A' .. 'Z' then
+                     Formstr (J) :=
+                       Character'Val (Character'Pos (Formstr (J)) + 32);
+                  end if;
+               end loop;
+
+               --  Check Form
+
+               Form_Parameter (Formstr, "mode", V1, V2);
+
+               if V1 = 0 then
+                  Mode := Overwrite;
+
+               elsif Formstr (V1 .. V2) = "copy" then
+                  Mode := Copy;
+
+               elsif Formstr (V1 .. V2) = "overwrite" then
+                  Mode := Overwrite;
+
+               elsif Formstr (V1 .. V2) = "append" then
+                  Mode := Append;
+
+               else
+                  raise Use_Error with "invalid Form";
+               end if;
+
+               Form_Parameter (Formstr, "preserve", V1, V2);
+
+               if V1 = 0 then
+                  Preserve := None;
+
+               elsif Formstr (V1 .. V2) = "timestamps" then
+                  Preserve := Time_Stamps;
+
+               elsif Formstr (V1 .. V2) = "all_attributes" then
+                  Preserve := Full;
+
+               elsif Formstr (V1 .. V2) = "no_attributes" then
+                  Preserve := None;
+
+               else
+                  raise Use_Error with "invalid Form";
+               end if;
+            end;
+         end if;
+
+         --  The implementation uses System.OS_Lib.Copy_File
+
+         Copy_File (Source_Name, Target_Name, Success, Mode, Preserve);
 
          if not Success then
             raise Use_Error with "copy of """ & Source_Name & """ failed";

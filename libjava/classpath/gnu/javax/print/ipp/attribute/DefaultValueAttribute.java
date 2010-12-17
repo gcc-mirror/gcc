@@ -1,4 +1,4 @@
-/* DefaultValueAttribute.java -- 
+/* DefaultValueAttribute.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -41,18 +41,18 @@ package gnu.javax.print.ipp.attribute;
 import javax.print.attribute.Attribute;
 
 /**
- * Marker interface for all attribute classes describing attributes 
+ * Marker interface for all attribute classes describing attributes
  * providing default values. Often there exist a sequence of an
  * attribute name like: Name - &gt; Name-default -&gt; Name-supported.
  *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public interface DefaultValueAttribute extends Attribute
-{  
+{
   /**
    * Returns the equally enum of the standard attribute class
    * of this SupportedValuesAttribute enum.
-   * 
+   *
    * @return The enum of the standard attribute class.
    */
   public Attribute getAssociatedAttribute();

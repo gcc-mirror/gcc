@@ -1,3 +1,11 @@
+2010-11-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR other/46202
+	* Makefile.in (install-strip): New phony target.
+	(check, installcheck, info, dvi, pdf, html, install)
+	(install-info, install-pdf, install-html, mostlyclean)
+	(clean, distclean, maintainer-clean): Mark phony.
+
 2009-10-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* Makefile.in (GNATLIBCFLAGS_FOR_C): New variable.

@@ -6,7 +6,7 @@
 
 #define N 256
 
-extern int a[N];
+extern int a[N+20];
 
 /* The alignment of 'pa' is unknown. 
    Yet we do know that both the read access and write access have 

@@ -1,0 +1,33 @@
+# For C++ crtstuff
+EXTRA_MULTILIB_PARTS = crtbegin$(objext) crtend$(objext)
+
+EXTRA_PARTS += crti$(objext) crtn$(objext)
+
+MULTILIB_OPTIONS = mxl-barrel-shift mno-xl-soft-mul mxl-multiply-high
+MULTILIB_DIRNAMES = bs m mh
+MULTILIB_EXCEPTIONS = *mxl-barrel-shift/mxl-multiply-high mxl-multiply-high
+
+# Extra files
+microblaze-c.o: $(srcdir)/config/microblaze/microblaze-c.c \
+    $(srcdir)/config/microblaze/microblaze-protos.h \
+    $(CONFIG_H) $(SYSTEM_H) $(CPPLIB_H) $(TM_P_H) $(TREE_H) errors.h $(TM_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(srcdir)/config/microblaze/microblaze-c.c
+
+# Build soft FP routines. 
+FPBIT = fp-bit.c
+DPBIT = dp-bit.c
+
+fp-bit.c: $(srcdir)/config/fp-bit.c
+	echo '#define FLOAT' > fp-bit.c
+	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
+
+dp-bit.c: $(srcdir)/config/fp-bit.c
+	cat $(srcdir)/config/fp-bit.c > dp-bit.c
+
+# Assemble startup files
+$(T)crti$(objext): $(srcdir)/config/microblaze/crti.s
+	$(GCC_FOR_TARGET) -c $(srcdir)/config/microblaze/crti.s -o $(T)crti$(objext)
+
+$(T)crtn$(objext): $(srcdir)/config/microblaze/crtn.s
+	$(GCC_FOR_TARGET) -c $(srcdir)/config/microblaze/crtn.s -o $(T)crtn$(objext)

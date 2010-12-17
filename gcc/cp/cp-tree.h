@@ -30,19 +30,18 @@ along with GCC; see the file COPYING3.  If not see
 
 /* In order for the format checking to accept the C++ front end
    diagnostic framework extensions, you must include this file before
-   toplev.h, not after.  We override the definition of GCC_DIAG_STYLE
+   diagnostic-core.h, not after.  We override the definition of GCC_DIAG_STYLE
    in c-common.h.  */
 #undef GCC_DIAG_STYLE
 #define GCC_DIAG_STYLE __gcc_cxxdiag__
-#if defined(GCC_TOPLEV_H) || defined (GCC_C_COMMON_H)
+#if defined(GCC_DIAGNOSTIC_CORE_H) || defined (GCC_C_COMMON_H)
 #error \
 In order for the format checking to accept the C++ front end diagnostic \
-framework extensions, you must include this file before toplev.h and \
+framework extensions, you must include this file before diagnostic-core.h and \
 c-common.h, not after.
 #endif
-#include "toplev.h"
-#include "diagnostic.h"
 #include "c-family/c-common.h"
+#include "diagnostic.h"
 
 #include "name-lookup.h"
 
@@ -73,6 +72,7 @@ c-common.h, not after.
       CONSTRUCTOR_IS_DIRECT_INIT (in CONSTRUCTOR)
       LAMBDA_EXPR_CAPTURES_THIS_P (in LAMBDA_EXPR)
       DECLTYPE_FOR_LAMBDA_CAPTURE (in DECLTYPE_TYPE)
+      VEC_INIT_EXPR_IS_CONSTEXPR (in VEC_INIT_EXPR)
    1: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -169,6 +169,9 @@ c-common.h, not after.
 
      The BV_FN is the declaration for the virtual function itself.
 
+     If BV_LOST_PRIMARY is set, it means that this entry is for a lost
+     primary virtual base and can be left null in the vtable.
+
    BINFO_VTABLE
      This is an expression with POINTER_TYPE that gives the value
      to which the vptr should be initialized.  Use get_vtbl_decl_for_binfo
@@ -234,6 +237,7 @@ struct GTY(()) template_parm_index_s {
   int index;
   int level;
   int orig_level;
+  int num_siblings;
   tree decl;
 };
 typedef struct template_parm_index_s template_parm_index;
@@ -286,11 +290,6 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
    sense of `same'.  */
 #define same_type_p(TYPE1, TYPE2) \
   comptypes ((TYPE1), (TYPE2), COMPARE_STRICT)
-
-/* Returns nonzero iff TYPE1 and TYPE2 are the same type, ignoring
-   top-level qualifiers.  */
-#define same_type_ignoring_top_level_qualifiers_p(TYPE1, TYPE2) \
-  same_type_p (TYPE_MAIN_VARIANT (TYPE1), TYPE_MAIN_VARIANT (TYPE2))
 
 /* Nonzero if we are presently building a statement tree, rather
    than expanding each statement as we encounter it.  */
@@ -390,7 +389,9 @@ typedef enum cpp0x_warn_str
   /* scoped enums */
   CPP0X_SCOPED_ENUMS,
   /* defaulted and deleted functions */
-  CPP0X_DEFAULTED_DELETED
+  CPP0X_DEFAULTED_DELETED,
+  /* inline namespaces */
+  CPP0X_INLINE_NAMESPACES
 } cpp0x_warn_str;
   
 /* The various kinds of operation used by composite_pointer_type. */
@@ -434,6 +435,17 @@ typedef enum impl_conv_rhs {
   ICR_RETURN,           /* return */
   ICR_ASSIGN            /* assignment */
 } impl_conv_rhs;
+
+/* Possible cases of implicit or explicit bad conversions to void. */
+typedef enum impl_conv_void {
+  ICV_CAST,            /* (explicit) conversion to void */
+  ICV_SECOND_OF_COND,  /* second operand of conditional expression */
+  ICV_THIRD_OF_COND,   /* third operand of conditional expression */
+  ICV_RIGHT_OF_COMMA,  /* right operand of comma operator */
+  ICV_LEFT_OF_COMMA,   /* left operand of comma operator */
+  ICV_STATEMENT,       /* statement */
+  ICV_THIRD_IN_FOR     /* for increment expression */
+} impl_conv_void;
 
 /* Macros for access to language-specific slots in an identifier.  */
 
@@ -557,6 +569,7 @@ typedef enum cp_trait_kind
   CPTK_IS_POLYMORPHIC,
   CPTK_IS_STD_LAYOUT,
   CPTK_IS_TRIVIAL,
+  CPTK_IS_LITERAL_TYPE,
   CPTK_IS_UNION
 } cp_trait_kind;
 
@@ -1045,7 +1058,8 @@ struct GTY(()) language_function {
   (cfun && cp_function_chain					\
    ? cp_function_chain->x_current_class_ptr : NULL_TREE)
 #define current_class_ref \
-  (cfun ? cp_function_chain->x_current_class_ref : NULL_TREE)
+  ((cfun && cp_function_chain)                                  \
+   ? cp_function_chain->x_current_class_ref : NULL_TREE)
 
 /* The EH_SPEC_BLOCK for the exception-specifiers for the current
    function, if any.  */
@@ -1239,11 +1253,11 @@ struct GTY(()) lang_type_header {
   BOOL_BITFIELD is_lang_type_class : 1;
 
   BOOL_BITFIELD has_type_conversion : 1;
-  BOOL_BITFIELD has_init_ref : 1;
+  BOOL_BITFIELD has_copy_ctor : 1;
   BOOL_BITFIELD has_default_ctor : 1;
   BOOL_BITFIELD const_needs_init : 1;
   BOOL_BITFIELD ref_needs_init : 1;
-  BOOL_BITFIELD has_const_assign_ref : 1;
+  BOOL_BITFIELD has_const_copy_assign : 1;
 
   BOOL_BITFIELD spare : 1;
 };
@@ -1271,7 +1285,7 @@ struct GTY(()) lang_type_class {
   unsigned non_pod_class : 1;
   unsigned nearly_empty_p : 1;
   unsigned user_align : 1;
-  unsigned has_assign_ref : 1;
+  unsigned has_copy_assign : 1;
   unsigned has_new : 1;
   unsigned has_array_new : 1;
 
@@ -1297,18 +1311,23 @@ struct GTY(()) lang_type_class {
   unsigned was_anonymous : 1;
   unsigned lazy_default_ctor : 1;
   unsigned lazy_copy_ctor : 1;
-  unsigned lazy_assignment_op : 1;
+  unsigned lazy_copy_assign : 1;
   unsigned lazy_destructor : 1;
 
-  unsigned has_const_init_ref : 1;
-  unsigned has_complex_init_ref : 1;
-  unsigned has_complex_assign_ref : 1;
+  unsigned has_const_copy_ctor : 1;
+  unsigned has_complex_copy_ctor : 1;
+  unsigned has_complex_copy_assign : 1;
   unsigned non_aggregate : 1;
   unsigned has_complex_dflt : 1;
   unsigned has_list_ctor : 1;
   unsigned non_std_layout : 1;
-  unsigned lazy_move_ctor : 1;
   unsigned is_literal : 1;
+
+  unsigned lazy_move_ctor : 1;
+  unsigned lazy_move_assign : 1;
+  unsigned has_complex_move_ctor : 1;
+  unsigned has_complex_move_assign : 1;
+  unsigned has_constexpr_ctor : 1;
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
@@ -1317,7 +1336,7 @@ struct GTY(()) lang_type_class {
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 7;
+  unsigned dummy : 3;
 
   tree primary_base;
   VEC(tree_pair_s,gc) *vcall_indices;
@@ -1412,8 +1431,13 @@ struct GTY((variable_size)) lang_type {
 
 /* Nonzero means that NODE (a class type) has an assignment operator
    -- but that it has not yet been declared.  */
-#define CLASSTYPE_LAZY_ASSIGNMENT_OP(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->lazy_assignment_op)
+#define CLASSTYPE_LAZY_COPY_ASSIGN(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->lazy_copy_assign)
+
+/* Nonzero means that NODE (a class type) has an assignment operator
+   -- but that it has not yet been declared.  */
+#define CLASSTYPE_LAZY_MOVE_ASSIGN(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->lazy_move_assign)
 
 /* Nonzero means that NODE (a class type) has a destructor -- but that
    it has not yet been declared.  */
@@ -1421,21 +1445,27 @@ struct GTY((variable_size)) lang_type {
   (LANG_TYPE_CLASS_CHECK (NODE)->lazy_destructor)
 
 /* Nonzero means that this _CLASSTYPE node overloads operator=(X&).  */
-#define TYPE_HAS_ASSIGN_REF(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_assign_ref)
+#define TYPE_HAS_COPY_ASSIGN(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_copy_assign)
 
 /* True iff the class type NODE has an "operator =" whose parameter
    has a parameter of type "const X&".  */
-#define TYPE_HAS_CONST_ASSIGN_REF(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->h.has_const_assign_ref)
+#define TYPE_HAS_CONST_COPY_ASSIGN(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->h.has_const_copy_assign)
 
 /* Nonzero means that this _CLASSTYPE node has an X(X&) constructor.  */
-#define TYPE_HAS_INIT_REF(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->h.has_init_ref)
-#define TYPE_HAS_CONST_INIT_REF(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->has_const_init_ref)
+#define TYPE_HAS_COPY_CTOR(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->h.has_copy_ctor)
+#define TYPE_HAS_CONST_COPY_CTOR(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->has_const_copy_ctor)
 
 /* Nonzero if this class has an X(initializer_list<T>) constructor.  */
 #define TYPE_HAS_LIST_CTOR(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->has_list_ctor)
+
+/* Nonzero if this class has a constexpr constructor other than a copy/move
+   constructor.  Note that a class can have constexpr constructors for
+   static initialization even if it isn't a literal class.  */
+#define TYPE_HAS_CONSTEXPR_CTOR(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->has_constexpr_ctor)
 
 /* Nonzero if this class defines an overloaded operator new.  (An
    operator new [] doesn't count.)  */
@@ -1748,6 +1778,8 @@ struct GTY((variable_size)) lang_type {
 /* The function to call.  */
 #define BV_FN(NODE) (TREE_VALUE (NODE))
 
+/* Whether or not this entry is for a lost primary virtual base.  */
+#define BV_LOST_PRIMARY(NODE) (TREE_LANG_FLAG_0 (NODE))
 
 /* For FUNCTION_TYPE or METHOD_TYPE, a list of the exceptions that
    this type can raise.  Each TREE_VALUE is a _TYPE.  The TREE_VALUE
@@ -2067,9 +2099,9 @@ struct GTY((variable_size)) lang_decl {
   if (TREE_CODE (FN) == FUNCTION_DECL			\
       && (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (FN)	\
 	  || DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (FN)))	\
-     for (CLONE = TREE_CHAIN (FN);			\
+     for (CLONE = DECL_CHAIN (FN);			\
 	  CLONE && DECL_CLONED_FUNCTION_P (CLONE);	\
-	  CLONE = TREE_CHAIN (CLONE))
+	  CLONE = DECL_CHAIN (CLONE))
 
 /* Nonzero if NODE has DECL_DISCRIMINATOR and not DECL_ACCESS.  */
 #define DECL_DISCRIMINATOR_P(NODE)	\
@@ -2176,23 +2208,6 @@ struct GTY((variable_size)) lang_decl {
    constant-expression.  */
 #define DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P(NODE) \
   (TREE_LANG_FLAG_2 (VAR_DECL_CHECK (NODE)))
-
-/* Nonzero for a VAR_DECL that can be used in an integral constant
-   expression.
-
-      [expr.const]
-
-      An integral constant-expression can only involve ... const
-      variables of static or enumeration types initialized with
-      constant expressions ...
-
-   The standard does not require that the expression be non-volatile.
-   G++ implements the proposed correction in DR 457.  */
-#define DECL_INTEGRAL_CONSTANT_VAR_P(NODE)		\
-  (TREE_CODE (NODE) == VAR_DECL				\
-   && CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (NODE))	\
-   && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (NODE))	\
-   && DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (NODE))
 
 /* Nonzero if the DECL was initialized in the class definition itself,
    rather than outside the class.  This is used for both static member
@@ -2312,7 +2327,7 @@ struct GTY((variable_size)) lang_decl {
 
 /* True if DECL is declared 'constexpr'.  */
 #define DECL_DECLARED_CONSTEXPR_P(DECL) \
-  DECL_LANG_FLAG_8 (VAR_OR_FUNCTION_DECL_CHECK (DECL))
+  DECL_LANG_FLAG_8 (VAR_OR_FUNCTION_DECL_CHECK (STRIP_TEMPLATE (DECL)))
 
 /* Nonzero if this DECL is the __PRETTY_FUNCTION__ variable in a
    template function.  */
@@ -2340,12 +2355,12 @@ struct GTY((variable_size)) lang_decl {
 #define SET_DECL_FRIEND_CONTEXT(NODE, CONTEXT) \
   (LANG_DECL_FN_CHECK (NODE)->context = (CONTEXT))
 
-/* NULL_TREE in DECL_CONTEXT represents the global namespace.  */
 #define CP_DECL_CONTEXT(NODE) \
-  (DECL_CONTEXT (NODE) ? DECL_CONTEXT (NODE) : global_namespace)
+  (!DECL_FILE_SCOPE_P (NODE) ? DECL_CONTEXT (NODE) : global_namespace)
 #define CP_TYPE_CONTEXT(NODE) \
-  (TYPE_CONTEXT (NODE) ? TYPE_CONTEXT (NODE) : global_namespace)
-#define FROB_CONTEXT(NODE)   ((NODE) == global_namespace ? NULL_TREE : (NODE))
+  (!TYPE_FILE_SCOPE_P (NODE) ? TYPE_CONTEXT (NODE) : global_namespace)
+#define FROB_CONTEXT(NODE) \
+  ((NODE) == global_namespace ? DECL_CONTEXT (NODE) : (NODE))
 
 /* 1 iff NODE has namespace scope, including the global namespace.  */
 #define DECL_NAMESPACE_SCOPE_P(NODE)				\
@@ -2884,6 +2899,15 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define VEC_INIT_EXPR_SLOT(NODE) TREE_OPERAND (NODE, 0)
 #define VEC_INIT_EXPR_INIT(NODE) TREE_OPERAND (NODE, 1)
 
+/* Indicates that a VEC_INIT_EXPR is a potential constant expression.
+   Only set when the current function is constexpr.  */
+#define VEC_INIT_EXPR_IS_CONSTEXPR(NODE) \
+  TREE_LANG_FLAG_0 (VEC_INIT_EXPR_CHECK (NODE))
+
+/* Indicates that a VEC_INIT_EXPR is expressing value-initialization.  */
+#define VEC_INIT_EXPR_VALUE_INIT(NODE) \
+  TREE_LANG_FLAG_1 (VEC_INIT_EXPR_CHECK (NODE))
+
 /* The TYPE_MAIN_DECL for a class template type is a TYPE_DECL, not a
    TEMPLATE_DECL.  This macro determines whether or not a given class
    type is really a template type, as opposed to an instantiation or
@@ -3029,9 +3053,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    || TREE_CODE (TYPE) == COMPLEX_TYPE)
 
 /* True iff TYPE is cv decltype(nullptr).  */
-#define NULLPTR_TYPE_P(TYPE)				\
-  (TREE_CODE (TYPE) == LANG_TYPE			\
-   && TYPE_MAIN_VARIANT (TYPE) == nullptr_type_node)
+#define NULLPTR_TYPE_P(TYPE) (TREE_CODE (TYPE) == NULLPTR_TYPE)
 
 /* [basic.types]
 
@@ -3080,6 +3102,16 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    (0).  */
 #define SET_SCOPED_ENUM_P(TYPE, VAL)                    \
   (ENUM_IS_SCOPED (TYPE) = (VAL))
+
+#define SET_OPAQUE_ENUM_P(TYPE, VAL)                    \
+  (ENUM_IS_OPAQUE (TYPE) = (VAL))
+
+#define OPAQUE_ENUM_P(TYPE)				\
+  (TREE_CODE (TYPE) == ENUMERAL_TYPE && ENUM_IS_OPAQUE (TYPE))
+
+/* Determines whether an ENUMERAL_TYPE has an explicit
+   underlying type.  */
+#define ENUM_FIXED_UNDERLYING_TYPE_P(NODE) (TYPE_LANG_FLAG_3 (NODE))
 
 /* Returns the underlying type of the given enumeration type. The
    underlying type is determined in different ways, depending on the
@@ -3159,13 +3191,19 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define TYPE_NON_AGGREGATE_CLASS(NODE) \
   (CLASS_TYPE_P (NODE) && CLASSTYPE_NON_AGGREGATE (NODE))
 
-/* Nonzero if there is a user-defined X::op=(x&) for this class.  */
-#define TYPE_HAS_COMPLEX_ASSIGN_REF(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_complex_assign_ref)
+/* Nonzero if there is a non-trivial X::op=(cv X&) for this class.  */
+#define TYPE_HAS_COMPLEX_COPY_ASSIGN(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_complex_copy_assign)
 
-/* Nonzero if there is a user-defined X::X(x&) for this class.  */
-#define TYPE_HAS_COMPLEX_INIT_REF(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_complex_init_ref)
+/* Nonzero if there is a non-trivial X::X(cv X&) for this class.  */
+#define TYPE_HAS_COMPLEX_COPY_CTOR(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_complex_copy_ctor)
 
-/* Nonzero if there is a user-defined default constructor for this class.  */
+/* Nonzero if there is a non-trivial X::op=(X&&) for this class.  */
+#define TYPE_HAS_COMPLEX_MOVE_ASSIGN(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_complex_move_assign)
+
+/* Nonzero if there is a non-trivial X::X(X&&) for this class.  */
+#define TYPE_HAS_COMPLEX_MOVE_CTOR(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_complex_move_ctor)
+
+/* Nonzero if there is a non-trivial default constructor for this class.  */
 #define TYPE_HAS_COMPLEX_DFLT(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_complex_dflt)
 
 /* Nonzero if TYPE has a trivial destructor.  From [class.dtor]:
@@ -3195,13 +3233,13 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 
 /* Nonzero for class type means that copy initialization of this type can use
    a bitwise copy.  */
-#define TYPE_HAS_TRIVIAL_INIT_REF(NODE) \
-  (TYPE_HAS_INIT_REF (NODE) && ! TYPE_HAS_COMPLEX_INIT_REF (NODE))
+#define TYPE_HAS_TRIVIAL_COPY_CTOR(NODE) \
+  (TYPE_HAS_COPY_CTOR (NODE) && ! TYPE_HAS_COMPLEX_COPY_CTOR (NODE))
 
 /* Nonzero for class type means that assignment of this type can use
    a bitwise copy.  */
-#define TYPE_HAS_TRIVIAL_ASSIGN_REF(NODE) \
-  (TYPE_HAS_ASSIGN_REF (NODE) && ! TYPE_HAS_COMPLEX_ASSIGN_REF (NODE))
+#define TYPE_HAS_TRIVIAL_COPY_ASSIGN(NODE) \
+  (TYPE_HAS_COPY_ASSIGN (NODE) && ! TYPE_HAS_COMPLEX_COPY_ASSIGN (NODE))
 
 /* Returns true if NODE is a pointer-to-data-member.  */
 #define TYPE_PTRMEM_P(NODE)			\
@@ -3774,6 +3812,12 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define FOR_EXPR(NODE)		TREE_OPERAND (FOR_STMT_CHECK (NODE), 2)
 #define FOR_BODY(NODE)		TREE_OPERAND (FOR_STMT_CHECK (NODE), 3)
 
+/* RANGE_FOR_STMT accessors. These give access to the declarator,
+   expression and body of the statement, respectively.  */
+#define RANGE_FOR_DECL(NODE)	TREE_OPERAND (RANGE_FOR_STMT_CHECK (NODE), 0)
+#define RANGE_FOR_EXPR(NODE)	TREE_OPERAND (RANGE_FOR_STMT_CHECK (NODE), 1)
+#define RANGE_FOR_BODY(NODE)	TREE_OPERAND (RANGE_FOR_STMT_CHECK (NODE), 2)
+
 #define SWITCH_STMT_COND(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 0)
 #define SWITCH_STMT_BODY(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 1)
 #define SWITCH_STMT_TYPE(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 2)
@@ -3867,7 +3911,8 @@ typedef enum special_function_kind {
   sfk_constructor,	   /* A constructor.  */
   sfk_copy_constructor,    /* A copy constructor.  */
   sfk_move_constructor,    /* A move constructor.  */
-  sfk_assignment_operator, /* An assignment operator.  */
+  sfk_copy_assignment,     /* A copy assignment operator.  */
+  sfk_move_assignment,     /* A move assignment operator.  */
   sfk_destructor,	   /* A destructor.  */
   sfk_complete_destructor, /* A destructor for complete objects.  */
   sfk_base_destructor,     /* A destructor for base subobjects.  */
@@ -3900,6 +3945,13 @@ typedef enum linkage_kind {
   lk_external			/* External linkage.  */
 } linkage_kind;
 
+typedef enum duration_kind {
+  dk_static,
+  dk_thread,
+  dk_auto,
+  dk_dynamic
+} duration_kind;
+
 /* Bitmask flags to control type substitution.  */
 enum tsubst_flags {
   tf_none = 0,			 /* nothing special */
@@ -3918,8 +3970,6 @@ enum tsubst_flags {
 				    conversion.  */
   tf_no_access_control = 1 << 7, /* Do not perform access checks, even
 				    when issuing other errors.   */
-  /* Do not instantiate classes (used by count_non_default_template_args). */
-  tf_no_class_instantiations = 1 << 8,
   /* Convenient substitution flags combinations.  */
   tf_warning_or_error = tf_warning | tf_error
 };
@@ -3970,7 +4020,6 @@ typedef enum base_kind {
 
 /* For building calls to `delete'.  */
 extern GTY(()) tree integer_two_node;
-extern GTY(()) tree integer_three_node;
 
 /* The number of function bodies which we are currently processing.
    (Zero if we are at namespace scope, one inside the body of a
@@ -3984,6 +4033,7 @@ extern int function_depth;
    sizeof can be nested.  */
 
 extern int cp_unevaluated_operand;
+extern tree cp_convert_range_for (tree, tree, tree);
 
 /* in pt.c  */
 
@@ -4162,12 +4212,24 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 /* We're inside an init-list, so narrowing conversions are ill-formed.  */
 #define LOOKUP_NO_NARROWING (LOOKUP_PREFER_RVALUE << 1)
 /* Avoid user-defined conversions for the first parameter of a copy
-   constructor.  */
+   constructor (or move constructor).  */
 #define LOOKUP_NO_COPY_CTOR_CONVERSION (LOOKUP_NO_NARROWING << 1)
 /* This is the first parameter of a copy constructor.  */
 #define LOOKUP_COPY_PARM (LOOKUP_NO_COPY_CTOR_CONVERSION << 1)
 /* We only want to consider list constructors.  */
 #define LOOKUP_LIST_ONLY (LOOKUP_COPY_PARM << 1)
+/* Return after determining which function to call and checking access.
+   Used by sythesized_method_walk to determine which functions will
+   be called to initialize subobjects, in order to determine exception
+   specification and possible implicit delete.
+   This is kind of a hack, but since access control doesn't respect SFINAE
+   we can't just use tf_none to avoid access control errors, we need
+   another mechanism.  Exiting early also avoids problems with trying
+   to perform argument conversions when the class isn't complete yet.  */
+#define LOOKUP_SPECULATIVE (LOOKUP_LIST_ONLY << 1)
+/* Used in calls to store_init_value to suppress its usual call to
+   digest_init.  */
+#define LOOKUP_ALREADY_DIGESTED (LOOKUP_SPECULATIVE << 1)
 
 #define LOOKUP_NAMESPACES_ONLY(F)  \
   (((F) & LOOKUP_PREFER_NAMESPACES) && !((F) & LOOKUP_PREFER_TYPES))
@@ -4257,6 +4319,9 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 	((template_parm_index*)TEMPLATE_PARM_INDEX_CHECK (NODE))
 #define TEMPLATE_PARM_IDX(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->index)
 #define TEMPLATE_PARM_LEVEL(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->level)
+/* The Number of sibling parms this template parm has.  */
+#define TEMPLATE_PARM_NUM_SIBLINGS(NODE) \
+  (TEMPLATE_PARM_INDEX_CAST (NODE)->num_siblings)
 #define TEMPLATE_PARM_DESCENDANTS(NODE) (TREE_CHAIN (NODE))
 #define TEMPLATE_PARM_ORIG_LEVEL(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->orig_level)
 #define TEMPLATE_PARM_DECL(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->decl)
@@ -4278,10 +4343,6 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
   (TEMPLATE_PARM_DECL (TEMPLATE_TYPE_PARM_INDEX (NODE)))
 #define TEMPLATE_TYPE_PARAMETER_PACK(NODE) \
   (TEMPLATE_PARM_PARAMETER_PACK (TEMPLATE_TYPE_PARM_INDEX (NODE)))
-/* The list of template parms that a given template parameter of type
-   TEMPLATE_TYPE_PARM belongs to.*/
-#define TEMPLATE_TYPE_PARM_SIBLING_PARMS(NODE) \
-  (TREE_CHECK ((NODE), TEMPLATE_TYPE_PARM))->type.maxval
 
 /* These constants can used as bit flags in the process of tree formatting.
 
@@ -4592,6 +4653,7 @@ extern tree strip_top_quals			(tree);
 extern bool reference_related_p			(tree, tree);
 extern tree perform_implicit_conversion		(tree, tree, tsubst_flags_t);
 extern tree perform_implicit_conversion_flags	(tree, tree, tsubst_flags_t, int);
+extern tree build_integral_nontype_arg_conv	(tree, tree, tsubst_flags_t);
 extern tree perform_direct_initialization_if_possible (tree, tree, bool,
                                                        tsubst_flags_t);
 extern tree in_charge_arg_for_name		(tree);
@@ -4654,9 +4716,15 @@ extern tree in_class_defaulted_default_constructor (tree);
 extern bool user_provided_p			(tree);
 extern bool type_has_user_provided_constructor  (tree);
 extern bool type_has_user_provided_default_constructor (tree);
+extern bool synthesized_default_constructor_is_constexpr (tree);
+extern bool type_has_constexpr_default_constructor (tree);
+extern bool type_has_virtual_destructor		(tree);
+extern bool type_has_move_constructor		(tree);
+extern bool type_has_move_assign		(tree);
 extern void defaulted_late_check		(tree);
 extern bool defaultable_fn_check		(tree);
 extern void fixup_type_variants			(tree);
+extern void fixup_attribute_variants		(tree);
 extern tree* decl_cloned_function_p		(const_tree, bool);
 extern void clone_function_decl			(tree, int);
 extern void adjust_clone_args			(tree);
@@ -4669,8 +4737,8 @@ extern tree ocp_convert				(tree, tree, int, int);
 extern tree cp_convert				(tree, tree);
 extern tree cp_convert_and_check                (tree, tree);
 extern tree cp_fold_convert			(tree, tree);
-extern tree convert_to_void	(tree, const char */*implicit context*/,
-                                 tsubst_flags_t);
+extern tree convert_to_void			(tree, impl_conv_void,
+                                 		 tsubst_flags_t);
 extern tree convert_force			(tree, tree, int);
 extern tree build_expr_type_conversion		(int, tree, bool);
 extern tree type_promotes_to			(tree);
@@ -4732,9 +4800,10 @@ extern bool grok_op_properties			(tree, bool);
 extern tree xref_tag				(enum tag_types, tree, tag_scope, bool);
 extern tree xref_tag_from_type			(tree, tree, tag_scope);
 extern bool xref_basetypes			(tree, tree);
-extern tree start_enum				(tree, tree, bool);
+extern tree start_enum				(tree, tree, tree, bool, bool *);
+extern void finish_enum_value_list		(tree);
 extern void finish_enum				(tree);
-extern void build_enumerator			(tree, tree, tree);
+extern void build_enumerator			(tree, tree, tree, location_t);
 extern tree lookup_enumerator			(tree, tree);
 extern void start_preparsed_function		(tree, tree, int);
 extern int start_function			(cp_decl_specifier_seq *, const cp_declarator *, tree);
@@ -4751,7 +4820,7 @@ extern tree static_fn_type			(tree);
 extern void revert_static_member_fn		(tree);
 extern void fixup_anonymous_aggr		(tree);
 extern int check_static_variable_definition	(tree, tree);
-extern tree compute_array_index_type		(tree, tree);
+extern tree compute_array_index_type		(tree, tree, tsubst_flags_t);
 extern tree check_default_argument		(tree, tree);
 typedef int (*walk_namespaces_fn)		(tree, void *);
 extern int walk_namespaces			(walk_namespaces_fn,
@@ -4807,6 +4876,8 @@ extern void constrain_class_visibility		(tree);
 extern void import_export_decl			(tree);
 extern tree build_cleanup			(tree);
 extern tree build_offset_ref_call_from_tree	(tree, VEC(tree,gc) **);
+extern bool decl_constant_var_p			(tree);
+extern bool decl_maybe_constant_var_p		(tree);
 extern void check_default_args			(tree);
 extern void mark_used				(tree);
 extern void finish_static_data_member_decl	(tree, tree, bool, tree, int);
@@ -4846,6 +4917,7 @@ extern tree build_throw				(tree);
 extern int nothrow_libfn_p			(const_tree);
 extern void check_handlers			(tree);
 extern tree finish_noexcept_expr		(tree, tsubst_flags_t);
+extern void perform_deferred_noexcept_checks	(void);
 extern bool nothrow_spec_p			(const_tree);
 extern bool type_noexcept_p			(const_tree);
 extern bool type_throw_all_p			(const_tree);
@@ -4878,8 +4950,8 @@ extern tree build_aggr_init			(tree, tree, int,
 extern int is_class_type			(tree, int);
 extern tree get_type_value			(tree);
 extern tree build_zero_init			(tree, tree, bool);
-extern tree build_value_init			(tree);
-extern tree build_value_init_noctor		(tree);
+extern tree build_value_init			(tree, tsubst_flags_t);
+extern tree build_value_init_noctor		(tree, tsubst_flags_t);
 extern tree build_offset_ref			(tree, tree, bool);
 extern tree build_new				(VEC(tree,gc) **, tree, tree,
 						 VEC(tree,gc) **, int,
@@ -4905,6 +4977,7 @@ extern void yyungetc				(int, int);
 extern tree unqualified_name_lookup_error	(tree);
 extern tree unqualified_fn_lookup_error		(tree);
 extern tree build_lang_decl			(enum tree_code, tree, tree);
+extern tree build_lang_decl_loc			(location_t, enum tree_code, tree, tree);
 extern void retrofit_lang_decl			(tree);
 extern tree copy_decl				(tree);
 extern tree copy_type				(tree);
@@ -4919,15 +4992,19 @@ extern void init_method				(void);
 extern tree make_thunk				(tree, bool, tree, tree);
 extern void finish_thunk			(tree);
 extern void use_thunk				(tree, bool);
+extern bool trivial_fn_p			(tree);
+extern bool maybe_explain_implicit_delete	(tree);
 extern void synthesize_method			(tree);
 extern tree lazily_declare_fn			(special_function_kind,
 						 tree);
 extern tree skip_artificial_parms_for		(const_tree, tree);
 extern int num_artificial_parms_for		(const_tree);
 extern tree make_alias_for			(tree, tree);
-extern tree locate_copy				(tree, void *);
-extern tree locate_ctor				(tree, void *);
-extern tree locate_dtor				(tree, void *);
+extern tree get_copy_ctor			(tree);
+extern tree get_copy_assign			(tree);
+extern tree get_default_ctor			(tree);
+extern tree get_dtor				(tree);
+extern tree locate_ctor				(tree);
 
 /* In optimize.c */
 extern bool maybe_clone_body			(tree);
@@ -4953,7 +5030,7 @@ extern void append_type_to_template_for_access_check (tree, tree, tree,
 extern tree splice_late_return_type		(tree, tree);
 extern bool is_auto				(const_tree);
 extern tree process_template_parm		(tree, location_t, tree, 
-						 bool, bool);
+						 bool, bool, unsigned);
 extern tree end_template_parm_list		(tree);
 extern void end_template_decl			(void);
 extern tree maybe_update_decl_type		(tree, tree);
@@ -5039,6 +5116,7 @@ extern tree get_template_innermost_arguments	(const_tree);
 extern tree get_template_argument_pack_elems	(const_tree);
 extern tree get_function_template_decl		(const_tree);
 extern tree resolve_nondeduced_context		(tree);
+extern hashval_t iterative_hash_template_arg (tree arg, hashval_t val);
 
 /* in repo.c */
 extern void init_repo				(void);
@@ -5068,6 +5146,7 @@ extern int accessible_p				(tree, tree, bool);
 extern tree lookup_field_1			(tree, tree, bool);
 extern tree lookup_field			(tree, tree, int, bool);
 extern int lookup_fnfields_1			(tree, tree);
+extern tree lookup_fnfields_slot		(tree, tree);
 extern int class_method_index_for_fn		(tree, tree);
 extern tree lookup_fnfields			(tree, tree, int);
 extern tree lookup_member			(tree, tree, int, bool);
@@ -5082,7 +5161,7 @@ extern int at_function_scope_p			(void);
 extern bool at_class_scope_p			(void);
 extern bool at_namespace_scope_p		(void);
 extern tree context_for_name_lookup		(tree);
-extern tree lookup_conversions			(tree, bool);
+extern tree lookup_conversions			(tree);
 extern tree binfo_from_vbase			(tree);
 extern tree binfo_for_vbase			(tree, tree);
 extern tree look_for_overrides_here		(tree, tree);
@@ -5123,6 +5202,7 @@ extern void pop_to_parent_deferring_access_checks (void);
 extern void perform_access_checks		(VEC (deferred_access_check,gc)*);
 extern void perform_deferred_access_checks	(void);
 extern void perform_or_defer_access_check	(tree, tree, tree);
+extern bool speculative_access_check		(tree, tree, tree, bool);
 extern int stmts_are_full_exprs_p		(void);
 extern void init_cp_semantics			(void);
 extern tree do_poplevel				(tree);
@@ -5146,6 +5226,9 @@ extern void finish_for_init_stmt		(tree);
 extern void finish_for_cond			(tree, tree);
 extern void finish_for_expr			(tree, tree);
 extern void finish_for_stmt			(tree);
+extern tree begin_range_for_stmt		(void);
+extern void finish_range_for_decl		(tree, tree, tree);
+extern void finish_range_for_stmt		(tree);
 extern tree finish_break_stmt			(void);
 extern tree finish_continue_stmt		(void);
 extern tree begin_switch_stmt			(void);
@@ -5165,7 +5248,16 @@ extern void finish_handler			(tree);
 extern void finish_cleanup			(tree, tree);
 extern bool literal_type_p (tree);
 extern tree validate_constexpr_fundecl (tree);
+extern tree register_constexpr_fundef (tree, tree);
+extern bool check_constexpr_ctor_body (tree, tree);
 extern tree ensure_literal_type_for_constexpr_object (tree);
+extern bool potential_constant_expression (tree, tsubst_flags_t);
+extern tree cxx_constant_value (tree);
+extern tree maybe_constant_value (tree);
+extern tree maybe_constant_init (tree);
+extern bool is_sub_constant_expr (tree);
+extern bool reduced_constant_expression_p (tree);
+extern VEC(tree,heap)* cx_error_context (void);
 
 enum {
   BCS_NO_SCOPE = 1,
@@ -5186,7 +5278,7 @@ extern tree finish_stmt_expr_expr		(tree, tree);
 extern tree finish_stmt_expr			(tree, bool);
 extern tree stmt_expr_value_expr		(tree);
 bool empty_expr_stmt_p				(tree);
-extern tree perform_koenig_lookup		(tree, VEC(tree,gc) *);
+extern tree perform_koenig_lookup		(tree, VEC(tree,gc) *, bool);
 extern tree finish_call_expr			(tree, VEC(tree,gc) **, bool,
 						 bool, tsubst_flags_t);
 extern tree finish_increment_expr		(tree, enum tree_code);
@@ -5279,16 +5371,17 @@ extern bool pod_type_p				(const_tree);
 extern bool layout_pod_type_p			(const_tree);
 extern bool std_layout_type_p			(const_tree);
 extern bool trivial_type_p			(const_tree);
+extern bool trivially_copyable_p		(const_tree);
 extern bool type_has_nontrivial_default_init	(const_tree);
 extern bool type_has_nontrivial_copy_init	(const_tree);
 extern bool class_tmpl_impl_spec_p		(const_tree);
 extern int zero_init_p				(const_tree);
 extern tree strip_typedefs			(tree);
-extern void cp_set_underlying_type		(tree);
 extern tree copy_binfo				(tree, tree, tree,
 						 tree *, int);
 extern int member_p				(const_tree);
-extern cp_lvalue_kind real_lvalue_p		(tree);
+extern cp_lvalue_kind real_lvalue_p		(const_tree);
+extern cp_lvalue_kind lvalue_kind		(const_tree);
 extern bool lvalue_or_rvalue_with_address_p	(const_tree);
 extern bool builtin_valid_in_constant_expr_p    (const_tree);
 extern tree build_min				(enum tree_code, tree, ...);
@@ -5301,6 +5394,7 @@ extern tree get_target_expr			(tree);
 extern tree build_cplus_array_type		(tree, tree);
 extern tree build_array_of_n_type		(tree, int);
 extern tree build_array_copy			(tree);
+extern tree build_vec_init_expr			(tree, tree);
 extern tree hash_tree_cons			(tree, tree, tree);
 extern tree hash_tree_chain			(tree, tree);
 extern tree build_qualified_name		(tree, tree, tree, bool);
@@ -5344,6 +5438,7 @@ extern int count_trees				(tree);
 extern int char_type_p				(tree);
 extern void verify_stmt_tree			(tree);
 extern linkage_kind decl_linkage		(tree);
+extern duration_kind decl_storage_duration	(tree);
 extern tree cp_walk_subtrees (tree*, int*, walk_tree_fn,
 			      void*, struct pointer_set_t*);
 #define cp_walk_tree(a,b,c,d) \
@@ -5364,7 +5459,7 @@ extern void cxx_print_xnode			(FILE *, tree, int);
 extern void cxx_print_decl			(FILE *, tree, int);
 extern void cxx_print_type			(FILE *, tree, int);
 extern void cxx_print_identifier		(FILE *, tree, int);
-extern void cxx_print_error_function	(struct diagnostic_context *,
+extern void cxx_print_error_function		(diagnostic_context *,
 						 const char *,
 						 struct diagnostic_info *);
 
@@ -5374,12 +5469,15 @@ extern int string_conv_p			(const_tree, const_tree, int);
 extern tree cp_truthvalue_conversion		(tree);
 extern tree condition_conversion		(tree);
 extern tree require_complete_type		(tree);
+extern tree require_complete_type_sfinae	(tree, tsubst_flags_t);
 extern tree complete_type			(tree);
 extern tree complete_type_or_else		(tree, tree);
+extern tree complete_type_or_maybe_complain	(tree, tree, tsubst_flags_t);
 extern int type_unknown_p			(const_tree);
 enum { ce_derived, ce_normal, ce_exact };
 extern bool comp_except_specs			(const_tree, const_tree, int);
 extern bool comptypes				(tree, tree, int);
+extern bool same_type_ignoring_top_level_qualifiers_p (tree, tree);
 extern bool compparms				(const_tree, const_tree);
 extern int comp_cv_qualification		(const_tree, const_tree);
 extern int comp_cv_qual_signature		(tree, tree);
@@ -5413,12 +5511,15 @@ extern tree build_x_binary_op			(enum tree_code, tree,
 extern tree build_x_array_ref			(tree, tree, tsubst_flags_t);
 extern tree build_x_unary_op			(enum tree_code, tree,
                                                  tsubst_flags_t);
+extern tree cp_build_addr_expr			(tree, tsubst_flags_t);
+extern tree cp_build_addr_expr_strict		(tree, tsubst_flags_t);
 extern tree cp_build_unary_op                   (enum tree_code, tree, int, 
                                                  tsubst_flags_t);
 extern tree unary_complex_lvalue		(enum tree_code, tree);
 extern tree build_x_conditional_expr		(tree, tree, tree, 
                                                  tsubst_flags_t);
-extern tree build_x_compound_expr_from_list	(tree, expr_list_kind);
+extern tree build_x_compound_expr_from_list	(tree, expr_list_kind,
+						 tsubst_flags_t);
 extern tree build_x_compound_expr_from_vec	(VEC(tree,gc) *, const char *);
 extern tree build_x_compound_expr		(tree, tree, tsubst_flags_t);
 extern tree build_compound_expr                 (location_t, tree, tree);
@@ -5439,7 +5540,8 @@ extern int comp_ptr_ttypes			(tree, tree);
 extern bool comp_ptr_ttypes_const		(tree, tree);
 extern bool error_type_p			(const_tree);
 extern int ptr_reasonably_similar		(const_tree, const_tree);
-extern tree build_ptrmemfunc			(tree, tree, int, bool);
+extern tree build_ptrmemfunc			(tree, tree, int, bool,
+						 tsubst_flags_t);
 extern int cp_type_quals			(const_tree);
 extern int type_memfn_quals			(const_tree);
 extern tree apply_memfn_quals			(tree, cp_cv_quals);
@@ -5468,7 +5570,8 @@ extern tree non_reference			(tree);
 extern tree lookup_anon_field			(tree, tree);
 extern bool invalid_nonstatic_memfn_p		(const_tree, tsubst_flags_t);
 extern tree convert_member_func_to_ptr		(tree, tree);
-extern tree convert_ptrmem			(tree, tree, bool, bool);
+extern tree convert_ptrmem			(tree, tree, bool, bool,
+						 tsubst_flags_t);
 extern int lvalue_or_else			(tree, enum lvalue_use,
                                                  tsubst_flags_t);
 extern void check_template_keyword		(tree);
@@ -5520,7 +5623,7 @@ extern alias_set_type cxx_get_alias_set		(tree);
 extern bool cxx_warn_unused_global_decl		(const_tree);
 extern size_t cp_tree_size			(enum tree_code);
 extern bool cp_var_mod_type_p			(tree, tree);
-extern void cxx_initialize_diagnostics		(struct diagnostic_context *);
+extern void cxx_initialize_diagnostics		(diagnostic_context *);
 extern int cxx_types_compatible_p		(tree, tree);
 extern void init_shadowed_var_for_decl		(void);
 

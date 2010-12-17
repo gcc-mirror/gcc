@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "rtl.h"
 #include "tm_p.h"
 #include "hard-reg-set.h"
@@ -466,7 +466,7 @@ dump_insn_vector (rtx_vec_t succs)
   int i;
   rtx succ;
 
-  for (i = 0; VEC_iterate (rtx, succs, i, succ); i++)
+  FOR_EACH_VEC_ELT (rtx, succs, i, succ)
     if (succ)
       dump_insn (succ);
     else

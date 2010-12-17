@@ -1,6 +1,6 @@
 /* PR c++/35244 */
 /* { dg-do compile } */
-/* { dg-require-effective-target tls_native } */
+/* { dg-require-effective-target tls } */
 /* { dg-options "-fopenmp" } */
 
 int v1;

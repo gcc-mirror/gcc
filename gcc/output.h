@@ -165,9 +165,6 @@ extern void merge_weak (tree, tree);
 /* Emit any pending weak declarations.  */
 extern void weak_finish (void);
 
-/* Emit any pending emutls declarations and initializations.  */
-extern void emutls_finish (void);
-
 /* Return the default TLS model for a given variable.  */
 extern enum tls_model decl_default_tls_model (const_tree);
 
@@ -179,6 +176,11 @@ extern enum tls_model decl_default_tls_model (const_tree);
    Accept an exact spelling or a decimal number.
    Prefixes such as % are optional.  */
 extern int decode_reg_name (const char *);
+
+/* Similar to decode_reg_name, but takes an extra parameter that is a
+   pointer to the number of (internal) registers described by the
+   external name.  */
+extern int decode_reg_name_and_count (const char *, int *);
 
 extern void assemble_alias (tree, tree);
 
@@ -266,6 +268,10 @@ extern bool default_assemble_integer (rtx, unsigned int, int);
    the constant, otherwise 0.  If FORCE is nonzero the constant must
    be outputable. */
 extern bool assemble_integer (rtx, unsigned, unsigned, int);
+
+/* Return section for TEXT_SECITON_NAME if DECL or DECL_SECTION_NAME (DECL)
+   is NULL.  */
+extern section *get_named_text_section (tree, const char *, const char *);
 
 /* An interface to assemble_integer for the common case in which a value is
    fully aligned and must be printed.  VALUE is the value of the integer
@@ -479,10 +485,7 @@ enum section_category
 
   SECCAT_BSS,
   SECCAT_SBSS,
-  SECCAT_TBSS,
-
-  SECCAT_EMUTLS_VAR,
-  SECCAT_EMUTLS_TMPL
+  SECCAT_TBSS
 };
 
 /* Information that is provided by all instances of the section type.  */
@@ -595,6 +598,9 @@ extern bool unlikely_text_section_p (section *);
 extern void switch_to_section (section *);
 extern void output_section_asm_op (const void *);
 
+extern void default_asm_output_source_filename (FILE *, const char *);
+extern void output_file_directive (FILE *, const char *);
+
 extern unsigned int default_section_type_flags (tree, const char *, int);
 
 extern bool have_global_bss_p (void);
@@ -630,17 +636,23 @@ extern void default_globalize_label (FILE *, const char *);
 extern void default_globalize_decl_name (FILE *, tree);
 extern void default_emit_unwind_label (FILE *, tree, int, int);
 extern void default_emit_except_table_label (FILE *);
+extern void default_generate_internal_label (char *, const char *,
+					     unsigned long);
 extern void default_internal_label (FILE *, const char *, unsigned long);
 extern void default_asm_declare_constant_name (FILE *, const char *,
 					       const_tree, HOST_WIDE_INT);
 extern void default_file_start (void);
 extern void file_end_indicate_exec_stack (void);
+extern void file_end_indicate_split_stack (void);
 
 extern void default_elf_asm_output_external (FILE *file, tree,
 					     const char *);
 extern int maybe_assemble_visibility (tree);
 
 extern int default_address_cost (rtx, bool);
+
+/* Output stack usage information.  */
+extern void output_stack_usage (void);
 
 /* dbxout helper functions */
 #if defined DBX_DEBUGGING_INFO || defined XCOFF_DEBUGGING_INFO

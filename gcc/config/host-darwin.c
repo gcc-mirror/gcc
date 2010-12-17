@@ -1,5 +1,5 @@
 /* Darwin host-specific hook definitions.
-   Copyright (C) 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2007, 2010 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -20,8 +20,7 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include <sys/mman.h>
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "config/host-darwin.h"
 
 /* Yes, this is really supposed to work.  */
@@ -59,7 +58,7 @@ darwin_gt_pch_use_address (void *addr, size_t sz, int fd, size_t off)
   sz = (sz + pagesize - 1) / pagesize * pagesize;
 
   if (munmap (pch_address_space + sz, sizeof (pch_address_space) - sz) != 0)
-    fatal_error ("couldn't unmap pch_address_space: %m");
+    fatal_error ("couldn%'t unmap pch_address_space: %m");
 
   if (ret)
     {

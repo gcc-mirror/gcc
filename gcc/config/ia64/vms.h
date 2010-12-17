@@ -183,12 +183,9 @@ typedef struct crtl_name_spec
 	  }                                                                \
     } while (0)
 
-#undef OPTIMIZATION_OPTIONS
-#define OPTIMIZATION_OPTIONS(LEVEL,SIZE)                   \
-  do {                                                     \
-       flag_merge_constants = 0;                           \
-       ia64_optimization_options ((LEVEL), (SIZE));        \
-  } while (0)
+#undef SUBTARGET_OPTIMIZATION_OPTIONS
+#define SUBTARGET_OPTIMIZATION_OPTIONS			\
+  { OPT_LEVELS_ALL, OPT_fmerge_constants, NULL, 0 }
 
 /* Define this to be nonzero if static stack checking is supported.  */
 #define STACK_CHECK_STATIC_BUILTIN 1

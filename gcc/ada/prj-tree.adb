@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Osint;   use Osint;
+with Prj.Env; use Prj.Env;
 with Prj.Err;
 
 with Ada.Unchecked_Deallocation;
@@ -558,11 +559,12 @@ package body Prj.Tree is
 
    function Expression_Kind_Of
      (Node    : Project_Node_Id;
-      In_Tree : Project_Node_Tree_Ref) return Variable_Kind is
+      In_Tree : Project_Node_Tree_Ref) return Variable_Kind
+   is
    begin
       pragma Assert
         (Present (Node)
-           and then
+           and then -- should use Nkind_In here ??? why not???
              (In_Tree.Project_Nodes.Table (Node).Kind = N_Literal_String
                 or else
               In_Tree.Project_Nodes.Table (Node).Kind = N_Attribute_Declaration
@@ -570,7 +572,7 @@ package body Prj.Tree is
               In_Tree.Project_Nodes.Table (Node).Kind = N_Variable_Declaration
                 or else
               In_Tree.Project_Nodes.Table (Node).Kind =
-                       N_Typed_Variable_Declaration
+                                                  N_Typed_Variable_Declaration
                 or else
               In_Tree.Project_Nodes.Table (Node).Kind = N_Package_Declaration
                 or else
@@ -580,9 +582,9 @@ package body Prj.Tree is
                 or else
               In_Tree.Project_Nodes.Table (Node).Kind = N_Variable_Reference
                 or else
-              In_Tree.Project_Nodes.Table (Node).Kind =
-                        N_Attribute_Reference));
-
+              In_Tree.Project_Nodes.Table (Node).Kind = N_Attribute_Reference
+                or else
+              In_Tree.Project_Nodes.Table (Node).Kind = N_External_Value));
       return In_Tree.Project_Nodes.Table (Node).Expr_Kind;
    end Expression_Kind_Of;
 
@@ -1836,7 +1838,7 @@ package body Prj.Tree is
    begin
       pragma Assert
         (Present (Node)
-           and then
+           and then -- should use Nkind_In here ??? why not???
              (In_Tree.Project_Nodes.Table (Node).Kind = N_Literal_String
                 or else
               In_Tree.Project_Nodes.Table (Node).Kind = N_Attribute_Declaration
@@ -1844,7 +1846,7 @@ package body Prj.Tree is
               In_Tree.Project_Nodes.Table (Node).Kind = N_Variable_Declaration
                 or else
               In_Tree.Project_Nodes.Table (Node).Kind =
-                N_Typed_Variable_Declaration
+                                                  N_Typed_Variable_Declaration
                 or else
               In_Tree.Project_Nodes.Table (Node).Kind = N_Package_Declaration
                 or else
@@ -1854,8 +1856,9 @@ package body Prj.Tree is
                 or else
               In_Tree.Project_Nodes.Table (Node).Kind = N_Variable_Reference
                 or else
-              In_Tree.Project_Nodes.Table (Node).Kind =
-                N_Attribute_Reference));
+              In_Tree.Project_Nodes.Table (Node).Kind = N_Attribute_Reference
+                or else
+              In_Tree.Project_Nodes.Table (Node).Kind = N_External_Value));
       In_Tree.Project_Nodes.Table (Node).Expr_Kind := To;
    end Set_Expression_Kind_Of;
 

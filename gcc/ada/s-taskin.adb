@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -98,6 +98,7 @@ package body System.Tasking is
       Parent           : Task_Id;
       Elaborated       : Access_Boolean;
       Base_Priority    : System.Any_Priority;
+      Base_CPU         : System.Multiprocessors.CPU_Range;
       Task_Info        : System.Task_Info.Task_Info_Type;
       Stack_Size       : System.Parameters.Size_Type;
       T                : Task_Id;
@@ -119,6 +120,7 @@ package body System.Tasking is
 
       T.Common.Parent                   := Parent;
       T.Common.Base_Priority            := Base_Priority;
+      T.Common.Base_CPU                 := Base_CPU;
       T.Common.Current_Priority         := 0;
       T.Common.Protected_Action_Nesting := 0;
       T.Common.Call                     := null;
@@ -170,12 +172,19 @@ package body System.Tasking is
    --  because we use the value -1 to indicate the default main priority, and
    --  that is of course not in Priority'range.
 
+   Main_CPU : Integer;
+   pragma Import (C, Main_CPU, "__gl_main_cpu");
+   --  Affinity for main task. Note that this is of type Integer, not
+   --  CPU_Range, because we use the value -1 to indicate the unassigned
+   --  affinity, and that is of course not in CPU_Range'Range.
+
    Initialized : Boolean := False;
    --  Used to prevent multiple calls to Initialize
 
    procedure Initialize is
       T             : Task_Id;
       Base_Priority : Any_Priority;
+      Base_CPU      : System.Multiprocessors.CPU_Range;
       Success       : Boolean;
 
    begin
@@ -192,9 +201,14 @@ package body System.Tasking is
          then Default_Priority
          else Priority (Main_Priority));
 
+      Base_CPU :=
+        (if Main_CPU = Unspecified_CPU
+         then System.Multiprocessors.Not_A_Specific_CPU
+         else System.Multiprocessors.CPU_Range (Main_CPU));
+
       T := STPO.New_ATCB (0);
       Initialize_ATCB
-        (null, null, Null_Address, Null_Task, null, Base_Priority,
+        (null, null, Null_Address, Null_Task, null, Base_Priority, Base_CPU,
          Task_Info.Unspecified_Task_Info, 0, T, Success);
       pragma Assert (Success);
 

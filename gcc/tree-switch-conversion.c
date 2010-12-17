@@ -80,8 +80,6 @@ eight) times the number of the actual switch branches. */
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include <signal.h>
-
 #include "line-map.h"
 #include "params.h"
 #include "flags.h"
@@ -96,6 +94,7 @@ eight) times the number of the actual switch branches. */
 #include "gimple-pretty-print.h"
 #include "tree-dump.h"
 #include "timevar.h"
+#include "langhooks.h"
 
 /* The main structure of the pass.  */
 struct switch_conv_info
@@ -155,6 +154,12 @@ struct switch_conv_info
   /* String reason why the case wasn't a good candidate that is written to the
      dump file, if there is one.  */
   const char *reason;
+
+  /* Parameters for expand_switch_using_bit_tests.  Should be computed
+     the same way as in expand_case.  */
+  unsigned int bit_test_uniq;
+  unsigned int bit_test_count;
+  basic_block bit_test_bb[2];
 };
 
 /* Global pass info.  */
@@ -173,7 +178,7 @@ check_range (gimple swtch)
   tree range_max;
 
   /* The gimplifier has already sorted the cases by CASE_LOW and ensured there
-     is a default label which is the last in the vector.  */
+     is a default label which is the first in the vector.  */
 
   min_case = gimple_switch_label (swtch, 1);
   info.range_min = CASE_LOW (min_case);
@@ -233,7 +238,26 @@ check_process_case (tree cs)
       info.default_count = e->count;
     }
   else
-    info.other_count += e->count;
+    {
+      int i;
+      info.other_count += e->count;
+      for (i = 0; i < 2; i++)
+	if (info.bit_test_bb[i] == label_bb)
+	  break;
+	else if (info.bit_test_bb[i] == NULL)
+	  {
+	    info.bit_test_bb[i] = label_bb;
+	    info.bit_test_uniq++;
+	    break;
+	  }
+      if (i == 2)
+	info.bit_test_uniq = 3;
+      if (CASE_HIGH (cs) != NULL_TREE
+	  && ! tree_int_cst_equal (CASE_LOW (cs), CASE_HIGH (cs)))
+	info.bit_test_count += 2;
+      else
+	info.bit_test_count++;
+    }
 
   if (!label_bb)
     {
@@ -335,13 +359,10 @@ create_temp_arrays (void)
 {
   int i;
 
-  info.default_values = (tree *) xcalloc (info.phi_count, sizeof (tree));
-  info.constructors = (VEC (constructor_elt, gc) **) xcalloc (info.phi_count,
-							      sizeof (tree));
-  info.target_inbound_names = (tree *) xcalloc (info.phi_count, sizeof (tree));
-  info.target_outbound_names = (tree *) xcalloc (info.phi_count,
-						 sizeof (tree));
-
+  info.default_values = XCNEWVEC (tree, info.phi_count * 3);
+  info.constructors = XCNEWVEC (VEC (constructor_elt, gc) *, info.phi_count);
+  info.target_inbound_names = info.default_values + info.phi_count;
+  info.target_outbound_names = info.target_inbound_names + info.phi_count;
   for (i = 0; i < info.phi_count; i++)
     info.constructors[i]
       = VEC_alloc (constructor_elt, gc, tree_low_cst (info.range_size, 1) + 1);
@@ -354,10 +375,8 @@ create_temp_arrays (void)
 static void
 free_temp_arrays (void)
 {
-  free (info.constructors);
-  free (info.default_values);
-  free (info.target_inbound_names);
-  free (info.target_outbound_names);
+  XDELETEVEC (info.constructors);
+  XDELETEVEC (info.default_values);
 }
 
 /* Populate the array of default values in the order of phi nodes.
@@ -467,19 +486,91 @@ build_constructors (gimple swtch)
 static tree
 constructor_contains_same_values_p (VEC (constructor_elt, gc) *vec)
 {
-  int i, len = VEC_length (constructor_elt, vec);
+  unsigned int i;
   tree prev = NULL_TREE;
+  constructor_elt *elt;
 
-  for (i = 0; i < len; i++)
+  FOR_EACH_VEC_ELT (constructor_elt, vec, i, elt)
     {
-      constructor_elt *elt = VEC_index (constructor_elt, vec, i);
-
       if (!prev)
 	prev = elt->value;
       else if (!operand_equal_p (elt->value, prev, OEP_ONLY_CONST))
 	return NULL_TREE;
     }
   return prev;
+}
+
+/* Return type which should be used for array elements, either TYPE,
+   or for integral type some smaller integral type that can still hold
+   all the constants.  */
+
+static tree
+array_value_type (gimple swtch, tree type, int num)
+{
+  unsigned int i, len = VEC_length (constructor_elt, info.constructors[num]);
+  constructor_elt *elt;
+  enum machine_mode mode;
+  int sign = 0;
+  tree smaller_type;
+
+  if (!INTEGRAL_TYPE_P (type))
+    return type;
+
+  mode = GET_CLASS_NARROWEST_MODE (GET_MODE_CLASS (TYPE_MODE (type)));
+  if (GET_MODE_SIZE (TYPE_MODE (type)) <= GET_MODE_SIZE (mode))
+    return type;
+
+  if (len < (optimize_bb_for_size_p (gimple_bb (swtch)) ? 2 : 32))
+    return type;
+
+  FOR_EACH_VEC_ELT (constructor_elt, info.constructors[num], i, elt)
+    {
+      double_int cst;
+
+      if (TREE_CODE (elt->value) != INTEGER_CST)
+	return type;
+
+      cst = TREE_INT_CST (elt->value);
+      while (1)
+	{
+	  unsigned int prec = GET_MODE_BITSIZE (mode);
+	  if (prec > HOST_BITS_PER_WIDE_INT)
+	    return type;
+
+	  if (sign >= 0
+	      && double_int_equal_p (cst, double_int_zext (cst, prec)))
+	    {
+	      if (sign == 0
+		  && double_int_equal_p (cst, double_int_sext (cst, prec)))
+		break;
+	      sign = 1;
+	      break;
+	    }
+	  if (sign <= 0
+	      && double_int_equal_p (cst, double_int_sext (cst, prec)))
+	    {
+	      sign = -1;
+	      break;
+	    }
+
+	  if (sign == 1)
+	    sign = 0;
+
+	  mode = GET_MODE_WIDER_MODE (mode);
+	  if (mode == VOIDmode
+	      || GET_MODE_SIZE (mode) >= GET_MODE_SIZE (TYPE_MODE (type)))
+	    return type;
+	}
+    }
+
+  if (sign == 0)
+    sign = TYPE_UNSIGNED (type) ? 1 : -1;
+  smaller_type = lang_hooks.types.type_for_mode (mode, sign >= 0);
+  if (GET_MODE_SIZE (TYPE_MODE (type))
+      <= GET_MODE_SIZE (TYPE_MODE (smaller_type)))
+    return type;
+
+  return smaller_type;
 }
 
 /* Create an appropriate array type and declaration and assemble a static array
@@ -511,12 +602,22 @@ build_one_array (gimple swtch, int num, tree arr_index_type, gimple phi,
     load = gimple_build_assign (name, cst);
   else
     {
-      tree array_type, ctor, decl, value_type, fetch;
+      tree array_type, ctor, decl, value_type, fetch, default_type;
 
-      value_type = TREE_TYPE (info.default_values[num]);
+      default_type = TREE_TYPE (info.default_values[num]);
+      value_type = array_value_type (swtch, default_type, num);
       array_type = build_array_type (value_type, arr_index_type);
+      if (default_type != value_type)
+	{
+	  unsigned int i;
+	  constructor_elt *elt;
+
+	  FOR_EACH_VEC_ELT (constructor_elt, info.constructors[num], i, elt)
+	    elt->value = fold_convert (value_type, elt->value);
+	}
       ctor = build_constructor (array_type, info.constructors[num]);
       TREE_CONSTANT (ctor) = true;
+      TREE_STATIC (ctor) = true;
 
       decl = build_decl (loc, VAR_DECL, NULL_TREE, array_type);
       TREE_STATIC (decl) = 1;
@@ -532,6 +633,12 @@ build_one_array (gimple swtch, int num, tree arr_index_type, gimple phi,
 
       fetch = build4 (ARRAY_REF, value_type, decl, tidx, NULL_TREE,
 		      NULL_TREE);
+      if (default_type != value_type)
+	{
+	  fetch = fold_convert (default_type, fetch);
+	  fetch = force_gimple_operand_gsi (&gsi, fetch, true, NULL_TREE,
+					    true, GSI_SAME_STMT);
+	}
       load = gimple_build_assign (name, fetch);
     }
 
@@ -694,9 +801,11 @@ gen_inbound_check (gimple swtch)
 
   /* Make sure we do not generate arithmetics in a subrange.  */
   if (TREE_TYPE (TREE_TYPE (info.index_expr)))
-    utype = unsigned_type_for (TREE_TYPE (TREE_TYPE (info.index_expr)));
+    utype = lang_hooks.types.type_for_mode
+      (TYPE_MODE (TREE_TYPE (TREE_TYPE (info.index_expr))), 1);
   else
-    utype = unsigned_type_for (TREE_TYPE (info.index_expr));
+    utype = lang_hooks.types.type_for_mode
+      (TYPE_MODE (TREE_TYPE (info.index_expr)), 1);
 
   /* (end of) block 0 */
   gsi = gsi_for_stmt (info.arr_ref_first);
@@ -814,6 +923,10 @@ process_switch (gimple swtch)
   info.default_prob = 0;
   info.default_count = 0;
   info.other_count = 0;
+  info.bit_test_uniq = 0;
+  info.bit_test_count = 0;
+  info.bit_test_bb[0] = NULL;
+  info.bit_test_bb[1] = NULL;
 
   /* An ERROR_MARK occurs for various reasons including invalid data type.
      (comment from stmt.c) */
@@ -836,6 +949,18 @@ process_switch (gimple swtch)
 	  fprintf (dump_file, "Processing of case %i failed\n", i);
 	return false;
       }
+
+  if (info.bit_test_uniq <= 2)
+    {
+      rtl_profile_for_bb (gimple_bb (swtch));
+      if (expand_switch_using_bit_tests_p (gimple_switch_index (swtch),
+					   info.range_size, info.bit_test_uniq,
+					   info.bit_test_count))
+	{
+	  info.reason = "  Expanding as bit test is preferable\n";
+	  return false;
+	}
+    }
 
   if (!check_final_bb ())
     return false;

@@ -48,8 +48,9 @@ import javax.swing.text.Style;
 import javax.swing.text.StyledDocument;
 import java.io.Writer;
 import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Enumeration;
-import java.util.Stack;
 import java.awt.Color;
 
 /**
@@ -61,7 +62,7 @@ import java.awt.Color;
 public class MinimalHTMLWriter extends AbstractWriter 
 {
   private StyledDocument doc;
-  private Stack tagStack;
+  private Deque<String> tagStack;
   private boolean inFontTag = false;
 
   /**
@@ -73,7 +74,7 @@ public class MinimalHTMLWriter extends AbstractWriter
   {
     super(w, doc);
     this.doc = doc;
-    tagStack = new Stack();
+    tagStack = new ArrayDeque<String>();
   }
 
   /**
@@ -87,7 +88,7 @@ public class MinimalHTMLWriter extends AbstractWriter
   {
     super(w, doc, pos, len);
     this.doc = doc;
-    tagStack = new Stack();
+    tagStack = new ArrayDeque<String>();
   }
 
   /**
@@ -315,7 +316,7 @@ public class MinimalHTMLWriter extends AbstractWriter
   {
     if(doc instanceof DefaultStyledDocument)
       {
-	Enumeration styles = ((DefaultStyledDocument)doc).getStyleNames();
+	Enumeration<?> styles = ((DefaultStyledDocument)doc).getStyleNames();
 	while(styles.hasMoreElements())
 	  writeStyle(doc.getStyle((String)styles.nextElement()));
       }
@@ -332,7 +333,7 @@ public class MinimalHTMLWriter extends AbstractWriter
    */
   protected void writeAttributes(AttributeSet attr) throws IOException
   {
-    Enumeration attribs = attr.getAttributeNames();
+    Enumeration<?> attribs = attr.getAttributeNames();
     while(attribs.hasMoreElements())
       {
 	Object attribName = attribs.nextElement();
@@ -422,8 +423,8 @@ public class MinimalHTMLWriter extends AbstractWriter
    */
   private void endOpenTags() throws IOException
   {
-    while(!tagStack.empty())
-      write((String)tagStack.pop());
+    while(tagStack.size() > 0)
+      write(tagStack.pop());
 
     if( inFontTag() )
       {

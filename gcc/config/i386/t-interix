@@ -1,8 +1,8 @@
 LIB1ASMSRC = i386/cygwin.asm
-LIB1ASMFUNCS = _chkstk
+LIB1ASMFUNCS = _chkstk _chkstk_ms
 
 winnt.o: $(srcdir)/config/i386/winnt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) $(RTL_H) $(REGS_H) hard-reg-set.h output.h $(TREE_H) flags.h \
-  $(TM_P_H) toplev.h $(HASHTAB_H) $(GGC_H)
+  $(TM_P_H) $(HASHTAB_H) $(GGC_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/i386/winnt.c

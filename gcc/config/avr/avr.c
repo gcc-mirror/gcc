@@ -34,6 +34,7 @@
 #include "tree.h"
 #include "output.h"
 #include "expr.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "obstack.h"
 #include "function.h"
@@ -48,6 +49,7 @@
 /* Maximal allowed offset for an address in the LD command */
 #define MAX_LD_OFFSET(MODE) (64 - (signed)GET_MODE_SIZE (MODE))
 
+static void avr_option_override (void);
 static int avr_naked_function_p (tree);
 static int interrupt_function_p (tree);
 static int signal_function_p (tree);
@@ -58,7 +60,7 @@ static int get_sequence_length (rtx insns);
 static int sequent_regs_live (void);
 static const char *ptrreg_to_str (int);
 static const char *cond_string (enum rtx_code);
-static int avr_num_arg_regs (enum machine_mode, tree);
+static int avr_num_arg_regs (enum machine_mode, const_tree);
 
 static RTX_CODE compare_condition (rtx insn);
 static rtx avr_legitimize_address (rtx, rtx, enum machine_mode);
@@ -90,6 +92,11 @@ static bool avr_hard_regno_scratch_ok (unsigned int);
 static unsigned int avr_case_values_threshold (void);
 static bool avr_frame_pointer_required_p (void);
 static bool avr_can_eliminate (const int, const int);
+static bool avr_class_likely_spilled_p (reg_class_t c);
+static rtx avr_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+			     const_tree, bool);
+static void avr_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+				      const_tree, bool);
 
 /* Allocate registers from r25 to r8 for parameters for function calls.  */
 #define FIRST_CUM_REG 26
@@ -126,6 +133,13 @@ static const struct attribute_spec avr_attribute_table[] =
   { "OS_main",   0, 0, false, true,  true,   avr_handle_fntype_attribute },
   { NULL,        0, 0, false, false, false, NULL }
 };
+
+/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
+static const struct default_options avr_option_optimization_table[] =
+  {
+    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -165,6 +179,10 @@ static const struct attribute_spec avr_attribute_table[] =
 #define TARGET_ADDRESS_COST avr_address_cost
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG avr_reorg
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG avr_function_arg
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE avr_function_arg_advance
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS avr_legitimize_address
@@ -191,10 +209,19 @@ static const struct attribute_spec avr_attribute_table[] =
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE avr_can_eliminate
 
+#undef TARGET_CLASS_LIKELY_SPILLED_P
+#define TARGET_CLASS_LIKELY_SPILLED_P avr_class_likely_spilled_p
+
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE avr_option_override
+
+#undef TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE avr_option_optimization_table
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-void
-avr_override_options (void)
+static void
+avr_option_override (void)
 {
   const struct mcu_type_s *t;
 
@@ -409,7 +436,7 @@ rtx avr_builtin_setjmp_frame_value (void)
 /* Return contents of MEM at frame pointer + stack size + 1 (+2 if 3 byte PC).
    This is return address of function.  */
 rtx 
-avr_return_addr_rtx (int count, const_rtx tem)
+avr_return_addr_rtx (int count, rtx tem)
 {
   rtx r;
     
@@ -738,6 +765,9 @@ expand_prologue (void)
             }
         }
     }
+
+  if (flag_stack_usage)
+    current_function_static_stack_size = cfun->machine->stack_usage;
 }
 
 /* Output summary at end of function prologue.  */
@@ -1136,7 +1166,7 @@ print_operand_address (FILE *file, rtx addr)
 	      output_addr_const (file, XEXP (x,0));
 	      fprintf (file,"+" HOST_WIDE_INT_PRINT_DEC ")", 2 * INTVAL (XEXP (x,1)));
 	      if (AVR_3_BYTE_PC)
-	        if (warning ( 0, "Pointer offset from symbol maybe incorrect."))
+	        if (warning (0, "pointer offset from symbol maybe incorrect"))
 		  {
 		    output_addr_const (stderr, addr);
 		    fprintf(stderr,"\n");
@@ -1529,20 +1559,14 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype, rtx libname,
 {
   cum->nregs = 18;
   cum->regno = FIRST_CUM_REG;
-  if (!libname && fntype)
-    {
-      int stdarg = (TYPE_ARG_TYPES (fntype) != 0
-                    && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
-                        != void_type_node));
-      if (stdarg)
-        cum->nregs = 0;
-    }
+  if (!libname && stdarg_p (fntype))
+    cum->nregs = 0;
 }
 
 /* Returns the number of registers to allocate for a function argument.  */
 
 static int
-avr_num_arg_regs (enum machine_mode mode, tree type)
+avr_num_arg_regs (enum machine_mode mode, const_tree type)
 {
   int size;
 
@@ -1560,9 +1584,9 @@ avr_num_arg_regs (enum machine_mode mode, tree type)
 /* Controls whether a function argument is passed
    in a register, and which register.  */
 
-rtx
-function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
-	      int named ATTRIBUTE_UNUSED)
+static rtx
+avr_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		  const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   int bytes = avr_num_arg_regs (mode, type);
 
@@ -1575,9 +1599,9 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
 /* Update the summarizer variable CUM to advance past an argument
    in the argument list.  */
    
-void
-function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
-		      int named ATTRIBUTE_UNUSED)
+static void
+avr_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			  const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   int bytes = avr_num_arg_regs (mode, type);
 
@@ -4232,6 +4256,8 @@ avr_rotate_bytes (rtx operands[])
     /* Work out if byte or word move is needed.  Odd byte rotates need QImode.
        Word move if no scratch is needed, otherwise use size of scratch.  */
     enum machine_mode move_mode = QImode;
+    int move_size, offset, size;
+
     if (num & 0xf)
       move_mode = QImode;
     else if ((mode == SImode && !same_reg) || !overlapped)
@@ -4247,11 +4273,11 @@ avr_rotate_bytes (rtx operands[])
     if (GET_MODE (scratch) == HImode && move_mode == QImode)
       scratch = simplify_gen_subreg (move_mode, scratch, HImode, 0); 
 
-    int move_size = GET_MODE_SIZE (move_mode);
+    move_size = GET_MODE_SIZE (move_mode);
     /* Number of bytes/words to rotate.  */
-    int offset = (num  >> 3) / move_size;
+    offset = (num  >> 3) / move_size;
     /* Number of moves needed.  */
-    int size = GET_MODE_SIZE (mode) / move_size;
+    size = GET_MODE_SIZE (mode) / move_size;
     /* Himode byte swap is special case to avoid a scratch register.  */
     if (mode == HImode && same_reg)
       {
@@ -4268,12 +4294,15 @@ avr_rotate_bytes (rtx operands[])
       }    
     else  
       {
+#define MAX_SIZE 8 /* GET_MODE_SIZE (DImode) / GET_MODE_SIZE (QImode)  */
 	/* Create linked list of moves to determine move order.  */
 	struct {
 	  rtx src, dst;
 	  int links;
-	} move[size + 8];
+	} move[MAX_SIZE + 8];
+	int blocked, moves;
 
+	gcc_assert (size <= MAX_SIZE);
 	/* Generate list of subreg moves.  */
 	for (i = 0; i < size; i++)
 	  {
@@ -4299,8 +4328,8 @@ avr_rotate_bytes (rtx operands[])
 		    break;
 		  }
 
-	int blocked = -1;
-	int moves = 0;
+	blocked = -1;
+	moves = 0;
 	/* Go through move list and perform non-conflicting moves.  As each
 	   non-overlapping move is made, it may remove other conflicts
 	   so the process is repeated until no conflicts remain.  */
@@ -4312,18 +4341,21 @@ avr_rotate_bytes (rtx operands[])
 	       src already.  */
 	    for (i = 0; i < size; i++)
 	      if (move[i].src != NULL_RTX)
-		if  (move[i].links == -1 || move[move[i].links].src == NULL_RTX)
-		  {
-		    moves++;
-		    /* Ignore NOP moves to self.  */
-		    if (!rtx_equal_p (move[i].dst, move[i].src))
-		      emit_move_insn (move[i].dst, move[i].src);
+		{
+		  if (move[i].links == -1
+		      || move[move[i].links].src == NULL_RTX)
+		    {
+		      moves++;
+		      /* Ignore NOP moves to self.  */
+		      if (!rtx_equal_p (move[i].dst, move[i].src))
+			emit_move_insn (move[i].dst, move[i].src);
 
-		    /* Remove  conflict from list.  */
-		    move[i].src = NULL_RTX;
-		  }
-		else
-		  blocked = i;
+		      /* Remove  conflict from list.  */
+		      move[i].src = NULL_RTX;
+		    }
+		  else
+		    blocked = i;
+		}
 
 	    /* Check for deadlock. This is when no moves occurred and we have
 	       at least one blocked move.  */
@@ -4763,8 +4795,8 @@ gas_output_ascii(FILE *file, const char *str, size_t length)
    assigned to registers of class CLASS would likely be spilled
    because registers of CLASS are needed for spill registers.  */
 
-bool
-class_likely_spilled_p (int c)
+static bool
+avr_class_likely_spilled_p (reg_class_t c)
 {
   return (c != ALL_REGS && c != ADDW_REGS);
 }
@@ -5824,16 +5856,6 @@ avr_function_value (const_tree type,
     offs = GET_MODE_SIZE (DImode);
   
   return gen_rtx_REG (BLKmode, RET_REGISTER + 2 - offs);
-}
-
-/* Places additional restrictions on the register class to
-   use when it is necessary to copy value X into a register
-   in class CLASS.  */
-
-enum reg_class
-preferred_reload_class (rtx x ATTRIBUTE_UNUSED, enum reg_class rclass)
-{
-  return rclass;
 }
 
 int

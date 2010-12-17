@@ -76,10 +76,6 @@ int flag_print_fields = 1;
 int flag_print_methods = 1;
 int flag_print_attributes = 1;
 
-/* When nonzero, warn when source file is newer than matching class
-   file.  */
-int flag_newer = 1;
-
 /* Print names of classes that have a "main" method. */
 int flag_print_main = 0;
 

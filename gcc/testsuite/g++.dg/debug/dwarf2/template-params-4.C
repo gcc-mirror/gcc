@@ -9,8 +9,8 @@
 // DW_TAG_GNU_template_parameter_pack DIE, but in practise, there is only one
 // DW_TAG_GNU_template_parameter_pack as there is only count<int, char, long>
 // is emitted.
-// { dg-final { scan-assembler-times "DIE \\(0x.*?\\) DW_TAG_GNU_template_parameter_pack" 1} }
-// { dg-final { scan-assembler-times "DIE \\(0x.*?\\) DW_TAG_template_type_param" 3} }
+// { dg-final { scan-assembler-times "DIE \\(0x\[^\n\]*\\) DW_TAG_GNU_template_parameter_pack" 1} }
+// { dg-final { scan-assembler-times "DIE \\(0x\[^\n\]*\\) DW_TAG_template_type_param" 3} }
 
 template <typename... Args> struct count;
 

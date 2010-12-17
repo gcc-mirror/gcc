@@ -129,8 +129,9 @@ package body Output is
 
             else
                declare
-                  Indented_Buffer : constant String
-                    := (1 .. Cur_Indentation => ' ') & Buffer (1 .. Len);
+                  Indented_Buffer : constant String :=
+                                      (1 .. Cur_Indentation => ' ') &
+                                                          Buffer (1 .. Len);
                begin
                   Write_Buffer (Indented_Buffer);
                end;
@@ -138,9 +139,10 @@ package body Output is
 
          exception
             when Write_Error =>
-               --  If there are errors with standard error, just quit.
-               --  Otherwise, set the output to standard error before reporting
-               --  a failure and quitting.
+
+               --  If there are errors with standard error just quit. Otherwise
+               --  set the output to standard error before reporting a failure
+               --  and quitting.
 
                if Current_FD /= Standerr then
                   Current_FD := Standerr;

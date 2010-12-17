@@ -10,4 +10,4 @@ program bound_check
       zz(i:j) = 'abcdef'
       print * , zz
       end
-! { dg-output "Substring out of bounds: upper bound exceeds string length.*at line 9)}
+! { dg-output "At line 10.*Substring out of bounds: upper bound \\(11\\) of 'zz' exceeds string length" }

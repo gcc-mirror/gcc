@@ -69,8 +69,10 @@ site.exp: Makefile
 
 extract_symvers = $(glibcxx_srcdir)/scripts/extract_symvers
 
+baseline_subdir := $(shell $(CXX) --print-multi-dir)
+
 baseline_symbols:
-	-@(output=${baseline_dir}/baseline_symbols.txt; \
+	-@(output=${baseline_dir}/${baseline_subdir}/baseline_symbols.txt; \
 	  if test ! -f $${output}; then \
 	    echo "Baseline file doesn't exist."; \
 	    echo "Try 'make new-abi-baseline' to create it."; \
@@ -78,8 +80,8 @@ baseline_symbols:
 	  fi; true)
 
 new-abi-baseline:
-	-@$(mkinstalldirs) ${baseline_dir}
-	-@(output=${baseline_dir}/baseline_symbols.txt; \
+	-@$(mkinstalldirs) ${baseline_dir}/${baseline_subdir}
+	-@(output=${baseline_dir}/${baseline_subdir}/baseline_symbols.txt; \
 	  if test -f $${output}; then \
 	    output=$${output}.new; \
 	    t=`echo $${output} | sed 's=.*config/abi/=='`; \

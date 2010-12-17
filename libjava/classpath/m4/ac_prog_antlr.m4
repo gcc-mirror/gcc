@@ -24,7 +24,11 @@ AC_DEFUN([AC_PROG_ANTLR],[
       if test -z "$JAVA"; then
         AC_MSG_ERROR(Failed to find either an antlr binary or a suitable Java runtime for ANTLR.)
       else
-        ANTLR="$JAVA -classpath $ANTLR_JAR antlr.Tool"
+        if test -z "$ANTLR_JAR"; then
+          AC_MSG_ERROR(Failed to find either an antlr binary or a suitable antlr jar file.)
+        else
+          ANTLR="$JAVA -classpath $ANTLR_JAR antlr.Tool"
+        fi
       fi
   fi
   AC_SUBST(ANTLR)

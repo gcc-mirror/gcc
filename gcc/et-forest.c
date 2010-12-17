@@ -26,7 +26,6 @@ License along with libiberty; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
 #include "et-forest.h"
 #include "alloc-pool.h"
 
@@ -661,13 +660,22 @@ et_nca (struct et_node *n1, struct et_node *n2)
       if (r)
 	r->parent = o1;
     }
-  else
+  else if (r == o2 || (r && r->parent != NULL))
     {
       ret = o2->prev;
 
       set_next (o1, o2);
       if (l)
 	l->parent = o1;
+    }
+  else
+    {
+      /* O1 and O2 are in different components of the forest.  */
+      if (l)
+	l->parent = o1;
+      if (r)
+	r->parent = o1;
+      return NULL;
     }
 
   if (0 < o2->depth)

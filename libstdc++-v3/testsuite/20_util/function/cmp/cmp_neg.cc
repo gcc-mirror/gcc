@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,20 +18,15 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-prune-output "include" }
+
 #include <functional>
 
 void test01()
 {
   std::function<void()> f1;
   std::function<void()> f2;
-  f1 == f2;  // { dg-error "here" }
-  f1 != f2;  // { dg-error "here" }
-  // { dg-excess-errors "" }
+  f1 == f2;  // { dg-error "no match" }
+  f1 != f2;  // { dg-error "no match" }
 }
-
-int main()
-{
-  test01();
-
-  return 0;
-}
+// { dg-excess-errors "candidates are" }

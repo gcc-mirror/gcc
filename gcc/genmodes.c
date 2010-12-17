@@ -1,5 +1,5 @@
 /* Generate the machine mode enumeration and associated tables.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1160,7 +1160,7 @@ emit_real_format_for_mode (void)
      or not the table itself is constant.
 
      For backward compatibility this table is always writable
-     (several targets modify it in OVERRIDE_OPTIONS).   FIXME:
+     (several targets modify it in TARGET_OPTION_OVERRIDE).   FIXME:
      convert all said targets to use ADJUST_FORMAT instead.  */
 #if 0
   print_maybe_const_decl ("const struct real_format *%s",

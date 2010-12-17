@@ -132,7 +132,54 @@ struct poly_dr
      dimensions.
 
      | i   j   k   a   1
-     | 0   0   0  -1   15  = 0 */
+     | 0   0   0  -1   15  = 0
+
+     The difference between the graphite internal format for access data and
+     the OpenSop format is in the order of columns.
+     Instead of having:
+
+     | i   j   k   a  s0  s1   1
+     | 0   0   0   1   0   0  -5     =  0
+     |-1   0   0   0   1   0   0     =  0
+     | 0  -1  -1   0   0   1   0     =  0
+     | 0   0   0   0   1   0   0     >= 0  # The last four lines describe the
+     | 0   0   0   0   0   1   0     >= 0  # array size.
+     | 0   0   0   0  -1   0 1335    >= 0
+     | 0   0   0   0   0  -1 123     >= 0
+
+     In OpenScop we have:
+
+     | a  s0  s1   i   j   k   1
+     | 1   0   0   0   0   0  -5     =  0
+     | 0   1   0  -1   0   0   0     =  0
+     | 0   0   1   0  -1  -1   0     =  0
+     | 0   1   0   0   0   0   0     >= 0  # The last four lines describe the
+     | 0   0   1   0   0   0   0     >= 0  # array size.
+     | 0  -1   0   0   0   0 1335    >= 0
+     | 0   0  -1   0   0   0 123     >= 0
+
+     The OpenScop access function is printed as follows:
+
+     | 1  # The number of disjunct components in a union of access functions.
+     | R C O I L P  # Described bellow.
+     | a  s0  s1   i   j   k   1
+     | 1   0   0   0   0   0  -5     =  0
+     | 0   1   0  -1   0   0   0     =  0
+     | 0   0   1   0  -1  -1   0     =  0
+     | 0   1   0   0   0   0   0     >= 0  # The last four lines describe the
+     | 0   0   1   0   0   0   0     >= 0  # array size.
+     | 0  -1   0   0   0   0 1335    >= 0
+     | 0   0  -1   0   0   0 123     >= 0
+
+     Where:
+     - R: Number of rows.
+     - C: Number of columns.
+     - O: Number of output dimensions = alias set + number of subscripts.
+     - I: Number of input dimensions (iterators).
+     - L: Number of local (existentially quantified) dimensions.
+     - P: Number of parameters.
+
+     In the example, the vector "R C O I L P" is "7 7 3 2 0 1".  */
   ppl_Pointset_Powerset_C_Polyhedron_t accesses;
 
   /* Data reference's base object set number, we must assure 2 pdrs are in the
@@ -367,7 +414,7 @@ extern void debug_iteration_domains (scop_p, int);
 extern bool scop_do_interchange (scop_p);
 extern bool scop_do_strip_mine (scop_p);
 extern bool scop_do_block (scop_p);
-extern void pbb_number_of_iterations (poly_bb_p, graphite_dim_t, mpz_t);
+extern bool flatten_all_loops (scop_p);
 extern void pbb_number_of_iterations_at_time (poly_bb_p, graphite_dim_t, mpz_t);
 extern void pbb_remove_duplicate_pdrs (poly_bb_p);
 
@@ -796,7 +843,7 @@ lst_dewey_number (lst_p lst)
   if (!LST_LOOP_FATHER (lst))
     return 0;
 
-  for (i = 0; VEC_iterate (lst_p, LST_SEQ (LST_LOOP_FATHER (lst)), i, l); i++)
+  FOR_EACH_VEC_ELT (lst_p, LST_SEQ (LST_LOOP_FATHER (lst)), i, l)
     if (l == lst)
       return i;
 
@@ -898,7 +945,7 @@ find_lst_loop (lst_p stmt, int loop_depth)
   return loop;
 }
 
-/* Return the first lst representing a PBB statement in LST.  */
+/* Return the first LST representing a PBB statement in LST.  */
 
 static inline lst_p
 lst_find_first_pbb (lst_p lst)
@@ -922,7 +969,7 @@ lst_find_first_pbb (lst_p lst)
   return NULL;
 }
 
-/* Returns true when LST is a loop that does not contains
+/* Returns true when LST is a loop that does not contain
    statements.  */
 
 static inline bool
@@ -931,7 +978,7 @@ lst_empty_p (lst_p lst)
   return !lst_find_first_pbb (lst);
 }
 
-/* Return the last lst representing a PBB statement in LST.  */
+/* Return the last LST representing a PBB statement in LST.  */
 
 static inline lst_p
 lst_find_last_pbb (lst_p lst)
@@ -1015,6 +1062,39 @@ lst_remove_from_sequence (lst_p lst)
   LST_LOOP_FATHER (lst) = NULL;
 }
 
+/* Removes the loop LST and inline its body in the father loop.  */
+
+static inline void
+lst_remove_loop_and_inline_stmts_in_loop_father (lst_p lst)
+{
+  lst_p l, father = LST_LOOP_FATHER (lst);
+  int i, dewey = lst_dewey_number (lst);
+
+  gcc_assert (lst && father && dewey >= 0);
+
+  VEC_ordered_remove (lst_p, LST_SEQ (father), dewey);
+  LST_LOOP_FATHER (lst) = NULL;
+
+  FOR_EACH_VEC_ELT (lst_p, LST_SEQ (lst), i, l)
+    {
+      VEC_safe_insert (lst_p, heap, LST_SEQ (father), dewey + i, l);
+      LST_LOOP_FATHER (l) = father;
+    }
+}
+
+/* Sets NITER to the upper bound approximation of the number of
+   iterations of loop LST.  */
+
+static inline void
+lst_niter_for_loop (lst_p lst, mpz_t niter)
+{
+  int depth = lst_depth (lst);
+  poly_bb_p pbb = LST_PBB (lst_find_first_pbb (lst));
+
+  gcc_assert (LST_LOOP_P (lst));
+  pbb_number_of_iterations_at_time (pbb, psct_dynamic_dim (pbb, depth), niter);
+}
+
 /* Updates the scattering of PBB to be at the DEWEY number in the loop
    at depth LEVEL.  */
 
@@ -1060,24 +1140,6 @@ lst_update_scattering_under (lst_p lst, int level, int dewey)
     pbb_update_scattering (LST_PBB (lst), level, dewey);
 }
 
-/* Updates the scattering of all the PBBs under LST and in sequence
-   with LST.  */
-
-static inline void
-lst_update_scattering_seq (lst_p lst)
-{
-  int i;
-  lst_p l;
-  lst_p father = LST_LOOP_FATHER (lst);
-  int dewey = lst_dewey_number (lst);
-  int level = lst_depth (lst);
-
-  gcc_assert (lst && father && dewey >= 0 && level >= 0);
-
-  for (i = dewey; VEC_iterate (lst_p, LST_SEQ (father), i, l); i++)
-    lst_update_scattering_under (l, level, i);
-}
-
 /* Updates the all the scattering levels of all the PBBs under
    LST.  */
 
@@ -1087,14 +1149,24 @@ lst_update_scattering (lst_p lst)
   int i;
   lst_p l;
 
-  if (!lst || !LST_LOOP_P (lst))
+  if (!lst)
     return;
 
   if (LST_LOOP_FATHER (lst))
-    lst_update_scattering_seq (lst);
+    {
+      lst_p father = LST_LOOP_FATHER (lst);
+      int dewey = lst_dewey_number (lst);
+      int level = lst_depth (lst);
 
-  for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
-    lst_update_scattering (l);
+      gcc_assert (lst && father && dewey >= 0 && level >= 0);
+
+      for (i = dewey; VEC_iterate (lst_p, LST_SEQ (father), i, l); i++)
+	lst_update_scattering_under (l, level, i);
+    }
+
+  if (LST_LOOP_P (lst))
+    for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+      lst_update_scattering (l);
 }
 
 /* Inserts LST1 before LST2 if BEFORE is true; inserts LST1 after LST2
@@ -1347,6 +1419,7 @@ extern int scop_max_loop_depth (scop_p);
 extern int unify_scattering_dimensions (scop_p);
 extern bool apply_poly_transforms (scop_p);
 extern bool graphite_legal_transform (scop_p);
+extern void cloog_checksum (scop_p);
 
 /* Set the region of SCOP to REGION.  */
 

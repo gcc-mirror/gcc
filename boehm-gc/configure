@@ -604,7 +604,7 @@ LTLIBOBJS
 LIBOBJS
 toolexeclibdir
 toolexecdir
-MY_CFLAGS
+O0_CFLAGS
 addtests
 addlibs
 addincludes
@@ -15332,59 +15332,40 @@ addobjs="$addobjs $machdep"
 #
 # Check for AViiON Machines running DGUX
 #
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if host is AViiON running DGUX" >&5
-$as_echo_n "checking if host is AViiON running DGUX... " >&6; }
 ac_is_dgux=no
 ac_fn_c_check_header_mongrel "$LINENO" "sys/dg_sys_info.h" "ac_cv_header_sys_dg_sys_info_h" "$ac_includes_default"
 if test "x$ac_cv_header_sys_dg_sys_info_h" = x""yes; then :
-  ac_is_dgux=yes;
+  ac_is_dgux=yes
 fi
 
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if host is AViiON running DGUX" >&5
+$as_echo_n "checking if host is AViiON running DGUX... " >&6; }
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_is_dgux" >&5
 $as_echo "$ac_is_dgux" >&6; }
     ## :GOTCHA: we do not check anything but sys/dg_sys_info.h
 if test $ac_is_dgux = yes; then
     if test "$enable_full_debug" = "yes"; then
-      CFLAGS="-g -mstandard -DDGUX -D_DGUX_SOURCE -Di386 -mno-legend -O2"
-      CXXFLAGS="-g -mstandard -DDGUX -D_DGUX_SOURCE -Di386 -mno-legend -O2"
-    else
-      CFLAGS="-DDGUX -D_DGUX_SOURCE -Di386 -mno-legend -O2"
-      CXXFLAGS="-DDGUX -D_DGUX_SOURCE -Di386 -mno-legend -O2"
+        GC_CFLAGS="$GC_CFLAGS -mstandard"
     fi
-
-
+    GC_CFLAGS="$GC_CFLAGS -DDGUX -D_DGUX_SOURCE -Di386 -mno-legend"
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether Solaris gcc optimization fix is necessary" >&5
-$as_echo_n "checking whether Solaris gcc optimization fix is necessary... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether GCC optimization should be disabled" >&5
+$as_echo_n "checking whether GCC optimization should be disabled... " >&6; }
+O0_CFLAGS=
 case "$host" in
- *aix*)
-    if test "$GCC" = yes; then
-       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-       new_CFLAGS=
-       for i in $CFLAGS; do
-	  case "$i" in
-	   -O*)
-	      ;;
-	   *)
-	      new_CFLAGS="$new_CFLAGS $i"
-	      ;;
-	  esac
-       done
-       CFLAGS="$new_CFLAGS"
-    else
-       { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-    fi
-    ;;
- *) { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; } ;;
+ *aix*) test "$GCC" = yes && O0_CFLAGS=-O0 ;;
+ *) ;;
 esac
-
-MY_CFLAGS="$CFLAGS"
+if test x"$O0_CFLAGS" != x; then
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
 
 
 

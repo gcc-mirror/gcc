@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -183,6 +183,7 @@ package Lib.Xref is
    --              P = overriding primitive operation
    --              r = reference
    --              R = subprogram reference in dispatching call
+   --              s = subprogram reference in a static call
    --              t = end of body
    --              w = WITH line
    --              x = type extension
@@ -295,6 +296,9 @@ package Lib.Xref is
    --           R is used to mark a dispatching call. The reference is to
    --           the specification of the primitive operation of the root
    --           type when the call has a controlling argument in its class.
+
+   --           s is used to mark a static subprogram call. The reference is
+   --           to the specification of the subprogram being called.
 
    --           t is similar to e. It identifies the end of a corresponding
    --           body (such a reference always links up with a b reference)
@@ -545,7 +549,7 @@ package Lib.Xref is
    --    g     C/C++ macro                     C/C++ fun-like macro
    --    h     Interface (Ada 2005)            Abstract type
    --    i     signed integer object           signed integer type
-   --    j     (unused)                        (unused)
+   --    j     C++ class object                C++ class
    --    k     generic package                 package
    --    l     label on loop                   label on statement
    --    m     modular integer object          modular integer type

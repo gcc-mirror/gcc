@@ -99,16 +99,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	builtin_assert ("system=linux");			\
 	builtin_assert ("system=unix");				\
 	builtin_assert ("system=posix");			\
-	if (OPTION_ANDROID)					\
-	  builtin_define ("__ANDROID__");			\
     } while (0)
 
 #if defined(HAVE_LD_EH_FRAME_HDR)
 #define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
 #endif
-
-/* Define this so we can compile MS code for use with WINE.  */
-#define HANDLE_PRAGMA_PACK_PUSH_POP
 
 #undef LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC \
@@ -165,6 +160,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_C99_FUNCTIONS (OPTION_GLIBC)
 
 /* Whether we have sincos that follows the GNU extension.  */
-#define TARGET_HAS_SINCOS (OPTION_GLIBC | OPTION_BIONIC)
+#define TARGET_HAS_SINCOS (OPTION_GLIBC || OPTION_BIONIC)
 
 #define TARGET_POSIX_IO

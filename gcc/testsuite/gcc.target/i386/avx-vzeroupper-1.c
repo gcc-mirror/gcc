@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target avx } */
-/* { dg-options "-O2 -mavx" } */
+/* { dg-options "-O2 -mavx -mtune=generic" } */
 
 #include "avx-check.h"
 

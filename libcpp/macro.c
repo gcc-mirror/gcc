@@ -1,7 +1,7 @@
 /* Part of CPP library.  (Macro and #define handling.)
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -1589,13 +1589,13 @@ parse_params (cpp_reader *pfile, cpp_macro *macro)
 				   pfile->spec_nodes.n__VA_ARGS__);
 	      pfile->state.va_args_ok = 1;
 	      if (! CPP_OPTION (pfile, c99)
-		  && CPP_OPTION (pfile, pedantic)
+		  && CPP_OPTION (pfile, cpp_pedantic)
 		  && CPP_OPTION (pfile, warn_variadic_macros))
 		cpp_pedwarning
                   (pfile, CPP_W_VARIADIC_MACROS,
 		   "anonymous variadic macros were introduced in C99");
 	    }
-	  else if (CPP_OPTION (pfile, pedantic)
+	  else if (CPP_OPTION (pfile, cpp_pedantic)
 		   && CPP_OPTION (pfile, warn_variadic_macros))
 	    cpp_pedwarning (pfile, CPP_W_VARIADIC_MACROS,
 		            "ISO C does not permit named variadic macros");

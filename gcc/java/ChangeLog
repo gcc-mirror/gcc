@@ -1,3 +1,248 @@
+2010-11-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* boehm.c: Don't include toplev.h.
+	* Make-lang.in (java/boehm.o): Don't depend on toplev.h.
+
+2010-11-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* expr.c, lang.c, mangle.c, mangle_name.c, typeck.c,
+	verify-glue.c: Don't include toplev.h.
+	* Make-lang.in: Dependencies for above files changed to remove
+	toplev.h.
+
+2010-11-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* boehm.c: Include "config.h" instead of <config.h>.
+	* builtins.c: Don't include <stdarg.h>.
+	* class.c: Don't include "stdio.h".
+	(O_BINARY): Don't define here.
+	* jcf-depend.c: Don't include <assert.h>.
+	(jcf_dependency_set_dep_file, jcf_dependency_init,
+	jcf_dependency_write): Use gcc_assert.
+	* jcf-io.c (O_BINARY): Don't define here.
+	* jcf-path.c: Don't include "tm.h".
+	(jcf_path_init): Use getenv instead of GET_ENVIRONMENT.
+	* resource.c: Don't include "stdio.h".
+	(O_BINARY): Don't define here.
+	* verify-impl.c: Don't include <stdio.h>.
+
+2010-11-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* jcf-parse.c (java_parse_file): Take no arguments.
+	* java-tree.h (java_parse_file): Update prototype.
+
+2010-11-09  Joern Rennecke  <amylaar@spamcop.net>
+	    Andrew Haley  <aph@redhat.com>
+
+	PR java/46386
+	* config/pdp11/t-pdp11 (java/constants.o-warn): Remove.
+
+2010-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* Make-lang.in (jvspec.o, java/lang.o): Use $(OPTS_H).
+	* lang.c (java_handle_option): Take location_t parameter.
+
+2010-11-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* expr.c (expand_java_field_op): Use %' in diagnostic.
+	* jcf-parse.c (java_parse_file): Use %' in diagnostics.
+	* jvspec.c (lang_specific_driver): Use %' in diagnostic.
+	* lang.c (java_post_options): Use %' in diagnostics.
+
+2010-11-06  Joern Rennecke  <amylaar@spamcop.net>
+
+	PR middle-end/46314
+	* class.c: Include target.h.
+	(make_local_function_alias):
+	Use targetm.asm_out.generate_internal_label.
+	* expr.c (lookup_label, generate_name): Likewise.
+
+2010-11-03  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR bootstrap/44335
+	* jfc-parse.c (target.h): Include.
+	(handle_constant): Use targetm.words_big_endian and
+	targetm.float_words_big_endian.
+	(get_constant): Use targetm.float_words_big_endian.
+
+2010-10-13  Richard Henderson  <rth@redhat.com>
+
+	* lang.c (java_eh_personality): Update call to
+	build_personality_function.
+
+2010-10-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* Make-lang.in (java/lang.o): Use $(OPTIONS_H) instead of
+	options.h.
+
+2010-10-11  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* decl.c (java_init_decl_processing): Use build_function_type_list
+	instead of build_function_type.
+	* jcf-parse.c (java_emit_static_constructor): Likewise.
+	* builtins.c (initialize_builtins): Likewise.
+
+2010-10-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* lang.c (java_init_options_struct): New.  Split out from
+	java_init_options.
+	(LANG_HOOKS_INIT_OPTIONS_STRUCT): Define.
+
+2010-10-04  Andi Kleen <ak@linux.intel.com>
+
+	* Make-lang.in (xgcj, jc1, jcf-dump, jvgenmain):
+        Add + to build rule.
+
+2010-09-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* lang.opt: Don't use VarExists.
+
+2010-09-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* java-tree.h (flag_filelist_file, flag_assert, flag_jni,
+	flag_force_classes_archive_check, flag_redundant, flag_newer,
+	flag_use_divide_subroutine, flag_use_atomic_builtins,
+	flag_use_boehm_gc, flag_hash_synchronization,
+	flag_check_references, flag_optimize_sci, flag_indirect_classes,
+	flag_indirect_dispatch, flag_store_check,
+	flag_reduced_reflection): Remove.
+	* jcf-dump.c (flag_newer): Remove.
+	* jcf.h (quiet_flag): Remove.
+	* parse.h (quiet_flag): Remove.
+
+2010-09-28  Richard Henderson  <rth@redhat.com>
+
+	* lang.c: Include "target.h".
+	(java_eh_personality): Use targetm.except_unwind_info.
+	* Make-lang.in (lang.o): Update deps.
+
+2010-09-27  Andrew Haley  <aph@redhat.com>
+
+	PR java/45773
+	* jvgenmain.c (main): Fix arg processing.
+
+2010-09-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* jvspec.c (lang_specific_driver): Handle OPT__help instead of
+	OPT_fhelp.
+	* lang.opt (-CLASSPATH, -all-warnings, -bootclasspath, -classpath,
+	-dependencies, -encoding, -extdirs, -include-directory,
+	-include-directory=, -output-class-directory,
+	-output-class-directory=, -resource, -resource=,
+	-user-dependencies): New.
+
+2010-09-16  Richard Guenther  <rguenther@suse.de>
+
+	* jcf-parse.c (current_file_list): Remove.
+	(java_parse_file): Use build_translation_unit_decl.  Adjust.
+
+2010-09-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* lang.opt (d): New.
+
+2010-09-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR java/45504
+	* jvgenmain.c (main): Check "-D XXX=YYY".
+
+2010-09-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* jvspec.c (jvgenmain_spec): Don't handle -fnew-verifier.
+
+2010-09-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* lang.opt (CLASSPATH, bootclasspath, classpath, encoding,
+	fCLASSPATH=): Mark as Java options and as aliases.
+	* jvspec.c (jvgenmain_spec): Don't handle -fCLASSPATH*.
+	(lang_specific_driver): Don't handle options marked as aliases.
+	* lang.c (java_handle_option): Don't handle OPT_fCLASSPATH_.
+
+2010-08-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* Make-lang.in (jvspec.o): Update dependencies.
+	* jvspec.c: Include opts.h.
+	(PARAM_ARG): Remove.
+	(find_spec_file): Do not add leading -specs=.
+	(lang_specific_driver): Use cl_decoded_option structures.
+	* lang.opt (C, CLASSPATH, D, bootclasspath, classpath, encoding,
+	extdirs, fmain=, s-bc-abi): New options.
+
+2010-08-20  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* class.c: Use FOR_EACH_VEC_ELT.
+	* expr.c: Likewise.
+	* jcf-parse.c: Likewise.
+	* resource.c: Likewise.
+
+2010-08-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* lang.opt (MD_, MMD_, version): Mark RejectDriver.
+
+2010-08-05  David Daney  <ddaney@caviumnetworks.com>
+
+	* class.c (build_utf8_ref): Fix code formatting from previous commit.
+
+2010-08-05  David Daney  <ddaney@caviumnetworks.com>
+
+	* class.c (build_utf8_ref): Make decl DECL_USER_ALIGN.
+
+2010-07-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* lang.c (java_handle_option): Update prototype and return value
+	type.
+
+2010-07-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* lang.c (java_option_lang_mask): New.
+	(java_init_options): Update prototype.
+	(LANG_HOOKS_OPTION_LANG_MASK): Define.
+
+2010-07-15  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* java-tree.h: Carefully replace TREE_CHAIN with DECL_CHAIN.
+	* boehm.c: Likewise.
+	* class.c: Likewise.
+	* decl.c: Likewise.
+	* expr.c: Likewise.
+	* jcf-parse.c: Likewise.
+	* typeck.c: Likewise.
+	* verify-glue.c: Likewise.
+
+2010-07-08  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* boehm.c: Include diagnostic-core.h in every file that includes
+	toplev.h.
+	* class.c: Likewise.
+	* constants.c: Likewise.
+	* decl.c: Likewise.
+	* except.c: Likewise.
+	* expr.c: Likewise.
+	* jcf-parse.c: Likewise.
+	* mangle.c: Likewise.
+	* mangle_name.c: Likewise.
+	* resource.c: Likewise.
+	* typeck.c: Likewise.
+	* verify-glue.c: Likewise.
+
+2010-07-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR bootstrap/44825
+	* class.c (make_class_data): Cast result of VEC_length calls to int.
+
+2010-07-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* constants.c (build_constants_constructor): Use build_constructor
+	instead of build_constructor_from_list.
+	* class.c (make_method_value): Likewise.
+	(get_dispatch_table): Likewise.
+	(make_class_data): Likewise.
+	(emit_indirect_register_classes): Likewise.
+	(emit_symbol_table): Likewise.
+	(add_assertion_table_entry): Likewise.
+	(emit_assertion_table): Likewise.
+	(make_field_value): Use build_constructor_single instead of
+	build_constructor_from_list.
+
 2010-06-28  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* java-tree.h (struct lang_type) [catch_classes]: Change type to a

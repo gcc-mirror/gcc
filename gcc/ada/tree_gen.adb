@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,7 +23,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;
 with Atree;
+with Debug;
 with Elists;
 with Fname;
 with Lib;
@@ -50,6 +52,13 @@ begin
    if Opt.Tree_Output then
       Osint.C.Tree_Create;
       Opt.Tree_Write;
+
+      --  For now, only write aspect specifications hash table if -gnatd.A set
+
+      if Debug.Debug_Flag_Dot_AA then
+         Aspects.Tree_Write;
+      end if;
+
       Atree.Tree_Write;
       Elists.Tree_Write;
       Fname.Tree_Write;

@@ -121,7 +121,12 @@ choose_tmpdir (void)
 #endif
       
 #ifdef P_tmpdir
-      base = try_dir (P_tmpdir, base);
+      /* We really want a directory name here as if concatenated with say \dir
+	 we do not end up with a double \\ which defines an UNC path.  */
+      if (strcmp (P_tmpdir, "\\") == 0)
+	base = try_dir ("\\.", base);
+      else
+	base = try_dir (P_tmpdir, base);
 #endif
 
       /* Try /var/tmp, /usr/tmp, then /tmp.  */

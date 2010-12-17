@@ -41,17 +41,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    Ex: If we define FROM_QQ and TO_SI, the conversion from QQ to SI is
    generated.  */
 
-/* Permit the tm.h file to select the endianness to use just for this
-   file.  This is used when the endianness is determined when the
-   compiler is run.  */
-
-#ifndef LIBGCC2_WORDS_BIG_ENDIAN
-#define LIBGCC2_WORDS_BIG_ENDIAN WORDS_BIG_ENDIAN
-#endif
-
-#ifndef LIBGCC2_DOUBLE_TYPE_SIZE
-#define LIBGCC2_DOUBLE_TYPE_SIZE DOUBLE_TYPE_SIZE
-#endif
 #ifndef LIBGCC2_LONG_DOUBLE_TYPE_SIZE
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE LONG_DOUBLE_TYPE_SIZE
 #endif
@@ -63,7 +52,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef LIBGCC2_HAS_DF_MODE
 #define LIBGCC2_HAS_DF_MODE \
   (BITS_PER_UNIT == 8 \
-   && (LIBGCC2_DOUBLE_TYPE_SIZE == 64 \
+   && (__SIZEOF_DOUBLE__ * __CHAR_BIT__ == 64 \
        || LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 64))
 #endif
 
@@ -431,7 +420,7 @@ typedef int word_type __attribute__ ((mode (__word__)));
 /* The following defines are based on the previous defines.  */
 
 #if defined (HINT_C_TYPE)
-#if LIBGCC2_WORDS_BIG_ENDIAN
+#if __BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__
   struct INTstruct {HINT_C_TYPE high, low;};
 #else
   struct INTstruct {HINT_C_TYPE low, high;};

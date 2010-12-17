@@ -1,4 +1,4 @@
-@c Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
+@c Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -39,6 +39,100 @@ has been declared in this way, it can be used as an option property.
 A target specific save record to save additional information. These
 records have two fields: the string @samp{TargetSave}, and a
 declaration type to go in the @code{cl_target_option} structure.
+
+@item
+A variable record to define a variable used to store option
+information.  These records have two fields: the string
+@samp{Variable}, and a declaration of the type and name of the
+variable, optionally with an initializer (but without any trailing
+@samp{;}).  These records may be used for variables used for many
+options where declaring the initializer in a single option definition
+record, or duplicating it in many records, would be inappropriate, or
+for variables set in option handlers rather than referenced by
+@code{Var} properties.
+
+@item
+A variable record to define a variable used to store option
+information.  These records have two fields: the string
+@samp{TargetVariable}, and a declaration of the type and name of the
+variable, optionally with an initializer (but without any trailing
+@samp{;}).  @samp{TargetVariable} is a combination of @samp{Variable}
+and @samp{TargetSave} records in that the variable is defined in the
+@code{gcc_options} structure, but these variables are also stored in
+the @code{cl_target_option} structure.  The variables are saved in the
+target save code and restored in the target restore code.
+
+@item
+A variable record to record any additional files that the
+@file{options.h} file should include.  This is useful to provide
+enumeration or structure definitions needed for target variables.
+These records have two fields: the string @samp{HeaderInclude} and the
+name of the include file.
+
+@item
+A variable record to record any additional files that the
+@file{options.c} file should include.  This is useful to provide
+inline functions needed for target variables and/or @code{#ifdef}
+sequences to properly set up the initialization.  These records have
+two fields: the string @samp{SourceInclude} and the name of the
+include file.
+
+@item
+An enumeration record to define a set of strings that may be used as
+arguments to an option or options.  These records have three fields:
+the string @samp{Enum}, a space-separated list of properties and help
+text used to describe the set of strings in @option{--help} output.
+Properties use the same format as option properties; the following are
+valid:
+@table @code
+@item Name(@var{name})
+This property is required; @var{name} must be a name (suitable for use
+in C identifiers) used to identify the set of strings in @code{Enum}
+option properties.
+
+@item Type(@var{type})
+This property is required; @var{type} is the C type for variables set
+by options using this enumeration together with @code{Var}.
+
+@item UnknownError(@var{message})
+The message @var{message} will be used as an error message if the
+argument is invalid; for enumerations without @code{UnknownError}, a
+generic error message is used.  @var{message} should contain a single
+@samp{%qs} format, which will be used to format the invalid argument.
+@end table
+
+@item
+An enumeration value record to define one of the strings in a set
+given in an @samp{Enum} record.  These records have two fields: the
+string @samp{EnumValue} and a space-separated list of properties.
+Properties use the same format as option properties; the following are
+valid:
+@table @code
+@item Enum(@var{name})
+This property is required; @var{name} says which @samp{Enum} record
+this @samp{EnumValue} record corresponds to.
+
+@item String(@var{string})
+This property is required; @var{string} is the string option argument
+being described by this record.
+
+@item Value(@var{value})
+This property is required; it says what value (representable as
+@code{int}) should be used for the given string.
+
+@item Canonical
+This property is optional.  If present, it says the present string is
+the canonical one among all those with the given value.  Other strings
+yielding that value will be mapped to this one so specs do not need to
+handle them.
+
+@item DriverOnly
+This property is optional.  If present, the present string will only
+be accepted by the driver.  This is used for cases such as
+@option{-march=native} that are processed by the driver so that
+@samp{gcc -v} shows how the options chosen depended on the system on
+which the compiler was run.
+@end table
 
 @item
 An option definition record.  These records have the following fields:
@@ -102,12 +196,20 @@ The option is available for all languages and targets.
 @item Target
 The option is available for all languages but is target-specific.
 
+@item Driver
+The option is handled by the compiler driver using code not shared
+with the compilers proper (@file{cc1} etc.).
+
 @item @var{language}
 The option is available when compiling for the given language.
 
 It is possible to specify several different languages for the same
 option.  Each @var{language} must have been declared by an earlier
 @code{Language} record.  @xref{Option file format}.
+
+@item RejectDriver
+The option is only handled by the compilers proper (@file{cc1} etc.)@:
+and should not be accepted by the driver.
 
 @item RejectNegative
 The option does not have a ``no-'' form.  All options beginning with
@@ -135,6 +237,18 @@ it will be part of the same @code{argv} entry as the option itself.
 
 This property cannot be used alongside @code{Joined} or @code{Separate}.
 
+@item MissingArgError(@var{message})
+For an option marked @code{Joined} or @code{Separate}, the message
+@var{message} will be used as an error message if the mandatory
+argument is missing; for options without @code{MissingArgError}, a
+generic error message is used.  @var{message} should contain a single
+@samp{%qs} format, which will be used to format the name of the option
+passed.
+
+@item Args(@var{n})
+For an option marked @code{Separate}, indicate that it takes @var{n}
+arguments.  The default is 1.
+
 @item UInteger
 The option's argument is a non-negative integer.  The option parser
 will check and convert the argument before passing it to the relevant
@@ -143,8 +257,15 @@ option handler.  @code{UInteger} should also be used on options like
 @code{-falign-loops}=@var{n} are supported to make sure the saved
 options are given a full integer.
 
+@item NoDriverArg
+For an option marked @code{Separate}, the option only takes an
+argument in the compiler proper, not in the driver.  This is for
+compatibility with existing options that are used both directly and
+via @option{-Wp,}; new options should not have this property.
+
 @item Var(@var{var})
-The state of this option should be stored in variable @var{var}.
+The state of this option should be stored in variable @var{var}
+(actually a macro for @code{global_options.x_@var{var}}).
 The way that the state is stored depends on the type of option:
 
 @itemize @bullet
@@ -163,14 +284,26 @@ If the option takes an argument and has the @code{UInteger} property,
 @var{var} is an integer variable that stores the value of the argument.
 
 @item
+If the option takes an argument and has the @code{Enum} property,
+@var{var} is a variable (type given in the @code{Type} property of the
+@samp{Enum} record whose @code{Name} property has the same argument as
+the @code{Enum} property of this option) that stores the value of the
+argument.
+
+@item
+If the option has the @code{Defer} property, @var{var} is a pointer to
+a @code{VEC(cl_deferred_option,heap)} that stores the option for later
+processing.  (@var{var} is declared with type @code{void *} and needs
+to be cast to @code{VEC(cl_deferred_option,heap)} before use.)
+
+@item
 Otherwise, if the option takes an argument, @var{var} is a pointer to
 the argument string.  The pointer will be null if the argument is optional
 and wasn't given.
 @end itemize
 
-The option-processing script will usually declare @var{var} in
-@file{options.c} and leave it to be zero-initialized at start-up time.
-You can modify this behavior using @code{VarExists} and @code{Init}.
+The option-processing script will usually zero-initialize @var{var}.
+You can modify this behavior using @code{Init}.
 
 @item Var(@var{var}, @var{set})
 The option controls an integer variable @var{var} and is active when
@@ -181,17 +314,10 @@ when the ``no-'' form is used.
 @var{var} is declared in the same way as for the single-argument form
 described above.
 
-@item VarExists
-The variable specified by the @code{Var} property already exists.
-No definition should be added to @file{options.c} in response to
-this option record.
-
-You should use this property only if the variable is declared outside
-@file{options.c}.
-
 @item Init(@var{value})
 The variable specified by the @code{Var} property should be statically
-initialized to @var{value}.
+initialized to @var{value}.  If more than one option using the same
+variable specifies @code{Init}, all must specify the same initializer.
 
 @item Mask(@var{name})
 The option is associated with a bit in the @code{target_flags}
@@ -225,8 +351,75 @@ The main purpose of this property is to support synonymous options.
 The first option should use @samp{Mask(@var{name})} and the others
 should use @samp{Mask(@var{name}) MaskExists}.
 
+@item Enum(@var{name})
+The option's argument is a string from the set of strings associated
+with the corresponding @samp{Enum} record.  The string is checked and
+converted to the integer specified in the corresponding
+@samp{EnumValue} record before being passed to option handlers.
+
+@item Defer
+The option should be stored in a vector, specified with @code{Var},
+for later processing.
+
+@item Alias(@var{opt})
+@itemx Alias(@var{opt}, @var{arg})
+@itemx Alias(@var{opt}, @var{posarg}, @var{negarg})
+The option is an alias for @option{-@var{opt}}.  In the first form,
+any argument passed to the alias is considered to be passed to
+@option{-@var{opt}}, and @option{-@var{opt}} is considered to be
+negated if the alias is used in negated form.  In the second form, the
+alias may not be negated or have an argument, and @var{posarg} is
+considered to be passed as an argument to @option{-@var{opt}}.  In the
+third form, the alias may not have an argument, if the alias is used
+in the positive form then @var{posarg} is considered to be passed to
+@option{-@var{opt}}, and if the alias is used in the negative form
+then @var{negarg} is considered to be passed to @option{-@var{opt}}.
+
+Aliases should not specify @code{Var} or @code{Mask} or
+@code{UInteger}.  Aliases should normally specify the same languages
+as the target of the alias; the flags on the target will be used to
+determine any diagnostic for use of an option for the wrong language,
+while those on the alias will be used to identify what command-line
+text is the option and what text is any argument to that option.
+
+When an @code{Alias} definition is used for an option, driver specs do
+not need to handle it and no @samp{OPT_} enumeration value is defined
+for it; only the canonical form of the option will be seen in those
+places.
+
+@item Ignore
+This option is ignored apart from printing any warning specified using
+@code{Warn}.  The option will not be seen by specs and no @samp{OPT_}
+enumeration value is defined for it.
+
+@item SeparateAlias
+For an option marked with @code{Joined}, @code{Separate} and
+@code{Alias}, the option only acts as an alias when passed a separate
+argument; with a joined argument it acts as a normal option, with an
+@samp{OPT_} enumeration value.  This is for compatibility with the
+Java @option{-d} option and should not be used for new options.
+
+@item Warn(@var{message})
+If this option is used, output the warning @var{message}.
+@var{message} is a format string, either taking a single operand with
+a @samp{%qs} format which is the option name, or not taking any
+operands, which is passed to the @samp{warning} function.  If an alias
+is marked @code{Warn}, the target of the alias must not also be marked
+@code{Warn}.
+
 @item Report
 The state of the option should be printed by @option{-fverbose-asm}.
+
+@item Warning
+This is a warning option and should be shown as such in
+@option{--help} output.  This flag does not currently affect anything
+other than @option{--help}.
+
+@item Optimization
+This is an optimization option.  It should be shown as such in
+@option{--help} output, and any associated variable named using
+@code{Var} should be saved and restored when the optimization level is
+changed with @code{optimize} attributes.
 
 @item Undocumented
 The option is deliberately missing documentation and should not

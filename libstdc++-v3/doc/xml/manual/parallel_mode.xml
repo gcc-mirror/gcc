@@ -1,12 +1,8 @@
-<?xml version='1.0'?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
-[ ]>
-
-<chapter id="manual.ext.parallel_mode" xreflabel="Parallel Mode">
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="manual.ext.parallel_mode" xreflabel="Parallel Mode">
 <?dbhtml filename="parallel_mode.html"?>
 
-<chapterinfo>
+<info><title>Parallel Mode</title>
   <keywordset>
     <keyword>
       C++
@@ -18,9 +14,9 @@
       parallel
     </keyword>
   </keywordset>
-</chapterinfo>
+</info>
 
-<title>Parallel Mode</title>
+
 
 <para> The libstdc++ parallel mode is an experimental parallel
 implementation of many algorithms the C++ Standard Library.
@@ -35,8 +31,8 @@ specific compiler flag.
 </para>
 
 
-<sect1 id="manual.ext.parallel_mode.intro" xreflabel="Intro">
-  <title>Intro</title>
+<section xml:id="manual.ext.parallel_mode.intro" xreflabel="Intro"><info><title>Intro</title></info>
+  
 
 <para>The following library components in the include
 <filename class="headerfile">numeric</filename> are included in the parallel mode:</para>
@@ -83,10 +79,10 @@ specific compiler flag.
   <listitem><para><function>std::unique_copy</function></para></listitem>
 </itemizedlist>
 
-</sect1>
+</section>
 
-<sect1 id="manual.ext.parallel_mode.semantics" xreflabel="Semantics">
-  <title>Semantics</title>
+<section xml:id="manual.ext.parallel_mode.semantics" xreflabel="Semantics"><info><title>Semantics</title></info>
+  
 
 <para> The parallel mode STL algorithms are currently not exception-safe,
 i.e. user-defined functors must not throw exceptions.
@@ -100,13 +96,13 @@ it is not possible to call parallel STL algorithm in
 concurrent threads, either.
 It might work with other compilers, though.</para>
 
-</sect1>
+</section>
 
-<sect1 id="manual.ext.parallel_mode.using" xreflabel="Using">
-  <title>Using</title>
+<section xml:id="manual.ext.parallel_mode.using" xreflabel="Using"><info><title>Using</title></info>
+  
 
-<sect2 id="parallel_mode.using.prereq_flags">
-  <title>Prerequisite Compiler Flags</title>
+<section xml:id="parallel_mode.using.prereq_flags"><info><title>Prerequisite Compiler Flags</title></info>
+  
 
 <para>
   Any use of parallel functionality requires additional compiler
@@ -114,7 +110,7 @@ It might work with other compilers, though.</para>
   not difficult: just compile your application with the compiler
   flag <literal>-fopenmp</literal>. This will link
   in <code>libgomp</code>, the GNU
-  OpenMP <ulink url="http://gcc.gnu.org/onlinedocs/libgomp">implementation</ulink>,
+  OpenMP <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libgomp">implementation</link>,
   whose presence is mandatory.
 </para>
 
@@ -129,10 +125,10 @@ In addition, hardware that supports atomic operations and a compiler
   the GCC manual for more information.
 </para>
 
-</sect2>
+</section>
 
-<sect2 id="parallel_mode.using.parallel_mode">
-  <title>Using Parallel Mode</title>
+<section xml:id="parallel_mode.using.parallel_mode"><info><title>Using Parallel Mode</title></info>
+  
 
 <para>
   To use the libstdc++ parallel mode, compile your application with
@@ -154,10 +150,10 @@ In addition, hardware that supports atomic operations and a compiler
   translation units. Parallel mode functionality has distinct linkage,
   and cannot be confused with normal mode symbols.
 </para>
-</sect2>
+</section>
 
-<sect2 id="parallel_mode.using.specific">
-  <title>Using Specific Parallel Components</title>
+<section xml:id="parallel_mode.using.specific"><info><title>Using Specific Parallel Components</title></info>
+  
 
 <para>When it is not feasible to recompile your entire application, or
   only specific algorithms need to be parallel-aware, individual
@@ -199,13 +195,14 @@ flags for atomic operations.)
   parallel algorithms that can be used in a similar manner:
 </para>
 
-<table frame='all'>
+<table frame="all">
 <title>Parallel Algorithms</title>
-<tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<colspec colname='c1'></colspec>
-<colspec colname='c2'></colspec>
-<colspec colname='c3'></colspec>
-<colspec colname='c4'></colspec>
+
+<tgroup cols="4" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
 
 <thead>
   <row>
@@ -461,16 +458,16 @@ flags for atomic operations.)
 </tgroup>
 </table>
 
-</sect2>
+</section>
 
-</sect1>
+</section>
 
-<sect1 id="manual.ext.parallel_mode.design" xreflabel="Design">
-  <title>Design</title>
+<section xml:id="manual.ext.parallel_mode.design" xreflabel="Design"><info><title>Design</title></info>
+  
   <para>
   </para>
-<sect2 id="parallel_mode.design.intro" xreflabel="Intro">
-  <title>Interface Basics</title>
+<section xml:id="parallel_mode.design.intro" xreflabel="Intro"><info><title>Interface Basics</title></info>
+  
 
 <para>
 All parallel algorithms are intended to have signatures that are
@@ -536,14 +533,14 @@ overload is therefore missing.
 </para>
 
 
-</sect2>
+</section>
 
-<sect2 id="parallel_mode.design.tuning" xreflabel="Tuning">
-  <title>Configuration and Tuning</title>
+<section xml:id="parallel_mode.design.tuning" xreflabel="Tuning"><info><title>Configuration and Tuning</title></info>
+  
 
 
-<sect3 id="parallel_mode.design.tuning.omp" xreflabel="OpenMP Environment">
-  <title>Setting up the OpenMP Environment</title>
+<section xml:id="parallel_mode.design.tuning.omp" xreflabel="OpenMP Environment"><info><title>Setting up the OpenMP Environment</title></info>
+  
 
 <para>
 Several aspects of the overall runtime environment can be manipulated
@@ -585,10 +582,10 @@ nested parallelism (<function>omp_set_nested</function>), schedule kind
 documentation for more information.
 </para>
 
-</sect3>
+</section>
 
-<sect3 id="parallel_mode.design.tuning.compile" xreflabel="Compile Switches">
-  <title>Compile Time Switches</title>
+<section xml:id="parallel_mode.design.tuning.compile" xreflabel="Compile Switches"><info><title>Compile Time Switches</title></info>
+  
 
 <para>
 To force an algorithm to execute sequentially, even though parallelism
@@ -662,10 +659,10 @@ Multiway mergesort comes with the two splitting strategies for multi-way
 merging. The quicksort options cannot be used for <code>stable_sort</code>.
 </para>
 
-</sect3>
+</section>
 
-<sect3 id="parallel_mode.design.tuning.settings" xreflabel="_Settings">
-  <title>Run Time Settings and Defaults</title>
+<section xml:id="parallel_mode.design.tuning.settings" xreflabel="_Settings"><info><title>Run Time Settings and Defaults</title></info>
+  
 
 <para>
 The default parallelization strategy, the choice of specific algorithm
@@ -729,8 +726,8 @@ i. e. it is a singleton. It can be read and written by calling
 <code>__gnu_parallel::_Settings::set</code>, respectively.
 Please note that the first call return a const object, so direct manipulation
 is forbidden.
-See <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a01005.html">
-  <filename class="headerfile">settings.h</filename></ulink>
+See <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a01005.html">
+  <filename class="headerfile">settings.h</filename></link>
 for complete details.
 </para>
 
@@ -754,12 +751,12 @@ int main()
 }
 </programlisting>
 
-</sect3>
+</section>
 
-</sect2>
+</section>
 
-<sect2 id="parallel_mode.design.impl" xreflabel="Impl">
-  <title>Implementation Namespaces</title>
+<section xml:id="parallel_mode.design.impl" xreflabel="Impl"><info><title>Implementation Namespaces</title></info>
+  
 
 <para> One namespace contain versions of code that are always
 explicitly sequential:
@@ -787,12 +784,12 @@ related to the parallel mode on a per-namespace basis, can be found in
 the generated source documentation.
 </para>
 
-</sect2>
+</section>
 
-</sect1>
+</section>
 
-<sect1 id="manual.ext.parallel_mode.test" xreflabel="Testing">
-  <title>Testing</title>
+<section xml:id="manual.ext.parallel_mode.test" xreflabel="Testing"><info><title>Testing</title></info>
+  
 
   <para>
     Both the normal conformance and regression tests and the
@@ -830,28 +827,22 @@ the generated source documentation.
     file, and can be generated by using the <code>make
     doc-performance</code> rule in the testsuite's Makefile.
 </para>
-</sect1>
+</section>
 
-<bibliography id="parallel_mode.biblio">
-<title>Bibliography</title>
+<bibliography xml:id="parallel_mode.biblio"><info><title>Bibliography</title></info>
+
 
   <biblioentry>
-    <title>
+    <citetitle>
       Parallelization of Bulk Operations for STL Dictionaries
-    </title>
+    </citetitle>
 
-    <author>
-      <firstname>Johannes</firstname>
-      <surname>Singler</surname>
-    </author>
-    <author>
-      <firstname>Leonor</firstname>
-      <surname>Frias</surname>
-    </author>
+    <author><personname><firstname>Johannes</firstname><surname>Singler</surname></personname></author>
+    <author><personname><firstname>Leonor</firstname><surname>Frias</surname></personname></author>
 
     <copyright>
       <year>2007</year>
-      <holder></holder>
+      <holder/>
     </copyright>
 
     <publisher>
@@ -862,26 +853,17 @@ the generated source documentation.
   </biblioentry>
 
   <biblioentry>
-    <title>
+    <citetitle>
       The Multi-Core Standard Template Library
-    </title>
+    </citetitle>
 
-    <author>
-      <firstname>Johannes</firstname>
-      <surname>Singler</surname>
-    </author>
-    <author>
-      <firstname>Peter</firstname>
-      <surname>Sanders</surname>
-    </author>
-    <author>
-      <firstname>Felix</firstname>
-      <surname>Putze</surname>
-    </author>
+    <author><personname><firstname>Johannes</firstname><surname>Singler</surname></personname></author>
+    <author><personname><firstname>Peter</firstname><surname>Sanders</surname></personname></author>
+    <author><personname><firstname>Felix</firstname><surname>Putze</surname></personname></author>
 
     <copyright>
       <year>2007</year>
-      <holder></holder>
+      <holder/>
     </copyright>
 
     <publisher>

@@ -1,6 +1,6 @@
 #! /bin/sh
 # Wrapper around gettext for programs using the msgid convention.
-# Copyright 1998, 2001, 2002, 2003, 2009 Free Software Foundation, Inc.
+# Copyright 1998, 2001, 2002, 2003, 2009, 2010 Free Software Foundation, Inc.
 
 # Written by Paul Eggert <eggert@twinsun.com>.
 # Revised by Zack Weinberg <zackw@stanford.edu> for no-POTFILES operation.
@@ -63,14 +63,21 @@ kopt=$pwd/$T/keyword-options
 kopt2=$pwd/$T/keyword2-options
 emsg=$pwd/$T/emsgids.c
 posr=$pwd/$T/po-sources
+posrcxx=$pwd/$T/po-cxx-sources
 pottmp1=$pwd/$T/tmp1.pot
 pottmp2=$pwd/$T/tmp2.pot
+pottmp3=$pwd/$T/tmp3.pot
 pottmp=$pwd/$T/tmp.pot
 
-# Locate files to scan, and generate the list.  All .c, .h, and .def files
-# in $srcdir are examined, likewise $srcdir/config and $srcdir/config/*
-# (directories).  Also, all subdirectories of $srcdir that contain a
-# config-lang.in.  Exclusions come from $srcdir/po/EXCLUDE.
+# Locate files to scan.  We scan the following directories:
+#  $srcdir
+#  $srcdir/c-family
+#  $srcdir/config
+#  $srcdir/config/*
+#  all subdirectories of $srcdir containing a config-lang.in file, and
+#    all subdirectories of those directories.
+# Within those directories, we examine all .c, .cc, .h, and .def files.
+# However, any files listed in $srcdir/po/EXCLUDE are not examined.
 #
 # Then generate keyword options for xgettext, by scanning for declarations
 # of functions whose parameter names end in "msgid".
@@ -83,14 +90,15 @@ pottmp=$pwd/$T/tmp.pot
 echo "scanning for keywords, %e and %n strings..." >&2
 
 ( cd $srcdir
-  lang_subdirs=`echo */config-lang.in */*/config-lang.in | sed -e 's|config-lang\.in||g'`
-  { for dir in "" c-family/ config/ config/*/ $lang_subdirs
-    do  for glob in '*.c' '*.h' '*.def'
+  lang_subdirs=`echo */config-lang.in */*/config-lang.in | sed -e 's|/config-lang\.in||g'`
+  { for dir in "" c-family/ config/ config/*/ \
+      `find $lang_subdirs -type d -print | fgrep -v .svn | sort | sed -e 's|$|/|'`
+    do  for glob in '*.c' '*.cc' '*.h' '*.def'
         do  eval echo $dir$glob
         done
     done;
   } | tr ' ' "$nl" | grep -v '\*' |
-  $AWK -v excl=po/EXCLUDES -v posr=$posr -v kopt=$kopt -v kopt2=$kopt2 -v emsg=$emsg '
+  $AWK -v excl=po/EXCLUDES -v posr=$posr -v posrcxx=$posrcxx -v kopt=$kopt -v kopt2=$kopt2 -v emsg=$emsg '
 function keyword_option(line) {
     paren_index = index(line, "(")
     name = substr(line, 1, paren_index - 1)
@@ -178,7 +186,11 @@ BEGIN {
 }
 
 { if (!($0 in excludes)) {
-    print > posr
+    if ($0 ~ /.cc$/) {
+      print > posrcxx
+    } else {
+      print > posr
+    }
     files[NR] = $0
   }
 }
@@ -223,6 +235,39 @@ echo "scanning option files..." >&2
 	if (/^[ \t]*(;|$)/ || !/^[^ \t]/) {
 	    field = 0
 	} else {
+	    if ((field == 1) && /MissingArgError/) {
+		line = $0
+		sub(".*MissingArgError\\(", "", line)
+		if (line ~ "^{") {
+			sub("^{", "", line)
+			sub("}\\).*", "", line)
+		} else
+			sub("\\).*", "", line)
+		printf("#line %d \"%s\"\n", lineno, file)
+		printf("_(\"%s\")\n", line)
+	    }
+	    if ((field == 1) && /UnknownError/) {
+		line = $0
+		sub(".*UnknownError\\(", "", line)
+		if (line ~ "^{") {
+			sub("^{", "", line)
+			sub("}\\).*", "", line)
+		} else
+			sub("\\).*", "", line)
+		printf("#line %d \"%s\"\n", lineno, file)
+		printf("_(\"%s\")\n", line)
+	    }
+	    if ((field == 1) && /Warn\(/) {
+		line = $0
+		sub(".*Warn\\(", "", line)
+		if (line ~ "^{") {
+			sub("^{", "", line)
+			sub("}\\).*", "", line)
+		} else
+			sub("\\).*", "", line)
+		printf("#line %d \"%s\"\n", lineno, file)
+		printf("_(\"%s\")\n", line)
+	    }
 	    if (field == 2) {
 		line = $0
 		printf("#line %d \"%s\"\n", lineno, file)
@@ -234,20 +279,29 @@ echo "scanning option files..." >&2
     }
   }') >> $emsg
 
-# Run the xgettext command, with temporary added as a file to scan.
+# Run the xgettext commands, with temporary added as a file to scan.
 echo "running xgettext..." >&2
 $xgettext --default-domain=$package --directory=$srcdir \
 	  --add-comments `cat $kopt` --files-from=$posr \
 	  --copyright-holder="Free Software Foundation, Inc." \
 	  --msgid-bugs-address="http://gcc.gnu.org/bugs.html" \
 	  --language=c -o $pottmp1
+if test -s $posrcxx; then
+  $xgettext --default-domain=$package --directory=$srcdir \
+	    --add-comments `cat $kopt` --files-from=$posrcxx \
+	    --copyright-holder="Free Software Foundation, Inc." \
+	    --msgid-bugs-address="http://gcc.gnu.org/bugs.html" \
+	    --language=c++ -o $pottmp2
+else
+  echo > $pottmp2
+fi
 $xgettext --default-domain=$package --directory=$srcdir \
 	  --add-comments --keyword= `cat $kopt2` --files-from=$posr \
 	  --copyright-holder="Free Software Foundation, Inc." \
 	  --msgid-bugs-address="http://gcc.gnu.org/bugs.html" \
-	  --language=GCC-source -o $pottmp2
+	  --language=GCC-source -o $pottmp3
 $xgettext --default-domain=$package \
-	  --add-comments $pottmp1 $pottmp2 \
+	  --add-comments $pottmp1 $pottmp2 $pottmp3 \
 	  --copyright-holder="Free Software Foundation, Inc." \
 	  --msgid-bugs-address="http://gcc.gnu.org/bugs.html" \
 	  --language=PO -o $pottmp

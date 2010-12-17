@@ -395,7 +395,8 @@ package body Xr_Tabls is
 
    begin
       case Ref_Type is
-         when 'b' | 'c' | 'H' | 'm' | 'o' | 'r' | 'R' | 'i' | ' ' | 'x' =>
+         when 'b' | 'c' | 'H' | 'm' | 'o' | 'r' | 'R' |
+              's' | 'i' | ' ' | 'x' =>
             null;
 
          when 'l' | 'w' =>
@@ -452,18 +453,17 @@ package body Xr_Tabls is
          Source_Line => null,
          Next        => null);
 
-      --  We can insert the reference in the list directly, since all
-      --  the references will appear only once in the ALI file
-      --  corresponding to the file where they are referenced.
-      --  This saves a lot of time compared to checking the list to check
-      --  if it exists.
+      --  We can insert the reference into the list directly, since all the
+      --  references will appear only once in the ALI file corresponding to the
+      --  file where they are referenced. This saves a lot of time compared to
+      --  checking the list to check if it exists.
 
       case Ref_Type is
          when 'b' | 'c' =>
             New_Ref.Next          := Declaration.Body_Ref;
             Declaration.Body_Ref  := New_Ref;
 
-         when 'r' | 'R' | 'H' | 'i' | 'l' | 'o' | ' ' | 'x' | 'w' =>
+         when 'r' | 'R' | 's' | 'H' | 'i' | 'l' | 'o' | ' ' | 'x' | 'w' =>
             New_Ref.Next          := Declaration.Ref_Ref;
             Declaration.Ref_Ref   := New_Ref;
 

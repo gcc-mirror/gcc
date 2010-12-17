@@ -1,10 +1,10 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fdump-tree-reassoc1" } */
 
-int
-ETree_nFactorEntriesInFront (int b, int m)
+unsigned int
+ETree_nFactorEntriesInFront (unsigned int b, unsigned int m)
 {
-  int nent = b*b + 2*b*m;
+  unsigned int nent = b*b + 2*b*m;
   return nent;
 }
 

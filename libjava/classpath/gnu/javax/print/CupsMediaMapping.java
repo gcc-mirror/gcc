@@ -1,4 +1,4 @@
-/* CupsMediaMapping.java -- 
+/* CupsMediaMapping.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -52,12 +52,12 @@ import javax.print.attribute.standard.MediaSizeName;
  * for use of media attribute translation between Java JPS API and
  * CUPS.
  * </p>
- *  
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public class CupsMediaMapping
 {
-  // the mapping map  
+  // the mapping map
   private static final HashMap ippByCups = new HashMap();
 
   /**
@@ -67,11 +67,11 @@ public class CupsMediaMapping
     {
       ippByCups.put("Postcard", MediaSizeName.JAPANESE_POSTCARD);
       ippByCups.put("Statement", MediaSizeName.INVOICE);
-      
+
       ippByCups.put("Letter", MediaSizeName.NA_LETTER);
       ippByCups.put("Executive", MediaSizeName.EXECUTIVE);
       ippByCups.put("Legal", MediaSizeName.NA_LEGAL);
-      
+
       ippByCups.put("A0", MediaSizeName.ISO_A0);
       ippByCups.put("A1", MediaSizeName.ISO_A1);
       ippByCups.put("A2", MediaSizeName.ISO_A2);
@@ -83,7 +83,7 @@ public class CupsMediaMapping
       ippByCups.put("A8", MediaSizeName.ISO_A8);
       ippByCups.put("A9", MediaSizeName.ISO_A9);
       ippByCups.put("A10", MediaSizeName.ISO_A10);
-            
+
       ippByCups.put("B0", MediaSizeName.JIS_B0);
       ippByCups.put("B1", MediaSizeName.JIS_B1);
       ippByCups.put("B2", MediaSizeName.JIS_B2);
@@ -95,7 +95,7 @@ public class CupsMediaMapping
       ippByCups.put("B8", MediaSizeName.JIS_B8);
       ippByCups.put("B9", MediaSizeName.JIS_B9);
       ippByCups.put("B10", MediaSizeName.JIS_B10);
-            
+
       ippByCups.put("ISOB0", MediaSizeName.ISO_B0);
       ippByCups.put("ISOB1", MediaSizeName.ISO_B1);
       ippByCups.put("ISOB2", MediaSizeName.ISO_B2);
@@ -118,7 +118,7 @@ public class CupsMediaMapping
       ippByCups.put("EnvISOB8", MediaSizeName.ISO_B8);
       ippByCups.put("EnvISOB9", MediaSizeName.ISO_B9);
       ippByCups.put("EnvISOB10", MediaSizeName.ISO_B10);
-      
+
       ippByCups.put("C0", MediaSizeName.ISO_C0);
       ippByCups.put("C1", MediaSizeName.ISO_C1);
       ippByCups.put("C2", MediaSizeName.ISO_C2);
@@ -136,7 +136,7 @@ public class CupsMediaMapping
       ippByCups.put("Env12", MediaSizeName.NA_NUMBER_12_ENVELOPE);
       ippByCups.put("Env14", MediaSizeName.NA_NUMBER_14_ENVELOPE);
       ippByCups.put("c8x10", MediaSizeName.NA_8X10);
-      
+
       ippByCups.put("EnvDL", MediaSizeName.ISO_DESIGNATED_LONG);
       ippByCups.put("DL", MediaSizeName.ISO_DESIGNATED_LONG);
       ippByCups.put("EnvC0", MediaSizeName.ISO_C0);
@@ -145,12 +145,12 @@ public class CupsMediaMapping
       ippByCups.put("EnvC3", MediaSizeName.ISO_C3);
       ippByCups.put("EnvC4", MediaSizeName.ISO_C4);
       ippByCups.put("EnvC5", MediaSizeName.ISO_C5);
-      ippByCups.put("EnvC6", MediaSizeName.ISO_C6);      
+      ippByCups.put("EnvC6", MediaSizeName.ISO_C6);
     }
-    
+
   /**
    * Returns the IPP media name of the given cups name.
-   * 
+   *
    * @param cupsName the name in cups
    * @return The IPP name if a mapping is known, <code>null</code> otherwise.
    */
@@ -158,10 +158,10 @@ public class CupsMediaMapping
   {
     return (String) ippByCups.get(cupsName);
   }
-  
+
   /**
    * Returns the mapping map for iteration.
-   * 
+   *
    * @return The mapping map as unmodifiable map.
    */
   public static final Map getMappingMap()
@@ -169,7 +169,7 @@ public class CupsMediaMapping
     return Collections.unmodifiableMap(ippByCups);
   }
 
-  private CupsMediaMapping() 
+  private CupsMediaMapping()
   {
     // not to be instantiated
   }

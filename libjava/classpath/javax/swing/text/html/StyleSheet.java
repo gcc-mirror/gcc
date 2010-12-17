@@ -369,7 +369,7 @@ public class StyleSheet extends StyleContext
    *
    * @return the resolved style
    */
-  private Style getResolvedStyle(String selector, List path, HTML.Tag tag)
+  private Style getResolvedStyle(String selector, List<Element> path, HTML.Tag tag)
   {
     Style style = resolvedStyles.get(selector);
     if (style == null)
@@ -380,7 +380,7 @@ public class StyleSheet extends StyleContext
   /**
    * Resolves a style. This creates arrays that hold the tag names,
    * class and id attributes and delegates the work to
-   * {@link #resolveStyle(String, String[], Map[])}.
+   * {@link #resolveStyle(String, String[], List<Map<String,String>>)}.
    *
    * @param selector the selector
    * @param path the Element path
@@ -388,14 +388,15 @@ public class StyleSheet extends StyleContext
    *
    * @return the resolved style
    */
-  private Style resolveStyle(String selector, List path, HTML.Tag tag)
+  private Style resolveStyle(String selector, List<Element> path, HTML.Tag tag)
   {
     int count = path.size();
     String[] tags = new String[count];
-    Map[] attributes = new Map[count];
+    List<Map<String,String>> attributes =
+      new ArrayList<Map<String,String>>(count);
     for (int i = 0; i < count; i++)
       {
-        Element el = (Element) path.get(i);
+        Element el = path.get(i);
         AttributeSet atts = el.getAttributes();
         if (i == 0 && el.isLeaf())
           {
@@ -413,12 +414,11 @@ public class StyleSheet extends StyleContext
               tags[i] = t.toString();
             else
               tags[i] = null;
-            attributes[i] = attributeSetToMap(atts);
+            attributes.set(i, attributeSetToMap(atts));
           }
         else
           {
             tags[i] = null;
-            attributes[i] = null;
           }
       }
     tags[0] = tag.toString();
@@ -434,7 +434,8 @@ public class StyleSheet extends StyleContext
    *
    * @return the resolved style
    */
-  private Style resolveStyle(String selector, String[] tags, Map[] attributes)
+  private Style resolveStyle(String selector, String[] tags,
+			     List<Map<String,String>> attributes)
   {
     // FIXME: This style resolver is not correct. But it works good enough for
     // the default.css.
@@ -462,10 +463,8 @@ public class StyleSheet extends StyleContext
 
     // Sort selectors.
     Collections.sort(styles);
-    Style[] styleArray = new Style[styles.size()];
-    styleArray = (Style[]) styles.toArray(styleArray);
-    Style resolved = new MultiStyle(selector,
-                                    (Style[]) styles.toArray(styleArray));
+    Style[] styleArray = styles.toArray(new Style[styles.size()]);
+    Style resolved = new MultiStyle(selector, styleArray);
     resolvedStyles.put(selector, resolved);
     return resolved;
   }
@@ -481,9 +480,9 @@ public class StyleSheet extends StyleContext
   public Style getRule(String selector)
   {
     CSSStyle best = null;
-    for (Iterator i = css.iterator(); i.hasNext();)
+    for (Iterator<CSSStyle> i = css.iterator(); i.hasNext();)
       {
-        CSSStyle style = (CSSStyle) i.next();
+        CSSStyle style = i.next();
         if (style.compareTo(best) < 0)
           best = style;
       }
@@ -584,7 +583,7 @@ public class StyleSheet extends StyleContext
   public void addStyleSheet(StyleSheet ss)
   {
     if (linked == null)
-      linked = new ArrayList();
+      linked = new ArrayList<StyleSheet>();
     linked.add(ss);
   }
   
@@ -1441,7 +1440,7 @@ public class StyleSheet extends StyleContext
    *
    * @return the converted map
    */
-  private Map attributeSetToMap(AttributeSet atts)
+  private Map<String,String> attributeSetToMap(AttributeSet atts)
   {
     HashMap<String,String> map = new HashMap<String,String>();
     Enumeration<?> keys = atts.getAttributeNames();

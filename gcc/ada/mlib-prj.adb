@@ -1374,12 +1374,12 @@ package body MLib.Prj is
                                               (Object_Dir_Path
                                                & Directory_Separator
                                                & Filename (1 .. Last));
+                           Object_File  : constant String :=
+                                            Filename (1 .. Last);
 
-                           C_Object_Path : String := Object_Path;
-                           C_Filename    : String := Filename (1 .. Last);
+                           C_Filename    : String := Object_File;
 
                         begin
-                           Canonical_Case_File_Name (C_Object_Path);
                            Canonical_Case_File_Name (C_Filename);
 
                            --  If in the object directory of an extended
@@ -1390,20 +1390,17 @@ package body MLib.Prj is
                              or else
                                C_Filename (1 .. B_Start'Length) /= B_Start.all
                            then
-                              Name_Len := Last;
-                              Name_Buffer (1 .. Name_Len) :=
-                                C_Filename (1 .. Last);
+                              Name_Len := 0;
+                              Add_Str_To_Name_Buffer (C_Filename);
                               Id := Name_Find;
 
                               if not Objects_Htable.Get (Id) then
                                  declare
                                     ALI_File : constant String :=
-                                                 Ext_To
-                                                   (C_Filename
-                                                      (1 .. Last), "ali");
+                                                 Ext_To (C_Filename, "ali");
 
                                     ALI_Path : constant String :=
-                                                 Ext_To (C_Object_Path, "ali");
+                                                 Ext_To (Object_Path, "ali");
 
                                     Add_It : Boolean;
                                     Fname  : File_Name_Type;
@@ -1801,7 +1798,7 @@ package body MLib.Prj is
             --  the library file and any ALI file of a source of the project.
 
             begin
-               Get_Name_String (For_Project.Library_Dir.Name);
+               Get_Name_String (For_Project.Library_Dir.Display_Name);
                Change_Dir (Name_Buffer (1 .. Name_Len));
 
             exception
@@ -1942,7 +1939,7 @@ package body MLib.Prj is
 
          Copy_ALI_Files
            (Files      => Ali_Files.all,
-            To         => For_Project.Library_ALI_Dir.Name,
+            To         => For_Project.Library_ALI_Dir.Display_Name,
             Interfaces => Arguments (1 .. Argument_Number));
 
          --  Copy interface sources if Library_Src_Dir specified
@@ -1954,7 +1951,7 @@ package body MLib.Prj is
             --  could be a source of the project.
 
             begin
-               Get_Name_String (For_Project.Library_Src_Dir.Name);
+               Get_Name_String (For_Project.Library_Src_Dir.Display_Name);
                Change_Dir (Name_Buffer (1 .. Name_Len));
 
             exception
@@ -2085,7 +2082,8 @@ package body MLib.Prj is
             Lib_Name : constant File_Name_Type :=
                          Library_File_Name_For (For_Project, In_Tree);
          begin
-            Change_Dir (Get_Name_String (For_Project.Library_Dir.Name));
+            Change_Dir
+              (Get_Name_String (For_Project.Library_Dir.Display_Name));
             Lib_TS := File_Stamp (Lib_Name);
             For_Project.Library_TS := Lib_TS;
          end;
@@ -2107,7 +2105,7 @@ package body MLib.Prj is
                --  be Empty_Time_Stamp, earlier than any other time stamp.
 
                Change_Dir
-                 (Get_Name_String (For_Project.Object_Directory.Name));
+                 (Get_Name_String (For_Project.Object_Directory.Display_Name));
                Open (Dir => Object_Dir, Dir_Name => ".");
 
                --  For all entries in the object directory
@@ -2212,7 +2210,7 @@ package body MLib.Prj is
    begin
       --  Change the working directory to the object directory
 
-      Change_Dir (Get_Name_String (For_Project.Object_Directory.Name));
+      Change_Dir (Get_Name_String (For_Project.Object_Directory.Display_Name));
 
       for Index in Interfaces'Range loop
 

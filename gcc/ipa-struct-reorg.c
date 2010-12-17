@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "pointer-set.h"
 #include "hashtab.h"
-#include "toplev.h"
 #include "flags.h"
 #include "debug.h"
 #include "target.h"
@@ -421,6 +420,10 @@ decompose_indirect_ref_acc (tree str_decl, struct field_access_site *acc)
   if (!is_result_of_mult (before_cast, &acc->num, struct_size))
     return false;
 
+  /* ???  Add TREE_OPERAND (acc->ref, 1) to acc->offset.  */
+  if (!integer_zerop (TREE_OPERAND (acc->ref, 1)))
+    return false;
+
   return true;
 }
 
@@ -434,7 +437,7 @@ decompose_access (tree str_decl, struct field_access_site *acc)
 {
   gcc_assert (acc->ref);
 
-  if (TREE_CODE (acc->ref) == INDIRECT_REF)
+  if (TREE_CODE (acc->ref) == MEM_REF)
     return decompose_indirect_ref_acc (str_decl, acc);
   else if (TREE_CODE (acc->ref) == ARRAY_REF)
     return true;
@@ -552,7 +555,7 @@ finalize_new_vars_creation (void **slot, void *data ATTRIBUTE_UNUSED)
   unsigned i;
   tree var;
 
-  for (i = 0; VEC_iterate (tree, n_var->new_vars, i, var); i++)
+  FOR_EACH_VEC_ELT (tree, n_var->new_vars, i, var)
     finalize_var_creation (var);
   return 1;
 }
@@ -566,7 +569,7 @@ find_var_in_new_vars_vec (new_var var, tree new_type)
   tree n_var;
   unsigned i;
 
-  for (i = 0; VEC_iterate (tree, var->new_vars, i, n_var); i++)
+  FOR_EACH_VEC_ELT (tree, var->new_vars, i, n_var)
     {
       tree type = strip_type(get_type_of_var (n_var));
       gcc_assert (type);
@@ -782,7 +785,7 @@ is_part_of_malloc (gimple stmt, tree fn_decl)
       alloc_site_t *call;
       unsigned i;
 
-      for (i = 0; VEC_iterate (alloc_site_t, fallocs->allocs, i, call); i++)
+      FOR_EACH_VEC_ELT (alloc_site_t, fallocs->allocs, i, call)
 	if (call->stmt == stmt
 	    || get_final_alloc_stmt (call->stmt) == stmt)
 	  return true;
@@ -969,12 +972,12 @@ replace_field_acc (struct field_access_site *acc, tree new_type)
   type_wrapper_t *wr_p = NULL;
   struct ref_pos r_pos;
 
-  while (TREE_CODE (ref_var) == INDIRECT_REF
+  while (TREE_CODE (ref_var) == MEM_REF
 	 || TREE_CODE (ref_var) == ARRAY_REF)
     {
       type_wrapper_t wr;
 
-      if ( TREE_CODE (ref_var) == INDIRECT_REF)
+      if (TREE_CODE (ref_var) == MEM_REF)
 	{
 	  wr.wrap = 0;
 	  wr.domain = 0;
@@ -1001,7 +1004,7 @@ replace_field_acc (struct field_access_site *acc, tree new_type)
 	new_ref = build4 (ARRAY_REF, type, new_ref,
 			  wr_p->domain, NULL_TREE, NULL_TREE);
       else /* Pointer.  */
-	new_ref = build1 (INDIRECT_REF, type, new_ref);
+	new_ref = build_simple_mem_ref (new_ref);
       VEC_pop (type_wrapper_t, wrapper);
     }
 
@@ -1041,7 +1044,7 @@ static void
 replace_field_access_stmt (struct field_access_site *acc, tree new_type)
 {
 
-  if (TREE_CODE (acc->ref) == INDIRECT_REF
+  if (TREE_CODE (acc->ref) == MEM_REF
       ||TREE_CODE (acc->ref) == ARRAY_REF
       ||TREE_CODE (acc->ref) == VAR_DECL)
     replace_field_acc (acc, new_type);
@@ -1061,7 +1064,7 @@ find_structure (tree type)
 
   type = TYPE_MAIN_VARIANT (type);
 
-  for (i = 0; VEC_iterate (structure, structures, i, str); i++)
+  FOR_EACH_VEC_ELT (structure, structures, i, str)
     if (is_equal_types (str->decl, type))
       return i;
 
@@ -1255,7 +1258,7 @@ create_new_stmts_for_cond_expr (gimple stmt)
   arg = integer_zerop (arg0) ? arg1 : arg0;
   pos = integer_zerop (arg0) ? 1 : 0;
 
-  for (i = 0; VEC_iterate (tree, str->new_types, i, type); i++)
+  FOR_EACH_VEC_ELT (tree, str->new_types, i, type)
     {
       tree new_arg;
 
@@ -1277,13 +1280,11 @@ insert_new_var_in_stmt (gimple stmt, tree var, tree new_var)
   pos = find_pos_in_stmt (stmt, var, &r_pos);
   gcc_assert (pos);
 
-  while (r_pos.container && (TREE_CODE(r_pos.container) == INDIRECT_REF
+  while (r_pos.container && (TREE_CODE(r_pos.container) == MEM_REF
 			     || TREE_CODE(r_pos.container) == ADDR_EXPR))
     {
-      tree type = TREE_TYPE (TREE_TYPE (new_var));
-
-      if (TREE_CODE(r_pos.container) == INDIRECT_REF)
-	new_var = build1 (INDIRECT_REF, type, new_var);
+      if (TREE_CODE(r_pos.container) == MEM_REF)
+	new_var = build_simple_mem_ref (new_var);
       else
 	new_var = build_fold_addr_expr (new_var);
       pos = find_pos_in_stmt (stmt, r_pos.container, &r_pos);
@@ -1311,7 +1312,7 @@ create_general_new_stmt (struct access_site *acc, tree new_type)
       gimple_set_vdef (new_stmt, NULL_TREE);
     }
 
-  for (i = 0; VEC_iterate (tree, acc->vars, i, var); i++)
+  FOR_EACH_VEC_ELT (tree, acc->vars, i, var)
     {
       tree new_var = find_new_var_of_type (var, new_type);
       tree lhs, rhs = NULL_TREE;
@@ -1364,7 +1365,7 @@ create_new_stmts_for_general_acc (struct access_site *acc, d_str str)
   gimple stmt = acc->stmt;
   unsigned i;
 
-  for (i = 0; VEC_iterate (tree, str->new_types, i, type); i++)
+  FOR_EACH_VEC_ELT (tree, str->new_types, i, type)
     {
       gimple new_stmt;
 
@@ -1473,7 +1474,7 @@ update_varpool_with_new_var (void **slot, void *data ATTRIBUTE_UNUSED)
   tree var;
   unsigned i;
 
-  for (i = 0; VEC_iterate (tree, n_var->new_vars, i, var); i++)
+  FOR_EACH_VEC_ELT (tree, n_var->new_vars, i, var)
     insert_global_to_varpool (var);
   return 1;
 }
@@ -1564,7 +1565,7 @@ add_unsuitable_type (VEC (tree, heap) **unsuitable_types, tree type)
 
   type = TYPE_MAIN_VARIANT (type);
 
-  for (i = 0; VEC_iterate (tree, *unsuitable_types, i, t); i++)
+  FOR_EACH_VEC_ELT (tree, *unsuitable_types, i, t)
     if (is_equal_types (t, type))
       break;
 
@@ -2086,7 +2087,7 @@ dump_acc (void **slot, void *data ATTRIBUTE_UNUSED)
     print_gimple_stmt (dump_file, acc->stmt, 0, 0);
   fprintf(dump_file, " : ");
 
-  for (i = 0; VEC_iterate (tree, acc->vars, i, var); i++)
+  FOR_EACH_VEC_ELT (tree, acc->vars, i, var)
     {
       print_generic_expr (dump_file, var, 0);
       fprintf(dump_file, ", ");
@@ -2153,7 +2154,7 @@ create_new_accesses_in_bb (basic_block bb)
   d_str str;
   unsigned i;
 
-  for (i = 0; VEC_iterate (structure, structures, i, str); i++)
+  FOR_EACH_VEC_ELT (structure, structures, i, str)
     create_new_accs_for_struct (str, bb);
 }
 
@@ -2166,7 +2167,7 @@ create_new_alloc_sites (fallocs_t m_data, tree context)
   alloc_site_t *call;
   unsigned j;
 
-  for (j = 0; VEC_iterate (alloc_site_t, m_data->allocs, j, call); j++)
+  FOR_EACH_VEC_ELT (alloc_site_t, m_data->allocs, j, call)
     {
       gimple stmt = call->stmt;
       d_str str = call->str;
@@ -2185,7 +2186,7 @@ create_new_alloc_sites (fallocs_t m_data, tree context)
 	}
 
       /* Generate an allocation sites for each new structure type.  */
-      for (i = 0; VEC_iterate (tree, str->new_types, i, type); i++)
+      FOR_EACH_VEC_ELT (tree, str->new_types, i, type)
 	{
 	  gimple new_malloc_stmt = NULL;
 	  gimple last_stmt_tmp = NULL;
@@ -2530,7 +2531,7 @@ get_stmt_accesses (tree *tp, int *walk_subtrees, void *data)
 	tree field_decl = TREE_OPERAND (t, 1);
 
 
-	if ((TREE_CODE (ref) == INDIRECT_REF
+	if ((TREE_CODE (ref) == MEM_REF
 	     || TREE_CODE (ref) == ARRAY_REF
 	     || TREE_CODE (ref) == VAR_DECL)
 	    && TREE_CODE (field_decl) == FIELD_DECL)
@@ -2644,7 +2645,7 @@ free_structures (void)
   d_str str;
   unsigned i;
 
-  for (i = 0; VEC_iterate (structure, structures, i, str); i++)
+  FOR_EACH_VEC_ELT (structure, structures, i, str)
     free_data_struct (str);
 
   VEC_free (structure, heap, structures);
@@ -2872,7 +2873,7 @@ exclude_escaping_types_1 (VEC (tree, heap) **unsuitable_types)
   d_str str;
   unsigned i;
 
-  for (i = 0; VEC_iterate (structure, structures, i, str); i++)
+  FOR_EACH_VEC_ELT (structure, structures, i, str)
     check_type_escape (str, unsuitable_types);
 }
 
@@ -2923,7 +2924,7 @@ exclude_types_passed_to_local_func (VEC (tree, heap) **unsuitable_types)
 	tree fn = c_node->decl;
 	tree arg;
 
-	for (arg = DECL_ARGUMENTS (fn); arg; arg = TREE_CHAIN (arg))
+	for (arg = DECL_ARGUMENTS (fn); arg; arg = DECL_CHAIN (arg))
 	  {
 	    tree type = TREE_TYPE (arg);
 
@@ -3353,8 +3354,8 @@ remove_unsuitable_types (VEC (tree, heap) *unsuitable_types)
   tree type;
   unsigned i, j;
 
-  for (j = 0; VEC_iterate (tree, unsuitable_types, j, type); j++)
-    for (i = 0; VEC_iterate (structure, structures, i, str); i++)
+  FOR_EACH_VEC_ELT (tree, unsuitable_types, j, type)
+    FOR_EACH_VEC_ELT (structure, structures, i, str)
       if (is_equal_types (str->decl, type))
 	{
 	  remove_structure (i);
@@ -3373,7 +3374,7 @@ exclude_types_with_bit_fields (VEC (tree, heap) **unsuitable_types)
   d_str str;
   unsigned i;
 
-  for (i = 0; VEC_iterate (structure, structures, i, str); i++)
+  FOR_EACH_VEC_ELT (structure, structures, i, str)
     check_bitfields (str, unsuitable_types);
 }
 
@@ -3404,7 +3405,7 @@ analyze_struct_form (VEC (tree, heap) **unsuitable_types)
   d_str str;
   unsigned i;
 
-  for (i = 0; VEC_iterate (structure, structures, i, str); i++)
+  FOR_EACH_VEC_ELT (structure, structures, i, str)
     check_struct_form (str, unsuitable_types);
 }
 
@@ -3416,7 +3417,6 @@ static void
 build_data_structure (VEC (tree, heap) **unsuitable_types)
 {
   tree var, type;
-  tree var_list;
   struct varpool_node *current_varpool;
   struct cgraph_node *c_node;
 
@@ -3439,6 +3439,7 @@ build_data_structure (VEC (tree, heap) **unsuitable_types)
       if (avail == AVAIL_LOCAL || avail == AVAIL_AVAILABLE)
 	{
 	  struct function *fn = DECL_STRUCT_FUNCTION (c_node->decl);
+	  unsigned ix;
 
 	  for (var = DECL_ARGUMENTS (c_node->decl); var;
 	       var = TREE_CHAIN (var))
@@ -3454,14 +3455,9 @@ build_data_structure (VEC (tree, heap) **unsuitable_types)
 	    }
 
 	  /* Check function local variables.  */
-	  for (var_list = fn->local_decls; var_list;
-	       var_list = TREE_CHAIN (var_list))
-	    {
-	      var = TREE_VALUE (var_list);
-
-	      if (is_candidate (var, &type, unsuitable_types))
-		add_structure (type);
-	    }
+	  FOR_EACH_LOCAL_DECL (fn, ix, var)
+	    if (is_candidate (var, &type, unsuitable_types))
+	      add_structure (type);
 	}
     }
 }
@@ -3583,7 +3579,7 @@ dump_accesses (void)
   if (!dump_file)
     return;
 
-  for (i = 0; VEC_iterate (structure, structures, i, str); i++)
+  FOR_EACH_VEC_ELT (structure, structures, i, str)
     dump_accs (str);
 }
 
@@ -3621,7 +3617,7 @@ exclude_alloc_and_field_accs (struct cgraph_node *node)
   d_str str;
   unsigned i;
 
-  for (i = 0; VEC_iterate (structure, structures, i, str); i++)
+  FOR_EACH_VEC_ELT (structure, structures, i, str)
     exclude_alloc_and_field_accs_1 (str, node);
 }
 
@@ -3786,7 +3782,7 @@ dump_new_types (void)
   fprintf (dump_file, "\nThe following are the new types generated by"
 	   " this optimization:\n");
 
-  for (i = 0; VEC_iterate (structure, structures, i, str); i++)
+  FOR_EACH_VEC_ELT (structure, structures, i, str)
     {
       if (dump_file)
 	{
@@ -3795,7 +3791,7 @@ dump_new_types (void)
 	  fprintf (dump_file, "\nthe number of new types is %d\n",
 		   VEC_length (tree, str->new_types));
 	}
-      for (j = 0; VEC_iterate (tree, str->new_types, j, type); j++)
+      FOR_EACH_VEC_ELT (tree, str->new_types, j, type)
 	dump_struct_type (type, 2, 0);
     }
 }
@@ -3809,7 +3805,7 @@ create_new_types (void)
   unsigned i;
   int str_num = 0;
 
-  for (i = 0; VEC_iterate (structure, structures, i, str); i++)
+  FOR_EACH_VEC_ELT (structure, structures, i, str)
     create_new_type (str, &str_num);
 }
 
@@ -3914,7 +3910,7 @@ exclude_cold_structs (void)
   d_str str;
 
   /* We summarize counts of fields of a structure into the structure count.  */
-  for (i = 0; VEC_iterate (structure, structures, i, str); i++)
+  FOR_EACH_VEC_ELT (structure, structures, i, str)
     sum_counts (str, &hottest);
 
   /* Remove cold structures from structures vector.  */
@@ -3943,7 +3939,7 @@ peel_structs (void)
   d_str str;
   unsigned i;
 
-  for (i = 0; VEC_iterate (structure, structures, i, str); i++)
+  FOR_EACH_VEC_ELT (structure, structures, i, str)
     peel_hot_fields (str);
 }
 
@@ -4031,7 +4027,10 @@ reorg_structs (void)
 static unsigned int
 reorg_structs_drive (void)
 {
-  reorg_structs ();
+  /* IPA struct-reorg is completely broken - its analysis phase is
+     non-conservative (which is not the only reason it is broken).  */
+  if (0)
+    reorg_structs ();
   return 0;
 }
 

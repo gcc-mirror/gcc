@@ -43,7 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "flags.h"
 #include "recog.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "cselib.h"
 #include "params.h"
 #include "tm_p.h"
@@ -480,22 +480,28 @@ try_forward_edges (int mode, basic_block b)
 		{
 		  /* When not optimizing, ensure that edges or forwarder
 		     blocks with different locus are not optimized out.  */
-		  int locus = single_succ_edge (target)->goto_locus;
+		  int new_locus = single_succ_edge (target)->goto_locus;
+		  int locus = goto_locus;
 
-		  if (locus && goto_locus && !locator_eq (locus, goto_locus))
-		    counter = n_basic_blocks;
-		  else if (locus)
-		    goto_locus = locus;
-
-		  if (INSN_P (BB_END (target)))
+		  if (new_locus && locus && !locator_eq (new_locus, locus))
+		    new_target = NULL;
+		  else
 		    {
-		      locus = INSN_LOCATOR (BB_END (target));
+		      if (new_locus)
+			locus = new_locus;
 
-		      if (locus && goto_locus
-			  && !locator_eq (locus, goto_locus))
-			counter = n_basic_blocks;
-		      else if (locus)
-			goto_locus = locus;
+		      new_locus = INSN_P (BB_END (target))
+				  ? INSN_LOCATOR (BB_END (target)) : 0;
+
+		      if (new_locus && locus && !locator_eq (new_locus, locus))
+			new_target = NULL;
+		      else
+			{
+			  if (new_locus)
+			    locus = new_locus;
+
+			  goto_locus = locus;
+			}
 		    }
 		}
 	    }
@@ -788,7 +794,6 @@ merge_blocks_move (edge e, basic_block b, basic_block c, int mode)
       edge tmp_edge, b_fallthru_edge;
       bool c_has_outgoing_fallthru;
       bool b_has_incoming_fallthru;
-      edge_iterator ei;
 
       /* Avoid overactive code motion, as the forwarder blocks should be
 	 eliminated by edge redirection instead.  One exception might have
@@ -801,16 +806,10 @@ merge_blocks_move (edge e, basic_block b, basic_block c, int mode)
 	 and loop notes.  This is done by squeezing out all the notes
 	 and leaving them there to lie.  Not ideal, but functional.  */
 
-      FOR_EACH_EDGE (tmp_edge, ei, c->succs)
-	if (tmp_edge->flags & EDGE_FALLTHRU)
-	  break;
-
+      tmp_edge = find_fallthru_edge (c->succs);
       c_has_outgoing_fallthru = (tmp_edge != NULL);
 
-      FOR_EACH_EDGE (tmp_edge, ei, b->preds)
-	if (tmp_edge->flags & EDGE_FALLTHRU)
-	  break;
-
+      tmp_edge = find_fallthru_edge (b->preds);
       b_has_incoming_fallthru = (tmp_edge != NULL);
       b_fallthru_edge = tmp_edge;
       next = b->prev_bb;
@@ -1179,13 +1178,16 @@ flow_find_head_matching_sequence (basic_block bb1, basic_block bb2, rtx *f1,
 
   while (true)
     {
-
       /* Ignore notes.  */
       while (!NONDEBUG_INSN_P (i1) && i1 != BB_END (bb1))
 	i1 = NEXT_INSN (i1);
 
       while (!NONDEBUG_INSN_P (i2) && i2 != BB_END (bb2))
 	i2 = NEXT_INSN (i2);
+
+      if ((i1 == BB_END (bb1) && !NONDEBUG_INSN_P (i1))
+	  || (i2 == BB_END (bb2) && !NONDEBUG_INSN_P (i2)))
+	break;
 
       if (NOTE_P (i1) || NOTE_P (i2)
 	  || JUMP_P (i1) || JUMP_P (i2))
@@ -1793,7 +1795,6 @@ try_crossjump_bb (int mode, basic_block bb)
   bool changed;
   unsigned max, ix, ix2;
   basic_block ev, ev2;
-  edge_iterator ei;
 
   /* Nothing to do if there is not at least two incoming edges.  */
   if (EDGE_COUNT (bb->preds) < 2)
@@ -1830,14 +1831,7 @@ try_crossjump_bb (int mode, basic_block bb)
   if (EDGE_COUNT (bb->preds) > max)
     return false;
 
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    {
-      if (e->flags & EDGE_FALLTHRU)
-	{
-	  fallthru = e;
-	  break;
-	}
-    }
+  fallthru = find_fallthru_edge (bb->preds);
 
   changed = false;
   for (ix = 0, ev = bb; ix < EDGE_COUNT (ev->preds); )
@@ -2102,6 +2096,7 @@ try_optimize_cfg (int mode)
 		  continue;
 		}
 
+	      /* Merge B with its single successor, if any.  */
 	      if (single_succ_p (b)
 		  && (s = single_succ_edge (b))
 		  && !(s->flags & EDGE_COMPLEX)

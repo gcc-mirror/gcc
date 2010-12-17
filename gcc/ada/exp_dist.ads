@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,7 @@ package Exp_Dist is
    PCS_Version_Number : constant array (PCS_Names) of Int :=
                           (Name_No_DSA      => 1,
                            Name_GARLIC_DSA  => 1,
-                           Name_PolyORB_DSA => 3);
+                           Name_PolyORB_DSA => 4);
    --  PCS interface version. This is used to check for consistency between the
    --  compiler used to generate distribution stubs and the PCS implementation.
    --  It must be incremented whenever a change is made to the generated code

@@ -52,6 +52,7 @@ public: inline QMap ():d (&QMapData::shared_null)
 };
 struct QVectorData
 {
+  QBasicAtomicInt ref;
   static QVectorData shared_null;
 };
 template < typename T > struct QVectorTypedData

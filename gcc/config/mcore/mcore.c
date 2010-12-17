@@ -1,6 +1,6 @@
 /* Output routines for Motorola MCore processor
    Copyright (C) 1993, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008,
-   2009 Free Software Foundation, Inc.
+   2009, 2010 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -40,15 +40,11 @@
 #include "recog.h"
 #include "function.h"
 #include "ggc.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "target.h"
 #include "target-def.h"
 #include "df.h"
-
-/* Maximum size we are allowed to grow the stack in a single operation.
-   If we want more, we must do it in increments of at most this size.
-   If this value is 0, we don't check at all.  */
-int mcore_stack_increment = STACK_UNITS_MAXSTEP;
 
 /* For dumping information about frame sizes.  */
 char * mcore_current_function_name = 0;
@@ -146,8 +142,17 @@ static bool       mcore_return_in_memory	(const_tree, const_tree);
 static int        mcore_arg_partial_bytes       (CUMULATIVE_ARGS *,
 						 enum machine_mode,
 						 tree, bool);
+static rtx        mcore_function_arg            (CUMULATIVE_ARGS *,
+						 enum machine_mode,
+						 const_tree, bool);
+static void       mcore_function_arg_advance    (CUMULATIVE_ARGS *,
+						 enum machine_mode,
+						 const_tree, bool);
+static unsigned int mcore_function_arg_boundary (enum machine_mode,
+						 const_tree);
 static void       mcore_asm_trampoline_template (FILE *);
 static void       mcore_trampoline_init		(rtx, tree, rtx);
+static void       mcore_option_override		(void);
 
 /* MCore specific attributes.  */
 
@@ -159,6 +164,23 @@ static const struct attribute_spec mcore_attribute_table[] =
   { "naked",     0, 0, true,  false, false, mcore_handle_naked_attribute },
   { NULL,        0, 0, false, false, false, NULL }
 };
+
+/* What options are we going to default to specific settings when
+   -O* happens; the user can subsequently override these settings.
+  
+   Omitting the frame pointer is a very good idea on the MCore.
+   Scheduling isn't worth anything on the current MCore implementation.  */
+
+static const struct default_options mcore_option_optimization_table[] =
+  {
+    { OPT_LEVELS_1_PLUS, OPT_ffunction_cse, NULL, 0 },
+    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    { OPT_LEVELS_ALL, OPT_fcaller_saves, NULL, 0 },
+    { OPT_LEVELS_ALL, OPT_fschedule_insns, NULL, 0 },
+    { OPT_LEVELS_ALL, OPT_fschedule_insns2, NULL, 0 },
+    { OPT_LEVELS_SIZE, OPT_mhardlit, NULL, 0 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
 
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ASM_EXTERNAL_LIBCALL
@@ -215,6 +237,12 @@ static const struct attribute_spec mcore_attribute_table[] =
 #define TARGET_PASS_BY_REFERENCE  hook_pass_by_reference_must_pass_in_stack
 #undef  TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES	mcore_arg_partial_bytes
+#undef  TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG		mcore_function_arg
+#undef  TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE	mcore_function_arg_advance
+#undef  TARGET_FUNCTION_ARG_BOUNDARY
+#define TARGET_FUNCTION_ARG_BOUNDARY	mcore_function_arg_boundary
 
 #undef  TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS	mcore_setup_incoming_varargs
@@ -223,6 +251,14 @@ static const struct attribute_spec mcore_attribute_table[] =
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE	mcore_asm_trampoline_template
 #undef  TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT		mcore_trampoline_init
+
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE mcore_option_override
+#undef TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE mcore_option_optimization_table
+
+#undef TARGET_EXCEPT_UNWIND_INFO
+#define TARGET_EXCEPT_UNWIND_INFO sjlj_except_unwind_info
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1672,7 +1708,6 @@ layout_mcore_frame (struct mcore_frame * infp)
   int nbytes;
   int regarg;
   int localregarg;
-  int localreg;
   int outbounds;
   unsigned int growths;
   int step;
@@ -1717,7 +1752,6 @@ layout_mcore_frame (struct mcore_frame * infp)
 
   regarg      = infp->reg_size + infp->arg_size;
   localregarg = infp->local_size + regarg;
-  localreg    = infp->local_size + infp->reg_size;
   outbounds   = infp->outbound_size + infp->pad_outbound;
   growths     = 0;
 
@@ -2678,13 +2712,14 @@ mcore_is_same_reg (rtx x, rtx y)
   return 0;
 }
 
-void
-mcore_override_options (void)
+static void
+mcore_option_override (void)
 {
   /* Only the m340 supports little endian code.  */
   if (TARGET_LITTLE_END && ! TARGET_M340)
     target_flags |= MASK_M340;
 }
+
 
 /* Compute the number of word sized registers needed to 
    hold a function argument of mode MODE and type TYPE.  */
@@ -2781,9 +2816,9 @@ mcore_function_value (const_tree valtype, const_tree func)
    NPARM_REGS words is at least partially passed in a register unless
    its data type forbids.  */
 
-rtx
-mcore_function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode,
-		    tree type, int named)
+static rtx
+mcore_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		    const_tree type, bool named)
 {
   int arg_reg;
   
@@ -2793,12 +2828,30 @@ mcore_function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode,
   if (targetm.calls.must_pass_in_stack (mode, type))
     return 0;
 
-  arg_reg = ROUND_REG (cum, mode);
+  arg_reg = ROUND_REG (*cum, mode);
   
   if (arg_reg < NPARM_REGS)
     return handle_structs_in_regs (mode, type, FIRST_PARM_REG + arg_reg);
 
   return 0;
+}
+
+static void
+mcore_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			    const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  *cum = (ROUND_REG (*cum, mode)
+	  + (int)named * mcore_num_arg_regs (mode, type));
+}
+
+static unsigned int
+mcore_function_arg_boundary (enum machine_mode mode,
+			     const_tree type ATTRIBUTE_UNUSED)
+{
+  /* Doubles must be aligned to an 8 byte boundary.  */
+  return (mode != BLKmode && GET_MODE_SIZE (mode) == 8
+	  ? BIGGEST_ALIGNMENT
+	  : PARM_BOUNDARY);
 }
 
 /* Returns the number of bytes of argument registers required to hold *part*

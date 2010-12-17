@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "cp-tree.h"
 #include "input.h"
-#include "toplev.h"
 #include "params.h"
 #include "hashtab.h"
 #include "target.h"
@@ -107,12 +106,11 @@ clone_body (tree clone, tree fn, void *arg_map)
   if (DECL_NAME (clone) == base_dtor_identifier
       || DECL_NAME (clone) == base_ctor_identifier)
     {
-      tree decls = DECL_STRUCT_FUNCTION (fn)->local_decls;
-      for (; decls; decls = TREE_CHAIN (decls))
-	{
-	  tree decl = TREE_VALUE (decls);
-	  walk_tree (&DECL_INITIAL (decl), copy_tree_body_r, &id, NULL);
-	}
+      unsigned ix;
+      tree decl;
+
+      FOR_EACH_LOCAL_DECL (DECL_STRUCT_FUNCTION (fn), ix, decl)
+        walk_tree (&DECL_INITIAL (decl), copy_tree_body_r, &id, NULL);
     }
 
   append_to_statement_list_force (stmts, &DECL_SAVED_TREE (clone));
@@ -283,16 +281,16 @@ maybe_clone_body (tree fn)
       clone_parm = DECL_ARGUMENTS (clone);
       /* Update the `this' parameter, which is always first.  */
       update_cloned_parm (parm, clone_parm, first);
-      parm = TREE_CHAIN (parm);
-      clone_parm = TREE_CHAIN (clone_parm);
+      parm = DECL_CHAIN (parm);
+      clone_parm = DECL_CHAIN (clone_parm);
       if (DECL_HAS_IN_CHARGE_PARM_P (fn))
-	parm = TREE_CHAIN (parm);
+	parm = DECL_CHAIN (parm);
       if (DECL_HAS_VTT_PARM_P (fn))
-	parm = TREE_CHAIN (parm);
+	parm = DECL_CHAIN (parm);
       if (DECL_HAS_VTT_PARM_P (clone))
-	clone_parm = TREE_CHAIN (clone_parm);
+	clone_parm = DECL_CHAIN (clone_parm);
       for (; parm;
-	   parm = TREE_CHAIN (parm), clone_parm = TREE_CHAIN (clone_parm))
+	   parm = DECL_CHAIN (parm), clone_parm = DECL_CHAIN (clone_parm))
 	/* Update this parameter.  */
 	update_cloned_parm (parm, clone_parm, first);
 
@@ -349,7 +347,7 @@ maybe_clone_body (tree fn)
                 clone_parm = DECL_ARGUMENTS (clone);
               parm;
               ++parmno,
-                parm = TREE_CHAIN (parm))
+                parm = DECL_CHAIN (parm))
             {
               /* Map the in-charge parameter to an appropriate constant.  */
               if (DECL_HAS_IN_CHARGE_PARM_P (fn) && parmno == 1)
@@ -368,7 +366,7 @@ maybe_clone_body (tree fn)
                     {
                       DECL_ABSTRACT_ORIGIN (clone_parm) = parm;
                       *pointer_map_insert (decl_map, parm) = clone_parm;
-                      clone_parm = TREE_CHAIN (clone_parm);
+                      clone_parm = DECL_CHAIN (clone_parm);
                     }
                   /* Otherwise, map the VTT parameter to `NULL'.  */
                   else
@@ -380,7 +378,7 @@ maybe_clone_body (tree fn)
               else
                 {
                   *pointer_map_insert (decl_map, parm) = clone_parm;
-                  clone_parm = TREE_CHAIN (clone_parm);
+                  clone_parm = DECL_CHAIN (clone_parm);
                 }
             }
 

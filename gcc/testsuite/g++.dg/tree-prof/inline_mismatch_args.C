@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-tree-einline2" } */
+/* { dg-options "-O2 -fdump-tree-einline" } */
 class DocId {
  public:
  DocId() { }
@@ -31,6 +31,6 @@ int main(void)
  baz.Bar(&baz, gid);
  return 0;
 }
-/* { dg-final-use { scan-tree-dump "Inlining .*Super::Foo" "einline2"} } */                                                                                
-/* { dg-final-use { scan-tree-dump-not "mismatched arguments" "einline2"} } */                                                                 
-/* { dg-final-use { cleanup-tree-dump "einline2" } } */
+/* { dg-final-use { scan-tree-dump "Inlining .*Super::Foo" "einline" } } */
+/* { dg-final-use { scan-tree-dump-not "mismatched arguments" "einline" } } */
+/* { dg-final-use { cleanup-tree-dump "einline" } } */

@@ -306,8 +306,16 @@ package body Exp_Imgv is
          Imid := RE_Image_Boolean;
          Tent := Rtyp;
 
+      --  For standard character, we have to select the version which handles
+      --  soft hyphen correctly, based on the version of Ada in use (ugly!)
+
       elsif Rtyp = Standard_Character then
-         Imid := RE_Image_Character;
+         if Ada_Version < Ada_2005 then
+            Imid := RE_Image_Character;
+         else
+            Imid := RE_Image_Character_05;
+         end if;
+
          Tent := Rtyp;
 
       elsif Rtyp = Standard_Wide_Character then
@@ -477,7 +485,7 @@ package body Exp_Imgv is
 
       elsif Rtyp = Standard_Wide_Character then
          Append_To (Arg_List,
-           New_Reference_To (Boolean_Literals (Ada_Version >= Ada_05), Loc));
+           New_Reference_To (Boolean_Literals (Ada_Version >= Ada_2005), Loc));
       end if;
 
       --  Now append the procedure call to the insert list

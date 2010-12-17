@@ -1844,41 +1844,41 @@ else
 fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+/* Define $2 to an innocuous variant, in case <limits.h> declares $2.
+   For example, HP-UX 11i <limits.h> declares gettimeofday.  */
+#define $2 innocuous_$2
+
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $2 (); below.
     Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
-    <limits.h> exists even on freestanding compilers.  Under hpux,
-    including <limits.h> includes <sys/time.h> and causes problems
-    checking for functions defined therein.  */
-#if defined (__STDC__) && !defined (_HPUX_SOURCE)
+    <limits.h> exists even on freestanding compilers.  */
+
+#ifdef __STDC__
 # include <limits.h>
 #else
 # include <assert.h>
 #endif
-/* Override any gcc2 internal prototype to avoid an error.  */
+
+#undef $2
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
 #ifdef __cplusplus
 extern "C"
-{
 #endif
-/* We use char because int might match the return type of a gcc2
-   builtin and then its argument prototype would still apply.  */
 char $2 ();
 /* The GNU C library defines this for functions which it implements
     to always fail with ENOSYS.  Some functions are actually named
     something starting with __ and the normal name is an alias.  */
-#if defined (__stub_$2) || defined (__stub___$2)
+#if defined __stub_$2 || defined __stub___$2
 choke me
-#else
-char (*f) () = $2;
-#endif
-#ifdef __cplusplus
-}
 #endif
 
 int
 main ()
 {
-return f != $2;
+return $2 ();
   ;
   return 0;
 }
@@ -4895,7 +4895,7 @@ host_makefile_frag=${frag}
 # It's OK to check for header files.  Although the compiler may not be
 # able to link anything, it had better be able to at least compile
 # something.
-for ac_header in sys/file.h sys/param.h limits.h stdlib.h malloc.h string.h unistd.h strings.h sys/time.h time.h sys/resource.h sys/stat.h sys/mman.h fcntl.h alloca.h sys/pstat.h sys/sysmp.h sys/sysinfo.h machine/hal_sysinfo.h sys/table.h sys/sysctl.h sys/systemcfg.h stdint.h stdio_ext.h
+for ac_header in sys/file.h sys/param.h limits.h stdlib.h malloc.h string.h unistd.h strings.h sys/time.h time.h sys/resource.h sys/stat.h sys/mman.h fcntl.h alloca.h sys/pstat.h sys/sysmp.h sys/sysinfo.h machine/hal_sysinfo.h sys/table.h sys/sysctl.h sys/systemcfg.h stdint.h stdio_ext.h process.h sys/prctl.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_preproc "$LINENO" "$ac_header" "$as_ac_Header"
@@ -5203,6 +5203,17 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 
 
+ac_fn_c_check_type "$LINENO" "ssize_t" "ac_cv_type_ssize_t" "$ac_includes_default"
+if test "x$ac_cv_type_ssize_t" = x""yes; then :
+
+else
+
+cat >>confdefs.h <<_ACEOF
+#define ssize_t int
+_ACEOF
+
+fi
+
 
 # Given the above check, we always have uintptr_t or a fallback
 # definition.  So define HAVE_UINTPTR_T in case any imported code
@@ -5276,14 +5287,16 @@ funcs="$funcs vprintf"
 funcs="$funcs vsnprintf"
 funcs="$funcs vsprintf"
 funcs="$funcs waitpid"
+funcs="$funcs setproctitle"
 
 # Also in the old function.def file: alloca, vfork, getopt.
 
 vars="sys_errlist sys_nerr sys_siglist"
 
-checkfuncs="getrusage on_exit psignal strerror strsignal sysconf times sbrk gettimeofday"
-checkfuncs="$checkfuncs realpath canonicalize_file_name pstat_getstatic pstat_getdynamic sysmp"
-checkfuncs="$checkfuncs getsysinfo table sysctl wait3 wait4 __fsetlocking"
+checkfuncs="__fsetlocking canonicalize_file_name dup3 getrusage getsysinfo \
+ gettimeofday on_exit psignal pstat_getdynamic pstat_getstatic realpath \
+ sbrk spawnve spawnvpe strerror strsignal sysconf sysctl sysmp table \
+ times wait3 wait4"
 
 # These are neither executed nor required, but they help keep
 # autoheader happy without adding a bunch of text to acconfig.h.
@@ -5291,6 +5304,7 @@ if test "x" = "y"; then
   for ac_func in asprintf atexit \
     basename bcmp bcopy bsearch bzero \
     calloc canonicalize_file_name clock \
+    dup3 \
     ffs __fsetlocking \
     getcwd getpagesize getrusage getsysinfo gettimeofday \
     index insque \
@@ -5298,7 +5312,8 @@ if test "x" = "y"; then
     on_exit \
     psignal pstat_getdynamic pstat_getstatic putenv \
     random realpath rename rindex \
-    sbrk setenv sigsetmask snprintf stpcpy stpncpy strcasecmp strchr strdup \
+    sbrk setenv setproctitle sigsetmask snprintf spawnve spawnvpe \
+     stpcpy stpncpy strcasecmp strchr strdup \
      strerror strncasecmp strndup strrchr strsignal strstr strtod strtol \
      strtoul strverscmp sysconf sysctl sysmp \
     table times tmpnam \
@@ -6539,10 +6554,10 @@ fi
 
 # Figure out which version of pexecute to use.
 case "${host}" in
-     *-*-mingw* | *-*-winnt*)	pexecute=./pex-win32.o  ;;
-     *-*-msdosdjgpp*)		pexecute=./pex-djgpp.o  ;;
-     *-*-msdos*)		pexecute=./pex-msdos.o  ;;
-     *)				pexecute=./pex-unix.o   ;;
+     *-*-mingw* | *-*-winnt*)	pexecute=pex-win32  ;;
+     *-*-msdosdjgpp*)		pexecute=pex-djgpp  ;;
+     *-*-msdos*)		pexecute=pex-msdos  ;;
+     *)				pexecute=pex-unix   ;;
 esac
 
 

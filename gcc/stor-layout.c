@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "expr.h"
 #include "output.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "ggc.h"
 #include "target.h"
 #include "langhooks.h"
@@ -49,8 +49,6 @@ tree sizetype_tab[(int) TYPE_KIND_LAST];
 /* If nonzero, this is an upper limit on alignment of structure fields.
    The value is measured in bits.  */
 unsigned int maximum_field_alignment = TARGET_DEFAULT_PACK_STRUCT * BITS_PER_UNIT;
-/* ... and its original value in bytes, specified via -fpack-struct=<value>.  */
-unsigned int initial_max_fld_align = TARGET_DEFAULT_PACK_STRUCT;
 
 /* Nonzero if all REFERENCE_TYPEs are internal and hence should be allocated
    in the address spaces' address_mode, not pointer_mode.   Set only by
@@ -172,6 +170,32 @@ variable_size (tree size)
 /* An array of functions used for self-referential size computation.  */
 static GTY(()) VEC (tree, gc) *size_functions;
 
+/* Look inside EXPR into simple arithmetic operations involving constants.
+   Return the outermost non-arithmetic or non-constant node.  */
+
+static tree
+skip_simple_constant_arithmetic (tree expr)
+{
+  while (true)
+    {
+      if (UNARY_CLASS_P (expr))
+	expr = TREE_OPERAND (expr, 0);
+      else if (BINARY_CLASS_P (expr))
+	{
+	  if (TREE_CONSTANT (TREE_OPERAND (expr, 1)))
+	    expr = TREE_OPERAND (expr, 0);
+	  else if (TREE_CONSTANT (TREE_OPERAND (expr, 0)))
+	    expr = TREE_OPERAND (expr, 1);
+	  else
+	    break;
+	}
+      else
+	break;
+    }
+
+  return expr;
+}
+
 /* Similar to copy_tree_r but do not copy component references involving
    PLACEHOLDER_EXPRs.  These nodes are spotted in find_placeholder_in_expr
    and substituted in substitute_in_expr.  */
@@ -233,13 +257,14 @@ self_referential_size (tree size)
 {
   static unsigned HOST_WIDE_INT fnno = 0;
   VEC (tree, heap) *self_refs = NULL;
-  tree param_type_list = NULL, param_decl_list = NULL, arg_list = NULL;
+  tree param_type_list = NULL, param_decl_list = NULL;
   tree t, ref, return_type, fntype, fnname, fndecl;
   unsigned int i;
   char buf[128];
+  VEC(tree,gc) *args = NULL;
 
   /* Do not factor out simple operations.  */
-  t = skip_simple_arithmetic (size);
+  t = skip_simple_constant_arithmetic (size);
   if (TREE_CODE (t) == CALL_EXPR)
     return size;
 
@@ -255,7 +280,8 @@ self_referential_size (tree size)
 
   /* Build the parameter and argument lists in parallel; also
      substitute the former for the latter in the expression.  */
-  for (i = 0; VEC_iterate (tree, self_refs, i, ref); i++)
+  args = VEC_alloc (tree, gc, VEC_length (tree, self_refs));
+  FOR_EACH_VEC_ELT (tree, self_refs, i, ref)
     {
       tree subst, param_name, param_type, param_decl;
 
@@ -290,7 +316,7 @@ self_referential_size (tree size)
 
       param_type_list = tree_cons (NULL_TREE, param_type, param_type_list);
       param_decl_list = chainon (param_decl, param_decl_list);
-      arg_list = tree_cons (NULL_TREE, ref, arg_list);
+      VEC_quick_push (tree, args, ref);
     }
 
   VEC_free (tree, heap, self_refs);
@@ -301,7 +327,6 @@ self_referential_size (tree size)
   /* The 3 lists have been created in reverse order.  */
   param_type_list = nreverse (param_type_list);
   param_decl_list = nreverse (param_decl_list);
-  arg_list = nreverse (arg_list);
 
   /* Build the function type.  */
   return_type = TREE_TYPE (size);
@@ -311,7 +336,7 @@ self_referential_size (tree size)
   sprintf (buf, "SZ"HOST_WIDE_INT_PRINT_UNSIGNED, fnno++);
   fnname = get_file_function_name (buf);
   fndecl = build_decl (input_location, FUNCTION_DECL, fnname, fntype);
-  for (t = param_decl_list; t; t = TREE_CHAIN (t))
+  for (t = param_decl_list; t; t = DECL_CHAIN (t))
     DECL_CONTEXT (t) = fndecl;
   DECL_ARGUMENTS (fndecl) = param_decl_list;
   DECL_RESULT (fndecl)
@@ -342,7 +367,7 @@ self_referential_size (tree size)
   VEC_safe_push (tree, gc, size_functions, fndecl);
 
   /* Replace the original expression with a call to the size function.  */
-  return build_function_call_expr (UNKNOWN_LOCATION, fndecl, arg_list);
+  return build_call_expr_loc_vec (input_location, fndecl, args);
 }
 
 /* Take, queue and compile all the size functions.  It is essential that
@@ -464,6 +489,50 @@ int_mode_for_mode (enum machine_mode mode)
     default:
       gcc_unreachable ();
     }
+
+  return mode;
+}
+
+/* Find a mode that is suitable for representing a vector with
+   NUNITS elements of mode INNERMODE.  Returns BLKmode if there
+   is no suitable mode.  */
+
+enum machine_mode
+mode_for_vector (enum machine_mode innermode, unsigned nunits)
+{
+  enum machine_mode mode;
+
+  /* First, look for a supported vector type.  */
+  if (SCALAR_FLOAT_MODE_P (innermode))
+    mode = MIN_MODE_VECTOR_FLOAT;
+  else if (SCALAR_FRACT_MODE_P (innermode))
+    mode = MIN_MODE_VECTOR_FRACT;
+  else if (SCALAR_UFRACT_MODE_P (innermode))
+    mode = MIN_MODE_VECTOR_UFRACT;
+  else if (SCALAR_ACCUM_MODE_P (innermode))
+    mode = MIN_MODE_VECTOR_ACCUM;
+  else if (SCALAR_UACCUM_MODE_P (innermode))
+    mode = MIN_MODE_VECTOR_UACCUM;
+  else
+    mode = MIN_MODE_VECTOR_INT;
+
+  /* Do not check vector_mode_supported_p here.  We'll do that
+     later in vector_type_mode.  */
+  for (; mode != VOIDmode ; mode = GET_MODE_WIDER_MODE (mode))
+    if (GET_MODE_NUNITS (mode) == nunits
+	&& GET_MODE_INNER (mode) == innermode)
+      break;
+
+  /* For integers, try mapping it to a same-sized scalar mode.  */
+  if (mode == VOIDmode
+      && GET_MODE_CLASS (innermode) == MODE_INT)
+    mode = mode_for_size (nunits * GET_MODE_BITSIZE (innermode),
+			  MODE_INT, 0);
+
+  if (mode == VOIDmode
+      || (GET_MODE_CLASS (mode) == MODE_INT
+	  && !have_regs_of_mode[mode]))
+    return BLKmode;
 
   return mode;
 }
@@ -616,11 +685,14 @@ layout_decl (tree decl, unsigned int known_align)
 	    }
 
 	  /* See if we can use an ordinary integer mode for a bit-field.
-	     Conditions are: a fixed size that is correct for another mode
-	     and occupying a complete byte or bytes on proper boundary.  */
+	     Conditions are: a fixed size that is correct for another mode,
+	     occupying a complete byte or bytes on proper boundary,
+	     and not volatile or not -fstrict-volatile-bitfields.  */
 	  if (TYPE_SIZE (type) != 0
 	      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-	      && GET_MODE_CLASS (TYPE_MODE (type)) == MODE_INT)
+	      && GET_MODE_CLASS (TYPE_MODE (type)) == MODE_INT
+	      && !(TREE_THIS_VOLATILE (decl)
+		   && flag_strict_volatile_bitfields > 0))
 	    {
 	      enum machine_mode xmode
 		= mode_for_size_tree (DECL_SIZE (decl), MODE_INT, 1);
@@ -700,9 +772,9 @@ layout_decl (tree decl, unsigned int known_align)
 	  int size_as_int = TREE_INT_CST_LOW (size);
 
 	  if (compare_tree_int (size, size_as_int) == 0)
-	    warning (OPT_Wlarger_than_eq, "size of %q+D is %d bytes", decl, size_as_int);
+	    warning (OPT_Wlarger_than_, "size of %q+D is %d bytes", decl, size_as_int);
 	  else
-	    warning (OPT_Wlarger_than_eq, "size of %q+D is larger than %wd bytes",
+	    warning (OPT_Wlarger_than_, "size of %q+D is larger than %wd bytes",
                      decl, larger_than_size);
 	}
     }
@@ -1019,8 +1091,7 @@ place_union_field (record_layout_info rli, tree field)
   if (TREE_CODE (rli->t) == UNION_TYPE)
     rli->offset = size_binop (MAX_EXPR, rli->offset, DECL_SIZE_UNIT (field));
   else if (TREE_CODE (rli->t) == QUAL_UNION_TYPE)
-    rli->offset = fold_build3_loc (input_location, COND_EXPR, sizetype,
-			       DECL_QUALIFIER (field),
+    rli->offset = fold_build3 (COND_EXPR, sizetype, DECL_QUALIFIER (field),
 			       DECL_SIZE_UNIT (field), rli->offset);
 }
 
@@ -1203,11 +1274,11 @@ place_field (record_layout_info rli, tree field)
 	      if (warn_packed_bitfield_compat == 1)
 		inform
 		  (input_location,
-		   "Offset of packed bit-field %qD has changed in GCC 4.4",
+		   "offset of packed bit-field %qD has changed in GCC 4.4",
 		   field);
 	    }
 	  else
-	    rli->bitpos = round_up_loc (input_location, rli->bitpos, type_align);
+	    rli->bitpos = round_up (rli->bitpos, type_align);
 	}
 
       if (! DECL_PACKED (field))
@@ -1388,7 +1459,7 @@ place_field (record_layout_info rli, tree field)
 	  if (maximum_field_alignment != 0)
 	    type_align = MIN (type_align, maximum_field_alignment);
 
-	  rli->bitpos = round_up_loc (input_location, rli->bitpos, type_align);
+	  rli->bitpos = round_up (rli->bitpos, type_align);
 
           /* If we really aligned, don't allow subsequent bitfields
 	     to undo that.  */
@@ -1454,8 +1525,8 @@ place_field (record_layout_info rli, tree field)
 
       /* If we ended a bitfield before the full length of the type then
 	 pad the struct out to the full length of the last type.  */
-      if ((TREE_CHAIN (field) == NULL
-	   || TREE_CODE (TREE_CHAIN (field)) != FIELD_DECL)
+      if ((DECL_CHAIN (field) == NULL
+	   || TREE_CODE (DECL_CHAIN (field)) != FIELD_DECL)
 	  && DECL_BIT_FIELD_TYPE (field)
 	  && !integer_zerop (DECL_SIZE (field)))
 	rli->bitpos = size_binop (PLUS_EXPR, rli->bitpos,
@@ -1502,10 +1573,9 @@ finalize_record_size (record_layout_info rli)
       = size_binop (PLUS_EXPR, unpadded_size_unit, size_one_node);
 
   /* Round the size up to be a multiple of the required alignment.  */
-  TYPE_SIZE (rli->t) = round_up_loc (input_location, unpadded_size,
-				 TYPE_ALIGN (rli->t));
+  TYPE_SIZE (rli->t) = round_up (unpadded_size, TYPE_ALIGN (rli->t));
   TYPE_SIZE_UNIT (rli->t)
-    = round_up_loc (input_location, unpadded_size_unit, TYPE_ALIGN_UNIT (rli->t));
+    = round_up (unpadded_size_unit, TYPE_ALIGN_UNIT (rli->t));
 
   if (TREE_CONSTANT (unpadded_size)
       && simple_cst_equal (unpadded_size, TYPE_SIZE (rli->t)) == 0
@@ -1525,7 +1595,7 @@ finalize_record_size (record_layout_info rli)
       rli->unpacked_align = MAX (TYPE_ALIGN (rli->t), rli->unpacked_align);
 #endif
 
-      unpacked_size = round_up_loc (input_location, TYPE_SIZE (rli->t), rli->unpacked_align);
+      unpacked_size = round_up (TYPE_SIZE (rli->t), rli->unpacked_align);
       if (simple_cst_equal (unpacked_size, TYPE_SIZE (rli->t)))
 	{
 	  if (TYPE_NAME (rli->t))
@@ -1576,7 +1646,7 @@ compute_record_mode (tree type)
   /* A record which has any BLKmode members must itself be
      BLKmode; it can't go in a register.  Unless the member is
      BLKmode only because it isn't aligned.  */
-  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+  for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     {
       if (TREE_CODE (field) != FIELD_DECL)
 	continue;
@@ -1677,10 +1747,9 @@ finalize_type_size (tree type)
 
   if (TYPE_SIZE (type) != 0)
     {
-      TYPE_SIZE (type) = round_up_loc (input_location,
-				   TYPE_SIZE (type), TYPE_ALIGN (type));
-      TYPE_SIZE_UNIT (type) = round_up_loc (input_location, TYPE_SIZE_UNIT (type),
-					TYPE_ALIGN_UNIT (type));
+      TYPE_SIZE (type) = round_up (TYPE_SIZE (type), TYPE_ALIGN (type));
+      TYPE_SIZE_UNIT (type)
+	= round_up (TYPE_SIZE_UNIT (type), TYPE_ALIGN_UNIT (type));
     }
 
   /* Evaluate nonconstant sizes only once, either now or as soon as safe.  */
@@ -1771,8 +1840,8 @@ finish_builtin_struct (tree type, const char *name, tree fields,
   for (tail = NULL_TREE; fields; tail = fields, fields = next)
     {
       DECL_FIELD_CONTEXT (fields) = type;
-      next = TREE_CHAIN (fields);
-      TREE_CHAIN (fields) = tail;
+      next = DECL_CHAIN (fields);
+      DECL_CHAIN (fields) = tail;
     }
   TYPE_FIELDS (type) = tail;
 
@@ -1873,44 +1942,8 @@ layout_type (tree type)
 
 	/* Find an appropriate mode for the vector type.  */
 	if (TYPE_MODE (type) == VOIDmode)
-	  {
-	    enum machine_mode innermode = TYPE_MODE (innertype);
-	    enum machine_mode mode;
-
-	    /* First, look for a supported vector type.  */
-	    if (SCALAR_FLOAT_MODE_P (innermode))
-	      mode = MIN_MODE_VECTOR_FLOAT;
-	    else if (SCALAR_FRACT_MODE_P (innermode))
-	      mode = MIN_MODE_VECTOR_FRACT;
-	    else if (SCALAR_UFRACT_MODE_P (innermode))
-	      mode = MIN_MODE_VECTOR_UFRACT;
-	    else if (SCALAR_ACCUM_MODE_P (innermode))
-	      mode = MIN_MODE_VECTOR_ACCUM;
-	    else if (SCALAR_UACCUM_MODE_P (innermode))
-	      mode = MIN_MODE_VECTOR_UACCUM;
-	    else
-	      mode = MIN_MODE_VECTOR_INT;
-
-	    /* Do not check vector_mode_supported_p here.  We'll do that
-	       later in vector_type_mode.  */
-	    for (; mode != VOIDmode ; mode = GET_MODE_WIDER_MODE (mode))
-	      if (GET_MODE_NUNITS (mode) == nunits
-	  	  && GET_MODE_INNER (mode) == innermode)
-	        break;
-
-	    /* For integers, try mapping it to a same-sized scalar mode.  */
-	    if (mode == VOIDmode
-	        && GET_MODE_CLASS (innermode) == MODE_INT)
-	      mode = mode_for_size (nunits * GET_MODE_BITSIZE (innermode),
-				    MODE_INT, 0);
-
-	    if (mode == VOIDmode ||
-		(GET_MODE_CLASS (mode) == MODE_INT
-		 && !have_regs_of_mode[mode]))
-	      SET_TYPE_MODE (type, BLKmode);
-	    else
-	      SET_TYPE_MODE (type, mode);
-	  }
+	  SET_TYPE_MODE (type,
+			 mode_for_vector (TYPE_MODE (innertype), nunits));
 
 	TYPE_SATURATING (type) = TYPE_SATURATING (TREE_TYPE (type));
         TYPE_UNSIGNED (type) = TYPE_UNSIGNED (TREE_TYPE (type));
@@ -1996,10 +2029,9 @@ layout_type (tree type)
 	      length
 		= size_binop (PLUS_EXPR, size_one_node,
 			      fold_convert (sizetype,
-					    fold_build2_loc (input_location,
-							     MINUS_EXPR,
-							     TREE_TYPE (lb),
-							     ub, lb)));
+					    fold_build2 (MINUS_EXPR,
+							 TREE_TYPE (lb),
+							 ub, lb)));
 
 	    TYPE_SIZE (type) = size_binop (MULT_EXPR, element_size,
 					   fold_convert (bitsizetype,
@@ -2086,7 +2118,7 @@ layout_type (tree type)
 	  TYPE_FIELDS (type) = nreverse (TYPE_FIELDS (type));
 
 	/* Place all the fields.  */
-	for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+	for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	  place_field (rli, field);
 
 	if (TREE_CODE (type) == QUAL_UNION_TYPE)

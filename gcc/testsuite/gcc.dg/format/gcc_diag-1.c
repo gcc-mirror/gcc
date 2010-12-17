@@ -201,7 +201,7 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   diag ("%s", n); /* { dg-warning "format" "bad argument types" } */
 
   /* Wrong number of arguments.  */
-  diag ("%d%d", i); /* { dg-warning "arguments" "wrong number of args" } */
+  diag ("%d%d", i); /* { dg-warning "matching" "wrong number of args" } */
   diag ("%d", i, i); /* { dg-warning "arguments" "wrong number of args" } */
   /* Miscellaneous bogus constructions.  */
   diag (""); /* { dg-warning "zero-length" "warning for empty format" } */

@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-fbounds-check" }
+! { dg-options "-fbounds-check -fno-realloc-lhs" }
 ! { dg-shouldfail "Incorrect extent in return value of CSHIFT intrinsic in dimension 2: is 3, should be 2" }
 program main
   integer, dimension(:,:), allocatable :: a, b

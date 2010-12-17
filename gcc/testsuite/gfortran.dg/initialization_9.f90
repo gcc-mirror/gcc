@@ -5,7 +5,7 @@
 
    integer function xstrcmp(s1)
      character*(*), intent(in) :: s1
-     integer :: n1 = len(s1)            ! { dg-error "Assumed character length variable" }
+     integer :: n1 = len(s1)  ! { dg-error "Assumed or deferred character length variable" }
      n1 = 1
      return
    end function xstrcmp

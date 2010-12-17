@@ -1,6 +1,7 @@
 /* Shared functions related to mangling names for the GNU compiler
    for the Java(TM) language.
-   Copyright (C) 2001, 2002, 2003, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2007, 2009, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -31,7 +32,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "tree.h"
 #include "java-tree.h"
 #include "obstack.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 
 static void append_unicode_mangled_name (const char *, int);
 #ifndef HAVE_AS_UTF8

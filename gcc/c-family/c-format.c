@@ -26,12 +26,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "flags.h"
 #include "c-common.h"
-#include "toplev.h"
 #include "intl.h"
 #include "diagnostic-core.h"
 #include "langhooks.h"
 #include "c-format.h"
 #include "alloc-pool.h"
+#include "target.h"
 
 /* Set format warning options according to a -Wformat=n option.  */
 
@@ -63,6 +63,7 @@ enum format_type { printf_format_type, asm_fprintf_format_type,
 		   gcc_diag_format_type, gcc_tdiag_format_type,
 		   gcc_cdiag_format_type,
 		   gcc_cxxdiag_format_type, gcc_gfc_format_type,
+		   gcc_objc_string_format_type,
 		   format_type_error = -1};
 
 typedef struct function_format_info
@@ -77,11 +78,37 @@ static int decode_format_type (const char *);
 
 static bool check_format_string (tree argument,
 				 unsigned HOST_WIDE_INT format_num,
-				 int flags, bool *no_add_attrs);
+				 int flags, bool *no_add_attrs,
+				 int expected_format_type);
 static bool get_constant (tree expr, unsigned HOST_WIDE_INT *value,
 			  int validated_p);
 static const char *convert_format_name_to_system_name (const char *attr_name);
 static bool cmp_attribs (const char *tattr_name, const char *attr_name);
+
+static int first_target_format_type;
+static const char *format_name (int format_num);
+static int format_flags (int format_num);
+
+/* Check that we have a pointer to a string suitable for use as a format.
+   The default is to check for a char type.
+   For objective-c dialects, this is extended to include references to string
+   objects validated by objc_string_ref_type_p ().  
+   Targets may also provide a string object type that can be used within c and 
+   c++ and shared with their respective objective-c dialects. In this case the
+   reference to a format string is checked for validity via a hook.
+   
+   The function returns true if strref points to any string type valid for the 
+   language dialect and target.  */
+
+static bool
+valid_stringptr_type_p (tree strref)
+{
+  return (strref != NULL
+	  && TREE_CODE (strref) == POINTER_TYPE
+	  && (TYPE_MAIN_VARIANT (TREE_TYPE (strref)) == char_type_node
+	      || objc_string_ref_type_p (strref)
+	      || (*targetcm.string_object_ref_type_p) ((const_tree) strref)));
+}
 
 /* Handle a "format_arg" attribute; arguments as in
    struct attribute_spec.handler.  */
@@ -104,13 +131,13 @@ handle_format_arg_attribute (tree *node, tree ARG_UNUSED (name),
   argument = TYPE_ARG_TYPES (type);
   if (argument)
     {
-      if (!check_format_string (argument, format_num, flags, no_add_attrs))
+      /* The format arg can be any string reference valid for the language and
+         target.  We cannot be more specific in this case.  */
+      if (!check_format_string (argument, format_num, flags, no_add_attrs, -1))
 	return NULL_TREE;
     }
 
-  if (TREE_CODE (TREE_TYPE (type)) != POINTER_TYPE
-      || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (type)))
-	  != char_type_node))
+  if (!valid_stringptr_type_p (TREE_TYPE (type)))
     {
       if (!(flags & (int) ATTR_FLAG_BUILT_IN))
 	error ("function does not return string type");
@@ -121,13 +148,18 @@ handle_format_arg_attribute (tree *node, tree ARG_UNUSED (name),
   return NULL_TREE;
 }
 
-/* Verify that the format_num argument is actually a string, in case
-   the format attribute is in error.  */
+/* Verify that the format_num argument is actually a string reference suitable,
+   for the language dialect and target (in case the format attribute is in 
+   error).  When we know the specific reference type expected, this is also 
+   checked.  */
 static bool
 check_format_string (tree argument, unsigned HOST_WIDE_INT format_num,
-		     int flags, bool *no_add_attrs)
+		     int flags, bool *no_add_attrs, int expected_format_type)
 {
   unsigned HOST_WIDE_INT i;
+  bool is_objc_sref, is_target_sref, is_char_ref;
+  tree ref;
+  int fmt_flags;
 
   for (i = 1; i != format_num; i++)
     {
@@ -137,17 +169,78 @@ check_format_string (tree argument, unsigned HOST_WIDE_INT format_num,
     }
 
   if (!argument
-      || TREE_CODE (TREE_VALUE (argument)) != POINTER_TYPE
-      || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (argument)))
-	  != char_type_node))
+      || !(ref = TREE_VALUE (argument))
+      || !valid_stringptr_type_p (ref))
     {
       if (!(flags & (int) ATTR_FLAG_BUILT_IN))
-	error ("format string argument not a string type");
+	error ("format string argument is not a string type");
       *no_add_attrs = true;
       return false;
     }
 
-  return true;
+  /* We only know that we want a suitable string reference.  */
+  if (expected_format_type < 0)
+    return true;
+
+  /* Now check that the arg matches the expected type.  */
+  is_char_ref = 
+    (TYPE_MAIN_VARIANT (TREE_TYPE (ref)) == char_type_node);
+
+  fmt_flags = format_flags (expected_format_type);
+  is_objc_sref = is_target_sref = false;
+  if (!is_char_ref)
+    is_objc_sref = objc_string_ref_type_p (ref);
+
+  if (!(fmt_flags & FMT_FLAG_PARSE_ARG_CONVERT_EXTERNAL))
+    {
+      if (is_char_ref)
+	return true; /* OK, we expected a char and found one.  */
+      else
+	{
+	  /* We expected a char but found an extended string type.  */
+	  if (is_objc_sref)
+	    error ("found a %<%s%> reference but the format argument should"
+		   " be a string", format_name (gcc_objc_string_format_type));
+	  else
+	    error ("found a %qT but the format argument should be a string",
+		   ref);
+	  *no_add_attrs = true;
+	  return false;
+	}
+    }
+
+  /* We expect a string object type as the format arg.  */
+  if (is_char_ref)
+    {
+      error ("format argument should be a %<%s%> reference but"
+	     " a string was found", format_name (expected_format_type));
+      *no_add_attrs = true;
+      return false;
+    }
+  
+  /* We will assert that objective-c will support either its own string type
+     or the target-supplied variant.  */
+  if (!is_objc_sref)
+    is_target_sref = (*targetcm.string_object_ref_type_p) ((const_tree) ref);
+
+  if (expected_format_type == (int) gcc_objc_string_format_type 
+      && (is_objc_sref || is_target_sref))
+    return true;
+
+  /* We will allow a target string ref to match only itself.  */
+  if (first_target_format_type 
+      && expected_format_type >= first_target_format_type
+      && is_target_sref)
+    return true;
+  else
+    {
+      error ("format argument should be a %<%s%> reference", 
+	      format_name (expected_format_type));
+      *no_add_attrs = true;
+      return false;
+    }
+
+  gcc_unreachable ();
 }
 
 /* Verify EXPR is a constant, and store its value.
@@ -195,6 +288,16 @@ decode_format_attr (tree args, function_format_info *info, int validated_p)
       p = convert_format_name_to_system_name (p);
 
       info->format_type = decode_format_type (p);
+      
+      if (!c_dialect_objc ()
+	   && info->format_type == gcc_objc_string_format_type)
+	{
+	  gcc_assert (!validated_p);
+	  warning (OPT_Wformat, "%qE is only allowed in Objective-C dialects",
+		   format_type_id);
+	  info->format_type = format_type_error;
+	  return false;
+	}
 
       if (info->format_type == format_type_error)
 	{
@@ -252,6 +355,20 @@ decode_format_attr (tree args, function_format_info *info, int validated_p)
 				       ? (warn_long_long ? STD_C99 : STD_C89) \
 				       : (VER)))
 
+/* Enum describing the kind of specifiers present in the format and
+   requiring an argument.  */
+enum format_specifier_kind {
+  CF_KIND_FORMAT,
+  CF_KIND_FIELD_WIDTH,
+  CF_KIND_FIELD_PRECISION
+};
+
+static const char *kind_descriptions[] = {
+  N_("format"),
+  N_("field width specifier"),
+  N_("field precision specifier")
+};
+
 /* Structure describing details of a type expected in format checking,
    and the type to check against it.  */
 typedef struct format_wanted_type
@@ -273,11 +390,13 @@ typedef struct format_wanted_type
   /* Whether the argument, dereferenced once, is read from and so
      must not be a NULL pointer.  */
   int reading_from_flag;
-  /* If warnings should be of the form "field precision should have
-     type 'int'", the name to use (in this case "field precision"),
-     otherwise NULL, for "format expects type 'long'" type
-     messages.  */
-  const char *name;
+  /* The kind of specifier that this type is used for.  */
+  enum format_specifier_kind kind;
+  /* The starting character of the specifier.  This never includes the
+     initial percent sign.  */
+  const char *format_start;
+  /* The length of the specifier.  */
+  int format_length;
   /* The actual parameter to check against the wanted type.  */
   tree param;
   /* The argument number of that parameter.  */
@@ -750,6 +869,11 @@ static const format_kind_info format_types_orig[] =
     0, 0, 0, 0, 0, 0,
     NULL, NULL
   },
+  { "NSString",   NULL,  NULL, NULL, NULL,
+    NULL, NULL,
+    FMT_FLAG_ARG_CONVERT|FMT_FLAG_PARSE_ARG_CONVERT_EXTERNAL, 0, 0, 0, 0, 0, 0,
+    NULL, NULL
+  },
   { "gnu_scanf",    scanf_length_specs,   scan_char_table,  "*'I", NULL,
     scanf_flag_specs, scanf_flag_pairs,
     FMT_FLAG_ARG_CONVERT|FMT_FLAG_SCANF_A_KLUDGE|FMT_FLAG_USE_DOLLAR|FMT_FLAG_ZERO_WIDTH_BAD|FMT_FLAG_DOLLAR_GAP_POINTER_OK,
@@ -812,6 +936,26 @@ typedef struct
   tree params;
 } format_check_context;
 
+/* Return the format name (as specified in the original table) for the format
+   type indicated by format_num.  */
+static const char *
+format_name (int format_num)
+{
+  if (format_num >= 0 && format_num < n_format_types)
+    return format_types[format_num].name;
+  gcc_unreachable ();
+}
+
+/* Return the format flags (as specified in the original table) for the format
+   type indicated by format_num.  */
+static int
+format_flags (int format_num)
+{
+  if (format_num >= 0 && format_num < n_format_types)
+    return format_types[format_num].flags;
+  gcc_unreachable ();
+}
+
 static void check_format_info (function_format_info *, tree);
 static void check_format_arg (void *, tree, unsigned HOST_WIDE_INT);
 static void check_format_info_main (format_check_results *,
@@ -828,9 +972,8 @@ static void finish_dollar_format_checking (format_check_results *, int);
 static const format_flag_spec *get_flag_spec (const format_flag_spec *,
 					      int, const char *);
 
-static void check_format_types (format_wanted_type *, const char *, int);
-static void format_type_warning (const char *, const char *, int, tree,
-				 int, const char *, tree, int);
+static void check_format_types (format_wanted_type *);
+static void format_type_warning (format_wanted_type *, tree, tree);
 
 /* Decode a format type from a string, returning the type, or
    format_type_error if not valid, in which case the caller should print an
@@ -911,7 +1054,7 @@ check_function_format (tree attrs, int nargs, tree *argarray)
 		  tree args;
 		  for (args = DECL_ARGUMENTS (current_function_decl);
 		       args != 0;
-		       args = TREE_CHAIN (args))
+		       args = DECL_CHAIN (args))
 		    {
 		      if (TREE_CODE (TREE_TYPE (args)) == POINTER_TYPE
 			  && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (args)))
@@ -1349,6 +1492,39 @@ check_format_arg (void *ctx, tree format_tree,
       return;
     }
   format_tree = TREE_OPERAND (format_tree, 0);
+  if (format_types[info->format_type].flags 
+      & (int) FMT_FLAG_PARSE_ARG_CONVERT_EXTERNAL)
+    {
+      bool objc_str = (info->format_type == gcc_objc_string_format_type);
+      /* We cannot examine this string here - but we can check that it is
+         a valid type.  */
+      if (TREE_CODE (format_tree) != CONST_DECL
+	  || !((objc_str && objc_string_ref_type_p (TREE_TYPE (format_tree)))
+		|| (*targetcm.string_object_ref_type_p) 
+				     ((const_tree) TREE_TYPE (format_tree))))
+	{
+	  res->number_non_literal++;
+	  return;
+	}
+      /* Skip to first argument to check.  */
+      while (arg_num + 1 < info->first_arg_num)
+	{
+	  if (params == 0)
+	    return;
+	  params = TREE_CHAIN (params);
+	  ++arg_num;
+	}
+      /* So, we have a valid literal string object and one or more params.
+         We need to use an external helper to parse the string into format
+         info.  For Objective-C variants we provide the resource within the
+         objc tree, for target variants, via a hook.  */
+      if (objc_str)
+	objc_check_format_arg (format_tree, params);
+      else if (targetcm.check_string_object_format_arg)
+	(*targetcm.check_string_object_format_arg) (format_tree, params);
+      /* Else we can't handle it and retire quietly.  */
+      return;
+    }
   if (TREE_CODE (format_tree) == ARRAY_REF
       && host_integerp (TREE_OPERAND (format_tree, 1), 0)
       && (offset += tree_low_cst (TREE_OPERAND (format_tree, 1), 0)) >= 0)
@@ -1457,7 +1633,7 @@ check_format_info_main (format_check_results *res,
 
   init_dollar_format_checking (info->first_arg_num, first_fillin_param);
 
-  while (1)
+  while (*format_chars != 0)
     {
       int i;
       int suppressed = FALSE;
@@ -1481,21 +1657,8 @@ check_format_info_main (format_check_results *res,
       char flag_chars[256];
       int alloc_flag = 0;
       int scalar_identity_flag = 0;
-      const char *format_start = format_chars;
-      if (*format_chars == 0)
-	{
-	  if (format_chars - orig_format_chars != format_length)
-	    warning (OPT_Wformat_contains_nul, "embedded %<\\0%> in format");
-	  if (info->first_arg_num != 0 && params != 0
-	      && has_operand_number <= 0)
-	    {
-	      res->number_other--;
-	      res->number_extra_args++;
-	    }
-	  if (has_operand_number > 0)
-	    finish_dollar_format_checking (res, fki->flags & (int) FMT_FLAG_DOLLAR_GAP_POINTER_OK);
-	  return;
-	}
+      const char *format_start;
+
       if (*format_chars++ != '%')
 	continue;
       if (*format_chars == 0)
@@ -1600,16 +1763,16 @@ check_format_info_main (format_check_results *res,
 	      if (info->first_arg_num != 0)
 		{
 		  if (params == 0)
-		    {
-		      warning (OPT_Wformat, "too few arguments for format");
-		      return;
-		    }
-		  cur_param = TREE_VALUE (params);
-		  if (has_operand_number <= 0)
-		    {
-		      params = TREE_CHAIN (params);
-		      ++arg_num;
-		    }
+                    cur_param = NULL;
+                  else
+                    {
+                      cur_param = TREE_VALUE (params);
+                      if (has_operand_number <= 0)
+                        {
+                          params = TREE_CHAIN (params);
+                          ++arg_num;
+                        }
+                    }
 		  width_wanted_type.wanted_type = *fki->width_type;
 		  width_wanted_type.wanted_type_name = NULL;
 		  width_wanted_type.pointer_count = 0;
@@ -1617,7 +1780,9 @@ check_format_info_main (format_check_results *res,
 		  width_wanted_type.scalar_identity_flag = 0;
 		  width_wanted_type.writing_in_flag = 0;
 		  width_wanted_type.reading_from_flag = 0;
-		  width_wanted_type.name = _("field width");
+                  width_wanted_type.kind = CF_KIND_FIELD_WIDTH;
+		  width_wanted_type.format_start = format_chars - 1;
+		  width_wanted_type.format_length = 1;
 		  width_wanted_type.param = cur_param;
 		  width_wanted_type.arg_num = arg_num;
 		  width_wanted_type.next = NULL;
@@ -1703,16 +1868,16 @@ check_format_info_main (format_check_results *res,
 	      if (info->first_arg_num != 0)
 		{
 		  if (params == 0)
-		    {
-		      warning (OPT_Wformat, "too few arguments for format");
-		      return;
-		    }
-		  cur_param = TREE_VALUE (params);
-		  if (has_operand_number <= 0)
-		    {
-		      params = TREE_CHAIN (params);
-		      ++arg_num;
-		    }
+                    cur_param = NULL;
+                  else
+                    {
+                      cur_param = TREE_VALUE (params);
+                      if (has_operand_number <= 0)
+                        {
+                          params = TREE_CHAIN (params);
+                          ++arg_num;
+                        }
+                    }
 		  precision_wanted_type.wanted_type = *fki->precision_type;
 		  precision_wanted_type.wanted_type_name = NULL;
 		  precision_wanted_type.pointer_count = 0;
@@ -1720,8 +1885,10 @@ check_format_info_main (format_check_results *res,
 		  precision_wanted_type.scalar_identity_flag = 0;
 		  precision_wanted_type.writing_in_flag = 0;
 		  precision_wanted_type.reading_from_flag = 0;
-		  precision_wanted_type.name = _("field precision");
+                  precision_wanted_type.kind = CF_KIND_FIELD_PRECISION;
 		  precision_wanted_type.param = cur_param;
+		  precision_wanted_type.format_start = format_chars - 2;
+		  precision_wanted_type.format_length = 2;
 		  precision_wanted_type.arg_num = arg_num;
 		  precision_wanted_type.next = NULL;
 		  if (last_wanted_type != 0)
@@ -1741,6 +1908,7 @@ check_format_info_main (format_check_results *res,
 	    }
 	}
 
+      format_start = format_chars;
       if (fki->alloc_char && fki->alloc_char == *format_chars)
 	{
 	  i = strlen (flag_chars);
@@ -2001,12 +2169,8 @@ check_format_info_main (format_check_results *res,
 	      /* Heuristic: skip one argument when an invalid length/type
 		 combination is encountered.  */
 	      arg_num++;
-	      if (params == 0)
-		{
-		  warning (OPT_Wformat, "too few arguments for format");
-		  return;
-		}
-	      params = TREE_CHAIN (params);
+	      if (params != 0)
+                params = TREE_CHAIN (params);
 	      continue;
 	    }
 	  else if (pedantic
@@ -2067,13 +2231,12 @@ check_format_info_main (format_check_results *res,
 	  while (fci)
 	    {
 	      if (params == 0)
-		{
-		  warning (OPT_Wformat, "too few arguments for format");
-		  return;
-		}
-
-	      cur_param = TREE_VALUE (params);
-	      params = TREE_CHAIN (params);
+                cur_param = NULL;
+              else
+                {
+                  cur_param = TREE_VALUE (params);
+                  params = TREE_CHAIN (params);
+                }
 
 	      wanted_type_ptr->wanted_type = wanted_type;
 	      wanted_type_ptr->wanted_type_name = wanted_type_name;
@@ -2095,9 +2258,11 @@ check_format_info_main (format_check_results *res,
 		  if (strchr (fci->flags2, 'R') != 0)
 		    wanted_type_ptr->reading_from_flag = 1;
 		}
-	      wanted_type_ptr->name = NULL;
+              wanted_type_ptr->kind = CF_KIND_FORMAT;
 	      wanted_type_ptr->param = cur_param;
 	      wanted_type_ptr->arg_num = arg_num;
+	      wanted_type_ptr->format_start = format_start;
+	      wanted_type_ptr->format_length = format_chars - format_start;
 	      wanted_type_ptr->next = NULL;
 	      if (last_wanted_type != 0)
 		last_wanted_type->next = wanted_type_ptr;
@@ -2118,17 +2283,26 @@ check_format_info_main (format_check_results *res,
 	}
 
       if (first_wanted_type != 0)
-	check_format_types (first_wanted_type, format_start,
-			    format_chars - format_start);
+        check_format_types (first_wanted_type);
     }
+
+  if (format_chars - orig_format_chars != format_length)
+    warning (OPT_Wformat_contains_nul, "embedded %<\\0%> in format");
+  if (info->first_arg_num != 0 && params != 0
+      && has_operand_number <= 0)
+    {
+      res->number_other--;
+      res->number_extra_args++;
+    }
+  if (has_operand_number > 0)
+    finish_dollar_format_checking (res, fki->flags & (int) FMT_FLAG_DOLLAR_GAP_POINTER_OK);
 }
 
 
 /* Check the argument types from a single format conversion (possibly
    including width and precision arguments).  */
 static void
-check_format_types (format_wanted_type *types, const char *format_start,
-		    int format_length)
+check_format_types (format_wanted_type *types)
 {
   for (; types != 0; types = types->next)
     {
@@ -2139,12 +2313,7 @@ check_format_types (format_wanted_type *types, const char *format_start,
       int arg_num;
       int i;
       int char_type_flag;
-      cur_param = types->param;
-      cur_type = TREE_TYPE (cur_param);
-      if (cur_type == error_mark_node)
-	continue;
-      orig_cur_type = cur_type;
-      char_type_flag = 0;
+
       wanted_type = types->wanted_type;
       arg_num = types->arg_num;
 
@@ -2156,6 +2325,19 @@ check_format_types (format_wanted_type *types, const char *format_start,
 	wanted_type = lang_hooks.types.type_promotes_to (wanted_type);
 
       wanted_type = TYPE_MAIN_VARIANT (wanted_type);
+
+      cur_param = types->param;
+      if (!cur_param)
+        {
+          format_type_warning (types, wanted_type, NULL);
+          continue;
+        }
+
+      cur_type = TREE_TYPE (cur_param);
+      if (cur_type == error_mark_node)
+	continue;
+      orig_cur_type = cur_type;
+      char_type_flag = 0;
 
       STRIP_NOPS (cur_param);
 
@@ -2220,10 +2402,7 @@ check_format_types (format_wanted_type *types, const char *format_start,
 	    }
 	  else
 	    {
-	      format_type_warning (types->name, format_start, format_length,
-				   wanted_type, types->pointer_count,
-				   types->wanted_type_name, orig_cur_type,
-				   arg_num);
+              format_type_warning (types, wanted_type, orig_cur_type);
 	      break;
 	    }
 	}
@@ -2275,33 +2454,34 @@ check_format_types (format_wanted_type *types, const char *format_start,
 	  && TYPE_PRECISION (cur_type) == TYPE_PRECISION (wanted_type))
 	continue;
       /* Now we have a type mismatch.  */
-      format_type_warning (types->name, format_start, format_length,
-			   wanted_type, types->pointer_count,
-			   types->wanted_type_name, orig_cur_type, arg_num);
+      format_type_warning (types, wanted_type, orig_cur_type);
     }
 }
 
 
 /* Give a warning about a format argument of different type from that
-   expected.  DESCR is a description such as "field precision", or
-   NULL for an ordinary format.  For an ordinary format, FORMAT_START
-   points to where the format starts in the format string and
-   FORMAT_LENGTH is its length.  WANTED_TYPE is the type the argument
-   should have after POINTER_COUNT pointer dereferences.
-   WANTED_NAME_NAME is a possibly more friendly name of WANTED_TYPE,
-   or NULL if the ordinary name of the type should be used.  ARG_TYPE
-   is the type of the actual argument.  ARG_NUM is the number of that
-   argument.  */
+   expected.  WANTED_TYPE is the type the argument should have, possibly
+   stripped of pointer dereferences.  The description (such as "field
+   precision"), the placement in the format string, a possibly more
+   friendly name of WANTED_TYPE, and the number of pointer dereferences
+   are taken from TYPE.  ARG_TYPE is the type of the actual argument,
+   or NULL if it is missing.  */
 static void
-format_type_warning (const char *descr, const char *format_start,
-		     int format_length, tree wanted_type, int pointer_count,
-		     const char *wanted_type_name, tree arg_type, int arg_num)
+format_type_warning (format_wanted_type *type, tree wanted_type, tree arg_type)
 {
+  int kind = type->kind;
+  const char *wanted_type_name = type->wanted_type_name;
+  const char *format_start = type->format_start;
+  int format_length = type->format_length;
+  int pointer_count = type->pointer_count;
+  int arg_num = type->arg_num;
+
   char *p;
   /* If ARG_TYPE is a typedef with a misleading name (for example,
      size_t but not the standard size_t expected by printf %zu), avoid
      printing the typedef name.  */
   if (wanted_type_name
+      && arg_type
       && TYPE_NAME (arg_type)
       && TREE_CODE (TYPE_NAME (arg_type)) == TYPE_DECL
       && DECL_NAME (TYPE_NAME (arg_type))
@@ -2327,28 +2507,36 @@ format_type_warning (const char *descr, const char *format_start,
       memset (p + 1, '*', pointer_count);
       p[pointer_count + 1] = 0;
     }
+
   if (wanted_type_name)
     {
-      if (descr)
-	warning (OPT_Wformat, "%s should have type %<%s%s%>, "
-		 "but argument %d has type %qT",
-		 descr, wanted_type_name, p, arg_num, arg_type);
+      if (arg_type)
+        warning (OPT_Wformat, "%s %<%s%.*s%> expects argument of type %<%s%s%>, "
+                 "but argument %d has type %qT",
+                 gettext (kind_descriptions[kind]),
+                 (kind == CF_KIND_FORMAT ? "%" : ""),
+                 format_length, format_start, 
+                 wanted_type_name, p, arg_num, arg_type);
       else
-	warning (OPT_Wformat, "format %q.*s expects type %<%s%s%>, "
-		 "but argument %d has type %qT",
-		 format_length, format_start, wanted_type_name, p,
-		 arg_num, arg_type);
+        warning (OPT_Wformat, "%s %<%s%.*s%> expects a matching %<%s%s%> argument",
+                 gettext (kind_descriptions[kind]),
+                 (kind == CF_KIND_FORMAT ? "%" : ""),
+                 format_length, format_start, wanted_type_name, p);
     }
   else
     {
-      if (descr)
-	warning (OPT_Wformat, "%s should have type %<%T%s%>, "
-		 "but argument %d has type %qT",
-		 descr, wanted_type, p, arg_num, arg_type);
+      if (arg_type)
+        warning (OPT_Wformat, "%s %<%s%.*s%> expects argument of type %<%T%s%>, "
+                 "but argument %d has type %qT",
+                 gettext (kind_descriptions[kind]),
+                 (kind == CF_KIND_FORMAT ? "%" : ""),
+                 format_length, format_start, 
+                 wanted_type, p, arg_num, arg_type);
       else
-	warning (OPT_Wformat, "format %q.*s expects type %<%T%s%>, "
-		 "but argument %d has type %qT",
-		 format_length, format_start, wanted_type, p, arg_num, arg_type);
+        warning (OPT_Wformat, "%s %<%s%.*s%> expects a matching %<%T%s%> argument",
+                 gettext (kind_descriptions[kind]),
+                 (kind == CF_KIND_FORMAT ? "%" : ""),
+                 format_length, format_start, wanted_type, p);
     }
 }
 
@@ -2785,6 +2973,8 @@ handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 	      TARGET_N_FORMAT_TYPES * sizeof (dynamic_format_types[0]));
 
       format_types = dynamic_format_types;
+      /* Provide a reference for the first potential external type.  */
+      first_target_format_type = n_format_types;
       n_format_types += TARGET_N_FORMAT_TYPES;
     }
 #endif
@@ -2799,7 +2989,7 @@ handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
   if (argument)
     {
       if (!check_format_string (argument, info.format_num, flags,
-				no_add_attrs))
+				no_add_attrs, info.format_type))
 	return NULL_TREE;
 
       if (info.first_arg_num != 0)

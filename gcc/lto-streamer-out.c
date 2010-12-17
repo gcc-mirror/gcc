@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "toplev.h"
 #include "tree.h"
 #include "expr.h"
 #include "flags.h"
@@ -533,6 +532,13 @@ pack_ts_block_value_fields (struct bitpack_d *bp, tree expr)
   bp_pack_value (bp, BLOCK_NUMBER (expr), 31);
 }
 
+/* Pack all the non-pointer fields of the TS_TRANSLATION_UNIT_DECL structure
+   of expression EXPR into bitpack BP.  */
+
+static void
+pack_ts_translation_unit_decl_value_fields (struct bitpack_d *bp ATTRIBUTE_UNUSED, tree expr ATTRIBUTE_UNUSED)
+{
+}
 
 /* Pack all the non-pointer fields in EXPR into a bit pack.  */
 
@@ -588,6 +594,9 @@ pack_value_fields (struct bitpack_d *bp, tree expr)
       /* This is only used by High GIMPLE.  */
       gcc_unreachable ();
     }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
+    pack_ts_translation_unit_decl_value_fields (bp, expr);
 }
 
 
@@ -721,6 +730,11 @@ lto_output_tree_ref (struct output_block *ob, tree expr)
       lto_output_var_decl_index (ob->decl_state, ob->main_stream, expr);
       break;
 
+    case TRANSLATION_UNIT_DECL:
+      output_record_start (ob, LTO_translation_unit_decl_ref);
+      lto_output_var_decl_index (ob->decl_state, ob->main_stream, expr);
+      break;
+
     default:
       /* No other node is indexable, so it should have been handled
 	 by lto_output_tree.  */
@@ -778,7 +792,8 @@ static void
 lto_output_ts_common_tree_pointers (struct output_block *ob, tree expr,
 				    bool ref_p)
 {
-  lto_output_tree_or_ref (ob, TREE_TYPE (expr), ref_p);
+  if (TREE_CODE (expr) != IDENTIFIER_NODE)
+    lto_output_tree_or_ref (ob, TREE_TYPE (expr), ref_p);
 }
 
 
@@ -861,6 +876,9 @@ lto_output_ts_decl_common_tree_pointers (struct output_block *ob, tree expr,
        || TREE_CODE (expr) == PARM_DECL)
       && DECL_HAS_VALUE_EXPR_P (expr))
     lto_output_tree_or_ref (ob, DECL_VALUE_EXPR (expr), ref_p);
+
+  if (TREE_CODE (expr) == VAR_DECL)
+    lto_output_tree_or_ref (ob, DECL_DEBUG_EXPR (expr), ref_p);
 }
 
 
@@ -956,8 +974,6 @@ lto_output_ts_type_tree_pointers (struct output_block *ob, tree expr,
   else if (TREE_CODE (expr) == FUNCTION_TYPE
 	   || TREE_CODE (expr) == METHOD_TYPE)
     lto_output_tree_or_ref (ob, TYPE_ARG_TYPES (expr), ref_p);
-  else if (TREE_CODE (expr) == VECTOR_TYPE)
-    lto_output_tree_or_ref (ob, TYPE_DEBUG_REPRESENTATION_TYPE (expr), ref_p);
 
   lto_output_tree_or_ref (ob, TYPE_SIZE (expr), ref_p);
   lto_output_tree_or_ref (ob, TYPE_SIZE_UNIT (expr), ref_p);
@@ -1039,17 +1055,22 @@ lto_output_ts_block_tree_pointers (struct output_block *ob, tree expr,
   tree t;
 
   lto_output_location (ob, BLOCK_SOURCE_LOCATION (expr));
-  lto_output_chain (ob, BLOCK_VARS (expr), ref_p);
+  /* We do not stream BLOCK_VARS but lazily construct it when reading
+     in decls.  */
 
   output_uleb128 (ob, VEC_length (tree, BLOCK_NONLOCALIZED_VARS (expr)));
-  for (i = 0; VEC_iterate (tree, BLOCK_NONLOCALIZED_VARS (expr), i, t); i++)
-    lto_output_tree_or_ref (ob, t, ref_p);
+  FOR_EACH_VEC_ELT (tree, BLOCK_NONLOCALIZED_VARS (expr), i, t)
+    {
+      gcc_assert (DECL_CONTEXT (t) != expr);
+      lto_output_tree_or_ref (ob, t, ref_p);
+    }
 
   lto_output_tree_or_ref (ob, BLOCK_SUPERCONTEXT (expr), ref_p);
   lto_output_tree_or_ref (ob, BLOCK_ABSTRACT_ORIGIN (expr), ref_p);
   lto_output_tree_or_ref (ob, BLOCK_FRAGMENT_ORIGIN (expr), ref_p);
   lto_output_tree_or_ref (ob, BLOCK_FRAGMENT_CHAIN (expr), ref_p);
-  lto_output_chain (ob, BLOCK_SUBBLOCKS (expr), ref_p);
+  /* Do not output BLOCK_SUBBLOCKS.  Instead on streaming-in this
+     list is re-constructed from BLOCK_SUPERCONTEXT.  */
 }
 
 
@@ -1067,7 +1088,7 @@ lto_output_ts_binfo_tree_pointers (struct output_block *ob, tree expr,
   /* Note that the number of BINFO slots has already been emitted in
      EXPR's header (see lto_output_tree_header) because this length
      is needed to build the empty BINFO node on the reader side.  */
-  for (i = 0; VEC_iterate (tree, BINFO_BASE_BINFOS (expr), i, t); i++)
+  FOR_EACH_VEC_ELT (tree, BINFO_BASE_BINFOS (expr), i, t)
     lto_output_tree_or_ref (ob, t, ref_p);
   output_zero (ob);
 
@@ -1077,7 +1098,7 @@ lto_output_ts_binfo_tree_pointers (struct output_block *ob, tree expr,
   lto_output_tree_or_ref (ob, BINFO_VPTR_FIELD (expr), ref_p);
 
   output_uleb128 (ob, VEC_length (tree, BINFO_BASE_ACCESSES (expr)));
-  for (i = 0; VEC_iterate (tree, BINFO_BASE_ACCESSES (expr), i, t); i++)
+  FOR_EACH_VEC_ELT (tree, BINFO_BASE_ACCESSES (expr), i, t)
     lto_output_tree_or_ref (ob, t, ref_p);
 
   lto_output_tree_or_ref (ob, BINFO_INHERITANCE_CHAIN (expr), ref_p);
@@ -1105,6 +1126,35 @@ lto_output_ts_constructor_tree_pointers (struct output_block *ob, tree expr,
     }
 }
 
+/* Write a TS_TARGET_OPTION tree in EXPR to OB.  */
+
+static void
+lto_output_ts_target_option (struct output_block *ob, tree expr)
+{
+  struct cl_target_option *t = TREE_TARGET_OPTION (expr);
+  struct bitpack_d bp;
+  unsigned i, len;
+
+  /* The cl_target_option is target specific and generated by the options
+     awk script, so we just recreate a byte-by-byte copy here. */
+
+  bp = bitpack_create (ob->main_stream);
+  len = sizeof (struct cl_target_option);
+  for (i = 0; i < len; i++)
+    bp_pack_value (&bp, ((unsigned char *)t)[i], 8);
+  /* Catch struct size mismatches between reader and writer. */
+  bp_pack_value (&bp, 0x12345678, 32);
+  lto_output_bitpack (&bp);
+}
+
+/* Write a TS_TRANSLATION_UNIT_DECL tree in EXPR to OB.  */
+
+static void
+lto_output_ts_translation_unit_decl_tree_pointers (struct output_block *ob,
+						   tree expr)
+{
+  output_string (ob, ob->main_stream, TRANSLATION_UNIT_LANGUAGE (expr));
+}
 
 /* Helper for lto_output_tree.  Write all pointer fields in EXPR to output
    block OB.  If REF_P is true, the leaves of EXPR are emitted as
@@ -1187,7 +1237,10 @@ lto_output_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
     sorry ("gimple bytecode streams do not support the optimization attribute");
 
   if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
-    sorry ("gimple bytecode streams do not support the target attribute");
+    lto_output_ts_target_option (ob, expr);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
+    lto_output_ts_translation_unit_decl_tree_pointers (ob, expr);
 }
 
 
@@ -1508,17 +1561,17 @@ output_eh_regions (struct output_block *ob, struct function *fn)
 
       /* Emit all the EH regions in the region array.  */
       output_sleb128 (ob, VEC_length (eh_region, fn->eh->region_array));
-      for (i = 0; VEC_iterate (eh_region, fn->eh->region_array, i, eh); i++)
+      FOR_EACH_VEC_ELT (eh_region, fn->eh->region_array, i, eh)
 	output_eh_region (ob, eh);
 
       /* Emit all landing pads.  */
       output_sleb128 (ob, VEC_length (eh_landing_pad, fn->eh->lp_array));
-      for (i = 0; VEC_iterate (eh_landing_pad, fn->eh->lp_array, i, lp); i++)
+      FOR_EACH_VEC_ELT (eh_landing_pad, fn->eh->lp_array, i, lp)
 	output_eh_lp (ob, lp);
 
       /* Emit all the runtime type data.  */
       output_sleb128 (ob, VEC_length (tree, fn->eh->ttype_data));
-      for (i = 0; VEC_iterate (tree, fn->eh->ttype_data, i, ttype); i++)
+      FOR_EACH_VEC_ELT (tree, fn->eh->ttype_data, i, ttype)
 	lto_output_tree_ref (ob, ttype);
 
       /* Emit the table of action chains.  */
@@ -1526,16 +1579,14 @@ output_eh_regions (struct output_block *ob, struct function *fn)
 	{
 	  tree t;
 	  output_sleb128 (ob, VEC_length (tree, fn->eh->ehspec_data.arm_eabi));
-	  for (i = 0;
-	       VEC_iterate (tree, fn->eh->ehspec_data.arm_eabi, i, t);
-	       i++)
+	  FOR_EACH_VEC_ELT (tree, fn->eh->ehspec_data.arm_eabi, i, t)
 	    lto_output_tree_ref (ob, t);
 	}
       else
 	{
 	  uchar c;
 	  output_sleb128 (ob, VEC_length (uchar, fn->eh->ehspec_data.other));
-	  for (i = 0; VEC_iterate (uchar, fn->eh->ehspec_data.other, i, c); i++)
+	  FOR_EACH_VEC_ELT (uchar, fn->eh->ehspec_data.other, i, c)
 	    lto_output_1_stream (ob->main_stream, c);
 	}
     }
@@ -1706,6 +1757,25 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
       for (i = 0; i < gimple_num_ops (stmt); i++)
 	{
 	  tree op = gimple_op (stmt, i);
+	  /* Wrap all uses of non-automatic variables inside MEM_REFs
+	     so that we do not have to deal with type mismatches on
+	     merged symbols during IL read in.  */
+	  if (op)
+	    {
+	      tree *basep = &op;
+	      while (handled_component_p (*basep))
+		basep = &TREE_OPERAND (*basep, 0);
+	      if (TREE_CODE (*basep) == VAR_DECL
+		  && !auto_var_in_fn_p (*basep, current_function_decl))
+		{
+		  bool volatilep = TREE_THIS_VOLATILE (*basep);
+		  *basep = build2 (MEM_REF, TREE_TYPE (*basep),
+				   build_fold_addr_expr (*basep),
+				   build_int_cst (build_pointer_type
+						  (TREE_TYPE (*basep)), 0));
+		  TREE_THIS_VOLATILE (*basep) = volatilep;
+		}
+	    }
 	  lto_output_tree_ref (ob, op);
 	}
       break;
@@ -1791,10 +1861,10 @@ produce_asm (struct output_block *ob, tree fn)
   if (section_type == LTO_section_function_body)
     {
       const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fn));
-      section_name = lto_get_section_name (section_type, name);
+      section_name = lto_get_section_name (section_type, name, NULL);
     }
   else
-    section_name = lto_get_section_name (section_type, NULL);
+    section_name = lto_get_section_name (section_type, NULL, NULL);
 
   lto_begin_section (section_name, !flag_wpa);
   free (section_name);
@@ -1840,6 +1910,8 @@ output_function (struct cgraph_node *node)
   struct function *fn;
   basic_block bb;
   struct output_block *ob;
+  unsigned i;
+  tree t;
 
   function = node->decl;
   fn = DECL_STRUCT_FUNCTION (function);
@@ -1878,6 +1950,10 @@ output_function (struct cgraph_node *node)
   bp_pack_value (&bp, fn->va_list_gpr_size, 8);
   lto_output_bitpack (&bp);
 
+  /* Output the function start and end loci.  */
+  lto_output_location (ob, fn->function_start_locus);
+  lto_output_location (ob, fn->function_end_locus);
+
   /* Output current IL state of the function.  */
   output_uleb128 (ob, fn->curr_properties);
 
@@ -1886,7 +1962,9 @@ output_function (struct cgraph_node *node)
   lto_output_tree_ref (ob, fn->nonlocal_goto_save_area);
 
   /* Output all the local variables in the function.  */
-  lto_output_tree_ref (ob, fn->local_decls);
+  output_sleb128 (ob, VEC_length (tree, fn->local_decls));
+  FOR_EACH_VEC_ELT (tree, fn->local_decls, i, t)
+    lto_output_tree_ref (ob, t);
 
   /* Output the head of the arguments list.  */
   lto_output_tree_ref (ob, DECL_ARGUMENTS (function));
@@ -1990,7 +2068,7 @@ output_unreferenced_globals (cgraph_node_set set, varpool_node_set vset)
   output_zero (ob);
 
   /* Emit the alias pairs for the nodes in SET.  */
-  for (i = 0; VEC_iterate (alias_pair, alias_pairs, i, p); i++)
+  FOR_EACH_VEC_ELT (alias_pair, alias_pairs, i, p)
     {
       if (output_alias_pair_p (p, set, vset))
 	{
@@ -2018,7 +2096,7 @@ copy_function (struct cgraph_node *node)
   size_t len;
   const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (function));
   char *section_name =
-    lto_get_section_name (LTO_section_function_body, name);
+    lto_get_section_name (LTO_section_function_body, name, NULL);
   size_t i, j;
   struct lto_in_decl_state *in_state;
   struct lto_out_decl_state *out_state = lto_get_out_decl_state ();
@@ -2101,7 +2179,7 @@ lto_output (cgraph_node_set set, varpool_node_set vset)
 #endif
 	  decl_state = lto_new_out_decl_state ();
 	  lto_push_out_decl_state (decl_state);
-	  if (!flag_wpa)
+	  if (gimple_has_body_p (node->decl))
 	    output_function (node);
 	  else
 	    copy_function (node);
@@ -2132,7 +2210,7 @@ struct ipa_opt_pass_d pass_ipa_lto_gimple_out =
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
-  TV_IPA_LTO_GIMPLE_IO,		        /* tv_id */
+  TV_IPA_LTO_GIMPLE_OUT,		        /* tv_id */
   0,	                                /* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */
@@ -2262,156 +2340,224 @@ lto_out_decl_state_written_size (struct lto_out_decl_state *state)
 }
 
 
-/* Helper function of write_symbols_of_kind.  CACHE is the streamer
-   cache with all the pickled nodes.  STREAM is the stream where to
-   write the table.  V is a vector with the DECLs that should be on
-   the table.  SEEN is a bitmap of symbols written so far.  */
+/* Write symbol T into STREAM in CACHE. SEEN specifies symbols we wrote
+   so far.  */
 
 static void
-write_symbol_vec (struct lto_streamer_cache_d *cache,
-		  struct lto_output_stream *stream,
-		  VEC(tree,heap) *v, bitmap seen)
+write_symbol (struct lto_streamer_cache_d *cache,
+	      struct lto_output_stream *stream,
+	      tree t, struct pointer_set_t *seen, bool alias)
 {
-  tree t;
-  int index;
+  const char *name;
+  enum gcc_plugin_symbol_kind kind;
+  enum gcc_plugin_symbol_visibility visibility;
+  int slot_num;
+  uint64_t size;
+  const char *comdat;
 
-  for (index = 0; VEC_iterate(tree, v, index, t); index++)
+  /* None of the following kinds of symbols are needed in the
+     symbol table.  */
+  if (!TREE_PUBLIC (t)
+      || is_builtin_fn (t)
+      || DECL_ABSTRACT (t)
+      || TREE_CODE (t) == RESULT_DECL)
+    return;
+
+  gcc_assert (TREE_CODE (t) == VAR_DECL
+	      || TREE_CODE (t) == FUNCTION_DECL);
+
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (t));
+
+  if (pointer_set_contains (seen, name))
+    return;
+  pointer_set_insert (seen, name);
+
+  /* FIXME lto: this is from assemble_name_raw in varasm.c. For some
+     architectures we might have to do the same name manipulations that
+     ASM_OUTPUT_LABELREF does. */
+  if (name[0] == '*')
+    name = &name[1];
+
+  lto_streamer_cache_lookup (cache, t, &slot_num);
+  gcc_assert (slot_num >= 0);
+
+  if (DECL_EXTERNAL (t))
     {
-      const char *name;
-      enum gcc_plugin_symbol_kind kind;
-      enum gcc_plugin_symbol_visibility visibility;
-      int slot_num;
-      uint64_t size;
-      const char *comdat;
-
-      /* None of the following kinds of symbols are needed in the
-	 symbol table.  */
-      if (!TREE_PUBLIC (t)
-	  || is_builtin_fn (t)
-	  || DECL_ABSTRACT (t)
-	  || TREE_CODE (t) == RESULT_DECL)
-	continue;
-
-      gcc_assert (TREE_CODE (t) == VAR_DECL
-		  || TREE_CODE (t) == FUNCTION_DECL);
-
-      name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (t));
-
-      /* FIXME lto: this is from assemble_name_raw in varasm.c. For some
-	 architectures we might have to do the same name manipulations that
-	 ASM_OUTPUT_LABELREF does. */
-      if (name[0] == '*')
-	name = &name[1];
-
-      lto_streamer_cache_lookup (cache, t, &slot_num);
-      gcc_assert (slot_num >= 0);
-
-      /* Avoid duplicate symbols. */
-      if (bitmap_bit_p (seen, slot_num))
-	continue;
+      if (DECL_WEAK (t))
+	kind = GCCPK_WEAKUNDEF;
       else
-        bitmap_set_bit (seen, slot_num);
-
-      if (DECL_EXTERNAL (t))
-	{
-	  if (DECL_WEAK (t))
-	    kind = GCCPK_WEAKUNDEF;
-	  else
-	    kind = GCCPK_UNDEF;
-	}
-      else
-	{
-	  if (DECL_WEAK (t))
-	    kind = GCCPK_WEAKDEF;
-	  else if (DECL_COMMON (t))
-	    kind = GCCPK_COMMON;
-	  else
-	    kind = GCCPK_DEF;
-	}
-
-      switch (DECL_VISIBILITY(t))
-	{
-	case VISIBILITY_DEFAULT:
-	  visibility = GCCPV_DEFAULT;
-	  break;
-	case VISIBILITY_PROTECTED:
-	  visibility = GCCPV_PROTECTED;
-	  break;
-	case VISIBILITY_HIDDEN:
-	  visibility = GCCPV_HIDDEN;
-	  break;
-	case VISIBILITY_INTERNAL:
-	  visibility = GCCPV_INTERNAL;
-	  break;
-	}
-
-      if (kind == GCCPK_COMMON
-	  && DECL_SIZE (t)
-	  && TREE_CODE (DECL_SIZE (t)) == INTEGER_CST)
-	size = (((uint64_t) TREE_INT_CST_HIGH (DECL_SIZE (t))) << 32)
-	  | TREE_INT_CST_LOW (DECL_SIZE (t));
-      else
-	size = 0;
-
-      if (DECL_ONE_ONLY (t))
-	comdat = IDENTIFIER_POINTER (DECL_COMDAT_GROUP (t));
-      else
-	comdat = "";
-
-      lto_output_data_stream (stream, name, strlen (name) + 1);
-      lto_output_data_stream (stream, comdat, strlen (comdat) + 1);
-      lto_output_data_stream (stream, &kind, 1);
-      lto_output_data_stream (stream, &visibility, 1);
-      lto_output_data_stream (stream, &size, 8);
-      lto_output_data_stream (stream, &slot_num, 4);
+	kind = GCCPK_UNDEF;
     }
+  else
+    {
+      if (DECL_WEAK (t))
+	kind = GCCPK_WEAKDEF;
+      else if (DECL_COMMON (t))
+	kind = GCCPK_COMMON;
+      else
+	kind = GCCPK_DEF;
+
+      /* When something is defined, it should have node attached.  */
+      gcc_assert (alias || TREE_CODE (t) != VAR_DECL
+		  || varpool_get_node (t)->finalized);
+      gcc_assert (alias || TREE_CODE (t) != FUNCTION_DECL
+		  || (cgraph_get_node (t)
+		      && cgraph_get_node (t)->analyzed));
+    }
+
+  /* Imitate what default_elf_asm_output_external do.
+     When symbol is external, we need to output it with DEFAULT visibility
+     when compiling with -fvisibility=default, while with HIDDEN visibility
+     when symbol has attribute (visibility("hidden")) specified.
+     targetm.binds_local_p check DECL_VISIBILITY_SPECIFIED and gets this
+     right. */
+     
+  if (DECL_EXTERNAL (t)
+      && !targetm.binds_local_p (t))
+    visibility = GCCPV_DEFAULT;
+  else
+    switch (DECL_VISIBILITY(t))
+      {
+      case VISIBILITY_DEFAULT:
+	visibility = GCCPV_DEFAULT;
+	break;
+      case VISIBILITY_PROTECTED:
+	visibility = GCCPV_PROTECTED;
+	break;
+      case VISIBILITY_HIDDEN:
+	visibility = GCCPV_HIDDEN;
+	break;
+      case VISIBILITY_INTERNAL:
+	visibility = GCCPV_INTERNAL;
+	break;
+      }
+
+  if (kind == GCCPK_COMMON
+      && DECL_SIZE (t)
+      && TREE_CODE (DECL_SIZE (t)) == INTEGER_CST)
+    {
+      size = (HOST_BITS_PER_WIDE_INT >= 64)
+	? (uint64_t) int_size_in_bytes (TREE_TYPE (t))
+	: (((uint64_t) TREE_INT_CST_HIGH (DECL_SIZE_UNIT (t))) << 32)
+		| TREE_INT_CST_LOW (DECL_SIZE_UNIT (t));
+    }
+  else
+    size = 0;
+
+  if (DECL_ONE_ONLY (t))
+    comdat = IDENTIFIER_POINTER (DECL_COMDAT_GROUP (t));
+  else
+    comdat = "";
+
+  lto_output_data_stream (stream, name, strlen (name) + 1);
+  lto_output_data_stream (stream, comdat, strlen (comdat) + 1);
+  lto_output_data_stream (stream, &kind, 1);
+  lto_output_data_stream (stream, &visibility, 1);
+  lto_output_data_stream (stream, &size, 8);
+  lto_output_data_stream (stream, &slot_num, 4);
 }
 
 
-/* Write IL symbols of KIND.  CACHE is the streamer cache with all the
-   pickled nodes.  SEEN is a bitmap of symbols written so far.  */
+/* Write an IL symbol table to OB.
+   SET and VSET are cgraph/varpool node sets we are outputting.  */
 
 static void
-write_symbols_of_kind (lto_decl_stream_e_t kind,
-		       struct lto_streamer_cache_d *cache, bitmap seen)
+produce_symtab (struct output_block *ob,
+	        cgraph_node_set set, varpool_node_set vset)
 {
-  struct lto_out_decl_state *out_state;
+  struct lto_streamer_cache_d *cache = ob->writer_cache;
+  char *section_name = lto_get_section_name (LTO_section_symtab, NULL, NULL);
+  struct pointer_set_t *seen;
+  struct cgraph_node *node, *alias;
+  struct varpool_node *vnode, *valias;
   struct lto_output_stream stream;
-  unsigned num_fns =
-    VEC_length (lto_out_decl_state_ptr, lto_function_decl_states);
-  unsigned idx;
-
-  memset (&stream, 0, sizeof (stream));
-  out_state = lto_get_out_decl_state ();
-  write_symbol_vec (cache, &stream, out_state->streams[kind].trees, seen);
-
-  for (idx = 0; idx < num_fns; idx++)
-    {
-      out_state =
-	VEC_index (lto_out_decl_state_ptr, lto_function_decl_states, idx);
-      write_symbol_vec (cache, &stream, out_state->streams[kind].trees, seen);
-    }
-
-  lto_write_stream (&stream);
-}
-
-
-/* Write an IL symbol table.  CACHE is the streamer cache with all the
-   pickled nodes.  */
-
-static void
-produce_symtab (struct lto_streamer_cache_d *cache)
-{
-  char *section_name = lto_get_section_name (LTO_section_symtab, NULL);
-  bitmap seen;
+  lto_varpool_encoder_t varpool_encoder = ob->decl_state->varpool_node_encoder;
+  lto_cgraph_encoder_t encoder = ob->decl_state->cgraph_node_encoder;
+  int i;
+  alias_pair *p;
 
   lto_begin_section (section_name, false);
   free (section_name);
 
-  seen = lto_bitmap_alloc ();
-  write_symbols_of_kind (LTO_DECL_STREAM_FN_DECL, cache, seen);
-  write_symbols_of_kind (LTO_DECL_STREAM_VAR_DECL, cache, seen);
-  lto_bitmap_free (seen);
+  seen = pointer_set_create ();
+  memset (&stream, 0, sizeof (stream));
+
+  /* Write all functions. 
+     First write all defined functions and the write all used functions.
+     This is done so only to handle duplicated symbols in cgraph.  */
+  for (i = 0; i < lto_cgraph_encoder_size (encoder); i++)
+    {
+      node = lto_cgraph_encoder_deref (encoder, i);
+      if (DECL_EXTERNAL (node->decl))
+	continue;
+      if (DECL_COMDAT (node->decl)
+	  && cgraph_comdat_can_be_unshared_p (node))
+	continue;
+      if (node->alias || node->global.inlined_to)
+	continue;
+      write_symbol (cache, &stream, node->decl, seen, false);
+      for (alias = node->same_body; alias; alias = alias->next)
+        write_symbol (cache, &stream, alias->decl, seen, true);
+    }
+  for (i = 0; i < lto_cgraph_encoder_size (encoder); i++)
+    {
+      node = lto_cgraph_encoder_deref (encoder, i);
+      if (!DECL_EXTERNAL (node->decl))
+	continue;
+      if (DECL_COMDAT (node->decl)
+	  && cgraph_comdat_can_be_unshared_p (node))
+	continue;
+      if (node->alias || node->global.inlined_to)
+	continue;
+      write_symbol (cache, &stream, node->decl, seen, false);
+      for (alias = node->same_body; alias; alias = alias->next)
+        write_symbol (cache, &stream, alias->decl, seen, true);
+    }
+
+  /* Write all variables.  */
+  for (i = 0; i < lto_varpool_encoder_size (varpool_encoder); i++)
+    {
+      vnode = lto_varpool_encoder_deref (varpool_encoder, i);
+      if (DECL_EXTERNAL (vnode->decl))
+	continue;
+      /* COMDAT virtual tables can be unshared.  Do not declare them
+	 in the LTO symbol table to prevent linker from forcing them
+	 into the output. */
+      if (DECL_COMDAT (vnode->decl)
+	  && !vnode->force_output
+	  && vnode->finalized 
+	  && DECL_VIRTUAL_P (vnode->decl))
+	continue;
+      if (vnode->alias)
+	continue;
+      write_symbol (cache, &stream, vnode->decl, seen, false);
+      for (valias = vnode->extra_name; valias; valias = valias->next)
+        write_symbol (cache, &stream, valias->decl, seen, true);
+    }
+  for (i = 0; i < lto_varpool_encoder_size (varpool_encoder); i++)
+    {
+      vnode = lto_varpool_encoder_deref (varpool_encoder, i);
+      if (!DECL_EXTERNAL (vnode->decl))
+	continue;
+      if (DECL_COMDAT (vnode->decl)
+	  && !vnode->force_output
+	  && vnode->finalized 
+	  && DECL_VIRTUAL_P (vnode->decl))
+	continue;
+      if (vnode->alias)
+	continue;
+      write_symbol (cache, &stream, vnode->decl, seen, false);
+      for (valias = vnode->extra_name; valias; valias = valias->next)
+        write_symbol (cache, &stream, valias->decl, seen, true);
+    }
+
+  /* Write all aliases.  */
+  FOR_EACH_VEC_ELT (alias_pair, alias_pairs, i, p)
+    if (output_alias_pair_p (p, set, vset))
+      write_symbol (cache, &stream, p->decl, seen, true);
+
+  lto_write_stream (&stream);
+  pointer_set_destroy (seen);
 
   lto_end_section ();
 }
@@ -2446,7 +2592,7 @@ produce_asm_for_decls (cgraph_node_set set, varpool_node_set vset)
 
   memset (&header, 0, sizeof (struct lto_decl_header));
 
-  section_name = lto_get_section_name (LTO_section_decls, NULL);
+  section_name = lto_get_section_name (LTO_section_decls, NULL, NULL);
   lto_begin_section (section_name, !flag_wpa);
   free (section_name);
 
@@ -2513,8 +2659,10 @@ produce_asm_for_decls (cgraph_node_set set, varpool_node_set vset)
 
   lto_end_section ();
 
-  /* Write the symbol table. */
-  produce_symtab (ob->writer_cache);
+  /* Write the symbol table.  It is used by linker to determine dependencies
+     and thus we can skip it for WPA.  */
+  if (!flag_wpa)
+    produce_symtab (ob, set, vset);
 
   /* Write command line opts.  */
   lto_write_options ();
@@ -2544,7 +2692,7 @@ struct ipa_opt_pass_d pass_ipa_lto_finish_out =
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
-  TV_IPA_LTO_DECL_IO,		        /* tv_id */
+  TV_IPA_LTO_DECL_OUT,		        /* tv_id */
   0,	                                /* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */

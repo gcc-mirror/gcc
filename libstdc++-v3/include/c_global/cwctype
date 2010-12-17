@@ -111,22 +111,19 @@ _GLIBCXX_END_NAMESPACE
 #endif //_GLIBCXX_USE_WCHAR_T
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-#  if defined(_GLIBCXX_INCLUDE_AS_TR1)
-#    error C++0x header cannot be included from TR1 header
-#  endif
-#  if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
-#    include <tr1_impl/cwctype>
-#  else
-#    define _GLIBCXX_INCLUDE_AS_CXX0X
-#    define _GLIBCXX_BEGIN_NAMESPACE_TR1
-#    define _GLIBCXX_END_NAMESPACE_TR1
-#    define _GLIBCXX_TR1
-#    include <tr1_impl/cwctype>
-#    undef _GLIBCXX_TR1
-#    undef _GLIBCXX_END_NAMESPACE_TR1
-#    undef _GLIBCXX_BEGIN_NAMESPACE_TR1
-#    undef _GLIBCXX_INCLUDE_AS_CXX0X
-#  endif
-#endif
 
-#endif
+#ifdef _GLIBCXX_USE_WCHAR_T
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
+#if _GLIBCXX_HAVE_ISWBLANK
+  using std::iswblank;
+#endif  
+
+_GLIBCXX_END_NAMESPACE
+
+#endif // _GLIBCXX_USE_WCHAR_T
+
+#endif // __GXX_EXPERIMENTAL_CXX0X__
+
+#endif // _GLIBCXX_CWCTYPE

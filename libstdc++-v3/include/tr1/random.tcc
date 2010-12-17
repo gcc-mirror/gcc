@@ -28,6 +28,9 @@
  *  You should not attempt to use it directly.
  */
 
+#ifndef _GLIBCXX_TR1_RANDOM_TCC
+#define _GLIBCXX_TR1_RANDOM_TCC 1
+
 namespace std
 {
 namespace tr1
@@ -1708,3 +1711,5 @@ namespace tr1
     }
 }
 }
+
+#endif

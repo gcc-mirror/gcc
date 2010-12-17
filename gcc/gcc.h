@@ -32,31 +32,6 @@ struct spec_function
   const char *(*func) (int, const char **);
 };
 
-/* This defines which switch letters take arguments.  */
-
-#define DEFAULT_SWITCH_TAKES_ARG(CHAR) \
-  ((CHAR) == 'D' || (CHAR) == 'U' || (CHAR) == 'o' \
-   || (CHAR) == 'e' || (CHAR) == 'T' || (CHAR) == 'u' \
-   || (CHAR) == 'I' || (CHAR) == 'J' || (CHAR) == 'm' \
-   || (CHAR) == 'x' || (CHAR) == 'L' || (CHAR) == 'A' \
-   || (CHAR) == 'B' )
-
-/* This defines which multi-letter switches take arguments.  */
-
-#define DEFAULT_WORD_SWITCH_TAKES_ARG(STR)		\
- (!strcmp (STR, "Tdata") || !strcmp (STR, "Ttext")	\
-  || !strcmp (STR, "Tbss") || !strcmp (STR, "include")	\
-  || !strcmp (STR, "imacros") || !strcmp (STR, "aux-info") \
-  || !strcmp (STR, "idirafter") || !strcmp (STR, "iprefix") \
-  || !strcmp (STR, "iwithprefix") || !strcmp (STR, "iwithprefixbefore") \
-  || !strcmp (STR, "iquote") || !strcmp (STR, "isystem") \
-  || !strcmp (STR, "isysroot") \
-  || !strcmp (STR, "-param") || !strcmp (STR, "specs") \
-  || !strcmp (STR, "MF") || !strcmp (STR, "MT") || !strcmp (STR, "MQ") \
-  || !strcmp (STR, "fintrinsic-modules-path") \
-  || !strcmp (STR, "dumpbase") || !strcmp (STR, "dumpdir"))
-
-
 /* These are exported by gcc.c.  */
 extern int do_spec (const char *);
 extern void record_temp_file (const char *, int, int);
@@ -66,7 +41,8 @@ extern void set_input (const char *);
 /* Spec files linked with gcc.c must provide definitions for these.  */
 
 /* Called before processing to change/add/remove arguments.  */
-extern void lang_specific_driver (int *, const char *const **, int *);
+extern void lang_specific_driver (struct cl_decoded_option **,
+				  unsigned int *, int *);
 
 /* Called before linking.  Returns 0 on success and -1 on failure.  */
 extern int lang_specific_pre_link (void);

@@ -1,11 +1,10 @@
 /* PR middle-end/37009 */
 /* { dg-do run { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 /* { dg-options "-msse2" } */
-/* { dg-require-effective-target sse2 } */
+/* { dg-require-effective-target sse2_runtime } */
 
 #include <stdarg.h>
 #include <emmintrin.h>
-#include "cpuid.h"
 #include "check.h"
 
 #ifndef ALIGNMENT
@@ -72,14 +71,8 @@ int
 main (void)
 {
   __m128 x = { 1.0 };
-  unsigned int eax, ebx, ecx, edx;
- 
-  if (!__get_cpuid (1, &eax, &ebx, &ecx, &edx))
-    return 0;
 
-  /* Run SSE2 test only if host has SSE2 support.  */
-  if (edx & bit_SSE2)
-    foo ("foo", 5, 5.0, x);
+  foo ("foo", 5, 5.0, x);
 
   return 0;
 }

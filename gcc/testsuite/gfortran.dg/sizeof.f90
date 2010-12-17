@@ -82,7 +82,7 @@ subroutine check_derived ()
        call abort
 end subroutine check_derived
 
-call check_int ()
-call check_real ()
+call check_int (1)
+call check_real (1.0, (/1.0, 2.0, 3.0, 4.0, 5.0/))
 call check_derived ()
 end

@@ -1,4 +1,4 @@
-/* UriAuthenticationSupported.java -- 
+/* UriAuthenticationSupported.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,58 +38,59 @@ exception statement from your version. */
 
 package gnu.javax.print.ipp.attribute.supported;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.EnumSyntax;
 import javax.print.attribute.SupportedValuesAttribute;
 
 /**
  * UriAuthenticationSupported attribute as described in RFC 2911 section
- * 4.4.2 provides the keywords (implemented as EnumSyntax) which 
+ * 4.4.2 provides the keywords (implemented as EnumSyntax) which
  * authentication methods are supported by the printer object. This
  * includes a value of none.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class UriAuthenticationSupported extends EnumSyntax 
+public final class UriAuthenticationSupported extends EnumSyntax
   implements SupportedValuesAttribute
 {
-  
+
   // a keyword based attribute in IPP - int values just starting at 0
-  
+
   /** Supports no authentication - assumes anonymous process */
-  public static final UriAuthenticationSupported NONE = 
+  public static final UriAuthenticationSupported NONE =
     new UriAuthenticationSupported(0);
-  
-  /** 
+
+  /**
    * The authenticated user assumed is the value of the
    * "requesting-user-name" operation attribute supplied
    * with the operation.
    */
-  public static final UriAuthenticationSupported REQUESTING_USER_NAME = 
+  public static final UriAuthenticationSupported REQUESTING_USER_NAME =
     new UriAuthenticationSupported(1);
-  
+
   /** Supports HTTP basic authentication (RFC 2617) */
-  public static final UriAuthenticationSupported BASIC = 
+  public static final UriAuthenticationSupported BASIC =
     new UriAuthenticationSupported(2);
-  
+
   /** Supports HTTP digest authentication (RFC 2617) */
-  public static final UriAuthenticationSupported DIGEST = 
+  public static final UriAuthenticationSupported DIGEST =
     new UriAuthenticationSupported(3);
-  
+
   /** Supports authentication through a client provided certificate */
-  public static final UriAuthenticationSupported CERTIFICATE = 
+  public static final UriAuthenticationSupported CERTIFICATE =
     new UriAuthenticationSupported(4);
-  
-  private static final String[] stringTable = { "none", 
-                                                "requesting-user-name",                                              
-                                                "basic", "digest", 
+
+  private static final String[] stringTable = { "none",
+                                                "requesting-user-name",
+                                                "basic", "digest",
                                                 "certificate" };
-  
-  private static final UriAuthenticationSupported[] enumValueTable = 
+
+  private static final UriAuthenticationSupported[] enumValueTable =
     { NONE, REQUESTING_USER_NAME, BASIC, DIGEST, CERTIFICATE };
 
   /**
    * Constructs a <code>UriAuthenticationSupported</code> object.
-   * 
+   *
    * @param value the enum value
    */
   public UriAuthenticationSupported(int value)
@@ -102,7 +103,7 @@ public final class UriAuthenticationSupported extends EnumSyntax
    *
    * @return The class <code>UriAuthenticationSupported</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return UriAuthenticationSupported.class;
   }
@@ -116,7 +117,7 @@ public final class UriAuthenticationSupported extends EnumSyntax
   {
     return "uri-authentication-supported";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.

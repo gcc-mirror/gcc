@@ -1,5 +1,5 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
-   Copyright (C) 1998, 1999, 2000, 2001, 2004, 2005, 2006, 2007
+   Copyright (C) 1998, 1999, 2000, 2001, 2004, 2005, 2006, 2007, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Axis Communications.
 
@@ -25,14 +25,11 @@ along with GCC; see the file COPYING3.  If not see
 #define STDIO_INCLUDED
 #endif
 
-extern void cris_conditional_register_usage (void);
 extern bool cris_simple_epilogue (void);
 #ifdef RTX_CODE
 extern const char *cris_op_str (rtx);
 extern void cris_notice_update_cc (rtx, rtx);
 extern bool cris_reload_address_legitimized (rtx, enum machine_mode, int, int, int);
-extern int cris_register_move_cost (enum machine_mode, enum reg_class,
-				    enum reg_class);
 extern int cris_side_effect_mode_ok (enum rtx_code, rtx *, int, int,
                                      int, int, int);
 extern bool cris_cc0_user_requires_cmp (rtx);
@@ -63,8 +60,6 @@ extern void cris_pragma_expand_mul (struct cpp_reader *);
 
 /* Need one that returns an int; usable in expressions.  */
 extern int cris_fatal (char *);
-
-extern void cris_override_options (void);
 
 extern int cris_initial_elimination_offset (int, int);
 

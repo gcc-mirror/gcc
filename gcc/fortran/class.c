@@ -29,19 +29,20 @@ along with GCC; see the file COPYING3.  If not see
 
    Each CLASS variable is encapsulated by a class container, which is a
    structure with two fields:
-    * $data: A pointer to the actual data of the variable. This field has the
+    * _data: A pointer to the actual data of the variable. This field has the
              declared type of the class variable and its attributes
              (pointer/allocatable/dimension/...).
-    * $vptr: A pointer to the vtable entry (see below) of the dynamic type.
+    * _vptr: A pointer to the vtable entry (see below) of the dynamic type.
     
    For each derived type we set up a "vtable" entry, i.e. a structure with the
    following fields:
-    * $hash: A hash value serving as a unique identifier for this type.
-    * $size: The size in bytes of the derived type.
-    * $extends: A pointer to the vtable entry of the parent derived type.
-   In addition to these fields, each vtable entry contains additional procedure
-   pointer components, which contain pointers to the procedures which are bound
-   to the type's "methods" (type-bound procedures).  */
+    * _hash:     A hash value serving as a unique identifier for this type.
+    * _size:     The size in bytes of the derived type.
+    * _extends:  A pointer to the vtable entry of the parent derived type.
+    * _def_init: A pointer to a default initialized variable of this type.
+    * _copy:     A procedure pointer to a copying procedure.
+   After these follow procedure pointer components for the specific
+   type-bound procedures.  */
 
 
 #include "config.h"
@@ -51,7 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 
 
 /* Insert a reference to the component of the given name.
-   Only to be used with CLASS containers.  */
+   Only to be used with CLASS containers and vtables.  */
 
 void
 gfc_add_component_ref (gfc_expr *e, const char *name)
@@ -67,7 +68,7 @@ gfc_add_component_ref (gfc_expr *e, const char *name)
 	break;
       tail = &((*tail)->next);
     }
-  if (*tail != NULL && strcmp (name, "$data") == 0)
+  if (*tail != NULL && strcmp (name, "_data") == 0)
     next = *tail;
   (*tail) = gfc_get_ref();
   (*tail)->next = next;
@@ -81,7 +82,7 @@ gfc_add_component_ref (gfc_expr *e, const char *name)
 
 
 /* Build a NULL initializer for CLASS pointers,
-   initializing the $data and $vptr components to zero.  */
+   initializing the _data and _vptr components to zero.  */
 
 gfc_expr *
 gfc_class_null_initializer (gfc_typespec *ts)
@@ -106,31 +107,46 @@ gfc_class_null_initializer (gfc_typespec *ts)
 }
 
 
+/* Create a unique string identifier for a derived type, composed of its name
+   and module name. This is used to construct unique names for the class
+   containers and vtab symbols.  */
+
+static void
+get_unique_type_string (char *string, gfc_symbol *derived)
+{  
+  if (derived->module)
+    sprintf (string, "%s_%s", derived->module, derived->name);
+  else
+    sprintf (string, "%s_%s", derived->ns->proc_name->name, derived->name);
+}
+
+
 /* Build a polymorphic CLASS entity, using the symbol that comes from
    build_sym. A CLASS entity is represented by an encapsulating type,
-   which contains the declared type as '$data' component, plus a pointer
-   component '$vptr' which determines the dynamic type.  */
+   which contains the declared type as '_data' component, plus a pointer
+   component '_vptr' which determines the dynamic type.  */
 
 gfc_try
 gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
 			gfc_array_spec **as, bool delayed_vtab)
 {
-  char name[GFC_MAX_SYMBOL_LEN + 5];
+  char name[GFC_MAX_SYMBOL_LEN], tname[GFC_MAX_SYMBOL_LEN];
   gfc_symbol *fclass;
   gfc_symbol *vtab;
   gfc_component *c;
 
   /* Determine the name of the encapsulating type.  */
+  get_unique_type_string (tname, ts->u.derived);
   if ((*as) && (*as)->rank && attr->allocatable)
-    sprintf (name, "class$%s_%d_a", ts->u.derived->name, (*as)->rank);
+    sprintf (name, "__class_%s_%d_a", tname, (*as)->rank);
   else if ((*as) && (*as)->rank)
-    sprintf (name, "class$%s_%d", ts->u.derived->name, (*as)->rank);
+    sprintf (name, "__class_%s_%d", tname, (*as)->rank);
   else if (attr->pointer)
-    sprintf (name, "class$%s_p", ts->u.derived->name);
+    sprintf (name, "__class_%s_p", tname);
   else if (attr->allocatable)
-    sprintf (name, "class$%s_a", ts->u.derived->name);
+    sprintf (name, "__class_%s_a", tname);
   else
-    sprintf (name, "class$%s", ts->u.derived->name);
+    sprintf (name, "__class_%s", tname);
 
   gfc_find_symbol (name, ts->u.derived->ns, 0, &fclass);
   if (fclass == NULL)
@@ -150,8 +166,8 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
 	  NULL, &gfc_current_locus) == FAILURE)
 	return FAILURE;
 
-      /* Add component '$data'.  */
-      if (gfc_add_component (fclass, "$data", &c) == FAILURE)
+      /* Add component '_data'.  */
+      if (gfc_add_component (fclass, "_data", &c) == FAILURE)
 	return FAILURE;
       c->ts = *ts;
       c->ts.type = BT_DERIVED;
@@ -166,18 +182,19 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
       c->as = (*as);
       c->initializer = NULL;
 
-      /* Add component '$vptr'.  */
-      if (gfc_add_component (fclass, "$vptr", &c) == FAILURE)
+      /* Add component '_vptr'.  */
+      if (gfc_add_component (fclass, "_vptr", &c) == FAILURE)
 	return FAILURE;
       c->ts.type = BT_DERIVED;
       if (delayed_vtab)
 	c->ts.u.derived = NULL;
       else
 	{
-	  vtab = gfc_find_derived_vtab (ts->u.derived, false);
+	  vtab = gfc_find_derived_vtab (ts->u.derived);
 	  gcc_assert (vtab);
 	  c->ts.u.derived = vtab->ts.u.derived;
 	}
+      c->attr.access = ACCESS_PRIVATE;
       c->attr.pointer = 1;
     }
 
@@ -199,371 +216,158 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
 }
 
 
-static void
-add_proc_component (gfc_component *c, gfc_symbol *vtype,
-		    gfc_symtree *st, gfc_symbol *specific,
-		    bool is_generic, bool is_generic_specific)
-{
-  /* Add procedure component.  */
-  if (is_generic)
-    {
-      if (gfc_add_component (vtype, specific->name, &c) == FAILURE)
-	return;
-      c->ts.interface = specific;
-    }
-  else if (c && is_generic_specific)
-    {
-      c->ts.interface = st->n.tb->u.specific->n.sym;
-    }
-  else
-    {
-      c = gfc_find_component (vtype, st->name, true, true);
-      if (!c && gfc_add_component (vtype, st->name, &c) == FAILURE)
-	return;
-      c->ts.interface = st->n.tb->u.specific->n.sym;
-    }
-
-  if (!c->tb)
-    c->tb = XCNEW (gfc_typebound_proc);
-  *c->tb = *st->n.tb;
-  c->tb->ppc = 1;
-  c->attr.procedure = 1;
-  c->attr.proc_pointer = 1;
-  c->attr.flavor = FL_PROCEDURE;
-  c->attr.access = ACCESS_PRIVATE;
-  c->attr.external = 1;
-  c->attr.untyped = 1;
-  c->attr.if_source = IFSRC_IFBODY;
-
-  /* A static initializer cannot be used here because the specific
-     function is not a constant; internal compiler error: in
-     output_constant, at varasm.c:4623  */
-  c->initializer = NULL;
-}
-
+/* Add a procedure pointer component to the vtype
+   to represent a specific type-bound procedure.  */
 
 static void
-add_proc_comps (gfc_component *c, gfc_symbol *vtype,
-		gfc_symtree *st, bool is_generic)
+add_proc_comp (gfc_symbol *vtype, const char *name, gfc_typebound_proc *tb)
 {
-  if (c == NULL && !is_generic)
+  gfc_component *c;
+  c = gfc_find_component (vtype, name, true, true);
+
+  if (c == NULL)
     {
-      add_proc_component (c, vtype, st, NULL, false, false);
-    }
-  else if (is_generic && st->n.tb && vtype->components == NULL)
-    {
-      gfc_tbp_generic* g;
-      gfc_symbol * specific;
-      for (g = st->n.tb->u.generic; g; g = g->next)
-	{
-	  if (!g->specific)
-	    continue;
-	  specific = g->specific->u.specific->n.sym;
-	  add_proc_component (NULL, vtype, st, specific, true, false);
-	}
+      /* Add procedure component.  */
+      if (gfc_add_component (vtype, name, &c) == FAILURE)
+	return;
+
+      if (!c->tb)
+	c->tb = XCNEW (gfc_typebound_proc);
+      *c->tb = *tb;
+      c->tb->ppc = 1;
+      c->attr.procedure = 1;
+      c->attr.proc_pointer = 1;
+      c->attr.flavor = FL_PROCEDURE;
+      c->attr.access = ACCESS_PRIVATE;
+      c->attr.external = 1;
+      c->attr.untyped = 1;
+      c->attr.if_source = IFSRC_IFBODY;
     }
   else if (c->attr.proc_pointer && c->tb)
     {
-      *c->tb = *st->n.tb;
+      *c->tb = *tb;
       c->tb->ppc = 1;
-      c->ts.interface = st->n.tb->u.specific->n.sym;	  
+    }
+
+  if (tb->u.specific)
+    {
+      c->ts.interface = tb->u.specific->n.sym;
+      if (!tb->deferred)
+	c->initializer = gfc_get_variable_expr (tb->u.specific);
     }
 }
 
-static void
-add_procs_to_declared_vtab1 (gfc_symtree *st, gfc_symbol *vtype,
-			     bool resolved)
-{
-  gfc_component *c;
-  gfc_symbol *generic;
-  char name[3 * GFC_MAX_SYMBOL_LEN + 10];
 
+/* Add all specific type-bound procedures in the symtree 'st' to a vtype.  */
+
+static void
+add_procs_to_declared_vtab1 (gfc_symtree *st, gfc_symbol *vtype)
+{
   if (!st)
     return;
 
   if (st->left)
-    add_procs_to_declared_vtab1 (st->left, vtype, resolved);
+    add_procs_to_declared_vtab1 (st->left, vtype);
 
   if (st->right)
-    add_procs_to_declared_vtab1 (st->right, vtype, resolved);
+    add_procs_to_declared_vtab1 (st->right, vtype);
 
-  if (!st->n.tb)
-    return;
-
-  if (!st->n.tb->is_generic && st->n.tb->u.specific)
-    {
-      c = gfc_find_component (vtype, st->name, true, true);
-      add_proc_comps (c, vtype, st, false);
-    }
-  else if (st->n.tb->is_generic)
-    {
-      c = gfc_find_component (vtype, st->name, true, true);
-
-      if (c == NULL)
-	{
-	  /* Add derived type component with generic name.  */
-	  if (gfc_add_component (vtype, st->name, &c) == FAILURE)
-	    return;
-	  c->ts.type = BT_DERIVED;
-	  c->attr.flavor = FL_VARIABLE;
-	  c->attr.pointer = 1;
-
-	  /* Add a special empty derived type as a placeholder.  */
-	  sprintf (name, "$empty");
-	  gfc_find_symbol (name, vtype->ns, 0, &generic);
-	  if (generic == NULL)
-	    {
-	      gfc_get_symbol (name, vtype->ns, &generic);
-	      generic->attr.flavor = FL_DERIVED;
-	      generic->refs++;
-	      gfc_set_sym_referenced (generic);
-	      generic->ts.type = BT_UNKNOWN;
-	      generic->attr.zero_comp = 1;
-	    }
-
-	  c->ts.u.derived = generic;
-	}
-    }
+  if (st->n.tb && !st->n.tb->error 
+      && !st->n.tb->is_generic && st->n.tb->u.specific)
+    add_proc_comp (vtype, st->name, st->n.tb);
 }
 
 
+/* Copy procedure pointers components from the parent type.  */
+
 static void
-copy_vtab_proc_comps (gfc_symbol *declared, gfc_symbol *vtype,
-		      bool resolved)
+copy_vtab_proc_comps (gfc_symbol *declared, gfc_symbol *vtype)
 {
-  gfc_component *c, *cmp;
+  gfc_component *cmp;
   gfc_symbol *vtab;
 
-  vtab = gfc_find_derived_vtab (declared, resolved);
+  vtab = gfc_find_derived_vtab (declared);
 
   for (cmp = vtab->ts.u.derived->components; cmp; cmp = cmp->next)
     {
       if (gfc_find_component (vtype, cmp->name, true, true))
 	continue;
 
-      if (gfc_add_component (vtype, cmp->name, &c) == FAILURE)
-	return;
-
-      if (cmp->ts.type == BT_DERIVED)
-	{
-	  c->ts = cmp->ts;
-	  c->ts.u.derived = cmp->ts.u.derived;
-	  c->attr.flavor = FL_VARIABLE;
-	  c->attr.pointer = 1;
-	  c->initializer = NULL;
-	  continue;
-	}
-
-      c->tb = XCNEW (gfc_typebound_proc);
-      *c->tb = *cmp->tb;
-      c->attr.procedure = 1;
-      c->attr.proc_pointer = 1;
-      c->attr.flavor = FL_PROCEDURE;
-      c->attr.access = ACCESS_PRIVATE;
-      c->attr.external = 1;
-      c->ts.interface = cmp->ts.interface;
-      c->attr.untyped = 1;
-      c->attr.if_source = IFSRC_IFBODY;
-      c->initializer = NULL;
+      add_proc_comp (vtype, cmp->name, cmp->tb);
     }
 }
 
+
+/* Add procedure pointers for all type-bound procedures to a vtab.  */
+
 static void
-add_procs_to_declared_vtab (gfc_symbol *declared, gfc_symbol *vtype,
-			    gfc_symbol *derived, bool resolved)
+add_procs_to_declared_vtab (gfc_symbol *derived, gfc_symbol *vtype)
 {
   gfc_symbol* super_type;
 
-  super_type = gfc_get_derived_super_type (declared);
+  super_type = gfc_get_derived_super_type (derived);
 
-  if (super_type && (super_type != declared))
-    add_procs_to_declared_vtab (super_type, vtype, derived, resolved);
-
-  if (declared != derived)
-    copy_vtab_proc_comps (declared, vtype, resolved);
-
-  if (declared->f2k_derived && declared->f2k_derived->tb_sym_root)
-    add_procs_to_declared_vtab1 (declared->f2k_derived->tb_sym_root,
-				 vtype, resolved);
-
-  if (declared->f2k_derived && declared->f2k_derived->tb_uop_root)
-    add_procs_to_declared_vtab1 (declared->f2k_derived->tb_uop_root,
-				 vtype, resolved);
-}
-
-
-static
-void add_generic_specifics (gfc_symbol *declared, gfc_symbol *vtab,
-			    const char *name)
-{
-  gfc_tbp_generic* g;
-  gfc_symbol * specific1;
-  gfc_symbol * specific2;
-  gfc_symtree *st = NULL;
-  gfc_component *c;
-
-  /* Find the generic procedure using the component name.  */
-  st = gfc_find_typebound_proc (declared, NULL, name, true, NULL);
-  if (st == NULL)
-    st = gfc_find_typebound_user_op (declared, NULL, name, true, NULL);
-
-  if (st == NULL)
-    return;
-
-  /* Add procedure pointer components for the specific procedures. */
-  for (g = st->n.tb->u.generic; g; g = g->next)
+  if (super_type && (super_type != derived))
     {
-      if (!g->specific)
-	continue;
-      specific1 = g->specific_st->n.tb->u.specific->n.sym;
-
-      c = vtab->ts.u.derived->components;
-      specific2 = NULL;
-
-      /* Override identical specific interface.  */
-      if (vtab->ts.u.derived->components)
-	{
-	  for (; c; c= c->next)
-	    {
-	      specific2 = c->ts.interface;
-	      if (gfc_compare_interfaces (specific2, specific1,
-					  specific1->name, 0, 0, NULL, 0))
-		break;
-	    }
-	}
-
-      add_proc_component (c, vtab->ts.u.derived, g->specific_st,
-			  NULL, false, true);
-      vtab->ts.u.derived->attr.zero_comp = 0;
+      /* Make sure that the PPCs appear in the same order as in the parent.  */
+      copy_vtab_proc_comps (super_type, vtype);
+      /* Only needed to get the PPC initializers right.  */
+      add_procs_to_declared_vtab (super_type, vtype);
     }
+
+  if (derived->f2k_derived && derived->f2k_derived->tb_sym_root)
+    add_procs_to_declared_vtab1 (derived->f2k_derived->tb_sym_root, vtype);
+
+  if (derived->f2k_derived && derived->f2k_derived->tb_uop_root)
+    add_procs_to_declared_vtab1 (derived->f2k_derived->tb_uop_root, vtype);
 }
 
 
-static void
-add_generics_to_declared_vtab (gfc_symbol *declared, gfc_symbol *vtype,
-			       gfc_symbol *derived, bool resolved)
-{
-  gfc_component *cmp;
-  gfc_symtree *st = NULL;
-  gfc_symbol * vtab;
-  char name[2 * GFC_MAX_SYMBOL_LEN + 8];
-  gfc_symbol* super_type;
-
-  gcc_assert (resolved);
-
-  for (cmp = vtype->components; cmp; cmp = cmp->next)
-    {
-      if (cmp->ts.type != BT_DERIVED)
-	continue;
-
-      /* The only derived type that does not represent a generic
-	 procedure is the pointer to the parent vtab.  */
-      if (cmp->ts.u.derived
-	    && strcmp (cmp->ts.u.derived->name, "$extends") == 0)
-	continue;
-
-      /* Find the generic procedure using the component name.  */
-      st = gfc_find_typebound_proc (declared, NULL, cmp->name,
-				    true, NULL);
-      if (st == NULL)
-	st = gfc_find_typebound_user_op (declared, NULL, cmp->name,
-					 true, NULL);
-
-      /* Should be an error but we pass on it for now.  */
-      if (st == NULL || !st->n.tb->is_generic)
-	continue;
-
-      vtab = NULL;
-
-      /* Build a vtab and a special vtype, with only the procedure
-	 pointer fields, to carry the pointers to the specific
-	 procedures.  Should this name ever be changed, the same
-	 should be done in trans-expr.c(gfc_trans_assign_vtab_procs). */
-      sprintf (name, "vtab$%s$%s", vtype->name, cmp->name);
-      gfc_find_symbol (name, derived->ns, 0, &vtab);
-      if (vtab == NULL)
-	{
-	  gfc_get_symbol (name, derived->ns, &vtab);
-	  vtab->ts.type = BT_DERIVED;
-	  vtab->attr.flavor = FL_VARIABLE;
-	  vtab->attr.target = 1;
-	  vtab->attr.save = SAVE_EXPLICIT;
-	  vtab->attr.vtab = 1;
-	  vtab->refs++;
-	  gfc_set_sym_referenced (vtab);
-	  sprintf (name, "%s$%s", vtype->name, cmp->name);
-	  
-	  gfc_find_symbol (name, derived->ns, 0, &cmp->ts.u.derived);
-	  if (cmp->ts.u.derived == NULL
-		|| (strcmp (cmp->ts.u.derived->name, "$empty") == 0))
-	    {
-	      gfc_get_symbol (name, derived->ns, &cmp->ts.u.derived);
-	      if (gfc_add_flavor (&cmp->ts.u.derived->attr, FL_DERIVED,
-				  NULL, &gfc_current_locus) == FAILURE)
-		return;
-	      cmp->ts.u.derived->refs++;
-	      gfc_set_sym_referenced (cmp->ts.u.derived);
-	      cmp->ts.u.derived->attr.vtype = 1;
-	      cmp->ts.u.derived->attr.zero_comp = 1;
-	    }
-	  vtab->ts.u.derived = cmp->ts.u.derived;
-	}
-
-      /* Store this for later use in setting the pointer.  */
-      cmp->ts.interface = vtab;
-
-      if (vtab->ts.u.derived->components)
-	continue;
-
-      super_type = gfc_get_derived_super_type (declared);
-
-      if (super_type && (super_type != declared))
-	add_generic_specifics (super_type, vtab, cmp->name);
-
-      add_generic_specifics (declared, vtab, cmp->name);
-    }
-}
-
-
-/* Find the symbol for a derived type's vtab.  A vtab has the following
-   fields:
-   $hash	a hash value used to identify the derived type
-   $size	the size in bytes of the derived type
-   $extends	a pointer to the vtable of the parent derived type
-   then:
-   procedure pointer components for the specific typebound procedures
-   structure pointers to reduced vtabs that contain procedure
-   pointers to the specific procedures.  */
+/* Find (or generate) the symbol for a derived type's vtab.  */
 
 gfc_symbol *
-gfc_find_derived_vtab (gfc_symbol *derived, bool resolved)
+gfc_find_derived_vtab (gfc_symbol *derived)
 {
   gfc_namespace *ns;
-  gfc_symbol *vtab = NULL, *vtype = NULL;
-  char name[2 * GFC_MAX_SYMBOL_LEN + 8];
-
-  ns = gfc_current_ns;
-
-  for (; ns; ns = ns->parent)
+  gfc_symbol *vtab = NULL, *vtype = NULL, *found_sym = NULL, *def_init = NULL;
+  gfc_symbol *copy = NULL, *src = NULL, *dst = NULL;
+  
+  /* Find the top-level namespace (MODULE or PROGRAM).  */
+  for (ns = gfc_current_ns; ns; ns = ns->parent)
     if (!ns->parent)
       break;
 
+  /* If the type is a class container, use the underlying derived type.  */
+  if (derived->attr.is_class)
+    derived = gfc_get_derived_super_type (derived);
+    
   if (ns)
     {
-      sprintf (name, "vtab$%s", derived->name);
-      gfc_find_symbol (name, ns, 0, &vtab);
+      char name[GFC_MAX_SYMBOL_LEN], tname[GFC_MAX_SYMBOL_LEN];
+      
+      get_unique_type_string (tname, derived);
+      sprintf (name, "__vtab_%s", tname);
+
+      /* Look for the vtab symbol in various namespaces.  */
+      gfc_find_symbol (name, gfc_current_ns, 0, &vtab);
+      if (vtab == NULL)
+	gfc_find_symbol (name, ns, 0, &vtab);
+      if (vtab == NULL)
+	gfc_find_symbol (name, derived->ns, 0, &vtab);
 
       if (vtab == NULL)
 	{
 	  gfc_get_symbol (name, ns, &vtab);
 	  vtab->ts.type = BT_DERIVED;
-	  vtab->attr.flavor = FL_VARIABLE;
+	  if (gfc_add_flavor (&vtab->attr, FL_VARIABLE, NULL,
+	                      &gfc_current_locus) == FAILURE)
+	    goto cleanup;
 	  vtab->attr.target = 1;
 	  vtab->attr.save = SAVE_EXPLICIT;
 	  vtab->attr.vtab = 1;
-	  vtab->refs++;
+	  vtab->attr.access = ACCESS_PUBLIC;
 	  gfc_set_sym_referenced (vtab);
-	  sprintf (name, "vtype$%s", derived->name);
+	  sprintf (name, "__vtype_%s", tname);
 	  
 	  gfc_find_symbol (name, ns, 0, &vtype);
 	  if (vtype == NULL)
@@ -574,22 +378,23 @@ gfc_find_derived_vtab (gfc_symbol *derived, bool resolved)
 	      gfc_get_symbol (name, ns, &vtype);
 	      if (gfc_add_flavor (&vtype->attr, FL_DERIVED,
 				  NULL, &gfc_current_locus) == FAILURE)
-		return NULL;
-	      vtype->refs++;
+		goto cleanup;
+	      vtype->attr.access = ACCESS_PUBLIC;
+	      vtype->attr.vtype = 1;
 	      gfc_set_sym_referenced (vtype);
 
-	      /* Add component '$hash'.  */
-	      if (gfc_add_component (vtype, "$hash", &c) == FAILURE)
-		return NULL;
+	      /* Add component '_hash'.  */
+	      if (gfc_add_component (vtype, "_hash", &c) == FAILURE)
+		goto cleanup;
 	      c->ts.type = BT_INTEGER;
 	      c->ts.kind = 4;
 	      c->attr.access = ACCESS_PRIVATE;
 	      c->initializer = gfc_get_int_expr (gfc_default_integer_kind,
 						 NULL, derived->hash_value);
 
-	      /* Add component '$size'.  */
-	      if (gfc_add_component (vtype, "$size", &c) == FAILURE)
-		return NULL;
+	      /* Add component '_size'.  */
+	      if (gfc_add_component (vtype, "_size", &c) == FAILURE)
+		goto cleanup;
 	      c->ts.type = BT_INTEGER;
 	      c->ts.kind = 4;
 	      c->attr.access = ACCESS_PRIVATE;
@@ -600,15 +405,15 @@ gfc_find_derived_vtab (gfc_symbol *derived, bool resolved)
 	      c->initializer = gfc_get_int_expr (gfc_default_integer_kind,
 						 NULL, 0);
 
-	      /* Add component $extends.  */
-	      if (gfc_add_component (vtype, "$extends", &c) == FAILURE)
-		return NULL;
+	      /* Add component _extends.  */
+	      if (gfc_add_component (vtype, "_extends", &c) == FAILURE)
+		goto cleanup;
 	      c->attr.pointer = 1;
 	      c->attr.access = ACCESS_PRIVATE;
 	      parent = gfc_get_derived_super_type (derived);
 	      if (parent)
 		{
-		  parent_vtab = gfc_find_derived_vtab (parent, resolved);
+		  parent_vtab = gfc_find_derived_vtab (parent);
 		  c->ts.type = BT_DERIVED;
 		  c->ts.u.derived = parent_vtab->ts.u.derived;
 		  c->initializer = gfc_get_expr ();
@@ -623,25 +428,123 @@ gfc_find_derived_vtab (gfc_symbol *derived, bool resolved)
 		  c->initializer = gfc_get_null_expr (NULL);
 		}
 
-	      add_procs_to_declared_vtab (derived, vtype, derived, resolved);
-	      vtype->attr.vtype = 1;
+	      if (derived->components == NULL && !derived->attr.zero_comp)
+		{
+		  /* At this point an error must have occurred.
+		     Prevent further errors on the vtype components.  */
+		  found_sym = vtab;
+		  goto have_vtype;
+		}
+
+	      /* Add component _def_init.  */
+	      if (gfc_add_component (vtype, "_def_init", &c) == FAILURE)
+		goto cleanup;
+	      c->attr.pointer = 1;
+	      c->attr.access = ACCESS_PRIVATE;
+	      c->ts.type = BT_DERIVED;
+	      c->ts.u.derived = derived;
+	      if (derived->attr.abstract)
+		c->initializer = gfc_get_null_expr (NULL);
+	      else
+		{
+		  /* Construct default initialization variable.  */
+		  sprintf (name, "__def_init_%s", tname);
+		  gfc_get_symbol (name, ns, &def_init);
+		  def_init->attr.target = 1;
+		  def_init->attr.save = SAVE_EXPLICIT;
+		  def_init->attr.access = ACCESS_PUBLIC;
+		  def_init->attr.flavor = FL_VARIABLE;
+		  gfc_set_sym_referenced (def_init);
+		  def_init->ts.type = BT_DERIVED;
+		  def_init->ts.u.derived = derived;
+		  def_init->value = gfc_default_initializer (&def_init->ts);
+
+		  c->initializer = gfc_lval_expr_from_sym (def_init);
+		}
+
+	      /* Add component _copy.  */
+	      if (gfc_add_component (vtype, "_copy", &c) == FAILURE)
+		goto cleanup;
+	      c->attr.proc_pointer = 1;
+	      c->attr.access = ACCESS_PRIVATE;
+	      c->tb = XCNEW (gfc_typebound_proc);
+	      c->tb->ppc = 1;
+	      if (derived->attr.abstract)
+		c->initializer = gfc_get_null_expr (NULL);
+	      else
+		{
+		  /* Set up namespace.  */
+		  gfc_namespace *sub_ns = gfc_get_namespace (ns, 0);
+		  sub_ns->sibling = ns->contained;
+		  ns->contained = sub_ns;
+		  sub_ns->resolved = 1;
+		  /* Set up procedure symbol.  */
+		  sprintf (name, "__copy_%s", tname);
+		  gfc_get_symbol (name, sub_ns, &copy);
+		  sub_ns->proc_name = copy;
+		  copy->attr.flavor = FL_PROCEDURE;
+		  copy->attr.if_source = IFSRC_DECL;
+		  gfc_set_sym_referenced (copy);
+		  /* Set up formal arguments.  */
+		  gfc_get_symbol ("src", sub_ns, &src);
+		  src->ts.type = BT_DERIVED;
+		  src->ts.u.derived = derived;
+		  src->attr.flavor = FL_VARIABLE;
+		  src->attr.dummy = 1;
+		  gfc_set_sym_referenced (src);
+		  copy->formal = gfc_get_formal_arglist ();
+		  copy->formal->sym = src;
+		  gfc_get_symbol ("dst", sub_ns, &dst);
+		  dst->ts.type = BT_DERIVED;
+		  dst->ts.u.derived = derived;
+		  dst->attr.flavor = FL_VARIABLE;
+		  dst->attr.dummy = 1;
+		  gfc_set_sym_referenced (dst);
+		  copy->formal->next = gfc_get_formal_arglist ();
+		  copy->formal->next->sym = dst;
+		  /* Set up code.  */
+		  sub_ns->code = gfc_get_code ();
+		  sub_ns->code->op = EXEC_ASSIGN;
+		  sub_ns->code->expr1 = gfc_lval_expr_from_sym (dst);
+		  sub_ns->code->expr2 = gfc_lval_expr_from_sym (src);
+		  /* Set initializer.  */
+		  c->initializer = gfc_lval_expr_from_sym (copy);
+		  c->ts.interface = copy;
+		}
+
+	      /* Add procedure pointers for type-bound procedures.  */
+	      add_procs_to_declared_vtab (derived, vtype);
 	    }
 
+have_vtype:
 	  vtab->ts.u.derived = vtype;
 	  vtab->value = gfc_default_initializer (&vtab->ts);
 	}
     }
 
-  /* Catch the call just before the backend declarations are built, so that
-     the generic procedures have been resolved and the specific procedures
-     have formal interfaces that can be compared.  */
-  if (resolved
-	&& vtab->ts.u.derived
-	&& vtab->ts.u.derived->backend_decl == NULL)
-    add_generics_to_declared_vtab (derived, vtab->ts.u.derived,
-				   derived, resolved);
+  found_sym = vtab;
 
-  return vtab;
+cleanup:
+  /* It is unexpected to have some symbols added at resolution or code
+     generation time. We commit the changes in order to keep a clean state.  */
+  if (found_sym)
+    {
+      gfc_commit_symbol (vtab);
+      if (vtype)
+	gfc_commit_symbol (vtype);
+      if (def_init)
+	gfc_commit_symbol (def_init);
+      if (copy)
+	gfc_commit_symbol (copy);
+      if (src)
+	gfc_commit_symbol (src);
+      if (dst)
+	gfc_commit_symbol (dst);
+    }
+  else
+    gfc_undo_symbols ();
+
+  return found_sym;
 }
 
 

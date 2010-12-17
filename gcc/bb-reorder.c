@@ -82,9 +82,11 @@
 #include "obstack.h"
 #include "expr.h"
 #include "params.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
+#include "toplev.h" /* user_defined_section_attribute */
 #include "tree-pass.h"
 #include "df.h"
+#include "bb-reorder.h"
 
 /* The number of rounds.  In most cases there will only be 4 rounds, but
    when partitioning hot and cold basic blocks into separate sections of
@@ -100,6 +102,14 @@
 #endif
 
 
+struct target_bb_reorder default_target_bb_reorder;
+#if SWITCHABLE_TARGET
+struct target_bb_reorder *this_target_bb_reorder = &default_target_bb_reorder;
+#endif
+
+#define uncond_jump_length \
+  (this_target_bb_reorder->x_uncond_jump_length)
+
 /* Branch thresholds in thousandths (per mille) of the REG_BR_PROB_BASE.  */
 static int branch_threshold[N_ROUNDS] = {400, 200, 100, 0, 0};
 
@@ -109,9 +119,6 @@ static int exec_threshold[N_ROUNDS] = {500, 200, 50, 0, 0};
 /* If edge frequency is lower than DUPLICATION_THRESHOLD per mille of entry
    block the edge destination is not duplicated while connecting traces.  */
 #define DUPLICATION_THRESHOLD 100
-
-/* Length of unconditional jump instruction.  */
-static int uncond_jump_length;
 
 /* Structure to hold needed information for each basic block.  */
 typedef struct bbro_basic_block_data_def
@@ -1292,7 +1299,9 @@ add_labels_and_missing_jumps (edge *crossing_edges, int n_crossing_edges)
 
 	      if (src && (src != ENTRY_BLOCK_PTR))
 		{
-		  if (!JUMP_P (BB_END (src)) && !block_ends_with_call_p (src))
+		  if (!JUMP_P (BB_END (src))
+		      && !block_ends_with_call_p (src)
+		      && !can_throw_internal (BB_END (src)))
 		    /* bb just falls through.  */
 		    {
 		      /* make sure there's only one successor */
@@ -1309,9 +1318,9 @@ add_labels_and_missing_jumps (edge *crossing_edges, int n_crossing_edges)
 		      src->il.rtl->footer = unlink_insn_chain (barrier, barrier);
 		      /* Mark edge as non-fallthru.  */
 		      crossing_edges[i]->flags &= ~EDGE_FALLTHRU;
-		    } /* end: 'if (GET_CODE ... '  */
-		} /* end: 'if (src && src->index...'  */
-	    } /* end: 'if (dest && dest->index...'  */
+		    } /* end: 'if (!JUMP_P ... '  */
+		} /* end: 'if (src && src !=...'  */
+	    } /* end: 'if (dest && dest !=...'  */
 	} /* end: 'if (crossing_edges[i]...'  */
     } /* end for loop  */
 }
@@ -1368,19 +1377,21 @@ fix_up_fall_thru_edges (void)
 	  fall_thru = succ2;
 	  cond_jump = succ1;
 	}
-      else if (!fall_thru && succ1 && block_ends_with_call_p (cur_bb))
-      {
-        edge e;
-        edge_iterator ei;
+      else if (succ1
+	       && (block_ends_with_call_p (cur_bb)
+		   || can_throw_internal (BB_END (cur_bb))))
+	{
+	  edge e;
+	  edge_iterator ei;
 
-        /* Find EDGE_CAN_FALLTHRU edge.  */
-        FOR_EACH_EDGE (e, ei, cur_bb->succs)
-          if (e->flags & EDGE_CAN_FALLTHRU)
-          {
-            fall_thru = e;
-            break;
-          }
-      }
+	  /* Find EDGE_CAN_FALLTHRU edge.  */
+	  FOR_EACH_EDGE (e, ei, cur_bb->succs)
+	    if (e->flags & EDGE_CAN_FALLTHRU)
+	      {
+		fall_thru = e;
+		break;
+	      }
+	}
 
       if (fall_thru && (fall_thru->dest != EXIT_BLOCK_PTR))
 	{

@@ -3,7 +3,7 @@
    used.  */
 /* { dg-do assemble } */
 /* { dg-options "-O2" } */
-/* { dg-require-effective-target tls_native } */
+/* { dg-require-effective-target tls } */
 
 struct __res_state
 {

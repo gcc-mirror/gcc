@@ -25,7 +25,10 @@
       builtin_define ("__RX__"); 		\
       builtin_assert ("cpu=RX"); 		\
       if (rx_cpu_type == RX610)			\
-        builtin_assert ("machine=RX610");	\
+	{					\
+          builtin_define ("__RX610__");		\
+          builtin_assert ("machine=RX610");	\
+	}					\
      else					\
         builtin_assert ("machine=RX600");	\
       						\
@@ -96,12 +99,6 @@ extern enum rx_cpu_types  rx_cpu_type;
 #define BYTES_BIG_ENDIAN 		TARGET_BIG_ENDIAN_DATA
 #define WORDS_BIG_ENDIAN 		TARGET_BIG_ENDIAN_DATA
 
-#ifdef __RX_BIG_ENDIAN__
-#define LIBGCC2_WORDS_BIG_ENDIAN	1
-#else
-#define LIBGCC2_WORDS_BIG_ENDIAN	0
-#endif
-
 #define UNITS_PER_WORD 			4
 
 #define INT_TYPE_SIZE			32
@@ -115,11 +112,9 @@ extern enum rx_cpu_types  rx_cpu_type;
 #ifdef __RX_32BIT_DOUBLES__
 #define LIBGCC2_HAS_DF_MODE		0
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE   32
-#define LIBGCC2_DOUBLE_TYPE_SIZE	32
 #else
 #define LIBGCC2_HAS_DF_MODE		1
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE   64
-#define LIBGCC2_DOUBLE_TYPE_SIZE	64
 #endif
 
 #define DEFAULT_SIGNED_CHAR		0
@@ -129,8 +124,6 @@ extern enum rx_cpu_types  rx_cpu_type;
 #define BIGGEST_ALIGNMENT 		32
 #define STACK_BOUNDARY 			32
 #define PARM_BOUNDARY 			8
-
-#define FUNCTION_ARG_BOUNDARY(MODE, TYPE) 32
 
 #define STACK_GROWS_DOWNWARD		1
 #define FRAME_GROWS_DOWNWARD		0
@@ -154,12 +147,9 @@ extern enum rx_cpu_types  rx_cpu_type;
 #define MOVE_MAX 			4
 #define STARTING_FRAME_OFFSET		0
 
-#define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, SIZE) 0
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC)   1
 
 #define LEGITIMATE_CONSTANT_P(X) 	rx_is_legitimate_constant (X)
-
-#define HANDLE_PRAGMA_PACK_PUSH_POP	1
 
 #define HAVE_PRE_DECCREMENT		1
 #define HAVE_POST_INCREMENT		1
@@ -208,7 +198,7 @@ enum reg_class
 #define BASE_REG_CLASS  		GR_REGS
 #define INDEX_REG_CLASS			GR_REGS
 
-#define FIRST_PSEUDO_REGISTER 		16
+#define FIRST_PSEUDO_REGISTER 		17
 
 #define REGNO_REG_CLASS(REGNO)          ((REGNO) < FIRST_PSEUDO_REGISTER \
 					 ? GR_REGS : NO_REGS)
@@ -220,6 +210,7 @@ enum reg_class
 #define STATIC_CHAIN_REGNUM 		8
 #define TRAMPOLINE_TEMP_REGNUM		9
 #define STRUCT_VAL_REGNUM		15
+#define CC_REGNUM                       16
 
 /* This is the register which is used to hold the address of the start
    of the small data area, if that feature is being used.  Note - this
@@ -246,16 +237,13 @@ enum reg_class
 
 #define FIXED_REGISTERS					\
 {							\
-  1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0	\
+  1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1	\
 }
 
 #define CALL_USED_REGISTERS				\
 {							\
-  1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1	\
+  1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1	\
 }
-
-#define CONDITIONAL_REGISTER_USAGE			\
-  rx_conditional_register_usage ()
 
 #define LIBCALL_VALUE(MODE)				\
   gen_rtx_REG (((GET_MODE_CLASS (MODE) != MODE_INT	\
@@ -269,8 +257,6 @@ enum reg_class
 #define REG_ALLOC_ORDER						\
 {  7,  10,  11,  12,  13,  14,  4,  3,  2,  1, 9, 8, 6, 5, 15	\
 }
-
-#define PREFERRED_RELOAD_CLASS(X,CLASS)		CLASS
 
 #define REGNO_IN_RANGE(REGNO, MIN, MAX)		\
   (IN_RANGE ((REGNO), (MIN), (MAX)) 		\
@@ -321,11 +307,6 @@ typedef unsigned int CUMULATIVE_ARGS;
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
   (CUM) = 0
 
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-  rx_function_arg (& CUM, MODE, TYPE, NAMED)
-
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
-  (CUM) += rx_function_arg_size (MODE, TYPE)
 
 #define TRAMPOLINE_SIZE 	(! TARGET_BIG_ENDIAN_DATA ? 14 : 20)
 #define TRAMPOLINE_ALIGNMENT 	32
@@ -352,8 +333,8 @@ typedef unsigned int CUMULATIVE_ARGS;
 #define REGISTER_NAMES						\
   {								\
     "r0",  "r1",  "r2",   "r3",   "r4",   "r5",   "r6",   "r7",	\
-    "r8",  "r9",  "r10",  "r11",  "r12",  "r13",  "r14",  "r15" \
-  };
+      "r8",  "r9",  "r10",  "r11",  "r12",  "r13",  "r14",  "r15", "cc"	\
+  }
 
 #define ADDITIONAL_REGISTER_NAMES	\
 {					\
@@ -610,9 +591,6 @@ typedef unsigned int CUMULATIVE_ARGS;
    they contain are always computed between two same-section symbols.  */
 #define JUMP_TABLES_IN_TEXT_SECTION	(flag_pic)
 
-#define CC_NO_CARRY			0400
-#define NOTICE_UPDATE_CC(EXP, INSN)	rx_notice_update_cc (EXP, INSN)
-
 extern int rx_float_compare_mode;
 
 /* This is a version of REG_P that also returns TRUE for SUBREGs.  */
@@ -621,8 +599,6 @@ extern int rx_float_compare_mode;
 /* Like REG_P except that this macro is true for SET expressions.  */
 #define SET_P(rtl)    (GET_CODE (rtl) == SET)
 
-#define CAN_DEBUG_WITHOUT_FP 1
-
 /* The AS100 assembler does not support .leb128 and .uleb128, but
    the compiler-build-time configure tests will have enabled their
    use because GAS supports them.  So default to generating STABS
@@ -636,14 +612,20 @@ extern int rx_float_compare_mode;
 #define ARG_POINTER_CFA_OFFSET(FNDECL)		4
 #define FRAME_POINTER_CFA_OFFSET(FNDECL)	4
 
-/* Translate -nofpu into -mnofpu so that it gets passed from gcc to cc1.  */
-#define TARGET_OPTION_TRANSLATE_TABLE \
-  {"-nofpu", "-mnofpu" }
-
-#define OPTIMIZATION_OPTIONS(LEVEL,SIZE) \
-  rx_set_optimization_options ()
-
 #define TARGET_USE_FPU		(! TARGET_NO_USE_FPU)
 
 /* This macro is used to decide when RX FPU instructions can be used.  */
 #define ALLOW_RX_FPU_INSNS	(TARGET_USE_FPU)
+
+#define BRANCH_COST(SPEED,PREDICT)       1
+#define REGISTER_MOVE_COST(MODE,FROM,TO) 2
+
+#define SELECT_CC_MODE(OP,X,Y)						\
+  (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT ? CC_ZSmode :		\
+    (GET_CODE (X) == PLUS || GET_CODE (X) == MINUS ? CC_ZSCmode :	\
+    (GET_CODE (X) == ABS ? CC_ZSOmode :					\
+    (GET_CODE (X) == AND || GET_CODE (X) == NOT || GET_CODE (X) == IOR	\
+     || GET_CODE (X) == XOR || GET_CODE (X) == ROTATE			\
+     || GET_CODE (X) == ROTATERT || GET_CODE (X) == ASHIFTRT		\
+     || GET_CODE (X) == LSHIFTRT || GET_CODE (X) == ASHIFT ? CC_ZSmode : \
+     CCmode))))

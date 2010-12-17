@@ -23,13 +23,13 @@
 // <http://www.gnu.org/licenses/>.
 
 /**
- * @file bits/regex_parser.h
+ * @file bits/regex_compiler.h
  * This is an internal header file, included by other library headers.
  * You should not attempt to use it directly.
  */
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
 namespace __regex
 {
   struct _Scanner_base
@@ -1110,6 +1110,7 @@ namespace __regex
                                         __f)._M_nfa())); }
 
 } // namespace __regex
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 /* vim: set ts=8 sw=2 sts=2: */

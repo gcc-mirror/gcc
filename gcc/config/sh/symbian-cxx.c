@@ -1,5 +1,5 @@
 /* Routines for C++ support for GCC for a Symbian OS targeted SH backend.
-   Copyright (C) 2004, 2005, 2007, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007, 2009, 2010 Free Software Foundation, Inc.
    Contributed by RedHat.
    Most of this code is stolen from i386/winnt.c.
 
@@ -30,7 +30,7 @@
 #include "expr.h"
 #include "tm_p.h"
 #include "cp/cp-tree.h"	/* We need access to the OVL_... macros.  */
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "sh-symbian.h"
 
 
@@ -117,7 +117,7 @@ sh_symbian_is_dllimported (tree decl)
 	   && !DECL_EXTERNAL (decl))
     {
       if (!DECL_VIRTUAL_P (decl))
-	error ("definition of static data member %q+D of dllimport'd class",
+	error ("definition of static data member %q+D of dllimport%'d class",
 	       decl);
       return false;
     }
@@ -629,7 +629,7 @@ sh_symbian_handle_dll_attribute (tree *pnode, tree name, tree args,
 	  sh_symbian_add_attribute (function, attr);
 
 	  /* Propagate the attribute to any function thunks as well.  */
-	  for (thunk = DECL_THUNKS (function); thunk; thunk = TREE_CHAIN (thunk))
+	  for (thunk = DECL_THUNKS (function); thunk; thunk = DECL_CHAIN (thunk))
 	    if (TREE_CODE (thunk) == FUNCTION_DECL)
 	      sh_symbian_add_attribute (thunk, attr);
 	}
@@ -638,7 +638,7 @@ sh_symbian_handle_dll_attribute (tree *pnode, tree name, tree args,
   if (TREE_CODE (node) == FUNCTION_DECL && DECL_VIRTUAL_P (node))
     {
       /* Propagate the attribute to any thunks of this function.  */
-      for (thunk = DECL_THUNKS (node); thunk; thunk = TREE_CHAIN (thunk))
+      for (thunk = DECL_THUNKS (node); thunk; thunk = DECL_CHAIN (thunk))
 	if (TREE_CODE (thunk) == FUNCTION_DECL)
 	  sh_symbian_add_attribute (thunk, attr);
     }

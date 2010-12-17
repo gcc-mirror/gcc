@@ -35,6 +35,7 @@ public:
   ::java::lang::String * getAlgorithm();
   JArray< jbyte > * getEncoded();
   ::java::lang::String * getFormat();
+  ::java::lang::String * toString();
   ::java::lang::String * __attribute__((aligned(__alignof__( ::java::lang::Object)))) algorithm;
   jint type;
   JArray< jbyte > * key;

@@ -1,4 +1,5 @@
-# Copyright (C) 2000, 2002, 2003, 2007, 2008 Free Software Foundation, Inc.
+# Copyright (C) 2000, 2002, 2003, 2007, 2008, 2010
+# Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -154,6 +155,28 @@ proc scan-file-not { output_file args } {
     dg-scan "scan-file-not" 0 $testcase $output_file $args
 }
 
+# Look for a pattern in the .su file produced by the compiler.  See
+# dg-scan for details.
+
+proc scan-stack-usage { args } {
+    upvar 2 name testcase
+    set testcase [lindex $testcase 0]
+    set output_file "[file rootname [file tail $testcase]].su"
+
+    dg-scan "scan-file" 1 $testcase $output_file $args
+}
+
+# Check that a pattern is not present in the .su file produced by the
+# compiler.  See dg-scan for details.
+
+proc scan-stack-usage-not { args } {
+    upvar 2 name testcase
+    set testcase [lindex $testcase 0]
+    set output_file "[file rootname [file tail $testcase]].su"
+
+    dg-scan "scan-file-not" 0 $testcase $output_file $args
+}
+
 # Call pass if pattern is present given number of times, otherwise fail.
 proc scan-assembler-times { args } {
     if { [llength $args] < 2 } {
@@ -290,4 +313,41 @@ proc scan-assembler-dem-not { args } {
     } else {
 	fail "$testcase scan-assembler-dem-not $pp_pattern"
     }
+}
+
+# Utility for testing that a function is defined on the current line.
+# Call pass if so, otherwise fail.  Invoked directly; the file must
+# have been compiled with -g -dA.
+#
+# Argument 0 is the current line, passed implicitly by dejagnu
+# Argument 1 is the function to check
+# Argument 2 handles expected failures and the like
+# Argument 3 is "." to match the current line, or an integer to match
+# an explicit line.
+proc dg-function-on-line { args } {
+    # Upvar from dg-final:
+    upvar dg-final-code final-code
+
+    set line [lindex $args 0]
+    set symbol [lindex $args 1]
+    set failures [lindex $args 2]
+
+    if { [llength $args] >= 4 } {
+	switch [lindex $args 3] {
+	    "." { }
+	    "default" { set line [lindex $args 3] }
+	}
+    }
+
+    set pattern [format {%s:[^\t]*(\t.(fnstart|frame|mask|file)[^\t]*)*\t[^:]+:%d\n} \
+                 $symbol $line]
+
+    # The lack of spaces around $pattern is important, since they'd
+    # become part of the regex scan-assembler tries to match.
+    set cmd "scan-assembler {$pattern}"
+    if { [llength $args] >= 3 } {
+        set cmd "$cmd {$failures}"
+    }
+
+    append final-code "$cmd\n"
 }

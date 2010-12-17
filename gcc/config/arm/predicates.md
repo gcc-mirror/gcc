@@ -73,6 +73,21 @@
 	      || REGNO_REG_CLASS (REGNO (op)) == FPA_REGS));
 })
 
+(define_predicate "vfp_register_operand"
+  (match_code "reg,subreg")
+{
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+
+  /* We don't consider registers whose class is NO_REGS
+     to be a register operand.  */
+  return (GET_CODE (op) == REG
+	  && (REGNO (op) >= FIRST_PSEUDO_REGISTER
+	      || REGNO_REG_CLASS (REGNO (op)) == VFP_LO_REGS
+	      || (TARGET_VFPD32
+		  && REGNO_REG_CLASS (REGNO (op)) == VFP_REGS)));
+})
+
 (define_special_predicate "subreg_lowpart_operator"
   (and (match_code "subreg")
        (match_test "subreg_lowpart_p (op)")))
@@ -85,6 +100,12 @@
 (define_predicate "arm_immediate_operand"
   (and (match_code "const_int")
        (match_test "const_ok_for_arm (INTVAL (op))")))
+
+;; A constant value which fits into two instructions, each taking
+;; an arithmetic constant operand for one of the words.
+(define_predicate "arm_immediate_di_operand"
+  (and (match_code "const_int,const_double")
+       (match_test "arm_const_double_by_immediates (op)")))
 
 (define_predicate "arm_neg_immediate_operand"
   (and (match_code "const_int")
@@ -107,6 +128,11 @@
   (ior (match_operand 0 "arm_rhs_operand")
        (match_operand 0 "memory_operand")))
 
+(define_predicate "shift_amount_operand"
+  (ior (and (match_test "TARGET_ARM")
+	    (match_operand 0 "s_register_operand"))
+       (match_operand 0 "const_int_operand")))
+
 (define_predicate "arm_add_operand"
   (ior (match_operand 0 "arm_rhs_operand")
        (match_operand 0 "arm_neg_immediate_operand")))
@@ -118,6 +144,10 @@
 (define_predicate "arm_not_operand"
   (ior (match_operand 0 "arm_rhs_operand")
        (match_operand 0 "arm_not_immediate_operand")))
+
+(define_predicate "arm_di_operand"
+  (ior (match_operand 0 "s_register_operand")
+       (match_operand 0 "arm_immediate_di_operand")))
 
 ;; True if the operand is a memory reference which contains an
 ;; offsettable address.
@@ -181,6 +211,11 @@
   (and (match_code "ior,xor,and")
        (match_test "mode == GET_MODE (op)")))
 
+;; True for commutative operators
+(define_special_predicate "commutative_binary_operator"
+  (and (match_code "ior,xor,and,plus")
+       (match_test "mode == GET_MODE (op)")))
+
 ;; True for shift operators.
 (define_special_predicate "shift_operator"
   (and (ior (ior (and (match_code "mult")
@@ -190,6 +225,10 @@
 				   && ((unsigned HOST_WIDE_INT) INTVAL (XEXP (op, 1))) < 32")))
 	    (match_code "ashift,ashiftrt,lshiftrt,rotatert"))
        (match_test "mode == GET_MODE (op)")))
+
+;; True for MULT, to identify which variant of shift_operator is in use.
+(define_special_predicate "mult_operator"
+  (match_code "mult"))
 
 ;; True for operators that have 16-bit thumb variants.  */
 (define_special_predicate "thumb_16bit_operator"
@@ -209,6 +248,9 @@
 
 (define_special_predicate "lt_ge_comparison_operator"
   (match_code "lt,ge"))
+
+(define_special_predicate "noov_comparison_operator"
+  (match_code "lt,ge,eq,ne"))
 
 (define_special_predicate "minmax_operator"
   (and (match_code "smin,smax,umin,umax")
@@ -256,7 +298,7 @@
 (define_predicate "power_of_two_operand"
   (match_code "const_int")
 {
-  HOST_WIDE_INT value = INTVAL (op);
+  unsigned HOST_WIDE_INT value = INTVAL (op) & 0xffffffff;
 
   return value != 0 && (value & (value - 1)) == 0;
 })
@@ -305,13 +347,17 @@
   (match_code "parallel")
 {
   HOST_WIDE_INT count = XVECLEN (op, 0);
-  int dest_regno;
+  unsigned dest_regno;
   rtx src_addr;
   HOST_WIDE_INT i = 1, base = 0;
+  HOST_WIDE_INT offset = 0;
   rtx elt;
+  bool addr_reg_loaded = false;
+  bool update = false;
 
   if (count <= 1
-      || GET_CODE (XVECEXP (op, 0, 0)) != SET)
+      || GET_CODE (XVECEXP (op, 0, 0)) != SET
+      || !REG_P (SET_DEST (XVECEXP (op, 0, 0))))
     return false;
 
   /* Check to see if this might be a write-back.  */
@@ -319,6 +365,7 @@
     {
       i++;
       base = 1;
+      update = true;
 
       /* Now check it more carefully.  */
       if (GET_CODE (SET_DEST (elt)) != REG
@@ -337,6 +384,15 @@
 
   dest_regno = REGNO (SET_DEST (XVECEXP (op, 0, i - 1)));
   src_addr = XEXP (SET_SRC (XVECEXP (op, 0, i - 1)), 0);
+  if (GET_CODE (src_addr) == PLUS)
+    {
+      if (GET_CODE (XEXP (src_addr, 1)) != CONST_INT)
+	return false;
+      offset = INTVAL (XEXP (src_addr, 1));
+      src_addr = XEXP (src_addr, 0);
+    }
+  if (!REG_P (src_addr))
+    return false;
 
   for (; i < count; i++)
     {
@@ -345,16 +401,28 @@
       if (GET_CODE (elt) != SET
           || GET_CODE (SET_DEST (elt)) != REG
           || GET_MODE (SET_DEST (elt)) != SImode
-          || REGNO (SET_DEST (elt)) != (unsigned int)(dest_regno + i - base)
+          || REGNO (SET_DEST (elt)) <= dest_regno
           || GET_CODE (SET_SRC (elt)) != MEM
           || GET_MODE (SET_SRC (elt)) != SImode
-          || GET_CODE (XEXP (SET_SRC (elt), 0)) != PLUS
-          || !rtx_equal_p (XEXP (XEXP (SET_SRC (elt), 0), 0), src_addr)
-          || GET_CODE (XEXP (XEXP (SET_SRC (elt), 0), 1)) != CONST_INT
-          || INTVAL (XEXP (XEXP (SET_SRC (elt), 0), 1)) != (i - base) * 4)
+          || ((GET_CODE (XEXP (SET_SRC (elt), 0)) != PLUS
+	       || !rtx_equal_p (XEXP (XEXP (SET_SRC (elt), 0), 0), src_addr)
+	       || GET_CODE (XEXP (XEXP (SET_SRC (elt), 0), 1)) != CONST_INT
+	       || INTVAL (XEXP (XEXP (SET_SRC (elt), 0), 1)) != offset + (i - base) * 4)
+	      && (!REG_P (XEXP (SET_SRC (elt), 0))
+		  || offset + (i - base) * 4 != 0)))
         return false;
+      dest_regno = REGNO (SET_DEST (elt));
+      if (dest_regno == REGNO (src_addr))
+        addr_reg_loaded = true;
     }
-
+  /* For Thumb, we only have updating instructions.  If the pattern does
+     not describe an update, it must be because the address register is
+     in the list of loaded registers - on the hardware, this has the effect
+     of overriding the update.  */
+  if (update && addr_reg_loaded)
+    return false;
+  if (TARGET_THUMB1)
+    return update || addr_reg_loaded;
   return true;
 })
 
@@ -362,9 +430,9 @@
   (match_code "parallel")
 {
   HOST_WIDE_INT count = XVECLEN (op, 0);
-  int src_regno;
+  unsigned src_regno;
   rtx dest_addr;
-  HOST_WIDE_INT i = 1, base = 0;
+  HOST_WIDE_INT i = 1, base = 0, offset = 0;
   rtx elt;
 
   if (count <= 1
@@ -395,6 +463,16 @@
   src_regno = REGNO (SET_SRC (XVECEXP (op, 0, i - 1)));
   dest_addr = XEXP (SET_DEST (XVECEXP (op, 0, i - 1)), 0);
 
+  if (GET_CODE (dest_addr) == PLUS)
+    {
+      if (GET_CODE (XEXP (dest_addr, 1)) != CONST_INT)
+	return false;
+      offset = INTVAL (XEXP (dest_addr, 1));
+      dest_addr = XEXP (dest_addr, 0);
+    }
+  if (!REG_P (dest_addr))
+    return false;
+
   for (; i < count; i++)
     {
       elt = XVECEXP (op, 0, i);
@@ -402,14 +480,17 @@
       if (GET_CODE (elt) != SET
           || GET_CODE (SET_SRC (elt)) != REG
           || GET_MODE (SET_SRC (elt)) != SImode
-          || REGNO (SET_SRC (elt)) != (unsigned int)(src_regno + i - base)
+          || REGNO (SET_SRC (elt)) <= src_regno
           || GET_CODE (SET_DEST (elt)) != MEM
           || GET_MODE (SET_DEST (elt)) != SImode
-          || GET_CODE (XEXP (SET_DEST (elt), 0)) != PLUS
-          || !rtx_equal_p (XEXP (XEXP (SET_DEST (elt), 0), 0), dest_addr)
-          || GET_CODE (XEXP (XEXP (SET_DEST (elt), 0), 1)) != CONST_INT
-          || INTVAL (XEXP (XEXP (SET_DEST (elt), 0), 1)) != (i - base) * 4)
+          || ((GET_CODE (XEXP (SET_DEST (elt), 0)) != PLUS
+	       || !rtx_equal_p (XEXP (XEXP (SET_DEST (elt), 0), 0), dest_addr)
+	       || GET_CODE (XEXP (XEXP (SET_DEST (elt), 0), 1)) != CONST_INT
+               || INTVAL (XEXP (XEXP (SET_DEST (elt), 0), 1)) != offset + (i - base) * 4)
+	      && (!REG_P (XEXP (SET_DEST (elt), 0))
+		  || offset + (i - base) * 4 != 0)))
         return false;
+      src_regno = REGNO (SET_SRC (elt));
     }
 
   return true;
@@ -506,13 +587,15 @@
 (define_predicate "imm_for_neon_logic_operand"
   (match_code "const_vector")
 {
-  return neon_immediate_valid_for_logic (op, mode, 0, NULL, NULL);
+  return (TARGET_NEON
+          && neon_immediate_valid_for_logic (op, mode, 0, NULL, NULL));
 })
 
 (define_predicate "imm_for_neon_inv_logic_operand"
   (match_code "const_vector")
 {
-  return neon_immediate_valid_for_logic (op, mode, 1, NULL, NULL);
+  return (TARGET_NEON
+          && neon_immediate_valid_for_logic (op, mode, 1, NULL, NULL));
 })
 
 (define_predicate "neon_logic_op2"
@@ -527,4 +610,75 @@
 (define_predicate "neon_lane_number"
   (and (match_code "const_int")
        (match_test "INTVAL (op) >= 0 && INTVAL (op) <= 7")))
+;; Predicates for named expanders that overlap multiple ISAs.
 
+(define_predicate "cmpdi_operand"
+  (if_then_else (match_test "TARGET_HARD_FLOAT && TARGET_MAVERICK")
+		(and (match_test "TARGET_ARM")
+		     (match_operand 0 "cirrus_fp_register"))
+		(and (match_test "TARGET_32BIT")
+		     (match_operand 0 "arm_di_operand"))))
+
+;; True if the operand is memory reference suitable for a ldrex/strex.
+(define_predicate "arm_sync_memory_operand"
+  (and (match_operand 0 "memory_operand")
+       (match_code "reg" "0")))
+
+;; Predicates for parallel expanders based on mode.
+(define_special_predicate "vect_par_constant_high" 
+  (match_code "parallel")
+{
+  HOST_WIDE_INT count = XVECLEN (op, 0);
+  int i;
+  int base = GET_MODE_NUNITS (mode);
+
+  if ((count < 1)
+      || (count != base/2))
+    return false;
+    
+  if (!VECTOR_MODE_P (mode))
+    return false;
+
+  for (i = 0; i < count; i++)
+   {
+     rtx elt = XVECEXP (op, 0, i);
+     int val;
+
+     if (GET_CODE (elt) != CONST_INT)
+       return false;
+
+     val = INTVAL (elt);
+     if (val != (base/2) + i)
+       return false;
+   }
+  return true; 
+})
+
+(define_special_predicate "vect_par_constant_low"
+  (match_code "parallel")
+{
+  HOST_WIDE_INT count = XVECLEN (op, 0);
+  int i;
+  int base = GET_MODE_NUNITS (mode);
+
+  if ((count < 1)
+      || (count != base/2))
+    return false;
+    
+  if (!VECTOR_MODE_P (mode))
+    return false;
+
+  for (i = 0; i < count; i++)
+   {
+     rtx elt = XVECEXP (op, 0, i);
+     int val;
+
+     if (GET_CODE (elt) != CONST_INT)
+       return false;
+
+     val = INTVAL (elt);
+     if (val != i)
+       return false;
+   } 
+  return true; 
+})

@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
@@ -39,6 +40,7 @@ with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Ch5;  use Sem_Ch5;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Ch13; use Sem_Ch13;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
@@ -63,6 +65,7 @@ package body Sem_Ch11 is
       Set_Etype                   (Id, Standard_Exception_Type);
       Set_Is_Statically_Allocated (Id);
       Set_Is_Pure                 (Id, PF);
+      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
    end Analyze_Exception_Declaration;
 
    --------------------------------
@@ -537,6 +540,14 @@ package body Sem_Ch11 is
             Analyze_And_Resolve (Expression (N), Standard_String);
          end if;
       end if;
+
+      --  Check obsolescent use of Numeric_Error
+
+      if Exception_Name = Standard_Numeric_Error then
+         Check_Restriction (No_Obsolescent_Features, Exception_Id);
+      end if;
+
+      --  Kill last assignment indication
 
       Kill_Current_Values (Last_Assignment_Only => True);
    end Analyze_Raise_Statement;

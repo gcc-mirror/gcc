@@ -47,17 +47,15 @@
                     "(cortex_a8_alu0+cortex_a8_issue_ls)|\
                      (cortex_a8_alu1+cortex_a8_issue_ls)")
 
-;; ...and in the case of two micro-ops.  We don't need to reserve
-;; cortex_a8_issue_ls here because dual issue is altogether forbidden
+;; ...and in the case of two micro-ops.  Dual issue is altogether forbidden
 ;; during the issue cycle of the first micro-op.  (Instead of modelling
 ;; a separate issue unit, we instead reserve alu0 and alu1 to
 ;; prevent any other instructions from being issued upon that first cycle.)
 ;; Even though the load/store pipeline is usually available in either
-;; ALU pipe, multi-cycle instructions always issue in pipeline 0.  This
-;; reservation is therefore the same as cortex_a8_multiply_2 below.
+;; ALU pipe, multi-cycle instructions always issue in pipeline 0.
 (define_reservation "cortex_a8_load_store_2"
-                    "cortex_a8_alu0+cortex_a8_alu1,\
-                     cortex_a8_alu0")
+                    "cortex_a8_alu0+cortex_a8_alu1+cortex_a8_issue_ls,\
+                     cortex_a8_alu0+cortex_a8_issue_ls")
 
 ;; The flow of a single-cycle multiplication.
 (define_reservation "cortex_a8_multiply"
@@ -87,8 +85,9 @@
 ;; (source read in E2 and destination available at the end of that cycle).
 (define_insn_reservation "cortex_a8_alu" 2
   (and (eq_attr "tune" "cortexa8")
-       (ior (and (eq_attr "type" "alu")
-                (not (eq_attr "insn" "mov,mvn")))
+       (ior (and (and (eq_attr "type" "alu")
+		      (eq_attr "neon_type" "none"))
+		 (not (eq_attr "insn" "mov,mvn")))
             (eq_attr "insn" "clz")))
   "cortex_a8_default")
 

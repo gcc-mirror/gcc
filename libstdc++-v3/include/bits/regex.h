@@ -23,13 +23,12 @@
 // <http://www.gnu.org/licenses/>.
 
 /**
- * @file bits/regex
+ * @file bits/regex.h
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
  */
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
 
 /**
  * @defgroup regex Regular Expressions
@@ -287,7 +286,7 @@ namespace std
       const ctype<_Ch_type>& __ctype(use_facet<
 				     ctype<_Ch_type> >(_M_locale));
       
-      if (__ctype.is(__c, __f))
+      if (__ctype.is(__f, __c))
 	return true;
       
       // special case of underscore in [[:w:]]
@@ -349,28 +348,27 @@ namespace std
       /**
        * @name Constants
        * std [28.8.1](1)
-       * @todo These should be constexpr.
        */
       //@{
-      static const regex_constants::syntax_option_type icase
+      static constexpr regex_constants::syntax_option_type icase
         = regex_constants::icase;
-      static const regex_constants::syntax_option_type nosubs
+      static constexpr regex_constants::syntax_option_type nosubs
         = regex_constants::nosubs;
-      static const regex_constants::syntax_option_type optimize
+      static constexpr regex_constants::syntax_option_type optimize
         = regex_constants::optimize;
-      static const regex_constants::syntax_option_type collate
+      static constexpr regex_constants::syntax_option_type collate
         = regex_constants::collate;
-      static const regex_constants::syntax_option_type ECMAScript
+      static constexpr regex_constants::syntax_option_type ECMAScript
         = regex_constants::ECMAScript;
-      static const regex_constants::syntax_option_type basic
+      static constexpr regex_constants::syntax_option_type basic
         = regex_constants::basic;
-      static const regex_constants::syntax_option_type extended
+      static constexpr regex_constants::syntax_option_type extended
         = regex_constants::extended;
-      static const regex_constants::syntax_option_type awk
+      static constexpr regex_constants::syntax_option_type awk
         = regex_constants::awk;
-      static const regex_constants::syntax_option_type grep
+      static constexpr regex_constants::syntax_option_type grep
         = regex_constants::grep;
-      static const regex_constants::syntax_option_type egrep
+      static constexpr regex_constants::syntax_option_type egrep
         = regex_constants::egrep;
       //@}
 
@@ -2423,6 +2421,5 @@ namespace std
 #endif
   
   //@} // group regex
-  
-}
+_GLIBCXX_END_NAMESPACE
 

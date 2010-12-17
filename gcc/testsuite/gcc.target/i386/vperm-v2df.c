@@ -3,6 +3,7 @@
 /* { dg-require-effective-target sse2 } */
 
 #include "isa-check.h"
+#include "sse-os-support.h"
 
 typedef double S;
 typedef double V __attribute__((vector_size(16)));
@@ -25,6 +26,11 @@ extern int memcmp (const void *, const void *, __SIZE_TYPE__);
 
 int main()
 {
+  check_isa ();
+
+  if (!sse_os_support ())
+    exit (0);
+
   i[0].s[0] = 0;
   i[0].s[1] = 1;
   i[0].s[2] = 2;

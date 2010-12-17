@@ -131,11 +131,14 @@ package GNAT.Perfect_Hash_Generators is
    --  Raise Too_Many_Tries if the algorithm does not succeed within Tries
    --  attempts (see Initialize).
 
-   procedure Produce (Pkg_Name : String := Default_Pkg_Name);
+   procedure Produce
+     (Pkg_Name   : String  := Default_Pkg_Name;
+      Use_Stdout : Boolean := False);
    --  Generate the hash function package Pkg_Name. This package includes the
-   --  minimal perfect Hash function. The output is placed in the current
-   --  directory, in files X.ads and X.adb, where X is the standard GNAT file
-   --  name for a package named Pkg_Name.
+   --  minimal perfect Hash function. The output is normally placed in the
+   --  current directory, in files X.ads and X.adb, where X is the standard
+   --  GNAT file name for a package named Pkg_Name. If Use_Stdout is True, the
+   --  output goes to standard output, and no files are written.
 
    ----------------------------------------------------------------
 

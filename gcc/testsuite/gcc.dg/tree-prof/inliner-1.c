@@ -23,10 +23,14 @@ hot_function ()
 
 main ()
 {
-  if (a)
-    cold_function ();
-  else
-    hot_function ();
+  int i;
+  for (i = 0; i < 100; i++)
+    {
+      if (a)
+        cold_function ();
+      else
+        hot_function ();
+    }
   return 0;
 }
 

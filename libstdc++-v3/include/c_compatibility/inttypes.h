@@ -48,22 +48,38 @@
 #  endif
 # endif
 
-# if defined(_GLIBCXX_INCLUDE_AS_TR1)
-#  error C++0x header cannot be included from TR1 header
-# endif
-# if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
-#  include <tr1_impl/cinttypes>
-# else
-#  define _GLIBCXX_INCLUDE_AS_CXX0X
-#  define _GLIBCXX_BEGIN_NAMESPACE_TR1
-#  define _GLIBCXX_END_NAMESPACE_TR1
-#  define _GLIBCXX_TR1
-#  include <tr1_impl/cinttypes>
-#  undef _GLIBCXX_TR1
-#  undef _GLIBCXX_END_NAMESPACE_TR1
-#  undef _GLIBCXX_BEGIN_NAMESPACE_TR1
-#  undef _GLIBCXX_INCLUDE_AS_CXX0X
-# endif
+#ifdef _GLIBCXX_USE_C99_INTTYPES_TR1
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
+  // types
+  using ::imaxdiv_t;
+
+  // functions
+  using ::imaxabs;
+
+  // May collide with _Longlong abs(_Longlong), and is not described
+  // anywhere outside the synopsis.  Likely, a defect.
+  //
+  // intmax_t abs(intmax_t)
+
+  using ::imaxdiv;
+
+  // Likewise, with lldiv_t div(_Longlong, _Longlong).
+  //
+  // imaxdiv_t div(intmax_t, intmax_t)
+
+  using ::strtoimax;
+  using ::strtoumax;
+
+#if defined(_GLIBCXX_USE_WCHAR_T) && _GLIBCXX_USE_C99_INTTYPES_WCHAR_T_TR1
+  using ::wcstoimax;
+  using ::wcstoumax;
+#endif
+
+_GLIBCXX_END_NAMESPACE
+
+#endif _GLIBCXX_USE_C99_INTTYPES_TR1
 
 #else
 

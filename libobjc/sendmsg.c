@@ -1,6 +1,6 @@
 /* GNU Objective C Runtime message lookup 
    Copyright (C) 1993, 1995, 1996, 1997, 1998,
-   2001, 2002, 2004, 2009 Free Software Foundation, Inc.
+   2001, 2002, 2004, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GCC.
@@ -28,13 +28,23 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* FIXME: This should be using libffi instead of __builtin_apply
    and friends.  */
 
+#include "objc-private/common.h"
+#include "objc-private/error.h"
 #include "tconfig.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "objc/runtime.h"
-#include "objc/sarray.h"
+#include "objc/objc-api.h"
+#include "objc/thr.h"
+#include "objc-private/runtime.h"
+#include "objc-private/sarray.h"
 #include "objc/encoding.h"
 #include "runtime-info.h"
+#include <assert.h> /* For assert */
+#include <string.h> /* For strlen */
+
+/* Temporarily while we include objc/objc-api.h instead of objc-private/module-abi-8.h.  */
+#define _CLS_IN_CONSTRUCTION 0x10L
+#define CLS_IS_IN_CONSTRUCTION(cls) __CLS_ISINFO(cls, _CLS_IN_CONSTRUCTION)
 
 /* This is how we hack STRUCT_VALUE to be 1 or 0.   */
 #define gen_rtx(args...) 1
@@ -85,8 +95,8 @@ static __big
 static id
 #endif
 __objc_block_forward (id, SEL, ...);
-static Method_t search_for_method_in_hierarchy (Class class, SEL sel);
-Method_t search_for_method_in_list (MethodList_t list, SEL op);
+static struct objc_method * search_for_method_in_hierarchy (Class class, SEL sel);
+struct objc_method * search_for_method_in_list (struct objc_method_list * list, SEL op);
 id nil_method (id, SEL);
 
 /* Given a selector, return the proper forwarding implementation. */
@@ -179,12 +189,35 @@ get_imp (Class class, SEL sel)
 	      /* The dispatch table has been installed, and the method
 		 is not in the dispatch table.  So the method just
 		 doesn't exist for the class.  Return the forwarding
-		 implementation. */
-             res = __objc_get_forward_imp ((id)class, sel);
+		 implementation.  We don't know the receiver (only its
+		 class), so we have to pass 'nil' as the first
+		 argument.  Passing the class as first argument is
+		 wrong because the class is not the receiver; it can
+		 result in us calling a class method when we want an
+		 instance method of the same name.  */
+             res = __objc_get_forward_imp (nil, sel);
 	    }
 	}
     }
   return res;
+}
+
+/* The new name of get_imp().  */
+IMP
+class_getMethodImplementation (Class class_, SEL selector)
+{
+  if (class_ == Nil  ||  selector == NULL)
+    return NULL;
+
+  /* get_imp is inlined, so we're good.  */
+  return get_imp (class_, selector);
+}
+
+/* Given a method, return its implementation.  */
+IMP
+method_get_imp (struct objc_method * method)
+{
+  return (method != (struct objc_method *)0) ? method->method_imp : (IMP)0;
 }
 
 /* Query if an object can respond to a selector, returns YES if the
@@ -212,10 +245,34 @@ __objc_responds_to (id object, SEL sel)
   return (res != 0);
 }
 
+BOOL
+class_respondsToSelector (Class class_, SEL selector)
+{
+  void *res;
+
+  if (class_ == Nil  ||  selector == NULL)
+    return NO;
+
+  /* Install dispatch table if need be */
+  if (class_->dtable == __objc_uninstalled_dtable)
+    {
+      objc_mutex_lock (__objc_runtime_mutex);
+      if (class_->dtable == __objc_uninstalled_dtable)
+	{
+	  __objc_install_dispatch_table_for_class (class_);
+	}
+      objc_mutex_unlock (__objc_runtime_mutex);
+    }
+
+  /* Get the method from the dispatch table */
+  res = sarray_get_safe (class_->dtable, (size_t) selector->sel_id);
+  return (res != 0);
+}
+
 /* This is the lookup function.  All entries in the table are either a 
    valid method *or* zero.  If zero then either the dispatch table
    needs to be installed or it doesn't exist and forwarding is attempted. */
-inline
+
 IMP
 objc_msg_lookup (id receiver, SEL op)
 {
@@ -361,11 +418,11 @@ __objc_send_initialize (Class class)
       {
 	SEL 	     op = sel_register_name ("initialize");
 	IMP	     imp = 0;
-        MethodList_t method_list = class->class_pointer->methods;
+        struct objc_method_list * method_list = class->class_pointer->methods;
 
         while (method_list) {
 	  int i;
-          Method_t method;
+          struct objc_method * method;
 
           for (i = 0; i < method_list->method_count; i++) {
 	    method = &(method_list->method_list[i]);
@@ -396,7 +453,7 @@ __objc_send_initialize (Class class)
    method nothing is guaranteed about what method will be used.
    Assumes that __objc_runtime_mutex is locked down. */
 static void
-__objc_install_methods_in_dtable (Class class, MethodList_t method_list)
+__objc_install_methods_in_dtable (Class class, struct objc_method_list * method_list)
 {
   int i;
 
@@ -408,7 +465,7 @@ __objc_install_methods_in_dtable (Class class, MethodList_t method_list)
 
   for (i = 0; i < method_list->method_count; i++)
     {
-      Method_t method = &(method_list->method_list[i]);
+      struct objc_method * method = &(method_list->method_list[i]);
       sarray_at_put_safe (class->dtable,
 			  (sidx) method->method_name->sel_id,
 			  method->method_imp);
@@ -479,7 +536,7 @@ __objc_update_dispatch_table_for_class (Class class)
    methods installed right away, and their selectors are made into
    SEL's by the function __objc_register_selectors_from_class. */
 void
-class_add_method_list (Class class, MethodList_t list)
+class_add_method_list (Class class, struct objc_method_list * list)
 {
   /* Passing of a linked list is not allowed.  Do multiple calls.  */
   assert (! list->method_next);
@@ -494,27 +551,118 @@ class_add_method_list (Class class, MethodList_t list)
   __objc_update_dispatch_table_for_class (class);
 }
 
-Method_t
+struct objc_method *
 class_get_instance_method (Class class, SEL op)
 {
   return search_for_method_in_hierarchy (class, op);
 }
 
-Method_t
+struct objc_method *
 class_get_class_method (MetaClass class, SEL op)
 {
   return search_for_method_in_hierarchy (class, op);
 }
 
+struct objc_method *
+class_getInstanceMethod (Class class_, SEL selector)
+{
+  if (class_ == Nil  ||  selector == NULL)
+    return NULL;
+
+  return search_for_method_in_hierarchy (class_, selector);
+}
+
+struct objc_method *
+class_getClassMethod (Class class_, SEL selector)
+{
+  if (class_ == Nil  ||  selector == NULL)
+    return NULL;
+  
+  return search_for_method_in_hierarchy (class_->class_pointer, 
+					 selector);
+}
+
+BOOL
+class_addMethod (Class class_, SEL selector, IMP implementation,
+		 const char *method_types)
+{
+  struct objc_method_list *method_list;
+  struct objc_method *method;
+  const char *method_name;
+
+  if (class_ == Nil  ||  selector == NULL  ||  implementation == NULL  
+      || method_types == NULL  || (strcmp (method_types, "") == 0))
+    return NO;
+
+  method_name = sel_get_name (selector);
+  if (method_name == NULL)
+    return NO;
+
+  method_list = (struct objc_method_list *)objc_calloc (1, sizeof (struct objc_method_list));
+  method_list->method_count = 1;
+
+  method = &(method_list->method_list[0]);
+  method->method_name = objc_malloc (strlen (method_name) + 1);
+  strcpy ((char *)method->method_name, method_name);
+
+  method->method_types = objc_malloc (strlen (method_types) + 1);
+  strcpy ((char *)method->method_types, method_types);
+  
+  method->method_imp = implementation;
+  
+  if (CLS_IS_IN_CONSTRUCTION (class_))
+    {
+      /* We only need to add the method to the list.  It will be
+	 registered with the runtime when the class pair is registered
+	 (if ever).  */
+      method_list->method_next = class_->methods;
+      class_->methods = method_list;
+    }
+  else
+    {
+      /* Add the method to a live class.  */
+      objc_mutex_lock (__objc_runtime_mutex);
+      class_add_method_list (class_, method_list);
+      objc_mutex_unlock (__objc_runtime_mutex);
+    }
+
+  return YES;
+}
+
+/* Temporarily, until we include objc/runtime.h.  */
+extern IMP
+method_setImplementation (struct objc_method * method, IMP implementation);
+
+IMP
+class_replaceMethod (Class class_, SEL selector, IMP implementation,
+		     const char *method_types)
+{
+  struct objc_method * method;
+
+  if (class_ == Nil  ||  selector == NULL  ||  implementation == NULL
+      || method_types == NULL)
+    return NULL;
+
+  method = search_for_method_in_hierarchy (class_, selector);
+
+  if (method)
+    {
+      return method_setImplementation (method, implementation);
+    }
+  else
+    {
+      class_addMethod (class_, selector, implementation, method_types);
+      return NULL;
+    }
+}
 
 /* Search for a method starting from the current class up its hierarchy.
    Return a pointer to the method's method structure if found.  NULL
    otherwise. */   
-
-static Method_t
+static struct objc_method *
 search_for_method_in_hierarchy (Class cls, SEL sel)
 {
-  Method_t method = NULL;
+  struct objc_method * method = NULL;
   Class class;
 
   if (! sel_is_mapped (sel))
@@ -533,10 +681,10 @@ search_for_method_in_hierarchy (Class cls, SEL sel)
 /* Given a linked list of method and a method's name.  Search for the named
    method's method structure.  Return a pointer to the method's method
    structure if found.  NULL otherwise. */  
-Method_t
-search_for_method_in_list (MethodList_t list, SEL op)
+struct objc_method *
+search_for_method_in_list (struct objc_method_list * list, SEL op)
 {
-  MethodList_t method_list = list;
+  struct objc_method_list * method_list = list;
 
   if (! sel_is_mapped (op))
     return NULL;
@@ -549,7 +697,7 @@ search_for_method_in_list (MethodList_t list, SEL op)
       /* Search the method list.  */
       for (i = 0; i < method_list->method_count; ++i)
         {
-          Method_t method = &method_list->method_list[i];
+          struct objc_method * method = &method_list->method_list[i];
 
           if (method->method_name)
             if (method->method_name->sel_id == op->sel_id)
@@ -657,6 +805,7 @@ __objc_forward (id object, SEL sel, arglist_t args)
 	      : "instance" ),
              object->class_pointer->name, sel_get_name (sel));
 
+    /* TODO: support for error: is surely deprecated ? */
     err_sel = sel_get_any_uid ("error:");
     if (__objc_responds_to (object, err_sel))
       {
@@ -666,7 +815,7 @@ __objc_forward (id object, SEL sel, arglist_t args)
 
     /* The object doesn't respond to doesNotRecognize: or error:;  Therefore,
        a default action is taken. */
-    objc_error (object, OBJC_ERR_UNIMPLEMENTED, "%s\n", msg);
+    _objc_abort ("%s\n", msg);
 
     return 0;
   }
@@ -705,7 +854,7 @@ __objc_print_dtable_stats ()
 /* Returns the uninstalled dispatch table indicator.
  If a class' dispatch table points to __objc_uninstalled_dtable
  then that means it needs its dispatch table to be installed. */
-inline
+
 struct sarray *
 objc_get_uninstalled_dtable ()
 {

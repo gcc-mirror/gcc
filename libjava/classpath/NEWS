@@ -1,3 +1,5 @@
+New in release 0.99 (XXX XX, XXXX)
+
 New in release 0.98 (Feb 05, 2009)
 
 * Native support for BigInteger is now provided using the GMP

@@ -85,10 +85,10 @@ namespace __profile
 
       template<typename _InputIterator>
         unordered_set(_InputIterator __f, _InputIterator __l,
-              size_type __n = 10,
-              const hasher& __hf = hasher(),
-              const key_equal& __eql = key_equal(),
-              const allocator_type& __a = allocator_type())
+		      size_type __n = 0,
+		      const hasher& __hf = hasher(),
+		      const key_equal& __eql = key_equal(),
+		      const allocator_type& __a = allocator_type())
       : _Base(__f, __l, __n, __hf, __eql, __a)
       {
         __profcxx_hashtable_construct(this, _Base::bucket_count());
@@ -103,14 +103,14 @@ namespace __profile
       }
 
       unordered_set(unordered_set&& __x)
-      : _Base(std::forward<_Base>(__x)) 
+      : _Base(std::move(__x)) 
       { 
         __profcxx_hashtable_construct(this, _Base::bucket_count());
         __profcxx_hashtable_construct2(this);
       }
 
       unordered_set(initializer_list<value_type> __l,
-		    size_type __n = 10,
+		    size_type __n = 0,
 		    const hasher& __hf = hasher(),
 		    const key_equal& __eql = key_equal(),
 		    const allocator_type& __a = allocator_type())
@@ -174,7 +174,7 @@ namespace __profile
       std::pair<iterator, bool>
       insert(const value_type& __obj)
       {
-        size_type __old_size =  _Base::bucket_count();
+        size_type __old_size = _Base::bucket_count();
         std::pair<iterator, bool> __res = _Base::insert(__obj);
         _M_profile_resize(__old_size,  _Base::bucket_count()); 
         return __res;
@@ -185,6 +185,24 @@ namespace __profile
       { 
         size_type __old_size = _Base::bucket_count(); 
         iterator __res = _Base::insert(__iter, __v);
+        _M_profile_resize(__old_size, _Base::bucket_count()); 
+        return __res;
+      }
+
+      std::pair<iterator, bool>
+      insert(value_type&& __obj)
+      {
+        size_type __old_size = _Base::bucket_count();
+        std::pair<iterator, bool> __res = _Base::insert(std::move(__obj));
+        _M_profile_resize(__old_size,  _Base::bucket_count()); 
+        return __res;
+      }
+
+      iterator
+      insert(const_iterator __iter, value_type&& __v)
+      { 
+        size_type __old_size = _Base::bucket_count();
+        iterator __res = _Base::insert(__iter, std::move(__v));
         _M_profile_resize(__old_size, _Base::bucket_count()); 
         return __res;
       }
@@ -302,9 +320,9 @@ namespace __profile
 
       explicit
       unordered_multiset(size_type __n = 10,
-		    const hasher& __hf = hasher(),
-		    const key_equal& __eql = key_equal(),
-		    const allocator_type& __a = allocator_type())
+			 const hasher& __hf = hasher(),
+			 const key_equal& __eql = key_equal(),
+			 const allocator_type& __a = allocator_type())
       : _Base(__n, __hf, __eql, __a)
       {
         __profcxx_hashtable_construct(this, _Base::bucket_count());
@@ -312,10 +330,10 @@ namespace __profile
 
       template<typename _InputIterator>
         unordered_multiset(_InputIterator __f, _InputIterator __l,
-              size_type __n = 10,
-              const hasher& __hf = hasher(),
-              const key_equal& __eql = key_equal(),
-              const allocator_type& __a = allocator_type())
+			   size_type __n = 0,
+			   const hasher& __hf = hasher(),
+			   const key_equal& __eql = key_equal(),
+			   const allocator_type& __a = allocator_type())
       : _Base(__f, __l, __n, __hf, __eql, __a)
       {
         __profcxx_hashtable_construct(this, _Base::bucket_count());
@@ -328,13 +346,13 @@ namespace __profile
       }
 
       unordered_multiset(unordered_multiset&& __x)
-      : _Base(std::forward<_Base>(__x))
+      : _Base(std::move(__x))
       {
         __profcxx_hashtable_construct(this, _Base::bucket_count());
       }
 
       unordered_multiset(initializer_list<value_type> __l,
-			 size_type __n = 10,
+			 size_type __n = 0,
 			 const hasher& __hf = hasher(),
 			 const key_equal& __eql = key_equal(),
 			 const allocator_type& __a = allocator_type())
@@ -406,9 +424,27 @@ namespace __profile
 
       iterator
       insert(const_iterator __iter, const value_type& __v)
-      { 
+      {
         size_type __old_size = _Base::bucket_count(); 
         iterator __res = _Base::insert(__iter, __v);
+        _M_profile_resize(__old_size, _Base::bucket_count()); 
+        return __res;
+      }
+
+      iterator
+      insert(value_type&& __obj)
+      {
+	size_type __old_size =  _Base::bucket_count();
+        iterator __res = _Base::insert(std::move(__obj));
+        _M_profile_resize(__old_size,  _Base::bucket_count()); 
+        return __res;
+      }
+
+      iterator
+      insert(const_iterator __iter, value_type&& __v)
+      {
+        size_type __old_size = _Base::bucket_count(); 
+        iterator __res = _Base::insert(__iter, std::move(__v));
         _M_profile_resize(__old_size, _Base::bucket_count()); 
         return __res;
       }

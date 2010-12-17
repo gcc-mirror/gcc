@@ -443,6 +443,20 @@ generate_error (st_parameter_common *cmp, int family, const char *message)
 }
 iexport(generate_error);
 
+
+/* generate_warning()-- Similar to generate_error but just give a warning.  */
+
+void
+generate_warning (st_parameter_common *cmp, const char *message)
+{
+  if (message == NULL)
+    message = " ";
+
+  show_locus (cmp);
+  st_printf ("Fortran runtime warning: %s\n", message);
+}
+
+
 /* Whether, for a feature included in a given standard set (GFC_STD_*),
    we should issue an error or a warning, or be quiet.  */
 
@@ -460,7 +474,6 @@ notification_std (int std)
 
   return warning ? NOTIFICATION_WARNING : NOTIFICATION_ERROR;
 }
-
 
 
 /* Possibly issue a warning/error about use of a nonstandard (or deleted)

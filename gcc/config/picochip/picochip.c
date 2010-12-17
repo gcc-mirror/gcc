@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on picoChip processors.
-   Copyright (C) 2001,2008, 2009   Free Software Foundation, Inc.
-   Contributed by picoChip Designs Ltd. (http://www.picochip.com)
+   Copyright (C) 2001, 2008, 2009, 2010   Free Software Foundation, Inc.
+   Contributed by Picochip Ltd. (http://www.picochip.com)
    Maintained by Daniel Towner (daniel.towner@picochip.com) and
    Hariharan Sandanagobalane (hariharan@picochip.com)
 
@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not, see
 #include "output.h"
 #include "basic-block.h"
 #include "integrate.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "ggc.h"
 #include "hashtab.h"
@@ -80,6 +81,16 @@ void picochip_reorg (void);
 int picochip_arg_partial_bytes (CUMULATIVE_ARGS * p_cum,
 				       enum machine_mode mode,
 				       tree type, bool named);
+rtx picochip_function_arg (CUMULATIVE_ARGS * p_cum,
+			   enum machine_mode mode,
+			   const_tree type, bool named);
+rtx picochip_incoming_function_arg (CUMULATIVE_ARGS * p_cum,
+				    enum machine_mode mode,
+				    const_tree type, bool named);
+void picochip_arg_advance (CUMULATIVE_ARGS * p_cum, enum machine_mode mode,
+			   const_tree type, bool named);
+unsigned int picochip_function_arg_boundary (enum machine_mode mode,
+					     const_tree type);
 
 int picochip_sched_lookahead (void);
 int picochip_sched_issue_rate (void);
@@ -103,18 +114,20 @@ int picochip_legitimize_reload_address (rtx *x, enum machine_mode mode,
 rtx picochip_struct_value_rtx(tree fntype ATTRIBUTE_UNUSED, int incoming ATTRIBUTE_UNUSED);
 rtx picochip_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED,
                          bool outgoing ATTRIBUTE_UNUSED);
-enum reg_class
+static reg_class_t
 picochip_secondary_reload (bool in_p,
-				 rtx x ATTRIBUTE_UNUSED,
-				 enum reg_class cla ATTRIBUTE_UNUSED,
-				 enum machine_mode mode,
-				 secondary_reload_info *sri);
+			   rtx x ATTRIBUTE_UNUSED,
+			   reg_class_t cla ATTRIBUTE_UNUSED,
+			   enum machine_mode mode,
+			   secondary_reload_info *sri);
 void
 picochip_asm_named_section (const char *name,
 			    unsigned int flags ATTRIBUTE_UNUSED,
 			    tree decl ATTRIBUTE_UNUSED);
 
 static rtx picochip_static_chain (const_tree, bool);
+
+static void picochip_option_override (void);
 
 /* Lookup table mapping a register number to the earliest containing
    class.  Used by REGNO_REG_CLASS.  */
@@ -187,6 +200,13 @@ static struct recog_data picochip_saved_recog_data;
 /* Determine which ALU to use for the instruction in
    picochip_current_prescan_insn. */
 static char picochip_get_vliw_alu_id (void);
+
+/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
+static const struct default_options picochip_option_optimization_table[] =
+  {
+    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
 
 /* Initialize the GCC target structure.  */
 
@@ -259,6 +279,18 @@ static char picochip_get_vliw_alu_id (void);
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES picochip_arg_partial_bytes
 
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG picochip_function_arg
+
+#undef TARGET_FUNCTION_INCOMING_ARG
+#define TARGET_FUNCTION_INCOMING_ARG picochip_incoming_function_arg
+
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE picochip_arg_advance
+
+#undef TARGET_FUNCTION_ARG_BOUNDARY
+#define TARGET_FUNCTION_ARG_BOUNDARY picochip_function_arg_boundary
+
 #undef TARGET_PROMOTE_FUNCTION_MODE
 #define TARGET_PROMOTE_FUNCTION_MODE default_promote_function_mode_always_promote
 #undef TARGET_PROMOTE_PROTOTYPES
@@ -300,6 +332,18 @@ static char picochip_get_vliw_alu_id (void);
 #undef TARGET_STATIC_CHAIN
 #define TARGET_STATIC_CHAIN picochip_static_chain
 
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE picochip_option_override
+
+#undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
+#define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE picochip_option_override
+
+#undef TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE picochip_option_optimization_table
+
+#undef TARGET_EXCEPT_UNWIND_INFO
+#define TARGET_EXCEPT_UNWIND_INFO sjlj_except_unwind_info
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 
@@ -313,17 +357,25 @@ picochip_return_in_memory(const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
   return ((unsigned HOST_WIDE_INT) int_size_in_bytes (type) > 4);
 }
 
-/* Allow certain command options to be overriden. */
-void
-picochip_override_options (void)
+/* Allow some options to be overriden.  In particular, the 2nd
+   scheduling pass option is switched off, and a machine dependent
+   reorganisation ensures that it is run later on, after the second
+   jump optimisation. */
+
+static void
+picochip_option_override (void)
 {
   /* If we are optimizing for stack, dont let inliner to inline functions
      that could potentially increase stack size.*/
    if (flag_conserve_stack)
-   {
-     PARAM_VALUE (PARAM_LARGE_STACK_FRAME) = 0;
-     PARAM_VALUE (PARAM_STACK_FRAME_GROWTH) = 0;
-   }
+     {
+       maybe_set_param_value (PARAM_LARGE_STACK_FRAME, 0,
+			      global_options.x_param_values,
+			      global_options_set.x_param_values);
+       maybe_set_param_value (PARAM_STACK_FRAME_GROWTH, 0,
+			      global_options.x_param_values,
+			      global_options_set.x_param_values);
+     }
 
   /* Turn off the elimination of unused types. The elaborator
      generates various interesting types to represent constants,
@@ -358,7 +410,6 @@ picochip_override_options (void)
   flag_schedule_insns_after_reload = 0;
   if (picochip_flag_schedule_insns2)
     {
-
       if (optimize_size)
 	picochip_schedule_type = DFA_TYPE_SPACE;
       else
@@ -366,7 +417,6 @@ picochip_override_options (void)
 	  picochip_schedule_type = DFA_TYPE_SPEED;
 	  flag_delayed_branch = 0;
 	}
-
     }
   else
     picochip_schedule_type = DFA_TYPE_NONE;
@@ -386,7 +436,7 @@ picochip_override_options (void)
      unit ISA options. Any unrecognised AE types will end up being
      passed to the compiler, which should reject them as invalid. */
   if (picochip_ae_type_string != NULL)
-    error ("invalid AE type specified (%s)\n", picochip_ae_type_string);
+    error ("invalid AE type specified (%s)", picochip_ae_type_string);
 
   /* Override any specific capabilities of the instruction set. These
      take precedence over any capabilities inferred from the AE type,
@@ -409,7 +459,7 @@ picochip_override_options (void)
       else if (strcmp (picochip_mul_type_string, "none") == 0)
 	{ /* Do nothing. Unit types already set to false. */ }
       else
-	error ("Invalid mul type specified (%s) - expected mac, mul or none",
+	error ("invalid mul type specified (%s) - expected mac, mul or none",
 	       picochip_mul_type_string);
     }
 
@@ -448,6 +498,73 @@ picochip_init_libfuncs (void)
   set_optab_libfunc (add_optab, DImode, "_adddi3");
   set_optab_libfunc (sub_optab, DImode, "_subdi3");
 }
+
+/* Memcpy function */
+int
+picochip_expand_movmemhi (rtx *operands)
+{
+  rtx src_addr_reg, dst_addr_reg, count_reg, src_mem, dst_mem, tmp_reg;
+  rtx start_label;
+  int align, size;
+  src_addr_reg = gen_reg_rtx(HImode);
+  dst_addr_reg = gen_reg_rtx(HImode);
+  count_reg = gen_reg_rtx(HImode);
+  emit_insn (gen_movhi (count_reg, operands[2]));
+  emit_insn (gen_movqi (src_addr_reg, XEXP(operands[1], 0)));
+  emit_insn (gen_movqi (dst_addr_reg, XEXP(operands[0], 0)));
+  gcc_assert (GET_CODE(count_reg) == REG);
+  start_label = gen_label_rtx ();
+  emit_label (start_label);
+
+  /* We can specialise the code for different alignments */
+  align = INTVAL(operands[3]);
+  size = INTVAL(operands[2]);
+  gcc_assert(align >= 0 && size >= 0);
+  if (size != 0)
+    {
+      if (size % 4 == 0 && align % 4 == 0)
+        {
+          src_mem = gen_rtx_MEM(SImode, src_addr_reg);
+          dst_mem = gen_rtx_MEM(SImode, dst_addr_reg);
+          tmp_reg = gen_reg_rtx(SImode);
+          emit_insn (gen_movsi (tmp_reg, src_mem));
+          emit_insn (gen_movsi (dst_mem, tmp_reg));
+          emit_insn (gen_addhi3 (dst_addr_reg, dst_addr_reg, GEN_INT(4)));
+          emit_insn (gen_addhi3 (src_addr_reg, src_addr_reg, GEN_INT(4)));
+          emit_insn (gen_addhi3 (count_reg, count_reg, GEN_INT(-4)));
+          /* The sub instruction above generates cc, but we cannot just emit the branch.*/
+          emit_cmp_and_jump_insns (count_reg, const0_rtx, GT, 0, HImode, 0, start_label);
+        }
+      else if (size % 2 == 0 && align % 2 == 0)
+        {
+          src_mem = gen_rtx_MEM(HImode, src_addr_reg);
+          dst_mem = gen_rtx_MEM(HImode, dst_addr_reg);
+          tmp_reg = gen_reg_rtx(HImode);
+          emit_insn (gen_movhi (tmp_reg, src_mem));
+          emit_insn (gen_movhi (dst_mem, tmp_reg));
+          emit_insn (gen_addhi3 (dst_addr_reg, dst_addr_reg, const2_rtx));
+          emit_insn (gen_addhi3 (src_addr_reg, src_addr_reg, const2_rtx));
+          emit_insn (gen_addhi3 (count_reg, count_reg, GEN_INT(-2)));
+          /* The sub instruction above generates cc, but we cannot just emit the branch.*/
+          emit_cmp_and_jump_insns (count_reg, const0_rtx, GT, 0, HImode, 0, start_label);
+        }
+      else
+        {
+          src_mem = gen_rtx_MEM(QImode, src_addr_reg);
+          dst_mem = gen_rtx_MEM(QImode, dst_addr_reg);
+          tmp_reg = gen_reg_rtx(QImode);
+          emit_insn (gen_movqi (tmp_reg, src_mem));
+          emit_insn (gen_movqi (dst_mem, tmp_reg));
+          emit_insn (gen_addhi3 (dst_addr_reg, dst_addr_reg, const1_rtx));
+          emit_insn (gen_addhi3 (src_addr_reg, src_addr_reg, const1_rtx));
+          emit_insn (gen_addhi3 (count_reg, count_reg, GEN_INT(-1)));
+          /* The sub instruction above generates cc, but we cannot just emit the branch.*/
+          emit_cmp_and_jump_insns (count_reg, const0_rtx, GT, 0, HImode, 0, start_label);
+        }
+    }
+  return 1;
+}
+
 
 /* Return the register class for letter C.  */
 enum reg_class
@@ -522,9 +639,9 @@ rtx
 picochip_return_addr_rtx(int count, rtx frameaddr ATTRIBUTE_UNUSED)
 {
    if (count==0)
-      return gen_rtx_REG (Pmode, LINK_REGNUM);
+     return gen_rtx_REG (Pmode, LINK_REGNUM);
    else
-      return NULL_RTX;
+     return NULL_RTX;
 }
 
 
@@ -573,12 +690,10 @@ picochip_emit_stack_allocate (int adjustment)
      so that the correct Dwarf information is generated (see documention
      for RTX_FRAME_RELATED_P for more details). */
   RTX_FRAME_RELATED_P (insn) = 1;
-  REG_NOTES (insn) =
-    gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-		       gen_rtx_SET (VOIDmode, stack_pointer_reg,
-				    gen_rtx_PLUS (Pmode, stack_pointer_reg,
-						  GEN_INT (-adjustment))),
-		       REG_NOTES (insn));
+  add_reg_note (insn, REG_FRAME_RELATED_EXPR,
+		gen_rtx_SET (VOIDmode, stack_pointer_reg,
+			     gen_rtx_PLUS (Pmode, stack_pointer_reg,
+					   GEN_INT (-adjustment))));
 
 }
 
@@ -631,17 +746,15 @@ picochip_emit_save_register (rtx reg, int offset)
 		       gen_rtx_REG (HImode, REGNO (reg) + 1));
 	RTX_FRAME_RELATED_P (RTVEC_ELT (p, 1)) = 1;
 
-	REG_NOTES (insn) =
-	  gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-			     gen_rtx_PARALLEL (VOIDmode, p),
-			     REG_NOTES (insn));
+	add_reg_note (insn, REG_FRAME_RELATED_EXPR,
+		      gen_rtx_PARALLEL (VOIDmode, p));
 
       }
       break;
 
     default:
       internal_error
-	("unexpected mode %s encountered in picochip_emit_save_register\n",
+	("unexpected mode %s encountered in picochip_emit_save_register",
 	 GET_MODE_NAME (GET_MODE (reg)));
     }
 
@@ -653,7 +766,7 @@ picochip_emit_save_register (rtx reg, int offset)
 static void
 picochip_emit_restore_register (rtx reg, int offset)
 {
-  rtx stack_pointer, address, mem, insn;
+  rtx stack_pointer, address, mem;
 
   stack_pointer = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
 
@@ -661,7 +774,7 @@ picochip_emit_restore_register (rtx reg, int offset)
 
   mem = gen_rtx_MEM (GET_MODE (reg), address);
 
-  insn = emit_move_insn (reg, mem);
+  emit_move_insn (reg, mem);
 
 }
 
@@ -712,7 +825,7 @@ picochip_is_aligned (int byte_offset, int bit_alignment)
 
 /* Compute the size of an argument in units. */
 static int
-picochip_compute_arg_size (tree type, enum machine_mode mode)
+picochip_compute_arg_size (const_tree type, enum machine_mode mode)
 {
   int type_size_in_units = 0;
 
@@ -727,8 +840,8 @@ picochip_compute_arg_size (tree type, enum machine_mode mode)
 
 /* Determine where the next outgoing arg should be placed. */
 rtx
-picochip_function_arg (CUMULATIVE_ARGS cum, int mode, tree type,
-		       int named ATTRIBUTE_UNUSED)
+picochip_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		       const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   int reg = 0;
   int type_align_in_units = 0;
@@ -743,22 +856,22 @@ picochip_function_arg (CUMULATIVE_ARGS cum, int mode, tree type,
 
   /* Compute the alignment and size of the parameter. */
   type_align_in_units =
-    picochip_get_function_arg_boundary (mode) / BITS_PER_UNIT;
+    picochip_function_arg_boundary (mode, type) / BITS_PER_UNIT;
   type_size_in_units = picochip_compute_arg_size (type, mode);
 
   /* Compute the correct offset (i.e., ensure that the offset meets
      the alignment requirements). */
-  offset_overflow = cum % type_align_in_units;
+  offset_overflow = *cum % type_align_in_units;
   if (offset_overflow == 0)
-    new_offset = cum;
+    new_offset = *cum;
   else
-    new_offset = (cum - offset_overflow) + type_align_in_units;
+    new_offset = (*cum - offset_overflow) + type_align_in_units;
 
   if (TARGET_DEBUG)
     {
       printf ("Function arg:\n");
       printf ("  Type valid: %s\n", (type ? "yes" : "no"));
-      printf ("  Cumulative Value: %d\n", cum);
+      printf ("  Cumulative Value: %d\n", *cum);
       printf ("  Mode: %s\n", GET_MODE_NAME (mode));
       printf ("  Type size: %i units\n", type_size_in_units);
       printf ("  Alignment: %i units\n", type_align_in_units);
@@ -792,7 +905,7 @@ picochip_function_arg (CUMULATIVE_ARGS cum, int mode, tree type,
     case CSImode:
     case SCmode:
     case CQImode:
-      return gen_rtx_REG ((enum machine_mode) mode, reg);
+      return gen_rtx_REG (mode, reg);
 
     case BLKmode:
       {
@@ -808,7 +921,7 @@ picochip_function_arg (CUMULATIVE_ARGS cum, int mode, tree type,
 
     default:
       warning
-	(0, "Defaulting to stack for %s register creation\n",
+	(0, "defaulting to stack for %s register creation",
 	 GET_MODE_NAME (mode));
       break;
     }
@@ -825,8 +938,9 @@ picochip_function_arg (CUMULATIVE_ARGS cum, int mode, tree type,
    passed in registers, which are then pushed onto the stack by the
    function prologue). */
 rtx
-picochip_incoming_function_arg (CUMULATIVE_ARGS cum, int mode,
-				tree type, int named)
+picochip_incoming_function_arg (CUMULATIVE_ARGS *cum,
+				enum machine_mode mode,
+				const_tree type, bool named)
 {
 
   if (cfun->stdarg)
@@ -838,8 +952,9 @@ picochip_incoming_function_arg (CUMULATIVE_ARGS cum, int mode,
 
 /* Gives the alignment boundary, in bits, of an argument with the
    specified mode.  */
-int
-picochip_get_function_arg_boundary (enum machine_mode mode)
+unsigned int
+picochip_function_arg_boundary (enum machine_mode mode,
+				const_tree type ATTRIBUTE_UNUSED)
 {
   int align;
 
@@ -874,7 +989,7 @@ picochip_arg_partial_bytes (CUMULATIVE_ARGS * p_cum, enum machine_mode mode,
 
   /* Compute the alignment and size of the parameter. */
   type_align_in_units =
-    picochip_get_function_arg_boundary (mode) / BITS_PER_UNIT;
+    picochip_function_arg_boundary (mode, type) / BITS_PER_UNIT;
   type_size_in_units = picochip_compute_arg_size (type, mode);
 
   /* Compute the correct offset (i.e., ensure that the offset meets
@@ -911,10 +1026,10 @@ picochip_arg_partial_bytes (CUMULATIVE_ARGS * p_cum, enum machine_mode mode,
 
 }
 
-/* Advance the cumulative args counter, returning the new counter. */
-CUMULATIVE_ARGS
-picochip_arg_advance (const CUMULATIVE_ARGS cum, int mode,
-		      tree type, int named ATTRIBUTE_UNUSED)
+/* Advance the cumulative args counter CUM. */
+void
+picochip_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		      const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   int type_align_in_units = 0;
   int type_size_in_units;
@@ -924,26 +1039,25 @@ picochip_arg_advance (const CUMULATIVE_ARGS cum, int mode,
   /* VOIDmode is passed when computing the second argument to a `call'
      pattern. This can be ignored. */
   if (mode == VOIDmode)
-    return 0;
+    return;
 
   /* Compute the alignment and size of the parameter. */
   type_align_in_units =
-    picochip_get_function_arg_boundary (mode) / BITS_PER_UNIT;
+    picochip_function_arg_boundary (mode, type) / BITS_PER_UNIT;
   type_size_in_units = picochip_compute_arg_size (type, mode);
 
   /* Compute the correct offset (i.e., ensure that the offset meets
      the alignment requirements). */
-  offset_overflow = cum % type_align_in_units;
+  offset_overflow = *cum % type_align_in_units;
   if (offset_overflow == 0)
-    new_offset = cum;
+    new_offset = *cum;
   else
-    new_offset = (cum - offset_overflow) + type_align_in_units;
+    new_offset = (*cum - offset_overflow) + type_align_in_units;
 
   /* Advance past the last argument. */
   new_offset += type_size_in_units;
 
-  return new_offset;
-
+  *cum = new_offset;
 }
 
 /* Determine whether a register needs saving/restoring. It does if it
@@ -1149,11 +1263,11 @@ picochip_regno_nregs (int regno ATTRIBUTE_UNUSED, int mode)
 }
 
 int
-picochip_class_max_nregs (int class, int mode)
+picochip_class_max_nregs (int reg_class, int mode)
 {
   int size = ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD);
 
-  if (class == ACC_REGS)
+  if (reg_class == ACC_REGS)
     return 1;
 
   if (GET_MODE_CLASS (mode) == MODE_CC)
@@ -1338,11 +1452,12 @@ rtx
 picochip_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
                              enum machine_mode mode)
 {
+  unsigned mask_val;
+
   if (!optimize)
     return x;
 
-  unsigned mask_val;
-  // Depending on mode, the offsets allowed are either 16/32/64.
+  /* Depending on mode, the offsets allowed are either 16/32/64.*/
   switch (mode)
     {
       case QImode:
@@ -1362,12 +1477,13 @@ picochip_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       && GET_CODE (XEXP (x, 0)) == REG
       && GET_CODE (XEXP (x, 1)) == CONST_INT)
     {
-      int offset = INTVAL (XEXP (x, 1));
-      // Ignore cases with negative offsets.
+      int high_val, low_val, offset;
+      offset = INTVAL (XEXP (x, 1));
+      /* Ignore cases with negative offsets.  */
       if (offset < 0)
         return x;
-      int high_val = offset & mask_val;
-      int low_val = offset - high_val;
+      high_val = offset & mask_val;
+      low_val = offset - high_val;
       if (high_val != 0)
         {
           rtx temp_reg = force_reg (Pmode, gen_rtx_PLUS (Pmode, XEXP (x, 0), GEN_INT(high_val)));
@@ -1397,6 +1513,8 @@ picochip_legitimize_reload_address (rtx *x,
                                     int opnum, int type,
                                     int ind_levels ATTRIBUTE_UNUSED)
 {
+  unsigned mask_val;
+
   if (picochip_symbol_offset(*x))
     {
       *x = gen_rtx_CONST(mode, *x);
@@ -1418,8 +1536,7 @@ picochip_legitimize_reload_address (rtx *x,
       return 1;
     }
 
-  unsigned mask_val;
-  // Depending on mode, the offsets allowed are either 16/32/64.
+  /* Depending on mode, the offsets allowed are either 16/32/64.  */
   switch (mode)
     {
       case QImode:
@@ -1439,12 +1556,13 @@ picochip_legitimize_reload_address (rtx *x,
       && GET_CODE (XEXP (*x, 0)) == REG
       && GET_CODE (XEXP (*x, 1)) == CONST_INT)
     {
-      int offset = INTVAL (XEXP (*x, 1));
-      // Ignore cases with negative offsets.
+      int high_val, low_val, offset;
+      offset = INTVAL (XEXP (*x, 1));
+      /* Ignore cases with negative offsets.  */
       if (offset < 0)
         return 0;
-      int high_val = offset & mask_val;
-      int low_val = offset - high_val;
+      high_val = offset & mask_val;
+      low_val = offset - high_val;
       if (high_val != 0)
         {
           rtx temp_reg = gen_rtx_PLUS (Pmode, XEXP (*x, 0), GEN_INT(high_val));
@@ -1487,7 +1605,7 @@ picochip_output_label (FILE * stream, const char name[])
     {
       if (picochip_current_vliw_state.num_cfi_labels_deferred == 2)
       {
-        internal_error ("LCFI labels have already been deferred.");
+        internal_error ("LCFI labels have already been deferred");
       }
       strcpy (picochip_current_vliw_state.cfi_label_name[
                 picochip_current_vliw_state.num_cfi_labels_deferred], name);
@@ -1550,10 +1668,22 @@ picochip_output_internal_label (FILE * stream, const char *prefix,
 	  (strcmp (prefix, "LM")) == 0 && picochip_vliw_continuation)
 	{
 	  if (strlen (picochip_current_vliw_state.lm_label_name) != 0)
-	    internal_error ("LM label has already been deferred.");
+	    internal_error ("LM label has already been deferred");
 
 	  sprintf (picochip_current_vliw_state.lm_label_name,
 		   "picoMark_%s%ld", prefix, num);
+	}
+      else if (picochip_schedule_type == DFA_TYPE_SPEED &&
+	  (strcmp (prefix, "LCFI")) == 0 && picochip_vliw_continuation)
+	{
+          if (picochip_current_vliw_state.num_cfi_labels_deferred == 2)
+          {
+            internal_error ("LCFI labels have already been deferred.");
+          }
+          sprintf(picochip_current_vliw_state.cfi_label_name[
+                    picochip_current_vliw_state.num_cfi_labels_deferred], 
+                  "picoMark_%s%ld", prefix, num);
+          picochip_current_vliw_state.num_cfi_labels_deferred++;
 	}
       else
 	{
@@ -1636,7 +1766,7 @@ picochip_output_ascii (FILE * file, const char *str, int length)
 
   for (i = 0; i < length; ++i)
     {
-      fprintf (file, "16#%hhx# ", (char) (str[i]));
+      fprintf (file, "16#%x# ", (char) (str[i]));
     }
 
   fprintf (file, "  ; ");
@@ -1687,7 +1817,7 @@ picochip_asm_file_start (void)
 
   /* Variable tracking should be run after all optimizations which change order
      of insns.  It also needs a valid CFG.  This can't be done in
-     picochip_override_options, because flag_var_tracking is finalized after
+     picochip_option_override, because flag_var_tracking is finalized after
      that.  */
   picochip_flag_var_tracking = flag_var_tracking;
   flag_var_tracking = 0;
@@ -1830,7 +1960,7 @@ picochip_asm_output_opcode (FILE * f, const char *ptr)
      made to pack it into a VLIW. */
   if (strchr (ptr, '\n') != NULL && picochip_vliw_continuation)
     internal_error
-      ("picochip_asm_output_opcode - Found multiple lines in VLIW packet %s\n",
+      ("picochip_asm_output_opcode - Found multiple lines in VLIW packet %s",
        ptr);
 
 
@@ -1933,7 +2063,7 @@ picochip_asm_output_opcode (FILE * f, const char *ptr)
 	}
       else if (c == '%')
 	internal_error
-	  ("picochip_asm_output_opcode - can't output unknown operator %c\n",
+	  ("picochip_asm_output_opcode - can%'t output unknown operator %c",
 	   *ptr);
       else
 	fputc (c, f);
@@ -2171,8 +2301,7 @@ picochip_is_short_branch (rtx insn)
   int isRealShortBranch = (get_attr_length(insn) == SHORT_BRANCH_LENGTH);
 
   return (isRealShortBranch ||
-	  (!isRealShortBranch &&
-	   picochip_current_vliw_state.num_insns_in_packet > 1));
+	  picochip_current_vliw_state.num_insns_in_packet > 1);
 }
 
 /* Output a compare-and-branch instruction (matching the cbranch
@@ -2185,7 +2314,7 @@ picochip_output_cbranch (rtx operands[])
       (HImode != GET_MODE (operands[2]) &&
        GET_CODE (operands[2]) != CONST_INT))
     {
-      internal_error ("%s: At least one operand can't be handled",
+      internal_error ("%s: at least one operand can%'t be handled",
 		      __FUNCTION__);
     }
 
@@ -2239,18 +2368,19 @@ picochip_output_cbranch (rtx operands[])
 const char *
 picochip_output_compare (rtx operands[])
 {
+  int code;
 
   if (HImode != GET_MODE (operands[1]) ||
       (HImode != GET_MODE (operands[2]) &&
        GET_CODE (operands[2]) != CONST_INT))
     {
-      internal_error ("%s: At least one operand can't be handled",
+      internal_error ("%s: at least one operand can%'t be handled",
 		      __FUNCTION__);
     }
 
+  code = GET_CODE (operands[0]);
   /* Use the type of comparison to output the appropriate condition
      test. */
-  int code = GET_CODE (operands[0]);
   switch (code)
     {
     case NE:
@@ -2325,7 +2455,7 @@ picochip_output_branch (rtx operands[], rtx insn)
 	case GTU:
 	  return ("BLO %l0 %>");
 	default:
-	  internal_error ("Unknown short branch in %s (type %d)\n",
+	  internal_error ("unknown short branch in %s (type %d)",
 			  __FUNCTION__, (int) INTVAL (operands[1]));
 	  return "UNKNOWN_BRANCH";
 	}
@@ -2362,7 +2492,7 @@ picochip_output_branch (rtx operands[], rtx insn)
 	  return ("JMPLO %l0 %>");
 
 	default:
-	  internal_error ("Unknown long branch in %s (type %d)\n",
+	  internal_error ("unknown long branch in %s (type %d)",
 			  __FUNCTION__, (int) INTVAL (operands[1]));
 	  return "UNKNOWN_BRANCH";
 	}
@@ -3064,40 +3194,67 @@ static void
 reorder_var_tracking_notes (void)
 {
   basic_block bb;
+
   FOR_EACH_BB (bb)
     {
-      rtx insn, next;
+      rtx insn, next, last_insn = NULL_RTX;
       rtx queue = NULL_RTX;
 
-      for (insn = BB_HEAD (bb); insn != BB_END (bb); insn = next)
-	{
-	  next = NEXT_INSN (insn);
+      /* Iterate through the bb and find the last non-debug insn */
+      for (insn = BB_HEAD (bb); insn != NEXT_INSN(BB_END (bb)); insn = NEXT_INSN(insn))
+        {
+          if (NONDEBUG_INSN_P(insn))
+            last_insn = insn;
+        }
 
-	  if (NONDEBUG_INSN_P (insn))
-	    {
-	      /* Emit queued up notes before the first instruction of a bundle.  */
-	      if (GET_MODE (insn) == TImode)
-		{
-		  while (queue)
-		    {
-		      rtx next_queue = PREV_INSN (queue);
-		      NEXT_INSN (PREV_INSN(insn)) = queue;
-		      PREV_INSN (queue) = PREV_INSN(insn);
-		      PREV_INSN (insn) = queue;
-		      NEXT_INSN (queue) = insn;
-		      queue = next_queue;
-		    }
-		}
-	    }
-	  else if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_VAR_LOCATION)
-	    {
-	       rtx prev = PREV_INSN (insn);
-	       PREV_INSN (next) = prev;
-	       NEXT_INSN (prev) = next;
+      /* In all normal cases, queue up notes and emit them just before a TImode
+         instruction. For the last instruction, emit the queued notes just after
+         the last instruction. */
+      for (insn = BB_HEAD (bb); insn != NEXT_INSN(BB_END (bb)); insn = next)
+        {
+          next = NEXT_INSN (insn);
+
+          if (insn == last_insn)
+            {
+              while (queue)
+                {
+                  rtx next_queue = PREV_INSN (queue);
+                  PREV_INSN (NEXT_INSN(insn)) = queue;
+                  NEXT_INSN(queue) = NEXT_INSN(insn);
+                  PREV_INSN(queue) = insn;
+                  NEXT_INSN(insn) = queue;
+                  queue = next_queue;
+                }
+              /* There is no more to do for this bb. break*/
+              break;
+            }
+          else if (NONDEBUG_INSN_P (insn))
+            {
+              /* Emit queued up notes before the first instruction of a bundle.  */
+              if (GET_MODE (insn) == TImode)
+                {
+                  while (queue)
+                    {
+                      rtx next_queue = PREV_INSN (queue);
+                      NEXT_INSN (PREV_INSN(insn)) = queue;
+                      PREV_INSN (queue) = PREV_INSN(insn);
+                      PREV_INSN (insn) = queue;
+                      NEXT_INSN (queue) = insn;
+                      queue = next_queue;
+                    }
+                }
+            }
+          else if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_VAR_LOCATION)
+            {
+               rtx prev = PREV_INSN (insn);
+               PREV_INSN (next) = prev;
+               NEXT_INSN (prev) = next;
                PREV_INSN (insn) = queue;
-	       queue = insn;
-	    }
-	}
+               queue = insn;
+            }
+        }
+        /* Make sure we are not dropping debug instructions.*/
+        gcc_assert (queue == NULL_RTX);
     }
 }
 
@@ -3188,7 +3345,7 @@ picochip_reorg (void)
       for (insn = get_insns (); insn; insn = next_insn (insn))
 	{
 	  /* The prologue end must be moved to the end of the VLIW packet. */
-	  if (NOTE_KIND (insn) == NOTE_INSN_PROLOGUE_END)
+	  if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_PROLOGUE_END)
 	    {
 	      prologue_end_note = insn;
 	      break;
@@ -3206,7 +3363,9 @@ picochip_reorg (void)
 
       if (last_insn_in_packet != NULL)
 	{
-          rtx tmp_note = emit_note_after (NOTE_KIND(prologue_end_note), last_insn_in_packet);
+          rtx tmp_note
+	    = emit_note_after ((enum insn_note) NOTE_KIND (prologue_end_note),
+			       last_insn_in_packet);
           memcpy(&NOTE_DATA (tmp_note), &NOTE_DATA(prologue_end_note), sizeof(NOTE_DATA(prologue_end_note)));
 	  delete_insn (prologue_end_note);
 	}
@@ -3278,7 +3437,7 @@ picochip_get_vliw_alu_id (void)
 	  return '1';
 
 	default:
-	  internal_error ("Too many ALU instructions emitted (%d)\n",
+	  internal_error ("too many ALU instructions emitted (%d)",
 			  picochip_current_vliw_state.num_alu_insns_so_far);
 	  return 'X';
 	}
@@ -3579,6 +3738,7 @@ gen_SImode_mem(rtx opnd1,rtx opnd2)
 {
   int offset1=0,offset2=0;
   rtx reg;
+  rtx address;
   if (GET_CODE(XEXP(opnd1,0)) == PLUS && GET_CODE(XEXP(XEXP(opnd1,0),1)) == CONST_INT)
   {
     offset1 = INTVAL(XEXP(XEXP(opnd1,0),1));
@@ -3592,7 +3752,7 @@ gen_SImode_mem(rtx opnd1,rtx opnd2)
   {
     offset2 = INTVAL(XEXP(XEXP(opnd2,0),1));
   }
-  rtx address = gen_rtx_PLUS (HImode, reg, GEN_INT(minimum(offset1,offset2)));
+  address = gen_rtx_PLUS (HImode, reg, GEN_INT(minimum(offset1,offset2)));
   return gen_rtx_MEM(SImode,address);
 }
 
@@ -3780,7 +3940,7 @@ picochip_expand_builtin_2op (enum insn_code icode, tree call, rtx target)
 
   /* Grab the incoming argument and emit its RTL. */
   arg0 = CALL_EXPR_ARG (call, 0);
-  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 
   /* Determine the modes of the instruction operands. */
   tmode = insn_data[icode].operand[0].mode;
@@ -3821,8 +3981,8 @@ picochip_expand_builtin_3op (enum insn_code icode, tree call, rtx target)
   arg1 = CALL_EXPR_ARG (call, 1);
 
   /* Emit rtl sequences for the function arguments. */
-  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 
   /* Get the mode's of each of the instruction operands. */
   tmode = insn_data[icode].operand[0].mode;
@@ -3865,8 +4025,8 @@ picochip_expand_builtin_2opvoid (enum insn_code icode, tree call)
   arg1 = CALL_EXPR_ARG (call, 1);
 
   /* Emit rtl sequences for the function arguments. */
-  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 
   /* Get the mode's of each of the instruction operands. */
   mode0 = insn_data[icode].operand[0].mode;
@@ -3902,9 +4062,9 @@ picochip_expand_array_get (tree call, rtx target)
   arg2 = CALL_EXPR_ARG (call, 2) ;
 
   /* Emit rtl sequences for the function arguments. */
-  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-  op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
+  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+  op2 = expand_expr (arg2, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 
   /* The second and third operands must be constant.  Nothing else will
      do. */
@@ -3947,10 +4107,10 @@ picochip_expand_array_put (tree call, rtx target)
   arg3 = CALL_EXPR_ARG (call, 3);
 
   /* Emit rtl sequences for the function arguments. */
-  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-  op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
-  op3 = expand_expr (arg3, NULL_RTX, VOIDmode, 0);
+  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+  op2 = expand_expr (arg2, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+  op3 = expand_expr (arg3, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 
   /* The first operand must be an SImode register. */
   if (GET_MODE (op0) != SImode || REG != GET_CODE (op0))
@@ -3990,9 +4150,9 @@ picochip_expand_array_testport (tree call, rtx target)
   arg2 = CALL_EXPR_ARG (call, 2);
 
   /* Emit rtl sequences for the function arguments. */
-  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-  op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
+  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+  op2 = expand_expr (arg2, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 
   /* The first operand must be a HImode register, or a constant.  If it
      isn't, force it into a HImode register. */
@@ -4032,6 +4192,7 @@ static rtx
 picochip_generate_halt (void)
 {
   static int currentId = 0;
+  rtx insns;
   rtx id = GEN_INT (currentId);
   currentId += 1;
 
@@ -4042,7 +4203,7 @@ picochip_generate_halt (void)
      it has to continue execution after the HALT.*/
   emit_barrier ();
 
-  rtx insns = get_insns();
+  insns = get_insns();
   end_sequence();
   emit_insn (insns);
 
@@ -4055,6 +4216,7 @@ picochip_generate_halt (void)
 void
 picochip_init_builtins (void)
 {
+  tree noreturn;
   tree endlink = void_list_node;
   tree int_endlink = tree_cons (NULL_TREE, integer_type_node, endlink);
   tree unsigned_endlink = tree_cons (NULL_TREE, unsigned_type_node, endlink);
@@ -4065,29 +4227,17 @@ picochip_init_builtins (void)
     tree_cons (NULL_TREE, integer_type_node, int_int_endlink);
   tree int_long_endlink =
     tree_cons (NULL_TREE, integer_type_node, long_endlink);
-  tree pchar_type_node = build_pointer_type (char_type_node);
   tree long_int_int_int_endlink =
     tree_cons (NULL_TREE, long_integer_type_node, int_int_int_endlink);
 
-  tree int_ftype_void, int_ftype_int, int_ftype_int_int, void_ftype_pchar;
-  tree long_ftype_int, long_ftype_int_int, long_ftype_int_int_int;
+  tree int_ftype_int, int_ftype_int_int;
+  tree long_ftype_int, long_ftype_int_int_int;
   tree void_ftype_int_long, int_ftype_int_int_int,
     void_ftype_long_int_int_int;
-  tree void_ftype_void, void_ftype_int, unsigned_ftype_unsigned;
+  tree void_ftype_void, unsigned_ftype_unsigned;
 
   /* void func (void) */
   void_ftype_void = build_function_type (void_type_node, endlink);
-
-  /* void func (void *) */
-  void_ftype_pchar
-    = build_function_type (void_type_node,
-			   tree_cons (NULL_TREE, pchar_type_node, endlink));
-
-  /* int func (void) */
-  int_ftype_void = build_function_type (integer_type_node, endlink);
-
-  /* void func (int) */
-  void_ftype_int = build_function_type (void_type_node, int_endlink);
 
   /* int func (int) */
   int_ftype_int = build_function_type (integer_type_node, int_endlink);
@@ -4101,10 +4251,6 @@ picochip_init_builtins (void)
 
   /* long func(int) */
   long_ftype_int = build_function_type (long_integer_type_node, int_endlink);
-
-  /* long func(int, int) */
-  long_ftype_int_int
-    = build_function_type (long_integer_type_node, int_int_endlink);
 
   /* long func(int, int, int) */
   long_ftype_int_int_int
@@ -4196,7 +4342,7 @@ picochip_init_builtins (void)
   /* Halt instruction. Note that the builtin function is marked as
      having the attribute `noreturn' so that the compiler realises
      that the halt stops the program dead. */
-  tree noreturn = tree_cons (get_identifier ("noreturn"), NULL, NULL);
+  noreturn = tree_cons (get_identifier ("noreturn"), NULL, NULL);
   add_builtin_function ("__builtin_halt", void_ftype_void,
 			       PICOCHIP_BUILTIN_HALT, BUILT_IN_MD, NULL,
 			       noreturn);
@@ -4363,12 +4509,12 @@ picochip_get_high_const (rtx value)
    choice of two registers to choose from, so that we a guaranteed to
    get at least one register which is different to the output
    register.  This trick is taken from the alpha implementation. */
-enum reg_class
+static reg_class_t
 picochip_secondary_reload (bool in_p,
-				 rtx x ATTRIBUTE_UNUSED,
-				 enum reg_class cla ATTRIBUTE_UNUSED,
-				 enum machine_mode mode,
-				 secondary_reload_info *sri)
+			   rtx x ATTRIBUTE_UNUSED,
+			   reg_class_t cla ATTRIBUTE_UNUSED,
+			   enum machine_mode mode,
+			   secondary_reload_info *sri)
 {
   if (mode == QImode && !TARGET_HAS_BYTE_ACCESS)
   {

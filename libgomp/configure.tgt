@@ -31,6 +31,10 @@ if test $enable_linux_futex = yes; then
 	config_path="linux/alpha linux posix"
 	;;
 
+    arm*-*-linux*)
+	config_path="linux/arm linux posix"
+	;;
+
     ia64*-*-linux*)
 	config_path="linux/ia64 linux posix"
 	;;
@@ -114,11 +118,6 @@ case "${target}" in
 
   *-*-mingw32*)
 	config_path="mingw32 posix"
-	;;
-
-  *-*-solaris2.[56]*)
-	config_path="posix95 posix"
-	XLDFLAGS="${XLDFLAGS} -lposix4"
 	;;
 
   *-*-darwin*)

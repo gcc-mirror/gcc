@@ -7,4 +7,4 @@ template<int> struct A
   ~A() { &A::i; } // { dg-error "reference" }
 };
 
-A<0> a; // { dg-message "instantiated" }
+A<0> a;

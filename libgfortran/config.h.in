@@ -87,15 +87,6 @@
 /* Define to 1 if you have the `backtrace_symbols' function. */
 #undef HAVE_BACKTRACE_SYMBOLS
 
-/* Define if fpclassify is broken. */
-#undef HAVE_BROKEN_FPCLASSIFY
-
-/* Define if isfinite is broken. */
-#undef HAVE_BROKEN_ISFINITE
-
-/* Define if isnan is broken. */
-#undef HAVE_BROKEN_ISNAN
-
 /* Define if powf is broken. */
 #undef HAVE_BROKEN_POWF
 
@@ -389,6 +380,9 @@
 
 /* Define to 1 if you have the <fenv.h> header file. */
 #undef HAVE_FENV_H
+
+/* Define if have a usable __float128 type. */
+#undef HAVE_FLOAT128
 
 /* Define to 1 if you have the <floatingpoint.h> header file. */
 #undef HAVE_FLOATINGPOINT_H

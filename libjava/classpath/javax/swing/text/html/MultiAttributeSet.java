@@ -57,7 +57,7 @@ class MultiAttributeSet
    * The Enumeration for the multiplexed names.
    */
   private class MultiNameEnumeration
-    implements Enumeration
+    implements Enumeration<Object>
   {
     /**
      * The index of the current AttributeSet.
@@ -67,7 +67,7 @@ class MultiAttributeSet
     /**
      * The names Enumeration of the current AttributeSet.
      */
-    private Enumeration current;
+    private Enumeration<?> current;
 
     /**
      * Creates a new instance.
@@ -147,7 +147,7 @@ class MultiAttributeSet
   public boolean containsAttributes(AttributeSet attributes)
   {
     boolean ret = true;
-    Enumeration e = attributes.getAttributeNames();
+    Enumeration<?> e = attributes.getAttributeNames();
     while (ret && e.hasMoreElements())
       {
         Object key = e.nextElement();
@@ -186,7 +186,7 @@ class MultiAttributeSet
     return n;
   }
 
-  public Enumeration getAttributeNames()
+  public Enumeration<?> getAttributeNames()
   {
     return new MultiNameEnumeration();
   }

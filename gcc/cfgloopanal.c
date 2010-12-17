@@ -32,6 +32,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "graphds.h"
 #include "params.h"
 
+struct target_cfgloop default_target_cfgloop;
+#if SWITCHABLE_TARGET
+struct target_cfgloop *this_target_cfgloop = &default_target_cfgloop;
+#endif
+
 /* Checks whether BB is executed exactly once in each LOOP iteration.  */
 
 bool
@@ -317,17 +322,6 @@ seq_cost (const_rtx seq, bool speed)
   return cost;
 }
 
-/* The properties of the target.  */
-
-unsigned target_avail_regs;	/* Number of available registers.  */
-unsigned target_res_regs;	/* Number of registers reserved for temporary
-				   expressions.  */
-unsigned target_reg_cost[2];	/* The cost for register when there still
-				   is some reserve, but we are approaching
-				   the number of available registers.  */
-unsigned target_spill_cost[2];	/* The cost for register when we need
-				   to spill.  */
-
 /* Initialize the constants for computing set costs.  */
 
 void
@@ -342,10 +336,15 @@ init_set_costs (void)
   unsigned i;
 
   target_avail_regs = 0;
+  target_clobbered_regs = 0;
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (TEST_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], i)
 	&& !fixed_regs[i])
-      target_avail_regs++;
+      {
+	target_avail_regs++;
+	if (call_used_regs[i])
+	  target_clobbered_regs++;
+      }
 
   target_res_regs = 3;
 
@@ -379,20 +378,29 @@ init_set_costs (void)
 
 /* Estimates cost of increased register pressure caused by making N_NEW new
    registers live around the loop.  N_OLD is the number of registers live
-   around the loop.  */
+   around the loop.  If CALL_P is true, also take into account that
+   call-used registers may be clobbered in the loop body, reducing the
+   number of available registers before we spill.  */
 
 unsigned
-estimate_reg_pressure_cost (unsigned n_new, unsigned n_old, bool speed)
+estimate_reg_pressure_cost (unsigned n_new, unsigned n_old, bool speed,
+			    bool call_p)
 {
   unsigned cost;
   unsigned regs_needed = n_new + n_old;
+  unsigned available_regs = target_avail_regs;
+
+  /* If there is a call in the loop body, the call-clobbered registers
+     are not available for loop invariants.  */
+  if (call_p)
+    available_regs = available_regs - target_clobbered_regs;
 
   /* If we have enough registers, we should use them and not restrict
      the transformations unnecessarily.  */
-  if (regs_needed + target_res_regs <= target_avail_regs)
+  if (regs_needed + target_res_regs <= available_regs)
     return 0;
 
-  if (regs_needed <= target_avail_regs)
+  if (regs_needed <= available_regs)
     /* If we are close to running out of registers, try to preserve
        them.  */
     cost = target_reg_cost [speed] * n_new;

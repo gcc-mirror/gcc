@@ -351,9 +351,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       seekpos(pos_type __pos,
 	      ios_base::openmode __mode = ios_base::in | ios_base::out);
 
-      // Common code for seekoff and seekpos
+      // Common code for seekoff, seekpos, and overflow
       pos_type
       _M_seek(off_type __off, ios_base::seekdir __way, __state_type __state);
+      
+      int
+      _M_get_ext_pos(__state_type &__state);
 
       virtual int
       sync();

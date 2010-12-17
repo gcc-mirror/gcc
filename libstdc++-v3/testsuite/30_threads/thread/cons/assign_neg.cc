@@ -28,8 +28,7 @@ void test01()
   typedef std::thread test_type;
   test_type t1;
   test_type t2;
-  t1 = t2;
+  t1 = t2;			// { dg-error "deleted" }
 }
 
-// { dg-error "used here" "" { target *-*-* } 31 }
-// { dg-error "deleted function" "" { target *-*-* } 148 }
+// { dg-prune-output "include" }

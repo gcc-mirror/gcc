@@ -1,0 +1,84 @@
+# Copyright (C) 2010 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+#
+# Based on gcc/testsuite/gcc.dg/lto/lto.exp.
+
+# Test link-time optimization across multiple files.
+#
+# Programs are broken into multiple files.  Each one is compiled
+# separately with LTO information.  The final executable is generated
+# by collecting all the generated object files using regular LTO or WHOPR.
+
+if $tracelevel then {
+    strace $tracelevel
+}
+
+# Load procedures from common libraries. 
+load_lib standard.exp
+load_lib objc-dg.exp
+
+# Load the language-independent compabibility support procedures.
+load_lib lto.exp
+
+# If LTO has not been enabled, bail.
+if { ![check_effective_target_lto] } {
+    return
+}
+
+global LTO_OPTIONS
+
+set LTO_OPTIONS [list	\
+  {-O0 -flto -fgnu-runtime}	\
+  {-O2 -flto -fgnu-runtime}	\
+  {-O0 -flto -flto-partition=none -fgnu-runtime} 	\
+  {-O2 -flto -flto-partition=none -fgnu-runtime}	\
+]
+
+objc_init
+lto_init no-mathlib
+
+# Define an identifier for use with this suite to avoid name conflicts
+# with other lto tests running at the same time.
+set sid "objc_lto"
+set tests [lsort [glob -nocomplain $srcdir/$subdir/*_0.m]]
+
+# Main loop.
+foreach src $tests {
+    # If we're only testing specific files and this isn't one of them, skip it.
+    if ![runtest_file_p $runtests $src] then {
+	continue
+    }
+    lto-execute $src $sid
+}
+
+# darwin targets can also run code with the NeXT runtime.
+if [istarget "*-*-darwin*" ] {
+set LTO_OPTIONS [list	\
+  {-O0 -flto -fnext-runtime}	\
+  {-O2 -flto -fnext-runtime}	\
+  {-O0 -flto -flto-partition=none -fnext-runtime} 	\
+  {-O2 -flto -flto-partition=none -fnext-runtime}	\
+]
+  foreach src $tests {
+    # If we're only testing specific files and this isn't one of them, skip it.
+    if ![runtest_file_p $runtests $src] then {
+	continue
+    }
+    lto-execute $src $sid
+  }
+}
+
+lto_finish

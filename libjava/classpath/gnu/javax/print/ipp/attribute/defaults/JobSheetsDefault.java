@@ -1,4 +1,4 @@
-/* JobSheetsDefault.java -- 
+/* JobSheetsDefault.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -49,26 +49,26 @@ import javax.print.attribute.standard.JobSheets;
 /**
  * JobSheetsDefault attribute provides the default value of
  * the printer object for the job-sheets attribute.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class JobSheetsDefault extends TextSyntax 
+public final class JobSheetsDefault extends TextSyntax
   implements DefaultValueAttribute
 {
-  //a keyword/name based attribute in IPP 
+  //a keyword/name based attribute in IPP
   // can be extended by administrators
   // standard values are predefined
-  
+
   /** No job sheet is the default */
-  public static final JobSheetsDefault NONE = 
+  public static final JobSheetsDefault NONE =
     new JobSheetsDefault("none", Locale.getDefault());
-  
+
   /** A job sheet is the default */
-  public static final JobSheetsDefault STANDARD = 
+  public static final JobSheetsDefault STANDARD =
     new JobSheetsDefault("standard", Locale.getDefault());
-  
+
   /**
-   * Creates a <code>JobSheetsDefault</code> object with the 
+   * Creates a <code>JobSheetsDefault</code> object with the
    * given value and locale.
    *
    * @param value the value for this syntax
@@ -81,13 +81,13 @@ public final class JobSheetsDefault extends TextSyntax
   {
     super(value, locale);
   }
- 
+
   /**
    * Returns category of this class.
    *
    * @return The class <code>JobSheetsDefault</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return JobSheetsDefault.class;
   }
@@ -101,21 +101,21 @@ public final class JobSheetsDefault extends TextSyntax
   {
     return "job-sheets-default";
   }
-  
+
   /**
    * Returns the equally enum of the standard attribute class
    * of this DefaultValuesAttribute enum.
    * <p>May return null if no value exists in JPS API.</p>
-   * 
+   *
    * @return The enum of the standard attribute class.
    */
-  public Attribute getAssociatedAttribute() 
+  public Attribute getAssociatedAttribute()
   {
     if (this.equals(JobSheetsDefault.NONE))
       return JobSheets.NONE;
     if (this.equals(JobSheetsDefault.STANDARD))
       return JobSheets.STANDARD;
-    
+
     return null;
   }
 

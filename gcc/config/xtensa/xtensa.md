@@ -315,24 +315,25 @@
    (set_attr "mode"	"SF")
    (set_attr "length"	"3")])
 
-(define_insn "muladdsf3"
+(define_insn "fmasf4"
   [(set (match_operand:SF 0 "register_operand" "=f")
-	(plus:SF (mult:SF (match_operand:SF 1 "register_operand" "%f")
-			  (match_operand:SF 2 "register_operand" "f"))
-		 (match_operand:SF 3 "register_operand" "0")))]
-  "TARGET_HARD_FLOAT && TARGET_FUSED_MADD"
+	(fma:SF (match_operand:SF 1 "register_operand" "f")
+		(match_operand:SF 2 "register_operand" "f")
+		(match_operand:SF 3 "register_operand" "0")))]
+  "TARGET_HARD_FLOAT"
   "madd.s\t%0, %1, %2"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"SF")
    (set_attr "length"	"3")])
 
-(define_insn "mulsubsf3"
+;; Note that (C - A*B) = (-A*B + C)
+(define_insn "fnmasf4"
   [(set (match_operand:SF 0 "register_operand" "=f")
-	(minus:SF (match_operand:SF 1 "register_operand" "0")
-		  (mult:SF (match_operand:SF 2 "register_operand" "%f")
-			   (match_operand:SF 3 "register_operand" "f"))))]
-  "TARGET_HARD_FLOAT && TARGET_FUSED_MADD"
-  "msub.s\t%0, %2, %3"
+	(fma:SF (neg:SF (match_operand:SF 1 "register_operand" "f"))
+		(match_operand:SF 2 "register_operand" "f")
+		(match_operand:SF 3 "register_operand" "0")))]
+  "TARGET_HARD_FLOAT"
+  "msub.s\t%0, %1, %2"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"SF")
    (set_attr "length"	"3")])

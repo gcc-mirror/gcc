@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,14 +48,13 @@ with System.Task_Primitives;
 with System.Task_Primitives.Operations;
 with System.Task_Primitives.Operations.DEC;
 
---  with Ada.Finalization;
---  removed, because of problem with controlled attribute ???
-
+with Ada.Finalization;
 with Ada.Task_Attributes;
 
 with Ada.Exceptions; use Ada.Exceptions;
 
 with Ada.Unchecked_Conversion;
+with Ada.Unchecked_Deallocation;
 
 package body System.AST_Handling is
 
@@ -190,14 +189,21 @@ package body System.AST_Handling is
    type AST_Handler_Vector is array (Natural range <>) of AST_Handler_Data;
    type AST_Handler_Vector_Ref is access all AST_Handler_Vector;
 
---  type AST_Vector_Ptr is new Ada.Finalization.Controlled with record
---  removed due to problem with controlled attribute, consequence is that
---  we have a memory leak if a task that has AST attribute entries is
---  terminated. ???
-
-   type AST_Vector_Ptr is record
+   type AST_Vector_Ptr is new Ada.Finalization.Controlled with record
       Vector : AST_Handler_Vector_Ref;
    end record;
+
+   procedure Finalize (Obj : in out AST_Vector_Ptr);
+   --  Override Finalize so that the AST Vector gets freed.
+
+   procedure Finalize (Obj : in out AST_Vector_Ptr) is
+      procedure Free is new
+       Ada.Unchecked_Deallocation (AST_Handler_Vector, AST_Handler_Vector_Ref);
+   begin
+      if Obj.Vector /= null then
+         Free (Obj.Vector);
+      end if;
+   end Finalize;
 
    AST_Vector_Init : AST_Vector_Ptr;
    --  Initial value, treated as constant, Vector will be null

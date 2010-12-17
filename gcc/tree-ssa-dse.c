@@ -301,8 +301,9 @@ dse_optimize_stmt (struct dse_global_data *dse_gd,
 	 virtual uses from stmt and the stmt which stores to that same
 	 memory location, then we may have found redundant store.  */
       if (bitmap_bit_p (dse_gd->stores, get_stmt_uid (use_stmt))
-	  && operand_equal_p (gimple_assign_lhs (stmt),
-			      gimple_assign_lhs (use_stmt), 0))
+	  && (operand_equal_p (gimple_assign_lhs (stmt),
+			       gimple_assign_lhs (use_stmt), 0)
+	      || stmt_kills_ref_p (use_stmt, gimple_assign_lhs (stmt))))
 	{
 	  /* If use_stmt is or might be a nop assignment, e.g. for
 	     struct { ... } S a, b, *p; ...

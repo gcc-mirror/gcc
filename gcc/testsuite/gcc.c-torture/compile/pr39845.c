@@ -1,3 +1,5 @@
+
+/* { dg-options "-fno-short-enums" {target short_enums} } */
 typedef union tree_node *tree;
 enum tree_code { EXCESS_PRECISION_EXPR };
 enum built_in_function { BUILT_IN_ACOS, BUILT_IN_FPCLASSIFY, BUILT_IN_ISFINITE };

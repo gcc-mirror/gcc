@@ -1,5 +1,5 @@
 /* Alpha extra machine modes. 
-   Copyright (C) 2003, 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2007, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* 128-bit floating point.  This gets reset in alpha_override_options
+/* 128-bit floating point.  This gets reset in alpha_option_override
    if VAX float format is in use.  */
 FLOAT_MODE (TF, 16, ieee_quad_format);
 

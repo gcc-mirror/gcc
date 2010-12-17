@@ -42,7 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "rtl.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "regs.h"
@@ -50,7 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "function.h"
 #include "except.h"
-#include "toplev.h"
+#include "rtl-error.h"
 #include "tm_p.h"
 #include "obstack.h"
 #include "insn-attr.h"
@@ -422,7 +421,10 @@ rest_of_pass_free_cfg (void)
   /* The resource.c machinery uses DF but the CFG isn't guaranteed to be
      valid at that point so it would be too late to call df_analyze.  */
   if (optimize > 0 && flag_delayed_branch)
-    df_analyze ();
+    {
+      df_note_add_problem ();
+      df_analyze ();
+    }
 #endif
 
   free_bb_for_insn ();
@@ -586,10 +588,12 @@ rtl_merge_blocks (basic_block a, basic_block b)
   rtx b_head = BB_HEAD (b), b_end = BB_END (b), a_end = BB_END (a);
   rtx del_first = NULL_RTX, del_last = NULL_RTX;
   rtx b_debug_start = b_end, b_debug_end = b_end;
+  bool forwarder_p = (b->flags & BB_FORWARDER_BLOCK) != 0;
   int b_empty = 0;
 
   if (dump_file)
-    fprintf (dump_file, "merging block %d into block %d\n", b->index, a->index);
+    fprintf (dump_file, "Merging block %d into block %d...\n", b->index,
+	     a->index);
 
   while (DEBUG_INSN_P (b_end))
     b_end = PREV_INSN (b_debug_start = b_end);
@@ -678,6 +682,13 @@ rtl_merge_blocks (basic_block a, basic_block b)
 
   df_bb_delete (b->index);
   BB_END (a) = a_end;
+
+  /* If B was a forwarder block, propagate the locus on the edge.  */
+  if (forwarder_p && !EDGE_SUCC (b, 0)->goto_locus)
+    EDGE_SUCC (b, 0)->goto_locus = EDGE_SUCC (a, 0)->goto_locus;
+
+  if (dump_file)
+    fprintf (dump_file, "Merged blocks %d and %d.\n", a->index, b->index);
 }
 
 
@@ -1051,8 +1062,7 @@ redirect_branch_edge (edge e, basic_block target)
     /* When expanding this BB might actually contain multiple
        jumps (i.e. not yet split by find_many_sub_basic_blocks).
        Redirect all of those that match our label.  */
-    for (insn = BB_HEAD (src); insn != NEXT_INSN (BB_END (src));
-	 insn = NEXT_INSN (insn))
+    FOR_BB_INSNS (src, insn)
       if (JUMP_P (insn) && !patch_jump_insn (insn, old_label, target))
 	return NULL;
 
@@ -1368,12 +1378,7 @@ rtl_split_edge (edge edge_in)
      Avoid existence of fallthru predecessors.  */
   if ((edge_in->flags & EDGE_FALLTHRU) == 0)
     {
-      edge e;
-      edge_iterator ei;
-
-      FOR_EACH_EDGE (e, ei, edge_in->dest->preds)
-	if (e->flags & EDGE_FALLTHRU)
-	  break;
+      edge e = find_fallthru_edge (edge_in->dest->preds);
 
       if (e)
 	force_nonfallthru (e);
@@ -2066,7 +2071,6 @@ rtl_verify_flow_info (void)
   FOR_EACH_BB_REVERSE (bb)
     {
       edge e;
-      edge_iterator ei;
       rtx head = BB_HEAD (bb);
       rtx end = BB_END (bb);
 
@@ -2120,9 +2124,7 @@ rtl_verify_flow_info (void)
 
       last_head = PREV_INSN (x);
 
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	if (e->flags & EDGE_FALLTHRU)
-	  break;
+      e = find_fallthru_edge (bb->succs);
       if (!e)
 	{
 	  rtx insn;
@@ -2698,12 +2700,13 @@ cfg_layout_can_merge_blocks_p (basic_block a, basic_block b)
 static void
 cfg_layout_merge_blocks (basic_block a, basic_block b)
 {
-#ifdef ENABLE_CHECKING
-  gcc_assert (cfg_layout_can_merge_blocks_p (a, b));
-#endif
+  bool forwarder_p = (b->flags & BB_FORWARDER_BLOCK) != 0;
+
+  gcc_checking_assert (cfg_layout_can_merge_blocks_p (a, b));
 
   if (dump_file)
-    fprintf (dump_file, "merging block %d into block %d\n", b->index, a->index);
+    fprintf (dump_file, "Merging block %d into block %d...\n", b->index,
+			 a->index);
 
   /* If there was a CODE_LABEL beginning B, delete it.  */
   if (LABEL_P (BB_HEAD (b)))
@@ -2811,9 +2814,12 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
       b->il.rtl->footer = NULL;
     }
 
+  /* If B was a forwarder block, propagate the locus on the edge.  */
+  if (forwarder_p && !EDGE_SUCC (b, 0)->goto_locus)
+    EDGE_SUCC (b, 0)->goto_locus = EDGE_SUCC (a, 0)->goto_locus;
+
   if (dump_file)
-    fprintf (dump_file, "Merged blocks %d and %d.\n",
-	     a->index, b->index);
+    fprintf (dump_file, "Merged blocks %d and %d.\n", a->index, b->index);
 }
 
 /* Split edge E.  */
@@ -3081,94 +3087,6 @@ init_rtl_bb_info (basic_block bb)
 {
   gcc_assert (!bb->il.rtl);
   bb->il.rtl = ggc_alloc_cleared_rtl_bb_info ();
-}
-
-
-/* Add EXPR to the end of basic block BB.  */
-
-rtx
-insert_insn_end_bb_new (rtx pat, basic_block bb)
-{
-  rtx insn = BB_END (bb);
-  rtx new_insn;
-  rtx pat_end = pat;
-
-  while (NEXT_INSN (pat_end) != NULL_RTX)
-    pat_end = NEXT_INSN (pat_end);
-
-  /* If the last insn is a jump, insert EXPR in front [taking care to
-     handle cc0, etc. properly].  Similarly we need to care trapping
-     instructions in presence of non-call exceptions.  */
-
-  if (JUMP_P (insn)
-      || (NONJUMP_INSN_P (insn)
-          && (!single_succ_p (bb)
-              || single_succ_edge (bb)->flags & EDGE_ABNORMAL)))
-    {
-#ifdef HAVE_cc0
-      rtx note;
-#endif
-      /* If this is a jump table, then we can't insert stuff here.  Since
-         we know the previous real insn must be the tablejump, we insert
-         the new instruction just before the tablejump.  */
-      if (GET_CODE (PATTERN (insn)) == ADDR_VEC
-          || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
-        insn = prev_real_insn (insn);
-
-#ifdef HAVE_cc0
-      /* FIXME: 'twould be nice to call prev_cc0_setter here but it aborts
-         if cc0 isn't set.  */
-      note = find_reg_note (insn, REG_CC_SETTER, NULL_RTX);
-      if (note)
-        insn = XEXP (note, 0);
-      else
-        {
-          rtx maybe_cc0_setter = prev_nonnote_insn (insn);
-          if (maybe_cc0_setter
-              && INSN_P (maybe_cc0_setter)
-              && sets_cc0_p (PATTERN (maybe_cc0_setter)))
-            insn = maybe_cc0_setter;
-        }
-#endif
-      /* FIXME: What if something in cc0/jump uses value set in new
-         insn?  */
-      new_insn = emit_insn_before_noloc (pat, insn, bb);
-    }
-
-  /* Likewise if the last insn is a call, as will happen in the presence
-     of exception handling.  */
-  else if (CALL_P (insn)
-           && (!single_succ_p (bb)
-               || single_succ_edge (bb)->flags & EDGE_ABNORMAL))
-    {
-      /* Keeping in mind targets with small register classes and parameters
-         in registers, we search backward and place the instructions before
-	 the first parameter is loaded.  Do this for everyone for consistency
-	 and a presumption that we'll get better code elsewhere as well.  */
-
-      /* Since different machines initialize their parameter registers
-         in different orders, assume nothing.  Collect the set of all
-         parameter registers.  */
-      insn = find_first_parameter_load (insn, BB_HEAD (bb));
-
-      /* If we found all the parameter loads, then we want to insert
-         before the first parameter load.
-
-         If we did not find all the parameter loads, then we might have
-         stopped on the head of the block, which could be a CODE_LABEL.
-         If we inserted before the CODE_LABEL, then we would be putting
-         the insn in the wrong basic block.  In that case, put the insn
-         after the CODE_LABEL.  Also, respect NOTE_INSN_BASIC_BLOCK.  */
-      while (LABEL_P (insn)
-             || NOTE_INSN_BASIC_BLOCK_P (insn))
-        insn = NEXT_INSN (insn);
-
-      new_insn = emit_insn_before_noloc (pat, insn, bb);
-    }
-  else
-    new_insn = emit_insn_after_noloc (pat, insn, bb);
-
-  return new_insn;
 }
 
 /* Returns true if it is possible to remove edge E by redirecting

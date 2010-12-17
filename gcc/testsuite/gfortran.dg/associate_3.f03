@@ -2,7 +2,7 @@
 ! { dg-options "-std=f2003" }
 
 ! PR fortran/38936
-! Check for errors with ASSOCIATE.
+! Check for errors with ASSOCIATE during parsing.
 
 PROGRAM main
   IMPLICIT NONE
@@ -29,10 +29,6 @@ PROGRAM main
   END ASSOCIATE myname3 ! { dg-error "Expected label 'myname2'" }
 
   ASSOCIATE (a => 1, b => 2, a => 3) ! { dg-error "Duplicate name 'a'" }
-
-  ASSOCIATE (a => 5)
-    a = 4 ! { dg-error "variable definition context" }
-  ENd ASSOCIATE
 
   ASSOCIATE (a => 5)
     INTEGER :: b ! { dg-error "Unexpected data declaration statement" }

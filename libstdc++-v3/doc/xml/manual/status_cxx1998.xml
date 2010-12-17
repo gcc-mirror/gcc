@@ -1,7 +1,8 @@
-<sect2 id="status.iso.1998" xreflabel="ISO C++ 1998">
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="status.iso.1998" xreflabel="ISO C++ 1998">
 <?dbhtml filename="status_iso_cxx1998.html"?>
 
-<sect2info>
+<info><title>C++ 1998/2003</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -10,12 +11,11 @@
       1998
     </keyword>
   </keywordset>
-</sect2info>
+</info>
 
-<title>C++ 1998/2003</title>
 
-<sect3 id="iso.1998.status" xreflabel="Implementation Status">
-  <title>Implementation Status</title>
+<section xml:id="iso.1998.status" xreflabel="Implementation Status">
+<info><title>Implementation Status</title></info>  
 
 <para>
 This status table is based on the table of contents of ISO/IEC 14882:2003.
@@ -35,13 +35,14 @@ particular release.
    Broken/Partial
       <?dbhtml bgcolor="#B0B0B0" ?>
 -->
-<table frame='all'>
-<title>C++ 1998/2003 Implementation Status</title>
-<tgroup cols='4' align='left' colsep='0' rowsep='1'>
-<colspec colname='c1'></colspec>
-<colspec colname='c2'></colspec>
-<colspec colname='c3'></colspec>
-<colspec colname='c4'></colspec>
+<table frame="all">
+  <title>C++ 1998/2003 Implementation Status</title>
+
+<tgroup cols="4" align="left" colsep="0" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
   <thead>
     <row>
       <entry>Section</entry>
@@ -65,25 +66,25 @@ particular release.
       <entry>18.1</entry>
       <entry>Types</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>18.2</entry>
       <entry>Implementation properties</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>18.2.1</entry>
       <entry>Numeric Limits</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>18.2.1.1</entry>
       <entry>Class template <code>numeric_limits</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>18.2.1.2</entry>
@@ -104,85 +105,85 @@ particular release.
       <entry>18.2.1.5</entry>
       <entry><code>numeric_limits</code> specializations</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>18.2.2</entry>
       <entry>C Library</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>18.3</entry>
       <entry>Start and termination</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>18.4</entry>
       <entry>Dynamic memory management</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>18.5</entry>
       <entry>Type identification</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>18.5.1</entry>
       <entry>Class type_info</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>18.5.2</entry>
       <entry>Class bad_cast</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>18.5.3</entry>
       <entry>Class bad_typeid</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>18.6</entry>
       <entry>Exception handling</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>18.6.1</entry>
       <entry>Class exception</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>18.6.2</entry>
       <entry>Violation exception-specifications</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>18.6.3</entry>
       <entry>Abnormal termination</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>18.6.4</entry>
       <entry><code>uncaught_exception</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>18.7</entry>
       <entry>Other runtime support</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>
@@ -196,19 +197,19 @@ particular release.
       <entry>19.1</entry>
       <entry>Exception classes</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>19.2</entry>
       <entry>Assertions</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>19.3</entry>
       <entry>Error numbers</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>
@@ -222,139 +223,139 @@ particular release.
       <entry>20.1</entry>
       <entry>Requirements</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
    <row>
       <entry>20.2</entry>
       <entry>Utility components</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>20.2.1</entry>
       <entry>Operators</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>20.2.2</entry>
       <entry><code>pair</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
    <row>
       <entry>20.3</entry>
       <entry>Function objects</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>20.3.1</entry>
       <entry>Base</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>20.3.2</entry>
       <entry>Arithmetic operation</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>20.3.3</entry>
       <entry>Comparisons</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>20.3.4</entry>
       <entry>Logical operations</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>20.3.5</entry>
       <entry>Negators</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>20.3.6</entry>
       <entry>Binders</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>20.3.7</entry>
       <entry>Adaptors for pointers to functions</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>20.3.8</entry>
       <entry>Adaptors for pointers to members</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>20.4</entry>
       <entry>Memory</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>20.4.1</entry>
       <entry>The default allocator</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>20.4.2</entry>
       <entry>Raw storage iterator</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>20.4.3</entry>
       <entry>Temporary buffers</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>20.4.4</entry>
       <entry>Specialized algorithms</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>20.4.4.1</entry>
       <entry><code>uninitialized_copy</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>20.4.4.2</entry>
       <entry><code>uninitialized_fill</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>20.4.4.3</entry>
       <entry><code>uninitialized_fill_n</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>20.4.5</entry>
       <entry>Class template <code>auto_ptr</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>20.4.6</entry>
       <entry>C library</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>
@@ -367,50 +368,50 @@ particular release.
     <row>
       <entry>21.1</entry>
       <entry>Character traits</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>21.1.1</entry>
       <entry>Character traits requirements</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>21.1.2</entry>
       <entry>traits typedef</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>21.1.3</entry>
       <entry><code>char_traits</code> specializations</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>21.1.3.1</entry>
       <entry>struct <code>char_traits&lt;char&gt;</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>21.1.3.2</entry>
       <entry>struct <code>char_traits&lt;wchar_t&gt;</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>21.2</entry>
       <entry>String classes</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>21.3</entry>
       <entry>Class template <code>basic_string</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>21.4</entry>
@@ -429,158 +430,158 @@ particular release.
     <row>
       <entry>22.1</entry>
       <entry>Locales</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>22.1.1</entry>
       <entry>Class <code>locale</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>22.1.2</entry>
       <entry><code>locale</code> globals</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>22.1.3</entry>
       <entry>Convenience interfaces</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>22.1.3.1</entry>
       <entry>Character classification</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>22.1.3.2</entry>
       <entry>Character conversions</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>22.2</entry>
       <entry>Standard locale categories</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>22.2.1</entry>
       <entry><code>ctype</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>22.2.2</entry>
       <entry>Numeric</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>22.2.2.1</entry>
       <entry><code>num_get</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>22.2.2.2</entry>
       <entry><code>num_put</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>22.2.3</entry>
       <entry><code>num_punct</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>22.2.4</entry>
       <entry><code>collate</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>22.2.5</entry>
       <entry>Time</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>22.2.5.1</entry>
       <entry><code>time_get</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>22.2.5.2</entry>
       <entry><code>time_get_byname</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>22.2.5.3</entry>
       <entry><code>time_put</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>22.2.5.3</entry>
       <entry><code>time_put_byname</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>22.2.6</entry>
       <entry>Monetary</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>22.2.6.1</entry>
       <entry><code>money_get</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>22.2.6.2</entry>
       <entry><code>money_put</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>22.2.6.3</entry>
       <entry><code>money_punct</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>22.2.6.4</entry>
       <entry><code>money_punct_byname</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>22.2.7</entry>
       <entry><code>messages</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>22.2.8</entry>
       <entry>Program-defined facets</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>22.3</entry>
       <entry>C Library Locales</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>
@@ -594,91 +595,91 @@ particular release.
       <entry>23.1</entry>
       <entry>Container requirements</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>23.2</entry>
       <entry>Sequence containers</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>23.2.1</entry>
       <entry>Class template <code>deque</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>23.2.2</entry>
       <entry>Class template <code>list</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>23.2.3</entry>
       <entry>Adaptors</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>23.2.3.1</entry>
       <entry>Class template <code>queue</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>23.2.3.2</entry>
       <entry>Class template <code>priority_queue</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>23.2.3.3</entry>
       <entry>Class template <code>stack</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>23.2.4</entry>
       <entry>Class template <code>vector</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>23.2.5</entry>
       <entry>Class <code>vector&lt;bool&gt;</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>23.3</entry>
       <entry>Associative containers</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>23.3.1</entry>
       <entry>Class template <code>map</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>23.3.2</entry>
       <entry>Class template <code>multimap</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>23.3.3</entry>
       <entry>Class template <code>set</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>23.3.4</entry>
       <entry>Class template <code>multiset</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>
@@ -692,67 +693,67 @@ particular release.
       <entry>24.1</entry>
       <entry>Requirements</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>24.2</entry>
       <entry>Header <code>&lt;iterator&gt;</code> synopsis</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>24.3</entry>
       <entry>Iterator primitives</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>24.4</entry>
       <entry>Predefined iterators and Iterator adaptors</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>24.4.1</entry>
       <entry>Reverse iterators</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>24.4.2</entry>
       <entry>Insert iterators</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>24.5</entry>
       <entry>Stream iterators</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>24.5.1</entry>
       <entry>Class template <code>istream_iterator</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>24.5.2</entry>
       <entry>Class template <code>ostream_iterator</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>24.5.3</entry>
       <entry>Class template <code>istreambuf_iterator</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>24.5.4</entry>
       <entry>Class template <code>ostreambuf_iterator</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>
@@ -766,25 +767,25 @@ particular release.
       <entry>25.1</entry>
       <entry>Non-modifying sequence operations</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>25.2</entry>
       <entry>Mutating sequence operations</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>25.3</entry>
       <entry>Sorting and related operations</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>25.4</entry>
       <entry>C library algorithms</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>
@@ -798,115 +799,115 @@ particular release.
       <entry>26.1</entry>
       <entry>Numeric type requirements</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>26.2</entry>
       <entry>Complex numbers</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>26.3</entry>
       <entry>Numeric arrays</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>26.3.1</entry>
       <entry>Header <code>&lt;valarray&gt;</code> synopsis</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>26.3.2</entry>
       <entry>Class template <code>valarray</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>26.3.3</entry>
       <entry><code>valarray</code> non-member operations</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>26.3.4</entry>
       <entry>Class <code>slice</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>26.3.5</entry>
       <entry>Class template <code>slice_array</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>26.3.6</entry>
       <entry>Class <code>gslice</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>26.3.7</entry>
       <entry>Class template <code>gslice_array</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>26.3.8</entry>
       <entry>Class template <code>mask_array</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>26.3.9</entry>
       <entry>Class template <code>indirect_array</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>26.4</entry>
       <entry>Generalized numeric operations</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>26.4.1</entry>
       <entry><code>accumulate</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>26.4.2</entry>
       <entry><code>inner_product</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>26.4.3</entry>
       <entry><code>partial_sum</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>26.4.4</entry>
       <entry><code>adjacent_difference</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>26.4.5</entry>
       <entry>iota</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>26.5</entry>
       <entry>C Library</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>
@@ -920,61 +921,61 @@ particular release.
       <entry>27.1</entry>
       <entry>Requirements</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>27.2</entry>
       <entry>Forward declarations</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>27.3</entry>
       <entry>Standard iostream objects</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>27.3.1</entry>
       <entry>Narrow stream objects</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>27.3.2</entry>
       <entry>Wide stream objects</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>27.4</entry>
       <entry>Iostreams base classes</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>27.5</entry>
       <entry>Stream buffers</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>27.6</entry>
       <entry>Formatting and manipulators</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>27.7</entry>
       <entry>String-based streams</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>27.8</entry>
       <entry>File-based streams</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>
@@ -987,53 +988,53 @@ particular release.
     <row>
       <entry>D.1</entry>
       <entry>Increment operator with bool operand</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>D.2</entry>
       <entry><code>static</code> keyword</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>D.3</entry>
       <entry>Access declarations</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>D.4</entry>
       <entry>Implicit conversion from const strings</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>D.5</entry>
       <entry>C standard library headers</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>D.6</entry>
       <entry>Old iostreams members</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>D.7</entry>
       <entry>char* streams</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
 
   </tbody>
 </tgroup>
 </table>
-</sect3>
+</section>
 
-<sect3 id="iso.1998.specific" xreflabel="Implementation Specific">
-  <title>Implementation Specific Behavior</title>
+<section xml:id="iso.1998.specific" xreflabel="Implementation Specific"><info><title>Implementation Specific Behavior</title></info>
+  
 
    <para>
      The ISO standard defines the following phrase:
@@ -1056,8 +1057,8 @@ particular release.
    </blockquote>
    <para>
      We do so here, for the C++ library only.  Behavior of the
-     compiler, linker, runtime loader, and other elements of &quot;the
-     implementation&quot; are documented elsewhere.  Everything listed
+     compiler, linker, runtime loader, and other elements of "the
+     implementation" are documented elsewhere.  Everything listed
      in Annex B, Implementation Qualities, are also part of the
      compiler, not the library.
    </para>
@@ -1104,13 +1105,13 @@ particular release.
       <code>std::type_info::name()</code> is the mangled type name (see the
       previous entry for more).
    </para>
-   <para><emphasis>[20.1.5]/5</emphasis> <emphasis>&quot;Implementors are encouraged to
+   <para><emphasis>[20.1.5]/5</emphasis> <emphasis>"Implementors are encouraged to
       supply libraries that can accept allocators that encapsulate more
       general memory models and that support non-equal instances.  In such
       implementations, any requirements imposed on allocators by containers
       beyond those requirements that appear in Table 32, and the semantics
       of containers and algorithms when allocator instances compare
-      non-equal, are implementation-defined.&quot;</emphasis>  As yet we don't
+      non-equal, are implementation-defined."</emphasis>  As yet we don't
       have any allocators which compare non-equal, so we can't describe how
       they behave.
    </para>
@@ -1158,6 +1159,6 @@ particular release.
       a get area exists will... whatever <code>fflush()</code> does, I think.
    </para>
 
-</sect3>
+</section>
 
-</sect2>
+</section>

@@ -21,8 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "toplev.h"
-#include "rtl.h"
+#include "rtl-error.h"
 #include "tm_p.h"
 #include "hard-reg-set.h"
 #include "regs.h"
@@ -31,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "insn-attr.h"
 #include "except.h"
-#include "toplev.h"
 #include "recog.h"
 #include "params.h"
 #include "target.h"
@@ -614,12 +612,14 @@ static bool
 in_fallthru_bb_p (rtx insn, rtx succ)
 {
   basic_block bb = BLOCK_FOR_INSN (insn);
+  edge e;
 
   if (bb == BLOCK_FOR_INSN (succ))
     return true;
 
-  if (find_fallthru_edge (bb))
-    bb = find_fallthru_edge (bb)->dest;
+  e = find_fallthru_edge_from (bb);
+  if (e)
+    bb = e->dest;
   else
     return false;
 
@@ -837,7 +837,8 @@ count_occurrences_1 (rtx *cur_rtx, void *arg)
 
   if (GET_CODE (*cur_rtx) == SUBREG
       && REG_P (p->x)
-      && REGNO (SUBREG_REG (*cur_rtx)) == REGNO (p->x))
+      && (!REG_P (SUBREG_REG (*cur_rtx))
+	  || REGNO (SUBREG_REG (*cur_rtx)) == REGNO (p->x)))
     {
       /* ??? Do not support substituting regs inside subregs.  In that case,
          simplify_subreg will be called by validate_replace_rtx, and
@@ -1138,6 +1139,9 @@ init_regs_for_mode (enum machine_mode mode)
             /* Can't use regs which aren't saved by
                the prologue.  */
             || !TEST_HARD_REG_BIT (sel_hrd.regs_ever_used, cur_reg + i)
+	    /* Can't use regs with non-null REG_BASE_VALUE, because adjusting
+	       it affects aliasing globally and invalidates all AV sets.  */
+	    || get_reg_base_value (cur_reg + i)
 #ifdef LEAF_REGISTERS
             /* We can't use a non-leaf register if we're in a
                leaf function.  */
@@ -1237,7 +1241,7 @@ mark_unavailable_hard_regs (def_t def, struct reg_rename *reg_rename_p,
      frame pointer, or we could not discover its class.  */
   if (fixed_regs[regno]
       || global_regs[regno]
-#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
       || (frame_pointer_needed && regno == HARD_FRAME_POINTER_REGNUM)
 #else
       || (frame_pointer_needed && regno == FRAME_POINTER_REGNUM)
@@ -1264,7 +1268,7 @@ mark_unavailable_hard_regs (def_t def, struct reg_rename *reg_rename_p,
 	SET_HARD_REG_BIT (reg_rename_p->unavailable_hard_regs,
                           FRAME_POINTER_REGNUM + i);
 
-#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
       for (i = hard_regno_nregs[HARD_FRAME_POINTER_REGNUM][Pmode]; i--;)
 	SET_HARD_REG_BIT (reg_rename_p->unavailable_hard_regs,
                           HARD_FRAME_POINTER_REGNUM + i);
@@ -2737,7 +2741,7 @@ compute_av_set_at_bb_end (insn_t insn, ilist_t p, int ws)
   /* Add insn to to the tail of current path.  */
   ilist_add (&p, insn);
 
-  for (is = 0; VEC_iterate (rtx, sinfo->succs_ok, is, succ); is++)
+  FOR_EACH_VEC_ELT (rtx, sinfo->succs_ok, is, succ)
     {
       av_set_t succ_set;
 
@@ -2791,7 +2795,7 @@ compute_av_set_at_bb_end (insn_t insn, ilist_t p, int ws)
   /* Check liveness restrictions via hard way when there are more than
      two successors.  */
   if (sinfo->succs_ok_n > 2)
-    for (is = 0; VEC_iterate (rtx, sinfo->succs_ok, is, succ); is++)
+    FOR_EACH_VEC_ELT (rtx, sinfo->succs_ok, is, succ)
       {
         basic_block succ_bb = BLOCK_FOR_INSN (succ);
 
@@ -2802,7 +2806,7 @@ compute_av_set_at_bb_end (insn_t insn, ilist_t p, int ws)
 
   /* Finally, check liveness restrictions on paths leaving the region.  */
   if (sinfo->all_succs_n > sinfo->succs_ok_n)
-    for (is = 0; VEC_iterate (rtx, sinfo->succs_other, is, succ); is++)
+    FOR_EACH_VEC_ELT (rtx, sinfo->succs_other, is, succ)
       mark_unavailable_targets
         (av1, NULL, BB_LV_SET (BLOCK_FOR_INSN (succ)));
 
@@ -3573,7 +3577,7 @@ vinsn_vec_has_expr_p (vinsn_vec_t vinsn_vec, expr_t expr)
   vinsn_t vinsn;
   int n;
 
-  for (n = 0; VEC_iterate (vinsn_t, vinsn_vec, n, vinsn); n++)
+  FOR_EACH_VEC_ELT (vinsn_t, vinsn_vec, n, vinsn)
     if (VINSN_SEPARABLE_P (vinsn))
       {
         if (vinsn_equal_p (vinsn, EXPR_VINSN (expr)))
@@ -3647,7 +3651,7 @@ vinsn_vec_clear (vinsn_vec_t *vinsn_vec)
       vinsn_t vinsn;
       int n;
 
-      for (n = 0; VEC_iterate (vinsn_t, *vinsn_vec, n, vinsn); n++)
+      FOR_EACH_VEC_ELT (vinsn_t, *vinsn_vec, n, vinsn)
         vinsn_detach (vinsn);
       VEC_block_remove (vinsn_t, *vinsn_vec, 0, len);
     }
@@ -3720,8 +3724,7 @@ fill_vec_av_set (av_set_t av, blist_t bnds, fence_t fence,
     }
 
   /* Sort the vector.  */
-  qsort (VEC_address (expr_t, vec_av_set), VEC_length (expr_t, vec_av_set),
-         sizeof (expr_t), sel_rank_for_schedule);
+  VEC_qsort (expr_t, vec_av_set, sel_rank_for_schedule);
 
   /* We record maximal priority of insns in av set for current instruction
      group.  */
@@ -3735,7 +3738,7 @@ fill_vec_av_set (av_set_t av, blist_t bnds, fence_t fence,
     {
       expr_t expr = VEC_index (expr_t, vec_av_set, n);
       insn_t insn = EXPR_INSN_RTX (expr);
-      char target_available;
+      signed char target_available;
       bool is_orig_reg_p = true;
       int need_cycles, new_prio;
 
@@ -3935,15 +3938,14 @@ fill_vec_av_set (av_set_t av, blist_t bnds, fence_t fence,
     gcc_assert (min_need_stall == 0);
 
   /* Sort the vector.  */
-  qsort (VEC_address (expr_t, vec_av_set), VEC_length (expr_t, vec_av_set),
-         sizeof (expr_t), sel_rank_for_schedule);
+  VEC_qsort (expr_t, vec_av_set, sel_rank_for_schedule);
 
   if (sched_verbose >= 4)
     {
       sel_print ("Total ready exprs: %d, stalled: %d\n",
                  VEC_length (expr_t, vec_av_set), stalled);
       sel_print ("Sorted av set (%d): ", VEC_length (expr_t, vec_av_set));
-      for (n = 0; VEC_iterate (expr_t, vec_av_set, n, expr); n++)
+      FOR_EACH_VEC_ELT (expr_t, vec_av_set, n, expr)
         dump_expr (expr);
       sel_print ("\n");
     }
@@ -3972,7 +3974,7 @@ convert_vec_av_set_to_ready (void)
       sched_extend_ready_list (ready.n_ready);
     }
 
-  for (n = 0; VEC_iterate (expr_t, vec_av_set, n, expr); n++)
+  FOR_EACH_VEC_ELT (expr_t, vec_av_set, n, expr)
     {
       vinsn_t vi = EXPR_VINSN (expr);
       insn_t insn = VINSN_INSN_RTX (vi);
@@ -4321,8 +4323,9 @@ choose_best_insn (fence_t fence, int privileged_n, int *index)
   if (dfa_lookahead > 0)
     {
       cycle_issued_insns = FENCE_ISSUED_INSNS (fence);
+      /* TODO: pass equivalent of first_cycle_insn_p to max_issue ().  */
       can_issue = max_issue (&ready, privileged_n,
-                             FENCE_STATE (fence), index);
+                             FENCE_STATE (fence), true, index);
       if (sched_verbose >= 2)
         sel_print ("max_issue: we can issue %d insns, already did %d insns\n",
                    can_issue, FENCE_ISSUED_INSNS (fence));
@@ -4403,7 +4406,8 @@ find_best_expr (av_set_t *av_vliw_ptr, blist_t bnds, fence_t fence,
     {
       can_issue_more = invoke_aftermath_hooks (fence, EXPR_INSN_RTX (best),
                                                can_issue_more);
-      if (can_issue_more == 0)
+      if (targetm.sched.variable_issue
+	  && can_issue_more == 0)
         *pneed_stall = 1;
     }
 
@@ -4633,11 +4637,8 @@ create_block_for_bookkeeping (edge e1, edge e2)
 		if (INSN_P (insn))
 		  EXPR_ORIG_BB_INDEX (INSN_EXPR (insn)) = succ->index;
 
-	      if (bitmap_bit_p (code_motion_visited_blocks, new_bb->index))
-		{
-		  bitmap_set_bit (code_motion_visited_blocks, succ->index);
-		  bitmap_clear_bit (code_motion_visited_blocks, new_bb->index);
-		}
+	      if (bitmap_clear_bit (code_motion_visited_blocks, new_bb->index))
+		bitmap_set_bit (code_motion_visited_blocks, succ->index);
 
 	      gcc_assert (LABEL_P (BB_HEAD (new_bb))
 			  && LABEL_P (BB_HEAD (succ)));
@@ -4879,22 +4880,39 @@ static void
 move_cond_jump (rtx insn, bnd_t bnd)
 {
   edge ft_edge;
-  basic_block block_from, block_next, block_new;
-  rtx next, prev, link;
+  basic_block block_from, block_next, block_new, block_bnd, bb;
+  rtx next, prev, link, head;
 
-  /* BLOCK_FROM holds basic block of the jump.  */
   block_from = BLOCK_FOR_INSN (insn);
+  block_bnd = BLOCK_FOR_INSN (BND_TO (bnd));
+  prev = BND_TO (bnd);
 
-  /* Moving of jump should not cross any other jumps or
-  beginnings of new basic blocks.  */
-  gcc_assert (block_from == BLOCK_FOR_INSN (BND_TO (bnd)));
+#ifdef ENABLE_CHECKING
+  /* Moving of jump should not cross any other jumps or beginnings of new
+     basic blocks.  The only exception is when we move a jump through
+     mutually exclusive insns along fallthru edges.  */
+  if (block_from != block_bnd)
+    {
+      bb = block_from;
+      for (link = PREV_INSN (insn); link != PREV_INSN (prev);
+           link = PREV_INSN (link))
+        {
+          if (INSN_P (link))
+            gcc_assert (sched_insns_conditions_mutex_p (insn, link));
+          if (BLOCK_FOR_INSN (link) && BLOCK_FOR_INSN (link) != bb)
+            {
+              gcc_assert (single_pred (bb) == BLOCK_FOR_INSN (link));
+              bb = BLOCK_FOR_INSN (link);
+            }
+        }
+    }
+#endif
 
   /* Jump is moved to the boundary.  */
-  prev = BND_TO (bnd);
   next = PREV_INSN (insn);
   BND_TO (bnd) = insn;
 
-  ft_edge = find_fallthru_edge (block_from);
+  ft_edge = find_fallthru_edge_from (block_from);
   block_next = ft_edge->dest;
   /* There must be a fallthrough block (or where should go
   control flow in case of false jump predicate otherwise?).  */
@@ -4905,28 +4923,35 @@ move_cond_jump (rtx insn, bnd_t bnd)
   gcc_assert (block_new->next_bb == block_next
               && block_from->next_bb == block_new);
 
-  gcc_assert (BB_END (block_from) == insn);
-
-  /* Move all instructions except INSN from BLOCK_FROM to
-     BLOCK_NEW.  */
-  for (link = prev; link != insn; link = NEXT_INSN (link))
+  /* Move all instructions except INSN to BLOCK_NEW.  */
+  bb = block_bnd;
+  head = BB_HEAD (block_new);
+  while (bb != block_from->next_bb)
     {
-      EXPR_ORIG_BB_INDEX (INSN_EXPR (link)) = block_new->index;
-      df_insn_change_bb (link, block_new);
+      rtx from, to;
+      from = bb == block_bnd ? prev : sel_bb_head (bb);
+      to = bb == block_from ? next : sel_bb_end (bb);
+
+      /* The jump being moved can be the first insn in the block.
+         In this case we don't have to move anything in this block.  */
+      if (NEXT_INSN (to) != from)
+        {
+          reorder_insns (from, to, head);
+
+          for (link = to; link != head; link = PREV_INSN (link))
+            EXPR_ORIG_BB_INDEX (INSN_EXPR (link)) = block_new->index;
+          head = to;
+        }
+
+      /* Cleanup possibly empty blocks left.  */
+      block_next = bb->next_bb;
+      if (bb != block_from)
+	tidy_control_flow (bb, false);
+      bb = block_next;
     }
-
-  /* Set correct basic block and instructions properties.  */
-  BB_END (block_new) = PREV_INSN (insn);
-
-  NEXT_INSN (PREV_INSN (prev)) = insn;
-  PREV_INSN (insn) = PREV_INSN (prev);
 
   /* Assert there is no jump to BLOCK_NEW, only fallthrough edge.  */
   gcc_assert (NOTE_INSN_BASIC_BLOCK_P (BB_HEAD (block_new)));
-  PREV_INSN (prev) = BB_HEAD (block_new);
-  NEXT_INSN (next) = NEXT_INSN (BB_HEAD (block_new));
-  NEXT_INSN (BB_HEAD (block_new)) = prev;
-  PREV_INSN (NEXT_INSN (next)) = next;
 
   gcc_assert (!sel_bb_empty_p (block_from)
               && !sel_bb_empty_p (block_new));
@@ -4955,7 +4980,7 @@ remove_temp_moveop_nops (bool full_tidying)
   int i;
   insn_t insn;
 
-  for (i = 0; VEC_iterate (insn_t, vec_temp_moveop_nops, i, insn); i++)
+  FOR_EACH_VEC_ELT (insn_t, vec_temp_moveop_nops, i, insn)
     {
       gcc_assert (INSN_NOP_P (insn));
       return_nop_to_pool (insn, full_tidying);
@@ -5490,7 +5515,7 @@ fill_insns (fence_t fence, int seqno, ilist_t **scheduled_insns_tailpp)
       blist_t *bnds_tailp1, *bndsp;
       expr_t expr_vliw;
       int need_stall;
-      int was_stall = 0, scheduled_insns = 0, stall_iterations = 0;
+      int was_stall = 0, scheduled_insns = 0;
       int max_insns = pipelining_p ? issue_rate : 2 * issue_rate;
       int max_stall = pipelining_p ? 1 : 3;
       bool last_insn_was_debug = false;
@@ -5509,16 +5534,15 @@ fill_insns (fence_t fence, int seqno, ilist_t **scheduled_insns_tailpp)
       do
         {
           expr_vliw = find_best_expr (&av_vliw, bnds, fence, &need_stall);
-          if (!expr_vliw && need_stall)
+          if (! expr_vliw && need_stall)
             {
               /* All expressions required a stall.  Do not recompute av sets
                  as we'll get the same answer (modulo the insns between
                  the fence and its boundary, which will not be available for
-                 pipelining).  */
-              gcc_assert (! expr_vliw && stall_iterations < 2);
-              was_stall++;
-	      /* If we are going to stall for too long, break to recompute av
+                 pipelining).
+		 If we are going to stall for too long, break to recompute av
 		 sets and bring more insns for pipelining.  */
+              was_stall++;
 	      if (need_stall <= 3)
 		stall_for_cycles (fence, need_stall);
 	      else
@@ -5786,7 +5810,7 @@ track_scheduled_insns_and_blocks (rtx insn)
      we still need to count it as an originator.  */
   bitmap_set_bit (current_originators, INSN_UID (insn));
 
-  if (!bitmap_bit_p (current_copies, INSN_UID (insn)))
+  if (!bitmap_clear_bit (current_copies, INSN_UID (insn)))
     {
       /* Note that original block needs to be rescheduled, as we pulled an
 	 instruction out of it.  */
@@ -5795,8 +5819,6 @@ track_scheduled_insns_and_blocks (rtx insn)
       else if (INSN_UID (insn) < first_emitted_uid && !DEBUG_INSN_P (insn))
 	num_insns_scheduled++;
     }
-  else
-    bitmap_clear_bit (current_copies, INSN_UID (insn));
 
   /* For instructions we must immediately remove insn from the
      stream, so subsequent update_data_sets () won't include this
@@ -6351,10 +6373,10 @@ code_motion_process_successors (insn_t insn, av_set_t orig_ops,
      bookkeeping generated for another fence or for another path in current
      move_op.  */
   gcc_assert (res == 1
-              || (res == 0
-                  && av_set_could_be_blocked_by_bookkeeping_p (orig_ops,
+	      || (res == 0
+		  && av_set_could_be_blocked_by_bookkeeping_p (orig_ops,
 							       static_params))
-              || res == -1);
+	      || res == -1);
 #endif
 
   /* Merge data, clean up, etc.  */
@@ -6693,6 +6715,8 @@ init_seqno_1 (basic_block bb, sbitmap visited_bbs, bitmap blocks_to_reschedule)
 
 	  init_seqno_1 (succ, visited_bbs, blocks_to_reschedule);
 	}
+      else if (blocks_to_reschedule)
+        bitmap_set_bit (forced_ebb_heads, succ->index);
     }
 
   for (insn = BB_END (bb); insn != note; insn = PREV_INSN (insn))
@@ -6863,11 +6887,11 @@ sel_region_init (int rgn)
   /* Set hooks so that no newly generated insn will go out unnoticed.  */
   sel_register_cfg_hooks ();
 
-  /* !!! We call target.sched.md_init () for the whole region, but we invoke
-     targetm.sched.md_finish () for every ebb.  */
-  if (targetm.sched.md_init)
+  /* !!! We call target.sched.init () for the whole region, but we invoke
+     targetm.sched.finish () for every ebb.  */
+  if (targetm.sched.init)
     /* None of the arguments are actually used in any target.  */
-    targetm.sched.md_init (sched_dump, sched_verbose, -1);
+    targetm.sched.init (sched_dump, sched_verbose, -1);
 
   first_emitted_uid = get_max_uid () + 1;
   preheader_removed = false;
@@ -6947,13 +6971,14 @@ reset_sched_cycles_in_current_ebb (void)
   int last_clock = 0;
   int haifa_last_clock = -1;
   int haifa_clock = 0;
+  int issued_insns = 0;
   insn_t insn;
 
-  if (targetm.sched.md_init)
+  if (targetm.sched.init)
     {
       /* None of the arguments are actually used in any target.
 	 NB: We should have md_reset () hook for cases like this.  */
-      targetm.sched.md_init (sched_dump, sched_verbose, -1);
+      targetm.sched.init (sched_dump, sched_verbose, -1);
     }
 
   state_reset (curr_state);
@@ -7001,7 +7026,9 @@ reset_sched_cycles_in_current_ebb (void)
           haifa_cost = cost;
           after_stall = 1;
         }
-
+      if (haifa_cost == 0
+	  && issued_insns == issue_rate)
+	haifa_cost = 1;
       if (haifa_cost > 0)
 	{
 	  int i = 0;
@@ -7009,6 +7036,7 @@ reset_sched_cycles_in_current_ebb (void)
 	  while (haifa_cost--)
 	    {
 	      advance_state (curr_state);
+	      issued_insns = 0;
               i++;
 
 	      if (sched_verbose >= 2)
@@ -7028,6 +7056,8 @@ reset_sched_cycles_in_current_ebb (void)
 	    }
 
 	  haifa_clock += i;
+          if (sched_verbose >= 2)
+            sel_print ("haifa clock: %d\n", haifa_clock);
 	}
       else
 	gcc_assert (haifa_cost == 0);
@@ -7041,21 +7071,27 @@ reset_sched_cycles_in_current_ebb (void)
 					    &sort_p))
 	  {
 	    advance_state (curr_state);
+	    issued_insns = 0;
 	    haifa_clock++;
 	    if (sched_verbose >= 2)
               {
                 sel_print ("advance_state (dfa_new_cycle)\n");
                 debug_state (curr_state);
+		sel_print ("haifa clock: %d\n", haifa_clock + 1);
               }
           }
 
       if (real_insn)
 	{
 	  cost = state_transition (curr_state, insn);
+	  issued_insns++;
 
           if (sched_verbose >= 2)
-            debug_state (curr_state);
-
+	    {
+	      sel_print ("scheduled insn %d, clock %d\n", INSN_UID (insn),
+			 haifa_clock + 1);
+              debug_state (curr_state);
+	    }
 	  gcc_assert (cost < 0);
 	}
 
@@ -7131,14 +7167,14 @@ sel_region_target_finish (bool reset_sched_cycles_p)
       if (reset_sched_cycles_p)
 	reset_sched_cycles_in_current_ebb ();
 
-      if (targetm.sched.md_init)
-	targetm.sched.md_init (sched_dump, sched_verbose, -1);
+      if (targetm.sched.init)
+	targetm.sched.init (sched_dump, sched_verbose, -1);
 
       put_TImodes ();
 
-      if (targetm.sched.md_finish)
+      if (targetm.sched.finish)
 	{
-	  targetm.sched.md_finish (sched_dump, sched_verbose);
+	  targetm.sched.finish (sched_dump, sched_verbose);
 
 	  /* Extend luids so that insns generated by the target will
 	     get zero luid.  */
@@ -7507,8 +7543,6 @@ sel_sched_region_1 (void)
 
                   /* Mark BB as head of the new ebb.  */
                   bitmap_set_bit (forced_ebb_heads, bb->index);
-
-                  bitmap_clear_bit (blocks_to_reschedule, bb->index);
 
                   gcc_assert (fences == NULL);
 

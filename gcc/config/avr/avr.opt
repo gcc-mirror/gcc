@@ -57,4 +57,4 @@ Relax branches
 
 mpmem-wrap-around
 Target Report
-Make the linker relaxation machine assume that a program counter wrap-around occures.
+Make the linker relaxation machine assume that a program counter wrap-around occurs.

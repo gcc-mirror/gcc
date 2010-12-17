@@ -6588,15 +6588,17 @@
 
       emit_insn (gen_subdi3 (want, stack_pointer_rtx,
 			     force_reg (Pmode, operands[1])));
-      emit_insn (gen_adddi3 (tmp, stack_pointer_rtx, GEN_INT (-4096)));
 
       if (!CONST_INT_P (operands[1]))
 	{
+	  rtx limit = GEN_INT (4096);
 	  out_label = gen_label_rtx ();
-	  test = gen_rtx_GEU (VOIDmode, want, tmp);
-	  emit_jump_insn (gen_cbranchdi4 (test, want, tmp, out_label));
+	  test = gen_rtx_LTU (VOIDmode, operands[1], limit);
+	  emit_jump_insn
+	    (gen_cbranchdi4 (test, operands[1], limit, out_label));
 	}
 
+      emit_insn (gen_adddi3 (tmp, stack_pointer_rtx, GEN_INT (-4096)));
       emit_label (loop_label);
       memref = gen_rtx_MEM (DImode, tmp);
       MEM_VOLATILE_P (memref) = 1;

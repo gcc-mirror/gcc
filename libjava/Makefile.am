@@ -291,7 +291,45 @@ extra_ldflags_libjava = @extra_ldflags_libjava@
 extra_ldflags = @extra_ldflags@
 
 if ANONVERSCRIPT
-extra_ldflags_libjava += -Wl,--version-script=$(srcdir)/libgcj.ver
+if ANONVERSCRIPT_GNU
+version_arg = -Wl,--version-script=$(srcdir)/libgcj.ver
+libgcj_la_version_arg = $(version_arg)
+libgcj_tools_la_version_arg = $(version_arg)
+lib_gnu_awt_xlib_la_version_arg = $(version_arg)
+libgcj_bc_la_version_arg = $(version_arg)
+
+version_dep = $(srcdir)/libgcj.ver
+libgcj_la_version_dep = $(version_dep)
+libgcj_tools_la_version_dep = $(version_dep)
+lib_gnu_awt_xlib_la_version_dep = $(version_dep)
+libgcj_bc_la_version_dep = $(version_dep)
+endif
+if ANONVERSCRIPT_SUN
+libgcj_la_version_arg = -Wl,-M,libgcj.ver-sun
+libgcj_tools_la_version_arg = -Wl,-M,libgcj_tools.ver-sun
+lib_gnu_awt_xlib_la_version_arg = -Wl,-M,lib_gnu_awt_xlib.ver-sun
+libgcj_bc_la_version_arg = -Wl,-M,libgcj_bc.ver-sun
+
+libgcj_la_version_dep = libgcj.ver-sun
+libgcj_tools_la_version_dep = libgcj_tools.ver-sun
+lib_gnu_awt_xlib_la_version_dep = lib_gnu_awt_xlib.ver-sun
+libgcj_bc_la_version_dep = libgcj_bc.ver-sun
+
+# The pattern rule necessary to build the *.ver-sun mapfiles is at the end
+# of the file, see below.
+endif
+else
+version_arg =
+libgcj_la_version_arg = $(version_arg)
+libgcj_tools_la_version_arg = $(version_arg)
+lib_gnu_awt_xlib_la_version_arg = $(version_arg)
+libgcj_bc_la_version_arg = $(version_arg)
+
+version_dep =
+libgcj_la_version_dep = $(version_dep)
+libgcj_tools_la_version_dep = $(version_dep)
+lib_gnu_awt_xlib_la_version_dep = $(version_dep)
+libgcj_bc_la_version_dep = $(version_dep)
 endif
 
 LTLDFLAGS = $(shell $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
@@ -406,6 +444,8 @@ libgcj_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc \
 
 ## We need to compile at least the interpreter this way.
 interpret.lo:  AM_CXXFLAGS += -fwrapv
+## Necessary so EH works on 64-bit Solaris 2.
+prims.lo: AM_CXXFLAGS += -fno-omit-frame-pointer
 
 if USING_BOEHMGC
 libgcj_la_SOURCES += boehm.cc
@@ -425,6 +465,9 @@ endif
 
 if USING_DARWIN_CRT
 libgcj_la_SOURCES += darwin.cc
+LIBJAVA_LDFLAGS_LIBMATH =
+else
+LIBJAVA_LDFLAGS_LIBMATH = -lm
 endif
 
 if USING_POSIX_THREADS
@@ -463,11 +506,9 @@ libgcj_la_DEPENDENCIES = libgcj-$(gcc_version).jar \
 	java/process-$(PLATFORM).lo \
 	$(ALL_PACKAGE_SOURCE_FILES_LO) \
 	$(LIBLTDL) $(libgcj_la_LIBADD) \
-	$(LIBJAVA_CORE_EXTRA)
-if ANONVERSCRIPT
-libgcj_la_DEPENDENCIES += $(srcdir)/libgcj.ver
-endif
-libgcj_la_LINK = $(LIBLINK) $(libgcj_la_LDFLAGS)
+	$(LIBJAVA_CORE_EXTRA) \
+	$(libgcj_la_version_dep)
+libgcj_la_LINK = $(LIBLINK) $(libgcj_la_LDFLAGS) $(libgcj_la_version_arg)
 
 ## A hack to make sure the various gcj-related macros, like
 ## LTGCJCOMPILE, are defined by automake.  This is never actually
@@ -490,10 +531,7 @@ libgcj_noncore_la_SOURCES =
 libgcj_noncore_la_LDFLAGS = $(libgcj_la_LDFLAGS)
 libgcj_noncore_la_LIBADD = $(libgcj_noncore_la_LIBADD_SUBOBJECTS) libgcj.la
 libgcj_noncore_la_DEPENDENCIES = libgcj-$(gcc_version).jar $(LIBLTDL) \
-		$(libgcj_noncore_la_LIBADD) libgcj.la
-if ANONVERSCRIPT
-libgcj_noncore_la_DEPENDENCIES += $(srcdir)/libgcj.ver
-endif
+		$(libgcj_noncore_la_LIBADD) libgcj.la $(libgcj_la_version_dep)
 libgcj_noncore_la_LINK = $(libgcj_la_LINK)
 
 endif	# BUILD_SUBLIBS
@@ -509,13 +547,17 @@ libgcj_tools_la_GCJFLAGS = $(AM_GCJFLAGS) -findirect-dispatch \
  -fsource-filename=$(here)/classpath/tools/all-classes.lst
 libgcj_tools_la_LDFLAGS = -rpath $(toolexeclibdir) \
  -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
- $(LIBGCJ_LD_SYMBOLIC_FUNCTIONS) $(LIBJAVA_LDFLAGS_NOUNDEF)
-libgcj_tools_la_LIBADD = libgcj.la -lm
-libgcj_tools_la_DEPENDENCIES = libgcj.la libgcj.spec
+ $(LIBGCJ_LD_SYMBOLIC_FUNCTIONS) $(LIBJAVA_LDFLAGS_NOUNDEF) \
+ $(LIBJAVA_LDFLAGS_LIBMATH)
+
+libgcj_tools_la_LIBADD = libgcj.la
+libgcj_tools_la_DEPENDENCIES = libgcj.la libgcj.spec \
+ $(libgcj_tools_la_version_dep)
 if BUILD_SUBLIBS
 libgcj_tools_la_DEPENDENCIES += libgcj-noncore.la
 endif
-libgcj_tools_la_LINK = $(LIBLINK) $(libgcj_tools_la_LDFLAGS)
+libgcj_tools_la_LINK = $(LIBLINK) $(libgcj_tools_la_LDFLAGS) \
+ $(libgcj_tools_la_version_arg)
 
 ## libjvm.so
 libjvm_la_SOURCES = jni-libjvm.cc
@@ -543,6 +585,7 @@ lib_gnu_awt_xlib_la_SOURCES = $(xlib_nat_source_files)
 lib_gnu_awt_xlib_la_LIBADD = gnu/awt/xlib.lo gnu/gcj/xlib.lo
 lib_gnu_awt_xlib_la_DEPENDENCIES = libgcj-$(gcc_version).jar \
 	libgcj.la libgcj.spec \
+	$(lib_gnu_awt_xlib_la_version_dep) \
 	$(lib_gnu_awt_xlib_la_LIBADD)
 if BUILD_SUBLIBS
 lib_gnu_awt_xlib_la_DEPENDENCIES += libgcj-noncore.la
@@ -558,7 +601,8 @@ lib_gnu_awt_xlib_la_LDFLAGS = ../libstdc++-v3/src/libstdc++.la \
 	@X_PRE_LIBS@ @X_LIBS@ -lX11 @X_EXTRA_LIBS@ \
         -rpath $(toolexeclibdir) $(LIBJAVA_LDFLAGS_NOUNDEF) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
-lib_gnu_awt_xlib_la_LINK = $(LIBLINK) $(lib_gnu_awt_xlib_la_LDFLAGS)
+lib_gnu_awt_xlib_la_LINK = $(LIBLINK) $(lib_gnu_awt_xlib_la_LDFLAGS) \
+	$(lib_gnu_awt_xlib_la_version_arg)
 
 ## Support for libgcj_bc: dummy shared library.
 ##
@@ -567,8 +611,9 @@ lib_gnu_awt_xlib_la_LINK = $(LIBLINK) $(lib_gnu_awt_xlib_la_LDFLAGS)
 libgcj_bc_la_SOURCES = libgcj_bc.c
 libgcj_bc_la_LDFLAGS = -rpath $(toolexeclibdir) -no-static -version-info 1:0:0 \
 	$(LIBGCJ_LD_SYMBOLIC_FUNCTIONS) $(LIBJAVA_LDFLAGS_NOUNDEF)
-libgcj_bc_la_DEPENDENCIES = libgcj.la
-libgcj_bc_la_LINK = $(LIBLINK) $(libgcj_bc_la_LDFLAGS)
+libgcj_bc_la_DEPENDENCIES = libgcj.la $(libgcj_bc_la_version_dep)
+libgcj_bc_la_LINK = $(LIBLINK) $(libgcj_bc_la_LDFLAGS) \
+	$(libgcj_bc_la_version_arg)
 ## This is specific to Linux/{Free,Net,Open}BSD/Hurd and perhaps few others.
 ## USE_LIBGCJ_BC shouldn't be set on other targets.
 libgcj_bc_dummy_LINK = $(CC) -L$(here)/.libs $(CFLAGS) $(LDFLAGS) -shared \
@@ -1125,6 +1170,8 @@ ecjx_LINK = $(GCJ_FOR_ECJX_LINK) $(ecjx_LDFLAGS)
 ecjx_LDFLAGS = $(ECJX_BASE_FLAGS) $(ECJ_BUILD_JAR)
 ecjx_LDADD = 
 ecjx_DEPENDENCIES = 
+ecjx.$(OBJEXT): ecjx.cc
+	$(GCC_FOR_ECJX) -c $<
 
 endif !NATIVE
 
@@ -1574,3 +1621,22 @@ distclean-multi:
 	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=distclean multi-clean
 maintainer-clean-multi:
 	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=maintainer-clean multi-clean
+
+if ANONVERSCRIPT
+if ANONVERSCRIPT_SUN
+# This must be at the end of the Makefile, otherwise .SECONDEXPANSION
+# causes expansion of filenames with $ in their names, which breaks the build.
+# .SECONDEXPANSION is necessary to allow the use of automatic variables ($@
+# in this case) in the requisites of pattern rules.
+.SECONDEXPANSION:
+
+%.ver-sun : $(srcdir)/libgcj.ver \
+		$(top_srcdir)/../contrib/make_sunver.pl \
+		$$($$(basename $$@)_la_OBJECTS) $$($$(basename $$@)_la_LIBADD)
+	perl $(top_srcdir)/../contrib/make_sunver.pl \
+	  $(srcdir)/libgcj.ver \
+	 `echo $($(basename $@)_la_OBJECTS) $($(basename $@)_la_LIBADD) | \
+	    sed 's,\([^/ 	]*\)\.l\([ao]\),.libs/\1.\2,g'` \
+	 > $@ || (rm -f $@ ; exit 1)
+endif
+endif

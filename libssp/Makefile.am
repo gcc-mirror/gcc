@@ -1,6 +1,6 @@
 ## Makefile for the toplevel directory of the libssp library.
 ##
-## Copyright (C) 2005
+## Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
 ## Free Software Foundation, Inc.
 ##
 
@@ -12,8 +12,23 @@ MAINT_CHARSET = latin1
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 
 if LIBSSP_USE_SYMVER
+if LIBSSP_USE_SYMVER_GNU
 version_arg = -Wl,--version-script=$(srcdir)/ssp.map
 version_dep = $(srcdir)/ssp.map
+endif
+if LIBSSP_USE_SYMVER_SUN
+version_arg = -Wl,-M,ssp.map-sun
+version_dep = ssp.map-sun
+ssp.map-sun : $(srcdir)/ssp.map \
+		$(top_srcdir)/../contrib/make_sunver.pl \
+		$(libssp_la_OBJECTS) $(libssp_la_LIBADD)
+	perl $(top_srcdir)/../contrib/make_sunver.pl \
+	  $(srcdir)/ssp.map \
+	  $(libssp_la_OBJECTS:%.lo=.libs/%.o) \
+	 `echo $(libssp_la_LIBADD) | \
+	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
+	 > $@ || (rm -f $@ ; exit 1)
+endif
 else
 version_arg =
 version_dep =

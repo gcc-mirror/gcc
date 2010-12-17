@@ -6,7 +6,7 @@ public:
   foo();
 };
 
-class bar: public foo {// { dg-error "uninitialized" }
+class bar: public foo {		// { dg-error "reference|bar::bar" }
 private:
   int &a;
 };
@@ -16,5 +16,5 @@ foo::foo() {
 
 int main(int argc, char **argv)
 {
-  bar x; // { dg-message "synthesized" }
+  bar x; // { dg-message "synthesized|deleted" }
 }

@@ -36,7 +36,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "flags.h"
 #include "langhooks.h"
 #include "java-tree.h"
-#include <stdarg.h>
 
 /* FIXME: All these headers are necessary for sync_compare_and_swap.
    Front ends should never have to look at that.  */
@@ -323,7 +322,8 @@ compareAndSwapInt_builtin (tree method_return_type ATTRIBUTE_UNUSED,
 			   tree orig_call)
 {
   enum machine_mode mode = TYPE_MODE (int_type_node);
-  if (sync_compare_and_swap[mode] != CODE_FOR_nothing
+  if (direct_optab_handler (sync_compare_and_swap_optab, mode)
+      != CODE_FOR_nothing
       || flag_use_atomic_builtins)
     {
       tree addr, stmt;
@@ -344,7 +344,8 @@ compareAndSwapLong_builtin (tree method_return_type ATTRIBUTE_UNUSED,
 			    tree orig_call)
 {
   enum machine_mode mode = TYPE_MODE (long_type_node);
-  if (sync_compare_and_swap[mode] != CODE_FOR_nothing
+  if (direct_optab_handler (sync_compare_and_swap_optab, mode)
+      != CODE_FOR_nothing
       || (GET_MODE_SIZE (mode) <= GET_MODE_SIZE (word_mode)
 	  && flag_use_atomic_builtins))
     /* We don't trust flag_use_atomic_builtins for multi-word
@@ -368,7 +369,8 @@ compareAndSwapObject_builtin (tree method_return_type ATTRIBUTE_UNUSED,
 			      tree orig_call)
 {
   enum machine_mode mode = TYPE_MODE (ptr_type_node);
-  if (sync_compare_and_swap[mode] != CODE_FOR_nothing
+  if (direct_optab_handler (sync_compare_and_swap_optab, mode)
+      != CODE_FOR_nothing
       || flag_use_atomic_builtins)
   {
     tree addr, stmt;
@@ -448,7 +450,8 @@ VMSupportsCS8_builtin (tree method_return_type,
 {
   enum machine_mode mode = TYPE_MODE (long_type_node);
   gcc_assert (method_return_type == boolean_type_node);
-  if (sync_compare_and_swap[mode] != CODE_FOR_nothing)
+  if (direct_optab_handler (sync_compare_and_swap_optab, mode)
+      != CODE_FOR_nothing)
     return boolean_true_node;
   else
     return boolean_false_node;
@@ -494,7 +497,6 @@ initialize_builtins (void)
   tree double_ftype_double, double_ftype_double_double;
   tree float_ftype_float_float;
   tree boolean_ftype_boolean_boolean;
-  tree t;
   int i;
 
   for (i = 0; java_builtins[i].builtin_code != END_BUILTINS; ++i)
@@ -508,14 +510,15 @@ initialize_builtins (void)
 
   void_list_node = end_params_node;
 
-  t = tree_cons (NULL_TREE, float_type_node, end_params_node);
-  t = tree_cons (NULL_TREE, float_type_node, t);
-  float_ftype_float_float = build_function_type (float_type_node, t);
+  float_ftype_float_float
+    = build_function_type_list (float_type_node,
+				float_type_node, float_type_node, NULL_TREE);
 
-  t = tree_cons (NULL_TREE, double_type_node, end_params_node);
-  double_ftype_double = build_function_type (double_type_node, t);
-  t = tree_cons (NULL_TREE, double_type_node, t);
-  double_ftype_double_double = build_function_type (double_type_node, t);
+  double_ftype_double
+    = build_function_type_list (double_type_node, double_type_node, NULL_TREE);
+  double_ftype_double_double
+    = build_function_type_list (double_type_node,
+				double_type_node, double_type_node, NULL_TREE);
 
   define_builtin (BUILT_IN_FMOD, "__builtin_fmod",
 		  double_ftype_double_double, "fmod", BUILTIN_CONST);
@@ -562,9 +565,10 @@ initialize_builtins (void)
 		  double_ftype_double, "_ZN4java4lang4Math3tanEJdd",
 		  BUILTIN_CONST);
   
-  t = tree_cons (NULL_TREE, boolean_type_node, end_params_node);
-  t = tree_cons (NULL_TREE, boolean_type_node, t);
-  boolean_ftype_boolean_boolean = build_function_type (boolean_type_node, t);
+  boolean_ftype_boolean_boolean
+    = build_function_type_list (boolean_type_node,
+				boolean_type_node, boolean_type_node,
+				NULL_TREE);
   define_builtin (BUILT_IN_EXPECT, "__builtin_expect", 
 		  boolean_ftype_boolean_boolean,
 		  "__builtin_expect",
@@ -584,7 +588,7 @@ initialize_builtins (void)
 					    int_type_node, NULL_TREE), 
 		  "__sync_bool_compare_and_swap_8", 0);
   define_builtin (BUILT_IN_SYNCHRONIZE, "__sync_synchronize",
-		  build_function_type (void_type_node, void_list_node),
+		  build_function_type_list (void_type_node, NULL_TREE),
 		  "__sync_synchronize", BUILTIN_NOTHROW);
   
   define_builtin (BUILT_IN_RETURN_ADDRESS, "__builtin_return_address",

@@ -10,6 +10,6 @@ module read
     subroutine a
       integer, parameter :: n = 2
       if (i .eq. 0) read(j,*) k
-      if (i .eq. 0) n = j    ! { dg-error "assign to a named constant" "" }
+      if (i .eq. 0) n = j    ! { dg-error "Named constant 'n' in variable definition context" }
     end subroutine a
 end module read

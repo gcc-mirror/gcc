@@ -39,8 +39,10 @@ namespace __gnu_test
     typedef std::false_type	is_mapped;
 
     typedef std::false_type	has_erase;
+    typedef std::false_type	has_erase_after;
     typedef std::false_type	has_throwing_erase;
     typedef std::false_type	has_insert;
+    typedef std::false_type	has_insert_after;
     typedef std::false_type	has_push_pop;
     typedef std::false_type	has_size_type_constructor;
   };
@@ -78,8 +80,8 @@ namespace __gnu_test
       typedef std::true_type	is_container;
       typedef std::true_type	is_allocator_aware;
 
-      typedef std::true_type	has_erase;
-      typedef std::true_type	has_insert;
+      typedef std::true_type	has_erase_after;
+      typedef std::true_type	has_insert_after;
       typedef std::true_type	has_push_pop;
       typedef std::true_type	has_size_type_constructor;
     };

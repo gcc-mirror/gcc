@@ -24,8 +24,6 @@ gnatfind        ^ GNAT FIND
 Gnatfind        ^ GNAT FIND
 gnatkr          ^ GNAT KRUNCH
 Gnatkr          ^ GNAT KRUNCH
-gnatlbr         ^ GNAT LIBRARY
-Gnatlbr         ^ GNAT LIBRARY
 gnatlink        ^ GNAT LINK
 Gnatlink        ^ GNAT LINK
 gnatls          ^ GNAT LIST
@@ -61,6 +59,7 @@ gcc -c          ^ GNAT COMPILE
 -gnatDG         ^ /XDEBUG /EXPAND_SOURCEA
 -gnatD          ^ /XDEBUG
 -gnatec         ^ /CONFIGURATION_PRAGMAS_FILE
+-gnateE         ^ /EXTRA_EXCEPTION_INFORMATION
 -gnateD         ^ /SYMBOL_PREPROCESSING
 -gnatef         ^ /FULL_PATH_IN_BRIEF_MESSAGES
 -gnateG         ^ /GENERATE_PROCESSED_SOURCE
@@ -140,6 +139,8 @@ gcc -c          ^ GNAT COMPILE
 -gnatwG         ^ /WARNINGS=NOUNRECOGNIZED_PRAGMAS
 -gnatwh         ^ /WARNINGS=HIDING
 -gnatwH         ^ /WARNINGS=NOHIDING
+-gnatw.h        ^ /WARNINGS=AVOIDGAPS
+-gnatw.H        ^ /WARNINGS=NOAVOIDGAPS
 -gnatwi         ^ /WARNINGS=IMPLEMENTATION
 -gnatwI         ^ /WARNINGS=NOIMPLEMENTATION
 -gnatwj         ^ /WARNINGS=OBSOLESCENT
@@ -161,6 +162,8 @@ gcc -c          ^ GNAT COMPILE
 -gnatwP         ^ /WARNINGS=NOINEFFECTIVE_INLINE
 -gnatw.p        ^ /WARNINGS=PARAMETER_ORDER
 -gnatw.P        ^ /WARNINGS=NO_PARAMETER_ORDER
+-gnatw.h        ^ /WARNINGS=OVERRIDING_SIZE
+-gnatw.H        ^ /WARNINGS=NOOVERRIDING_SIZE
 -gnatwq         ^ /WARNINGS=MISSING_PARENS
 -gnatwQ         ^ /WARNINGS=NOMISSING_PARENS
 -gnatwr         ^ /WARNINGS=REDUNDANT
@@ -170,6 +173,8 @@ gcc -c          ^ GNAT COMPILE
 -gnatwT         ^ /WARNINGS=NODELETED_CODE
 -gnatwu         ^ /WARNINGS=UNUSED
 -gnatwU         ^ /WARNINGS=NOUNUSED
+-gnatw.u        ^ /WARNINGS=UNORDERED_ENUMERATIONS
+-gnatw.U        ^ /WARNINGS=NOUNORDERED_ENUMERATIONS
 -gnatwv         ^ /WARNINGS=VARIABLES_UNINITIALIZED
 -gnatwV         ^ /WARNINGS=NOVARIABLES_UNINITIALIZED
 -gnatww         ^ /WARNINGS=LOWBOUND_ASSUMED
@@ -195,6 +200,9 @@ gcc -c          ^ GNAT COMPILE
 -gnat83         ^ /83
 -gnat95         ^ /95
 -gnat05         ^ /05
+-gnat2005       ^ /2005
+-gnat12         ^ /12
+-gnat2012       ^ /2012
 -gnatx          ^ /XREF=SUPPRESS
 -gnatX          ^ /EXTENSIONS_ALLOWED
 --RTS           ^ /RUNTIME_SYSTEM
@@ -218,3 +226,5 @@ stderr          ^ SYS$ERROR
 -O1             ^ /OPTIMIZE=SOME
 -O2             ^ /OPTIMIZE=ALL
 -O3             ^ /OPTIMIZE=INLINING
+-H32            ^ /32_MALLOC
+-H64            ^ /64_MALLOC

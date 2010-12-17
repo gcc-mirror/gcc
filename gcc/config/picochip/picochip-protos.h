@@ -1,7 +1,7 @@
 /* Prototypes for exported functions defined in picochip.c
 
-   Copyright (C) 2000, 2001, 2008 Free Software Foundation, Inc.
-   Contributed by picoChip Designs Ltd. (http://www.picochip.com)
+   Copyright (C) 2000, 2001, 2008, 2009, 2010 Free Software Foundation, Inc.
+   Contributed by Picochip Ltd. (http://www.picochip.com)
    Maintained by Daniel Towner (daniel.towner@picochip.com) and
    Hariharan Sandanagobalane (hariharan@picochip.com).
 
@@ -21,7 +21,6 @@
    along with GCC; see the file COPYING3.  If not, see
    <http://www.gnu.org/licenses/>. */
 
-#include "target.h"
 extern void picochip_function_prologue (FILE *, HOST_WIDE_INT);
 extern void picochip_function_epilogue (FILE *, HOST_WIDE_INT);
 
@@ -46,18 +45,13 @@ extern const char *picochip_output_get_array (int alternative,
 extern const char *picochip_output_testport_array (int alternative,
 						   rtx operands[]);
 
+extern int picochip_expand_movmemhi (rtx *operands);
+
 extern rtx gen_SImode_mem(rtx opnd1,rtx opnd2);
 extern bool ok_to_peephole_stw(rtx opnd0, rtx opnd1, rtx opnd2, rtx opnd3);
 extern bool ok_to_peephole_ldw(rtx opnd0, rtx opnd1, rtx opnd2, rtx opnd3);
 
 extern rtx gen_min_reg(rtx opnd1,rtx opnd2);
-
-extern rtx picochip_function_arg (CUMULATIVE_ARGS cum, int mode, tree type,
-			   int named);
-
-extern rtx picochip_incoming_function_arg (CUMULATIVE_ARGS, int, tree, int);
-extern CUMULATIVE_ARGS picochip_arg_advance (CUMULATIVE_ARGS cum, int mode,
-				      tree type, int named);
 
 extern int picochip_regno_nregs (int regno, int mode);
 extern int picochip_class_max_nregs (int klass, int mode);
@@ -71,14 +65,6 @@ extern int picochip_absolute_memory_operand (rtx op, enum machine_mode mode);
 extern rtx picochip_function_value (const_tree valtype, const_tree func, bool outgoing);
 extern int picochip_symbol_offset (rtx operand);
 
-extern int picochip_get_function_arg_boundary (enum machine_mode mode);
-
-extern enum reg_class picochip_secondary_reload(bool in_p,
-                                 rtx x,
-                                 enum reg_class cla,
-                                 enum machine_mode mode,
-                                 secondary_reload_info *sri);
-
 extern void picochip_get_hi_aligned_mem (rtx ref, rtx * paligned_mem, rtx * pbitnum);
 
 extern rtx picochip_get_low_const (rtx value);
@@ -89,7 +75,6 @@ extern void picochip_expand_epilogue (int is_sibling_call);
 
 extern void picochip_final_prescan_insn (rtx insn, rtx * operand, int num_operands);
 extern const char *picochip_asm_output_opcode (FILE * f, const char *ptr);
-extern void picochip_override_options (void);
 
 extern int picochip_check_conditional_copy (rtx * operands);
 
@@ -136,7 +121,7 @@ extern int picochip_flag_schedule_insns2;
 extern void picochip_asm_output_anchor (rtx symbol);
 
 /* Instruction set capability flags.  These are initialised to the
-   appropriate values by picochip_override_options, once the user has
+   appropriate values by picochip_option_override, once the user has
    selected a CPU type. */
 extern bool picochip_has_mul_unit;
 extern bool picochip_has_mac_unit;

@@ -47,3 +47,10 @@
 
   return (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == REG);
 })
+
+(define_predicate "impossible_plus_operand"
+  (match_code "plus")
+{
+  return XEXP (op, 0) == stack_pointer_rtx
+      || XEXP (op, 1) == stack_pointer_rtx;
+})

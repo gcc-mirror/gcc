@@ -1,4 +1,4 @@
-/* IppRequest.java -- 
+/* IppRequest.java --
  Copyright (C) 2006 Free Software Foundation, Inc.
 
  This file is part of GNU Classpath.
@@ -112,37 +112,37 @@ import javax.print.attribute.standard.Sides;
  * <li>data                    - q bytes - optional</li>
  * </ul>
  * </p>
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public class IppRequest
 {
 
   /**
-   * The printer-poll timeout. 
+   * The printer-poll timeout.
    */
   private static final int timeout = 1000;
 
   /**
    * Helper class used to write the attributes of a request
    * into the supplied data output stream in the correct way.
-   * 
+   *
    * @author Wolfgang Baer (WBaer@gmx.de)
    */
   class RequestWriter
-  {    
+  {
     private DataOutputStream out;
-    
+
     /**
      * Creates a RequestWriter.
-     * 
+     *
      * @param stream the stream to write to.
      */
     RequestWriter(DataOutputStream stream)
     {
       out = stream;
     }
-    
+
     /**
      * Writes an attribute in IntegerSyntax into the stream.
      * @param attribute the attribute
@@ -218,7 +218,7 @@ public class IppRequest
               out.write(name.getBytes());
             }
           else
-            out.writeShort(0x0000); // only name-length 
+            out.writeShort(0x0000); // only name-length
 
           out.writeShort(8); // range is 8 bytes
           out.writeInt(ranges[i][0]);
@@ -283,7 +283,7 @@ public class IppRequest
         }
 
       out.writeByte(directionFromUTC);
-      out.writeByte(offsetInMillis / 3600000); // hours    
+      out.writeByte(offsetInMillis / 3600000); // hours
       out.writeByte((offsetInMillis % 3600000) / 60000); // minutes
     }
 
@@ -295,7 +295,7 @@ public class IppRequest
      * of NAME value-tag in IPP this method checks for these attributes and
      * writes them as NAME_WITHOUT_LANGUAGE value-tag into the stream.
      * </p>
-     * 
+     *
      * @param attribute the attribute
      * @param out the stream to write to
      * @throws IOException if thrown by the stream
@@ -314,11 +314,11 @@ public class IppRequest
         out.writeByte(IppValueTag.MIME_MEDIA_TYPE);
       else
         out.writeByte(IppValueTag.TEXT_WITHOUT_LANGUAGE);
-      
+
       out.writeShort(name.length());
       out.write(name.getBytes());
       out.writeShort(attribute.getValue().length());
-      out.write(attribute.getValue().getBytes());     
+      out.write(attribute.getValue().getBytes());
     }
 
     /**
@@ -347,8 +347,8 @@ public class IppRequest
      * @throws IOException if thrown by the stream
      */
     private void write(CharsetSyntax attribute) throws IOException
-    {      
-      String name = ((Attribute) attribute).getName();      
+    {
+      String name = ((Attribute) attribute).getName();
       out.writeByte(IppValueTag.CHARSET);
       out.writeShort(name.length());
       out.write(name.getBytes());
@@ -371,7 +371,7 @@ public class IppRequest
       out.writeShort(attribute.getValue().length());
       out.write(attribute.getValue().getBytes());
     }
-    
+
     /**
      * Writes an attribute in RequestedAttributes into the stream.
      * @param attribute the attribute
@@ -380,32 +380,32 @@ public class IppRequest
      */
     private void write(RequestedAttributes attribute) throws IOException
     {
-      List values = attribute.getValues();
-      
+      String[] values = attribute.getValues();
+
       String name = ((Attribute) attribute).getName();
       out.writeByte(IppValueTag.KEYWORD);
       out.writeShort(name.length());
-      out.write(name.getBytes()); 
-      out.writeShort(((String) values.get(0)).length());
-      out.write(((String) values.get(0)).getBytes());
-      
-      for (int i=1; i < values.size(); i++)
+      out.write(name.getBytes());
+      out.writeShort(values[0].length());
+      out.write(values[0].getBytes());
+
+      for (int i=1; i < values.length; i++)
         {
           out.writeByte(IppValueTag.KEYWORD);
           out.writeShort(0x0000); // length for additional value
-          out.writeShort(((String) values.get(i)).length());
-          out.write(((String) values.get(i)).getBytes());  
+          out.writeShort(values[i].length());
+          out.write(values[i].getBytes());
         }
-    } 
+    }
 
-    
+
     /**
      * Writes the given operation attribute group of the given map instance
      * (key=group, values=set of attributes) into the supplied data
      * output stream.
-     * 
+     *
      * @param attributes the set with the attributes.
-     * 
+     *
      * @throws IOException if thrown by the used DataOutputStream.
      * @throws IppException if unknown attributes occur.
      */
@@ -413,23 +413,23 @@ public class IppRequest
         throws IOException, IppException
     {
       out.write(IppDelimiterTag.OPERATION_ATTRIBUTES_TAG);
-      
+
       // its essential to write these two in this order and as first ones
       Attribute att = attributes.get(AttributesCharset.class);
       write((CharsetSyntax) att);
-      
-      logger.log(Component.IPP, "Attribute: Name: <" 
-        + att.getCategory().getName() + "> Value: <" + att.toString() + ">");  
-      
+
+      logger.log(Component.IPP, "Attribute: Name: <"
+        + att.getCategory().getName() + "> Value: <" + att.toString() + ">");
+
       attributes.remove(AttributesCharset.class);
-      
+
       att = attributes.get(AttributesNaturalLanguage.class);
       write((NaturalLanguageSyntax) att);
       attributes.remove(AttributesNaturalLanguage.class);
-      
-      logger.log(Component.IPP, "Attribute: Name: <" 
+
+      logger.log(Component.IPP, "Attribute: Name: <"
         + att.getCategory().getName() + "> Value: <" + att.toString() + ">");
-      
+
       // furthermore its essential to now write out the target attribute
       PrinterURI printerUri = (PrinterURI) attributes.get(PrinterURI.class);
       JobUri jobUri = (JobUri) attributes.get(JobUri.class);
@@ -470,26 +470,26 @@ public class IppRequest
             .getName() + "> Value: <" + jobUri.toString() + ">");
         }
       else if (reqAttrs != null)
-	{
-	  write(reqAttrs);
-	  attributes.remove(RequestedAttributes.class);
-	  logger.log(Component.IPP, "RequestedAttributes: <" + reqAttrs + ">");
-	}
+        {
+          write(reqAttrs);
+          attributes.remove(RequestedAttributes.class);
+          logger.log(Component.IPP, "RequestedAttributes: <" + reqAttrs + ">");
+        }
       else
         {
           throw new IppException("Unknown target operation attribute combination.");
-        }      
-      
+        }
+
       writeAttributes(attributes);
     }
-    
+
     /**
      * Writes the given attribute groups of the given map instance
      * (key=group, values=set of attributes) into the supplied data
      * output stream.
-     * 
+     *
      * @param attributes the set with the attributes.
-     * 
+     *
      * @throws IOException if thrown by the used DataOutputStream.
      * @throws IppException if unknown attributes occur.
      */
@@ -500,9 +500,9 @@ public class IppRequest
       for (int i = 0; i < attributeArray.length; i++)
         {
           logger.log(Component.IPP, "Attribute: Name: <" + attributeArray[i]
-            .getCategory().getName() + "> Value: <" 
-            + attributeArray[i].toString() + ">");          
-          
+            .getCategory().getName() + "> Value: <"
+            + attributeArray[i].toString() + ">");
+
           if (attributeArray[i] instanceof IntegerSyntax)
             write((IntegerSyntax) attributeArray[i]);
           else if (attributeArray[i] instanceof TextSyntax)
@@ -551,8 +551,8 @@ public class IppRequest
   /** The operation type of this request. */
   private short operation_id;
 
-  /** 
-   * The request id of this request. This is 
+  /**
+   * The request id of this request. This is
    * assigned automatically by the constructor.
    */
   private final int request_id;
@@ -564,48 +564,48 @@ public class IppRequest
   private AttributeSet jobAttributes;
 
   private Object data;
-  
+
   private URI requestUri;
 
   /** The underlying connection - IPP is http based */
   private HttpURLConnection  connection;
-  
+
   /**
    * Creates an IPPRequest instance.
-   * 
+   *
    * @param uri the URI of the request
    * @param user the user if any
    * @param password the password of the supplied user
    */
   public IppRequest(URI uri, String user, String password)
-  {   
+  {
     request_id = incrementRequestIdCounter();
     requestUri = uri;
-    
+
     try
       {
-        URL url = new URL("http", 
-                      user == null 
-                      ? uri.getHost() : user + ":" 
-                      + password + "@" + uri.getHost(), 
+        URL url = new URL("http",
+                      user == null
+                      ? uri.getHost() : user + ":"
+                      + password + "@" + uri.getHost(),
                       uri.getPort(), uri.getPath());
-       
+
         connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setDoOutput(true);
-        
+
         connection.setRequestProperty("Content-type", "application/ipp");
-        connection.setRequestProperty("Accept", "text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2");        
-      }   
+        connection.setRequestProperty("Accept", "text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2");
+      }
     catch (IOException e)
       {
         // MalformedURLException - uri is already checked
         // ProtocolException - POST is correct method type
-        // IOException -HTTPURLConnection constructor actually 
+        // IOException -HTTPURLConnection constructor actually
         // does never throw this exception.
         logger.log(Component.IPP, "Unexpected IOException", e);
       }
-    
+
     logger.log(Component.IPP, "[IppConnection] Host: " + uri.getHost()
                               + " Port: " + uri.getPort() + " Path: "
                               + uri.getPath());
@@ -614,7 +614,7 @@ public class IppRequest
   /**
    * Synchronized method to be called by the constructor
    * to assign a unique request id to this request.
-   * 
+   *
    * @return The unique request id.
    */
   private synchronized int incrementRequestIdCounter()
@@ -624,7 +624,7 @@ public class IppRequest
 
   /**
    * Returns the id of this request.
-   * 
+   *
    * @return The request ID.
    */
   public int getRequestID()
@@ -632,11 +632,11 @@ public class IppRequest
     return request_id;
   }
 
-  /** 
-   * Sets the data of the request. The data used in this 
+  /**
+   * Sets the data of the request. The data used in this
    * request will be the one of the supplied inputstream
    * instead of the alternative byte array possibility.
-   * 
+   *
    * @param stream the input stream to use for the data.
    */
   public void setData(InputStream stream)
@@ -644,11 +644,11 @@ public class IppRequest
     data = stream;
   }
 
-  /** 
-   * Sets the data of the request. The data used in this 
+  /**
+   * Sets the data of the request. The data used in this
    * request will be the one of the supplied byte[]
    * instead of the alternative input stream possibility.
-   * 
+   *
    * @param bytes the byte[] to use for the data.
    */
   public void setData(byte[] bytes)
@@ -658,7 +658,7 @@ public class IppRequest
 
   /**
    * Sets the operation id for this request.
-   * 
+   *
    * @param id the operation id.
    */
   public void setOperationID(short id)
@@ -668,7 +668,7 @@ public class IppRequest
 
   /**
    * Adds the default values for the operation
-   * attributes "attributes-charset" and 
+   * attributes "attributes-charset" and
    * "attributes-natural-language"
    */
   public void setOperationAttributeDefaults()
@@ -679,64 +679,64 @@ public class IppRequest
     operationAttributes.add(AttributesCharset.UTF8);
     operationAttributes.add(AttributesNaturalLanguage.EN);
   }
-  
+
   /**
    * Add the job attribute of this request to the given
    * attribute set.
-   * 
+   *
    * @param attribute the job attribute.
    */
   public void addJobAttribute(Attribute attribute)
   {
     if (jobAttributes == null)
       jobAttributes = new HashAttributeSet();
-    
+
     jobAttributes.add(attribute);
   }
-  
+
   /**
    * Sets the printer attribute of this request to the given
    * attribute set.
-   * 
+   *
    * @param attribute the printer attribute.
    */
   public void addPrinterAttributes(Attribute attribute)
   {
     if (printerAttributes == null)
       printerAttributes = new HashAttributeSet();
-    
+
     printerAttributes.add(attribute);
   }
 
   /**
    * Adds the given attribute to the operation attributes set.
-   * 
+   *
    * @param attribute the operation attribute to add.
    */
   public void addOperationAttribute(Attribute attribute)
   {
     if (operationAttributes == null)
       operationAttributes = new HashAttributeSet();
-    
+
     operationAttributes.add(attribute);
   }
-  
+
   /**
    * Filters from the given attribute set the job operation out
    * and adds them to the operation attributes set.
-   * 
+   *
    * @param set the attributes to filter, may not be <code>null</code>.
    */
   public void addAndFilterJobOperationAttributes(AttributeSet set)
   {
     if (operationAttributes == null)
       operationAttributes = new HashAttributeSet();
-    
+
     // document-natural-language - not defined in JPS attributes
     // document-format - specified outside, special treatment
     Attribute[] tmp = set.toArray();
-    for (int i = 0; i < tmp.length; i++) 
-      {        
+    for (int i = 0; i < tmp.length; i++)
+      {
         if (tmp[i].getCategory().equals(JobName.class)
             || tmp[i].getCategory().equals(Fidelity.class)
             || tmp[i].getCategory().equals(JobImpressions.class)
@@ -745,27 +745,27 @@ public class IppRequest
             || tmp[i].getCategory().equals(Compression.class)
             || tmp[i].getCategory().equals(DocumentName.class)
             || tmp[i].getCategory().equals(RequestingUserName.class))
-                
-          operationAttributes.add(tmp[i]);            
-      }    
+
+          operationAttributes.add(tmp[i]);
+      }
   }
-  
+
   /**
    * Filters from the given attribute set the job template attributes
    * out and adds them to the job attributes set.
-   * 
+   *
    * @param set the attributes to filter, may not be <code>null</code>.
    */
   public void addAndFilterJobTemplateAttributes(AttributeSet set)
   {
     if (jobAttributes == null)
       jobAttributes = new HashAttributeSet();
-    
+
     // document-natural-language - not defined in JPS attributes
     // document-format - specified outside, special treatment
     Attribute[] tmp = set.toArray();
-    for (int i = 0; i < tmp.length; i++) 
-      {        
+    for (int i = 0; i < tmp.length; i++)
+      {
         if (tmp[i].getCategory().equals(JobPriority.class)
             || tmp[i].getCategory().equals(JobHoldUntil.class)
             || tmp[i].getCategory().equals(JobSheets.class)
@@ -780,67 +780,67 @@ public class IppRequest
             || tmp[i].getCategory().equals(PrintQuality.class)
             || tmp[i].getCategory().equals(SheetCollate.class)
             || tmp[i].getCategory().equals(Sides.class))
-                
-          jobAttributes.add(tmp[i]);            
-      }    
+
+          jobAttributes.add(tmp[i]);
+      }
   }
 
   /**
    * Does some validation of the supplied parameters and then
    * sends the request to the ipp server or service.
-   * 
+   *
    * @return The response if any.
-   * 
+   *
    * @throws IllegalStateException if request is already sent
    * @throws IppException if connection or request failed.
-   * @throws IOException if writing of the header, attributes or footer fails. 
+   * @throws IOException if writing of the header, attributes or footer fails.
    */
   public IppResponse send() throws IppException, IOException
   {
     if (alreadySent)
       throw new IllegalStateException("Request is already sent");
-    
+
     alreadySent = true;
-      
-    OutputStream stream = connection.getOutputStream();   
+
+    OutputStream stream = connection.getOutputStream();
     DataOutputStream out = new DataOutputStream(stream);
-        
+
     //  the header 8 bytes long
     out.writeShort(VERSION);
     out.writeShort(operation_id);
     out.writeInt(request_id);
-        
-    logger.log(Component.IPP, "OperationID: " + Integer.toHexString(operation_id) 
-      + " RequestID: " + request_id); 
-        
+
+    logger.log(Component.IPP, "OperationID: " + Integer.toHexString(operation_id)
+      + " RequestID: " + request_id);
+
     // Pass stuff the the attribute writer which knows how to
     // write the attributes in correct order
     logger.log(Component.IPP, "Operation Attributes");
-        
+
     RequestWriter writer = new RequestWriter(out);
-    writer.writeOperationAttributes(operationAttributes);       
-        
+    writer.writeOperationAttributes(operationAttributes);
+
     if (jobAttributes != null)
       {
         logger.log(Component.IPP, "Job Attributes");
         out.write(IppDelimiterTag.JOB_ATTRIBUTES_TAG);
         writer.writeAttributes(jobAttributes);
-      }           
+      }
     if (printerAttributes != null)
       {
         logger.log(Component.IPP, "Printer Attributes");
         out.write(IppDelimiterTag.PRINTER_ATTRIBUTES_TAG);
         writer.writeAttributes(printerAttributes);
-      }          
+      }
 
     // write the delimiter to the data
-    out.write(IppDelimiterTag.END_OF_ATTRIBUTES_TAG);               
+    out.write(IppDelimiterTag.END_OF_ATTRIBUTES_TAG);
 
     // check if data is byte[] or inputstream
     if (data instanceof InputStream)
       {
         byte[] readbuf = new byte[2048];
-        int len = 0;            
+        int len = 0;
         while( (len = ((InputStream) data).read(readbuf)) > 0)
           out.write(readbuf, 0, len);
       }
@@ -848,27 +848,27 @@ public class IppRequest
       {
         out.write((byte[]) data);
       }
-             
+
     out.flush();
-    stream.flush();  
-  
+    stream.flush();
+
     // Set the connection timeout, for if the printer is offline.
     // FIXME: The print services polling should probably be done in its
     // own thread.
     connection.setConnectTimeout( timeout );
 
     int responseCode = connection.getResponseCode();
-    
+
     if (responseCode == HttpURLConnection.HTTP_OK)
-      { 
-        IppResponse response = new IppResponse(requestUri, operation_id);        
-        response.setResponseData(connection.getInputStream());     
+      {
+        IppResponse response = new IppResponse(requestUri, operation_id);
+        response.setResponseData(connection.getInputStream());
         return response;
       }
 
     logger.log(Component.IPP, "HTTP-Statuscode: " + responseCode);
 
-    throw new IppException("Request failed got HTTP status code " 
+    throw new IppException("Request failed got HTTP status code "
                            + responseCode);
   }
 

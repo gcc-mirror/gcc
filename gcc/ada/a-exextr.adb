@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,8 +53,7 @@ package body Exception_Traces is
    pragma Export
      (Ada, Raise_Hook_Initialized, "__gnat_exception_actions_initialized");
 
-   procedure Last_Chance_Handler
-     (Except :  Exception_Occurrence);
+   procedure Last_Chance_Handler (Except : Exception_Occurrence);
    pragma Import (C, Last_Chance_Handler, "__gnat_last_chance_handler");
    pragma No_Return (Last_Chance_Handler);
    --  Users can replace the default version of this routine,

@@ -1,6 +1,5 @@
 /* { dg-require-effective-target vect_double } */
 
-#include <stdio.h>
 #include <stdarg.h>
 #include "tree-vect.h"
 

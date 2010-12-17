@@ -19,7 +19,7 @@
 #undef NEXT_OBJC_USE_NEW_INTERFACE
 
 #ifdef __NEXT_RUNTIME__
-#  if (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5 || __OBJC2__)
+#  if (__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1050 || __OBJC2__)
     /* We have to use an updated interface for 32bit NeXT to avoid
      * 'deprecated' warnings. 
      * For 64bit NeXT the ABI is different (and the interfaces 'deprecated'
@@ -36,7 +36,10 @@
        */
 #      define NEXT_OBJC_ABI_VERSION 0
 #    endif
-#  endif
-#endif
+#  else
+      /* Pre-OSX 10.5 all is ABI 0.  */
+#     define NEXT_OBJC_ABI_VERSION 0
+#  endif /* MAC_OS_X_VERSION_MIN_REQUIRED > 10.5 or OBJC2 */
+#endif /* __NEXT_RUNTIME__ */
 
 #endif /* _OBJC_NEXT_ABI_H_ */

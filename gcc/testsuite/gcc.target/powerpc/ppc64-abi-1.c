@@ -1,4 +1,5 @@
 /* { dg-do run { target { powerpc*-*-* && lp64 } } } */
+/* { dg-skip-if "" { *-*-darwin* } { "*" } { "" } } */
 /* { dg-options "-O2" } */
 #include <stdarg.h>
 #include <signal.h>

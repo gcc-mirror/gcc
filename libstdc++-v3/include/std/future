@@ -45,8 +45,8 @@
 #include <atomic>
 #include <bits/functexcept.h>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   /**
    * @defgroup futures Futures
    * @ingroup concurrency
@@ -64,19 +64,23 @@ namespace std
     no_state
   };
 
+  /// Specialization.
   template<>
     struct is_error_code_enum<future_errc> : public true_type { };
 
   /// Points to a statically-allocated object derived from error_category.
-  extern const error_category* const future_category;
+  const error_category&
+  future_category();
 
-  // TODO: requires constexpr
-  inline error_code make_error_code(future_errc __errc)
-  { return error_code(static_cast<int>(__errc), *future_category); }
+  /// Overload for make_error_code.
+  inline error_code 
+  make_error_code(future_errc __errc)
+  { return error_code(static_cast<int>(__errc), future_category()); }
 
-  // TODO: requires constexpr
-  inline error_condition make_error_condition(future_errc __errc)
-  { return error_condition(static_cast<int>(__errc), *future_category); }
+  /// Overload for make_error_condition.
+  inline error_condition 
+  make_error_condition(future_errc __errc)
+  { return error_condition(static_cast<int>(__errc), future_category()); }
 
   /**
    *  @brief Exception type thrown by futures.
@@ -116,7 +120,21 @@ namespace std
   template<typename _Res>
     class promise;
 
-  enum class launch { any, async, sync };
+  /// Launch code for futures
+  enum class launch 
+  { 
+    any, 
+    async, 
+    sync 
+  };
+
+  /// Status code for futures
+  enum class future_status 
+  {
+    ready,
+    timeout,
+    deferred
+  };
 
   template<typename _Fn, typename... _Args>
     future<typename result_of<_Fn(_Args...)>::type>
@@ -213,29 +231,25 @@ namespace std
 	typedef unique_ptr<_Res, _Result_base::_Deleter> type;
       };
 
-    // TODO: use when allocator_arg_t available
-    /*
     /// Result_alloc.
     template<typename _Res, typename _Alloc>
-      struct _Result_alloc : _Result<_Res>
+      struct _Result_alloc : _Result<_Res>, _Alloc
       {
         typedef typename _Alloc::template rebind<_Result_alloc>::other
           __allocator_type;
 
         explicit
-	_Result_alloc(const _Alloc& __a) : _Result<_Res>(), _M_alloc(__a)
+	_Result_alloc(const _Alloc& __a) : _Result<_Res>(), _Alloc(__a)
         { }
 	
       private:
 	void _M_destroy()
         {
-          __allocator_type __a(_M_alloc);
+          __allocator_type __a(*this);
           __a.destroy(this);
           __a.deallocate(this, 1);
         }
-
-        __allocator_type _M_alloc;
-    };
+      };
 
     template<typename _Res, typename _Allocator>
       static typename _Ptr<_Result_alloc<_Res, _Allocator>>::type
@@ -245,7 +259,7 @@ namespace std
         typename __result_type::__allocator_type __a2(__a);
         __result_type* __p = __a2.allocate(1);
         __try
-        {
+	{
           __a2.construct(__p, __a);
         }
         __catch(...)
@@ -255,7 +269,6 @@ namespace std
         }
         return typename _Ptr<__result_type>::type(__p);
       }
-    */
 
 
     /// Shared state between a promise and one or more associated futures.
@@ -309,7 +322,7 @@ namespace std
         bool __set = __ignore_failure;
         // all calls to this function are serialized,
         // side-effects of invoking __res only happen once
-        call_once(_M_once, mem_fn(&_State::_M_do_set), this, ref(__res),
+        call_once(_M_once, &_State::_M_do_set, this, ref(__res),
             ref(__set));
         if (!__set)
           __throw_future_error(int(future_errc::promise_already_satisfied));
@@ -543,7 +556,7 @@ namespace std
       explicit
       __basic_future(future<_Res>&&);
 
-      __basic_future() { }
+      constexpr __basic_future() : _M_state() { }
 
       struct _Reset
       {
@@ -571,7 +584,7 @@ namespace std
       future(const __state_type& __state) : _Base_type(__state) { }
 
     public:
-      future() : _Base_type() { }
+      constexpr future() : _Base_type() { }
 
       /// Move constructor
       future(future&& __uf) : _Base_type(std::move(__uf)) { }
@@ -612,7 +625,7 @@ namespace std
       future(const __state_type& __state) : _Base_type(__state) { }
 
     public:
-      future() : _Base_type() { }
+      constexpr future() : _Base_type() { }
 
       /// Move constructor
       future(future&& __uf) : _Base_type(std::move(__uf)) { }
@@ -653,7 +666,7 @@ namespace std
       future(const __state_type& __state) : _Base_type(__state) { }
 
     public:
-      future() : _Base_type() { }
+      constexpr future() : _Base_type() { }
 
       /// Move constructor
       future(future&& __uf) : _Base_type(std::move(__uf)) { }
@@ -685,7 +698,7 @@ namespace std
       typedef __basic_future<_Res> _Base_type;
 
     public:
-      shared_future() : _Base_type() { }
+      constexpr shared_future() : _Base_type() { }
 
       /// Copy constructor
       shared_future(const shared_future& __sf) : _Base_type(__sf) { }
@@ -729,7 +742,7 @@ namespace std
       typedef __basic_future<_Res&>           _Base_type;
 
     public:
-      shared_future() : _Base_type() { }
+      constexpr shared_future() : _Base_type() { }
 
       /// Copy constructor
       shared_future(const shared_future& __sf) : _Base_type(__sf) { }
@@ -768,7 +781,7 @@ namespace std
       typedef __basic_future<void> _Base_type;
 
     public:
-      shared_future() : _Base_type() { }
+      constexpr shared_future() : _Base_type() { }
 
       /// Copy constructor
       shared_future(const shared_future& __sf) : _Base_type(__sf) { }
@@ -843,14 +856,11 @@ namespace std
 	_M_storage(std::move(__rhs._M_storage))
       { }
 
-      // TODO: needs allocator_arg_t
-      /*
       template<typename _Allocator>
         promise(allocator_arg_t, const _Allocator& __a)
         : _M_future(std::allocate_shared<_State>(__a)),
-        _M_storage(__future_base::_S_allocate_result<_Res>(__a))
+	  _M_storage(__future_base::_S_allocate_result<_Res>(__a))
         { }
-      */
 
       promise(const promise&) = delete;
 
@@ -910,6 +920,11 @@ namespace std
     swap(promise<_Res>& __x, promise<_Res>& __y)
     { __x.swap(__y); }
 
+  template<typename _Res, typename _Alloc>
+    struct uses_allocator<promise<_Res>, _Alloc>
+    : public true_type { };
+
+
   /// Partial specialization for promise<R&>
   template<typename _Res>
     class promise<_Res&>
@@ -933,14 +948,11 @@ namespace std
 	_M_storage(std::move(__rhs._M_storage))
       { }
 
-      // TODO: needs allocator_arg_t
-      /*
       template<typename _Allocator>
         promise(allocator_arg_t, const _Allocator& __a)
         : _M_future(std::allocate_shared<_State>(__a)),
-        _M_storage(__future_base::_S_allocate_result<_Res&>(__a))
+	  _M_storage(__future_base::_S_allocate_result<_Res&>(__a))
         { }
-      */
 
       promise(const promise&) = delete;
 
@@ -1011,15 +1023,11 @@ namespace std
 	_M_storage(std::move(__rhs._M_storage))
       { }
 
-
-      // TODO: needs allocator_arg_t
-      /*
       template<typename _Allocator>
         promise(allocator_arg_t, const _Allocator& __a)
         : _M_future(std::allocate_shared<_State>(__a)),
-        _M_storage(__future_base::_S_allocate_result<void>(__a))
+	  _M_storage(__future_base::_S_allocate_result<void>(__a))
         { }
-      */
 
       promise(const promise&) = delete;
 
@@ -1088,12 +1096,6 @@ namespace std
     _M_future->_M_set_result(std::move(__setter));
   }
 
-  // TODO: needs allocators
-  /*
-  template<typename _Res, class Alloc>
-    struct uses_allocator<promise<_Res>, Alloc> : true_type  { };
-  */
-
 
   template<typename _StateT, typename _Res>
     struct __future_base::_Task_setter
@@ -1142,20 +1144,17 @@ namespace std
       : _M_result(new _Result<_Res>()), _M_task(std::move(__task))
       { }
 
-      // TODO: needs allocator_arg_t
-      /*
       template<typename _Func, typename _Alloc>
         _Task_state(_Func&& __task, const _Alloc& __a)
-        : _M_result(_S_allocate_result<_Res>(__a))
-        , _M_task(allocator_arg, __a, std::move(__task))
+        : _M_result(_S_allocate_result<_Res>(__a)),
+	  _M_task(allocator_arg, __a, std::move(__task))
         { }
-      */
 
       void
       _M_run(_Args... __args)
       {
         // bound arguments decay so wrap lvalue references
-        auto __bound = std::bind<_Res>(_M_task,
+        auto __bound = std::bind<_Res>(std::ref(_M_task),
             _S_maybe_wrap_ref(std::forward<_Args>(__args))...);
         _Task_setter<_Task_state> __setter{ this, std::move(__bound) };
         _M_set_result(std::move(__setter));
@@ -1208,14 +1207,11 @@ namespace std
       : _M_state(std::make_shared<_State_type>(__fn))
       { }
 
-      // TODO: needs allocator_arg_t
-      /*
       template<typename _Fn, typename _Allocator>
         explicit
         packaged_task(allocator_arg_t __tag, const _Allocator& __a, _Fn __fn)
         : _M_state(std::allocate_shared<_State_type>(__a, std::move(__fn)))
         { }
-      */
 
       ~packaged_task()
       {
@@ -1264,12 +1260,18 @@ namespace std
       }
     };
 
+  /// swap
   template<typename _Res, typename... _ArgTypes>
     inline void
     swap(packaged_task<_Res(_ArgTypes...)>& __x,
 	 packaged_task<_Res(_ArgTypes...)>& __y)
     { __x.swap(__y); }
- 
+
+  template<typename _Res, typename _Alloc>
+    struct uses_allocator<packaged_task<_Res>, _Alloc>
+    : public true_type { };
+
+
   template<typename _Res>
     class __future_base::_Deferred_state : public __future_base::_State
     {
@@ -1324,6 +1326,7 @@ namespace std
       thread _M_thread;
     };
 
+  /// async 
   template<typename _Fn, typename... _Args>
     future<typename result_of<_Fn(_Args...)>::type>
     async(launch __policy, _Fn&& __fn, _Args&&... __args)
@@ -1345,6 +1348,7 @@ namespace std
       return future<result_type>(__state);
     }
 
+  /// async, potential overload
   template<typename _Fn, typename... _Args>
     inline typename
     enable_if<!is_same<typename decay<_Fn>::type, launch>::value,
@@ -1360,7 +1364,7 @@ namespace std
        // && _GLIBCXX_ATOMIC_BUILTINS_4
 
   // @} group futures
-}
+_GLIBCXX_END_NAMESPACE
 
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 

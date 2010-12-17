@@ -64,10 +64,20 @@
 
 #include <bits/c++config.h>
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+# include <type_traits>  // For _GLIBCXX_HAS_NESTED_TYPE
+#endif
+
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @defgroup iterators Iterators
+   *  Abstractions for uniform iterating through various underlying types.
+  */
+  //@{ 
+
+  /**
+   *  @defgroup iterator_tags Iterator Tags
    *  These are empty types, used to distinguish different iterators.  The
    *  distinction is not made by what they contain, but simply by what they
    *  are.  Different underlying algorithms can then be used based on the
@@ -90,7 +100,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /// Random-access iterators support a superset of bidirectional
   /// iterator operations.
   struct random_access_iterator_tag : public bidirectional_iterator_tag { };
-
+  //@}
 
   /**
    *  @brief  Common %iterator class.
@@ -126,6 +136,28 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  argument.  Specialized versions for pointers and pointers-to-const
    *  provide tighter, more correct semantics.
   */
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+
+_GLIBCXX_HAS_NESTED_TYPE(iterator_category)
+
+  template<typename _Iterator,
+	   bool = __has_iterator_category<_Iterator>::value>
+    struct __iterator_traits { };
+
+  template<typename _Iterator>
+    struct __iterator_traits<_Iterator, true>
+    {
+      typedef typename _Iterator::iterator_category iterator_category;
+      typedef typename _Iterator::value_type        value_type;
+      typedef typename _Iterator::difference_type   difference_type;
+      typedef typename _Iterator::pointer           pointer;
+      typedef typename _Iterator::reference         reference;
+    };
+
+  template<typename _Iterator>
+    struct iterator_traits
+    : public __iterator_traits<_Iterator> { };
+#else
   template<typename _Iterator>
     struct iterator_traits
     {
@@ -135,6 +167,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef typename _Iterator::pointer           pointer;
       typedef typename _Iterator::reference         reference;
     };
+#endif
 
   /// Partial specialization for pointer types.
   template<typename _Tp>
@@ -168,6 +201,24 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     { return typename iterator_traits<_Iter>::iterator_category(); }
 
   //@}
+
+  // If _Iterator has a base returns it otherwise _Iterator is returned
+  // untouched
+  template<typename _Iterator, bool _HasBase>
+    struct _Iter_base
+    {
+      typedef _Iterator iterator_type;
+      static iterator_type _S_base(_Iterator __it)
+      { return __it; }
+    };
+
+  template<typename _Iterator>
+    struct _Iter_base<_Iterator, true>
+    {
+      typedef typename _Iterator::iterator_type iterator_type;
+      static iterator_type _S_base(_Iterator __it)
+      { return __it.base(); }
+    };
 
 _GLIBCXX_END_NAMESPACE
 

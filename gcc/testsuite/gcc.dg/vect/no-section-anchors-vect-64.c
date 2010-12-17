@@ -7,8 +7,8 @@
 
 int ib[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
 int ia[N][4][N+1];
-int ic[N][N][3][13];
-int id[N][N][N];
+int ic[N][N][3][N+1];
+int id[N][N][N+4];
 
 __attribute__ ((noinline))
 int main1 ()

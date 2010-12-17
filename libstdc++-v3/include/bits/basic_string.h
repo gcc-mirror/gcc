@@ -232,9 +232,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
 	  if (__builtin_expect(this != &_S_empty_rep(), false))
 #endif
-	    if (__gnu_cxx::__exchange_and_add_dispatch(&this->_M_refcount,
-						       -1) <= 0)
-	      _M_destroy(__a);
+	    {
+	      // Be race-detector-friendly.  For more info see bits/c++config.
+	      _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&this->_M_refcount);
+	      if (__gnu_cxx::__exchange_and_add_dispatch(&this->_M_refcount,
+							 -1) <= 0)
+		{
+		  _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&this->_M_refcount);
+		  _M_destroy(__a);
+		}
+	    }
 	}  // XXX MT
 
 	void
@@ -2918,23 +2925,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /// std::hash specialization for string.
   template<>
     struct hash<string>
-    : public std::unary_function<string, size_t>
+    : public __hash_base<size_t, string>
     {
       size_t
       operator()(const string& __s) const
-      { return std::_Fnv_hash::hash(__s.data(), __s.length()); }
+      { return std::_Hash_impl::hash(__s.data(), __s.length()); }
     };
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   /// std::hash specialization for wstring.
   template<>
     struct hash<wstring>
-    : public std::unary_function<wstring, size_t>
+    : public __hash_base<size_t, wstring>
     {
       size_t
       operator()(const wstring& __s) const
-      { return std::_Fnv_hash::hash(__s.data(),
-				    __s.length() * sizeof(wchar_t)); }
+      { return std::_Hash_impl::hash(__s.data(),
+                                     __s.length() * sizeof(wchar_t)); }
     };
 #endif
 #endif /* _GLIBCXX_COMPATIBILITY_CXX0X */
@@ -2943,23 +2950,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /// std::hash specialization for u16string.
   template<>
     struct hash<u16string>
-    : public std::unary_function<u16string, size_t>
+    : public __hash_base<size_t, u16string>
     {
       size_t
       operator()(const u16string& __s) const
-      { return std::_Fnv_hash::hash(__s.data(),
-				    __s.length() * sizeof(char16_t)); }
+      { return std::_Hash_impl::hash(__s.data(),
+                                     __s.length() * sizeof(char16_t)); }
     };
 
   /// std::hash specialization for u32string.
   template<>
     struct hash<u32string>
-    : public std::unary_function<u32string, size_t>
+    : public __hash_base<size_t, u32string>
     {
       size_t
       operator()(const u32string& __s) const
-      { return std::_Fnv_hash::hash(__s.data(),
-				    __s.length() * sizeof(char32_t)); }
+      { return std::_Hash_impl::hash(__s.data(),
+                                     __s.length() * sizeof(char32_t)); }
     };
 #endif
 

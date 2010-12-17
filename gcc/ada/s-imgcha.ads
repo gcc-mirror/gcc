@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,5 +41,15 @@ package System.Img_Char is
    --  Computes Character'Image (V) and stores the result in S (1 .. P)
    --  setting the resulting value of P. The caller guarantees that S is
    --  long enough to hold the result, and that S'First is 1.
+
+   procedure Image_Character_05
+     (V : Character;
+      S : in out String;
+      P : out Natural);
+   --  Computes Character'Image (V) and stores the result in S (1 .. P)
+   --  setting the resulting value of P. The caller guarantees that S is
+   --  long enough to hold the result, and that S'First is 1. This version
+   --  is for use in Ada 2005 and beyond, where soft hyphen is a non-graphic
+   --  and results in "SOFT_HYPHEN" as the output.
 
 end System.Img_Char;

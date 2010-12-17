@@ -1,12 +1,11 @@
-<?xml version='1.0'?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
-[ ]>
-
-<chapter id="std.util" xreflabel="Utilities">
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="std.util" xreflabel="Utilities">
 <?dbhtml filename="utilities.html"?>
 
-<chapterinfo>
+<info><title>
+  Utilities
+  <indexterm><primary>Utilities</primary></indexterm>
+</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -15,30 +14,27 @@
       library
     </keyword>
   </keywordset>
-</chapterinfo>
+</info>
 
-<title>
-  Utilities
-  <indexterm><primary>Utilities</primary></indexterm>
-</title>
+
 
 <!-- Section 01 : Functors -->
-<section id="std.util.functors" xreflabel="Functors">
+<section xml:id="std.util.functors" xreflabel="Functors"><info><title>Functors</title></info>
 <?dbhtml filename="functors.html"?>
-  <title>Functors</title>
+  
    <para>If you don't know what functors are, you're not alone.  Many people
       get slightly the wrong idea.  In the interest of not reinventing
       the wheel, we will refer you to the introduction to the functor
       concept written by SGI as chapter of their STL, in
-      <ulink url="http://www.sgi.com/tech/stl/functors.html">their
-      http://www.sgi.com/tech/stl/functors.html</ulink>.
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/functors.html">their
+      http://www.sgi.com/tech/stl/functors.html</link>.
    </para>
 </section>
 
 <!-- Section 02 : Pairs -->
-<section id="std.util.pairs" xreflabel="Pairs">
+<section xml:id="std.util.pairs" xreflabel="Pairs"><info><title>Pairs</title></info>
 <?dbhtml filename="pairs.html"?>
-  <title>Pairs</title>
+  
    <para>The <code>pair&lt;T1,T2&gt;</code> is a simple and handy way to
       carry around a pair of objects.  One is of type T1, and another of
       type T2; they may be the same type, but you don't get anything
@@ -92,9 +88,9 @@
 </section>
 
 <!-- Section 03 : Memory -->
-<section id="std.util.memory" xreflabel="Memory">
+<section xml:id="std.util.memory" xreflabel="Memory"><info><title>Memory</title></info>
 <?dbhtml filename="memory.html"?>
-  <title>Memory</title>
+  
   <para>
     Memory contains three general areas. First, function and operator
     calls via <function>new</function> and <function>delete</function>
@@ -104,26 +100,23 @@
   </para>
 
   <!--  Section 01 : allocator -->
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	      parse="xml" href="allocator.xml">
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="allocator.xml">
   </xi:include>
 
   <!--  Section 02 : auto_ptr -->
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	      parse="xml" href="auto_ptr.xml">
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="auto_ptr.xml">
   </xi:include>
 
   <!--  Section 03 : shared_ptr -->
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	      parse="xml" href="shared_ptr.xml">
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="shared_ptr.xml">
   </xi:include>
 
 </section>
 
 <!-- Section 04 : Traits -->
-<section id="std.util.traits" xreflabel="Traits">
+<section xml:id="std.util.traits" xreflabel="Traits"><info><title>Traits</title></info>
 <?dbhtml filename="traits.html"?>
-  <title>Traits</title>
+  
   <para>
   </para>
 </section>

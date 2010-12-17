@@ -57,6 +57,6 @@ int main (void)
 
 /* The initialization loop in main also gets vectorized.  */
 /* { dg-final { scan-tree-dump-times "vect_recog_dot_prod_pattern: detected" 1 "vect" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { target { vect_short_mult && vect_widen_sum_hi_to_si } } } } */ 
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { xfail { vect_widen_sum_hi_to_si_pattern } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { target { vect_short_mult && { vect_widen_sum_hi_to_si  && vect_unpack } } } } } */ 
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { xfail { vect_widen_sum_hi_to_si_pattern ||  { ! vect_unpack } } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

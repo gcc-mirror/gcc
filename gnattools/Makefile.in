@@ -1,5 +1,5 @@
 # Makefile for gnattools
-#   Copyright 2003, 2004, 2009 Free Software Foundation, Inc.
+#   Copyright 2003, 2004, 2009, 2010 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -274,17 +274,23 @@ pdf:
 # Build HTML (none here).
 html:
 
+.PHONY: check installcheck info dvi pdf html
+
 # Build TAGS (none here).
 TAGS:
 
 # Installation rules.
 install:
 
+install-strip: install
+
 install-info:
 
 install-pdf:
 
 install-html:
+
+.PHONY: install install-strip install-info install-pdf install-html
 
 # Cleaning rules.
 mostlyclean:
@@ -295,6 +301,8 @@ distclean:
 	$(RM) Makefile config.status config.log
 
 maintainer-clean:
+
+.PHONY: mostlyclean clean distclean maintainer-clean
 
 # Rules for rebuilding this Makefile.
 Makefile: $(srcdir)/Makefile.in config.status

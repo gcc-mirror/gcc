@@ -1,6 +1,6 @@
 /* Get common system includes and various definitions and declarations based
    on autoconf macros.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2009
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -28,6 +28,12 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifdef HAVE_STDDEF_H
 # include <stddef.h>
+#endif
+#ifdef HAVE_STDINT_H
+# include <stdint.h>
+#endif
+#ifdef HAVE_INTTYPES_H
+# include <inttypes.h>
 #endif
 
 #include <stdio.h>

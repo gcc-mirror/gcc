@@ -39,6 +39,10 @@ along with GCC; see the file COPYING3.  If not see
 # define NAMED_CHARKNDCST(a,b,c) 
 #endif
 
+#ifndef NAMED_FUNCTION
+# define NAMED_FUNCTION(a,b,c,d)
+#endif
+
 /* The arguments to NAMED_*CST are:
      -- an internal name
      -- the symbol name in the module, as seen by Fortran code
@@ -162,6 +166,15 @@ PROCEDURE (ISOCBINDING_LOC, "c_loc")
 PROCEDURE (ISOCBINDING_FUNLOC, "c_funloc")
 PROCEDURE (ISOCBINDING_F_PROCPOINTER, "c_f_procpointer")
 
+/* The arguments to NAMED_FUNCTIONS are:
+     -- the ISYM
+     -- the symbol name in the module, as seen by Fortran code
+     -- the Fortran standard  */
+
+NAMED_FUNCTION (ISOCBINDING_C_SIZEOF, "c_sizeof", \
+                GFC_ISYM_C_SIZEOF, GFC_STD_F2008)
+
+
 #undef NAMED_INTCST
 #undef NAMED_REALCST
 #undef NAMED_CMPXCST
@@ -170,3 +183,4 @@ PROCEDURE (ISOCBINDING_F_PROCPOINTER, "c_f_procpointer")
 #undef NAMED_CHARKNDCST
 #undef DERIVED_TYPE
 #undef PROCEDURE
+#undef NAMED_FUNCTION

@@ -28,7 +28,9 @@
 void
 check_add_float (void)
 {
+#ifndef __SPU__
   CHECK_ADD (float, __builtin_copysignf, 0.0f, 0.0if);
+#endif
 }
 
 void

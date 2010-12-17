@@ -1,5 +1,3 @@
-/* { dg-options "-O3 -fno-inline -fdump-ipa-all -fipa-struct-reorg -fwhole-program -combine" } */
-/* { dg-do compile } */
 /* { dg-do run } */
 
 #include <stdlib.h>
@@ -43,5 +41,5 @@ main ()
 }
 
 /*--------------------------------------------------------------------------*/
-/* { dg-final { scan-ipa-dump "No structures to transform" "ipa_struct_reorg" { xfail { "avr-*-*" } } } } */
+/* { dg-final { scan-ipa-dump "No structures to transform" "ipa_struct_reorg" { xfail *-*-* } } } */
 /* { dg-final { cleanup-ipa-dump "*" } } */

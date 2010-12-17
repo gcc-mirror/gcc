@@ -20,18 +20,6 @@
 
 ;; Vector Moves
 
-;; All integer and float modes supported by Neon and IWMMXT.
-(define_mode_iterator VALL [V2DI V2SI V4HI V8QI V2SF V4SI V8HI V16QI V4SF])
-
-;; All integer and float modes supported by Neon and IWMMXT, except V2DI.
-(define_mode_iterator VALLW [V2SI V4HI V8QI V2SF V4SI V8HI V16QI V4SF])
-
-;; All integer modes supported by Neon and IWMMXT
-(define_mode_iterator VINT [V2DI V2SI V4HI V8QI V4SI V8HI V16QI])
-
-;; All integer modes supported by Neon and IWMMXT, except V2DI
-(define_mode_iterator VINTW [V2SI V4HI V8QI V4SI V8HI V16QI])
-
 (define_expand "mov<mode>"
   [(set (match_operand:VALL 0 "nonimmediate_operand" "")
 	(match_operand:VALL 1 "general_operand" ""))]
@@ -57,7 +45,8 @@
   [(set (match_operand:VALL 0 "s_register_operand" "")
         (plus:VALL (match_operand:VALL 1 "s_register_operand" "")
                    (match_operand:VALL 2 "s_register_operand" "")))]
-  "TARGET_NEON
+  "(TARGET_NEON && ((<MODE>mode != V2SFmode && <MODE>mode != V4SFmode)
+		    || flag_unsafe_math_optimizations))
    || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))"
 {
 })
@@ -66,7 +55,8 @@
   [(set (match_operand:VALL 0 "s_register_operand" "")
         (minus:VALL (match_operand:VALL 1 "s_register_operand" "")
                     (match_operand:VALL 2 "s_register_operand" "")))]
-  "TARGET_NEON
+  "(TARGET_NEON && ((<MODE>mode != V2SFmode && <MODE>mode != V4SFmode)
+		    || flag_unsafe_math_optimizations))
    || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))"
 {
 })
@@ -75,7 +65,9 @@
   [(set (match_operand:VALLW 0 "s_register_operand" "")
         (mult:VALLW (match_operand:VALLW 1 "s_register_operand" "")
 		    (match_operand:VALLW 2 "s_register_operand" "")))]
-  "TARGET_NEON || (<MODE>mode == V4HImode && TARGET_REALLY_IWMMXT)"
+  "(TARGET_NEON && ((<MODE>mode != V2SFmode && <MODE>mode != V4SFmode)
+		    || flag_unsafe_math_optimizations))
+   || (<MODE>mode == V4HImode && TARGET_REALLY_IWMMXT)"
 {
 })
 
@@ -83,7 +75,8 @@
   [(set (match_operand:VALLW 0 "s_register_operand" "")
 	(smin:VALLW (match_operand:VALLW 1 "s_register_operand" "")
 		    (match_operand:VALLW 2 "s_register_operand" "")))]
-  "TARGET_NEON
+  "(TARGET_NEON && ((<MODE>mode != V2SFmode && <MODE>mode != V4SFmode)
+		    || flag_unsafe_math_optimizations))
    || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))"
 {
 })
@@ -101,7 +94,8 @@
   [(set (match_operand:VALLW 0 "s_register_operand" "")
 	(smax:VALLW (match_operand:VALLW 1 "s_register_operand" "")
 		    (match_operand:VALLW 2 "s_register_operand" "")))]
-  "TARGET_NEON
+  "(TARGET_NEON && ((<MODE>mode != V2SFmode && <MODE>mode != V4SFmode)
+		    || flag_unsafe_math_optimizations))
    || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))"
 {
 })

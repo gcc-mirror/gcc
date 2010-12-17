@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,7 @@
 
 --  Allows an anonymous array (or array-like container) to be sorted. Generic
 --  formal Less returns the result of comparing the elements designated by the
---  indices, and generic formal Swap exchanges the designated elements.
+--  indexes, and generic formal Swap exchanges the designated elements.
 
 generic
    type Index_Type is (<>);

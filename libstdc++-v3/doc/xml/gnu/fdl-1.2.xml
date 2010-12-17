@@ -1,15 +1,16 @@
-<appendix id="appendix.gfdl-1.2">
+<appendix xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	  xml:id="appendix.gfdl-1.2">
+<info><title>GNU Free Documentation License</title></info>
   <?dbhtml filename="appendix_gfdl.html"?>
-  <title>GNU Free Documentation License</title>
+  
   <para>
     Copyright (C) 2000, 2001, 2002 Free Software Foundation,
     <abbrev>Inc.</abbrev> 51 Franklin <abbrev>St</abbrev>, Fifth Floor,
-    Boston, <abbrev>MA</abbrev> 02110-1301 <abbrev
-    role="initialism">USA</abbrev>.  Everyone is permitted to copy and
+    Boston, <abbrev>MA</abbrev> 02110-1301 <abbrev role="initialism">USA</abbrev>.  Everyone is permitted to copy and
     distribute verbatim copies of this license document, but changing it is
     not allowed.
   </para>
-  <bridgehead id="fdl-1-preamble" renderas="sect1">
+  <bridgehead xml:id="fdl-1-preamble" renderas="sect1">
     0. PREAMBLE
   </bridgehead>
   <para>
@@ -35,7 +36,7 @@
     for any textual work, regardless of subject matter or whether it is
     published as a printed book.  We recommend this License principally for
     works whose purpose is instruction or reference.</para>
-  <bridgehead id="fdl-1-definitions" renderas="sect1">
+  <bridgehead xml:id="fdl-1-definitions" renderas="sect1">
     1. APPLICABILITY AND DEFINITIONS
   </bridgehead>
   <para>
@@ -131,7 +132,7 @@
     these Warranty Disclaimers may have is void and has no effect on the
     meaning of this License.
   </para>
-  <bridgehead id="VerbatimCopying" renderas="sect1">
+  <bridgehead xml:id="VerbatimCopying" renderas="sect1">
     2. VERBATIM COPYING
   </bridgehead>
   <para>
@@ -149,7 +150,7 @@
     You may also lend copies, under the same conditions stated above, and you
     may publicly display copies.
   </para>
-  <bridgehead id="QuantityCopying" renderas="sect1">
+  <bridgehead xml:id="QuantityCopying" renderas="sect1">
     3. COPYING IN QUANTITY
   </bridgehead>
   <para>
@@ -190,7 +191,7 @@
     them a chance to provide you with an updated version of the
     Document.
   </para>
-  <bridgehead id="Modifications" renderas="sect1">
+  <bridgehead xml:id="Modifications" renderas="sect1">
     4. MODIFICATIONS
   </bridgehead>
   <para>
@@ -340,7 +341,7 @@
     permission to use their names for publicity for or to assert or imply
     endorsement of any Modified Version.
   </para>
-  <bridgehead id="Combining" renderas="sect1">
+  <bridgehead xml:id="Combining" renderas="sect1">
     5. COMBINING DOCUMENTS
   </bridgehead>
   <para>
@@ -368,7 +369,7 @@
     sections Entitled "Dedications".  You must delete all sections Entitled
     "Endorsements".
   </para>
-  <bridgehead id="Collections" renderas="sect1">
+  <bridgehead xml:id="Collections" renderas="sect1">
     6. COLLECTIONS OF DOCUMENTS
   </bridgehead>
   <para>
@@ -384,7 +385,7 @@
     License into the extracted document, and follow this License in all other
     respects regarding verbatim copying of that document.
   </para>
-  <bridgehead id="Aggregation" renderas="sect1">
+  <bridgehead xml:id="Aggregation" renderas="sect1">
     7. AGGREGATION WITH INDEPENDENT WORKS
   </bridgehead>
   <para>
@@ -405,7 +406,7 @@
     if the Document is in electronic form.  Otherwise they must appear on
     printed covers that bracket the whole aggregate.
   </para>
-  <bridgehead id="Translation" renderas="sect1">
+  <bridgehead xml:id="Translation" renderas="sect1">
     8. TRANSLATION
   </bridgehead>
   <para>
@@ -426,7 +427,7 @@
     "Dedications", or "History", the requirement (section 4) to Preserve its
     Title (section 1) will typically require changing the actual title.
   </para>
-  <bridgehead id="fdl-1-termination" renderas="sect1">
+  <bridgehead xml:id="fdl-1-termination" renderas="sect1">
     9. TERMINATION
   </bridgehead>
   <para>
@@ -438,15 +439,14 @@
     have their licenses terminated so long as such parties remain in full
     compliance.
   </para>
-  <bridgehead id="FutureRevisions" renderas="sect1">
+  <bridgehead xml:id="FutureRevisions" renderas="sect1">
     10. FUTURE REVISIONS OF THIS LICENSE
   </bridgehead>
   <para>
     The Free Software Foundation may publish new, revised versions of the GNU
     Free Documentation License from time to time.  Such new versions will be
     similar in spirit to the present version, but may differ in detail to
-    address new problems or concerns.  See <ulink
-    url="http://www.gnu.org/copyleft/">http://www.gnu.org/copyleft/</ulink>.
+    address new problems or concerns.  See <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.gnu.org/copyleft/">http://www.gnu.org/copyleft/</link>.
   </para>
   <para>
     Each version of the License is given a distinguishing version number.  If
@@ -458,7 +458,7 @@
     License, you may choose any version ever published (not as a draft) by the
     Free Software Foundation.
   </para>
-  <bridgehead id="HowToUse" renderas="sect1">
+  <bridgehead xml:id="HowToUse" renderas="sect1">
     ADDENDUM: How to use this License for your documents
   </bridgehead>
   <para>

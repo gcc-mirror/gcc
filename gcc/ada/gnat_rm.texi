@@ -81,6 +81,7 @@ AdaCore
 * Interfacing to Other Languages::
 * Specialized Needs Annexes::
 * Implementation of Specific Ada Features::
+* Implementation of Ada 2012 Features::
 * Obsolescent Features::
 * GNU Free Documentation License::
 * Index::
@@ -142,7 +143,7 @@ Implementation Defined Pragmas
 * Pragma Finalize_Storage_Only::
 * Pragma Float_Representation::
 * Pragma Ident::
-* Pragma Implemented_By_Entry::
+* Pragma Implemented::
 * Pragma Implicit_Packing::
 * Pragma Import_Exception::
 * Pragma Import_Function::
@@ -156,6 +157,7 @@ Implementation Defined Pragmas
 * Pragma Interface_Name::
 * Pragma Interrupt_Handler::
 * Pragma Interrupt_State::
+* Pragma Invariant::
 * Pragma Keep_Names::
 * Pragma License::
 * Pragma Link_With::
@@ -173,6 +175,7 @@ Implementation Defined Pragmas
 * Pragma Normalize_Scalars::
 * Pragma Obsolescent::
 * Pragma Optimize_Alignment::
+* Pragma Ordered::
 * Pragma Passive::
 * Pragma Persistent_BSS::
 * Pragma Polling::
@@ -185,6 +188,7 @@ Implementation Defined Pragmas
 * Pragma Restriction_Warnings::
 * Pragma Shared::
 * Pragma Short_Circuit_And_Or::
+* Pragma Short_Descriptors::
 * Pragma Source_File_Name::
 * Pragma Source_File_Name_Project::
 * Pragma Source_Reference::
@@ -467,6 +471,8 @@ Implementation of Specific Ada Features
 * The Size of Discriminated Records with Default Discriminants::
 * Strict Conformance to the Ada Reference Manual::
 
+Implementation of Ada 2012 Features
+
 Obsolescent Features
 
 GNU Free Documentation License
@@ -582,6 +588,10 @@ of the specialized needs annexes.
 @ref{Implementation of Specific Ada Features}, discusses issues related
 to GNAT's implementation of machine code insertions, tasking, and several
 other features.
+
+@item
+@ref{Implementation of Ada 2012 Features}, describes the status of the
+GNAT implementation of the Ada 2012 language standard.
 
 @item
 @ref{Obsolescent Features} documents implementation dependent features,
@@ -758,7 +768,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Finalize_Storage_Only::
 * Pragma Float_Representation::
 * Pragma Ident::
-* Pragma Implemented_By_Entry::
+* Pragma Implemented::
 * Pragma Implicit_Packing::
 * Pragma Import_Exception::
 * Pragma Import_Function::
@@ -772,6 +782,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Interface_Name::
 * Pragma Interrupt_Handler::
 * Pragma Interrupt_State::
+* Pragma Invariant::
 * Pragma Keep_Names::
 * Pragma License::
 * Pragma Link_With::
@@ -789,6 +800,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Normalize_Scalars::
 * Pragma Obsolescent::
 * Pragma Optimize_Alignment::
+* Pragma Ordered::
 * Pragma Passive::
 * Pragma Persistent_BSS::
 * Pragma Polling::
@@ -801,6 +813,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Restriction_Warnings::
 * Pragma Shared::
 * Pragma Short_Circuit_And_Or::
+* Pragma Short_Descriptors::
 * Pragma Source_File_Name::
 * Pragma Source_File_Name_Project::
 * Pragma Source_Reference::
@@ -1540,7 +1553,7 @@ pragma Convention_Identifier (Fortran77, Fortran);
 @noindent
 would allow the use of the convention identifier @code{Fortran77} in
 subsequent code, avoiding the need to modify the sources. As another
-example, you could use this to parametrize convention requirements
+example, you could use this to parameterize convention requirements
 according to systems. Suppose you needed to use @code{Stdcall} on
 windows systems, and @code{C} on some other system, then you could
 define a convention identifier @code{Library} and use a single
@@ -1749,124 +1762,70 @@ gnat_ugn, @value{EDITION} User's Guide}.
 Syntax:
 
 @smallexample @c ada
-pragma Eliminate (
-    [Unit_Name =>] IDENTIFIER |
-                   SELECTED_COMPONENT);
+pragma Eliminate (UNIT_NAME, ENTITY, Source_Location => SOURCE_TRACE)
 
-pragma Eliminate (
-    [Unit_Name       =>]  IDENTIFIER |
-                          SELECTED_COMPONENT,
-    [Entity          =>]  IDENTIFIER |
-                          SELECTED_COMPONENT |
-                          STRING_LITERAL
-    [,OVERLOADING_RESOLUTION]);
+UNIT_NAME        ::= IDENTIFIER |
+                     SELECTED_COMPONENT,
 
-OVERLOADING_RESOLUTION ::= PARAMETER_AND_RESULT_TYPE_PROFILE |
-                           SOURCE_LOCATION
+ENTITY           ::= IDENTIFIER |
+                     SELECTED_COMPONENT,
 
-PARAMETER_AND_RESULT_TYPE_PROFILE ::= PROCEDURE_PROFILE |
-                                      FUNCTION_PROFILE
+SOURCE_TRACE     ::= SOURCE_REFERENCE |
+                     SOURCE_REFERENCE LBRACKET SOURCE_TRACE RBRACKET
 
-PROCEDURE_PROFILE ::= Parameter_Types => PARAMETER_TYPES
+LBRACKET         ::= [
+RBRACKET         ::= ]
 
-FUNCTION_PROFILE ::= [Parameter_Types => PARAMETER_TYPES,]
-                      Result_Type => result_SUBTYPE_NAME]
+SOURCE_REFERENCE ::= FILE_NAME : LINE_NUMBER
 
-PARAMETER_TYPES ::= (SUBTYPE_NAME @{, SUBTYPE_NAME@})
-SUBTYPE_NAME    ::= STRING_VALUE
-
-SOURCE_LOCATION ::= Source_Location => SOURCE_TRACE
-SOURCE_TRACE    ::= STRING_VALUE
-
-STRING_VALUE ::= STRING_LITERAL @{& STRING_LITERAL@}
+FILE_NAME        ::= STRING_LITERAL
+LINE_NUMBER      ::= INTEGER_LITERAL
 @end smallexample
 
 @noindent
-This pragma indicates that the given entity is not used outside the
-compilation unit it is defined in. The entity must be an explicitly declared
-subprogram; this includes  generic subprogram instances and
-subprograms declared in generic package instances.
+This pragma indicates that the given entity is not used in the program
+to be compiled and built. The entity must be an explicitly declared
+subprogram; this includes generic subprogram instances and
+subprograms declared in generic package instances. @code{Unit_Name}
+must be the name of the compilation unit in which the entity is declared.
 
-If the entity to be eliminated is a library level subprogram, then
-the first form of pragma @code{Eliminate} is used with only a single argument.
-In this form, the @code{Unit_Name} argument specifies the name of the
-library  level unit to be eliminated.
-
-In all other cases, both @code{Unit_Name} and @code{Entity} arguments
-are required. If item is an entity of a library package, then the first
-argument specifies the unit name, and the second argument specifies
-the particular entity.  If the second argument is in string form, it must
-correspond to the internal manner in which GNAT stores entity names (see
-compilation unit Namet in the compiler sources for details).
-
-The remaining parameters (OVERLOADING_RESOLUTION) are optionally used
-to distinguish between overloaded subprograms. If a pragma does not contain
-the OVERLOADING_RESOLUTION parameter(s), it is applied to all the overloaded
-subprograms denoted by the first two parameters.
-
-Use PARAMETER_AND_RESULT_TYPE_PROFILE to specify the profile of the subprogram
-to be eliminated in a manner similar to that used for the extended
-@code{Import} and @code{Export} pragmas, except that the subtype names are
-always given as strings. At the moment, this form of distinguishing
-overloaded subprograms is implemented only partially, so we do not recommend
-using it for practical subprogram elimination.
-
-Note that in case of a parameterless procedure its profile is represented
-as @code{Parameter_Types => ("")}
-
-Alternatively, the @code{Source_Location} parameter is used to specify
-which overloaded alternative is to be eliminated by pointing to the
-location of the DEFINING_PROGRAM_UNIT_NAME of this subprogram in the
-source text. The string literal (or concatenation of string literals)
-given as SOURCE_TRACE must have the following format:
-
-@smallexample @c ada
-SOURCE_TRACE ::= SOURCE_LOCATION@{LBRACKET SOURCE_LOCATION RBRACKET@}
-
-LBRACKET ::= [
-RBRACKET ::= ]
-
-SOURCE_LOCATION ::= FILE_NAME:LINE_NUMBER
-FILE_NAME       ::= STRING_LITERAL
-LINE_NUMBER     ::= DIGIT @{DIGIT@}
-@end smallexample
-
-SOURCE_TRACE should be the short name of the source file (with no directory
-information), and LINE_NUMBER is supposed to point to the line where the
-defining name of the subprogram is located.
-
-For the subprograms that are not a part of generic instantiations, only one
-SOURCE_LOCATION is used. If a subprogram is declared in a package
-instantiation, SOURCE_TRACE contains two SOURCE_LOCATIONs, the first one is
-the location of the (DEFINING_PROGRAM_UNIT_NAME of the) instantiation, and the
-second one denotes the declaration of the corresponding subprogram in the
-generic package. This approach is recursively used to create SOURCE_LOCATIONs
-in case of nested instantiations.
+The @code{Source_Location} argument is used to resolve overloading
+in case more then one callable entity with the same name is declared
+in the given compilation unit. Each file name must be the short name of the
+source file (with no directory information).
+If an entity is not declared in
+a generic instantiation (this includes generic subprogram instances),
+the source trace includes only one source
+reference. If an entity is declared inside a generic instantiation,
+its source trace starts from the source location in the instantiation and
+ends with the source location of the declaration of the corresponding
+entity in the generic
+unit. This approach is recursively used in case of nested instantiations:
+the leftmost element of the
+source trace is the location of the outermost instantiation, the next
+element is the location of the next (first nested) instantiation in the
+code of the corresponding generic unit, and so on.
 
 The effect of the pragma is to allow the compiler to eliminate
 the code or data associated with the named entity.  Any reference to
-an eliminated entity outside the compilation unit it is defined in,
-causes a compile time or link time error.
+an eliminated entity outside the compilation unit where it is defined
+causes a compile-time or link-time error.
 
 The intention of pragma @code{Eliminate} is to allow a program to be compiled
-in a system independent manner, with unused entities eliminated, without
-the requirement of modifying the source text.  Normally the required set
+in a system-independent manner, with unused entities eliminated, without
+needing to modify the source text.  Normally the required set
 of @code{Eliminate} pragmas is constructed automatically using the gnatelim
 tool. Elimination of unused entities local to a compilation unit is
 automatic, without requiring the use of pragma @code{Eliminate}.
 
-Note that the reason this pragma takes string literals where names might
-be expected is that a pragma @code{Eliminate} can appear in a context where the
-relevant names are not visible.
+Any source file change that removes, splits, or
+adds lines may make the set of Eliminate pragmas invalid because their
+@code{Source_Location} argument values may get out of date.
 
-Note that any change in the source files that includes removing, splitting of
-adding lines may make the set of Eliminate pragmas using SOURCE_LOCATION
-parameter illegal.
-
-It is legal to use pragma Eliminate where the referenced entity is a
-dispatching operation, but it is not clear what this would mean, since
-in general the call does not know which entity is actually being called.
-Consequently, a pragma Eliminate for a dispatching operation is ignored.
+Pragma Eliminate may be used where the referenced entity is a
+dispatching operation. In this case all the subprograms to which the
+given operation can dispatch are considered to be unused (are never called
+as a result of a direct or a dispatching call).
 
 @node Pragma Export_Exception
 @unnumberedsec Pragma Export_Exception
@@ -2206,8 +2165,9 @@ you can construct your own extension unit following the above
 definition.  Note that such a package is a child of @code{System}
 and thus is considered part of the implementation.  To compile
 it you will have to use the appropriate switch for compiling
-system units.  @xref{Top, @value{EDITION} User's Guide, About This
-Guide,, gnat_ugn, @value{EDITION} User's Guide}, for details.
+system units.
+@xref{Top, @value{EDITION} User's Guide, About This Guide, gnat_ugn, @value{EDITION} User's Guide},
+for details.
 
 @node Pragma Extensions_Allowed
 @unnumberedsec Pragma Extensions_Allowed
@@ -2426,9 +2386,7 @@ floating point types declared in the packages @code{Standard} and
 be @code{IEEE_Float} and the pragma has no effect. On OpenVMS, the
 argument may be @code{VAX_Float} to specify the use of the VAX float
 format for the floating-point types in Standard. This requires that
-the standard runtime libraries be recompiled.  @xref{The GNAT Run-Time
-Library Builder gnatlbr,,, gnat_ugn, @value{EDITION} User's Guide
-OpenVMS}, for a description of the @code{GNAT LIBRARY} command.
+the standard runtime libraries be recompiled.
 
 The two argument form specifies the representation to be used for
 the specified floating-point type. On all systems other than OpenVMS,
@@ -2441,9 +2399,9 @@ format, as follows:
 @item
 For digits values up to 6, F float format will be used.
 @item
-For digits values from 7 to 9, G float format will be used.
+For digits values from 7 to 9, D float format will be used.
 @item
-For digits values from 10 to 15, F float format will be used.
+For digits values from 10 to 15, G float format will be used.
 @item
 Digits values above 15 are not allowed.
 @end itemize
@@ -2471,41 +2429,51 @@ maximum allowed length is 31 characters, so if it is important to
 maintain compatibility with this compiler, you should obey this length
 limit.
 
-@node Pragma Implemented_By_Entry
-@unnumberedsec Pragma Implemented_By_Entry
-@findex Implemented_By_Entry
+@node Pragma Implemented
+@unnumberedsec Pragma Implemented
+@findex Implemented
 @noindent
 Syntax:
 
 @smallexample @c ada
-pragma Implemented_By_Entry (LOCAL_NAME);
+pragma Implemented (procedure_LOCAL_NAME, implementation_kind);
+
+implementation_kind ::= By_Entry | By_Protected_Procedure | By_Any
 @end smallexample
 
 @noindent
-This is a representation pragma which applies to protected, synchronized and
-task interface primitives. If the pragma is applied to primitive operation Op
-of interface Iface, it is illegal to override Op in a type that implements
-Iface, with anything other than an entry.
+This is an Ada 2012 representation pragma which applies to protected, task
+and synchronized interface primitives. The use of pragma Implemented provides
+a way to impose a static requirement on the overriding opreration by adhering
+to one of the three implementation kids: entry, protected procedure or any of
+the above.
 
 @smallexample @c ada
-type Iface is protected interface;
-procedure Do_Something (Object : in out Iface) is abstract;
-pragma Implemented_By_Entry (Do_Something);
+type Synch_Iface is synchronized interface;
+procedure Prim_Op (Obj : in out Iface) is abstract;
+pragma Implemented (Prim_Op, By_Protected_Procedure);
 
-protected type P is new Iface with
-   procedure Do_Something;  --  Illegal
-end P;
+protected type Prot_1 is new Synch_Iface with
+   procedure Prim_Op;  --  Legal
+end Prot_1;
 
-task type T is new Iface with
-   entry Do_Something;      --  Legal
-end T;
+protected type Prot_2 is new Synch_Iface with
+   entry Prim_Op;      --  Illegal
+end Prot_2;
+
+task type Task_Typ is new Synch_Iface with
+   entry Prim_Op;      --  Illegal
+end Task_Typ;
 @end smallexample
 
 @noindent
-NOTE: The pragma is still in its design stage by the Ada Rapporteur Group. It
-is intended to be used in conjunction with dispatching requeue statements as
-described in AI05-0030. Should the ARG decide on an official name and syntax,
-this pragma will become language-defined rather than GNAT-specific.
+When applied to the procedure_or_entry_NAME of a requeue statement, pragma
+Implemented determines the runtime behavior of the requeue. Implementation kind
+By_Entry guarantees that the action of requeueing will procede from an entry to
+another entry. Implementation kind By_Protected_Procedure transforms the
+requeue into a dispatching call, thus eliminating the chance of blocking. Kind
+By_Any shares the behavior of By_Entry and By_Protected_Procedure depending on
+the target's overriding subprogram kind.
 
 @node Pragma Implicit_Packing
 @unnumberedsec Pragma Implicit_Packing
@@ -3039,6 +3007,43 @@ Overriding the default state of signals used by the Ada runtime may interfere
 with an application's runtime behavior in the cases of the synchronous signals,
 and in the case of the signal used to implement the @code{abort} statement.
 
+@node Pragma Invariant
+@unnumberedsec Pragma Invariant
+@findex Invariant
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Invariant
+  ([Entity =>]    private_type_LOCAL_NAME,
+   [Check  =>]    EXPRESSION
+   [,[Message =>] String_Expression]);
+@end smallexample
+
+@noindent
+This pragma provides exactly the same capabilities as the Invariant aspect
+defined in AI05-0146-1, and in the Ada 2012 Reference Manual. The Invariant
+aspect is fully implemented in Ada 2012 mode, but since it requires the use
+of the aspect syntax, which is not available exception in 2012 mode, it is
+not possible to use the Invariant aspect in earlier versions of Ada. However
+the Invariant pragma may be used in any version of Ada.
+
+The pragma must appear within the visible part of the package specification,
+after the type to which its Entity argument appears. As with the Invariant
+aspect, the Check expression is not analyzed until the end of the visible
+part of the package, so it may contain forward references. The Message
+argument, if present, provides the exception message used if the invariant
+is violated. If no Message parameter is provided, a default message that
+identifies the line on which the pragma appears is used.
+
+It is permissible to have multiple Invariants for the same type entity, in
+which case they are and'ed together. It is permissible to use this pragma
+in Ada 2012 mode, but you cannot have both an invariant aspect and an
+invariant pragma for the same entity.
+
+For further details on the use of this pragma, see the Ada 2012 documentation
+of the Invariant aspect.
+
 @node Pragma Keep_Names
 @unnumberedsec Pragma Keep_Names
 @findex Keep_Names
@@ -3344,9 +3349,6 @@ type @code{Long_Float} and for floating point type representations with
 For further details on this pragma, see the
 @cite{DEC Ada Language Reference Manual}, section 3.5.7b.  Note that to use
 this pragma, the standard runtime libraries must be recompiled.
-@xref{The GNAT Run-Time Library Builder gnatlbr,,, gnat_ugn,
-@value{EDITION} User's Guide OpenVMS}, for a description of the
-@code{GNAT LIBRARY} command.
 
 @node Pragma Machine_Attribute
 @unnumberedsec Pragma Machine_Attribute
@@ -3730,6 +3732,101 @@ that units with an explicit configuration pragma in the same file as the source
 unit are excluded from the consistency check, as are all predefined units. The
 latter are compiled by default in pragma Optimize_Alignment (Off) mode if no
 pragma appears at the start of the file.
+
+@node Pragma Ordered
+@unnumberedsec Pragma Ordered
+@findex Ordered
+@findex pragma @code{Ordered}
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Ordered (enumeration_first_subtype_LOCAL_NAME);
+@end smallexample
+
+@noindent
+Most enumeration types are from a conceptual point of view unordered.
+For example, consider:
+
+@smallexample @c ada
+type Color is (Red, Blue, Green, Yellow);
+@end smallexample
+
+@noindent
+By Ada semantics @code{Blue > Red} and @code{Green > Blue},
+but really these relations make no sense; the enumeration type merely
+specifies a set of possible colors, and the order is unimportant.
+
+For unordered enumeration types, it is generally a good idea if
+clients avoid comparisons (other than equality or inequality) and
+explicit ranges. (A @emph{client} is a unit where the type is referenced,
+other than the unit where the type is declared, its body, and its subunits.)
+For example, if code buried in some client says:
+
+@smallexample @c ada
+if Current_Color < Yellow then ...
+if Current_Color in Blue .. Green then ...
+@end smallexample
+
+@noindent
+then the client code is relying on the order, which is undesirable.
+It makes the code hard to read and creates maintenance difficulties if
+entries have to be added to the enumeration type. Instead,
+the code in the client should list the possibilities, or an
+appropriate subtype should be declared in the unit that declares
+the original enumeration type. E.g., the following subtype could
+be declared along with the type @code{Color}:
+
+@smallexample @c ada
+subtype RBG is Color range Red .. Green;
+@end smallexample
+
+@noindent
+and then the client could write:
+
+@smallexample @c ada
+if Current_Color in RBG then ...
+if Current_Color = Blue or Current_Color = Green then ...
+@end smallexample
+
+@noindent
+However, some enumeration types are legitimately ordered from a conceptual
+point of view. For example, if you declare:
+
+@smallexample @c ada
+type Day is (Mon, Tue, Wed, Thu, Fri, Sat, Sun);
+@end smallexample
+
+@noindent
+then the ordering imposed by the language is reasonable, and
+clients can depend on it, writing for example:
+
+@smallexample @c ada
+if D in Mon .. Fri then ...
+if D < Wed then ...
+@end smallexample
+
+@noindent
+The pragma @option{Ordered} is provided to mark enumeration types that
+are conceptually ordered, alerting the reader that clients may depend
+on the ordering. GNAT provides a pragma to mark enumerations as ordered
+rather than one to mark them as unordered, since in our experience,
+the great majority of enumeration types are conceptually unordered.
+
+The types @code{Boolean}, @code{Character}, @code{Wide_Character},
+and @code{Wide_Wide_Character}
+are considered to be ordered types, so each is declared with a
+pragma @code{Ordered} in package @code{Standard}.
+
+Normally pragma @code{Ordered} serves only as documentation and a guide for
+coding standards, but GNAT provides a warning switch @option{-gnatw.u} that
+requests warnings for inappropriate uses (comparisons and explicit
+subranges) for unordered types. If this switch is used, then any
+enumeration type not marked with pragma @code{Ordered} will be considered
+as unordered, and will generate warnings for inappropriate uses.
+
+For additional information please refer to the description of the
+@option{-gnatw.u} switch in the @value{EDITION} User's Guide.
 
 @node Pragma Passive
 @unnumberedsec Pragma Passive
@@ -4274,6 +4371,14 @@ modifies a global variable (the count).  Memo functions are another
 example (where a table of previous calls is kept and consulted to
 avoid re-computation).
 
+Note also that the normal rules excluding optimization of subprograms
+in pure units (when parameter types are descended from System.Address,
+or when the full view of a parameter type is limited), do not apply
+for the Pure_Function case. If you explicitly specify Pure_Function,
+the compiler may optimize away calls with identical arguments, and
+if that results in unexpected behavior, the proper action is not to
+use the pragma for subprograms that are not (conceptually) pure.
+
 @findex Pure
 Note: Most functions in a @code{Pure} package are automatically pure, and
 there is no need to use pragma @code{Pure_Function} for such functions.  One
@@ -4338,7 +4443,23 @@ short-circuited logical operators. If this configuration pragma occurs locally
 within the file being compiled, it applies only to the file being compiled.
 There is no requirement that all units in a partition use this option.
 
-semantics are identical to pragma Atomic.
+@node Pragma Short_Descriptors
+@unnumberedsec Pragma Short_Descriptors
+@findex Short_Descriptors
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Short_Descriptors
+@end smallexample
+
+@noindent
+In VMS versions of the compiler, this configuration pragma causes all
+occurrences of the mechanism types Descriptor[_xxx] to be treated as
+Short_Descriptor[_xxx]. This is helpful in porting legacy applications from a
+32-bit environment to a 64-bit environment. This pragma is ignored for non-VMS
+versions.
+
 @node Pragma Source_File_Name
 @unnumberedsec Pragma Source_File_Name
 @findex Source_File_Name
@@ -4686,11 +4807,13 @@ pragma Suppress_All;
 @end smallexample
 
 @noindent
-This pragma can only appear immediately following a compilation
-unit.  The effect is to apply @code{Suppress (All_Checks)} to the unit
-which it follows.  This pragma is implemented for compatibility with DEC
-Ada 83 usage.  The use of pragma @code{Suppress (All_Checks)} as a normal
-configuration pragma is the preferred usage in GNAT@.
+This pragma can appear anywhere within a unit.
+The effect is to apply @code{Suppress (All_Checks)} to the unit
+in which it appears.  This pragma is implemented for compatibility with DEC
+Ada 83 usage where it appears at the end of a unit, and for compatibility
+with Rational Ada, where it appears as a program unit pragma.
+The use of the standard Ada pragma @code{Suppress (All_Checks)}
+as a normal configuration pragma is the preferred usage in GNAT@.
 
 @node Pragma Suppress_Exception_Locations
 @unnumberedsec Pragma Suppress_Exception_Locations
@@ -5453,6 +5576,7 @@ consideration, you should minimize the use of these attributes.
 * Passed_By_Reference::
 * Pool_Address::
 * Range_Length::
+* Ref::
 * Result::
 * Safe_Emax::
 * Safe_Large::
@@ -5569,7 +5693,7 @@ and implementation of the @code{Bit} attribute.
 @unnumberedsec Bit_Position
 @findex Bit_Position
 @noindent
-@code{@var{R.C}'Bit}, where @var{R} is a record object and C is one
+@code{@var{R.C}'Bit_Position}, where @var{R} is a record object and C is one
 of the fields of the record type, yields the bit
 offset within the record contains the first bit of
 storage allocated for the object.  The value of this attribute is of the
@@ -5745,11 +5869,11 @@ may raise @code{Constraint_Error}.
 @cindex Representation of enums
 @findex Enum_Val
 @noindent
-For every enumeration subtype @var{S}, @code{@var{S}'Enum_Rep} denotes a
+For every enumeration subtype @var{S}, @code{@var{S}'Enum_Val} denotes a
 function with the following spec:
 
 @smallexample @c ada
-function @var{S}'Enum_Rep (Arg : @i{Universal_Integer)
+function @var{S}'Enum_Val (Arg : @i{Universal_Integer)
   return @var{S}'Base};
 @end smallexample
 
@@ -6026,14 +6150,17 @@ will be 64 (8 bytes).
 @cindex Postconditions
 @noindent
 The attribute Prefix'Old can be used within a
-subprogram to refer to the value of the prefix on entry. So for
+subprogram body or within a precondition or
+postcondition pragma. The effect is to
+refer to the value of the prefix on entry. So for
 example if you have an argument of a record type X called Arg1,
 you can refer to Arg1.Field'Old which yields the value of
 Arg1.Field on entry. The implementation simply involves generating
 an object declaration which captures the value on entry. Any
 prefix is allowed except one of a limited type (since limited
-types cannot be copied to capture their values) or a local variable
-(since it does not exist at subprogram entry time).
+types cannot be copied to capture their values) or an expression
+which references a local variable
+(since local variables do not exist at subprogram entry time).
 
 The following example shows the use of 'Old to implement
 a test of a postcondition:
@@ -6104,6 +6231,16 @@ the number of values represented by the subtype (zero for a null
 range).  The result is static for static subtypes.  @code{Range_Length}
 applied to the index subtype of a one dimensional array always gives the
 same result as @code{Range} applied to the array itself.
+
+@node Ref
+@unnumberedsec Ref
+@findex Ref
+@noindent
+The @code{System.Address'Ref}
+(@code{System.Address} is the only permissible prefix)
+denotes a function identical to
+@code{System.Storage_Elements.To_Address} except that
+it is a static attribute.  See @ref{To_Address} for more details.
 
 @node Result
 @unnumberedsec Result
@@ -6266,9 +6403,7 @@ number.  The static result is the string consisting of the characters of
 the number as defined in the original source.  This allows the user
 program to access the actual text of named numbers without intermediate
 conversions and without the need to enclose the strings in quotes (which
-would preclude their use as numbers).  This is used internally for the
-construction of values of the floating-point attributes from the file
-@file{ttypef.ads}, but may also be used by user programs.
+would preclude their use as numbers).
 
 For example, the following program prints the first 50 digits of pi:
 
@@ -7095,16 +7230,16 @@ for scalar types.
 @cindex Stream oriented attributes
 The XDR implementation is provided as an alternative body of the
 @code{System.Stream_Attributes} package, in the file
-@file{s-strxdr.adb} in the GNAT library.
-There is no @file{s-strxdr.ads} file.
+@file{s-stratt-xdr.adb} in the GNAT library.
+There is no @file{s-stratt-xdr.ads} file.
 In order to install the XDR implementation, do the following:
 @enumerate
 @item Replace the default implementation of the
 @code{System.Stream_Attributes} package with the XDR implementation.
 For example on a Unix platform issue the commands:
 @smallexample
-$ mv s-stratt.adb s-strold.adb
-$ mv s-strxdr.adb s-stratt.adb
+$ mv s-stratt.adb s-stratt-default.adb
+$ mv s-stratt-xdr.adb s-stratt.adb
 @end smallexample
 
 @item
@@ -7793,10 +7928,11 @@ Followed.
 @chapter Implementation Defined Characteristics
 
 @noindent
-In addition to the implementation dependent pragmas and attributes, and
-the implementation advice, there are a number of other Ada features
-that are potentially implementation dependent.  These are mentioned
-throughout the Ada Reference Manual, and are summarized in Annex M@.
+In addition to the implementation dependent pragmas and attributes, and the
+implementation advice, there are a number of other Ada features that are
+potentially implementation dependent and are designated as
+implementation-defined. These are mentioned throughout the Ada Reference
+Manual, and are summarized in Annex M@.
 
 A requirement for conforming Ada compilers is that they provide
 documentation describing how the implementation deals with each of these
@@ -8412,6 +8548,35 @@ made with appropriate alignment
 @sp 1
 @cartouche
 @noindent
+@strong{53}. The semantics of operations on invalid representations.
+See 13.9.2(10-11).
+@end cartouche
+@noindent
+For assignments and other operations where the use of invalid values cannot
+result in erroneous behavior, the compiler ignores the possibility of invalid
+values. An exception is raised at the point where an invalid value would
+result in erroneous behavior. For example executing:
+
+@smallexample @c ada
+procedure invalidvals is
+   X : Integer := -1;
+   Y : Natural range 1 .. 10;
+   for Y'Address use X'Address;
+   Z : Natural range 1 .. 10;
+   A : array (Natural range 1 .. 10) of Integer;
+begin
+   Z := Y;     -- no exception
+   A (Z) := 3; -- exception raised;
+end;
+@end smallexample
+
+@noindent
+As indicated, an exception is raised on the array assignment, but not
+on the simple assignment of the invalid negative value from Y to Z.
+
+@sp 1
+@cartouche
+@noindent
 @strong{53}.  The manner of choosing a storage pool for an access type
 when @code{Storage_Pool} is not specified for the type.  See 13.11(17).
 @end cartouche
@@ -8967,8 +9132,8 @@ random numbers is one microsecond.
 Annex is not supported.  See A.5.3(72).
 @end cartouche
 @noindent
-See the source file @file{ttypef.ads} for the values of all numeric
-attributes.
+Run the compiler with @option{-gnatS} to produce a listing of package
+@code{Standard}, has the values of all numeric attributes.
 
 @sp 1
 @cartouche
@@ -9025,7 +9190,104 @@ main program in the natural manner.
 @sp 1
 @cartouche
 @noindent
-@strong{74}.  Implementation-defined convention names.  See B.1(11).
+@strong{74}.  The interpretation of the @code{Form} parameter in procedure
+@code{Create_Directory}.  See A.16(56).
+@end cartouche
+@noindent
+The @code{Form} parameter is not used.
+
+@sp 1
+@cartouche
+@noindent
+@strong{75}.  The interpretation of the @code{Form} parameter in procedure
+@code{Create_Path}.  See A.16(60).
+@end cartouche
+@noindent
+The @code{Form} parameter is not used.
+
+@sp 1
+@cartouche
+@noindent
+@strong{76}.  The interpretation of the @code{Form} parameter in procedure
+@code{Copy_File}.  See A.16(68).
+@end cartouche
+@noindent
+The @code{Form} parameter is case-insensitive.
+
+Two fields are recognized in the @code{Form} parameter:
+
+@table @code
+
+@item preserve=<value>
+
+@item mode=<value>
+
+@end table
+
+@noindent
+<value> starts immediately after the character '=' and ends with the
+character immediately preceding the next comma (',') or with the last
+character of the parameter.
+
+The only possible values for preserve= are:
+
+@table @code
+
+@item no_attributes
+Do not try to preserve any file attributes. This is the default if no
+preserve= is found in Form.
+
+@item all_attributes
+Try to preserve all file attributes (timestamps, access rights).
+
+@item timestamps
+Preserve the timestamp of the copied file, but not the other file attributes.
+
+@end table
+
+@noindent
+The only possible values for mode= are:
+
+@table @code
+
+@item copy
+Only do the copy if the destination file does not already exist. If it already
+exists, Copy_File fails.
+
+@item overwrite
+Copy the file in all cases. Overwite an already existing destination file.
+
+@item append
+Append the original file to the destination file. If the destination file does
+not exist, the destination file is a copy of the source file. When mode=append,
+the field preserve=, if it exists, is not taken into account.
+
+@end table
+
+@noindent
+If the Form parameter includes one or both of the fields and the value or
+values are incorrect, Copy_file fails with Use_Error.
+
+Examples of correct Forms:
+
+@smallexample
+Form => "preserve=no_attributes,mode=overwrite" (the default)
+Form => "mode=append"
+Form => "mode=copy, preserve=all_attributes"
+@end smallexample
+
+@noindent
+Examples of incorrect Forms
+
+@smallexample
+Form => "preserve=junk"
+Form => "mode=internal, preserve=timestamps"
+@end smallexample
+
+@sp 1
+@cartouche
+@noindent
+@strong{77}.  Implementation-defined convention names.  See B.1(11).
 @end cartouche
 @noindent
 The following convention names are supported
@@ -9083,7 +9345,7 @@ implementations, these names are accepted silently.
 @sp 1
 @cartouche
 @noindent
-@strong{75}.  The meaning of link names.  See B.1(36).
+@strong{78}.  The meaning of link names.  See B.1(36).
 @end cartouche
 @noindent
 Link names are the actual names used by the linker.
@@ -9091,7 +9353,7 @@ Link names are the actual names used by the linker.
 @sp 1
 @cartouche
 @noindent
-@strong{76}.  The manner of choosing link names when neither the link
+@strong{79}.  The manner of choosing link names when neither the link
 name nor the address of an imported or exported entity is specified.  See
 B.1(36).
 @end cartouche
@@ -9103,7 +9365,7 @@ letters.
 @sp 1
 @cartouche
 @noindent
-@strong{77}.  The effect of pragma @code{Linker_Options}.  See B.1(37).
+@strong{80}.  The effect of pragma @code{Linker_Options}.  See B.1(37).
 @end cartouche
 @noindent
 The string passed to @code{Linker_Options} is presented uninterpreted as
@@ -9124,7 +9386,7 @@ from the corresponding package spec.
 @sp 1
 @cartouche
 @noindent
-@strong{78}.  The contents of the visible part of package
+@strong{81}.  The contents of the visible part of package
 @code{Interfaces} and its language-defined descendants.  See B.2(1).
 @end cartouche
 @noindent
@@ -9133,7 +9395,7 @@ See files with prefix @file{i-} in the distributed library.
 @sp 1
 @cartouche
 @noindent
-@strong{79}.  Implementation-defined children of package
+@strong{82}.  Implementation-defined children of package
 @code{Interfaces}.  The contents of the visible part of package
 @code{Interfaces}.  See B.2(11).
 @end cartouche
@@ -9143,7 +9405,7 @@ See files with prefix @file{i-} in the distributed library.
 @sp 1
 @cartouche
 @noindent
-@strong{80}.  The types @code{Floating}, @code{Long_Floating},
+@strong{83}.  The types @code{Floating}, @code{Long_Floating},
 @code{Binary}, @code{Long_Binary}, @code{Decimal_ Element}, and
 @code{COBOL_Character}; and the initialization of the variables
 @code{Ada_To_COBOL} and @code{COBOL_To_Ada}, in
@@ -9171,7 +9433,7 @@ For initialization, see the file @file{i-cobol.ads} in the distributed library.
 @sp 1
 @cartouche
 @noindent
-@strong{81}.  Support for access to machine instructions.  See C.1(1).
+@strong{84}.  Support for access to machine instructions.  See C.1(1).
 @end cartouche
 @noindent
 See documentation in file @file{s-maccod.ads} in the distributed library.
@@ -9179,7 +9441,7 @@ See documentation in file @file{s-maccod.ads} in the distributed library.
 @sp 1
 @cartouche
 @noindent
-@strong{82}.  Implementation-defined aspects of access to machine
+@strong{85}.  Implementation-defined aspects of access to machine
 operations.  See C.1(9).
 @end cartouche
 @noindent
@@ -9188,7 +9450,7 @@ See documentation in file @file{s-maccod.ads} in the distributed library.
 @sp 1
 @cartouche
 @noindent
-@strong{83}.  Implementation-defined aspects of interrupts.  See C.3(2).
+@strong{86}.  Implementation-defined aspects of interrupts.  See C.3(2).
 @end cartouche
 @noindent
 Interrupts are mapped to signals or conditions as appropriate.  See
@@ -9199,7 +9461,7 @@ on the interrupts supported on a particular target.
 @sp 1
 @cartouche
 @noindent
-@strong{84}.  Implementation-defined aspects of pre-elaboration.  See
+@strong{87}.  Implementation-defined aspects of pre-elaboration.  See
 C.4(13).
 @end cartouche
 @noindent
@@ -9209,7 +9471,7 @@ except under control of the debugger.
 @sp 1
 @cartouche
 @noindent
-@strong{85}.  The semantics of pragma @code{Discard_Names}.  See C.5(7).
+@strong{88}.  The semantics of pragma @code{Discard_Names}.  See C.5(7).
 @end cartouche
 @noindent
 Pragma @code{Discard_Names} causes names of enumeration literals to
@@ -9220,7 +9482,7 @@ Pos values.
 @sp 1
 @cartouche
 @noindent
-@strong{86}.  The result of the @code{Task_Identification.Image}
+@strong{89}.  The result of the @code{Task_Identification.Image}
 attribute.  See C.7.1(7).
 @end cartouche
 @noindent
@@ -9250,7 +9512,7 @@ virtual address of the control block of the task.
 @sp 1
 @cartouche
 @noindent
-@strong{87}.  The value of @code{Current_Task} when in a protected entry
+@strong{90}.  The value of @code{Current_Task} when in a protected entry
 or interrupt handler.  See C.7.1(17).
 @end cartouche
 @noindent
@@ -9260,7 +9522,7 @@ convenient thread, so the value of @code{Current_Task} is undefined.
 @sp 1
 @cartouche
 @noindent
-@strong{88}.  The effect of calling @code{Current_Task} from an entry
+@strong{91}.  The effect of calling @code{Current_Task} from an entry
 body or interrupt handler.  See C.7.1(19).
 @end cartouche
 @noindent
@@ -9271,7 +9533,7 @@ executing the code.
 @sp 1
 @cartouche
 @noindent
-@strong{89}.  Implementation-defined aspects of
+@strong{92}.  Implementation-defined aspects of
 @code{Task_Attributes}.  See C.7.2(19).
 @end cartouche
 @noindent
@@ -9280,7 +9542,7 @@ There are no implementation-defined aspects of @code{Task_Attributes}.
 @sp 1
 @cartouche
 @noindent
-@strong{90}.  Values of all @code{Metrics}.  See D(2).
+@strong{93}.  Values of all @code{Metrics}.  See D(2).
 @end cartouche
 @noindent
 The metrics information for GNAT depends on the performance of the
@@ -9295,7 +9557,7 @@ the required metrics.
 @sp 1
 @cartouche
 @noindent
-@strong{91}.  The declarations of @code{Any_Priority} and
+@strong{94}.  The declarations of @code{Any_Priority} and
 @code{Priority}.  See D.1(11).
 @end cartouche
 @noindent
@@ -9304,7 +9566,7 @@ See declarations in file @file{system.ads}.
 @sp 1
 @cartouche
 @noindent
-@strong{92}.  Implementation-defined execution resources.  See D.1(15).
+@strong{95}.  Implementation-defined execution resources.  See D.1(15).
 @end cartouche
 @noindent
 There are no implementation-defined execution resources.
@@ -9312,7 +9574,7 @@ There are no implementation-defined execution resources.
 @sp 1
 @cartouche
 @noindent
-@strong{93}.  Whether, on a multiprocessor, a task that is waiting for
+@strong{96}.  Whether, on a multiprocessor, a task that is waiting for
 access to a protected object keeps its processor busy.  See D.2.1(3).
 @end cartouche
 @noindent
@@ -9322,7 +9584,7 @@ object does not keep its processor busy.
 @sp 1
 @cartouche
 @noindent
-@strong{94}.  The affect of implementation defined execution resources
+@strong{97}.  The affect of implementation defined execution resources
 on task dispatching.  See D.2.1(9).
 @end cartouche
 @noindent
@@ -9338,7 +9600,7 @@ underlying operating system.
 @sp 1
 @cartouche
 @noindent
-@strong{95}.  Implementation-defined @code{policy_identifiers} allowed
+@strong{98}.  Implementation-defined @code{policy_identifiers} allowed
 in a pragma @code{Task_Dispatching_Policy}.  See D.2.2(3).
 @end cartouche
 @noindent
@@ -9348,7 +9610,7 @@ pragma.
 @sp 1
 @cartouche
 @noindent
-@strong{96}.  Implementation-defined aspects of priority inversion.  See
+@strong{99}.  Implementation-defined aspects of priority inversion.  See
 D.2.2(16).
 @end cartouche
 @noindent
@@ -9358,7 +9620,7 @@ of delay expirations for lower priority tasks.
 @sp 1
 @cartouche
 @noindent
-@strong{97}.  Implementation defined task dispatching.  See D.2.2(18).
+@strong{100}.  Implementation defined task dispatching.  See D.2.2(18).
 @end cartouche
 @noindent
 @c SGI info:
@@ -9371,7 +9633,7 @@ The policy is the same as that of the underlying threads implementation.
 @sp 1
 @cartouche
 @noindent
-@strong{98}.  Implementation-defined @code{policy_identifiers} allowed
+@strong{101}.  Implementation-defined @code{policy_identifiers} allowed
 in a pragma @code{Locking_Policy}.  See D.3(4).
 @end cartouche
 @noindent
@@ -9384,7 +9646,7 @@ requesting the lock.
 @sp 1
 @cartouche
 @noindent
-@strong{99}.  Default ceiling priorities.  See D.3(10).
+@strong{102}.  Default ceiling priorities.  See D.3(10).
 @end cartouche
 @noindent
 The ceiling priority of protected objects of the type
@@ -9394,7 +9656,7 @@ Reference Manual D.3(10),
 @sp 1
 @cartouche
 @noindent
-@strong{100}.  The ceiling of any protected object used internally by
+@strong{103}.  The ceiling of any protected object used internally by
 the implementation.  See D.3(16).
 @end cartouche
 @noindent
@@ -9404,7 +9666,7 @@ The ceiling priority of internal protected objects is
 @sp 1
 @cartouche
 @noindent
-@strong{101}.  Implementation-defined queuing policies.  See D.4(1).
+@strong{104}.  Implementation-defined queuing policies.  See D.4(1).
 @end cartouche
 @noindent
 There are no implementation-defined queuing policies.
@@ -9412,7 +9674,7 @@ There are no implementation-defined queuing policies.
 @sp 1
 @cartouche
 @noindent
-@strong{102}.  On a multiprocessor, any conditions that cause the
+@strong{105}.  On a multiprocessor, any conditions that cause the
 completion of an aborted construct to be delayed later than what is
 specified for a single processor.  See D.6(3).
 @end cartouche
@@ -9423,7 +9685,7 @@ processor, there are no further delays.
 @sp 1
 @cartouche
 @noindent
-@strong{103}.  Any operations that implicitly require heap storage
+@strong{106}.  Any operations that implicitly require heap storage
 allocation.  See D.7(8).
 @end cartouche
 @noindent
@@ -9433,7 +9695,7 @@ task creation.
 @sp 1
 @cartouche
 @noindent
-@strong{104}.  Implementation-defined aspects of pragma
+@strong{107}.  Implementation-defined aspects of pragma
 @code{Restrictions}.  See D.7(20).
 @end cartouche
 @noindent
@@ -9442,7 +9704,7 @@ There are no such implementation-defined aspects.
 @sp 1
 @cartouche
 @noindent
-@strong{105}.  Implementation-defined aspects of package
+@strong{108}.  Implementation-defined aspects of package
 @code{Real_Time}.  See D.8(17).
 @end cartouche
 @noindent
@@ -9451,7 +9713,7 @@ There are no implementation defined aspects of package @code{Real_Time}.
 @sp 1
 @cartouche
 @noindent
-@strong{106}.  Implementation-defined aspects of
+@strong{109}.  Implementation-defined aspects of
 @code{delay_statements}.  See D.9(8).
 @end cartouche
 @noindent
@@ -9461,7 +9723,7 @@ delayed (see D.9(7)).
 @sp 1
 @cartouche
 @noindent
-@strong{107}.  The upper bound on the duration of interrupt blocking
+@strong{110}.  The upper bound on the duration of interrupt blocking
 caused by the implementation.  See D.12(5).
 @end cartouche
 @noindent
@@ -9471,7 +9733,7 @@ no cases is it more than 10 milliseconds.
 @sp 1
 @cartouche
 @noindent
-@strong{108}.  The means for creating and executing distributed
+@strong{111}.  The means for creating and executing distributed
 programs.  See E(5).
 @end cartouche
 @noindent
@@ -9481,7 +9743,7 @@ distributed programs.  See the GLADE reference manual for further details.
 @sp 1
 @cartouche
 @noindent
-@strong{109}.  Any events that can result in a partition becoming
+@strong{112}.  Any events that can result in a partition becoming
 inaccessible.  See E.1(7).
 @end cartouche
 @noindent
@@ -9490,7 +9752,7 @@ See the GLADE reference manual for full details on such events.
 @sp 1
 @cartouche
 @noindent
-@strong{110}.  The scheduling policies, treatment of priorities, and
+@strong{113}.  The scheduling policies, treatment of priorities, and
 management of shared resources between partitions in certain cases.  See
 E.1(11).
 @end cartouche
@@ -9501,7 +9763,7 @@ multi-partition execution.
 @sp 1
 @cartouche
 @noindent
-@strong{111}.  Events that cause the version of a compilation unit to
+@strong{114}.  Events that cause the version of a compilation unit to
 change.  See E.3(5).
 @end cartouche
 @noindent
@@ -9514,7 +9776,7 @@ comments.
 @sp 1
 @cartouche
 @noindent
-@strong{112}.  Whether the execution of the remote subprogram is
+@strong{115}.  Whether the execution of the remote subprogram is
 immediately aborted as a result of cancellation.  See E.4(13).
 @end cartouche
 @noindent
@@ -9524,7 +9786,7 @@ a distributed application.
 @sp 1
 @cartouche
 @noindent
-@strong{113}.  Implementation-defined aspects of the PCS@.  See E.5(25).
+@strong{116}.  Implementation-defined aspects of the PCS@.  See E.5(25).
 @end cartouche
 @noindent
 See the GLADE reference manual for a full description of all implementation
@@ -9533,7 +9795,7 @@ defined aspects of the PCS@.
 @sp 1
 @cartouche
 @noindent
-@strong{114}.  Implementation-defined interfaces in the PCS@.  See
+@strong{117}.  Implementation-defined interfaces in the PCS@.  See
 E.5(26).
 @end cartouche
 @noindent
@@ -9543,7 +9805,7 @@ implementation defined interfaces.
 @sp 1
 @cartouche
 @noindent
-@strong{115}.  The values of named numbers in the package
+@strong{118}.  The values of named numbers in the package
 @code{Decimal}.  See F.2(7).
 @end cartouche
 @noindent
@@ -9563,7 +9825,7 @@ implementation defined interfaces.
 @sp 1
 @cartouche
 @noindent
-@strong{116}.  The value of @code{Max_Picture_Length} in the package
+@strong{119}.  The value of @code{Max_Picture_Length} in the package
 @code{Text_IO.Editing}.  See F.3.3(16).
 @end cartouche
 @noindent
@@ -9572,7 +9834,7 @@ implementation defined interfaces.
 @sp 1
 @cartouche
 @noindent
-@strong{117}.  The value of @code{Max_Picture_Length} in the package
+@strong{120}.  The value of @code{Max_Picture_Length} in the package
 @code{Wide_Text_IO.Editing}.  See F.3.4(5).
 @end cartouche
 @noindent
@@ -9581,7 +9843,7 @@ implementation defined interfaces.
 @sp 1
 @cartouche
 @noindent
-@strong{118}.  The accuracy actually achieved by the complex elementary
+@strong{121}.  The accuracy actually achieved by the complex elementary
 functions and by other complex arithmetic operations.  See G.1(1).
 @end cartouche
 @noindent
@@ -9591,7 +9853,7 @@ operations.  Only fast math mode is currently supported.
 @sp 1
 @cartouche
 @noindent
-@strong{119}.  The sign of a zero result (or a component thereof) from
+@strong{122}.  The sign of a zero result (or a component thereof) from
 any operator or function in @code{Numerics.Generic_Complex_Types}, when
 @code{Real'Signed_Zeros} is True.  See G.1.1(53).
 @end cartouche
@@ -9602,7 +9864,7 @@ implementation advice.
 @sp 1
 @cartouche
 @noindent
-@strong{120}.  The sign of a zero result (or a component thereof) from
+@strong{123}.  The sign of a zero result (or a component thereof) from
 any operator or function in
 @code{Numerics.Generic_Complex_Elementary_Functions}, when
 @code{Real'Signed_Zeros} is @code{True}.  See G.1.2(45).
@@ -9614,7 +9876,7 @@ implementation advice.
 @sp 1
 @cartouche
 @noindent
-@strong{121}.  Whether the strict mode or the relaxed mode is the
+@strong{124}.  Whether the strict mode or the relaxed mode is the
 default.  See G.2(2).
 @end cartouche
 @noindent
@@ -9624,7 +9886,7 @@ provides a highly efficient implementation of strict mode.
 @sp 1
 @cartouche
 @noindent
-@strong{122}.  The result interval in certain cases of fixed-to-float
+@strong{125}.  The result interval in certain cases of fixed-to-float
 conversion.  See G.2.1(10).
 @end cartouche
 @noindent
@@ -9635,7 +9897,7 @@ floating-point format.
 @sp 1
 @cartouche
 @noindent
-@strong{123}.  The result of a floating point arithmetic operation in
+@strong{126}.  The result of a floating point arithmetic operation in
 overflow situations, when the @code{Machine_Overflows} attribute of the
 result type is @code{False}.  See G.2.1(13).
 @end cartouche
@@ -9652,7 +9914,7 @@ properly generated.
 @sp 1
 @cartouche
 @noindent
-@strong{124}.  The result interval for division (or exponentiation by a
+@strong{127}.  The result interval for division (or exponentiation by a
 negative exponent), when the floating point hardware implements division
 as multiplication by a reciprocal.  See G.2.1(16).
 @end cartouche
@@ -9662,7 +9924,7 @@ Not relevant, division is IEEE exact.
 @sp 1
 @cartouche
 @noindent
-@strong{125}.  The definition of close result set, which determines the
+@strong{128}.  The definition of close result set, which determines the
 accuracy of certain fixed point multiplications and divisions.  See
 G.2.3(5).
 @end cartouche
@@ -9675,7 +9937,7 @@ is converted to the target type.
 @sp 1
 @cartouche
 @noindent
-@strong{126}.  Conditions on a @code{universal_real} operand of a fixed
+@strong{129}.  Conditions on a @code{universal_real} operand of a fixed
 point multiplication or division for which the result shall be in the
 perfect result set.  See G.2.3(22).
 @end cartouche
@@ -9687,7 +9949,7 @@ representable in 64-bits.
 @sp 1
 @cartouche
 @noindent
-@strong{127}.  The result of a fixed point arithmetic operation in
+@strong{130}.  The result of a fixed point arithmetic operation in
 overflow situations, when the @code{Machine_Overflows} attribute of the
 result type is @code{False}.  See G.2.3(27).
 @end cartouche
@@ -9698,7 +9960,7 @@ types.
 @sp 1
 @cartouche
 @noindent
-@strong{128}.  The result of an elementary function reference in
+@strong{131}.  The result of an elementary function reference in
 overflow situations, when the @code{Machine_Overflows} attribute of the
 result type is @code{False}.  See G.2.4(4).
 @end cartouche
@@ -9708,7 +9970,7 @@ IEEE infinite and Nan values are produced as appropriate.
 @sp 1
 @cartouche
 @noindent
-@strong{129}.  The value of the angle threshold, within which certain
+@strong{132}.  The value of the angle threshold, within which certain
 elementary functions, complex arithmetic operations, and complex
 elementary functions yield results conforming to a maximum relative
 error bound.  See G.2.4(10).
@@ -9719,7 +9981,7 @@ Information on this subject is not yet available.
 @sp 1
 @cartouche
 @noindent
-@strong{130}.  The accuracy of certain elementary functions for
+@strong{133}.  The accuracy of certain elementary functions for
 parameters beyond the angle threshold.  See G.2.4(10).
 @end cartouche
 @noindent
@@ -9728,7 +9990,7 @@ Information on this subject is not yet available.
 @sp 1
 @cartouche
 @noindent
-@strong{131}.  The result of a complex arithmetic operation or complex
+@strong{134}.  The result of a complex arithmetic operation or complex
 elementary function reference in overflow situations, when the
 @code{Machine_Overflows} attribute of the corresponding real type is
 @code{False}.  See G.2.6(5).
@@ -9739,7 +10001,7 @@ IEEE infinite and Nan values are produced as appropriate.
 @sp 1
 @cartouche
 @noindent
-@strong{132}.  The accuracy of certain complex arithmetic operations and
+@strong{135}.  The accuracy of certain complex arithmetic operations and
 certain complex elementary functions for parameters (or components
 thereof) beyond the angle threshold.  See G.2.6(8).
 @end cartouche
@@ -9749,7 +10011,7 @@ Information on those subjects is not yet available.
 @sp 1
 @cartouche
 @noindent
-@strong{133}.  Information regarding bounded errors and erroneous
+@strong{136}.  Information regarding bounded errors and erroneous
 execution.  See H.2(1).
 @end cartouche
 @noindent
@@ -9758,7 +10020,7 @@ Information on this subject is not yet available.
 @sp 1
 @cartouche
 @noindent
-@strong{134}.  Implementation-defined aspects of pragma
+@strong{137}.  Implementation-defined aspects of pragma
 @code{Inspection_Point}.  See H.3.2(8).
 @end cartouche
 @noindent
@@ -9768,7 +10030,7 @@ be examined by the debugger at the inspection point.
 @sp 1
 @cartouche
 @noindent
-@strong{135}.  Implementation-defined aspects of pragma
+@strong{138}.  Implementation-defined aspects of pragma
 @code{Restrictions}.  See H.4(25).
 @end cartouche
 @noindent
@@ -9779,7 +10041,7 @@ generated code.  Checks must suppressed by use of pragma @code{Suppress}.
 @sp 1
 @cartouche
 @noindent
-@strong{136}.  Any restrictions on pragma @code{Restrictions}.  See
+@strong{139}.  Any restrictions on pragma @code{Restrictions}.  See
 H.4(27).
 @end cartouche
 @noindent
@@ -16026,6 +16288,1615 @@ machines that are not fully compliant with this standard, such as Alpha, the
 @option{-mieee} compiler flag must be used for achieving IEEE confirming
 behavior (although at the cost of a significant performance penalty), so
 infinite and and NaN values are properly generated.
+
+
+@node Implementation of Ada 2012 Features
+@chapter Implementation of Ada 2012 Features
+@cindex Ada 2012 implementation status
+
+This chapter contains a complete list of Ada 2012 features that have been
+implemented as of GNAT version 6.4. Generally, these features are only
+available if the @option{-gnat12} (Ada 2012 features enabled) flag is set
+@cindex @option{-gnat12} option
+or if the configuration pragma @code{Ada_2012} is used.
+@cindex pragma @code{Ada_2012}
+@cindex configuration pragma @code{Ada_2012}
+@cindex @code{Ada_2012} configuration pragma
+However, new pragmas, attributes, and restrictions are
+unconditionally available, since the Ada 95 standard allows the addition of
+new pragmas, attributes, and restrictions (there are exceptions, which are
+documented in the individual descriptions), and also certain packages
+were made available in earlier versions of Ada.
+
+An ISO date (YYYY-MM-DD) appears in parentheses on the description line.
+This date shows the implementation date of the feature. Any wavefront
+subsequent to this date will contain the indicated feature, as will any
+subsequent releases. A date of 0000-00-00 means that GNAT has always
+implemented the feature, or implemented it as soon as it appeared as a
+binding interpretation.
+
+Each feature corresponds to an Ada Issue (``AI'') approved by the Ada
+standardization group (ISO/IEC JTC1/SC22/WG9) for inclusion in Ada 2012.
+The features are ordered based on the relevant sections of the Ada
+Reference Manual (``RM'').  When a given AI relates to multiple points
+in the RM, the earliest is used.
+
+A complete description of the AIs may be found in
+@url{www.ada-auth.org/ai05-summary.html}.
+
+@itemize @bullet
+
+@item
+@emph{AI-0176 Quantified expressions (2010-09-29)}
+@cindex AI-0176 (Ada 2012 feature)
+
+@noindent
+  Both universally and existentially quantified expressions are implemented.
+  They use the new syntax for iterators proposed in AI05-139-2, as well as
+  the standard Ada loop syntax.
+
+@noindent
+  RM References:  1.01.04 (12)   2.09 (2/2)   4.04 (7)   4.05.09 (0)
+
+@item
+@emph{AI-0079 Allow @i{other_format} characters in source (2010-07-10)}
+@cindex AI-0079 (Ada 2012 feature)
+
+@noindent
+  Wide characters in the unicode category @i{other_format} are now allowed in
+  source programs between tokens, but not within a token such as an identifier.
+
+@noindent
+  RM References:  2.01 (4/2)   2.02 (7)
+
+@item
+@emph{AI-0091 Do not allow @i{other_format} in identifiers (0000-00-00)}
+@cindex AI-0091 (Ada 2012 feature)
+
+@noindent
+  Wide characters in the unicode category @i{other_format} are not permitted
+  within  an identifier, since this can be a security problem. The error
+  message for this case has been improved to be more specific, but GNAT has
+  never allowed such characters to appear in identifiers.
+
+@noindent
+  RM References:  2.03 (3.1/2)   2.03 (4/2)   2.03 (5/2)   2.03 (5.1/2)   2.03 (5.2/2)   2.03 (5.3/2)   2.09 (2/2)
+
+@item
+@emph{AI-0100 Placement of pragmas  (2010-07-01)}
+@cindex AI-0100 (Ada 2012 feature)
+
+@noindent
+  This AI is an earlier version of AI-163. It simplifies the rules
+  for legal placement of pragmas. In the case of lists that allow pragmas, if
+  the list may have no elements, then the list may consist solely of pragmas.
+
+@noindent
+  RM References:  2.08 (7)
+
+@item
+@emph{AI-0163 Pragmas in place of null (2010-07-01)}
+@cindex AI-0163 (Ada 2012 feature)
+
+@noindent
+  A statement sequence may be composed entirely of pragmas. It is no longer
+  necessary to add a dummy @code{null} statement to make the sequence legal.
+
+@noindent
+  RM References:  2.08 (7)   2.08 (16)
+
+
+@item
+@emph{AI-0080 ``View of'' not needed if clear from context (0000-00-00)}
+@cindex AI-0080 (Ada 2012 feature)
+
+@noindent
+  This is an editorial change only, described as non-testable in the AI.
+
+@noindent
+  RM References:  3.01 (7)
+
+
+@item
+@emph{AI-0183 Aspect specifications (2010-08-16)}
+@cindex AI-0183 (Ada 2012 feature)
+
+@noindent
+  Aspect specifications have been fully implemented except for pre and post-
+  conditions, and type invariants, which have their own separate AI's. All
+  forms of declarations listed in the AI are supported. The following is a
+  list of the aspects supported (with GNAT implementation aspects marked)
+
+@multitable {@code{Preelaborable_Initialization}} {--GNAT}
+@item @code{Ada_2005} @tab                      -- GNAT
+@item @code{Ada_2012} @tab                      -- GNAT
+@item @code{Address} @tab
+@item @code{Alignment} @tab
+@item @code{Atomic} @tab
+@item @code{Atomic_Components} @tab
+@item @code{Bit_Order} @tab
+@item @code{Component_Size} @tab
+@item @code{Discard_Names} @tab
+@item @code{External_Tag} @tab
+@item @code{Favor_Top_Level} @tab               -- GNAT
+@item @code{Inline} @tab
+@item @code{Inline_Always} @tab                 -- GNAT
+@item @code{Invariant} @tab
+@item @code{Machine_Radix} @tab
+@item @code{No_Return} @tab
+@item @code{Object_Size} @tab                   -- GNAT
+@item @code{Pack} @tab
+@item @code{Persistent_BSS} @tab                -- GNAT
+@item @code{Post} @tab
+@item @code{Pre} @tab
+@item @code{Predicate} @tab
+@item @code{Preelaborable_Initialization} @tab
+@item @code{Pure_Function} @tab                 -- GNAT
+@item @code{Shared} @tab                        -- GNAT
+@item @code{Size} @tab
+@item @code{Storage_Pool} @tab
+@item @code{Storage_Size} @tab
+@item @code{Stream_Size} @tab
+@item @code{Suppress} @tab
+@item @code{Suppress_Debug_Info} @tab           -- GNAT
+@item @code{Unchecked_Union} @tab
+@item @code{Universal_Aliasing} @tab            -- GNAT
+@item @code{Unmodified} @tab                    -- GNAT
+@item @code{Unreferenced} @tab                  -- GNAT
+@item @code{Unreferenced_Objects} @tab          -- GNAT
+@item @code{Unsuppress} @tab
+@item @code{Value_Size} @tab                    -- GNAT
+@item @code{Volatile} @tab
+@item @code{Volatile_Components}
+@item @code{Warnings} @tab                      -- GNAT
+@end multitable
+
+@noindent
+  Note that for aspects with an expression, e.g. @code{Size}, the expression is
+  treated like a default expression (visibility is analyzed at the point of
+  occurrence of the aspect, but evaluation of the expression occurs at the
+  freeze point of the entity involved.
+
+@noindent
+  RM References:  3.02.01 (3)   3.02.02 (2)   3.03.01 (2/2)   3.08 (6)
+  3.09.03 (1.1/2)   6.01 (2/2)   6.07 (2/2)   9.05.02 (2/2)   7.01 (3)   7.03
+  (2)   7.03 (3)   9.01 (2/2)   9.01 (3/2)   9.04 (2/2)   9.04 (3/2)
+  9.05.02 (2/2)   11.01 (2)   12.01 (3)   12.03 (2/2)   12.04 (2/2)   12.05 (2)
+  12.06 (2.1/2)   12.06 (2.2/2)   12.07 (2)   13.01 (0.1/2)   13.03 (5/1)
+  13.03.01 (0)
+
+
+@item
+@emph{AI-0128 Inequality is a primitive operation (0000-00-00)}
+@cindex AI-0128 (Ada 2012 feature)
+
+@noindent
+  If an equality operator ("=") is declared for a type, then the implicitly
+  declared inequality operator ("/=") is a primitive operation of the type.
+  This is the only reasonable interpretation, and is the one always implemented
+  by GNAT, but the RM was not entirely clear in making this point.
+
+@noindent
+  RM References:  3.02.03 (6)   6.06 (6)
+
+@item
+@emph{AI-0003 Qualified expressions as names (2010-07-11)}
+@cindex AI-0003 (Ada 2012 feature)
+
+@noindent
+   In Ada 2012, a qualified expression is considered to be syntatically a name,
+   meaning that constructs such as @code{A'(F(X)).B} are now legal. This is
+   useful in disambiguating some cases of overloading.
+
+@noindent
+  RM References:  3.03 (11)   3.03 (21)   4.01 (2)   4.04 (7)   4.07 (3)
+  5.04 (7)
+
+@item
+@emph{AI-0120 Constant instance of protected object (0000-00-00)}
+@cindex AI-0120 (Ada 2012 feature)
+
+@noindent
+  This is an RM editorial change only. The section that lists objects that are
+  constant failed to include the current instance of a protected object
+  within a protected function. This has always been treated as a constant
+  in GNAT.
+
+@noindent
+  RM References:  3.03 (21)
+
+@item
+@emph{AI-0008 General access to constrained objects (0000-00-00)}
+@cindex AI-0008 (Ada 2012 feature)
+
+@noindent
+  The wording in the RM implied that if you have a general access to a
+  constrained object, it could be used to modify the discriminants. This was
+  obviously not intended. @code{Constraint_Error} should be raised, and GNAT
+  has always done so in this situation.
+
+@noindent
+  RM References:  3.03 (23)   3.10.02 (26/2)   4.01 (9)   6.04.01 (17)   8.05.01 (5/2)
+
+
+@item
+@emph{AI-0093 Additional rules use immutably limited (0000-00-00)}
+@cindex AI-0093 (Ada 2012 feature)
+
+@noindent
+  This is an editorial change only, to make more widespread use of the Ada 2012
+  ``immutably limited''.
+
+@noindent
+  RM References:  3.03 (23.4/3)
+
+
+
+@item
+@emph{AI-0096 Deriving from formal private types (2010-07-20)}
+@cindex AI-0096 (Ada 2012 feature)
+
+@noindent
+  In general it is illegal for a type derived from a formal limited type to be
+  nonlimited.  This AI makes an exception to this rule: derivation is legal
+  if it appears in the private part of the generic, and the formal type is not
+  tagged. If the type is tagged, the legality check must be applied to the
+  private part of the package.
+
+@noindent
+  RM References:  3.04 (5.1/2)   6.02 (7)
+
+
+@item
+@emph{AI-0181 Soft hyphen is a non-graphic character (2010-07-23)}
+@cindex AI-0181 (Ada 2012 feature)
+
+@noindent
+  From Ada 2005 on, soft hyphen is considered a non-graphic character, which
+  means that it has a special name (@code{SOFT_HYPHEN}) in conjunction with the
+  @code{Image} and @code{Value} attributes for the character types. Strictly
+  speaking this is an inconsistency with Ada 95, but in practice the use of
+  these attributes is so obscure that it will not cause problems.
+
+@noindent
+  RM References:  3.05.02 (2/2)   A.01 (35/2)   A.03.03 (21)
+
+
+@item
+@emph{AI-0182 Additional forms for @code{Character'Value} (0000-00-00)}
+@cindex AI-0182 (Ada 2012 feature)
+
+@noindent
+  This AI allows @code{Character'Value} to accept the string @code{'?'} where
+  @code{?} is any character including non-graphic control characters. GNAT has
+  always accepted such strings. It also allows strings such as
+  @code{HEX_00000041} to be accepted, but GNAT does not take advantage of this
+  permission and raises @code{Constraint_Error}, as is certainly still
+  permitted.
+
+@noindent
+  RM References:  3.05 (56/2)
+
+
+@item
+@emph{AI-0214 Defaulted discriminants for limited tagged (2010-10-01)}
+@cindex AI-0214 (Ada 2012 feature)
+
+@noindent
+  Ada 2012 relaxes the restriction that forbids discriminants of tagged types
+  to have default expressions by allowing them when the type is limited. It
+  is often useful to define a default value for a discriminant even though
+  it can't be changed by assignment.
+
+@noindent
+  RM References:  3.07 (9.1/2)   3.07.02 (3)
+
+
+@item
+@emph{AI-0102 Some implicit conversions are illegal (0000-00-00)}
+@cindex AI-0102 (Ada 2012 feature)
+
+@noindent
+  It is illegal to assign an anonymous access constant to an anonymous access
+  variable. The RM did not have a clear rule to prevent this, but GNAT has
+  always generated an error for this usage.
+
+@noindent
+  RM References:  3.07 (16)   3.07.01 (9)   6.04.01 (6)   8.06 (27/2)
+
+
+@item
+@emph{AI-0158 Generalizing membership tests (2010-09-16)}
+@cindex AI-0158 (Ada 2012 feature)
+
+@noindent
+  This AI extends the syntax of membership tests to simplify complex conditions
+  that can be expressed as membership in a subset of values of any type. It
+  introduces syntax for a list of expressions that may be used in loop contexts
+  as well.
+
+@noindent
+  RM References:  3.08.01 (5)   4.04 (3)   4.05.02 (3)   4.05.02 (5)   4.05.02 (27)
+
+
+@item
+@emph{AI-0173 Testing if tags represent abstract types (2010-07-03)}
+@cindex AI-0173 (Ada 2012 feature)
+
+@noindent
+  The function @code{Ada.Tags.Type_Is_Abstract} returns @code{True} if invoked
+  with the tag of an abstract type, and @code{False} otherwise.
+
+@noindent
+  RM References:  3.09 (7.4/2)   3.09 (12.4/2)
+
+
+
+@item
+@emph{AI-0076 function with controlling result (0000-00-00)}
+@cindex AI-0076 (Ada 2012 feature)
+
+@noindent
+  This is an editorial change only. The RM defines calls with controlling
+  results, but uses the term ``function with controlling result'' without an
+  explicit definition.
+
+@noindent
+  RM References:  3.09.02 (2/2)
+
+
+@item
+@emph{AI-0126 Dispatching with no declared operation (0000-00-00)}
+@cindex AI-0126 (Ada 2012 feature)
+
+@noindent
+  This AI clarifies dispatching rules, and simply confirms that dispatching
+  executes the operation of the parent type when there is no explicitly or
+  implicitly declared operation for the descendant type. This has always been
+  the case in all versions of GNAT.
+
+@noindent
+  RM References:  3.09.02 (20/2)   3.09.02 (20.1/2)   3.09.02 (20.2/2)
+
+
+@item
+@emph{AI-0097 Treatment of abstract null extension (2010-07-19)}
+@cindex AI-0097 (Ada 2012 feature)
+
+@noindent
+  The RM as written implied that in some cases it was possible to create an
+  object of an abstract type, by having an abstract extension inherit a non-
+  abstract constructor from its parent type. This mistake has been corrected
+  in GNAT and in the RM, and this construct is now illegal.
+
+@noindent
+  RM References:  3.09.03 (4/2)
+
+
+@item
+@emph{AI-0203 Extended return cannot be abstract (0000-00-00)}
+@cindex AI-0203 (Ada 2012 feature)
+
+@noindent
+  A return_subtype_indication cannot denote an abstract subtype. GNAT has never
+  permitted such usage.
+
+@noindent
+  RM References:  3.09.03 (8/3)
+
+
+@item
+@emph{AI-0198 Inheriting abstract operators  (0000-00-00)}
+@cindex AI-0198 (Ada 2012 feature)
+
+@noindent
+  This AI resolves a conflict between two rules involving inherited abstract
+  operations and predefined operators. If a derived numeric type inherits
+  an abstract operator, it overrides the predefined one. This interpretation
+  was always the one implemented in GNAT.
+
+@noindent
+  RM References:  3.09.03 (4/3)
+
+@item
+@emph{AI-0073 Functions returning abstract types (2010-07-10)}
+@cindex AI-0073 (Ada 2012 feature)
+
+@noindent
+  This AI covers a number of issues regarding returning abstract types. In
+  particular generic fucntions cannot have abstract result types or access
+  result types designated an abstract type. There are some other cases which
+  are detailed in the AI. Note that this binding interpretation has not been
+  retrofitted to operate before Ada 2012 mode, since it caused a significant
+  number of regressions.
+
+@noindent
+  RM References:  3.09.03 (8)   3.09.03 (10)   6.05 (8/2)
+
+
+@item
+@emph{AI-0070 Elaboration of interface types (0000-00-00)}
+@cindex AI-0070 (Ada 2012 feature)
+
+@noindent
+  This is an editorial change only, there are no testable consequences short of
+  checking for the absence of generated code for an interface declaration.
+
+@noindent
+  RM References:  3.09.04 (18/2)
+
+
+@item
+@emph{AI-0208 Characteristics of incomplete views (0000-00-00)}
+@cindex AI-0208 (Ada 2012 feature)
+
+@noindent
+  The wording in the Ada 2005 RM concerning characteristics of incomplete views
+  was incorrect and implied that some programs intended to be legal were now
+  illegal. GNAT had never considered such programs illegal, so it has always
+  implemented the intent of this AI.
+
+@noindent
+  RM References:  3.10.01 (2.4/2)   3.10.01 (2.6/2)
+
+
+@item
+@emph{AI-0162 Incomplete type completed by partial view (2010-09-15)}
+@cindex AI-0162 (Ada 2012 feature)
+
+@noindent
+  Incomplete types are made more useful by allowing them to be completed by
+  private types and private extensions.
+
+@noindent
+  RM References:  3.10.01 (2.5/2)   3.10.01 (2.6/2)   3.10.01 (3)   3.10.01 (4/2)
+
+
+
+@item
+@emph{AI-0098 Anonymous subprogram access restrictions (0000-00-00)}
+@cindex AI-0098 (Ada 2012 feature)
+
+@noindent
+  An unintentional omission in the RM implied some inconsistent restrictions on
+  the use of anonymous access to subprogram values. These restrictions were not
+  intentional, and have never been enforced by GNAT.
+
+@noindent
+  RM References:  3.10.01 (6)   3.10.01 (9.2/2)
+
+
+@item
+@emph{AI-0199 Aggregate with anonymous access components (2010-07-14)}
+@cindex AI-0199 (Ada 2012 feature)
+
+@noindent
+  A choice list in a record aggregate can include several components of
+  (distinct) anonymous access types as long as they have matching designated
+  subtypes.
+
+@noindent
+  RM References:  4.03.01 (16)
+
+
+@item
+@emph{AI-0220 Needed components for aggregates (0000-00-00)}
+@cindex AI-0220 (Ada 2012 feature)
+
+@noindent
+  This AI addresses a wording problem in the RM that appears to permit some
+  complex cases of aggregates with non-static discriminants. GNAT has always
+  implemented the intended semantics.
+
+@noindent
+  RM References:  4.03.01 (17)
+
+@item
+@emph{AI-0147 Conditional expressions (2009-03-29)}
+@cindex AI-0147 (Ada 2012 feature)
+
+@noindent
+  Conditional expressions are permitted. The form of such an expression is:
+
+@smallexample
+    (@b{if} @i{expr} @b{then} @i{expr} @{@b{elsif} @i{expr} @b{then} @i{expr}@} [@b{else} @i{expr}])
+@end smallexample
+
+  The parentheses can be omitted in contexts where parentheses are present
+  anyway, such as subprogram arguments and pragma arguments. If the @b{else}
+  clause is omitted, @b{else True} is assumed;
+  thus @code{(@b{if} A @b{then} B)} is a way to conveniently represent
+  @emph{(A implies B)} in standard logic.
+
+@noindent
+  RM References:  4.03.03 (15)   4.04 (1)   4.04 (7)   4.05.07 (0)   4.07 (2)
+  4.07 (3)   4.09 (12)   4.09 (33)   5.03 (3)   5.03 (4)   7.05 (2.1/2)
+
+
+@item
+@emph{AI-0037 Out-of-range box associations in aggregate (0000-00-00)}
+@cindex AI-0037 (Ada 2012 feature)
+
+@noindent
+  This AI confirms that an association of the form @code{Indx => <>} in an
+  array aggregate must raise @code{Constraint_Error} if @code{Indx}
+  is out of range. The RM specified a range check on other associations, but
+  not when the value of the association was defaulted. GNAT has always inserted
+  a constraint check on the index value.
+
+@noindent
+  RM References:  4.03.03 (29)
+
+
+@item
+@emph{AI-0123 Composability of equality (2010-04-13)}
+@cindex AI-0123 (Ada 2012 feature)
+
+@noindent
+  Equality of untagged record composes, so that the predefined equality for a
+  composite type that includes a component of some untagged record type
+  @code{R} uses the equality operation of @code{R} (which may be user-defined
+  or predefined). This makes the behavior of untagged records identical to that
+  of tagged types in this respect.
+
+  This change is an incompatibility with previous versions of Ada, but it
+  corrects a non-uniformity that was often a source of confusion. Analysis of
+  a large number of industrial programs indicates that in those rare cases
+  where a composite type had an untagged record component with a user-defined
+  equality, either there was no use of the composite equality, or else the code
+  expected the same composability as for tagged types, and thus had a bug that
+  would be fixed by this change.
+
+@noindent
+  RM References:  4.05.02 (9.7/2)   4.05.02 (14)   4.05.02 (15)   4.05.02 (24)
+  8.05.04 (8)
+
+
+@item
+@emph{AI-0088 The value of exponentiation (0000-00-00)}
+@cindex AI-0088 (Ada 2012 feature)
+
+@noindent
+  This AI clarifies the equivalence rule given for the dynamic semantics of
+  exponentiation: the value of the operation can be obtained by repeated
+  multiplication, but the operation can be implemented otherwise (for example
+  using the familiar divide-by-two-and-square algorithm, even if this is less
+  accurate), and does not imply repeated reads of a volatile base.
+
+@noindent
+  RM References:  4.05.06 (11)
+
+@item
+@emph{AI-0188 Case expressions (2010-01-09)}
+@cindex AI-0188 (Ada 2012 feature)
+
+@noindent
+  Case expressions are permitted. This allows use of constructs such as:
+@smallexample
+  X := (@b{case} Y @b{is when} 1 => 2, @b{when} 2 => 3, @b{when others} => 31)
+@end smallexample
+
+@noindent
+  RM References:  4.05.07 (0)   4.05.08 (0)   4.09 (12)   4.09 (33)
+
+@item
+@emph{AI-0104 Null exclusion and uninitialized allocator (2010-07-15)}
+@cindex AI-0104 (Ada 2012 feature)
+
+@noindent
+  The assignment @code{Ptr := @b{new not null} Some_Ptr;} will raise
+  @code{Constraint_Error} because the default value of the allocated object is
+  @b{null}. This useless construct is illegal in Ada 2012.
+
+@noindent
+  RM References:  4.08 (2)
+
+@item
+@emph{AI-0157 Allocation/Deallocation from empty pool (2010-07-11)}
+@cindex AI-0157 (Ada 2012 feature)
+
+@noindent
+  Allocation and Deallocation from an empty storage pool (i.e. allocation or
+  deallocation of a pointer for which a static storage size clause of zero
+  has been given) is now illegal and is detected as such. GNAT
+  previously gave a warning but not an error.
+
+@noindent
+  RM References:  4.08 (5.3/2)   13.11.02 (4)   13.11.02 (17)
+
+@item
+@emph{AI-0179 Statement not required after label (2010-04-10)}
+@cindex AI-0179 (Ada 2012 feature)
+
+@noindent
+  It is not necessary to have a statement following a label, so a label
+  can appear at the end of a statement sequence without the need for putting a
+  null statement afterwards, but it is not allowable to have only labels and
+  no real statements in a statement sequence.
+
+@noindent
+  RM References:  5.01 (2)
+
+
+@item
+@emph{AI-139-2 Syntactic sugar for iterators (2010-09-29)}
+@cindex AI-139-2 (Ada 2012 feature)
+
+@noindent
+  The new syntax for iterating over arrays and containers is now implemented.
+  Iteration over containers is for now limited to read-only iterators. Only
+  default iterators are supported, with the syntax:  @code{@b{for} Elem @b{of} C}.
+
+@noindent
+  RM References:  5.05
+
+@item
+@emph{AI-0134 Profiles must match for full conformance (0000-00-00)}
+@cindex AI-0134 (Ada 2012 feature)
+
+@noindent
+  For full conformance, the profiles of anonymous-access-to-subprogram
+  parameters must match. GNAT has always enforced this rule.
+
+@noindent
+  RM References:  6.03.01 (18)
+
+@item
+@emph{AI-0207 Mode conformance and access constant (0000-00-00)}
+@cindex AI-0207 (Ada 2012 feature)
+
+@noindent
+  This AI confirms that access_to_constant indication must match for mode
+  conformance. This was implemented in GNAT when the qualifier was originally
+  introduced in Ada 2005.
+
+@noindent
+  RM References:  6.03.01 (16/2)
+
+
+@item
+@emph{AI-0046 Null exclusion match for full conformance (2010-07-17)}
+@cindex AI-0046 (Ada 2012 feature)
+
+@noindent
+  For full conformance, in the case of access parameters, the null exclusion
+  must match (either both or neither must have @code{@b{not null}}).
+
+@noindent
+  RM References:  6.03.02 (18)
+
+
+@item
+@emph{AI-0118 The association of parameter associations (0000-00-00)}
+@cindex AI-0118 (Ada 2012 feature)
+
+@noindent
+  This AI clarifies the rules for named associations in subprogram calls and
+  generic instantiations. The rules have been in place since Ada 83.
+
+@noindent
+  RM References:  6.04.01 (2)   12.03 (9)
+
+
+@item
+@emph{AI-0196 Null exclusion tests for out parameters (0000-00-00)}
+@cindex AI-0196 (Ada 2012 feature)
+
+@noindent
+  Null exclusion checks are not made for @code{@b{out}} parameters when
+  evaluating the actual parameters. GNAT has never generated these checks.
+
+@noindent
+  RM References:  6.04.01 (13)
+
+@item
+@emph{AI-0015 Constant return objects (0000-00-00)}
+@cindex AI-0015 (Ada 2012 feature)
+
+@noindent
+  The return object declared in an @i{extended_return_statement} may be
+  declared constant. This was always intended, and GNAT has always allowed it.
+
+@noindent
+  RM References:  6.05 (2.1/2)   3.03 (10/2)   3.03 (21)   6.05 (5/2)
+  6.05 (5.7/2)
+
+
+@item
+@emph{AI-0032 Extended return for class-wide functions (0000-00-00)}
+@cindex AI-0032 (Ada 2012 feature)
+
+@noindent
+  If a function returns a class-wide type, the object of an extended return
+  statement can be declared with a specific type that is covered by the class-
+  wide type. This has been implemented in GNAT since the introduction of
+  extended returns. Note AI-0103 complements this AI by imposing matching
+  rules for constrained return types.
+
+@noindent
+  RM References:  6.05 (5.2/2)   6.05 (5.3/2)   6.05 (5.6/2)   6.05 (5.8/2)
+  6.05 (8/2)
+
+@item
+@emph{AI-0103 Static matching for extended return (2010-07-23)}
+@cindex AI-0103 (Ada 2012 feature)
+
+@noindent
+  If the return subtype of a function is an elementary type or a constrained
+  type, the subtype indication in an extended return statement must match
+  statically this return subtype.
+
+@noindent
+  RM References:  6.05 (5.2/2)
+
+
+@item
+@emph{AI-0058 Abnormal completion of an extended return (0000-00-00)}
+@cindex AI-0058 (Ada 2012 feature)
+
+@noindent
+  The RM had some incorrect wording implying wrong treatment of abnormal
+  completion in an extended return. GNAT has always implemented the intended
+  correct semantics as described by this AI.
+
+@noindent
+  RM References:  6.05 (22/2)
+
+
+@item
+@emph{AI-0050 Raising Constraingt_Errpr early for function call (0000-00-00)}
+@cindex AI-0050 (Ada 2012 feature)
+
+@noindent
+  The implementation permissions for raising @code{Constraing_Error} early on a function call when it was clear an exception would be raised were over-permissive and allowed mishandling of discriminants in some cases. GNAT did
+  not take advantage of these incorrect permissions in any case.
+
+@noindent
+  RM References:  6.05 (24/2)
+
+
+@item
+@emph{AI-0125 Nonoverridable operations of an ancestor (2010-09-28)}
+@cindex AI-0125 (Ada 2012 feature)
+
+@noindent
+  In Ada 2012, the declaration of a primitive operation of a type extension
+  or private extension can also override an inherited primitive that is not
+  visible at the point of this declaration.
+
+@noindent
+  RM References:  7.03.01 (6)   8.03 (23)   8.03.01 (5/2)   8.03.01 (6/2)
+
+@item
+@emph{AI-0062 Null exclusions and deferred constants (0000-00-00)}
+@cindex AI-0062 (Ada 2012 feature)
+
+@noindent
+  A full constant may have a null exclusion even if its associated deferred
+  constant does not. GNAT has always allowed this.
+
+@noindent
+  RM References:  7.04 (6/2)   7.04 (7.1/2)
+
+
+@item
+@emph{AI-0178 Incomplete views are limited (0000-00-00)}
+@cindex AI-0178 (Ada 2012 feature)
+
+@noindent
+  This AI clarifies the role of incomplete views and plugs an omission in the
+  RM. GNAT always correctly restricted the use of incomplete views and types.
+
+@noindent
+  RM References:  7.05 (3/2)   7.05 (6/2)
+
+@item
+@emph{AI-0087 Actual for formal nonlimited derived type (2010-07-15)}
+@cindex AI-0087 (Ada 2012 feature)
+
+@noindent
+  The actual for a formal nonlimited derived type cannot be limited. In
+  particular, a formal derived type that extends a limited interface but which
+  is not explicitly limited cannot be instantiated with a limited type.
+
+@noindent
+  RM References:  7.05 (5/2)   12.05.01 (5.1/2)
+
+@item
+@emph{AI-0099 Tag determines whether finalization needed (0000-00-00)}
+@cindex AI-0099 (Ada 2012 feature)
+
+@noindent
+  This AI clarifies that ``needs finalization'' is part of dynamic semantics,
+  and therefore depends on the run-time charateristics of an object (i.e. its
+  tag) and not on its nominal type. As the AI indicates: ``we do not expect
+  this to affect any implementation''.
+
+@noindent
+  RM References:  7.06.01 (6)   7.06.01 (7)   7.06.01 (8)   7.06.01 (9/2)
+
+
+
+@item
+@emph{AI-0064 Redundant finalization rule (0000-00-00)}
+@cindex AI-0064 (Ada 2012 feature)
+
+@noindent
+  This is an editorial change only. The intended behavior is already checked
+  by an existing ACATS test, which GNAT has always executed correctly.
+
+@noindent
+  RM References:  7.06.01 (17.1/1)
+
+@item
+@emph{AI-0026 Missing rules for Unchecked_Union (2010-07-07)}
+@cindex AI-0026 (Ada 2012 feature)
+
+@noindent
+  Record representation clauses concerning Unchecked_Union types cannot mention
+  the discriminant of the type. The type of a component declared in the variant
+  part of an Unchecked_Union cannot be controlled, have controlled components,
+  nor have protected or task parts. If an Unchecked_Union type is declared
+  within the body of a generic unit or its descendants, then the type of a
+  component declared in the variant part cannot be a formal private type or a
+  formal private extension declared within the same generic unit.
+
+@noindent
+  RM References:  7.06 (9.4/2)   B.03.03 (9/2)   B.03.03 (10/2)
+
+
+@item
+@emph{AI-0205 Extended return declares visible name (0000-00-00)}
+@cindex AI-0205 (Ada 2012 feature)
+
+@noindent
+  This AI corrects a simple omission in the RM. Return objects have always
+  been visible within an extended return statement.
+
+@noindent
+  RM References:  8.03 (17)
+
+
+@item
+@emph{AI-0042 Overriding versus implemented-by (0000-00-00)}
+@cindex AI-0042 (Ada 2012 feature)
+
+@noindent
+  This AI fixes a wording gap in the RM. An operation of a synchronized
+  interface can be implemented by a protected or task entry, but the abstract
+  operation is not being overridden in the usual sense, and it must be stated
+  separately that this implementation is legal. This has always been the case
+  in GNAT.
+
+@noindent
+  RM References:  9.01 (9.2/2)   9.04 (11.1/2)
+
+@item
+@emph{AI-0030 Requeue on synchronized interfaces (2010-07-19)}
+@cindex AI-0030 (Ada 2012 feature)
+
+@noindent
+  Requeue is permitted to a protected, synchronized or task interface primitive
+  providing it is known that the overriding operation is an entry. Otherwise
+  the requeue statement has the same effect as a procedure call. Use of pragma
+  @code{Implemented} provides a way to impose a static requirement on the
+  overriding operation by adhering to one of the implementation kinds: entry,
+  protected procedure or any of the above.
+
+@noindent
+  RM References:  9.05 (9)   9.05.04 (2)   9.05.04 (3)   9.05.04 (5)
+  9.05.04 (6)   9.05.04 (7)   9.05.04 (12)
+
+
+@item
+@emph{AI-0201 Independence of atomic object components (2010-07-22)}
+@cindex AI-0201 (Ada 2012 feature)
+
+@noindent
+  If an Atomic object has a pragma @code{Pack} or a @code{Component_Size}
+  attribute, then individual components may not be addressable by independent
+  tasks. However, if the representation clause has no effect (is confirming),
+  then independence is not compromised. Furthermore, in GNAT, specification of
+  other appropriately addressable component sizes (e.g. 16 for 8-bit
+  characters) also preserves independence. GNAT now gives very clear warnings
+  both for the declaration of such a type, and for any assignment to its components.
+
+@noindent
+  RM References:  9.10 (1/3)   C.06 (22/2)   C.06 (23/2)
+
+@item
+@emph{AI-0009 Pragma Independent[_Components] (2010-07-23)}
+@cindex AI-0009 (Ada 2012 feature)
+
+@noindent
+  This AI introduces the new pragmas @code{Independent} and
+  @code{Independent_Components},
+  which control guaranteeing independence of access to objects and components.
+  The AI also requires independence not unaffected by confirming rep clauses.
+
+@noindent
+  RM References:  9.10 (1)   13.01 (15/1)   13.02 (9)   13.03 (13)   C.06 (2)
+  C.06 (4)   C.06 (6)   C.06 (9)   C.06 (13)   C.06 (14)
+
+
+@item
+@emph{AI-0072 Task signalling using 'Terminated (0000-00-00)}
+@cindex AI-0072 (Ada 2012 feature)
+
+@noindent
+  This AI clarifies that task signalling for reading @code{'Terminated} only
+  occurs if the result is True. GNAT semantics has always been consistent with
+  this notion of task signalling.
+
+@noindent
+  RM References:  9.10 (6.1/1)
+
+@item
+@emph{AI-0108 Limited incomplete view and discriminants (0000-00-00)}
+@cindex AI-0108 (Ada 2012 feature)
+
+@noindent
+  This AI confirms that an incomplete type from a limited view does not have
+  discriminants. This has always been the case in GNAT.
+
+@noindent
+  RM References:  10.01.01 (12.3/2)
+
+@item
+@emph{AI-0129 Limited views and incomplete types (0000-00-00)}
+@cindex AI-0129 (Ada 2012 feature)
+
+@noindent
+  This AI clarifies the description of limited views: a limited view of a
+  package includes only one view of a type that has an incomplete declaration
+  and a full declaration (there is no possible ambiguity in a client package).
+  This AI also fixes an omission: a nested package in the private part has no
+  limited view. GNAT always implemented this correctly.
+
+@noindent
+  RM References:  10.01.01 (12.2/2)   10.01.01 (12.3/2)
+
+
+
+@item
+@emph{AI-0077 Limited withs and scope of declarations (0000-00-00)}
+@cindex AI-0077 (Ada 2012 feature)
+
+@noindent
+  This AI clarifies that a declaration does not include a context clause,
+  and confirms that it is illegal to have a context in which both a limited
+  and a nonlimited view of a package are accessible. Such double visibility
+  was always rejected by GNAT.
+
+@noindent
+  RM References:  10.01.02 (12/2)   10.01.02 (21/2)   10.01.02 (22/2)
+
+@item
+@emph{AI-0122 Private with and children of generics (0000-00-00)}
+@cindex AI-0122 (Ada 2012 feature)
+
+@noindent
+  This AI clarifies the visibility of private children of generic units within
+  instantiations of a parent. GNAT has always handled this correctly.
+
+@noindent
+  RM References:  10.01.02 (12/2)
+
+
+
+@item
+@emph{AI-0040 Limited with clauses on descendant (0000-00-00)}
+@cindex AI-0040 (Ada 2012 feature)
+
+@noindent
+  This AI confirms that a limited with clause in a child unit cannot name
+  an ancestor of the unit. This has always been checked in GNAT.
+
+@noindent
+  RM References:  10.01.02 (20/2)
+
+@item
+@emph{AI-0132 Placement of library unit pragmas (0000-00-00)}
+@cindex AI-0132 (Ada 2012 feature)
+
+@noindent
+  This AI fills a gap in the description of library unit pragmas. The pragma
+  clearly must apply to a library unit, even if it does not carry the name
+  of the enclosing unit. GNAT has always enforced the required check.
+
+@noindent
+  RM References:  10.01.05 (7)
+
+
+@item
+@emph{AI-0034 Categorization of limited views (0000-00-00)}
+@cindex AI-0034 (Ada 2012 feature)
+
+@noindent
+  The RM makes certain limited with clauses illegal because of categorization
+  considerations, when the corresponding normal with would be legal. This is
+  not intended, and GNAT has always implemented the recommended behavior.
+
+@noindent
+  RM References:  10.02.01 (11/1)   10.02.01 (17/2)
+
+
+@item
+@emph{AI-0035 Inconsistencies with Pure units (0000-00-00)}
+@cindex AI-0035 (Ada 2012 feature)
+
+@noindent
+  This AI remedies some inconsistencies in the legality rules for Pure units.
+  Derived access types are legal in a pure unit (on the assumption that the
+  rule for a zero storage pool size has been enforced on the ancestor type).
+  The rules are enforced in generic instances and in subunits. GNAT has always
+  implemented the recommended behavior.
+
+@noindent
+  RM References:  10.02.01 (15.1/2)   10.02.01 (15.4/2)   10.02.01 (15.5/2)   10.02.01 (17/2)
+
+
+@item
+@emph{AI-0219 Pure permissions and limited parameters (2010-05-25)}
+@cindex AI-0219 (Ada 2012 feature)
+
+@noindent
+  This AI refines the rules for the cases with limited parameters which do not
+  allow the implementations to omit ``redundant''. GNAT now properly conforms
+  to the requirements of this binding interpretation.
+
+@noindent
+  RM References:  10.02.01 (18/2)
+
+@item
+@emph{AI-0043 Rules about raising exceptions (0000-00-00)}
+@cindex AI-0043 (Ada 2012 feature)
+
+@noindent
+  This AI covers various omissions in the RM regarding the raising of
+  exceptions. GNAT has always implemented the intended semantics.
+
+@noindent
+  RM References:  11.04.01 (10.1/2)   11 (2)
+
+
+@item
+@emph{AI-0200 Mismatches in formal package declarations (0000-00-00)}
+@cindex AI-0200 (Ada 2012 feature)
+
+@noindent
+  This AI plugs a gap in the RM which appeared to allow some obviously intended
+  illegal instantiations. GNAT has never allowed these instantiations.
+
+@noindent
+  RM References:  12.07 (16)
+
+
+@item
+@emph{AI-0112 Detection of duplicate pragmas (2010-07-24)}
+@cindex AI-0112 (Ada 2012 feature)
+
+@noindent
+  This AI concerns giving names to various representation aspects, but the
+  practical effect is simply to make the use of duplicate
+  @code{Atomic}[@code{_Components}],
+  @code{Volatile}[@code{_Components}] and
+  @code{Independent}[@code{_Components}] pragmas illegal, and GNAT
+  now performs this required check.
+
+@noindent
+  RM References:  13.01 (8)
+
+@item
+@emph{AI-0106 No representation pragmas on generic formals (0000-00-00)}
+@cindex AI-0106 (Ada 2012 feature)
+
+@noindent
+  The RM appeared to allow representation pragmas on generic formal parameters,
+  but this was not intended, and GNAT has never permitted this usage.
+
+@noindent
+  RM References:  13.01 (9.1/1)
+
+
+@item
+@emph{AI-0012 Pack/Component_Size for aliased/atomic (2010-07-15)}
+@cindex AI-0012 (Ada 2012 feature)
+
+@noindent
+  It is now illegal to give an inappropriate component size or a pragma
+  @code{Pack} that attempts to change the component size in the case of atomic
+  or aliased components. Previously GNAT ignored such an attempt with a
+  warning.
+
+@noindent
+  RM References:  13.02 (6.1/2)   13.02 (7)   C.06 (10)   C.06 (11)   C.06 (21)
+
+
+@item
+@emph{AI-0039 Stream attributes cannot be dynamic (0000-00-00)}
+@cindex AI-0039 (Ada 2012 feature)
+
+@noindent
+  The RM permitted the use of dynamic expressions (such as @code{ptr.@b{all})}
+  for stream attributes, but these were never useful and are now illegal. GNAT
+  has always regarded such expressions as illegal.
+
+@noindent
+  RM References:  13.03 (4)   13.03 (6)   13.13.02 (38/2)
+
+
+@item
+@emph{AI-0095 Address of intrinsic subprograms (0000-00-00)}
+@cindex AI-0095 (Ada 2012 feature)
+
+@noindent
+  The prefix of @code{'Address} cannot statically denote a subprogram with
+  convention @code{Intrinsic}. The use of the @code{Address} attribute raises
+  @code{Program_Error} if the prefix denotes a subprogram with convention
+  @code{Intrinsic}.
+
+@noindent
+  RM References:  13.03 (11/1)
+
+
+@item
+@emph{AI-0116 Alignment of class-wide objects (0000-00-00)}
+@cindex AI-0116 (Ada 2012 feature)
+
+@noindent
+  This AI requires that the alignment of a class-wide object be no greater
+  than the alignment of any type in the class. GNAT has always followed this
+  recommendation.
+
+@noindent
+  RM References:  13.03 (29)   13.11 (16)
+
+
+@item
+@emph{AI-0146 Type invariants (2009-09-21)}
+@cindex AI-0146 (Ada 2012 feature)
+
+@noindent
+  Type invariants may be specified for private types using the aspect notation.
+  Aspect @code{Invariant} may be specified for any private type,
+  @code{Invariant'Class} can
+  only be specified for tagged types, and is inherited by any descendent of the
+  tagged types. The invariant is a boolean expression that is tested for being
+  true in the following situations: conversions to the private type, object
+  declarations for the private type that are default initialized, and
+  [@b{in}] @b{out}
+  parameters and returned result on return from any primitive operation for
+  the type that is visible to a client.
+
+@noindent
+  RM References:  13.03.03 (00)
+
+@item
+@emph{AI-0078 Relax Unchecked_Conversion alignment rules (0000-00-00)}
+@cindex AI-0078 (Ada 2012 feature)
+
+@noindent
+  In Ada 2012, compilers are required to support unchecked conversion where the
+  target alignment is a multiple of the source alignment. GNAT always supported
+  this case (and indeed all cases of differing alignments, doing copies where
+  required if the alignment was reduced).
+
+@noindent
+  RM References:  13.09 (7)
+
+
+@item
+@emph{AI-0195 Invalid value handling is implementation defined (2010-07-03)}
+@cindex AI-0195 (Ada 2012 feature)
+
+@noindent
+  The handling of invalid values is now designated to be implementation
+  defined. This is a documentation change only, requiring Annex M in the GNAT
+  Reference Manual to document this handling.
+  In GNAT, checks for invalid values are made
+  only when necessary to avoid erroneous behavior. Operations like assignments
+  which cannot cause erroneous behavior ignore the possibility of invalid
+  values and do not do a check. The date given above applies only to the
+  documentation change, this behavior has always been implemented by GNAT.
+
+@noindent
+  RM References:  13.09.01 (10)
+
+@item
+@emph{AI-0193 Alignment of allocators (2010-09-16)}
+@cindex AI-0193 (Ada 2012 feature)
+
+@noindent
+  This AI introduces a new attribute @code{Max_Alignment_For_Allocation},
+  analogous to @code{Max_Size_In_Storage_Elements}, but for alignment instead
+  of size.
+
+@noindent
+  RM References:  13.11 (16)   13.11 (21)   13.11.01 (0)   13.11.01 (1)
+  13.11.01 (2)   13.11.01 (3)
+
+
+@item
+@emph{AI-0177 Parameterized expressions (2010-07-10)}
+@cindex AI-0177 (Ada 2012 feature)
+
+@noindent
+  The new Ada 2012 notion of parameterized expressions is implemented. The form
+  is:
+@smallexample
+  @i{function specification} @b{is} (@i{expression})
+@end smallexample
+
+@noindent
+  This is exactly equivalent to the
+  corresponding function body that returns the expression, but it can appear
+  in a package spec. Note that the expression must be parenthesized.
+
+@noindent
+  RM References:  13.11.01 (3/2)
+
+@item
+@emph{AI-0033 Attach/Interrupt_Handler in generic (2010-07-24)}
+@cindex AI-0033 (Ada 2012 feature)
+
+@noindent
+  Neither of these two pragmas may appear within a generic template, because
+  the generic might be instantiated at other than the library level.
+
+@noindent
+  RM References:  13.11.02 (16)   C.03.01 (7/2)   C.03.01 (8/2)
+
+
+@item
+@emph{AI-0161 Restriction No_Default_Stream_Attributes (2010-09-11)}
+@cindex AI-0161 (Ada 2012 feature)
+
+@noindent
+  A new restriction @code{No_Default_Stream_Attributes} prevents the use of any
+  of the default stream attributes for elementary types. If this restriction is
+  in force, then it is necessary to provide explicit subprograms for any
+  stream attributes used.
+
+@noindent
+  RM References:  13.12.01 (4/2)   13.13.02 (40/2)   13.13.02 (52/2)
+
+@item
+@emph{AI-0194 Value of Stream_Size attribute (0000-00-00)}
+@cindex AI-0194 (Ada 2012 feature)
+
+@noindent
+  The @code{Stream_Size} attribute returns the default number of bits in the
+  stream representation of the given type.
+  This value is not affected by the presence
+  of stream subprogram attributes for the type. GNAT has always implemented
+  this interpretation.
+
+@noindent
+  RM References:  13.13.02 (1.2/2)
+
+@item
+@emph{AI-0109 Redundant check in S'Class'Input (0000-00-00)}
+@cindex AI-0109 (Ada 2012 feature)
+
+@noindent
+  This AI is an editorial change only. It removes the need for a tag check
+  that can never fail.
+
+@noindent
+  RM References:  13.13.02 (34/2)
+
+@item
+@emph{AI-0007 Stream read and private scalar types (0000-00-00)}
+@cindex AI-0007 (Ada 2012 feature)
+
+@noindent
+  The RM as written appeared to limit the possibilities of declaring read
+  attribute procedures for private scalar types. This limitation was not
+  intended, and has never been enforced by GNAT.
+
+@noindent
+  RM References:  13.13.02 (50/2)   13.13.02 (51/2)
+
+
+@item
+@emph{AI-0065 Remote access types and external streaming (0000-00-00)}
+@cindex AI-0065 (Ada 2012 feature)
+
+@noindent
+  This AI clarifies the fact that all remote access types support external
+  streaming. This fixes an obvious oversight in the definition of the
+  language, and GNAT always implemented the intended correct rules.
+
+@noindent
+  RM References:  13.13.02 (52/2)
+
+@item
+@emph{AI-0019 Freezing of primitives for tagged types (0000-00-00)}
+@cindex AI-0019 (Ada 2012 feature)
+
+@noindent
+  The RM suggests that primitive subprograms of a specific tagged type are
+  frozen when the tagged type is frozen. This would be an incompatible change
+  and is not intended. GNAT has never attempted this kind of freezing and its
+  behavior is consistent with the recommendation of this AI.
+
+@noindent
+  RM References:  13.14 (2)   13.14 (3/1)   13.14 (8.1/1)   13.14 (10)   13.14 (14)   13.14 (15.1/2)
+
+@item
+@emph{AI-0017 Freezing and incomplete types (0000-00-00)}
+@cindex AI-0017 (Ada 2012 feature)
+
+@noindent
+  So-called ``Taft-amendment types'' (i.e., types that are completed in package
+  bodies) are not frozen by the occurrence of bodies in the
+  enclosing declarative part. GNAT always implemented this properly.
+
+@noindent
+  RM References:  13.14 (3/1)
+
+
+@item
+@emph{AI-0060 Extended definition of remote access types (0000-00-00)}
+@cindex AI-0060 (Ada 2012 feature)
+
+@noindent
+  This AI extends the definition of remote access types to include access
+  to limited, synchronized, protected or task class-wide interface types.
+  GNAT already implemented this extension.
+
+@noindent
+  RM References:  A (4)   E.02.02 (9/1)   E.02.02 (9.2/1)   E.02.02 (14/2)   E.02.02 (18)
+
+@item
+@emph{AI-0114 Classification of letters (0000-00-00)}
+@cindex AI-0114 (Ada 2012 feature)
+
+@noindent
+  The code points 170 (@code{FEMININE ORDINAL INDICATOR}),
+  181 (@code{MICRO SIGN}), and
+  186 (@code{MASCULINE ORDINAL INDICATOR}) are technically considered
+  lower case letters by Unicode.
+  However, they are not allowed in identifiers, and they
+  return @code{False} to @code{Ada.Characters.Handling.Is_Letter/Is_Lower}.
+  This behavior is consistent with that defined in Ada 95.
+
+@noindent
+  RM References:  A.03.02 (59)   A.04.06 (7)
+
+
+@item
+@emph{AI-0185 Ada.Wide_[Wide_]Characters.Handling (2010-07-06)}
+@cindex AI-0185 (Ada 2012 feature)
+
+@noindent
+  Two new packages @code{Ada.Wide_[Wide_]Characters.Handling} provide
+  classification functions for @code{Wide_Character} and
+  @code{Wide_Wide_Character}, as well as providing
+  case folding routines for @code{Wide_[Wide_]Character} and
+  @code{Wide_[Wide_]String}.
+
+@noindent
+  RM References:  A.03.05 (0)   A.03.06 (0)
+
+
+@item
+@emph{AI-0031 Add From parameter to Find_Token (2010-07-25)}
+@cindex AI-0031 (Ada 2012 feature)
+
+@noindent
+  A new version of @code{Find_Token} is added to all relevant string packages,
+  with an extra parameter @code{From}. Instead of starting at the first
+  character of the string, the search for a matching Token starts at the
+  character indexed by the value of @code{From}.
+  These procedures are available in all versions of Ada
+  but if used in versions earlier than Ada 2012 they will generate a warning
+  that an Ada 2012 subprogram is being used.
+
+@noindent
+  RM References:  A.04.03 (16)   A.04.03 (67)   A.04.03 (68/1)   A.04.04 (51)
+  A.04.05 (46)
+
+
+@item
+@emph{AI-0056 Index on null string returns zero (0000-00-00)}
+@cindex AI-0056 (Ada 2012 feature)
+
+@noindent
+  The wording in the Ada 2005 RM implied an incompatible handling of the
+  @code{Index} functions, resulting in raising an exception instead of
+  returning zero in some situations.
+  This was not intended and has been corrected.
+  GNAT always returned zero, and is thus consistent with this AI.
+
+@noindent
+  RM References:  A.04.03 (56.2/2)   A.04.03 (58.5/2)
+
+
+@item
+@emph{AI-0137 String encoding package (2010-03-25)}
+@cindex AI-0137 (Ada 2012 feature)
+
+@noindent
+  The packages @code{Ada.Strings.UTF_Encoding}, together with its child
+  packages, @code{Conversions}, @code{Strings}, @code{Wide_Strings},
+  and @code{Wide_Wide_Strings} have been
+  implemented. These packages (whose documentation can be found in the spec
+  files @file{a-stuten.ads}, @file{a-suenco.ads}, @file{a-suenst.ads},
+  @file{a-suewst.ads}, @file{a-suezst.ads}) allow encoding and decoding of
+  @code{String}, @code{Wide_String}, and @code{Wide_Wide_String}
+  values using UTF coding schemes (including UTF-8, UTF-16LE, UTF-16BE, and
+  UTF-16), as well as conversions between the different UTF encodings. With
+  the exception of @code{Wide_Wide_Strings}, these packages are available in
+  Ada 95 and Ada 2005 mode as well as Ada 2012 mode.
+  The @code{Wide_Wide_Strings package}
+  is available in Ada 2005 mode as well as Ada 2012 mode (but not in Ada 95
+  mode since it uses @code{Wide_Wide_Character}).
+
+@noindent
+  RM References:  A.04.11
+
+@item
+@emph{AI-0038 Minor errors in Text_IO (0000-00-00)}
+@cindex AI-0038 (Ada 2012 feature)
+
+@noindent
+  These are minor errors in the description on three points. The intent on
+  all these points has always been clear, and GNAT has always implemented the
+  correct intended semantics.
+
+@noindent
+  RM References:  A.10.05 (37)   A.10.07 (8/1)   A.10.07 (10)   A.10.07 (12)   A.10.08 (10)   A.10.08 (24)
+
+@item
+@emph{AI-0044 Restrictions on container instantiations (0000-00-00)}
+@cindex AI-0044 (Ada 2012 feature)
+
+@noindent
+  This AI places restrictions on allowed instantiations of generic containers.
+  These restrictions are not checked by the compiler, so there is nothing to
+  change in the implementation. This affects only the RM documentation.
+
+@noindent
+  RM References:  A.18 (4/2)   A.18.02 (231/2)   A.18.03 (145/2)   A.18.06 (56/2)   A.18.08 (66/2)   A.18.09 (79/2)   A.18.26 (5/2)   A.18.26 (9/2)
+
+@item
+@emph{AI-0127 Adding Locale Capabilities (2010-09-29)}
+@cindex AI-0127 (Ada 2012 feature)
+
+@noindent
+  This package provides an interface for identifying the current locale.
+
+@noindent
+  RM References:  A.19    A.19.01    A.19.02    A.19.03    A.19.05    A.19.06
+  A.19.07    A.19.08    A.19.09    A.19.10    A.19.11    A.19.12    A.19.13
+
+
+
+@item
+@emph{AI-0002 Export C with unconstrained arrays (0000-00-00)}
+@cindex AI-0002 (Ada 2012 feature)
+
+@noindent
+  The compiler is not required to support exporting an Ada subprogram with
+  convention C if there are parameters or a return type of an unconstrained
+  array type (such as @code{String}). GNAT allows such declarations but
+  generates warnings. It is possible, but complicated, to write the
+  corresponding C code and certainly such code would be specific to GNAT and
+  non-portable.
+
+@noindent
+  RM References:  B.01 (17)   B.03 (62)   B.03 (71.1/2)
+
+
+@item
+@emph{AI-0216 No_Task_Hierarchy forbids local tasks (0000-00-00)}
+@cindex AI-0216 (Ada 2012 feature)
+
+@noindent
+  It is clearly the intention that @code{No_Task_Hierarchy} is intended to
+  forbid tasks declared locally within subprograms, or functions returning task
+  objects, and that is the implementation that GNAT has always provided.
+  However the language in the RM was not sufficiently clear on this point.
+  Thus this is a docmentation change in the RM only.
+
+@noindent
+  RM References:  D.07 (3/3)
+
+@item
+@emph{AI-0211 No_Relative_Delays forbids Set_Handler use (2010-07-09)}
+@cindex AI-0211 (Ada 2012 feature)
+
+@noindent
+  The restriction @code{No_Relative_Delays} forbids any calls to the subprogram
+  @code{Ada.Real_Time.Timing_Events.Set_Handler}.
+
+@noindent
+  RM References:  D.07 (5)   D.07 (10/2)   D.07 (10.4/2)   D.07 (10.7/2)
+
+@item
+@emph{AI-0190 pragma Default_Storage_Pool (2010-09-15)}
+@cindex AI-0190 (Ada 2012 feature)
+
+@noindent
+  This AI introduces a new pragma @code{Default_Storage_Pool}, which can be
+  used to control storage pools globally.
+  In particular, you can force every access
+  type that is used for allocation (@b{new}) to have an explicit storage pool,
+  or you can declare a pool globally to be used for all access types that lack
+  an explicit one.
+
+@noindent
+  RM References:  D.07 (8)
+
+@item
+@emph{AI-0189 No_Allocators_After_Elaboration (2010-01-23)}
+@cindex AI-0189 (Ada 2012 feature)
+
+@noindent
+  This AI introduces a new restriction @code{No_Allocators_After_Elaboration},
+  which says that no dynamic allocation will occur once elaboration is
+  completed.
+  In general this requires a run-time check, which is not required, and which
+  GNAT does not attempt. But the static cases of allocators in a task body or
+  in the body of the main program are detected and flagged at compile or bind
+  time.
+
+@noindent
+  RM References:  D.07 (19.1/2)   H.04 (23.3/2)
+
+@item
+@emph{AI-0171 Pragma CPU and Ravenscar Profile (2010-09-24)}
+@cindex AI-0171 (Ada 2012 feature)
+
+@noindent
+  A new package @code{System.Multiprocessors} is added, together with the
+  definition of pragma @code{CPU} for controlling task affinity. A new no
+  dependence restriction, on @code{System.Multiprocessors.Dispatching_Domains},
+  is added to the Ravenscar profile.
+
+@noindent
+  RM References:  D.13.01 (4/2)   D.16
+
+
+@item
+@emph{AI-0210 Correct Timing_Events metric (0000-00-00)}
+@cindex AI-0210 (Ada 2012 feature)
+
+@noindent
+  This is a documentation only issue regarding wording of metric requirements,
+  that does not affect the implementation of the compiler.
+
+@noindent
+  RM References:  D.15 (24/2)
+
+
+@item
+@emph{AI-0206 Remote types packages and preelaborate (2010-07-24)}
+@cindex AI-0206 (Ada 2012 feature)
+
+@noindent
+  Remote types packages are now allowed to depend on preelaborated packages.
+  This was formerly considered illegal.
+
+@noindent
+  RM References:  E.02.02 (6)
+
+
+
+@item
+@emph{AI-0152 Restriction No_Anonymous_Allocators (2010-09-08)}
+@cindex AI-0152 (Ada 2012 feature)
+
+@noindent
+  Restriction @code{No_Anonymous_Allocators} prevents the use of allocators
+  where the type of the returned value is an anonymous access type.
+
+@noindent
+  RM References:  H.04 (8/1)
+@end itemize
+
 
 @node Obsolescent Features
 @chapter Obsolescent Features

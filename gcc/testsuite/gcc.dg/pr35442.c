@@ -11,4 +11,4 @@ foo (A a)
 }
 
 /* Ignore a warning that is irrelevant to the purpose of this test.  */
-/* { dg-prune-output ".*GCC vector passed by reference.*" } */
+/* { dg-prune-output "(.*GCC vector passed by reference.*|.*ABI for * passing parameters with.*)" } */

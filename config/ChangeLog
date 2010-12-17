@@ -1,3 +1,79 @@
+2010-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* bootstrap-lto.mk (BOOT_ADAFLAGS): Delete.
+
+2010-11-19  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* cloog.m4: Use AS_HELP_STRING and fix help formatting.
+
+2010-11-15  Andreas Schwab  <schwab@redhat.com>
+
+	* cloog.m4 (CLOOG_INIT_FLAGS): Fix spelling in option names.
+
+2010-11-12  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* cloog.m4: Add -enable-cloog-backend=(isl|ppl|ppl-legacy) to
+	define the cloog backend to use. Furthermore, only pass the ppllibs to
+	the configure checks, if necessary.
+
+2010-11-12  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* cloog.m4: Use CLooG predefined macro to check for CLooG PPL.
+
+2010-11-12  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* cloog.m4: Fix typo.  verison -> version.
+
+2010-11-12  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* cloog.m4: Pass ppl libraries to the CLooG version check.
+
+2010-11-11  Jan Hubicka  <jh@suse.cz>
+
+	* bootstrap-lto: Use -flto.
+
+2010-11-04  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* mh-darwin: Renamed from mh-ppc-darwin.
+
+2010-06-27  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* po.m4 (AM_PO_SUBDIRS): Fix unportable shell quoting.
+
+2010-09-10  Jonathan Yong  <jon_y@users.sourceforge.net>
+
+	* dfp.m4: Enable decimal float for i?86 cygwin
+	and mingw, and for x86_64 mingw.
+
+2010-09-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/45524
+	* dfp.m4: Don't set enable_decimal_float to dpd if DFP is
+	disabled.  Set default_decimal_float.
+
+2010-09-06  Andreas Schwab  <schwab@redhat.com>
+
+	* dfp.m4: Quote argument of AC_MSG_WARN.
+
+2010-09-03  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* dfp.m4: New file.
+
+2010-09-01  Andi Kleen	<ak@linux.intel.com>
+
+	* bootstrap-lto.mk (STAGE2_CFLAGS, STAGE3_CFLAGS): Change
+	to -fwhopr=jobserver -fuse-linker-plugin -frandom-seed=1.
+
+2010-08-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR target/45084
+	* stdint.m4 (GCC_HEADER_STDINT): Use m4 quotes for arguments
+	of AC_MSG_ERROR.
+
+2010-07-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gc++filt.m4: New file.
+
 2010-06-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	* bootstrap-lto.mk: New.

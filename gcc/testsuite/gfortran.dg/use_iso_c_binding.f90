@@ -7,12 +7,12 @@
 ! intrinsic one.  --Rickett, 09.26.06
 module use_stmt_0
   ! this is an error because c_ptr_2 does not exist 
-  use, intrinsic :: iso_c_binding, only: c_ptr_2 ! { dg-error "Symbol 'c_ptr_2' referenced at \\(1\\) does not exist" }
+  use, intrinsic :: iso_c_binding, only: c_ptr_2 ! { dg-error "Symbol 'c_ptr_2' referenced at \\(1\\) not found" }
 end module use_stmt_0
 
 module use_stmt_1
   ! this is an error because c_ptr_2 does not exist 
-  use iso_c_binding, only: c_ptr_2 ! { dg-error "Symbol 'c_ptr_2' referenced at \\(1\\) does not exist" }
+  use iso_c_binding, only: c_ptr_2 ! { dg-error "Symbol 'c_ptr_2' referenced at \\(1\\) not found" }
 end module use_stmt_1
 
 module use_stmt_2

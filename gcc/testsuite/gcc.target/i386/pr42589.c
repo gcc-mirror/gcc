@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target ilp32 } */
+/* { dg-skip-if "" { i?86-*-* x86_64-*-* } { "-march=*" } { "-march=i486" } } */
 /* { dg-options "-O2 -march=i486" } */
 
 void

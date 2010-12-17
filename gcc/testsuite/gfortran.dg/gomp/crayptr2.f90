@@ -1,6 +1,6 @@
 ! { dg-do compile }
 ! { dg-options "-fopenmp -fcray-pointer" }
-! { dg-require-effective-target tls_native }
+! { dg-require-effective-target tls }
 
 module crayptr2
   integer :: e		! { dg-error "CRAY POINTEE attribute conflicts with THREADPRIVATE" }

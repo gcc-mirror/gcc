@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "tm_p.h"
 #include "ggc.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "integrate.h"
 #include "target.h"
@@ -120,8 +121,6 @@ struct GTY(()) machine_function
 
 #define MEP_CONTROL_REG(x) \
   (GET_CODE (x) == REG && ANY_CONTROL_REGNO_P (REGNO (x)))
-
-static const struct attribute_spec mep_attribute_table[11];
 
 static GTY(()) section * based_section;
 static GTY(()) section * tinybss_section;
@@ -217,6 +216,10 @@ static void mep_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					tree, int *, int);
 static bool mep_pass_by_reference (CUMULATIVE_ARGS * cum, enum machine_mode,
 				   const_tree, bool);
+static rtx mep_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+			     const_tree, bool);
+static void mep_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+				      const_tree, bool);
 static bool mep_vector_mode_supported_p (enum machine_mode);
 static bool mep_handle_option (size_t, const char *, int);
 static rtx  mep_allocate_initial_value (rtx);
@@ -228,84 +231,8 @@ static tree mep_build_builtin_va_list (void);
 static void mep_expand_va_start (tree, rtx);
 static tree mep_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 static bool mep_can_eliminate (const int, const int);
+static void mep_conditional_register_usage (void);
 static void mep_trampoline_init (rtx, tree, rtx);
-
-/* Initialize the GCC target structure.  */
-
-#undef  TARGET_ASM_FUNCTION_PROLOGUE
-#define TARGET_ASM_FUNCTION_PROLOGUE	mep_start_function
-#undef  TARGET_ATTRIBUTE_TABLE
-#define TARGET_ATTRIBUTE_TABLE		mep_attribute_table
-#undef  TARGET_COMP_TYPE_ATTRIBUTES
-#define TARGET_COMP_TYPE_ATTRIBUTES	mep_comp_type_attributes
-#undef  TARGET_INSERT_ATTRIBUTES
-#define TARGET_INSERT_ATTRIBUTES	mep_insert_attributes
-#undef  TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P
-#define TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P	mep_function_attribute_inlinable_p
-#undef  TARGET_CAN_INLINE_P
-#define TARGET_CAN_INLINE_P		mep_can_inline_p
-#undef  TARGET_SECTION_TYPE_FLAGS
-#define TARGET_SECTION_TYPE_FLAGS	mep_section_type_flags
-#undef  TARGET_ASM_NAMED_SECTION
-#define TARGET_ASM_NAMED_SECTION	mep_asm_named_section
-#undef  TARGET_INIT_BUILTINS
-#define TARGET_INIT_BUILTINS		mep_init_builtins
-#undef  TARGET_EXPAND_BUILTIN
-#define TARGET_EXPAND_BUILTIN		mep_expand_builtin
-#undef  TARGET_SCHED_ADJUST_COST
-#define TARGET_SCHED_ADJUST_COST	mep_adjust_cost
-#undef  TARGET_SCHED_ISSUE_RATE
-#define TARGET_SCHED_ISSUE_RATE		mep_issue_rate
-#undef  TARGET_SCHED_REORDER
-#define TARGET_SCHED_REORDER		mep_sched_reorder
-#undef  TARGET_STRIP_NAME_ENCODING
-#define TARGET_STRIP_NAME_ENCODING	mep_strip_name_encoding
-#undef  TARGET_ASM_SELECT_SECTION
-#define TARGET_ASM_SELECT_SECTION	mep_select_section
-#undef  TARGET_ASM_UNIQUE_SECTION
-#define TARGET_ASM_UNIQUE_SECTION	mep_unique_section
-#undef  TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO	mep_encode_section_info
-#undef  TARGET_FUNCTION_OK_FOR_SIBCALL
-#define TARGET_FUNCTION_OK_FOR_SIBCALL	mep_function_ok_for_sibcall
-#undef  TARGET_RTX_COSTS
-#define TARGET_RTX_COSTS		mep_rtx_cost
-#undef  TARGET_ADDRESS_COST
-#define TARGET_ADDRESS_COST 		mep_address_cost
-#undef  TARGET_MACHINE_DEPENDENT_REORG
-#define TARGET_MACHINE_DEPENDENT_REORG  mep_reorg
-#undef  TARGET_SETUP_INCOMING_VARARGS
-#define TARGET_SETUP_INCOMING_VARARGS	mep_setup_incoming_varargs
-#undef  TARGET_PASS_BY_REFERENCE
-#define TARGET_PASS_BY_REFERENCE        mep_pass_by_reference
-#undef  TARGET_VECTOR_MODE_SUPPORTED_P
-#define TARGET_VECTOR_MODE_SUPPORTED_P	mep_vector_mode_supported_p
-#undef  TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION            mep_handle_option
-#undef  TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS	TARGET_DEFAULT
-#undef  TARGET_ALLOCATE_INITIAL_VALUE
-#define TARGET_ALLOCATE_INITIAL_VALUE   mep_allocate_initial_value
-#undef  TARGET_ASM_INIT_SECTIONS
-#define TARGET_ASM_INIT_SECTIONS 	mep_asm_init_sections
-#undef  TARGET_RETURN_IN_MEMORY
-#define TARGET_RETURN_IN_MEMORY		mep_return_in_memory
-#undef  TARGET_NARROW_VOLATILE_BITFIELD
-#define TARGET_NARROW_VOLATILE_BITFIELD mep_narrow_volatile_bitfield
-#undef	TARGET_EXPAND_BUILTIN_SAVEREGS
-#define	TARGET_EXPAND_BUILTIN_SAVEREGS	mep_expand_builtin_saveregs
-#undef  TARGET_BUILD_BUILTIN_VA_LIST
-#define TARGET_BUILD_BUILTIN_VA_LIST	mep_build_builtin_va_list
-#undef  TARGET_EXPAND_BUILTIN_VA_START
-#define TARGET_EXPAND_BUILTIN_VA_START	mep_expand_va_start
-#undef	TARGET_GIMPLIFY_VA_ARG_EXPR
-#define	TARGET_GIMPLIFY_VA_ARG_EXPR	mep_gimplify_va_arg_expr
-#undef  TARGET_CAN_ELIMINATE
-#define TARGET_CAN_ELIMINATE            mep_can_eliminate
-#undef  TARGET_TRAMPOLINE_INIT
-#define TARGET_TRAMPOLINE_INIT		mep_trampoline_init
-
-struct gcc_target targetm = TARGET_INITIALIZER;
 
 #define WANT_GCC_DEFINITIONS
 #include "mep-intrin.h"
@@ -352,8 +279,8 @@ mep_set_leaf_registers (int enable)
       mep_leaf_registers[i] = enable;
 }
 
-void
-mep_conditional_register_usage (char *fixed_regs, char *call_used_regs)
+static void
+mep_conditional_register_usage (void)
 {
   int i;
 
@@ -369,19 +296,23 @@ mep_conditional_register_usage (char *fixed_regs, char *call_used_regs)
     global_regs[i] = 1;
 }
 
-void
-mep_optimization_options (void)
-{
-  /* The first scheduling pass often increases register pressure and tends
-     to result in more spill code.  Only run it when specifically asked.  */
-  flag_schedule_insns = 0;
 
-  /* Using $fp doesn't gain us much, even when debugging is important.  */
-  flag_omit_frame_pointer = 1;
-}
+static const struct default_options mep_option_optimization_table[] =
+  {
+    /* The first scheduling pass often increases register pressure and
+       tends to result in more spill code.  Only run it when
+       specifically asked.  */
+    { OPT_LEVELS_ALL, OPT_fschedule_insns, NULL, 0 },
 
-void
-mep_override_options (void)
+    /* Using $fp doesn't gain us much, even when debugging is
+       important.  */
+    { OPT_LEVELS_ALL, OPT_fomit_frame_pointer, NULL, 1 },
+
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
+
+static void
+mep_option_override (void)
 {
   if (flag_pic == 1)
     warning (OPT_fpic, "-fpic is not supported");
@@ -1340,9 +1271,11 @@ mep_legitimate_address (enum machine_mode mode, rtx x, int strict)
 
 int
 mep_legitimize_reload_address (rtx *x, enum machine_mode mode, int opnum,
-			       enum reload_type type,
+			       int type_i,
 			       int ind_levels ATTRIBUTE_UNUSED)
 {
+  enum reload_type type = (enum reload_type) type_i;
+
   if (GET_CODE (*x) == PLUS
       && GET_CODE (XEXP (*x, 0)) == MEM
       && GET_CODE (XEXP (*x, 1)) == REG)
@@ -2167,7 +2100,7 @@ mep_secondary_copro_reload_class (enum reg_class rclass, rtx x)
 
 /* Copying X to register in RCLASS.  */
 
-int
+enum reg_class
 mep_secondary_input_reload_class (enum reg_class rclass,
 				  enum machine_mode mode ATTRIBUTE_UNUSED,
 				  rtx x)
@@ -2188,12 +2121,12 @@ mep_secondary_input_reload_class (enum reg_class rclass,
 #if DEBUG_RELOAD
   fprintf (stderr, " - requires %s\n", reg_class_names[rv]);
 #endif
-  return rv;
+  return (enum reg_class) rv;
 }
 
 /* Copying register in RCLASS to X.  */
 
-int
+enum reg_class
 mep_secondary_output_reload_class (enum reg_class rclass,
 				   enum machine_mode mode ATTRIBUTE_UNUSED,
 				   rtx x)
@@ -2215,7 +2148,7 @@ mep_secondary_output_reload_class (enum reg_class rclass,
   fprintf (stderr, " - requires %s\n", reg_class_names[rv]);
 #endif
 
-  return rv;
+  return (enum reg_class) rv;
 }
 
 /* Implement SECONDARY_MEMORY_NEEDED.  */
@@ -3476,7 +3409,7 @@ mep_print_operand (FILE *file, rtx x, int code)
 			  (unsigned long) CONST_DOUBLE_HIGH(r));
 		  break;
 		case SYMBOL_REF:
-		  real_name = TARGET_STRIP_NAME_ENCODING (XSTR (r, 0));
+		  real_name = targetm.strip_name_encoding (XSTR (r, 0));
 		  assemble_name (file, real_name);
 		  break;
 		case LABEL_REF:
@@ -3610,9 +3543,9 @@ mep_build_builtin_va_list (void)
   DECL_FIELD_CONTEXT (f_next_stack) = record;
 
   TYPE_FIELDS (record) = f_next_gp;
-  TREE_CHAIN (f_next_gp) = f_next_gp_limit;
-  TREE_CHAIN (f_next_gp_limit) = f_next_cop;
-  TREE_CHAIN (f_next_cop) = f_next_stack;
+  DECL_CHAIN (f_next_gp) = f_next_gp_limit;
+  DECL_CHAIN (f_next_gp_limit) = f_next_cop;
+  DECL_CHAIN (f_next_cop) = f_next_stack;
 
   layout_type (record);
 
@@ -3630,9 +3563,9 @@ mep_expand_va_start (tree valist, rtx nextarg)
   ns = cfun->machine->arg_regs_to_save;
 
   f_next_gp = TYPE_FIELDS (va_list_type_node);
-  f_next_gp_limit = TREE_CHAIN (f_next_gp);
-  f_next_cop = TREE_CHAIN (f_next_gp_limit);
-  f_next_stack = TREE_CHAIN (f_next_cop);
+  f_next_gp_limit = DECL_CHAIN (f_next_gp);
+  f_next_cop = DECL_CHAIN (f_next_gp_limit);
+  f_next_stack = DECL_CHAIN (f_next_cop);
 
   next_gp = build3 (COMPONENT_REF, TREE_TYPE (f_next_gp), valist, f_next_gp,
 		    NULL_TREE);
@@ -3696,9 +3629,9 @@ mep_gimplify_va_arg_expr (tree valist, tree type,
   rsize = (size + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
 
   f_next_gp = TYPE_FIELDS (va_list_type_node);
-  f_next_gp_limit = TREE_CHAIN (f_next_gp);
-  f_next_cop = TREE_CHAIN (f_next_gp_limit);
-  f_next_stack = TREE_CHAIN (f_next_cop);
+  f_next_gp_limit = DECL_CHAIN (f_next_gp);
+  f_next_cop = DECL_CHAIN (f_next_gp_limit);
+  f_next_stack = DECL_CHAIN (f_next_cop);
 
   next_gp = build3 (COMPONENT_REF, TREE_TYPE (f_next_gp), valist, f_next_gp,
 		    NULL_TREE);
@@ -3795,23 +3728,29 @@ mep_init_cumulative_args (CUMULATIVE_ARGS *pcum, tree fntype,
     pcum->vliw = 0;
 }
 
-rtx
-mep_function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode,
-		  tree type ATTRIBUTE_UNUSED, int named ATTRIBUTE_UNUSED)
+/* The ABI is thus: Arguments are in $1, $2, $3, $4, stack.  Arguments
+   larger than 4 bytes are passed indirectly.  Return value in 0,
+   unless bigger than 4 bytes, then the caller passes a pointer as the
+   first arg.  For varargs, we copy $1..$4 to the stack.  */
+
+static rtx
+mep_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		  const_tree type ATTRIBUTE_UNUSED,
+		  bool named ATTRIBUTE_UNUSED)
 {
   /* VOIDmode is a signal for the backend to pass data to the call
      expander via the second operand to the call pattern.  We use
      this to determine whether to use "jsr" or "jsrv".  */
   if (mode == VOIDmode)
-    return GEN_INT (cum.vliw);
+    return GEN_INT (cum->vliw);
 
   /* If we havn't run out of argument registers, return the next.  */
-  if (cum.nregs < 4)
+  if (cum->nregs < 4)
     {
       if (type && TARGET_IVC2 && VECTOR_TYPE_P (type))
-	return gen_rtx_REG (mode, cum.nregs + 49);
+	return gen_rtx_REG (mode, cum->nregs + 49);
       else
-	return gen_rtx_REG (mode, cum.nregs + 1);
+	return gen_rtx_REG (mode, cum->nregs + 1);
     }
 
   /* Otherwise the argument goes on the stack.  */
@@ -3840,10 +3779,11 @@ mep_pass_by_reference (CUMULATIVE_ARGS * cum ATTRIBUTE_UNUSED,
   return true;
 }
 
-void
-mep_arg_advance (CUMULATIVE_ARGS *pcum,
-		 enum machine_mode mode ATTRIBUTE_UNUSED,
-		 tree type ATTRIBUTE_UNUSED, int named ATTRIBUTE_UNUSED)
+static void
+mep_function_arg_advance (CUMULATIVE_ARGS *pcum,
+			  enum machine_mode mode ATTRIBUTE_UNUSED,
+			  const_tree type ATTRIBUTE_UNUSED,
+			  bool named ATTRIBUTE_UNUSED)
 {
   pcum->nregs += 1;
 }
@@ -3867,7 +3807,7 @@ mep_narrow_volatile_bitfield (void)
 /* Implement FUNCTION_VALUE.  All values are returned in $0.  */
 
 rtx
-mep_function_value (tree type, tree func ATTRIBUTE_UNUSED)
+mep_function_value (const_tree type, const_tree func ATTRIBUTE_UNUSED)
 {
   if (TARGET_IVC2 && VECTOR_TYPE_P (type))
     return gen_rtx_REG (TYPE_MODE (type), 48);
@@ -4129,7 +4069,7 @@ mep_validate_vliw (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
       if (TREE_CODE (*node) == POINTER_TYPE
  	  && !gave_pointer_note)
  	{
- 	  inform (input_location, "To describe a pointer to a VLIW function, use syntax like this:");
+ 	  inform (input_location, "to describe a pointer to a VLIW function, use syntax like this:");
  	  inform (input_location, "  typedef int (__vliw *vfuncptr) ();");
  	  gave_pointer_note = 1;
  	}
@@ -4137,7 +4077,7 @@ mep_validate_vliw (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
       if (TREE_CODE (*node) == ARRAY_TYPE
  	  && !gave_array_note)
  	{
- 	  inform (input_location, "To describe an array of VLIW function pointers, use syntax like this:");
+ 	  inform (input_location, "to describe an array of VLIW function pointers, use syntax like this:");
  	  inform (input_location, "  typedef int (__vliw *vfuncptr[]) ();");
  	  gave_array_note = 1;
  	}
@@ -4301,6 +4241,30 @@ mep_file_cleanups (void)
   if (pragma_htab)
     htab_traverse (pragma_htab, note_unused_pragma_disinterrupt, NULL);
 }
+
+/* These three functions provide a bridge between the pramgas that
+   affect register classes, and the functions that maintain them.  We
+   can't call those functions directly as pragma handling is part of
+   the front end and doesn't have direct access to them.  */
+
+void
+mep_save_register_info (void)
+{
+  save_register_info ();
+}
+
+void
+mep_reinit_regs (void)
+{
+  reinit_regs ();
+}
+
+void
+mep_init_regs (void)
+{
+  init_regs ();
+}
+
      
 
 static int
@@ -4877,7 +4841,7 @@ mep_output_aligned_common (FILE *stream, tree decl, const char *name,
 	      align /= 2;
 	      p2align ++;
 	    }
-	  name2 = TARGET_STRIP_NAME_ENCODING (name);
+	  name2 = targetm.strip_name_encoding (name);
 	  if (global)
 	    fprintf (stream, "\t.globl\t%s\n", name2);
 	  fprintf (stream, "\t.p2align %d\n", p2align);
@@ -5628,7 +5592,7 @@ mep_invert_branch (rtx insn, rtx after)
 static void
 mep_reorg_erepeat (rtx insns)
 {
-  rtx insn, prev, label_before, l, x;
+  rtx insn, prev, l, x;
   int count;
 
   for (insn = insns; insn; insn = NEXT_INSN (insn))
@@ -5643,7 +5607,6 @@ mep_reorg_erepeat (rtx insns)
 	    print_rtl_single (dump_file, insn);
 	  }
 	count = simplejump_p (insn) ? 0 : 1;
-	label_before = 0;
 	for (prev = PREV_INSN (insn); prev; prev = PREV_INSN (prev))
 	  {
 	    if (GET_CODE (prev) == CALL_INSN
@@ -5732,8 +5695,6 @@ mep_reorg_erepeat (rtx insns)
 	    if (INSN_P (prev))
 	      {
 		count ++;
-		if (count == 2)
-		  label_before = prev;
 	      }
 	  }
       }
@@ -6331,7 +6292,6 @@ mep_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
   const struct cgen_insn *cgen_insn;
   const struct insn_data_d *idata;
   unsigned int first_arg = 0;
-  tree return_type = void_type_node;
   unsigned int builtin_n_args;
 
   fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
@@ -6353,7 +6313,7 @@ mep_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
       if (cgen_insn->cret_p > 1)
 	builtin_n_args ++;
       first_arg = 1;
-      return_type = mep_cgen_regnum_to_type (cgen_insn->regnums[0].type);
+      mep_cgen_regnum_to_type (cgen_insn->regnums[0].type);
       builtin_n_args --;
     }
 
@@ -7414,5 +7374,92 @@ mep_asm_init_sections (void)
 			   "\t.section .ftext,\"ax\"\n\t.core");
 
 }
+
+/* Initialize the GCC target structure.  */
+
+#undef  TARGET_ASM_FUNCTION_PROLOGUE
+#define TARGET_ASM_FUNCTION_PROLOGUE	mep_start_function
+#undef  TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE		mep_attribute_table
+#undef  TARGET_COMP_TYPE_ATTRIBUTES
+#define TARGET_COMP_TYPE_ATTRIBUTES	mep_comp_type_attributes
+#undef  TARGET_INSERT_ATTRIBUTES
+#define TARGET_INSERT_ATTRIBUTES	mep_insert_attributes
+#undef  TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P
+#define TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P	mep_function_attribute_inlinable_p
+#undef  TARGET_CAN_INLINE_P
+#define TARGET_CAN_INLINE_P		mep_can_inline_p
+#undef  TARGET_SECTION_TYPE_FLAGS
+#define TARGET_SECTION_TYPE_FLAGS	mep_section_type_flags
+#undef  TARGET_ASM_NAMED_SECTION
+#define TARGET_ASM_NAMED_SECTION	mep_asm_named_section
+#undef  TARGET_INIT_BUILTINS
+#define TARGET_INIT_BUILTINS		mep_init_builtins
+#undef  TARGET_EXPAND_BUILTIN
+#define TARGET_EXPAND_BUILTIN		mep_expand_builtin
+#undef  TARGET_SCHED_ADJUST_COST
+#define TARGET_SCHED_ADJUST_COST	mep_adjust_cost
+#undef  TARGET_SCHED_ISSUE_RATE
+#define TARGET_SCHED_ISSUE_RATE		mep_issue_rate
+#undef  TARGET_SCHED_REORDER
+#define TARGET_SCHED_REORDER		mep_sched_reorder
+#undef  TARGET_STRIP_NAME_ENCODING
+#define TARGET_STRIP_NAME_ENCODING	mep_strip_name_encoding
+#undef  TARGET_ASM_SELECT_SECTION
+#define TARGET_ASM_SELECT_SECTION	mep_select_section
+#undef  TARGET_ASM_UNIQUE_SECTION
+#define TARGET_ASM_UNIQUE_SECTION	mep_unique_section
+#undef  TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO	mep_encode_section_info
+#undef  TARGET_FUNCTION_OK_FOR_SIBCALL
+#define TARGET_FUNCTION_OK_FOR_SIBCALL	mep_function_ok_for_sibcall
+#undef  TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS		mep_rtx_cost
+#undef  TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST 		mep_address_cost
+#undef  TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG  mep_reorg
+#undef  TARGET_SETUP_INCOMING_VARARGS
+#define TARGET_SETUP_INCOMING_VARARGS	mep_setup_incoming_varargs
+#undef  TARGET_PASS_BY_REFERENCE
+#define TARGET_PASS_BY_REFERENCE        mep_pass_by_reference
+#undef  TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG             mep_function_arg
+#undef  TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE     mep_function_arg_advance
+#undef  TARGET_VECTOR_MODE_SUPPORTED_P
+#define TARGET_VECTOR_MODE_SUPPORTED_P	mep_vector_mode_supported_p
+#undef  TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION            mep_handle_option
+#undef  TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE		mep_option_override
+#undef  TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE	mep_option_optimization_table
+#undef  TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS	TARGET_DEFAULT
+#undef  TARGET_ALLOCATE_INITIAL_VALUE
+#define TARGET_ALLOCATE_INITIAL_VALUE   mep_allocate_initial_value
+#undef  TARGET_ASM_INIT_SECTIONS
+#define TARGET_ASM_INIT_SECTIONS 	mep_asm_init_sections
+#undef  TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY		mep_return_in_memory
+#undef  TARGET_NARROW_VOLATILE_BITFIELD
+#define TARGET_NARROW_VOLATILE_BITFIELD mep_narrow_volatile_bitfield
+#undef	TARGET_EXPAND_BUILTIN_SAVEREGS
+#define	TARGET_EXPAND_BUILTIN_SAVEREGS	mep_expand_builtin_saveregs
+#undef  TARGET_BUILD_BUILTIN_VA_LIST
+#define TARGET_BUILD_BUILTIN_VA_LIST	mep_build_builtin_va_list
+#undef  TARGET_EXPAND_BUILTIN_VA_START
+#define TARGET_EXPAND_BUILTIN_VA_START	mep_expand_va_start
+#undef	TARGET_GIMPLIFY_VA_ARG_EXPR
+#define	TARGET_GIMPLIFY_VA_ARG_EXPR	mep_gimplify_va_arg_expr
+#undef  TARGET_CAN_ELIMINATE
+#define TARGET_CAN_ELIMINATE            mep_can_eliminate
+#undef  TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE	mep_conditional_register_usage
+#undef  TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT		mep_trampoline_init
+
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-mep.h"

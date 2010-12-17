@@ -1,4 +1,4 @@
-/* JobHoldUntilDefault.java -- 
+/* JobHoldUntilDefault.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -50,57 +50,57 @@ import javax.print.attribute.standard.JobHoldUntil;
 /**
  * JobHoldUntilDefault attribute provides the default value
  * for the attribute type job-hold-until.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class JobHoldUntilDefault extends TextSyntax 
+public final class JobHoldUntilDefault extends TextSyntax
   implements DefaultValueAttribute
 {
-  
-  // a keyword/name based attribute in IPP 
+
+  // a keyword/name based attribute in IPP
   // can be extended by administrators
   // standard values are predefined
-  
+
   /** Job should be printed immediately. */
-  public static final JobHoldUntilDefault NO_HOLD = 
+  public static final JobHoldUntilDefault NO_HOLD =
     new JobHoldUntilDefault("no-hold", null);
-  
+
   /** Job should be hold indefinitely. */
-  public static final JobHoldUntilDefault INDEFINITE = 
+  public static final JobHoldUntilDefault INDEFINITE =
     new JobHoldUntilDefault("indefinite", null);
-  
+
   /**  Job should be processed during the day. */
-  public static final JobHoldUntilDefault DAY_TIME = 
+  public static final JobHoldUntilDefault DAY_TIME =
     new JobHoldUntilDefault("day-time", null);
-  
+
   /**  Job should be processed in the evening. */
-  public static final JobHoldUntilDefault EVENING = 
+  public static final JobHoldUntilDefault EVENING =
     new JobHoldUntilDefault("evening", null);
-  
+
   /**  Job should be processed during night. */
-  public static final JobHoldUntilDefault NIGHT = 
+  public static final JobHoldUntilDefault NIGHT =
     new JobHoldUntilDefault("night", null);
-  
+
   /**  Job should be processed during the weekend. */
-  public static final JobHoldUntilDefault WEEKEND = 
+  public static final JobHoldUntilDefault WEEKEND =
     new JobHoldUntilDefault("weekend", null);
-  
-  /**  
-   * Job should be processed as second-shift 
-   * (after close of business). 
-   */
-  public static final JobHoldUntilDefault SECOND_SHIFT = 
-    new JobHoldUntilDefault("second-shift", null);
-  
-  /**  
-   * Job should be processed as third-shift 
-   * (after midnight). 
-   */
-  public static final JobHoldUntilDefault THIRD_SHIFT = 
-    new JobHoldUntilDefault("third-shift", null); 
 
   /**
-   * Creates a <code>JobHoldUntilDefault</code> object with the 
+   * Job should be processed as second-shift
+   * (after close of business).
+   */
+  public static final JobHoldUntilDefault SECOND_SHIFT =
+    new JobHoldUntilDefault("second-shift", null);
+
+  /**
+   * Job should be processed as third-shift
+   * (after midnight).
+   */
+  public static final JobHoldUntilDefault THIRD_SHIFT =
+    new JobHoldUntilDefault("third-shift", null);
+
+  /**
+   * Creates a <code>JobHoldUntilDefault</code> object with the
    * given value and locale.
    *
    * @param value the value for this syntax
@@ -119,7 +119,7 @@ public final class JobHoldUntilDefault extends TextSyntax
    *
    * @return The class <code>JobHoldUntilDefault</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return JobHoldUntilDefault.class;
   }
@@ -133,14 +133,14 @@ public final class JobHoldUntilDefault extends TextSyntax
   {
     return "job-hold-until-default";
   }
-  
+
   /**
    * Returns the equally enum of the standard attribute class
    * of this DefaultValuesAttribute enum.
-   * 
+   *
    * @return The enum of the standard attribute class.
    */
-  public Attribute getAssociatedAttribute() 
+  public Attribute getAssociatedAttribute()
   {
     // FIXME Same Mapping problem as in IppPrintService
     return new JobHoldUntil(new Date());

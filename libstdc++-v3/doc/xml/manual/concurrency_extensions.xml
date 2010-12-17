@@ -1,12 +1,8 @@
-<?xml version='1.0'?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
-[ ]>
-
-<chapter id="manual.ext.concurrency" xreflabel="Concurrency Extensions">
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="manual.ext.concurrency" xreflabel="Concurrency Extensions">
 <?dbhtml filename="ext_concurrency.html"?>
 
-<chapterinfo>
+<info><title>Concurrency</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -15,15 +11,15 @@
       library
     </keyword>
   </keywordset>
-</chapterinfo>
+</info>
 
-<title>Concurrency</title>
 
-<sect1 id="manual.ext.concurrency.design" xreflabel="Design">
-  <title>Design</title>
 
-  <sect2 id="manual.ext.concurrency.design.threads" xreflabel="Threads API">
-    <title>Interface to Locks and Mutexes</title>
+<section xml:id="manual.ext.concurrency.design" xreflabel="Design"><info><title>Design</title></info>
+  
+
+  <section xml:id="manual.ext.concurrency.design.threads" xreflabel="Threads API"><info><title>Interface to Locks and Mutexes</title></info>
+    
 
 <para>The file &lt;ext/concurrence.h&gt; contains all the higher-level
 constructs for playing with threads. In contrast to the atomics layer,
@@ -78,10 +74,10 @@ locks it during construction of <code>__scoped_locke</code> and
 unlocks it during destruction. This is an efficient way of locking
 critical sections, while retaining exception-safety.
 </para>
-  </sect2>
+  </section>
 
-  <sect2 id="manual.ext.concurrency.design.atomics" xreflabel="Atomic API">
-    <title>Interface to Atomic Functions</title>
+  <section xml:id="manual.ext.concurrency.design.atomics" xreflabel="Atomic API"><info><title>Interface to Atomic Functions</title></info>
+    
 
 
 <para>
@@ -186,15 +182,15 @@ _GLIBCXX_WRITE_MEM_BARRIER
 Which expand to the appropriate write and read barrier required by the
 host hardware and operating system.
 </para>
-  </sect2>
+  </section>
 
-</sect1>
+</section>
 
 
-<sect1 id="manual.ext.concurrency.impl" xreflabel="Implementation">
-  <title>Implementation</title>
-  <sect2 id="manual.ext.concurrency.impl.atomic_fallbacks" xreflabel="Atomic F">
-    <title>Using Builtin Atomic Functions</title>
+<section xml:id="manual.ext.concurrency.impl" xreflabel="Implementation"><info><title>Implementation</title></info>
+  
+  <section xml:id="manual.ext.concurrency.impl.atomic_fallbacks" xreflabel="Atomic F"><info><title>Using Builtin Atomic Functions</title></info>
+    
 
 <para>The functions for atomic operations described above are either
 implemented via compiler intrinsics (if the underlying host is
@@ -253,16 +249,16 @@ hardware, hand-crafted assembly is selected. This is the case for the following 
 <para>And for the rest, a simulated atomic lock via pthreads.
 </para>
 
-<para> Detailed information about compiler intrinsics for atomic operations can be found in the GCC <ulink url="http://gcc.gnu.org/onlinedocs/gcc/Atomic-Builtins.html"> documentation</ulink>.
+<para> Detailed information about compiler intrinsics for atomic operations can be found in the GCC <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc/Atomic-Builtins.html"> documentation</link>.
 </para>
 
 <para> More details on the library fallbacks from the porting <link linkend="internals.thread_safety">section</link>.
 </para>
 
 
-  </sect2>
-  <sect2 id="manual.ext.concurrency.impl.thread" xreflabel="Pthread">
-    <title>Thread Abstraction</title>
+  </section>
+  <section xml:id="manual.ext.concurrency.impl.thread" xreflabel="Pthread"><info><title>Thread Abstraction</title></info>
+    
 
 <para>A thin layer above IEEE 1003.1 (i.e. pthreads) is used to abstract
 the thread interface for GCC. This layer is called "gthread," and is
@@ -276,7 +272,7 @@ the current host. In libstdc++ implementation files,
 </para>
 
 <para>Within libstdc++ sources, all calls to underlying thread functionality
-use this layer. More detail as to the specific interface can be found in the source <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00883_source.html">documentation</ulink>.
+use this layer. More detail as to the specific interface can be found in the source <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00883_source.html">documentation</link>.
 </para>
 
 <para>By design, the gthread layer is interoperable with the types,
@@ -285,12 +281,12 @@ including <code>pthread_t</code>, <code>pthread_once_t</code>, <code>pthread_cre
 etc.
 </para>
 
-  </sect2>
-</sect1>
+  </section>
+</section>
 
-<sect1 id="manual.ext.concurrency.use" xreflabel="Use">
+<section xml:id="manual.ext.concurrency.use" xreflabel="Use"><info><title>Use</title></info>
 
-  <title>Use</title>
+  
 
 <para>Typical usage of the last two constructs is demonstrated as follows:
 </para>
@@ -332,6 +328,6 @@ and <code>__concurrence_broadcast_error</code>.
 </para>
 
 
-</sect1>
+</section>
 
 </chapter>

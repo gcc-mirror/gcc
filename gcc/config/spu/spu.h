@@ -1,4 +1,4 @@
-/* Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -20,16 +20,9 @@
 
 #define TARGET_VERSION fprintf (stderr, " (spu %s)", __DATE__);
 
-#define OVERRIDE_OPTIONS spu_override_options()
 #define C_COMMON_OVERRIDE_OPTIONS spu_c_common_override_options()
 
-#define OPTIMIZATION_OPTIONS(level,size) \
-	  spu_optimization_options(level,size)
-
 #define INIT_EXPANDERS spu_init_expanders()
-
-extern int target_flags;
-extern const char *spu_fixed_range_string;
 
 /* Which processor to generate code or schedule for.  */
 enum processor_type
@@ -174,9 +167,6 @@ extern GTY(()) int spu_tune;
     1, 1, 1 \
 }
 
-#define CONDITIONAL_REGISTER_USAGE \
-	spu_conditional_register_usage()
-
 
 /* Values in Registers */
 
@@ -231,8 +221,6 @@ enum reg_class {
 	((!(STRICT) || REGNO_OK_FOR_INDEX_P (REGNO (X))))
 #define INT_REG_OK_FOR_BASE_P(X,STRICT) \
 	((!(STRICT) || REGNO_OK_FOR_BASE_P (REGNO (X))))
-
-#define PREFERRED_RELOAD_CLASS(X,CLASS)  (CLASS)
 
 #define CLASS_MAX_NREGS(CLASS, MODE)	\
 	((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
@@ -334,26 +322,13 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 
 #define OUTGOING_REG_PARM_STACK_SPACE(FNTYPE) 1
 
-#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) (0)
-
 
 /* Register Arguments */
-
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-        (spu_function_arg((CUM),(MODE),(TYPE),(NAMED)))
 
 #define CUMULATIVE_ARGS int
 
 #define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,FNDECL,N_NAMED_ARGS) \
 		((CUM) = 0)
-
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
-        ((CUM) += \
-	 (TYPE) && TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST ? 1 \
-	 : (MODE) == BLKmode ? ((int_size_in_bytes(TYPE)+15) / 16) \
-         : (MODE) == VOIDmode ? 1 \
-	 : HARD_REGNO_NREGS(CUM,MODE))
-
 
 /* The SPU ABI wants 32/64-bit types at offset 0 in the quad-word on the
    stack.  8/16-bit types should be at offsets 3/2 respectively.  */
@@ -448,12 +423,6 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 
 #define ASM_APP_OFF ""
 
-#define ASM_OUTPUT_SOURCE_FILENAME(STREAM, NAME) \
-  do {	fprintf (STREAM, "\t.file\t");			\
-	output_quoted_string (STREAM, NAME);		\
-	fprintf (STREAM, "\n");				\
-  } while (0)
-
 
 /* Uninitialized Data */
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
@@ -540,8 +509,6 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 
 #define NO_IMPLICIT_EXTERN_C 1
 
-#define HANDLE_PRAGMA_PACK_PUSH_POP 1
-
 /* Canonicalize a comparison from one we don't have to one we do have.  */
 #define CANONICALIZE_COMPARISON(CODE,OP0,OP1) \
   do {                                                                    \
@@ -572,7 +539,7 @@ enum spu_builtin_type
   B_INTERNAL
 };
 
-struct GTY(()) spu_builtin_description
+struct spu_builtin_description
 {
   int fcode;
   int icode;
@@ -582,8 +549,6 @@ struct GTY(()) spu_builtin_description
   /* The first element of parm is always the return type.  The rest
      are a zero terminated list of parameters.  */
   int parm[5];
-
-  tree fndecl;
 };
 
 extern struct spu_builtin_description spu_builtins[];

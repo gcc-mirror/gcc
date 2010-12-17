@@ -1,6 +1,6 @@
 /* C++-specific tree lowering bits; see also c-gimplify.c and tree-gimple.c.
 
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@redhat.com>
 
@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "cp-tree.h"
 #include "c-family/c-common.h"
-#include "toplev.h"
 #include "tree-iterator.h"
 #include "gimple.h"
 #include "hashtab.h"
@@ -51,7 +50,7 @@ static tree
 begin_bc_block (enum bc_t bc)
 {
   tree label = create_artificial_label (input_location);
-  TREE_CHAIN (label) = bc_label[bc];
+  DECL_CHAIN (label) = bc_label[bc];
   bc_label[bc] = label;
   return label;
 }
@@ -73,8 +72,8 @@ finish_bc_block (enum bc_t bc, tree label, gimple_seq body)
       gimple_seq_add_stmt (&body, gimple_build_label (label));
     }
 
-  bc_label[bc] = TREE_CHAIN (label);
-  TREE_CHAIN (label) = NULL_TREE;
+  bc_label[bc] = DECL_CHAIN (label);
+  DECL_CHAIN (label) = NULL_TREE;
   return body;
 }
 
@@ -424,7 +423,7 @@ gimplify_expr_stmt (tree *stmt_p)
 /* Gimplify initialization from an AGGR_INIT_EXPR.  */
 
 static void
-cp_gimplify_init_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
+cp_gimplify_init_expr (tree *expr_p)
 {
   tree from = TREE_OPERAND (*expr_p, 1);
   tree to = TREE_OPERAND (*expr_p, 0);
@@ -451,7 +450,6 @@ cp_gimplify_init_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       if (TREE_CODE (sub) == AGGR_INIT_EXPR
 	  || TREE_CODE (sub) == VEC_INIT_EXPR)
 	{
-	  gimplify_expr (&to, pre_p, post_p, is_gimple_lvalue, fb_lvalue);
 	  if (TREE_CODE (sub) == AGGR_INIT_EXPR)
 	    AGGR_INIT_EXPR_SLOT (sub) = to;
 	  else
@@ -531,10 +529,13 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
     case VEC_INIT_EXPR:
       {
 	location_t loc = input_location;
+	tree init = VEC_INIT_EXPR_INIT (*expr_p);
+	int from_array = (init && TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE);
 	gcc_assert (EXPR_HAS_LOCATION (*expr_p));
 	input_location = EXPR_LOCATION (*expr_p);
 	*expr_p = build_vec_init (VEC_INIT_EXPR_SLOT (*expr_p), NULL_TREE,
-				  VEC_INIT_EXPR_INIT (*expr_p), false, 1,
+				  init, VEC_INIT_EXPR_VALUE_INIT (*expr_p),
+				  from_array,
 				  tf_warning_or_error);
 	ret = GS_OK;
 	input_location = loc;
@@ -556,7 +557,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	 LHS of an assignment might also be involved in the RHS, as in bug
 	 25979.  */
     case INIT_EXPR:
-      cp_gimplify_init_expr (expr_p, pre_p, post_p);
+      cp_gimplify_init_expr (expr_p);
       if (TREE_CODE (*expr_p) != INIT_EXPR)
 	return GS_OK;
       /* Otherwise fall through.  */
@@ -575,21 +576,34 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  TREE_OPERAND (*expr_p, 1) = build1 (VIEW_CONVERT_EXPR,
 					      TREE_TYPE (op0), op1);
 
-	else if ((rhs_predicate_for (op0)) (op1)
-		 && !(TREE_CODE (op1) == CALL_EXPR
-		      && CALL_EXPR_RETURN_SLOT_OPT (op1))
+	else if ((is_gimple_lvalue (op1) || INDIRECT_REF_P (op1)
+		  || (TREE_CODE (op1) == CONSTRUCTOR
+		      && CONSTRUCTOR_NELTS (op1) == 0)
+		  || (TREE_CODE (op1) == CALL_EXPR
+		      && !CALL_EXPR_RETURN_SLOT_OPT (op1)))
 		 && is_really_empty_class (TREE_TYPE (op0)))
 	  {
 	    /* Remove any copies of empty classes.  We check that the RHS
-	       has a simple form so that TARGET_EXPRs and CONSTRUCTORs get
-	       reduced properly, and we leave the return slot optimization
-	       alone because it isn't a copy.
+	       has a simple form so that TARGET_EXPRs and non-empty
+	       CONSTRUCTORs get reduced properly, and we leave the return
+	       slot optimization alone because it isn't a copy (FIXME so it
+	       shouldn't be represented as one).
 
 	       Also drop volatile variables on the RHS to avoid infinite
 	       recursion from gimplify_expr trying to load the value.  */
 	    if (!TREE_SIDE_EFFECTS (op1)
 		|| (DECL_P (op1) && TREE_THIS_VOLATILE (op1)))
 	      *expr_p = op0;
+	    else if (TREE_CODE (op1) == MEM_REF
+		     && TREE_THIS_VOLATILE (op1))
+	      {
+		/* Similarly for volatile MEM_REFs on the RHS.  */
+		if (!TREE_SIDE_EFFECTS (TREE_OPERAND (op1, 0)))
+		  *expr_p = op0;
+		else
+		  *expr_p = build2 (COMPOUND_EXPR, TREE_TYPE (*expr_p),
+				    TREE_OPERAND (op1, 0), op0);
+	      }
 	    else
 	      *expr_p = build2 (COMPOUND_EXPR, TREE_TYPE (*expr_p),
 				op0, op1);
@@ -894,7 +908,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 
 	  IMPORTED_DECL_ASSOCIATED_DECL (using_directive)
 	    = TREE_OPERAND (stmt, 0);
-	  TREE_CHAIN (using_directive) = BLOCK_VARS (block);
+	  DECL_CHAIN (using_directive) = BLOCK_VARS (block);
 	  BLOCK_VARS (block) = using_directive;
 	}
       /* The USING_STMT won't appear in GENERIC.  */
@@ -922,7 +936,7 @@ cp_genericize (tree fndecl)
   struct cp_genericize_data wtd;
 
   /* Fix up the types of parms passed by invisible reference.  */
-  for (t = DECL_ARGUMENTS (fndecl); t; t = TREE_CHAIN (t))
+  for (t = DECL_ARGUMENTS (fndecl); t; t = DECL_CHAIN (t))
     if (TREE_ADDRESSABLE (TREE_TYPE (t)))
       {
 	/* If a function's arguments are copied to create a thunk,
@@ -1179,7 +1193,7 @@ cxx_omp_predetermined_sharing (tree decl)
 	  tree var;
 
 	  if (outer)
-	    for (var = BLOCK_VARS (outer); var; var = TREE_CHAIN (var))
+	    for (var = BLOCK_VARS (outer); var; var = DECL_CHAIN (var))
 	      if (DECL_NAME (decl) == DECL_NAME (var)
 		  && (TYPE_MAIN_VARIANT (type)
 		      == TYPE_MAIN_VARIANT (TREE_TYPE (var))))

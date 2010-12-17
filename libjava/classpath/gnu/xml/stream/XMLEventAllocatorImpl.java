@@ -110,7 +110,8 @@ public class XMLEventAllocatorImpl
         for (int i = 0; i < len; i++)
           namespaces.add(new NamespaceImpl(location,
                                            reader.getNamespacePrefix(i),
-                                           reader.getNamespaceURI(i)));
+                                           reader.getNamespaceURI(i),
+                                           false));
         return new EndElementImpl(location,
                                   reader.getName(),
                                   namespaces);
@@ -158,7 +159,8 @@ public class XMLEventAllocatorImpl
         for (int i = 0; i < len; i++)
           namespaces.add(new NamespaceImpl(location,
                                            reader.getNamespacePrefix(i),
-                                           reader.getNamespaceURI(i)));
+                                           reader.getNamespaceURI(i),
+                                           false));
         len = reader.getAttributeCount();
         List attributes = new LinkedList();
         for (int i = 0; i < len; i++)

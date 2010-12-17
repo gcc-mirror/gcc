@@ -242,7 +242,7 @@ maybe_retrofit_in_chrg (tree fn)
   basetype = TREE_TYPE (TREE_VALUE (arg_types));
   arg_types = TREE_CHAIN (arg_types);
 
-  parms = TREE_CHAIN (DECL_ARGUMENTS (fn));
+  parms = DECL_CHAIN (DECL_ARGUMENTS (fn));
 
   /* If this is a subobject constructor or destructor, our caller will
      pass us a pointer to our VTT.  */
@@ -251,7 +251,7 @@ maybe_retrofit_in_chrg (tree fn)
       parm = build_artificial_parm (vtt_parm_identifier, vtt_parm_type);
 
       /* First add it to DECL_ARGUMENTS between 'this' and the real args...  */
-      TREE_CHAIN (parm) = parms;
+      DECL_CHAIN (parm) = parms;
       parms = parm;
 
       /* ...and then to TYPE_ARG_TYPES.  */
@@ -262,12 +262,12 @@ maybe_retrofit_in_chrg (tree fn)
 
   /* Then add the in-charge parm (before the VTT parm).  */
   parm = build_artificial_parm (in_charge_identifier, integer_type_node);
-  TREE_CHAIN (parm) = parms;
+  DECL_CHAIN (parm) = parms;
   parms = parm;
   arg_types = hash_tree_chain (integer_type_node, arg_types);
 
   /* Insert our new parameter(s) into the list.  */
-  TREE_CHAIN (DECL_ARGUMENTS (fn)) = parms;
+  DECL_CHAIN (DECL_ARGUMENTS (fn)) = parms;
 
   /* And rebuild the function type.  */
   fntype = build_method_type_directly (basetype, TREE_TYPE (TREE_TYPE (fn)),
@@ -624,7 +624,7 @@ check_classfn (tree ctype, tree function, tree template_parms)
 	  && !comp_template_parms (template_parms,
 				   DECL_TEMPLATE_PARMS (function)))
 	{
-	  error ("template parameter lists provided don't match the "
+	  error ("template parameter lists provided don%'t match the "
 		 "template parameters of %qD", function);
 	  return error_mark_node;
 	}
@@ -771,21 +771,6 @@ finish_static_data_member_decl (tree decl,
     permerror (input_location, "local class %q#T shall not have static data member %q#D",
 	       current_class_type, decl);
 
-  /* Static consts need not be initialized in the class definition.  */
-  if (init != NULL_TREE && TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
-    {
-      static int explained = 0;
-
-      error ("initializer invalid for static member with constructor");
-      if (!explained)
-	{
-	  error ("(an out of class initialization is required)");
-	  explained = 1;
-	}
-      init = NULL_TREE;
-    }
-
-  DECL_INITIAL (decl) = init;
   DECL_IN_AGGR_P (decl) = 1;
 
   if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
@@ -879,7 +864,7 @@ grokfield (const cp_declarator *declarator,
       if (declspecs->specs[(int)ds_typedef]
           && TREE_TYPE (value) != error_mark_node
           && TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (value))) != value)
-	cp_set_underlying_type (value);
+	set_underlying_type (value);
 
       return value;
     }
@@ -938,8 +923,7 @@ grokfield (const cp_declarator *declarator,
 	{
 	  if (TREE_CODE (init) == CONSTRUCTOR)
 	    init = digest_init (TREE_TYPE (value), init);
-	  else
-	    init = integral_constant_value (init);
+	  init = maybe_constant_init (init);
 
 	  if (init != error_mark_node && !TREE_CONSTANT (init))
 	    {
@@ -1066,7 +1050,10 @@ grokbitfield (const cp_declarator *declarator,
 
   if (width != error_mark_node)
     {
-      constant_expression_warning (width);
+      /* The width must be an integer type.  */
+      if (!INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (TREE_TYPE (width)))
+	error ("width of bit-field %qD has non-integral type %qT", value,
+	       TREE_TYPE (width));
       DECL_INITIAL (value) = width;
       SET_DECL_C_BIT_FIELD (value);
     }
@@ -1321,7 +1308,7 @@ build_anon_union_vars (tree type, tree object)
 
   for (field = TYPE_FIELDS (type);
        field != NULL_TREE;
-       field = TREE_CHAIN (field))
+       field = DECL_CHAIN (field))
     {
       tree decl;
       tree ref;
@@ -1826,7 +1813,7 @@ maybe_emit_vtables (tree ctype)
     determine_key_method (ctype);
 
   /* See if any of the vtables are needed.  */
-  for (vtbl = CLASSTYPE_VTABLES (ctype); vtbl; vtbl = TREE_CHAIN (vtbl))
+  for (vtbl = CLASSTYPE_VTABLES (ctype); vtbl; vtbl = DECL_CHAIN (vtbl))
     {
       import_export_decl (vtbl);
       if (DECL_NOT_REALLY_EXTERN (vtbl) && decl_needed_p (vtbl))
@@ -1845,7 +1832,7 @@ maybe_emit_vtables (tree ctype)
 
   /* The ABI requires that we emit all of the vtables if we emit any
      of them.  */
-  for (vtbl = CLASSTYPE_VTABLES (ctype); vtbl; vtbl = TREE_CHAIN (vtbl))
+  for (vtbl = CLASSTYPE_VTABLES (ctype); vtbl; vtbl = DECL_CHAIN (vtbl))
     {
       /* Mark entities references from the virtual table as used.  */
       mark_vtable_entries (vtbl);
@@ -2242,7 +2229,7 @@ constrain_class_visibility (tree type)
   if (CLASSTYPE_VISIBILITY_SPECIFIED (type))
     vis = VISIBILITY_INTERNAL;
 
-  for (t = TYPE_FIELDS (type); t; t = TREE_CHAIN (t))
+  for (t = TYPE_FIELDS (type); t; t = DECL_CHAIN (t))
     if (TREE_CODE (t) == FIELD_DECL && TREE_TYPE (t) != error_mark_node)
       {
 	tree ftype = strip_pointer_or_array_types (TREE_TYPE (t));
@@ -2868,7 +2855,7 @@ start_static_storage_duration_function (unsigned count)
   DECL_CONTEXT (priority_decl) = ssdf_decl;
   TREE_USED (priority_decl) = 1;
 
-  TREE_CHAIN (initialize_p_decl) = priority_decl;
+  DECL_CHAIN (initialize_p_decl) = priority_decl;
   DECL_ARGUMENTS (ssdf_decl) = initialize_p_decl;
 
   /* Put the function in the global scope.  */
@@ -2966,7 +2953,7 @@ fix_temporary_vars_context_r (tree *node,
     {
       tree var;
 
-      for (var = BIND_EXPR_VARS (*node); var; var = TREE_CHAIN (var))
+      for (var = BIND_EXPR_VARS (*node); var; var = DECL_CHAIN (var))
 	if (TREE_CODE (var) == VAR_DECL
 	  && !DECL_NAME (var)
 	  && DECL_ARTIFICIAL (var)
@@ -3300,7 +3287,7 @@ generate_ctor_or_dtor_function (bool constructor_p, int priority,
 
   /* Call the static storage duration function with appropriate
      arguments.  */
-  for (i = 0; VEC_iterate (tree, ssdf_decls, i, fndecl); ++i)
+  FOR_EACH_VEC_ELT (tree, ssdf_decls, i, fndecl)
     {
       /* Calls to pure or const functions will expand to nothing.  */
       if (! (flags_from_decl_or_type (fndecl) & (ECF_CONST | ECF_PURE)))
@@ -3537,6 +3524,60 @@ decl_defined_p (tree decl)
     }
 }
 
+/* Nonzero for a VAR_DECL whose value can be used in a constant expression.
+
+      [expr.const]
+
+      An integral constant-expression can only involve ... const
+      variables of integral or enumeration types initialized with
+      constant expressions ...
+
+      C++0x also allows constexpr variables and temporaries initialized
+      with constant expressions.  We handle the former here, but the latter
+      are just folded away in cxx_eval_constant_expression.
+
+   The standard does not require that the expression be non-volatile.
+   G++ implements the proposed correction in DR 457.  */
+
+bool
+decl_constant_var_p (tree decl)
+{
+  bool ret;
+  tree type = TREE_TYPE (decl);
+  if (TREE_CODE (decl) != VAR_DECL)
+    return false;
+  if (DECL_DECLARED_CONSTEXPR_P (decl))
+    ret = true;
+  else if (CP_TYPE_CONST_NON_VOLATILE_P (type)
+	   && INTEGRAL_OR_ENUMERATION_TYPE_P (type))
+    {
+      /* We don't know if a template static data member is initialized with
+	 a constant expression until we instantiate its initializer.  */
+      mark_used (decl);
+      ret = DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl);
+    }
+  else
+    ret = false;
+
+  gcc_assert (!ret || DECL_INITIAL (decl));
+  return ret;
+}
+
+/* Returns true if DECL could be a symbolic constant variable, depending on
+   its initializer.  */
+
+bool
+decl_maybe_constant_var_p (tree decl)
+{
+  tree type = TREE_TYPE (decl);
+  if (TREE_CODE (decl) != VAR_DECL)
+    return false;
+  if (DECL_DECLARED_CONSTEXPR_P (decl))
+    return true;
+  return (CP_TYPE_CONST_NON_VOLATILE_P (type)
+	  && INTEGRAL_OR_ENUMERATION_TYPE_P (type));
+}
+
 /* Complain that DECL uses a type with no linkage but is never defined.  */
 
 static void
@@ -3742,7 +3783,7 @@ cp_write_global_declarations (void)
       /* Go through the set of inline functions whose bodies have not
 	 been emitted yet.  If out-of-line copies of these functions
 	 are required, emit them.  */
-      for (i = 0; VEC_iterate (tree, deferred_fns, i, decl); ++i)
+      FOR_EACH_VEC_ELT (tree, deferred_fns, i, decl)
 	{
 	  /* Does it need synthesizing?  */
 	  if (DECL_DEFAULTED_FN (decl) && ! DECL_INITIAL (decl)
@@ -3844,7 +3885,7 @@ cp_write_global_declarations (void)
 	reconsider = true;
 
       /* Static data members are just like namespace-scope globals.  */
-      for (i = 0; VEC_iterate (tree, pending_statics, i, decl); ++i)
+      FOR_EACH_VEC_ELT (tree, pending_statics, i, decl)
 	{
 	  if (var_finalized_p (decl) || DECL_REALLY_EXTERN (decl)
 	      /* Don't write it out if we haven't seen a definition.  */
@@ -3866,7 +3907,7 @@ cp_write_global_declarations (void)
   while (reconsider);
 
   /* All used inline functions must have a definition at this point.  */
-  for (i = 0; VEC_iterate (tree, deferred_fns, i, decl); ++i)
+  FOR_EACH_VEC_ELT (tree, deferred_fns, i, decl)
     {
       if (/* Check online inline functions that were actually used.  */
 	  DECL_ODR_USED (decl) && DECL_DECLARED_INLINE_P (decl)
@@ -3888,9 +3929,17 @@ cp_write_global_declarations (void)
     }
 
   /* So must decls that use a type with no linkage.  */
-  for (i = 0; VEC_iterate (tree, no_linkage_decls, i, decl); ++i)
+  FOR_EACH_VEC_ELT (tree, no_linkage_decls, i, decl)
     if (!decl_defined_p (decl))
       no_linkage_error (decl);
+
+  /* Then, do the Objective-C stuff.  This is where all the
+     Objective-C module stuff gets generated (symtab,
+     class/protocol/selector lists etc).  This must be done after C++
+     templates, destructors etc. so that selectors used in C++
+     templates are properly allocated.  */
+  if (c_dialect_objc ())
+    objc_write_global_declarations ();
 
   /* We give C linkage to static constructors and destructors.  */
   push_lang_context (lang_name_c);
@@ -3933,6 +3982,8 @@ cp_write_global_declarations (void)
       emit_debug_global_declarations (VEC_address (tree, pending_statics),
 				      VEC_length (tree, pending_statics));
     }
+
+  perform_deferred_noexcept_checks ();
 
   /* Generate hidden aliases for Java.  */
   if (candidates)
@@ -4003,7 +4054,7 @@ build_offset_ref_call_from_tree (tree fn, VEC(tree,gc) **args)
       make_args_non_dependent (*args);
       object = build_non_dependent_expr (object);
       if (TREE_CODE (fn) == DOTSTAR_EXPR)
-	object = cp_build_unary_op (ADDR_EXPR, object, 0, tf_warning_or_error);
+	object = cp_build_addr_expr (object, tf_warning_or_error);
       VEC_safe_insert (tree, gc, *args, 0, object);
       /* Now that the arguments are done, transform FN.  */
       fn = build_non_dependent_expr (fn);
@@ -4017,8 +4068,7 @@ build_offset_ref_call_from_tree (tree fn, VEC(tree,gc) **args)
 	void B::g() { (this->*p)(); }  */
   if (TREE_CODE (fn) == OFFSET_REF)
     {
-      tree object_addr = cp_build_unary_op (ADDR_EXPR, object, 0,
-                                         tf_warning_or_error);
+      tree object_addr = cp_build_addr_expr (object, tf_warning_or_error);
       fn = TREE_OPERAND (fn, 1);
       fn = get_member_function_from_ptrfunc (&object_addr, fn);
       VEC_safe_insert (tree, gc, *args, 0, object_addr);
@@ -4076,8 +4126,6 @@ possibly_inlined_p (tree decl)
 void
 mark_used (tree decl)
 {
-  HOST_WIDE_INT saved_processing_template_decl = 0;
-
   /* If DECL is a BASELINK for a single function, then treat it just
      like the DECL for the function.  Otherwise, if the BASELINK is
      for an overloaded function, we don't know which function was
@@ -4110,13 +4158,11 @@ mark_used (tree decl)
 	      return;
 	    }
 	}
-      error ("deleted function %q+D", decl);
-      error ("used here");
+      error ("use of deleted function %qD", decl);
+      if (!maybe_explain_implicit_delete (decl))
+	error_at (DECL_SOURCE_LOCATION (decl), "declared here");
       return;
     }
-  /* If we don't need a value, then we don't need to synthesize DECL.  */
-  if (cp_unevaluated_operand != 0)
-    return;
 
   /* We can only check DECL_ODR_USED on variables or functions with
      DECL_LANG_SPECIFIC set, and these are also the only decls that we
@@ -4140,29 +4186,37 @@ mark_used (tree decl)
       return;
     }
 
-  /* Normally, we can wait until instantiation-time to synthesize
-     DECL.  However, if DECL is a static data member initialized with
-     a constant, we need the value right now because a reference to
-     such a data member is not value-dependent.  */
-  if (TREE_CODE (decl) == VAR_DECL
-      && DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl)
-      && DECL_CLASS_SCOPE_P (decl))
+  /* Normally, we can wait until instantiation-time to synthesize DECL.
+     However, if DECL is a static data member initialized with a constant
+     or a constexpr function, we need it right now because a reference to
+     such a data member or a call to such function is not value-dependent.  */
+  if ((decl_maybe_constant_var_p (decl)
+       || (TREE_CODE (decl) == FUNCTION_DECL
+	   && DECL_DECLARED_CONSTEXPR_P (decl)))
+      && !DECL_INITIAL (decl)
+      && DECL_LANG_SPECIFIC (decl)
+      && DECL_TEMPLATE_INSTANTIATION (decl))
     {
-      /* Don't try to instantiate members of dependent types.  We
-	 cannot just use dependent_type_p here because this function
-	 may be called from fold_non_dependent_expr, and then we may
-	 see dependent types, even though processing_template_decl
-	 will not be set.  */
-      if (CLASSTYPE_TEMPLATE_INFO ((DECL_CONTEXT (decl)))
-	  && uses_template_parms (CLASSTYPE_TI_ARGS (DECL_CONTEXT (decl))))
-	return;
-      /* Pretend that we are not in a template, even if we are, so
-	 that the static data member initializer will be processed.  */
-      saved_processing_template_decl = processing_template_decl;
-      processing_template_decl = 0;
+      /* Instantiating a function will result in garbage collection.  We
+	 must treat this situation as if we were within the body of a
+	 function so as to avoid collecting live data only referenced from
+	 the stack (such as overload resolution candidates).  */
+      ++function_depth;
+      instantiate_decl (decl, /*defer_ok=*/false,
+			/*expl_inst_class_mem_p=*/false);
+      --function_depth;
     }
 
+  /* If we don't need a value, then we don't need to synthesize DECL.  */
+  if (cp_unevaluated_operand != 0)
+    return;
+
   if (processing_template_decl)
+    return;
+
+  /* Check this too in case we're within fold_non_dependent_expr.  */
+  if (DECL_TEMPLATE_INFO (decl)
+      && uses_template_parms (DECL_TI_ARGS (decl)))
     return;
 
   DECL_ODR_USED (decl) = 1;
@@ -4234,8 +4288,6 @@ mark_used (tree decl)
        need.  Therefore, we always try to defer instantiation.  */
     instantiate_decl (decl, /*defer_ok=*/true,
 		      /*expl_inst_class_mem_p=*/false);
-
-  processing_template_decl = saved_processing_template_decl;
 }
 
 #include "gt-cp-decl2.h"

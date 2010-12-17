@@ -1,6 +1,6 @@
 ;; GCC machine description for picochip
 ;; Copyright (C) 2008, 2009 Free Software Foundation, Inc.
-;; Contributed by picoChip Designs Ltd (http://www.picochip.com)
+;; Contributed by Picochip Ltd (http://www.picochip.com)
 ;; Maintained by Daniel Towner (dant@picochip.com) and Hariharan
 ;; Sandanagobalane (hariharan@picochip.com)
 ;;
@@ -622,7 +622,7 @@
 
 ; Match a branch instruction, created from a tstport/cbranch split.
 ; We use a "use" clause so GCC doesnt try to use this pattern generally.
-(define_insn "*branch"
+(define_insn "branch"
   [(set (pc)
         (if_then_else
             (match_operator 2 "comparison_operator"
@@ -665,6 +665,9 @@
        rtx shiftVal;
        rtx loadedValue;
        rtx addressMask;
+       rtx topByteValue;
+       rtx signExtendedValue;
+
 
        warn_of_byte_access();
 
@@ -713,11 +716,11 @@
          emit_insn(gen_rtx_SET(HImode, loadedValue, gen_rtx_MEM(HImode, wordAddress)));
 
 	 /* Shift the desired byte to the most significant byte. */
-	 rtx topByteValue = gen_reg_rtx (HImode);
+	 topByteValue = gen_reg_rtx (HImode);
 	 emit_insn (gen_ashlhi3 (topByteValue, loadedValue, shiftVal));
 
          /* Sign extend the top-byte back into the bottom byte. */
-	 rtx signExtendedValue = gen_reg_rtx(HImode);
+	 signExtendedValue = gen_reg_rtx(HImode);
          emit_insn(gen_ashrhi3(signExtendedValue, topByteValue, GEN_INT(8)));
 
          /* Final extraction of QI mode register. */
@@ -729,8 +732,8 @@
        {
          rtx zeroingByteMask;
          rtx temp;
-         rtx tempQiMode;
          rtx tempHiMode;
+         rtx lsbByteMask;
 
          /* Get the address. */
          address = gen_reg_rtx(HImode);
@@ -764,19 +767,10 @@
 	  * bits, instead of the original memory value which is being
 	  * modified.
   	  */
-         /*if (register_operand(operands[1],QImode))
-         {
-           tempHiMode = XEXP(operands[1], 0);
-         }
-         else
-         {
-           tempHiMode = operands[1];
-         }*/
-         //tempHiMode = force_reg(QImode, operands[1]);
          tempHiMode = simplify_gen_subreg(HImode, operands[1], QImode, 0);
          temp = gen_reg_rtx(HImode);
 	 emit_insn(gen_rtx_SET(HImode, temp, tempHiMode));
-         rtx lsbByteMask = gen_reg_rtx (HImode);
+         lsbByteMask = gen_reg_rtx (HImode);
 	 emit_insn (gen_rtx_SET (HImode, lsbByteMask, GEN_INT (0xFF)));
 	 emit_insn (gen_andhi3 (temp, temp, lsbByteMask));
 
@@ -912,6 +906,20 @@
     LDL %a1,%R0\t\t// %R0 :={SF} Mem(%M1{byte})
     // %R0 := #%1 (SF)\n\tCOPY.%# %L1,%L0\n\tCOPY.%# %U1,%U0
     STL %R1,%a0\t\t// Mem(%M0{byte}) :={SF} %R1")
+
+;; memcpy pattern
+;; 0 = destination (mem:BLK ...)
+;; 1 = source (mem:BLK ...)
+;; 2 = count
+;; 3 = alignment
+(define_expand "movmemhi"
+  [(match_operand 0 "memory_operand" "")
+  (match_operand 1 "memory_operand" "")
+  (match_operand:HI 2 "immediate_operand" "")
+  (match_operand 3 "" "")]
+  "picochip_schedule_type != DFA_TYPE_NONE"
+  "if (picochip_expand_movmemhi(operands)) DONE; FAIL;"
+)
 
 ;;===========================================================================
 ;; NOP
@@ -1849,12 +1857,18 @@
   {
     /* Synthesise a variable shift. */
 
+    rtx tmp1;
+    rtx tmp2;
+    rtx tmp3;
+    rtx minus_one;
+    rtx tmp4;
+
     /* Fill a temporary with the sign bits. */
-    rtx tmp1 = gen_reg_rtx (HImode);
+    tmp1 = gen_reg_rtx (HImode);
     emit_insn (gen_builtin_asri (tmp1, operands[1], GEN_INT(15)));
 
     /* Shift the unsigned value. */
-    rtx tmp2 = gen_reg_rtx (HImode);
+    tmp2 = gen_reg_rtx (HImode);
     emit_insn (gen_lshrhi3 (tmp2, operands[1], operands[2]));
 
     /* The word of sign bits must be shifted back to the left, to zero
@@ -1862,10 +1876,10 @@
      * count). Since the shifts are computed modulo 16 (i.e., only the
      * lower 4 bits of the count are used), the shift amount (15 - count)
      * is equivalent to !count. */
-    rtx tmp3 = gen_reg_rtx (HImode);
-    rtx tmp3_1 = GEN_INT (-1);
-    emit_insn (gen_xorhi3 (tmp3, operands[2], tmp3_1));
-    rtx tmp4 = gen_reg_rtx (HImode);
+    tmp3 = gen_reg_rtx (HImode);
+    minus_one = GEN_INT (-1);
+    emit_insn (gen_xorhi3 (tmp3, operands[2], minus_one));
+    tmp4 = gen_reg_rtx (HImode);
     emit_insn (gen_ashlhi3 (tmp4, tmp1, tmp3));
 
     /* Combine the sign bits with the shifted value. */
@@ -2372,7 +2386,7 @@
 		   UNSPEC_TESTPORT))
    (clobber (reg:CC CC_REGNUM))]
   ""
-  "// %0 := TestPort(%1)\;TSTPORT %1\;COPYSW.0 %0\;AND.0 %0,8,%0"
+  "// %0 := TestPort(%1)\;COPY.1 0,%0 %| TSTPORT %1\;COPYEQ 1,%0"
   [(set_attr "length" "9")])
 
 ; Entry point for array tstport (the actual port index is computed as the
@@ -2497,21 +2511,36 @@
 ;;============================================================================
 
 ;; Define expand seems to consider the resulting two instructions to be
-;; independent. It was moving the actual copy instruction further down
-;; with a call instruction in between. The call was clobbering the CC
-;; and hence the cond_copy was wrong. With a split, it works correctly.
+;; independent. With a split, guarded by reload, it works correctly.
 (define_expand "movhicc"
-  [(set (reg:CC CC_REGNUM) (match_operand 1 "comparison_operator" ""))
+   [(set (match_operand:HI 0 "register_operand" "=r,r")
+                   (if_then_else:HI (match_operand:HI 1 "" "")
+		   (match_operand:HI 2 "register_operand" "0,0")
+		   (match_operand:HI 3 "picochip_register_or_immediate_operand" "r,i")))]
+  ""
+  {if (!picochip_check_conditional_copy (operands))
+     FAIL;
+  })
+
+(define_insn_and_split "*checked_movhicc"
+   [(set (match_operand:HI 0 "register_operand" "=r,r")
+                   (if_then_else:HI (match_operator 1 "picochip_peephole_comparison_operator"
+                          [(match_operand:HI 4 "register_operand" "r,r")
+                           (match_operand:HI 5 "picochip_comparison_operand" "r,i")])
+		   (match_operand:HI 2 "register_operand" "0,0")
+		   (match_operand:HI 3 "picochip_register_or_immediate_operand" "r,i")))]
+  ""
+  "#"
+  "reload_completed"
+  [(set (reg:CC CC_REGNUM) (match_dup 1))
    (parallel [(set (match_operand:HI 0 "register_operand" "=r,r")
                    (if_then_else:HI (match_op_dup:HI 1 [(reg:CC CC_REGNUM) (const_int 0)])
                                  (match_operand:HI 2 "picochip_register_or_immediate_operand" "0,0")
                                  (match_operand:HI 3 "picochip_register_or_immediate_operand" "r,i")))
-              (use (match_dup 4))])]
-  ""
-  {if (!picochip_check_conditional_copy (operands))
-     FAIL;
-   operands[4] = GEN_INT(GET_CODE(operands[1]));
-  })
+              (use (match_dup 6))])]
+  "{
+     operands[6] = GEN_INT(GET_CODE(operands[0]));
+   }")
 
 ;; We dont do any checks here. But this pattern is used only when movhicc 
 ;; was checked. Put a "use" clause to make sure.
@@ -2520,7 +2549,7 @@
 	(if_then_else:HI
             (match_operator:HI 4 "picochip_peephole_comparison_operator"
                  [(reg:CC CC_REGNUM) (const_int 0)])
-	 (match_operand:HI 1 "picochip_register_or_immediate_operand" "0,0")
+	 (match_operand:HI 1 "register_operand" "0,0")
 	 (match_operand:HI 2 "picochip_register_or_immediate_operand" "r,i")))
    (use (match_operand:HI 3 "const_int_operand" ""))]
   ""
@@ -2563,7 +2592,7 @@
   (const_string "unknown"))
 
 (define_attr "schedType" "none,space,speed"
-  (const (symbol_ref "picochip_schedule_type")))
+  (const (symbol_ref "(enum attr_schedType) picochip_schedule_type")))
 
 ;; Define whether an instruction uses a long constant.
 

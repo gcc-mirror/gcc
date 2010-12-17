@@ -1,5 +1,5 @@
 /* Target Prototypes for R8C/M16C/M32C
-   Copyright (C) 2005, 2007, 2008
+   Copyright (C) 2005, 2007, 2008, 2010
    Free Software Foundation, Inc.
    Contributed by Red Hat.
 
@@ -22,7 +22,6 @@
 #define MM enum machine_mode
 #define UINT unsigned int
 
-int  m32c_class_likely_spilled_p (int);
 void m32c_conditional_register_usage (void);
 int  m32c_const_ok_for_constraint_p (HOST_WIDE_INT, char, const char *);
 UINT m32c_dwarf_frame_regnum (int);
@@ -37,21 +36,14 @@ void m32c_init_expanders (void);
 int  m32c_initial_elimination_offset (int, int);
 void m32c_output_reg_pop (FILE *, int);
 void m32c_output_reg_push (FILE *, int);
-void m32c_override_options (void);
 int  m32c_print_operand_punct_valid_p (int);
-int  m32c_push_rounding (int);
+unsigned int  m32c_push_rounding (int);
 int  m32c_reg_class_from_constraint (char, const char *);
 void m32c_register_pragmas (void);
 void m32c_note_pragma_address (const char *, unsigned);
 int  m32c_regno_ok_for_base_p (int);
 int  m32c_trampoline_alignment (void);
 int  m32c_trampoline_size (void);
-
-#if defined(RTX_CODE) && defined(TREE_CODE)
-
-rtx  m32c_function_arg (CUMULATIVE_ARGS *, MM, tree, int);
-
-#endif
 
 #ifdef RTX_CODE
 
@@ -75,9 +67,7 @@ bool m32c_immd_dbl_mov (rtx *, MM);
 rtx  m32c_incoming_return_addr_rtx (void);
 int  m32c_legitimate_constant_p (rtx);
 int  m32c_legitimize_reload_address (rtx *, MM, int, int, int);
-bool m32c_function_value_regno_p (const unsigned int);
 int  m32c_limit_reload_class (MM, int);
-int  m32c_memory_move_cost (MM, int, int);
 int  m32c_modes_tieable_p (MM, MM);
 bool m32c_mov_ok (rtx *, MM);
 char * m32c_output_compare (rtx, rtx *);
@@ -88,19 +78,18 @@ int  m32c_prepare_shift (rtx *, int, int);
 void m32c_print_operand (FILE *, rtx, int);
 void m32c_print_operand_address (FILE *, rtx);
 int  m32c_reg_ok_for_base_p (rtx, int);
-int  m32c_register_move_cost (MM, int, int);
-MM   m32c_regno_reg_class (int);
+enum reg_class m32c_regno_reg_class (int);
 rtx  m32c_return_addr_rtx (int);
 const char *m32c_scc_pattern (rtx *, RTX_CODE);
 int  m32c_secondary_reload_class (int, MM, rtx);
 int  m32c_split_move (rtx *, MM, int);
 int  m32c_split_psi_p (rtx *);
+int current_function_special_page_vector (rtx);
 
 #endif
 
 #ifdef TREE_CODE
 
-void m32c_function_arg_advance (CUMULATIVE_ARGS *, MM, tree, int);
 tree m32c_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 void m32c_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, int);
 bool m32c_promote_function_return (const_tree);

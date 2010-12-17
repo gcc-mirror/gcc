@@ -30,5 +30,5 @@ main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "ESCAPED = { ESCAPED NONLOCAL i }" "alias" } } */
+/* { dg-final { scan-tree-dump "ESCAPED = {\[^\n\}\]* i \[^\n\}\]*}" "alias" } } */
 /* { dg-final { cleanup-tree-dump "alias" } } */

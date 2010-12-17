@@ -108,6 +108,6 @@ void operator delete(void* p) throw()
       if (count == 0)
 	std::printf("All memory released \n");
       else
-	std::printf("%lu allocations to be released \n", count);
+	std::printf("%lu allocations to be released \n", (unsigned long)count);
     }
 }

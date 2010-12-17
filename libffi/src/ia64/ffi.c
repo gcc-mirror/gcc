@@ -225,7 +225,7 @@ ffi_prep_cif_machdep(ffi_cif *cif)
   int flags;
 
   /* Adjust cif->bytes to include space for the bits of the ia64_args frame
-     that preceeds the integer register portion.  The estimate that the 
+     that precedes the integer register portion.  The estimate that the
      generic bits did for the argument space required is good enough for the
      integer component.  */
   cif->bytes += offsetof(struct ia64_args, gp_regs[0]);

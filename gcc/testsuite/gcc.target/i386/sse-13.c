@@ -1,14 +1,16 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -mxop -maes -mpclmul -mpopcnt -mabm -mlwp" } */
+/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mbmi -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c" } */
 
 #include <mm_malloc.h>
 
 /* Test that the intrinsics compile with optimization.  All of them
    are defined as inline functions in {,x,e,p,t,s,w,a,b,i}mmintrin.h,
-   xopintrin.h, abmintrin.h, lwpintrin.h, popcntintrin.h and mm3dnow.h
-   that reference the proper builtin functions.  Defining away
-   "extern" and "__inline" results in all of them being compiled as
-   proper functions.  */
+   mm3dnow.h, fma4intrin.h, xopintrin.h, abmintrin.h, bmiintrin.h,
+   tbmintrin.h, lwpintrin.h, popcntintrin.h and mm_malloc.h that
+   reference the proper builtin functions.
+
+   Defining away "extern" and "__inline" results in all of them being
+   compiled as proper functions.  */
 
 #define extern
 #define __inline
@@ -50,6 +52,8 @@
 #define __builtin_ia32_vinsertf128_si256(X, Y, C) __builtin_ia32_vinsertf128_si256(X, Y, 1)
 #define __builtin_ia32_roundpd256(V, M) __builtin_ia32_roundpd256(V, 1)
 #define __builtin_ia32_roundps256(V, M) __builtin_ia32_roundps256(V, 1)
+#define __builtin_ia32_vcvtps2ph(A, I) __builtin_ia32_vcvtps2ph(A, 1)
+#define __builtin_ia32_vcvtps2ph256(A, I) __builtin_ia32_vcvtps2ph256(A, 1)
 
 /* wmmintrin.h */
 #define __builtin_ia32_aeskeygenassist128(X, C) __builtin_ia32_aeskeygenassist128(X, 1)
@@ -138,5 +142,10 @@
 #define __builtin_ia32_lwpval64(D2, D1, F) __builtin_ia32_lwpval64 (D2, D1, 1)
 #define __builtin_ia32_lwpins32(D2, D1, F) __builtin_ia32_lwpins32 (D2, D1, 1)
 #define __builtin_ia32_lwpins64(D2, D1, F) __builtin_ia32_lwpins64 (D2, D1, 1)
+
+/* tbmintrin.h */
+#define __builtin_ia32_bextri_u32(X, Y) __builtin_ia32_bextri_u32 (X, 1)
+#define __builtin_ia32_bextri_u64(X, Y) __builtin_ia32_bextri_u64 (X, 1)
+
 
 #include <x86intrin.h>

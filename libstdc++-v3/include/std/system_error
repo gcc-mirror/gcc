@@ -311,26 +311,29 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   public:
     system_error(error_code __ec = error_code())
-    : runtime_error(""), _M_code(__ec) { }
+    : runtime_error(__ec.message()), _M_code(__ec) { }
 
     system_error(error_code __ec, const string& __what)
-    : runtime_error(__what), _M_code(__ec) { }
-    
+    : runtime_error(__what + ": " + __ec.message()), _M_code(__ec) { }
+
     /*
      * TODO: Add const char* ctors to all exceptions.
      *
      * system_error(error_code __ec, const char* __what)
-     * : runtime_error(__what), _M_code(__ec) { }
+     * : runtime_error(__what + (": " + __ec.message())), _M_code(__ec) { }
      *
      * system_error(int __v, const error_category& __ecat, const char* __what)
-     * : runtime_error(__what), _M_code(error_code(__v, __ecat)) { }
+     * : runtime_error(__what + (": " + __ec.message())),
+     *   _M_code(error_code(__v, __ecat)) { }
      */
 
     system_error(int __v, const error_category& __ecat)
-    : runtime_error(""), _M_code(error_code(__v, __ecat)) { }
+    : runtime_error(error_code(__v, __ecat).message()),
+      _M_code(__v, __ecat) { }
 
     system_error(int __v, const error_category& __ecat, const string& __what)
-    : runtime_error(__what), _M_code(error_code(__v, __ecat)) { }
+    : runtime_error(__what + ": " + error_code(__v, __ecat).message()),
+      _M_code(__v, __ecat) { }
 
     virtual ~system_error() throw();
 
@@ -350,13 +353,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /// std::hash specialization for error_code.
   template<>
     struct hash<error_code>
-    : public std::unary_function<error_code, size_t>
+    : public __hash_base<size_t, error_code>
     {
       size_t
       operator()(const error_code& __e) const
       {
-	const size_t __tmp = std::_Fnv_hash::hash(__e._M_value);
-	return std::_Fnv_hash::__hash_combine(__e._M_cat, __tmp);
+	const size_t __tmp = std::_Hash_impl::hash(__e._M_value);
+	return std::_Hash_impl::__hash_combine(__e._M_cat, __tmp);
       }
     };
 
@@ -367,4 +370,3 @@ _GLIBCXX_END_NAMESPACE
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
 #endif // _GLIBCXX_SYSTEM_ERROR
-

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#import gdb
+import gdb
 import itertools
 import re
 
@@ -77,8 +77,7 @@ class StdListPrinter:
         elif self.typename == "std::__debug::list":
             nodetype = gdb.lookup_type('std::__norm::_List_node<%s>' % itype).pointer()
         else:
-            #raise ValueError, "Cannot cast list node for list printer."
-            raise "Cannot cast list node for list printer."
+            raise ValueError, "Cannot cast list node for list printer."
         return self._iterator(nodetype, self.val['_M_impl']['_M_node'])
 
     def to_string(self):
@@ -154,37 +153,74 @@ class StdVectorPrinter:
     "Print a std::vector"
 
     class _iterator:
-        def __init__ (self, start, finish):
-            self.item = start
-            self.finish = finish
+        def __init__ (self, start, finish, bitvec):
+            self.bitvec = bitvec
+            if bitvec:
+                self.item   = start['_M_p']
+                self.so     = start['_M_offset']
+                self.finish = finish['_M_p']
+                self.fo     = finish['_M_offset']
+                itype = self.item.dereference().type
+                self.isize = 8 * itype.sizeof
+            else:
+                self.item = start
+                self.finish = finish
             self.count = 0
 
         def __iter__(self):
             return self
 
         def next(self):
-            if self.item == self.finish:
-                raise StopIteration
             count = self.count
             self.count = self.count + 1
-            elt = self.item.dereference()
-            self.item = self.item + 1
-            return ('[%d]' % count, elt)
+            if self.bitvec:
+                if self.item == self.finish and self.so >= self.fo:
+                    raise StopIteration
+                elt = self.item.dereference()
+                if elt & (1 << self.so):
+                    obit = 1
+                else:
+                    obit = 0
+                self.so = self.so + 1
+                if self.so >= self.isize:
+                    self.item = self.item + 1
+                    self.so = 0
+                return ('[%d]' % count, obit)
+            else:
+                if self.item == self.finish:
+                    raise StopIteration
+                elt = self.item.dereference()
+                self.item = self.item + 1
+                return ('[%d]' % count, elt)
 
     def __init__(self, typename, val):
         self.typename = typename
         self.val = val
+        self.is_bool = val.type.template_argument(0).code  == gdb.TYPE_CODE_BOOL
 
     def children(self):
         return self._iterator(self.val['_M_impl']['_M_start'],
-                              self.val['_M_impl']['_M_finish'])
+                              self.val['_M_impl']['_M_finish'],
+                              self.is_bool)
 
     def to_string(self):
         start = self.val['_M_impl']['_M_start']
         finish = self.val['_M_impl']['_M_finish']
         end = self.val['_M_impl']['_M_end_of_storage']
-        return ('%s of length %d, capacity %d'
-                % (self.typename, int (finish - start), int (end - start)))
+        if self.is_bool:
+            start = self.val['_M_impl']['_M_start']['_M_p']
+            so    = self.val['_M_impl']['_M_start']['_M_offset']
+            finish = self.val['_M_impl']['_M_finish']['_M_p']
+            fo     = self.val['_M_impl']['_M_finish']['_M_offset']
+            itype = start.dereference().type
+            bl = 8 * itype.sizeof
+            length   = (bl - so) + bl * ((finish - start) - 1) + fo
+            capacity = bl * (end - start)
+            return ('%s<bool> of length %d, capacity %d'
+                    % (self.typename, int (length), int (capacity)))
+        else:
+            return ('%s of length %d, capacity %d'
+                    % (self.typename, int (finish - start), int (end - start)))
 
     def display_hint(self):
         return 'array'
@@ -547,7 +583,9 @@ class StdStringPrinter:
         reptype = gdb.lookup_type (str (realtype) + '::_Rep').pointer ()
         header = ptr.cast(reptype) - 1
         len = header.dereference ()['_M_length']
-        return self.val['_M_dataplus']['_M_p'].lazy_string (length = len)
+        if hasattr(ptr, "lazy_string"):
+            return ptr.lazy_string (length = len)
+        return ptr.string (length = len)
 
     def display_hint (self):
         return 'string'

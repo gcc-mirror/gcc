@@ -1,5 +1,5 @@
 /* Branch prediction routines for the GNU compiler.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -43,7 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "function.h"
 #include "except.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "recog.h"
 #include "expr.h"
 #include "predict.h"
@@ -77,7 +77,6 @@ static sreal real_zero, real_one, real_almost_one, real_br_prob_base,
 static void combine_predictions_for_insn (rtx, basic_block);
 static void dump_prediction (FILE *, enum br_predictor, int, basic_block, int);
 static void predict_paths_leading_to (basic_block, enum br_predictor, enum prediction);
-static void choose_function_section (void);
 static bool can_predict_insn_p (const_rtx);
 
 /* Information we hold about each branch predictor.
@@ -941,7 +940,7 @@ predict_loops (void)
       exits = get_loop_exit_edges (loop);
       n_exits = VEC_length (edge, exits);
 
-      for (j = 0; VEC_iterate (edge, exits, j, ex); j++)
+      FOR_EACH_VEC_ELT (edge, exits, j, ex)
 	{
 	  tree niter = NULL;
 	  HOST_WIDE_INT nitercst;
@@ -1179,9 +1178,8 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code, tree op1, bitma
       def = SSA_NAME_DEF_STMT (op0);
 
       /* If we were already here, break the infinite cycle.  */
-      if (bitmap_bit_p (visited, SSA_NAME_VERSION (op0)))
+      if (!bitmap_set_bit (visited, SSA_NAME_VERSION (op0)))
 	return NULL;
-      bitmap_set_bit (visited, SSA_NAME_VERSION (op0));
 
       if (gimple_code (def) == GIMPLE_PHI)
 	{
@@ -1329,9 +1327,17 @@ strip_predict_hints (void)
 		  && gimple_call_num_args (stmt) == 2)
 		{
 		  var = gimple_call_lhs (stmt);
-		  ass_stmt = gimple_build_assign (var, gimple_call_arg (stmt, 0));
-
-		  gsi_replace (&bi, ass_stmt, true);
+		  if (var)
+		    {
+		      ass_stmt
+			= gimple_build_assign (var, gimple_call_arg (stmt, 0));
+		      gsi_replace (&bi, ass_stmt, true);
+		    }
+		  else
+		    {
+		      gsi_remove (&bi, true);
+		      continue;
+		    }
 		}
 	    }
 	  gsi_next (&bi);
@@ -1786,8 +1792,33 @@ predict_paths_for_bb (basic_block cur, basic_block bb,
     if (e->src->index >= NUM_FIXED_BLOCKS
 	&& !dominated_by_p (CDI_POST_DOMINATORS, e->src, bb))
     {
+      edge e2;
+      edge_iterator ei2;
+      bool found = false;
+
+      /* Ignore abnormals, we predict them as not taken anyway.  */
+      if (e->flags & (EDGE_EH | EDGE_FAKE | EDGE_ABNORMAL))
+	continue;
       gcc_assert (bb == cur || dominated_by_p (CDI_POST_DOMINATORS, cur, bb));
-      predict_edge_def (e, pred, taken);
+
+      /* See if there is how many edge from e->src that is not abnormal
+	 and does not lead to BB.  */
+      FOR_EACH_EDGE (e2, ei2, e->src->succs)
+	if (e2 != e
+	    && !(e2->flags & (EDGE_EH | EDGE_FAKE | EDGE_ABNORMAL))
+	    && !dominated_by_p (CDI_POST_DOMINATORS, e2->dest, bb))
+	  {
+	    found = true;
+	    break;
+	  }
+
+      /* If there is non-abnormal path leaving e->src, predict edge
+	 using predictor.  Otherwise we need to look for paths
+	 leading to e->src.  */
+      if (found)
+        predict_edge_def (e, pred, taken);
+      else
+	predict_paths_for_bb (e->src, e->src, pred, taken);
     }
   for (son = first_dom_son (CDI_POST_DOMINATORS, cur);
        son;
@@ -1855,9 +1886,6 @@ propagate_freq (basic_block head, bitmap tovisit)
       edge_iterator ei;
       int count = 0;
 
-       /* The outermost "loop" includes the exit block, which we can not
-	  look up via BASIC_BLOCK.  Detect this and use EXIT_BLOCK_PTR
-	  directly.  Do the same for the entry block.  */
       bb = BASIC_BLOCK (i);
 
       FOR_EACH_EDGE (e, ei, bb->preds)
@@ -1872,6 +1900,9 @@ propagate_freq (basic_block head, bitmap tovisit)
 		     e->src->index, bb->index);
 	}
       BLOCK_INFO (bb)->npredecessors = count;
+      /* When function never returns, we will never process exit block.  */
+      if (!count && bb == EXIT_BLOCK_PTR)
+	bb->count = bb->frequency = 0;
     }
 
   memcpy (&BLOCK_INFO (head)->frequency, &real_one, sizeof (real_one));
@@ -2152,8 +2183,6 @@ estimate_bb_frequencies (void)
       free_aux_for_edges ();
     }
   compute_function_frequency ();
-  if (flag_reorder_functions)
-    choose_function_section ();
 }
 
 /* Decide whether function is hot, cold or unlikely executed.  */
@@ -2162,6 +2191,11 @@ compute_function_frequency (void)
 {
   basic_block bb;
   struct cgraph_node *node = cgraph_node (current_function_decl);
+  if (DECL_STATIC_CONSTRUCTOR (current_function_decl)
+      || MAIN_NAME_P (DECL_NAME (current_function_decl)))
+    node->only_called_at_startup = true;
+  if (DECL_STATIC_DESTRUCTOR (current_function_decl))
+    node->only_called_at_exit = true;
 
   if (!profile_info || !flag_branch_probabilities)
     {
@@ -2192,35 +2226,6 @@ compute_function_frequency (void)
       if (!probably_never_executed_bb_p (bb))
 	node->frequency = NODE_FREQUENCY_NORMAL;
     }
-}
-
-/* Choose appropriate section for the function.  */
-static void
-choose_function_section (void)
-{
-  struct cgraph_node *node = cgraph_node (current_function_decl);
-  if (DECL_SECTION_NAME (current_function_decl)
-      || !targetm.have_named_sections
-      /* Theoretically we can split the gnu.linkonce text section too,
-	 but this requires more work as the frequency needs to match
-	 for all generated objects so we need to merge the frequency
-	 of all instances.  For now just never set frequency for these.  */
-      || DECL_ONE_ONLY (current_function_decl))
-    return;
-
-  /* If we are doing the partitioning optimization, let the optimization
-     choose the correct section into which to put things.  */
-
-  if (flag_reorder_blocks_and_partition)
-    return;
-
-  if (node->frequency == NODE_FREQUENCY_HOT)
-    DECL_SECTION_NAME (current_function_decl) =
-      build_string (strlen (HOT_TEXT_SECTION_NAME), HOT_TEXT_SECTION_NAME);
-  if (node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
-    DECL_SECTION_NAME (current_function_decl) =
-      build_string (strlen (UNLIKELY_EXECUTED_TEXT_SECTION_NAME),
-		    UNLIKELY_EXECUTED_TEXT_SECTION_NAME);
 }
 
 static bool
@@ -2282,3 +2287,29 @@ struct gimple_opt_pass pass_strip_predict_hints =
   TODO_ggc_collect | TODO_verify_ssa			/* todo_flags_finish */
  }
 };
+
+/* Rebuild function frequencies.  Passes are in general expected to
+   maintain profile by hand, however in some cases this is not possible:
+   for example when inlining several functions with loops freuqencies might run
+   out of scale and thus needs to be recomputed.  */
+
+void
+rebuild_frequencies (void)
+{
+  timevar_push (TV_REBUILD_FREQUENCIES);
+  if (profile_status == PROFILE_GUESSED)
+    {
+      loop_optimizer_init (0);
+      add_noreturn_fake_exit_edges ();
+      mark_irreducible_loops ();
+      connect_infinite_loops_to_exit ();
+      estimate_bb_frequencies ();
+      remove_fake_exit_edges ();
+      loop_optimizer_finalize ();
+    }
+  else if (profile_status == PROFILE_READ)
+    counts_to_freqs ();
+  else
+    gcc_unreachable ();
+  timevar_pop (TV_REBUILD_FREQUENCIES);
+}

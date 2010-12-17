@@ -1,3 +1,3 @@
-// { dg-require-effective-target tls_native }
+// { dg-require-effective-target tls }
 
 __thread int i;

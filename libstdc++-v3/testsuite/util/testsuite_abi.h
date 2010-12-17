@@ -29,7 +29,7 @@
 // Encapsulates symbol characteristics.
 struct symbol
 {
-  enum category { function, object, uncategorized };
+  enum category { function, object, tls, uncategorized };
   enum designation { existing, added, subtracted, undesignated };
   enum version { none, compatible, incompatible, unversioned };
   enum compatibility 

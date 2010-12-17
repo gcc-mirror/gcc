@@ -39,6 +39,10 @@ public:
   virtual ::java::lang::String * getPrefix() = 0;
   virtual ::java::lang::String * getNamespaceURI() = 0;
   virtual jboolean isDefaultNamespaceDeclaration() = 0;
+  virtual ::javax::xml::namespace$::QName * getName() = 0;
+  virtual ::java::lang::String * getValue() = 0;
+  virtual ::java::lang::String * getDTDType() = 0;
+  virtual jboolean isSpecified() = 0;
   virtual jint getEventType() = 0;
   virtual ::javax::xml::stream::Location * getLocation() = 0;
   virtual jboolean isStartElement() = 0;

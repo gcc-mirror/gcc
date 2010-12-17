@@ -1,6 +1,6 @@
 /* Configuration for an Alpha running GNU with ELF as the target machine.
 
-Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+Copyright (C) 2002, 2003, 2004, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,7 +29,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef TARGET_OS_CPP_BUILTINS /* config.gcc includes alpha/linux.h.  */
 #define TARGET_OS_CPP_BUILTINS()		\
     do {					\
-	HURD_TARGET_OS_CPP_BUILTINS();		\
+	LINUX_TARGET_OS_CPP_BUILTINS();		\
 	builtin_define ("_LONGLONG");		\
     } while (0)
 

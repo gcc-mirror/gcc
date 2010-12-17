@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,7 +57,7 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
       if Equivalent_Keys (Key, X) then
          if HT.Busy > 0 then
             raise Program_Error with
-              "attempt to tamper with elements (container is busy)";
+              "attempt to tamper with cursors (container is busy)";
          end if;
          HT.Buckets (Indx) := Next (X);
          HT.Length := HT.Length - 1;
@@ -75,7 +75,7 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
          if Equivalent_Keys (Key, X) then
             if HT.Busy > 0 then
                raise Program_Error with
-                 "attempt to tamper with elements (container is busy)";
+                 "attempt to tamper with cursors (container is busy)";
             end if;
             Set_Next (Node => Prev, Next => Next (X));
             HT.Length := HT.Length - 1;
@@ -130,7 +130,7 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
       if B = null then
          if HT.Busy > 0 then
             raise Program_Error with
-              "attempt to tamper with elements (container is busy)";
+              "attempt to tamper with cursors (container is busy)";
          end if;
 
          if HT.Length = Count_Type'Last then
@@ -160,7 +160,7 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
 
       if HT.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (container is busy)";
+           "attempt to tamper with cursors (container is busy)";
       end if;
 
       if HT.Length = Count_Type'Last then
@@ -212,7 +212,7 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
 
          if HT.Lock > 0 then
             raise Program_Error with
-              "attempt to tamper with cursors (container is locked)";
+              "attempt to tamper with elements (container is locked)";
          end if;
 
          --  We can change a node's key to Key (that's what Assign is for), but
@@ -256,7 +256,7 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
 
          if HT.Lock > 0 then
             raise Program_Error with
-              "attempt to tamper with cursors (container is locked)";
+              "attempt to tamper with elements (container is locked)";
          end if;
 
          Assign (Node, Key);
@@ -269,7 +269,7 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
 
       if HT.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (container is busy)";
+           "attempt to tamper with cursors (container is busy)";
       end if;
 
       --  Do the assignment first, before moving the node, so that if Assign

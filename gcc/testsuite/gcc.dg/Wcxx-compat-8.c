@@ -22,7 +22,17 @@ enum e2
 struct s3 v3;
 int v4 = C;
 
+enum e3
+{
+  F = sizeof (struct t3),	/* { dg-bogus "invalid in C\[+\]\[+\]" } */
+  /* { dg-error "invalid application of 'sizeof'" "" { target *-*-* } 27 } */
+  G = __alignof__ (struct t4), /* { dg-bogus "invalid in C\[+\]\[+\]" } */
+  /* { dg-error "invalid application of '__alignof__'" "" { target *-*-* } 29 } */
+  H
+};
+
 __typeof__ (struct s5 { int i; }) v5; /* { dg-warning "invalid in C\[+\]\[+\]" } */
+__typeof__ (struct t5) w5; /* { dg-bogus "invalid in C\[+\]\[+\]" } */
 
 int
 f1 (struct s1 *p)
@@ -30,14 +40,26 @@ f1 (struct s1 *p)
   return ((struct s6 { int j; } *) p)->j;  /* { dg-warning "invalid in C\[+\]\[+\]" } */
 }
 
-int
+void *
 f2 (struct s1 *p)
+{
+  return ((struct t6 *) p);  /* { dg-bogus "invalid in C\[+\]\[+\]" } */
+}
+
+int
+f3 (struct s1 *p)
 {
   return (__extension__ (struct s7 { int j; } *)p)->j;
 }
 
 int
-f3 ()
+f4 ()
 {
   return (struct s8 { int i; }) { 0 }.i;  /* { dg-warning "invalid in C\[+\]\[+\]" } */
+}
+
+void *
+f5 ()
+{
+  return &((struct t8) { });  /* { dg-warning "invalid in C\[+\]\[+\]" } */
 }

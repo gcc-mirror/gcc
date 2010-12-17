@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -81,10 +81,10 @@ package System.Tasking.Stages is
    --         _init.discr := discr;
    --         _init._task_id := null;
    --         create_task (unspecified_priority, tZ,
-   --           unspecified_task_info, ada__real_time__time_span_zero, 0,
-   --           _master, task_procedure_access!(tB'address),
-   --           _init'address, tE'unchecked_access, _chain, _task_id, _init.
-   --           _task_id);
+   --           unspecified_task_info, unspecified_cpu,
+   --           ada__real_time__time_span_zero, 0, _master,
+   --           task_procedure_access!(tB'address), _init'address,
+   --           tE'unchecked_access, _chain, _task_id, _init._task_id);
    --         return;
    --      end tVIP;
    --   ]
@@ -170,6 +170,7 @@ package System.Tasking.Stages is
      (Priority          : Integer;
       Size              : System.Parameters.Size_Type;
       Task_Info         : System.Task_Info.Task_Info_Type;
+      CPU               : Integer;
       Relative_Deadline : Ada.Real_Time.Time_Span;
       Num_Entries       : Task_Entry_Index;
       Master            : Master_Level;
@@ -183,11 +184,15 @@ package System.Tasking.Stages is
    --  Compiler interface only. Do not call from within the RTS.
    --  This must be called to create a new task.
    --
-   --  Priority is the task's priority (assumed to be in the
-   --   System.Any_Priority'Range)
+   --  Priority is the task's priority (assumed to be in range of type
+   --   System.Any_Priority)
    --  Size is the stack size of the task to create
    --  Task_Info is the task info associated with the created task, or
    --   Unspecified_Task_Info if none.
+   --  CPU is the task affinity. Passed as an Integer because the undefined
+   --   value is not in the range of CPU_Range. Static range checks are
+   --   performed when analyzing the pragma, and dynamic ones are performed
+   --   before setting the affinity at run time.
    --  Relative_Deadline is the relative deadline associated with the created
    --   task by means of a pragma Relative_Deadline, or 0.0 if none.
    --  State is the compiler generated task's procedure body

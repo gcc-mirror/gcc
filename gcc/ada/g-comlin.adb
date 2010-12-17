@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,10 +29,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Unchecked_Deallocation;
+with Ada.Characters.Handling;    use Ada.Characters.Handling;
 with Ada.Strings.Unbounded;
+with Ada.Text_IO;                use Ada.Text_IO;
+with Ada.Unchecked_Deallocation;
 
-with GNAT.OS_Lib; use GNAT.OS_Lib;
+with GNAT.Directory_Operations; use GNAT.Directory_Operations;
+with GNAT.OS_Lib;               use GNAT.OS_Lib;
 
 package body GNAT.Command_Line is
 
@@ -112,6 +115,31 @@ package body GNAT.Command_Line is
    --  Add a new element to Line. If Before is True, the item is inserted at
    --  the beginning, else it is appended.
 
+   procedure Add
+     (Config : in out Command_Line_Configuration;
+      Switch : Switch_Definition);
+   procedure Add
+     (Def : in out Alias_Definitions_List;
+      Alias  : Alias_Definition);
+   --  Add a new element to Def.
+
+   procedure Initialize_Switch_Def
+     (Def         : out Switch_Definition;
+      Switch      : String := "";
+      Long_Switch : String := "";
+      Help        : String := "";
+      Section     : String := "");
+   --  Initialize [Def] with the contents of the other parameters.
+   --  This also checks consistency of the switch parameters, and will raise
+   --  Invalid_Switch if they do not match.
+
+   procedure Decompose_Switch
+     (Switch         : String;
+      Parameter_Type : out Switch_Parameter_Type;
+      Switch_Last    : out Integer);
+   --  Given a switch definition ("name:" for instance), extracts the type of
+   --  parameter that is expected, and the name of the switch
+
    function Can_Have_Parameter (S : String) return Boolean;
    --  True if S can have a parameter
 
@@ -122,9 +150,14 @@ package body GNAT.Command_Line is
    --  Remove any possible trailing '!', ':', '?' and '='
 
    generic
-      with procedure Callback (Simple_Switch : String; Parameter : String);
+      with procedure Callback
+        (Simple_Switch : String;
+         Separator     : String;
+         Parameter     : String;
+         Index         : Integer);  --  Index in Config.Switches, or -1
    procedure For_Each_Simple_Switch
-     (Cmd       : Command_Line;
+     (Config    : Command_Line_Configuration;
+      Section   : String;
       Switch    : String;
       Parameter : String  := "";
       Unalias   : Boolean := True);
@@ -160,6 +193,14 @@ package body GNAT.Command_Line is
       Substring : String) return Boolean;
    --  Return True if the characters starting at Index in Type_Str are
    --  equivalent to Substring.
+
+   generic
+      with function Callback (S : String; Index : Integer) return Boolean;
+   procedure Foreach_Switch
+     (Config   : Command_Line_Configuration;
+      Section  : String);
+   --  Iterate over all switches defined in Config, for a specific section.
+   --  Index is set to the index in Config.Switches
 
    --------------
    -- Argument --
@@ -197,7 +238,6 @@ package body GNAT.Command_Line is
    ---------------
 
    function Expansion (Iterator : Expansion_Iterator) return String is
-      use GNAT.Directory_Operations;
       type Pointer is access all Expansion_Iterator;
 
       It   : constant Pointer := Iterator'Unrestricted_Access;
@@ -224,9 +264,10 @@ package body GNAT.Command_Line is
 
             if Current = 1 then
                return String'(1 .. 0 => ' ');
-            else
-               --  Otherwise continue with the directory at the previous level
 
+            --  Otherwise continue with the directory at the previous level
+
+            else
                Current := Current - 1;
                It.Current_Depth := Current;
             end if;
@@ -236,8 +277,8 @@ package body GNAT.Command_Line is
 
          elsif Is_Directory
            (It.Dir_Name (1 .. It.Levels (Current).Name_Last) & S (1 .. Last))
-           and then S (1 .. Last) /= "."
-           and then S (1 .. Last) /= ".."
+             and then S (1 .. Last) /= "."
+             and then S (1 .. Last) /= ".."
          then
             --  We can go to the next level only if we have not reached the
             --  maximum depth,
@@ -286,6 +327,29 @@ package body GNAT.Command_Line is
       end loop;
    end Expansion;
 
+   ---------------------
+   -- Current_Section --
+   ---------------------
+
+   function Current_Section
+     (Parser : Opt_Parser := Command_Line_Parser) return String
+   is
+   begin
+      if Parser.Current_Section = 1 then
+         return "";
+      end if;
+
+      for Index in reverse 1 .. Integer'Min (Parser.Current_Argument - 1,
+                                             Parser.Section'Last)
+      loop
+         if Parser.Section (Index) = 0 then
+            return Argument (Parser, Index);
+         end if;
+      end loop;
+
+      return "";
+   end Current_Section;
+
    -----------------
    -- Full_Switch --
    -----------------
@@ -333,7 +397,7 @@ package body GNAT.Command_Line is
             Parser.Current_Argument := 1;
             while Parser.Current_Argument <= Parser.Arg_Count
               and then Parser.Section (Parser.Current_Argument) /=
-                Parser.Current_Section
+                                                      Parser.Current_Section
             loop
                Parser.Current_Argument := Parser.Current_Argument + 1;
             end loop;
@@ -344,7 +408,7 @@ package body GNAT.Command_Line is
       elsif Parser.Section (Parser.Current_Argument) = 0 then
          while Parser.Current_Argument <= Parser.Arg_Count
            and then Parser.Section (Parser.Current_Argument) /=
-             Parser.Current_Section
+                                                      Parser.Current_Section
          loop
             Parser.Current_Argument := Parser.Current_Argument + 1;
          end loop;
@@ -394,6 +458,41 @@ package body GNAT.Command_Line is
       return Argument (Parser, Parser.Current_Argument - 1);
    end Get_Argument;
 
+   ----------------------
+   -- Decompose_Switch --
+   ----------------------
+
+   procedure Decompose_Switch
+     (Switch         : String;
+      Parameter_Type : out Switch_Parameter_Type;
+      Switch_Last    : out Integer)
+   is
+   begin
+      if Switch = "" then
+         Parameter_Type := Parameter_None;
+         Switch_Last := Switch'Last;
+         return;
+      end if;
+
+      case Switch (Switch'Last) is
+         when ':'    =>
+            Parameter_Type := Parameter_With_Optional_Space;
+            Switch_Last    := Switch'Last - 1;
+         when '='    =>
+            Parameter_Type := Parameter_With_Space_Or_Equal;
+            Switch_Last    := Switch'Last - 1;
+         when '!'    =>
+            Parameter_Type := Parameter_No_Space;
+            Switch_Last    := Switch'Last - 1;
+         when '?'    =>
+            Parameter_Type := Parameter_Optional;
+            Switch_Last    := Switch'Last - 1;
+         when others =>
+            Parameter_Type := Parameter_None;
+            Switch_Last    := Switch'Last;
+      end case;
+   end Decompose_Switch;
+
    ----------------------------------
    -- Find_Longest_Matching_Switch --
    ----------------------------------
@@ -407,6 +506,7 @@ package body GNAT.Command_Line is
    is
       Index  : Natural;
       Length : Natural := 1;
+      Last   : Natural;
       P      : Switch_Parameter_Type;
 
    begin
@@ -432,37 +532,26 @@ package body GNAT.Command_Line is
             Length := Length + 1;
          end loop;
 
+         --  Length now marks the separator after the current switch
+         --  Last will mark the last character of the name of the switch
+
          if Length = Index + 1 then
             P := Parameter_None;
+            Last := Index;
          else
-            case Switches (Length - 1) is
-               when ':'    =>
-                  P      := Parameter_With_Optional_Space;
-                  Length := Length - 1;
-               when '='    =>
-                  P      := Parameter_With_Space_Or_Equal;
-                  Length := Length - 1;
-               when '!'    =>
-                  P      := Parameter_No_Space;
-                  Length := Length - 1;
-               when '?'    =>
-                  P      := Parameter_Optional;
-                  Length := Length - 1;
-               when others =>
-                  P      := Parameter_None;
-            end case;
+            Decompose_Switch (Switches (Index .. Length - 1), P, Last);
          end if;
 
          --  If it is the one we searched, it may be a candidate
 
-         if Arg'First + Length - 1 - Index <= Arg'Last
-           and then Switches (Index .. Length - 1) =
-                      Arg (Arg'First .. Arg'First + Length - 1 - Index)
-           and then Length - Index > Switch_Length
+         if Arg'First + Last - Index <= Arg'Last
+           and then Switches (Index .. Last) =
+                      Arg (Arg'First .. Arg'First + Last - Index)
+           and then Last - Index + 1 > Switch_Length
          then
             Param             := P;
             Index_In_Switches := Index;
-            Switch_Length     := Length - Index;
+            Switch_Length     := Last - Index + 1;
          end if;
 
          --  Look for the next switch in Switches
@@ -601,6 +690,7 @@ package body GNAT.Command_Line is
                First   => Parser.Current_Index,
                Last    => End_Index);
             Parser.Current_Index := End_Index + 1;
+
             raise Invalid_Switch;
          end if;
 
@@ -644,7 +734,6 @@ package body GNAT.Command_Line is
                --  If the switch is of the form <switch>=xxx
 
                if End_Index < Arg'Last then
-
                   if Arg (End_Index + 1) = '='
                     and then End_Index + 1 < Arg'Last
                   then
@@ -681,7 +770,6 @@ package body GNAT.Command_Line is
                end if;
 
             when Parameter_No_Space =>
-
                if End_Index < Arg'Last then
                   Set_Parameter
                     (Parser.The_Parameter,
@@ -696,7 +784,6 @@ package body GNAT.Command_Line is
                end if;
 
             when Parameter_Optional =>
-
                if End_Index < Arg'Last then
                   Set_Parameter
                     (Parser.The_Parameter,
@@ -708,7 +795,6 @@ package body GNAT.Command_Line is
                Dummy := Goto_Next_Argument_In_Section (Parser);
 
             when Parameter_None =>
-
                if Concatenate or else End_Index = Arg'Last then
                   Parser.Current_Index := End_Index + 1;
 
@@ -1076,15 +1162,19 @@ package body GNAT.Command_Line is
    procedure Define_Alias
      (Config   : in out Command_Line_Configuration;
       Switch   : String;
-      Expanded : String)
+      Expanded : String;
+      Section  : String := "")
    is
+      Def    : Alias_Definition;
    begin
       if Config = null then
          Config := new Command_Line_Configuration_Record;
       end if;
 
-      Add (Config.Aliases,    new String'(Switch));
-      Add (Config.Expansions, new String'(Expanded));
+      Def.Alias     := new String'(Switch);
+      Def.Expansion := new String'(Expanded);
+      Def.Section   := new String'(Section);
+      Add (Config.Aliases, Def);
    end Define_Alias;
 
    -------------------
@@ -1103,20 +1193,190 @@ package body GNAT.Command_Line is
       Add (Config.Prefixes, new String'(Prefix));
    end Define_Prefix;
 
-   -------------------
-   -- Define_Switch --
-   -------------------
+   ---------
+   -- Add --
+   ---------
 
-   procedure Define_Switch
-     (Config : in out Command_Line_Configuration;
-      Switch : String)
+   procedure Add (Config : in out Command_Line_Configuration;
+                  Switch : Switch_Definition)
    is
+      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
+        (Switch_Definitions, Switch_Definitions_List);
+      Tmp : Switch_Definitions_List;
+
    begin
       if Config = null then
          Config := new Command_Line_Configuration_Record;
       end if;
 
-      Add (Config.Switches, new String'(Switch));
+      Tmp := Config.Switches;
+
+      if Tmp = null then
+         Config.Switches := new Switch_Definitions (1 .. 1);
+      else
+         Config.Switches := new Switch_Definitions (1 .. Tmp'Length + 1);
+         Config.Switches (1 .. Tmp'Length) := Tmp.all;
+         Unchecked_Free (Tmp);
+      end if;
+
+      Config.Switches (Config.Switches'Last) := Switch;
+   end Add;
+
+   ---------
+   -- Add --
+   ---------
+
+   procedure Add (Def : in out Alias_Definitions_List;
+                  Alias : Alias_Definition)
+   is
+      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
+        (Alias_Definitions, Alias_Definitions_List);
+      Tmp : Alias_Definitions_List := Def;
+
+   begin
+      if Tmp = null then
+         Def := new Alias_Definitions (1 .. 1);
+      else
+         Def := new Alias_Definitions (1 .. Tmp'Length + 1);
+         Def (1 .. Tmp'Length) := Tmp.all;
+         Unchecked_Free (Tmp);
+      end if;
+
+      Def (Def'Last) := Alias;
+   end Add;
+
+   ---------------------------
+   -- Initialize_Switch_Def --
+   ---------------------------
+
+   procedure Initialize_Switch_Def
+     (Def : out Switch_Definition;
+      Switch      : String := "";
+      Long_Switch : String := "";
+      Help        : String := "";
+      Section     : String := "")
+   is
+      P1, P2       : Switch_Parameter_Type := Parameter_None;
+      Last1, Last2 : Integer;
+
+   begin
+      if Switch /= "" then
+         Def.Switch := new String'(Switch);
+         Decompose_Switch (Switch, P1, Last1);
+      end if;
+
+      if Long_Switch /= "" then
+         Def.Long_Switch := new String'(Long_Switch);
+         Decompose_Switch (Long_Switch, P2, Last2);
+      end if;
+
+      if Switch /= "" and then Long_Switch /= "" then
+         if (P1 = Parameter_None and then P2 /= P1)
+           or else (P2 = Parameter_None and then P1 /= P2)
+           or else (P1 = Parameter_Optional and then P2 /= P1)
+           or else (P2 = Parameter_Optional and then P2 /= P1)
+         then
+            raise Invalid_Switch
+              with "Inconsistent parameter types for "
+                & Switch & " and " & Long_Switch;
+         end if;
+      end if;
+
+      if Section /= "" then
+         Def.Section := new String'(Section);
+      end if;
+
+      if Help /= "" then
+         Def.Help := new String'(Help);
+      end if;
+   end Initialize_Switch_Def;
+
+   -------------------
+   -- Define_Switch --
+   -------------------
+
+   procedure Define_Switch
+     (Config      : in out Command_Line_Configuration;
+      Switch      : String := "";
+      Long_Switch : String := "";
+      Help        : String := "";
+      Section     : String := "")
+   is
+      Def : Switch_Definition;
+   begin
+      if Switch /= "" or else Long_Switch /= "" then
+         Initialize_Switch_Def (Def, Switch, Long_Switch, Help, Section);
+         Add (Config, Def);
+      end if;
+   end Define_Switch;
+
+   -------------------
+   -- Define_Switch --
+   -------------------
+
+   procedure Define_Switch
+     (Config      : in out Command_Line_Configuration;
+      Output      : access Boolean;
+      Switch      : String := "";
+      Long_Switch : String := "";
+      Help        : String := "";
+      Section     : String := "";
+      Value       : Boolean := True)
+   is
+      Def : Switch_Definition (Switch_Boolean);
+   begin
+      if Switch /= "" or else Long_Switch /= "" then
+         Initialize_Switch_Def (Def, Switch, Long_Switch, Help, Section);
+         Def.Boolean_Output := Output.all'Unchecked_Access;
+         Def.Boolean_Value  := Value;
+         Add (Config, Def);
+      end if;
+   end Define_Switch;
+
+   -------------------
+   -- Define_Switch --
+   -------------------
+
+   procedure Define_Switch
+     (Config      : in out Command_Line_Configuration;
+      Output      : access Integer;
+      Switch      : String := "";
+      Long_Switch : String := "";
+      Help        : String := "";
+      Section     : String := "";
+      Initial     : Integer := 0;
+      Default     : Integer := 1)
+   is
+      Def : Switch_Definition (Switch_Integer);
+   begin
+      if Switch /= "" or else Long_Switch /= "" then
+         Initialize_Switch_Def (Def, Switch, Long_Switch, Help, Section);
+         Def.Integer_Output  := Output.all'Unchecked_Access;
+         Def.Integer_Default := Default;
+         Def.Integer_Initial := Initial;
+         Add (Config, Def);
+      end if;
+   end Define_Switch;
+
+   -------------------
+   -- Define_Switch --
+   -------------------
+
+   procedure Define_Switch
+     (Config      : in out Command_Line_Configuration;
+      Output      : access GNAT.Strings.String_Access;
+      Switch      : String := "";
+      Long_Switch : String := "";
+      Help        : String := "";
+      Section     : String := "")
+   is
+      Def : Switch_Definition (Switch_String);
+   begin
+      if Switch /= "" or else Long_Switch /= "" then
+         Initialize_Switch_Def (Def, Switch, Long_Switch, Help, Section);
+         Def.String_Output  := Output.all'Unchecked_Access;
+         Add (Config, Def);
+      end if;
    end Define_Switch;
 
    --------------------
@@ -1135,36 +1395,111 @@ package body GNAT.Command_Line is
       Add (Config.Sections, new String'(Section));
    end Define_Section;
 
+   --------------------
+   -- Foreach_Switch --
+   --------------------
+
+   procedure Foreach_Switch
+     (Config   : Command_Line_Configuration;
+      Section  : String)
+   is
+   begin
+      if Config /= null and then Config.Switches /= null then
+         for J in Config.Switches'Range loop
+            if (Section = "" and then Config.Switches (J).Section = null)
+              or else
+                (Config.Switches (J).Section /= null
+                 and then Config.Switches (J).Section.all = Section)
+            then
+               exit when Config.Switches (J).Switch /= null
+                 and then not Callback (Config.Switches (J).Switch.all, J);
+
+               exit when Config.Switches (J).Long_Switch /= null
+                 and then
+                   not Callback (Config.Switches (J).Long_Switch.all, J);
+            end if;
+         end loop;
+      end if;
+   end Foreach_Switch;
+
    ------------------
    -- Get_Switches --
    ------------------
 
    function Get_Switches
      (Config      : Command_Line_Configuration;
-      Switch_Char : Character)
-      return String
+      Switch_Char : Character := '-';
+      Section     : String := "") return String
    is
       Ret : Ada.Strings.Unbounded.Unbounded_String;
-      use type Ada.Strings.Unbounded.Unbounded_String;
+      use Ada.Strings.Unbounded;
+
+      function Add_Switch (S : String; Index : Integer) return Boolean;
+      --  Add a switch to Ret
+
+      ----------------
+      -- Add_Switch --
+      ----------------
+
+      function Add_Switch (S : String; Index : Integer) return Boolean is
+         pragma Unreferenced (Index);
+      begin
+         if S = "*" then
+            Ret := "*" & Ret;  --  Always first
+         elsif S (S'First) = Switch_Char then
+            Append (Ret, " " & S (S'First + 1 .. S'Last));
+         else
+            Append (Ret, " " & S);
+         end if;
+         return True;
+      end Add_Switch;
+
+      Tmp : Boolean;
+      pragma Unreferenced (Tmp);
+
+      procedure Foreach is new Foreach_Switch (Add_Switch);
+
+   --  Start of processing for Get_Switches
 
    begin
-      if Config = null or else Config.Switches = null then
+      if Config = null then
          return "";
       end if;
 
-      for J in Config.Switches'Range loop
-         if Config.Switches (J) (Config.Switches (J)'First) = Switch_Char then
-            Ret :=
-              Ret & " " &
-                Config.Switches (J)
-                  (Config.Switches (J)'First + 1 .. Config.Switches (J)'Last);
-         else
-            Ret := Ret & " " & Config.Switches (J).all;
-         end if;
-      end loop;
+      Foreach (Config, Section => Section);
 
-      return Ada.Strings.Unbounded.To_String (Ret);
+      --  Adding relevant aliases
+
+      if Config.Aliases /= null then
+         for A in Config.Aliases'Range loop
+            if Config.Aliases (A).Section.all = Section then
+               Tmp := Add_Switch (Config.Aliases (A).Alias.all, -1);
+            end if;
+         end loop;
+      end if;
+
+      return To_String (Ret);
    end Get_Switches;
+
+   ------------------------
+   -- Section_Delimiters --
+   ------------------------
+
+   function Section_Delimiters
+     (Config : Command_Line_Configuration) return String
+   is
+      use Ada.Strings.Unbounded;
+      Result : Unbounded_String;
+
+   begin
+      if Config /= null and then Config.Sections /= null then
+         for S in Config.Sections'Range loop
+            Append (Result, " " & Config.Sections (S).all);
+         end loop;
+      end if;
+
+      return To_String (Result);
+   end Section_Delimiters;
 
    -----------------------
    -- Set_Configuration --
@@ -1183,7 +1518,8 @@ package body GNAT.Command_Line is
    -----------------------
 
    function Get_Configuration
-     (Cmd : Command_Line) return Command_Line_Configuration is
+     (Cmd : Command_Line) return Command_Line_Configuration
+   is
    begin
       return Cmd.Config;
    end Get_Configuration;
@@ -1264,36 +1600,11 @@ package body GNAT.Command_Line is
 
                   if not Is_Section then
                      if Section = null then
-
-                        --  Work around some weird cases: some switches may
-                        --  expect parameters, but have the same value as
-                        --  longer switches: -gnaty3 (-gnaty, parameter=3) and
-                        --  -gnatya (-gnatya, no parameter).
-
-                        --  So we are calling add_switch here with parameter
-                        --  attached. This will be anyway correctly handled by
-                        --  Add_Switch if -gnaty3 is actually provided.
-
-                        if Separator (Parser) = ASCII.NUL then
-                           Add_Switch
-                             (Cmd, Sw & Parameter (Parser), "", ASCII.NUL);
-                        else
-                           Add_Switch
-                             (Cmd, Sw, Parameter (Parser), Separator (Parser));
-                        end if;
+                        Add_Switch (Cmd, Sw, Parameter (Parser));
                      else
-                        if Separator (Parser) = ASCII.NUL then
-                           Add_Switch
-                             (Cmd, Sw & Parameter (Parser), "",
-                              Separator (Parser),
-                              Section.all);
-                        else
-                           Add_Switch
-                             (Cmd, Sw,
-                              Parameter (Parser),
-                              Separator (Parser),
-                              Section.all);
-                        end if;
+                        Add_Switch
+                          (Cmd, Sw, Parameter (Parser),
+                           Section => Section.all);
                      end if;
                   end if;
                end;
@@ -1310,12 +1621,10 @@ package body GNAT.Command_Line is
 
                   if Section = null then
                      Add_Switch
-                       (Cmd, Switch_Char & Full_Switch (Parser),
-                        Separator => Separator (Parser));
+                       (Cmd, Switch_Char & Full_Switch (Parser));
                   else
                      Add_Switch
                        (Cmd, Switch_Char & Full_Switch (Parser),
-                        Separator => Separator (Parser),
                         Section   => Section.all);
                   end if;
             end;
@@ -1332,7 +1641,8 @@ package body GNAT.Command_Line is
    function Looking_At
      (Type_Str  : String;
       Index     : Natural;
-      Substring : String) return Boolean is
+      Substring : String) return Boolean
+   is
    begin
       return Index + Substring'Length - 1 <= Type_Str'Last
         and then Type_Str (Index .. Index + Substring'Length - 1) = Substring;
@@ -1397,7 +1707,8 @@ package body GNAT.Command_Line is
    ----------------------------
 
    procedure For_Each_Simple_Switch
-     (Cmd       : Command_Line;
+     (Config    : Command_Line_Configuration;
+      Section   : String;
       Switch    : String;
       Parameter : String := "";
       Unalias   : Boolean := True)
@@ -1406,6 +1717,17 @@ package body GNAT.Command_Line is
         (Prefix : String;
          Group  : String) return Boolean;
       --  Perform the analysis of a group of switches
+
+      Found_In_Config : Boolean := False;
+      function Is_In_Config
+        (Config_Switch : String; Index : Integer) return Boolean;
+      --  If Switch is the same as Config_Switch, run the callback and sets
+      --  Found_In_Config to True
+
+      function Starts_With
+        (Config_Switch : String; Index : Integer) return Boolean;
+      --  if Switch starts with Config_Switch, sets Found_In_Config to True.
+      --  The return value is for the Foreach_Switch iterator
 
       --------------------
       -- Group_Analysis --
@@ -1418,88 +1740,103 @@ package body GNAT.Command_Line is
          Idx   : Natural;
          Found : Boolean;
 
+         function Analyze_Simple_Switch
+           (Switch : String; Index : Integer) return Boolean;
+
+         ---------------------------
+         -- Analyze_Simple_Switch --
+         ---------------------------
+
+         function Analyze_Simple_Switch
+           (Switch : String; Index : Integer) return Boolean
+         is
+            pragma Unreferenced (Index);
+
+            Full  : constant String := Prefix & Group (Idx .. Group'Last);
+            Sw    : constant String := Actual_Switch (Switch);
+            Last  : Natural;
+            Param : Natural;
+
+         begin
+            if Sw'Length >= Prefix'Length
+
+            --  Verify that sw starts with Prefix
+
+              and then Looking_At (Sw, Sw'First, Prefix)
+
+            --  Verify that the group starts with sw
+
+              and then Looking_At (Full, Full'First, Sw)
+            then
+               Last  := Idx + Sw'Length - Prefix'Length - 1;
+               Param := Last + 1;
+
+               if Can_Have_Parameter (Switch) then
+
+                  --  Include potential parameter to the recursive call.
+                  --  Only numbers are allowed.
+
+                  while Last < Group'Last
+                    and then Group (Last + 1) in '0' .. '9'
+                  loop
+                     Last := Last + 1;
+                  end loop;
+               end if;
+
+               if not Require_Parameter (Switch)
+                 or else Last >= Param
+               then
+                  if Idx = Group'First
+                    and then Last = Group'Last
+                    and then Last < Param
+                  then
+                     --  The group only concerns a single switch. Do not
+                     --  perform recursive call.
+
+                     --  Note that we still perform a recursive call if
+                     --  a parameter is detected in the switch, as this
+                     --  is a way to correctly identify such a parameter
+                     --  in aliases.
+
+                     return False;
+                  end if;
+
+                  Found := True;
+
+                  --  Recursive call, using the detected parameter if any
+
+                  if Last >= Param then
+                     For_Each_Simple_Switch
+                       (Config,
+                        Section,
+                        Prefix & Group (Idx .. Param - 1),
+                        Group (Param .. Last));
+                  else
+                     For_Each_Simple_Switch
+                       (Config, Section, Prefix & Group (Idx .. Last), "");
+                  end if;
+
+                  Idx := Last + 1;
+                  return False;
+               end if;
+            end if;
+            return True;
+         end Analyze_Simple_Switch;
+
+         procedure Foreach is new Foreach_Switch (Analyze_Simple_Switch);
+
+      --  Start of processing for Group_Analysis
+
       begin
          Idx := Group'First;
          while Idx <= Group'Last loop
             Found := False;
 
-            for S in Cmd.Config.Switches'Range loop
-               declare
-                  Sw              : constant String :=
-                                      Actual_Switch
-                                        (Cmd.Config.Switches (S).all);
-                  Full            : constant String :=
-                                      Prefix & Group (Idx .. Group'Last);
-                  Last            : Natural;
-                  Param           : Natural;
-
-               begin
-                  if Sw'Length >= Prefix'Length
-
-                     --  Verify that sw starts with Prefix
-
-                     and then Looking_At (Sw, Sw'First, Prefix)
-
-                     --  Verify that the group starts with sw
-
-                     and then Looking_At (Full, Full'First, Sw)
-                  then
-                     Last := Idx + Sw'Length - Prefix'Length - 1;
-                     Param := Last + 1;
-
-                     if Can_Have_Parameter (Cmd.Config.Switches (S).all) then
-
-                        --  Include potential parameter to the recursive call.
-                        --  Only numbers are allowed.
-
-                        while Last < Group'Last
-                          and then Group (Last + 1) in '0' .. '9'
-                        loop
-                           Last := Last + 1;
-                        end loop;
-                     end if;
-
-                     if not Require_Parameter (Cmd.Config.Switches (S).all)
-                       or else Last >= Param
-                     then
-                        if Idx = Group'First
-                          and then Last = Group'Last
-                          and then Last < Param
-                        then
-                           --  The group only concerns a single switch. Do not
-                           --  perform recursive call.
-
-                           --  Note that we still perform a recursive call if
-                           --  a parameter is detected in the switch, as this
-                           --  is a way to correctly identify such a parameter
-                           --  in aliases.
-
-                           return False;
-                        end if;
-
-                        Found := True;
-
-                        --  Recursive call, using the detected parameter if any
-
-                        if Last >= Param then
-                           For_Each_Simple_Switch
-                             (Cmd,
-                              Prefix & Group (Idx .. Param - 1),
-                              Group (Param .. Last));
-                        else
-                           For_Each_Simple_Switch
-                             (Cmd, Prefix & Group (Idx .. Last), "");
-                        end if;
-
-                        Idx := Last + 1;
-                        exit;
-                     end if;
-                  end if;
-               end;
-            end loop;
+            Foreach (Config, Section);
 
             if not Found then
-               For_Each_Simple_Switch (Cmd, Prefix & Group (Idx), "");
+               For_Each_Simple_Switch
+                 (Config, Section, Prefix & Group (Idx), "");
                Idx := Idx + 1;
             end if;
          end loop;
@@ -1507,28 +1844,136 @@ package body GNAT.Command_Line is
          return True;
       end Group_Analysis;
 
+      ------------------
+      -- Is_In_Config --
+      ------------------
+
+      function Is_In_Config
+        (Config_Switch : String; Index : Integer) return Boolean
+      is
+         Last : Natural;
+         P    : Switch_Parameter_Type;
+
+      begin
+         Decompose_Switch (Config_Switch, P, Last);
+
+         if Config_Switch (Config_Switch'First .. Last) = Switch then
+            case P is
+               when Parameter_None =>
+                  if Parameter = "" then
+                     Callback (Switch, "", "", Index => Index);
+                     Found_In_Config := True;
+                     return False;
+                  end if;
+
+               when Parameter_With_Optional_Space =>
+                  if Parameter /= "" then
+                     Callback (Switch, " ", Parameter, Index => Index);
+                     Found_In_Config := True;
+                     return False;
+                  end if;
+
+               when Parameter_With_Space_Or_Equal =>
+                  if Parameter /= "" then
+                     Callback (Switch, "=", Parameter, Index => Index);
+                     Found_In_Config := True;
+                     return False;
+                  end if;
+
+               when Parameter_No_Space =>
+                  if Parameter /= "" then
+                     Callback (Switch, "", Parameter, Index);
+                     Found_In_Config := True;
+                     return False;
+                  end if;
+
+               when Parameter_Optional =>
+                  Callback (Switch, "", Parameter, Index);
+                  Found_In_Config := True;
+                  return False;
+            end case;
+         end if;
+
+         return True;
+      end Is_In_Config;
+
+      -----------------
+      -- Starts_With --
+      -----------------
+
+      function Starts_With
+        (Config_Switch : String; Index : Integer) return Boolean
+      is
+         Last  : Natural;
+         Param : Natural;
+         P     : Switch_Parameter_Type;
+
+      begin
+         --  This function is called when we believe the parameter was
+         --  specified as part of the switch, instead of separately. Thus we
+         --  look in the config to find all possible switches.
+
+         Decompose_Switch (Config_Switch, P, Last);
+
+         if Looking_At
+           (Switch, Switch'First, Config_Switch (Config_Switch'First .. Last))
+         then
+            --  Set first char of Param, and last char of Switch
+
+            Param := Switch'First + Last;
+            Last  := Switch'First + Last - Config_Switch'First;
+
+            case P is
+
+               --  None is already handled in Is_In_Config
+
+               when Parameter_None =>
+                  null;
+
+               when Parameter_With_Space_Or_Equal =>
+                  if Param <= Switch'Last
+                    and then
+                      (Switch (Param) = ' ' or else Switch (Param) = '=')
+                  then
+                     Callback (Switch (Switch'First .. Last),
+                               "=", Switch (Param + 1 .. Switch'Last), Index);
+                     Found_In_Config := True;
+                     return False;
+                  end if;
+
+               when Parameter_With_Optional_Space =>
+                  if Param <= Switch'Last and then Switch (Param) = ' '  then
+                     Param := Param + 1;
+                  end if;
+
+                  Callback (Switch (Switch'First .. Last),
+                            " ", Switch (Param .. Switch'Last), Index);
+                  Found_In_Config := True;
+                  return False;
+
+               when Parameter_No_Space | Parameter_Optional =>
+                  Callback (Switch (Switch'First .. Last),
+                            "", Switch (Param .. Switch'Last), Index);
+                  Found_In_Config := True;
+                  return False;
+            end case;
+         end if;
+         return True;
+      end Starts_With;
+
+      procedure Foreach_In_Config is new Foreach_Switch (Is_In_Config);
+      procedure Foreach_Starts_With is new Foreach_Switch (Starts_With);
+
+   --  Start of processing for For_Each_Simple_Switch
+
    begin
       --  First determine if the switch corresponds to one belonging to the
       --  configuration. If so, run callback and exit.
 
-      if Cmd.Config /= null and then Cmd.Config.Switches /= null then
-         for S in Cmd.Config.Switches'Range loop
-            declare
-               Config_Switch : String renames Cmd.Config.Switches (S).all;
-            begin
-               if Actual_Switch (Config_Switch) = Switch
-                    and then
-                  ((Can_Have_Parameter (Config_Switch)
-                      and then Parameter /= "")
-                   or else
-                   (not Require_Parameter (Config_Switch)
-                       and then Parameter = ""))
-               then
-                  Callback (Switch, Parameter);
-                  return;
-               end if;
-            end;
-         end loop;
+      Foreach_In_Config (Config, Section);
+
+      if Found_In_Config then
+         return;
       end if;
 
       --  If adding a switch that can in fact be expanded through aliases,
@@ -1540,13 +1985,16 @@ package body GNAT.Command_Line is
       --  be checked for a common prefix and split into simple switches.
 
       if Unalias
-        and then Cmd.Config /= null
-        and then Cmd.Config.Aliases /= null
+        and then Config /= null
+        and then Config.Aliases /= null
       then
-         for A in Cmd.Config.Aliases'Range loop
-            if Cmd.Config.Aliases (A).all = Switch and then Parameter = "" then
+         for A in Config.Aliases'Range loop
+            if Config.Aliases (A).Section.all = Section
+              and then Config.Aliases (A).Alias.all = Switch
+              and then Parameter = ""
+            then
                For_Each_Simple_Switch
-                 (Cmd, Cmd.Config.Expansions (A).all, "");
+                 (Config, Section, Config.Aliases (A).Expansion.all, "");
                return;
             end if;
          end loop;
@@ -1555,33 +2003,32 @@ package body GNAT.Command_Line is
       --  If adding a switch grouping several switches, add each of the simple
       --  switches instead.
 
-      if Cmd.Config /= null and then Cmd.Config.Prefixes /= null then
-         for P in Cmd.Config.Prefixes'Range loop
-            if Switch'Length > Cmd.Config.Prefixes (P)'Length + 1
+      if Config /= null and then Config.Prefixes /= null then
+         for P in Config.Prefixes'Range loop
+            if Switch'Length > Config.Prefixes (P)'Length + 1
               and then Looking_At
-                (Switch, Switch'First, Cmd.Config.Prefixes (P).all)
+                (Switch, Switch'First, Config.Prefixes (P).all)
             then
                --  Alias expansion will be done recursively
 
-               if Cmd.Config.Switches = null then
-                  for S in Switch'First + Cmd.Config.Prefixes (P)'Length
+               if Config.Switches = null then
+                  for S in Switch'First + Config.Prefixes (P)'Length
                             .. Switch'Last
                   loop
                      For_Each_Simple_Switch
-                       (Cmd, Cmd.Config.Prefixes (P).all & Switch (S), "");
+                       (Config, Section,
+                        Config.Prefixes (P).all & Switch (S), "");
                   end loop;
 
                   return;
 
                elsif Group_Analysis
-                 (Cmd.Config.Prefixes (P).all,
+                 (Config.Prefixes (P).all,
                   Switch
-                    (Switch'First + Cmd.Config.Prefixes (P)'Length
-                      .. Switch'Last))
+                    (Switch'First + Config.Prefixes (P)'Length .. Switch'Last))
                then
                   --  Recursive calls already done on each switch of the group:
                   --  Return without executing Callback.
-
                   return;
                end if;
             end if;
@@ -1589,52 +2036,24 @@ package body GNAT.Command_Line is
       end if;
 
       --  Test if added switch is a known switch with parameter attached
+      --  instead of being specified separately
 
       if Parameter = ""
-        and then Cmd.Config /= null
-        and then Cmd.Config.Switches /= null
+        and then Config /= null
+        and then Config.Switches /= null
       then
-         for S in Cmd.Config.Switches'Range loop
-            declare
-               Sw    : constant String :=
-                         Actual_Switch (Cmd.Config.Switches (S).all);
-               Last  : Natural;
-               Param : Natural;
-
-            begin
-               --  Verify that switch starts with Sw
-               --  What if the "verification" fails???
-
-               if Switch'Length >= Sw'Length
-                 and then Looking_At (Switch, Switch'First, Sw)
-               then
-                  Param := Switch'First + Sw'Length - 1;
-                  Last := Param;
-
-                  if Can_Have_Parameter (Cmd.Config.Switches (S).all) then
-                     while Last < Switch'Last
-                       and then Switch (Last + 1) in '0' .. '9'
-                     loop
-                        Last := Last + 1;
-                     end loop;
-                  end if;
-
-                  --  If full Switch is a known switch with attached parameter
-                  --  then we use this parameter in the callback.
-
-                  if Last = Switch'Last then
-                     Callback
-                       (Switch (Switch'First .. Param),
-                        Switch (Param + 1 .. Last));
-                     return;
-
-                  end if;
-               end if;
-            end;
-         end loop;
+         Found_In_Config := False;
+         Foreach_Starts_With (Config, Section);
+         if Found_In_Config then
+            return;
+         end if;
       end if;
 
-      Callback (Switch, Parameter);
+      --  The switch is invalid in the config, but we still want to report it.
+      --  The config could, for instance, include "*" to specify it accepts
+      --  all switches.
+
+      Callback (Switch, " ", Parameter, Index => -1);
    end For_Each_Simple_Switch;
 
    ----------------
@@ -1652,8 +2071,8 @@ package body GNAT.Command_Line is
       Success : Boolean;
       pragma Unreferenced (Success);
    begin
-      Add_Switch
-        (Cmd, Switch, Parameter, Separator, Section, Add_Before, Success);
+      Add_Switch (Cmd, Switch, Parameter, Separator,
+                  Section, Add_Before, Success);
    end Add_Switch;
 
    ----------------
@@ -1669,7 +2088,13 @@ package body GNAT.Command_Line is
       Add_Before : Boolean := False;
       Success    : out Boolean)
    is
-      procedure Add_Simple_Switch (Simple : String; Param : String);
+      pragma Unreferenced (Separator);  --  ??? Should be removed eventually
+
+      procedure Add_Simple_Switch
+        (Simple    : String;
+         Separator : String;
+         Param     : String;
+         Index     : Integer);
       --  Add a new switch that has had all its aliases expanded, and switches
       --  ungrouped. We know there are no more aliases in Switches.
 
@@ -1677,25 +2102,37 @@ package body GNAT.Command_Line is
       -- Add_Simple_Switch --
       -----------------------
 
-      procedure Add_Simple_Switch (Simple : String; Param : String) is
+      procedure Add_Simple_Switch
+        (Simple    : String;
+         Separator : String;
+         Param     : String;
+         Index     : Integer)
+      is
+         pragma Unreferenced (Index);
+         Sep : Character;
+
       begin
+         if Separator = "" then
+            Sep := ASCII.NUL;
+         else
+            Sep := Separator (Separator'First);
+         end if;
+
          if Cmd.Expanded = null then
             Cmd.Expanded := new Argument_List'(1 .. 1 => new String'(Simple));
 
             if Param /= "" then
-               Cmd.Params := new Argument_List'
-                 (1 .. 1 => new String'(Separator & Param));
-
+               Cmd.Params :=
+                 new Argument_List'(1 .. 1 => new String'(Sep & Param));
             else
                Cmd.Params := new Argument_List'(1 .. 1 => null);
             end if;
 
             if Section = "" then
                Cmd.Sections := new Argument_List'(1 .. 1 => null);
-
             else
-               Cmd.Sections := new Argument_List'
-                 (1 .. 1 => new String'(Section));
+               Cmd.Sections :=
+                 new Argument_List'(1 .. 1 => new String'(Section));
             end if;
 
          else
@@ -1707,7 +2144,7 @@ package body GNAT.Command_Line is
                    ((Cmd.Params (C) = null and then Param = "")
                      or else
                        (Cmd.Params (C) /= null
-                         and then Cmd.Params (C).all = Separator & Param))
+                         and then Cmd.Params (C).all = Sep & Param))
                  and then
                    ((Cmd.Sections (C) = null and then Section = "")
                      or else
@@ -1726,9 +2163,8 @@ package body GNAT.Command_Line is
             if Param /= "" then
                Add
                  (Cmd.Params,
-                  new String'(Separator & Param),
+                  new String'(Sep & Param),
                   Add_Before);
-
             else
                Add
                  (Cmd.Params,
@@ -1751,13 +2187,30 @@ package body GNAT.Command_Line is
       end Add_Simple_Switch;
 
       procedure Add_Simple_Switches is
-         new For_Each_Simple_Switch (Add_Simple_Switch);
+        new For_Each_Simple_Switch (Add_Simple_Switch);
+
+      --  Local Variables
+
+      Section_Valid : Boolean := False;
 
    --  Start of processing for Add_Switch
 
    begin
+      if Section /= "" and then Cmd.Config /= null then
+         for S in Cmd.Config.Sections'Range loop
+            if Section = Cmd.Config.Sections (S).all then
+               Section_Valid := True;
+               exit;
+            end if;
+         end loop;
+
+         if not Section_Valid then
+            raise Invalid_Section;
+         end if;
+      end if;
+
       Success := False;
-      Add_Simple_Switches (Cmd, Switch, Parameter);
+      Add_Simple_Switches (Cmd.Config, Section, Switch, Parameter);
       Free (Cmd.Coalesce);
    end Add_Switch;
 
@@ -1843,16 +2296,19 @@ package body GNAT.Command_Line is
       Section       : String  := "";
       Success       : out Boolean)
    is
-      procedure Remove_Simple_Switch (Simple : String; Param : String);
+      procedure Remove_Simple_Switch
+        (Simple, Separator, Param : String; Index : Integer);
       --  Removes a simple switch, with no aliasing or grouping
 
       --------------------------
       -- Remove_Simple_Switch --
       --------------------------
 
-      procedure Remove_Simple_Switch (Simple : String; Param : String) is
+      procedure Remove_Simple_Switch
+        (Simple, Separator, Param : String; Index : Integer)
+      is
          C : Integer;
-         pragma Unreferenced (Param);
+         pragma Unreferenced (Param, Separator, Index);
 
       begin
          if Cmd.Expanded /= null then
@@ -1890,7 +2346,8 @@ package body GNAT.Command_Line is
 
    begin
       Success := False;
-      Remove_Simple_Switches (Cmd, Switch, "", Unalias => not Has_Parameter);
+      Remove_Simple_Switches
+        (Cmd.Config, Section, Switch, "", Unalias => not Has_Parameter);
       Free (Cmd.Coalesce);
    end Remove_Switch;
 
@@ -1904,14 +2361,18 @@ package body GNAT.Command_Line is
       Parameter : String;
       Section   : String  := "")
    is
-      procedure Remove_Simple_Switch (Simple : String; Param : String);
+      procedure Remove_Simple_Switch
+        (Simple, Separator, Param : String; Index : Integer);
       --  Removes a simple switch, with no aliasing or grouping
 
       --------------------------
       -- Remove_Simple_Switch --
       --------------------------
 
-      procedure Remove_Simple_Switch (Simple : String; Param : String) is
+      procedure Remove_Simple_Switch
+        (Simple, Separator, Param : String; Index : Integer)
+      is
+         pragma Unreferenced (Separator, Index);
          C : Integer;
 
       begin
@@ -1954,12 +2415,12 @@ package body GNAT.Command_Line is
       end Remove_Simple_Switch;
 
       procedure Remove_Simple_Switches is
-         new For_Each_Simple_Switch (Remove_Simple_Switch);
+        new For_Each_Simple_Switch (Remove_Simple_Switch);
 
    --  Start of processing for Remove_Switch
 
    begin
-      Remove_Simple_Switches (Cmd, Switch, Parameter);
+      Remove_Simple_Switches (Cmd.Config, Section, Switch, Parameter);
       Free (Cmd.Coalesce);
    end Remove_Switch;
 
@@ -2060,10 +2521,10 @@ package body GNAT.Command_Line is
 
                   Free (Result (C));
 
-               else
-                  --  We changed section: we put the grouped switches to the
-                  --  first place, on continue with the new section.
+               --  We changed section: we put the grouped switches to the first
+               --  place, on continue with the new section.
 
+               else
                   Result (First) :=
                     new String'
                       (Cmd.Config.Prefixes (P).all &
@@ -2099,17 +2560,25 @@ package body GNAT.Command_Line is
       Found : Boolean;
       First : Natural;
 
-      procedure Check_Cb (Switch : String; Param : String);
-      --  Comment required ???
+      procedure Check_Cb (Switch, Separator, Param : String; Index : Integer);
+      --  Checks whether the command line contains [Switch].
+      --  Sets the global variable [Found] appropriately.
+      --  This will be called for each simple switch that make up an alias, to
+      --  know whether the alias should be applied.
 
-      procedure Remove_Cb (Switch : String; Param : String);
-      --  Comment required ???
+      procedure Remove_Cb (Switch, Separator, Param : String; Index : Integer);
+      --  Remove the simple switch [Switch] from the command line, since it is
+      --  part of a simpler alias
 
       --------------
       -- Check_Cb --
       --------------
 
-      procedure Check_Cb (Switch : String; Param : String) is
+      procedure Check_Cb
+        (Switch, Separator, Param : String; Index : Integer)
+      is
+         pragma Unreferenced (Separator, Index);
+
       begin
          if Found then
             for E in Result'Range loop
@@ -2132,19 +2601,23 @@ package body GNAT.Command_Line is
       -- Remove_Cb --
       ---------------
 
-      procedure Remove_Cb (Switch : String; Param : String) is
+      procedure Remove_Cb (Switch, Separator, Param : String; Index : Integer)
+      is
+         pragma Unreferenced (Separator, Index);
+
       begin
          for E in Result'Range loop
             if Result (E) /= null
                  and then
                    (Params (E) = null
-                    or else Params (E) (Params (E)'First + 1
-                                            .. Params (E)'Last) = Param)
+                     or else Params (E) (Params (E)'First + 1
+                                             .. Params (E)'Last) = Param)
               and then Result (E).all = Switch
             then
                if First > E then
                   First := E;
                end if;
+
                Free (Result (E));
                Free (Params (E));
                return;
@@ -2171,12 +2644,16 @@ package body GNAT.Command_Line is
          --  then check whether the expanded command line has all of them.
 
          Found := True;
-         Check_All (Cmd, Cmd.Config.Expansions (A).all);
+         Check_All (Cmd.Config,
+                    Switch  => Cmd.Config.Aliases (A).Expansion.all,
+                    Section => Cmd.Config.Aliases (A).Section.all);
 
          if Found then
             First := Integer'Last;
-            Remove_All (Cmd, Cmd.Config.Expansions (A).all);
-            Result (First) := new String'(Cmd.Config.Aliases (A).all);
+            Remove_All (Cmd.Config,
+                        Switch  => Cmd.Config.Aliases (A).Expansion.all,
+                        Section => Cmd.Config.Aliases (A).Section.all);
+            Result (First) := new String'(Cmd.Config.Aliases (A).Alias.all);
          end if;
       end loop;
    end Alias_Switches;
@@ -2243,6 +2720,8 @@ package body GNAT.Command_Line is
             end if;
          end loop;
       end loop;
+
+      Unchecked_Free (Sections_List);
    end Sort_Sections;
 
    -----------
@@ -2252,7 +2731,7 @@ package body GNAT.Command_Line is
    procedure Start
      (Cmd      : in out Command_Line;
       Iter     : in out Command_Line_Iterator;
-      Expanded : Boolean)
+      Expanded : Boolean := False)
    is
    begin
       if Cmd.Expanded = null then
@@ -2274,6 +2753,7 @@ package body GNAT.Command_Line is
             Cmd.Coalesce (E) := new String'(Cmd.Expanded (E).all);
          end loop;
 
+         Free (Cmd.Coalesce_Sections);
          Cmd.Coalesce_Sections := new Argument_List (Cmd.Sections'Range);
          for E in Cmd.Sections'Range loop
             Cmd.Coalesce_Sections (E) :=
@@ -2281,6 +2761,7 @@ package body GNAT.Command_Line is
                else new String'(Cmd.Sections (E).all));
          end loop;
 
+         Free (Cmd.Coalesce_Params);
          Cmd.Coalesce_Params := new Argument_List (Cmd.Params'Range);
          for E in Cmd.Params'Range loop
             Cmd.Coalesce_Params (E) :=
@@ -2439,13 +2920,37 @@ package body GNAT.Command_Line is
    ----------
 
    procedure Free (Config : in out Command_Line_Configuration) is
+      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
+        (Switch_Definitions, Switch_Definitions_List);
+      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
+        (Alias_Definitions, Alias_Definitions_List);
    begin
       if Config /= null then
-         Free (Config.Aliases);
-         Free (Config.Expansions);
          Free (Config.Prefixes);
          Free (Config.Sections);
-         Free (Config.Switches);
+         Free (Config.Usage);
+         Free (Config.Help);
+
+         if Config.Aliases /= null then
+            for A in Config.Aliases'Range loop
+               Free (Config.Aliases (A).Alias);
+               Free (Config.Aliases (A).Expansion);
+               Free (Config.Aliases (A).Section);
+            end loop;
+            Unchecked_Free (Config.Aliases);
+         end if;
+
+         if Config.Switches /= null then
+            for S in Config.Switches'Range loop
+               Free (Config.Switches (S).Switch);
+               Free (Config.Switches (S).Long_Switch);
+               Free (Config.Switches (S).Help);
+               Free (Config.Switches (S).Section);
+            end loop;
+
+            Unchecked_Free (Config.Switches);
+         end if;
+
          Unchecked_Free (Config);
       end if;
    end Free;
@@ -2458,7 +2963,470 @@ package body GNAT.Command_Line is
    begin
       Free (Cmd.Expanded);
       Free (Cmd.Coalesce);
+      Free (Cmd.Coalesce_Sections);
+      Free (Cmd.Coalesce_Params);
       Free (Cmd.Params);
+      Free (Cmd.Sections);
    end Free;
+
+   ---------------
+   -- Set_Usage --
+   ---------------
+
+   procedure Set_Usage
+     (Config : in out Command_Line_Configuration;
+      Usage  : String := "[switches] [arguments]";
+      Help   : String := "")
+   is
+   begin
+      if Config = null then
+         Config := new Command_Line_Configuration_Record;
+      end if;
+
+      Free (Config.Usage);
+      Config.Usage := new String'(Usage);
+      Config.Help  := new String'(Help);
+   end Set_Usage;
+
+   ------------------
+   -- Display_Help --
+   ------------------
+
+   procedure Display_Help (Config : Command_Line_Configuration) is
+      function Switch_Name
+        (Def : Switch_Definition;
+         Section : String) return String;
+      --  Return the "-short, --long=ARG" string for Def.
+      --  Returns "" if the switch is not in the section.
+
+      function Param_Name
+        (P    : Switch_Parameter_Type;
+         Name : String := "ARG") return String;
+      --  Return the display for a switch parameter
+
+      procedure Display_Section_Help (Section : String);
+      --  Display the help for a specific section ("" is the default section)
+
+      --------------------------
+      -- Display_Section_Help --
+      --------------------------
+
+      procedure Display_Section_Help (Section : String) is
+         Max_Len : Natural := 0;
+      begin
+         --  ??? Special display for "*"
+
+         New_Line;
+
+         if Section /= "" then
+            Put_Line ("Switches after " & Section);
+         end if;
+
+         --  Compute size of the switches column
+
+         for S in Config.Switches'Range loop
+            Max_Len := Natural'Max
+              (Max_Len, Switch_Name (Config.Switches (S), Section)'Length);
+         end loop;
+
+         if Config.Aliases /= null then
+            for A in Config.Aliases'Range loop
+               if Config.Aliases (A).Section.all = Section then
+                  Max_Len := Natural'Max
+                    (Max_Len, Config.Aliases (A).Alias'Length);
+               end if;
+            end loop;
+         end if;
+
+         --  Display the switches
+
+         for S in Config.Switches'Range loop
+            declare
+               N : constant String :=
+                 Switch_Name (Config.Switches (S), Section);
+            begin
+               if N /= "" then
+                  Put (" ");
+                  Put (N);
+                  Put ((1 .. Max_Len - N'Length + 1 => ' '));
+
+                  if Config.Switches (S).Help /= null then
+                     Put (Config.Switches (S).Help.all);
+                  end if;
+
+                  New_Line;
+               end if;
+            end;
+         end loop;
+
+         --  Display the aliases
+
+         if Config.Aliases /= null then
+            for A in Config.Aliases'Range loop
+               if Config.Aliases (A).Section.all = Section then
+                  Put (" ");
+                  Put (Config.Aliases (A).Alias.all);
+                  Put ((1 .. Max_Len - Config.Aliases (A).Alias'Length + 1
+                       => ' '));
+                  Put ("Equivalent to " & Config.Aliases (A).Expansion.all);
+                  New_Line;
+               end if;
+            end loop;
+         end if;
+      end Display_Section_Help;
+
+      ----------------
+      -- Param_Name --
+      ----------------
+
+      function Param_Name
+        (P    : Switch_Parameter_Type;
+         Name : String := "ARG") return String
+      is
+      begin
+         case P is
+            when Parameter_None =>
+               return "";
+
+            when Parameter_With_Optional_Space =>
+               return " " & To_Upper (Name);
+
+            when Parameter_With_Space_Or_Equal =>
+               return "=" & To_Upper (Name);
+
+            when Parameter_No_Space =>
+               return To_Upper (Name);
+
+            when Parameter_Optional =>
+               return '[' & To_Upper (Name) & ']';
+         end case;
+      end Param_Name;
+
+      -----------------
+      -- Switch_Name --
+      -----------------
+
+      function Switch_Name
+        (Def : Switch_Definition;
+         Section : String) return String
+      is
+         use Ada.Strings.Unbounded;
+         Result       : Unbounded_String;
+         P1, P2       : Switch_Parameter_Type;
+         Last1, Last2 : Integer := 0;
+
+      begin
+         if (Section = "" and then Def.Section = null)
+           or else (Def.Section /= null and then Def.Section.all = Section)
+         then
+            if Def.Switch /= null
+              and then Def.Switch.all = "*"
+            then
+               return "[any switch]";
+            end if;
+
+            if Def.Switch /= null then
+               Decompose_Switch (Def.Switch.all, P1, Last1);
+               Append (Result, Def.Switch (Def.Switch'First .. Last1));
+
+               if Def.Long_Switch /= null then
+                  Decompose_Switch (Def.Long_Switch.all, P2, Last2);
+                  Append (Result, ", "
+                          & Def.Long_Switch (Def.Long_Switch'First .. Last2));
+                  Append (Result, Param_Name (P2, "ARG"));
+
+               else
+                  Append (Result, Param_Name (P1, "ARG"));
+               end if;
+
+            else  --  Long_Switch necessarily not null
+               Decompose_Switch (Def.Long_Switch.all, P2, Last2);
+               Append (Result,
+                       Def.Long_Switch (Def.Long_Switch'First .. Last2));
+               Append (Result, Param_Name (P2, "ARG"));
+            end if;
+         end if;
+
+         return To_String (Result);
+      end Switch_Name;
+
+   --  Start of processing for Display_Help
+
+   begin
+      if Config = null then
+         return;
+      end if;
+
+      if Config.Usage /= null then
+         Put_Line ("Usage: "
+                   & Base_Name
+                     (Ada.Command_Line.Command_Name) & " " & Config.Usage.all);
+      else
+         Put_Line ("Usage: " & Base_Name (Ada.Command_Line.Command_Name)
+                   & " [switches] [arguments]");
+      end if;
+
+      if Config.Help /= null and then Config.Help.all /= "" then
+         Put_Line (Config.Help.all);
+      end if;
+
+      Display_Section_Help ("");
+
+      if Config.Sections /= null and then Config.Switches /= null then
+         for S in Config.Sections'Range loop
+            Display_Section_Help (Config.Sections (S).all);
+         end loop;
+      end if;
+   end Display_Help;
+
+   ------------
+   -- Getopt --
+   ------------
+
+   procedure Getopt
+     (Config   : Command_Line_Configuration;
+      Callback : Switch_Handler := null;
+      Parser   : Opt_Parser := Command_Line_Parser)
+   is
+      Getopt_Switches : String_Access;
+      C   : Character := ASCII.NUL;
+
+      Empty_Name : aliased constant String := "";
+      Current_Section : Integer := -1;
+      Section_Name : not null access constant String := Empty_Name'Access;
+
+      procedure Simple_Callback
+        (Simple_Switch : String;
+         Separator     : String;
+         Parameter     : String;
+         Index         : Integer);
+      --  Needs comments ???
+
+      procedure Do_Callback (Switch, Parameter : String; Index : Integer);
+
+      -----------------
+      -- Do_Callback --
+      -----------------
+
+      procedure Do_Callback (Switch, Parameter : String; Index : Integer) is
+      begin
+         --  Do automatic handling when possible
+
+         if Index /= -1 then
+            case Config.Switches (Index).Typ is
+               when Switch_Untyped =>
+                  null;   --  no automatic handling
+
+               when Switch_Boolean =>
+                  Config.Switches (Index).Boolean_Output.all :=
+                    Config.Switches (Index).Boolean_Value;
+                  return;
+
+               when Switch_Integer =>
+                  begin
+                     if Parameter = "" then
+                        Config.Switches (Index).Integer_Output.all :=
+                          Config.Switches (Index).Integer_Default;
+                     else
+                        Config.Switches (Index).Integer_Output.all :=
+                          Integer'Value (Parameter);
+                     end if;
+                  exception
+                     when Constraint_Error =>
+                        raise Invalid_Parameter
+                          with "Expected integer parameter for '"
+                            & Switch & "'";
+                  end;
+
+               when Switch_String =>
+                  Free (Config.Switches (Index).String_Output.all);
+                  Config.Switches (Index).String_Output.all :=
+                    new String'(Parameter);
+            end case;
+         end if;
+
+         --  Otherwise calls the user callback if one was defined
+
+         if Callback /= null then
+            Callback (Switch    => Switch,
+                      Parameter => Parameter,
+                      Section   => Section_Name.all);
+         end if;
+      end Do_Callback;
+
+      procedure For_Each_Simple
+        is new For_Each_Simple_Switch (Simple_Callback);
+
+      ---------------------
+      -- Simple_Callback --
+      ---------------------
+
+      procedure Simple_Callback
+        (Simple_Switch : String;
+         Separator     : String;
+         Parameter     : String;
+         Index         : Integer)
+      is
+         pragma Unreferenced (Separator);
+      begin
+         Do_Callback (Switch    => Simple_Switch,
+                      Parameter => Parameter,
+                      Index     => Index);
+      end Simple_Callback;
+
+   --  Start of processing for Getopt
+
+   begin
+      --  Initialize sections
+
+      if Config.Sections = null then
+         Config.Sections := new Argument_List'(1 .. 0 => null);
+      end if;
+
+      Internal_Initialize_Option_Scan
+        (Parser                   => Parser,
+         Switch_Char              => Parser.Switch_Character,
+         Stop_At_First_Non_Switch => Parser.Stop_At_First,
+         Section_Delimiters       => Section_Delimiters (Config));
+
+      Getopt_Switches := new String'
+        (Get_Switches (Config, Parser.Switch_Character, Section_Name.all)
+         & " h -help");
+
+      --  Initialize output values for automatically handled switches
+
+      for S in Config.Switches'Range loop
+         case Config.Switches (S).Typ is
+            when Switch_Untyped =>
+               null;   --  Nothing to do
+
+            when Switch_Boolean =>
+               Config.Switches (S).Boolean_Output.all :=
+                 not Config.Switches (S).Boolean_Value;
+
+            when Switch_Integer =>
+               Config.Switches (S).Integer_Output.all :=
+                 Config.Switches (S).Integer_Initial;
+
+            when Switch_String =>
+               Config.Switches (S).String_Output.all := new String'("");
+         end case;
+      end loop;
+
+      --  For all sections, and all switches within those sections
+
+      loop
+         C := Getopt (Switches    => Getopt_Switches.all,
+                      Concatenate => True,
+                      Parser      => Parser);
+
+         if C = '*' then
+            --  Full_Switch already includes the leading '-'
+
+            Do_Callback (Switch    => Full_Switch (Parser),
+                         Parameter => Parameter (Parser),
+                         Index     => -1);
+
+         elsif C /= ASCII.NUL then
+            if Full_Switch (Parser) = "h"
+              or else Full_Switch (Parser) = "-help"
+            then
+               Display_Help (Config);
+               raise Exit_From_Command_Line;
+            end if;
+
+            --  Do switch expansion if needed
+            For_Each_Simple
+              (Config,
+               Section   => Section_Name.all,
+               Switch    => Parser.Switch_Character & Full_Switch (Parser),
+               Parameter => Parameter (Parser));
+
+         else
+            if Current_Section = -1 then
+               Current_Section := Config.Sections'First;
+            else
+               Current_Section := Current_Section + 1;
+            end if;
+
+            exit when Current_Section > Config.Sections'Last;
+
+            Section_Name := Config.Sections (Current_Section);
+            Goto_Section (Section_Name.all, Parser);
+
+            Free (Getopt_Switches);
+            Getopt_Switches := new String'
+              (Get_Switches
+                 (Config, Parser.Switch_Character, Section_Name.all));
+         end if;
+      end loop;
+
+      Free (Getopt_Switches);
+
+   exception
+      when Invalid_Switch =>
+         Free (Getopt_Switches);
+
+         --  Message inspired by "ls" on Unix
+
+         Put_Line (Standard_Error,
+                   Base_Name (Ada.Command_Line.Command_Name)
+                   & ": unrecognized option '"
+                   & Parser.Switch_Character & Full_Switch (Parser)
+                   & "'");
+         Put_Line (Standard_Error,
+                   "Try `"
+                   & Base_Name (Ada.Command_Line.Command_Name)
+                   & " --help` for more information.");
+
+         raise;
+
+      when others =>
+         Free (Getopt_Switches);
+         raise;
+   end Getopt;
+
+   -----------
+   -- Build --
+   -----------
+
+   procedure Build
+     (Line        : in out Command_Line;
+      Args        : out GNAT.OS_Lib.Argument_List_Access;
+      Expanded    : Boolean := False;
+      Switch_Char : Character := '-')
+   is
+      Iter  : Command_Line_Iterator;
+      Count : Natural := 0;
+
+   begin
+      Start (Line, Iter, Expanded => Expanded);
+      while Has_More (Iter) loop
+         if Is_New_Section (Iter) then
+            Count := Count + 1;
+         end if;
+
+         Count := Count + 1;
+         Next (Iter);
+      end loop;
+
+      Args := new Argument_List (1 .. Count);
+      Count := Args'First;
+
+      Start (Line, Iter, Expanded => Expanded);
+      while Has_More (Iter) loop
+         if Is_New_Section (Iter) then
+            Args (Count) := new String'
+              (Switch_Char & Current_Section (Iter));
+            Count := Count + 1;
+         end if;
+
+         Args (Count) := new String'(Current_Switch (Iter)
+                                     & Current_Separator (Iter)
+                                     & Current_Parameter (Iter));
+         Count := Count + 1;
+         Next (Iter);
+      end loop;
+   end Build;
 
 end GNAT.Command_Line;

@@ -1,23 +1,21 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE appendix PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
-  "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<appendix id="appendix.gpl-3.0">
-  <?dbhtml filename="appendix_gpl.html"?>
-  <title>
+<appendix xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	  xml:id="appendix.gpl-3.0"><info><title>
     <acronym>GNU</acronym> General Public License version 3
-  </title>
+  </title></info>
+  <?dbhtml filename="appendix_gpl.html"?>
+  
   <para>
     Version 3, 29 June 2007
   </para>
   <para>
-    Copyright &copy; 2007 Free Software Foundation, Inc.
-    <ulink url="http://www.fsf.org/">http://www.fsf.org/</ulink>
+    Copyright © 2007 Free Software Foundation, Inc.
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.fsf.org/">http://www.fsf.org/</link>
   </para>
   <para>
     Everyone is permitted to copy and distribute verbatim copies of this license
     document, but changing it is not allowed.
   </para>
-  <bridgehead id="gpl-3-preamble" renderas="sect1">
+  <bridgehead xml:id="gpl-3-preamble" renderas="sect1">
     Preamble
   </bridgehead>
   <para>
@@ -28,7 +26,7 @@
     The licenses for most software and other practical works are designed to
     take away your freedom to share and change the works.  By contrast, the
     <acronym>GNU</acronym> General Public License is intended to guarantee your
-    freedom to share and change all versions of a program&mdash;to make sure it
+    freedom to share and change all versions of a program—to make sure it
     remains free software for all its users.  We, the Free Software Foundation,
     use the <acronym>GNU</acronym> General Public License for most of our
     software; it applies also to any other work released this way by its
@@ -61,9 +59,9 @@
     distribute and/or modify it.
   </para>
   <para>
-    For the developers&rsquo; and authors&rsquo; protection, the
+    For the developers’ and authors’ protection, the
     <acronym>GPL</acronym> clearly explains that there is no warranty for this
-    free software.  For both users&rsquo; and authors&rsquo; sake, the
+    free software.  For both users’ and authors’ sake, the
     <acronym>GPL</acronym> requires that modified versions be marked as changed,
     so that their problems will not be attributed erroneously to authors of
     previous versions.
@@ -71,7 +69,7 @@
   <para>
     Some devices are designed to deny users access to install or run modified
     versions of the software inside them, although the manufacturer can do so.
-    This is fundamentally incompatible with the aim of protecting users&rsquo;
+    This is fundamentally incompatible with the aim of protecting users’
     freedom to change the software.  The systematic pattern of such abuse occurs
     in the area of products for individuals to use, which is precisely where it
     is most unacceptable.  Therefore, we have designed this version of the
@@ -95,36 +93,36 @@
   <bridgehead>
     TERMS AND CONDITIONS
   </bridgehead>
-  <bridgehead id="gpl-3-definitions" renderas="sect1">
+  <bridgehead xml:id="gpl-3-definitions" renderas="sect1">
     0. Definitions.
   </bridgehead>
   <para>
-    &ldquo;This License&rdquo; refers to version 3 of the <acronym>GNU</acronym>
+    “This License” refers to version 3 of the <acronym>GNU</acronym>
     General Public License.
   </para>
   <para>
-    &ldquo;Copyright&rdquo; also means copyright-like laws that apply to other
+    “Copyright” also means copyright-like laws that apply to other
     kinds of works, such as semiconductor masks.
   </para>
   <para>
-    &ldquo;The Program&rdquo; refers to any copyrightable work licensed under
-    this License.  Each licensee is addressed as &ldquo;you&rdquo;.
-    &ldquo;Licensees&rdquo; and &ldquo;recipients&rdquo; may be individuals or
+    “The Program” refers to any copyrightable work licensed under
+    this License.  Each licensee is addressed as “you”.
+    “Licensees” and “recipients” may be individuals or
     organizations.
   </para>
   <para>
-    To &ldquo;modify&rdquo; a work means to copy from or adapt all or part of
+    To “modify” a work means to copy from or adapt all or part of
     the work in a fashion requiring copyright permission, other than the making
-    of an exact copy.  The resulting work is called a &ldquo;modified
-    version&rdquo; of the earlier work or a work &ldquo;based on&rdquo; the
+    of an exact copy.  The resulting work is called a “modified
+    version” of the earlier work or a work “based on” the
     earlier work.
   </para>
   <para>
-    A &ldquo;covered work&rdquo; means either the unmodified Program or a work
+    A “covered work” means either the unmodified Program or a work
     based on the Program.
   </para>
   <para>
-    To &ldquo;propagate&rdquo; a work means to do anything with it that, without
+    To “propagate” a work means to do anything with it that, without
     permission, would make you directly or secondarily liable for infringement
     under applicable copyright law, except executing it on a computer or
     modifying a private copy.  Propagation includes copying, distribution (with
@@ -132,13 +130,13 @@
     countries other activities as well.
   </para>
   <para>
-    To &ldquo;convey&rdquo; a work means any kind of propagation that enables
+    To “convey” a work means any kind of propagation that enables
     other parties to make or receive copies.  Mere interaction with a user
     through a computer network, with no transfer of a copy, is not conveying.
   </para>
   <para>
-    An interactive user interface displays &ldquo;Appropriate Legal
-    Notices&rdquo; to the extent that it includes a convenient and prominently
+    An interactive user interface displays “Appropriate Legal
+    Notices” to the extent that it includes a convenient and prominently
     visible feature that (1) displays an appropriate copyright notice, and (2)
     tells the user that there is no warranty for the work (except to the extent
     that warranties are provided), that licensees may convey the work under this
@@ -146,37 +144,37 @@
     a list of user commands or options, such as a menu, a prominent item in the
     list meets this criterion.
   </para>
-  <bridgehead id="SourceCode" renderas="sect1">
+  <bridgehead xml:id="SourceCode" renderas="sect1">
     1. Source Code.
   </bridgehead>
   <para>
-    The &ldquo;source code&rdquo; for a work means the preferred form of the
-    work for making modifications to it.  &ldquo;Object code&rdquo; means any
+    The “source code” for a work means the preferred form of the
+    work for making modifications to it.  “Object code” means any
     non-source form of a work.
   </para>
   <para>
-    A &ldquo;Standard Interface&rdquo; means an interface that either is an
+    A “Standard Interface” means an interface that either is an
     official standard defined by a recognized standards body, or, in the case of
     interfaces specified for a particular programming language, one that is
     widely used among developers working in that language.
   </para>
   <para>
-    The &ldquo;System Libraries&rdquo; of an executable work include anything,
+    The “System Libraries” of an executable work include anything,
     other than the work as a whole, that (a) is included in the normal form of
     packaging a Major Component, but which is not part of that Major Component,
     and (b) serves only to enable use of the work with that Major Component, or
     to implement a Standard Interface for which an implementation is available
-    to the public in source code form.  A &ldquo;Major Component&rdquo;, in this
+    to the public in source code form.  A “Major Component”, in this
     context, means a major essential component (kernel, window system, and so
     on) of the specific operating system (if any) on which the executable work
     runs, or a compiler used to produce the work, or an object code interpreter
     used to run it.
   </para>
   <para>
-    The &ldquo;Corresponding Source&rdquo; for a work in object code form means
+    The “Corresponding Source” for a work in object code form means
     all the source code needed to generate, install, and (for an executable
     work) run the object code and to modify the work, including scripts to
-    control those activities.  However, it does not include the work&rsquo;s
+    control those activities.  However, it does not include the work’s
     System Libraries, or general-purpose tools or generally available free
     programs which are used unmodified in performing those activities but which
     are not part of the work.  For example, Corresponding Source includes
@@ -193,7 +191,7 @@
   <para>
     The Corresponding Source for a work in source code form is that same work.
   </para>
-  <bridgehead id="BasicPermissions" renderas="sect1">
+  <bridgehead xml:id="BasicPermissions" renderas="sect1">
     2. Basic Permissions.
   </bridgehead>
   <para>
@@ -222,8 +220,8 @@
     conditions stated below.  Sublicensing is not allowed; section 10 makes it
     unnecessary.
   </para>
-  <bridgehead id="Protecting" renderas="sect1">
-    3. Protecting Users&rsquo; Legal Rights From Anti-Circumvention Law.
+  <bridgehead xml:id="Protecting" renderas="sect1">
+    3. Protecting Users’ Legal Rights From Anti-Circumvention Law.
   </bridgehead>
   <para>
     No covered work shall be deemed part of an effective technological measure
@@ -236,15 +234,15 @@
     circumvention of technological measures to the extent such circumvention is
     effected by exercising rights under this License with respect to the covered
     work, and you disclaim any intention to limit operation or modification of
-    the work as a means of enforcing, against the work&rsquo;s users, your or
-    third parties&rsquo; legal rights to forbid circumvention of technological
+    the work as a means of enforcing, against the work’s users, your or
+    third parties’ legal rights to forbid circumvention of technological
     measures.
   </para>
-  <bridgehead id="ConveyingVerbatim" renderas="sect1">
+  <bridgehead xml:id="ConveyingVerbatim" renderas="sect1">
     4. Conveying Verbatim Copies.
   </bridgehead>
   <para>
-    You may convey verbatim copies of the Program&rsquo;s source code as you
+    You may convey verbatim copies of the Program’s source code as you
     receive it, in any medium, provided that you conspicuously and appropriately
     publish on each copy an appropriate copyright notice; keep intact all
     notices stating that this License and any non-permissive terms added in
@@ -256,7 +254,7 @@
     You may charge any price or no price for each copy that you convey, and you
     may offer support or warranty protection for a fee.
   </para>
-  <bridgehead id="ConveyingModified" renderas="sect1">
+  <bridgehead xml:id="ConveyingModified" renderas="sect1">
     5. Conveying Modified Source Versions.
   </bridgehead>
   <para>
@@ -264,7 +262,7 @@
     it from the Program, in the form of source code under the terms of section
     4, provided that you also meet all of these conditions:
   </para>
-  <orderedlist numeration="loweralpha">
+  <orderedlist numeration="loweralpha" inheritnum="ignore" continuation="restarts">
     <listitem>
       <para>
         The work must carry prominent notices stating that you modified it, and
@@ -275,8 +273,8 @@
       <para>
         The work must carry prominent notices stating that it is released under
         this License and any conditions added under section 7.  This requirement
-        modifies the requirement in section 4 to &ldquo;keep intact all
-        notices&rdquo;.
+        modifies the requirement in section 4 to “keep intact all
+        notices”.
       </para>
     </listitem>
     <listitem>
@@ -303,13 +301,13 @@
     A compilation of a covered work with other separate and independent works,
     which are not by their nature extensions of the covered work, and which are
     not combined with it such as to form a larger program, in or on a volume of
-    a storage or distribution medium, is called an &ldquo;aggregate&rdquo; if
+    a storage or distribution medium, is called an “aggregate” if
     the compilation and its resulting copyright are not used to limit the access
-    or legal rights of the compilation&rsquo;s users beyond what the individual works
+    or legal rights of the compilation’s users beyond what the individual works
     permit.  Inclusion of a covered work in an aggregate does not cause
     this License to apply to the other parts of the aggregate.
   </para>
-  <bridgehead id="ConveyingNonSource" renderas="sect1">
+  <bridgehead xml:id="ConveyingNonSource" renderas="sect1">
     6. Conveying Non-Source Forms.
   </bridgehead>
   <para>
@@ -317,7 +315,7 @@
     sections 4 and 5, provided that you also convey the machine-readable
     Corresponding Source under the terms of this License, in one of these ways:
   </para>
-  <orderedlist numeration="loweralpha">
+  <orderedlist numeration="loweralpha" inheritnum="ignore" continuation="restarts">
     <listitem>
       <para>
         Convey the object code in, or embodied in, a physical product (including
@@ -379,13 +377,13 @@
     conveying the object code work.
   </para>
   <para>
-    A &ldquo;User Product&rdquo; is either (1) a &ldquo;consumer product&rdquo;,
+    A “User Product” is either (1) a “consumer product”,
     which means any tangible personal property which is normally used for
     personal, family, or household purposes, or (2) anything designed or sold
     for incorporation into a dwelling.  In determining whether a product is a
     consumer product, doubtful cases shall be resolved in favor of coverage.
-    For a particular product received by a particular user, &ldquo;normally
-    used&rdquo; refers to a typical or common use of that class of product,
+    For a particular product received by a particular user, “normally
+    used” refers to a typical or common use of that class of product,
     regardless of the status of the particular user or of the way in which the
     particular user actually uses, or expects or is expected to use, the
     product.  A product is a consumer product regardless of whether the product
@@ -393,7 +391,7 @@
     uses represent the only significant mode of use of the product.
   </para>
   <para>
-    &ldquo;Installation Information&rdquo; for a User Product means any methods,
+    “Installation Information” for a User Product means any methods,
     procedures, authorization keys, or other information required to install and
     execute modified versions of a covered work in that User Product from a
     modified version of its Corresponding Source.  The information must suffice
@@ -429,11 +427,11 @@
     and must require no special password or key for unpacking, reading or
     copying.
   </para>
-   <bridgehead id="AdditionalTerms" renderas="sect1">
+   <bridgehead xml:id="AdditionalTerms" renderas="sect1">
      7. Additional Terms.
    </bridgehead>
    <para>
-     &ldquo;Additional permissions&rdquo; are terms that supplement the terms of
+     “Additional permissions” are terms that supplement the terms of
      this License by making exceptions from one or more of its conditions.
      Additional permissions that are applicable to the entire Program shall be
      treated as though they were included in this License, to the extent that
@@ -455,7 +453,7 @@
      to a covered work, you may (if authorized by the copyright holders of that
      material) supplement the terms of this License with terms:
    </para>
-   <orderedlist numeration="loweralpha">
+   <orderedlist numeration="loweralpha" inheritnum="ignore" continuation="restarts">
      <listitem>
        <para>
          Disclaiming warranty or limiting liability differently from the terms
@@ -499,8 +497,8 @@
      </listitem>
    </orderedlist>
    <para>
-     All other non-permissive additional terms are considered &ldquo;further
-     restrictions&rdquo; within the meaning of section 10.  If the Program as
+     All other non-permissive additional terms are considered “further
+     restrictions” within the meaning of section 10.  If the Program as
      you received it, or any part of it, contains a notice stating that it is
      governed by this License along with a term that is a further restriction,
      you may remove that term.  If a license document contains a further
@@ -520,7 +518,7 @@
      of a separately written license, or stated as exceptions; the above
      requirements apply either way.
    </para>
-   <bridgehead id="gpl-3-termination" renderas="sect1">
+   <bridgehead xml:id="gpl-3-termination" renderas="sect1">
      8. Termination.
    </bridgehead>
    <para>
@@ -551,7 +549,7 @@
      reinstated, you do not qualify to receive new licenses for the same
      material under section 10.
    </para>
-   <bridgehead id="AcceptanceNotRequired" renderas="sect1">
+   <bridgehead xml:id="AcceptanceNotRequired" renderas="sect1">
      9. Acceptance Not Required for Having Copies.
    </bridgehead>
    <para>
@@ -564,7 +562,7 @@
      Therefore, by modifying or propagating a covered work, you indicate your
      acceptance of this License to do so.
    </para>
-   <bridgehead id="AutomaticDownstream" renderas="sect1">
+   <bridgehead xml:id="AutomaticDownstream" renderas="sect1">
      10. Automatic Licensing of Downstream Recipients.
    </bridgehead>
    <para>
@@ -574,12 +572,12 @@
      compliance by third parties with this License.
    </para>
    <para>
-     An &ldquo;entity transaction&rdquo; is a transaction transferring control
+     An “entity transaction” is a transaction transferring control
      of an organization, or substantially all assets of one, or subdividing an
      organization, or merging organizations.  If propagation of a covered work
      results from an entity transaction, each party to that transaction who
      receives a copy of the work also receives whatever licenses to the work the
-     party&rsquo;s predecessor in interest had or could give under the previous
+     party’s predecessor in interest had or could give under the previous
      paragraph, plus a right to possession of the Corresponding Source of the
      work from the predecessor in interest, if the predecessor has it or can get
      it with reasonable efforts.
@@ -593,36 +591,36 @@
      by making, using, selling, offering for sale, or importing the Program or
      any portion of it.
    </para>
-  <bridgehead id="Patents" renderas="sect1">
+  <bridgehead xml:id="Patents" renderas="sect1">
     11. Patents.
   </bridgehead>
   <para>
-    A &ldquo;contributor&rdquo; is a copyright holder who authorizes use under
+    A “contributor” is a copyright holder who authorizes use under
     this License of the Program or a work on which the Program is based.  The
-    work thus licensed is called the contributor&rsquo;s &ldquo;contributor
-    version&rdquo;.
+    work thus licensed is called the contributor’s “contributor
+    version”.
   </para>
   <para>
-    A contributor&rsquo;s &ldquo;essential patent claims&rdquo; are all patent
+    A contributor’s “essential patent claims” are all patent
     claims owned or controlled by the contributor, whether already acquired or
     hereafter acquired, that would be infringed by some manner, permitted by
     this License, of making, using, or selling its contributor version, but do
     not include claims that would be infringed only as a consequence of further
     modification of the contributor version.  For purposes of this definition,
-    &ldquo;control&rdquo; includes the right to grant patent sublicenses in a
+    “control” includes the right to grant patent sublicenses in a
     manner consistent with the requirements of this License.
   </para>
   <para>
     Each contributor grants you a non-exclusive, worldwide, royalty-free patent
-    license under the contributor&rsquo;s essential patent claims, to make, use,
+    license under the contributor’s essential patent claims, to make, use,
     sell, offer for sale, import and otherwise run, modify and propagate the
     contents of its contributor version.
   </para>
   <para>
-    In the following three paragraphs, a &ldquo;patent license&rdquo; is any
+    In the following three paragraphs, a “patent license” is any
     express agreement or commitment, however denominated, not to enforce a
     patent (such as an express permission to practice a patent or covenant not
-    to sue for patent infringement).  To &ldquo;grant&rdquo; such a patent
+    to sue for patent infringement).  To “grant” such a patent
     license to a party means to make such an agreement or commitment not to
     enforce a patent against the party.
   </para>
@@ -634,10 +632,10 @@
     cause the Corresponding Source to be so available, or (2) arrange to deprive
     yourself of the benefit of the patent license for this particular work, or
     (3) arrange, in a manner consistent with the requirements of this License,
-    to extend the patent license to downstream recipients.  &ldquo;Knowingly
-    relying&rdquo; means you have actual knowledge that, but for the patent
+    to extend the patent license to downstream recipients.  “Knowingly
+    relying” means you have actual knowledge that, but for the patent
     license, your conveying the covered work in a country, or your
-    recipient&rsquo;s use of the covered work in a country, would infringe one
+    recipient’s use of the covered work in a country, would infringe one
     or more identifiable patents in that country that you have reason to believe
     are valid.
   </para>
@@ -650,7 +648,7 @@
     all recipients of the covered work and works based on it.
   </para>
   <para>
-    A patent license is &ldquo;discriminatory&rdquo; if it does not include
+    A patent license is “discriminatory” if it does not include
     within the scope of its coverage, prohibits the exercise of, or is
     conditioned on the non-exercise of one or more of the rights that are
     specifically granted under this License.  You may not convey a covered work
@@ -669,8 +667,8 @@
     implied license or other defenses to infringement that may otherwise be
     available to you under applicable patent law.
   </para>
-  <bridgehead id="NoSurrender" renderas="sect1">
-    12. No Surrender of Others&rsquo; Freedom.
+  <bridgehead xml:id="NoSurrender" renderas="sect1">
+    12. No Surrender of Others’ Freedom.
   </bridgehead>
   <para>
     If conditions are imposed on you (whether by court order, agreement or
@@ -683,7 +681,7 @@
     Program, the only way you could satisfy both those terms and this License
     would be to refrain entirely from conveying the Program.
   </para>
-  <bridgehead id="UsedWithAGPL" renderas="sect1">
+  <bridgehead xml:id="UsedWithAGPL" renderas="sect1">
     13. Use with the <acronym>GNU</acronym> Affero General Public License.
   </bridgehead>
   <para>
@@ -696,7 +694,7 @@
     section 13, concerning interaction through a network will apply to the
     combination as such.
   </para>
-  <bridgehead id="RevisedVersions" renderas="sect1">
+  <bridgehead xml:id="RevisedVersions" renderas="sect1">
     14. Revised Versions of this License.
   </bridgehead>
   <para>
@@ -708,7 +706,7 @@
   <para>
     Each version is given a distinguishing version number.  If the Program
     specifies that a certain numbered version of the <acronym>GNU</acronym>
-    General Public License &ldquo;or any later version&rdquo; applies to it, you
+    General Public License “or any later version” applies to it, you
     have the option of following the terms and conditions either of that
     numbered version or of any later version published by the Free Software
     Foundation.  If the Program does not specify a version number of the
@@ -718,7 +716,7 @@
   <para>
     If the Program specifies that a proxy can decide which future versions of
     the <acronym>GNU</acronym> General Public License can be used, that
-    proxy&rsquo;s public statement of acceptance of a version permanently
+    proxy’s public statement of acceptance of a version permanently
     authorizes you to choose that version for the Program.
   </para>
   <para>
@@ -726,20 +724,20 @@
     However, no additional obligations are imposed on any author or copyright
     holder as a result of your choosing to follow a later version.
   </para>
-  <bridgehead id="WarrantyDisclaimer" renderas="sect1">
+  <bridgehead xml:id="WarrantyDisclaimer" renderas="sect1">
     15. Disclaimer of Warranty.
   </bridgehead>
   <para>
     THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE
     LAW.  EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR
-    OTHER PARTIES PROVIDE THE PROGRAM &ldquo;AS IS&rdquo; WITHOUT WARRANTY OF
+    OTHER PARTIES PROVIDE THE PROGRAM “AS IS” WITHOUT WARRANTY OF
     ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE
     IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
     THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH
     YOU.  SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL
     NECESSARY SERVICING, REPAIR OR CORRECTION.
   </para>
-  <bridgehead id="LiabilityLimitation" renderas="sect1">
+  <bridgehead xml:id="LiabilityLimitation" renderas="sect1">
     16. Limitation of Liability.
   </bridgehead>
   <para>
@@ -753,7 +751,7 @@
     EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGES.
   </para>
-  <bridgehead id="InterpretationSecs1516" renderas="sect1">
+  <bridgehead xml:id="InterpretationSecs1516" renderas="sect1">
     17. Interpretation of Sections 15 and 16.
   </bridgehead>
   <para>
@@ -767,7 +765,7 @@
   <bridgehead>
     END OF TERMS AND CONDITIONS
   </bridgehead>
-  <bridgehead id="HowToApply" renderas="sect1">
+  <bridgehead xml:id="HowToApply" renderas="sect1">
     How to Apply These Terms to Your New Programs
   </bridgehead>
   <para>
@@ -779,11 +777,11 @@
     To do so, attach the following notices to the program.  It is safest to
     attach them to the start of each source file to most effectively state the
     exclusion of warranty; and each file should have at least the
-    &ldquo;copyright&rdquo; line and a pointer to where the full notice is
+    “copyright” line and a pointer to where the full notice is
     found.
   </para>
   <screen>
-<replaceable>one line to give the program&rsquo;s name and a brief idea of what it does.</replaceable>
+<replaceable>one line to give the program’s name and a brief idea of what it does.</replaceable>
 Copyright (C) <replaceable>year</replaceable> <replaceable>name of author</replaceable>
 
 This program is free software: you can redistribute it and/or modify
@@ -797,7 +795,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 <acronym>GNU</acronym> General Public License for more details.
 
 You should have received a copy of the <acronym>GNU</acronym> General Public License
-along with this program.  If not, see <ulink url="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</ulink>.
+along with this program.  If not, see <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</link>.
   </screen>
   <para>
     Also add information on how to contact you by electronic and paper mail.
@@ -808,22 +806,22 @@ along with this program.  If not, see <ulink url="http://www.gnu.org/licenses/">
   </para>
   <screen>
 <replaceable>program</replaceable> Copyright (C) <replaceable>year</replaceable> <replaceable>name of author</replaceable>
-This program comes with ABSOLUTELY NO WARRANTY; for details type &lsquo;<literal>show w</literal>&rsquo;.
+This program comes with ABSOLUTELY NO WARRANTY; for details type ‘<literal>show w</literal>’.
 This is free software, and you are welcome to redistribute it
-under certain conditions; type &lsquo;<literal>show c</literal>&rsquo; for details.
+under certain conditions; type ‘<literal>show c</literal>’ for details.
   </screen>
   <para>
-    The hypothetical commands &lsquo;<literal>show w</literal>&rsquo; and
-    &lsquo;<literal>show c</literal>&rsquo; should show the appropriate parts of
-    the General Public License.  Of course, your program&rsquo;s commands might be
-    different; for a GUI interface, you would use an &ldquo;about box&rdquo;.
+    The hypothetical commands ‘<literal>show w</literal>’ and
+    ‘<literal>show c</literal>’ should show the appropriate parts of
+    the General Public License.  Of course, your program’s commands might be
+    different; for a GUI interface, you would use an “about box”.
   </para>
   <para>
     You should also get your employer (if you work as a programmer) or school,
-    if any, to sign a &ldquo;copyright disclaimer&rdquo; for the program, if
+    if any, to sign a “copyright disclaimer” for the program, if
     necessary.  For more information on this, and how to apply and follow the
     <acronym>GNU</acronym> <acronym>GPL</acronym>, see
-    <ulink url="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</ulink>.
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</link>.
   </para>
   <para>
     The <acronym>GNU</acronym> General Public License does not permit
@@ -831,7 +829,6 @@ under certain conditions; type &lsquo;<literal>show c</literal>&rsquo; for detai
     subroutine library, you may consider it more useful to permit linking
     proprietary applications with the library.  If this is what you want to do,
     use the <acronym>GNU</acronym> Lesser General Public License instead of this
-    License.  But first, please read <ulink
-    url="http://www.gnu.org/philosophy/why-not-lgpl.html">http://www.gnu.org/philosophy/why-not-lgpl.html</ulink>.
+    License.  But first, please read <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.gnu.org/philosophy/why-not-lgpl.html">http://www.gnu.org/philosophy/why-not-lgpl.html</link>.
   </para>
 </appendix>

@@ -24,7 +24,7 @@ function test3() ! { dg-warning "Obsolescent feature" }
   return
 entry bar3()
   bar3 = ""
-end function test3 ! { dg-warning "Obsolescent feature" }
+end function test3
 
 function test4(n) ! { dg-error "returning variables of different string lengths" }
   integer  :: n
@@ -52,4 +52,4 @@ function test6() ! { dg-warning "Obsolescent feature|returning variables of diff
   return
 entry bar6()
   bar6 = ""
-end function test6 ! { dg-warning "Obsolescent feature" }
+end function test6

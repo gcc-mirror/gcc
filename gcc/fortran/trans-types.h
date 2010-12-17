@@ -31,12 +31,19 @@ extern GTY(()) tree ppvoid_type_node;
 extern GTY(()) tree pvoid_type_node;
 extern GTY(()) tree prvoid_type_node;
 extern GTY(()) tree pchar_type_node;
+extern GTY(()) tree float128_type_node;
+extern GTY(()) tree complex_float128_type_node;
 
 /* This is the type used to hold the lengths of character variables.
    It must be the same as the corresponding definition in gfortran.h.  */
 /* TODO: This is still hardcoded as kind=4 in some bits of the compiler
    and runtime library.  */
 extern GTY(()) tree gfc_charlen_type_node;
+
+/* The following flags give us information on the correspondance of
+   real (and complex) kinds with C floating-point types long double
+   and __float128.  */
+extern bool gfc_real16_is_float128;
 
 typedef enum {
   PACKED_NO = 0,
@@ -64,6 +71,7 @@ tree gfc_get_character_type_len_for_eltype (tree, tree);
 
 tree gfc_sym_type (gfc_symbol *);
 tree gfc_typenode_for_spec (gfc_typespec *);
+int gfc_copy_dt_decls_ifequal (gfc_symbol *, gfc_symbol *, bool);
 
 tree gfc_get_function_type (gfc_symbol *);
 
@@ -77,7 +85,7 @@ tree gfc_get_array_type_bounds (tree, int, int, tree *, tree *, int,
 tree gfc_get_nodesc_array_type (tree, gfc_array_spec *, gfc_packed, bool);
 
 /* Add a field of given name and type to a UNION_TYPE or RECORD_TYPE.  */
-tree gfc_add_field_to_struct (tree *, tree, tree, tree);
+tree gfc_add_field_to_struct (tree, tree, tree, tree **);
 
 /* Layout and output debugging info for a type.  */
 void gfc_finish_type (tree);

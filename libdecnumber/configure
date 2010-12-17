@@ -4101,8 +4101,7 @@ _ACEOF
 $as_echo_n "checking for type equivalent to int8_t... " >&6; }
   case "$ac_cv_sizeof_char" in
     1) acx_cv_type_int8_t=char ;;
-    *) { as_fn_set_status please report a bug
-as_fn_error "no 8-bit type" "$LINENO" 5; }
+    *) as_fn_error "no 8-bit type, please report a bug" "$LINENO" 5
   esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_type_int8_t" >&5
 $as_echo "$acx_cv_type_int8_t" >&6; }
@@ -4112,8 +4111,7 @@ $as_echo_n "checking for type equivalent to int16_t... " >&6; }
   case "$ac_cv_sizeof_int:$ac_cv_sizeof_short" in
     2:*) acx_cv_type_int16_t=int ;;
     *:2) acx_cv_type_int16_t=short ;;
-    *) { as_fn_set_status please report a bug
-as_fn_error "no 16-bit type" "$LINENO" 5; }
+    *) as_fn_error "no 16-bit type, please report a bug" "$LINENO" 5
   esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_type_int16_t" >&5
 $as_echo "$acx_cv_type_int16_t" >&6; }
@@ -4123,8 +4121,7 @@ $as_echo_n "checking for type equivalent to int32_t... " >&6; }
   case "$ac_cv_sizeof_int:$ac_cv_sizeof_long" in
     4:*) acx_cv_type_int32_t=int ;;
     *:4) acx_cv_type_int32_t=long ;;
-    *) { as_fn_set_status please report a bug
-as_fn_error "no 32-bit type" "$LINENO" 5; }
+    *) as_fn_error "no 32-bit type, please report a bug" "$LINENO" 5
   esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_type_int32_t" >&5
 $as_echo "$acx_cv_type_int32_t" >&6; }
@@ -4151,8 +4148,7 @@ $as_echo_n "checking for type equivalent to intptr_t... " >&6; }
     2) acx_cv_type_intptr_t=int16_t ;;
     4) acx_cv_type_intptr_t=int32_t ;;
     8) acx_cv_type_intptr_t=int64_t ;;
-    *) { as_fn_set_status please report a bug
-as_fn_error "no equivalent for intptr_t" "$LINENO" 5; }
+    *) as_fn_error "no equivalent for intptr_t, please report a bug" "$LINENO" 5
   esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_type_intptr_t" >&5
 $as_echo "$acx_cv_type_intptr_t" >&6; }
@@ -4592,11 +4588,13 @@ test -n "$target_alias" &&
 # If you change the defaults here, be sure to change them in the GCC directory also
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for decimal floating point" >&5
 $as_echo_n "checking for decimal floating point... " >&6; }
+
+
 # Check whether --enable-decimal-float was given.
 if test "${enable_decimal_float+set}" = set; then :
   enableval=$enable_decimal_float;
   case $enable_decimal_float in
-    yes | no | bid | dpd) ;;
+    yes | no | bid | dpd) default_decimal_float=$enable_decimal_float ;;
     *) as_fn_error "'$enable_decimal_float' is an invalid value for --enable-decimal-float.
 Valid choices are 'yes', 'bid', 'dpd', and 'no'." "$LINENO" 5 ;;
   esac
@@ -4604,10 +4602,14 @@ Valid choices are 'yes', 'bid', 'dpd', and 'no'." "$LINENO" 5 ;;
 else
 
   case $target in
-    powerpc*-*-linux* | i?86*-*-linux* | x86_64*-*-linux*)
+    powerpc*-*-linux* | i?86*-*-linux* | x86_64*-*-linux* | s390*-*-linux* | \
+    i?86*-*-mingw* | x86_64*-*-mingw* | \
+    i?86*-*-cygwin*)
       enable_decimal_float=yes
       ;;
     *)
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: decimal float is not supported for this target, ignored" >&5
+$as_echo "$as_me: WARNING: decimal float is not supported for this target, ignored" >&2;}
       enable_decimal_float=no
       ;;
   esac
@@ -4616,18 +4618,30 @@ fi
 
 
 # x86's use BID format instead of DPD
-# In theory --enable-decimal-float=no should not compile anything
-# For the sake of simplicity, just use the default format in this directory
-if test x$enable_decimal_float = xyes -o x$enable_decimal_float = xno; then
-  case $target in
-    i?86*-*-linux* | x86_64*-*-linux*)
-      enable_decimal_float=bid
-      ;;
-    *)
-      enable_decimal_float=dpd
-      ;;
-  esac
-fi
+case x$enable_decimal_float in
+  xyes)
+    case $target in
+      i?86*-*-* | x86_64*-*-*)
+	enable_decimal_float=bid
+	;;
+      *)
+	enable_decimal_float=dpd
+	;;
+    esac
+    default_decimal_float=$enable_decimal_float
+    ;;
+  xno)
+    # ENABLE_DECIMAL_FLOAT is set to 0. But we have to have proper
+    # dependency on libdecnumber.
+    default_decimal_float=dpd
+    ;;
+esac
+
+
+
+
+# Use default_decimal_float for dependency.
+enable_decimal_float=$default_decimal_float
 
 # If BID is being used, additional objects should be linked in.
 if test x$enable_decimal_float = xbid; then

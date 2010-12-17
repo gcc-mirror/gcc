@@ -126,49 +126,49 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       
       ///  Default constructor.  First parameter is x, second parameter is y.
       ///  Unspecified parameters default to 0.
-      complex(const _Tp& __r = _Tp(), const _Tp& __i = _Tp())
+      _GLIBCXX_CONSTEXPR complex(const _Tp& __r = _Tp(), const _Tp& __i = _Tp())
       : _M_real(__r), _M_imag(__i) { }
 
       // Lets the compiler synthesize the copy constructor   
       // complex (const complex<_Tp>&);
       ///  Copy constructor.
       template<typename _Up>
-        complex(const complex<_Up>& __z)
+        _GLIBCXX_CONSTEXPR complex(const complex<_Up>& __z)
 	: _M_real(__z.real()), _M_imag(__z.imag()) { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 387. std::complex over-encapsulated.
-      _Tp real() const
-      { return _M_real; }
+      constexpr _Tp 
+      real() const { return _M_real; }
 
-      _Tp imag() const
-      { return _M_imag; }
+      constexpr _Tp 
+      imag() const { return _M_imag; }
 #else
       ///  Return real part of complex number.
-      _Tp& real()
-      { return _M_real; }
+      _Tp& 
+      real() { return _M_real; }
 
       ///  Return real part of complex number.
-      const _Tp& real() const
-      { return _M_real; }
+      const _Tp& 
+      real() const { return _M_real; }
 
       ///  Return imaginary part of complex number.
-      _Tp& imag()
-      { return _M_imag; }
+      _Tp& 
+      imag() { return _M_imag; }
 
       ///  Return imaginary part of complex number.
-      const _Tp& imag() const
-      { return _M_imag; }
+      const _Tp& 
+      imag() const { return _M_imag; }
 #endif
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 387. std::complex over-encapsulated.
-      void real(_Tp __val)
-      { _M_real = __val; }
+      void 
+      real(_Tp __val) { _M_real = __val; }
 
-      void imag(_Tp __val)
-      { _M_imag = __val; }
+      void 
+      imag(_Tp __val) { _M_imag = __val; }
 
       /// Assign this complex number to scalar @a t.
       complex<_Tp>& operator=(const _Tp&);
@@ -215,7 +215,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       template<typename _Up>
         complex<_Tp>& operator/=(const complex<_Up>&);
 
-      const complex& __rep() const
+      _GLIBCXX_USE_CONSTEXPR complex __rep() const
       { return *this; }
 
     private:
@@ -447,17 +447,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   //@{
   ///  Return true if @a x is equal to @a y.
   template<typename _Tp>
-    inline bool
+    inline _GLIBCXX_CONSTEXPR bool
     operator==(const complex<_Tp>& __x, const complex<_Tp>& __y)
     { return __x.real() == __y.real() && __x.imag() == __y.imag(); }
 
   template<typename _Tp>
-    inline bool
+    inline _GLIBCXX_CONSTEXPR bool
     operator==(const complex<_Tp>& __x, const _Tp& __y)
     { return __x.real() == __y && __x.imag() == _Tp(); }
 
   template<typename _Tp>
-    inline bool
+    inline _GLIBCXX_CONSTEXPR bool
     operator==(const _Tp& __x, const complex<_Tp>& __y)
     { return __x == __y.real() && _Tp() == __y.imag(); }
   //@}
@@ -465,17 +465,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   //@{
   ///  Return false if @a x is equal to @a y.
   template<typename _Tp>
-    inline bool
+    inline _GLIBCXX_CONSTEXPR bool
     operator!=(const complex<_Tp>& __x, const complex<_Tp>& __y)
     { return __x.real() != __y.real() || __x.imag() != __y.imag(); }
 
   template<typename _Tp>
-    inline bool
+    inline _GLIBCXX_CONSTEXPR bool
     operator!=(const complex<_Tp>& __x, const _Tp& __y)
     { return __x.real() != __y || __x.imag() != _Tp(); }
 
   template<typename _Tp>
-    inline bool
+    inline _GLIBCXX_CONSTEXPR bool
     operator!=(const _Tp& __x, const complex<_Tp>& __y)
     { return __x != __y.real() || _Tp() != __y.imag(); }
   //@}
@@ -529,12 +529,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // Values
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
   template<typename _Tp>
-    inline _Tp
+    inline constexpr _Tp
     real(const complex<_Tp>& __z)
     { return __z.real(); }
     
   template<typename _Tp>
-    inline _Tp
+    inline constexpr _Tp
     imag(const complex<_Tp>& __z)
     { return __z.imag(); }
 #else
@@ -951,12 +951,32 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   //                          raised to the __y-th power.  The branch
   //                          cut is on the negative axis.
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Tp>
+    complex<_Tp>
+    __complex_pow_unsigned(complex<_Tp> __x, unsigned __n)
+    {
+      complex<_Tp> __y = __n % 2 ? __x : complex<_Tp>(1);
+
+      while (__n >>= 1)
+        {
+          __x *= __x;
+          if (__n % 2)
+            __y *= __x;
+        }
+
+      return __y;
+    }
+
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 844. complex pow return type is ambiguous.
   template<typename _Tp>
     inline complex<_Tp>
     pow(const complex<_Tp>& __z, int __n)
-    { return std::__pow_helper(__z, __n); }
+    {
+      return __n < 0
+        ? complex<_Tp>(1) / std::__complex_pow_unsigned(__z, -__n)
+        : std::__complex_pow_unsigned(__z, __n);
+    }
 #endif
 
   template<typename _Tp>
@@ -1021,77 +1041,73 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef float value_type;
       typedef __complex__ float _ComplexT;
 
-      complex(_ComplexT __z) : _M_value(__z) { }
+      _GLIBCXX_CONSTEXPR complex(_ComplexT __z) : _M_value(__z) { }
 
-      complex(float __r = 0.0f, float __i = 0.0f)
-      {
-	__real__ _M_value = __r;
-	__imag__ _M_value = __i;
-      }
+      _GLIBCXX_CONSTEXPR complex(float __r = 0.0f, float __i = 0.0f)
+      : _M_value(__r + __i * 1.0fi) { }
 
-      explicit complex(const complex<double>&);
-      explicit complex(const complex<long double>&);	
+      explicit _GLIBCXX_CONSTEXPR complex(const complex<double>&);
+      explicit _GLIBCXX_CONSTEXPR complex(const complex<long double>&);	
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 387. std::complex over-encapsulated.
-      float real() const
-      { return __real__ _M_value; }
+      constexpr float 
+      real() const { return __real__ _M_value; }
 
-      float imag() const
-      { return __imag__ _M_value; }
+      constexpr float 
+      imag() const { return __imag__ _M_value; }
 #else
-      float& real()
-      { return __real__ _M_value; }
+      float& 
+      real() { return __real__ _M_value; }
 
-      const float& real() const
-      { return __real__ _M_value; }      
+      const float& 
+      real() const { return __real__ _M_value; }      
 
-      float& imag()
-      { return __imag__ _M_value; }
+      float& 
+      imag() { return __imag__ _M_value; }
 
-      const float& imag() const
-      { return __imag__ _M_value; }
+      const float& 
+      imag() const { return __imag__ _M_value; }
 #endif
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 387. std::complex over-encapsulated.
-      void real(float __val)
-      { __real__ _M_value = __val; }
+      void 
+      real(float __val) { __real__ _M_value = __val; }
 
-      void imag(float __val)
-      { __imag__ _M_value = __val; }
+      void 
+      imag(float __val) { __imag__ _M_value = __val; }
 
-      complex<float>&
+      complex&
       operator=(float __f)
       {
-	__real__ _M_value = __f;
-	__imag__ _M_value = 0.0f;
+	_M_value = __f;
 	return *this;
       }
 
-      complex<float>&
+      complex&
       operator+=(float __f)
       {
-	__real__ _M_value += __f;
+	_M_value += __f;
 	return *this;
       }
 
-      complex<float>&
+      complex&
       operator-=(float __f)
       {
-	__real__ _M_value -= __f;
+	_M_value -= __f;
 	return *this;
       }
 
-      complex<float>&
+      complex&
       operator*=(float __f)
       {
 	_M_value *= __f;
 	return *this;
       }
 
-      complex<float>&
+      complex&
       operator/=(float __f)
       {
 	_M_value /= __f;
@@ -1103,7 +1119,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // complex& operator=(const complex&);
 
       template<typename _Tp>
-        complex<float>&
+        complex&
         operator=(const complex<_Tp>&  __z)
 	{
 	  __real__ _M_value = __z.real();
@@ -1112,7 +1128,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
 
       template<typename _Tp>
-        complex<float>&
+        complex&
         operator+=(const complex<_Tp>& __z)
 	{
 	  __real__ _M_value += __z.real();
@@ -1121,7 +1137,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
 
       template<class _Tp>
-        complex<float>&
+        complex&
         operator-=(const complex<_Tp>& __z)
 	{
 	  __real__ _M_value -= __z.real();
@@ -1130,7 +1146,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
 
       template<class _Tp>
-        complex<float>&
+        complex&
         operator*=(const complex<_Tp>& __z)
 	{
 	  _ComplexT __t;
@@ -1141,7 +1157,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
 
       template<class _Tp>
-        complex<float>&
+        complex&
         operator/=(const complex<_Tp>& __z)
 	{
 	  _ComplexT __t;
@@ -1151,7 +1167,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  return *this;
 	}
 
-      const _ComplexT& __rep() const { return _M_value; }
+      _GLIBCXX_USE_CONSTEXPR _ComplexT __rep() const { return _M_value; }
 
     private:
       _ComplexT _M_value;
@@ -1165,79 +1181,75 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef double value_type;
       typedef __complex__ double _ComplexT;
 
-      complex(_ComplexT __z) : _M_value(__z) { }
+      _GLIBCXX_CONSTEXPR complex(_ComplexT __z) : _M_value(__z) { }
 
-      complex(double __r = 0.0, double __i = 0.0)
-      {
-	__real__ _M_value = __r;
-	__imag__ _M_value = __i;
-      }
+      _GLIBCXX_CONSTEXPR complex(double __r = 0.0, double __i = 0.0)
+      : _M_value(__r + __i * 1.0i) { }
 
-      complex(const complex<float>& __z)
+      _GLIBCXX_CONSTEXPR complex(const complex<float>& __z)
       : _M_value(__z.__rep()) { }
 
-      explicit complex(const complex<long double>&);	
+      explicit _GLIBCXX_CONSTEXPR complex(const complex<long double>&);	
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 387. std::complex over-encapsulated.
-      double real() const
-      { return __real__ _M_value; }
+      constexpr double 
+      real() const { return __real__ _M_value; }
 
-      double imag() const
-      { return __imag__ _M_value; }
+      constexpr double 
+      imag() const { return __imag__ _M_value; }
 #else
-      double& real()
-      { return __real__ _M_value; }
+      double& 
+      real() { return __real__ _M_value; }
 
-      const double& real() const
-      { return __real__ _M_value; }
+      const double& 
+      real() const { return __real__ _M_value; }
 
-      double& imag()
-      { return __imag__ _M_value; }
+      double& 
+      imag() { return __imag__ _M_value; }
 
-      const double& imag() const
-      { return __imag__ _M_value; }
+      const double& 
+      imag() const { return __imag__ _M_value; }
 #endif
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 387. std::complex over-encapsulated.
-      void real(double __val)
-      { __real__ _M_value = __val; }
+      void 
+      real(double __val) { __real__ _M_value = __val; }
 
-      void imag(double __val)
-      { __imag__ _M_value = __val; }
+      void 
+      imag(double __val) { __imag__ _M_value = __val; }
 
-      complex<double>&
+      complex&
       operator=(double __d)
       {
-	__real__ _M_value = __d;
-	__imag__ _M_value = 0.0;
+	_M_value = __d;
 	return *this;
       }
 
-      complex<double>&
+      complex&
       operator+=(double __d)
       {
-	__real__ _M_value += __d;
+	_M_value += __d;
 	return *this;
       }
 	
-      complex<double>&
+      complex&
       operator-=(double __d)
       {
-	__real__ _M_value -= __d;
+	_M_value -= __d;
 	return *this;
       }
 
-      complex<double>&
+      complex&
       operator*=(double __d)
       {
 	_M_value *= __d;
 	return *this;
       }
 
-      complex<double>&
+      complex&
       operator/=(double __d)
       {
 	_M_value /= __d;
@@ -1248,7 +1260,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // complex& operator=(const complex&);
 
       template<typename _Tp>
-        complex<double>&
+        complex&
         operator=(const complex<_Tp>& __z)
 	{
 	  __real__ _M_value = __z.real();
@@ -1257,7 +1269,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
 
       template<typename _Tp>
-        complex<double>&
+        complex&
         operator+=(const complex<_Tp>& __z)
 	{
 	  __real__ _M_value += __z.real();
@@ -1266,7 +1278,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
 
       template<typename _Tp>
-        complex<double>&
+        complex&
         operator-=(const complex<_Tp>& __z)
 	{
 	  __real__ _M_value -= __z.real();
@@ -1275,7 +1287,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
 
       template<typename _Tp>
-        complex<double>&
+        complex&
         operator*=(const complex<_Tp>& __z)
 	{
 	  _ComplexT __t;
@@ -1286,7 +1298,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
 
       template<typename _Tp>
-        complex<double>&
+        complex&
         operator/=(const complex<_Tp>& __z)
 	{
 	  _ComplexT __t;
@@ -1296,7 +1308,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  return *this;
 	}
 
-      const _ComplexT& __rep() const { return _M_value; }
+      _GLIBCXX_USE_CONSTEXPR _ComplexT __rep() const { return _M_value; }
 
     private:
       _ComplexT _M_value;
@@ -1310,80 +1322,77 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef long double value_type;
       typedef __complex__ long double _ComplexT;
 
-      complex(_ComplexT __z) : _M_value(__z) { }
+      _GLIBCXX_CONSTEXPR complex(_ComplexT __z) : _M_value(__z) { }
 
-      complex(long double __r = 0.0L, long double __i = 0.0L)
-      {
-	__real__ _M_value = __r;
-	__imag__ _M_value = __i;
-      }
+      _GLIBCXX_CONSTEXPR complex(long double __r = 0.0L, 
+				 long double __i = 0.0L)
+      : _M_value(__r + __i * 1.0Li) { }
 
-      complex(const complex<float>& __z)
+      _GLIBCXX_CONSTEXPR complex(const complex<float>& __z)
       : _M_value(__z.__rep()) { }
 
-      complex(const complex<double>& __z)
+      _GLIBCXX_CONSTEXPR complex(const complex<double>& __z)
       : _M_value(__z.__rep()) { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 387. std::complex over-encapsulated.
-      long double real() const
-      { return __real__ _M_value; }
+      constexpr long double 
+      real() const { return __real__ _M_value; }
 
-      long double imag() const
-      { return __imag__ _M_value; }
+      constexpr long double 
+      imag() const { return __imag__ _M_value; }
 #else
-      long double& real()
-      { return __real__ _M_value; }
+      long double& 
+      real() { return __real__ _M_value; }
 
-      const long double& real() const
-      { return __real__ _M_value; }
+      const long double& 
+      real() const { return __real__ _M_value; }
 
-      long double& imag()
-      { return __imag__ _M_value; }
+      long double& 
+      imag() { return __imag__ _M_value; }
 
-      const long double& imag() const
-      { return __imag__ _M_value; }
+      const long double& 
+      imag() const { return __imag__ _M_value; }
 #endif
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 387. std::complex over-encapsulated.
-      void real(long double __val)
-      { __real__ _M_value = __val; }
+      void 
+      real(long double __val) { __real__ _M_value = __val; }
 
-      void imag(long double __val)
-      { __imag__ _M_value = __val; }
+      void 
+      imag(long double __val) { __imag__ _M_value = __val; }
 
-      complex<long double>&
+      complex&
       operator=(long double __r)
       {
-	__real__ _M_value = __r;
-	__imag__ _M_value = 0.0L;
+	_M_value = __r;
 	return *this;
       }
 
-      complex<long double>&
+      complex&
       operator+=(long double __r)
       {
-	__real__ _M_value += __r;
+	_M_value += __r;
 	return *this;
       }
 
-      complex<long double>&
+      complex&
       operator-=(long double __r)
       {
-	__real__ _M_value -= __r;
+	_M_value -= __r;
 	return *this;
       }
 
-      complex<long double>&
+      complex&
       operator*=(long double __r)
       {
 	_M_value *= __r;
 	return *this;
       }
 
-      complex<long double>&
+      complex&
       operator/=(long double __r)
       {
 	_M_value /= __r;
@@ -1394,7 +1403,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // complex& operator=(const complex&);
 
       template<typename _Tp>
-        complex<long double>&
+        complex&
         operator=(const complex<_Tp>& __z)
 	{
 	  __real__ _M_value = __z.real();
@@ -1403,7 +1412,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
 
       template<typename _Tp>
-        complex<long double>&
+        complex&
 	operator+=(const complex<_Tp>& __z)
 	{
 	  __real__ _M_value += __z.real();
@@ -1412,7 +1421,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
 
       template<typename _Tp>
-        complex<long double>&
+        complex&
 	operator-=(const complex<_Tp>& __z)
 	{
 	  __real__ _M_value -= __z.real();
@@ -1421,7 +1430,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
 
       template<typename _Tp>
-        complex<long double>&
+        complex&
 	operator*=(const complex<_Tp>& __z)
 	{
 	  _ComplexT __t;
@@ -1432,7 +1441,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
 
       template<typename _Tp>
-        complex<long double>&
+        complex&
 	operator/=(const complex<_Tp>& __z)
 	{
 	  _ComplexT __t;
@@ -1442,7 +1451,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  return *this;
 	}
 
-      const _ComplexT& __rep() const { return _M_value; }
+      _GLIBCXX_USE_CONSTEXPR _ComplexT __rep() const { return _M_value; }
 
     private:
       _ComplexT _M_value;
@@ -1450,15 +1459,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // These bits have to be at the end of this file, so that the
   // specializations have all been defined.
-  inline
+  inline _GLIBCXX_CONSTEXPR
   complex<float>::complex(const complex<double>& __z)
   : _M_value(__z.__rep()) { }
 
-  inline
+  inline _GLIBCXX_CONSTEXPR
   complex<float>::complex(const complex<long double>& __z)
   : _M_value(__z.__rep()) { }
 
-  inline
+  inline _GLIBCXX_CONSTEXPR
   complex<double>::complex(const complex<long double>& __z)
   : _M_value(__z.__rep()) { }
 
@@ -1514,24 +1523,322 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 _GLIBCXX_END_NAMESPACE
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-#  if defined(_GLIBCXX_INCLUDE_AS_TR1)
-#    error C++0x header cannot be included from TR1 header
-#  endif
-#  if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
-#    include <tr1_impl/complex>
-#  else
-#    define _GLIBCXX_INCLUDE_AS_CXX0X
-#    define _GLIBCXX_BEGIN_NAMESPACE_TR1
-#    define _GLIBCXX_END_NAMESPACE_TR1
-#    define _GLIBCXX_TR1
-#    include <tr1_impl/complex>
-#    undef _GLIBCXX_TR1
-#    undef _GLIBCXX_END_NAMESPACE_TR1
-#    undef _GLIBCXX_BEGIN_NAMESPACE_TR1
-#    undef _GLIBCXX_INCLUDE_AS_CXX0X
-#  endif
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
+
+  // Forward declarations.
+  template<typename _Tp> std::complex<_Tp> acos(const std::complex<_Tp>&);
+  template<typename _Tp> std::complex<_Tp> asin(const std::complex<_Tp>&);
+  template<typename _Tp> std::complex<_Tp> atan(const std::complex<_Tp>&);
+
+  template<typename _Tp> std::complex<_Tp> acosh(const std::complex<_Tp>&);
+  template<typename _Tp> std::complex<_Tp> asinh(const std::complex<_Tp>&);
+  template<typename _Tp> std::complex<_Tp> atanh(const std::complex<_Tp>&);
+  // DR 595.
+  template<typename _Tp> _Tp               fabs(const std::complex<_Tp>&);
+
+  template<typename _Tp>
+    inline std::complex<_Tp>
+    __complex_acos(const std::complex<_Tp>& __z)
+    {
+      const std::complex<_Tp> __t = std::asin(__z);
+      const _Tp __pi_2 = 1.5707963267948966192313216916397514L;
+      return std::complex<_Tp>(__pi_2 - __t.real(), -__t.imag());
+    }
+
+#if _GLIBCXX_USE_C99_COMPLEX_TR1
+  inline __complex__ float
+  __complex_acos(__complex__ float __z)
+  { return __builtin_cacosf(__z); }
+
+  inline __complex__ double
+  __complex_acos(__complex__ double __z)
+  { return __builtin_cacos(__z); }
+
+  inline __complex__ long double
+  __complex_acos(const __complex__ long double& __z)
+  { return __builtin_cacosl(__z); }
+
+  template<typename _Tp>
+    inline std::complex<_Tp>
+    acos(const std::complex<_Tp>& __z)
+    { return __complex_acos(__z.__rep()); }
+#else
+  /// acos(__z) [8.1.2].
+  //  Effects:  Behaves the same as C99 function cacos, defined
+  //            in subclause 7.3.5.1.
+  template<typename _Tp>
+    inline std::complex<_Tp>
+    acos(const std::complex<_Tp>& __z)
+    { return __complex_acos(__z); }
+#endif
+
+  template<typename _Tp>
+    inline std::complex<_Tp>
+    __complex_asin(const std::complex<_Tp>& __z)
+    {
+      std::complex<_Tp> __t(-__z.imag(), __z.real());
+      __t = std::asinh(__t);
+      return std::complex<_Tp>(__t.imag(), -__t.real());
+    }
+
+#if _GLIBCXX_USE_C99_COMPLEX_TR1
+  inline __complex__ float
+  __complex_asin(__complex__ float __z)
+  { return __builtin_casinf(__z); }
+
+  inline __complex__ double
+  __complex_asin(__complex__ double __z)
+  { return __builtin_casin(__z); }
+
+  inline __complex__ long double
+  __complex_asin(const __complex__ long double& __z)
+  { return __builtin_casinl(__z); }
+
+  template<typename _Tp>
+    inline std::complex<_Tp>
+    asin(const std::complex<_Tp>& __z)
+    { return __complex_asin(__z.__rep()); }
+#else
+  /// asin(__z) [8.1.3].
+  //  Effects:  Behaves the same as C99 function casin, defined
+  //            in subclause 7.3.5.2.
+  template<typename _Tp>
+    inline std::complex<_Tp>
+    asin(const std::complex<_Tp>& __z)
+    { return __complex_asin(__z); }
+#endif
+  
+  template<typename _Tp>
+    std::complex<_Tp>
+    __complex_atan(const std::complex<_Tp>& __z)
+    {
+      const _Tp __r2 = __z.real() * __z.real();
+      const _Tp __x = _Tp(1.0) - __r2 - __z.imag() * __z.imag();
+
+      _Tp __num = __z.imag() + _Tp(1.0);
+      _Tp __den = __z.imag() - _Tp(1.0);
+
+      __num = __r2 + __num * __num;
+      __den = __r2 + __den * __den;
+
+      return std::complex<_Tp>(_Tp(0.5) * atan2(_Tp(2.0) * __z.real(), __x),
+			       _Tp(0.25) * log(__num / __den));
+    }
+
+#if _GLIBCXX_USE_C99_COMPLEX_TR1
+  inline __complex__ float
+  __complex_atan(__complex__ float __z)
+  { return __builtin_catanf(__z); }
+
+  inline __complex__ double
+  __complex_atan(__complex__ double __z)
+  { return __builtin_catan(__z); }
+
+  inline __complex__ long double
+  __complex_atan(const __complex__ long double& __z)
+  { return __builtin_catanl(__z); }
+
+  template<typename _Tp>
+    inline std::complex<_Tp>
+    atan(const std::complex<_Tp>& __z)
+    { return __complex_atan(__z.__rep()); }
+#else
+  /// atan(__z) [8.1.4].
+  //  Effects:  Behaves the same as C99 function catan, defined
+  //            in subclause 7.3.5.3.
+  template<typename _Tp>
+    inline std::complex<_Tp>
+    atan(const std::complex<_Tp>& __z)
+    { return __complex_atan(__z); }
+#endif
+
+  template<typename _Tp>
+    std::complex<_Tp>
+    __complex_acosh(const std::complex<_Tp>& __z)
+    {
+      std::complex<_Tp> __t((__z.real() - __z.imag())
+			    * (__z.real() + __z.imag()) - _Tp(1.0),
+			    _Tp(2.0) * __z.real() * __z.imag());
+      __t = std::sqrt(__t);
+
+      return std::log(__t + __z);
+    }
+
+#if _GLIBCXX_USE_C99_COMPLEX_TR1
+  inline __complex__ float
+  __complex_acosh(__complex__ float __z)
+  { return __builtin_cacoshf(__z); }
+
+  inline __complex__ double
+  __complex_acosh(__complex__ double __z)
+  { return __builtin_cacosh(__z); }
+
+  inline __complex__ long double
+  __complex_acosh(const __complex__ long double& __z)
+  { return __builtin_cacoshl(__z); }
+
+  template<typename _Tp>
+    inline std::complex<_Tp>
+    acosh(const std::complex<_Tp>& __z)
+    { return __complex_acosh(__z.__rep()); }
+#else
+  /// acosh(__z) [8.1.5].
+  //  Effects:  Behaves the same as C99 function cacosh, defined
+  //            in subclause 7.3.6.1.
+  template<typename _Tp>
+    inline std::complex<_Tp>
+    acosh(const std::complex<_Tp>& __z)
+    { return __complex_acosh(__z); }
+#endif
+
+  template<typename _Tp>
+    std::complex<_Tp>
+    __complex_asinh(const std::complex<_Tp>& __z)
+    {
+      std::complex<_Tp> __t((__z.real() - __z.imag())
+			    * (__z.real() + __z.imag()) + _Tp(1.0),
+			    _Tp(2.0) * __z.real() * __z.imag());
+      __t = std::sqrt(__t);
+
+      return std::log(__t + __z);
+    }
+
+#if _GLIBCXX_USE_C99_COMPLEX_TR1
+  inline __complex__ float
+  __complex_asinh(__complex__ float __z)
+  { return __builtin_casinhf(__z); }
+
+  inline __complex__ double
+  __complex_asinh(__complex__ double __z)
+  { return __builtin_casinh(__z); }
+
+  inline __complex__ long double
+  __complex_asinh(const __complex__ long double& __z)
+  { return __builtin_casinhl(__z); }
+
+  template<typename _Tp>
+    inline std::complex<_Tp>
+    asinh(const std::complex<_Tp>& __z)
+    { return __complex_asinh(__z.__rep()); }
+#else
+  /// asinh(__z) [8.1.6].
+  //  Effects:  Behaves the same as C99 function casin, defined
+  //            in subclause 7.3.6.2.
+  template<typename _Tp>
+    inline std::complex<_Tp>
+    asinh(const std::complex<_Tp>& __z)
+    { return __complex_asinh(__z); }
+#endif
+
+  template<typename _Tp>
+    std::complex<_Tp>
+    __complex_atanh(const std::complex<_Tp>& __z)
+    {
+      const _Tp __i2 = __z.imag() * __z.imag();
+      const _Tp __x = _Tp(1.0) - __i2 - __z.real() * __z.real();
+
+      _Tp __num = _Tp(1.0) + __z.real();
+      _Tp __den = _Tp(1.0) - __z.real();
+
+      __num = __i2 + __num * __num;
+      __den = __i2 + __den * __den;
+
+      return std::complex<_Tp>(_Tp(0.25) * (log(__num) - log(__den)),
+			       _Tp(0.5) * atan2(_Tp(2.0) * __z.imag(), __x));
+    }
+
+#if _GLIBCXX_USE_C99_COMPLEX_TR1
+  inline __complex__ float
+  __complex_atanh(__complex__ float __z)
+  { return __builtin_catanhf(__z); }
+
+  inline __complex__ double
+  __complex_atanh(__complex__ double __z)
+  { return __builtin_catanh(__z); }
+
+  inline __complex__ long double
+  __complex_atanh(const __complex__ long double& __z)
+  { return __builtin_catanhl(__z); }
+
+  template<typename _Tp>
+    inline std::complex<_Tp>
+    atanh(const std::complex<_Tp>& __z)
+    { return __complex_atanh(__z.__rep()); }
+#else
+  /// atanh(__z) [8.1.7].
+  //  Effects:  Behaves the same as C99 function catanh, defined
+  //            in subclause 7.3.6.3.
+  template<typename _Tp>
+    inline std::complex<_Tp>
+    atanh(const std::complex<_Tp>& __z)
+    { return __complex_atanh(__z); }
+#endif
+
+  template<typename _Tp>
+    inline _Tp
+    /// fabs(__z) [8.1.8].
+    //  Effects:  Behaves the same as C99 function cabs, defined
+    //            in subclause 7.3.8.1.
+    fabs(const std::complex<_Tp>& __z)
+    { return std::abs(__z); }
+
+  /// Additional overloads [8.1.9].
+  template<typename _Tp>
+    inline typename __gnu_cxx::__promote<_Tp>::__type
+    arg(_Tp __x)
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+#if (_GLIBCXX_USE_C99_MATH && !_GLIBCXX_USE_C99_FP_MACROS_DYNAMIC)
+      return std::signbit(__x) ? __type(3.1415926535897932384626433832795029L)
+	                       : __type();
+#else
+      return std::arg(std::complex<__type>(__x));
+#endif
+    }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__promote<_Tp>::__type
+    imag(_Tp)
+    { return _Tp(); }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__promote<_Tp>::__type
+    norm(_Tp __x)
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+      return __type(__x) * __type(__x);
+    }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__promote<_Tp>::__type
+    real(_Tp __x)
+    { return __x; }
+
+  template<typename _Tp, typename _Up>
+    inline std::complex<typename __gnu_cxx::__promote_2<_Tp, _Up>::__type>
+    pow(const std::complex<_Tp>& __x, const _Up& __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return std::pow(std::complex<__type>(__x), __type(__y));
+    }
+
+  template<typename _Tp, typename _Up>
+    inline std::complex<typename __gnu_cxx::__promote_2<_Tp, _Up>::__type>
+    pow(const _Tp& __x, const std::complex<_Up>& __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return std::pow(__type(__x), std::complex<__type>(__y));
+    }
+
+  template<typename _Tp, typename _Up>
+    inline std::complex<typename __gnu_cxx::__promote_2<_Tp, _Up>::__type>
+    pow(const std::complex<_Tp>& __x, const std::complex<_Up>& __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return std::pow(std::complex<__type>(__x),
+		      std::complex<__type>(__y));
+    }
 
   // Forward declarations.
   // DR 781.
@@ -1585,6 +1892,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 _GLIBCXX_END_NAMESPACE
 
-#endif
+#endif  // __GXX_EXPERIMENTAL_CXX0X__
 
-#endif	/* _GLIBCXX_COMPLEX */
+#endif  /* _GLIBCXX_COMPLEX */

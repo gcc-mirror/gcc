@@ -2,6 +2,7 @@
    text section if nothing went in there.  */
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
 /* { dg-do compile } */
+/* { dg-require-effective-target function_sections } */
 /* { dg-options "-gdwarf-2 -ffunction-sections -w -dA" } */
 /* { dg-final { scan-assembler-not "\\.Letext0-\\.Ltext0" } } */
 /* { dg-final { scan-assembler-not "\\.Ltext0\[^\n\r\]*Offset 0x0" } } */

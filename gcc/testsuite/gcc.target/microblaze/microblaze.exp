@@ -1,0 +1,62 @@
+#   Copyright 2009, 2010 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+
+# MicroBlaze test driver that uses the `dg.exp' driver.
+
+# Exit immediately if this isn't a MicroBlaze target.
+if { ![istarget microblaze*-*-*] } then {
+  return
+}
+
+# Don't execute when we are testing some configuration of GCC or G++.
+# This we figure out by looking at target_config_cflags which needs to be "" for microblaze.exp
+if { $target_config_cflags != "" } {
+  return 
+}
+
+global TORTURE_OPTIONS
+set TORTURE_OPTIONS [list \
+                         { -O0 } \
+                         { -O1 } \
+                         { -O2 } \
+                         { -O3 } \
+                         { -Os } ]
+
+# If a testcase doesn't have special options, use these.
+global DEFAULT_CFLAGS
+if ![info exists DEFAULT_CFLAGS] then {
+    set DEFAULT_CFLAGS " -ansi -pedantic-errors"
+}
+
+# Load support procs.
+load_lib gcc-dg.exp
+
+# Initialize `dg'.
+dg-init
+
+set default_c_flags "" 
+
+# Main loop.
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/isa/*.\[cSi\]]] \
+${default_c_flags} ""
+
+gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/others/*.\[cSi\]]] \
+    "-mcpu=v6.00.a" 
+
+
+# All done.
+dg-finish

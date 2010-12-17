@@ -1,4 +1,4 @@
-! { dg-do  run }
+! { dg-do run }
 ! PR34782 tab format failure to display properly (regression vs. g77)
       character a(6)
       character(22)  :: output

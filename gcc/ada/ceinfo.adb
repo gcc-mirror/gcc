@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,8 +23,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Program to check consistency of einfo.ads and einfo.adb. Checks that
---  field name usage is consistent, including comments mentioning fields.
+--  Check consistency of einfo.ads and einfo.adb. Checks that field name usage
+--  is consistent, including comments mentioning fields.
+
+--  Note that this is used both as a standalone program, and as a procedure
+--  called by XEinfo. This raises an unhandled exception if it finds any
+--  errors; we don't attempt any sophisticated error recovery.
 
 with Ada.Strings.Unbounded;         use Ada.Strings.Unbounded;
 with Ada.Strings.Unbounded.Text_IO; use Ada.Strings.Unbounded.Text_IO;
@@ -41,6 +45,9 @@ procedure CEinfo is
 
    Infil  : File_Type;
    Lineno : Natural := 0;
+
+   Err : exception;
+   --  Raised on error
 
    Fieldnm    : VString;
    Accessfunc : VString;
@@ -126,6 +133,8 @@ begin
                Put_Line
                  ("*** unknown field name " & Fieldnm & " at line " & Lineno);
             end if;
+
+            raise Err;
          end if;
       end if;
    end loop;
@@ -153,6 +162,8 @@ begin
             Put_Line
               ("*** unknown field name " & Fieldnm & " at line " & Lineno);
          end if;
+
+         raise Err;
       end if;
    end loop;
 
@@ -172,6 +183,7 @@ begin
          Put_Line ("*** incorrect field at line " & Lineno);
          Put_Line ("      found field " & Accessfunc);
          Put_Line ("      expecting field " & Get (Fields, Fieldnm));
+         raise Err;
       end if;
    end loop;
 
@@ -196,8 +208,11 @@ begin
          Put_Line ("*** incorrect field at line " & Lineno);
          Put_Line ("      found field " & Accessfunc);
          Put_Line ("      expecting field " & Get (Fields, Fieldnm));
+         raise Err;
       end if;
    end loop;
+
+   Close (Infil);
 
    Put_Line ("All tests completed successfully, no errors detected");
 

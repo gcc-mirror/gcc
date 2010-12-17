@@ -278,6 +278,14 @@ There are several ways of defining source directories:
   be excluded. It is also possible to exclude a complete directory subtree
   using the "/**" notation.
 
+@cindex @code{Ignore_Source_Sub_Dirs}
+  It is often desirable to remove, from the source directories, directory
+  subtrees rooted at some subdirectories. An example is the subdirectories
+  created by a Version Control System such as Subversion that creates directory
+  subtrees .svn/**. To do that, attribute  @b{Ignore_Source_Sub_Dirs} can be
+  used. It specifies the list of simple file names for the root of these
+  undesirable directory subtrees.
+
 @end itemize
 
 @noindent
@@ -575,13 +583,13 @@ packages would be involved in the build process.
    @b{end} Builder;
 
    @b{package} Compiler @b{is} --<<<  for the compiler
-   @b{end} Builder;
+   @b{end} Compiler;
 
    @b{package} Binder @b{is}   --<<<  for the binder
-   @b{end} Builder;
+   @b{end} Binder;
 
    @b{package} Linker @b{is}   --<<<  for the linker
-   @b{end} Builder;
+   @b{end} Linker;
 @end smallexample
 
 @noindent
@@ -633,8 +641,23 @@ Several attributes can be used to specify the switches:
   @end smallexample
 
   @noindent
+  @code{Switches} may take a pattern as an index, such as in:
+
+  @smallexample
+  @b{package} Compiler @b{is}
+    @b{for} Default_Switches ("Ada") @b{use} ("-O2");
+    @b{for} Switches ("pkg*") @b{use} ("-O0");
+  @b{end} Compiler;
+  @end smallexample
+
+  @noindent
+  Sources @file{pkg.adb} and @file{pkg-child.adb} would be compiled with -O0,
+  not -O2.
+
+  @noindent
   @code{Switches} can also be given a language name as index instead of a file
   name in which case it has the same semantics as @emph{Default_Switches}.
+  However, indexes with wild cards are never valid for language name.
 
 @item @b{Local_Configuration_Pragmas}:
 @cindex @code{Local_Configuration_Pragmas}
@@ -1582,6 +1605,17 @@ Other library-related attributes can be used to change the defaults:
   accomplishes specific actions before calling gcc (which itself is calling the
   linker to build the library image).
 
+@item @b{Library_Options}:
+@cindex @code{Library_Options}
+  This attribute may be used to specified additional switches (last switches)
+  when linking a shared library.
+
+@item @b{Leading_Library_Options}:
+@cindex @code{Leading_Library_Options}
+  This attribute, that is taken into account only by @command{gprbuild}, may be
+  used to specified leading options (first switches) when linking a shared
+  library.
+
 @cindex @code{Linker_Options}
 @item @b{Linker.Linker_Options}:
   This attribute specifies additional switches to be given to the linker when
@@ -1758,11 +1792,6 @@ included in the library.
   When a stand-alone library is bound, the switches that are specified in
   the attribute @b{Binder.Default_Switches ("Ada")} are
   used in the call to @command{gnatbind}.
-
-@item @b{Library_Options}:
-@cindex @code{Library_Options}
-  This attribute may be used to specified additional switches to  @command{gcc}
-  when linking the library.
 
 @item @b{Library_Src_Dir}:
 @cindex @code{Library_Src_Dir}
@@ -2382,9 +2411,8 @@ must be the same as the name of the renaming package. The project must
 contain a package declaration with this name, and the project
 must appear in the context clause of the current project, or be its parent
 project. It is not possible to add or override attributes to the renaming
-project. If you need to do so, you should declare a standard package, and
-assign the value of the attributes one by one (@code{for Switches ("Ada")
-use Other_Project.Compiler'Switches ("Ada")}).
+project. If you need to do so, you should use an @b{extending declaration}
+(see below).
 
 Packages that are renamed in other project files often come from project files
 that have no sources: they are just used as templates. Any modification in the
@@ -2392,14 +2420,22 @@ template will be reflected automatically in all the project files that rename
 a package from the template. This is a very common way to share settings
 between projects.
 
+Finally, a package can also be defined by an @b{extending declaration}. This is
+similar to a @b{renaming declaration}, except that it is possible to add or
+override attributes.
+
 @smallexample
-package_declaration ::= package_spec | package_renaming
+package_declaration ::= package_spec | package_renaming | package_extension
 package_spec ::=
   @i{package} @i{<package_>}simple_name @i{is}
     @{simple_declarative_item@}
   @i{end} package_identifier ;
 package_renaming ::==
   @i{package} @i{<package_>}simple_name @i{renames} @i{<project_>}simple_name.package_identifier ;
+package_extension ::==
+  @i{package} @i{<package_>}simple_name @i{extends} @i{<project_>}simple_name.package_identifier @i{is}
+    @{simple_declarative_item@}
+  @i{end} package_identifier ;
 @end smallexample
 
 @c ---------------------------------------------
@@ -2487,6 +2523,11 @@ An external value is an expression whose value is obtained from the command
 that invoked the processing of the current project file (typically a
 gnatmake or gprbuild command).
 
+There are two kinds of external values, one that returns a single string, and
+one that returns a string list.
+
+The syntax of a single string external value is:
+
 @smallexample
 external_value ::= @i{external} ( string_literal [, string_literal] )
 @end smallexample
@@ -2504,7 +2545,7 @@ or be specified on the command line through the
 are specified, then the command line value is used, so that a user can more
 easily override the value.
 
-The function @code{external} always returns a string, possibly empty if the
+The function @code{external} always returns a string. It is an error if the
 value was not found in the environment and no default was specified in the
 call to @code{external}.
 
@@ -2516,6 +2557,42 @@ Most of the time, this construct is used to initialize typed variables, which
 are then used in @b{case} statements to control the value assigned to
 attributes in various scenarios. Thus such variables are often called
 @b{scenario variables}.
+
+The syntax for a string list external value is:
+
+@smallexample
+external_value ::= @i{external_as_list} ( string_literal , string_literal )
+@end smallexample
+
+@noindent
+The first string_literal is the string to be used on the command line or
+in the environment to specify the external value. The second string_literal is
+the separator between each component of the string list.
+
+If the external value does not exist in the environment or on the command line,
+the result is an empty list. This is also the case, if the separator is an
+empty string or if the external value is only one separator.
+
+Any separator at the beginning or at the end of the external value is
+discarded. Then, if there is no separator in the external vaue, the result is
+a string list with only one string. Otherwise, any string between the biginning
+and the first separator, between two consecutive separators and between the
+last separator and the end are components of the string list.
+
+@smallexample
+   @i{external_as_list} ("SWITCHES", ",")
+@end smallexample
+
+@noindent
+If the external value is "-O2,-g", the result is ("-O2", "-g").
+
+If the external value is ",-O2,-g,", the result is also ("-O2", "-g").
+
+if the external value is "-gnav", the result is ("-gnatv").
+
+If the external value is ",,", the result is ("").
+
+If the external value is ",", the result is (), the empty string list.
 
 @c ---------------------------------------------
 @node Typed String Declaration
@@ -2764,6 +2841,7 @@ system (file). The text is between brackets ([]) if the index is optional.
 @item Library_Interface @tab string @tab - @tab -
 @item Library_Auto_Init @tab string @tab - @tab -
 @item Library_Options @tab list @tab - @tab -
+@item Leading_Library_Options @tab list @tab - @tab -
 @item Library_Src_Dir @tab string @tab - @tab -
 @item Library_ALI_Dir @tab string @tab - @tab -
 @item Library_GCC @tab string @tab - @tab -
@@ -2804,6 +2882,7 @@ system (file). The text is between brackets ([]) if the index is optional.
 @item VCS_Kind @tab string @tab IDE @tab -
 @item VCS_File_Check @tab string @tab IDE @tab -
 @item VCS_Log_Check @tab string @tab IDE @tab -
+@item Documentation_Dir @tab string @tab IDE @tab -
 @headitem
    Configuration files @tab @tab @tab See gprbuild manual
 @item Default_Language @tab string @tab - @tab -
@@ -2862,6 +2941,7 @@ system (file). The text is between brackets ([]) if the index is optional.
 @item Objects_Path @tab string @tab Binder @tab insensitive (language)
 @item Objects_Path_File @tab string @tab Binder @tab insensitive (language)
 @item Linker_Options @tab list @tab Linker @tab -
+@item Leading_Switches @tab list @tab Linker @tab -
 @item Map_File_Options @tab string @tab Linker @tab -
 @item Executable_Switches @tab list @tab Linker @tab -
 @item Lib_Dir_Switch @tab string @tab Linker @tab -

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,10 +52,10 @@ package body Nlists is
    --  three fields:
 
    type List_Header is record
-      First : Node_Id;
+      First : Node_Or_Entity_Id;
       --  Pointer to first node in list. Empty if list is empty
 
-      Last  : Node_Id;
+      Last : Node_Or_Entity_Id;
       --  Pointer to last node in list. Empty if list is empty
 
       Parent : Node_Id;
@@ -85,16 +85,16 @@ package body Nlists is
    --  list and Prev_Node is Empty at the start of a list.
 
    package Next_Node is new Table.Table (
-      Table_Component_Type => Node_Id,
-      Table_Index_Type     => Node_Id'Base,
+      Table_Component_Type => Node_Or_Entity_Id,
+      Table_Index_Type     => Node_Or_Entity_Id'Base,
       Table_Low_Bound      => First_Node_Id,
       Table_Initial        => Alloc.Orig_Nodes_Initial,
       Table_Increment      => Alloc.Orig_Nodes_Increment,
       Table_Name           => "Next_Node");
 
    package Prev_Node is new Table.Table (
-      Table_Component_Type => Node_Id,
-      Table_Index_Type     => Node_Id'Base,
+      Table_Component_Type => Node_Or_Entity_Id,
+      Table_Index_Type     => Node_Or_Entity_Id'Base,
       Table_Low_Bound      => First_Node_Id,
       Table_Initial        => Alloc.Orig_Nodes_Initial,
       Table_Increment      => Alloc.Orig_Nodes_Increment,
@@ -104,23 +104,23 @@ package body Nlists is
    -- Local Subprograms --
    -----------------------
 
-   procedure Set_First (List : List_Id; To : Node_Id);
+   procedure Set_First (List : List_Id; To : Node_Or_Entity_Id);
    pragma Inline (Set_First);
    --  Sets First field of list header List to reference To
 
-   procedure Set_Last (List : List_Id; To : Node_Id);
+   procedure Set_Last (List : List_Id; To : Node_Or_Entity_Id);
    pragma Inline (Set_Last);
    --  Sets Last field of list header List to reference To
 
-   procedure Set_List_Link (Node : Node_Id; To : List_Id);
+   procedure Set_List_Link (Node : Node_Or_Entity_Id; To : List_Id);
    pragma Inline (Set_List_Link);
    --  Sets list link of Node to list header To
 
-   procedure Set_Next (Node : Node_Id; To : Node_Id);
+   procedure Set_Next (Node : Node_Or_Entity_Id; To : Node_Or_Entity_Id);
    pragma Inline (Set_Next);
    --  Sets the Next_Node pointer for Node to reference To
 
-   procedure Set_Prev (Node : Node_Id; To : Node_Id);
+   procedure Set_Prev (Node : Node_Or_Entity_Id; To : Node_Or_Entity_Id);
    pragma Inline (Set_Prev);
    --  Sets the Prev_Node pointer for Node to reference To
 
@@ -128,8 +128,8 @@ package body Nlists is
    -- Allocate_List_Tables --
    --------------------------
 
-   procedure Allocate_List_Tables (N : Node_Id) is
-      Old_Last : constant Node_Id'Base := Next_Node.Last;
+   procedure Allocate_List_Tables (N : Node_Or_Entity_Id) is
+      Old_Last : constant Node_Or_Entity_Id'Base := Next_Node.Last;
 
    begin
       pragma Assert (N >= Old_Last);
@@ -149,8 +149,8 @@ package body Nlists is
    -- Append --
    ------------
 
-   procedure Append (Node : Node_Id; To : List_Id) is
-      L : constant Node_Id := Last (To);
+   procedure Append (Node : Node_Or_Entity_Id; To : List_Id) is
+      L : constant Node_Or_Entity_Id := Last (To);
 
       procedure Append_Debug;
       pragma Inline (Append_Debug);
@@ -230,9 +230,9 @@ package body Nlists is
 
       else
          declare
-            L : constant Node_Id := Last (To);
-            F : constant Node_Id := First (List);
-            N : Node_Id;
+            L : constant Node_Or_Entity_Id := Last (To);
+            F : constant Node_Or_Entity_Id := First (List);
+            N : Node_Or_Entity_Id;
 
          begin
             pragma Debug (Append_List_Debug);
@@ -272,7 +272,7 @@ package body Nlists is
    -- Append_To --
    ---------------
 
-   procedure Append_To (To : List_Id; Node : Node_Id) is
+   procedure Append_To (To : List_Id; Node : Node_Or_Entity_Id) is
    begin
       Append (Node, To);
    end Append_To;
@@ -281,7 +281,7 @@ package body Nlists is
    -- First --
    -----------
 
-   function First (List : List_Id) return Node_Id is
+   function First (List : List_Id) return Node_Or_Entity_Id is
    begin
       if List = No_List then
          return Empty;
@@ -295,8 +295,8 @@ package body Nlists is
    -- First_Non_Pragma --
    ----------------------
 
-   function First_Non_Pragma (List : List_Id) return Node_Id is
-      N : constant Node_Id := First (List);
+   function First_Non_Pragma (List : List_Id) return Node_Or_Entity_Id is
+      N : constant Node_Or_Entity_Id := First (List);
    begin
       if Nkind (N) /= N_Pragma
            and then
@@ -329,11 +329,22 @@ package body Nlists is
    end Initialize;
 
    ------------------
+   -- In_Same_List --
+   ------------------
+
+   function In_Same_List (N1, N2 : Node_Or_Entity_Id) return Boolean is
+   begin
+      return List_Containing (N1) = List_Containing (N2);
+   end In_Same_List;
+
+   ------------------
    -- Insert_After --
    ------------------
 
-   procedure Insert_After (After : Node_Id; Node : Node_Id) is
-
+   procedure Insert_After
+     (After : Node_Or_Entity_Id;
+      Node  : Node_Or_Entity_Id)
+   is
       procedure Insert_After_Debug;
       pragma Inline (Insert_After_Debug);
       --  Output debug information if Debug_Flag_N set
@@ -366,8 +377,8 @@ package body Nlists is
       pragma Debug (Insert_After_Debug);
 
       declare
-         Before : constant Node_Id := Next (After);
-         LC     : constant List_Id := List_Containing (After);
+         Before : constant Node_Or_Entity_Id := Next (After);
+         LC     : constant List_Id           := List_Containing (After);
 
       begin
          if Present (Before) then
@@ -390,8 +401,10 @@ package body Nlists is
    -- Insert_Before --
    -------------------
 
-   procedure Insert_Before (Before : Node_Id; Node : Node_Id) is
-
+   procedure Insert_Before
+     (Before : Node_Or_Entity_Id;
+      Node   : Node_Or_Entity_Id)
+   is
       procedure Insert_Before_Debug;
       pragma Inline (Insert_Before_Debug);
       --  Output debug information if Debug_Flag_N set
@@ -424,8 +437,8 @@ package body Nlists is
       pragma Debug (Insert_Before_Debug);
 
       declare
-         After : constant Node_Id := Prev (Before);
-         LC    : constant List_Id := List_Containing (Before);
+         After : constant Node_Or_Entity_Id := Prev (Before);
+         LC    : constant List_Id           := List_Containing (Before);
 
       begin
          if Present (After) then
@@ -448,7 +461,7 @@ package body Nlists is
    -- Insert_List_After --
    -----------------------
 
-   procedure Insert_List_After (After : Node_Id; List : List_Id) is
+   procedure Insert_List_After (After : Node_Or_Entity_Id; List : List_Id) is
 
       procedure Insert_List_After_Debug;
       pragma Inline (Insert_List_After_Debug);
@@ -479,11 +492,11 @@ package body Nlists is
 
       else
          declare
-            Before : constant Node_Id := Next (After);
-            LC     : constant List_Id := List_Containing (After);
-            F      : constant Node_Id := First (List);
-            L      : constant Node_Id := Last (List);
-            N      : Node_Id;
+            Before : constant Node_Or_Entity_Id := Next (After);
+            LC     : constant List_Id           := List_Containing (After);
+            F      : constant Node_Or_Entity_Id := First (List);
+            L      : constant Node_Or_Entity_Id := Last (List);
+            N      : Node_Or_Entity_Id;
 
          begin
             pragma Debug (Insert_List_After_Debug);
@@ -515,7 +528,7 @@ package body Nlists is
    -- Insert_List_Before --
    ------------------------
 
-   procedure Insert_List_Before (Before : Node_Id; List : List_Id) is
+   procedure Insert_List_Before (Before : Node_Or_Entity_Id; List : List_Id) is
 
       procedure Insert_List_Before_Debug;
       pragma Inline (Insert_List_Before_Debug);
@@ -546,11 +559,11 @@ package body Nlists is
 
       else
          declare
-            After : constant Node_Id := Prev (Before);
-            LC    : constant List_Id := List_Containing (Before);
-            F     : constant Node_Id := First (List);
-            L     : constant Node_Id := Last (List);
-            N     : Node_Id;
+            After : constant Node_Or_Entity_Id := Prev (Before);
+            LC    : constant List_Id           := List_Containing (Before);
+            F     : constant Node_Or_Entity_Id := First (List);
+            L     : constant Node_Or_Entity_Id := Last (List);
+            N     : Node_Or_Entity_Id;
 
          begin
             pragma Debug (Insert_List_Before_Debug);
@@ -591,7 +604,7 @@ package body Nlists is
    -- Is_List_Member --
    --------------------
 
-   function Is_List_Member (Node : Node_Id) return Boolean is
+   function Is_List_Member (Node : Node_Or_Entity_Id) return Boolean is
    begin
       return Nodes.Table (Node).In_List;
    end Is_List_Member;
@@ -609,7 +622,7 @@ package body Nlists is
    -- Last --
    ----------
 
-   function Last (List : List_Id) return Node_Id is
+   function Last (List : List_Id) return Node_Or_Entity_Id is
    begin
       pragma Assert (List <= Lists.Last);
       return Lists.Table (List).Last;
@@ -628,8 +641,8 @@ package body Nlists is
    -- Last_Non_Pragma --
    ---------------------
 
-   function Last_Non_Pragma (List : List_Id) return Node_Id is
-      N : constant Node_Id := Last (List);
+   function Last_Non_Pragma (List : List_Id) return Node_Or_Entity_Id is
+      N : constant Node_Or_Entity_Id := Last (List);
    begin
       if Nkind (N) /= N_Pragma then
          return N;
@@ -642,7 +655,7 @@ package body Nlists is
    -- List_Containing --
    ---------------------
 
-   function List_Containing (Node : Node_Id) return List_Id is
+   function List_Containing (Node : Node_Or_Entity_Id) return List_Id is
    begin
       pragma Assert (Is_List_Member (Node));
       return List_Id (Nodes.Table (Node).Link);
@@ -654,7 +667,7 @@ package body Nlists is
 
    function List_Length (List : List_Id) return Nat is
       Result : Nat;
-      Node   : Node_Id;
+      Node   : Node_Or_Entity_Id;
 
    begin
       Result := 0;
@@ -698,7 +711,7 @@ package body Nlists is
 
    function New_Copy_List (List : List_Id) return List_Id is
       NL : List_Id;
-      E  : Node_Id;
+      E  : Node_Or_Entity_Id;
 
    begin
       if List = No_List then
@@ -723,7 +736,7 @@ package body Nlists is
 
    function New_Copy_List_Original (List : List_Id) return List_Id is
       NL : List_Id;
-      E  : Node_Id;
+      E  : Node_Or_Entity_Id;
 
    begin
       if List = No_List then
@@ -790,7 +803,7 @@ package body Nlists is
    --  list directly, rather than first building an empty list and then doing
    --  the insertion, which results in some unnecessary work.
 
-   function New_List (Node : Node_Id) return List_Id is
+   function New_List (Node : Node_Or_Entity_Id) return List_Id is
 
       procedure New_List_Debug;
       pragma Inline (New_List_Debug);
@@ -838,14 +851,21 @@ package body Nlists is
       end if;
    end New_List;
 
-   function New_List (Node1, Node2 : Node_Id) return List_Id is
+   function New_List
+     (Node1 : Node_Or_Entity_Id;
+      Node2 : Node_Or_Entity_Id) return List_Id
+   is
       L : constant List_Id := New_List (Node1);
    begin
       Append (Node2, L);
       return L;
    end New_List;
 
-   function New_List (Node1, Node2, Node3 : Node_Id) return List_Id is
+   function New_List
+     (Node1 : Node_Or_Entity_Id;
+      Node2 : Node_Or_Entity_Id;
+      Node3 : Node_Or_Entity_Id) return List_Id
+   is
       L : constant List_Id := New_List (Node1);
    begin
       Append (Node2, L);
@@ -853,7 +873,12 @@ package body Nlists is
       return L;
    end New_List;
 
-   function New_List (Node1, Node2, Node3, Node4 : Node_Id) return List_Id is
+   function New_List
+     (Node1 : Node_Or_Entity_Id;
+      Node2 : Node_Or_Entity_Id;
+      Node3 : Node_Or_Entity_Id;
+      Node4 : Node_Or_Entity_Id) return List_Id
+   is
       L : constant List_Id := New_List (Node1);
    begin
       Append (Node2, L);
@@ -863,11 +888,11 @@ package body Nlists is
    end New_List;
 
    function New_List
-     (Node1 : Node_Id;
-      Node2 : Node_Id;
-      Node3 : Node_Id;
-      Node4 : Node_Id;
-      Node5 : Node_Id) return List_Id
+     (Node1 : Node_Or_Entity_Id;
+      Node2 : Node_Or_Entity_Id;
+      Node3 : Node_Or_Entity_Id;
+      Node4 : Node_Or_Entity_Id;
+      Node5 : Node_Or_Entity_Id) return List_Id
    is
       L : constant List_Id := New_List (Node1);
    begin
@@ -879,12 +904,12 @@ package body Nlists is
    end New_List;
 
    function New_List
-     (Node1 : Node_Id;
-      Node2 : Node_Id;
-      Node3 : Node_Id;
-      Node4 : Node_Id;
-      Node5 : Node_Id;
-      Node6 : Node_Id) return List_Id
+     (Node1 : Node_Or_Entity_Id;
+      Node2 : Node_Or_Entity_Id;
+      Node3 : Node_Or_Entity_Id;
+      Node4 : Node_Or_Entity_Id;
+      Node5 : Node_Or_Entity_Id;
+      Node6 : Node_Or_Entity_Id) return List_Id
    is
       L : constant List_Id := New_List (Node1);
    begin
@@ -900,13 +925,13 @@ package body Nlists is
    -- Next --
    ----------
 
-   function Next (Node : Node_Id) return Node_Id is
+   function Next (Node : Node_Or_Entity_Id) return Node_Or_Entity_Id is
    begin
       pragma Assert (Is_List_Member (Node));
       return Next_Node.Table (Node);
    end Next;
 
-   procedure Next (Node : in out Node_Id) is
+   procedure Next (Node : in out Node_Or_Entity_Id) is
    begin
       Node := Next (Node);
    end Next;
@@ -924,22 +949,22 @@ package body Nlists is
    -- Next_Non_Pragma --
    ---------------------
 
-   function Next_Non_Pragma (Node : Node_Id) return Node_Id is
-      N : Node_Id;
+   function Next_Non_Pragma
+     (Node : Node_Or_Entity_Id) return Node_Or_Entity_Id
+   is
+      N : Node_Or_Entity_Id;
 
    begin
       N := Node;
       loop
          N := Next (N);
-         exit when Nkind (N) /= N_Pragma
-                     and then
-                   Nkind (N) /= N_Null_Statement;
+         exit when not Nkind_In (N, N_Pragma, N_Null_Statement);
       end loop;
 
       return N;
    end Next_Non_Pragma;
 
-   procedure Next_Non_Pragma (Node : in out Node_Id) is
+   procedure Next_Non_Pragma (Node : in out Node_Or_Entity_Id) is
    begin
       Node := Next_Non_Pragma (Node);
    end Next_Non_Pragma;
@@ -966,10 +991,10 @@ package body Nlists is
    -- p --
    -------
 
-   function p (U : Union_Id) return Node_Id is
+   function p (U : Union_Id) return Node_Or_Entity_Id is
    begin
       if U in Node_Range then
-         return Parent (Node_Id (U));
+         return Parent (Node_Or_Entity_Id (U));
       elsif U in List_Range then
          return Parent (List_Id (U));
       else
@@ -981,7 +1006,7 @@ package body Nlists is
    -- Parent --
    ------------
 
-   function Parent (List : List_Id) return Node_Id is
+   function Parent (List : List_Id) return Node_Or_Entity_Id is
    begin
       pragma Assert (List <= Lists.Last);
       return Lists.Table (List).Parent;
@@ -991,8 +1016,8 @@ package body Nlists is
    -- Pick --
    ----------
 
-   function Pick (List : List_Id; Index : Pos) return Node_Id is
-      Elmt : Node_Id;
+   function Pick (List : List_Id; Index : Pos) return Node_Or_Entity_Id is
+      Elmt : Node_Or_Entity_Id;
 
    begin
       Elmt := First (List);
@@ -1007,8 +1032,8 @@ package body Nlists is
    -- Prepend --
    -------------
 
-   procedure Prepend (Node : Node_Id; To : List_Id) is
-      F : constant Node_Id := First (To);
+   procedure Prepend (Node : Node_Or_Entity_Id; To : List_Id) is
+      F : constant Node_Or_Entity_Id := First (To);
 
       procedure Prepend_Debug;
       pragma Inline (Prepend_Debug);
@@ -1088,9 +1113,9 @@ package body Nlists is
 
       else
          declare
-            F : constant Node_Id := First (To);
-            L : constant Node_Id := Last (List);
-            N : Node_Id;
+            F : constant Node_Or_Entity_Id := First (To);
+            L : constant Node_Or_Entity_Id := Last (List);
+            N : Node_Or_Entity_Id;
 
          begin
             pragma Debug (Prepend_List_Debug);
@@ -1130,7 +1155,7 @@ package body Nlists is
    -- Prepend_To --
    ----------------
 
-   procedure Prepend_To (To : List_Id; Node : Node_Id) is
+   procedure Prepend_To (To : List_Id; Node : Node_Or_Entity_Id) is
    begin
       Prepend (Node, To);
    end Prepend_To;
@@ -1148,13 +1173,13 @@ package body Nlists is
    -- Prev --
    ----------
 
-   function Prev (Node : Node_Id) return Node_Id is
+   function Prev (Node : Node_Or_Entity_Id) return Node_Or_Entity_Id is
    begin
       pragma Assert (Is_List_Member (Node));
       return Prev_Node.Table (Node);
    end Prev;
 
-   procedure Prev (Node : in out Node_Id) is
+   procedure Prev (Node : in out Node_Or_Entity_Id) is
    begin
       Node := Prev (Node);
    end Prev;
@@ -1172,8 +1197,10 @@ package body Nlists is
    -- Prev_Non_Pragma --
    ---------------------
 
-   function Prev_Non_Pragma (Node : Node_Id) return Node_Id is
-      N : Node_Id;
+   function Prev_Non_Pragma
+     (Node : Node_Or_Entity_Id) return Node_Or_Entity_Id
+   is
+      N : Node_Or_Entity_Id;
 
    begin
       N := Node;
@@ -1185,7 +1212,7 @@ package body Nlists is
       return N;
    end Prev_Non_Pragma;
 
-   procedure Prev_Non_Pragma (Node : in out Node_Id) is
+   procedure Prev_Non_Pragma (Node : in out Node_Or_Entity_Id) is
    begin
       Node := Prev_Non_Pragma (Node);
    end Prev_Non_Pragma;
@@ -1194,10 +1221,10 @@ package body Nlists is
    -- Remove --
    ------------
 
-   procedure Remove (Node : Node_Id) is
-      Lst : constant List_Id := List_Containing (Node);
-      Prv : constant Node_Id := Prev (Node);
-      Nxt : constant Node_Id := Next (Node);
+   procedure Remove (Node : Node_Or_Entity_Id) is
+      Lst : constant List_Id           := List_Containing (Node);
+      Prv : constant Node_Or_Entity_Id := Prev (Node);
+      Nxt : constant Node_Or_Entity_Id := Next (Node);
 
       procedure Remove_Debug;
       pragma Inline (Remove_Debug);
@@ -1241,8 +1268,8 @@ package body Nlists is
    -- Remove_Head --
    -----------------
 
-   function Remove_Head (List : List_Id) return Node_Id is
-      Frst : constant Node_Id := First (List);
+   function Remove_Head (List : List_Id) return Node_Or_Entity_Id is
+      Frst : constant Node_Or_Entity_Id := First (List);
 
       procedure Remove_Head_Debug;
       pragma Inline (Remove_Head_Debug);
@@ -1271,7 +1298,7 @@ package body Nlists is
 
       else
          declare
-            Nxt : constant Node_Id := Next (Frst);
+            Nxt : constant Node_Or_Entity_Id := Next (Frst);
 
          begin
             Set_First (List, Nxt);
@@ -1293,8 +1320,10 @@ package body Nlists is
    -- Remove_Next --
    -----------------
 
-   function Remove_Next (Node : Node_Id) return Node_Id is
-      Nxt : constant Node_Id := Next (Node);
+   function Remove_Next
+     (Node : Node_Or_Entity_Id) return Node_Or_Entity_Id
+   is
+      Nxt : constant Node_Or_Entity_Id := Next (Node);
 
       procedure Remove_Next_Debug;
       pragma Inline (Remove_Next_Debug);
@@ -1318,8 +1347,8 @@ package body Nlists is
    begin
       if Present (Nxt) then
          declare
-            Nxt2 : constant Node_Id := Next (Nxt);
-            LC   : constant List_Id := List_Containing (Node);
+            Nxt2 : constant Node_Or_Entity_Id := Next (Nxt);
+            LC   : constant List_Id           := List_Containing (Node);
 
          begin
             pragma Debug (Remove_Next_Debug);
@@ -1343,7 +1372,7 @@ package body Nlists is
    -- Set_First --
    ---------------
 
-   procedure Set_First (List : List_Id; To : Node_Id) is
+   procedure Set_First (List : List_Id; To : Node_Or_Entity_Id) is
    begin
       Lists.Table (List).First := To;
    end Set_First;
@@ -1352,7 +1381,7 @@ package body Nlists is
    -- Set_Last --
    --------------
 
-   procedure Set_Last (List : List_Id; To : Node_Id) is
+   procedure Set_Last (List : List_Id; To : Node_Or_Entity_Id) is
    begin
       Lists.Table (List).Last := To;
    end Set_Last;
@@ -1361,7 +1390,7 @@ package body Nlists is
    -- Set_List_Link --
    -------------------
 
-   procedure Set_List_Link (Node : Node_Id; To : List_Id) is
+   procedure Set_List_Link (Node : Node_Or_Entity_Id; To : List_Id) is
    begin
       Nodes.Table (Node).Link := Union_Id (To);
    end Set_List_Link;
@@ -1370,7 +1399,7 @@ package body Nlists is
    -- Set_Next --
    --------------
 
-   procedure Set_Next (Node : Node_Id; To : Node_Id) is
+   procedure Set_Next (Node : Node_Or_Entity_Id; To : Node_Or_Entity_Id) is
    begin
       Next_Node.Table (Node) := To;
    end Set_Next;
@@ -1379,7 +1408,7 @@ package body Nlists is
    -- Set_Parent --
    ----------------
 
-   procedure Set_Parent (List : List_Id; Node : Node_Id) is
+   procedure Set_Parent (List : List_Id; Node : Node_Or_Entity_Id) is
    begin
       pragma Assert (List <= Lists.Last);
       Lists.Table (List).Parent := Node;
@@ -1389,7 +1418,7 @@ package body Nlists is
    -- Set_Prev --
    --------------
 
-   procedure Set_Prev (Node : Node_Id; To : Node_Id) is
+   procedure Set_Prev (Node : Node_Or_Entity_Id; To : Node_Or_Entity_Id) is
    begin
       Prev_Node.Table (Node) := To;
    end Set_Prev;

@@ -246,7 +246,7 @@ AC_SUBST_FILE(host_makefile_frag)
 # It's OK to check for header files.  Although the compiler may not be
 # able to link anything, it had better be able to at least compile
 # something.
-AC_CHECK_HEADERS(sys/file.h sys/param.h limits.h stdlib.h malloc.h string.h unistd.h strings.h sys/time.h time.h sys/resource.h sys/stat.h sys/mman.h fcntl.h alloca.h sys/pstat.h sys/sysmp.h sys/sysinfo.h machine/hal_sysinfo.h sys/table.h sys/sysctl.h sys/systemcfg.h stdint.h stdio_ext.h)
+AC_CHECK_HEADERS(sys/file.h sys/param.h limits.h stdlib.h malloc.h string.h unistd.h strings.h sys/time.h time.h sys/resource.h sys/stat.h sys/mman.h fcntl.h alloca.h sys/pstat.h sys/sysmp.h sys/sysinfo.h machine/hal_sysinfo.h sys/table.h sys/sysctl.h sys/systemcfg.h stdint.h stdio_ext.h process.h sys/prctl.h)
 AC_HEADER_SYS_WAIT
 AC_HEADER_TIME
 
@@ -290,6 +290,7 @@ fi
 
 AC_TYPE_INTPTR_T
 AC_TYPE_UINTPTR_T
+AC_TYPE_SSIZE_T
 
 # Given the above check, we always have uintptr_t or a fallback
 # definition.  So define HAVE_UINTPTR_T in case any imported code
@@ -351,14 +352,16 @@ funcs="$funcs vprintf"
 funcs="$funcs vsnprintf"
 funcs="$funcs vsprintf"
 funcs="$funcs waitpid"
+funcs="$funcs setproctitle"
 
 # Also in the old function.def file: alloca, vfork, getopt.
 
 vars="sys_errlist sys_nerr sys_siglist"
 
-checkfuncs="getrusage on_exit psignal strerror strsignal sysconf times sbrk gettimeofday"
-checkfuncs="$checkfuncs realpath canonicalize_file_name pstat_getstatic pstat_getdynamic sysmp"
-checkfuncs="$checkfuncs getsysinfo table sysctl wait3 wait4 __fsetlocking"
+checkfuncs="__fsetlocking canonicalize_file_name dup3 getrusage getsysinfo \
+ gettimeofday on_exit psignal pstat_getdynamic pstat_getstatic realpath \
+ sbrk spawnve spawnvpe strerror strsignal sysconf sysctl sysmp table \
+ times wait3 wait4"
 
 # These are neither executed nor required, but they help keep
 # autoheader happy without adding a bunch of text to acconfig.h.
@@ -366,6 +369,7 @@ if test "x" = "y"; then
   AC_CHECK_FUNCS(asprintf atexit \
     basename bcmp bcopy bsearch bzero \
     calloc canonicalize_file_name clock \
+    dup3 \
     ffs __fsetlocking \
     getcwd getpagesize getrusage getsysinfo gettimeofday \
     index insque \
@@ -373,7 +377,8 @@ if test "x" = "y"; then
     on_exit \
     psignal pstat_getdynamic pstat_getstatic putenv \
     random realpath rename rindex \
-    sbrk setenv sigsetmask snprintf stpcpy stpncpy strcasecmp strchr strdup \
+    sbrk setenv setproctitle sigsetmask snprintf spawnve spawnvpe \
+     stpcpy stpncpy strcasecmp strchr strdup \
      strerror strncasecmp strndup strrchr strsignal strstr strtod strtol \
      strtoul strverscmp sysconf sysctl sysmp \
     table times tmpnam \
@@ -671,10 +676,10 @@ fi
 
 # Figure out which version of pexecute to use.
 case "${host}" in
-     *-*-mingw* | *-*-winnt*)	pexecute=./pex-win32.o  ;;
-     *-*-msdosdjgpp*)		pexecute=./pex-djgpp.o  ;;
-     *-*-msdos*)		pexecute=./pex-msdos.o  ;;
-     *)				pexecute=./pex-unix.o   ;;
+     *-*-mingw* | *-*-winnt*)	pexecute=pex-win32  ;;
+     *-*-msdosdjgpp*)		pexecute=pex-djgpp  ;;
+     *-*-msdos*)		pexecute=pex-msdos  ;;
+     *)				pexecute=pex-unix   ;;
 esac
 AC_SUBST(pexecute)
 

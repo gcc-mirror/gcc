@@ -17,9 +17,10 @@ subroutine fn
 end subroutine fn
 
 subroutine foo (ii)
+  use iso_c_binding, only: c_intptr_t
   common /targ/targ
   integer targ(10)
-  integer ii
+  integer(c_intptr_t) ii
   targ(2) = ii
 end subroutine foo
 

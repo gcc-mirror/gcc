@@ -28,10 +28,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef GCC_DEFAULTS_H
 #define GCC_DEFAULTS_H
 
-#ifndef GET_ENVIRONMENT
-#define GET_ENVIRONMENT(VALUE, NAME) do { (VALUE) = getenv (NAME); } while (0)
-#endif
-
 /* Store in OUTPUT a string (made with alloca) containing an
    assembler-name for a local static variable or function named NAME.
    LABELNO is an integer which is different for each call.  */
@@ -110,6 +106,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 #endif
 
+#ifndef IFUNC_ASM_TYPE
+#define IFUNC_ASM_TYPE "gnu_indirect_function"
+#endif
+
 #ifndef TLS_COMMON_ASM_OP
 #define TLS_COMMON_ASM_OP ".tls_common"
 #endif
@@ -133,11 +133,19 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 /* This is how to output the definition of a user-level label named
-   NAME, such as the label on a static function or variable NAME.  */
+   NAME, such as the label on variable NAME.  */
 
 #ifndef ASM_OUTPUT_LABEL
 #define ASM_OUTPUT_LABEL(FILE,NAME) \
   do { assemble_name ((FILE), (NAME)); fputs (":\n", (FILE)); } while (0)
+#endif
+
+/* This is how to output the definition of a user-level label named
+   NAME, such as the label on a function.  */
+
+#ifndef ASM_OUTPUT_FUNCTION_LABEL
+#define ASM_OUTPUT_FUNCTION_LABEL(FILE, NAME, DECL) \
+  ASM_OUTPUT_LABEL ((FILE), (NAME))
 #endif
 
 /* Output the definition of a compiler-generated label named NAME.  */
@@ -242,13 +250,20 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 #endif
 
-/* This determines whether or not we support weak symbols.  */
+/* This determines whether or not we support weak symbols.  SUPPORTS_WEAK
+   must be a preprocessor constant.  */
 #ifndef SUPPORTS_WEAK
 #if defined (ASM_WEAKEN_LABEL) || defined (ASM_WEAKEN_DECL)
 #define SUPPORTS_WEAK 1
 #else
 #define SUPPORTS_WEAK 0
 #endif
+#endif
+
+/* This determines whether or not we support weak symbols during target
+   code generation.  TARGET_SUPPORTS_WEAK can be any valid C expression.  */
+#ifndef TARGET_SUPPORTS_WEAK
+#define TARGET_SUPPORTS_WEAK (SUPPORTS_WEAK)
 #endif
 
 /* This determines whether or not we support the discriminator
@@ -332,8 +347,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* If we have a definition of INCOMING_RETURN_ADDR_RTX, assume that
    the rest of the DWARF 2 frame unwind support is also provided.  */
-#if !defined (DWARF2_UNWIND_INFO) && defined (INCOMING_RETURN_ADDR_RTX) \
-    && !defined (TARGET_UNWIND_INFO)
+#if !defined (DWARF2_UNWIND_INFO) && defined (INCOMING_RETURN_ADDR_RTX)
 #define DWARF2_UNWIND_INFO 1
 #endif
 
@@ -682,6 +696,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define PIC_OFFSET_TABLE_REGNUM INVALID_REGNUM
 #endif
 
+#ifndef PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
+#define PIC_OFFSET_TABLE_REG_CALL_CLOBBERED 0
+#endif
+
 #ifndef TARGET_DLLIMPORT_DECL_ATTRIBUTES
 #define TARGET_DLLIMPORT_DECL_ATTRIBUTES 0
 #endif
@@ -757,16 +775,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #ifndef TARGET_DEFAULT_PACK_STRUCT
 #define TARGET_DEFAULT_PACK_STRUCT 0
-#endif
-
-/* By default, the C++ compiler will use function addresses in the
-   vtable entries.  Setting this nonzero tells the compiler to use
-   function descriptors instead.  The value of this macro says how
-   many words wide the descriptor is (normally 2).  It is assumed
-   that the address of a function descriptor may be treated as a
-   pointer to a function.  */
-#ifndef TARGET_VTABLE_USES_DESCRIPTORS
-#define TARGET_VTABLE_USES_DESCRIPTORS 0
 #endif
 
 /* By default, the vtable entries are void pointers, the so the alignment
@@ -885,26 +893,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_DEC_EVAL_METHOD 2
 #endif
 
-#ifndef HOT_TEXT_SECTION_NAME
-#define HOT_TEXT_SECTION_NAME ".text.hot"
-#endif
-
-#ifndef UNLIKELY_EXECUTED_TEXT_SECTION_NAME
-#define UNLIKELY_EXECUTED_TEXT_SECTION_NAME ".text.unlikely"
-#endif
-
 #ifndef HAS_LONG_COND_BRANCH
 #define HAS_LONG_COND_BRANCH 0
 #endif
 
 #ifndef HAS_LONG_UNCOND_BRANCH
 #define HAS_LONG_UNCOND_BRANCH 0
-#endif
-
-/* By default, only attempt to parallelize bitwise operations, and
-   possibly adds/subtracts using bit-twiddling.  */
-#ifndef UNITS_PER_SIMD_WORD
-#define UNITS_PER_SIMD_WORD(MODE) UNITS_PER_WORD
 #endif
 
 /* Determine whether __cxa_atexit, rather than atexit, is used to
@@ -1015,6 +1009,18 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #ifndef MOVE_MAX_PIECES
 #define MOVE_MAX_PIECES   MOVE_MAX
+#endif
+
+#ifndef MAX_MOVE_MAX
+#define MAX_MOVE_MAX MOVE_MAX
+#endif
+
+#ifndef MIN_UNITS_PER_WORD
+#define MIN_UNITS_PER_WORD UNITS_PER_WORD
+#endif
+
+#ifndef MAX_BITS_PER_WORD
+#define MAX_BITS_PER_WORD BITS_PER_WORD
 #endif
 
 #ifndef STACK_POINTER_OFFSET
@@ -1184,49 +1190,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    functions.
 */
 
-/* Just because the user configured --with-sjlj-exceptions=no doesn't
-   mean that we can use call frame exceptions.  Detect that the target
-   has appropriate support.  */
-
-#ifndef MUST_USE_SJLJ_EXCEPTIONS
-# if defined (EH_RETURN_DATA_REGNO)			\
-       && (defined (TARGET_UNWIND_INFO)			\
-	   || (DWARF2_UNWIND_INFO			\
-	       && (defined (EH_RETURN_HANDLER_RTX)	\
-		   || defined (HAVE_eh_return))))
-#  define MUST_USE_SJLJ_EXCEPTIONS	0
-# else
-#  define MUST_USE_SJLJ_EXCEPTIONS	1
-# endif
-#endif
-
-#ifdef CONFIG_SJLJ_EXCEPTIONS
-# if CONFIG_SJLJ_EXCEPTIONS == 1
-#  define USING_SJLJ_EXCEPTIONS		1
-# endif
-# if CONFIG_SJLJ_EXCEPTIONS == 0
-#  define USING_SJLJ_EXCEPTIONS		0
-#  if !defined(EH_RETURN_DATA_REGNO)
-    #error "EH_RETURN_DATA_REGNO required"
-#  endif
-#  if ! (defined(TARGET_UNWIND_INFO) || DWARF2_UNWIND_INFO)
-    #error "{DWARF2,TARGET}_UNWIND_INFO required"
-#  endif
-#  if !defined(TARGET_UNWIND_INFO) \
-	&& !(defined(EH_RETURN_HANDLER_RTX) || defined(HAVE_eh_return))
-    #error "EH_RETURN_HANDLER_RTX or eh_return required"
-#  endif
-/* Usually the above error checks will have already triggered an
-   error, but backends may set MUST_USE_SJLJ_EXCEPTIONS for their own
-   reasons.  */
-#  if MUST_USE_SJLJ_EXCEPTIONS
-    #error "Must use SJLJ exceptions but configured not to"
-#  endif
-# endif
-#else
-# define USING_SJLJ_EXCEPTIONS		MUST_USE_SJLJ_EXCEPTIONS
-#endif
-
 /* The default branch cost is 1.  */
 #ifndef BRANCH_COST
 #define BRANCH_COST(speed_p, predictable_p) 1
@@ -1281,14 +1244,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   DEFAULT_FUNCTION_ARG_PADDING ((MODE), (TYPE))
 #endif
 
-/* Supply a default definition for FUNCTION_ARG_BOUNDARY.  Normally, we let
-   FUNCTION_ARG_PADDING, which also pads the length, handle any needed
-   alignment.  */
-
-#ifndef FUNCTION_ARG_BOUNDARY
-#define FUNCTION_ARG_BOUNDARY(MODE, TYPE)	PARM_BOUNDARY
-#endif
-
 /* Supply a default definition of STACK_SAVEAREA_MODE for emit_stack_save.
    Normally move_insn, so Pmode stack pointer.  */
 
@@ -1333,16 +1288,20 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifdef STACK_CHECK_PROTECT
 #define STACK_OLD_CHECK_PROTECT STACK_CHECK_PROTECT
 #else
-#define STACK_OLD_CHECK_PROTECT \
- (USING_SJLJ_EXCEPTIONS ? 75 * UNITS_PER_WORD : 8 * 1024)
+#define STACK_OLD_CHECK_PROTECT					\
+ (targetm.except_unwind_info (&global_options) == UI_SJLJ	\
+  ? 75 * UNITS_PER_WORD						\
+  : 8 * 1024)
 #endif
 
 /* Minimum amount of stack required to recover from an anticipated stack
    overflow detection.  The default value conveys an estimate of the amount
    of stack required to propagate an exception.  */
 #ifndef STACK_CHECK_PROTECT
-#define STACK_CHECK_PROTECT \
- (USING_SJLJ_EXCEPTIONS ? 75 * UNITS_PER_WORD : 12 * 1024)
+#define STACK_CHECK_PROTECT					\
+ (targetm.except_unwind_info (&global_options) == UI_SJLJ	\
+  ? 75 * UNITS_PER_WORD						\
+  : 12 * 1024)
 #endif
 
 /* Make the maximum frame size be the largest we can and still only need
@@ -1362,6 +1321,20 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    controllable by the user at some point.  */
 #ifndef STACK_CHECK_MAX_VAR_SIZE
 #define STACK_CHECK_MAX_VAR_SIZE (STACK_CHECK_MAX_FRAME_SIZE / 100)
+#endif
+
+/* By default, the C++ compiler will use function addresses in the
+   vtable entries.  Setting this nonzero tells the compiler to use
+   function descriptors instead.  The value of this macro says how
+   many words wide the descriptor is (normally 2).  It is assumed
+   that the address of a function descriptor may be treated as a
+   pointer to a function.  */
+#ifndef TARGET_VTABLE_USES_DESCRIPTORS
+#define TARGET_VTABLE_USES_DESCRIPTORS 0
+#endif
+
+#ifndef SWITCHABLE_TARGET
+#define SWITCHABLE_TARGET 0
 #endif
 
 #endif /* GCC_INSN_FLAGS_H  */

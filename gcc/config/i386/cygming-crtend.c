@@ -47,7 +47,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    this would be the 'length' field in a real FDE.  */
 
 static EH_FRAME_SECTION_CONST int __FRAME_END__[]
-  __attribute__ ((unused,  section(EH_FRAME_SECTION_NAME),
+  __attribute__ ((used,  section(EH_FRAME_SECTION_NAME),
 		  aligned(4)))
   = { 0 };
 #endif
@@ -55,7 +55,7 @@ static EH_FRAME_SECTION_CONST int __FRAME_END__[]
 #if TARGET_USE_JCR_SECTION
 /* Null terminate the .jcr section array.  */
 static void *__JCR_END__[1] 
-   __attribute__ ((unused, section(JCR_SECTION_NAME),
+   __attribute__ ((used, section(JCR_SECTION_NAME),
 		   aligned(sizeof(void *))))
    = { 0 };
 #endif

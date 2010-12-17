@@ -1,4 +1,4 @@
-/* JobStateMessage.java -- 
+/* JobStateMessage.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -46,10 +46,10 @@ import javax.print.attribute.TextSyntax;
 /**
  * JobStateMessage attribute describes information about the
  * job-state and job-state-reasons in human readable form.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class JobStateMessage 
+public final class JobStateMessage
   extends TextSyntax implements Attribute
 {
 
@@ -73,7 +73,7 @@ public final class JobStateMessage
    *
    * @return The class <code>JobStateMessage</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return JobStateMessage.class;
   }

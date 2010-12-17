@@ -1,7 +1,7 @@
 /* { dg-require-effective-target vect_int } */
+/* { dg-do run { xfail { sparc*-*-* && ilp32 } } } PR rtl-opt/46603 */
 
 #include <stdarg.h>
-#include <stdio.h>
 #include "tree-vect.h"
 
 #define N 128 

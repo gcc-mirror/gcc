@@ -111,6 +111,9 @@ esac
 AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
 
+# Create a spec file, so that compile/link tests don't fail
+test -f libgfortran.spec || touch libgfortran.spec
+
 # Check the compiler.
 # The same as in boehm-gc and libstdc++. Have to borrow it from there.
 # We must force CC to /not/ be precious variables; otherwise
@@ -138,17 +141,34 @@ AC_SUBST(CFLAGS)
 
 # Check for symbol versioning (copied from libssp).
 AC_MSG_CHECKING([whether symbol versioning is supported])
+save_LDFLAGS="$LDFLAGS"
+LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
 cat > conftest.map <<EOF
 FOO_1.0 {
   global: *foo*; bar; local: *;
 };
 EOF
-save_LDFLAGS="$LDFLAGS"
-LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
-AC_TRY_LINK([int foo;],[],[gfortran_use_symver=yes],[gfortran_use_symver=no])
+AC_TRY_LINK([int foo;],[],[gfortran_use_symver=gnu],[gfortran_use_symver=no])
+if test x$gfortran_use_symver = xno; then
+  case "$target_os" in
+    solaris2*)
+      LDFLAGS="$save_LDFLAGS"
+      LDFLAGS="$LDFLAGS -fPIC -shared -Wl,-M,./conftest.map"
+      # Sun ld cannot handle wildcards and treats all entries as undefined.
+      cat > conftest.map <<EOF
+FOO_1.0 {
+  global: foo; local: *;
+};
+EOF
+      AC_TRY_LINK([int foo;],[],[gfortran_use_symver=sun],[gfortran_use_symver=no])
+      ;;
+  esac
+fi
 LDFLAGS="$save_LDFLAGS"
 AC_MSG_RESULT($gfortran_use_symver)
-AM_CONDITIONAL(LIBGFOR_USE_SYMVER, [test "x$gfortran_use_symver" = xyes])
+AM_CONDITIONAL(LIBGFOR_USE_SYMVER, [test "x$gfortran_use_symver" != xno])
+AM_CONDITIONAL(LIBGFOR_USE_SYMVER_GNU, [test "x$gfortran_use_symver" = xgnu])
+AM_CONDITIONAL(LIBGFOR_USE_SYMVER_SUN, [test "x$gfortran_use_symver" = xsun])
 
 # Figure out whether the compiler supports "-ffunction-sections -fdata-sections",
 # similarly to how libstdc++ does it
@@ -433,15 +453,6 @@ AC_CHECK_LIB([m],[catanl],[AC_DEFINE([HAVE_CATANL],[1],[libm includes catanl])])
 # On AIX, clog is present in libm as __clog
 AC_CHECK_LIB([m],[__clog],[AC_DEFINE([HAVE_CLOG],[1],[libm includes clog])])
 
-# Check for a isfinite macro that works on long doubles.
-LIBGFOR_CHECK_FOR_BROKEN_ISFINITE
-
-# Check for a isnan macro that works on long doubles.
-LIBGFOR_CHECK_FOR_BROKEN_ISNAN
-
-# Check for a fpclassify macro that works on long doubles.
-LIBGFOR_CHECK_FOR_BROKEN_FPCLASSIFY
-
 # Check whether the system has a working stat()
 LIBGFOR_CHECK_WORKING_STAT
 
@@ -450,6 +461,9 @@ LIBGFOR_CHECK_MINGW_SNPRINTF
 
 # Check for a broken powf implementation
 LIBGFOR_CHECK_FOR_BROKEN_POWF
+
+# Check whether we have a __float128 type
+LIBGFOR_CHECK_FLOAT128
 
 # Check for GNU libc feenableexcept
 AC_CHECK_LIB([m],[feenableexcept],[have_feenableexcept=yes AC_DEFINE([HAVE_FEENABLEEXCEPT],[1],[libm includes feenableexcept])])
@@ -501,6 +515,9 @@ else
   multilib_arg=
 fi
 
-# Write our Makefile.
-AC_CONFIG_FILES(Makefile)
+# Write our Makefile and spec file.
+AC_CONFIG_FILES([
+Makefile
+libgfortran.spec
+])
 AC_OUTPUT

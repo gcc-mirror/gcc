@@ -24,6 +24,7 @@
 #include "c-family/c-pragma.h"
 #include "tm_p.h"
 #include "langhooks.h"
+#include "target.h"
 
 
 /* Keep the vector keywords handy for fast comparisons.  */
@@ -94,7 +95,7 @@ spu_resolve_overloaded_builtin (location_t loc, tree fndecl, void *passed_args)
 			  || POINTER_TYPE_P (t))
   VEC(tree,gc) *fnargs = (VEC(tree,gc) *) passed_args;
   unsigned int nargs = VEC_length (tree, fnargs);
-  int new_fcode, fcode = DECL_FUNCTION_CODE (fndecl) - END_BUILTINS;
+  int new_fcode, fcode = DECL_FUNCTION_CODE (fndecl);
   struct spu_builtin_description *desc;
   tree match = NULL_TREE;
 
@@ -111,7 +112,7 @@ spu_resolve_overloaded_builtin (location_t loc, tree fndecl, void *passed_args)
   for (new_fcode = fcode + 1; spu_builtins[new_fcode].type == B_INTERNAL;
        new_fcode++)
     {
-      tree decl = spu_builtins[new_fcode].fndecl;
+      tree decl = targetm.builtin_decl (new_fcode, true);
       tree params = TYPE_ARG_TYPES (TREE_TYPE (decl));
       tree param;
       bool all_scalar;
@@ -187,19 +188,19 @@ spu_resolve_overloaded_builtin (location_t loc, tree fndecl, void *passed_args)
 void
 spu_cpu_cpp_builtins (struct cpp_reader *pfile)
 {
-  builtin_define_std ("__SPU__");
+  cpp_define (pfile, "__SPU__");
   cpp_assert (pfile, "cpu=spu");
   cpp_assert (pfile, "machine=spu");
   if (spu_arch == PROCESSOR_CELLEDP)
-    builtin_define_std ("__SPU_EDP__");
-  builtin_define_std ("__vector=__attribute__((__spu_vector__))");
+    cpp_define (pfile, "__SPU_EDP__");
+  cpp_define (pfile, "__vector=__attribute__((__spu_vector__))");
   switch (spu_ea_model)
     {
     case 32:
-      builtin_define_std ("__EA32__");
+      cpp_define (pfile, "__EA32__");
       break;
     case 64:
-      builtin_define_std ("__EA64__");
+      cpp_define (pfile, "__EA64__");
       break;
     default:
        gcc_unreachable ();

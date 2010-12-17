@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.        --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,10 +30,11 @@ with Types; use Types;
 package Exp_Intr is
 
    procedure Expand_Intrinsic_Call (N : Node_Id; E : Entity_Id);
-   --  N is either a function call node, or a procedure call statement node
-   --  where the corresponding subprogram is intrinsic (i.e. was the subject
-   --  of a Import or Interface pragma specifying the subprogram as intrinsic.
-   --  The effect is to replace the call with appropriate specialized nodes.
-   --  The second argument is the entity for the subprogram spec.
+   --  N is either a function call node, a procedure call statement node, or
+   --  an operator where the corresponding subprogram is intrinsic (i.e. was
+   --  the subject of a Import or Interface pragma specifying the subprogram
+   --  as intrinsic.  The effect is to replace the call with appropriate
+   --  specialized nodes.  The second argument is the entity for the
+   --  subprogram spec.
 
 end Exp_Intr;

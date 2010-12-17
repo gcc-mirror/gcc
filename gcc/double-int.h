@@ -132,7 +132,9 @@ double_int_fits_in_uhwi_p (double_int cst)
    2 * HOST_BITS_PER_WIDE_INT bits.  */
 
 double_int double_int_mul (double_int, double_int);
+double_int double_int_mul_with_sign (double_int, double_int, bool, int *);
 double_int double_int_add (double_int, double_int);
+double_int double_int_sub (double_int, double_int);
 double_int double_int_neg (double_int);
 
 /* You must ensure that double_int_ext is called on the operands
@@ -147,7 +149,9 @@ double_int double_int_umod (double_int, double_int, unsigned);
 double_int double_int_divmod (double_int, double_int, bool, unsigned, double_int *);
 double_int double_int_sdivmod (double_int, double_int, unsigned, double_int *);
 double_int double_int_udivmod (double_int, double_int, unsigned, double_int *);
+
 double_int double_int_setbit (double_int, unsigned);
+int double_int_ctz (double_int);
 
 /* Logical operations.  */
 
@@ -157,7 +161,7 @@ static inline double_int
 double_int_not (double_int a)
 {
   a.low = ~a.low;
-  a.high = ~ a.high;
+  a.high = ~a.high;
   return a;
 }
 
@@ -178,6 +182,16 @@ double_int_and (double_int a, double_int b)
 {
   a.low &= b.low;
   a.high &= b.high;
+  return a;
+}
+
+/* Returns A & ~B.  */
+
+static inline double_int
+double_int_and_not (double_int a, double_int b)
+{
+  a.low &= ~b.low;
+  a.high &= ~b.high;
   return a;
 }
 
@@ -269,9 +283,6 @@ double_int_equal_p (double_int cst1, double_int cst2)
 
 /* Legacy interface with decomposed high/low parts.  */
 
-extern int fit_double_type (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-			    unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,
-			    const_tree);
 extern int add_double_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
 				 unsigned HOST_WIDE_INT, HOST_WIDE_INT,
 				 unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,

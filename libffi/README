@@ -77,6 +77,7 @@ tested:
 | X86          | Linux            |
 | X86          | Mac OSX          |
 | X86          | OpenBSD          |
+| X86          | OS/2             |
 | X86          | Solaris          |
 | X86          | Windows/Cygwin   |
 | X86          | Windows/MingW    |
@@ -110,6 +111,14 @@ will add some extra code which will suppress certain warnings when you
 are using Purify with libffi. Only use this switch when using 
 Purify, as it will slow down the library.
 
+It's also possible to build libffi on Windows platforms with
+Microsoft's Visual C++ compiler.  In this case, use the msvcc.sh
+wrapper script during configuration like so:
+
+path/to/configure --enable-shared --enable-static \
+	CC=path/to/msvcc.sh LD=link \
+	CPP=\"cl -nologo -EP\"
+
 Configure has many other options. Use "configure --help" to see them all.
 
 Once configure has finished, type "make". Note that you must be using
@@ -125,6 +134,12 @@ History
 =======
 
 See the ChangeLog files for details.
+
+3.0.10 ???-??-??
+	Fix the N64 build on mips-sgi-irix6.5.
+	Testsuite fixes for Tru64 Unix.
+	Enable builds with Microsoft's compiler.
+	Enable x86 builds with Sun's compiler.
 
 3.0.9 Dec-31-09
         Add AVR32 and win64 ports.  Add ARM softfp support.

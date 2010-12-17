@@ -98,12 +98,14 @@ public class XMLEventFactoryImpl
   public Namespace createNamespace(String namespaceURI)
   {
     return new NamespaceImpl(location,
-                             XMLConstants.DEFAULT_NS_PREFIX, namespaceURI);
+                             XMLConstants.DEFAULT_NS_PREFIX,
+                             namespaceURI,
+                             true);
   }
 
   public Namespace createNamespace(String prefix, String namespaceUri)
   {
-     return new NamespaceImpl(location, prefix, namespaceUri);
+     return new NamespaceImpl(location, prefix, namespaceUri, true);
   }
 
   public StartElement createStartElement(QName name,

@@ -143,34 +143,40 @@ procedure Gnatbind is
       --  should not be listed.
 
       No_Restriction_List : constant array (All_Restrictions) of Boolean :=
-        (No_Exception_Propagation => True,
+        (No_Allocators_After_Elaboration => True,
+         --  This involves run-time conditions not checkable at compile time
+
+         No_Anonymous_Allocators         => True,
+         --  Premature, since we have not implemented this yet
+
+         No_Exception_Propagation        => True,
          --  Modifies code resulting in different exception semantics
 
-         No_Exceptions            => True,
+         No_Exceptions                   => True,
          --  Has unexpected Suppress (All_Checks) effect
 
-         No_Implicit_Conditionals => True,
+         No_Implicit_Conditionals        => True,
          --  This could modify and pessimize generated code
 
-         No_Implicit_Dynamic_Code => True,
+         No_Implicit_Dynamic_Code        => True,
          --  This could modify and pessimize generated code
 
-         No_Implicit_Loops        => True,
+         No_Implicit_Loops               => True,
          --  This could modify and pessimize generated code
 
-         No_Recursion             => True,
+         No_Recursion                    => True,
          --  Not checkable at compile time
 
-         No_Reentrancy            => True,
+         No_Reentrancy                   => True,
          --  Not checkable at compile time
 
-         Max_Entry_Queue_Length    => True,
+         Max_Entry_Queue_Length           => True,
          --  Not checkable at compile time
 
-         Max_Storage_At_Blocking  => True,
+         Max_Storage_At_Blocking         => True,
          --  Not checkable at compile time
 
-         others => False);
+         others                          => False);
 
       Additional_Restrictions_Listed : Boolean := False;
       --  Set True if we have listed header for restrictions
@@ -583,13 +589,11 @@ begin
    Osint.Add_Default_Search_Dirs;
 
    --  Carry out package initializations. These are initializations which
-   --  might logically be performed at elaboration time, but Namet at least
-   --  can't be done that way (because it is used in the Compiler), and we
-   --  decide to be consistent. Like elaboration, the order in which these
-   --  calls are made is in some cases important.
+   --  might logically be performed at elaboration time, and we decide to be
+   --  consistent. Like elaboration, the order in which these calls are made
+   --  is in some cases important.
 
    Csets.Initialize;
-   Namet.Initialize;
    Snames.Initialize;
 
    --  Acquire target parameters
@@ -791,8 +795,20 @@ begin
         and then ALIs.Table (ALIs.First).Main_Program = None
         and then not No_Main_Subprogram
       then
-         Error_Msg_File_1 := Main_Lib_File;
-         Error_Msg ("{ does not contain a unit that can be a main program");
+         Get_Name_String
+           (Units.Table (ALIs.Table (ALIs.First).First_Unit).Uname);
+
+         declare
+            Unit_Name : String := Name_Buffer (1 .. Name_Len - 2);
+         begin
+            To_Mixed (Unit_Name);
+            Get_Name_String (ALIs.Table (ALIs.First).Sfile);
+            Add_Str_To_Name_Buffer (":1: ");
+            Add_Str_To_Name_Buffer (Unit_Name);
+            Add_Str_To_Name_Buffer (" cannot be used as a main program");
+            Write_Line (Name_Buffer (1 .. Name_Len));
+            Errors_Detected := Errors_Detected + 1;
+         end;
       end if;
 
       --  Perform consistency and correctness checks

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mfpmath=387" } */
+/* { dg-options "-O2 -mfpmath=387 -mfancy-math-387" } */
 
 double foo(double x, double y)
 {

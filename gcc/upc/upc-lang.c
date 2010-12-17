@@ -39,6 +39,8 @@ Boston, MA 02111-1307, USA.  */
 #include "c-family/c-pretty-print.h"
 #include "c-family/c-pragma.h"
 #include "flags.h"
+#include "opts.h"
+#include "options.h"
 
 /* FIXME: Convert the UPC switch values below to use
    the Var() definitions in c.opt, where applicable.  */
@@ -53,28 +55,11 @@ int use_upc_dwarf2_extensions;
 /* Nonzero whenever UPC functionality is being used.  */
 int flag_upc;
 
-/* Generate code that provides the UPC runtime with
-   the file and line number where the runtime was callled.  */
-int flag_upc_debug;
-
-/* The -fupc-inline-lib switch tells the UPC compiler to
-   inline shared access routines. */
-int flag_upc_inline_lib;
-
-/* The -fupc-instrument switch tells the UPC compiler to
-   instrument UPC shared accesses and library calls, using GASP tool support.  */
-int flag_upc_instrument;
-
-/* The -fupc-instrument-functions switch tells the UPC compiler to
-   instrument function entry/exit, using GASP tool support.  */
-int flag_upc_instrument_functions;
-
 enum c_language_kind c_language = clk_upc;
 
 static void upc_initialize_diagnostics (diagnostic_context *);
-static unsigned int upc_init_options (unsigned int, const char **);
+static void upc_init_options (unsigned int, struct cl_decoded_option *);
 static bool upc_post_options (const char **);
-static void upc_write_global_declarations (void);
 static alias_set_type upc_get_alias_set (tree);
 
 /* UPC inherits hook definitions from "c-objc-common.h"
@@ -96,8 +81,6 @@ static alias_set_type upc_get_alias_set (tree);
 #define LANG_HOOKS_HANDLE_OPTION upc_handle_option
 #undef LANG_HOOKS_INIT
 #define LANG_HOOKS_INIT upc_lang_init
-#undef LANG_HOOKS_WRITE_GLOBALS
-#define LANG_HOOKS_WRITE_GLOBALS upc_write_global_declarations
 #undef LANG_HOOKS_FINISH
 #define LANG_HOOKS_FINISH upc_finish
 #undef LANG_HOOKS_INITIALIZE_DIAGNOSTICS
@@ -109,15 +92,8 @@ static alias_set_type upc_get_alias_set (tree);
 #undef LANG_HOOKS_TYPES_COMPATIBLE_P
 #define LANG_HOOKS_TYPES_COMPATIBLE_P upc_types_compatible_p
 
-
 /* Each front end provides its own hooks, for toplev.c.  */
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
-
-void
-finish_file (void)
-{
-  upc_finish_file ();
-}
 
 static void
 upc_initialize_diagnostics (diagnostic_context *context)
@@ -146,11 +122,13 @@ set_std_c99 (int iso)
   flag_isoc94 = 1;
 }
 
-static unsigned int
-upc_init_options (unsigned int argc, const char **argv)
+static void
+upc_init_options (unsigned int decoded_options_count,
+		  struct cl_decoded_option *decoded_options)
 {
-  unsigned int result;
-  result = c_common_init_options (argc, argv);
+  struct cl_option_handlers handlers;
+
+  c_common_init_options (decoded_options_count, decoded_options);
 
   /* UPC is based upon the C99 dialect. Assert it here.
    * We'll let the user override these options as he/she
@@ -163,8 +141,11 @@ upc_init_options (unsigned int argc, const char **argv)
      are compilation errors.  Enable this warning-as-error
      mode by default.  */
   warn_pointer_arith = 1;
-  enable_warning_as_error ("pointer-arith", true,
-                            CL_C | CL_ObjC | CL_UPC);
+  set_default_handlers (&handlers);
+  control_warning_option (OPT_Wpointer_arith, (int) DK_ERROR, true,
+			  UNKNOWN_LOCATION, CL_C | CL_ObjC | CL_UPC,
+			  &handlers, &global_options, &global_options_set,
+			  global_dc);
 
 #ifdef ENABLE_UPC_DWARF2_SUPPORT
   /* Some targets support UPC's DWARF2 extensions by default. */
@@ -192,18 +173,11 @@ upc_init_options (unsigned int argc, const char **argv)
      inlining, otherwise use the user specified flag for unconditional 
      enable/disable of inlining (0 - disable, 1 - enable) */
   flag_upc_inline_lib = -1;
-  return result;
 }
 
 static bool upc_post_options (const char **pfilename)
 {
   return c_common_post_options (pfilename);
-}
-
-static void
-upc_write_global_declarations (void)
-{
-  c_write_global_declarations ();
 }
 
 static alias_set_type

@@ -1,5 +1,6 @@
 /* Definitions for Intel 386 running FreeBSD with ELF format
-   Copyright (C) 1996, 2000, 2002, 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 1996, 2000, 2002, 2004, 2007, 2010
+   Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu.
    Adapted from GNU/Linux version by John Polstra.
@@ -100,7 +101,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef	LINK_SPEC
 #define LINK_SPEC "\
-  %{p:%nconsider using `-pg' instead of `-p' with gprof(1)} \
+  %{p:%nconsider using '-pg' instead of '-p' with gprof(1)} \
   %{v:-V} \
   %{assert*} %{R*} %{rpath*} %{defsym*} \
   %{shared:-Bshareable %{h*} %{soname*}} \
@@ -138,3 +139,17 @@ along with GCC; see the file COPYING3.  If not see
    compiler get the contents of <float.h> and std::numeric_limits correct.  */
 #undef TARGET_96_ROUND_53_LONG_DOUBLE
 #define TARGET_96_ROUND_53_LONG_DOUBLE (!TARGET_64BIT)
+
+/* Put all *tf routines in libgcc.  */
+#undef LIBGCC2_HAS_TF_MODE
+#define LIBGCC2_HAS_TF_MODE 1
+#define LIBGCC2_TF_CEXT q
+#define TF_SIZE 113
+
+/* Static stack checking is supported by means of probes.  */
+#define STACK_CHECK_STATIC_BUILTIN 1
+
+/* Support for i386 has been removed from FreeBSD 6.0 onward.  */
+#if FBSD_MAJOR >= 6
+#define SUBTARGET32_DEFAULT_CPU "i486"
+#endif

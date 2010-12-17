@@ -35,5 +35,5 @@ main ()
   return 0;
 }
 
-/* { dg-final { scan-ipa-dump "Number of structures to transform is 1" "ipa_struct_reorg" } } */
+/* { dg-final { scan-ipa-dump "Number of structures to transform is 1" "ipa_struct_reorg" { xfail *-*-* } } } */
 /* { dg-final { cleanup-ipa-dump "*" } } */

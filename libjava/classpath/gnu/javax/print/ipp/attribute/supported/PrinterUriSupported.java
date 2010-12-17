@@ -1,4 +1,4 @@
-/* PrinterUriSupported.java -- 
+/* PrinterUriSupported.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -40,6 +40,7 @@ package gnu.javax.print.ipp.attribute.supported;
 
 import java.net.URI;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.SupportedValuesAttribute;
 import javax.print.attribute.URISyntax;
 
@@ -47,10 +48,10 @@ import javax.print.attribute.URISyntax;
  * PrinterUriSupported attribute as described in RFC 2911 section
  * 4.4.1 contains one of the URIs the printer supported for
  * job processing (e.g. one with authentication).
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class PrinterUriSupported extends URISyntax 
+public final class PrinterUriSupported extends URISyntax
   implements SupportedValuesAttribute
 {
 
@@ -70,7 +71,7 @@ public final class PrinterUriSupported extends URISyntax
    *
    * @return The class <code>PrinterUriSupported</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return PrinterUriSupported.class;
   }

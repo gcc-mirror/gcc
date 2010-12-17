@@ -665,8 +665,6 @@ main (void)
 
 #undef index
 
-#include <signal.h>
-
 #ifndef CROSS_DIRECTORY_STRUCTURE
 #include <a.out.h>
 #else

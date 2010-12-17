@@ -634,6 +634,9 @@ extern int vsnprintf (char *, size_t, const char *, va_list) ATTRIBUTE_PRINTF(3,
 extern int strverscmp (const char *, const char *);
 #endif
 
+/* Set the title of a process */
+extern void setproctitle (const char *name, ...);
+
 #define ARRAY_SIZE(a) (sizeof (a) / sizeof ((a)[0]))
 
 /* Drastically simplified alloca configurator.  If we're using GCC,

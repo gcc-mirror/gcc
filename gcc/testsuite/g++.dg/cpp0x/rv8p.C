@@ -8,14 +8,14 @@
 template <bool> struct sa;
 template <> struct sa<true> {};
 
-struct one   {char x[1];};
-struct two   {char x[2];};
-struct three {char x[3];};
-struct four  {char x[4];};
-struct five  {char x[5];};
-struct six   {char x[6];};
-struct seven {char x[7];};
-struct eight {char x[8];};
+struct one   {long x[1];};
+struct two   {long x[2];};
+struct three {long x[3];};
+struct four  {long x[4];};
+struct five  {long x[5];};
+struct six   {long x[6];};
+struct seven {long x[7];};
+struct eight {long x[8];};
 
 struct A
 {
@@ -42,17 +42,17 @@ eight sink_8_12345678(const volatile A&&);
 int test8_12345678()
 {
                    A a;
-    const          A ca = a;
+    const          A ca;
           volatile A va;
-    const volatile A cva = a;
-    sa<sizeof(sink_8_12345678(a))           == 1> t1;
-    sa<sizeof(sink_8_12345678(ca))          == 2> t2;
-    sa<sizeof(sink_8_12345678(va))          == 3> t3;
-    sa<sizeof(sink_8_12345678(cva))         == 4> t4;
-    sa<sizeof(sink_8_12345678(source()))    == 5> t5;
-    sa<sizeof(sink_8_12345678(c_source()))  == 6> t6;
-    sa<sizeof(sink_8_12345678(v_source()))  == 7> t7;
-    sa<sizeof(sink_8_12345678(cv_source())) == 8> t8;
+    const volatile A cva;
+    sa<sizeof(sink_8_12345678(a))           == 1 * sizeof(long)> t1;
+    sa<sizeof(sink_8_12345678(ca))          == 2 * sizeof(long)> t2;
+    sa<sizeof(sink_8_12345678(va))          == 3 * sizeof(long)> t3;
+    sa<sizeof(sink_8_12345678(cva))         == 4 * sizeof(long)> t4;
+    sa<sizeof(sink_8_12345678(source()))    == 5 * sizeof(long)> t5;
+    sa<sizeof(sink_8_12345678(c_source()))  == 6 * sizeof(long)> t6;
+    sa<sizeof(sink_8_12345678(v_source()))  == 7 * sizeof(long)> t7;
+    sa<sizeof(sink_8_12345678(cv_source())) == 8 * sizeof(long)> t8;
     return 0;
 }
 

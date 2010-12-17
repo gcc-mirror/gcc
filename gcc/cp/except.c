@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-tree.h"
 #include "flags.h"
 #include "output.h"
-#include "toplev.h"
 #include "tree-inline.h"
 #include "tree-iterator.h"
 #include "target.h"
@@ -295,9 +294,8 @@ decl_is_java_type (tree decl, int err)
 /* Select the personality routine to be used for exception handling,
    or issue an error if we need two different ones in the same
    translation unit.
-   ??? At present eh_personality_decl is set to
-   __gxx_personality_(sj|v)0 in init_exception_processing - should it
-   be done here instead?  */
+   ??? At present DECL_FUNCTION_PERSONALITY is set via
+   LANG_HOOKS_EH_PERSONALITY.  Should it be done here instead?  */
 void
 choose_personality_routine (enum languages lang)
 {
@@ -376,7 +374,7 @@ initialize_handler_parm (tree decl, tree exp)
      pointer catch parm with the address of the temporary.  */
   if (TREE_CODE (init_type) == REFERENCE_TYPE
       && TYPE_PTR_P (TREE_TYPE (init_type)))
-    exp = cp_build_unary_op (ADDR_EXPR, exp, 1, tf_warning_or_error);
+    exp = cp_build_addr_expr (exp, tf_warning_or_error);
 
   exp = ocp_convert (init_type, exp, CONV_IMPLICIT|CONV_FORCE_TEMP, 0);
 
@@ -649,7 +647,9 @@ build_throw (tree exp)
     {
       if (cfun)
 	current_function_returns_abnormally = 1;
-      return build_min (THROW_EXPR, void_type_node, exp);
+      exp = build_min (THROW_EXPR, void_type_node, exp);
+      SET_EXPR_LOCATION (exp, input_location);
+      return exp;
     }
 
   if (exp == null_node)
@@ -835,6 +835,7 @@ build_throw (tree exp)
     }
 
   exp = build1 (THROW_EXPR, void_type_node, exp);
+  SET_EXPR_LOCATION (exp, input_location);
 
   return exp;
 }
@@ -1052,21 +1053,69 @@ check_noexcept_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
 
       STRIP_NOPS (fn);
       if (TREE_CODE (fn) == ADDR_EXPR)
+	fn = TREE_OPERAND (fn, 0);
+      if (TREE_CODE (fn) == FUNCTION_DECL)
 	{
 	  /* We do use TREE_NOTHROW for ABI internals like __dynamic_cast,
 	     and for C library functions known not to throw.  */
-	  fn = TREE_OPERAND (fn, 0);
-	  if (TREE_CODE (fn) == FUNCTION_DECL
-	      && DECL_EXTERN_C_P (fn)
+	  if (DECL_EXTERN_C_P (fn)
 	      && (DECL_ARTIFICIAL (fn)
 		  || nothrow_libfn_p (fn)))
 	    return TREE_NOTHROW (fn) ? NULL_TREE : fn;
+	  /* A call to a constexpr function is noexcept if the call
+	     is a constant expression.  */
+	  if (DECL_DECLARED_CONSTEXPR_P (fn)
+	      && is_sub_constant_expr (t))
+	    return NULL_TREE;
 	}
       if (!TYPE_NOTHROW_P (type))
 	return fn;
     }
 
   return NULL_TREE;
+}
+
+/* If a function that causes a noexcept-expression to be false isn't
+   defined yet, remember it and check it for TREE_NOTHROW again at EOF.  */
+
+typedef struct GTY(()) pending_noexcept {
+  tree fn;
+  location_t loc;
+} pending_noexcept;
+DEF_VEC_O(pending_noexcept);
+DEF_VEC_ALLOC_O(pending_noexcept,gc);
+static GTY(()) VEC(pending_noexcept,gc) *pending_noexcept_checks;
+
+/* FN is a FUNCTION_DECL that caused a noexcept-expr to be false.  Warn if
+   it can't throw.  */
+
+static void
+maybe_noexcept_warning (tree fn)
+{
+  if (TREE_NOTHROW (fn))
+    {
+      warning (OPT_Wnoexcept, "noexcept-expression evaluates to %<false%> "
+	       "because of a call to %qD", fn);
+      warning (OPT_Wnoexcept, "but %q+D does not throw; perhaps "
+	       "it should be declared %<noexcept%>", fn);
+    }
+}
+
+/* Check any functions that weren't defined earlier when they caused a
+   noexcept expression to evaluate to false.  */
+
+void
+perform_deferred_noexcept_checks (void)
+{
+  int i;
+  pending_noexcept *p;
+  location_t saved_loc = input_location;
+  FOR_EACH_VEC_ELT (pending_noexcept, pending_noexcept_checks, i, p)
+    {
+      input_location = p->loc;
+      maybe_noexcept_warning (p->fn);
+    }
+  input_location = saved_loc;
 }
 
 /* Evaluate noexcept ( EXPR ).  */
@@ -1082,13 +1131,20 @@ finish_noexcept_expr (tree expr, tsubst_flags_t complain)
   fn = cp_walk_tree_without_duplicates (&expr, check_noexcept_r, 0);
   if (fn)
     {
-      if ((complain & tf_warning) && TREE_CODE (fn) == FUNCTION_DECL
-	  && TREE_NOTHROW (fn) && !DECL_ARTIFICIAL (fn))
+      if ((complain & tf_warning) && warn_noexcept
+	  && TREE_CODE (fn) == FUNCTION_DECL)
 	{
-	  warning (OPT_Wnoexcept, "noexcept-expression evaluates to %<false%> "
-		   "because of a call to %qD", fn);
-	  warning (OPT_Wnoexcept, "but %q+D does not throw; perhaps "
-		   "it should be declared %<noexcept%>", fn);
+	  if (!DECL_INITIAL (fn))
+	    {
+	      /* Not defined yet; check again at EOF.  */
+	      pending_noexcept *p
+		= VEC_safe_push (pending_noexcept, gc,
+				 pending_noexcept_checks, NULL);
+	      p->fn = fn;
+	      p->loc = input_location;
+	    }
+	  else
+	    maybe_noexcept_warning (fn);
 	}
       return boolean_false_node;
     }
@@ -1143,9 +1199,15 @@ type_throw_all_p (const_tree type)
 tree
 build_noexcept_spec (tree expr, int complain)
 {
-  expr = perform_implicit_conversion_flags (boolean_type_node, expr,
-					    complain,
-					    LOOKUP_NORMAL);
+  /* This isn't part of the signature, so don't bother trying to evaluate
+     it until instantiation.  */
+  if (!processing_template_decl)
+    {
+      expr = cxx_constant_value (expr);
+      expr = perform_implicit_conversion_flags (boolean_type_node, expr,
+						complain,
+						LOOKUP_NORMAL);
+    }
   if (expr == boolean_true_node)
     return noexcept_true_spec;
   else if (expr == boolean_false_node)

@@ -34,36 +34,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "function.h"
 #include "expr.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "tm_p.h"
 #include "addresses.h"
 #include "output.h"
 #include "ggc.h"
 
-/* True if caller-save has been initialized.  */
-bool caller_save_initialized_p;
-
-/* Call used hard registers which can not be saved because there is no
-   insn for this.  */
-HARD_REG_SET no_caller_save_reg_set;
-
-#ifndef MAX_MOVE_MAX
-#define MAX_MOVE_MAX MOVE_MAX
-#endif
-
-#ifndef MIN_UNITS_PER_WORD
-#define MIN_UNITS_PER_WORD UNITS_PER_WORD
-#endif
-
 #define MOVE_MAX_WORDS (MOVE_MAX / UNITS_PER_WORD)
 
-/* Modes for each hard register that we can save.  The smallest mode is wide
-   enough to save the entire contents of the register.  When saving the
-   register because it is live we first try to save in multi-register modes.
-   If that is not possible the save is done one register at a time.  */
-
-static enum machine_mode
-  regno_save_mode[FIRST_PSEUDO_REGISTER][MAX_MOVE_MAX / MIN_UNITS_PER_WORD + 1];
+#define regno_save_mode \
+  (this_target_reload->x_regno_save_mode)
+#define cached_reg_save_code \
+  (this_target_reload->x_cached_reg_save_code)
+#define cached_reg_restore_code \
+  (this_target_reload->x_cached_reg_restore_code)
 
 /* For each hard register, a place on the stack where it can be saved,
    if needed.  */
@@ -76,17 +60,6 @@ static int save_slots_num;
 
 /* Allocated slots so far.  */
 static rtx save_slots[FIRST_PSEUDO_REGISTER];
-
-/* We will only make a register eligible for caller-save if it can be
-   saved in its widest mode with a simple SET insn as long as the memory
-   address is valid.  We record the INSN_CODE is those insns here since
-   when we emit them, the addresses might not be valid, so they might not
-   be recognized.  */
-
-static int
-  cached_reg_save_code[FIRST_PSEUDO_REGISTER][MAX_MACHINE_MODE];
-static int
-  cached_reg_restore_code[FIRST_PSEUDO_REGISTER][MAX_MACHINE_MODE];
 
 /* Set of hard regs currently residing in save area (during insn scan).  */
 
@@ -142,15 +115,19 @@ reg_save_code (int reg, enum machine_mode mode)
   if (cached_reg_save_code[reg][mode])
      return cached_reg_save_code[reg][mode];
   if (!HARD_REGNO_MODE_OK (reg, mode))
-     {
-       cached_reg_save_code[reg][mode] = -1;
-       cached_reg_restore_code[reg][mode] = -1;
-       return -1;
-     }
+    {
+      /* Depending on how HARD_REGNO_MODE_OK is defined, range propagation
+	 might deduce here that reg >= FIRST_PSEUDO_REGISTER.  So the assert
+	 below silences a warning.  */
+      gcc_assert (reg < FIRST_PSEUDO_REGISTER);
+      cached_reg_save_code[reg][mode] = -1;
+      cached_reg_restore_code[reg][mode] = -1;
+      return -1;
+    }
 
   /* Update the register number and modes of the register
      and memory operand.  */
-  SET_REGNO (test_reg, reg);
+  SET_REGNO_RAW (test_reg, reg);
   PUT_MODE (test_reg, mode);
   PUT_MODE (test_mem, mode);
 
@@ -289,8 +266,8 @@ init_caller_save (void)
   savepat = gen_rtx_SET (VOIDmode, test_mem, test_reg);
   restpat = gen_rtx_SET (VOIDmode, test_reg, test_mem);
 
-  saveinsn = gen_rtx_INSN (VOIDmode, 0, 0, 0, 0, 0, savepat, -1, 0);
-  restinsn = gen_rtx_INSN (VOIDmode, 0, 0, 0, 0, 0, restpat, -1, 0);
+  saveinsn = gen_rtx_INSN (VOIDmode, 0, 0, 0, 0, savepat, 0, -1, 0);
+  restinsn = gen_rtx_INSN (VOIDmode, 0, 0, 0, 0, restpat, 0, -1, 0);
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     for (j = 1; j <= MOVE_MAX_WORDS; j++)
@@ -789,6 +766,7 @@ save_call_clobbered_regs (void)
 	  if (n_regs_saved)
 	    {
 	      int regno;
+	      HARD_REG_SET this_insn_sets;
 
 	      if (code == JUMP_INSN)
 		/* Restore all registers if this is a JUMP_INSN.  */
@@ -803,7 +781,17 @@ save_call_clobbered_regs (void)
 
 	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 		if (TEST_HARD_REG_BIT (referenced_regs, regno))
-		  regno += insert_restore (chain, 1, regno, MOVE_MAX_WORDS, save_mode);
+		  regno += insert_restore (chain, 1, regno, MOVE_MAX_WORDS,
+					   save_mode);
+	      /* If a saved register is set after the call, this means we no
+		 longer should restore it.  This can happen when parts of a
+		 multi-word pseudo do not conflict with other pseudos, so
+		 IRA may allocate the same hard register for both.  One may
+		 be live across the call, while the other is set
+		 afterwards.  */
+	      CLEAR_HARD_REG_SET (this_insn_sets);
+	      note_stores (PATTERN (insn), mark_set_regs, &this_insn_sets);
+	      AND_COMPL_HARD_REG_SET (hard_regs_saved, this_insn_sets);
 	    }
 
 	  if (code == CALL_INSN
@@ -883,7 +871,10 @@ save_call_clobbered_regs (void)
 	     remain saved.  If the last insn in the block is a JUMP_INSN, put
 	     the restore before the insn, otherwise, put it after the insn.  */
 
-	  if (DEBUG_INSN_P (insn) && last && last->block == chain->block)
+	  if (n_regs_saved
+	      && DEBUG_INSN_P (insn)
+	      && last
+	      && last->block == chain->block)
 	    {
 	      rtx ins, prev;
 	      basic_block bb = BLOCK_FOR_INSN (insn);

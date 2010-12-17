@@ -1,3 +1,98 @@
+2010-11-29  Richard Henderson  <rth@redhat.com>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* src/x86/sysv.S (FDE_ENCODING, FDE_ENCODE): Define.
+	(.eh_frame): Use FDE_ENCODING.
+	(.LASFDE1, .LASFDE2, LASFDE3): Simplify with FDE_ENCODE.
+
+2010-11-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/lib/libffi-dg.exp: Rename ...
+	* testsuite/lib/libffi.exp: ... to this.
+	* libffi/testsuite/libffi.call/call.exp: Don't load libffi-dg.exp.
+	* libffi/testsuite/libffi.special/special.exp: Likewise.
+
+2010-10-28  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* src/arm/ffi.c (ffi_prep_args): Add VFP register argument handling
+	code, new parameter, and return value. Update comments.
+	(ffi_prep_cif_machdep): Add case for VFP struct return values. Add
+	call to layout_vfp_args().
+	(ffi_call_SYSV): Update declaration.
+	(ffi_call_VFP): New declaration.
+	(ffi_call): Add VFP struct return conditions. Call ffi_call_VFP()
+	when ABI is FFI_VFP.
+	(ffi_closure_VFP): New declaration.
+	(ffi_closure_SYSV_inner): Add new vfp_args parameter, update call to
+	ffi_prep_incoming_args_SYSV().
+	(ffi_prep_incoming_args_SYSV): Update parameters. Add VFP argument
+	case handling.
+	(ffi_prep_closure_loc): Pass ffi_closure_VFP to trampoline
+	construction under VFP hard-float.
+	(rec_vfp_type_p): New function.
+	(vfp_type_p): Same.
+	(place_vfp_arg): Same.
+	(layout_vfp_args): Same.
+	* src/arm/ffitarget.h (ffi_abi): Add FFI_VFP. Define FFI_DEFAULT_ABI
+	based on __ARM_PCS_VFP.
+	(FFI_EXTRA_CIF_FIELDS): Define for adding VFP hard-float specific
+	fields.
+	(FFI_TYPE_STRUCT_VFP_FLOAT): Define internally used type code.
+	(FFI_TYPE_STRUCT_VFP_DOUBLE): Same.
+	* src/arm/sysv.S (ffi_call_SYSV): Change call of ffi_prep_args() to
+	direct call. Move function pointer load upwards.
+	(ffi_call_VFP): New function.
+	(ffi_closure_VFP): Same.
+
+	* testsuite/lib/libffi-dg.exp (check-flags): New function.
+	(dg-skip-if): New function.
+	* testsuite/libffi.call/cls_double_va.c: Skip if target is arm*-*-*
+	and compiler options include -mfloat-abi=hard.
+	* testsuite/libffi.call/cls_longdouble_va.c: Same.
+
+2010-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libffi/45677
+	* src/x86/ffi64.c (ffi_prep_cif_machdep): Ensure cif->bytes is
+	a multiple of 8.
+	* testsuite/libffi.call/many2.c: New test.
+
+2010-08-20  Mark Wielaard  <mjw@redhat.com>
+
+	* src/closures.c (open_temp_exec_file_mnt): Check if getmntent_r
+	returns NULL.
+
+2010-08-09  Andreas Tobler  <andreast@fgznet.ch>
+
+	* configure.ac: Add target powerpc64-*-freebsd*.
+	* configure: Regenerate.
+	* testsuite/libffi.call/cls_align_longdouble_split.c: Pass
+	-mlong-double-128 only to linux targets.
+	* testsuite/libffi.call/cls_align_longdouble_split2.c: Likewise.
+	* testsuite/libffi.call/cls_longdouble.c: Likewise.
+	* testsuite/libffi.call/huge_struct.c: Likewise.
+
+2010-07-10  Evan Phoenix  <evan@fallingsnow.net>
+
+	* src/closures.c (selinux_enabled_check): Fix strncmp usage bug.
+
+2010-07-07  Dan Horák <dan@danny.cz>
+
+	* include/ffi.h.in: Protect #define with #ifndef.
+	* src/powerpc/ffitarget.h: Ditto.
+	* src/s390/ffitarget.h: Ditto.
+	* src/sparc/ffitarget.h: Ditto.
+
+2010-07-07   Neil Roberts <neil@linux.intel.com>
+
+	* src/x86/sysv.S (ffi_call_SYSV): Align the stack pointer to
+	16-bytes.
+
+2010-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am (AM_MAKEFLAGS): Pass also mandir to submakes.
+	* Makefile.in: Regenerated.
+
 2010-05-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (libffi_cv_as_x86_pcrel): Check for illegal in as
@@ -8,10 +103,32 @@
 	* fficonfig.h.in: Regenerate.
 	* src/x86/sysv.S (.eh_frame): Use .ascii, .string or error.
 
+2010-05-05  Michael Kohler <michaelkohler@live.com>
+
+	* src/dlmalloc.c (dlfree): Fix spelling.
+	* src/ia64/ffi.c (ffi_prep_cif_machdep): Ditto.
+	* configure.ac: Ditto.
+	* configure: Rebuilt.
+
+2010-04-13  Dan Witte  <dwitte@mozilla.com>
+
+	* msvcc.sh: Build with -W3 instead of -Wall.
+	* src/powerpc/ffi_darwin.c: Remove build warnings.
+	* src/x86/ffi.c: Ditto.
+	* src/x86/ffitarget.h: Ditto.
+
+2010-04-12  Dan Witte  <dwitte@mozilla.com>
+	    Walter Meinl <wuno@lsvw.de>
+
+	* configure.ac: Add OS/2 support.
+	* configure: Rebuilt.
+	* src/closures.c: Ditto.
+	* src/dlmalloc.c: Ditto.
+	* src/x86/win32.S: Ditto.
+
 2010-04-07  Jakub Jelinek  <jakub@redhat.com>
 
-	* regex.c (byte_re_match_2_internal): Avoid set but not used
-	warning.
+	* testsuite/libffi.call/err_bad_abi.c: Remove unused args variable.
 
 2010-04-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
@@ -29,6 +146,11 @@
 	* libffi/src/x86/unix64.S (.eh_frame)
 	[HAVE_AS_X86_64_UNWIND_SECTION_TYPE]: Use @unwind section type.
 
+2010-03-14  Matthias Klose  <doko@ubuntu.com>
+
+	* src/x86/ffi64.c: Fix typo in comment.
+	* src/x86/ffi.c: Use /* ... */ comment style.
+
 2010-02-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/libffi.texi (The Closure API): Fix typo.
@@ -38,6 +160,38 @@
 
 	* src/arm/sysv.S (__ARM_ARCH__): Define for processor
 	__ARM_ARCH_7EM__.
+
+2010-01-15  Anthony Green  <green@redhat.com>
+
+	* README: Add notes on building with Microsoft Visual C++.
+
+2010-01-15  Daniel Witte  <dwitte@mozilla.com>
+
+	* msvcc.sh: New file.
+
+	* src/x86/win32.S: Port assembly routines to MSVC and #ifdef.
+	* src/x86/ffi.c: Tweak function declaration and remove excess
+	parens.
+	* include/ffi.h.in: Add __declspec(align(8)) to typedef struct
+	ffi_closure.
+
+	* src/x86/ffi.c: Merge ffi_call_SYSV and ffi_call_STDCALL into new
+	function ffi_call_win32 on X86_WIN32.
+	* src/x86/win32.S (ffi_call_SYSV): Rename to ffi_call_win32.
+	(ffi_call_STDCALL): Remove.
+
+	* src/prep_cif.c (ffi_prep_cif): Move stack space allocation code
+	to ffi_prep_cif_machdep for x86.
+	* src/x86/ffi.c (ffi_prep_cif_machdep): To here.
+
+2010-01-15  Oliver Kiddle  <okiddle@yahoo.co.uk>
+
+	* src/x86/ffitarget.h (ffi_abi): Check for __i386 and __amd64 for
+	Sun Studio compiler compatibility. 
+
+2010-01-12  Conrad Irwin <conrad.irwin@gmail.com>
+
+	* doc/libffi.texi: Add closure example.
 
 2010-01-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 

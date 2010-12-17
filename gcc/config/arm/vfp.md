@@ -82,6 +82,7 @@
   "
   [(set_attr "predicable" "yes")
    (set_attr "type" "*,*,*,*,load1,store1,r_2_f,f_2_r,fcpys,f_loads,f_stores")
+   (set_attr "insn" "mov,mov,mvn,mov,*,*,*,*,*,*,*")
    (set_attr "pool_range"     "*,*,*,*,4096,*,*,*,*,1020,*")
    (set_attr "neg_pool_range" "*,*,*,*,4084,*,*,*,*,1008,*")]
 )
@@ -123,6 +124,7 @@
   "
   [(set_attr "predicable" "yes")
    (set_attr "type" "*,*,*,*,load1,load1,store1,store1,r_2_f,f_2_r,fcpys,f_load,f_store")
+   (set_attr "insn" "mov,mov,mvn,mov,*,*,*,*,*,*,*,*,*")
    (set_attr "pool_range"     "*,*,*,*,1020,4096,*,*,*,*,*,1020,*")
    (set_attr "neg_pool_range" "*,*,*,*,   0,   0,*,*,*,*,*,1008,*")]
 )
@@ -352,6 +354,7 @@
   [(set_attr "predicable" "yes")
    (set_attr "type"
      "r_2_f,f_2_r,fconsts,f_loads,f_stores,load1,store1,fcpys,*")
+   (set_attr "insn" "*,*,*,*,*,*,*,*,mov")
    (set_attr "pool_range" "*,*,*,1020,*,4096,*,*,*")
    (set_attr "neg_pool_range" "*,*,*,1008,*,4080,*,*,*")]
 )
@@ -388,6 +391,7 @@
   [(set_attr "predicable" "yes")
    (set_attr "type"
      "r_2_f,f_2_r,fconsts,f_load,f_store,load1,store1,fcpys,*")
+   (set_attr "insn" "*,*,*,*,*,*,*,*,mov")
    (set_attr "pool_range" "*,*,*,1020,*,4092,*,*,*")
    (set_attr "neg_pool_range" "*,*,*,1008,*,0,*,*,*")]
 )
@@ -1099,7 +1103,7 @@
    fcmpes%?\\t%0, %1
    fcmpezs%?\\t%0"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "fcmpd")]
+   (set_attr "type" "fcmps")]
 )
 
 (define_insn "*cmpdf_vfp"
@@ -1132,7 +1136,7 @@
 (define_insn "*push_multi_vfp"
   [(match_parallel 2 "multi_register_push"
     [(set (match_operand:BLK 0 "memory_operand" "=m")
-	  (unspec:BLK [(match_operand:DF 1 "s_register_operand" "w")]
+	  (unspec:BLK [(match_operand:DF 1 "vfp_register_operand" "")]
 		      UNSPEC_PUSH_MULT))])]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "* return vfp_output_fstmd (operands);"

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,13 +57,13 @@ package System.Pool_Global is
      (Pool : Unbounded_No_Reclaim_Pool)
       return System.Storage_Elements.Storage_Count;
 
-   procedure Allocate
+   overriding procedure Allocate
      (Pool         : in out Unbounded_No_Reclaim_Pool;
       Address      : out System.Address;
       Storage_Size : System.Storage_Elements.Storage_Count;
       Alignment    : System.Storage_Elements.Storage_Count);
 
-   procedure Deallocate
+   overriding procedure Deallocate
      (Pool         : in out Unbounded_No_Reclaim_Pool;
       Address      : System.Address;
       Storage_Size : System.Storage_Elements.Storage_Count;

@@ -1,3 +1,57 @@
+2010-11-23  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/24358
+	* lang-specs.h: Print a deprecation note every time
+	objc++-cpp-output is requested.
+
+2010-10-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objcp-lang.c (LANG_HOOKS_DECL_PRINTABLE_NAME): Do not define.
+
+2010-10-20  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objcp-lang.c (finish_file): Removed.
+
+2010-10-14  Iain Sandoe  <iains@gcc.gnu.org>
+
+	merge from FSF apple 'trunk' branch. 
+	2006 Fariborz Jahanian <fjahanian@apple.com>
+	
+	Radars 4436866, 4505126, 4506903, 4517826
+	* objcp-lang.c (objcxx_init_ts): Update for property_decl.
+
+2010-10-13  Richard Henderson  <rth@redhat.com>
+
+	* objcp-lang.c (objcxx_eh_personality): Update call to
+	build_personality_function.
+
+2010-10-11  Andi Kleen  <ak@linux.intel.com>
+
+	* Make-lang.in (cc1objplus-checksum.c): Use correct temporary
+	name.
+
+2010-10-07  Andi Kleen  <ak@linux.intel.com>
+
+	* Make-lang.in (cc1objplus-dummy): Remove.
+	(cc1objplus-checksum): Change to run checksum over object files
+        and options only.
+
+2010-10-04  Andi Kleen <ak@linux.intel.com>
+
+	* Make-lang.in (cc1objplus-dummy, cc1objplus): Add + to build rule.
+
+2010-09-28  Richard Henderson  <rth@redhat.com>
+
+	* objcp-lang.c: Include "target.h".
+	(objcxx_eh_personality): Use targetm.except_unwind_info.
+	* Make-lang.in (objcp-lang.o): Update deps.
+
+2010-09-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/25965	
+	* objcp-decl.c (objcp_finish_struct): Call
+	objc_get_interface_ivars() and check for duplicate ivars.
+
 2010-06-28  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* objcp-lang.c: Do not include except.h.

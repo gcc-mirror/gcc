@@ -61,6 +61,7 @@
 #include <bits/stl_algobase.h>
 #include <bits/allocator.h>
 #include <bits/stl_list.h>
+#include <bits/range_access.h>
 
 #ifndef _GLIBCXX_EXPORT_TEMPLATE
 # include <bits/list.tcc>

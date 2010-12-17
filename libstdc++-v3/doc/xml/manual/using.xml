@@ -1,21 +1,15 @@
-<?xml version='1.0'?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
-[ ]>
-
-<chapter id="manual.intro.using" xreflabel="Using">
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="manual.intro.using" xreflabel="Using">
+  <info><title>Using</title></info>
   <?dbhtml filename="using.html"?>
 
-<title>Using</title>
-
-
-  <sect1 id="manual.intro.using.flags" xreflabel="Flags">
-    <title>Command Options</title>
+  <section xml:id="manual.intro.using.flags" xreflabel="Flags"><info><title>Command Options</title></info>
+    
     <para>
       The set of features available in the GNU C++ library is shaped
       by
-      several <ulink url="http://gcc.gnu.org/onlinedocs/gcc-4.3.2//gcc/Invoking-GCC.html">GCC
-      Command Options</ulink>. Options that impact libstdc++ are
+      several <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc-4.3.2//gcc/Invoking-GCC.html">GCC
+      Command Options</link>. Options that impact libstdc++ are
       enumerated and detailed in the table below.
     </para>
 
@@ -23,11 +17,12 @@
       By default, <command>g++</command> is equivalent to  <command>g++ -std=gnu++98</command>. The standard library also defaults to this dialect.
     </para>
 
- <table frame='all'>
+ <table frame="all">
 <title>C++ Command Options</title>
-<tgroup cols='2' align='left' colsep='1' rowsep='1'>
-<colspec colname='c1'></colspec>
-<colspec colname='c2'></colspec>
+
+<tgroup cols="2" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
 
   <thead>
     <row>
@@ -82,19 +77,19 @@
 </tgroup>
 </table>
 
-  </sect1>
+  </section>
 
-  <sect1 id="manual.intro.using.headers" xreflabel="Headers">
+  <section xml:id="manual.intro.using.headers" xreflabel="Headers"><info><title>Headers</title></info>
     <?dbhtml filename="using_headers.html"?>
-    <title>Headers</title>
+    
 
-    <sect2 id="manual.intro.using.headers.all" xreflabel="Header Files">
-      <title>Header Files</title>
+    <section xml:id="manual.intro.using.headers.all" xreflabel="Header Files"><info><title>Header Files</title></info>
+      
 
    <para>
      The C++ standard specifies the entire set of header files that
      must be available to all hosted implementations.  Actually, the
-     word &quot;files&quot; is a misnomer, since the contents of the
+     word "files" is a misnomer, since the contents of the
      headers don't necessarily have to be in any kind of external
      file.  The only rule is that when one <code>#include</code>'s a
      header, the contents of that header become available, no matter
@@ -121,14 +116,15 @@
      C++98/03 include files. These are available in the default compilation mode, i.e. <code>-std=c++98</code> or <code>-std=gnu++98</code>.
    </para>
 
-<table frame='all'>
+<table frame="all">
 <title>C++ 1998 Library Headers</title>
-<tgroup cols='5' align='left' colsep='1' rowsep='1'>
-<colspec colname='c1'></colspec>
-<colspec colname='c2'></colspec>
-<colspec colname='c3'></colspec>
-<colspec colname='c4'></colspec>
-<colspec colname='c5'></colspec>
+
+<tgroup cols="5" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
+<colspec colname="c5"/>
 <tbody>
 <row>
 <entry><filename class="headerfile">algorithm</filename></entry>
@@ -180,15 +176,16 @@
 </tgroup>
 </table>
 
-<para></para>
-<table frame='all'>
+<para/>
+<table frame="all">
 <title>C++ 1998 Library Headers for C Library Facilities</title>
-<tgroup cols='5' align='left' colsep='1' rowsep='1'>
-<colspec colname='c1'></colspec>
-<colspec colname='c2'></colspec>
-<colspec colname='c3'></colspec>
-<colspec colname='c4'></colspec>
-<colspec colname='c5'></colspec>
+
+<tgroup cols="5" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
+<colspec colname="c5"/>
 <tbody>
 <row>
 <entry><filename class="headerfile">cassert</filename></entry>
@@ -225,15 +222,16 @@ C++0x include files. These are only available in C++0x compilation
 mode, i.e. <literal>-std=c++0x</literal> or <literal>-std=gnu++0x</literal>.
 </para>
 
-<para></para>
-<table frame='all'>
+<para/>
+<table frame="all">
 <title>C++ 200x Library Headers</title>
-<tgroup cols='5' align='left' colsep='1' rowsep='1'>
-<colspec colname='c1'></colspec>
-<colspec colname='c2'></colspec>
-<colspec colname='c3'></colspec>
-<colspec colname='c4'></colspec>
-<colspec colname='c5'></colspec>
+
+<tgroup cols="5" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
+<colspec colname="c5"/>
 <tbody>
 
 <row>
@@ -309,16 +307,17 @@ mode, i.e. <literal>-std=c++0x</literal> or <literal>-std=gnu++0x</literal>.
 </tgroup>
 </table>
 
-<para></para>
+<para/>
 
-<table frame='all'>
+<table frame="all">
 <title>C++ 200x Library Headers for C Library Facilities</title>
-<tgroup cols='5' align='left' colsep='1' rowsep='1'>
-<colspec colname='c1'></colspec>
-<colspec colname='c2'></colspec>
-<colspec colname='c3'></colspec>
-<colspec colname='c4'></colspec>
-<colspec colname='c5'></colspec>
+
+<tgroup cols="5" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
+<colspec colname="c5"/>
 <tbody>
 <row>
 <entry><filename class="headerfile">cassert</filename></entry>
@@ -355,10 +354,6 @@ mode, i.e. <literal>-std=c++0x</literal> or <literal>-std=gnu++0x</literal>.
 <entry><filename class="headerfile">cwchar</filename></entry>
 <entry><filename class="headerfile">cwctype</filename></entry>
 </row>
-<row>
-<entry><filename class="headerfile">stdatomic.h</filename></entry>
-</row>
-
 </tbody>
 </tgroup>
 </table>
@@ -368,14 +363,15 @@ mode, i.e. <literal>-std=c++0x</literal> or <literal>-std=gnu++0x</literal>.
   In addition, TR1 includes as:
 </para>
 
-<table frame='all'>
+<table frame="all">
 <title>C++ TR 1 Library Headers</title>
-<tgroup cols='5' align='left' colsep='1' rowsep='1'>
-<colspec colname='c1'></colspec>
-<colspec colname='c2'></colspec>
-<colspec colname='c3'></colspec>
-<colspec colname='c4'></colspec>
-<colspec colname='c5'></colspec>
+
+<tgroup cols="5" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
+<colspec colname="c5"/>
 <tbody>
 
 <row>
@@ -400,17 +396,18 @@ mode, i.e. <literal>-std=c++0x</literal> or <literal>-std=gnu++0x</literal>.
 </tgroup>
 </table>
 
-<para></para>
+<para/>
 
 
-<table frame='all'>
+<table frame="all">
 <title>C++ TR 1 Library Headers for C Library Facilities</title>
-<tgroup cols='5' align='left' colsep='1' rowsep='1'>
-<colspec colname='c1'></colspec>
-<colspec colname='c2'></colspec>
-<colspec colname='c3'></colspec>
-<colspec colname='c4'></colspec>
-<colspec colname='c5'></colspec>
+
+<tgroup cols="5" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
+<colspec colname="c5"/>
 <tbody>
 
 <row>
@@ -445,10 +442,11 @@ compiler supports scalar decimal floating-point types defined via
 <code>__attribute__((mode(SD|DD|LD)))</code>.
 </para>
 
-<table frame='all'>
+<table frame="all">
 <title>C++ TR 24733 Decimal Floating-Point Header</title>
-<tgroup cols='1' align='left' colsep='1' rowsep='1'>
-<colspec colname='c1'></colspec>
+
+<tgroup cols="1" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
 <tbody>
 <row>
 <entry><filename class="headerfile">decimal/decimal</filename></entry>
@@ -461,11 +459,12 @@ compiler supports scalar decimal floating-point types defined via
   Also included are files for the C++ ABI interface:
 </para>
 
-<table frame='all'>
+<table frame="all">
 <title>C++ ABI Headers</title>
-<tgroup cols='2' align='left' colsep='1' rowsep='1'>
-<colspec colname='c1'></colspec>
-<colspec colname='c2'></colspec>
+
+<tgroup cols="2" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
 <tbody>
 <row><entry><filename class="headerfile">cxxabi.h</filename></entry><entry><filename class="headerfile">cxxabi_forced.h</filename></entry></row>
 </tbody>
@@ -476,14 +475,15 @@ compiler supports scalar decimal floating-point types defined via
   And a large variety of extensions.
 </para>
 
-<table frame='all'>
+<table frame="all">
 <title>Extension Headers</title>
-<tgroup cols='5' align='left' colsep='1' rowsep='1'>
-<colspec colname='c1'></colspec>
-<colspec colname='c2'></colspec>
-<colspec colname='c3'></colspec>
-<colspec colname='c4'></colspec>
-<colspec colname='c5'></colspec>
+
+<tgroup cols="5" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
+<colspec colname="c5"/>
 <tbody>
 
 <row>
@@ -536,16 +536,17 @@ compiler supports scalar decimal floating-point types defined via
 </tgroup>
 </table>
 
-<para></para>
+<para/>
 
-<table frame='all'>
+<table frame="all">
 <title>Extension Debug Headers</title>
-<tgroup cols='5' align='left' colsep='1' rowsep='1'>
-<colspec colname='c1'></colspec>
-<colspec colname='c2'></colspec>
-<colspec colname='c3'></colspec>
-<colspec colname='c4'></colspec>
-<colspec colname='c5'></colspec>
+
+<tgroup cols="5" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
+<colspec colname="c5"/>
 <tbody>
 
 <row>
@@ -567,15 +568,16 @@ compiler supports scalar decimal floating-point types defined via
 </tgroup>
 </table>
 
-<para></para>
+<para/>
 
-<table frame='all'>
+<table frame="all">
 <title>Extension Profile Headers</title>
-<tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<colspec colname='c1'></colspec>
-<colspec colname='c2'></colspec>
-<colspec colname='c3'></colspec>
-<colspec colname='c4'></colspec>
+
+<tgroup cols="4" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
 <tbody>
 
 <row>
@@ -596,13 +598,14 @@ compiler supports scalar decimal floating-point types defined via
 </tgroup>
 </table>
 
-<para></para>
+<para/>
 
-<table frame='all'>
+<table frame="all">
 <title>Extension Parallel Headers</title>
-<tgroup cols='2' align='left' colsep='1' rowsep='1'>
-<colspec colname='c1'></colspec>
-<colspec colname='c2'></colspec>
+
+<tgroup cols="2" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
 <tbody>
 <row>
 <entry><filename class="headerfile">parallel/algorithm</filename></entry>
@@ -612,10 +615,10 @@ compiler supports scalar decimal floating-point types defined via
 </tgroup>
 </table>
 
-    </sect2>
+    </section>
 
-    <sect2 id="manual.intro.using.headers.mixing" xreflabel="Mixing Headers">
-      <title>Mixing Headers</title>
+    <section xml:id="manual.intro.using.headers.mixing" xreflabel="Mixing Headers"><info><title>Mixing Headers</title></info>
+      
 
 <para> A few simple rules.
 </para>
@@ -655,10 +658,10 @@ same translation unit:
 
 <para> Several parts of C++0x diverge quite substantially from TR1 predecessors.
 </para>
-    </sect2>
+    </section>
 
-    <sect2 id="manual.intro.using.headers.cheaders" xreflabel="C Headers and">
-      <title>The C Headers and <code>namespace std</code></title>
+    <section xml:id="manual.intro.using.headers.cheaders" xreflabel="C Headers and"><info><title>The C Headers and <code>namespace std</code></title></info>
+      
 
 <para>
 	The standard specifies that if one includes the C-style header
@@ -682,10 +685,10 @@ used uniformly, instead of a combination
 of <code>std::sinf</code>, <code>std::sin</code>,
 and <code>std::sinl</code>.
 </para>
-    </sect2>
+    </section>
 
-    <sect2 id="manual.intro.using.headers.pre" xreflabel="Precompiled Headers">
-      <title>Precompiled Headers</title>
+    <section xml:id="manual.intro.using.headers.pre" xreflabel="Precompiled Headers"><info><title>Precompiled Headers</title></info>
+      
 
 
 <para>There are three base header files that are provided. They can be
@@ -754,18 +757,18 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 </programlisting>
 
 <para>The exclamation point to the left of the <code>stdc++.h.gch</code> listing means that the generated PCH file was used, and thus the </para>
-<para></para>
+<para/>
 
-<para> Detailed information about creating precompiled header files can be found in the GCC <ulink url="http://gcc.gnu.org/onlinedocs/gcc/Precompiled-Headers.html">documentation</ulink>.
+<para> Detailed information about creating precompiled header files can be found in the GCC <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc/Precompiled-Headers.html">documentation</link>.
 </para>
 
-    </sect2>
-  </sect1>
+    </section>
+  </section>
 
 
-  <sect1 id="manual.intro.using.macros" xreflabel="Macros">
+  <section xml:id="manual.intro.using.macros" xreflabel="Macros"><info><title>Macros</title></info>
     <?dbhtml filename="using_macros.html"?>
-    <title>Macros</title>
+    
 
    <para>
      All library macros begin with <code>_GLIBCXX_</code>.
@@ -863,8 +866,7 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 	<code>--enable-concept-checks</code>.  When defined, performs
 	compile-time checking on certain template instantiations to
 	detect violations of the requirements of the standard.  This
-	is described in more detail <link
-	linkend="manual.ext.compile_checks">here</link>.
+	is described in more detail <link linkend="manual.ext.compile_checks">here</link>.
       </para>
     </listitem></varlistentry>
 
@@ -901,14 +903,14 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
     </listitem></varlistentry>
     </variablelist>
 
-  </sect1>
+  </section>
 
-  <sect1 id="manual.intro.using.namespaces" xreflabel="Namespaces">
+  <section xml:id="manual.intro.using.namespaces" xreflabel="Namespaces"><info><title>Namespaces</title></info>
     <?dbhtml filename="using_namespaces.html"?>
-    <title>Namespaces</title>
+    
 
-    <sect2 id="manual.intro.using.namespaces.all" xreflabel="Available Namespaces">
-      <title>Available Namespaces</title>
+    <section xml:id="manual.intro.using.namespaces.all" xreflabel="Available Namespaces"><info><title>Available Namespaces</title></info>
+      
 
 
 
@@ -937,14 +939,14 @@ and <code>__gnu_pbds</code>.
 </para></listitem>
 </itemizedlist>
 
-<para> A complete list of implementation namespaces (including namespace contents) is available in the generated source <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/namespaces.html">documentation</ulink>.
+<para> A complete list of implementation namespaces (including namespace contents) is available in the generated source <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/namespaces.html">documentation</link>.
 </para>
 
 
-    </sect2>
+    </section>
 
-    <sect2 id="manual.intro.using.namespaces.std" xreflabel="namespace std">
-      <title>namespace std</title>
+    <section xml:id="manual.intro.using.namespaces.std" xreflabel="namespace std"><info><title>namespace std</title></info>
+      
 
 
 <para>
@@ -967,10 +969,10 @@ cases where the qualified verbiage becomes unwieldy.)
 	</listitem>
 </itemizedlist>
 
-    </sect2>
+    </section>
 
-    <sect2 id="manual.intro.using.namespaces.comp" xreflabel="Using Namespace Composition">
-      <title>Using Namespace Composition</title>
+    <section xml:id="manual.intro.using.namespaces.comp" xreflabel="Using Namespace Composition"><info><title>Using Namespace Composition</title></info>
+      
 
 <para>
 Best practice in programming suggests sequestering new data or
@@ -1005,22 +1007,22 @@ namespace gtk
 	<code>std::string</code> does not get imported into
 	the global namespace.  Additionally, a more elaborate arrangement can be made for backwards compatibility and portability, whereby the
 	<code>using</code>-declarations can wrapped in macros that
-	are set based on autoconf-tests to either &quot;&quot; or i.e. <code>using
+	are set based on autoconf-tests to either "" or i.e. <code>using
 	  std::string;</code> (depending on whether the system has
 	libstdc++ in <code>std::</code> or not).  (ideas from
 	Llewelly and Karl Nelson)
 </para>
 
 
-    </sect2>
-  </sect1>
+    </section>
+  </section>
 
-  <sect1 id="manual.intro.using.linkage" xreflabel="Linkage">
+  <section xml:id="manual.intro.using.linkage" xreflabel="Linkage"><info><title>Linking</title></info>
     <?dbhtml filename="using_dynamic_or_shared.html"?>
-    <title>Linking</title>
+    
 
-    <sect2 id="manual.intro.using.linkage.freestanding" xreflabel="Freestanding">
-      <title>Almost Nothing</title>
+    <section xml:id="manual.intro.using.linkage.freestanding" xreflabel="Freestanding"><info><title>Almost Nothing</title></info>
+      
       <para>
 	Or as close as it gets: freestanding. This is a minimal
 	configuration, with only partial support for the standard
@@ -1121,10 +1123,10 @@ namespace gtk
 	identified above is actually used at compile time. Violations
 	are diagnosed as undefined symbols at link time.
       </para>
-    </sect2>
+    </section>
 
-    <sect2 id="manual.intro.using.linkage.dynamic" xreflabel="Dynamic and Shared">
-      <title>Finding Dynamic or Shared Libraries</title>
+    <section xml:id="manual.intro.using.linkage.dynamic" xreflabel="Dynamic and Shared"><info><title>Finding Dynamic or Shared Libraries</title></info>
+      
 
     <para>
       If the only library built is the static library
@@ -1139,10 +1141,10 @@ namespace gtk
     </para>
     <para>
 A quick read of the relevant part of the GCC
-      manual, <ulink url="http://gcc.gnu.org/onlinedocs/gcc/Invoking-G_002b_002b.html#Invoking-G_002b_002b">Compiling
-      C++ Programs</ulink>, specifies linking against a C++
+      manual, <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc/Invoking-G_002b_002b.html#Invoking-G_002b_002b">Compiling
+      C++ Programs</link>, specifies linking against a C++
       library. More details from the
-      GCC <ulink url="http://gcc.gnu.org/faq.html#rpath">FAQ</ulink>,
+      GCC <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/faq.html#rpath">FAQ</link>,
       which states <emphasis>GCC does not, by default, specify a
       location so that the dynamic linker can find dynamic libraries at
       runtime.</emphasis>
@@ -1177,19 +1179,19 @@ A quick read of the relevant part of the GCC
 	  <listitem>
 	    <para>
 	      GNU ld (default on Linux):
-              <literal>-Wl,-rpath,<filename class="directory">destdir</filename>/lib</literal>
+              <literal>-Wl,-rpath,</literal><filename class="directory">destdir/lib</filename>
 	    </para>
 	  </listitem>
 	  <listitem>
 	    <para>
 	      IRIX ld:
-              <literal>-Wl,-rpath,<filename class="directory">destdir</filename>/lib</literal>
+              <literal>-Wl,-rpath,</literal><filename class="directory">destdir/lib</filename>
 	    </para>
 	  </listitem>
 	  <listitem>
 	  <para>
 	    Solaris ld:
-            <literal>-Wl,-R<filename class="directory">destdir</filename>/lib</literal>
+            <literal>-Wl,-R</literal><filename class="directory">destdir/lib</filename>
 	  </para>
 	  </listitem>
 	</itemizedlist>
@@ -1225,13 +1227,13 @@ A quick read of the relevant part of the GCC
       create your executables, these details are taken care of for
       you.
     </para>
-    </sect2>
-  </sect1>
+    </section>
+  </section>
 
 
-  <sect1 id="manual.intro.using.concurrency" xreflabel="Concurrency">
+  <section xml:id="manual.intro.using.concurrency" xreflabel="Concurrency"><info><title>Concurrency</title></info>
     <?dbhtml filename="using_concurrency.html"?>
-    <title>Concurrency</title>
+    
 
    <para>This section discusses issues surrounding the proper compilation
       of multithreaded applications which use the Standard C++
@@ -1239,8 +1241,8 @@ A quick read of the relevant part of the GCC
       standard does not address matters of multithreaded applications.
    </para>
 
-    <sect2 id="manual.intro.using.concurrency.prereq" xreflabel="Thread Prereq">
-      <title>Prerequisites</title>
+    <section xml:id="manual.intro.using.concurrency.prereq" xreflabel="Thread Prereq"><info><title>Prerequisites</title></info>
+      
 
    <para>All normal disclaimers aside, multithreaded C++ application are
       only supported when libstdc++ and all user code was built with
@@ -1274,14 +1276,14 @@ A quick read of the relevant part of the GCC
       in ``gcc -dumpspecs'' (look at lib and cpp entries).
    </para>
 
-    </sect2>
+    </section>
 
-    <sect2 id="manual.intro.using.concurrency.thread_safety" xreflabel="Thread Safety">
-      <title>Thread Safety</title>
+    <section xml:id="manual.intro.using.concurrency.thread_safety" xreflabel="Thread Safety"><info><title>Thread Safety</title></info>
+      
 
 
 <para>
-We currently use the <ulink url="http://www.sgi.com/tech/stl/thread_safety.html">SGI STL</ulink> definition of thread safety.
+We currently use the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/thread_safety.html">SGI STL</link> definition of thread safety.
 </para>
 
 
@@ -1315,9 +1317,8 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
 	 Requisite command-line flags are used for atomic operations
 	 and threading. Examples of this include <code>-pthread</code>
 	 and <code>-march=native</code>, although specifics vary
-	 depending on the host environment. See <ulink
-	 url="http://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html">Machine
-	 Dependent Options</ulink>.
+	 depending on the host environment. See <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html">Machine
+	 Dependent Options</link>.
        </para>
        </listitem>
        <listitem>
@@ -1366,20 +1367,20 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       </para>
 
 
-  </sect2>
-  <sect2 id="manual.intro.using.concurrency.atomics" xreflabel="Atomics">
-    <title>Atomics</title>
+  </section>
+  <section xml:id="manual.intro.using.concurrency.atomics" xreflabel="Atomics"><info><title>Atomics</title></info>
+    
     <para>
     </para>
-  </sect2>
+  </section>
 
-    <sect2 id="manual.intro.using.concurrency.io" xreflabel="IO">
-      <title>IO</title>
+    <section xml:id="manual.intro.using.concurrency.io" xreflabel="IO"><info><title>IO</title></info>
+      
      <para>This gets a bit tricky.  Please read carefully, and bear with me.
    </para>
 
-    <sect3 id="concurrency.io.structure" xreflabel="Structure">
-      <title>Structure</title>
+    <section xml:id="concurrency.io.structure" xreflabel="Structure"><info><title>Structure</title></info>
+      
    <para>A wrapper
       type called <code>__basic_file</code> provides our abstraction layer
       for the <code>std::filebuf</code> classes.  Nearly all decisions dealing
@@ -1390,18 +1391,18 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       level is akin to providing locking within containers, and is not done
       for the same reasons (see the links above).
    </para>
-    </sect3>
+    </section>
 
-    <sect3 id="concurrency.io.defaults" xreflabel="Defaults">
-      <title>Defaults</title>
+    <section xml:id="concurrency.io.defaults" xreflabel="Defaults"><info><title>Defaults</title></info>
+      
    <para>The __basic_file type is simply a collection of small wrappers around
       the C stdio layer (again, see the link under Structure).  We do no
       locking ourselves, but simply pass through to calls to <code>fopen</code>,
       <code>fwrite</code>, and so forth.
    </para>
-   <para>So, for 3.0, the question of &quot;is multithreading safe for I/O&quot;
-      must be answered with, &quot;is your platform's C library threadsafe
-      for I/O?&quot;  Some are by default, some are not; many offer multiple
+   <para>So, for 3.0, the question of "is multithreading safe for I/O"
+      must be answered with, "is your platform's C library threadsafe
+      for I/O?"  Some are by default, some are not; many offer multiple
       implementations of the C library with varying tradeoffs of threadsafety
       and efficiency.  You, the programmer, are always required to take care
       with multiple threads.
@@ -1420,10 +1421,10 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       inside an <code>std::ofstream</code>), you need to guard such accesses
       like any other critical shared resource.
    </para>
-    </sect3>
+    </section>
 
-    <sect3 id="concurrency.io.future" xreflabel="Future">
-      <title>Future</title>
+    <section xml:id="concurrency.io.future" xreflabel="Future"><info><title>Future</title></info>
+      
    <para> A
       second choice may be available for I/O implementations:  libio.  This is
       disabled by default, and in fact will not currently work due to other
@@ -1434,11 +1435,11 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       type is basically derived from FILE.  (The real situation is more
       complex than that... it's derived from an internal type used to
       implement FILE.  See libio/libioP.h to see scary things done with
-      vtbls.)  The result is that there is no &quot;layer&quot; of C stdio
+      vtbls.)  The result is that there is no "layer" of C stdio
       to go through; the filebuf makes calls directly into the same
       functions used to implement <code>fread</code>, <code>fwrite</code>,
       and so forth, using internal data structures.  (And when I say
-      &quot;makes calls directly,&quot; I mean the function is literally
+      "makes calls directly," I mean the function is literally
       replaced by a jump into an internal function.  Fast but frightening.
       *grin*)
    </para>
@@ -1453,20 +1454,20 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       installed.  For other platforms, a copy of the libio subsection will
       be built and included in libstdc++.
    </para>
-    </sect3>
+    </section>
 
-    <sect3 id="concurrency.io.alt" xreflabel="Alt">
-      <title>Alternatives</title>
+    <section xml:id="concurrency.io.alt" xreflabel="Alt"><info><title>Alternatives</title></info>
+      
    <para>Don't forget that other cstdio implementations are possible.  You could
       easily write one to perform your own forms of locking, to solve your
-      &quot;interesting&quot; problems.
+      "interesting" problems.
    </para>
-    </sect3>
+    </section>
 
-    </sect2>
+    </section>
 
-    <sect2 id="manual.intro.using.concurrency.containers" xreflabel="Containers">
-      <title>Containers</title>
+    <section xml:id="manual.intro.using.concurrency.containers" xreflabel="Containers"><info><title>Containers</title></info>
+      
 
    <para>This section discusses issues surrounding the design of
       multithreaded applications which use Standard C++ containers.
@@ -1481,10 +1482,10 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
    </para>
    <para>Two excellent pages to read when working with the Standard C++
       containers and threads are
-      <ulink url="http://www.sgi.com/tech/stl/thread_safety.html">SGI's
-      http://www.sgi.com/tech/stl/thread_safety.html</ulink> and
-      <ulink url="http://www.sgi.com/tech/stl/Allocators.html">SGI's
-      http://www.sgi.com/tech/stl/Allocators.html</ulink>.
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/thread_safety.html">SGI's
+      http://www.sgi.com/tech/stl/thread_safety.html</link> and
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/Allocators.html">SGI's
+      http://www.sgi.com/tech/stl/Allocators.html</link>.
    </para>
    <para><emphasis>However, please ignore all discussions about the user-level
       configuration of the lock implementation inside the STL
@@ -1528,17 +1529,15 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       options and capabilities.
    </para>
 
-    </sect2>
-</sect1>
+    </section>
+</section>
 
 <!-- Section 0x : Exception policies, expectations, topics -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="using_exceptions.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="using_exceptions.xml">
 </xi:include>
 
 <!-- Section 0x : Debug -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="debug.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="debug.xml">
 </xi:include>
 
 </chapter>

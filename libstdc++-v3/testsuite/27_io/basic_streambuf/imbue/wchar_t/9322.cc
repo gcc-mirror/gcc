@@ -1,4 +1,5 @@
-// { dg-require-namedlocale "" }
+// { dg-require-namedlocale "en_US" }
+// { dg-require-namedlocale "de_DE" }
 
 // 1999-10-11 bkoz
 

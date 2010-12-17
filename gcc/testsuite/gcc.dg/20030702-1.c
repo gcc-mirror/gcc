@@ -8,5 +8,3 @@ void test (void)
 {
   fork ();
 }
-
-/* { dg-final { cleanup-coverage-files } } */

@@ -88,7 +88,7 @@ public class ObjectView extends ComponentView
     String classId = (String) atts.getAttribute("classid");
     try
       {
-        Class objectClass = Class.forName(classId);
+        Class<?> objectClass = Class.forName(classId);
         Object instance = objectClass.newInstance();
         comp = (Component) instance;
       }

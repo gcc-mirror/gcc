@@ -16,6 +16,6 @@ void
 foo (int i, int j, va_list va)
 {
   printf("%2$*1$c", i, j);
-  printf("%2$*1$c %2$*1$c", i, j); /* { dg-bogus "too few" "bogus too few dollar" } */
-  vbar(va, "%*s"); /* { dg-bogus "too few" "bogus too few vprintf" } */
+  printf("%2$*1$c %2$*1$c", i, j); /* { dg-bogus "matching" "bogus too few dollar" } */
+  vbar(va, "%*s"); /* { dg-bogus "matching" "bogus too few vprintf" } */
 }

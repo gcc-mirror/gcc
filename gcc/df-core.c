@@ -758,7 +758,7 @@ struct rtl_opt_pass pass_df_initialize_opt =
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
+  TV_DF_SCAN,                           /* tv_id */
   0,                                    /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
@@ -785,7 +785,7 @@ struct rtl_opt_pass pass_df_initialize_no_opt =
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
+  TV_DF_SCAN,                           /* tv_id */
   0,                                    /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
@@ -1427,29 +1427,6 @@ df_set_bb_dirty (basic_block bb)
 }
 
 
-/* Mark BB as needing it's transfer functions as being out of
-   date, except for LR problem.  Used when analyzing DEBUG_INSNs,
-   as LR problem can trigger DCE, and DEBUG_INSNs shouldn't ever
-   shorten or enlarge lifetime of regs.  */
-
-void
-df_set_bb_dirty_nonlr (basic_block bb)
-{
-  if (df)
-    {
-      int p;
-      for (p = 1; p < df->num_problems_defined; p++)
-	{
-	  struct dataflow *dflow = df->problems_in_order[p];
-	  if (dflow == df_lr)
-	    continue;
-	  if (dflow->out_of_date_transfer_functions)
-	    bitmap_set_bit (dflow->out_of_date_transfer_functions, bb->index);
-	  dflow->solutions_dirty = true;
-	}
-    }
-}
-
 /* Grow the bb_info array.  */
 
 void
@@ -1919,58 +1896,33 @@ df_print_regset (FILE *file, bitmap r)
    debugging dump.  */
 
 void
-df_print_byte_regset (FILE *file, bitmap r)
+df_print_word_regset (FILE *file, bitmap r)
 {
   unsigned int max_reg = max_reg_num ();
-  bitmap_iterator bi;
 
   if (r == NULL)
     fputs (" (nil)", file);
   else
     {
       unsigned int i;
-      for (i = 0; i < max_reg; i++)
+      for (i = FIRST_PSEUDO_REGISTER; i < max_reg; i++)
 	{
-	  unsigned int first = df_byte_lr_get_regno_start (i);
-	  unsigned int len = df_byte_lr_get_regno_len (i);
-
-	  if (len > 1)
+	  bool found = (bitmap_bit_p (r, 2 * i)
+			|| bitmap_bit_p (r, 2 * i + 1));
+	  if (found)
 	    {
-	      bool found = false;
-	      unsigned int j;
-
-	      EXECUTE_IF_SET_IN_BITMAP (r, first, j, bi)
-		{
-		  found = j < first + len;
-		  break;
-		}
-	      if (found)
-		{
-		  const char * sep = "";
-		  fprintf (file, " %d", i);
-		  if (i < FIRST_PSEUDO_REGISTER)
-		    fprintf (file, " [%s]", reg_names[i]);
-		  fprintf (file, "(");
-		  EXECUTE_IF_SET_IN_BITMAP (r, first, j, bi)
-		    {
-		      if (j > first + len - 1)
-			break;
-		      fprintf (file, "%s%d", sep, j-first);
-		      sep = ", ";
-		    }
-		  fprintf (file, ")");
-		}
+	      int word;
+	      const char * sep = "";
+	      fprintf (file, " %d", i);
+	      fprintf (file, "(");
+	      for (word = 0; word < 2; word++)
+		if (bitmap_bit_p (r, 2 * i + word))
+		  {
+		    fprintf (file, "%s%d", sep, word);
+		    sep = ", ";
+		  }
+	      fprintf (file, ")");
 	    }
-	  else
-	    {
-	      if (bitmap_bit_p (r, first))
-		{
-		  fprintf (file, " %d", i);
-		  if (i < FIRST_PSEUDO_REGISTER)
-		    fprintf (file, " [%s]", reg_names[i]);
-		}
-	    }
-
 	}
     }
   fprintf (file, "\n");
@@ -2099,6 +2051,17 @@ df_dump_bottom (basic_block bb, FILE *file)
 }
 
 
+static void
+df_ref_dump (df_ref ref, FILE *file)
+{
+  fprintf (file, "%c%d(%d)",
+	   DF_REF_REG_DEF_P (ref)
+	   ? 'd'
+	   : (DF_REF_FLAGS (ref) & DF_REF_IN_NOTE) ? 'e' : 'u',
+	   DF_REF_ID (ref),
+	   DF_REF_REGNO (ref));
+}
+
 void
 df_refs_chain_dump (df_ref *ref_rec, bool follow_chain, FILE *file)
 {
@@ -2106,10 +2069,7 @@ df_refs_chain_dump (df_ref *ref_rec, bool follow_chain, FILE *file)
   while (*ref_rec)
     {
       df_ref ref = *ref_rec;
-      fprintf (file, "%c%d(%d)",
-	       DF_REF_REG_DEF_P (ref) ? 'd' : (DF_REF_FLAGS (ref) & DF_REF_IN_NOTE) ? 'e' : 'u',
-	       DF_REF_ID (ref),
-	       DF_REF_REGNO (ref));
+      df_ref_dump (ref, file);
       if (follow_chain)
 	df_chain_dump (DF_REF_CHAIN (ref), file);
       ref_rec++;
@@ -2126,10 +2086,7 @@ df_regs_chain_dump (df_ref ref,  FILE *file)
   fprintf (file, "{ ");
   while (ref)
     {
-      fprintf (file, "%c%d(%d) ",
-	       DF_REF_REG_DEF_P (ref) ? 'd' : 'u',
-	       DF_REF_ID (ref),
-	       DF_REF_REGNO (ref));
+      df_ref_dump (ref, file);
       ref = DF_REF_NEXT_REG (ref);
     }
   fprintf (file, "}");

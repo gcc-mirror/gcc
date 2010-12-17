@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -230,7 +230,7 @@ package body Ada.Containers.Hashed_Sets is
 
       if Container.HT.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (set is busy)";
+           "attempt to tamper with cursors (set is busy)";
       end if;
 
       pragma Assert (Vet (Position), "bad cursor in Delete");
@@ -263,7 +263,7 @@ package body Ada.Containers.Hashed_Sets is
 
       if Target.HT.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (set is busy)";
+           "attempt to tamper with cursors (set is busy)";
       end if;
 
       if Source.HT.Length < Target.HT.Length then
@@ -614,7 +614,7 @@ package body Ada.Containers.Hashed_Sets is
       if not Inserted then
          if Container.HT.Lock > 0 then
             raise Program_Error with
-              "attempt to tamper with cursors (set is locked)";
+              "attempt to tamper with elements (set is locked)";
          end if;
 
          Position.Node.Element := New_Item;
@@ -713,7 +713,7 @@ package body Ada.Containers.Hashed_Sets is
 
       if Target.HT.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (set is busy)";
+           "attempt to tamper with cursors (set is busy)";
       end if;
 
       Tgt_Node := HT_Ops.First (Target.HT);
@@ -1059,7 +1059,7 @@ package body Ada.Containers.Hashed_Sets is
 
       if Container.HT.Lock > 0 then
          raise Program_Error with
-           "attempt to tamper with cursors (set is locked)";
+           "attempt to tamper with elements (set is locked)";
       end if;
 
       Node.Element := New_Item;
@@ -1123,7 +1123,7 @@ package body Ada.Containers.Hashed_Sets is
 
       if Target.HT.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (set is busy)";
+           "attempt to tamper with cursors (set is busy)";
       end if;
 
       declare
@@ -1392,7 +1392,7 @@ package body Ada.Containers.Hashed_Sets is
 
       if Target.HT.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (set is busy)";
+           "attempt to tamper with cursors (set is busy)";
       end if;
 
       declare

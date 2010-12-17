@@ -122,7 +122,7 @@ resolve_mask_arg (gfc_expr *mask)
 
 static void
 resolve_bound (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *kind,
-	       const char *name)
+	       const char *name, bool coarray)
 {
   f->ts.type = BT_INTEGER;
   if (kind)
@@ -134,11 +134,46 @@ resolve_bound (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *kind,
     {
       f->rank = 1;
       f->shape = gfc_get_shape (1);
-      mpz_init_set_ui (f->shape[0], array->rank);
+      mpz_init_set_ui (f->shape[0], coarray ? gfc_get_corank (array)
+					    : array->rank);
     }
 
   f->value.function.name = xstrdup (name);
 }
+
+
+static void
+resolve_transformational (const char *name, gfc_expr *f, gfc_expr *array,
+			  gfc_expr *dim, gfc_expr *mask)
+{
+  const char *prefix;
+
+  f->ts = array->ts;
+
+  if (mask)
+    {
+      if (mask->rank == 0)
+	prefix = "s";
+      else
+	prefix = "m";
+
+      resolve_mask_arg (mask);
+    }
+  else
+    prefix = "";
+
+  if (dim != NULL)
+    {
+      f->rank = array->rank - 1;
+      f->shape = gfc_copy_shape_excluding (array->shape, array->rank, dim);
+      gfc_resolve_dim_arg (dim);
+    }
+
+  f->value.function.name
+    = gfc_get_string (PREFIX ("%s%s_%c%d"), prefix, name,
+		    gfc_type_letter (array->ts.type), array->ts.kind);
+}
+
 
 /********************** Resolution functions **********************/
 
@@ -411,6 +446,45 @@ gfc_resolve_besn (gfc_expr *f, gfc_expr *n, gfc_expr *x)
       gfc_convert_type (n, &ts, 2);
     }
   f->value.function.name = gfc_get_string ("<intrinsic>");
+}
+
+
+void
+gfc_resolve_bessel_n2 (gfc_expr *f, gfc_expr *n1, gfc_expr *n2, gfc_expr *x)
+{
+  gfc_typespec ts;
+  gfc_clear_ts (&ts);
+  
+  f->ts = x->ts;
+  f->rank = 1;
+  if (n1->expr_type == EXPR_CONSTANT && n2->expr_type == EXPR_CONSTANT)
+    {
+      f->shape = gfc_get_shape (1);
+      mpz_init (f->shape[0]);
+      mpz_sub (f->shape[0], n2->value.integer, n1->value.integer);
+      mpz_add_ui (f->shape[0], f->shape[0], 1);
+    }
+
+  if (n1->ts.kind != gfc_c_int_kind)
+    {
+      ts.type = BT_INTEGER;
+      ts.kind = gfc_c_int_kind;
+      gfc_convert_type (n1, &ts, 2);
+    }
+
+  if (n2->ts.kind != gfc_c_int_kind)
+    {
+      ts.type = BT_INTEGER;
+      ts.kind = gfc_c_int_kind;
+      gfc_convert_type (n2, &ts, 2);
+    }
+
+  if (f->value.function.isym->id == GFC_ISYM_JN2)
+    f->value.function.name = gfc_get_string (PREFIX ("bessel_jn_r%d"),
+					     f->ts.kind);
+  else
+    f->value.function.name = gfc_get_string (PREFIX ("bessel_yn_r%d"),
+					     f->ts.kind);
 }
 
 
@@ -751,6 +825,20 @@ gfc_resolve_dprod (gfc_expr *f, gfc_expr *a ATTRIBUTE_UNUSED,
 
 
 void
+gfc_resolve_dshift (gfc_expr *f, gfc_expr *i, gfc_expr *j ATTRIBUTE_UNUSED,
+		    gfc_expr *shift ATTRIBUTE_UNUSED)
+{
+  f->ts = i->ts;
+  if (f->value.function.isym->id == GFC_ISYM_DSHIFTL)
+    f->value.function.name = gfc_get_string ("dshiftl_i%d", f->ts.kind);
+  else if (f->value.function.isym->id == GFC_ISYM_DSHIFTR)
+    f->value.function.name = gfc_get_string ("dshiftr_i%d", f->ts.kind);
+  else
+    gcc_unreachable ();
+}
+
+
+void
 gfc_resolve_eoshift (gfc_expr *f, gfc_expr *array, gfc_expr *shift,
 		     gfc_expr *boundary, gfc_expr *dim)
 {
@@ -850,10 +938,10 @@ gfc_resolve_extends_type_of (gfc_expr *f, gfc_expr *a, gfc_expr *mo)
 
   /* Replace the first argument with the corresponding vtab.  */
   if (a->ts.type == BT_CLASS)
-    gfc_add_component_ref (a, "$vptr");
+    gfc_add_vptr_component (a);
   else if (a->ts.type == BT_DERIVED)
     {
-      vtab = gfc_find_derived_vtab (a->ts.u.derived, false);
+      vtab = gfc_find_derived_vtab (a->ts.u.derived);
       /* Clear the old expr.  */
       gfc_free_ref_list (a->ref);
       memset (a, '\0', sizeof (gfc_expr));
@@ -866,10 +954,10 @@ gfc_resolve_extends_type_of (gfc_expr *f, gfc_expr *a, gfc_expr *mo)
 
   /* Replace the second argument with the corresponding vtab.  */
   if (mo->ts.type == BT_CLASS)
-    gfc_add_component_ref (mo, "$vptr");
+    gfc_add_vptr_component (mo);
   else if (mo->ts.type == BT_DERIVED)
     {
-      vtab = gfc_find_derived_vtab (mo->ts.u.derived, false);
+      vtab = gfc_find_derived_vtab (mo->ts.u.derived);
       /* Clear the old expr.  */
       gfc_free_ref_list (mo->ref);
       memset (mo, '\0', sizeof (gfc_expr));
@@ -882,6 +970,10 @@ gfc_resolve_extends_type_of (gfc_expr *f, gfc_expr *a, gfc_expr *mo)
 
   f->ts.type = BT_LOGICAL;
   f->ts.kind = 4;
+
+  f->value.function.isym->formal->ts = a->ts;
+  f->value.function.isym->formal->next->ts = mo->ts;
+
   /* Call library function.  */
   f->value.function.name = gfc_get_string (PREFIX ("is_extension_of"));
 }
@@ -1000,6 +1092,13 @@ gfc_resolve_hypot (gfc_expr *f, gfc_expr *x, gfc_expr *y ATTRIBUTE_UNUSED)
 
 
 void
+gfc_resolve_iall (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
+{
+  resolve_transformational ("iall", f, array, dim, mask);
+}
+
+
+void
 gfc_resolve_iand (gfc_expr *f, gfc_expr *i, gfc_expr *j)
 {
   /* If the kind of i and j are different, then g77 cross-promoted the
@@ -1015,6 +1114,13 @@ gfc_resolve_iand (gfc_expr *f, gfc_expr *i, gfc_expr *j)
 
   f->ts = i->ts;
   f->value.function.name = gfc_get_string ("__iand_%d", i->ts.kind);
+}
+
+
+void
+gfc_resolve_iany (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
+{
+  resolve_transformational ("iany", f, array, dim, mask);
 }
 
 
@@ -1195,6 +1301,13 @@ gfc_resolve_long (gfc_expr *f, gfc_expr *a)
 
 
 void
+gfc_resolve_iparity (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
+{
+  resolve_transformational ("iparity", f, array, dim, mask);
+}
+
+
+void
 gfc_resolve_isatty (gfc_expr *f, gfc_expr *u)
 {
   gfc_typespec ts;
@@ -1268,14 +1381,14 @@ gfc_resolve_kill (gfc_expr *f, gfc_expr *p ATTRIBUTE_UNUSED,
 void
 gfc_resolve_lbound (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 {
-  resolve_bound (f, array, dim, kind, "__lbound");
+  resolve_bound (f, array, dim, kind, "__lbound", false);
 }
 
 
 void
 gfc_resolve_lcobound (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 {
-  resolve_bound (f, array, dim, kind, "__lcobound");
+  resolve_bound (f, array, dim, kind, "__lcobound", true);
 }
 
 
@@ -1590,6 +1703,21 @@ gfc_resolve_mclock8 (gfc_expr *f)
 
 
 void
+gfc_resolve_mask (gfc_expr *f, gfc_expr *i ATTRIBUTE_UNUSED,
+		  gfc_expr *kind)
+{
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = kind ? mpz_get_si (kind->value.integer)
+		    : gfc_default_integer_kind;
+
+  if (f->value.function.isym->id == GFC_ISYM_MASKL)
+    f->value.function.name = gfc_get_string ("__maskl_i%d", f->ts.kind);
+  else
+    f->value.function.name = gfc_get_string ("__maskr_i%d", f->ts.kind);
+}
+
+
+void
 gfc_resolve_merge (gfc_expr *f, gfc_expr *tsource,
 		   gfc_expr *fsource ATTRIBUTE_UNUSED,
 		   gfc_expr *mask ATTRIBUTE_UNUSED)
@@ -1607,6 +1735,16 @@ gfc_resolve_merge (gfc_expr *f, gfc_expr *tsource,
   f->value.function.name
     = gfc_get_string ("__merge_%c%d", gfc_type_letter (tsource->ts.type),
 		      tsource->ts.kind);
+}
+
+
+void
+gfc_resolve_merge_bits (gfc_expr *f, gfc_expr *i,
+			gfc_expr *j ATTRIBUTE_UNUSED,
+			gfc_expr *mask ATTRIBUTE_UNUSED)
+{
+  f->ts = i->ts;
+  f->value.function.name = gfc_get_string ("__merge_bits_i%d", i->ts.kind);
 }
 
 
@@ -1781,6 +1919,13 @@ gfc_resolve_nint (gfc_expr *f, gfc_expr *a, gfc_expr *kind)
 
 
 void
+gfc_resolve_norm2 (gfc_expr *f, gfc_expr *array, gfc_expr *dim)
+{
+  resolve_transformational ("norm2", f, array, dim, NULL);
+}
+
+
+void
 gfc_resolve_not (gfc_expr *f, gfc_expr *i)
 {
   f->ts = i->ts;
@@ -1845,35 +1990,17 @@ gfc_resolve_pack (gfc_expr *f, gfc_expr *array, gfc_expr *mask,
 
 
 void
+gfc_resolve_parity (gfc_expr *f, gfc_expr *array, gfc_expr *dim)
+{
+  resolve_transformational ("parity", f, array, dim, NULL);
+}
+
+
+void
 gfc_resolve_product (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
 		     gfc_expr *mask)
 {
-  const char *name;
-
-  f->ts = array->ts;
-
-  if (dim != NULL)
-    {
-      f->rank = array->rank - 1;
-      f->shape = gfc_copy_shape_excluding (array->shape, array->rank, dim);
-      gfc_resolve_dim_arg (dim);
-    }
-
-  if (mask)
-    {
-      if (mask->rank == 0)
-	name = "sproduct";
-      else
-	name = "mproduct";
-
-      resolve_mask_arg (mask);
-    }
-  else
-    name = "product";
-
-  f->value.function.name
-    = gfc_get_string (PREFIX ("%s_%c%d"), name,
-		      gfc_type_letter (array->ts.type), array->ts.kind);
+  resolve_transformational ("product", f, array, dim, mask);
 }
 
 
@@ -2066,6 +2193,21 @@ gfc_resolve_shape (gfc_expr *f, gfc_expr *array)
   f->shape = gfc_get_shape (1);
   mpz_init_set_ui (f->shape[0], array->rank);
   f->value.function.name = gfc_get_string (PREFIX ("shape_%d"), f->ts.kind);
+}
+
+
+void
+gfc_resolve_shift (gfc_expr *f, gfc_expr *i, gfc_expr *shift ATTRIBUTE_UNUSED)
+{
+  f->ts = i->ts;
+  if (f->value.function.isym->id == GFC_ISYM_SHIFTA)
+    f->value.function.name = gfc_get_string ("shifta_i%d", f->ts.kind);
+  else if (f->value.function.isym->id == GFC_ISYM_SHIFTL)
+    f->value.function.name = gfc_get_string ("shiftl_i%d", f->ts.kind);
+  else if (f->value.function.isym->id == GFC_ISYM_SHIFTR)
+    f->value.function.name = gfc_get_string ("shiftr_i%d", f->ts.kind);
+  else
+    gcc_unreachable ();
 }
 
 
@@ -2318,34 +2460,21 @@ gfc_resolve_ftell (gfc_expr *f, gfc_expr *u)
 
 
 void
+gfc_resolve_storage_size (gfc_expr *f, gfc_expr *a ATTRIBUTE_UNUSED,
+			  gfc_expr *kind)
+{
+  f->ts.type = BT_INTEGER;
+  if (kind)
+    f->ts.kind = mpz_get_si (kind->value.integer);
+  else
+    f->ts.kind = gfc_default_integer_kind;
+}
+
+
+void
 gfc_resolve_sum (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
 {
-  const char *name;
-
-  f->ts = array->ts;
-
-  if (mask)
-    {
-      if (mask->rank == 0)
-	name = "ssum";
-      else
-	name = "msum";
-
-      resolve_mask_arg (mask);
-    }
-  else
-    name = "sum";
-
-  if (dim != NULL)
-    {
-      f->rank = array->rank - 1;
-      f->shape = gfc_copy_shape_excluding (array->shape, array->rank, dim);
-      gfc_resolve_dim_arg (dim);
-    }
-
-  f->value.function.name
-    = gfc_get_string (PREFIX ("%s_%c%d"), name,
-		    gfc_type_letter (array->ts.type), array->ts.kind);
+  resolve_transformational ("sum", f, array, dim, mask);
 }
 
 
@@ -2401,7 +2530,7 @@ gfc_resolve_image_index (gfc_expr *f, gfc_expr *array ATTRIBUTE_UNUSED,
 void
 gfc_resolve_this_image (gfc_expr *f, gfc_expr *array, gfc_expr *dim)
 {
-  resolve_bound (f, array, dim, NULL, "__this_image");
+  resolve_bound (f, array, dim, NULL, "__this_image", true);
 }
 
 
@@ -2540,14 +2669,14 @@ gfc_resolve_trim (gfc_expr *f, gfc_expr *string)
 void
 gfc_resolve_ubound (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 {
-  resolve_bound (f, array, dim, kind, "__ubound");
+  resolve_bound (f, array, dim, kind, "__ubound", false);
 }
 
 
 void
 gfc_resolve_ucobound (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 {
-  resolve_bound (f, array, dim, kind, "__ucobound");
+  resolve_bound (f, array, dim, kind, "__ucobound", true);
 }
 
 
@@ -3088,6 +3217,17 @@ gfc_resolve_system_clock (gfc_code *c)
     kind = gfc_default_integer_kind;
 
   name = gfc_get_string (PREFIX ("system_clock_%d"), kind);
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+
+/* Resolve the EXECUTE_COMMAND_LINE intrinsic subroutine.  */
+void
+gfc_resolve_execute_command_line (gfc_code *c)
+{
+  const char *name;
+  name = gfc_get_string (PREFIX ("execute_command_line_i%d"),
+			 gfc_default_integer_kind);
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }
 

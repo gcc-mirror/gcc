@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Csets;    use Csets;
 with Debug;    use Debug;
@@ -635,6 +636,14 @@ package body Treepr is
          Print_Eol;
       end if;
 
+      if Field_Present (Field29 (Ent)) then
+         Print_Str (Prefix);
+         Write_Field29_Name (Ent);
+         Write_Str (" = ");
+         Print_Field (Field29 (Ent));
+         Print_Eol;
+      end if;
+
       Write_Entity_Flags (Ent, Prefix);
    end Print_Entity_Info;
 
@@ -1010,6 +1019,12 @@ package body Treepr is
                Print_Eol;
             end if;
 
+            if Has_Aspects (N) then
+               Print_Str (Prefix_Str_Char);
+               Print_Str ("Has_Aspects = True");
+               Print_Eol;
+            end if;
+
             if Has_Dynamic_Range_Check (N) then
                Print_Str (Prefix_Str_Char);
                Print_Str ("Has_Dynamic_Range_Check = True");
@@ -1099,6 +1114,10 @@ package body Treepr is
             when F_Field5 =>
                Field_To_Be_Printed := Field5 (N) /= Union_Id (Empty);
 
+            --  Flag3 is obsolete, so this probably gets removed ???
+
+            when F_Flag3 => Field_To_Be_Printed := Has_Aspects (N);
+
             when F_Flag4  => Field_To_Be_Printed := Flag4  (N);
             when F_Flag5  => Field_To_Be_Printed := Flag5  (N);
             when F_Flag6  => Field_To_Be_Printed := Flag6  (N);
@@ -1115,12 +1134,10 @@ package body Treepr is
             when F_Flag17 => Field_To_Be_Printed := Flag17 (N);
             when F_Flag18 => Field_To_Be_Printed := Flag18 (N);
 
-            --  Flag1,2,3 are no longer used
+            --  Flag1,2 are no longer used
 
             when F_Flag1  => raise Program_Error;
             when F_Flag2  => raise Program_Error;
-            when F_Flag3  => raise Program_Error;
-
          end case;
 
          --  Print field if it is to be printed
@@ -1170,11 +1187,14 @@ package body Treepr is
                when F_Flag17 => Print_Flag  (Flag17 (N));
                when F_Flag18 => Print_Flag  (Flag18 (N));
 
-               --  Flag1,2,3 are no longer used
+               --  Flag1,2 are no longer used
 
                when F_Flag1  => raise Program_Error;
                when F_Flag2  => raise Program_Error;
-               when F_Flag3  => raise Program_Error;
+
+               --  Not clear why we need the following ???
+
+               when F_Flag3  => Print_Flag (Has_Aspects (N));
             end case;
 
             Print_Eol;
@@ -1188,8 +1208,16 @@ package body Treepr is
                P := P + 1;
             end loop;
          end if;
-
       end loop;
+
+      --  Print aspects if present
+
+      if Has_Aspects (N) then
+         Print_Str (Prefix_Str_Char);
+         Print_Str ("Aspect_Specifications = ");
+         Print_Field (Union_Id (Aspect_Specifications (N)));
+         Print_Eol;
+      end if;
 
       --  Print entity information for entities
 
@@ -1906,6 +1934,10 @@ package body Treepr is
          Visit_Descendent (Field3 (N));
          Visit_Descendent (Field4 (N));
          Visit_Descendent (Field5 (N));
+
+         if Has_Aspects (N) then
+            Visit_Descendent (Union_Id (Aspect_Specifications (N)));
+         end if;
 
       --  Entity case
 

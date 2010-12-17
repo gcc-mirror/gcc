@@ -210,10 +210,17 @@ along with GCC; see the file COPYING3.  If not see
 /* The stack pointer needs to be moved while checking the stack.  */
 #define STACK_CHECK_MOVING_SP 1
 
+/* Static stack checking is supported by means of probes.  */
+#define STACK_CHECK_STATIC_BUILTIN 1
+
 /* This macro may be overridden in i386/k*bsd-gnu.h.  */
 #define REG_NAME(reg) reg
 
 #ifdef TARGET_LIBC_PROVIDES_SSP
 /* i386 glibc provides __stack_chk_guard in %gs:0x14.  */
 #define TARGET_THREAD_SSP_OFFSET	0x14
+
+/* We steal the last transactional memory word.  */
+#define TARGET_CAN_SPLIT_STACK
+#define TARGET_THREAD_SPLIT_STACK_OFFSET 0x30
 #endif

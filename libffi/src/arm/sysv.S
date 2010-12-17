@@ -142,12 +142,11 @@ _L__\name:
 .endm
 
 
-	@ r0:   ffi_prep_args
+	@ r0:   fn
 	@ r1:   &ecif
 	@ r2:   cif->bytes
 	@ r3:   fig->flags
 	@ sp+0: ecif.rvalue
-	@ sp+4: fn
 
 	@ This assumes we are using gas.
 ARM_FUNC_START ffi_call_SYSV
@@ -162,24 +161,23 @@ ARM_FUNC_START ffi_call_SYSV
 	sub	sp, fp, r2
 
 	@ Place all of the ffi_prep_args in position
-	mov	ip, r0
 	mov	r0, sp
 	@     r1 already set
 
 	@ Call ffi_prep_args(stack, &ecif)
-	call_reg(ip)
+	bl	ffi_prep_args
 
 	@ move first 4 parameters in registers
 	ldmia	sp, {r0-r3}
 
 	@ and adjust stack
-	ldr	ip, [fp, #8]
-        cmp	ip, #16
-	movhs	ip, #16
-        add	sp, sp, ip
+	sub	lr, fp, sp	@ cif->bytes == fp - sp
+	ldr	ip, [fp]	@ load fn() in advance
+	cmp	lr, #16
+	movhs	lr, #16
+	add	sp, sp, lr
 
 	@ call (fn) (...)
-	ldr	ip, [fp, #28]
 	call_reg(ip)
 	
 	@ Remove the space we pushed for the args
@@ -230,6 +228,101 @@ LSYM(Lepilogue):
 	UNWIND .fnend
         .size    CNAME(ffi_call_SYSV),.ffi_call_SYSV_end-CNAME(ffi_call_SYSV)
 
+
+	@ r0:   fn
+	@ r1:   &ecif
+	@ r2:   cif->bytes
+	@ r3:   fig->flags
+	@ sp+0: ecif.rvalue
+
+ARM_FUNC_START ffi_call_VFP
+	@ Save registers
+        stmfd	sp!, {r0-r3, fp, lr}
+	UNWIND .save	{r0-r3, fp, lr}
+	mov	fp, sp
+	UNWIND .setfp	fp, sp
+
+	@ Make room for all of the new args.
+	sub	sp, sp, r2
+
+	@ Make room for loading VFP args
+	sub	sp, sp, #64
+
+	@ Place all of the ffi_prep_args in position
+	mov	r0, sp
+	@     r1 already set
+	sub	r2, fp, #64   @ VFP scratch space
+
+	@ Call ffi_prep_args(stack, &ecif, vfp_space)
+	bl	ffi_prep_args
+
+	@ Load VFP register args if needed
+	cmp	r0, #0
+	beq	LSYM(Lbase_args)
+
+	@ Load only d0 if possible
+	cmp	r0, #3
+	sub	ip, fp, #64
+	flddle	d0, [ip]
+	fldmiadgt	ip, {d0-d7}
+
+LSYM(Lbase_args):
+	@ move first 4 parameters in registers
+	ldmia	sp, {r0-r3}
+
+	@ and adjust stack
+	sub	lr, ip, sp	@ cif->bytes == (fp - 64) - sp
+	ldr	ip, [fp]	@ load fn() in advance
+        cmp	lr, #16
+	movhs	lr, #16
+        add	sp, sp, lr
+
+	@ call (fn) (...)
+	call_reg(ip)
+
+	@ Remove the space we pushed for the args
+	mov	sp, fp
+
+	@ Load r2 with the pointer to storage for
+	@ the return value
+	ldr	r2, [sp, #24]
+
+	@ Load r3 with the return type code 
+	ldr	r3, [sp, #12]
+
+	@ If the return value pointer is NULL,
+	@ assume no return value.
+	cmp	r2, #0
+	beq	LSYM(Lepilogue_vfp)
+	
+	cmp	r3, #FFI_TYPE_INT
+	streq	r0, [r2]
+	beq	LSYM(Lepilogue_vfp)
+
+	cmp	r3, #FFI_TYPE_SINT64
+	stmeqia	r2, {r0, r1}
+	beq	LSYM(Lepilogue_vfp)
+
+	cmp	r3, #FFI_TYPE_FLOAT
+	fstseq	s0, [r2]
+	beq	LSYM(Lepilogue_vfp)
+	
+	cmp	r3, #FFI_TYPE_DOUBLE
+	fstdeq	d0, [r2]
+	beq	LSYM(Lepilogue_vfp)
+
+	cmp	r3, #FFI_TYPE_STRUCT_VFP_FLOAT
+	cmpne	r3, #FFI_TYPE_STRUCT_VFP_DOUBLE
+	fstmiadeq	r2, {d0-d3}
+
+LSYM(Lepilogue_vfp):
+	RETLDM	"r0-r3,fp"
+
+.ffi_call_VFP_end:
+	UNWIND .fnend
+        .size    CNAME(ffi_call_VFP),.ffi_call_VFP_end-CNAME(ffi_call_VFP)
+	
+	
 /*
 	unsigned int FFI_HIDDEN
 	ffi_closure_SYSV_inner (closure, respp, args)
@@ -301,6 +394,68 @@ ARM_FUNC_START ffi_closure_SYSV
 .ffi_closure_SYSV_end:
 	UNWIND .fnend
         .size    CNAME(ffi_closure_SYSV),.ffi_closure_SYSV_end-CNAME(ffi_closure_SYSV)
+
+
+ARM_FUNC_START ffi_closure_VFP
+	fstmfdd	sp!, {d0-d7}
+	@ r0-r3, then d0-d7
+	UNWIND .pad #80
+	add	ip, sp, #80
+	stmfd	sp!, {ip, lr}
+	UNWIND .save	{r0, lr}
+	add	r2, sp, #72
+	add	r3, sp, #8
+	.pad #72
+	sub	sp, sp, #72
+	str	sp, [sp, #64]
+	add	r1, sp, #64
+	bl	ffi_closure_SYSV_inner
+
+	cmp	r0, #FFI_TYPE_INT
+	beq	.Lretint_vfp
+
+	cmp	r0, #FFI_TYPE_FLOAT
+	beq	.Lretfloat_vfp
+
+	cmp	r0, #FFI_TYPE_DOUBLE
+	cmpne	r0, #FFI_TYPE_LONGDOUBLE
+	beq	.Lretdouble_vfp
+
+	cmp	r0, #FFI_TYPE_SINT64
+	beq	.Lretlonglong_vfp
+
+	cmp	r0, #FFI_TYPE_STRUCT_VFP_FLOAT
+	beq	.Lretfloat_struct_vfp
+
+	cmp	r0, #FFI_TYPE_STRUCT_VFP_DOUBLE
+	beq	.Lretdouble_struct_vfp
+	
+.Lclosure_epilogue_vfp:
+	add	sp, sp, #72
+	ldmfd	sp, {sp, pc}
+
+.Lretfloat_vfp:
+	flds	s0, [sp]
+	b	.Lclosure_epilogue_vfp
+.Lretdouble_vfp:
+	fldd	d0, [sp]
+	b	.Lclosure_epilogue_vfp
+.Lretint_vfp:
+	ldr	r0, [sp]
+	b	.Lclosure_epilogue_vfp
+.Lretlonglong_vfp:
+	ldmia	sp, {r0, r1}
+	b	.Lclosure_epilogue_vfp
+.Lretfloat_struct_vfp:
+	fldmiad	sp, {d0-d1}
+	b	.Lclosure_epilogue_vfp
+.Lretdouble_struct_vfp:
+	fldmiad	sp, {d0-d3}
+	b	.Lclosure_epilogue_vfp
+
+.ffi_closure_VFP_end:
+	UNWIND .fnend
+        .size    CNAME(ffi_closure_VFP),.ffi_closure_VFP_end-CNAME(ffi_closure_VFP)
 
 #if defined __ELF__ && defined __linux__
 	.section	.note.GNU-stack,"",%progbits

@@ -1,5 +1,6 @@
 /* { dg-do compile } */ 
 /* { dg-options "-O2 -fdump-tree-optimized" } */
+
 int a, b, c, d;
 extern int printf (const char *, ...);
 int main(void)
@@ -14,6 +15,10 @@ int main(void)
   printf ("%d %d\n", e, f);
 }
 
-/* { dg-final { scan-tree-dump-times "b.._. \\\+ a.._." 1 "optimized"} } */
-/* { dg-final { scan-tree-dump-times " \\\+ " 2 "optimized"} } */
+/* We cannot reassociate these expressions because of undefined signed
+   integer overflow.  Instead the value-numberer has to be extended
+   to canonicalize these expressions.  */
+
+/* { dg-final { scan-tree-dump-times "b.._. \\\+ a.._." 1 "optimized" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times " \\\+ " 2 "optimized" { xfail *-*-* } } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

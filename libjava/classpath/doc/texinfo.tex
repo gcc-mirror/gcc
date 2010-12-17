@@ -1,13 +1,13 @@
 % texinfo.tex -- TeX macros to handle Texinfo files.
-%
+% 
 % Load plain if necessary, i.e., if running under initex.
 \expandafter\ifx\csname fmtname\endcsname\relax\input plain\fi
 %
-\def\texinfoversion{2008-11-17.21}
+\def\texinfoversion{2009-08-14.15}
 %
-% Copyright (C) 1985, 1986, 1988, 1990, 1991, 1992, 1993, 1994, 1995,
+% Copyright 1985, 1986, 1988, 1990, 1991, 1992, 1993, 1994, 1995,
 % 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-% 2007, 2008 Free Software Foundation, Inc.
+% 2007, 2008, 2009 Free Software Foundation, Inc.
 %
 % This texinfo.tex file is free software: you can redistribute it and/or
 % modify it under the terms of the GNU General Public License as
@@ -100,6 +100,7 @@
 \let\ptextop=\top
 {\catcode`\'=\active
 \global\let\ptexquoteright'}% Math-mode def from plain.tex.
+\let\ptexraggedright=\raggedright
 
 % If this character appears in an error message or help string, it
 % starts a new line in the output.
@@ -357,7 +358,7 @@
                % We don't want .vr (or whatever) entries like this:
                % \entry{{\tt \indexbackslash }acronym}{32}{\code {\acronym}}
                % "\acronym" won't work when it's read back in;
-               % it needs to be 
+               % it needs to be
                % {\code {{\tt \backslashcurfont }acronym}
     \shipout\vbox{%
       % Do this early so pdf references go to the beginning of the page.
@@ -708,7 +709,7 @@
 \def\?{?\spacefactor=\endofsentencespacefactor\space}
 
 % @frenchspacing on|off  says whether to put extra space after punctuation.
-% 
+%
 \def\onword{on}
 \def\offword{off}
 %
@@ -1284,7 +1285,7 @@ where each line of input produces a line of output.}
 % that's what we do).
 
 % double active backslashes.
-% 
+%
 {\catcode`\@=0 \catcode`\\=\active
  @gdef@activebackslashdouble{%
    @catcode`@\=@active
@@ -1296,11 +1297,11 @@ where each line of input produces a line of output.}
 % us) handles it with this amazing macro to replace tokens, with minor
 % changes for Texinfo.  It is included here under the GPL by permission
 % from the author, Heiko Oberdiek.
-% 
+%
 % #1 is the tokens to replace.
 % #2 is the replacement.
 % #3 is the control sequence with the string.
-% 
+%
 \def\HyPsdSubst#1#2#3{%
   \def\HyPsdReplace##1#1##2\END{%
     ##1%
@@ -1331,11 +1332,17 @@ output) for that.)}
 
 \ifpdf
   %
-  % Color manipulation macros based on pdfcolor.tex.
-  \def\cmykDarkRed{0.28 1 1 0.35}
-  \def\cmykBlack{0 0 0 1}
+  % Color manipulation macros based on pdfcolor.tex,
+  % except using rgb instead of cmyk; the latter is said to render as a
+  % very dark gray on-screen and a very dark halftone in print, instead
+  % of actual black.
+  \def\rgbDarkRed{0.50 0.09 0.12}
+  \def\rgbBlack{0 0 0}
   %
-  \def\pdfsetcolor#1{\pdfliteral{#1 k}}
+  % k sets the color for filling (usual text, etc.);
+  % K sets the color for stroking (thin rules, e.g., normal _'s).
+  \def\pdfsetcolor#1{\pdfliteral{#1 rg  #1 RG}}
+  %
   % Set color, and create a mark which defines \thiscolor accordingly,
   % so that \makeheadline knows which color to restore.
   \def\setcolor#1{%
@@ -1344,7 +1351,7 @@ output) for that.)}
     \pdfsetcolor{#1}%
   }
   %
-  \def\maincolor{\cmykBlack}
+  \def\maincolor{\rgbBlack}
   \pdfsetcolor{\maincolor}
   \edef\thiscolor{\maincolor}
   \def\lastcolordefs{}
@@ -1439,8 +1446,8 @@ output) for that.)}
   %
   % by default, use a color that is dark enough to print on paper as
   % nearly black, but still distinguishable for online viewing.
-  \def\urlcolor{\cmykDarkRed}
-  \def\linkcolor{\cmykDarkRed}
+  \def\urlcolor{\rgbDarkRed}
+  \def\linkcolor{\rgbDarkRed}
   \def\endlink{\setcolor{\maincolor}\pdfendlink}
   %
   % Adding outlines to PDF; macros for calculating structure of outlines
@@ -1569,11 +1576,15 @@ output) for that.)}
       % tried to figure out what each command should do in the context
       % of @url.  for now, just make @/ a no-op, that's the only one
       % people have actually reported a problem with.
-      % 
+      %
       \normalturnoffactive
       \def\@{@}%
       \let\/=\empty
       \makevalueexpandable
+      % do we want to go so far as to use \indexnofonts instead of just
+      % special-casing \var here?
+      \def\var##1{##1}%
+      %
       \leavevmode\setcolor{\urlcolor}%
       \startlink attr{/Border [0 0 0]}%
         user{/Subtype /Link /A << /S /URI /URI (#1) >>}%
@@ -1604,6 +1615,7 @@ output) for that.)}
     \setcolor{\linkcolor}#1\endlink}
   \def\done{\edef\st{\global\noexpand\toksA={\the\toksB}}\st}
 \else
+  % non-pdf mode
   \let\pdfmkdest = \gobble
   \let\pdfurl = \gobble
   \let\endlink = \relax
@@ -1972,7 +1984,7 @@ end
 
 % Definitions for a main text size of 11pt.  This is the default in
 % Texinfo.
-% 
+%
 \def\definetextfontsizexi{%
 % Text fonts (11.2pt, magstep1).
 \def\textnominalsize{11pt}
@@ -2103,7 +2115,7 @@ end
 % section, chapter, etc., sizes following suit.  This is for the GNU
 % Press printing of the Emacs 22 manual.  Maybe other manuals in the
 % future.  Used with @smallbook, which sets the leading to 12pt.
-% 
+%
 \def\definetextfontsizex{%
 % Text fonts (10pt).
 \def\textnominalsize{10pt}
@@ -2192,7 +2204,7 @@ end
 \setfont\secsf\sfbshape{12}{1000}{OT1}
 \let\secbf\secrm
 \setfont\secsc\scbshape{10}{\magstep1}{OT1}
-\font\seci=cmmi12 
+\font\seci=cmmi12
 \font\secsy=cmsy10 scaled \magstep1
 \def\sececsize{1200}
 
@@ -2236,7 +2248,7 @@ end
 % We provide the user-level command
 %   @fonttextsize 10
 % (or 11) to redefine the text font size.  pt is assumed.
-% 
+%
 \def\xword{10}
 \def\xiword{11}
 %
@@ -2246,7 +2258,7 @@ end
   %
   % Set \globaldefs so that documents can use this inside @tex, since
   % makeinfo 4.8 does not support it, but we need it nonetheless.
-  % 
+  %
  \begingroup \globaldefs=1
   \ifx\textsizearg\xword \definetextfontsizex
   \else \ifx\textsizearg\xiword \definetextfontsizexi
@@ -2348,6 +2360,16 @@ end
   \def\lsize{smaller}\def\lllsize{smaller}%
   \resetmathfonts \setleading{9.5pt}}
 
+% Fonts for short table of contents.
+\setfont\shortcontrm\rmshape{12}{1000}{OT1}
+\setfont\shortcontbf\bfshape{10}{\magstep1}{OT1}  % no cmb12
+\setfont\shortcontsl\slshape{12}{1000}{OT1}
+\setfont\shortconttt\ttshape{12}{1000}{OT1TT}
+
+% Define these just so they can be easily changed for other fonts.
+\def\angleleft{$\langle$}
+\def\angleright{$\rangle$}
+
 % Set the fonts to use with the @small... environments.
 \let\smallexamplefonts = \smallfonts
 
@@ -2361,27 +2383,127 @@ end
 %
 % By the way, for comparison, here's what fits with @example (10pt):
 %   8.5x11=71  smallbook=60  a4=75  a5=58
-%
-% I wish the USA used A4 paper.
 % --karl, 24jan03.
-
 
 % Set up the default fonts, so we can use them for creating boxes.
 %
 \definetextfontsizexi
 
-% Define these so they can be easily changed for other fonts.
-\def\angleleft{$\langle$}
-\def\angleright{$\rangle$}
+
+\message{markup,}
+
+% Check if we are currently using a typewriter font.  Since all the
+% Computer Modern typewriter fonts have zero interword stretch (and
+% shrink), and it is reasonable to expect all typewriter fonts to have
+% this property, we can check that font parameter.
+%
+\def\ifmonospace{\ifdim\fontdimen3\font=0pt }
+
+% Markup style infrastructure.  \defmarkupstylesetup\INITMACRO will
+% define and register \INITMACRO to be called on markup style changes.
+% \INITMACRO can check \currentmarkupstyle for the innermost
+% style and the set of \ifmarkupSTYLE switches for all styles
+% currently in effect.
+\newif\ifmarkupvar
+\newif\ifmarkupsamp
+\newif\ifmarkupkey
+%\newif\ifmarkupfile % @file == @samp.
+%\newif\ifmarkupoption % @option == @samp.
+\newif\ifmarkupcode
+\newif\ifmarkupkbd
+%\newif\ifmarkupenv % @env == @code.
+%\newif\ifmarkupcommand % @command == @code.
+\newif\ifmarkuptex % @tex (and part of @math, for now).
+\newif\ifmarkupexample
+\newif\ifmarkupverb
+\newif\ifmarkupverbatim
+
+\let\currentmarkupstyle\empty
+
+\def\setupmarkupstyle#1{%
+  \csname markup#1true\endcsname
+  \def\currentmarkupstyle{#1}%
+  \markupstylesetup
+}
+
+\let\markupstylesetup\empty
+
+\def\defmarkupstylesetup#1{%
+  \expandafter\def\expandafter\markupstylesetup
+    \expandafter{\markupstylesetup #1}%
+  \def#1%
+}
+
+% Markup style setup for left and right quotes.
+\defmarkupstylesetup\markupsetuplq{%
+  \expandafter\let\expandafter \temp \csname markupsetuplq\currentmarkupstyle\endcsname
+  \ifx\temp\relax \markupsetuplqdefault \else \temp \fi
+}
+
+\defmarkupstylesetup\markupsetuprq{%
+  \expandafter\let\expandafter \temp \csname markupsetuprq\currentmarkupstyle\endcsname
+  \ifx\temp\relax \markupsetuprqdefault \else \temp \fi
+}
+
+{
+\catcode`\'=\active
+\catcode`\`=\active
+
+\gdef\markupsetuplqdefault{\let`\lq}
+\gdef\markupsetuprqdefault{\let'\rq}
+
+\gdef\markupsetcodequoteleft{\let`\codequoteleft}
+\gdef\markupsetcodequoteright{\let'\codequoteright}
+
+\gdef\markupsetnoligaturesquoteleft{\let`\noligaturesquoteleft}
+}
+
+\let\markupsetuplqcode \markupsetcodequoteleft
+\let\markupsetuprqcode \markupsetcodequoteright
+\let\markupsetuplqexample \markupsetcodequoteleft
+\let\markupsetuprqexample \markupsetcodequoteright
+\let\markupsetuplqverb \markupsetcodequoteleft
+\let\markupsetuprqverb \markupsetcodequoteright
+\let\markupsetuplqverbatim \markupsetcodequoteleft
+\let\markupsetuprqverbatim \markupsetcodequoteright
+
+\let\markupsetuplqsamp \markupsetnoligaturesquoteleft
+\let\markupsetuplqkbd \markupsetnoligaturesquoteleft
+
+% Allow an option to not replace quotes with a regular directed right
+% quote/apostrophe (char 0x27), but instead use the undirected quote
+% from cmtt (char 0x0d).  The undirected quote is ugly, so don't make it
+% the default, but it works for pasting with more pdf viewers (at least
+% evince), the lilypond developers report.  xpdf does work with the
+% regular 0x27.
+%
+\def\codequoteright{%
+  \expandafter\ifx\csname SETtxicodequoteundirected\endcsname\relax
+    \expandafter\ifx\csname SETcodequoteundirected\endcsname\relax
+      '%
+    \else \char'15 \fi
+  \else \char'15 \fi
+}
+%
+% and a similar option for the left quote char vs. a grave accent.
+% Modern fonts display ASCII 0x60 as a grave accent, so some people like
+% the code environments to do likewise.
+%
+\def\codequoteleft{%
+  \expandafter\ifx\csname SETtxicodequotebacktick\endcsname\relax
+    \expandafter\ifx\csname SETcodequotebacktick\endcsname\relax
+      % [Knuth] pp. 380,381,391
+      % \relax disables Spanish ligatures ?` and !` of \tt font.
+      \relax`%
+    \else \char'22 \fi
+  \else \char'22 \fi
+}
+
+% [Knuth] pp. 380,381,391, disable Spanish ligatures ?` and !` of \tt font.
+\def\noligaturesquoteleft{\relax\lq}
 
 % Count depth in font-changes, for error checks
 \newcount\fontdepth \fontdepth=0
-
-% Fonts for short table of contents.
-\setfont\shortcontrm\rmshape{12}{1000}{OT1}
-\setfont\shortcontbf\bfshape{10}{\magstep1}{OT1}  % no cmb12
-\setfont\shortcontsl\slshape{12}{1000}{OT1}
-\setfont\shortconttt\ttshape{12}{1000}{OT1TT}
 
 %% Add scribe-like font environments, plus @l for inline lisp (usually sans
 %% serif) and @ii for TeX italic
@@ -2397,7 +2519,7 @@ end
 % @var is set to this for defun arguments.
 \def\ttslanted#1{{\ttsl #1}\futurelet\next\smartitalicx}
 
-% like \smartslanted except unconditionally use \sl.  We never want
+% @cite is like \smartslanted except unconditionally use \sl.  We never want
 % ttsl for book titles, do we?
 \def\cite#1{{\sl #1}\futurelet\next\smartitalicx}
 
@@ -2407,7 +2529,12 @@ end
 \let\dfn=\smartslanted
 \let\emph=\smartitalic
 
-% @b, explicit bold.
+% Explicit font changes: @r, @sc, undocumented @ii.
+\def\r#1{{\rm #1}}              % roman font
+\def\sc#1{{\smallcaps#1}}       % smallcaps font
+\def\ii#1{{\it #1}}             % italic font
+
+% @b, explicit bold.  Also @strong.
 \def\b#1{{\bf #1}}
 \let\strong=\b
 
@@ -2439,22 +2566,35 @@ end
 \catcode`@=\other
 \def\endofsentencespacefactor{3000}% default
 
+% @t, explicit typewriter.
 \def\t#1{%
   {\tt \rawbackslash \plainfrenchspacing #1}%
   \null
 }
+
+% @samp.
 \def\samp#1{{\setupmarkupstyle{samp}\lq\tclose{#1}\rq\null}}
-\setfont\keyrm\rmshape{8}{1000}{OT1}
-\font\keysy=cmsy9
-\def\key#1{{\keyrm\textfont2=\keysy \leavevmode\hbox{%
-  \raise0.4pt\hbox{\angleleft}\kern-.08em\vtop{%
-    \vbox{\hrule\kern-0.4pt
-     \hbox{\raise0.4pt\hbox{\vphantom{\angleleft}}#1}}%
-    \kern-0.4pt\hrule}%
-  \kern-.06em\raise0.4pt\hbox{\angleright}}}}
-\def\key #1{{\setupmarkupstyle{key}\nohyphenation \uppercase{#1}}\null}
-% The old definition, with no lozenge:
-%\def\key #1{{\ttsl \nohyphenation \uppercase{#1}}\null}
+
+% definition of @key that produces a lozenge.  Doesn't adjust to text size.
+%\setfont\keyrm\rmshape{8}{1000}{OT1}
+%\font\keysy=cmsy9
+%\def\key#1{{\keyrm\textfont2=\keysy \leavevmode\hbox{%
+%  \raise0.4pt\hbox{\angleleft}\kern-.08em\vtop{%
+%    \vbox{\hrule\kern-0.4pt
+%     \hbox{\raise0.4pt\hbox{\vphantom{\angleleft}}#1}}%
+%    \kern-0.4pt\hrule}%
+%  \kern-.06em\raise0.4pt\hbox{\angleright}}}}
+
+% definition of @key with no lozenge.  If the current font is already
+% monospace, don't change it; that way, we respect @kbdinputstyle.  But
+% if it isn't monospace, then use \tt.
+%
+\def\key#1{{\setupmarkupstyle{key}%
+  \nohyphenation
+  \ifmonospace\else\tt\fi
+  #1}\null}
+
+% ctrl is no longer a Texinfo command.
 \def\ctrl #1{{\tt \rawbackslash \hat}#1}
 
 % @file, @option are the same as @samp.
@@ -2532,7 +2672,7 @@ end
 % each of the four underscores in __typeof__.  This is undesirable in
 % some manuals, especially if they don't have long identifiers in
 % general.  @allowcodebreaks provides a way to control this.
-% 
+%
 \newif\ifallowcodebreaks  \allowcodebreakstrue
 
 \def\keywordtrue{true}
@@ -2552,6 +2692,7 @@ end
 
 % @kbd is like @code, except that if the argument is just one @key command,
 % then @kbd has no effect.
+\def\kbd#1{{\setupmarkupstyle{kbd}\def\look{#1}\expandafter\kbdfoo\look??\par}}
 
 % @kbdinputstyle -- arg is `distinct' (@kbd uses slanted tty font always),
 %   `example' (@kbd uses ttsl only inside of @example and friends),
@@ -2573,7 +2714,7 @@ end
 \def\wordexample{example}
 \def\wordcode{code}
 
-% Default is `distinct.'
+% Default is `distinct'.
 \kbdinputstyle distinct
 
 \def\xkey{\key}
@@ -2643,34 +2784,20 @@ end
   \let\email=\uref
 \fi
 
-% Check if we are currently using a typewriter font.  Since all the
-% Computer Modern typewriter fonts have zero interword stretch (and
-% shrink), and it is reasonable to expect all typewriter fonts to have
-% this property, we can check that font parameter.
-%
-\def\ifmonospace{\ifdim\fontdimen3\font=0pt }
-
 % Typeset a dimension, e.g., `in' or `pt'.  The only reason for the
 % argument is to make the input look right: @dmn{pt} instead of @dmn{}pt.
 %
 \def\dmn#1{\thinspace #1}
-
-\def\kbd#1{{\setupmarkupstyle{kbd}\def\look{#1}\expandafter\kbdfoo\look??\par}}
 
 % @l was never documented to mean ``switch to the Lisp font'',
 % and it is not used as such in any manual I can find.  We need it for
 % Polish suppressed-l.  --karl, 22sep96.
 %\def\l#1{{\li #1}\null}
 
-% Explicit font changes: @r, @sc, undocumented @ii.
-\def\r#1{{\rm #1}}              % roman font
-\def\sc#1{{\smallcaps#1}}       % smallcaps font
-\def\ii#1{{\it #1}}             % italic font
-
 % @acronym for "FBI", "NATO", and the like.
 % We print this one point size smaller, since it's intended for
 % all-uppercase.
-% 
+%
 \def\acronym#1{\doacronym #1,,\finish}
 \def\doacronym#1,#2,#3\finish{%
   {\selectfonts\lsize #1}%
@@ -2682,7 +2809,7 @@ end
 
 % @abbr for "Comput. J." and the like.
 % No font change, but don't do end-of-sentence spacing.
-% 
+%
 \def\abbr#1{\doabbr #1,,\finish}
 \def\doabbr#1,#2,#3\finish{%
   {\plainfrenchspacing #1}%
@@ -2691,6 +2818,44 @@ end
     \space ({\unsepspaces \ignorespaces \temp \unskip})%
   \fi
 }
+
+
+\message{glyphs,}
+
+% @point{}, @result{}, @expansion{}, @print{}, @equiv{}.
+%
+% Since these characters are used in examples, they should be an even number of
+% \tt widths. Each \tt character is 1en, so two makes it 1em.
+%
+\def\point{$\star$}
+\def\arrow{\leavevmode\raise.05ex\hbox to 1em{\hfil$\rightarrow$\hfil}}
+\def\result{\leavevmode\raise.05ex\hbox to 1em{\hfil$\Rightarrow$\hfil}}
+\def\expansion{\leavevmode\hbox to 1em{\hfil$\mapsto$\hfil}}
+\def\print{\leavevmode\lower.1ex\hbox to 1em{\hfil$\dashv$\hfil}}
+\def\equiv{\leavevmode\hbox to 1em{\hfil$\ptexequiv$\hfil}}
+
+% The @error{} command.
+% Adapted from the TeXbook's \boxit.
+%
+\newbox\errorbox
+%
+{\tentt \global\dimen0 = 3em}% Width of the box.
+\dimen2 = .55pt % Thickness of rules
+% The text. (`r' is open on the right, `e' somewhat less so on the left.)
+\setbox0 = \hbox{\kern-.75pt \reducedsf error\kern-1.5pt}
+%
+\setbox\errorbox=\hbox to \dimen0{\hfil
+   \hsize = \dimen0 \advance\hsize by -5.8pt % Space to left+right.
+   \advance\hsize by -2\dimen2 % Rules.
+   \vbox{%
+      \hrule height\dimen2
+      \hbox{\vrule width\dimen2 \kern3pt          % Space to left of text.
+         \vtop{\kern2.4pt \box0 \kern2.4pt}% Space above/below.
+         \kern3pt\vrule width\dimen2}% Space to right.
+      \hrule height\dimen2}
+    \hfil}
+%
+\def\error{\leavevmode\lower.7ex\copy\errorbox}
 
 % @pounds{} is a sterling sign, which Knuth put in the CM italic font.
 %
@@ -2701,52 +2866,59 @@ end
 % Theiling, which support regular, slanted, bold and bold slanted (and
 % "outlined" (blackboard board, sort of) versions, which we don't need).
 % It is available from http://www.ctan.org/tex-archive/fonts/eurosym.
-% 
+%
 % Although only regular is the truly official Euro symbol, we ignore
 % that.  The Euro is designed to be slightly taller than the regular
 % font height.
-% 
+%
 % feymr - regular
 % feymo - slanted
 % feybr - bold
 % feybo - bold slanted
-% 
+%
 % There is no good (free) typewriter version, to my knowledge.
 % A feymr10 euro is ~7.3pt wide, while a normal cmtt10 char is ~5.25pt wide.
 % Hmm.
-% 
+%
 % Also doesn't work in math.  Do we need to do math with euro symbols?
 % Hope not.
-% 
-% 
+%
+%
 \def\euro{{\eurofont e}}
 \def\eurofont{%
   % We set the font at each command, rather than predefining it in
   % \textfonts and the other font-switching commands, so that
   % installations which never need the symbol don't have to have the
   % font installed.
-  % 
+  %
   % There is only one designed size (nominal 10pt), so we always scale
   % that to the current nominal size.
-  % 
+  %
   % By the way, simply using "at 1em" works for cmr10 and the like, but
   % does not work for cmbx10 and other extended/shrunken fonts.
-  % 
+  %
   \def\eurosize{\csname\curfontsize nominalsize\endcsname}%
   %
-  \ifx\curfontstyle\bfstylename 
+  \ifx\curfontstyle\bfstylename
     % bold:
     \font\thiseurofont = \ifusingit{feybo10}{feybr10} at \eurosize
-  \else 
+  \else
     % regular:
     \font\thiseurofont = \ifusingit{feymo10}{feymr10} at \eurosize
   \fi
   \thiseurofont
 }
 
-% Hacks for glyphs from the EC fonts similar to \euro.  We don't
-% use \let for the aliases, because sometimes we redefine the original
-% macro, and the alias should reflect the redefinition.
+% Glyphs from the EC fonts.  We don't use \let for the aliases, because
+% sometimes we redefine the original macro, and the alias should reflect
+% the redefinition.
+%
+% Use LaTeX names for the Icelandic letters.
+\def\DH{{\ecfont \char"D0}} % Eth
+\def\dh{{\ecfont \char"F0}} % eth
+\def\TH{{\ecfont \char"DE}} % Thorn
+\def\th{{\ecfont \char"FE}} % thorn
+%
 \def\guillemetleft{{\ecfont \char"13}}
 \def\guillemotleft{\guillemetleft}
 \def\guillemetright{{\ecfont \char"14}}
@@ -2760,7 +2932,7 @@ end
 % we have the precomposed glyphs for the most common cases.  We put the
 % tests to use those glyphs in the single \ogonek macro so we have fewer
 % dummy definitions to worry about for index entries, etc.
-% 
+%
 % ogonek is also used with other letters in Lithuanian (IOU), but using
 % the precomposed glyphs for those is not so easy since they aren't in
 % the same EC font.
@@ -2783,6 +2955,7 @@ end
 \def\Eogonek{{\ecfont \char"86}}\def\macrocharE{E}
 \def\eogonek{{\ecfont \char"A6}}\def\macrochare{e}
 %
+% Use the ec* fonts (cm-super in outline format) for non-CM glyphs.
 \def\ecfont{%
   % We can't distinguish serif/sans and italic/slanted, but this
   % is used for crude hacks anyway (like adding French and German
@@ -2817,7 +2990,7 @@ end
 % Laurent Siebenmann reports \Orb undefined with:
 %  Textures 1.7.7 (preloaded format=plain 93.10.14)  (68K)  16 APR 2004 02:38
 % so we'll define it if necessary.
-% 
+%
 \ifx\Orb\undefined
 \def\Orb{\mathhexbox20D}
 \fi
@@ -3163,7 +3336,7 @@ end
     % cause the example and the item to crash together.  So we use this
     % bizarre value of 10001 as a signal to \aboveenvbreak to insert
     % \parskip glue after all.  Section titles are handled this way also.
-    % 
+    %
     \penalty 10001
     \endgroup
     \itemxneedsnegativevskipfalse
@@ -3257,9 +3430,18 @@ end
   \parindent=0pt
   \parskip=\smallskipamount
   \ifdim\parskip=0pt \parskip=2pt \fi
+  %
+  % Try typesetting the item mark that if the document erroneously says
+  % something like @itemize @samp (intending @table), there's an error
+  % right away at the @itemize.  It's not the best error message in the
+  % world, but it's better than leaving it to the @item.  This means if
+  % the user wants an empty mark, they have to say @w{} not just @w.
   \def\itemcontents{#1}%
+  \setbox0 = \hbox{\itemcontents}%
+  %
   % @itemize with no arg is equivalent to @itemize @bullet.
   \ifx\itemcontents\empty\def\itemcontents{\bullet}\fi
+  %
   \let\item=\itemizeitem
 }
 
@@ -3280,6 +3462,7 @@ end
    \ifnum\lastpenalty<10000 \parskip=0in \fi
    \noindent
    \hbox to 0pt{\hss \itemcontents \kern\itemmargin}%
+   %
    \vadjust{\penalty 1200}}% not good to break after first line of item.
   \flushcr
 }
@@ -3501,12 +3684,19 @@ end
 %
 % @headitem starts a heading row, which we typeset in bold.
 % Assignments have to be global since we are inside the implicit group
-% of an alignment entry.  Note that \everycr resets \everytab.
-\def\headitem{\checkenv\multitable \crcr \global\everytab={\bf}\the\everytab}%
+% of an alignment entry.  \everycr resets \everytab so we don't have to
+% undo it ourselves.
+\def\headitemfont{\b}% for people to use in the template row; not changeable
+\def\headitem{%
+  \checkenv\multitable
+  \crcr
+  \global\everytab={\bf}% can't use \headitemfont since the parsing differs
+  \the\everytab % for the first item
+}%
 %
 % A \tab used to include \hskip1sp.  But then the space in a template
 % line is not enough.  That is bad.  So let's go back to just `&' until
-% we encounter the problem it was intended to solve again.
+% we again encounter the problem the 1sp was intended to solve.
 %					--karl, nathan@acm.org, 20apr99.
 \def\tab{\checkenv\multitable &\the\everytab}%
 
@@ -3959,7 +4149,7 @@ end
   % processing continues to some further point.  On the other hand, it
   % seems \endinput does not hurt in the printed index arg, since that
   % is still getting written without apparent harm.
-  % 
+  %
   % Sample source (mac-idx3.tex, reported by Graham Percival to
   % help-texinfo, 22may06):
   % @macro funindex {WORD}
@@ -3967,12 +4157,12 @@ end
   % @end macro
   % ...
   % @funindex commtest
-  % 
+  %
   % The above is not enough to reproduce the bug, but it gives the flavor.
-  % 
+  %
   % Sample whatsit resulting:
   % .@write3{\entry{xyz}{@folio }{@code {xyz@endinput }}}
-  % 
+  %
   % So:
   \let\endinput = \empty
   %
@@ -4024,19 +4214,23 @@ end
   % Non-English letters.
   \definedummyword\AA
   \definedummyword\AE
+  \definedummyword\DH
   \definedummyword\L
-  \definedummyword\OE
   \definedummyword\O
+  \definedummyword\OE
+  \definedummyword\TH
   \definedummyword\aa
   \definedummyword\ae
-  \definedummyword\l
-  \definedummyword\oe
-  \definedummyword\o
-  \definedummyword\ss
+  \definedummyword\dh
   \definedummyword\exclamdown
-  \definedummyword\questiondown
+  \definedummyword\l
+  \definedummyword\o
+  \definedummyword\oe
   \definedummyword\ordf
   \definedummyword\ordm
+  \definedummyword\questiondown
+  \definedummyword\ss
+  \definedummyword\th
   %
   % Although these internal commands shouldn't show up, sometimes they do.
   \definedummyword\bf
@@ -4131,6 +4325,7 @@ end
   \definedummyword\code
   \definedummyword\command
   \definedummyword\dfn
+  \definedummyword\email
   \definedummyword\emph
   \definedummyword\env
   \definedummyword\file
@@ -4179,19 +4374,23 @@ end
   % Non-English letters.
   \def\AA{AA}%
   \def\AE{AE}%
+  \def\DH{DZZ}%
   \def\L{L}%
   \def\OE{OE}%
   \def\O{O}%
+  \def\TH{ZZZ}%
   \def\aa{aa}%
   \def\ae{ae}%
+  \def\dh{dzz}%
+  \def\exclamdown{!}%
   \def\l{l}%
   \def\oe{oe}%
-  \def\o{o}%
-  \def\ss{ss}%
-  \def\exclamdown{!}%
-  \def\questiondown{?}%
   \def\ordf{a}%
   \def\ordm{o}%
+  \def\o{o}%
+  \def\questiondown{?}%
+  \def\ss{ss}%
+  \def\th{zzz}%
   %
   \def\LaTeX{LaTeX}%
   \def\TeX{TeX}%
@@ -4201,20 +4400,19 @@ end
   \def\bullet{bullet}%
   \def\comma{,}%
   \def\copyright{copyright}%
-  \def\registeredsymbol{R}%
   \def\dots{...}%
   \def\enddots{...}%
   \def\equiv{==}%
   \def\error{error}%
   \def\euro{euro}%
+  \def\expansion{==>}%
   \def\guillemetleft{<<}%
   \def\guillemetright{>>}%
   \def\guilsinglleft{<}%
   \def\guilsinglright{>}%
-  \def\expansion{==>}%
   \def\minus{-}%
-  \def\pounds{pounds}%
   \def\point{.}%
+  \def\pounds{pounds}%
   \def\print{-|}%
   \def\quotedblbase{"}%
   \def\quotedblleft{"}%
@@ -4222,19 +4420,20 @@ end
   \def\quoteleft{`}%
   \def\quoteright{'}%
   \def\quotesinglbase{,}%
+  \def\registeredsymbol{R}%
   \def\result{=>}%
-  \def\textdegree{degrees}%
+  \def\textdegree{o}%
   %
   % We need to get rid of all macros, leaving only the arguments (if present).
   % Of course this is not nearly correct, but it is the best we can do for now.
   % makeinfo does not expand macros in the argument to @deffn, which ends up
   % writing an index entry, and texindex isn't prepared for an index sort entry
   % that starts with \.
-  % 
+  %
   % Since macro invocations are followed by braces, we can just redefine them
   % to take a single TeX argument.  The case of a macro invocation that
   % goes to end-of-line is not handled.
-  % 
+  %
   \macrolist
 }
 
@@ -4362,7 +4561,7 @@ end
     % to re-insert the same penalty (values >10000 are used for various
     % signals); since we just inserted a non-discardable item, any
     % following glue (such as a \parskip) would be a breakpoint.  For example:
-    % 
+    %
     %   @deffn deffn-whatever
     %   @vindex index-whatever
     %   Description.
@@ -4943,7 +5142,9 @@ end
   \gdef\chaplevelprefix{\the\chapno.}%
   \resetallfloatnos
   %
-  \message{\putwordChapter\space \the\chapno}%
+  % \putwordChapter can contain complex things in translations.
+  \toks0=\expandafter{\putwordChapter}%
+  \message{\the\toks0 \space \the\chapno}%
   %
   % Write the actual heading.
   \chapmacro{#1}{Ynumbered}{\the\chapno}%
@@ -4954,15 +5155,17 @@ end
   \global\let\subsubsection = \numberedsubsubsec
 }
 
-\outer\parseargdef\appendix{\apphead0{#1}} % normally apphead0 calls appendixzzz
+\outer\parseargdef\appendix{\apphead0{#1}} % normally calls appendixzzz
+%
 \def\appendixzzz#1{%
   \global\secno=0 \global\subsecno=0 \global\subsubsecno=0
     \global\advance\appendixno by 1
   \gdef\chaplevelprefix{\appendixletter.}%
   \resetallfloatnos
   %
-  \def\appendixnum{\putwordAppendix\space \appendixletter}%
-  \message{\appendixnum}%
+  % \putwordAppendix can contain complex things in translations.
+  \toks0=\expandafter{\putwordAppendix}%
+  \message{\the\toks0 \space \appendixletter}%
   %
   \chapmacro{#1}{Yappendix}{\appendixletter}%
   %
@@ -5102,7 +5305,7 @@ end
 \def\chapheading{\chapbreak \parsearg\chapheadingzzz}
 \def\chapheadingzzz#1{%
   {\chapfonts \vbox{\hyphenpenalty=10000\tolerance=5000
-                    \parindent=0pt\raggedright
+                    \parindent=0pt\ptexraggedright
                     \rmisbold #1\hfill}}%
   \bigskip \par\penalty 200\relax
   \suppressfirstparagraphindent
@@ -5195,7 +5398,10 @@ end
     \xdef\lastchapterdefs{%
       \gdef\noexpand\thischaptername{\the\toks0}%
       \gdef\noexpand\thischapternum{\appendixletter}%
-      \gdef\noexpand\thischapter{\putwordAppendix{} \noexpand\thischapternum:
+      % \noexpand\putwordAppendix avoids expanding indigestible
+      % commands in some of the translations.
+      \gdef\noexpand\thischapter{\noexpand\putwordAppendix{}
+                                 \noexpand\thischapternum:
                                  \noexpand\thischaptername}%
     }%
   \else
@@ -5203,7 +5409,10 @@ end
     \xdef\lastchapterdefs{%
       \gdef\noexpand\thischaptername{\the\toks0}%
       \gdef\noexpand\thischapternum{\the\chapno}%
-      \gdef\noexpand\thischapter{\putwordChapter{} \noexpand\thischapternum:
+      % \noexpand\putwordChapter avoids expanding indigestible
+      % commands in some of the translations.
+      \gdef\noexpand\thischapter{\noexpand\putwordChapter{}
+                                 \noexpand\thischapternum:
                                  \noexpand\thischaptername}%
     }%
   \fi\fi\fi
@@ -5259,7 +5468,7 @@ end
     %
     % Typeset the actual heading.
     \nobreak % Avoid page breaks at the interline glue.
-    \vbox{\hyphenpenalty=10000 \tolerance=5000 \parindent=0pt \raggedright
+    \vbox{\hyphenpenalty=10000 \tolerance=5000 \parindent=0pt \ptexraggedright
           \hangindent=\wd0 \centerparametersmaybe
           \unhbox0 #1\par}%
   }%
@@ -5283,7 +5492,7 @@ end
 %
 \def\unnchfopen #1{%
 \chapoddpage {\chapfonts \vbox{\hyphenpenalty=10000\tolerance=5000
-                       \parindent=0pt\raggedright
+                       \parindent=0pt\ptexraggedright
                        \rmisbold #1\hfill}}\bigskip \par\nobreak
 }
 \def\chfopen #1#2{\chapoddpage {\chapfonts
@@ -5346,7 +5555,10 @@ end
         \xdef\lastsectiondefs{%
           \gdef\noexpand\thissectionname{\the\toks0}%
           \gdef\noexpand\thissectionnum{#4}%
-          \gdef\noexpand\thissection{\putwordSection{} \noexpand\thissectionnum:
+          % \noexpand\putwordSection avoids expanding indigestible
+          % commands in some of the translations.
+          \gdef\noexpand\thissection{\noexpand\putwordSection{}
+                                     \noexpand\thissectionnum:
                                      \noexpand\thissectionname}%
         }%
       \fi
@@ -5356,11 +5568,19 @@ end
         \xdef\lastsectiondefs{%
           \gdef\noexpand\thissectionname{\the\toks0}%
           \gdef\noexpand\thissectionnum{#4}%
-          \gdef\noexpand\thissection{\putwordSection{} \noexpand\thissectionnum:
+          % \noexpand\putwordSection avoids expanding indigestible
+          % commands in some of the translations.
+          \gdef\noexpand\thissection{\noexpand\putwordSection{}
+                                     \noexpand\thissectionnum:
                                      \noexpand\thissectionname}%
         }%
       \fi
     \fi\fi\fi
+    %
+    % Go into vertical mode.  Usually we'll already be there, but we
+    % don't want the following whatsit to end up in a preceding paragraph
+    % if the document didn't happen to have a blank line.
+    \par
     %
     % Output the mark.  Pass it through \safewhatsit, to take care of
     % the preceding space.
@@ -5411,7 +5631,7 @@ end
     \nobreak
     %
     % Output the actual section heading.
-    \vbox{\hyphenpenalty=10000 \tolerance=5000 \parindent=0pt \raggedright
+    \vbox{\hyphenpenalty=10000 \tolerance=5000 \parindent=0pt \ptexraggedright
           \hangindent=\wd0  % zero if no section number
           \unhbox0 #1}%
   }%
@@ -5427,11 +5647,11 @@ end
   % glue accumulate.  (Not a breakpoint because it's preceded by a
   % discardable item.)
   \vskip-\parskip
-  % 
+  %
   % This is purely so the last item on the list is a known \penalty >
   % 10000.  This is so \startdefun can avoid allowing breakpoints after
   % section headings.  Otherwise, it would insert a valid breakpoint between:
-  % 
+  %
   %   @section sec-whatever
   %   @deffn def-whatever
   \penalty 10001
@@ -5489,7 +5709,7 @@ end
 % These characters do not print properly in the Computer Modern roman
 % fonts, so we must take special care.  This is more or less redundant
 % with the Texinfo input format setup at the end of this file.
-% 
+%
 \def\activecatcodes{%
   \catcode`\"=\active
   \catcode`\$=\active
@@ -5539,7 +5759,7 @@ end
 
 % redefined for the two-volume lispref.  We always output on
 % \jobname.toc even if this is redefined.
-% 
+%
 \def\tocreadfilename{\jobname.toc}
 
 % Normal (long) toc.
@@ -5709,144 +5929,6 @@ end
 \message{environments,}
 % @foo ... @end foo.
 
-% Markup style infrastructure.  \defmarkupstylesetup\INITMACRO will
-% define and register \INITMACRO to be called on markup style changes.
-% \INITMACRO can check \currentmarkupstyle for the innermost
-% style and the set of \ifmarkupSTYLE switches for all styles
-% currently in effect.
-\newif\ifmarkupvar
-\newif\ifmarkupsamp
-\newif\ifmarkupkey
-%\newif\ifmarkupfile % @file == @samp.
-%\newif\ifmarkupoption % @option == @samp.
-\newif\ifmarkupcode
-\newif\ifmarkupkbd
-%\newif\ifmarkupenv % @env == @code.
-%\newif\ifmarkupcommand % @command == @code.
-\newif\ifmarkuptex % @tex (and part of @math, for now).
-\newif\ifmarkupexample
-\newif\ifmarkupverb
-\newif\ifmarkupverbatim
-
-\let\currentmarkupstyle\empty
-
-\def\setupmarkupstyle#1{%
-  \csname markup#1true\endcsname
-  \def\currentmarkupstyle{#1}%
-  \markupstylesetup
-}
-
-\let\markupstylesetup\empty
-
-\def\defmarkupstylesetup#1{%
-  \expandafter\def\expandafter\markupstylesetup
-    \expandafter{\markupstylesetup #1}%
-  \def#1%
-}
-
-% Markup style setup for left and right quotes.
-\defmarkupstylesetup\markupsetuplq{%
-  \expandafter\let\expandafter \temp \csname markupsetuplq\currentmarkupstyle\endcsname
-  \ifx\temp\relax \markupsetuplqdefault \else \temp \fi
-}
-
-\defmarkupstylesetup\markupsetuprq{%
-  \expandafter\let\expandafter \temp \csname markupsetuprq\currentmarkupstyle\endcsname
-  \ifx\temp\relax \markupsetuprqdefault \else \temp \fi
-}
-
-{
-\catcode`\'=\active
-\catcode`\`=\active
-
-\gdef\markupsetuplqdefault{\let`\lq}
-\gdef\markupsetuprqdefault{\let'\rq}
-
-\gdef\markupsetcodequoteleft{\let`\codequoteleft}
-\gdef\markupsetcodequoteright{\let'\codequoteright}
-
-\gdef\markupsetnoligaturesquoteleft{\let`\noligaturesquoteleft}
-}
-
-\let\markupsetuplqcode \markupsetcodequoteleft
-\let\markupsetuprqcode \markupsetcodequoteright
-\let\markupsetuplqexample \markupsetcodequoteleft
-\let\markupsetuprqexample \markupsetcodequoteright
-\let\markupsetuplqverb \markupsetcodequoteleft
-\let\markupsetuprqverb \markupsetcodequoteright
-\let\markupsetuplqverbatim \markupsetcodequoteleft
-\let\markupsetuprqverbatim \markupsetcodequoteright
-
-\let\markupsetuplqsamp \markupsetnoligaturesquoteleft
-\let\markupsetuplqkbd \markupsetnoligaturesquoteleft
-
-% Allow an option to not replace quotes with a regular directed right
-% quote/apostrophe (char 0x27), but instead use the undirected quote
-% from cmtt (char 0x0d).  The undirected quote is ugly, so don't make it
-% the default, but it works for pasting with more pdf viewers (at least
-% evince), the lilypond developers report.  xpdf does work with the
-% regular 0x27.  
-% 
-\def\codequoteright{%
-  \expandafter\ifx\csname SETtxicodequoteundirected\endcsname\relax
-    \expandafter\ifx\csname SETcodequoteundirected\endcsname\relax
-      '%
-    \else \char'15 \fi
-  \else \char'15 \fi
-}
-%
-% and a similar option for the left quote char vs. a grave accent.
-% Modern fonts display ASCII 0x60 as a grave accent, so some people like
-% the code environments to do likewise.
-% 
-\def\codequoteleft{%
-  \expandafter\ifx\csname SETtxicodequotebacktick\endcsname\relax
-    \expandafter\ifx\csname SETcodequotebacktick\endcsname\relax
-      % [Knuth] pp. 380,381,391
-      % \relax disables Spanish ligatures ?` and !` of \tt font.
-      \relax`%
-    \else \char'22 \fi
-  \else \char'22 \fi
-}
-
-% [Knuth] pp. 380,381,391, disable Spanish ligatures ?` and !` of \tt font.
-\def\noligaturesquoteleft{\relax\lq}
-
-% @point{}, @result{}, @expansion{}, @print{}, @equiv{}.
-%
-% Since these characters are used in examples, they should be an even number of
-% \tt widths. Each \tt character is 1en, so two makes it 1em.
-%
-\def\point{$\star$}
-\def\arrow{\leavevmode\raise.05ex\hbox to 1em{\hfil$\rightarrow$\hfil}}
-\def\result{\leavevmode\raise.05ex\hbox to 1em{\hfil$\Rightarrow$\hfil}}
-\def\expansion{\leavevmode\hbox to 1em{\hfil$\mapsto$\hfil}}
-\def\print{\leavevmode\lower.1ex\hbox to 1em{\hfil$\dashv$\hfil}}
-\def\equiv{\leavevmode\hbox to 1em{\hfil$\ptexequiv$\hfil}}
-
-% The @error{} command.
-% Adapted from the TeXbook's \boxit.
-%
-\newbox\errorbox
-%
-{\tentt \global\dimen0 = 3em}% Width of the box.
-\dimen2 = .55pt % Thickness of rules
-% The text. (`r' is open on the right, `e' somewhat less so on the left.)
-\setbox0 = \hbox{\kern-.75pt \reducedsf error\kern-1.5pt}
-%
-\setbox\errorbox=\hbox to \dimen0{\hfil
-   \hsize = \dimen0 \advance\hsize by -5.8pt % Space to left+right.
-   \advance\hsize by -2\dimen2 % Rules.
-   \vbox{%
-      \hrule height\dimen2
-      \hbox{\vrule width\dimen2 \kern3pt          % Space to left of text.
-         \vtop{\kern2.4pt \box0 \kern2.4pt}% Space above/below.
-         \kern3pt\vrule width\dimen2}% Space to right.
-      \hrule height\dimen2}
-    \hfil}
-%
-\def\error{\leavevmode\lower.7ex\copy\errorbox}
-
 % @tex ... @end tex    escapes into raw Tex temporarily.
 % One exception: @ is still an escape character, so that @end tex works.
 % But \@ or @@ will get a plain tex @ character.
@@ -5999,6 +6081,7 @@ end
 
 % This macro is called at the beginning of all the @example variants,
 % inside a group.
+\newdimen\nonfillparindent
 \def\nonfillstart{%
   \aboveenvbreak
   \hfuzz = 12pt % Don't be fussy
@@ -6006,7 +6089,12 @@ end
   \let\par = \lisppar % don't ignore blank lines
   \obeylines % each line of input is a line of output
   \parskip = 0pt
+  % Turn off paragraph indentation but redefine \indent to emulate
+  % the normal \indent.
+  \nonfillparindent=\parindent
   \parindent = 0pt
+  \let\indent\nonfillindent
+  %
   \emergencystretch = 0pt % don't try to avoid overfull boxes
   \ifx\nonarrowing\relax
     \advance \leftskip by \lispnarrowing
@@ -6016,6 +6104,24 @@ end
   \fi
   \let\exdent=\nofillexdent
 }
+
+\begingroup
+\obeyspaces
+% We want to swallow spaces (but not other tokens) after the fake
+% @indent in our nonfill-environments, where spaces are normally
+% active and set to @tie, resulting in them not being ignored after
+% @indent.
+\gdef\nonfillindent{\futurelet\temp\nonfillindentcheck}%
+\gdef\nonfillindentcheck{%
+\ifx\temp %
+\expandafter\nonfillindentgobble%
+\else%
+\leavevmode\nonfillindentbox%
+\fi%
+}%
+\endgroup
+\def\nonfillindentgobble#1{\nonfillindent}
+\def\nonfillindentbox{\hbox to \nonfillparindent{\hss}}
 
 % If you want all examples etc. small: @set dispenvsize small.
 % If you want even small examples the full size: @set dispenvsize nosmall.
@@ -6101,6 +6207,30 @@ end
   \gobble
 }
 \let\Eflushright = \afterenvbreak
+
+
+% @raggedright does more-or-less normal line breaking but no right
+% justification.  From plain.tex.
+\envdef\raggedright{%
+  \rightskip0pt plus2em \spaceskip.3333em \xspaceskip.5em\relax
+}
+\let\Eraggedright\par
+
+\envdef\raggedleft{%
+  \parindent=0pt \leftskip0pt plus2em
+  \spaceskip.3333em \xspaceskip.5em \parfillskip=0pt
+  \hbadness=10000 % Last line will usually be underfull, so turn off
+                  % badness reporting.
+}
+\let\Eraggedleft\par
+
+\envdef\raggedcenter{%
+  \parindent=0pt \rightskip0pt plus1em \leftskip0pt plus1em
+  \spaceskip.3333em \xspaceskip.5em \parfillskip=0pt
+  \hbadness=10000 % Last line will usually be underfull, so turn off
+                  % badness reporting.
+}
+\let\Eraggedcenter\par
 
 
 % @quotation does normal linebreaking (hence we can't use \nonfillstart)
@@ -6721,7 +6851,7 @@ end
 % This does \let #1 = #2, with \csnames; that is,
 %   \let \csname#1\endcsname = \csname#2\endcsname
 % (except of course we have to play expansion games).
-% 
+%
 \def\cslet#1#2{%
   \expandafter\let
   \csname#1\expandafter\endcsname
@@ -7881,21 +8011,22 @@ end
     \closein 1
   \endgroup % end raw TeX
 \endgroup}
-}
 %
 % If they passed de_DE, and txi-de_DE.tex doesn't exist,
 % try txi-de.tex.
-% 
-\def\documentlanguagetrywithoutunderscore#1_#2\finish{%
+%
+\gdef\documentlanguagetrywithoutunderscore#1_#2\finish{%
   \openin 1 txi-#1.tex
   \ifeof 1
     \errhelp = \nolanghelp
     \errmessage{Cannot read language file txi-#1.tex}%
   \else
+    \globaldefs = 1  % everything in the txi-LL files needs to persist
     \input txi-#1.tex
   \fi
   \closein 1
 }
+}% end of special _ catcode
 %
 \newhelp\nolanghelp{The given language definition file cannot be found or
 is empty.  Maybe you need to install it?  Putting it in the current
@@ -7904,16 +8035,16 @@ directory should work if nowhere else does.}
 % This macro is called from txi-??.tex files; the first argument is the
 % \language name to set (without the "\lang@" prefix), the second and
 % third args are \{left,right}hyphenmin.
-% 
+%
 % The language names to pass are determined when the format is built.
 % See the etex.log file created at that time, e.g.,
 % /usr/local/texlive/2008/texmf-var/web2c/pdftex/etex.log.
-% 
+%
 % With TeX Live 2008, etex now includes hyphenation patterns for all
 % available languages.  This means we can support hyphenation in
 % Texinfo, at least to some extent.  (This still doesn't solve the
 % accented characters problem.)
-% 
+%
 \catcode`@=11
 \def\txisetlanguage#1#2#3{%
   % do not set the language if the name is undefined in the current TeX.
@@ -7968,7 +8099,7 @@ directory should work if nowhere else does.}
      \setnonasciicharscatcode\active
      \lattwochardefs
   %
-  \else \ifx \declaredencoding \latone 
+  \else \ifx \declaredencoding \latone
      \setnonasciicharscatcode\active
      \latonechardefs
   %
@@ -7980,7 +8111,7 @@ directory should work if nowhere else does.}
      \setnonasciicharscatcode\active
      \utfeightchardefs
   %
-  \else 
+  \else
     \message{Unknown document encoding #1, ignoring.}%
   %
   \fi % utfeight
@@ -7992,7 +8123,7 @@ directory should work if nowhere else does.}
 
 % A message to be logged when using a character that isn't available
 % the default font encoding (OT1).
-% 
+%
 \def\missingcharmsg#1{\message{Character missing in OT1 encoding: #1.}}
 
 % Take account of \c (plain) vs. \, (Texinfo) difference.
@@ -8005,21 +8136,21 @@ directory should work if nowhere else does.}
 %
 % Latin1 (ISO-8859-1) character definitions.
 \def\latonechardefs{%
-  \gdef^^a0{~} 
+  \gdef^^a0{~}
   \gdef^^a1{\exclamdown}
-  \gdef^^a2{\missingcharmsg{CENT SIGN}} 
+  \gdef^^a2{\missingcharmsg{CENT SIGN}}
   \gdef^^a3{{\pounds}}
   \gdef^^a4{\missingcharmsg{CURRENCY SIGN}}
   \gdef^^a5{\missingcharmsg{YEN SIGN}}
-  \gdef^^a6{\missingcharmsg{BROKEN BAR}} 
+  \gdef^^a6{\missingcharmsg{BROKEN BAR}}
   \gdef^^a7{\S}
-  \gdef^^a8{\"{}} 
-  \gdef^^a9{\copyright} 
+  \gdef^^a8{\"{}}
+  \gdef^^a9{\copyright}
   \gdef^^aa{\ordf}
   \gdef^^ab{\guillemetleft}
   \gdef^^ac{$\lnot$}
-  \gdef^^ad{\-} 
-  \gdef^^ae{\registeredsymbol} 
+  \gdef^^ad{\-}
+  \gdef^^ae{\registeredsymbol}
   \gdef^^af{\={}}
   %
   \gdef^^b0{\textdegree}
@@ -8046,7 +8177,7 @@ directory should work if nowhere else does.}
   \gdef^^c2{\^A}
   \gdef^^c3{\~A}
   \gdef^^c4{\"A}
-  \gdef^^c5{\ringaccent A} 
+  \gdef^^c5{\ringaccent A}
   \gdef^^c6{\AE}
   \gdef^^c7{\cedilla C}
   \gdef^^c8{\`E}
@@ -8058,7 +8189,7 @@ directory should work if nowhere else does.}
   \gdef^^ce{\^I}
   \gdef^^cf{\"I}
   %
-  \gdef^^d0{\missingcharmsg{LATIN CAPITAL LETTER ETH}}
+  \gdef^^d0{\DH}
   \gdef^^d1{\~N}
   \gdef^^d2{\`O}
   \gdef^^d3{\'O}
@@ -8072,7 +8203,7 @@ directory should work if nowhere else does.}
   \gdef^^db{\^U}
   \gdef^^dc{\"U}
   \gdef^^dd{\'Y}
-  \gdef^^de{\missingcharmsg{LATIN CAPITAL LETTER THORN}}
+  \gdef^^de{\TH}
   \gdef^^df{\ss}
   %
   \gdef^^e0{\`a}
@@ -8092,7 +8223,7 @@ directory should work if nowhere else does.}
   \gdef^^ee{\^{\dotless i}}
   \gdef^^ef{\"{\dotless i}}
   %
-  \gdef^^f0{\missingcharmsg{LATIN SMALL LETTER ETH}}
+  \gdef^^f0{\dh}
   \gdef^^f1{\~n}
   \gdef^^f2{\`o}
   \gdef^^f3{\'o}
@@ -8106,7 +8237,7 @@ directory should work if nowhere else does.}
   \gdef^^fb{\^u}
   \gdef^^fc{\"u}
   \gdef^^fd{\'y}
-  \gdef^^fe{\missingcharmsg{LATIN SMALL LETTER THORN}}
+  \gdef^^fe{\th}
   \gdef^^ff{\"y}
 }
 
@@ -8178,7 +8309,7 @@ directory should work if nowhere else does.}
   \gdef^^ce{\^I}
   \gdef^^cf{\v D}
   %
-  \gdef^^d0{\missingcharmsg{LATIN CAPITAL LETTER D WITH STROKE}}
+  \gdef^^d0{\DH}
   \gdef^^d1{\'N}
   \gdef^^d2{\v N}
   \gdef^^d3{\'O}
@@ -8187,7 +8318,7 @@ directory should work if nowhere else does.}
   \gdef^^d6{\"O}
   \gdef^^d7{$\times$}
   \gdef^^d8{\v R}
-  \gdef^^d9{\ringaccent U} 
+  \gdef^^d9{\ringaccent U}
   \gdef^^da{\'U}
   \gdef^^db{\H U}
   \gdef^^dc{\"U}
@@ -8212,7 +8343,7 @@ directory should work if nowhere else does.}
   \gdef^^ee{\^\i}
   \gdef^^ef{\v d}
   %
-  \gdef^^f0{\missingcharmsg{LATIN SMALL LETTER D WITH STROKE}}
+  \gdef^^f0{\dh}
   \gdef^^f1{\'n}
   \gdef^^f2{\v n}
   \gdef^^f3{\'o}
@@ -8231,11 +8362,11 @@ directory should work if nowhere else does.}
 }
 
 % UTF-8 character definitions.
-% 
+%
 % This code to support UTF-8 is based on LaTeX's utf8.def, with some
 % changes for Texinfo conventions.  It is included here under the GPL by
 % permission from Frank Mittelbach and the LaTeX team.
-% 
+%
 \newcount\countUTFx
 \newcount\countUTFy
 \newcount\countUTFz
@@ -8385,6 +8516,7 @@ directory should work if nowhere else does.}
   \DeclareUnicodeCharacter{00CE}{\^I}
   \DeclareUnicodeCharacter{00CF}{\"I}
 
+  \DeclareUnicodeCharacter{00D0}{\DH}
   \DeclareUnicodeCharacter{00D1}{\~N}
   \DeclareUnicodeCharacter{00D2}{\`O}
   \DeclareUnicodeCharacter{00D3}{\'O}
@@ -8397,6 +8529,7 @@ directory should work if nowhere else does.}
   \DeclareUnicodeCharacter{00DB}{\^U}
   \DeclareUnicodeCharacter{00DC}{\"U}
   \DeclareUnicodeCharacter{00DD}{\'Y}
+  \DeclareUnicodeCharacter{00DE}{\TH}
   \DeclareUnicodeCharacter{00DF}{\ss}
 
   \DeclareUnicodeCharacter{00E0}{\`a}
@@ -8416,6 +8549,7 @@ directory should work if nowhere else does.}
   \DeclareUnicodeCharacter{00EE}{\^{\dotless{i}}}
   \DeclareUnicodeCharacter{00EF}{\"{\dotless{i}}}
 
+  \DeclareUnicodeCharacter{00F0}{\dh}
   \DeclareUnicodeCharacter{00F1}{\~n}
   \DeclareUnicodeCharacter{00F2}{\`o}
   \DeclareUnicodeCharacter{00F3}{\'o}
@@ -8428,6 +8562,7 @@ directory should work if nowhere else does.}
   \DeclareUnicodeCharacter{00FB}{\^u}
   \DeclareUnicodeCharacter{00FC}{\"u}
   \DeclareUnicodeCharacter{00FD}{\'y}
+  \DeclareUnicodeCharacter{00FE}{\th}
   \DeclareUnicodeCharacter{00FF}{\"y}
 
   \DeclareUnicodeCharacter{0100}{\=A}
@@ -8972,6 +9107,9 @@ directory should work if nowhere else does.}
 
 \message{and turning on texinfo input format.}
 
+% DEL is a comment character, in case @c does not suffice.
+\catcode`\^^? = 14
+
 % Define macros to output various characters with catcode for normal text.
 \catcode`\"=\other
 \catcode`\~=\other
@@ -9081,7 +9219,7 @@ directory should work if nowhere else does.}
 
 % Same as @turnoffactive except outputs \ as {\tt\char`\\} instead of
 % the literal character `\'.
-% 
+%
 @def@normalturnoffactive{%
   @let\=@normalbackslash
   @let"=@normaldoublequote
@@ -9137,7 +9275,7 @@ directory should work if nowhere else does.}
 @catcode`@`=@active
 @markupsetuplqdefault
 @markupsetuprqdefault
- 
+
 @c Local variables:
 @c eval: (add-hook 'write-file-hooks 'time-stamp)
 @c page-delimiter: "^\\\\message"

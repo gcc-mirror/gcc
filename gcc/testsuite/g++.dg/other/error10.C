@@ -6,7 +6,7 @@ template<int> struct A {};
 
 template<int N>
 void foo(const A<N> &a)
-{ -A<N>(a); } // { dg-error "\\(\\(const A<0>\\*\\)a\\)" "" }
+{ -A<N>(a); } // { dg-error "\\(\\* & a\\)" "" }
 
 void bar()
 {

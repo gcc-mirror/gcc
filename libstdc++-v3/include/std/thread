@@ -46,8 +46,8 @@
 
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   /**
    * @defgroup threads Threads
    * @ingroup concurrency
@@ -55,9 +55,6 @@ namespace std
    * Classes for thread support.
    * @{
    */
-
-  template<typename _Tp>
-    struct hash;
 
   /// thread
   class thread
@@ -123,21 +120,20 @@ namespace std
 
   public:
     thread() = default;
+    thread(thread&) = delete;
     thread(const thread&) = delete;
 
     thread(thread&& __t)
     { swap(__t); }
 
-    template<typename _Callable>
-      explicit thread(_Callable __f)
-      {
-	_M_start_thread(_M_make_routine<_Callable>
-			(std::forward<_Callable>(__f)));
-      }
-
     template<typename _Callable, typename... _Args>
+      explicit 
       thread(_Callable&& __f, _Args&&... __args)
-      { _M_start_thread(_M_make_routine(std::bind(__f, __args...))); }
+      {
+        _M_start_thread(_M_make_routine(std::bind<void>(
+                std::forward<_Callable>(__f),
+                std::forward<_Args>(__args)...)));
+      }
 
     ~thread()
     {
@@ -223,11 +219,11 @@ namespace std
   /// std::hash specialization for thread::id.
   template<>
     struct hash<thread::id>
-    : public std::unary_function<thread::id, size_t>
+    : public __hash_base<size_t, thread::id>
     {
       size_t
       operator()(const thread::id& __id) const
-      { return std::_Fnv_hash::hash(__id._M_thread); }
+      { return std::_Hash_impl::hash(__id._M_thread); }
     };
 
   template<class _CharT, class _Traits>
@@ -287,7 +283,7 @@ namespace std
   }
 
   // @} group threads
-}
+_GLIBCXX_END_NAMESPACE
 
 #endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1
 

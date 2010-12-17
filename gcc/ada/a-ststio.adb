@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -147,7 +147,7 @@ package body Ada.Streams.Stream_IO is
    function End_Of_File (File : File_Type) return Boolean is
    begin
       FIO.Check_Read_Status (AP (File));
-      return Count (File.Index) > Size (File);
+      return File.Index > Size (File);
    end End_Of_File;
 
    -----------
@@ -175,7 +175,7 @@ package body Ada.Streams.Stream_IO is
    function Index (File : File_Type) return Positive_Count is
    begin
       FIO.Check_File_Open (AP (File));
-      return Count (File.Index);
+      return File.Index;
    end Index;
 
    -------------

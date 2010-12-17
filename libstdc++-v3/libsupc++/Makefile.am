@@ -1,6 +1,7 @@
 ## Makefile for the GNU C++ Support library.
 ##
-## Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+## Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+## 2009, 2010
 ## Free Software Foundation, Inc.
 ##
 ## Process this file with automake to produce Makefile.in.
@@ -43,6 +44,7 @@ endif
 sources = \
 	array_type_info.cc \
 	atexit_arm.cc \
+	bad_alloc.cc \
 	bad_cast.cc \
 	bad_typeid.cc \
 	class_type_info.cc \
@@ -69,6 +71,7 @@ sources = \
 	function_type_info.cc \
 	fundamental_type_info.cc \
 	guard.cc \
+	hash_bytes.cc \
 	new_handler.cc \
 	new_op.cc \
 	new_opnt.cc \

@@ -250,7 +250,17 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
       /* We may eliminate the need for out-of-line copy to be output.
 	 In that case just go ahead and re-use it.  */
       if (!e->callee->callers->next_caller
+	  /* FIXME: When address is taken of DECL_EXTERNAL function we still can remove its
+	     offline copy, but we would need to keep unanalyzed node in the callgraph so
+	     references can point to it.  */
+	  && !e->callee->address_taken
 	  && cgraph_can_remove_if_no_direct_calls_p (e->callee)
+	  /* Inlining might enable more devirtualizing, so we want to remove
+	     those only after all devirtualizable virtual calls are processed.
+	     Lacking may edges in callgraph we just preserve them post
+	     inlining.  */
+	  && (!DECL_VIRTUAL_P (e->callee->decl)
+	      || (!DECL_COMDAT (e->callee->decl) && !DECL_EXTERNAL (e->callee->decl)))
 	  /* Don't reuse if more than one function shares a comdat group.
 	     If the other function(s) are needed, we need to emit even
 	     this function out of line.  */
@@ -258,7 +268,7 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	  && !cgraph_new_nodes)
 	{
 	  gcc_assert (!e->callee->global.inlined_to);
-	  if (e->callee->analyzed)
+	  if (e->callee->analyzed && !DECL_EXTERNAL (e->callee->decl))
 	    {
 	      overall_size -= e->callee->global.size;
 	      nfunctions_inlined++;
@@ -334,7 +344,9 @@ cgraph_mark_inline_edge (struct cgraph_edge *e, bool update_original,
     overall_size += new_size - old_size;
   ncalls_inlined++;
 
-  if (flag_indirect_inlining)
+  /* FIXME: We should remove the optimize check after we ensure we never run
+     IPA passes when not optimizng.  */
+  if (flag_indirect_inlining && optimize)
     return ipa_propagate_indirect_call_infos (curr, new_edges);
   else
     return false;
@@ -389,9 +401,15 @@ cgraph_estimate_growth (struct cgraph_node *node)
      we decide to not inline for different reasons, but it is not big deal
      as in that case we will keep the body around, but we will also avoid
      some inlining.  */
-  if (cgraph_only_called_directly_p (node)
+  if (cgraph_will_be_removed_from_program_if_no_direct_calls (node)
       && !DECL_EXTERNAL (node->decl) && !self_recursive)
     growth -= node->global.size;
+  /* COMDAT functions are very often not shared across multiple units since they
+     come from various template instantiations.  Take this into account.  */
+  else  if (DECL_COMDAT (node->decl) && !self_recursive
+	    && cgraph_can_remove_if_no_direct_calls_p (node))
+    growth -= (node->global.size
+	       * (100 - PARAM_VALUE (PARAM_COMDAT_SHARING_PROBABILITY)) + 50) / 100;
 
   node->global.estimated_growth = growth;
   return growth;
@@ -478,13 +496,19 @@ cgraph_default_inline_p (struct cgraph_node *n, cgraph_inline_failed_t *reason)
 	*reason = CIF_FUNCTION_NOT_INLINE_CANDIDATE;
       return false;
     }
-
   if (!n->analyzed)
     {
       if (reason)
 	*reason = CIF_BODY_NOT_AVAILABLE;
       return false;
     }
+  if (cgraph_function_body_availability (n) <= AVAIL_OVERWRITABLE)
+    {
+      if (reason)
+	*reason = CIF_OVERWRITABLE;
+      return false;
+    }
+
 
   if (DECL_DECLARED_INLINE_P (decl))
     {
@@ -661,6 +685,30 @@ cgraph_edge_badness (struct cgraph_edge *edge, bool dump)
     return badness;
 }
 
+/* Recompute badness of EDGE and update its key in HEAP if needed.  */
+static void
+update_edge_key (fibheap_t heap, struct cgraph_edge *edge)
+{
+  int badness = cgraph_edge_badness (edge, false);
+  if (edge->aux)
+    {
+      fibnode_t n = (fibnode_t) edge->aux;
+      gcc_checking_assert (n->data == edge);
+
+      /* fibheap_replace_key only decrease the keys.
+	 When we increase the key we do not update heap
+	 and instead re-insert the element once it becomes
+	 a minium of heap.  */
+      if (badness < n->key)
+	{
+	  fibheap_replace_key (heap, n, badness);
+	  gcc_checking_assert (n->key == badness);
+	}
+    }
+  else
+    edge->aux = fibheap_insert (heap, badness, edge);
+}
+
 /* Recompute heap nodes for each of caller edge.  */
 
 static void
@@ -671,15 +719,13 @@ update_caller_keys (fibheap_t heap, struct cgraph_node *node,
   cgraph_inline_failed_t failed_reason;
 
   if (!node->local.inlinable
+      || cgraph_function_body_availability (node) <= AVAIL_OVERWRITABLE
       || node->global.inlined_to)
     return;
-  if (bitmap_bit_p (updated_nodes, node->uid))
+  if (!bitmap_set_bit (updated_nodes, node->uid))
     return;
-  bitmap_set_bit (updated_nodes, node->uid);
   node->global.estimated_growth = INT_MIN;
 
-  if (!node->local.inlinable)
-    return;
   /* See if there is something to do.  */
   for (edge = node->callers; edge; edge = edge->next_caller)
     if (edge->inline_failed)
@@ -702,28 +748,54 @@ update_caller_keys (fibheap_t heap, struct cgraph_node *node,
 
   for (; edge; edge = edge->next_caller)
     if (edge->inline_failed)
-      {
-	int badness = cgraph_edge_badness (edge, false);
-	if (edge->aux)
-	  {
-	    fibnode_t n = (fibnode_t) edge->aux;
-	    gcc_assert (n->data == edge);
-	    if (n->key == badness)
-	      continue;
+      update_edge_key (heap, edge);
+}
 
-	    /* fibheap_replace_key only decrease the keys.
-	       When we increase the key we do not update heap
-	       and instead re-insert the element once it becomes
-	       a minium of heap.  */
-	    if (badness < n->key)
-	      {
-		fibheap_replace_key (heap, n, badness);
-		gcc_assert (n->key == badness);
-	        continue;
-	      }
+/* Recompute heap nodes for each uninlined call.
+   This is used when we know that edge badnesses are going only to increase
+   (we introduced new call site) and thus all we need is to insert newly
+   created edges into heap.  */
+
+static void
+update_callee_keys (fibheap_t heap, struct cgraph_node *node,
+		    bitmap updated_nodes)
+{
+  struct cgraph_edge *e = node->callees;
+  node->global.estimated_growth = INT_MIN;
+
+  if (!e)
+    return;
+  while (true)
+    if (!e->inline_failed && e->callee->callees)
+      e = e->callee->callees;
+    else
+      {
+	if (e->inline_failed
+	    && e->callee->local.inlinable
+	    && cgraph_function_body_availability (e->callee) >= AVAIL_AVAILABLE
+	    && !bitmap_bit_p (updated_nodes, e->callee->uid))
+	  {
+	    node->global.estimated_growth = INT_MIN;
+	    /* If function becomes uninlinable, we need to remove it from the heap.  */
+	    if (!cgraph_default_inline_p (e->callee, &e->inline_failed))
+	      update_caller_keys (heap, e->callee, updated_nodes);
+	    else
+	    /* Otherwise update just edge E.  */
+	      update_edge_key (heap, e);
 	  }
+	if (e->next_callee)
+	  e = e->next_callee;
 	else
-	  edge->aux = fibheap_insert (heap, badness, edge);
+	  {
+	    do
+	      {
+		if (e->caller == node)
+		  return;
+		e = e->caller->callers;
+	      }
+	    while (!e->next_callee);
+	    e = e->next_callee;
+	  }
       }
 }
 
@@ -731,8 +803,8 @@ update_caller_keys (fibheap_t heap, struct cgraph_node *node,
    Walk recursively into all inline clones.  */
 
 static void
-update_callee_keys (fibheap_t heap, struct cgraph_node *node,
-		    bitmap updated_nodes)
+update_all_callee_keys (fibheap_t heap, struct cgraph_node *node,
+			bitmap updated_nodes)
 {
   struct cgraph_edge *e = node->callees;
   node->global.estimated_growth = INT_MIN;
@@ -969,6 +1041,7 @@ add_new_edges_to_heap (fibheap_t heap, VEC (cgraph_edge_p, heap) *new_edges)
 
       gcc_assert (!edge->aux);
       if (edge->callee->local.inlinable
+	  && edge->inline_failed
 	  && cgraph_default_inline_p (edge->callee, &edge->inline_failed))
         edge->aux = fibheap_insert (heap, cgraph_edge_badness (edge, false), edge);
     }
@@ -1166,7 +1239,7 @@ cgraph_decide_inlining_of_small_functions (void)
 	    continue;
 	  if (flag_indirect_inlining)
 	    add_new_edges_to_heap (heap, new_indirect_edges);
-          update_callee_keys (heap, where, updated_nodes);
+          update_all_callee_keys (heap, where, updated_nodes);
 	}
       else
 	{
@@ -1182,11 +1255,18 @@ cgraph_decide_inlining_of_small_functions (void)
 	      continue;
 	    }
 	  callee = edge->callee;
+	  gcc_checking_assert (!callee->global.inlined_to);
 	  cgraph_mark_inline_edge (edge, true, &new_indirect_edges);
 	  if (flag_indirect_inlining)
 	    add_new_edges_to_heap (heap, new_indirect_edges);
 
-	  update_callee_keys (heap, callee, updated_nodes);
+	  /* We inlined last offline copy to the body.  This might lead
+	     to callees of function having fewer call sites and thus they
+	     may need updating.  */
+	  if (callee->global.inlined_to)
+	    update_all_callee_keys (heap, callee, updated_nodes);
+	  else
+	    update_callee_keys (heap, edge->callee, updated_nodes);
 	}
       where = edge->caller;
       if (where->global.inlined_to)
@@ -1333,6 +1413,14 @@ cgraph_flatten (struct cgraph_node *node)
 	  continue;
 	}
 
+      if (gimple_in_ssa_p (DECL_STRUCT_FUNCTION (node->decl))
+	  != gimple_in_ssa_p (DECL_STRUCT_FUNCTION (e->callee->decl)))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Not inlining: SSA form does not match.\n");
+	  continue;
+	}
+
       /* Inline the edge and flatten the inline clone.  Avoid
          recursing through the original node if the node was cloned.  */
       if (dump_file)
@@ -1379,7 +1467,8 @@ cgraph_decide_inlining (void)
 	struct cgraph_edge *e;
 
 	gcc_assert (inline_summary (node)->self_size == node->global.size);
-	initial_size += node->global.size;
+	if (!DECL_EXTERNAL (node->decl))
+	  initial_size += node->global.size;
 	for (e = node->callees; e; e = e->next_callee)
 	  if (max_count < e->count)
 	    max_count = e->count;
@@ -1442,14 +1531,15 @@ cgraph_decide_inlining (void)
 
 	  if (node->callers
 	      && !node->callers->next_caller
-	      && cgraph_only_called_directly_p (node)
+	      && !node->global.inlined_to
+	      && cgraph_will_be_removed_from_program_if_no_direct_calls (node)
 	      && node->local.inlinable
+	      && cgraph_function_body_availability (node) >= AVAIL_AVAILABLE
 	      && node->callers->inline_failed
 	      && node->callers->caller != node
 	      && node->callers->caller->global.inlined_to != node
 	      && !node->callers->call_stmt_cannot_inline_p
-	      && !DECL_EXTERNAL (node->decl)
-	      && !DECL_COMDAT (node->decl))
+	      && !DECL_EXTERNAL (node->decl))
 	    {
 	      cgraph_inline_failed_t reason;
 	      old_size = overall_size;
@@ -1502,16 +1592,15 @@ cgraph_decide_inlining (void)
   return 0;
 }
 
-/* Return true when N is leaf function.  Accept cheap (pure&const) builtins
+/* Return true when N is leaf function.  Accept cheap builtins
    in leaf functions.  */
+
 static bool
 leaf_node_p (struct cgraph_node *n)
 {
   struct cgraph_edge *e;
   for (e = n->callees; e; e = e->next_callee)
-    if (!DECL_BUILT_IN (e->callee->decl)
-	|| (!TREE_READONLY (e->callee->decl)
-	    || DECL_PURE_P (e->callee->decl)))
+    if (!is_inexpensive_builtin (e->callee->decl))
       return false;
   return true;
 }
@@ -1771,55 +1860,30 @@ struct gimple_opt_pass pass_early_inline =
  }
 };
 
-/* When inlining shall be performed.  */
-static bool
-cgraph_gate_ipa_early_inlining (void)
-{
-  return (flag_early_inlining
-	  && !in_lto_p
-	  && (flag_branch_probabilities || flag_test_coverage
-	      || profile_arc_flag));
-}
 
-/* IPA pass wrapper for early inlining pass.  We need to run early inlining
-   before tree profiling so we have stand alone IPA pass for doing so.  */
-struct simple_ipa_opt_pass pass_ipa_early_inline =
-{
- {
-  SIMPLE_IPA_PASS,
-  "einline_ipa",			/* name */
-  cgraph_gate_ipa_early_inlining,	/* gate */
-  NULL,					/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_INLINE_HEURISTICS,			/* tv_id */
-  0,	                                /* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_dump_cgraph 		        /* todo_flags_finish */
- }
-};
+/* See if statement might disappear after inlining.
+   0 - means not eliminated
+   1 - half of statements goes away
+   2 - for sure it is eliminated.
+   We are not terribly sophisficated, basically looking for simple abstraction
+   penalty wrappers.  */
 
-/* See if statement might disappear after inlining.  We are not terribly
-   sophisficated, basically looking for simple abstraction penalty wrappers.  */
-
-static bool
-likely_eliminated_by_inlining_p (gimple stmt)
+static int
+eliminated_by_inlining_prob (gimple stmt)
 {
   enum gimple_code code = gimple_code (stmt);
   switch (code)
     {
       case GIMPLE_RETURN:
-        return true;
+        return 2;
       case GIMPLE_ASSIGN:
 	if (gimple_num_ops (stmt) != 2)
-	  return false;
+	  return 0;
 
 	/* Casts of parameters, loads from parameters passed by reference
-	   and stores to return value or parameters are probably free after
-	   inlining.  */
+	   and stores to return value or parameters are often free after
+	   inlining dua to SRA and further combining.
+	   Assume that half of statements goes away.  */
 	if (gimple_assign_rhs_code (stmt) == CONVERT_EXPR
 	    || gimple_assign_rhs_code (stmt) == NOP_EXPR
 	    || gimple_assign_rhs_code (stmt) == VIEW_CONVERT_EXPR
@@ -1832,10 +1896,12 @@ likely_eliminated_by_inlining_p (gimple stmt)
 	    bool rhs_free = false;
 	    bool lhs_free = false;
 
- 	    while (handled_component_p (inner_lhs) || TREE_CODE (inner_lhs) == INDIRECT_REF)
+ 	    while (handled_component_p (inner_lhs)
+		   || TREE_CODE (inner_lhs) == MEM_REF)
 	      inner_lhs = TREE_OPERAND (inner_lhs, 0);
  	    while (handled_component_p (inner_rhs)
-	           || TREE_CODE (inner_rhs) == ADDR_EXPR || TREE_CODE (inner_rhs) == INDIRECT_REF)
+	           || TREE_CODE (inner_rhs) == ADDR_EXPR
+		   || TREE_CODE (inner_rhs) == MEM_REF)
 	      inner_rhs = TREE_OPERAND (inner_rhs, 0);
 
 
@@ -1855,14 +1921,15 @@ likely_eliminated_by_inlining_p (gimple stmt)
 	        || (TREE_CODE (inner_lhs) == SSA_NAME
 		    && TREE_CODE (SSA_NAME_VAR (inner_lhs)) == RESULT_DECL))
 	      lhs_free = true;
-	    if (lhs_free && (is_gimple_reg (rhs) || is_gimple_min_invariant (rhs)))
+	    if (lhs_free
+		&& (is_gimple_reg (rhs) || is_gimple_min_invariant (rhs)))
 	      rhs_free = true;
 	    if (lhs_free && rhs_free)
-	      return true;
+	      return 1;
 	  }
-	return false;
+	return 0;
       default:
-	return false;
+	return 0;
     }
 }
 
@@ -1873,8 +1940,11 @@ estimate_function_body_sizes (struct cgraph_node *node)
 {
   gcov_type time = 0;
   gcov_type time_inlining_benefit = 0;
-  int size = 0;
-  int size_inlining_benefit = 0;
+  /* Estimate static overhead for function prologue/epilogue and alignment. */
+  int size = 2;
+  /* Benefits are scaled by probability of elimination that is in range
+     <0,2>.  */
+  int size_inlining_benefit = 2 * 2;
   basic_block bb;
   gimple_stmt_iterator bsi;
   struct function *my_function = DECL_STRUCT_FUNCTION (node->decl);
@@ -1895,6 +1965,7 @@ estimate_function_body_sizes (struct cgraph_node *node)
 	  gimple stmt = gsi_stmt (bsi);
 	  int this_size = estimate_num_insns (stmt, &eni_size_weights);
 	  int this_time = estimate_num_insns (stmt, &eni_time_weights);
+	  int prob;
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
@@ -1905,20 +1976,21 @@ estimate_function_body_sizes (struct cgraph_node *node)
 	  this_time *= freq;
 	  time += this_time;
 	  size += this_size;
-	  if (likely_eliminated_by_inlining_p (stmt))
-	    {
-	      size_inlining_benefit += this_size;
-	      time_inlining_benefit += this_time;
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		fprintf (dump_file, "    Likely eliminated\n");
-	    }
+	  prob = eliminated_by_inlining_prob (stmt);
+	  if (prob == 1 && dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "    50%% will be eliminated by inlining\n");
+	  if (prob == 2 && dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "    will eliminated by inlining\n");
+	  size_inlining_benefit += this_size * prob;
+	  time_inlining_benefit += this_time * prob;
 	  gcc_assert (time >= 0);
 	  gcc_assert (size >= 0);
 	}
     }
   time = (time + CGRAPH_FREQ_BASE / 2) / CGRAPH_FREQ_BASE;
-  time_inlining_benefit = ((time_inlining_benefit + CGRAPH_FREQ_BASE / 2)
-  			   / CGRAPH_FREQ_BASE);
+  time_inlining_benefit = ((time_inlining_benefit + CGRAPH_FREQ_BASE)
+  			   / (CGRAPH_FREQ_BASE * 2));
+  size_inlining_benefit = (size_inlining_benefit + 1) / 2;
   if (dump_file)
     fprintf (dump_file, "Overall function body time: %i-%i size: %i-%i\n",
 	     (int)time, (int)time_inlining_benefit,
@@ -1931,7 +2003,7 @@ estimate_function_body_sizes (struct cgraph_node *node)
       time_inlining_benefit += cost;
       size_inlining_benefit += cost;
     }
-  for (arg = DECL_ARGUMENTS (node->decl); arg; arg = TREE_CHAIN (arg))
+  for (arg = DECL_ARGUMENTS (node->decl); arg; arg = DECL_CHAIN (arg))
     if (!VOID_TYPE_P (TREE_TYPE (arg)))
       {
         int cost = estimate_move_cost (TREE_TYPE (arg));
@@ -1962,7 +2034,7 @@ compute_inline_parameters (struct cgraph_node *node)
 
   /* Estimate the stack size for the function.  But not at -O0
      because estimated_stack_frame_size is a quadratic problem.  */
-  self_stack_size = optimize ? estimated_stack_frame_size () : 0;
+  self_stack_size = optimize ? estimated_stack_frame_size (node->decl) : 0;
   inline_summary (node)->estimated_self_stack_size = self_stack_size;
   node->global.estimated_stack_size = self_stack_size;
   node->global.stack_frame_offset = 0;
@@ -2029,7 +2101,9 @@ analyze_function (struct cgraph_node *node)
   current_function_decl = node->decl;
 
   compute_inline_parameters (node);
-  if (flag_indirect_inlining)
+  /* FIXME: We should remove the optimize check after we ensure we never run
+     IPA passes when not optimizng.  */
+  if (flag_indirect_inlining && optimize)
     inline_indirect_intraprocedural_analysis (node);
 
   current_function_decl = NULL;

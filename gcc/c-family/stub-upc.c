@@ -30,10 +30,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 int compiling_upc;
 int flag_upc;
-int flag_upc_debug;
-int flag_upc_inline_lib;
-int flag_upc_instrument;
-int flag_upc_instrument_functions;
 int use_upc_dwarf2_extensions;
 
 int
@@ -225,4 +221,9 @@ tree
 upc_instrument_forall (location_t ARG_UNUSED(loc), int ARG_UNUSED(start))
 {
   return 0;
+}
+
+void
+upc_write_global_declarations (void)
+{
 }

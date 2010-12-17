@@ -149,15 +149,17 @@ host_modules= { module= lto-plugin; bootstrap=true; };
 
 target_modules = { module= libstdc++-v3;
 		   bootstrap=true;
-		   lib_path=.libs;
+		   lib_path=src/.libs;
 		   raw_cxx=true; };
 target_modules = { module= libmudflap; lib_path=.libs; };
 target_modules = { module= libssp; lib_path=.libs; };
 target_modules = { module= newlib; };
 target_modules = { module= libgcc; bootstrap=true; no_check=true; };
+target_modules = { module= libquadmath; };
 target_modules = { module= libgfortran; };
 target_modules = { module= libobjc; };
 target_modules = { module= libupc; };
+target_modules = { module= libgo; };
 target_modules = { module= libtermcap; no_check=true;
                    missing=mostlyclean;
                    missing=clean;
@@ -281,12 +283,13 @@ flags_to_pass = { flag= AS_FOR_TARGET ; };
 flags_to_pass = { flag= CC_FOR_TARGET ; };
 flags_to_pass = { flag= CFLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= CPPFLAGS_FOR_TARGET ; };
-flags_to_pass = { flag= CXX_FOR_TARGET ; };
 flags_to_pass = { flag= CXXFLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= DLLTOOL_FOR_TARGET ; };
 flags_to_pass = { flag= FLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= GCJ_FOR_TARGET ; };
 flags_to_pass = { flag= GFORTRAN_FOR_TARGET ; };
+flags_to_pass = { flag= GOC_FOR_TARGET ; };
+flags_to_pass = { flag= GOCFLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= LD_FOR_TARGET ; };
 flags_to_pass = { flag= LIPO_FOR_TARGET ; };
 flags_to_pass = { flag= LDFLAGS_FOR_TARGET ; };
@@ -342,7 +345,12 @@ dependencies = { module=all-gcc; on=all-libcpp; hard=true; };
 dependencies = { module=all-gcc; on=all-libdecnumber; hard=true; };
 dependencies = { module=all-gcc; on=all-libiberty; };
 dependencies = { module=all-gcc; on=all-fixincludes; };
+dependencies = { module=info-gcc; on=all-build-libiberty; };
+dependencies = { module=dvi-gcc; on=all-build-libiberty; };
+dependencies = { module=pdf-gcc; on=all-build-libiberty; };
+dependencies = { module=html-gcc; on=all-build-libiberty; };
 dependencies = { module=install-gcc ; on=install-fixincludes; };
+dependencies = { module=install-strip-gcc ; on=install-strip-fixincludes; };
 
 dependencies = { module=configure-libcpp; on=configure-libiberty; hard=true; };
 dependencies = { module=configure-libcpp; on=configure-intl; };
@@ -404,9 +412,11 @@ dependencies = { module=all-binutils; on=all-intl; };
 // binutils might be on PATH, and they might need the shared opcodes
 // library.
 dependencies = { module=install-binutils; on=install-opcodes; };
+dependencies = { module=install-strip-binutils; on=install-strip-opcodes; };
 
 // libopcodes depends on libbfd
 dependencies = { module=install-opcodes; on=install-bfd; };
+dependencies = { module=install-strip-opcodes; on=install-strip-bfd; };
 
 dependencies = { module=configure-gas; on=configure-intl; };
 dependencies = { module=all-gas; on=all-libiberty; };
@@ -427,6 +437,7 @@ dependencies = { module=all-ld; on=all-build-byacc; };
 dependencies = { module=all-ld; on=all-build-flex; };
 dependencies = { module=all-ld; on=all-intl; };
 dependencies = { module=install-ld; on=install-gold; };
+dependencies = { module=install-strip-ld; on=install-strip-gold; };
 dependencies = { module=configure-gold; on=configure-intl; };
 dependencies = { module=all-gold; on=all-libiberty; };
 dependencies = { module=all-gold; on=all-intl; };
@@ -457,6 +468,7 @@ dependencies = { module=configure-itcl; on=configure-tk; };
 dependencies = { module=all-itcl; on=all-tcl; };
 dependencies = { module=all-itcl; on=all-tk; };
 dependencies = { module=install-itcl; on=install-tcl; };
+dependencies = { module=install-strip-itcl; on=install-strip-tcl; };
 
 dependencies = { module=configure-tk; on=configure-tcl; };
 dependencies = { module=all-tk; on=all-tcl; };
@@ -467,7 +479,9 @@ dependencies = { module=all-sid; on=all-opcodes; };
 dependencies = { module=all-sid; on=all-tcl; };
 dependencies = { module=all-sid; on=all-tk; };
 dependencies = { module=install-sid; on=install-tcl; };
+dependencies = { module=install-strip-sid; on=install-strip-tcl; };
 dependencies = { module=install-sid; on=install-tk; };
+dependencies = { module=install-strip-sid; on=install-strip-tk; };
 
 dependencies = { module=configure-sim; on=configure-intl; };
 dependencies = { module=all-sim; on=all-intl; };
@@ -535,6 +549,9 @@ dependencies = { module=configure-target-boehm-gc; on=all-target-libstdc++-v3; }
 dependencies = { module=configure-target-fastjar; on=configure-target-zlib; };
 dependencies = { module=all-target-fastjar; on=all-target-zlib; };
 dependencies = { module=all-target-fastjar; on=all-target-libiberty; };
+dependencies = { module=configure-target-libgo; on=configure-target-libffi; };
+dependencies = { module=configure-target-libgo; on=all-target-libstdc++-v3; };
+dependencies = { module=all-target-libgo; on=all-target-libffi; };
 dependencies = { module=configure-target-libjava; on=configure-target-zlib; };
 dependencies = { module=configure-target-libjava; on=configure-target-boehm-gc; };
 dependencies = { module=configure-target-libjava; on=configure-target-qthreads; };
@@ -571,11 +588,13 @@ dependencies = { module=configure-target-libiberty; on=all-binutils; };
 dependencies = { module=configure-target-libiberty; on=all-ld; };
 dependencies = { module=configure-target-newlib; on=all-binutils; };
 dependencies = { module=configure-target-newlib; on=all-ld; };
+dependencies = { module=configure-target-libgfortran; on=all-target-libquadmath; };
 
 languages = { language=c;	gcc-check-target=check-gcc; };
 languages = { language=c++;	gcc-check-target=check-c++;
 				lib-check-target=check-target-libstdc++-v3; };
 languages = { language=fortran;	gcc-check-target=check-fortran;
+				lib-check-target=check-target-libquadmath;
 				lib-check-target=check-target-libgfortran; };
 languages = { language=java;	gcc-check-target=check-java;
 				lib-check-target=check-target-libjava; };
@@ -586,6 +605,8 @@ languages = { language=objc;	gcc-check-target=check-objc;
 languages = { language=upc;	gcc-check-target=check-upc;
 				lib-check-target=check-target-libupc; };
 languages = { language=obj-c++;	gcc-check-target=check-obj-c++; };
+languages = { language=go;	gcc-check-target=check-go;
+				lib-check-target=check-target-libgo; };
 
 // Toplevel bootstrap
 bootstrap_stage = { id=1 ; };

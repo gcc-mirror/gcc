@@ -1,6 +1,7 @@
 // { dg-do run }
 // { dg-require-effective-target tls }
-/* { dg-skip-if "PR44140" { *-*-* } { "-flto" "-fwhopr" } { "" } } */
+// { dg-add-options tls }
+
 extern "C" {
 extern void abort ();
 }

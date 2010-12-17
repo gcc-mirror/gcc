@@ -54,6 +54,9 @@ DIST_COMMON = README $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
 	$(top_srcdir)/../../config/lead-dot.m4 \
+	$(top_srcdir)/../../config/lib-ld.m4 \
+	$(top_srcdir)/../../config/lib-link.m4 \
+	$(top_srcdir)/../../config/lib-prefix.m4 \
 	$(top_srcdir)/../../config/multi.m4 \
 	$(top_srcdir)/../../config/no-executables.m4 \
 	$(top_srcdir)/../../config/override.m4 \
@@ -72,9 +75,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
 	$(top_srcdir)/m4/ax_create_stdint_h.m4 \
 	$(top_srcdir)/m4/ax_func_which_gethostbyname_r.m4 \
 	$(top_srcdir)/m4/gcc_attribute.m4 $(top_srcdir)/m4/iconv.m4 \
-	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
-	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/pkg.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/../../mkinstalldirs

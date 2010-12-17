@@ -100,8 +100,8 @@ find_con_by_component (gfc_component *com, gfc_constructor_base base)
    according to normal assignment rules.  */
 
 static gfc_expr *
-create_character_intializer (gfc_expr *init, gfc_typespec *ts,
-			     gfc_ref *ref, gfc_expr *rvalue)
+create_character_initializer (gfc_expr *init, gfc_typespec *ts,
+			      gfc_ref *ref, gfc_expr *rvalue)
 {
   int len, start, end;
   gfc_char_t *dest;
@@ -149,7 +149,7 @@ create_character_intializer (gfc_expr *init, gfc_typespec *ts,
 
   /* Copy the initial value.  */
   if (rvalue->ts.type == BT_HOLLERITH)
-    len = rvalue->representation.length;
+    len = rvalue->representation.length - rvalue->ts.u.pad;
   else
     len = rvalue->value.character.length;
 
@@ -244,7 +244,7 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
 	      gfc_error ("'%s' at %L already is initialized at %L",
 			 lvalue->symtree->n.sym->name, &lvalue->where,
 			 &init->where);
-	      return FAILURE;
+	      goto abort;
 	    }
 
 	  if (init == NULL)
@@ -267,7 +267,7 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
 	    {
 	      gfc_error ("Data element below array lower bound at %L",
 			 &lvalue->where);
-	      return FAILURE;
+	      goto abort;
 	    }
 	  else
 	    {
@@ -275,12 +275,12 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
 	      if (spec_size (ref->u.ar.as, &size) == SUCCESS)
 		{
 		  if (mpz_cmp (offset, size) >= 0)
-		  {
-		    mpz_clear (size);
-		    gfc_error ("Data element above array upper bound at %L",
-			       &lvalue->where);
-		    return FAILURE;
-		  }
+		    {
+		      mpz_clear (size);
+		      gfc_error ("Data element above array upper bound at %L",
+		                 &lvalue->where);
+		      goto abort;
+		    }
 		  mpz_clear (size);
 		}
 	    }
@@ -336,11 +336,13 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
       last_con = con;
     }
 
+  mpz_clear (offset);
+
   if (ref || last_ts->type == BT_CHARACTER)
     {
       if (lvalue->ts.u.cl->length == NULL && !(ref && ref->u.ss.length != NULL))
 	return FAILURE;
-      expr = create_character_intializer (init, last_ts, ref, rvalue);
+      expr = create_character_initializer (init, last_ts, ref, rvalue);
     }
   else
     {
@@ -371,6 +373,10 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
     last_con->expr = expr;
 
   return SUCCESS;
+
+abort:
+  mpz_clear (offset);
+  return FAILURE;
 }
 
 

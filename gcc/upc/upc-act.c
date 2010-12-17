@@ -89,15 +89,18 @@ static tree unshared_var_addr (location_t, const tree);
    
 /* Process UPC specific command line switches */
 
-int
-upc_handle_option (size_t scode, const char *arg, int value, int kind)
+bool
+upc_handle_option (size_t scode, const char *arg, int value, int kind,
+                   location_t loc,
+		   const struct cl_option_handlers *handlers)
 {
   enum opt_code code = (enum opt_code) scode;
   int result = 1;
   switch (code)
     {
     default:
-      result = c_common_handle_option (scode, arg, value, kind);
+      result = c_common_handle_option (scode, arg, value, kind, loc,
+                                       handlers);
       break;
     case OPT_dwarf_2_upc:
       use_upc_dwarf2_extensions = value;
@@ -1593,7 +1596,7 @@ upc_build_init_func (const tree stmt_list)
 }
 
 void
-upc_finish_file (void)
+upc_write_global_declarations (void)
 {
   upc_write_init_func ();
   upc_free_unshared_var_table ();

@@ -14,6 +14,9 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_RANLIB
 
+AC_USE_SYSTEM_EXTENSIONS
+AC_SYS_LARGEFILE
+
 # See if we are building gcc with C++.
 # Do this early so setting lang to C++ affects following tests
 AC_ARG_ENABLE(build-with-cxx,
@@ -56,26 +59,19 @@ fi
 AC_HEADER_TIME
 ACX_HEADER_STRING
 
-# AC_CHECK_HEADERS is repeated to work around apparent autoconf 2.59 bug.  If
-# AC_CHECK_HEADERS comes after the if clause, the last AC_LANG call gets used,
-# no matter which branch is taken.
-if test "$ENABLE_BUILD_WITH_CXX" = "no"; then
-   AC_LANG(C)
-   AC_CHECK_HEADERS(locale.h fcntl.h limits.h stddef.h \
+AC_CHECK_HEADERS(locale.h fcntl.h limits.h stddef.h \
 	stdlib.h strings.h string.h sys/file.h unistd.h)
-else
-   AC_LANG(C++)
-   AC_CHECK_HEADERS(locale.h fcntl.h limits.h stddef.h \
-	stdlib.h strings.h string.h sys/stat.h sys/file.h unistd.h)
-fi
 
 # Checks for typedefs, structures, and compiler characteristics.
+AC_C_BIGENDIAN
 AC_C_CONST
 AC_C_INLINE
 AC_FUNC_OBSTACK
 AC_TYPE_OFF_T
 AC_TYPE_SIZE_T
-AC_CHECK_TYPE(ssize_t, int)
+AC_TYPE_SSIZE_T
+AC_TYPE_UINTPTR_T
+AC_CHECK_TYPE(ptrdiff_t, int)
 AC_STRUCT_TM
 AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(long)
@@ -180,6 +176,13 @@ m4_changequote([,])
 AC_DEFINE_UNQUOTED(HOST_WIDE_INT, $host_wide_int,
 [Define to the widest efficient host integer type at least
    as wide as the target's size_t type.])
+
+case $target in
+  i?86-* | x86_64-*)
+    AC_TRY_COMPILE([], [asm ("pcmpestri %0, %%xmm0, %%xmm1" : : "i"(0))],
+      [AC_DEFINE([HAVE_SSE4], [1],
+		 [Define to 1 if you can assemble SSE4 insns.])])
+esac
 
 # Output.
 

@@ -96,59 +96,21 @@ frontend/backend implementation.
 
 The frontend, as characterized by the files thr.h and thr.c, is a set
 of platform independent structures and functions which represent the
-user interface.  Objective-C programs should use these structures and
-functions for their thread and mutex work if they wish to maintain a
-high degree of portability across platforms.
+user interface.  For example, objc_mutex_lock().  Objective-C programs
+should use these structures and functions for their thread and mutex
+work if they wish to maintain a high degree of portability across
+platforms.
 
-The backend is composed of a file with the necessary code to map the ObjC
-thread and mutex to a platform specific implementation.  For example, the
-file thr-solaris.c contains the implementation for Solaris.
+The backend is currently GCC's gthread code (gthr.h and related).  For
+example, __gthread_objc_mutex_lock().  The thread system is
+automatically configured when GCC is configured.  On most platforms
+this thread backend is able to automatically switch to non-multi-threaded
+mode if the threading library is not linked in.
 
-If you are compiling libobjc as part of GCC, the thr-objc.c backend is
-always used; this backend uses GCC's gthread code.  The thread system
-is automatically configured when GCC is configured.  Important: make
-sure you configure GCC using `--enable-threads' if you want threads !
-  
-If you want to compile libobjc standalone, then you would need to
-modify the configure.in and makefiles for it; and you need to pick an
-appropriate backend file for the target platform; you make this choice
-by assigning the OBJC_THREAD_FILE make variable to the basename of the
-backend file.  For example, OBJC_THREAD_FILE=thr-posix would indicate
-that the generic posix backend file, thr-posix.c, should be compiled
-with the ObjC runtime library.  If your platform does not support
-threads then you should specify the OBJC_THREAD_FILE=thr-single
-backend file to compile the ObjC runtime library without thread or
-mutex support; note that programs which rely upon the ObjC thread and
-mutex functions will compile and link correctly but attempting to
-create a thread or mutex will result in an error.
-  
-It is questionable whether it is really necessary to have both a
-frontend and backend function for all available functionality.  On the
-one hand, it provides a clear, consistent differentiation between what
-is public and what is private with the downside of having the overhead
-of multiple functions calls.  For example, the function to have a
-thread yield the processor is objc_thread_yield; in the current
-implementation this produces a function call set:
+If you want to compile libobjc standalone, then you would need to modify
+the configure.in and makefiles for it and you need to import the
+gthread code from GCC.
 
-objc_thread_yield()  ->  __objc_thread_yield()  ->  system yield function
-
-This has two extra function calls over calling the platform specific function
-explicitly, but the issue is whether only the overhead of a single function
-is necessary.
-
-objc_thread_yield()  ->  system yield function
-
-This breaks the public/private dichotomy between the frontend/backend
-for the sake of efficiency.  It is possible to just use a preprocessor
-define so as to eliminate the extra function call:
-
-#define objc_thread_yield() __objc_thread_yield()
-
-This has the undesirable effect that if objc_thread_yield is actually
-turned into a function based upon future need; then ObjC programs which
-access the thread functions would need to be recompiled versus just
-being relinked.
- 
 ******************************************************************************
 * Threads:
 
@@ -212,34 +174,34 @@ objc_thread_get_data(void), void *
 * Backend thread functions
 * User programs should *NOT* directly call these functions.
 
-__objc_thread_detach(void (*func)(void *arg), void *arg), objc_thread_t
+__gthr_objc_thread_detach(void (*func)(void *arg), void *arg), objc_thread_t
 	Spawns a new thread executing func, called by objc_thread_detach.
 	Return NULL if error otherwise return thread id.
 
-__objc_thread_set_priority(int priority), int
+__gthr_objc_thread_set_priority(int priority), int
 	Set the thread's priority, called by objc_thread_set_priority.
 	Return -1 if error otherwise return 0.
 
-__objc_thread_get_priority(void), int
+__gthr_objc_thread_get_priority(void), int
 	Query a thread's priority, called by objc_thread_get_priority.
 	Return -1 if error otherwise return the priority.
 
-__objc_thread_yield(void), void
+__gthr_objc_thread_yield(void), void
 	Yields the processor, called by objc_thread_yield.
 
-__objc_thread_exit(void), int
+__gthr_objc_thread_exit(void), int
 	Terminates the thread, called by objc_thread_exit.
 	Return -1 if error otherwise function does not return.
 
-__objc_thread_id(void), objc_thread_t
+__gthr_objc_thread_id(void), objc_thread_t
 	Returns the current thread's id, called by objc_thread_id.
 	Return -1 if error otherwise return thread id.
 
-__objc_thread_set_data(void *value), int
+__gthr_objc_thread_set_data(void *value), int
 	Set pointer for thread local storage, called by objc_thread_set_data.
 	Returns -1 if error otherwise return 0.
 
-__objc_thread_get_data(void), void *
+__gthr_objc_thread_get_data(void), void *
 	Returns the pointer to the thread's local storage.
 	Returns NULL if error, called by objc_thread_get_data.
 
@@ -284,23 +246,23 @@ objc_mutex_unlock(objc_mutex_t mutex), int
 * Backend mutex functions
 * User programs should *NOT* directly call these functions.
 
-__objc_mutex_allocate(objc_mutex_t mutex), int
+__gthr_objc_mutex_allocate(objc_mutex_t mutex), int
 	Allocates a new mutex, called by objc_mutex_allocate.
 	Return -1 if error otherwise return 0.
 
-__objc_mutex_deallocate(objc_mutex_t mutex), int
+__gthr_objc_mutex_deallocate(objc_mutex_t mutex), int
 	Free a mutex, called by objc_mutex_deallocate.
 	Return -1 if error otherwise return 0.
 
-__objc_mutex_lock(objc_mutex_t mutex), int
+__gthr_objc_mutex_lock(objc_mutex_t mutex), int
 	Locks a mutex, called by objc_mutex_lock.
 	Return -1 if error otherwise return 0.
 	
-__objc_mutex_trylock(objc_mutex_t mutex), int
+__gthr_objc_mutex_trylock(objc_mutex_t mutex), int
 	Attempts to lock a mutex, called by objc_mutex_trylock.
 	Return -1 if failed to acquire lock or error otherwise return 0.
 
-__objc_mutex_unlock(objc_mutex_t mutex), int
+__gthr_objc_mutex_unlock(objc_mutex_t mutex), int
 	Unlocks the mutex, called by objc_mutex_unlock.
 	Return -1 if error otherwise return 0.
 
@@ -354,24 +316,24 @@ objc_condition_signal(objc_condition_t condition), int
 * User programs should *NOT* directly call these functions.
 *
 
-__objc_condition_allocate(objc_condition_t condition), int
+__gthr_objc_condition_allocate(objc_condition_t condition), int
 	Allocate a condition mutex, called by objc_condition_allocate.
 	Return -1 if error otherwise return 0.
 
-__objc_condition_deallocate(objc_condition_t condition), int
+__gthr_objc_condition_deallocate(objc_condition_t condition), int
 	Deallocate a condition, called by objc_condition_deallocate.
 	Return -1 if error otherwise return 0.
 
-__objc_condition_wait(objc_condition_t condition, objc_mutex_t mutex), int
+__gthr_objc_condition_wait(objc_condition_t condition, objc_mutex_t mutex), int
 	Wait on the condition, called by objc_condition_wait.
 	Return -1 if error otherwise return 0 when condition is met.
 	
-__objc_condition_broadcast(objc_condition_t condition), int
+__gthr_objc_condition_broadcast(objc_condition_t condition), int
 	Wake up all threads waiting on this condition.
 	Called by objc_condition_broadcast.
 	Return -1 if error otherwise return 0.
 
-__objc_condition_signal(objc_condition_t condition), int
+__gthr_objc_condition_signal(objc_condition_t condition), int
 	Wake up one thread waiting on this condition.
 	Called by objc_condition_signal.
 	Return -1 if error otherwise return 0.

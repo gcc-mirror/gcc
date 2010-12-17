@@ -1,7 +1,8 @@
 /* PR c/34457 */
-/* { dg-do compile } */
+/* { dg-do link } */
 /* { dg-require-effective-target trampolines } */
-/* { dg-options "--combine -O2" } */
+/* { dg-require-effective-target lto } */
+/* { dg-options "-flto -O2" } */
 /* { dg-additional-sources "pr34457-2.c" } */
    
 
@@ -9,7 +10,7 @@ typedef __SIZE_TYPE__ size_t;
 extern int printf (const char *, ...);
 extern void *memset (void *, int, size_t);
 
-int bar (int (*)(), int, void *);
+int bar (int (*p)(), int q, void *r) {}
 
 int
 main(int argc, char **argv)

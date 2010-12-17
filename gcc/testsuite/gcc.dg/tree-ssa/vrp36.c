@@ -8,5 +8,5 @@ int foo(int i)
   return 1;
 }
 
-/* { dg-final { scan-tree-dump "Folding predicate i_.* == 1 to 0" "vrp1" } } */
+/* { dg-final { scan-tree-dump-not "i_.* == 1" "vrp1" } } */
 /* { dg-final { cleanup-tree-dump "vrp1" } } */

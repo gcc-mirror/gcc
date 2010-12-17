@@ -11,10 +11,6 @@ float out[N];
 float fir_out[N];
 
 /* Should be vectorized. Fixed misaligment in the inner-loop.  */
-/* Currently not vectorized because we get too many BBs in the inner-loop,
-   because the compiler doesn't realize that the inner-loop executes at
-   least once (cause k<4), and so there's no need to create a guard code
-   to skip the inner-loop in case it doesn't execute.  */
 __attribute__ ((noinline))
 void foo (){
  int i,j,k;
@@ -74,6 +70,5 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 2 "vect" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 1 "vect" { xfail vect_no_align } } } */
+/* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 2 "vect" { xfail vect_no_align } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

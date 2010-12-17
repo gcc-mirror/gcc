@@ -21,10 +21,6 @@
 LIBGCC1 =
 CROSS_LIBGCC1 =
 
-# We must build libgcc2.a with -G 0, in case the user wants to link
-# without the $gp register.
-TARGET_LIBGCC2_CFLAGS = -G 0
-
 LIB2FUNCS_EXTRA = $(srcdir)/config/udivmod.c $(srcdir)/config/divmod.c $(srcdir)/config/udivmodsi4.c $(srcdir)/config/iq2000/lib2extra-funcs.c
 
 # We want fine grained libraries, so use the new code to build the

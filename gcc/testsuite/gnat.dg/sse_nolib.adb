@@ -1,5 +1,6 @@
 --  { dg-do run { target i?86-*-* x86_64-*-* } }
 --  { dg-options "-O1 -msse" }
+--  { dg-require-effective-target sse_runtime } 
 
 with Ada.Unchecked_Conversion;
 
@@ -10,7 +11,7 @@ procedure SSE_Nolib is
    package SSE_Types is
       VECTOR_ALIGN : constant := 16;
       VECTOR_BYTES : constant := 16;
-            
+
       type m128 is private;
    private
       type m128 is array (1 .. 4) of Float;

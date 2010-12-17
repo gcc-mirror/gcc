@@ -34,12 +34,10 @@ package body Ch5 is
 
    function P_Case_Statement                     return Node_Id;
    function P_Case_Statement_Alternative         return Node_Id;
-   function P_Condition                          return Node_Id;
    function P_Exit_Statement                     return Node_Id;
    function P_Goto_Statement                     return Node_Id;
    function P_If_Statement                       return Node_Id;
    function P_Label                              return Node_Id;
-   function P_Loop_Parameter_Specification       return Node_Id;
    function P_Null_Statement                     return Node_Id;
 
    function P_Assignment_Statement (LHS : Node_Id)  return Node_Id;
@@ -61,6 +59,11 @@ package body Ch5 is
    --  Parse for statement. If Loop_Name is non-Empty on entry, it is
    --  the N_Identifier node for the label on the loop. If Loop_Name is
    --  Empty on entry (the default), then the for statement is unlabeled.
+
+   function P_Iterator_Specification (Def_Id : Node_Id) return Node_Id;
+   --  Parse an iterator specification. The defining identifier has already
+   --  been scanned, as it is the common prefix between loop and iterator
+   --  specification.
 
    function P_Loop_Statement (Loop_Name : Node_Id := Empty) return Node_Id;
    --  Parse loop statement. If Loop_Name is non-Empty on entry, it is
@@ -84,7 +87,8 @@ package body Ch5 is
    -- 5.1  Sequence of Statements --
    ---------------------------------
 
-   --  SEQUENCE_OF_STATEMENTS ::= STATEMENT {STATEMENT}
+   --  SEQUENCE_OF_STATEMENTS ::= STATEMENT {STATEMENT} {LABEL}
+   --  Note: the final label is an Ada 2012 addition.
 
    --  STATEMENT ::=
    --    {LABEL} SIMPLE_STATEMENT | {LABEL} COMPOUND_STATEMENT
@@ -150,6 +154,12 @@ package body Ch5 is
       --  is required. It is initialized from the Sreq flag, and modified as
       --  statements are scanned (a statement turns it off, and a label turns
       --  it back on again since a statement must follow a label).
+      --  Note : this final requirement is lifted in Ada 2012.
+
+      Statement_Seen : Boolean;
+      --  In Ada 2012, a label can end a sequence of statements, but the
+      --  sequence cannot contain only labels. This flag is set whenever a
+      --  label is encountered, to enforce this rule at the end of a sequence.
 
       Declaration_Found : Boolean := False;
       --  This flag is set True if a declaration is encountered, so that the
@@ -191,10 +201,57 @@ package body Ch5 is
       -----------------------------
 
       procedure Test_Statement_Required is
+         function All_Pragmas return Boolean;
+         --  Return True if statement list is all pragmas
+
+         -----------------
+         -- All_Pragmas --
+         -----------------
+
+         function All_Pragmas return Boolean is
+            S : Node_Id;
+         begin
+            S := First (Statement_List);
+            while Present (S) loop
+               if Nkind (S) /= N_Pragma then
+                  return False;
+               else
+                  Next (S);
+               end if;
+            end loop;
+
+            return True;
+         end All_Pragmas;
+
+      --  Start of processing for Test_Statement_Required
+
       begin
          if Statement_Required then
-            Error_Msg_BC -- CODEFIX
-              ("statement expected");
+
+            --  Check no statement required after label in Ada 2012, and that
+            --  it is OK to have nothing but pragmas in a statement sequence.
+
+            if Ada_Version >= Ada_2012
+              and then not Is_Empty_List (Statement_List)
+              and then
+                ((Nkind (Last (Statement_List)) = N_Label
+                   and then Statement_Seen)
+                or else All_Pragmas)
+            then
+               declare
+                  Null_Stm : constant Node_Id :=
+                               Make_Null_Statement (Token_Ptr);
+               begin
+                  Set_Comes_From_Source (Null_Stm, False);
+                  Append_To (Statement_List, Null_Stm);
+               end;
+
+            --  If not Ada 2012, or not special case above, give error message
+
+            else
+               Error_Msg_BC -- CODEFIX
+                 ("statement expected");
+            end if;
          end if;
       end Test_Statement_Required;
 
@@ -203,6 +260,7 @@ package body Ch5 is
    begin
       Statement_List := New_List;
       Statement_Required := SS_Flags.Sreq;
+      Statement_Seen     := False;
 
       loop
          Ignore (Tok_Semicolon);
@@ -334,10 +392,10 @@ package body Ch5 is
                when Tok_Exception =>
                   Test_Statement_Required;
 
-                  --  If Extm not set and the exception is not to the left
-                  --  of the expected column of the end for this sequence, then
-                  --  we assume it belongs to the current sequence, even though
-                  --  it is not permitted.
+                  --  If Extm not set and the exception is not to the left of
+                  --  the expected column of the end for this sequence, then we
+                  --  assume it belongs to the current sequence, even though it
+                  --  is not permitted.
 
                   if not SS_Flags.Extm and then
                      Start_Column >= Scope.Table (Scope.Last).Ecol
@@ -350,7 +408,7 @@ package body Ch5 is
 
                   --  Always return, in the case where we scanned out handlers
                   --  that we did not expect, Parse_Exception_Handlers returned
-                  --  with Token being either end or EOF, so we are OK
+                  --  with Token being either end or EOF, so we are OK.
 
                   exit;
 
@@ -358,8 +416,8 @@ package body Ch5 is
 
                when Tok_Or =>
 
-                  --  Terminate if Ortm set or if the or is to the left
-                  --  of the expected column of the end for this sequence
+                  --  Terminate if Ortm set or if the or is to the left of the
+                  --  expected column of the end for this sequence.
 
                   if SS_Flags.Ortm
                      or else Start_Column < Scope.Table (Scope.Last).Ecol
@@ -385,9 +443,9 @@ package body Ch5 is
 
                   exit when SS_Flags.Tatm and then Token = Tok_Abort;
 
-                  --  Otherwise we treat THEN as some kind of mess where we
-                  --  did not see the associated IF, but we pick up assuming
-                  --  it had been there!
+                  --  Otherwise we treat THEN as some kind of mess where we did
+                  --  not see the associated IF, but we pick up assuming it had
+                  --  been there!
 
                   Restore_Scan_State (Scan_State); -- to THEN
                   Append_To (Statement_List, P_If_Statement);
@@ -397,8 +455,8 @@ package body Ch5 is
 
                when Tok_When | Tok_Others =>
 
-                  --  Terminate if Whtm set or if the WHEN is to the left
-                  --  of the expected column of the end for this sequence
+                  --  Terminate if Whtm set or if the WHEN is to the left of
+                  --  the expected column of the end for this sequence.
 
                   if SS_Flags.Whtm
                      or else Start_Column < Scope.Table (Scope.Last).Ecol
@@ -719,8 +777,15 @@ package body Ch5 is
                   Statement_Required := False;
 
                --  Label starting with << which must precede real statement
+               --  Note: in Ada 2012, the label may end the sequence.
 
                when Tok_Less_Less =>
+                  if Present (Last (Statement_List))
+                    and then Nkind (Last (Statement_List)) /= N_Label
+                  then
+                     Statement_Seen := True;
+                  end if;
+
                   Append_To (Statement_List, P_Label);
                   Statement_Required := True;
 
@@ -1459,8 +1524,7 @@ package body Ch5 is
 
       if No (Loop_Name) then
          Created_Name :=
-           Make_Identifier (Sloc (Loop_Node),
-             Chars => Set_Loop_Block_Name ('L'));
+           Make_Identifier (Sloc (Loop_Node), Set_Loop_Block_Name ('L'));
          Set_Comes_From_Source (Created_Name, False);
          Set_Has_Created_Identifier (Loop_Node, True);
          Set_Identifier (Loop_Node, Created_Name);
@@ -1492,6 +1556,7 @@ package body Ch5 is
       Iter_Scheme_Node : Node_Id;
       Loop_For_Flag    : Boolean;
       Created_Name     : Node_Id;
+      Spec             : Node_Id;
 
    begin
       Push_Scope_Stack;
@@ -1503,8 +1568,13 @@ package body Ch5 is
       Loop_For_Flag := (Prev_Token = Tok_Loop);
       Scan; -- past FOR
       Iter_Scheme_Node := New_Node (N_Iteration_Scheme, Token_Ptr);
-      Set_Loop_Parameter_Specification
-         (Iter_Scheme_Node, P_Loop_Parameter_Specification);
+      Spec := P_Loop_Parameter_Specification;
+
+      if Nkind (Spec) = N_Loop_Parameter_Specification then
+         Set_Loop_Parameter_Specification (Iter_Scheme_Node, Spec);
+      else
+         Set_Iterator_Specification (Iter_Scheme_Node, Spec);
+      end if;
 
       --  The following is a special test so that a miswritten for loop such
       --  as "loop for I in 1..10;" is handled nicely, without making an extra
@@ -1525,8 +1595,7 @@ package body Ch5 is
 
          if No (Loop_Name) then
             Created_Name :=
-              Make_Identifier (Sloc (Loop_Node),
-                Chars => Set_Loop_Block_Name ('L'));
+              Make_Identifier (Sloc (Loop_Node), Set_Loop_Block_Name ('L'));
             Set_Comes_From_Source (Created_Name, False);
             Set_Has_Created_Identifier (Loop_Node, True);
             Set_Identifier (Loop_Node, Created_Name);
@@ -1592,8 +1661,7 @@ package body Ch5 is
 
          if No (Loop_Name) then
             Created_Name :=
-              Make_Identifier (Sloc (Loop_Node),
-                Chars => Set_Loop_Block_Name ('L'));
+              Make_Identifier (Sloc (Loop_Node), Set_Loop_Block_Name ('L'));
             Set_Comes_From_Source (Created_Name, False);
             Set_Has_Created_Identifier (Loop_Node, True);
             Set_Identifier (Loop_Node, Created_Name);
@@ -1626,11 +1694,32 @@ package body Ch5 is
       Scan_State : Saved_Scan_State;
 
    begin
-      Loop_Param_Specification_Node :=
-        New_Node (N_Loop_Parameter_Specification, Token_Ptr);
 
       Save_Scan_State (Scan_State);
       ID_Node := P_Defining_Identifier (C_In);
+
+      --  If the next token is OF, it indicates an Ada 2012 iterator. If the
+      --  next token is a colon, this is also an Ada 2012 iterator, including
+      --  a subtype indication for the loop parameter. Otherwise we parse the
+      --  construct as a loop parameter specification. Note that the form
+      --  "for A in B" is ambiguous, and must be resolved semantically: if B
+      --  is a discrete subtype this is a loop specification, but if it is an
+      --  expression it is an iterator specification. Ambiguity is resolved
+      --  during analysis of the loop parameter specification.
+
+      if Token = Tok_Of or else Token = Tok_Colon then
+         if Ada_Version < Ada_2012 then
+            Error_Msg_SC ("iterator is an Ada2012 feature");
+         end if;
+
+         return P_Iterator_Specification (ID_Node);
+      end if;
+
+      --  The span of the Loop_Parameter_Specification starts at the
+      --  defining identifier.
+
+      Loop_Param_Specification_Node :=
+        New_Node (N_Loop_Parameter_Specification, Sloc (ID_Node));
       Set_Defining_Identifier (Loop_Param_Specification_Node, ID_Node);
 
       if Token = Tok_Left_Paren then
@@ -1659,6 +1748,42 @@ package body Ch5 is
       when Error_Resync =>
          return Error;
    end P_Loop_Parameter_Specification;
+
+   ----------------------------------
+   -- 5.5.1 Iterator_Specification --
+   ----------------------------------
+
+   function P_Iterator_Specification (Def_Id : Node_Id) return Node_Id is
+      Node1 : Node_Id;
+
+   begin
+      Node1 :=  New_Node (N_Iterator_Specification, Sloc (Def_Id));
+      Set_Defining_Identifier (Node1, Def_Id);
+
+      if Token = Tok_Colon then
+         Scan;  --  past :
+         Set_Subtype_Indication (Node1, P_Subtype_Indication);
+      end if;
+
+      if Token = Tok_Of then
+         Set_Of_Present (Node1);
+         Scan;  --  past OF
+
+      elsif Token = Tok_In then
+         Scan;  --  past IN
+
+      else
+         return Error;
+      end if;
+
+      if Token = Tok_Reverse then
+         Scan; -- past REVERSE
+         Set_Reverse_Present (Node1, True);
+      end if;
+
+      Set_Name (Node1, P_Name);
+      return Node1;
+   end P_Iterator_Specification;
 
    --------------------------
    -- 5.6  Block Statement --
@@ -1705,8 +1830,7 @@ package body Ch5 is
 
       if No (Block_Name) then
          Created_Name :=
-           Make_Identifier (Sloc (Block_Node),
-             Chars => Set_Loop_Block_Name ('B'));
+           Make_Identifier (Sloc (Block_Node), Set_Loop_Block_Name ('B'));
          Set_Comes_From_Source (Created_Name, False);
          Set_Has_Created_Identifier (Block_Node, True);
          Set_Identifier (Block_Node, Created_Name);
@@ -1747,8 +1871,7 @@ package body Ch5 is
 
       if No (Block_Name) then
          Created_Name :=
-           Make_Identifier (Sloc (Block_Node),
-             Chars => Set_Loop_Block_Name ('B'));
+           Make_Identifier (Sloc (Block_Node), Set_Loop_Block_Name ('B'));
          Set_Comes_From_Source (Created_Name, False);
          Set_Has_Created_Identifier (Block_Node, True);
          Set_Identifier (Block_Node, Created_Name);

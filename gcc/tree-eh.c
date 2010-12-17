@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "langhooks.h"
 #include "ggc.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "gimple.h"
 #include "target.h"
 
@@ -847,9 +847,8 @@ emit_eh_dispatch (gimple_seq *seq, eh_region region)
 static void
 note_eh_region_may_contain_throw (eh_region region)
 {
-  while (!bitmap_bit_p (eh_region_may_contain_throw_map, region->index))
+  while (bitmap_set_bit (eh_region_may_contain_throw_map, region->index))
     {
-      bitmap_set_bit (eh_region_may_contain_throw_map, region->index);
       region = region->outer;
       if (region == NULL)
 	break;
@@ -1877,7 +1876,7 @@ lower_eh_constructs_2 (struct leh_state *state, gimple_stmt_iterator *gsi)
 	      else
 		{
 		  /* The user has dome something silly.  Remove it.  */
-		  rhs = build_int_cst (ptr_type_node, 0);
+		  rhs = null_pointer_node;
 		  goto do_replace;
 		}
 	      break;
@@ -2335,6 +2334,11 @@ operation_could_trap_helper_p (enum tree_code op,
 	return true;
       return false;
 
+    case COMPLEX_EXPR:
+    case CONSTRUCTOR:
+      /* Constructing an object cannot trap.  */
+      return false;
+
     default:
       /* Any floating arithmetic may trap.  */
       if (fp_operation && flag_trapping_math)
@@ -2405,11 +2409,10 @@ tree_could_trap_p (tree expr)
   switch (code)
     {
     case TARGET_MEM_REF:
-      /* For TARGET_MEM_REFs use the information based on the original
-	 reference.  */
-      expr = TMR_ORIGINAL (expr);
-      code = TREE_CODE (expr);
-      goto restart;
+      if (TREE_CODE (TMR_BASE (expr)) == ADDR_EXPR
+	  && !TMR_INDEX (expr) && !TMR_INDEX2 (expr))
+	return false;
+      return !TREE_THIS_NOTRAP (expr);
 
     case COMPONENT_REF:
     case REALPART_EXPR:
@@ -2437,9 +2440,11 @@ tree_could_trap_p (tree expr)
 	return false;
       return !in_array_bounds_p (expr);
 
+    case MEM_REF:
+      if (TREE_CODE (TREE_OPERAND (expr, 0)) == ADDR_EXPR)
+	return false;
+      /* Fallthru.  */
     case INDIRECT_REF:
-    case ALIGN_INDIRECT_REF:
-    case MISALIGNED_INDIRECT_REF:
       return !TREE_THIS_NOTRAP (expr);
 
     case ASM_EXPR:
@@ -3665,6 +3670,8 @@ cleanup_empty_eh_unsplit (basic_block bb, edge e_out, eh_landing_pad lp)
 {
   gimple_stmt_iterator gsi;
   tree lab;
+  edge_iterator ei;
+  edge e;
 
   /* We really ought not have totally lost everything following
      a landing pad label.  Given that BB is empty, there had better
@@ -3686,6 +3693,22 @@ cleanup_empty_eh_unsplit (basic_block bb, edge e_out, eh_landing_pad lp)
       if (lp_nr && get_eh_region_from_lp_number (lp_nr) != lp->region)
 	return false;
     }
+
+  /* The destination block must not be a regular successor for any
+     of the preds of the landing pad.  Thus, avoid turning
+        <..>
+	 |  \ EH
+	 |  <..>
+	 |  /
+	<..>
+     into
+        <..>
+	|  | EH
+	<..>
+     which CFG verification would choke on.  See PR45172.  */
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    if (find_edge (e->src, e_out->dest))
+      return false;
 
   /* Attempt to move the PHIs into the successor block.  */
   if (cleanup_empty_eh_merge_phis (e_out->dest, bb, e_out, false))
@@ -3738,7 +3761,13 @@ cleanup_empty_eh (eh_landing_pad lp)
 
   /* If the block is totally empty, look for more unsplitting cases.  */
   if (gsi_end_p (gsi))
-    return cleanup_empty_eh_unsplit (bb, e_out, lp);
+    {
+      /* For the degenerate case of an infinite loop bail out.  */
+      if (e_out->dest == bb)
+	return false;
+
+      return cleanup_empty_eh_unsplit (bb, e_out, lp);
+    }
 
   /* The block should consist only of a single RESX statement.  */
   resx = gsi_stmt (gsi);

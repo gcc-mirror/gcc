@@ -347,10 +347,10 @@ package body Ch10 is
             Error_Msg_BC -- CODEFIX
               ("keyword BODY expected here [see file name]");
             Restore_Scan_State (Scan_State);
-            Set_Unit (Comp_Unit_Node, P_Package (Pf_Pbod));
+            Set_Unit (Comp_Unit_Node, P_Package (Pf_Pbod_Pexp));
          else
             Restore_Scan_State (Scan_State);
-            Set_Unit (Comp_Unit_Node, P_Package (Pf_Decl_Gins_Pbod_Rnam));
+            Set_Unit (Comp_Unit_Node, P_Package (Pf_Decl_Gins_Pbod_Rnam_Pexp));
          end if;
 
       elsif Token = Tok_Generic then
@@ -364,7 +364,7 @@ package body Ch10 is
         or else Token = Tok_Overriding
         or else Token = Tok_Procedure
       then
-         Set_Unit (Comp_Unit_Node, P_Subprogram (Pf_Decl_Gins_Pbod_Rnam));
+         Set_Unit (Comp_Unit_Node, P_Subprogram (Pf_Decl_Gins_Pbod_Rnam_Pexp));
 
          --  A little bit of an error recovery check here. If we just scanned
          --  a subprogram declaration (as indicated by an SIS entry being
@@ -634,7 +634,6 @@ package body Ch10 is
          --  Check we did not with any child units
 
          Item := First (Context_Items (Comp_Unit_Node));
-
          while Present (Item) loop
             if Nkind (Item) = N_With_Clause
               and then Nkind (Name (Item)) /= N_Identifier
@@ -842,7 +841,7 @@ package body Ch10 is
                  ("unexpected LIMITED ignored");
             end if;
 
-            if Ada_Version < Ada_05 then
+            if Ada_Version < Ada_2005 then
                Error_Msg_SP ("LIMITED WITH is an Ada 2005 extension");
                Error_Msg_SP
                  ("\unit must be compiled with -gnat05 switch");
@@ -861,7 +860,7 @@ package body Ch10 is
                Restore_Scan_State (Scan_State); -- to PRIVATE
                return Item_List;
 
-            elsif Ada_Version < Ada_05 then
+            elsif Ada_Version < Ada_2005 then
                Error_Msg_SP ("`PRIVATE WITH` is an Ada 2005 extension");
                Error_Msg_SP
                  ("\unit must be compiled with -gnat05 switch");
@@ -914,6 +913,10 @@ package body Ch10 is
                   --  place where such an "error" should be caught.
 
                   Set_Name (With_Node, P_Qualified_Simple_Name);
+                  if Name (With_Node) = Error then
+                     Remove (With_Node);
+                  end if;
+
                   Set_First_Name (With_Node, First_Flag);
                   Set_Limited_Present (With_Node, Has_Limited);
                   Set_Private_Present (With_Node, Has_Private);
@@ -1035,10 +1038,10 @@ package body Ch10 is
         or else Token = Tok_Overriding
         or else Token = Tok_Procedure
       then
-         Body_Node := P_Subprogram (Pf_Pbod);
+         Body_Node := P_Subprogram (Pf_Pbod_Pexp);
 
       elsif Token = Tok_Package then
-         Body_Node := P_Package (Pf_Pbod);
+         Body_Node := P_Package (Pf_Pbod_Pexp);
 
       elsif Token = Tok_Protected then
          Scan; -- past PROTECTED

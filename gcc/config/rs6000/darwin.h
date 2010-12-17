@@ -1,5 +1,5 @@
 /* Target definitions for PowerPC running Darwin (Mac OS X).
-   Copyright (C) 1997, 2000, 2001, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 1997, 2000, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2010
    Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
@@ -18,6 +18,9 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
+
+#undef DARWIN_PPC
+#define DARWIN_PPC 1
 
 #undef  TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (Darwin/PowerPC)");
@@ -51,9 +54,6 @@
 #undef  PTRDIFF_TYPE
 #define PTRDIFF_TYPE (TARGET_64BIT ? "long int" : "int")
 
-/* Translate config/rs6000/darwin.opt to config/darwin.h.  */
-#define TARGET_DYNAMIC_NO_PIC (TARGET_MACHO_DYNAMIC_NO_PIC)
-
 #define TARGET_OS_CPP_BUILTINS()			\
   do							\
     {							\
@@ -64,6 +64,9 @@
       darwin_cpp_builtins (pfile);			\
     }							\
   while (0)
+
+/* Generate branch islands stubs if this is true.  */
+extern int darwin_emit_branch_islands;
 
 #define SUBTARGET_OVERRIDE_OPTIONS darwin_rs6000_override_options ()
 
@@ -87,14 +90,18 @@
 
 
 /* We want -fPIC by default, unless we're using -static to compile for
-   the kernel or some such.  */
+   the kernel or some such.  The "-faltivec" option should have been
+   called "-maltivec" all along.  */
 
 #define CC1_SPEC "\
   %(cc1_cpu) \
   %{g: %{!fno-eliminate-unused-debug-symbols: -feliminate-unused-debug-symbols }} \
   %{static: %{Zdynamic: %e conflicting code gen style switches are used}}\
   %{!mmacosx-version-min=*:-mmacosx-version-min=%(darwin_minversion)} \
-  %{!mkernel:%{!static:%{!mdynamic-no-pic:-fPIC}}}"
+  %{!mkernel:%{!static:%{!mdynamic-no-pic:-fPIC}}} \
+  %{faltivec:-maltivec -include altivec.h} %{fno-altivec:-mno-altivec} \
+  %<faltivec %<fno-altivec " \
+  DARWIN_CC1_SPEC
 
 #define DARWIN_ARCH_SPEC "%{m64:ppc64;:ppc}"
 
@@ -143,18 +150,6 @@
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START rs6000_darwin_file_start
 
-/* The "-faltivec" option should have been called "-maltivec" all
-   along.  -ffix-and-continue and -findirect-data is for compatibility
-   for old compilers.  */
-
-#define SUBTARGET_OPTION_TRANSLATE_TABLE				\
-  { "-ffix-and-continue", "-mfix-and-continue" },			\
-  { "-findirect-data", "-mfix-and-continue" },				\
-  { "-faltivec", "-maltivec -include altivec.h" },			\
-  { "-fno-altivec", "-mno-altivec" },					\
-  { "-Waltivec-long-deprecated",	"-mwarn-altivec-long" },	\
-  { "-Wno-altivec-long-deprecated", "-mno-warn-altivec-long" }
-
 /* Make both r2 and r13 available for allocation.  */
 #define FIXED_R2 0
 #define FIXED_R13 0
@@ -180,11 +175,6 @@
 #define STACK_DYNAMIC_OFFSET(FUNDECL)					\
   (RS6000_ALIGN (crtl->outgoing_args_size, 16)		\
    + (STACK_POINTER_OFFSET))
-
-/* These are used by -fbranch-probabilities */
-#define HOT_TEXT_SECTION_NAME "__TEXT,__text,regular,pure_instructions"
-#define UNLIKELY_EXECUTED_TEXT_SECTION_NAME \
-                              "__TEXT,__unlikely,regular,pure_instructions"
 
 /* Define cutoff for using external functions to save floating point.
    Currently on Darwin, always use inline stores.  */
@@ -241,17 +231,6 @@
 #undef ASM_OUTPUT_INTERNAL_LABEL_PREFIX
 #define ASM_OUTPUT_INTERNAL_LABEL_PREFIX(FILE,PREFIX)	\
   fprintf (FILE, "%s", PREFIX)
-
-/* This says how to output an assembler line to define a global common
-   symbol.  */
-#define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)			\
-  do {									\
-    unsigned HOST_WIDE_INT _new_size = SIZE;				\
-    fputs ("\t.comm ", (FILE));						\
-    RS6000_OUTPUT_BASENAME ((FILE), (NAME));				\
-    if (_new_size == 0) _new_size = 1;					\
-    fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED"\n", _new_size);	\
-  } while (0)
 
 /* Override the standard rs6000 definition.  */
 
@@ -385,8 +364,6 @@
 #define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
   (!(FIRST) ? upward : FUNCTION_ARG_PADDING (MODE, TYPE))
 
-/* XXX: Darwin supports neither .quad, or .llong, but it also doesn't
-   support 64 bit PowerPC either, so this just keeps things happy.  */
 #define DOUBLE_INT_ASM_OP "\t.quad\t"
 
 /* For binary compatibility with 2.95; Darwin C APIs use bool from
@@ -435,5 +412,26 @@
    default, as kernel code doesn't save/restore those registers.  */
 #define OS_MISSING_ALTIVEC (flag_mkernel || flag_apple_kext)
 
-/* Darwin has to rename some of the long double builtins.  */
-#define SUBTARGET_INIT_BUILTINS darwin_patch_builtins ()
+/* Darwin has support for section anchors on powerpc*.  
+   It is disabled for any section containing a "zero-sized item" (because these
+   are re-written as size=1 to be compatible with the OSX ld64).
+   The re-writing would interfere with the computation of anchor offsets.
+   Therefore, we place zero-sized items in their own sections and make such
+   sections unavailable to section anchoring.  */
+
+#undef TARGET_ASM_OUTPUT_ANCHOR 
+#define TARGET_ASM_OUTPUT_ANCHOR darwin_asm_output_anchor
+
+#undef TARGET_USE_ANCHORS_FOR_SYMBOL_P
+#define TARGET_USE_ANCHORS_FOR_SYMBOL_P darwin_use_anchors_for_symbol_p
+
+#undef DARWIN_SECTION_ANCHORS
+#define DARWIN_SECTION_ANCHORS 1
+
+/* PPC Darwin has to rename some of the long double builtins.  */
+#undef  SUBTARGET_INIT_BUILTINS
+#define SUBTARGET_INIT_BUILTINS						\
+do {									\
+  darwin_patch_builtins ();						\
+  darwin_init_cfstring_builtins ((unsigned) (RS6000_BUILTIN_COUNT));	\
+} while(0)

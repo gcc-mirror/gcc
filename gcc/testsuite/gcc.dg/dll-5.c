@@ -1,5 +1,5 @@
 /* { dg-do compile { target i?86-pc-cygwin } } */
-/* { dg-do compile { target i?86-pc-mingw* } } */
+/* { dg-do compile { target i?86-*-mingw* x86_64-*-mingw* } } */
 /* { dg-do compile { target arm*-*-pe* } } */
 
 /* { dg-options -mnop-fun-dllimport } */
@@ -19,4 +19,4 @@ __declspec (dllexport) void dllexp ()
 
 /* { dg-final { scan-assembler-not "(__imp_dllimpfn|_imp__dllimpfn)" } } */
 /* { dg-final { scan-assembler "(__imp_dllimpvar|_imp__dllimpvar)" } } */
-/* { dg-final { scan-assembler "\.section\[ \t\]*.drectve\n\.*-export:dllexp" } } */
+/* { dg-final { scan-assembler "\.section\[ \t\]*.drectve\n\.*-export:\[\\\\\"\]*dllexp" } } */

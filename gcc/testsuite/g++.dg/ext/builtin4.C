@@ -6,5 +6,5 @@
 extern "C" int printf(const char*,...);
 
 void foo() {
-  printf("%d"); 		// { dg-warning "too few arguments" }
+  printf("%d"); 		// { dg-warning "expects a matching" }
 }

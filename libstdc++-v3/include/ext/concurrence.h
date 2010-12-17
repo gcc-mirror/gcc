@@ -1,6 +1,6 @@
 // Support for concurrent programing -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -31,9 +31,13 @@
 #ifndef _CONCURRENCE_H
 #define _CONCURRENCE_H 1
 
+#pragma GCC system_header
+
 #include <exception>
 #include <bits/gthr.h> 
 #include <bits/functexcept.h>
+#include <bits/cpp_type_traits.h>
+#include <ext/type_traits.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
@@ -159,6 +163,14 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 #endif 
     }
 
+#if __GTHREADS && ! defined __GTHREAD_MUTEX_INIT
+    ~__mutex() 
+    { 
+      if (__gthread_active_p())
+	__gthread_mutex_destroy(&_M_mutex); 
+    }
+#endif 
+
     void lock()
     {
 #if __GTHREADS
@@ -209,6 +221,14 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 #endif 
     }
 
+#if __GTHREADS && ! defined __GTHREAD_RECURSIVE_MUTEX_INIT
+    ~__recursive_mutex()
+    {
+      if (__gthread_active_p())
+	_S_destroy(&_M_mutex);
+    }
+#endif
+
     void lock()
     { 
 #if __GTHREADS
@@ -232,7 +252,44 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     }
 
     __gthread_recursive_mutex_t* gthread_recursive_mutex(void)
-      { return &_M_mutex; }
+    { return &_M_mutex; }
+
+#if __GTHREADS && ! defined __GTHREAD_RECURSIVE_MUTEX_INIT
+    // FIXME: gthreads doesn't define __gthread_recursive_mutex_destroy
+    // so we need to obtain a __gthread_mutex_t to destroy
+  private:
+    template<typename _Mx, typename _Rm>
+      static void
+      _S_destroy_win32(_Mx* __mx, _Rm const* __rmx)
+      {
+        __mx->counter = __rmx->counter;
+        __mx->sema = __rmx->sema;
+        __gthread_mutex_destroy(__mx);
+      }
+
+    // matches a gthr-win32.h recursive mutex
+    template<typename _Rm>
+      static typename __enable_if<sizeof(&_Rm::sema), void>::__type
+      _S_destroy(_Rm* __mx)
+      {
+        __gthread_mutex_t __tmp;
+        _S_destroy_win32(&__tmp, __mx);
+      }
+
+    // matches a recursive mutex with a member 'actual'
+    template<typename _Rm>
+      static typename __enable_if<sizeof(&_Rm::actual), void>::__type
+      _S_destroy(_Rm* __mx)
+      { __gthread_mutex_destroy(&__mx->actual); }
+
+    // matches when there's only one mutex type
+    template<typename _Rm>
+      static typename
+      __enable_if<std::__are_same<_Rm, __gthread_mutex_t>::__value,
+        void>::__type
+      _S_destroy(_Rm* __mx)
+      { __gthread_mutex_destroy(__mx); }
+#endif
   };
 
   /// Scoped lock idiom.
@@ -281,6 +338,14 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	}
 #endif 
     }
+
+#if __GTHREADS && ! defined __GTHREAD_COND_INIT
+    ~__cond() 
+    { 
+      if (__gthread_active_p())
+	__gthread_cond_destroy(&_M_cond); 
+    }
+#endif 
 
     void broadcast()
     {

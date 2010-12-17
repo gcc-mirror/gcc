@@ -1,6 +1,6 @@
 /* Output routines for GCC for CRX.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -43,6 +43,7 @@
 #include "recog.h"
 #include "expr.h"
 #include "optabs.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "basic-block.h"
 #include "df.h"
@@ -129,6 +130,10 @@ static bool crx_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_U
 static int crx_address_cost (rtx, bool);
 static bool crx_legitimate_address_p (enum machine_mode, rtx, bool);
 static bool crx_can_eliminate (const int, const int);
+static rtx crx_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+			     const_tree, bool);
+static void crx_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+				      const_tree, bool);
 
 /*****************************************************************************/
 /* RTL VALIDITY								     */
@@ -154,6 +159,16 @@ static bool crx_can_eliminate (const int, const int);
 #define	TARGET_RETURN_IN_MEMORY		crx_return_in_memory
 
 /*****************************************************************************/
+/* PASSING FUNCTION ARGUMENTS						     */
+/*****************************************************************************/
+
+#undef  TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG		crx_function_arg
+
+#undef  TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE	crx_function_arg_advance
+
+/*****************************************************************************/
 /* RELATIVE COSTS OF OPERATIONS						     */
 /*****************************************************************************/
 
@@ -173,6 +188,19 @@ static const struct attribute_spec crx_attribute_table[] = {
   {NULL, 0, 0, false, false, false, NULL}
 };
 
+/* Option handling.  */
+
+#undef	TARGET_OPTION_OPTIMIZATION_TABLE
+#define	TARGET_OPTION_OPTIMIZATION_TABLE	crx_option_optimization_table
+
+static const struct default_options crx_option_optimization_table[] =
+  {
+    /* Put each function in its own section so that PAGE-instruction
+       relaxation can do its best.  */
+    { OPT_LEVELS_1_PLUS, OPT_ffunction_sections, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
 
 /* Initialize 'targetm' variable which contains pointers to functions and data
  * relating to the target machine.  */
@@ -415,7 +443,7 @@ crx_hard_regno_mode_ok (int regno, enum machine_mode mode)
  * the number of registers needed else 0.  */
 
 static int
-enough_regs_for_param (CUMULATIVE_ARGS * cum, tree type,
+enough_regs_for_param (CUMULATIVE_ARGS * cum, const_tree type,
 		       enum machine_mode mode)
 {
   int type_size;
@@ -438,11 +466,11 @@ enough_regs_for_param (CUMULATIVE_ARGS * cum, tree type,
   return 0;
 }
 
-/* Implements the macro FUNCTION_ARG defined in crx.h.  */
+/* Implements TARGET_FUNCTION_ARG.  */
 
-rtx
-crx_function_arg (CUMULATIVE_ARGS * cum, enum machine_mode mode, tree type,
-	      int named ATTRIBUTE_UNUSED)
+static rtx
+crx_function_arg (CUMULATIVE_ARGS * cum, enum machine_mode mode,
+		  const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   last_parm_in_reg = 0;
 
@@ -506,11 +534,11 @@ crx_init_cumulative_args (CUMULATIVE_ARGS * cum, tree fntype,
     }
 }
 
-/* Implements the macro FUNCTION_ARG_ADVANCE defined in crx.h.  */
+/* Implements TARGET_FUNCTION_ARG_ADVANCE.  */
 
-void
+static void
 crx_function_arg_advance (CUMULATIVE_ARGS * cum, enum machine_mode mode,
-		      tree type, int named ATTRIBUTE_UNUSED)
+			  const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   /* l holds the number of registers required */
   int l = GET_MODE_BITSIZE (mode) / BITS_PER_WORD;
@@ -562,30 +590,21 @@ crx_function_arg_regno_p (int n)
  * Scaled index		--> reg + reg | 22-bit disp. + reg + reg |
  *			    22-disp. + reg + reg + (2 | 4 | 8) */
 
-static int crx_addr_reg_p (rtx addr_reg)
+static rtx
+crx_addr_reg (rtx addr_reg)
 {
-  rtx reg;
+  if (GET_MODE (addr_reg) != Pmode)
+    return NULL_RTX;
 
   if (REG_P (addr_reg))
-    {
-      reg = addr_reg;
-    }
-  else if ((GET_CODE (addr_reg) == SUBREG
+    return addr_reg;
+  else if (GET_CODE (addr_reg) == SUBREG
 	   && REG_P (SUBREG_REG (addr_reg))
-	   && GET_MODE_SIZE (GET_MODE (SUBREG_REG (addr_reg)))
-	   <= UNITS_PER_WORD))
-    {
-      reg = SUBREG_REG (addr_reg);
-    }
+	   && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (addr_reg)))
+	       <= UNITS_PER_WORD))
+    return SUBREG_REG (addr_reg);
   else
-    return FALSE;
-
-  if (GET_MODE (addr_reg) != Pmode)
-    {
-      return FALSE;
-    }
-
-  return TRUE;
+    return NULL_RTX;
 }
 
 enum crx_addrtype
@@ -724,8 +743,18 @@ crx_decompose_address (rtx addr, struct crx_address *out)
       return CRX_INVALID;
     }
 
-  if (base && !crx_addr_reg_p (base)) return CRX_INVALID;
-  if (index && !crx_addr_reg_p (index)) return CRX_INVALID;
+  if (base)
+    {
+      base = crx_addr_reg (base);
+      if (!base)
+	return CRX_INVALID;
+    }
+  if (index)
+    {
+      index = crx_addr_reg (index);
+      if (!index)
+	return CRX_INVALID;
+    }
   
   out->base = base;
   out->index = index;
@@ -1411,16 +1440,11 @@ crx_expand_prologue (void)
 void
 crx_expand_epilogue (void)
 {
-  rtx return_reg;
-
   /* Nonzero if we need to return and pop only RA. This will generate a
    * different insn. This differentiate is for the peepholes for call as last
    * statement in function. */
   int only_popret_RA = (save_regs[RETURN_ADDRESS_REGNUM]
 			&& (sum_regs == UNITS_PER_WORD));
-
-  /* Return register.  */
-  return_reg = gen_rtx_REG (Pmode, RETURN_ADDRESS_REGNUM);
 
   if (frame_pointer_needed)
     /* Restore the stack pointer with the frame pointers value */

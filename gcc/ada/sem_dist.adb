@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -777,7 +777,7 @@ package body Sem_Dist is
         Make_Aggregate (Loc,
           Component_Associations => New_List (
             Make_Component_Association (Loc,
-              Choices => New_List (Make_Identifier (Loc, Name_Ras)),
+              Choices    => New_List (Make_Identifier (Loc, Name_Ras)),
               Expression => Make_Null (Loc)))));
       Analyze_And_Resolve (N, Target_Type);
       return True;

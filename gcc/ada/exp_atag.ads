@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2006-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -96,6 +96,11 @@ package Exp_Atag is
    --  the given Tag.
    --
    --  Generates: TSD (Tag).Transportable;
+
+   function Build_Inherit_CPP_Prims (Typ : Entity_Id) return List_Id;
+   --  Build code that copies from Typ's parent the dispatch table slots of
+   --  inherited primitives and updates slots of overridden primitives. The
+   --  generated code handles primary and secondary dispatch tables of Typ.
 
    function Build_Inherit_Predefined_Prims
      (Loc          : Source_Ptr;

@@ -21,5 +21,9 @@ int bar (void)
   return q->i;
 }
 
-/* { dg-final { scan-tree-dump-times "a.b.i" 2 "ccp1" } } */
+/* The first access is through struct A, so a.b.i is fine,
+   the second access needs to preserve the original access type struct B.  */
+
+/* { dg-final { scan-tree-dump-times "a.b.i" 1 "ccp1" } } */
+/* { dg-final { scan-tree-dump-times "MEM\\\[\\\(struct B \\\*\\\)&a\\\].i" 1 "ccp1" } } */
 /* { dg-final { cleanup-tree-dump "ccp1" } } */

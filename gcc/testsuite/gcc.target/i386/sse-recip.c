@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -ffast-math -msse -mfpmath=sse -mrecip" } */
+/* { dg-require-effective-target sse } */
 
 #include "sse-check.h"
 

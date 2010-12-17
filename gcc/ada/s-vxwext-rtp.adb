@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   B o d y                                --
 --                                                                          --
---            Copyright (C) 2008-2009, Free Software Foundation, Inc.       --
+--            Copyright (C) 2008-2010, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNARL is free software;  you can redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides vxworks specific support functions needed
+--  This package provides VxWorks specific support functions needed
 --  by System.OS_Interface.
 
 --  This is the VxWorks 6 RTP version of this package
@@ -53,6 +53,54 @@ package body System.VxWorks.Ext is
       return ERROR;
    end Int_Unlock;
 
+   -----------------------
+   -- Interrupt_Connect --
+   -----------------------
+
+   function Interrupt_Connect
+     (Vector    : Interrupt_Vector;
+      Handler   : Interrupt_Handler;
+      Parameter : System.Address := System.Null_Address) return int
+   is
+      pragma Unreferenced (Vector, Handler, Parameter);
+   begin
+      return ERROR;
+   end Interrupt_Connect;
+
+   -----------------------
+   -- Interrupt_Context --
+   -----------------------
+
+   function Interrupt_Context return int is
+   begin
+      --  For RTPs, never in an interrupt context
+
+      return 0;
+   end Interrupt_Context;
+
+   --------------------------------
+   -- Interrupt_Number_To_Vector --
+   --------------------------------
+
+   function Interrupt_Number_To_Vector
+     (intNum : int) return Interrupt_Vector
+   is
+      pragma Unreferenced (intNum);
+   begin
+      return 0;
+   end Interrupt_Number_To_Vector;
+
+   ---------------
+   -- semDelete --
+   ---------------
+
+   function semDelete (Sem : SEM_ID) return int is
+      function OS_semDelete (Sem : SEM_ID) return int;
+      pragma Import (C, OS_semDelete, "semDelete");
+   begin
+      return OS_semDelete (Sem);
+   end semDelete;
+
    --------------------
    -- Set_Time_Slice --
    --------------------
@@ -62,22 +110,6 @@ package body System.VxWorks.Ext is
    begin
       return ERROR;
    end Set_Time_Slice;
-
-   function Interrupt_Connect
-     (Vector    : Interrupt_Vector;
-      Handler   : Interrupt_Handler;
-      Parameter : System.Address := System.Null_Address) return int is
-      pragma Unreferenced (Vector, Handler, Parameter);
-   begin
-      return ERROR;
-   end Interrupt_Connect;
-
-   function Interrupt_Number_To_Vector
-     (intNum : int) return Interrupt_Vector is
-      pragma Unreferenced (intNum);
-   begin
-      return 0;
-   end Interrupt_Number_To_Vector;
 
    ------------------------
    -- taskCpuAffinitySet --

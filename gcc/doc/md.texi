@@ -1998,31 +1998,33 @@ Integer/Floating point constant that can be loaded into a register using
 three instructions
 
 @item m
-Memory operand.  Note that on PowerPC targets, @code{m} can include
-addresses that update the base register.  It is therefore only safe
-to use @samp{m} in an @code{asm} statement if that @code{asm} statement
+Memory operand.  
+Normally, @code{m} does not allow addresses that update the base register.
+If @samp{<} or @samp{>} constraint is also used, they are allowed and
+therefore on PowerPC targets in that case it is only safe
+to use @samp{m<>} in an @code{asm} statement if that @code{asm} statement
 accesses the operand exactly once.  The @code{asm} statement must also
 use @samp{%U@var{<opno>}} as a placeholder for the ``update'' flag in the
 corresponding load or store instruction.  For example:
 
 @smallexample
-asm ("st%U0 %1,%0" : "=m" (mem) : "r" (val));
+asm ("st%U0 %1,%0" : "=m<>" (mem) : "r" (val));
 @end smallexample
 
 is correct but:
 
 @smallexample
-asm ("st %1,%0" : "=m" (mem) : "r" (val));
+asm ("st %1,%0" : "=m<>" (mem) : "r" (val));
 @end smallexample
 
-is not.  Use @code{es} rather than @code{m} if you don't want the
-base register to be updated.
+is not.
 
 @item es
 A ``stable'' memory operand; that is, one which does not include any
-automodification of the base register.  Unlike @samp{m}, this constraint
-can be used in @code{asm} statements that might access the operand
-several times, or that might not access it at all.
+automodification of the base register.  This used to be useful when
+@samp{m} allowed automodification of the base register, but as those are now only
+allowed when @samp{<} or @samp{>} is used, @samp{es} is basically the same
+as @samp{m} without @samp{<} and @samp{>}.
 
 @item Q
 Memory operand that is an offset from a register (it is usually better
@@ -2099,8 +2101,32 @@ The @code{si} register.
 The @code{di} register.
 
 @item A
-The @code{a} and @code{d} registers, as a pair (for instructions that
-return half the result in one and half in the other).
+The @code{a} and @code{d} registers.  This class is used for instructions
+that return double word results in the @code{ax:dx} register pair.  Single
+word values will be allocated either in @code{ax} or @code{dx}.
+For example on i386 the following implements @code{rdtsc}:
+
+@smallexample
+unsigned long long rdtsc (void)
+@{
+  unsigned long long tick;
+  __asm__ __volatile__("rdtsc":"=A"(tick));
+  return tick;
+@}
+@end smallexample
+
+This is not correct on x86_64 as it would allocate tick in either @code{ax}
+or @code{dx}.  You have to use the following variant instead:
+
+@smallexample
+unsigned long long rdtsc (void)
+@{
+  unsigned int tickl, tickh;
+  __asm__ __volatile__("rdtsc":"=a"(tickl),"=d"(tickh));
+  return ((unsigned long long)tickh << 32)|tickl;
+@}
+@end smallexample
+
 
 @item f
 Any 80387 floating-point (stack) register.
@@ -2194,10 +2220,9 @@ Application register residing in I-unit
 Floating-point register
 
 @item m
-Memory operand.
-Remember that @samp{m} allows postincrement and postdecrement which
+Memory operand.  If used together with @samp{<} or @samp{>},
+the operand can have postincrement and postdecrement which
 require printing with @samp{%Pn} on IA-64.
-Use @samp{S} to disallow postincrement and postdecrement.
 
 @item G
 Floating-point constant 0.0 or 1.0
@@ -2233,7 +2258,9 @@ Non-volatile memory for floating-point loads and stores
 Integer constant in the range 1 to 4 for @code{shladd} instruction
 
 @item S
-Memory operand except postincrement and postdecrement
+Memory operand except postincrement and postdecrement.  This is
+now roughly the same as @samp{m} when not used together with @samp{<}
+or @samp{>}.
 @end table
 
 @item FRV---@file{config/frv/frv.h}
@@ -2674,7 +2701,15 @@ A register indirect address without offset.
 @item Z
 Symbolic references to the control bus.
 
+@end table
 
+@item MicroBlaze---@file{config/microblaze/constraints.md}
+@table @code
+@item d
+A general register (@code{r0} to @code{r31}).
+
+@item z
+A status register (@code{rmsr}, @code{$fcc1} to @code{$fcc7}).
 
 @end table
 
@@ -2907,6 +2942,55 @@ A constant in the range of 0 to 255.
 
 @item N
 A constant in the range of 0 to @minus{}255.
+
+@end table
+
+@item PDP-11---@file{config/pdp11/constraints.md}
+@table @code
+@item a
+Floating point registers AC0 through AC3.  These can be loaded from/to
+memory with a single instruction.
+
+@item d
+Odd numbered general registers (R1, R3, R5).  These are used for
+16-bit multiply operations.
+
+@item f
+Any of the floating point registers (AC0 through AC5).
+
+@item G
+Floating point constant 0.
+
+@item I
+An integer constant that fits in 16 bits.
+
+@item J
+An integer constant whose low order 16 bits are zero.
+
+@item K
+An integer constant that does not meet the constraints for codes
+@samp{I} or @samp{J}.
+
+@item L
+The integer constant 1.
+
+@item M
+The integer constant @minus{}1.
+
+@item N
+The integer constant 0.
+
+@item O
+Integer constants @minus{}4 through @minus{}1 and 1 through 4; shifts by these
+amounts are handled as multiple single-bit shifts rather than a single
+variable-length shift.
+
+@item Q
+A memory reference which requires an additional word (address or
+offset) after the opcode.
+
+@item R
+A memory reference that is encoded within the opcode.
 
 @end table
 
@@ -3937,6 +4021,46 @@ means of constraints requiring operands 1 and 0 to be the same location.
 @itemx @samp{and@var{m}3}, @samp{ior@var{m}3}, @samp{xor@var{m}3}
 Similar, for other arithmetic operations.
 
+@cindex @code{fma@var{m}4} instruction pattern
+@item @samp{fma@var{m}4}
+Multiply operand 2 and operand 1, then add operand 3, storing the
+result in operand 0.  All operands must have mode @var{m}.  This
+pattern is used to implement the @code{fma}, @code{fmaf}, and
+@code{fmal} builtin functions from the ISO C99 standard.  The
+@code{fma} operation may produce different results than doing the
+multiply followed by the add if the machine does not perform a
+rounding step between the operations.
+
+@cindex @code{fms@var{m}4} instruction pattern
+@item @samp{fms@var{m}4}
+Like @code{fma@var{m}4}, except operand 3 subtracted from the
+product instead of added to the product.  This is represented
+in the rtl as
+
+@smallexample
+(fma:@var{m} @var{op1} @var{op2} (neg:@var{m} @var{op3}))
+@end smallexample
+
+@cindex @code{fnma@var{m}4} instruction pattern
+@item @samp{fnma@var{m}4}
+Like @code{fma@var{m}4} except that the intermediate product
+is negated before being added to operand 3.  This is represented
+in the rtl as
+
+@smallexample
+(fma:@var{m} (neg:@var{m} @var{op1}) @var{op2} @var{op3})
+@end smallexample
+
+@cindex @code{fnms@var{m}4} instruction pattern
+@item @samp{fnms@var{m}4}
+Like @code{fms@var{m}4} except that the intermediate product
+is negated before subtracting operand 3.  This is represented
+in the rtl as
+
+@smallexample
+(fma:@var{m} (neg:@var{m} @var{op1}) @var{op2} (neg:@var{m} @var{op3}))
+@end smallexample
+
 @cindex @code{min@var{m}3} instruction pattern
 @cindex @code{max@var{m}3} instruction pattern
 @item @samp{smin@var{m}3}, @samp{smax@var{m}3}
@@ -4367,19 +4491,19 @@ point mode @var{n} as a signed number according to the current
 rounding mode and store in operand 0 (which has mode @var{n}).
 
 @cindex @code{lround@var{m}@var{n}2}
-@item @samp{lround@var{m}2}
+@item @samp{lround@var{m}@var{n}2}
 Convert operand 1 (valid for floating point mode @var{m}) to fixed
 point mode @var{n} as a signed number rounding to nearest and away
 from zero and store in operand 0 (which has mode @var{n}).
 
 @cindex @code{lfloor@var{m}@var{n}2}
-@item @samp{lfloor@var{m}2}
+@item @samp{lfloor@var{m}@var{n}2}
 Convert operand 1 (valid for floating point mode @var{m}) to fixed
 point mode @var{n} as a signed number rounding down and store in
 operand 0 (which has mode @var{n}).
 
 @cindex @code{lceil@var{m}@var{n}2}
-@item @samp{lceil@var{m}2}
+@item @samp{lceil@var{m}@var{n}2}
 Convert operand 1 (valid for floating point mode @var{m}) to fixed
 point mode @var{n} as a signed number rounding up and store in
 operand 0 (which has mode @var{n}).
@@ -4558,19 +4682,19 @@ operand 2 is the character to search for (normally zero),
 and operand 3 is a constant describing the known alignment
 of the beginning of the string.
 
-@cindex @code{float@var{mn}2} instruction pattern
+@cindex @code{float@var{m}@var{n}2} instruction pattern
 @item @samp{float@var{m}@var{n}2}
 Convert signed integer operand 1 (valid for fixed point mode @var{m}) to
 floating point mode @var{n} and store in operand 0 (which has mode
 @var{n}).
 
-@cindex @code{floatuns@var{mn}2} instruction pattern
+@cindex @code{floatuns@var{m}@var{n}2} instruction pattern
 @item @samp{floatuns@var{m}@var{n}2}
 Convert unsigned integer operand 1 (valid for fixed point mode @var{m})
 to floating point mode @var{n} and store in operand 0 (which has mode
 @var{n}).
 
-@cindex @code{fix@var{mn}2} instruction pattern
+@cindex @code{fix@var{m}@var{n}2} instruction pattern
 @item @samp{fix@var{m}@var{n}2}
 Convert operand 1 (valid for floating point mode @var{m}) to fixed
 point mode @var{n} as a signed number and store in operand 0 (which
@@ -4580,7 +4704,7 @@ the value of operand 1 is an integer.
 If the machine description defines this pattern, it also needs to
 define the @code{ftrunc} pattern.
 
-@cindex @code{fixuns@var{mn}2} instruction pattern
+@cindex @code{fixuns@var{m}@var{n}2} instruction pattern
 @item @samp{fixuns@var{m}@var{n}2}
 Convert operand 1 (valid for floating point mode @var{m}) to fixed
 point mode @var{n} as an unsigned number and store in operand 0 (which
@@ -4593,35 +4717,35 @@ Convert operand 1 (valid for floating point mode @var{m}) to an
 integer value, still represented in floating point mode @var{m}, and
 store it in operand 0 (valid for floating point mode @var{m}).
 
-@cindex @code{fix_trunc@var{mn}2} instruction pattern
+@cindex @code{fix_trunc@var{m}@var{n}2} instruction pattern
 @item @samp{fix_trunc@var{m}@var{n}2}
 Like @samp{fix@var{m}@var{n}2} but works for any floating point value
 of mode @var{m} by converting the value to an integer.
 
-@cindex @code{fixuns_trunc@var{mn}2} instruction pattern
+@cindex @code{fixuns_trunc@var{m}@var{n}2} instruction pattern
 @item @samp{fixuns_trunc@var{m}@var{n}2}
 Like @samp{fixuns@var{m}@var{n}2} but works for any floating point
 value of mode @var{m} by converting the value to an integer.
 
-@cindex @code{trunc@var{mn}2} instruction pattern
+@cindex @code{trunc@var{m}@var{n}2} instruction pattern
 @item @samp{trunc@var{m}@var{n}2}
 Truncate operand 1 (valid for mode @var{m}) to mode @var{n} and
 store in operand 0 (which has mode @var{n}).  Both modes must be fixed
 point or both floating point.
 
-@cindex @code{extend@var{mn}2} instruction pattern
+@cindex @code{extend@var{m}@var{n}2} instruction pattern
 @item @samp{extend@var{m}@var{n}2}
 Sign-extend operand 1 (valid for mode @var{m}) to mode @var{n} and
 store in operand 0 (which has mode @var{n}).  Both modes must be fixed
 point or both floating point.
 
-@cindex @code{zero_extend@var{mn}2} instruction pattern
+@cindex @code{zero_extend@var{m}@var{n}2} instruction pattern
 @item @samp{zero_extend@var{m}@var{n}2}
 Zero-extend operand 1 (valid for mode @var{m}) to mode @var{n} and
 store in operand 0 (which has mode @var{n}).  Both modes must be fixed
 point.
 
-@cindex @code{fract@var{mn}2} instruction pattern
+@cindex @code{fract@var{m}@var{n}2} instruction pattern
 @item @samp{fract@var{m}@var{n}2}
 Convert operand 1 of mode @var{m} to mode @var{n} and store in
 operand 0 (which has mode @var{n}).  Mode @var{m} and mode @var{n}
@@ -4630,7 +4754,7 @@ fixed-point to signed integer, floating-point to fixed-point,
 or fixed-point to floating-point.
 When overflows or underflows happen, the results are undefined.
 
-@cindex @code{satfract@var{mn}2} instruction pattern
+@cindex @code{satfract@var{m}@var{n}2} instruction pattern
 @item @samp{satfract@var{m}@var{n}2}
 Convert operand 1 of mode @var{m} to mode @var{n} and store in
 operand 0 (which has mode @var{n}).  Mode @var{m} and mode @var{n}
@@ -4639,7 +4763,7 @@ or floating-point to fixed-point.
 When overflows or underflows happen, the instruction saturates the
 results to the maximum or the minimum.
 
-@cindex @code{fractuns@var{mn}2} instruction pattern
+@cindex @code{fractuns@var{m}@var{n}2} instruction pattern
 @item @samp{fractuns@var{m}@var{n}2}
 Convert operand 1 of mode @var{m} to mode @var{n} and store in
 operand 0 (which has mode @var{n}).  Mode @var{m} and mode @var{n}
@@ -4647,7 +4771,7 @@ could be unsigned integer to fixed-point, or
 fixed-point to unsigned integer.
 When overflows or underflows happen, the results are undefined.
 
-@cindex @code{satfractuns@var{mn}2} instruction pattern
+@cindex @code{satfractuns@var{m}@var{n}2} instruction pattern
 @item @samp{satfractuns@var{m}@var{n}2}
 Convert unsigned integer operand 1 of mode @var{m} to fixed-point mode
 @var{n} and store in operand 0 (which has mode @var{n}).

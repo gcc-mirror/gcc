@@ -1,5 +1,5 @@
 /* Definitions for StrongARM running FreeBSD using the ELF format
-   Copyright (C) 2001, 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2004, 2007, 2010 Free Software Foundation, Inc.
    Contributed by David E. O'Brien <obrien@FreeBSD.org> and BSDi.
 
    This file is part of GCC.
@@ -28,7 +28,7 @@
 
 #undef	LINK_SPEC
 #define LINK_SPEC "							\
-  %{p:%nconsider using `-pg' instead of `-p' with gprof(1) }		\
+  %{p:%nconsider using '-pg' instead of '-p' with gprof(1)}		\
   %{v:-V}								\
   %{assert*} %{R*} %{rpath*} %{defsym*}					\
   %{shared:-Bshareable %{h*} %{soname*}}				\

@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O -fdump-tree-forwprop1" } */
+/* { dg-options "-O -fdump-tree-optimized-vops" } */
 
 struct Value
 {
@@ -35,12 +35,14 @@ int main(int argc, char *argv[])
   return 0;
 }
 
-/* Check that we forward propagated
+/* Check that we propagate
      D.2182_13 = (struct Ref *) &D.2137.lhs;
    to
      D.2182_13->lhs.m ={v} &I;
    yielding
-     D.2137.lhs.m ={v} &I;  */
+     D.2137.lhs.m ={v} &I;
+   so that SRA can promote all locals to registers and we end up
+   referencing a single virtual operand at abort () after optimization.  */
 
-/* { dg-final { scan-tree-dump-times "D\\\.....\\\..hs\\\.m =" 2 "forwprop1" } } */
-/* { dg-final { cleanup-tree-dump "forwprop1" } } */
+/* { dg-final { scan-tree-dump-times ".MEM_\[0-9\]*\\\(D\\\)" 1 "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

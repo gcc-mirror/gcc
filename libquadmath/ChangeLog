@@ -1,0 +1,44 @@
+2010-11-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46594
+	* Makefile.am: Install include files in
+	target/version specific directory.
+	* Makefile.in: Regenerate.
+
+2010-11-30  Tobias Burnus  <burnus@net-b.de>
+
+	* acinclude.m4 (LIBGOMP_CHECK_SYNC_BUILTINS,
+	LIBGOMP_CHECK_ATTRIBUTE_VISIBILITY,
+	LIBGOMP_CHECK_ATTRIBUTE_DLLEXPORT): Remove.
+
+2010-11-29  Kai Tietz  <kai.tietz@onevision.com>
+
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* configure.ac (ACX_NONCANONICAL_TARGET): Call it.
+	(target_alias): Use AC_SUBST for it.
+	(GCC_NO_EXECUTABLES): Call it.
+	(AC_PROG_CC): Improve multilib handling.
+	Check that gcc is used for compilation.
+	Use pattern from libssp for symbol versioning checking.
+	* Makefile.am (LTLDFLAGS): Removed.
+	(libquadmath_la_LDFLAGS): Add -no-undefined.
+	(libquadmath_la_LINK): Commented out.
+	(libquadmath_la_DEPENDENCIES): Add libquadmath_la_LIBADD.
+	(AM_MAKEFLAGS): Add hack for argument passing by top-level.
+	(MAKEOVERRIDES): New.
+	* aclocal.m4: Regenerated.
+
+2010-11-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.am (libquadmath_la_LIBADD): Move -lm ...
+	(libquadmath_la_LDFLAGS): ... here.
+	(quadmath.map-sun): Tabify.
+	Fix sed expression.
+	* Makefile.in: Regenerate.
+
+2010-11-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/32049
+	Initial implementation and checkin.

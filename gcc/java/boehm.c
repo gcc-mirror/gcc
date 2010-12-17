@@ -1,5 +1,6 @@
 /* Functions related to the Boehm garbage collector.
-   Copyright (C) 2000, 2003, 2004, 2006, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003, 2004, 2006, 2009, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23,8 +24,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 /* Written by Tom Tromey <tromey@cygnus.com>.  */
 
-#include <config.h>
-
+#include "config.h"
 #include "system.h"
 #include "coretypes.h"
 #include "double-int.h"
@@ -32,7 +32,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "tree.h"
 #include "java-tree.h"
 #include "parse.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 
 static void mark_reference_fields (tree, double_int *, unsigned int,
 				   int *, int *, int *, HOST_WIDE_INT *);
@@ -62,10 +62,10 @@ mark_reference_fields (tree field,
 			     mask, ubit,
 			     pointer_after_end, all_bits_set,
 			     last_set_index, last_view_index);
-      field = TREE_CHAIN (field);
+      field = DECL_CHAIN (field);
     }
 
-  for (; field != NULL_TREE; field = TREE_CHAIN (field))
+  for (; field != NULL_TREE; field = DECL_CHAIN (field))
     {
       HOST_WIDE_INT offset;
       HOST_WIDE_INT size_bytes;

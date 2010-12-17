@@ -50,10 +50,10 @@ if gdb.current_objfile () is not None:
     dotdots = ('..' + os.sep) * len (libdir.split (os.sep))
 
     objfile = gdb.current_objfile ().filename
-    dir = os.path.join (os.path.dirname (objfile), dotdots, pythondir)
+    dir_ = os.path.join (os.path.dirname (objfile), dotdots, pythondir)
 
-    if not dir in sys.path:
-        sys.path.insert(0, dir)
+    if not dir_ in sys.path:
+        sys.path.insert(0, dir_)
 
 # Load the pretty-printers.
 from libstdcxx.v6.printers import register_libstdcxx_printers

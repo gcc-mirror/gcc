@@ -1,4 +1,4 @@
-/* PrintAttributeException.java -- 
+/* PrintAttributeException.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -46,25 +46,25 @@ import javax.print.attribute.Attribute;
  * A <code>PrintException</code> further refining the exception
  * cause by providing an implementation of the print exception
  * interface <code>AttributeException</code>.
- * 
+ *
  * @see javax.print.PrintException
  * @see javax.print.AttributeException
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class PrintAttributeException extends PrintException 
+public final class PrintAttributeException extends PrintException
   implements AttributeException
 {
   private Class[] categories;
   private Attribute[] values;
-  
+
   /**
    * Constructs a <code>PrintAttributeException</code>
    * with the given unsupported attributes and/or values.
-   * 
-   * @param unsupportedAttributes the unsupported categories, 
+   *
+   * @param unsupportedAttributes the unsupported categories,
    * may be <code>null</code>.
-   * @param unsupportedValues the unsupported attribute values, 
+   * @param unsupportedValues the unsupported attribute values,
    * may be <code>null</code>.
    */
   public PrintAttributeException(Class[] unsupportedAttributes,
@@ -78,11 +78,11 @@ public final class PrintAttributeException extends PrintException
   /**
    * Constructs a <code>PrintAttributeException</code>
    * with the given unsupported attributes and/or values.
-   * 
+   *
    * @param e chained exception
-   * @param unsupportedAttributes the unsupported categories, 
+   * @param unsupportedAttributes the unsupported categories,
    * may be <code>null</code>.
-   * @param unsupportedValues the unsupported attribute values, 
+   * @param unsupportedValues the unsupported attribute values,
    * may be <code>null</code>.
    */
   public PrintAttributeException(Exception e,
@@ -96,11 +96,11 @@ public final class PrintAttributeException extends PrintException
   /**
    * Constructs a <code>PrintAttributeException</code>
    * with the given unsupported attributes and/or values.
-   * 
+   *
    * @param s detailed message
-   * @param unsupportedAttributes the unsupported categories, 
+   * @param unsupportedAttributes the unsupported categories,
    * may be <code>null</code>.
-   * @param unsupportedValues the unsupported attribute values, 
+   * @param unsupportedValues the unsupported attribute values,
    * may be <code>null</code>.
    */
   public PrintAttributeException(String s,
@@ -114,12 +114,12 @@ public final class PrintAttributeException extends PrintException
   /**
    * Constructs a <code>PrintAttributeException</code>
    * with the given unsupported attributes and/or values.
-   * 
+   *
    * @param s detailed message
    * @param e chained exception
-   * @param unsupportedAttributes the unsupported categories, 
+   * @param unsupportedAttributes the unsupported categories,
    * may be <code>null</code>.
-   * @param unsupportedValues the unsupported attribute values, 
+   * @param unsupportedValues the unsupported attribute values,
    * may be <code>null</code>.
    */
   public PrintAttributeException(String s, Exception e,

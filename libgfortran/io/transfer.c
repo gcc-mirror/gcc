@@ -48,7 +48,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
    For other sorts of data transfer, there are zero or more data
    transfer statement that depend on the format of the data transfer
-   statement.
+   statement. For READ (and for backwards compatibily: for WRITE), one has
 
       transfer_integer
       transfer_logical
@@ -56,8 +56,22 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
       transfer_character_wide
       transfer_real
       transfer_complex
+      transfer_real128
+      transfer_complex128
+   
+    and for WRITE
 
-    These subroutines do not return status.
+      transfer_integer_write
+      transfer_logical_write
+      transfer_character_write
+      transfer_character_wide_write
+      transfer_real_write
+      transfer_complex_write
+      transfer_real128_write
+      transfer_complex128_write
+
+    These subroutines do not return status. The *128 functions
+    are in the file transfer128.c.
 
     The last call is a call to st_[read|write]_done().  While
     something can easily go wrong with the initial st_read() or
@@ -67,24 +81,47 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 extern void transfer_integer (st_parameter_dt *, void *, int);
 export_proto(transfer_integer);
 
+extern void transfer_integer_write (st_parameter_dt *, void *, int);
+export_proto(transfer_integer_write);
+
 extern void transfer_real (st_parameter_dt *, void *, int);
 export_proto(transfer_real);
+
+extern void transfer_real_write (st_parameter_dt *, void *, int);
+export_proto(transfer_real_write);
 
 extern void transfer_logical (st_parameter_dt *, void *, int);
 export_proto(transfer_logical);
 
+extern void transfer_logical_write (st_parameter_dt *, void *, int);
+export_proto(transfer_logical_write);
+
 extern void transfer_character (st_parameter_dt *, void *, int);
 export_proto(transfer_character);
+
+extern void transfer_character_write (st_parameter_dt *, void *, int);
+export_proto(transfer_character_write);
 
 extern void transfer_character_wide (st_parameter_dt *, void *, int, int);
 export_proto(transfer_character_wide);
 
+extern void transfer_character_wide_write (st_parameter_dt *,
+					   void *, int, int);
+export_proto(transfer_character_wide_write);
+
 extern void transfer_complex (st_parameter_dt *, void *, int);
 export_proto(transfer_complex);
+
+extern void transfer_complex_write (st_parameter_dt *, void *, int);
+export_proto(transfer_complex_write);
 
 extern void transfer_array (st_parameter_dt *, gfc_array_char *, int,
 			    gfc_charlen_type);
 export_proto(transfer_array);
+
+extern void transfer_array_write (st_parameter_dt *, gfc_array_char *, int,
+			    gfc_charlen_type);
+export_proto(transfer_array_write);
 
 static void us_read (st_parameter_dt *, int);
 static void us_write (st_parameter_dt *, int);
@@ -177,18 +214,6 @@ current_mode (st_parameter_dt *dtp)
 
 /* Mid level data transfer statements.  */
 
-/* When reading sequential formatted records we have a problem.  We
-   don't know how long the line is until we read the trailing newline,
-   and we don't want to read too much.  If we read too much, we might
-   have to do a physical seek backwards depending on how much data is
-   present, and devices like terminals aren't seekable and would cause
-   an I/O error.
-
-   Given this, the solution is to read a byte at a time, stopping if
-   we hit the newline.  For small allocations, we use a static buffer.
-   For larger allocations, we are forced to allocate memory on the
-   heap.  Hopefully this won't happen very often.  */
-   
 /* Read sequential file - internal unit  */
 
 static char *
@@ -214,7 +239,18 @@ read_sf_internal (st_parameter_dt *dtp, int * length)
     }
 
   lorig = *length;
-  base = mem_alloc_r (dtp->u.p.current_unit->s, length);
+  if (is_char4_unit(dtp))
+    {
+      int i;
+      gfc_char4_t *p = (gfc_char4_t *) mem_alloc_r4 (dtp->u.p.current_unit->s,
+			length);
+      base = fbuf_alloc (dtp->u.p.current_unit, lorig);
+      for (i = 0; i < *length; i++, p++)
+	base[i] = *p > 255 ? '?' : (unsigned char) *p;
+    }
+  else
+    base = mem_alloc_r (dtp->u.p.current_unit->s, length);
+
   if (unlikely (lorig > *length))
     {
       hit_eof (dtp);
@@ -229,6 +265,18 @@ read_sf_internal (st_parameter_dt *dtp, int * length)
   return base;
 
 }
+
+/* When reading sequential formatted records we have a problem.  We
+   don't know how long the line is until we read the trailing newline,
+   and we don't want to read too much.  If we read too much, we might
+   have to do a physical seek backwards depending on how much data is
+   present, and devices like terminals aren't seekable and would cause
+   an I/O error.
+
+   Given this, the solution is to read a byte at a time, stopping if
+   we hit the newline.  For small allocations, we use a static buffer.
+   For larger allocations, we are forced to allocate memory on the
+   heap.  Hopefully this won't happen very often.  */
 
 /* Read sequential file - external unit */
 
@@ -429,7 +477,7 @@ read_block_form (st_parameter_dt *dtp, int * nbytes)
     dtp->u.p.size_used += (GFC_IO_INT) *nbytes;
 
   if (norig != *nbytes)
-    {				
+    {
       /* Short read, this shouldn't happen.  */
       if (!dtp->u.p.current_unit->pad_status == PAD_YES)
 	{
@@ -439,6 +487,52 @@ read_block_form (st_parameter_dt *dtp, int * nbytes)
     }
 
   dtp->u.p.current_unit->strm_pos += (gfc_offset) *nbytes;
+
+  return source;
+}
+
+
+/* Read a block from a character(kind=4) internal unit, to be transferred into
+   a character(kind=4) variable.  Note: Portions of this code borrowed from
+   read_sf_internal.  */
+void *
+read_block_form4 (st_parameter_dt *dtp, int * nbytes)
+{
+  static gfc_char4_t *empty_string[0];
+  gfc_char4_t *source;
+  int lorig;
+
+  if (dtp->u.p.current_unit->bytes_left < (gfc_offset) *nbytes)
+    *nbytes = dtp->u.p.current_unit->bytes_left;
+
+  /* Zero size array gives internal unit len of 0.  Nothing to read. */
+  if (dtp->internal_unit_len == 0
+      && dtp->u.p.current_unit->pad_status == PAD_NO)
+    hit_eof (dtp);
+
+  /* If we have seen an eor previously, return a length of 0.  The
+     caller is responsible for correctly padding the input field.  */
+  if (dtp->u.p.sf_seen_eor)
+    {
+      *nbytes = 0;
+      /* Just return something that isn't a NULL pointer, otherwise the
+         caller thinks an error occured.  */
+      return empty_string;
+    }
+
+  lorig = *nbytes;
+  source = (gfc_char4_t *) mem_alloc_r4 (dtp->u.p.current_unit->s, nbytes);
+
+  if (unlikely (lorig > *nbytes))
+    {
+      hit_eof (dtp);
+      return NULL;
+    }
+
+  dtp->u.p.current_unit->bytes_left -= *nbytes;
+
+  if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
+    dtp->u.p.size_used += (GFC_IO_INT) *nbytes;
 
   return source;
 }
@@ -560,7 +654,6 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t nbytes)
       have_read_record += have_read_subrecord;
 
       if (unlikely (to_read_subrecord != have_read_subrecord))
-			
 	{
 	  /* Short read, e.g. if we hit EOF.  This means the record
 	     structure has been corrupted, or the trailing record
@@ -639,25 +732,37 @@ write_block (st_parameter_dt *dtp, int length)
 
   if (is_internal_unit (dtp))
     {
-    dest = mem_alloc_w (dtp->u.p.current_unit->s, &length);
+      if (dtp->common.unit) /* char4 internel unit.  */
+	{
+	  gfc_char4_t *dest4;
+	  dest4 = mem_alloc_w4 (dtp->u.p.current_unit->s, &length);
+	  if (dest4 == NULL)
+	  {
+            generate_error (&dtp->common, LIBERROR_END, NULL);
+            return NULL;
+	  }
+	  return dest4;
+	}
+      else
+	dest = mem_alloc_w (dtp->u.p.current_unit->s, &length);
 
-    if (dest == NULL)
-      {
-        generate_error (&dtp->common, LIBERROR_END, NULL);
-        return NULL;
-      }
+      if (dest == NULL)
+	{
+          generate_error (&dtp->common, LIBERROR_END, NULL);
+          return NULL;
+	}
 
-    if (unlikely (dtp->u.p.current_unit->endfile == AT_ENDFILE))
-      generate_error (&dtp->common, LIBERROR_END, NULL);
+      if (unlikely (dtp->u.p.current_unit->endfile == AT_ENDFILE))
+	generate_error (&dtp->common, LIBERROR_END, NULL);
     }
   else
     {
       dest = fbuf_alloc (dtp->u.p.current_unit, length);
       if (dest == NULL)
-        {
-          generate_error (&dtp->common, LIBERROR_OS, NULL);
-          return NULL;
-        }
+	{
+	  generate_error (&dtp->common, LIBERROR_OS, NULL);
+	  return NULL;
+	}
     }
     
   if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
@@ -1254,7 +1359,7 @@ formatted_transfer_scalar_read (st_parameter_dt *dtp, bt type, void *p, int kind
 	  consume_data_flag = 0;
 	  dtp->u.p.current_unit->decimal_status = DECIMAL_POINT;
 	  break;
-	
+
 	case FMT_RC:
 	  consume_data_flag = 0;
 	  dtp->u.p.current_unit->round_status = ROUND_COMPATIBLE;
@@ -1535,7 +1640,7 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 		write_i (dtp, f, p, kind);
 		break;
 	      case BT_LOGICAL:
-		write_l (dtp, f, p, kind);	
+		write_l (dtp, f, p, kind);
 		break;
 	      case BT_CHARACTER:
 		if (kind == 4)
@@ -1779,6 +1884,11 @@ transfer_integer (st_parameter_dt *dtp, void *p, int kind)
   dtp->u.p.transfer (dtp, BT_INTEGER, p, kind, kind, 1);
 }
 
+void
+transfer_integer_write (st_parameter_dt *dtp, void *p, int kind)
+{
+  transfer_integer (dtp, p, kind);
+}
 
 void
 transfer_real (st_parameter_dt *dtp, void *p, int kind)
@@ -1790,6 +1900,11 @@ transfer_real (st_parameter_dt *dtp, void *p, int kind)
   dtp->u.p.transfer (dtp, BT_REAL, p, kind, size, 1);
 }
 
+void
+transfer_real_write (st_parameter_dt *dtp, void *p, int kind)
+{
+  transfer_real (dtp, p, kind);
+}
 
 void
 transfer_logical (st_parameter_dt *dtp, void *p, int kind)
@@ -1799,6 +1914,11 @@ transfer_logical (st_parameter_dt *dtp, void *p, int kind)
   dtp->u.p.transfer (dtp, BT_LOGICAL, p, kind, kind, 1);
 }
 
+void
+transfer_logical_write (st_parameter_dt *dtp, void *p, int kind)
+{
+  transfer_logical (dtp, p, kind);
+}
 
 void
 transfer_character (st_parameter_dt *dtp, void *p, int len)
@@ -1819,6 +1939,12 @@ transfer_character (st_parameter_dt *dtp, void *p, int len)
 }
 
 void
+transfer_character_write (st_parameter_dt *dtp, void *p, int len)
+{
+  transfer_character (dtp, p, len);
+}
+
+void
 transfer_character_wide (st_parameter_dt *dtp, void *p, int len, int kind)
 {
   static char *empty_string[0];
@@ -1836,6 +1962,11 @@ transfer_character_wide (st_parameter_dt *dtp, void *p, int len, int kind)
   dtp->u.p.transfer (dtp, BT_CHARACTER, p, kind, len, 1);
 }
 
+void
+transfer_character_wide_write (st_parameter_dt *dtp, void *p, int len, int kind)
+{
+  transfer_character_wide (dtp, p, len, kind);
+}
 
 void
 transfer_complex (st_parameter_dt *dtp, void *p, int kind)
@@ -1847,6 +1978,11 @@ transfer_complex (st_parameter_dt *dtp, void *p, int kind)
   dtp->u.p.transfer (dtp, BT_COMPLEX, p, kind, size, 1);
 }
 
+void
+transfer_complex_write (st_parameter_dt *dtp, void *p, int kind)
+{
+  transfer_complex (dtp, p, kind);
+}
 
 void
 transfer_array (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
@@ -1855,7 +1991,7 @@ transfer_array (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type stride[GFC_MAX_DIMENSIONS];
-  index_type stride0, rank, size, type, n;
+  index_type stride0, rank, size, n;
   size_t tsize;
   char *data;
   bt iotype;
@@ -1863,39 +1999,8 @@ transfer_array (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
   if ((dtp->common.flags & IOPARM_LIBRETURN_MASK) != IOPARM_LIBRETURN_OK)
     return;
 
-  type = GFC_DESCRIPTOR_TYPE (desc);
-  size = GFC_DESCRIPTOR_SIZE (desc);
-
-  /* FIXME: What a kludge: Array descriptors and the IO library use
-     different enums for types.  */
-  switch (type)
-    {
-    case GFC_DTYPE_UNKNOWN:
-      iotype = BT_NULL;  /* Is this correct?  */
-      break;
-    case GFC_DTYPE_INTEGER:
-      iotype = BT_INTEGER;
-      break;
-    case GFC_DTYPE_LOGICAL:
-      iotype = BT_LOGICAL;
-      break;
-    case GFC_DTYPE_REAL:
-      iotype = BT_REAL;
-      break;
-    case GFC_DTYPE_COMPLEX:
-      iotype = BT_COMPLEX;
-      break;
-    case GFC_DTYPE_CHARACTER:
-      iotype = BT_CHARACTER;
-      size = charlen;
-      break;
-    case GFC_DTYPE_DERIVED:
-      internal_error (&dtp->common,
-		"Derived type I/O should have been handled via the frontend.");
-      break;
-    default:
-      internal_error (&dtp->common, "transfer_array(): Bad type");
-    }
+  iotype = (bt) GFC_DESCRIPTOR_TYPE (desc);
+  size = iotype == BT_CHARACTER ? charlen : GFC_DESCRIPTOR_SIZE (desc);
 
   rank = GFC_DESCRIPTOR_RANK (desc);
   for (n = 0; n < rank; n++)
@@ -1952,6 +2057,12 @@ transfer_array (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
     }
 }
 
+void
+transfer_array_write (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
+		      gfc_charlen_type charlen)
+{
+  transfer_array (dtp, desc, kind, charlen);
+}
 
 /* Preposition a sequential unformatted file while reading.  */
 
@@ -2132,49 +2243,49 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 
   dtp->u.p.current_unit = get_unit (dtp, 1);
   if (dtp->u.p.current_unit->s == NULL)
-  {  /* Open the unit with some default flags.  */
-     st_parameter_open opp;
-     unit_convert conv;
+    {  /* Open the unit with some default flags.  */
+       st_parameter_open opp;
+       unit_convert conv;
 
-    if (dtp->common.unit < 0)
-      {
-	close_unit (dtp->u.p.current_unit);
-	dtp->u.p.current_unit = NULL;
-	generate_error (&dtp->common, LIBERROR_BAD_OPTION,
-			"Bad unit number in statement");
-	return;
-      }
-    memset (&u_flags, '\0', sizeof (u_flags));
-    u_flags.access = ACCESS_SEQUENTIAL;
-    u_flags.action = ACTION_READWRITE;
+      if (dtp->common.unit < 0)
+	{
+	  close_unit (dtp->u.p.current_unit);
+	  dtp->u.p.current_unit = NULL;
+	  generate_error (&dtp->common, LIBERROR_BAD_OPTION,
+			  "Bad unit number in statement");
+	  return;
+	}
+      memset (&u_flags, '\0', sizeof (u_flags));
+      u_flags.access = ACCESS_SEQUENTIAL;
+      u_flags.action = ACTION_READWRITE;
 
-    /* Is it unformatted?  */
-    if (!(cf & (IOPARM_DT_HAS_FORMAT | IOPARM_DT_LIST_FORMAT
-		| IOPARM_DT_IONML_SET)))
-      u_flags.form = FORM_UNFORMATTED;
-    else
-      u_flags.form = FORM_UNSPECIFIED;
+      /* Is it unformatted?  */
+      if (!(cf & (IOPARM_DT_HAS_FORMAT | IOPARM_DT_LIST_FORMAT
+		  | IOPARM_DT_IONML_SET)))
+	u_flags.form = FORM_UNFORMATTED;
+      else
+	u_flags.form = FORM_UNSPECIFIED;
 
-    u_flags.delim = DELIM_UNSPECIFIED;
-    u_flags.blank = BLANK_UNSPECIFIED;
-    u_flags.pad = PAD_UNSPECIFIED;
-    u_flags.decimal = DECIMAL_UNSPECIFIED;
-    u_flags.encoding = ENCODING_UNSPECIFIED;
-    u_flags.async = ASYNC_UNSPECIFIED;
-    u_flags.round = ROUND_UNSPECIFIED;
-    u_flags.sign = SIGN_UNSPECIFIED;
+      u_flags.delim = DELIM_UNSPECIFIED;
+      u_flags.blank = BLANK_UNSPECIFIED;
+      u_flags.pad = PAD_UNSPECIFIED;
+      u_flags.decimal = DECIMAL_UNSPECIFIED;
+      u_flags.encoding = ENCODING_UNSPECIFIED;
+      u_flags.async = ASYNC_UNSPECIFIED;
+      u_flags.round = ROUND_UNSPECIFIED;
+      u_flags.sign = SIGN_UNSPECIFIED;
 
-    u_flags.status = STATUS_UNKNOWN;
+      u_flags.status = STATUS_UNKNOWN;
 
-    conv = get_unformatted_convert (dtp->common.unit);
+      conv = get_unformatted_convert (dtp->common.unit);
 
-    if (conv == GFC_CONVERT_NONE)
-      conv = compile_options.convert;
+      if (conv == GFC_CONVERT_NONE)
+	conv = compile_options.convert;
 
-    /* We use big_endian, which is 0 on little-endian machines
-       and 1 on big-endian machines.  */
-    switch (conv)
-      {
+      /* We use big_endian, which is 0 on little-endian machines
+	 and 1 on big-endian machines.  */
+      switch (conv)
+	{
 	case GFC_CONVERT_NATIVE:
 	case GFC_CONVERT_SWAP:
 	  break;
@@ -2190,18 +2301,18 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	default:
 	  internal_error (&opp.common, "Illegal value for CONVERT");
 	  break;
-      }
+	}
 
-     u_flags.convert = conv;
+      u_flags.convert = conv;
 
-     opp.common = dtp->common;
-     opp.common.flags &= IOPARM_COMMON_MASK;
-     dtp->u.p.current_unit = new_unit (&opp, dtp->u.p.current_unit, &u_flags);
-     dtp->common.flags &= ~IOPARM_COMMON_MASK;
-     dtp->common.flags |= (opp.common.flags & IOPARM_COMMON_MASK);
-     if (dtp->u.p.current_unit == NULL)
-       return;
-  }
+      opp.common = dtp->common;
+      opp.common.flags &= IOPARM_COMMON_MASK;
+      dtp->u.p.current_unit = new_unit (&opp, dtp->u.p.current_unit, &u_flags);
+      dtp->common.flags &= ~IOPARM_COMMON_MASK;
+      dtp->common.flags |= (opp.common.flags & IOPARM_COMMON_MASK);
+      if (dtp->u.p.current_unit == NULL)
+	return;
+    }
 
   /* Check the action.  */
 
@@ -2549,7 +2660,8 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
     }
 
   /* Bugware for badly written mixed C-Fortran I/O.  */
-  flush_if_preconnected(dtp->u.p.current_unit->s);
+  if (!is_internal_unit (dtp))
+    flush_if_preconnected(dtp->u.p.current_unit->s);
 
   dtp->u.p.current_unit->mode = dtp->u.p.mode;
 
@@ -2569,7 +2681,10 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
       else
 	{
 	  if ((cf & IOPARM_DT_LIST_FORMAT) != 0)
-	    dtp->u.p.transfer = list_formatted_read;
+	    {
+	        dtp->u.p.last_char = EOF - 1;
+		dtp->u.p.transfer = list_formatted_read;
+	    }
 	  else
 	    dtp->u.p.transfer = formatted_transfer;
 	}
@@ -3027,6 +3142,14 @@ sset (stream * s, int c, ssize_t nbyte)
   return nbyte - bytes_left;
 }
 
+static inline void
+memset4 (gfc_char4_t *p, gfc_char4_t c, int k)
+{
+  int j;
+  for (j = 0; j < k; j++)
+    *p++ = c;
+}
+
 /* Position to the next record in write mode.  */
 
 static void
@@ -3077,6 +3200,7 @@ next_record_w (st_parameter_dt *dtp, int done)
 
       if (is_internal_unit (dtp))
 	{
+	  char *p;
 	  if (is_array_io (dtp))
 	    {
 	      int finished;
@@ -3101,11 +3225,17 @@ next_record_w (st_parameter_dt *dtp, int done)
 		  length = (int) (dtp->u.p.current_unit->recl - max_pos);
 		}
 
-	      if (sset (dtp->u.p.current_unit->s, ' ', length) != length)
-		{
-		  generate_error (&dtp->common, LIBERROR_END, NULL);
-		  return;
+	      p = write_block (dtp, length);
+	      if (p == NULL)
+		return;
+
+	      if (unlikely (is_char4_unit (dtp)))
+	        {
+		  gfc_char4_t *p4 = (gfc_char4_t *) p;
+		  memset4 (p4, ' ', length);
 		}
+	      else
+		memset (p, ' ', length);
 
 	      /* Now that the current record has been padded out,
 		 determine where the next record in the array is. */
@@ -3150,11 +3280,19 @@ next_record_w (st_parameter_dt *dtp, int done)
 		  else
 		    length = (int) dtp->u.p.current_unit->bytes_left;
 		}
-
-	      if (sset (dtp->u.p.current_unit->s, ' ', length) != length)
+	      if (length > 0)
 		{
-		  generate_error (&dtp->common, LIBERROR_END, NULL);
-		  return;
+		  p = write_block (dtp, length);
+		  if (p == NULL)
+		    return;
+
+		  if (unlikely (is_char4_unit (dtp)))
+		    {
+		      gfc_char4_t *p4 = (gfc_char4_t *) p;
+		      memset4 (p4, (gfc_char4_t) ' ', length);
+		    }
+		  else
+		    memset (p, ' ', length);
 		}
 	    }
 	}
@@ -3242,7 +3380,6 @@ next_record (st_parameter_dt *dtp, int done)
 static void
 finalize_transfer (st_parameter_dt *dtp)
 {
-  jmp_buf eof_jump;
   GFC_INTEGER_4 cf = dtp->common.flags;
 
   if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
@@ -3273,13 +3410,6 @@ finalize_transfer (st_parameter_dt *dtp)
   dtp->u.p.transfer = NULL;
   if (dtp->u.p.current_unit == NULL)
     return;
-
-  dtp->u.p.eof_jump = &eof_jump;
-  if (setjmp (eof_jump))
-    {
-      generate_error (&dtp->common, LIBERROR_END, NULL);
-      return;
-    }
 
   if ((cf & IOPARM_DT_LIST_FORMAT) != 0 && dtp->u.p.mode == READING)
     {

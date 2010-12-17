@@ -71,6 +71,7 @@ public class _ServantLocatorStub
    * This the purpose of this field is undocumented up till 1.5 java API
    * inclusive.
    */
+  @SuppressWarnings("unchecked") // Needed for API compatibility
   public static final Class _opsClass = ServantLocatorOperations.class;
 
   /**

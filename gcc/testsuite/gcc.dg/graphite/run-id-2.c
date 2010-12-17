@@ -19,9 +19,17 @@ static int __attribute__((noinline)) bar(int n)
   return c;
 }
 
+extern void abort ();
+
 int main()
 {
-  return
-   foo(0) != 0 || foo(1) != 1 || bar(0) != 0 || bar(1) != 2 || bar(2) != 5;
+  if (foo(0) != 0
+      || foo(1) != 1
+      || bar(0) != 0
+      || bar(1) != 2
+      || bar(2) != 5)
+    abort ();
+
+  return 0;
 }
 

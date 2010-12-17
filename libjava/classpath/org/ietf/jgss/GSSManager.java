@@ -180,7 +180,7 @@ public abstract class GSSManager
         ClassLoader loader = GSSManager.class.getClassLoader();
         if (loader == null)
           loader = ClassLoader.getSystemClassLoader();
-        Class c = loader.loadClass(impl);
+        Class<?> c = loader.loadClass(impl);
         return (GSSManager) c.newInstance();
       }
     catch (Exception x)

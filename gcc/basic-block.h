@@ -554,9 +554,7 @@ single_pred_p (const_basic_block bb)
 static inline edge
 single_succ_edge (const_basic_block bb)
 {
-#ifdef ENABLE_CHECKING
-  gcc_assert (single_succ_p (bb));
-#endif
+  gcc_checking_assert (single_succ_p (bb));
   return EDGE_SUCC (bb, 0);
 }
 
@@ -566,9 +564,7 @@ single_succ_edge (const_basic_block bb)
 static inline edge
 single_pred_edge (const_basic_block bb)
 {
-#ifdef ENABLE_CHECKING
-  gcc_assert (single_pred_p (bb));
-#endif
+  gcc_checking_assert (single_pred_p (bb));
   return EDGE_PRED (bb, 0);
 }
 
@@ -600,9 +596,7 @@ typedef struct {
 static inline VEC(edge,gc) *
 ei_container (edge_iterator i)
 {
-#ifdef ENABLE_CHECKING
-  gcc_assert (i.container);
-#endif
+  gcc_checking_assert (i.container);
   return *i.container;
 }
 
@@ -653,9 +647,7 @@ ei_one_before_end_p (edge_iterator i)
 static inline void
 ei_next (edge_iterator *i)
 {
-#ifdef ENABLE_CHECKING
-  gcc_assert (i->index < EDGE_COUNT (ei_container (*i)));
-#endif
+  gcc_checking_assert (i->index < EDGE_COUNT (ei_container (*i)));
   i->index++;
 }
 
@@ -663,9 +655,7 @@ ei_next (edge_iterator *i)
 static inline void
 ei_prev (edge_iterator *i)
 {
-#ifdef ENABLE_CHECKING
-  gcc_assert (i->index > 0);
-#endif
+  gcc_checking_assert (i->index > 0);
   i->index--;
 }
 
@@ -783,11 +773,9 @@ extern void link_block (basic_block, basic_block);
 extern void unlink_block (basic_block);
 extern void compact_blocks (void);
 extern basic_block alloc_block (void);
-extern void alloc_aux_for_block (basic_block, int);
 extern void alloc_aux_for_blocks (int);
 extern void clear_aux_for_blocks (void);
 extern void free_aux_for_blocks (void);
-extern void alloc_aux_for_edge (edge, int);
 extern void alloc_aux_for_edges (int);
 extern void clear_aux_for_edges (void);
 extern void free_aux_for_edges (void);
@@ -854,6 +842,8 @@ extern VEC (basic_block, heap) *get_dominated_by (enum cdi_direction, basic_bloc
 extern VEC (basic_block, heap) *get_dominated_by_region (enum cdi_direction,
 							 basic_block *,
 							 unsigned);
+extern VEC (basic_block, heap) *get_dominated_to_depth (enum cdi_direction,
+							basic_block, int);
 extern VEC (basic_block, heap) *get_all_dominated_blocks (enum cdi_direction,
 							  basic_block);
 extern void add_to_dominance_info (enum cdi_direction, basic_block);
@@ -885,9 +875,6 @@ extern basic_block get_bb_copy (basic_block);
 void set_loop_copy (struct loop *, struct loop *);
 struct loop *get_loop_copy (struct loop *);
 
-
-extern rtx insert_insn_end_bb_new (rtx, basic_block);
-
 #include "cfghooks.h"
 
 /* Return true when one of the predecessor edges of BB is marked with EDGE_EH.  */
@@ -918,6 +905,20 @@ bb_has_abnormal_pred (basic_block bb)
 	return true;
     }
   return false;
+}
+
+/* Return the fallthru edge in EDGES if it exists, NULL otherwise.  */
+static inline edge
+find_fallthru_edge (VEC(edge,gc) *edges)
+{
+  edge e;
+  edge_iterator ei;
+
+  FOR_EACH_EDGE (e, ei, edges)
+    if (e->flags & EDGE_FALLTHRU)
+      break;
+
+  return e;
 }
 
 /* In cfgloopmanip.c.  */

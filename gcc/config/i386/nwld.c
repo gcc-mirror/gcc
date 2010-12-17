@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for NetWare.
    Contributed by Jan Beulich (jbeulich@novell.com)
-   Copyright (C) 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2007, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "flags.h"
 #include "tm_p.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 
 void
 nwld_named_section_asm_out_constructor (rtx symbol, int priority)

@@ -484,9 +484,11 @@ static tree pretemp;
 static tree storetemp;
 static tree prephitemp;
 
-/* Set of blocks with statements that have had its EH information
-   cleaned up.  */
+/* Set of blocks with statements that have had their EH properties changed.  */
 static bitmap need_eh_cleanup;
+
+/* Set of blocks with statements that have had their AB properties changed.  */
+static bitmap need_ab_cleanup;
 
 /* The phi_translate_table caches phi translations for a given
    expression and predecessor.  */
@@ -855,9 +857,8 @@ bitmap_set_replace_value (bitmap_set_t set, unsigned int lookfor,
   exprset = VEC_index (bitmap_set_t, value_expressions, lookfor);
   FOR_EACH_EXPR_ID_IN_SET (exprset, i, bi)
     {
-      if (bitmap_bit_p (&set->expressions, i))
+      if (bitmap_clear_bit (&set->expressions, i))
 	{
-	  bitmap_clear_bit (&set->expressions, i);
 	  bitmap_set_bit (&set->expressions, get_expression_id (expr));
 	  return;
 	}
@@ -894,9 +895,7 @@ bitmap_value_insert_into_set (bitmap_set_t set, pre_expr expr)
 {
   unsigned int val = get_expr_value_id (expr);
 
-#ifdef ENABLE_CHECKING
-  gcc_assert (expr->id == get_or_alloc_expression_id (expr));
-#endif
+  gcc_checking_assert (expr->id == get_or_alloc_expression_id (expr));
 
   /* Constant values are always considered to be part of the set.  */
   if (value_id_constant_p (val))
@@ -1629,12 +1628,28 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	    newop.op0 = op0;
 	    newop.op1 = op1;
 	    newop.op2 = op2;
+	    /* If it transforms a non-constant ARRAY_REF into a constant
+	       one, adjust the constant offset.  */
+	    if (newop.opcode == ARRAY_REF
+		&& newop.off == -1
+		&& TREE_CODE (op0) == INTEGER_CST
+		&& TREE_CODE (op1) == INTEGER_CST
+		&& TREE_CODE (op2) == INTEGER_CST)
+	      {
+		double_int off = tree_to_double_int (op0);
+		off = double_int_add (off,
+				      double_int_neg
+				        (tree_to_double_int (op1)));
+		off = double_int_mul (off, tree_to_double_int (op2));
+		if (double_int_fits_in_shwi_p (off))
+		  newop.off = off.low;
+	      }
 	    VEC_replace (vn_reference_op_s, newoperands, j, &newop);
 	    /* If it transforms from an SSA_NAME to an address, fold with
 	       a preceding indirect reference.  */
 	    if (j > 0 && op0 && TREE_CODE (op0) == ADDR_EXPR
 		&& VEC_index (vn_reference_op_s,
-			      newoperands, j - 1)->opcode == INDIRECT_REF)
+			      newoperands, j - 1)->opcode == MEM_REF)
 	      vn_reference_fold_indirect (&newoperands, &j);
 	  }
 	if (i != VEC_length (vn_reference_op_s, operands))
@@ -1661,6 +1676,7 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	  {
 	    unsigned int new_val_id;
 	    pre_expr constant;
+	    bool converted = false;
 
 	    tree result = vn_reference_lookup_pieces (newvuse, ref->set,
 						      ref->type,
@@ -1668,6 +1684,13 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 						      &newref, true);
 	    if (result)
 	      VEC_free (vn_reference_op_s, heap, newoperands);
+
+	    if (result
+		&& !useless_type_conversion_p (ref->type, TREE_TYPE (result)))
+	      {
+		result = fold_build1 (VIEW_CONVERT_EXPR, ref->type, result);
+		converted = true;
+	      }
 
 	    if (result && is_gimple_min_invariant (result))
 	      {
@@ -1679,7 +1702,54 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	    expr->kind = REFERENCE;
 	    expr->id = 0;
 
-	    if (newref)
+	    if (converted)
+	      {
+		vn_nary_op_t nary;
+		tree nresult;
+
+		gcc_assert (CONVERT_EXPR_P (result)
+			    || TREE_CODE (result) == VIEW_CONVERT_EXPR);
+
+		nresult = vn_nary_op_lookup_pieces (1, TREE_CODE (result),
+						    TREE_TYPE (result),
+						    TREE_OPERAND (result, 0),
+						    NULL_TREE, NULL_TREE,
+						    NULL_TREE,
+						    &nary);
+		if (nresult && is_gimple_min_invariant (nresult))
+		  return get_or_alloc_expr_for_constant (nresult);
+
+		expr->kind = NARY;
+		if (nary)
+		  {
+		    PRE_EXPR_NARY (expr) = nary;
+		    constant = fully_constant_expression (expr);
+		    if (constant != expr)
+		      return constant;
+
+		    new_val_id = nary->value_id;
+		    get_or_alloc_expression_id (expr);
+		  }
+		else
+		  {
+		    new_val_id = get_next_value_id ();
+		    VEC_safe_grow_cleared (bitmap_set_t, heap,
+					   value_expressions,
+					   get_max_value_id() + 1);
+		    nary = vn_nary_op_insert_pieces (1, TREE_CODE (result),
+						     TREE_TYPE (result),
+						     TREE_OPERAND (result, 0),
+						     NULL_TREE, NULL_TREE,
+						     NULL_TREE, NULL_TREE,
+						     new_val_id);
+		    PRE_EXPR_NARY (expr) = nary;
+		    constant = fully_constant_expression (expr);
+		    if (constant != expr)
+		      return constant;
+		    get_or_alloc_expression_id (expr);
+		  }
+	      }
+	    else if (newref)
 	      {
 		PRE_EXPR_REFERENCE (expr) = newref;
 		constant = fully_constant_expression (expr);
@@ -1816,7 +1886,7 @@ phi_translate_set (bitmap_set_t dest, bitmap_set_t set, basic_block pred,
     }
 
   exprs = sorted_array_from_bitmap_set (set);
-  for (i = 0; VEC_iterate (pre_expr, exprs, i, expr); i++)
+  FOR_EACH_VEC_ELT (pre_expr, exprs, i, expr)
     {
       pre_expr translated;
       translated = phi_translate (expr, set, NULL, pred, phiblock);
@@ -1884,7 +1954,10 @@ bitmap_find_leader (bitmap_set_t set, unsigned int val, gimple stmt)
 	      gimple def_stmt = SSA_NAME_DEF_STMT (PRE_EXPR_NAME (val));
 	      if (gimple_code (def_stmt) != GIMPLE_PHI
 		  && gimple_bb (def_stmt) == gimple_bb (stmt)
-		  && gimple_uid (def_stmt) >= gimple_uid (stmt))
+		  /* PRE insertions are at the end of the basic-block
+		     and have UID 0.  */
+		  && (gimple_uid (def_stmt) == 0
+		      || gimple_uid (def_stmt) >= gimple_uid (stmt)))
 		continue;
 	    }
 	  return val;
@@ -2077,7 +2150,7 @@ valid_in_sets (bitmap_set_t set1, bitmap_set_t set2, pre_expr expr,
 	vn_reference_op_t vro;
 	unsigned int i;
 
-	for (i = 0; VEC_iterate (vn_reference_op_s, ref->operands, i, vro); i++)
+	FOR_EACH_VEC_ELT (vn_reference_op_s, ref->operands, i, vro)
 	  {
 	    if (!vro_valid_in_sets (set1, set2, vro))
 	      return false;
@@ -2111,7 +2184,7 @@ dependent_clean (bitmap_set_t set1, bitmap_set_t set2, basic_block block)
   pre_expr expr;
   int i;
 
-  for (i = 0; VEC_iterate (pre_expr, exprs, i, expr); i++)
+  FOR_EACH_VEC_ELT (pre_expr, exprs, i, expr)
     {
       if (!valid_in_sets (set1, set2, expr, block))
 	bitmap_remove_from_set (set1, expr);
@@ -2130,7 +2203,7 @@ clean (bitmap_set_t set, basic_block block)
   pre_expr expr;
   int i;
 
-  for (i = 0; VEC_iterate (pre_expr, exprs, i, expr); i++)
+  FOR_EACH_VEC_ELT (pre_expr, exprs, i, expr)
     {
       if (!valid_in_sets (set, NULL, expr, block))
 	bitmap_remove_from_set (set, expr);
@@ -2264,7 +2337,7 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
       else
 	bitmap_set_copy (ANTIC_OUT, ANTIC_IN (first));
 
-      for (i = 0; VEC_iterate (basic_block, worklist, i, bprime); i++)
+      FOR_EACH_VEC_ELT (basic_block, worklist, i, bprime)
 	{
 	  if (!gimple_seq_empty_p (phi_nodes (bprime)))
 	    {
@@ -2407,7 +2480,7 @@ compute_partial_antic_aux (basic_block block,
 	}
       if (VEC_length (basic_block, worklist) > 0)
 	{
-	  for (i = 0; VEC_iterate (basic_block, worklist, i, bprime); i++)
+	  FOR_EACH_VEC_ELT (basic_block, worklist, i, bprime)
 	    {
 	      unsigned int i;
 	      bitmap_iterator bi;
@@ -2533,10 +2606,8 @@ compute_antic (void)
 						      block->index));
 	    }
 	}
-#ifdef ENABLE_CHECKING
       /* Theoretically possible, but *highly* unlikely.  */
-      gcc_assert (num_iterations < 500);
-#endif
+      gcc_checking_assert (num_iterations < 500);
     }
 
   statistics_histogram_event (cfun, "compute_antic iterations",
@@ -2565,10 +2636,8 @@ compute_antic (void)
 							    block->index));
 		}
 	    }
-#ifdef ENABLE_CHECKING
 	  /* Theoretically possible, but *highly* unlikely.  */
-	  gcc_assert (num_iterations < 500);
-#endif
+	  gcc_checking_assert (num_iterations < 500);
 	}
       statistics_histogram_event (cfun, "compute_partial_antic iterations",
 				  num_iterations);
@@ -2598,7 +2667,7 @@ can_PRE_operation (tree op)
   return UNARY_CLASS_P (op)
     || BINARY_CLASS_P (op)
     || COMPARISON_CLASS_P (op)
-    || TREE_CODE (op) == INDIRECT_REF
+    || TREE_CODE (op) == MEM_REF 
     || TREE_CODE (op) == COMPONENT_REF
     || TREE_CODE (op) == VIEW_CONVERT_EXPR
     || TREE_CODE (op) == CALL_EXPR
@@ -2674,12 +2743,35 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	return folded;
       }
       break;
+    case MEM_REF:
+      {
+	tree baseop = create_component_ref_by_pieces_1 (block, ref, operand,
+							stmts, domstmt);
+	tree offset = currop->op0;
+	if (!baseop)
+	  return NULL_TREE;
+	if (TREE_CODE (baseop) == ADDR_EXPR
+	    && handled_component_p (TREE_OPERAND (baseop, 0)))
+	  {
+	    HOST_WIDE_INT off;
+	    tree base;
+	    base = get_addr_base_and_unit_offset (TREE_OPERAND (baseop, 0),
+						  &off);
+	    gcc_assert (base);
+	    offset = int_const_binop (PLUS_EXPR, offset,
+				      build_int_cst (TREE_TYPE (offset),
+						     off), 0);
+	    baseop = build_fold_addr_expr (base);
+	  }
+	return fold_build2 (MEM_REF, currop->type, baseop, offset);
+      }
+      break;
     case TARGET_MEM_REF:
       {
+	pre_expr op0expr, op1expr;
+	tree genop0 = NULL_TREE, genop1 = NULL_TREE;
 	vn_reference_op_t nextop = VEC_index (vn_reference_op_s, ref->operands,
-					      *operand);
-	pre_expr op0expr;
-	tree genop0 = NULL_TREE;
+					      ++*operand);
 	tree baseop = create_component_ref_by_pieces_1 (block, ref, operand,
 							stmts, domstmt);
 	if (!baseop)
@@ -2692,16 +2784,16 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	    if (!genop0)
 	      return NULL_TREE;
 	  }
-	if (DECL_P (baseop))
-	  return build6 (TARGET_MEM_REF, currop->type,
-			 baseop, NULL_TREE,
-			 genop0, currop->op1, currop->op2,
-			 unshare_expr (nextop->op1));
-	else
-	  return build6 (TARGET_MEM_REF, currop->type,
-			 NULL_TREE, baseop,
-			 genop0, currop->op1, currop->op2,
-			 unshare_expr (nextop->op1));
+	if (nextop->op0)
+	  {
+	    op1expr = get_or_alloc_expr_for (nextop->op0);
+	    genop1 = find_or_generate_expression (block, op1expr,
+						  stmts, domstmt);
+	    if (!genop1)
+	      return NULL_TREE;
+	  }
+	return build5 (TARGET_MEM_REF, currop->type,
+		       baseop, currop->op2, genop0, currop->op1, genop1);
       }
       break;
     case ADDR_EXPR:
@@ -2723,28 +2815,6 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	  return NULL_TREE;
 	folded = fold_build1 (currop->opcode, currop->type,
 			      genop0);
-	return folded;
-      }
-      break;
-    case ALIGN_INDIRECT_REF:
-    case MISALIGNED_INDIRECT_REF:
-    case INDIRECT_REF:
-      {
-	tree folded;
-	tree genop1 = create_component_ref_by_pieces_1 (block, ref,
-							operand,
-							stmts, domstmt);
-	if (!genop1)
-	  return NULL_TREE;
-	genop1 = fold_convert (build_pointer_type (currop->type),
-			       genop1);
-
-	if (currop->opcode == MISALIGNED_INDIRECT_REF)
-	  folded = fold_build2 (currop->opcode, currop->type,
-				genop1, currop->op1);
-	else
-	  folded = fold_build1 (currop->opcode, currop->type,
-				genop1);
 	return folded;
       }
       break;
@@ -2880,7 +2950,7 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 }
 
 /* For COMPONENT_REF's and ARRAY_REF's, we can't have any intermediates for the
-   COMPONENT_REF or INDIRECT_REF or ARRAY_REF portion, because we'd end up with
+   COMPONENT_REF or MEM_REF or ARRAY_REF portion, because we'd end up with
    trying to rename aggregates into ssa form directly, which is a no no.
 
    Thus, this routine doesn't create temporaries, it just builds a
@@ -2928,9 +2998,10 @@ find_or_generate_expression (basic_block block, pre_expr expr,
     }
 
   /* If it's still NULL, it must be a complex expression, so generate
-     it recursively.  Not so for FRE though.  */
+     it recursively.  Not so if inserting expressions for values generated
+     by SCCVN.  */
   if (genop == NULL
-      && !in_fre)
+      && !domstmt)
     {
       bitmap_set_t exprset;
       unsigned int lookfor = get_expr_value_id (expr);
@@ -3131,7 +3202,7 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
   VN_INFO (name)->value_id = value_id;
   nameexpr = get_or_alloc_expr_for_name (name);
   add_to_value (value_id, nameexpr);
-  if (!in_fre)
+  if (NEW_SETS (block))
     bitmap_value_replace_in_set (NEW_SETS (block), nameexpr);
   bitmap_value_replace_in_set (AVAIL_OUT (block), nameexpr);
 
@@ -3168,7 +3239,7 @@ inhibit_phi_insertion (basic_block bb, pre_expr expr)
      memory reference is a simple induction variable.  In other
      cases the vectorizer won't do anything anyway (either it's
      loop invariant or a complicated expression).  */
-  for (i = 0; VEC_iterate (vn_reference_op_s, ops, i, op); ++i)
+  FOR_EACH_VEC_ELT (vn_reference_op_s, ops, i, op)
     {
       switch (op->opcode)
 	{
@@ -3310,6 +3381,8 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 		      avail[bprime->index] = get_or_alloc_expr_for_name (forcedexpr);
 		    }
 		}
+	      else
+		avail[bprime->index] = get_or_alloc_expr_for_constant (builtexpr);
 	    }
 	}
       else if (eprime->kind == NAME)
@@ -3453,7 +3526,7 @@ do_regular_insertion (basic_block block, basic_block dom)
   pre_expr expr;
   int i;
 
-  for (i = 0; VEC_iterate (pre_expr, exprs, i, expr); i++)
+  FOR_EACH_VEC_ELT (pre_expr, exprs, i, expr)
     {
       if (expr->kind != NAME)
 	{
@@ -3599,7 +3672,7 @@ do_partial_partial_insertion (basic_block block, basic_block dom)
   pre_expr expr;
   int i;
 
-  for (i = 0; VEC_iterate (pre_expr, exprs, i, expr); i++)
+  FOR_EACH_VEC_ELT (pre_expr, exprs, i, expr)
     {
       if (expr->kind != NAME)
 	{
@@ -4176,6 +4249,10 @@ eliminate (void)
 		      || TREE_CODE (rhs) != SSA_NAME
 		      || may_propagate_copy (rhs, sprime)))
 		{
+		  bool can_make_abnormal_goto
+		    = is_gimple_call (stmt)
+		      && stmt_can_make_abnormal_goto (stmt);
+
 		  gcc_assert (sprime != rhs);
 
 		  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -4204,14 +4281,24 @@ eliminate (void)
 		  stmt = gsi_stmt (gsi);
 		  update_stmt (stmt);
 
-		  /* If we removed EH side effects from the statement, clean
+		  /* If we removed EH side-effects from the statement, clean
 		     its EH information.  */
 		  if (maybe_clean_or_replace_eh_stmt (stmt, stmt))
 		    {
 		      bitmap_set_bit (need_eh_cleanup,
 				      gimple_bb (stmt)->index);
 		      if (dump_file && (dump_flags & TDF_DETAILS))
-			fprintf (dump_file, "  Removed EH side effects.\n");
+			fprintf (dump_file, "  Removed EH side-effects.\n");
+		    }
+
+		  /* Likewise for AB side-effects.  */
+		  if (can_make_abnormal_goto
+		      && !stmt_can_make_abnormal_goto (stmt))
+		    {
+		      bitmap_set_bit (need_ab_cleanup,
+				      gimple_bb (stmt)->index);
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+			fprintf (dump_file, "  Removed AB side-effects.\n");
 		    }
 		}
 	    }
@@ -4268,13 +4355,17 @@ eliminate (void)
 	    }
 	  /* Visit indirect calls and turn them into direct calls if
 	     possible.  */
-	  if (gimple_code (stmt) == GIMPLE_CALL
+	  if (is_gimple_call (stmt)
 	      && TREE_CODE (gimple_call_fn (stmt)) == SSA_NAME)
 	    {
 	      tree fn = VN_INFO (gimple_call_fn (stmt))->valnum;
 	      if (TREE_CODE (fn) == ADDR_EXPR
 		  && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL)
 		{
+		  bool can_make_abnormal_goto
+		    = stmt_can_make_abnormal_goto (stmt);
+		  bool was_noreturn = gimple_call_noreturn_p (stmt);
+
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    {
 		      fprintf (dump_file, "Replacing call target with ");
@@ -4285,12 +4376,30 @@ eliminate (void)
 
 		  gimple_call_set_fn (stmt, fn);
 		  update_stmt (stmt);
+
+		  /* When changing a call into a noreturn call, cfg cleanup
+		     is needed to fix up the noreturn call.  */
+		  if (!was_noreturn && gimple_call_noreturn_p (stmt))
+		    todo |= TODO_cleanup_cfg;
+
+		  /* If we removed EH side-effects from the statement, clean
+		     its EH information.  */
 		  if (maybe_clean_or_replace_eh_stmt (stmt, stmt))
 		    {
 		      bitmap_set_bit (need_eh_cleanup,
 				      gimple_bb (stmt)->index);
 		      if (dump_file && (dump_flags & TDF_DETAILS))
-			fprintf (dump_file, "  Removed EH side effects.\n");
+			fprintf (dump_file, "  Removed EH side-effects.\n");
+		    }
+
+		  /* Likewise for AB side-effects.  */
+		  if (can_make_abnormal_goto
+		      && !stmt_can_make_abnormal_goto (stmt))
+		    {
+		      bitmap_set_bit (need_ab_cleanup,
+				      gimple_bb (stmt)->index);
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+			fprintf (dump_file, "  Removed AB side-effects.\n");
 		    }
 
 		  /* Changing an indirect call to a direct call may
@@ -4380,7 +4489,7 @@ eliminate (void)
   /* We cannot remove stmts during BB walk, especially not release SSA
      names there as this confuses the VN machinery.  The stmts ending
      up in to_remove are either stores or simple copies.  */
-  for (i = 0; VEC_iterate (gimple, to_remove, i, stmt); ++i)
+  FOR_EACH_VEC_ELT (gimple, to_remove, i, stmt)
     {
       tree lhs = gimple_assign_lhs (stmt);
       tree rhs = gimple_assign_rhs1 (stmt);
@@ -4405,9 +4514,12 @@ eliminate (void)
       if (TREE_CODE (lhs) != SSA_NAME
 	  || has_zero_uses (lhs))
 	{
+	  basic_block bb = gimple_bb (stmt);
 	  gsi = gsi_for_stmt (stmt);
 	  unlink_stmt_vdef (stmt);
 	  gsi_remove (&gsi, true);
+	  if (gimple_purge_dead_eh_edges (bb))
+	    todo |= TODO_cleanup_cfg;
 	  if (TREE_CODE (lhs) == SSA_NAME)
 	    bitmap_clear_bit (inserted_exprs, SSA_NAME_VERSION (lhs));
 	  release_defs (stmt);
@@ -4642,8 +4754,7 @@ init_pre (bool do_fre)
   postorder = XNEWVEC (int, n_basic_blocks - NUM_FIXED_BLOCKS);
   my_rev_post_order_compute (postorder, false);
 
-  FOR_ALL_BB (bb)
-    bb->aux = XCNEWVEC (struct bb_bitmap_sets, 1);
+  alloc_aux_for_blocks (sizeof (struct bb_bitmap_sets));
 
   calculate_dominance_info (CDI_POST_DOMINATORS);
   calculate_dominance_info (CDI_DOMINATORS);
@@ -4667,6 +4778,7 @@ init_pre (bool do_fre)
     }
 
   need_eh_cleanup = BITMAP_ALLOC (NULL);
+  need_ab_cleanup = BITMAP_ALLOC (NULL);
 }
 
 
@@ -4675,8 +4787,6 @@ init_pre (bool do_fre)
 static void
 fini_pre (bool do_fre)
 {
-  basic_block bb;
-
   free (postorder);
   VEC_free (bitmap_set_t, heap, value_expressions);
   BITMAP_FREE (inserted_exprs);
@@ -4688,11 +4798,7 @@ fini_pre (bool do_fre)
   htab_delete (expression_to_id);
   VEC_free (unsigned, heap, name_to_id);
 
-  FOR_ALL_BB (bb)
-    {
-      free (bb->aux);
-      bb->aux = NULL;
-    }
+  free_aux_for_blocks ();
 
   free_dominance_info (CDI_POST_DOMINATORS);
 
@@ -4703,6 +4809,14 @@ fini_pre (bool do_fre)
     }
 
   BITMAP_FREE (need_eh_cleanup);
+
+  if (!bitmap_empty_p (need_ab_cleanup))
+    {
+      gimple_purge_all_dead_abnormal_call_edges (need_ab_cleanup);
+      cleanup_tree_cfg ();
+    }
+
+  BITMAP_FREE (need_ab_cleanup);
 
   if (!do_fre)
     loop_optimizer_finalize ();
@@ -4723,7 +4837,7 @@ execute_pre (bool do_fre)
   if (!do_fre)
     loop_optimizer_init (LOOPS_NORMAL);
 
-  if (!run_scc_vn (do_fre))
+  if (!run_scc_vn ())
     {
       if (!do_fre)
 	loop_optimizer_finalize ();

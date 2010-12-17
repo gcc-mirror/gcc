@@ -1,6 +1,6 @@
 /* Definitions of target machine for GCC for Motorola 680x0/ColdFire.
    Copyright (C) 1987, 1988, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -274,8 +274,6 @@ along with GCC; see the file COPYING3.  If not see
 #define TUNE_MAC	((m68k_tune_flags & FL_CF_MAC) != 0)
 #define TUNE_EMAC	((m68k_tune_flags & FL_CF_EMAC) != 0)
 
-#define OVERRIDE_OPTIONS   override_options()
-
 /* These are meant to be redefined in the host dependent files */
 #define SUBTARGET_OVERRIDE_OPTIONS
 
@@ -400,25 +398,6 @@ along with GCC; see the file COPYING3.  If not see
 }
 
 
-/* Make sure everything's fine if we *don't* have a given processor.
-   This assumes that putting a register in fixed_regs will keep the
-   compiler's mitts completely off it.  We don't bother to zero it out
-   of register classes.  */
-#define CONDITIONAL_REGISTER_USAGE				\
-{								\
-  int i;							\
-  HARD_REG_SET x;						\
-  if (!TARGET_HARD_FLOAT)					\
-    {								\
-      COPY_HARD_REG_SET (x, reg_class_contents[(int)FP_REGS]);	\
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)		\
-        if (TEST_HARD_REG_BIT (x, i))				\
-	  fixed_regs[i] = call_used_regs[i] = 1;		\
-    }								\
-  if (flag_pic)							\
-    fixed_regs[PIC_REG] = call_used_regs[PIC_REG] = 1;		\
-}
-
 /* On the m68k, ordinary registers hold 32 bits worth;
    for the 68881 registers, a single register is always enough for
    anything that can be stored in them at all.  */
@@ -534,21 +513,6 @@ extern enum reg_class regno_reg_class[];
 
 #define FIRST_PARM_OFFSET(FNDECL) 8
 
-/* On the 68000, the RTS insn cannot pop anything.
-   On the 68010, the RTD insn may be used to pop them if the number
-     of args is fixed, but if the number is variable then the caller
-     must pop them all.  RTD can't be used for library calls now
-     because the library is compiled with the Unix compiler.
-   Use of RTD is a selectable option, since it is incompatible with
-   standard Unix calling sequences.  If the option is not selected,
-   the caller must always pop the args.  */
-#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE)   \
-  ((TARGET_RTD && (!(FUNDECL) || TREE_CODE (FUNDECL) != IDENTIFIER_NODE)	\
-    && (TYPE_ARG_TYPES (FUNTYPE) == 0				\
-	|| (TREE_VALUE (tree_last (TYPE_ARG_TYPES (FUNTYPE)))	\
-	    == void_type_node)))				\
-   ? (SIZE) : 0)
-
 /* On the m68k the return value defaults to D0.  */
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
   gen_rtx_REG (TYPE_MODE (VALTYPE), D0_REG)
@@ -574,14 +538,6 @@ extern enum reg_class regno_reg_class[];
 /* On the m68k, the offset starts at 0.  */
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
  ((CUM) = 0)
-
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
- ((CUM) += ((MODE) != BLKmode			\
-	    ? (GET_MODE_SIZE (MODE) + 3) & ~3	\
-	    : (int_size_in_bytes (TYPE) + 3) & ~3))
-
-/* On the m68k all args are always pushed.  */
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) 0
 
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
   asm_fprintf (FILE, "\tlea %LLP%d,%Ra0\n\tjsr mcount\n", (LABELNO))

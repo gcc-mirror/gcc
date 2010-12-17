@@ -5,10 +5,10 @@
 // We want to test that there is a DW_TAG_namespace DIE DW_AT_name is set
 // to "not_emitted". That namespace die has a child DW_TAG_typedef DIE
 // which DW_AT_name is the null terminated string "T".
-// { dg-final { scan-assembler-times "DIE +\\(.*?\\) DW_TAG_namespace" 1 } }
-// { dg-final { scan-assembler-times "\"not_emitted.0\".*?DW_AT_name" 1 } }
-// { dg-final { scan-assembler-times "DIE +\\(.*?\\) DW_TAG_typedef" 1 } }
-// { dg-final { scan-assembler-times "\.ascii \"T.0\"\[\t \]+.*?DW_AT_name" 1 } }
+// { dg-final { scan-assembler-times "DIE +\\(\[^\n\]*\\) DW_TAG_namespace" 1 } }
+// { dg-final { scan-assembler-times "\"not_emitted.0\"\[^\n\]*DW_AT_name" 1 } }
+// { dg-final { scan-assembler-times "DIE +\\(\[^\n\]*\\) DW_TAG_typedef" 1 } }
+// { dg-final { scan-assembler-times "\.ascii \"T.0\"\[\t \]+\[^\n\]*DW_AT_name" 1 } }
 
 struct strukt
 {

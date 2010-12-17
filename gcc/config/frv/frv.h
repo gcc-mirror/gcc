@@ -1,5 +1,6 @@
 /* Target macros for the FRV port of GCC.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009,
+   2010
    Free Software Foundation, Inc.
    Contributed by Red Hat Inc.
 
@@ -33,33 +34,6 @@
 
 
 /* Driver configuration.  */
-
-/* A C expression which determines whether the option `-CHAR' takes arguments.
-   The value should be the number of arguments that option takes-zero, for many
-   options.
-
-   By default, this macro is defined to handle the standard options properly.
-   You need not define it unless you wish to add additional options which take
-   arguments.
-
-   Defined in svr4.h.  */
-#undef  SWITCH_TAKES_ARG
-#define SWITCH_TAKES_ARG(CHAR)                                          \
-  (DEFAULT_SWITCH_TAKES_ARG (CHAR) || (CHAR) == 'G')
-
-/* A C expression which determines whether the option `-NAME' takes arguments.
-   The value should be the number of arguments that option takes-zero, for many
-   options.  This macro rather than `SWITCH_TAKES_ARG' is used for
-   multi-character option names.
-
-   By default, this macro is defined as `DEFAULT_WORD_SWITCH_TAKES_ARG', which
-   handles the standard options properly.  You need not define
-   `WORD_SWITCH_TAKES_ARG' unless you wish to add additional options which take
-   arguments.  Any redefinition should call `DEFAULT_WORD_SWITCH_TAKES_ARG' and
-   then check for additional options.
-
-   Defined in svr4.h.  */
-#undef WORD_SWITCH_TAKES_ARG
 
 /* -fpic and -fPIC used to imply the -mlibrary-pic multilib, but with
     FDPIC which multilib to use depends on whether FDPIC is in use or
@@ -326,44 +300,6 @@
           fprintf (stderr, " (68k, MIT syntax)");
         #endif  */
 #define TARGET_VERSION fprintf (stderr, _(" (frv)"))
-
-/* Sometimes certain combinations of command options do not make sense on a
-   particular target machine.  You can define a macro `OVERRIDE_OPTIONS' to
-   take account of this.  This macro, if defined, is executed once just after
-   all the command options have been parsed.
-
-   Don't use this macro to turn on various extra optimizations for `-O'.  That
-   is what `OPTIMIZATION_OPTIONS' is for.  */
-
-#define OVERRIDE_OPTIONS frv_override_options ()
-
-/* Some machines may desire to change what optimizations are performed for
-   various optimization levels.  This macro, if defined, is executed once just
-   after the optimization level is determined and before the remainder of the
-   command options have been parsed.  Values set in this macro are used as the
-   default values for the other command line options.
-
-   LEVEL is the optimization level specified; 2 if `-O2' is specified, 1 if
-   `-O' is specified, and 0 if neither is specified.
-
-   SIZE is nonzero if `-Os' is specified, 0 otherwise.
-
-   You should not use this macro to change options that are not
-   machine-specific.  These should uniformly selected by the same optimization
-   level on all supported machines.  Use this macro to enable machine-specific
-   optimizations.
-
-   *Do not examine `write_symbols' in this macro!* The debugging options are
-   *not supposed to alter the generated code.  */
-#define OPTIMIZATION_OPTIONS(LEVEL,SIZE) frv_optimization_options (LEVEL, SIZE)
-
-
-/* Define this macro if debugging can be performed even without a frame
-   pointer.  If this macro is defined, GCC will turn on the
-   `-fomit-frame-pointer' option whenever `-O' is specified.  */
-/* Frv needs a specific frame layout that includes the frame pointer.  */
-
-#define CAN_DEBUG_WITHOUT_FP
 
 #define LABEL_ALIGN_AFTER_BARRIER(LABEL) (TARGET_ALIGN_LABELS ? 3 : 0)
 
@@ -848,28 +784,6 @@
 	1, 1				/* 171-172, iacc0 */		\
 }
 
-/* Zero or more C statements that may conditionally modify two variables
-   `fixed_regs' and `call_used_regs' (both of type `char []') after they have
-   been initialized from the two preceding macros.
-
-   This is necessary in case the fixed or call-clobbered registers depend on
-   target flags.
-
-   You need not define this macro if it has no work to do.
-
-   If the usage of an entire class of registers depends on the target flags,
-   you may indicate this to GCC by using this macro to modify `fixed_regs' and
-   `call_used_regs' to 1 for each of the registers in the classes which should
-   not be used by GCC.  Also define the macro `REG_CLASS_FROM_LETTER' to return
-   `NO_REGS' if it is called with a letter for a class that shouldn't be used.
-
-   (However, if this class is not included in `GENERAL_REGS' and all of the
-   insn patterns whose constraints permit this class are controlled by target
-   switches, then GCC will automatically avoid using these registers when the
-   target switches are opposed to them.)  */
-
-#define CONDITIONAL_REGISTER_USAGE frv_conditional_register_usage ()
-
 
 /* Order of allocation of registers.  */
 
@@ -1231,47 +1145,11 @@ extern enum reg_class reg_class_from_letter[];
    ? GPR_P (NUM)                                                        \
    : (reg_renumber [NUM] >= 0 && GPR_P (reg_renumber [NUM])))
 
-/* A C expression that places additional restrictions on the register class to
-   use when it is necessary to copy value X into a register in class CLASS.
-   The value is a register class; perhaps CLASS, or perhaps another, smaller
-   class.  On many machines, the following definition is safe:
-
-        #define PREFERRED_RELOAD_CLASS(X,CLASS) CLASS
-
-   Sometimes returning a more restrictive class makes better code.  For
-   example, on the 68000, when X is an integer constant that is in range for a
-   `moveq' instruction, the value of this macro is always `DATA_REGS' as long
-   as CLASS includes the data registers.  Requiring a data register guarantees
-   that a `moveq' will be used.
-
-   If X is a `const_double', by returning `NO_REGS' you can force X into a
-   memory constant.  This is useful on certain machines where immediate
-   floating values cannot be loaded into certain kinds of registers.
-
-   This declaration must be present.  */
-#define PREFERRED_RELOAD_CLASS(X, CLASS) CLASS
-
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, X) \
   frv_secondary_reload_class (CLASS, MODE, X)
 
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, X) \
   frv_secondary_reload_class (CLASS, MODE, X)
-
-/* A C expression whose value is nonzero if pseudos that have been assigned to
-   registers of class CLASS would likely be spilled because registers of CLASS
-   are needed for spill registers.
-
-   The default value of this macro returns 1 if CLASS has exactly one register
-   and zero otherwise.  On most machines, this default should be used.  Only
-   define this macro to some other expression if pseudo allocated by
-   `local-alloc.c' end up in memory because their hard registers were needed
-   for spill registers.  If this macro returns nonzero for those classes, those
-   pseudos will only be allocated by `global.c', which knows how to reallocate
-   the pseudo to another register.  If there would not be another register
-   available for reallocation, you should not change the definition of this
-   macro since the only effect of such a definition would be to slow down
-   register allocation.  */
-#define CLASS_LIKELY_SPILLED_P(CLASS) frv_class_likely_spilled_p (CLASS)
 
 /* A C expression for the maximum number of consecutive registers of
    class CLASS needed to hold a value of mode MODE.
@@ -1614,62 +1492,10 @@ typedef struct frv_stack {
    proper.  */
 #define ACCUMULATE_OUTGOING_ARGS 1
 
-/* A C expression that should indicate the number of bytes of its own arguments
-   that a function pops on returning, or 0 if the function pops no arguments
-   and the caller must therefore pop them all after the function returns.
-
-   FUNDECL is a C variable whose value is a tree node that describes the
-   function in question.  Normally it is a node of type `FUNCTION_DECL' that
-   describes the declaration of the function.  From this it is possible to
-   obtain the DECL_ATTRIBUTES of the function.
-
-   FUNTYPE is a C variable whose value is a tree node that describes the
-   function in question.  Normally it is a node of type `FUNCTION_TYPE' that
-   describes the data type of the function.  From this it is possible to obtain
-   the data types of the value and arguments (if known).
-
-   When a call to a library function is being considered, FUNTYPE will contain
-   an identifier node for the library function.  Thus, if you need to
-   distinguish among various library functions, you can do so by their names.
-   Note that "library function" in this context means a function used to
-   perform arithmetic, whose name is known specially in the compiler and was
-   not mentioned in the C code being compiled.
-
-   STACK-SIZE is the number of bytes of arguments passed on the stack.  If a
-   variable number of bytes is passed, it is zero, and argument popping will
-   always be the responsibility of the calling function.
-
-   On the VAX, all functions always pop their arguments, so the definition of
-   this macro is STACK-SIZE.  On the 68000, using the standard calling
-   convention, no functions pop their arguments, so the value of the macro is
-   always 0 in this case.  But an alternative calling convention is available
-   in which functions that take a fixed number of arguments pop them but other
-   functions (such as `printf') pop nothing (the caller pops all).  When this
-   convention is in use, FUNTYPE is examined to determine whether a function
-   takes a fixed number of arguments.  */
-#define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, STACK_SIZE) 0
-
 
 /* The number of register assigned to holding function arguments.  */
 
 #define FRV_NUM_ARG_REGS        6
-
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)                    \
-  frv_function_arg (&CUM, MODE, TYPE, NAMED, FALSE)
-
-/* Define this macro if the target machine has "register windows", so that the
-   register in which a function sees an arguments is not necessarily the same
-   as the one in which the caller passed the argument.
-
-   For such machines, `FUNCTION_ARG' computes the register in which the caller
-   passes the value, and `FUNCTION_INCOMING_ARG' should be defined in a similar
-   fashion to tell the function being called where the arguments will arrive.
-
-   If `FUNCTION_INCOMING_ARG' is not defined, `FUNCTION_ARG' serves both
-   purposes.  */
-
-#define FUNCTION_INCOMING_ARG(CUM, MODE, TYPE, NAMED)			\
-  frv_function_arg (&CUM, MODE, TYPE, NAMED, TRUE)
 
 /* A C type for declaring a variable that is used as the first argument of
    `FUNCTION_ARG' and other related values.  For some target machines, the type
@@ -1712,24 +1538,6 @@ typedef struct frv_stack {
 
 #define INIT_CUMULATIVE_INCOMING_ARGS(CUM, FNTYPE, LIBNAME) \
   frv_init_cumulative_args (&CUM, FNTYPE, LIBNAME, NULL, TRUE)
-
-/* A C statement (sans semicolon) to update the summarizer variable CUM to
-   advance past an argument in the argument list.  The values MODE, TYPE and
-   NAMED describe that argument.  Once this is done, the variable CUM is
-   suitable for analyzing the *following* argument with `FUNCTION_ARG', etc.
-
-   This macro need not do anything if the argument in question was passed on
-   the stack.  The compiler knows how to track the amount of stack space used
-   for arguments without any special help.  */
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
-  frv_function_arg_advance (&CUM, MODE, TYPE, NAMED)
-
-/* If defined, a C expression that gives the alignment boundary, in bits, of an
-   argument with the specified mode and type.  If it is not defined,
-   `PARM_BOUNDARY' is used for all arguments.  */
-
-#define FUNCTION_ARG_BOUNDARY(MODE, TYPE) \
-  frv_function_arg_boundary (MODE, TYPE)
 
 /* A C expression that is nonzero if REGNO is the number of a hard register in
    which function arguments are sometimes passed.  This does *not* include
@@ -1996,31 +1804,6 @@ __asm__("\n"								\
 
 /* Describing Relative Costs of Operations.  */
 
-/* A C expression for the cost of moving data from a register in class FROM to
-   one in class TO.  The classes are expressed using the enumeration values
-   such as `GENERAL_REGS'.  A value of 4 is the default; other values are
-   interpreted relative to that.
-
-   It is not required that the cost always equal 2 when FROM is the same as TO;
-   on some machines it is expensive to move between registers if they are not
-   general registers.
-
-   If reload sees an insn consisting of a single `set' between two hard
-   registers, and if `REGISTER_MOVE_COST' applied to their classes returns a
-   value of 2, reload does not check to ensure that the constraints of the insn
-   are met.  Setting a cost of other than 2 will allow reload to verify that
-   the constraints are met.  You should do this if the `movM' pattern's
-   constraints do not allow such copying.  */
-#define REGISTER_MOVE_COST(MODE, FROM, TO) frv_register_move_cost (FROM, TO)
-
-/* A C expression for the cost of moving data of mode M between a register and
-   memory.  A value of 2 is the default; this cost is relative to those in
-   `REGISTER_MOVE_COST'.
-
-   If moving between registers and memory is more expensive than between two
-   registers, you should define this macro to express the relative cost.  */
-#define MEMORY_MOVE_COST(M,C,I) 4
-
 /* A C expression for the cost of a branch instruction.  A value of 1 is the
    default; other values are interpreted relative to that.  */
 #define BRANCH_COST(speed_p, predictable_p) frv_branch_cost_int
@@ -2175,7 +1958,7 @@ extern int size_directive_output;
 #undef ASM_OUTPUT_ALIGNED_DECL_LOCAL
 #define ASM_OUTPUT_ALIGNED_DECL_LOCAL(STREAM, DECL, NAME, SIZE, ALIGN)	\
 do {                                                                   	\
-  if ((SIZE) > 0 && (SIZE) <= g_switch_value)				\
+  if ((SIZE) > 0 && (SIZE) <= (unsigned HOST_WIDE_INT) g_switch_value)	\
     switch_to_section (get_named_section (NULL, ".sbss", 0));           \
   else                                                                 	\
     switch_to_section (bss_section);                                  	\
@@ -2501,13 +2284,6 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
    `QImode'.  */
 #define FUNCTION_MODE QImode
 
-/* Define this macro to handle System V style pragmas: #pragma pack and
-   #pragma weak.  Note, #pragma weak will only be supported if SUPPORT_WEAK is
-   defined.
-
-   Defined in svr4.h.  */
-#define HANDLE_SYSV_PRAGMA 1
-
 /* A C expression for the maximum number of instructions to execute via
    conditional execution instructions instead of a branch.  A value of
    BRANCH_COST+1 is the default if the machine does not use
@@ -2564,11 +2340,6 @@ frv_ifcvt_modify_multiple_tests (CE_INFO, BB, &TRUE_EXPR, &FALSE_EXPR)
 
 #define MINIMAL_SECOND_JUMP_OPTIMIZATION
 
-
-/* If the following macro is defined and nonzero and deterministic
-   finite state automata are used for pipeline hazard recognition, the
-   code making resource-constrained software pipelining is on.  */
-#define RCSP_SOFTWARE_PIPELINING 1
 
 /* If the following macro is defined and nonzero and deterministic
    finite state automata are used for pipeline hazard recognition, we

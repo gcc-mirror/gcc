@@ -69,28 +69,27 @@ objc_init_ts (void)
   tree_contains_struct[CLASS_METHOD_DECL][TS_DECL_NON_COMMON] = 1;
   tree_contains_struct[INSTANCE_METHOD_DECL][TS_DECL_NON_COMMON] = 1;
   tree_contains_struct[KEYWORD_DECL][TS_DECL_NON_COMMON] = 1;
+  tree_contains_struct[PROPERTY_DECL][TS_DECL_NON_COMMON] = 1;
   
   tree_contains_struct[CLASS_METHOD_DECL][TS_DECL_WITH_VIS] = 1;
   tree_contains_struct[INSTANCE_METHOD_DECL][TS_DECL_WITH_VIS] = 1;
   tree_contains_struct[KEYWORD_DECL][TS_DECL_WITH_VIS] = 1;
+  tree_contains_struct[PROPERTY_DECL][TS_DECL_WITH_VIS] = 1;
 
   tree_contains_struct[CLASS_METHOD_DECL][TS_DECL_WRTL] = 1;
   tree_contains_struct[INSTANCE_METHOD_DECL][TS_DECL_WRTL] = 1;
   tree_contains_struct[KEYWORD_DECL][TS_DECL_WRTL] = 1;
+  tree_contains_struct[PROPERTY_DECL][TS_DECL_WRTL] = 1;
   
   tree_contains_struct[CLASS_METHOD_DECL][TS_DECL_MINIMAL] = 1;
   tree_contains_struct[INSTANCE_METHOD_DECL][TS_DECL_MINIMAL] = 1;
   tree_contains_struct[KEYWORD_DECL][TS_DECL_MINIMAL] = 1;
+  tree_contains_struct[PROPERTY_DECL][TS_DECL_MINIMAL] = 1;
   
   tree_contains_struct[CLASS_METHOD_DECL][TS_DECL_COMMON] = 1;
   tree_contains_struct[INSTANCE_METHOD_DECL][TS_DECL_COMMON] = 1;
   tree_contains_struct[KEYWORD_DECL][TS_DECL_COMMON] = 1;
-}
-
-void
-finish_file (void)
-{
-  objc_finish_file ();
+  tree_contains_struct[PROPERTY_DECL][TS_DECL_COMMON] = 1;
 }
 
 #include "gtype-objc.h"

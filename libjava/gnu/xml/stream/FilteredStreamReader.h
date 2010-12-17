@@ -6,7 +6,7 @@
 
 #pragma interface
 
-#include <javax/xml/stream/util/ReaderDelegate.h>
+#include <javax/xml/stream/util/StreamReaderDelegate.h>
 extern "Java"
 {
   namespace gnu
@@ -32,7 +32,7 @@ extern "Java"
   }
 }
 
-class gnu::xml::stream::FilteredStreamReader : public ::javax::xml::stream::util::ReaderDelegate
+class gnu::xml::stream::FilteredStreamReader : public ::javax::xml::stream::util::StreamReaderDelegate
 {
 
 public: // actually package-private
@@ -42,7 +42,7 @@ public:
   virtual jint next();
   virtual jint nextTag();
 public: // actually package-private
-  ::javax::xml::stream::XMLStreamReader * __attribute__((aligned(__alignof__( ::javax::xml::stream::util::ReaderDelegate)))) reader;
+  ::javax::xml::stream::XMLStreamReader * __attribute__((aligned(__alignof__( ::javax::xml::stream::util::StreamReaderDelegate)))) reader;
   ::javax::xml::stream::StreamFilter * filter;
 public:
   static ::java::lang::Class class$;

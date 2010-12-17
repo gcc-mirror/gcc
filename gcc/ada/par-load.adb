@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -266,11 +266,12 @@ begin
            Required   => False,
            Subunit    => False,
            Error_Node => Curunit,
-           Corr_Body  => Cur_Unum);
+           Corr_Body  => Cur_Unum,
+           PMES       => (Cur_Unum = Main_Unit));
 
-      --  If we successfully load the unit, then set the spec/body
-      --  pointers. Once again note that if the loaded unit has a fatal error,
-      --  Load will have set our Fatal_Error flag to propagate this condition.
+      --  If we successfully load the unit, then set the spec/body pointers.
+      --  Once again note that if the loaded unit has a fatal error, Load will
+      --  have set our Fatal_Error flag to propagate this condition.
 
       if Unum /= No_Unit then
          Set_Library_Unit (Curunit, Cunit (Unum));
@@ -347,7 +348,7 @@ begin
         Load_Unit
           (Load_Name  => Body_Name,
            Required   => True,
-           Subunit    => True,
+           Subunit    => False,
            Error_Node => Name (Unit (Curunit)));
 
       if Unum /= No_Unit then

@@ -1,3 +1,5 @@
+/* { dg-options "-Wno-psabi" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+
 /* Disable this test for 16-bit targets.  */
 
 #include <limits.h>

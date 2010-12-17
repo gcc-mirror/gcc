@@ -2,7 +2,7 @@
    32-bit-aligned addresses.  */
 /* { dg-do compile { target "sh*-*-*" } } */
 /* { dg-options "-O" } */
-/* { dg-final { scan-assembler-times "\tmovua\\.l\t(.*)+" 2 } } */
+/* { dg-final { scan-assembler-times "\tmovua\\.l\t" 2 } } */
 
 #ifdef __SH4A__
 #include <string.h>

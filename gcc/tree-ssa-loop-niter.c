@@ -39,7 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-data-ref.h"
 #include "params.h"
 #include "flags.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "tree-inline.h"
 #include "gmp.h"
 
@@ -94,10 +94,10 @@ split_to_var_and_offset (tree expr, tree *var, mpz_t offset)
       *var = op0;
       /* Always sign extend the offset.  */
       off = tree_to_double_int (op1);
-      if (negate)
-	off = double_int_neg (off);
       off = double_int_sext (off, TYPE_PRECISION (type));
       mpz_set_double_int (offset, off, false);
+      if (negate)
+	mpz_neg (offset, offset);
       break;
 
     case INTEGER_CST:
@@ -535,22 +535,46 @@ inverse (tree x, tree mask)
 }
 
 /* Derives the upper bound BND on the number of executions of loop with exit
-   condition S * i <> C, assuming that this exit is taken.  If
-   NO_OVERFLOW is true, then the control variable of the loop does not
-   overflow.  If NO_OVERFLOW is true or BNDS.below >= 0, then BNDS.up
-   contains the upper bound on the value of C.  */
+   condition S * i <> C.  If NO_OVERFLOW is true, then the control variable of
+   the loop does not overflow.  EXIT_MUST_BE_TAKEN is true if we are guaranteed
+   that the loop ends through this exit, i.e., the induction variable ever
+   reaches the value of C.  
+   
+   The value C is equal to final - base, where final and base are the final and
+   initial value of the actual induction variable in the analysed loop.  BNDS
+   bounds the value of this difference when computed in signed type with
+   unbounded range, while the computation of C is performed in an unsigned
+   type with the range matching the range of the type of the induction variable.
+   In particular, BNDS.up contains an upper bound on C in the following cases:
+   -- if the iv must reach its final value without overflow, i.e., if
+      NO_OVERFLOW && EXIT_MUST_BE_TAKEN is true, or
+   -- if final >= base, which we know to hold when BNDS.below >= 0.  */
 
 static void
 number_of_iterations_ne_max (mpz_t bnd, bool no_overflow, tree c, tree s,
-			     bounds *bnds)
+			     bounds *bnds, bool exit_must_be_taken)
 {
   double_int max;
   mpz_t d;
+  bool bnds_u_valid = ((no_overflow && exit_must_be_taken)
+		       || mpz_sgn (bnds->below) >= 0);
 
-  /* If the control variable does not overflow, the number of iterations is
-     at most c / s.  Otherwise it is at most the period of the control
-     variable.  */
-  if (!no_overflow && !multiple_of_p (TREE_TYPE (c), c, s))
+  if (multiple_of_p (TREE_TYPE (c), c, s))
+    {
+      /* If C is an exact multiple of S, then its value will be reached before
+	 the induction variable overflows (unless the loop is exited in some
+	 other way before).  Note that the actual induction variable in the
+	 loop (which ranges from base to final instead of from 0 to C) may
+	 overflow, in which case BNDS.up will not be giving a correct upper
+	 bound on C; thus, BNDS_U_VALID had to be computed in advance.  */
+      no_overflow = true;
+      exit_must_be_taken = true;
+    }
+
+  /* If the induction variable can overflow, the number of iterations is at
+     most the period of the control variable (or infinite, but in that case
+     the whole # of iterations analysis will fail).  */
+  if (!no_overflow)
     {
       max = double_int_mask (TYPE_PRECISION (TREE_TYPE (c))
 			     - tree_low_cst (num_ending_zeros (s), 1));
@@ -558,14 +582,22 @@ number_of_iterations_ne_max (mpz_t bnd, bool no_overflow, tree c, tree s,
       return;
     }
 
-  /* Determine the upper bound on C.  */
-  if (no_overflow || mpz_sgn (bnds->below) >= 0)
-    mpz_set (bnd, bnds->up);
-  else if (TREE_CODE (c) == INTEGER_CST)
-    mpz_set_double_int (bnd, tree_to_double_int (c), true);
-  else
-    mpz_set_double_int (bnd, double_int_mask (TYPE_PRECISION (TREE_TYPE (c))),
-			true);
+  /* Now we know that the induction variable does not overflow, so the loop
+     iterates at most (range of type / S) times.  */
+  mpz_set_double_int (bnd, double_int_mask (TYPE_PRECISION (TREE_TYPE (c))),
+		      true);
+
+  /* If the induction variable is guaranteed to reach the value of C before
+     overflow, ... */
+  if (exit_must_be_taken)
+    {
+      /* ... then we can strenghten this to C / S, and possibly we can use
+	 the upper bound on C given by BNDS.  */
+      if (TREE_CODE (c) == INTEGER_CST)
+	mpz_set_double_int (bnd, tree_to_double_int (c), true);
+      else if (bnds_u_valid)
+	mpz_set (bnd, bnds->up);
+    }
 
   mpz_init (d);
   mpz_set_double_int (d, tree_to_double_int (s), true);
@@ -617,7 +649,8 @@ number_of_iterations_ne (tree type, affine_iv *iv, tree final,
     }
 
   mpz_init (max);
-  number_of_iterations_ne_max (max, iv->no_overflow, c, s, bnds);
+  number_of_iterations_ne_max (max, iv->no_overflow, c, s, bnds,
+			       exit_must_be_taken);
   niter->max = mpz_get_double_int (niter_type, max, false);
   mpz_clear (max);
 
@@ -1906,7 +1939,7 @@ find_loop_niter (struct loop *loop, edge *exit)
   struct tree_niter_desc desc;
 
   *exit = NULL;
-  for (i = 0; VEC_iterate (edge, exits, i, ex); i++)
+  FOR_EACH_VEC_ELT (edge, exits, i, ex)
     {
       if (!just_once_each_iteration_p (loop, ex->src))
 	continue;
@@ -1969,12 +2002,12 @@ finite_loop_p (struct loop *loop)
   edge ex;
   struct tree_niter_desc desc;
   bool finite = false;
+  int flags;
 
   if (flag_unsafe_loop_optimizations)
     return true;
-  if ((TREE_READONLY (current_function_decl)
-       || DECL_PURE_P (current_function_decl))
-      && !DECL_LOOPING_CONST_OR_PURE_P (current_function_decl))
+  flags = flags_from_decl_or_type (current_function_decl);
+  if ((flags & (ECF_CONST|ECF_PURE)) && !(flags & ECF_LOOPING_CONST_OR_PURE))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Found loop %i to be finite: it is within pure or const function.\n",
@@ -1983,7 +2016,7 @@ finite_loop_p (struct loop *loop)
     }
 
   exits = get_loop_exit_edges (loop);
-  for (i = 0; VEC_iterate (edge, exits, i, ex); i++)
+  FOR_EACH_VEC_ELT (edge, exits, i, ex)
     {
       if (!just_once_each_iteration_p (loop, ex->src))
 	continue;
@@ -2263,7 +2296,7 @@ find_loop_niter_by_eval (struct loop *loop, edge *exit)
       && VEC_length (edge, exits) > 1)
     return chrec_dont_know;
 
-  for (i = 0; VEC_iterate (edge, exits, i, ex); i++)
+  FOR_EACH_VEC_ELT (edge, exits, i, ex)
     {
       if (!just_once_each_iteration_p (loop, ex->src))
 	continue;
@@ -2397,7 +2430,7 @@ derive_constant_upper_bound_ops (tree type, tree op0,
 	  /* OP0 + CST.  We need to check that
 	     BND <= MAX (type) - CST.  */
 
-	  mmax = double_int_add (max, double_int_neg (cst));
+	  mmax = double_int_sub (max, cst);
 	  if (double_int_ucmp (bnd, mmax) > 0)
 	    return max;
 
@@ -2429,7 +2462,7 @@ derive_constant_upper_bound_ops (tree type, tree op0,
 		return max;
 	    }
 
-	  bnd = double_int_add (bnd, double_int_neg (cst));
+	  bnd = double_int_sub (bnd, cst);
 	}
 
       return bnd;
@@ -2625,7 +2658,7 @@ array_at_struct_end_p (tree ref)
 
   /* Unless the reference is through a pointer, the size of the array matches
      its declaration.  */
-  if (!base || !INDIRECT_REF_P (base))
+  if (!base || (!INDIRECT_REF_P (base) && TREE_CODE (base) != MEM_REF))
     return false;
 
   for (;handled_component_p (ref); ref = parent)
@@ -2640,7 +2673,7 @@ array_at_struct_end_p (tree ref)
 
 	  /* Unless the field is at the end of the struct, we are done.  */
 	  field = TREE_OPERAND (ref, 1);
-	  if (TREE_CHAIN (field))
+	  if (DECL_CHAIN (field))
 	    return false;
 	}
 
@@ -2651,7 +2684,6 @@ array_at_struct_end_p (tree ref)
 	 Therefore, continue checking.  */
     }
 
-  gcc_assert (INDIRECT_REF_P (ref));
   return true;
 }
 
@@ -2900,10 +2932,11 @@ gcov_type_to_double_int (gcov_type val)
   return ret;
 }
 
-/* Records estimates on numbers of iterations of LOOP.  */
+/* Records estimates on numbers of iterations of LOOP.  If USE_UNDEFINED_P
+   is true also use estimates derived from undefined behavior.  */
 
 void
-estimate_numbers_of_iterations_loop (struct loop *loop)
+estimate_numbers_of_iterations_loop (struct loop *loop, bool use_undefined_p)
 {
   VEC (edge, heap) *exits;
   tree niter, type;
@@ -2920,7 +2953,7 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
   loop->any_estimate = false;
 
   exits = get_loop_exit_edges (loop);
-  for (i = 0; VEC_iterate (edge, exits, i, ex); i++)
+  FOR_EACH_VEC_ELT (edge, exits, i, ex)
     {
       if (!number_of_iterations_exit (loop, ex, &niter_desc, false))
 	continue;
@@ -2937,7 +2970,8 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
     }
   VEC_free (edge, heap, exits);
 
-  infer_loop_bounds_from_undefined (loop);
+  if (use_undefined_p)
+    infer_loop_bounds_from_undefined (loop);
 
   /* If we have a measured profile, use it to estimate the number of
      iterations.  */
@@ -2960,7 +2994,7 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
 /* Records estimates on numbers of iterations of loops.  */
 
 void
-estimate_numbers_of_iterations (void)
+estimate_numbers_of_iterations (bool use_undefined_p)
 {
   loop_iterator li;
   struct loop *loop;
@@ -2971,7 +3005,7 @@ estimate_numbers_of_iterations (void)
 
   FOR_EACH_LOOP (li, loop, 0)
     {
-      estimate_numbers_of_iterations_loop (loop);
+      estimate_numbers_of_iterations_loop (loop, use_undefined_p);
     }
 
   fold_undefer_and_ignore_overflow_warnings ();
@@ -3167,7 +3201,7 @@ scev_probably_wraps_p (tree base, tree step,
 
   valid_niter = fold_build2 (FLOOR_DIV_EXPR, unsigned_type, delta, step_abs);
 
-  estimate_numbers_of_iterations_loop (loop);
+  estimate_numbers_of_iterations_loop (loop, true);
   for (bound = loop->bounds; bound; bound = bound->next)
     {
       if (n_of_executions_at_most (at_stmt, bound, valid_niter))

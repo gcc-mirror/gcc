@@ -1,4 +1,7 @@
 // { dg-do assemble  }
+// { dg-prune-output "note" }
+// { dg-options "-std=c++98 -pedantic-errors" }
+
 // GROUPS uncaught
 // Cfront bug A.4 (See Language System Release Notes for the
 // SPARCompiler C++ version 3.0)

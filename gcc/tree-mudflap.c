@@ -39,11 +39,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "hashtab.h"
 #include "diagnostic.h"
-#include <demangle.h>
+#include "demangle.h"
 #include "langhooks.h"
 #include "ggc.h"
 #include "cgraph.h"
-#include "toplev.h"
 #include "gimple.h"
 
 /* Internal function decls */
@@ -322,7 +321,7 @@ mf_make_mf_cache_struct_type (tree field_type)
   tree struct_type = make_node (RECORD_TYPE);
   DECL_CONTEXT (fieldlo) = struct_type;
   DECL_CONTEXT (fieldhi) = struct_type;
-  TREE_CHAIN (fieldlo) = fieldhi;
+  DECL_CHAIN (fieldlo) = fieldhi;
   TYPE_FIELDS (struct_type) = fieldlo;
   TYPE_NAME (struct_type) = get_identifier ("__mf_cache");
   layout_type (struct_type);
@@ -622,7 +621,7 @@ mf_build_check_statement_for (tree base, tree limit,
 
   u = build3 (COMPONENT_REF, mf_uintptr_type,
               build1 (INDIRECT_REF, mf_cache_struct_type, mf_elem),
-              TREE_CHAIN (TYPE_FIELDS (mf_cache_struct_type)), NULL_TREE);
+              DECL_CHAIN (TYPE_FIELDS (mf_cache_struct_type)), NULL_TREE);
 
   v = mf_limit;
 
@@ -790,7 +789,8 @@ mf_xform_derefs_1 (gimple_stmt_iterator *iter, tree *tp,
               }
             else if (TREE_CODE (var) == COMPONENT_REF)
               var = TREE_OPERAND (var, 0);
-            else if (INDIRECT_REF_P (var))
+            else if (INDIRECT_REF_P (var)
+		     || TREE_CODE (var) == MEM_REF)
               {
 		base = TREE_OPERAND (var, 0);
                 break;
@@ -860,6 +860,18 @@ mf_xform_derefs_1 (gimple_stmt_iterator *iter, tree *tp,
 
     case INDIRECT_REF:
       addr = TREE_OPERAND (t, 0);
+      base = addr;
+      limit = fold_build2_loc (location, POINTER_PLUS_EXPR, ptr_type_node,
+			   fold_build2_loc (location,
+					POINTER_PLUS_EXPR, ptr_type_node, base,
+					size),
+			   size_int (-1));
+      break;
+
+    case MEM_REF:
+      addr = build2 (POINTER_PLUS_EXPR, TREE_TYPE (TREE_OPERAND (t, 1)),
+		     TREE_OPERAND (t, 0),
+		     fold_convert (sizetype, TREE_OPERAND (t, 1)));
       base = addr;
       limit = fold_build2_loc (location, POINTER_PLUS_EXPR, ptr_type_node,
 			   fold_build2_loc (location,
@@ -1061,7 +1073,7 @@ mx_register_decls (tree decl, gimple_seq seq, location_t location)
           unregister_fncall = gimple_build_call (mf_unregister_fndecl, 3,
 						 unregister_fncall_param,
 						 size,
-						 build_int_cst (NULL_TREE, 3));
+						 integer_three_node);
 
 
           variable_name = mf_varname_tree (decl);
@@ -1074,7 +1086,7 @@ mx_register_decls (tree decl, gimple_seq seq, location_t location)
 	  register_fncall = gimple_build_call (mf_register_fndecl, 4,
 					       register_fncall_param,
 					       size,
-					       build_int_cst (NULL_TREE, 3),
+					       integer_three_node,
 					       variable_name);
 
 
@@ -1101,7 +1113,7 @@ mx_register_decls (tree decl, gimple_seq seq, location_t location)
           mf_mark (decl);
         }
 
-      decl = TREE_CHAIN (decl);
+      decl = DECL_CHAIN (decl);
     }
 
   /* Actually, (initially_stmts!=NULL) <=> (finally_stmts!=NULL) */
@@ -1314,7 +1326,7 @@ mudflap_finish_file (void)
     {
       size_t i;
       tree obj;
-      for (i = 0; VEC_iterate (tree, deferred_static_decls, i, obj); i++)
+      FOR_EACH_VEC_ELT (tree, deferred_static_decls, i, obj)
         {
           gcc_assert (DECL_P (obj));
 

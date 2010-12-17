@@ -1,5 +1,4 @@
 /* { dg-lto-do run } */
-/* { dg-lto-options {{-O2 -flto}} } */
 
 struct bar {int x;};
 extern struct bar foo(void);

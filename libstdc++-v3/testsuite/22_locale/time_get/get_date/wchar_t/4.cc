@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "" }
+// { dg-require-namedlocale "zh_TW" }
 
 // 2003-12-17  Paolo Carlini  <pcarlini@suse.de>
 

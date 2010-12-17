@@ -497,7 +497,7 @@ namespace __detail
   // the form pair<T1, T2> and a key extraction policy that returns the
   // first part of the pair, the hashtable gets a mapped_type typedef.
   // If it satisfies those criteria and also has unique keys, then it
-  // also gets an operator[].  
+  // also gets an operator[].
   template<typename _Key, typename _Value, typename _Ex, bool __unique,
 	   typename _Hashtable>
     struct _Map_base { };
@@ -515,6 +515,9 @@ namespace __detail
 
       mapped_type&
       operator[](const _Key& __k);
+
+      mapped_type&
+      operator[](_Key&& __k);
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 761. unordered_map needs an at() member function.
@@ -540,6 +543,26 @@ namespace __detail
 	__h->_M_find_node(__h->_M_buckets[__n], __k, __code);
       if (!__p)
 	return __h->_M_insert_bucket(std::make_pair(__k, mapped_type()),
+				     __n, __code)->second;
+      return (__p->_M_v).second;
+    }
+
+  template<typename _Key, typename _Pair, typename _Hashtable>
+    typename _Map_base<_Key, _Pair, std::_Select1st<_Pair>,
+		       true, _Hashtable>::mapped_type&
+    _Map_base<_Key, _Pair, std::_Select1st<_Pair>, true, _Hashtable>::
+    operator[](_Key&& __k)
+    {
+      _Hashtable* __h = static_cast<_Hashtable*>(this);
+      typename _Hashtable::_Hash_code_type __code = __h->_M_hash_code(__k);
+      std::size_t __n = __h->_M_bucket_index(__k, __code,
+					     __h->_M_bucket_count);
+
+      typename _Hashtable::_Node* __p =
+	__h->_M_find_node(__h->_M_buckets[__n], __k, __code);
+      if (!__p)
+	return __h->_M_insert_bucket(std::make_pair(std::move(__k),
+						    mapped_type()),
 				     __n, __code)->second;
       return (__p->_M_v).second;
     }

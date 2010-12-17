@@ -1,10 +1,9 @@
 /* PR middle-end/37010 */
 /* { dg-do run { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 /* { dg-options "-msse2 -mpreferred-stack-boundary=2" } */
-/* { dg-require-effective-target sse2 } */
+/* { dg-require-effective-target sse2_runtime } */
 
 #include <emmintrin.h>
-#include "cpuid.h"
 
 typedef __PTRDIFF_TYPE__ ptrdiff_t;
 typedef float __m128 __attribute__ ((__vector_size__ (16), __may_alias__));
@@ -42,19 +41,11 @@ int
 main (void)
 {
   __m128 x = { 1.0 };
-  unsigned int eax, ebx, ecx, edx;
- 
-  if (!__get_cpuid (1, &eax, &ebx, &ecx, &edx))
-    return 0;
 
-  /* Run SSE2 test only if host has SSE2 support.  */
-  if (edx & bit_SSE2)
-    {
-      foo (x, x, x, x, 5);
+  foo (x, x, x, x, 5);
 
-      if (__builtin_memcmp (&r, &x, sizeof (r)))
-	abort ();
-    }
+  if (__builtin_memcmp (&r, &x, sizeof (r)))
+    abort ();
 
   return 0;
 }

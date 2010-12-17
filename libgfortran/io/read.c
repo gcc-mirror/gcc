@@ -40,7 +40,7 @@ typedef unsigned char uchar;
 
 
 /* set_integer()-- All of the integer assignments come here to
- * actually place the value into memory.  */
+   actually place the value into memory.  */
 
 void
 set_integer (void *dest, GFC_INTEGER_LARGEST value, int length)
@@ -131,11 +131,10 @@ max_value (int length, int signed_flag)
 
 
 /* convert_real()-- Convert a character representation of a floating
- * point number to the machine number.  Returns nonzero if there is a
- * range problem during conversion.  Note: many architectures
- * (e.g. IA-64, HP-PA) require that the storage pointed to by the dest
- * argument is properly aligned for the type in question.  TODO:
- * handle not-a-numbers and infinities.  */
+   point number to the machine number.  Returns nonzero if there is a
+   range problem during conversion.  Note: many architectures
+   (e.g. IA-64, HP-PA) require that the storage pointed to by the dest
+   argument is properly aligned for the type in question.  */
 
 int
 convert_real (st_parameter_dt *dtp, void *dest, const char *buffer, int length)
@@ -163,10 +162,16 @@ convert_real (st_parameter_dt *dtp, void *dest, const char *buffer, int length)
       break;
 #endif
 
-#if defined(HAVE_GFC_REAL_16) && defined (HAVE_STRTOLD)
+#if defined(HAVE_GFC_REAL_16)
+# if defined(GFC_REAL_16_IS_FLOAT128)
+    case 16:
+      __qmath_(quadmath_strtopQ) (buffer, NULL, dest);
+      break;
+# elif defined(HAVE_STRTOLD)
     case 16:
       *((GFC_REAL_16*) dest) = gfc_strtold (buffer, NULL);
       break;
+# endif
 #endif
 
     default:
@@ -384,26 +389,51 @@ read_utf8_char4 (st_parameter_dt *dtp, void *p, int len, int width)
 static void
 read_default_char4 (st_parameter_dt *dtp, char *p, int len, int width)
 {
-  char *s;
-  gfc_char4_t *dest;
   int m, n;
+  gfc_char4_t *dest;
 
-  s = read_block_form (dtp, &width);
-  
-  if (s == NULL)
-    return;
-  if (width > len)
-     s += (width - len);
+  if (is_char4_unit(dtp))
+    {
+      gfc_char4_t *s4;
 
-  m = ((int) width > len) ? len : (int) width;
-  
-  dest = (gfc_char4_t *) p;
-  
-  for (n = 0; n < m; n++, dest++, s++)
-    *dest = (unsigned char ) *s;
+      s4 = (gfc_char4_t *) read_block_form4 (dtp, &width);
 
-  for (n = 0; n < len - (int) width; n++, dest++)
-    *dest = (unsigned char) ' ';
+      if (s4 == NULL)
+	return;
+      if (width > len)
+	 s4 += (width - len);
+
+      m = ((int) width > len) ? len : (int) width;
+
+      dest = (gfc_char4_t *) p;
+
+      for (n = 0; n < m; n++)
+	*dest++ = *s4++;
+
+      for (n = 0; n < len - (int) width; n++)
+	*dest++ = (gfc_char4_t) ' ';
+    }
+  else
+    {
+      char *s;
+
+      s = read_block_form (dtp, &width);
+
+      if (s == NULL)
+	return;
+      if (width > len)
+	 s += (width - len);
+
+      m = ((int) width > len) ? len : (int) width;
+
+      dest = (gfc_char4_t *) p;
+
+      for (n = 0; n < m; n++, dest++, s++)
+	*dest = (unsigned char ) *s;
+
+      for (n = 0; n < len - (int) width; n++, dest++)
+	*dest = (unsigned char) ' ';
+    }
 }
 
 
@@ -809,6 +839,66 @@ read_f (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
   p = eat_leading_spaces (&w, (char*) p);
   if (w == 0)
     goto zero;
+
+  /* Check for Infinity or NaN.  */    
+  if (unlikely ((w >= 3 && (*p == 'i' || *p == 'I' || *p == 'n' || *p == 'N'))))
+    {
+      int seen_paren = 0;
+      char *save = out;
+
+      /* Scan through the buffer keeping track of spaces and parenthesis. We
+	 null terminate the string as soon as we see a left paren or if we are
+	 BLANK_NULL mode.  Leading spaces have already been skipped above,
+	 trailing spaces are ignored by converting to '\0'. A space
+	 between "NaN" and the optional perenthesis is not permitted.  */
+      while (w > 0)
+	{
+	  *out = tolower (*p);
+	  switch (*p)
+	    {
+	    case ' ':
+	      if (dtp->u.p.blank_status == BLANK_ZERO)
+		{
+		  *out = '0';
+		  break;
+		}
+	      *out = '\0';
+	      if (seen_paren == 1)
+	        goto bad_float;
+	      break;
+	    case '(':
+	      seen_paren++;
+	      *out = '\0';
+	      break;
+	    case ')':
+	      if (seen_paren++ != 1)
+		goto bad_float;
+	      break;
+	    default:
+	      if (!isalnum (*out))
+		goto bad_float;
+	    }
+	  --w;
+	  ++p;
+	  ++out;
+	}
+	 
+      *out = '\0';
+      
+      if (seen_paren != 0 && seen_paren != 2)
+	goto bad_float;
+
+      if ((strcmp (save, "inf") == 0) || (strcmp (save, "infinity") == 0))
+	{
+	   if (seen_paren)
+	     goto bad_float;
+	}
+      else if (strcmp (save, "nan") != 0)
+	goto bad_float;
+
+      convert_real (dtp, dest, buffer, length);
+      return;
+    }
 
   /* Process the mantissa string.  */
   while (w > 0)

@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package gnu.javax.print.ipp.attribute.supported;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.EnumSyntax;
 import javax.print.attribute.SupportedValuesAttribute;
 
@@ -44,45 +45,45 @@ import javax.print.attribute.SupportedValuesAttribute;
 /**
  * <code>SidesSupported</code> provides the
  * supported values for the sides attribute.
- *  
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class SidesSupported extends EnumSyntax
   implements SupportedValuesAttribute
 {
-  
+
   /** Specifies that each page should be printed on one sheet. */
   public static final SidesSupported ONE_SIDED = new SidesSupported(0);
-  
-  /** 
-   * Specifies that two following pages should be printed on the 
+
+  /**
+   * Specifies that two following pages should be printed on the
    * front and back of one sheet for binding on the long edge.
    */
-  public static final SidesSupported TWO_SIDED_LONG_EDGE = 
+  public static final SidesSupported TWO_SIDED_LONG_EDGE =
     new SidesSupported(1);
-  
-  /** 
-   * Specifies that two following pages should be printed on the 
+
+  /**
+   * Specifies that two following pages should be printed on the
    * front and back of one sheet for binding on the short edge.
    */
-  public static final SidesSupported TWO_SIDED_SHORT_EDGE = 
+  public static final SidesSupported TWO_SIDED_SHORT_EDGE =
     new SidesSupported(2);
-  
+
   /** An alias constant for "two sided long edge". */
   public static final SidesSupported DUPLEX = new SidesSupported(1);
-  
+
   /** An alias constant for "two sided short edge". */
   public static final SidesSupported TUMBLE = new SidesSupported(2);
 
-  private static final String[] stringTable = { "one-sided", 
+  private static final String[] stringTable = { "one-sided",
                                                 "two-sided-long-edge",
                                                 "two-sided-short-edge" };
-  
-  private static final SidesSupported[] 
-      enumValueTable = { ONE_SIDED, TWO_SIDED_LONG_EDGE, 
+
+  private static final SidesSupported[]
+      enumValueTable = { ONE_SIDED, TWO_SIDED_LONG_EDGE,
                          TWO_SIDED_SHORT_EDGE };
-  
-  
+
+
   /**
    * Creates a <code>SidesSupported</code> object.
    *
@@ -98,7 +99,7 @@ public final class SidesSupported extends EnumSyntax
    *
    * @return The class <code>SidesSupported</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return SidesSupported.class;
   }
@@ -112,7 +113,7 @@ public final class SidesSupported extends EnumSyntax
   {
     return "sides-supported";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.

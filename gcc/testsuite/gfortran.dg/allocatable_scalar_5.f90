@@ -1,7 +1,7 @@
 ! { dg-do run }
 ! { dg-options "-Wall -pedantic" }
 !
-! PR fortran/41872
+! PR fortran/41872; updated due to PR fortran/46484
 !
 !  More tests for allocatable scalars
 !
@@ -11,8 +11,6 @@ program test
   integer :: b
 
   if (allocated (a)) call abort ()
-  if (allocated (func (.false.))) call abort ()
-  if (.not.allocated (func (.true.))) call abort ()
   b = 7
   b = func(.true.)
   if (b /= 5332) call abort () 
@@ -28,7 +26,6 @@ program test
   call intout2 (a)
   if (allocated (a)) call abort ()
 
-  if (allocated (func2 ())) call abort ()
 contains
 
   function func (alloc)
@@ -40,10 +37,6 @@ contains
       func = 5332
     end if
   end function func
-
-  function func2 ()
-    integer, allocatable ::  func2
-  end function func2
 
   subroutine intout (dum, alloc)
     implicit none

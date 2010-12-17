@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2008, AdaCore                     --
+--                     Copyright (C) 1995-2010, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -107,7 +107,7 @@ package System.Tasking.Task_Attributes is
    --  Ensure that the designated object is always strictly enough aligned.
 
    In_Use : Direct_Index_Vector := 0;
-   --  Set True for direct indices that are already used (True??? type???)
+   --  Set True for direct indexes that are already used (True??? type???)
 
    All_Attributes : Access_Instance;
    --  A linked list of all indirectly access attributes, which includes all

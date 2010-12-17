@@ -1,11 +1,13 @@
 load_lib libgomp-dg.exp
 
 global shlib_ext
+global ALWAYS_CFLAGS
 
 set shlib_ext [get_shlib_extension]
 set lang_library_path	"../libgfortran/.libs"
 set lang_link_flags	"-lgfortran"
 set lang_test_file_found 0
+set quadmath_library_path "../libquadmath/.libs"
 
 
 # Initialize dg.
@@ -36,7 +38,13 @@ if { $lang_test_file_found } {
     set tests [lsort [find $srcdir/$subdir *.\[fF\]{,90,95,03,08}]]
 
     if { $blddir != "" } {
-        set ld_library_path "$always_ld_library_path:${blddir}/${lang_library_path}"
+	# We could, perhaps, test for the presence of the quad math lib - but if it 
+	# is required then its absence will cause a fail, and if it is not required
+	# the additions here should be harmless.
+	lappend ALWAYS_CFLAGS "ldflags=-L${blddir}/${quadmath_library_path}/"
+	# Allow for spec subsitution.
+	lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/${quadmath_library_path}/"
+	set ld_library_path "$always_ld_library_path:${blddir}/${lang_library_path}:${blddir}/${quadmath_library_path}"
     } else {
         set ld_library_path "$always_ld_library_path"
     }

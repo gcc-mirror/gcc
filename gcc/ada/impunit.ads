@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,10 +48,15 @@ package Impunit is
       --  in both Ada 95 mode and Ada 05 mode. Note that in Ada 83 mode, no
       --  child units are allowed, so you can't even name such a unit.
 
-      Ada_05_Unit);
-   --  This unit is defined in the Ada 05 RM. Withing this unit from a
-   --  Ada 95 mode program will generate a warning (again, strictly speaking
-   --  this should be an error, but that seems over-strenuous).
+      Ada_2005_Unit,
+      --  This unit is defined in the Ada 2005 RM. Withing this unit from a
+      --  Ada 95 mode program will generate a warning (again, strictly speaking
+      --  this should be an error, but that seems over-strenuous).
+
+      Ada_2012_Unit);
+      --  This unit is defined in the Ada 2012 RM. Withing this unit from a Ada
+      --  95 mode or Ada 2005 program will generate a warning (again, strictly
+      --  speaking this should be an error, but that seems over-strenuous).
 
    function Get_Kind_Of_Unit (U : Unit_Number_Type) return Kind_Of_Unit;
    --  Given the unit number of a unit, this function determines the type

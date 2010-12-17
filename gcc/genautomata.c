@@ -1603,7 +1603,7 @@ gen_regexp_repeat (const char *str)
       return regexp;
     }
   else
-    return gen_regexp_el (str);
+    return gen_regexp_el (repeat_vect[0]);
 }
 
 /* Parse reservation STR which possibly contains separator '+'.  */
@@ -1629,7 +1629,7 @@ gen_regexp_allof (const char *str)
       return allof;
     }
   else
-    return gen_regexp_repeat (str);
+    return gen_regexp_repeat (allof_vect[0]);
 }
 
 /* Parse reservation STR which possibly contains separator '|'.  */
@@ -1655,7 +1655,7 @@ gen_regexp_oneof (const char *str)
       return oneof;
     }
   else
-    return gen_regexp_allof (str);
+    return gen_regexp_allof (oneof_vect[0]);
 }
 
 /* Parse reservation STR which possibly contains separator ','.  */
@@ -1680,7 +1680,7 @@ gen_regexp_sequence (const char *str)
       return sequence;
     }
   else
-    return gen_regexp_oneof (str);
+    return gen_regexp_oneof (sequence_vect[0]);
 }
 
 /* Parse construction reservation STR.  */
@@ -1688,7 +1688,7 @@ static regexp_t
 gen_regexp (const char *str)
 {
   reserv_str = str;
-  return gen_regexp_sequence (str);;
+  return gen_regexp_sequence (str);
 }
 
 /* Process a DEFINE_RESERVATION.
@@ -3252,9 +3252,7 @@ uniq_sort_alt_states (alt_state_t alt_states_list)
        curr_alt_state = curr_alt_state->next_alt_state)
     VEC_safe_push (alt_state_t, heap, alt_states, curr_alt_state);
 
-  qsort (VEC_address (alt_state_t, alt_states),
-	 VEC_length  (alt_state_t, alt_states),
-	 sizeof (alt_state_t), alt_state_cmp);
+  VEC_qsort (alt_state_t, alt_states, alt_state_cmp);
 
   prev_unique_state_ind = 0;
   for (i = 1; i < VEC_length (alt_state_t, alt_states); i++)
@@ -6004,9 +6002,7 @@ evaluate_equiv_classes (automaton_t automaton,
   all_achieved_states = VEC_alloc (state_t, heap, 1500);
   pass_states (automaton, add_achieved_state);
   pass_states (automaton, cache_presence);
-  qsort (VEC_address (state_t, all_achieved_states),
-	 VEC_length (state_t, all_achieved_states),
-         sizeof (state_t), compare_states_for_equiv);
+  VEC_qsort (state_t, all_achieved_states, compare_states_for_equiv);
 
   odd_iteration_flag = 0;
   new_equiv_class_num = init_equiv_class (all_achieved_states,
@@ -7456,9 +7452,7 @@ output_trans_table (automaton_t automaton)
      from the state (state with the maximum num is the first).  */
   output_states_vect = 0;
   pass_states (automaton, add_states_vect_el);
-  qsort (VEC_address (state_t, output_states_vect),
-	 VEC_length (state_t, output_states_vect),
-         sizeof (state_t), compare_transition_els_num);
+  VEC_qsort (state_t, output_states_vect, compare_transition_els_num);
 
   for (i = 0; i < VEC_length (state_t, output_states_vect); i++)
     {
@@ -7854,12 +7848,15 @@ output_automata_list_min_issue_delay_code (automata_list_el_t automata_list)
 	{
 	  fprintf (output_file, ") / %d];\n",
 		   automaton->min_issue_delay_table_compression_factor);
-	  fprintf (output_file, "      %s = (%s >> (8 - (",
+	  fprintf (output_file, "      %s = (%s >> (8 - ((",
 		   TEMPORARY_VARIABLE_NAME, TEMPORARY_VARIABLE_NAME);
 	  output_translate_vect_name (output_file, automaton);
+	  fprintf (output_file, " [%s] + ", INTERNAL_INSN_CODE_NAME);
+	  fprintf (output_file, "%s->", CHIP_PARAMETER_NAME);
+	  output_chip_member_name (output_file, automaton);
+	  fprintf (output_file, " * %d)", automaton->insn_equiv_classes_num);
 	  fprintf
-	    (output_file, " [%s] %% %d + 1) * %d)) & %d;\n",
-	     INTERNAL_INSN_CODE_NAME,
+	    (output_file, " %% %d + 1) * %d)) & %d;\n",
 	     automaton->min_issue_delay_table_compression_factor,
 	     8 / automaton->min_issue_delay_table_compression_factor,
 	     (1 << (8 / automaton->min_issue_delay_table_compression_factor))
@@ -8941,9 +8938,7 @@ output_state (state_t state)
   fprintf (output_description_file,
 	   state->new_cycle_p ? " (new cycle)\n" : "\n");
   add_state_reservs (state);
-  qsort (VEC_address (reserv_sets_t, state_reservs),
-	 VEC_length (reserv_sets_t, state_reservs),
-         sizeof (reserv_sets_t), state_reservs_cmp);
+  VEC_qsort (reserv_sets_t, state_reservs, state_reservs_cmp);
   remove_state_duplicate_reservs ();
   for (i = 0; i < VEC_length (reserv_sets_t, state_reservs); i++)
     {
@@ -9556,7 +9551,7 @@ main (int argc, char **argv)
 		"#include \"regs.h\"\n"
 		"#include \"output.h\"\n"
 		"#include \"insn-attr.h\"\n"
-		"#include \"toplev.h\"\n"
+                "#include \"diagnostic-core.h\"\n"
 		"#include \"flags.h\"\n"
 		"#include \"function.h\"\n"
 		"#include \"emit-rtl.h\"\n");
@@ -9564,6 +9559,16 @@ main (int argc, char **argv)
 
 	  write_automata ();
 	}
+    }
+  else
+    {
+      puts ("/* Generated automatically by the program `genautomata'\n"
+	    "   from the machine description file `md'.  */\n\n"
+	    "/* There is no automaton, but ISO C forbids empty\n"
+	    "   translation units, so include a header file with some\n"
+	    "   declarations, and its pre-requisite header file.  */\n"
+	    "#include \"config.h\"\n"
+	    "#include \"system.h\"\n");
     }
 
   fflush (stdout);

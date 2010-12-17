@@ -20,6 +20,6 @@ class B
 };
 
 B::B (const A a[])
-  : ary(a)        // { dg-error "bad array initializer" }
+  : ary(a)        // { dg-error "array" }
 {
 }

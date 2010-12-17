@@ -142,17 +142,6 @@ extern short *reg_renumber;	/* def in local_alloc.c */
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION	fprintf (stderr, " (MC68HC11/MC68HC12/MC68HCS12)")
 
-/* Sometimes certain combinations of command options do not make
-   sense on a particular target machine.  You can define a macro
-   `OVERRIDE_OPTIONS' to take account of this.  This macro, if
-   defined, is executed once just after all the command options have
-   been parsed.
-
-   Don't use this macro to turn on various extra optimizations for
-   `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.  */
-
-#define OVERRIDE_OPTIONS	m68hc11_override_options ()
-
 
 /* Define cost parameters for a given processor variant.  */
 struct processor_costs {
@@ -382,14 +371,6 @@ SOFT_REG_FIRST+28, SOFT_REG_FIRST+29,SOFT_REG_FIRST+30,SOFT_REG_FIRST+31
   {1, 1, 1, 1, 1, 1, 1, 1,   1, 1,  1,   1,1, 1, SOFT_REG_USED, 1, 1}
 /* X, D, Y, SP,PC,A, B, CCR, Z, FP, ZTMP,ZR,XYR, D1 - 32,     SOFT-FP, AP */
 
-
-/* Define this macro to change register usage conditional on target flags.
-
-   The soft-registers are disabled or enabled according to the
-  -msoft-reg-count=<n> option.  */
-
-
-#define CONDITIONAL_REGISTER_USAGE (m68hc11_conditional_register_usage ())
 
 /* List the order in which to allocate registers.  Each register must be
    listed once, even those in FIXED_REGISTERS.  */
@@ -715,34 +696,6 @@ extern enum reg_class m68hc11_tmp_regs_class;
 #define HARD_REGNO_RENAME_OK(REGNO1,REGNO2) \
   m68hc11_hard_regno_rename_ok ((REGNO1), (REGNO2))
 
-/* A C expression whose value is nonzero if pseudos that have been
-   assigned to registers of class CLASS would likely be spilled
-   because registers of CLASS are needed for spill registers.
-
-   The default value of this macro returns 1 if CLASS has exactly one
-   register and zero otherwise.  On most machines, this default
-   should be used.  Only define this macro to some other expression
-   if pseudo allocated by `local-alloc.c' end up in memory because
-   their hard registers were needed for spill registers.  If this
-   macro returns nonzero for those classes, those pseudos will only
-   be allocated by `global.c', which knows how to reallocate the
-   pseudo to another register.  If there would not be another
-   register available for reallocation, you should not change the
-   definition of this macro since the only effect of such a
-   definition would be to slow down register allocation.  */
-
-#define CLASS_LIKELY_SPILLED_P(CLASS)					\
-  (((CLASS) == D_REGS)							\
-   || ((CLASS) == X_REGS)                                               \
-   || ((CLASS) == Y_REGS)                                               \
-   || ((CLASS) == A_REGS)                                               \
-   || ((CLASS) == SP_REGS)                                              \
-   || ((CLASS) == D_OR_X_REGS)                                          \
-   || ((CLASS) == D_OR_Y_REGS)                                          \
-   || ((CLASS) == X_OR_SP_REGS)                                         \
-   || ((CLASS) == Y_OR_SP_REGS)                                         \
-   || ((CLASS) == D_OR_SP_REGS))
-
 /* Return the maximum number of consecutive registers needed to represent
    mode MODE in a register of class CLASS.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)		\
@@ -896,15 +849,6 @@ extern enum reg_class m68hc11_tmp_regs_class;
    stack pointer really advances by. No rounding or alignment needed
    for MC6811.  */
 #define PUSH_ROUNDING(BYTES)	(BYTES)
-
-/* Value is 1 if returning from a function call automatically pops the
-   arguments described by the number-of-args field in the call. FUNTYPE is
-   the data type of the function (as a tree), or for a library call it is
-   an identifier node for the subroutine name.
-  
-   The standard MC6811 call, with arg count word, includes popping the
-   args as part of the call template.  */
-#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE)	0
 
 /* Passing Arguments in Registers.  */
 
@@ -937,27 +881,6 @@ typedef struct m68hc11_args
    function whose data type is FNTYPE. For a library call, FNTYPE is 0.  */
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
     (m68hc11_init_cumulative_args (&CUM, FNTYPE, LIBNAME))
-
-/* Update the data in CUM to advance over an argument of mode MODE and data
-   type TYPE. (TYPE is null for libcalls where that information may not be
-   available.) */
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED) \
-    (m68hc11_function_arg_advance (&CUM, MODE, TYPE, NAMED))
-
-/* Define where to put the arguments to a function.
-   Value is zero to push the argument on the stack,
-   or a hard register in which to store the argument.
-
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
-   CUM is a variable of type CUMULATIVE_ARGS which gives info about
-    the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).  */
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-  (m68hc11_function_arg (&CUM, MODE, TYPE, NAMED))
 
 /* Define the profitability of saving registers around calls.
 

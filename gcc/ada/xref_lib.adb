@@ -518,13 +518,14 @@ package body Xref_Lib is
          when 'T' => return "task type";
          when 'W' => return "protected type";
 
-         when 'a' => return "array type";
+         when 'a' => return Param_String & "array object";
          when 'b' => return Param_String & "boolean object";
          when 'c' => return Param_String & "class-wide object";
          when 'd' => return Param_String & "decimal object";
          when 'e' => return Param_String & "enumeration object";
          when 'f' => return Param_String & "float object";
          when 'i' => return Param_String & "integer object";
+         when 'j' => return Param_String & "class object";
          when 'm' => return Param_String & "modular object";
          when 'o' => return Param_String & "fixed object";
          when 'p' => return Param_String & "access object";
@@ -537,6 +538,7 @@ package body Xref_Lib is
 
          when 'h' => return "interface";
          when 'g' => return "macro";
+         when 'J' => return "class";
          when 'K' => return "package";
          when 'k' => return "generic package";
          when 'L' => return "statement label";
@@ -553,6 +555,7 @@ package body Xref_Lib is
          when 'Y' => return "entry";
 
          when '+' => return "private type";
+         when '*' => return "private variable";
 
          --  The above should be the only possibilities, but for this kind
          --  of informational output, we don't want to bomb if we find

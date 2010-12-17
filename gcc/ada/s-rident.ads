@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,8 +62,11 @@ package System.Rident is
       No_Abort_Statements,                     -- (RM D.7(5), H.4(3))
       No_Access_Subprograms,                   -- (RM H.4(17))
       No_Allocators,                           -- (RM H.4(7))
+      No_Allocators_After_Elaboration,         -- Ada 2012 (RM D.7(19.1/2))
+      No_Anonymous_Allocators,                 -- Ada 2012 (RM H.4(8/1))
       No_Asynchronous_Control,                 -- (RM D.7(10))
       No_Calendar,                             -- GNAT
+      No_Default_Stream_Attributes,            -- Ada 2012 (RM 13.12.1(4/2))
       No_Delay,                                -- (RM H.4(21))
       No_Direct_Boolean_Operators,             -- GNAT
       No_Dispatch,                             -- (RM H.4(19))
@@ -327,7 +330,7 @@ package System.Rident is
       --  value of the parameter permitted by the profile.
    end record;
 
-   Profile_Info : array (Profile_Name_Actual) of Profile_Data :=
+   Profile_Info : constant array (Profile_Name_Actual) of Profile_Data :=
 
                      --  Restricted Profile
 

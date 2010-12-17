@@ -1,7 +1,7 @@
 /* The 3 constant initializers should be uniquized.  */
 
 /* { dg-lto-do run } */
-/* { dg-lto-options {{-Os -flto} {-Os -fwhopr} } } */
+/* { dg-lto-options {{-Os -flto -flto-partition=none} {-Os -flto -flto-partition=1to1} } } */
 
 int lookup1 (int i)
 {

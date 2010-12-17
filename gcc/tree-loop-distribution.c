@@ -311,38 +311,6 @@ generate_memset_zero (gimple stmt, tree op0, tree nb_iter,
   return res;
 }
 
-/* Propagate phis in BB b to their uses and remove them.  */
-
-static void
-prop_phis (basic_block b)
-{
-  gimple_stmt_iterator psi;
-  gimple_seq phis = phi_nodes (b);
-
-  for (psi = gsi_start (phis); !gsi_end_p (psi); )
-    {
-      gimple phi = gsi_stmt (psi);
-      tree def = gimple_phi_result (phi), use = gimple_phi_arg_def (phi, 0);
-
-      gcc_assert (gimple_phi_num_args (phi) == 1);
-
-      if (!is_gimple_reg (def))
-	{
-	  imm_use_iterator iter;
-	  use_operand_p use_p;
-	  gimple stmt;
-
-	  FOR_EACH_IMM_USE_STMT (stmt, iter, def)
-	    FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
-	      SET_USE (use_p, use);
-	}
-      else
-	replace_uses_by (def, use);
-
-      remove_phi_node (&psi, true);
-    }
-}
-
 /* Tries to generate a builtin function for the instructions of LOOP
    pointed to by the bits set in PARTITION.  Returns true when the
    operation succeeded.  */
@@ -397,7 +365,7 @@ generate_builtin (struct loop *loop, bitmap partition, bool copy_p)
   op1 = gimple_assign_rhs1 (write);
 
   if (!(TREE_CODE (op0) == ARRAY_REF
-	|| TREE_CODE (op0) == INDIRECT_REF))
+	|| TREE_CODE (op0) == MEM_REF))
     goto end;
 
   /* The new statements will be placed before LOOP.  */
@@ -412,11 +380,13 @@ generate_builtin (struct loop *loop, bitmap partition, bool copy_p)
   if (res && !copy_p)
     {
       unsigned nbbs = loop->num_nodes;
-      basic_block src = loop_preheader_edge (loop)->src;
-      basic_block dest = single_exit (loop)->dest;
-      prop_phis (dest);
-      make_edge (src, dest, EDGE_FALLTHRU);
+      edge exit = single_exit (loop);
+      basic_block src = loop_preheader_edge (loop)->src, dest = exit->dest;
+      redirect_edge_pred (exit, src);
+      exit->flags &= ~(EDGE_TRUE_VALUE|EDGE_FALSE_VALUE);
+      exit->flags |= EDGE_FALLTHRU;
       cancel_loop_tree (loop);
+      rescan_loop_exit (exit, false, true);
 
       for (i = 0; i < nbbs; i++)
 	delete_basic_block (bbs[i]);
@@ -517,12 +487,10 @@ mark_nodes_having_upstream_mem_writes (struct graph *rdg)
 
 	graphds_dfs (rdg, &v, 1, &nodes, false, NULL);
 
-	for (i = 0; VEC_iterate (int, nodes, i, x); i++)
+	FOR_EACH_VEC_ELT (int, nodes, i, x)
 	  {
-	    if (bitmap_bit_p (seen, x))
+	    if (!bitmap_set_bit (seen, x))
 	      continue;
-
-	    bitmap_set_bit (seen, x);
 
 	    if (RDG_MEM_WRITE_STMT (rdg, x)
 		|| predecessor_has_mem_write (rdg, &(rdg->vertices[x]))
@@ -644,12 +612,11 @@ rdg_flag_vertex (struct graph *rdg, int v, bitmap partition, bitmap loops,
 {
   struct loop *loop;
 
-  if (bitmap_bit_p (partition, v))
+  if (!bitmap_set_bit (partition, v))
     return;
 
   loop = loop_containing_stmt (RDG_STMT (rdg, v));
   bitmap_set_bit (loops, loop->num);
-  bitmap_set_bit (partition, v);
 
   if (rdg_cannot_recompute_vertex_p (rdg, v))
     {
@@ -675,7 +642,7 @@ rdg_flag_vertex_and_dependent (struct graph *rdg, int v, bitmap partition,
   graphds_dfs (rdg, &v, 1, &nodes, false, remaining_stmts);
   rdg_flag_vertex (rdg, v, partition, loops, part_has_writes);
 
-  for (i = 0; VEC_iterate (int, nodes, i, x); i++)
+  FOR_EACH_VEC_ELT (int, nodes, i, x)
     if (!already_processed_vertex_p (processed, x))
       rdg_flag_vertex_and_dependent (rdg, x, partition, loops, processed,
 				     part_has_writes);
@@ -693,7 +660,7 @@ collect_condition_stmts (struct loop *loop, VEC (gimple, heap) **conds)
   edge e;
   VEC (edge, heap) *exits = get_loop_exit_edges (loop);
 
-  for (i = 0; VEC_iterate (edge, exits, i, e); i++)
+  FOR_EACH_VEC_ELT (edge, exits, i, e)
     {
       gimple cond = last_stmt (e->src);
 
@@ -730,11 +697,8 @@ rdg_flag_loop_exits (struct graph *rdg, bitmap loops, bitmap partition,
 				       part_has_writes);
 
       EXECUTE_IF_SET_IN_BITMAP (new_loops, 0, i, bi)
-	if (!bitmap_bit_p (loops, i))
-	  {
-	    bitmap_set_bit (loops, i);
-	    collect_condition_stmts (get_loop (i), &conds);
-	  }
+	if (bitmap_set_bit (loops, i))
+	  collect_condition_stmts (get_loop (i), &conds);
 
       BITMAP_FREE (new_loops);
     }
@@ -777,7 +741,7 @@ rdg_flag_similar_memory_accesses (struct graph *rdg, bitmap partition,
 
 	      /* Remove from OTHER_STORES the vertex that we flagged.  */
 	      if (RDG_MEM_WRITE_STMT (rdg, j))
-		for (k = 0; VEC_iterate (int, *other_stores, k, kk); k++)
+		FOR_EACH_VEC_ELT (int, *other_stores, k, kk)
 		  if (kk == j)
 		    {
 		      VEC_unordered_remove (int, *other_stores, k);
@@ -808,7 +772,7 @@ build_rdg_partition_for_component (struct graph *rdg, rdgc c,
   bitmap loops = BITMAP_ALLOC (NULL);
   bitmap processed = BITMAP_ALLOC (NULL);
 
-  for (i = 0; VEC_iterate (int, c->vertices, i, v); i++)
+  FOR_EACH_VEC_ELT (int, c->vertices, i, v)
     if (!already_processed_vertex_p (processed, v))
       rdg_flag_vertex_and_dependent (rdg, v, partition, loops, processed,
 				     part_has_writes);
@@ -835,7 +799,7 @@ free_rdg_components (VEC (rdgc, heap) *components)
   int i;
   rdgc x;
 
-  for (i = 0; VEC_iterate (rdgc, components, i, x); i++)
+  FOR_EACH_VEC_ELT (rdgc, components, i, x)
     {
       VEC_free (int, heap, x->vertices);
       free (x);
@@ -860,18 +824,17 @@ rdg_build_components (struct graph *rdg, VEC (int, heap) *starting_vertices,
   for (i = 0; i < rdg->n_vertices; i++)
     VEC_safe_push (int, heap, all_components[rdg->vertices[i].component], i);
 
-  for (i = 0; VEC_iterate (int, starting_vertices, i, v); i++)
+  FOR_EACH_VEC_ELT (int, starting_vertices, i, v)
     {
       int c = rdg->vertices[v].component;
 
-      if (!bitmap_bit_p (saved_components, c))
+      if (bitmap_set_bit (saved_components, c))
 	{
 	  rdgc x = XCNEW (struct rdg_component);
 	  x->num = c;
 	  x->vertices = all_components[c];
 
 	  VEC_safe_push (rdgc, heap, *components, x);
-	  bitmap_set_bit (saved_components, c);
 	}
     }
 
@@ -896,7 +859,7 @@ rdg_build_partitions (struct graph *rdg, VEC (rdgc, heap) *components,
   rdgc x;
   bitmap partition = BITMAP_ALLOC (NULL);
 
-  for (i = 0; VEC_iterate (rdgc, components, i, x); i++)
+  FOR_EACH_VEC_ELT (rdgc, components, i, x)
     {
       bitmap np;
       bool part_has_writes = false;
@@ -962,7 +925,7 @@ dump_rdg_partitions (FILE *file, VEC (bitmap, heap) *partitions)
   int i;
   bitmap partition;
 
-  for (i = 0; VEC_iterate (bitmap, partitions, i, partition); i++)
+  FOR_EACH_VEC_ELT (bitmap, partitions, i, partition)
     debug_bitmap_file (file, partition);
 }
 
@@ -1026,7 +989,7 @@ partition_contains_all_rw (struct graph *rdg, VEC (bitmap, heap) *partitions)
   bitmap partition;
   int nrw = number_of_rw_in_rdg (rdg);
 
-  for (i = 0; VEC_iterate (bitmap, partitions, i, partition); i++)
+  FOR_EACH_VEC_ELT (bitmap, partitions, i, partition)
     if (nrw == number_of_rw_in_partition (rdg, partition))
       return true;
 
@@ -1061,7 +1024,7 @@ ldist_gen (struct loop *loop, struct graph *rdg,
 	  unsigned j;
 	  bool found = false;
 
-	  for (j = 0; VEC_iterate (int, starting_vertices, j, v); j++)
+	  FOR_EACH_VEC_ELT (int, starting_vertices, j, v)
 	    if (i == v)
 	      {
 		found = true;
@@ -1087,7 +1050,7 @@ ldist_gen (struct loop *loop, struct graph *rdg,
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_rdg_partitions (dump_file, partitions);
 
-  for (i = 0; VEC_iterate (bitmap, partitions, i, partition); i++)
+  FOR_EACH_VEC_ELT (bitmap, partitions, i, partition)
     if (!generate_code_for_partition (loop, partition, i < nbp - 1))
       goto ldist_done;
 
@@ -1099,7 +1062,7 @@ ldist_gen (struct loop *loop, struct graph *rdg,
   BITMAP_FREE (remaining_stmts);
   BITMAP_FREE (upstream_mem_writes);
 
-  for (i = 0; VEC_iterate (bitmap, partitions, i, partition); i++)
+  FOR_EACH_VEC_ELT (bitmap, partitions, i, partition)
     BITMAP_FREE (partition);
 
   VEC_free (int, heap, other_stores);
@@ -1150,7 +1113,7 @@ distribute_loop (struct loop *loop, VEC (gimple, heap) *stmts)
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_rdg (dump_file, rdg);
 
-  for (i = 0; VEC_iterate (gimple, stmts, i, s); i++)
+  FOR_EACH_VEC_ELT (gimple, stmts, i, s)
     {
       int v = rdg_vertex_for_stmt (rdg, s);
 
@@ -1182,20 +1145,43 @@ tree_loop_distribution (void)
 
   FOR_EACH_LOOP (li, loop, 0)
     {
-      VEC (gimple, heap) *work_list = VEC_alloc (gimple, heap, 3);
+      VEC (gimple, heap) *work_list = NULL;
 
-      /* With the following working list, we're asking distribute_loop
-	 to separate the stores of the loop: when dependences allow,
-	 it will end on having one store per loop.  */
-      stores_from_loop (loop, &work_list);
+      /* If the loop doesn't have a single exit we will fail anyway,
+	 so do that early.  */
+      if (!single_exit (loop))
+	continue;
 
-      /* A simple heuristic for cache locality is to not split stores
-	 to the same array.  Without this call, an unrolled loop would
-	 be split into as many loops as unroll factor, each loop
-	 storing in the same array.  */
-      remove_similar_memory_refs (&work_list);
+      /* If both flag_tree_loop_distribute_patterns and
+	 flag_tree_loop_distribution are set, then only
+	 distribute_patterns is executed.  */
+      if (flag_tree_loop_distribute_patterns)
+	{
+	  /* With the following working list, we're asking
+	     distribute_loop to separate from the rest of the loop the
+	     stores of the form "A[i] = 0".  */
+	  stores_zero_from_loop (loop, &work_list);
 
-      nb_generated_loops = distribute_loop (loop, work_list);
+	  /* Do nothing if there are no patterns to be distributed.  */
+	  if (VEC_length (gimple, work_list) > 0)
+	    nb_generated_loops = distribute_loop (loop, work_list);
+	}
+      else if (flag_tree_loop_distribution)
+	{
+	  /* With the following working list, we're asking
+	     distribute_loop to separate the stores of the loop: when
+	     dependences allow, it will end on having one store per
+	     loop.  */
+	  stores_from_loop (loop, &work_list);
+
+	  /* A simple heuristic for cache locality is to not split
+	     stores to the same array.  Without this call, an unrolled
+	     loop would be split into as many loops as unroll factor,
+	     each loop storing in the same array.  */
+	  remove_similar_memory_refs (&work_list);
+
+	  nb_generated_loops = distribute_loop (loop, work_list);
+	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -1217,7 +1203,8 @@ tree_loop_distribution (void)
 static bool
 gate_tree_loop_distribution (void)
 {
-  return flag_tree_loop_distribution != 0;
+  return flag_tree_loop_distribution
+    || flag_tree_loop_distribute_patterns;
 }
 
 struct gimple_opt_pass pass_loop_distribution =

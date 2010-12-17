@@ -1,4 +1,4 @@
-// { dg-options "-D_GLIBCXX_PROFILE" }
+// { dg-require-profile-mode "" }
 
 // -*- C++ -*-
 

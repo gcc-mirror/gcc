@@ -96,6 +96,7 @@ private:
   void writeEncoded(::java::lang::String *, jboolean);
   void writeEncodedWithRestrictedChars(::java::lang::String *, jboolean);
   jboolean isName(::java::lang::String *);
+  jboolean isPrefix(::java::lang::String *);
   jboolean isNCName(::java::lang::String *);
   jboolean isChars(::java::lang::String *);
   jboolean isURI(::java::lang::String *);

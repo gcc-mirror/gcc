@@ -1,6 +1,6 @@
 /* List management for the GCC expander.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   1999, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "rtl.h"
 #include "ggc.h"
 

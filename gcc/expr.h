@@ -641,9 +641,11 @@ extern void emit_stack_restore (enum save_level, rtx, rtx);
 /* Invoke emit_stack_save for the nonlocal_goto_save_area.  */
 extern void update_nonlocal_goto_save_area (void);
 
-/* Allocate some space on the stack dynamically and return its address.  An rtx
-   says how many bytes.  */
-extern rtx allocate_dynamic_stack_space (rtx, rtx, int);
+/* Allocate some space on the stack dynamically and return its address.  */
+extern rtx allocate_dynamic_stack_space (rtx, unsigned, unsigned, bool);
+
+/* Emit one stack probe at ADDRESS, an address within the stack.  */
+extern void emit_stack_probe (rtx);
 
 /* Probe a range of stack addresses from FIRST to FIRST+SIZE, inclusive.
    FIRST is a constant and size is a Pmode RTX.  These are offsets from
@@ -666,7 +668,7 @@ mode_for_extraction (enum extraction_pattern, int);
 extern void store_bit_field (rtx, unsigned HOST_WIDE_INT,
 			     unsigned HOST_WIDE_INT, enum machine_mode, rtx);
 extern rtx extract_bit_field (rtx, unsigned HOST_WIDE_INT,
-			      unsigned HOST_WIDE_INT, int, rtx,
+			      unsigned HOST_WIDE_INT, int, bool, rtx,
 			      enum machine_mode, enum machine_mode);
 extern rtx extract_low_bits (enum machine_mode, enum machine_mode, rtx);
 extern rtx expand_mult (enum machine_mode, rtx, rtx, rtx, int);
@@ -691,7 +693,5 @@ extern tree build_libfunc_function (const char *);
 
 /* Get the personality libfunc for a function decl.  */
 rtx get_personality_function (tree);
-
-extern int vector_mode_valid_p (enum machine_mode);
 
 #endif /* GCC_EXPR_H */

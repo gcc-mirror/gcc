@@ -1,7 +1,6 @@
 /* { dg-require-effective-target vect_int } */
 
 #include <stdarg.h>
-#include <stdio.h>
 #include "tree-vect.h"
 
 #define N 200
@@ -53,7 +52,7 @@ int main (int argc, const char* argv[])
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { target vect_perm } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target vect_perm } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { target vect_perm_byte } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target vect_perm_byte } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
 

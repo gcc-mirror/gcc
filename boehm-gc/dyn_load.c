@@ -122,7 +122,7 @@
 #    endif
 #  endif
 
-/* An user-supplied routine that is called to dtermine if a DSO must
+/* An user-supplied routine that is called to determine if a DSO must
    be scanned by the gc.  */
 static int (*GC_has_static_roots)(const char *, void *, size_t);
 /* Register the routine.  */
@@ -1157,72 +1157,167 @@ void GC_register_dynamic_libraries()
 
 /*#define DARWIN_DEBUG*/
 
+/* Writeable sections generally available on Darwin.  */
 const static struct { 
         const char *seg;
         const char *sect;
 } GC_dyld_sections[] = {
         { SEG_DATA, SECT_DATA },
+        /* Used by FSF GCC, but not by OSX system tools, so far.  */
+        { SEG_DATA, "__static_data" }, 
         { SEG_DATA, SECT_BSS },
-        { SEG_DATA, SECT_COMMON }
+        { SEG_DATA, SECT_COMMON },
+        /* FSF GCC - zero-sized object sections for targets supporting section
+           anchors.  */
+        { SEG_DATA, "__zobj_data" },
+        { SEG_DATA, "__zobj_bss" }
 };
-    
+
+/* Additional writeable sections:
+
+   GCC on Darwin constucts aligned sections "on demand", where the alignment
+   size is embedded in the section name.  Furthermore, there are distintions
+   between sections containing private vs. public symbols.
+
+   It also constructs sections specifically for zero-sized objects, when the
+   target supports section anchors.  */
+const char * GC_dyld_add_sect_fmts[] = 
+{
+  "__bss%u",
+  "__pu_bss%u",
+  "__zo_bss%u",
+  "__zo_pu_bss%u",
+  NULL
+} ;
+
+/* Currently, mach-o will allow up to a max of 2^15 alignment in an
+   object file.  */
+#define L2_MAX_OFILE_ALIGNMENT 15
+
+  
 #ifdef DARWIN_DEBUG
-static const char *GC_dyld_name_for_hdr(const struct GC_MACH_HEADER *hdr) {
-    unsigned long i,c;
-    c = _dyld_image_count();
-    for(i=0;i<c;i++) if(_dyld_get_image_header(i) == hdr)
-        return _dyld_get_image_name(i);
-    return NULL;
+static const char *
+GC_dyld_name_for_hdr (const struct GC_MACH_HEADER *hdr)
+{
+  unsigned long i,c;
+  c = _dyld_image_count();
+  for (i=0;i<c;i++) 
+    if(_dyld_get_image_header(i) == hdr)
+      return _dyld_get_image_name(i);
+  return NULL;
 }
 #endif
-        
+
+
 /* This should never be called by a thread holding the lock */
-static void GC_dyld_image_add(const struct GC_MACH_HEADER *hdr, intptr_t slide)
+static void 
+GC_dyld_image_add (const struct GC_MACH_HEADER *hdr, intptr_t slide)
 {
-    unsigned long start,end,i;
-    const struct GC_MACH_SECTION *sec;
-    if (GC_no_dls) return;
-    for(i=0;i<sizeof(GC_dyld_sections)/sizeof(GC_dyld_sections[0]);i++) {
+  char secnam[16];
+  unsigned long start,end,i,j;
+  const struct GC_MACH_SECTION *sec;
+  const char *fmt;
 
+  if (GC_no_dls)
+    return;
+
+  for (i=0; i<sizeof(GC_dyld_sections)/sizeof(GC_dyld_sections[0]); i++)
+    {
       sec = GC_GETSECTBYNAME (hdr, GC_dyld_sections[i].seg,
 			      GC_dyld_sections[i].sect);
-        if(sec == NULL || sec->size == 0) continue;
-        start = slide + sec->addr;
-        end = start + sec->size;
-#	ifdef DARWIN_DEBUG
-            GC_printf4("Adding section at %p-%p (%lu bytes) from image %s\n",
-                start,end,sec->size,GC_dyld_name_for_hdr(hdr));
-#       endif
-        GC_add_roots((char*)start,(char*)end);
+      if(sec == NULL || sec->size == 0)
+	continue;
+
+      start = slide + sec->addr;
+      end = start + sec->size;
+
+#     ifdef DARWIN_DEBUG
+      GC_printf5("Adding section __DATA,%s at %p-%p (%lu bytes) from image %s\n",
+                GC_dyld_sections[i].sect, start,end,sec->size,GC_dyld_name_for_hdr(hdr));
+#      endif
+      GC_add_roots((char*)start,(char*)end);
     }
-#   ifdef DARWIN_DEBUG
-        GC_print_static_roots();
-#   endif
+
+  /* Sections constructed on demand.  */
+  j=0;
+  while ((fmt = GC_dyld_add_sect_fmts[j]) != NULL)
+    {
+      /* Add our manufactured aligned BSS sections.  */
+      for (i=0; i<=L2_MAX_OFILE_ALIGNMENT; i++)
+	{
+	  snprintf (secnam, 16, fmt, (unsigned)i);
+	  sec = GC_GETSECTBYNAME (hdr, SEG_DATA, secnam);
+	  if (sec == NULL || sec->size == 0)
+	    continue;
+	  start = slide + sec->addr;
+	  end = start + sec->size;
+#	  ifdef DARWIN_DEBUG
+	  GC_printf5("Adding section __DATA,%s at %p-%p (%lu bytes) from image %s\n",
+		 secnam, start,end,sec->size,GC_dyld_name_for_hdr(hdr));
+#	  endif
+	  GC_add_roots((char*)start,(char*)end);
+	}
+      j++;
+    } 
+# ifdef DARWIN_DEBUG
+  GC_print_static_roots();
+# endif
 }
 
 /* This should never be called by a thread holding the lock */
-static void GC_dyld_image_remove(const struct GC_MACH_HEADER *hdr,
-				 intptr_t slide) {
-    unsigned long start,end,i;
-    const struct GC_MACH_SECTION *sec;
-    for(i=0;i<sizeof(GC_dyld_sections)/sizeof(GC_dyld_sections[0]);i++) {
+static void 
+GC_dyld_image_remove (const struct GC_MACH_HEADER *hdr, intptr_t slide)
+{
+  char secnam[16];
+  unsigned long start,end,i,j;
+  const struct GC_MACH_SECTION *sec;
+  const char *fmt;
+
+  for (i=0; i<sizeof(GC_dyld_sections)/sizeof(GC_dyld_sections[0]); i++)
+    {
       sec = GC_GETSECTBYNAME (hdr, GC_dyld_sections[i].seg,
 			      GC_dyld_sections[i].sect);
-        if(sec == NULL || sec->size == 0) continue;
-        start = slide + sec->addr;
-        end = start + sec->size;
-#	ifdef DARWIN_DEBUG
-            GC_printf4("Removing section at %p-%p (%lu bytes) from image %s\n",
-                start,end,sec->size,GC_dyld_name_for_hdr(hdr));
-#		endif
-        GC_remove_roots((char*)start,(char*)end);
+      if(sec == NULL || sec->size == 0)
+	continue;
+
+      start = slide + sec->addr;
+      end = start + sec->size;
+#     ifdef DARWIN_DEBUG
+      GC_printf5("Removing section __DATA,%s at %p-%p (%lu bytes) from image %s\n",
+                  GC_dyld_sections[i].sect, start,end,sec->size,GC_dyld_name_for_hdr(hdr));
+#      endif
+      GC_remove_roots((char*)start,(char*)end);
     }
-#   ifdef DARWIN_DEBUG
-        GC_print_static_roots();
-#   endif
+
+  /* Remove our on-demand sections.  */
+  j=0;
+  while ((fmt = GC_dyld_add_sect_fmts[j]) != NULL)
+    {
+      for (i=0; i<=L2_MAX_OFILE_ALIGNMENT; i++)
+	{
+	  snprintf (secnam, 16, fmt, (unsigned)i);
+	  sec = GC_GETSECTBYNAME (hdr, SEG_DATA, secnam);
+	  if (sec == NULL || sec->size == 0)
+	    continue;
+	  start = slide + sec->addr;
+	  end = start + sec->size;
+#	  ifdef DARWIN_DEBUG
+	  GC_printf5("Removing section __DATA,%s at %p-%p (%lu bytes) from image %s\n",
+		      secnam, start,end,sec->size,GC_dyld_name_for_hdr(hdr));
+#	  endif
+	  GC_remove_roots((char*)start,(char*)end);
+	}
+      j++;
+    }
+
+# ifdef DARWIN_DEBUG
+  GC_print_static_roots();
+# endif
 }
 
-void GC_register_dynamic_libraries() {
+void 
+GC_register_dynamic_libraries() 
+{
     /* Currently does nothing. The callbacks are setup by GC_init_dyld() 
     The dyld library takes it from there. */
 }
@@ -1233,15 +1328,18 @@ void GC_register_dynamic_libraries() {
    This should be called BEFORE any thread in created and WITHOUT the
    allocation lock held. */
    
-void GC_init_dyld() {
+void 
+GC_init_dyld()
+{
   static GC_bool initialized = FALSE;
   char *bind_fully_env = NULL;
   
-  if(initialized) return;
+  if(initialized)
+    return;
   
-#   ifdef DARWIN_DEBUG
+# ifdef DARWIN_DEBUG
   GC_printf0("Registering dyld callbacks...\n");
-#   endif
+# endif
   
   /* Apple's Documentation:
      When you call _dyld_register_func_for_add_image, the dynamic linker runtime
@@ -1254,27 +1352,28 @@ void GC_init_dyld() {
      linked in the future
   */
   
-    _dyld_register_func_for_add_image(GC_dyld_image_add);
-    _dyld_register_func_for_remove_image(GC_dyld_image_remove);
+  _dyld_register_func_for_add_image(GC_dyld_image_add);
+  _dyld_register_func_for_remove_image(GC_dyld_image_remove);
 
-    /* Set this early to avoid reentrancy issues. */
-    initialized = TRUE;
+  /* Set this early to avoid reentrancy issues. */
+  initialized = TRUE;
 
-    bind_fully_env = getenv("DYLD_BIND_AT_LAUNCH");
+  bind_fully_env = getenv("DYLD_BIND_AT_LAUNCH");
     
-    if (bind_fully_env == NULL) {
-#   ifdef DARWIN_DEBUG
+  if (bind_fully_env == NULL)
+    {
+#     ifdef DARWIN_DEBUG
       GC_printf0("Forcing full bind of GC code...\n");
-#   endif
+#     endif
       
-      if(!_dyld_bind_fully_image_containing_address((unsigned long*)GC_malloc))
-        GC_abort("_dyld_bind_fully_image_containing_address failed");
+      if (!_dyld_bind_fully_image_containing_address((unsigned long*)GC_malloc))
+	GC_abort("_dyld_bind_fully_image_containing_address failed");
     }
-
 }
 
 #define HAVE_REGISTER_MAIN_STATIC_DATA
-GC_bool GC_register_main_static_data()
+GC_bool 
+GC_register_main_static_data (void)
 {
   /* Already done through dyld callbacks */
   return FALSE;

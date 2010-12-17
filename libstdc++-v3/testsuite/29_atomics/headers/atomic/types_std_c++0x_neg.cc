@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,6 +49,29 @@ void test01()
   using atomic_char16_t;
   using atomic_char32_t;
 
+  using atomic_int_least8_t;
+  using atomic_uint_least8_t;
+  using atomic_int_least16_t;
+  using atomic_uint_least16_t;
+  using atomic_int_least32_t;
+  using atomic_uint_least32_t;
+  using atomic_int_least64_t;
+  using atomic_uint_least64_t;
+  using atomic_int_fast8_t;
+  using atomic_uint_fast8_t;
+  using atomic_int_fast16_t;
+  using atomic_uint_fast16_t;
+  using atomic_int_fast32_t;
+  using atomic_uint_fast32_t;
+  using atomic_int_fast64_t;
+  using atomic_uint_fast64_t;
+  using atomic_intptr_t;
+  using atomic_uintptr_t;
+  using atomic_size_t;
+  using atomic_ptrdiff_t;
+  using atomic_intmax_t;
+  using atomic_uintmax_t;
+
   using atomic_address;
 }
 
@@ -76,3 +99,72 @@ void test01()
 // { dg-error "expected nested-name-specifier" "" { target *-*-* } 49 }
 // { dg-error "expected nested-name-specifier" "" { target *-*-* } 50 }
 // { dg-error "expected nested-name-specifier" "" { target *-*-* } 52 }
+// { dg-error "expected nested-name-specifier" "" { target *-*-* } 53 }
+// { dg-error "expected nested-name-specifier" "" { target *-*-* } 54 }
+// { dg-error "expected nested-name-specifier" "" { target *-*-* } 55 }
+// { dg-error "expected nested-name-specifier" "" { target *-*-* } 56 }
+// { dg-error "expected nested-name-specifier" "" { target *-*-* } 57 }
+// { dg-error "expected nested-name-specifier" "" { target *-*-* } 58 }
+// { dg-error "expected nested-name-specifier" "" { target *-*-* } 59 }
+// { dg-error "expected nested-name-specifier" "" { target *-*-* } 60 }
+// { dg-error "expected nested-name-specifier" "" { target *-*-* } 61 }
+// { dg-error "expected nested-name-specifier" "" { target *-*-* } 62 }
+// { dg-error "expected nested-name-specifier" "" { target *-*-* } 63 }
+// { dg-error "expected nested-name-specifier" "" { target *-*-* } 64 }
+// { dg-error "expected nested-name-specifier" "" { target *-*-* } 65 }
+// { dg-error "expected nested-name-specifier" "" { target *-*-* } 66 }
+// { dg-error "expected nested-name-specifier" "" { target *-*-* } 67 }
+// { dg-error "expected nested-name-specifier" "" { target *-*-* } 68 }
+// { dg-error "expected nested-name-specifier" "" { target *-*-* } 69 }
+// { dg-error "expected nested-name-specifier" "" { target *-*-* } 70 }
+// { dg-error "expected nested-name-specifier" "" { target *-*-* } 71 }
+// { dg-error "expected nested-name-specifier" "" { target *-*-* } 72 }
+// { dg-error "expected nested-name-specifier" "" { target *-*-* } 73 }
+// { dg-error "expected nested-name-specifier" "" { target *-*-* } 75 }
+
+// { dg-error "declared" "" { target *-*-* } 26 }
+// { dg-error "declared" "" { target *-*-* } 27 }
+// { dg-error "declared" "" { target *-*-* } 28 }
+// { dg-error "declared" "" { target *-*-* } 29 }
+// { dg-error "declared" "" { target *-*-* } 30 }
+// { dg-error "declared" "" { target *-*-* } 31 }
+// { dg-error "declared" "" { target *-*-* } 32 }
+// { dg-error "declared" "" { target *-*-* } 34 }
+// { dg-error "declared" "" { target *-*-* } 36 }
+// { dg-error "declared" "" { target *-*-* } 37 }
+// { dg-error "declared" "" { target *-*-* } 38 }
+// { dg-error "declared" "" { target *-*-* } 39 }
+// { dg-error "declared" "" { target *-*-* } 40 }
+// { dg-error "declared" "" { target *-*-* } 41 }
+// { dg-error "declared" "" { target *-*-* } 42 }
+// { dg-error "declared" "" { target *-*-* } 43 }
+// { dg-error "declared" "" { target *-*-* } 44 }
+// { dg-error "declared" "" { target *-*-* } 45 }
+// { dg-error "declared" "" { target *-*-* } 46 }
+// { dg-error "declared" "" { target *-*-* } 47 }
+// { dg-error "declared" "" { target *-*-* } 48 }
+// { dg-error "declared" "" { target *-*-* } 49 }
+// { dg-error "declared" "" { target *-*-* } 50 }
+// { dg-error "declared" "" { target *-*-* } 52 }
+// { dg-error "declared" "" { target *-*-* } 53 }
+// { dg-error "declared" "" { target *-*-* } 54 }
+// { dg-error "declared" "" { target *-*-* } 55 }
+// { dg-error "declared" "" { target *-*-* } 56 }
+// { dg-error "declared" "" { target *-*-* } 57 }
+// { dg-error "declared" "" { target *-*-* } 58 }
+// { dg-error "declared" "" { target *-*-* } 59 }
+// { dg-error "declared" "" { target *-*-* } 60 }
+// { dg-error "declared" "" { target *-*-* } 61 }
+// { dg-error "declared" "" { target *-*-* } 62 }
+// { dg-error "declared" "" { target *-*-* } 63 }
+// { dg-error "declared" "" { target *-*-* } 64 }
+// { dg-error "declared" "" { target *-*-* } 65 }
+// { dg-error "declared" "" { target *-*-* } 66 }
+// { dg-error "declared" "" { target *-*-* } 67 }
+// { dg-error "declared" "" { target *-*-* } 68 }
+// { dg-error "declared" "" { target *-*-* } 69 }
+// { dg-error "declared" "" { target *-*-* } 70 }
+// { dg-error "declared" "" { target *-*-* } 71 }
+// { dg-error "declared" "" { target *-*-* } 72 }
+// { dg-error "declared" "" { target *-*-* } 73 }
+// { dg-error "declared" "" { target *-*-* } 75 }

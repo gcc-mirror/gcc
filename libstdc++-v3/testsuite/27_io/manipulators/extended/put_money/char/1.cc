@@ -1,5 +1,5 @@
 // { dg-options "-std=gnu++0x" }
-// { dg-require-namedlocale "" }
+// { dg-require-namedlocale "de_DE@euro" }
 
 // 2010-03-01  Paolo Carlini  <paolo.carlini@oracle.com>
 

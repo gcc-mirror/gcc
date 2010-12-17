@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_C_TREE_H
 
 #include "c-family/c-common.h"
-#include "toplev.h"
 #include "diagnostic.h"
 
 /* struct lang_identifier is private to c-decl.c, but langhooks.c needs to
@@ -175,6 +174,8 @@ extern int get_upc_pupc_mode(void);
    only used to distinguish tag definitions, tag references and typeof
    uses.  */
 enum c_typespec_kind {
+  /* No typespec.  This appears only in struct c_declspec.  */
+  ctsk_none,
   /* A reserved keyword type specifier.  */
   ctsk_resword,
   /* A reference to a tag, previously declared, such as "struct foo".
@@ -269,13 +270,14 @@ struct c_declspecs {
   /* Any type specifier keyword used such as "int", not reflecting
      modifiers such as "short", or cts_none if none.  */
   ENUM_BITFIELD (c_typespec_keyword) typespec_word : 8;
+  /* The kind of type specifier if one has been seen, ctsk_none
+     otherwise.  */
+  ENUM_BITFIELD (c_typespec_kind) typespec_kind : 3;
   /* Whether any expressions in typeof specifiers may appear in
      constant expressions.  */
   BOOL_BITFIELD expr_const_operands : 1;
   /* Whether any declaration specifiers have been seen at all.  */
   BOOL_BITFIELD declspecs_seen_p : 1;
-  /* Whether a type specifier has been seen.  */
-  BOOL_BITFIELD type_seen_p : 1;
   /* Whether something other than a storage class specifier or
      attribute has been seen.  This is used to warn for the
      obsolescent usage of storage class specifiers other than at the
@@ -285,10 +287,6 @@ struct c_declspecs {
   BOOL_BITFIELD non_sc_seen_p : 1;
   /* Whether the type is specified by a typedef or typeof name.  */
   BOOL_BITFIELD typedef_p : 1;
-  /* Whether a struct, union or enum type either had its content
-     defined by a type specifier in the list or was the first visible
-     declaration of its tag.  */
-  BOOL_BITFIELD tag_defined_p : 1;
   /* Whether the type is explicitly "signed" or specified by a typedef
      whose type is explicitly "signed".  */
   BOOL_BITFIELD explicit_signed_p : 1;
@@ -345,12 +343,22 @@ enum c_declarator_kind {
   cdk_attrs
 };
 
+typedef struct GTY(()) c_arg_tag_d {
+  /* The argument name.  */
+  tree id;
+  /* The type of the argument.  */
+  tree type;
+} c_arg_tag;
+
+DEF_VEC_O(c_arg_tag);
+DEF_VEC_ALLOC_O(c_arg_tag,gc);
+
 /* Information about the parameters in a function declarator.  */
 struct c_arg_info {
   /* A list of parameter decls.  */
   tree parms;
   /* A list of structure, union and enum tags defined.  */
-  tree tags;
+  VEC(c_arg_tag,gc) *tags;
   /* A list of argument types to go in the FUNCTION_TYPE.  */
   tree types;
   /* A list of non-parameter decls (notably enumeration constants)
@@ -470,8 +478,9 @@ extern int quals_from_declspecs (const struct c_declspecs *);
 extern struct c_declarator *build_array_declarator (location_t, tree,
     						    struct c_declspecs *,
 						    bool, bool);
-extern tree build_enumerator (location_t, struct c_enum_contents *, tree, tree);
-extern tree check_for_loop_decls (location_t);
+extern tree build_enumerator (location_t, location_t, struct c_enum_contents *,
+			      tree, tree);
+extern tree check_for_loop_decls (location_t, bool);
 extern void mark_forward_parm_decls (void);
 extern void declare_parm_level (void);
 extern void undeclared_variable (location_t, tree);
@@ -487,6 +496,7 @@ extern tree finish_enum (tree, tree, tree);
 extern void finish_function (void);
 extern tree finish_struct (location_t, tree, tree, tree,
 			   struct c_struct_parse_info *);
+extern struct c_arg_info *build_arg_info (void);
 extern struct c_arg_info *get_parm_info (bool);
 extern tree grokfield (location_t, struct c_declarator *,
 		       struct c_declspecs *, tree, tree *);
@@ -549,7 +559,6 @@ extern void c_initialize_diagnostics (diagnostic_context *);
 extern bool c_vla_unspec_p (tree x, tree fn);
 
 /* in c-typeck.c */
-extern bool in_late_binary_op;
 extern int in_alignof;
 extern int in_sizeof;
 extern int in_typeof;

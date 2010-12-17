@@ -1,4 +1,5 @@
-/* { dg-do compile } */
+/* { dg-do assemble } */
+/* { dg-options "-save-temps" } */
 
 template <class T>
 struct Vec {
@@ -11,7 +12,7 @@ typedef struct {
   Vec<float> fvec;
   float fscalar;
   double dscalar;
-  Vec<char> chVec;
+  Vec<signed char> chVec;
   int iscalar;
 } anonymous;
 
@@ -23,4 +24,5 @@ const char *enc3 = @encode(anonymous);
 
 /* { dg-final { scan-assembler "{Vec<float>=ffi}" } }  */
 /* { dg-final { scan-assembler "{Vec<double>=ddi}" } }  */
-/* { dg-final { scan-assembler "{?={Vec<double>=ddi}{Vec<float>=ffi}fd{Vec<char>=cci}i}" } }  */
+/* { dg-final { scan-file "encode-2.o" "{?={Vec<double>=ddi}{Vec<float>=ffi}fd{Vec<signed char>=cci}i}" } }
+/* { dg-final cleanup-saved-temps } */

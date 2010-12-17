@@ -2,7 +2,7 @@
    on information stored in GCC's tree structure.  This code implements the
    -aux-info option.
    Copyright (C) 1989, 1991, 1994, 1995, 1997, 1998,
-   1999, 2000, 2003, 2004, 2007 Free Software Foundation, Inc.
+   1999, 2000, 2003, 2004, 2007, 2010 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@segfault.us.com).
 
 This file is part of GCC.
@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "tree.h"
 #include "c-tree.h"
-#include "toplev.h"
 
 enum formals_style_enum {
   ansi,
@@ -42,7 +41,6 @@ static const char *data_type;
 
 static char *affix_data_type (const char *) ATTRIBUTE_MALLOC;
 static const char *gen_formal_list_for_type (tree, formals_style);
-static int   deserves_ellipsis (tree);
 static const char *gen_formal_list_for_func_def (tree, formals_style);
 static const char *gen_type (const char *, tree, formals_style);
 static const char *gen_decl (tree, int, formals_style);
@@ -183,28 +181,6 @@ gen_formal_list_for_type (tree fntype, formals_style style)
   return concat (" (", formal_list, ")", NULL);
 }
 
-/* For the generation of an ANSI prototype for a function definition, we have
-   to look at the formal parameter list of the function's own "type" to
-   determine if the function's formal parameter list should end with an
-   ellipsis.  Given a tree node, the following function will return nonzero
-   if the "function type" parameter list should end with an ellipsis.  */
-
-static int
-deserves_ellipsis (tree fntype)
-{
-  tree formal_type;
-
-  formal_type = TYPE_ARG_TYPES (fntype);
-  while (formal_type && TREE_VALUE (formal_type) != void_type_node)
-    formal_type = TREE_CHAIN (formal_type);
-
-  /* If there were at least some parameters, and if the formals-types-list
-     petered out to a NULL (i.e. without being terminated by a void_type_node)
-     then we need to tack on an ellipsis.  */
-
-  return (!formal_type && TYPE_ARG_TYPES (fntype));
-}
-
 /* Generate a parameter list for a function definition (in some given style).
 
    Note that this routine has to be separate (and different) from the code that
@@ -248,7 +224,7 @@ gen_formal_list_for_func_def (tree fndecl, formals_style style)
     {
       if (!DECL_ARGUMENTS (fndecl))
 	formal_list = concat (formal_list, "void", NULL);
-      if (deserves_ellipsis (TREE_TYPE (fndecl)))
+      if (stdarg_p (TREE_TYPE (fndecl)))
 	formal_list = concat (formal_list, ", ...", NULL);
     }
   if ((style == ansi) || (style == k_and_r_names))

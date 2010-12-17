@@ -27,6 +27,8 @@ extern int memcmp (const void *, const void *, __SIZE_TYPE__);
 
 int main()
 {
+  check_isa ();
+
   i[0].s[0] = 0;
   i[0].s[1] = 1;
   i[0].s[2] = 2;

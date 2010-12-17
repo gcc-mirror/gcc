@@ -28,6 +28,7 @@
 --  handling of private and full declarations, and the construction of dispatch
 --  tables for tagged types.
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
@@ -51,8 +52,9 @@ with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch10; use Sem_Ch10;
 with Sem_Ch12; use Sem_Ch12;
+with Sem_Ch13; use Sem_Ch13;
 with Sem_Disp; use Sem_Disp;
-with Sem_Prag; use Sem_Prag;
+with Sem_Eval; use Sem_Eval;
 with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
 with Snames;   use Snames;
@@ -252,9 +254,8 @@ package body Sem_Ch7 is
          end if;
 
          if Is_Package_Or_Generic_Package (Spec_Id)
-           and then
-             (Scope (Spec_Id) = Standard_Standard
-               or else Is_Child_Unit (Spec_Id))
+           and then (Scope (Spec_Id) = Standard_Standard
+                      or else Is_Child_Unit (Spec_Id))
            and then not Unit_Requires_Body (Spec_Id)
          then
             if Ada_Version = Ada_83 then
@@ -473,9 +474,10 @@ package body Sem_Ch7 is
       --  is conservative and definitely correct.
 
       --  We only do this at the outer (library) level non-generic packages.
-      --  The reason is simply to cut down on the number of external symbols
-      --  generated, so this is simply an optimization of the efficiency
-      --  of the compilation process. It has no other effect.
+      --  The reason is simply to cut down on the number of global symbols
+      --  generated, which has a double effect: (1) to make the compilation
+      --  process more efficient and (2) to give the code generator more
+      --  freedom to optimize within each unit, especially subprograms.
 
       if (Scope (Spec_Id) = Standard_Standard or else Is_Child_Unit (Spec_Id))
         and then not Is_Generic_Unit (Spec_Id)
@@ -485,19 +487,20 @@ package body Sem_Ch7 is
 
             function Has_Referencer
               (L     : List_Id;
-               Outer : Boolean)
-               return  Boolean;
+               Outer : Boolean) return  Boolean;
             --  Traverse the given list of declarations in reverse order.
-            --  Return True as soon as a referencer is reached. Return False if
-            --  none is found. The Outer parameter is True for the outer level
-            --  call, and False for inner level calls for nested packages. If
-            --  Outer is True, then any entities up to the point of hitting a
-            --  referencer get their Is_Public flag cleared, so that the
-            --  entities will be treated as static entities in the C sense, and
-            --  need not have fully qualified names. For inner levels, we need
-            --  all names to be fully qualified to deal with the same name
-            --  appearing in parallel packages (right now this is tied to their
-            --  being external).
+            --  Return True if a referencer is present. Return False if none is
+            --  found. The Outer parameter is True for the outer level call and
+            --  False for inner level calls for nested packages. If Outer is
+            --  True, then any entities up to the point of hitting a referencer
+            --  get their Is_Public flag cleared, so that the entities will be
+            --  treated as static entities in the C sense, and need not have
+            --  fully qualified names. Furthermore, if the referencer is an
+            --  inlined subprogram that doesn't reference other subprograms,
+            --  we keep clearing the Is_Public flag on subprograms. For inner
+            --  levels, we need all names to be fully qualified to deal with
+            --  the same name appearing in parallel packages (right now this
+            --  is tied to their being external).
 
             --------------------
             -- Has_Referencer --
@@ -505,13 +508,68 @@ package body Sem_Ch7 is
 
             function Has_Referencer
               (L     : List_Id;
-               Outer : Boolean)
-               return  Boolean
+               Outer : Boolean) return  Boolean
             is
+               Has_Referencer_Except_For_Subprograms : Boolean := False;
+
                D : Node_Id;
                E : Entity_Id;
                K : Node_Kind;
                S : Entity_Id;
+
+               function Check_Subprogram_Ref (N : Node_Id)
+                 return Traverse_Result;
+               --  Look for references to subprograms
+
+               --------------------------
+               -- Check_Subprogram_Ref --
+               --------------------------
+
+               function Check_Subprogram_Ref (N : Node_Id)
+                 return Traverse_Result
+               is
+                  V : Node_Id;
+
+               begin
+                  --  Check name of procedure or function calls
+
+                  if Nkind_In (N, N_Procedure_Call_Statement, N_Function_Call)
+                    and then Is_Entity_Name (Name (N))
+                  then
+                     return Abandon;
+                  end if;
+
+                  --  Check prefix of attribute references
+
+                  if Nkind (N) = N_Attribute_Reference
+                    and then Is_Entity_Name (Prefix (N))
+                    and then Present (Entity (Prefix (N)))
+                    and then Ekind (Entity (Prefix (N))) in Subprogram_Kind
+                  then
+                     return Abandon;
+                  end if;
+
+                  --  Check value of constants
+
+                  if Nkind (N) = N_Identifier
+                    and then Present (Entity (N))
+                    and then Ekind (Entity (N)) = E_Constant
+                  then
+                     V := Constant_Value (Entity (N));
+                     if Present (V)
+                       and then not Compile_Time_Known_Value_Or_Aggr (V)
+                     then
+                        return Abandon;
+                     end if;
+                  end if;
+
+                  return OK;
+               end Check_Subprogram_Ref;
+
+               function Check_Subprogram_Refs is
+                 new Traverse_Func (Check_Subprogram_Ref);
+
+            --  Start of processing for Has_Referencer
 
             begin
                if No (L) then
@@ -524,6 +582,8 @@ package body Sem_Ch7 is
 
                   if K in N_Body_Stub then
                      return True;
+
+                  --  Processing for subprogram bodies
 
                   elsif K = N_Subprogram_Body then
                      if Acts_As_Spec (D) then
@@ -541,7 +601,13 @@ package body Sem_Ch7 is
                         --  of accessing global entities.
 
                         if Has_Pragma_Inline (E) then
-                           return True;
+                           if Outer
+                             and then Check_Subprogram_Refs (D) = OK
+                           then
+                              Has_Referencer_Except_For_Subprograms := True;
+                           else
+                              return True;
+                           end if;
                         else
                            Set_Is_Public (E, False);
                         end if;
@@ -549,18 +615,30 @@ package body Sem_Ch7 is
                      else
                         E := Corresponding_Spec (D);
 
-                        if Present (E)
-                          and then (Is_Generic_Unit (E)
-                                     or else Has_Pragma_Inline (E)
-                                     or else Is_Inlined (E))
-                        then
-                           return True;
+                        if Present (E) then
+
+                           --  A generic subprogram body acts as a referencer
+
+                           if Is_Generic_Unit (E) then
+                              return True;
+                           end if;
+
+                           if Has_Pragma_Inline (E) or else Is_Inlined (E) then
+                              if Outer
+                                and then Check_Subprogram_Refs (D) = OK
+                              then
+                                 Has_Referencer_Except_For_Subprograms := True;
+                              else
+                                 return True;
+                              end if;
+                           end if;
                         end if;
                      end if;
 
                   --  Processing for package bodies
 
                   elsif K = N_Package_Body
+                    and then not Has_Referencer_Except_For_Subprograms
                     and then Present (Corresponding_Spec (D))
                   then
                      E := Corresponding_Spec (D);
@@ -590,7 +668,9 @@ package body Sem_Ch7 is
                   --  Processing for package specs, recurse into declarations.
                   --  Again we skip this for the case of generic instances.
 
-                  elsif K = N_Package_Declaration then
+                  elsif K = N_Package_Declaration
+                    and then not Has_Referencer_Except_For_Subprograms
+                  then
                      S := Specification (D);
 
                      if not Is_Generic_Unit (Defining_Entity (S)) then
@@ -617,6 +697,8 @@ package body Sem_Ch7 is
                      E := Defining_Entity (D);
 
                      if Outer
+                       and then (not Has_Referencer_Except_For_Subprograms
+                                  or else K = N_Subprogram_Declaration)
                        and then not Is_Imported (E)
                        and then not Is_Exported (E)
                        and then No (Interface_Name (E))
@@ -628,7 +710,7 @@ package body Sem_Ch7 is
                   Prev (D);
                end loop;
 
-               return False;
+               return Has_Referencer_Except_For_Subprograms;
             end Has_Referencer;
 
          --  Start of processing for Make_Non_Public_Where_Possible
@@ -686,7 +768,7 @@ package body Sem_Ch7 is
       --     package Pkg is ...
 
       if From_With_Type (Id) then
-         return;
+         goto Leave;
       end if;
 
       if Debug_Flag_C then
@@ -760,6 +842,9 @@ package body Sem_Ch7 is
          Write_Location (Sloc (N));
          Write_Eol;
       end if;
+
+      <<Leave>>
+         Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
    end Analyze_Package_Declaration;
 
    -----------------------------------
@@ -784,12 +869,6 @@ package body Sem_Ch7 is
       --  enclosing package. This requires a separate step to install these
       --  private_with_clauses, and remove them at the end of the nested
       --  package.
-
-      procedure Analyze_PPCs (Decls : List_Id);
-      --  Given a list of declarations, go through looking for subprogram
-      --  specs, and for each one found, analyze any pre/postconditions that
-      --  are chained to the spec. This is the implementation of the late
-      --  visibility analysis for preconditions and postconditions in specs.
 
       procedure Clear_Constants (Id : Entity_Id; FE : Entity_Id);
       --  Clears constant indications (Never_Set_In_Source, Constant_Value, and
@@ -818,33 +897,6 @@ package body Sem_Ch7 is
       --  This has to be done at the point of entering the instance package's
       --  private part rather than being done in Sem_Ch12.Install_Parent
       --  (which is where the parents' visible declarations are installed).
-
-      ------------------
-      -- Analyze_PPCs --
-      ------------------
-
-      procedure Analyze_PPCs (Decls : List_Id) is
-         Decl : Node_Id;
-         Spec : Node_Id;
-         Sent : Entity_Id;
-         Prag : Node_Id;
-
-      begin
-         Decl := First (Decls);
-         while Present (Decl) loop
-            if Nkind (Original_Node (Decl)) = N_Subprogram_Declaration then
-               Spec := Specification (Original_Node (Decl));
-               Sent := Defining_Unit_Name (Spec);
-               Prag := Spec_PPC_List (Sent);
-               while Present (Prag) loop
-                  Analyze_PPC_In_Decl_Part (Prag, Sent);
-                  Prag := Next_Pragma (Prag);
-               end loop;
-            end if;
-
-            Next (Decl);
-         end loop;
-      end Analyze_PPCs;
 
       ---------------------
       -- Clear_Constants --
@@ -1074,17 +1126,26 @@ package body Sem_Ch7 is
    begin
       if Present (Vis_Decls) then
          Analyze_Declarations (Vis_Decls);
-         Analyze_PPCs (Vis_Decls);
       end if;
 
-      --  Verify that incomplete types have received full declarations
+      --  Verify that incomplete types have received full declarations and
+      --  also build invariant procedures for any types with invariants.
 
       E := First_Entity (Id);
       while Present (E) loop
+
+         --  Check on incomplete types
+
          if Ekind (E) = E_Incomplete_Type
            and then No (Full_View (E))
          then
             Error_Msg_N ("no declaration in visible part for incomplete}", E);
+         end if;
+
+         --  Build invariant procedures
+
+         if Is_Type (E) and then Has_Invariants (E) then
+            Build_Invariant_Procedure (E, N);
          end if;
 
          Next_Entity (E);
@@ -1108,7 +1169,6 @@ package body Sem_Ch7 is
          declare
             Orig_Spec : constant Node_Id := Specification (Orig_Decl);
             Save_Priv : constant List_Id := Private_Declarations (Orig_Spec);
-
          begin
             Set_Private_Declarations (Orig_Spec, Empty_List);
             Save_Global_References   (Orig_Decl);
@@ -1209,7 +1269,6 @@ package body Sem_Ch7 is
          end if;
 
          Analyze_Declarations (Priv_Decls);
-         Analyze_PPCs (Priv_Decls);
 
          --  Check the private declarations for incomplete deferred constants
 
@@ -1344,6 +1403,7 @@ package body Sem_Ch7 is
 
       New_Private_Type (N, Id, N);
       Set_Depends_On_Private (Id);
+      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
    end Analyze_Private_Type_Declaration;
 
    ----------------------------------
@@ -1450,7 +1510,7 @@ package body Sem_Ch7 is
                  (Nkind (Parent (E)) = N_Private_Extension_Declaration
                    and then Is_Generic_Type (E)))
            and then In_Open_Scopes (Scope (Etype (E)))
-           and then E = Base_Type (E)
+           and then Is_Base_Type (E)
          then
             if Is_Tagged_Type (E) then
                Op_List := Primitive_Operations (E);
@@ -1477,8 +1537,15 @@ package body Sem_Ch7 is
 
                      Op_Elmt_2 := Next_Elmt (Op_Elmt);
                      while Present (Op_Elmt_2) loop
+
+                        --  Skip entities with attribute Interface_Alias since
+                        --  they are not overriding primitives (these entities
+                        --  link an interface primitive with their covering
+                        --  primitive)
+
                         if Chars (Node (Op_Elmt_2)) = Chars (Parent_Subp)
                           and then Type_Conformant (Prim_Op, Node (Op_Elmt_2))
+                          and then No (Interface_Alias (Node (Op_Elmt_2)))
                         then
                            --  The private inherited operation has been
                            --  overridden by an explicit subprogram: replace
@@ -1487,7 +1554,6 @@ package body Sem_Ch7 is
                            New_Op := Node (Op_Elmt_2);
                            Replace_Elmt (Op_Elmt, New_Op);
                            Remove_Elmt  (Op_List, Op_Elmt_2);
-                           Set_Is_Overriding_Operation (New_Op);
                            Set_Overridden_Operation (New_Op, Parent_Subp);
 
                            --  We don't need to inherit its dispatching slot.
@@ -1868,7 +1934,25 @@ package body Sem_Ch7 is
 
    procedure New_Private_Type (N : Node_Id; Id : Entity_Id; Def : Node_Id) is
    begin
-      Enter_Name (Id);
+      --  For other than Ada 2012, enter tha name in the current scope
+
+      if Ada_Version < Ada_2012 then
+         Enter_Name (Id);
+
+      --  Ada 2012 (AI05-0162): Enter the name in the current scope handling
+      --  private type that completes an incomplete type.
+
+      else
+         declare
+            Prev : Entity_Id;
+         begin
+            Prev := Find_Type_Name (N);
+            pragma Assert (Prev = Id
+              or else (Ekind (Prev) = E_Incomplete_Type
+                        and then Present (Full_View (Prev))
+                        and then Full_View (Prev) = Id));
+         end;
+      end if;
 
       if Limited_Present (Def) then
          Set_Ekind (Id, E_Limited_Private_Type);
@@ -1905,11 +1989,11 @@ package body Sem_Ch7 is
       Set_Private_Dependents (Id, New_Elmt_List);
 
       if Tagged_Present (Def) then
-         Set_Ekind                (Id, E_Record_Type_With_Private);
-         Set_Primitive_Operations (Id, New_Elmt_List);
-         Set_Is_Abstract_Type     (Id, Abstract_Present (Def));
-         Set_Is_Limited_Record    (Id, Limited_Present (Def));
-         Set_Has_Delayed_Freeze   (Id, True);
+         Set_Ekind                       (Id, E_Record_Type_With_Private);
+         Set_Direct_Primitive_Operations (Id, New_Elmt_List);
+         Set_Is_Abstract_Type            (Id, Abstract_Present (Def));
+         Set_Is_Limited_Record           (Id, Limited_Present (Def));
+         Set_Has_Delayed_Freeze          (Id, True);
 
          --  Create a class-wide type with the same attributes
 
@@ -1943,7 +2027,7 @@ package body Sem_Ch7 is
       ------------------------------
 
       procedure Preserve_Full_Attributes (Priv, Full : Entity_Id) is
-         Priv_Is_Base_Type : constant Boolean := Priv = Base_Type (Priv);
+         Priv_Is_Base_Type : constant Boolean := Is_Base_Type (Priv);
 
       begin
          Set_Size_Info (Priv, (Full));
@@ -1953,6 +2037,7 @@ package body Sem_Ch7 is
          Set_Is_Volatile             (Priv, Is_Volatile                (Full));
          Set_Treat_As_Volatile       (Priv, Treat_As_Volatile          (Full));
          Set_Is_Ada_2005_Only        (Priv, Is_Ada_2005_Only           (Full));
+         Set_Is_Ada_2012_Only        (Priv, Is_Ada_2012_Only           (Full));
          Set_Has_Pragma_Unmodified   (Priv, Has_Pragma_Unmodified      (Full));
          Set_Has_Pragma_Unreferenced (Priv, Has_Pragma_Unreferenced    (Full));
          Set_Has_Pragma_Unreferenced_Objects

@@ -1,5 +1,6 @@
 // PR c++/13594
 
+// { dg-options "" }
 // { dg-do compile }
 
 namespace foo {

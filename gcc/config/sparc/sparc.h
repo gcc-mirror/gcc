@@ -450,7 +450,7 @@ extern enum cmodel sparc_cmodel;
 /* Special flags to the Sun-4 assembler when using pipe for input.  */
 
 #define ASM_SPEC "\
-%{R} %{!pg:%{!p:%{fpic|fPIC|fpie|fPIE:-k}}} %{keep-local-as-symbols:-L} \
+%{!pg:%{!p:%{fpic|fPIC|fpie|fPIE:-k}}} %{keep-local-as-symbols:-L} \
 %(asm_cpu) %(asm_relax)"
 
 #define AS_NEEDS_DASH_FOR_PIPED_INPUT
@@ -496,13 +496,6 @@ extern enum cmodel sparc_cmodel;
 /* ??? This should be 32 bits for v9 but what can we do?  */
 #define WCHAR_TYPE "short unsigned int"
 #define WCHAR_TYPE_SIZE 16
-
-/* Show we can debug even without a frame pointer.  */
-#define CAN_DEBUG_WITHOUT_FP
-
-/* Option handling.  */
-
-#define OVERRIDE_OPTIONS  sparc_override_options ()
 
 /* Mask of all CPU selection flags.  */
 #define MASK_ISA \
@@ -524,7 +517,8 @@ extern enum cmodel sparc_cmodel;
 
 /* MASK_APP_REGS must always be the default because that's what
    FIXED_REGISTERS is set to and -ffixed- is processed before
-   CONDITIONAL_REGISTER_USAGE is called (where we process -mno-app-regs).  */
+   TARGET_CONDITIONAL_REGISTER_USAGE is called (where we process
+   -mno-app-regs).  */
 #define TARGET_DEFAULT (MASK_APP_REGS + MASK_FPU)
 
 /* Processor type.
@@ -589,14 +583,6 @@ extern struct sparc_cpu_select sparc_select[];
    numbered.  */
 #define WORDS_BIG_ENDIAN 1
 
-/* Define this to set the endianness to use in libgcc2.c, which can
-   not depend on target_flags.  */
-#if defined (__LITTLE_ENDIAN__) || defined(__LITTLE_ENDIAN_DATA__)
-#define LIBGCC2_WORDS_BIG_ENDIAN 0
-#else
-#define LIBGCC2_WORDS_BIG_ENDIAN 1
-#endif
-
 #define MAX_BITS_PER_WORD	64
 
 /* Width of a word, in units (bytes).  */
@@ -606,8 +592,6 @@ extern struct sparc_cpu_select sparc_select[];
 #else
 #define MIN_UNITS_PER_WORD	4
 #endif
-
-#define UNITS_PER_SIMD_WORD(MODE) (TARGET_VIS ? 8 : UNITS_PER_WORD)
 
 /* Now define the sizes of the C data types.  */
 
@@ -773,7 +757,7 @@ extern struct sparc_cpu_select sparc_select[];
    stack frames.
 
    Registers fixed in arch32 and not arch64 (or vice-versa) are marked in
-   CONDITIONAL_REGISTER_USAGE in order to properly handle -ffixed-.
+   TARGET_CONDITIONAL_REGISTER_USAGE in order to properly handle -ffixed-.
 */
 
 #define FIXED_REGISTERS  \
@@ -818,57 +802,6 @@ extern struct sparc_cpu_select sparc_select[];
   1, 1, 1, 1, 1, 1, 1, 1,	\
 				\
   1, 1, 1, 1, 1, 1}
-
-/* If !TARGET_FPU, then make the fp registers and fp cc regs fixed so that
-   they won't be allocated.  */
-
-#define CONDITIONAL_REGISTER_USAGE				\
-do								\
-  {								\
-    if (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)		\
-      {								\
-	fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
-	call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
-      }								\
-    /* If the user has passed -f{fixed,call-{used,saved}}-g5 */	\
-    /* then honor it.  */					\
-    if (TARGET_ARCH32 && fixed_regs[5])				\
-      fixed_regs[5] = 1;					\
-    else if (TARGET_ARCH64 && fixed_regs[5] == 2)		\
-      fixed_regs[5] = 0;					\
-    if (! TARGET_V9)						\
-      {								\
-	int regno;						\
-	for (regno = SPARC_FIRST_V9_FP_REG;			\
-	     regno <= SPARC_LAST_V9_FP_REG;			\
-	     regno++)						\
-	  fixed_regs[regno] = 1;				\
-	/* %fcc0 is used by v8 and v9.  */			\
-	for (regno = SPARC_FIRST_V9_FCC_REG + 1;		\
-	     regno <= SPARC_LAST_V9_FCC_REG;			\
-	     regno++)						\
-	  fixed_regs[regno] = 1;				\
-      }								\
-    if (! TARGET_FPU)						\
-      {								\
-	int regno;						\
-	for (regno = 32; regno < SPARC_LAST_V9_FCC_REG; regno++) \
-	  fixed_regs[regno] = 1;				\
-      }								\
-    /* If the user has passed -f{fixed,call-{used,saved}}-g2 */	\
-    /* then honor it.  Likewise with g3 and g4.  */		\
-    if (fixed_regs[2] == 2)					\
-      fixed_regs[2] = ! TARGET_APP_REGS;			\
-    if (fixed_regs[3] == 2)					\
-      fixed_regs[3] = ! TARGET_APP_REGS;			\
-    if (TARGET_ARCH32 && fixed_regs[4] == 2)			\
-      fixed_regs[4] = ! TARGET_APP_REGS;			\
-    else if (TARGET_CM_EMBMEDANY)				\
-      fixed_regs[4] = 1;					\
-    else if (fixed_regs[4] == 2)				\
-      fixed_regs[4] = 0;					\
-  }								\
-while (0)
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
@@ -1387,15 +1320,6 @@ extern char leaf_reg_remap[];
    the function!  */
 #define ACCUMULATE_OUTGOING_ARGS 1
 
-/* Value is the number of bytes of arguments automatically
-   popped when returning from a subroutine call.
-   FUNDECL is the declaration node of the function (as a tree),
-   FUNTYPE is the data type of the function (as a tree),
-   or for a library call it is an identifier node for the subroutine name.
-   SIZE is the number of bytes of arguments passed on the stack.  */
-
-#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) 0
-
 /* Define this macro if the target machine has "register windows".  This
    C expression returns the register number as seen by the called function
    corresponding to register number OUT as seen by the calling function.
@@ -1459,35 +1383,6 @@ struct sparc_args {
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL, N_NAMED_ARGS) \
 init_cumulative_args (& (CUM), (FNTYPE), (LIBNAME), (FNDECL));
 
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   TYPE is null for libcalls where that information may not be available.  */
-
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED) \
-function_arg_advance (& (CUM), (MODE), (TYPE), (NAMED))
-
-/* Determine where to put an argument to a function.
-   Value is zero to push the argument on the stack,
-   or a hard register in which to store the argument.
-
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
-   CUM is a variable of type CUMULATIVE_ARGS which gives info about
-    the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).  */
-
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-function_arg (& (CUM), (MODE), (TYPE), (NAMED), 0)
-
-/* Define where a function finds its arguments.
-   This is different from FUNCTION_ARG because of register windows.  */
-
-#define FUNCTION_INCOMING_ARG(CUM, MODE, TYPE, NAMED) \
-function_arg (& (CUM), (MODE), (TYPE), (NAMED), 1)
-
 /* If defined, a C expression which determines whether, and in which direction,
    to pad out an argument with extra space.  The value should be of type
    `enum direction': either `upward' to pad above the argument,
@@ -1495,17 +1390,6 @@ function_arg (& (CUM), (MODE), (TYPE), (NAMED), 1)
 
 #define FUNCTION_ARG_PADDING(MODE, TYPE) \
 function_arg_padding ((MODE), (TYPE))
-
-/* If defined, a C expression that gives the alignment boundary, in bits,
-   of an argument with the specified mode and type.  If it is not defined,
-   PARM_BOUNDARY is used for all arguments.
-   For sparc64, objects requiring 16 byte alignment are passed that way.  */
-
-#define FUNCTION_ARG_BOUNDARY(MODE, TYPE) \
-((TARGET_ARCH64					\
-  && (GET_MODE_ALIGNMENT (MODE) == 128		\
-      || ((TYPE) && TYPE_ALIGN (TYPE) == 128)))	\
- ? 128 : PARM_BOUNDARY)
 
 
 /* Generate the special assembly code needed to tell the assembler whatever
@@ -1810,36 +1694,14 @@ do {									\
 
 /* Try a machine-dependent way of reloading an illegitimate address
    operand.  If we find one, push the reload and jump to WIN.  This
-   macro is used in only one place: `find_reloads_address' in reload.c.
-
-   For SPARC 32, we wish to handle addresses by splitting them into
-   HIGH+LO_SUM pairs, retaining the LO_SUM in the memory reference.
-   This cuts the number of extra insns by one.
-
-   Do nothing when generating PIC code and the address is a
-   symbolic operand or requires a scratch register.  */
-
-#define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_LEVELS,WIN)     \
-do {                                                                    \
-  /* Decompose SImode constants into hi+lo_sum.  We do have to 		\
-     rerecognize what we produce, so be careful.  */			\
-  if (CONSTANT_P (X)							\
-      && (MODE != TFmode || TARGET_ARCH64)				\
-      && GET_MODE (X) == SImode						\
-      && GET_CODE (X) != LO_SUM && GET_CODE (X) != HIGH			\
-      && ! (flag_pic							\
-	    && (symbolic_operand (X, Pmode)				\
-		|| pic_address_needs_scratch (X)))			\
-      && sparc_cmodel <= CM_MEDLOW)					\
-    {									\
-      X = gen_rtx_LO_SUM (GET_MODE (X),					\
-			  gen_rtx_HIGH (GET_MODE (X), X), X);		\
-      push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL,		\
-                   BASE_REG_CLASS, GET_MODE (X), VOIDmode, 0, 0,	\
-                   OPNUM, TYPE);					\
-      goto WIN;								\
-    }									\
-  /* ??? 64-bit reloads.  */						\
+   macro is used in only one place: `find_reloads_address' in reload.c.  */
+#define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_LEVELS,WIN)	   \
+do {									   \
+  int win;								   \
+  (X) = sparc_legitimize_reload_address ((X), (MODE), (OPNUM),		   \
+					 (int)(TYPE), (IND_LEVELS), &win); \
+  if (win)								   \
+    goto WIN;								   \
 } while (0)
 
 /* Specify the machine mode that this machine uses
@@ -2100,13 +1962,6 @@ do {									\
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
   if ((LOG) != 0)			\
     fprintf (FILE, "\t.align %d\n", (1<<(LOG)))
-
-/* This is how to output an assembler line that says to advance
-   the location counter to a multiple of 2**LOG bytes using the
-   "nop" instruction as padding.  */
-#define ASM_OUTPUT_ALIGN_WITH_NOP(FILE,LOG)   \
-  if ((LOG) != 0)                             \
-    fprintf (FILE, "\t.align %d,0x1000000\n", (1<<(LOG)))
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "\t.skip "HOST_WIDE_INT_PRINT_UNSIGNED"\n", (SIZE))

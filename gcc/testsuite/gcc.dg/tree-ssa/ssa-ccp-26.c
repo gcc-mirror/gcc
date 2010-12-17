@@ -7,5 +7,5 @@ int foo(int i)
   return (a + 1)[i];
 }
 
-/* { dg-final { scan-tree-dump "= a\\\[D\\\." "forwprop1" } } */
+/* { dg-final { scan-tree-dump "=.*&a\\\]\\\[D\\\." "forwprop1" } } */
 /* { dg-final { cleanup-tree-dump "forwprop1" } } */

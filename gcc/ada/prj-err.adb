@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,16 +28,6 @@ with Output;   use Output;
 with Stringt;  use Stringt;
 
 package body Prj.Err is
-
-   -----------------------
-   -- Obsolescent_Check --
-   -----------------------
-
-   procedure Obsolescent_Check (S : Source_Ptr) is
-      pragma Warnings (Off, S);
-   begin
-      null;
-   end Obsolescent_Check;
 
    ---------------
    -- Post_Scan --
@@ -104,6 +94,10 @@ package body Prj.Err is
          --  If still null, we are parsing a project that was created in-memory
          --  so we shouldn't report errors for projects that the user has no
          --  access to in any case.
+
+         if Current_Verbosity = High then
+            Write_Line ("Error in in-memory project, ignored");
+         end if;
 
          return;
       end if;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1995-2009, AdaCore                     --
+--                     Copyright (C) 1995-2010, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -80,7 +80,7 @@ package System.HTable is
 
       function Get (K : Key) return Element;
       --  Returns the Element associated with a key or No_Element if the
-      --  given key has not associated element
+      --  given key has no associated element.
 
       procedure Remove (K : Key);
       --  Removes the latest inserted element pointer associated with the
@@ -94,8 +94,24 @@ package System.HTable is
       function Get_Next return Element;
       --  Returns a non-specified element that has not been returned by the
       --  same function since the last call to Get_First or No_Element if
-      --  there is no such element. If there is no call to 'Set' in between
+      --  there is no such element. If there is no call to Set in between
       --  Get_Next calls, all the elements of the HTable will be traversed.
+
+      procedure Get_First (K : in out Key; E : out Element);
+      --  This version of the iterator returns a key/element pair. A non-
+      --  specified entry is returned, and there is no guarantee that two
+      --  calls to this procedure will return the same element. If the table
+      --  is empty, E is set to No_Element, and K is unchanged, otherwise
+      --  K and E are set to the first returned entry.
+
+      procedure Get_Next (K : in out Key; E : out Element);
+      --  This version of the iterator returns a key/element pair. It returns
+      --  a non-specified element that has not been returned since the last
+      --  call to Get_First. If there is no remaining element, then E is set
+      --  to No_Element, and the value in K is unchanged, otherwise K and E
+      --  are set to the next entry. If there is no call to Set in between
+      --  Get_Next calls, all the elements of the HTable will be traversed.
+
    end Simple_HTable;
 
    -------------------

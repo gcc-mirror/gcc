@@ -1,3 +1,41 @@
+2010-11-29  Iain Sandoe  <iains@gcc.gnu.org>
+	    Mike Stump  <mrs@gcc.gnu.org>
+
+	PR target/26427
+	PR target/33120
+	PR testsuite/35710
+	* dyn_load.c (GC_register_dynamic_libraries/DARWIN):  Add new writable
+	data section names.
+	(GC_dyld_name_for_hdr): Adjust layout.
+	(GC_dyld_image_add): Adjust layout, add new Darwin sections, adjust
+	debug to name the sections.
+	(GC_dyld_image_remove): Adjust layout, remove new Darwin sections,
+	adjust debug to name the sections.
+	(GC_register_dynamic_libraries): Adjust layout.
+	(GC_init_dyld): Likewise.
+	(GC_register_main_static_data): Likewise.
+
+2010-10-29  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure: Regenerate.
+
+2010-10-28  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.ac: Rewrite DGUX check to use GC_CFLAGS, and -O0 check
+	to remove the need for MY_CFLAGS.
+	* Makefile.am: Do not use @...@ substitutions.  Use AM_CXXFLAGS,
+	AM_CFLAGS and AM_LDFLAGS instead of redefining LTCOMPILE and LINK.
+	Use "override" to disable -O2 when required.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+
+2010-10-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* dyn_load.c: Fix typo.
+	* pthread_support.c (GC_get_thread_stack_base) [DEBUG_THREADS]:
+	Use GC_printf0.
+
 2010-06-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (*-*-solaris2.8*): Only usr alternate thread

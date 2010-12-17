@@ -98,6 +98,16 @@ next_htab_element (htab_iterator *hti)
   return NULL;
 }
 
+/* Get the variable with uid UID from the list of referenced vars.  */
+
+static inline tree
+referenced_var (unsigned int uid)
+{
+  tree var = referenced_var_lookup (uid);
+  gcc_assert (var || uid == 0);
+  return var;
+}
+
 /* Initialize ITER to point to the first referenced variable in the
    referenced_vars hashtable, and return that variable.  */
 
@@ -220,10 +230,8 @@ link_imm_use (ssa_use_operand_t *linknode, tree def)
   else
     {
       root = &(SSA_NAME_IMM_USE_NODE (def));
-#ifdef ENABLE_CHECKING
       if (linknode->use)
         gcc_checking_assert (*(linknode->use) == def);
-#endif
       link_imm_use_to_list (linknode, root);
     }
 }
@@ -546,13 +554,11 @@ phi_arg_index_from_use (use_operand_p use)
   root = gimple_phi_arg (phi, 0);
   index = element - root;
 
-#ifdef ENABLE_CHECKING
   /* Make sure the calculation doesn't have any leftover bytes.  If it does,
      then imm_use is likely not the first element in phi_arg_d.  */
-  gcc_assert ((((char *)element - (char *)root)
-	       % sizeof (struct phi_arg_d)) == 0
-	      && index < gimple_phi_capacity (phi));
-#endif
+  gcc_checking_assert ((((char *)element - (char *)root)
+			% sizeof (struct phi_arg_d)) == 0
+		       && index < gimple_phi_capacity (phi));
 
  return index;
 }
@@ -603,9 +609,7 @@ phi_ssa_name_p (const_tree t)
 {
   if (TREE_CODE (t) == SSA_NAME)
     return true;
-#ifdef ENABLE_CHECKING
-  gcc_assert (is_gimple_min_invariant (t));
-#endif
+  gcc_checking_assert (is_gimple_min_invariant (t));
   return false;
 }
 
@@ -965,9 +969,7 @@ static inline use_operand_p
 move_use_after_head (use_operand_p use_p, use_operand_p head,
 		      use_operand_p last_p)
 {
-#ifdef ENABLE_CHECKING
-  gcc_assert (USE_FROM_PTR (use_p) == USE_FROM_PTR (head));
-#endif
+  gcc_checking_assert (USE_FROM_PTR (use_p) == USE_FROM_PTR (head));
   /* Skip head when we find it.  */
   if (use_p != head)
     {

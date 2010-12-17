@@ -1,6 +1,6 @@
-/* Prove that HANDLE_SYSTEMV_PRAGMA alignment handling works somewhat. */
+/* Prove that pragma alignment handling works somewhat. */
 
-/* { dg-do run { target i?86-*-linux* x86_64-*-linux* i?86-*-*bsd* *-*-solaris2.* } } */
+/* { dg-do run } */
 
 extern void abort (void);
 

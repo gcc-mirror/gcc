@@ -42,6 +42,7 @@ package Sem_Ch4  is
    procedure Analyze_Negation                           (N : Node_Id);
    procedure Analyze_Null                               (N : Node_Id);
    procedure Analyze_Qualified_Expression               (N : Node_Id);
+   procedure Analyze_Quantified_Expression              (N : Node_Id);
    procedure Analyze_Range                              (N : Node_Id);
    procedure Analyze_Reference                          (N : Node_Id);
    procedure Analyze_Selected_Component                 (N : Node_Id);
@@ -60,6 +61,6 @@ package Sem_Ch4  is
    --    c) A conversion
    --    d) A slice
    --  The resolution of the construct requires some semantic information
-   --  on the prefix and the indices.
+   --  on the prefix and the indexes.
 
 end Sem_Ch4;

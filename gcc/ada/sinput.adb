@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -227,8 +227,7 @@ package body Sinput is
          Get_Name_String_And_Append
            (Reference_Name (Get_Source_File_Index (Ptr)));
          Add_Char_To_Name_Buffer (':');
-         Add_Nat_To_Name_Buffer
-           (Nat (Get_Logical_Line_Number (Ptr)));
+         Add_Nat_To_Name_Buffer (Nat (Get_Logical_Line_Number (Ptr)));
 
          Ptr := Instantiation_Location (Ptr);
          exit when Ptr = No_Location;
@@ -237,6 +236,13 @@ package body Sinput is
 
       Name_Buffer (Name_Len + 1) := NUL;
       return;
+   end Build_Location_String;
+
+   function Build_Location_String (Loc : Source_Ptr) return String is
+   begin
+      Name_Len := 0;
+      Build_Location_String (Loc);
+      return Name_Buffer (1 .. Name_Len);
    end Build_Location_String;
 
    -----------------------
@@ -298,6 +304,19 @@ package body Sinput is
          return SFR.Logical_Lines_Table (L);
       end if;
    end Get_Logical_Line_Number;
+
+   ---------------------------------
+   -- Get_Logical_Line_Number_Img --
+   ---------------------------------
+
+   function Get_Logical_Line_Number_Img
+     (P : Source_Ptr) return String
+   is
+   begin
+      Name_Len := 0;
+      Add_Nat_To_Name_Buffer (Nat (Get_Logical_Line_Number (P)));
+      return Name_Buffer (1 .. Name_Len);
+   end Get_Logical_Line_Number_Img;
 
    ------------------------------
    -- Get_Physical_Line_Number --
@@ -792,8 +811,7 @@ package body Sinput is
                else
                   --  Free the buffer, we use Free here, because we used malloc
                   --  or realloc directly to allocate the tables. That is
-                  --  because we were playing the big array trick. We need to
-                  --  suppress the warning for freeing from an empty pool!
+                  --  because we were playing the big array trick.
 
                   --  We have to recreate a proper pointer to the actual array
                   --  from the zero origin pointer stored in the source table.
@@ -801,9 +819,7 @@ package body Sinput is
                   Tmp1 :=
                     To_Source_Buffer_Ptr
                       (S.Source_Text (S.Source_First)'Address);
-                  pragma Warnings (Off);
                   Free_Ptr (Tmp1);
-                  pragma Warnings (On);
 
                   if S.Lines_Table /= null then
                      Memory.Free (To_Address (S.Lines_Table));

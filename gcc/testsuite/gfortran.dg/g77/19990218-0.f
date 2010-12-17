@@ -2,7 +2,7 @@ c { dg-do compile }
         program test
         double precision a,b,c
         data a,b/1.0d-46,1.0d0/
-        c=fun(a,b)
+        c=fun(a,b) ! { dg-error "Return type mismatch of function" }
         print*,'in main: fun=',c
         end
         double precision function fun(a,b)

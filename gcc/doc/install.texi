@@ -355,17 +355,6 @@ not installed in your default library search path.
 
 Necessary to build libgcj, the GCJ runtime.
 
-@item libelf version 0.8.12 (or later)
-
-Necessary to build link-time optimization (LTO) support.  It can be
-downloaded from @uref{http://www.mr511.de/software/libelf-0.8.12.tar.gz},
-though it is commonly available in several systems.  The version in
-IRIX 6.5 doesn't work since it lacks @file{gelf.h}.  The version in
-Solaris 2 does work.
-
-The @option{--with-libelf} configure option should be used if libelf is
-not installed in your default library search patch.
-
 @end table
 
 @heading Tools/packages necessary for modifying GCC
@@ -456,8 +445,13 @@ snapshots of the development sources are also available via FTP@.
 Necessary when regenerating @file{Makefile} dependencies in libiberty.
 Necessary when regenerating @file{libiberty/functions.texi}.
 Necessary when generating manpages from Texinfo manuals.
-Necessary when targetting Darwin, building libstdc++,
+Necessary when targetting Darwin, building @samp{libstdc++},
 and not using @option{--disable-symvers}.
+Necessary when targetting Solaris 2 with Sun @command{ld}, building
+@samp{libstdc++}, and not using @option{--disable-symvers}.  A helper
+scripts needs @samp{Glob.pm}, which is missing from @command{perl} 5.005
+included in Solaris~8.  The bundled @command{perl} in Solaris~9 and up
+works.
 Used by various scripts to generate some files included in SVN (mainly
 Unicode-related and rarely changing) from source tables.
 
@@ -1172,10 +1166,11 @@ of the arguments depend on the target.
 Specify if the compiler should default to @option{-marm} or @option{-mthumb}.
 This option is only supported on ARM targets.
 
-@item --with-fpmath=sse
-Specify if the compiler should default to @option{-msse2} and
-@option{-mfpmath=sse}.  This option is only supported on i386 and
-x86-64 targets.
+@item --with-fpmath=@var{isa}
+This options sets @option{-mfpmath=sse} by default and specifies the default
+ISA for floating-point arithmetics.  You can select either @samp{sse} which
+enables @option{-msse2} or @samp{avx} which enables @option{-mavx} by default.
+This option is only supported on i386 and x86-64 targets.
 
 @item --with-divide=@var{type}
 Specify how the compiler should generate code for checking for
@@ -1223,6 +1218,10 @@ This is essential for fully standards-compliant handling of
 destructors, but requires __cxa_atexit in libc.  This option is currently
 only available on systems with GNU libc.  When enabled, this will cause
 @option{-fuse-cxa-atexit} to be passed by default.
+
+@item --enable-indirect-function
+Define if you want to enable the @code{ifunc} attribute.  This option is
+currently only available on systems with GNU libc on certain targets.
 
 @item --enable-target-optspace
 Specify that target
@@ -1565,7 +1564,10 @@ they are installed (@samp{--with-gmp=@var{gmpinstalldir}},
 @option{--with-mpc-lib=@var{mpcinstalldir}/lib} and
 @option{--with-mpc-include=@var{mpcinstalldir}/include}.  If these
 shorthand assumptions are not correct, you can use the explicit
-include and lib options directly.
+include and lib options directly.  You might also need to ensure the
+shared libraries can be found by the dynamic linker when building and
+using GCC, for example by setting the runtime shared library path
+variable (@env{LD_LIBRARY_PATH} on GNU/Linux and Solaris systems).
 
 @item --with-ppl=@var{pathname}
 @itemx --with-ppl-include=@var{pathname}
@@ -1638,20 +1640,9 @@ default for a native toolchain with an assembler that accepts it and
 GLIBC 2.11 or above, otherwise disabled.
 
 @item --enable-lto
+@itemx --disable-lto
 Enable support for link-time optimization (LTO).  This is enabled by
-default if a working libelf implementation is found (see
-@option{--with-libelf}).
-
-@item --with-libelf=@var{pathname}
-@itemx --with-libelf-include=@var{pathname}
-@itemx --with-libelf-lib=@var{pathname}
-If you do not have libelf installed in a standard location and you
-want to enable support for link-time optimization (LTO), you can
-explicitly specify the directory where libelf is installed
-(@samp{--with-libelf=@var{libelfinstalldir}}).  The
-@option{--with-libelf=@var{libelfinstalldir}} option is shorthand for
-@option{--with-libelf-include=@var{libelfinstalldir}/include}
-@option{--with-libelf-lib=@var{libelfinstalldir}/lib}.
+default, and may be disabled using @option{--disable-lto}.
 
 @item --enable-gold
 Enable support for using @command{gold} as the linker.  If gold support is
@@ -1668,8 +1659,8 @@ The following options only apply to building cross compilers.
 @table @code
 @item --with-sysroot
 @itemx --with-sysroot=@var{dir}
-Tells GCC to consider @var{dir} as the root of a tree that contains a
-(subset of) the root filesystem of the target operating system.
+Tells GCC to consider @var{dir} as the root of a tree that contains
+(a subset of) the root filesystem of the target operating system.
 Target system headers, libraries and run-time object files will be
 searched in there.  More specifically, this acts as if
 @option{--sysroot=@var{dir}} was added to the default options of the built
@@ -1978,6 +1969,36 @@ Exec prefix where libart is installed (optional).
 Do not try to compile and run a test libart program.
 
 @end table
+
+@subsubheading Overriding @command{configure} test results
+
+Sometimes, it might be necessary to override the result of some
+@command{configure} test, for example in order to ease porting to a new
+system or work around a bug in a test.  The toplevel @command{configure}
+script provides three variables for this:
+
+@table @code
+
+@item build_configargs
+@cindex @code{build_configargs}
+The contents of this variable is passed to all build @command{configure}
+scripts.
+
+@item host_configargs
+@cindex @code{host_configargs}
+The contents of this variable is passed to all host @command{configure}
+scripts.
+
+@item target_configargs
+@cindex @code{target_configargs}
+The contents of this variable is passed to all target @command{configure}
+scripts.
+
+@end table
+
+In order to avoid shell and @command{make} quoting issues for complex
+overrides, you can pass a setting for @env{CONFIG_SITE} and set
+variables in the site file.
 
 @html
 <hr />
@@ -2596,7 +2617,7 @@ messages may be automatically processed.
 
 Now that GCC has been built (and optionally tested), you can install it with
 @smallexample
-cd @var{objdir}; make install
+cd @var{objdir} && make install
 @end smallexample
 
 We strongly recommend to install into a target directory where there is
@@ -2632,7 +2653,8 @@ jail can be achieved with the command
 make DESTDIR=@var{path-to-rootdir} install
 @end smallexample
 
-@noindent where @var{path-to-rootdir} is the absolute path of
+@noindent
+where @var{path-to-rootdir} is the absolute path of
 a directory relative to which all installation paths will be
 interpreted.  Note that the directory specified by @code{DESTDIR}
 need not exist yet; it will be created if necessary.
@@ -2645,6 +2667,12 @@ be filled with duplicated GCC executables only if it already exists,
 it will not be created otherwise.  This is regarded as a feature,
 not as a bug, because it gives slightly more control to the packagers
 using the @code{DESTDIR} feature.
+
+You can install stripped programs and libraries with
+
+@smallexample
+make install-strip
+@end smallexample
 
 If you are bootstrapping a released version of GCC then please
 quickly review the build status page for your release, available from
@@ -2782,7 +2810,7 @@ Development Tools for the Renesas H8/300[HS] Series}.
 HP-UX:
 @itemize
 @item
-@uref{http://hpux.cs.utah.edu/,,HP-UX Porting Center};
+@uref{http://hpux.connect.org.uk/,,HP-UX Porting Center};
 
 @item
 @uref{ftp://sunsite.informatik.rwth-aachen.de/pub/packages/gcc_hpux/,,Binaries for HP-UX 11.00 at Aachen University of Technology}.
@@ -2797,10 +2825,30 @@ Development Tools for the Motorola 68HC11/68HC12}.
 OpenServer/Unixware}.
 
 @item
-Solaris 2 (SPARC, Intel)---@uref{http://www.sunfreeware.com/,,Sunfreeware}.
+Solaris 2 (SPARC, Intel):
+@itemize
+@item
+@uref{http://www.sunfreeware.com/,,Sunfreeware}
 
 @item
-SGI---@uref{http://freeware.sgi.com/,,SGI Freeware}.
+@uref{http://www.blastwave.org/,,Blastwave}
+
+@item
+@uref{http://www.opencsw.org/,,OpenCSW}
+
+@item
+@uref{http://jupiterrise.com/tgcware/,,TGCware}
+@end itemize
+
+@item
+SGI IRIX:
+@itemize
+@item
+@uref{http://nekochan.net/,,Nekoware}
+
+@item
+@uref{http://jupiterrise.com/tgcware/,,TGCware}
+@end itemize
 
 @item
 Microsoft Windows:
@@ -2893,6 +2941,8 @@ information are.
 @item
 @uref{#ix86-x-linux,,i?86-*-linux*}
 @item
+@uref{#ix86-x-solaris289,,i?86-*-solaris2.[89]}
+@item
 @uref{#ix86-x-solaris210,,i?86-*-solaris2.10}
 @item
 @uref{#ia64-x-linux,,ia64-*-linux}
@@ -2920,6 +2970,8 @@ information are.
 @uref{#m68k-uclinux,,m68k-uclinux}
 @item
 @uref{#mep-x-elf,,mep-*-elf}
+@item
+@uref{#microblaze-x-elf,,microblaze-*-elf}
 @item
 @uref{#mips-x-x,,mips-*-*}
 @item
@@ -2954,6 +3006,8 @@ information are.
 @uref{#s390x-ibm-tpf,,s390x-ibm-tpf*}
 @item
 @uref{#x-x-solaris2,,*-*-solaris2*}
+@item
+@uref{#sparc-x-x,,sparc*-*-*}
 @item
 @uref{#sparc-sun-solaris2,,sparc-sun-solaris2*}
 @item
@@ -3212,12 +3266,13 @@ Support for FreeBSD 1 was discontinued in GCC 3.2.  Support for
 FreeBSD 2 (and any mutant a.out variants of FreeBSD 3) was
 discontinued in GCC 4.0.
 
-In GCC 4.5, we enabled the use of @code{dl_iterate_phdr} inside boehm-gc on
-FreeBSD 7 or later.  In order to better match the configuration of the
-FreeBSD system compiler: We also enabled the check to see if libc
-provides SSP support (which it does on FreeBSD 7), the use of
-@code{dl_iterate_phdr} inside @file{libgcc_s.so.1} (on FreeBSD 7 or later)
-and the use of @code{__cxa_atexit} by default (on FreeBSD 6 or later).
+In order to better utilize FreeBSD base system functionality and match
+the configuration of the system compiler, GCC 4.5 and above as well as
+GCC 4.4 past 2010-06-20 leverage SSP support in libc (which is present
+on FreeBSD 7 or later) and the use of @code{__cxa_atexit} by default
+(on FreeBSD 6 or later).  The use of @code{dl_iterate_phdr} inside
+@file{libgcc_s.so.1} and boehm-gc (on FreeBSD 7 or later) is enabled
+by GCC 4.5 and above.
 
 We support FreeBSD using the ELF file format with DWARF 2 debugging
 for all CPU architectures.  You may use @option{-gstabs} instead of
@@ -3464,6 +3519,26 @@ See @uref{http://gcc.gnu.org/PR10877,,bug 10877} for more information.
 If you receive Signal 11 errors when building on GNU/Linux, then it is
 possible you have a hardware problem.  Further information on this can be
 found on @uref{http://www.bitwizard.nl/sig11/,,www.bitwizard.nl}.
+
+@html
+<hr />
+@end html
+@heading @anchor{ix86-x-solaris289}i?86-*-solaris2.[89]
+The Sun assembler in Solaris 8 and 9 has several bugs and limitations.
+While GCC works around them, several features are missing, so it is
+@c FIXME: which ones?
+recommended to use the GNU assembler instead.  There is no bundled
+version, but the current version, from GNU binutils 2.20.1, is known to
+work.
+
+Solaris~2/x86 doesn't support the execution of SSE/SSE2 instructions
+before Solaris~9 4/04, even if the CPU supports them.  Programs will
+receive @code{SIGILL} if they try.  The fix is available both in
+Solaris~9 Update~6 and kernel patch 112234-12 or newer.  There is no
+corresponding patch for Solaris 8.  To avoid this problem,
+@option{-march} defaults to @samp{pentiumpro} on Solaris 8 and 9.  If
+you have the patch installed, you can configure GCC with an appropriate
+@option{--with-arch} option, but need GNU @command{as} for SSE2 support.
 
 @html
 <hr />
@@ -3763,6 +3838,13 @@ original ABI by configuring for @samp{m68k-uclinuxoldabi} or
 @end html
 @heading @anchor{mep-x-elf}mep-*-elf
 Toshiba Media embedded Processor.
+This configuration is intended for embedded systems.
+
+@html
+<hr />
+@end html
+@heading @anchor{microblaze-x-elf}microblaze-*-elf
+Xilinx MicroBlaze processor.
 This configuration is intended for embedded systems.
 
 @html
@@ -4109,6 +4191,12 @@ Solaris 10 cannot be used due to several bugs.  Again, the current
 version (2.20.1) is known to work, but generally lacks platform specific
 features, so better stay with Sun @command{ld}.
 
+To enable symbol versioning in @samp{libstdc++} with Sun @command{ld},
+you need to have any version of GNU @command{c++filt}, which is part of
+GNU binutils.  @samp{libstdc++} symbol versioning will be disabled if no
+appropriate version is found.  Sun @command{c++filt} from the Sun Studio
+compilers does @emph{not} work.
+
 Sun bug 4296832 turns up when compiling X11 headers with GCC 2.95 or
 newer: @command{g++} will complain that types are missing.  These headers
 assume that omitting the type means @code{int}; this assumption worked for
@@ -4131,6 +4219,44 @@ testsuite failures appear.
 There are patches for Solaris 8 (117350-12 or newer for SPARC,
 117351-12 or newer for Intel) and Solaris 9 (117171-11 or newer for
 SPARC, 117172-11 or newer for Intel) that address this problem.
+
+Solaris~8 provides an alternate implementation of the thread libraries,
+@samp{libpthread} and @samp{libthread}.  They are required for TLS
+support and have been made the default in Solaris~9, so they are always
+used on Solaris~8.
+
+Thread-local storage (TLS) is supported in Solaris~8 and 9, but requires
+some patches.  The @samp{libthread} patches provide the
+@code{__tls_get_addr} (SPARC, 64-bit x86) resp.@ @code{___tls_get_addr}
+(32-bit x86) functions.  On Solaris~8, you need 108993-26 or newer on
+SPARC, 108994-26 or newer on Intel.  On Solaris~9, the necessary support
+on SPARC is present since FCS, while 114432-05 or newer is reqired on
+Intel.  Additionally, on Solaris~8, patch 109147-14 or newer on SPARC or
+109148-22 or newer on Intel are required for the Sun @command{ld} and
+runtime linker (@command{ld.so.1}) support.  Again, Solaris~9/SPARC
+works since FCS, while 113986-02 is required on Intel.  The linker
+patches must be installed even if GNU @command{ld} is used. Sun
+@command{as} in Solaris~8 and 9 doesn't support the necessary
+relocations, so GNU @command{as} must be used.  The @command{configure}
+script checks for those prerequisites and automatically enables TLS
+support if they are met.  Although those minimal patch versions should
+work, it is recommended to use the latest patch versions which include
+additional bug fixes.
+
+@html
+<hr />
+@end html
+@heading @anchor{sparc-x-x}sparc*-*-*
+
+This section contains general configuration information for all
+SPARC-based platforms.  In addition to reading this section, please
+read all other sections that match your target.
+
+Newer versions of the GNU Multiple Precision Library (GMP), the MPFR
+library and the MPC library are known to be miscompiled by earlier
+versions of GCC on these platforms.  We therefore recommend the use
+of the exact versions of these libraries listed as minimal versions
+in @uref{prerequisites.html,,the prerequisites}.
 
 @html
 <hr />
@@ -4184,12 +4310,11 @@ ld: warning: relocation error: R_SPARC_UA32: @dots{}
 To work around this problem, compile with @option{-gstabs+} instead of
 plain @option{-g}.
 
-When configuring the GNU Multiple Precision Library (GMP) or the MPFR
-library on a Solaris 7 or later system, the canonical target triplet
-must be specified as the @command{build} parameter on the configure
-line.  This triplet can be obtained by invoking @command{./config.guess} in
-the toplevel source directory of GCC (and not that of GMP or MPFR).
-For example on a Solaris 9 system:
+When configuring the GNU Multiple Precision Library (GMP), the MPFR
+library or the MPC library on a Solaris 7 or later system, the canonical
+target triplet must be specified as the @command{build} parameter on the
+configure line.  This target triplet can be obtained by invoking @command{./config.guess} in the toplevel source directory of GCC (and
+not that of GMP or MPFR or MPC).  For example on a Solaris 9 system:
 
 @smallexample
    % ./configure --build=sparc-sun-solaris2.9 --prefix=xxx

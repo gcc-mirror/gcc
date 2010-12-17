@@ -5,8 +5,8 @@
 #include <stdio.h>
 #endif
 
-#define N 1111
-#define M 1111
+#define N 111
+#define M 111
 
 static int __attribute__((noinline))
 foo (int *x)
@@ -38,7 +38,7 @@ main (void)
   fprintf (stderr, "res = %d \n", res);
 #endif
 
-  if (res != 2468642)
+  if (res != 24642)
     abort ();
 
   return 0;

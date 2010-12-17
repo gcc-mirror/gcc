@@ -1,7 +1,7 @@
 /* CPP Library. (Directive handling.)
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2007, 2008, 2009 Free Software Foundation, Inc.
+   2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -128,6 +128,7 @@ static struct answer ** find_answer (cpp_hashnode *, const struct answer *);
 static void handle_assertion (cpp_reader *, const char *, int);
 static void do_pragma_push_macro (cpp_reader *);
 static void do_pragma_pop_macro (cpp_reader *);
+static void cpp_pop_definition (cpp_reader *, struct def_pragma_macro *);
 
 /* This is the table of directive handlers.  It is ordered by
    frequency of occurrence; the numbers at the end are directive
@@ -354,7 +355,7 @@ directive_diagnostics (cpp_reader *pfile, const directive *dir, int indented)
 	cpp_error (pfile, CPP_DL_PEDWARN, "#%s is a GCC extension", dir->name);
       else if (((dir->flags & DEPRECATED) != 0
 		|| (dir == &dtable[T_IMPORT] && !CPP_OPTION (pfile, objc)))
-	       && CPP_OPTION (pfile, warn_deprecated))
+	       && CPP_OPTION (pfile, cpp_warn_deprecated))
 	cpp_warning (pfile, CPP_W_DEPRECATED,
                      "#%s is a deprecated GCC extension", dir->name);
     }
@@ -400,7 +401,7 @@ _cpp_handle_directive (cpp_reader *pfile, int indented)
 
   if (was_parsing_args)
     {
-      if (CPP_OPTION (pfile, pedantic))
+      if (CPP_OPTION (pfile, cpp_pedantic))
 	cpp_error (pfile, CPP_DL_PEDWARN,
 	     "embedding a directive within macro arguments is not portable");
       pfile->state.parsing_args = 0;
@@ -1436,6 +1437,9 @@ do_pragma_once (cpp_reader *pfile)
 static void
 do_pragma_push_macro (cpp_reader *pfile)
 {
+  cpp_hashnode *node;
+  size_t defnlen;
+  const uchar *defn = NULL;
   char *macroname, *dest;
   const char *limit, *src;
   const cpp_token *txt;
@@ -1465,10 +1469,26 @@ do_pragma_push_macro (cpp_reader *pfile)
   check_eol (pfile, false);
   skip_rest_of_line (pfile);
   c = XNEW (struct def_pragma_macro);
+  memset (c, 0, sizeof (struct def_pragma_macro));
   c->name = XNEWVAR (char, strlen (macroname) + 1);
   strcpy (c->name, macroname);
   c->next = pfile->pushed_macros;
-  c->value = cpp_push_definition (pfile, c->name);
+  node = _cpp_lex_identifier (pfile, c->name);
+  if (node->type == NT_VOID)
+    c->is_undef = 1;
+  else
+    {
+      defn = cpp_macro_definition (pfile, node);
+      defnlen = ustrlen (defn);
+      c->definition = XNEWVEC (uchar, defnlen + 2);
+      c->definition[defnlen] = '\n';
+      c->definition[defnlen + 1] = 0;
+      c->line = node->value.macro->line;
+      c->syshdr = node->value.macro->syshdr;
+      c->used = node->value.macro->used;
+      memcpy (c->definition, defn, defnlen);
+    }
+
   pfile->pushed_macros = c;
 }
 
@@ -1512,7 +1532,8 @@ do_pragma_pop_macro (cpp_reader *pfile)
 	    pfile->pushed_macros = c->next;
 	  else
 	    l->next = c->next;
-	  cpp_pop_definition (pfile, c->name, c->value);
+	  cpp_pop_definition (pfile, c);
+	  free (c->definition);
 	  free (c->name);
 	  free (c);
 	  break;
@@ -1804,6 +1825,9 @@ do_ifdef (cpp_reader *pfile)
 	      node->flags |= NODE_USED;
 	      if (node->type == NT_MACRO)
 		{
+		  if ((node->flags & NODE_BUILTIN)
+		      && pfile->cb.user_builtin_macro)
+		    pfile->cb.user_builtin_macro (pfile, node);
 		  if (pfile->cb.used_define)
 		    pfile->cb.used_define (pfile, pfile->directive_line, node);
 		}
@@ -1842,6 +1866,9 @@ do_ifndef (cpp_reader *pfile)
 	      node->flags |= NODE_USED;
 	      if (node->type == NT_MACRO)
 		{
+		  if ((node->flags & NODE_BUILTIN)
+		      && pfile->cb.user_builtin_macro)
+		    pfile->cb.user_builtin_macro (pfile, node);
 		  if (pfile->cb.used_define)
 		    pfile->cb.used_define (pfile, pfile->directive_line, node);
 		}
@@ -2328,23 +2355,12 @@ cpp_undef (cpp_reader *pfile, const char *macro)
   run_directive (pfile, T_UNDEF, buf, len);
 }
 
-/* If STR is a defined macro, return its definition node, else return NULL.  */
-cpp_macro *
-cpp_push_definition (cpp_reader *pfile, const char *str)
+/* Replace a previous definition DEF of the macro STR.  If DEF is NULL,
+   or first element is zero, then the macro should be undefined.  */
+static void
+cpp_pop_definition (cpp_reader *pfile, struct def_pragma_macro *c)
 {
-  cpp_hashnode *node = _cpp_lex_identifier (pfile, str);
-  if (node && node->type == NT_MACRO)
-    return node->value.macro;
-  else
-    return NULL;
-}
-
-/* Replace a previous definition DFN of the macro STR.  If DFN is NULL,
-   then the macro should be undefined.  */
-void
-cpp_pop_definition (cpp_reader *pfile, const char *str, cpp_macro *dfn)
-{
-  cpp_hashnode *node = _cpp_lex_identifier (pfile, str);
+  cpp_hashnode *node = _cpp_lex_identifier (pfile, c->name);
   if (node == NULL)
     return;
 
@@ -2361,16 +2377,35 @@ cpp_pop_definition (cpp_reader *pfile, const char *str, cpp_macro *dfn)
   if (node->type != NT_VOID)
     _cpp_free_definition (node);
 
-  if (dfn)
-    {
-      node->type = NT_MACRO;
-      node->value.macro = dfn;
-      if (! ustrncmp (NODE_NAME (node), DSC ("__STDC_")))
-	node->flags |= NODE_WARN;
+  if (c->is_undef)
+    return;
+  {
+    size_t namelen;
+    const uchar *dn;
+    cpp_hashnode *h = NULL;
+    cpp_buffer *nbuf;
 
-      if (pfile->cb.define)
-	pfile->cb.define (pfile, pfile->directive_line, node);
-    }
+    namelen = ustrcspn (c->definition, "( \n");
+    h = cpp_lookup (pfile, c->definition, namelen);
+    dn = c->definition + namelen;
+
+    h->type = NT_VOID;
+    h->flags &= ~(NODE_POISONED|NODE_BUILTIN|NODE_DISABLED|NODE_USED);
+    nbuf = cpp_push_buffer (pfile, dn, ustrchr (dn, '\n') - dn, true);
+    if (nbuf != NULL)
+      {
+	_cpp_clean_line (pfile);
+	nbuf->sysp = 1;
+	if (!_cpp_create_definition (pfile, h))
+	  abort ();
+	_cpp_pop_buffer (pfile);
+      }
+    else
+      abort ();
+    h->value.macro->line = c->line;
+    h->value.macro->syshdr = c->syshdr;
+    h->value.macro->used = c->used;
+  }
 }
 
 /* Process the string STR as if it appeared as the body of a #assert.  */

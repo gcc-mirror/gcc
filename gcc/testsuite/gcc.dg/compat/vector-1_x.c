@@ -1,4 +1,5 @@
 /* { dg-options "-w" } */
+/* { dg-options "-w -Wno-psabi" { target { i?86-*-* x86_64-*-* } } } */
 
 #ifndef SKIP_ATTRIBUTE
 

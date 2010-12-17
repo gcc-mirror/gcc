@@ -41,7 +41,7 @@ struct E
 struct F
 {
   F() = default;
-  F(const F&) = delete;		// { dg-error "deleted" }
+  F(const F&) = delete;		// { dg-error "declared" }
 };
 
 struct G
@@ -54,13 +54,15 @@ G::G() = default;
 
 union U
 {
-  G g;				// { dg-error "constructor" }
+  G g;				// { dg-error "union member.*non-trivial" }
 };
 
 int main()
 {
   F f;
-  F f2(f);			// { dg-error "used" }
+  F f2(f);			// { dg-error "use" }
   B* b = new const B;		// { dg-error "uninitialized const" }
+  U u;				// { dg-error "deleted" }
 }
 
+// { dg-prune-output "implicitly deleted because" }

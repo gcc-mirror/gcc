@@ -31,27 +31,15 @@
 #define _GLIBCXX_DEBUG_FORMATTER_H 1
 
 #include <bits/c++config.h>
+#include <bits/cpp_type_traits.h>
 #include <typeinfo>
-#include <debug/debug.h>
 
 namespace __gnu_debug
 {
   using std::type_info;
 
-  /** Determine if the two types are the same. */
-  template<typename _Type1, typename _Type2>
-    struct __is_same
-    {
-      static const bool value = false;
-    };
-
-  template<typename _Type>
-    struct __is_same<_Type, _Type>
-    {
-      static const bool value = true;
-    };
-
-  template<bool> struct __truth { };
+  template<typename _Iterator>
+    bool __check_singular(_Iterator&);
 
   class _Safe_sequence_base;
 
@@ -111,7 +99,11 @@ namespace __gnu_debug
     __msg_output_ostream,
     // istreambuf_iterator
     __msg_deref_istreambuf,
-    __msg_inc_istreambuf
+    __msg_inc_istreambuf,
+    // forward_list
+    __msg_insert_after_end,
+    __msg_erase_after_bad,
+    __msg_valid_range2
   };
 
   class _Error_formatter
@@ -133,6 +125,7 @@ namespace __gnu_debug
       __begin,         // dereferenceable, and at the beginning
       __middle,        // dereferenceable, not at the beginning
       __end,           // past-the-end, may be at beginning if sequence empty
+      __before_begin,  // before begin
       __last_state
     };
 
@@ -218,9 +211,9 @@ namespace __gnu_debug
 	  _M_variant._M_iterator._M_type = 0;
 #endif
 	  _M_variant._M_iterator._M_constness =
-	    __is_same<_Safe_iterator<_Iterator, _Sequence>,
-	                         typename _Sequence::iterator>::
-	      value? __mutable_iterator : __const_iterator;
+	    std::__are_same<_Safe_iterator<_Iterator, _Sequence>,
+	                    typename _Sequence::iterator>::
+	      __value ? __mutable_iterator : __const_iterator;
 	  _M_variant._M_iterator._M_sequence = __it._M_get_sequence();
 #ifdef __GXX_RTTI
 	  _M_variant._M_iterator._M_seq_type = &typeid(_Sequence);
@@ -232,11 +225,11 @@ namespace __gnu_debug
 	    _M_variant._M_iterator._M_state = __singular;
 	  else
 	    {
-	      bool __is_begin = __it._M_is_begin();
-	      bool __is_end = __it._M_is_end();
-	      if (__is_end)
+	      if (__it._M_is_before_begin())
+		_M_variant._M_iterator._M_state = __before_begin;
+	      else if (__it._M_is_end())
 		_M_variant._M_iterator._M_state = __end;
-	      else if (__is_begin)
+	      else if (__it._M_is_begin())
 		_M_variant._M_iterator._M_state = __begin;
 	      else
 		_M_variant._M_iterator._M_state = __middle;

@@ -1,3 +1,79 @@
+2010-11-24  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* testsuite/libgomp.fortran/fortran.exp: Add paths for libquadmath.
+
+2010-11-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/32049
+	* configure.ac: 
+	* configure: Regenerate.
+
+2010-10-06  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/linux/futex.h: New.
+	* config/linux/arm/mutex.h: New.
+	* configure.tgt (arm*-*-linux*): Add config path.
+
+2010-09-30  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* testsuite/libgomp.graphite/force-parallel-1.c: Adjust.
+
+2010-09-23  Tobias Burnus  <burnus@net-b.de>
+
+	* libgomp.texi (omp_get_nested, omp_set_nested, omp_set_dynamic):
+	Change Fortran datatype to LOGICAL.
+	(omp_set_lock, omp_test_lock, omp_unset_lock, omp_set_nested_lock,
+	omp_unset_nested_lock): Use intent(inout) instead of intent(out).
+
+2010-08-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure: Regenerate.
+
+2010-07-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi: Add function keyword to a couple of Fortran
+	interfaces, use integer instead of int for Fortran.
+
+2010-07-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* libgomp.texi: Fix spelling and pasto problems throughout.
+	Adjust prototypes to match code.
+
+2010-07-24  Tobias Burnus  <burnus@net-b.de>
+
+	* testsuite/libgomp.fortran/appendix-a/a.28.5.f90: Add -w to
+	silence -fwhole-file warning.
+
+2010-07-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.tgt (*-*-solaris2.[56]*): Removed.
+
+2010-07-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* acinclude.m4 (LIBGOMP_ENABLE_SYMVERS): Handle sun style.
+	Define LIBGOMP_BUILD_VERSIONED_SHLIB_GNU,
+	LIBGOMP_BUILD_VERSIONED_SHLIB_SUN automake conditionals.
+	(HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT): Define unless
+	targetting solaris2*.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
+	* Makefile.am [LIBGOMP_BUILD_VERSIONED_SHLIB]: Protect
+	libgomp_version_script with LIBGOMP_BUILD_VERSIONED_SHLIB_GNU.
+	Add libgomp_version_dep.
+	[LIBGOMP_BUILD_VERSIONED_SHLIB_SUN]: Handle Sun symbol
+	versioning.
+	[!LIBGOMP_BUILD_VERSIONED_SHLIB]: Add libgomp_version_dep.
+	(libgomp_la_DEPENDENCIES): Set to $(libgomp_version_dep).
+	* Makefile.in: Regenerate.
+
+	* libgomp.h (LIBGOMP_GNU_SYMBOL_VERSIONING): Undef unless
+	HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT.
+	* libgomp.map (OMP_1.0): Move symbols both in OMP_1.0 and OMP_3.0
+	to common block, protected by
+	HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT.
+
 2010-06-10  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* libgomp.texi: Move to GFDL version 1.3.  Update copyright years.

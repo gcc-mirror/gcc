@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,6 +61,16 @@ package body System.Img_WChar is
 
          P := 4;
 
+      --  Deal with annoying Ada 95 incompatibility with soft hyphen
+
+      elsif V = Wide_Character'Val (16#00AD#)
+        and then not Ada_2005
+      then
+         P := 3;
+         S (1) := ''';
+         S (2) := Character'Val (16#00AD#);
+         S (3) := ''';
+
       --  Normal case, same as Wide_Wide_Character
 
       else
@@ -83,10 +93,14 @@ package body System.Img_WChar is
       Val : Unsigned_32 := Wide_Wide_Character'Pos (V);
 
    begin
-      --  If in range of standard Character, use Character routine
+      --  If in range of standard Character, use Character routine. Use the
+      --  Ada 2005 version, since either we are called directly in Ada 2005
+      --  mode for Wide_Wide_Character, or this is the Wide_Character case
+      --  which already took care of the Soft_Hyphen glitch.
 
       if Val <= 16#FF# then
-         Image_Character (Character'Val (Wide_Wide_Character'Pos (V)), S, P);
+         Image_Character_05
+           (Character'Val (Wide_Wide_Character'Pos (V)), S, P);
 
       --  Otherwise value returned is Hex_hhhhhhhh
 

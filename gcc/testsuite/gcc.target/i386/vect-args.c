@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-w" } */
+/* { dg-options "-w -Wno-psabi" } */
 
 /* SSE1 and SSE2 modes.  */
 typedef unsigned char V16QImode __attribute__((vector_size(16)));

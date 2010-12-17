@@ -622,6 +622,7 @@ enum dwarf_location_atom
     /* The following is for marking variables that are uninitialized.  */
     DW_OP_GNU_uninit     = 0xf0,
     DW_OP_GNU_encoded_addr = 0xf1,
+    DW_OP_GNU_implicit_pointer = 0xf2,
     /* HP extensions.  */
     DW_OP_HP_unknown     = 0xe0, /* Ouch, the same as GNU_push_tls_address.  */
     DW_OP_HP_is_value    = 0xe1,
@@ -893,6 +894,8 @@ enum dwarf_source_language
     DW_LANG_D = 0x0013,
     /* DWARF 4.  */
     DW_LANG_Python = 0x0014,
+    /* DWARF 5.  */
+    DW_LANG_Go = 0x0016,
 
     DW_LANG_lo_user = 0x8000,	/* Implementation-defined range start.  */
     DW_LANG_hi_user = 0xffff,	/* Implementation-defined range start.  */

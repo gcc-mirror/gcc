@@ -35,6 +35,8 @@
 #define bit_XSAVE	(1 << 26)
 #define bit_OSXSAVE	(1 << 27)
 #define bit_AVX		(1 << 28)
+#define bit_F16C	(1 << 29)
+#define bit_RDRND	(1 << 30)
 
 /* %edx */
 #define bit_CMPXCHG8B	(1 << 8)
@@ -52,12 +54,16 @@
 #define bit_XOP         (1 << 11)
 #define bit_LWP 	(1 << 15)
 #define bit_FMA4        (1 << 16)
+#define bit_TBM         (1 << 21)
 
 /* %edx */
 #define bit_LM		(1 << 29)
 #define bit_3DNOWP	(1 << 30)
 #define bit_3DNOW	(1 << 31)
 
+/* Extended Features (%eax == 7) */
+#define bit_FSGSBASE	(1 << 0)
+#define bit_BMI		(1 << 3)
 
 #if defined(__i386__) && defined(__PIC__)
 /* %ebx may be the PIC register.  */

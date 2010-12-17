@@ -22,11 +22,13 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#include "assert.h"
+#include "objc-private/common.h"
+#include <assert.h> /* For assert */
 
-#include "objc/hash.h"
-
-#include "objc/runtime.h"		/* for DEBUG_PRINTF */
+#include "objc/runtime.h" /* For objc_calloc */
+#include "objc/thr.h"     /* Required by objc-private/runtime.h.  */
+#include "objc-private/hash.h"
+#include "objc-private/runtime.h"		/* for DEBUG_PRINTF */
 
 /* These two macros determine when a hash table is full and
    by how much it should be expanded respectively.

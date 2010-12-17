@@ -1,6 +1,6 @@
 /* Check calls to formatted I/O functions (-Wformat).
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2007, 2008 Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004, 2007, 2008, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -73,7 +73,10 @@ enum
   FMT_FLAG_EMPTY_PREC_OK = 64,
   /* Gaps are allowed in the arguments with $ operand numbers if all
      arguments are pointers (scanf).  */
-  FMT_FLAG_DOLLAR_GAP_POINTER_OK = 128
+  FMT_FLAG_DOLLAR_GAP_POINTER_OK = 128,
+  /* The format arg is an opaque object that will be parsed by an external
+     facility.  */
+  FMT_FLAG_PARSE_ARG_CONVERT_EXTERNAL = 256
   /* Not included here: details of whether width or precision may occur
      (controlled by width_char and precision_char); details of whether
      '*' can be used for these (width_type and precision_type); details

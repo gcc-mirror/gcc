@@ -27,7 +27,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 include(`mtype.m4')dnl
 
-`#if defined (HAVE_'real_type`) && defined (HAVE_FREXP'Q`)
+mathfunc_macro
+
+`#if defined (HAVE_'real_type`) && 'hasmathfunc(frexp)`
 
 extern GFC_INTEGER_4 exponent_r'kind` ('real_type` s);
 export_proto(exponent_r'kind`);
@@ -36,7 +38,7 @@ GFC_INTEGER_4
 exponent_r'kind` ('real_type` s)
 {
   int ret;
-  frexp'q` (s, &ret);
+  MATHFUNC(frexp) (s, &ret);
   return ret;
 }
 

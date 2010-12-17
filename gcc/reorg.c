@@ -1,6 +1,6 @@
 /* Perform instruction reorganizations for delay slot filling.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu).
    Hacked by Michael Tiemann (tiemann@cygnus.com).
@@ -115,7 +115,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "rtl.h"
 #include "tm_p.h"
 #include "expr.h"
@@ -3458,9 +3458,13 @@ relax_delay_slots (rtx first)
 	     We do this by deleting the INSN containing the SEQUENCE, then
 	     re-emitting the insns separately, and then deleting the RETURN.
 	     This allows the count of the jump target to be properly
-	     decremented.  */
+	     decremented.
 
-	  /* Clear the from target bit, since these insns are no longer
+	     Note that we need to change the INSN_UID of the re-emitted insns
+	     since it is used to hash the insns for mark_target_live_regs and
+	     the re-emitted insns will no longer be wrapped up in a SEQUENCE.
+
+	     Clear the from target bit, since these insns are no longer
 	     in delay slots.  */
 	  for (i = 0; i < XVECLEN (pat, 0); i++)
 	    INSN_FROM_TARGET_P (XVECEXP (pat, 0, i)) = 0;
@@ -3468,13 +3472,10 @@ relax_delay_slots (rtx first)
 	  trial = PREV_INSN (insn);
 	  delete_related_insns (insn);
 	  gcc_assert (GET_CODE (pat) == SEQUENCE);
-	  after = trial;
-	  for (i = 0; i < XVECLEN (pat, 0); i++)
-	    {
-	      rtx this_insn = XVECEXP (pat, 0, i);
-	      add_insn_after (this_insn, after, NULL);
-	      after = this_insn;
-	    }
+	  add_insn_after (delay_insn, trial, NULL);
+	  after = delay_insn;
+	  for (i = 1; i < XVECLEN (pat, 0); i++)
+	    after = emit_copy_of_insn_after (XVECEXP (pat, 0, i), after);
 	  delete_scheduled_jump (delay_insn);
 	  continue;
 	}
@@ -3579,9 +3580,13 @@ relax_delay_slots (rtx first)
 	     We do this by deleting the INSN containing the SEQUENCE, then
 	     re-emitting the insns separately, and then deleting the jump.
 	     This allows the count of the jump target to be properly
-	     decremented.  */
+	     decremented.
 
-	  /* Clear the from target bit, since these insns are no longer
+	     Note that we need to change the INSN_UID of the re-emitted insns
+	     since it is used to hash the insns for mark_target_live_regs and
+	     the re-emitted insns will no longer be wrapped up in a SEQUENCE.
+
+	     Clear the from target bit, since these insns are no longer
 	     in delay slots.  */
 	  for (i = 0; i < XVECLEN (pat, 0); i++)
 	    INSN_FROM_TARGET_P (XVECEXP (pat, 0, i)) = 0;
@@ -3589,13 +3594,10 @@ relax_delay_slots (rtx first)
 	  trial = PREV_INSN (insn);
 	  delete_related_insns (insn);
 	  gcc_assert (GET_CODE (pat) == SEQUENCE);
-	  after = trial;
-	  for (i = 0; i < XVECLEN (pat, 0); i++)
-	    {
-	      rtx this_insn = XVECEXP (pat, 0, i);
-	      add_insn_after (this_insn, after, NULL);
-	      after = this_insn;
-	    }
+	  add_insn_after (delay_insn, trial, NULL);
+	  after = delay_insn;
+	  for (i = 1; i < XVECLEN (pat, 0); i++)
+	    after = emit_copy_of_insn_after (XVECEXP (pat, 0, i), after);
 	  delete_scheduled_jump (delay_insn);
 	  continue;
 	}

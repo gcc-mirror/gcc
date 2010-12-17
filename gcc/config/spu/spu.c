@@ -35,6 +35,7 @@
 #include "output.h"
 #include "basic-block.h"
 #include "integrate.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "ggc.h"
 #include "hashtab.h"
@@ -148,6 +149,9 @@ static struct spu_builtin_range spu_builtin_range[] = {
 char regs_ever_allocated[FIRST_PSEUDO_REGISTER];
 
 /*  Prototypes and external defs.  */
+static void spu_option_override (void);
+static void spu_option_init_struct (struct gcc_options *opts);
+static void spu_option_default_params (void);
 static void spu_init_builtins (void);
 static tree spu_builtin_decl (unsigned, bool);
 static bool spu_scalar_mode_supported_p (enum machine_mode mode);
@@ -187,6 +191,10 @@ static tree spu_handle_vector_attribute (tree * node, tree name, tree args,
 static int spu_naked_function_p (tree func);
 static bool spu_pass_by_reference (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 				   const_tree type, bool named);
+static rtx spu_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			     const_tree type, bool named);
+static void spu_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+				      const_tree type, bool named);
 static tree spu_build_builtin_va_list (void);
 static void spu_va_start (tree, rtx);
 static tree spu_gimplify_va_arg_expr (tree valist, tree type,
@@ -209,7 +217,7 @@ static rtx spu_addr_space_legitimize_address (rtx, rtx, enum machine_mode,
 static tree spu_builtin_mul_widen_even (tree);
 static tree spu_builtin_mul_widen_odd (tree);
 static tree spu_builtin_mask_for_load (void);
-static int spu_builtin_vectorization_cost (enum vect_cost_for_stmt);
+static int spu_builtin_vectorization_cost (enum vect_cost_for_stmt, tree, int);
 static bool spu_vector_alignment_reachable (const_tree, bool);
 static tree spu_builtin_vec_perm (tree, tree *);
 static enum machine_mode spu_addr_space_pointer_mode (addr_space_t);
@@ -223,8 +231,7 @@ static section *spu_select_section (tree, int, unsigned HOST_WIDE_INT);
 static void spu_unique_section (tree, int);
 static rtx spu_expand_load (rtx, rtx, rtx, int);
 static void spu_trampoline_init (rtx, tree, rtx);
-
-extern const char *reg_names[];
+static void spu_conditional_register_usage (void);
 
 /* Which instruction set architecture to use.  */
 int spu_arch;
@@ -390,6 +397,12 @@ static const struct attribute_spec spu_attribute_table[] =
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE spu_pass_by_reference
 
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG spu_function_arg
+
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE spu_function_arg_advance
+
 #undef TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size
 
@@ -432,8 +445,8 @@ static const struct attribute_spec spu_attribute_table[] =
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST spu_builtin_vectorization_cost
 
-#undef TARGET_VECTOR_ALIGNMENT_REACHABLE
-#define TARGET_VECTOR_ALIGNMENT_REACHABLE spu_vector_alignment_reachable
+#undef TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE
+#define TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE spu_vector_alignment_reachable
 
 #undef TARGET_VECTORIZE_BUILTIN_VEC_PERM
 #define TARGET_VECTORIZE_BUILTIN_VEC_PERM spu_builtin_vec_perm
@@ -465,31 +478,49 @@ static const struct attribute_spec spu_attribute_table[] =
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT spu_trampoline_init
 
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE spu_option_override
+
+#undef TARGET_OPTION_INIT_STRUCT
+#define TARGET_OPTION_INIT_STRUCT spu_option_init_struct
+
+#undef TARGET_OPTION_DEFAULT_PARAMS
+#define TARGET_OPTION_DEFAULT_PARAMS spu_option_default_params
+
+#undef TARGET_EXCEPT_UNWIND_INFO
+#define TARGET_EXCEPT_UNWIND_INFO  sjlj_except_unwind_info
+
+#undef TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE spu_conditional_register_usage
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-void
-spu_optimization_options (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
+static void
+spu_option_init_struct (struct gcc_options *opts)
+{
+  /* With so many registers this is better on by default. */
+  opts->x_flag_rename_registers = 1;
+}
+
+/* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
+static void
+spu_option_default_params (void)
 {
   /* Override some of the default param values.  With so many registers
      larger values are better for these params.  */
-  MAX_PENDING_LIST_LENGTH = 128;
-
-  /* With so many registers this is better on by default. */
-  flag_rename_registers = 1;
+  set_default_param_value (PARAM_MAX_PENDING_LIST_LENGTH, 128);
 }
 
-/* Sometimes certain combinations of command options do not make sense
-   on a particular target machine.  You can define a macro
-   OVERRIDE_OPTIONS to take account of this. This macro, if defined, is
-   executed once just after all the command options have been parsed.  */
-void
-spu_override_options (void)
+/* Implement TARGET_OPTION_OVERRIDE.  */
+static void
+spu_option_override (void)
 {
   /* Small loops will be unpeeled at -O3.  For SPU it is more important
      to keep code small by default.  */
-  if (!flag_unroll_loops && !flag_peel_loops
-      && !PARAM_SET_P (PARAM_MAX_COMPLETELY_PEEL_TIMES))
-    PARAM_VALUE (PARAM_MAX_COMPLETELY_PEEL_TIMES) = 1;
+  if (!flag_unroll_loops && !flag_peel_loops)
+    maybe_set_param_value (PARAM_MAX_COMPLETELY_PEEL_TIMES, 1,
+			   global_options.x_param_values,
+			   global_options_set.x_param_values);
 
   flag_omit_frame_pointer = 1;
 
@@ -512,7 +543,7 @@ spu_override_options (void)
       else if (strcmp (&spu_arch_string[0], "celledp") == 0)
         spu_arch = PROCESSOR_CELLEDP;
       else
-        error ("Unknown architecture '%s'", &spu_arch_string[0]);
+        error ("unknown architecture %qs", &spu_arch_string[0]);
     }
 
   /* Determine processor to tune for.  */
@@ -523,7 +554,7 @@ spu_override_options (void)
       else if (strcmp (&spu_tune_string[0], "celledp") == 0)
         spu_tune = PROCESSOR_CELLEDP;
       else
-        error ("Unknown architecture '%s'", &spu_tune_string[0]);
+        error ("unknown architecture %qs", &spu_tune_string[0]);
     }
 
   /* Change defaults according to the processor architecture.  */
@@ -722,9 +753,9 @@ spu_expand_insv (rtx ops[])
   HOST_WIDE_INT width = INTVAL (ops[1]);
   HOST_WIDE_INT start = INTVAL (ops[2]);
   HOST_WIDE_INT maskbits;
-  enum machine_mode dst_mode, src_mode;
+  enum machine_mode dst_mode;
   rtx dst = ops[0], src = ops[3];
-  int dst_size, src_size;
+  int dst_size;
   rtx mask;
   rtx shift_reg;
   int shift;
@@ -744,8 +775,6 @@ spu_expand_insv (rtx ops[])
       src = force_reg (m, convert_to_mode (m, src, 0));
     }
   src = adjust_operand (src, 0);
-  src_mode = GET_MODE (src);
-  src_size = GET_MODE_BITSIZE (GET_MODE (src));
 
   mask = gen_reg_rtx (dst_mode);
   shift_reg = gen_reg_rtx (dst_mode);
@@ -1139,7 +1168,7 @@ spu_emit_branch_or_set (int is_set, rtx cmp, rtx operands[])
           if (eq_rtx == 0)
 	    abort ();
           emit_insn (eq_rtx);
-          ior_code = ior_optab->handlers[(int)comp_mode].insn_code;
+          ior_code = optab_handler (ior_optab, comp_mode);
           gcc_assert (ior_code != CODE_FOR_nothing);
           emit_insn (GEN_FCN (ior_code)
 		     (compare_result, compare_result, eq_result));
@@ -1695,8 +1724,6 @@ print_operand (FILE * file, rtx x, int code)
     }
   gcc_unreachable ();
 }
-
-extern char call_used_regs[];
 
 /* For PIC mode we've reserved PIC_OFFSET_TABLE_REGNUM, which is a
    caller saved register.  For leaf functions it is more efficient to
@@ -2333,7 +2360,7 @@ spu_emit_branch_hint (rtx before, rtx branch, rtx target,
     return;
 
   /* If we have a Basic block note, emit it after the basic block note.  */
-  if (NOTE_KIND (before) == NOTE_INSN_BASIC_BLOCK)
+  if (NOTE_INSN_BASIC_BLOCK_P (before))
     before = NEXT_INSN (before);
 
   branch_label = gen_label_rtx ();
@@ -3989,14 +4016,14 @@ spu_function_value (const_tree type, const_tree func ATTRIBUTE_UNUSED)
   return gen_rtx_REG (mode, FIRST_RETURN_REGNUM);
 }
 
-rtx
-spu_function_arg (CUMULATIVE_ARGS cum,
+static rtx
+spu_function_arg (CUMULATIVE_ARGS *cum,
 		  enum machine_mode mode,
-		  tree type, int named ATTRIBUTE_UNUSED)
+		  const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   int byte_size;
 
-  if (cum >= MAX_REGISTER_ARGS)
+  if (*cum >= MAX_REGISTER_ARGS)
     return 0;
 
   byte_size = ((mode == BLKmode)
@@ -4004,7 +4031,7 @@ spu_function_arg (CUMULATIVE_ARGS cum,
 
   /* The ABI does not allow parameters to be passed partially in
      reg and partially in stack. */
-  if ((cum + (byte_size + 15) / 16) > MAX_REGISTER_ARGS)
+  if ((*cum + (byte_size + 15) / 16) > MAX_REGISTER_ARGS)
     return 0;
 
   /* Make sure small structs are left justified in a register. */
@@ -4017,12 +4044,25 @@ spu_function_arg (CUMULATIVE_ARGS cum,
 	byte_size = 4;
       smode = smallest_mode_for_size (byte_size * BITS_PER_UNIT, MODE_INT);
       gr_reg = gen_rtx_EXPR_LIST (VOIDmode,
-				  gen_rtx_REG (smode, FIRST_ARG_REGNUM + cum),
+				  gen_rtx_REG (smode, FIRST_ARG_REGNUM + *cum),
 				  const0_rtx);
       return gen_rtx_PARALLEL (mode, gen_rtvec (1, gr_reg));
     }
   else
-    return gen_rtx_REG (mode, FIRST_ARG_REGNUM + cum);
+    return gen_rtx_REG (mode, FIRST_ARG_REGNUM + *cum);
+}
+
+static void
+spu_function_arg_advance (CUMULATIVE_ARGS * cum, enum machine_mode mode,
+			  const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  *cum += (type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
+	   ? 1
+	   : mode == BLKmode
+	   ? ((int_size_in_bytes (type) + 15) / 16)
+	   : mode == VOIDmode
+	   ? 1
+	   : HARD_REGNO_NREGS (cum, mode));
 }
 
 /* Variable sized types are passed by reference.  */
@@ -4076,10 +4116,10 @@ spu_build_builtin_va_list (void)
   DECL_ALIGN (f_skip) = 128;
   DECL_USER_ALIGN (f_skip) = 1;
 
-  TREE_CHAIN (record) = type_decl;
+  TYPE_STUB_DECL (record) = type_decl;
   TYPE_NAME (record) = type_decl;
   TYPE_FIELDS (record) = f_args;
-  TREE_CHAIN (f_args) = f_skip;
+  DECL_CHAIN (f_args) = f_skip;
 
   /* We know this is being padded and we want it too.  It is an internal
      type so hide the warnings from the user. */
@@ -4114,9 +4154,9 @@ spu_va_start (tree valist, rtx nextarg)
   tree args, skip, t;
 
   f_args = TYPE_FIELDS (TREE_TYPE (va_list_type_node));
-  f_skip = TREE_CHAIN (f_args);
+  f_skip = DECL_CHAIN (f_args);
 
-  valist = build_va_arg_indirect_ref (valist);
+  valist = build_simple_mem_ref (valist);
   args =
     build3 (COMPONENT_REF, TREE_TYPE (f_args), valist, f_args, NULL_TREE);
   skip =
@@ -4169,9 +4209,9 @@ spu_gimplify_va_arg_expr (tree valist, tree type, gimple_seq * pre_p,
   bool pass_by_reference_p;
 
   f_args = TYPE_FIELDS (TREE_TYPE (va_list_type_node));
-  f_skip = TREE_CHAIN (f_args);
+  f_skip = DECL_CHAIN (f_args);
 
-  valist = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (valist)), valist);
+  valist = build_simple_mem_ref (valist);
   args =
     build3 (COMPONENT_REF, TREE_TYPE (f_args), valist, f_args, NULL_TREE);
   skip =
@@ -4233,7 +4273,7 @@ spu_setup_incoming_varargs (CUMULATIVE_ARGS * cum, enum machine_mode mode,
 
       /* cum currently points to the last named argument, we want to
          start at the next argument. */
-      FUNCTION_ARG_ADVANCE (ncum, mode, type, 1);
+      spu_function_arg_advance (&ncum, mode, type, true);
 
       offset = -STACK_POINTER_OFFSET;
       for (regno = ncum; regno < MAX_REGISTER_ARGS; regno++)
@@ -4249,7 +4289,7 @@ spu_setup_incoming_varargs (CUMULATIVE_ARGS * cum, enum machine_mode mode,
     }
 }
 
-void
+static void
 spu_conditional_register_usage (void)
 {
   if (flag_pic)
@@ -4588,7 +4628,8 @@ spu_expand_mov (rtx * ops, enum machine_mode mode)
 
       if (GET_MODE_SIZE (mode) < GET_MODE_SIZE (imode))
 	{
-	  enum insn_code icode = convert_optab_handler (trunc_optab, mode, imode)->insn_code;
+	  enum insn_code icode = convert_optab_handler (trunc_optab,
+							mode, imode);
 	  emit_insn (GEN_FCN (icode) (ops[0], from));
 	}
       else
@@ -4935,6 +4976,7 @@ spu_split_store (rtx * ops)
 	}
     }
 
+  gcc_assert (aform == 0 || aform == 1);
   reg = gen_reg_rtx (TImode);
 
   scalar = store_with_one_insn_p (ops[0]);
@@ -5616,12 +5658,14 @@ extern GTY(()) struct spu_builtin_description spu_builtins[NUM_SPU_BUILTINS];
 
 struct spu_builtin_description spu_builtins[] = {
 #define DEF_BUILTIN(fcode, icode, name, type, params) \
-  {fcode, icode, name, type, params, NULL_TREE},
+  {fcode, icode, name, type, params},
 #include "spu-builtins.def"
 #undef DEF_BUILTIN
 };
 
-/* Returns the rs6000 builtin decl for CODE.  */
+static GTY(()) tree spu_builtin_decls[NUM_SPU_BUILTINS];
+
+/* Returns the spu builtin decl for CODE.  */
 
 static tree
 spu_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
@@ -5629,7 +5673,7 @@ spu_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
   if (code >= NUM_SPU_BUILTINS)
     return error_mark_node;
           
-  return spu_builtins[code].fndecl;
+  return spu_builtin_decls[code];
 }
 
 
@@ -5707,14 +5751,13 @@ spu_init_builtins (void)
       p = build_function_type (spu_builtin_types[d->parm[0]], p);
 
       sprintf (name, "__builtin_%s", d->name);
-      d->fndecl =
-	add_builtin_function (name, p, END_BUILTINS + i, BUILT_IN_MD,
-			      NULL, NULL_TREE);
+      spu_builtin_decls[i] =
+	add_builtin_function (name, p, i, BUILT_IN_MD, NULL, NULL_TREE);
       if (d->fcode == SPU_MASK_FOR_LOAD)
-	TREE_READONLY (d->fndecl) = 1;	
+	TREE_READONLY (spu_builtin_decls[i]) = 1;	
 
       /* These builtins don't throw.  */
-      TREE_NOTHROW (d->fndecl) = 1;
+      TREE_NOTHROW (spu_builtin_decls[i]) = 1;
     }
 }
 
@@ -6251,7 +6294,7 @@ spu_emit_vector_compare (enum rtx_code rcode,
           {
             enum insn_code nor_code;
             rtx eq_rtx = spu_emit_vector_compare (EQ, op0, op1, dest_mode);
-            nor_code = optab_handler (one_cmpl_optab, (int)dest_mode)->insn_code;
+            nor_code = optab_handler (one_cmpl_optab, dest_mode);
             gcc_assert (nor_code != CODE_FOR_nothing);
             emit_insn (GEN_FCN (nor_code) (mask, eq_rtx));
             if (dmode != dest_mode)
@@ -6286,7 +6329,7 @@ spu_emit_vector_compare (enum rtx_code rcode,
             c_rtx = spu_emit_vector_compare (new_code, op0, op1, dest_mode);
             eq_rtx = spu_emit_vector_compare (EQ, op0, op1, dest_mode);
 
-            ior_code = optab_handler (ior_optab, (int)dest_mode)->insn_code;
+            ior_code = optab_handler (ior_optab, dest_mode);
             gcc_assert (ior_code != CODE_FOR_nothing);
             emit_insn (GEN_FCN (ior_code) (mask, c_rtx, eq_rtx));
             if (dmode != dest_mode)
@@ -6384,7 +6427,7 @@ spu_check_builtin_parm (struct spu_builtin_description *d, rtx op, int p)
       int range = p - SPU_BTI_7;
 
       if (!CONSTANT_P (op))
-	error ("%s expects an integer literal in the range [%d, %d].",
+	error ("%s expects an integer literal in the range [%d, %d]",
 	       d->name,
 	       spu_builtin_range[range].low, spu_builtin_range[range].high);
 
@@ -6404,8 +6447,7 @@ spu_check_builtin_parm (struct spu_builtin_description *d, rtx op, int p)
       /* The default for v is 0 which is valid in every range. */
       if (v < spu_builtin_range[range].low
 	  || v > spu_builtin_range[range].high)
-	error ("%s expects an integer literal in the range [%d, %d]. ("
-	       HOST_WIDE_INT_PRINT_DEC ")",
+	error ("%s expects an integer literal in the range [%d, %d]. (%wd)",
 	       d->name,
 	       spu_builtin_range[range].low, spu_builtin_range[range].high,
 	       v);
@@ -6434,7 +6476,7 @@ spu_check_builtin_parm (struct spu_builtin_description *d, rtx op, int p)
 	  || (GET_CODE (op) == SYMBOL_REF
 	      && SYMBOL_REF_FUNCTION_P (op))
 	  || (v & ((1 << lsbits) - 1)) != 0)
-	warning (0, "%d least significant bits of %s are ignored.", lsbits,
+	warning (0, "%d least significant bits of %s are ignored", lsbits,
 		 d->name);
     }
 }
@@ -6514,7 +6556,7 @@ spu_expand_builtin_1 (struct spu_builtin_description *d,
 
       /* get addr */
       arg = CALL_EXPR_ARG (exp, 0);
-      gcc_assert (TREE_CODE (TREE_TYPE (arg)) == POINTER_TYPE);
+      gcc_assert (POINTER_TYPE_P (TREE_TYPE (arg)));
       op = expand_expr (arg, NULL_RTX, Pmode, EXPAND_NORMAL);
       addr = memory_address (mode, op);
 
@@ -6637,7 +6679,7 @@ spu_expand_builtin (tree exp,
 		    int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl) - END_BUILTINS;
+  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
   struct spu_builtin_description *d;
 
   if (fcode < NUM_SPU_BUILTINS)
@@ -6657,9 +6699,9 @@ spu_builtin_mul_widen_even (tree type)
     {
     case V8HImode:
       if (TYPE_UNSIGNED (type))
-	return spu_builtins[SPU_MULE_0].fndecl;
+	return spu_builtin_decls[SPU_MULE_0];
       else
-	return spu_builtins[SPU_MULE_1].fndecl;
+	return spu_builtin_decls[SPU_MULE_1];
       break;
     default:
       return NULL_TREE;
@@ -6674,9 +6716,9 @@ spu_builtin_mul_widen_odd (tree type)
     {
     case V8HImode:
       if (TYPE_UNSIGNED (type))
-	return spu_builtins[SPU_MULO_1].fndecl;
+	return spu_builtin_decls[SPU_MULO_1];
       else
-	return spu_builtins[SPU_MULO_0].fndecl; 
+	return spu_builtin_decls[SPU_MULO_0]; 
       break;
     default:
       return NULL_TREE;
@@ -6687,14 +6729,14 @@ spu_builtin_mul_widen_odd (tree type)
 static tree
 spu_builtin_mask_for_load (void)
 {
-  struct spu_builtin_description *d = &spu_builtins[SPU_MASK_FOR_LOAD];
-  gcc_assert (d);
-  return d->fndecl;
+  return spu_builtin_decls[SPU_MASK_FOR_LOAD];
 }
 
 /* Implement targetm.vectorize.builtin_vectorization_cost.  */
 static int 
-spu_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost)
+spu_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
+                                tree vectype ATTRIBUTE_UNUSED,
+                                int misalign ATTRIBUTE_UNUSED)
 {
   switch (type_of_cost)
     {
@@ -6744,54 +6786,43 @@ spu_vector_alignment_reachable (const_tree type ATTRIBUTE_UNUSED, bool is_packed
 tree
 spu_builtin_vec_perm (tree type, tree *mask_element_type)
 {
-  struct spu_builtin_description *d;
-
   *mask_element_type = unsigned_char_type_node;
 
   switch (TYPE_MODE (type))
     {
     case V16QImode:
       if (TYPE_UNSIGNED (type))
-        d = &spu_builtins[SPU_SHUFFLE_0];
+        return spu_builtin_decls[SPU_SHUFFLE_0];
       else
-        d = &spu_builtins[SPU_SHUFFLE_1];
-      break;
+        return spu_builtin_decls[SPU_SHUFFLE_1];
 
     case V8HImode:
       if (TYPE_UNSIGNED (type))
-        d = &spu_builtins[SPU_SHUFFLE_2];
+        return spu_builtin_decls[SPU_SHUFFLE_2];
       else
-        d = &spu_builtins[SPU_SHUFFLE_3];
-      break;
+        return spu_builtin_decls[SPU_SHUFFLE_3];
 
     case V4SImode:
       if (TYPE_UNSIGNED (type))
-        d = &spu_builtins[SPU_SHUFFLE_4];
+        return spu_builtin_decls[SPU_SHUFFLE_4];
       else
-        d = &spu_builtins[SPU_SHUFFLE_5];
-      break;
+        return spu_builtin_decls[SPU_SHUFFLE_5];
 
     case V2DImode:
       if (TYPE_UNSIGNED (type))
-        d = &spu_builtins[SPU_SHUFFLE_6];
+        return spu_builtin_decls[SPU_SHUFFLE_6];
       else
-        d = &spu_builtins[SPU_SHUFFLE_7];
-      break;
+        return spu_builtin_decls[SPU_SHUFFLE_7];
 
     case V4SFmode:
-      d = &spu_builtins[SPU_SHUFFLE_8];
-      break;
+      return spu_builtin_decls[SPU_SHUFFLE_8];
 
     case V2DFmode:
-      d = &spu_builtins[SPU_SHUFFLE_9];
-      break;
+      return spu_builtin_decls[SPU_SHUFFLE_9];
 
     default:
       return NULL_TREE;
     }
-
-  gcc_assert (d);
-  return d->fndecl;
 }
 
 /* Return the appropriate mode for a named address pointer.  */
@@ -7082,7 +7113,7 @@ spu_split_convert (rtx ops[])
 }
 
 void
-spu_function_profiler (FILE * file, int labelno)
+spu_function_profiler (FILE * file, int labelno ATTRIBUTE_UNUSED)
 {
   fprintf (file, "# profile\n");
   fprintf (file, "brsl $75,  _mcount\n");

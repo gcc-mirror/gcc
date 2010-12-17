@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 struct resources
 {
   char memory;		/* Insn sets or needs a memory location.  */
-  char unch_memory;	/* Insn sets of needs a "unchanging" MEM.  */
+  char unch_memory;	/* Insn sets or needs an "unchanging" MEM.  */
   char volatil;		/* Insn sets or needs a volatile memory loc.  */
   char cc;		/* Insn sets or needs the condition codes.  */
   HARD_REG_SET regs;	/* Which registers are set or needed.  */

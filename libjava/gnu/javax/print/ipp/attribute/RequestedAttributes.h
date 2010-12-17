@@ -7,6 +7,8 @@
 #pragma interface
 
 #include <java/lang/Object.h>
+#include <gcj/array.h>
+
 extern "Java"
 {
   namespace gnu
@@ -33,7 +35,7 @@ class gnu::javax::print::ipp::attribute::RequestedAttributes : public ::java::la
 public:
   RequestedAttributes(::java::lang::String *);
   void addValue(::java::lang::String *);
-  ::java::util::List * getValues();
+  JArray< ::java::lang::String * > * getValues();
   ::java::lang::Class * getCategory();
   ::java::lang::String * getName();
   ::java::lang::String * toString();

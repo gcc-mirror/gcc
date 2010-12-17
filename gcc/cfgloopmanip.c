@@ -1,6 +1,6 @@
 /* Loop manipulation code for GNU compiler.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009 Free Software
-   Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -130,7 +130,7 @@ fix_loop_placement (struct loop *loop)
   struct loop *father = current_loops->tree_root, *act;
   bool ret = false;
 
-  for (i = 0; VEC_iterate (edge, exits, i, e); i++)
+  FOR_EACH_VEC_ELT (edge, exits, i, e)
     {
       act = find_common_loop (loop, e->dest->loop_father);
       if (flow_loop_nested_p (father, act))
@@ -146,7 +146,7 @@ fix_loop_placement (struct loop *loop)
 
       /* The exit edges of LOOP no longer exits its original immediate
 	 superloops; remove them from the appropriate exit lists.  */
-      for (i = 0; VEC_iterate (edge, exits, i, e); i++)
+      FOR_EACH_VEC_ELT (edge, exits, i, e)
 	rescan_loop_exit (e, false, false);
 
       ret = true;
@@ -1271,7 +1271,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
       bb->aux = 0;
 
       dom_bbs = get_dominated_by (CDI_DOMINATORS, bb);
-      for (j = 0; VEC_iterate (basic_block, dom_bbs, j, dominated); j++)
+      FOR_EACH_VEC_ELT (basic_block, dom_bbs, j, dominated)
 	{
 	  if (flow_bb_inside_loop_p (loop, dominated))
 	    continue;
@@ -1538,7 +1538,10 @@ loop_version (struct loop *loop,
   /* Duplicate loop.  */
   if (!cfg_hook_duplicate_loop_to_header_edge (loop, entry, 1,
 					       NULL, NULL, NULL, 0))
-    return NULL;
+    {
+      entry->flags |= irred_flag;
+      return NULL;
+    }
 
   /* After duplication entry edge now points to new loop head block.
      Note down new head as second_head.  */

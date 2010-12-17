@@ -558,7 +558,6 @@ powf (float x, float y)
 }
 #endif
 
-/* Note that if fpclassify is not defined, then NaN is not handled */
 
 /* Algorithm by Steven G. Kargl.  */
 
@@ -1854,7 +1853,7 @@ tgamma (double x)
   n = 0;
   y = x;
 
-  if (__builtin_isnan (x))
+  if (isnan (x))
     return x;
 
   if (y <= 0)

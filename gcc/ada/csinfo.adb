@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,10 +23,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Program to check consistency of sinfo.ads and sinfo.adb. Checks that field
---  name usage is consistent and that assertion cross-reference lists are
---  correct, as well as making sure that all the comments on field name usage
---  are consistent.
+--  Check consistency of sinfo.ads and sinfo.adb. Checks that field name usage
+--  is consistent and that assertion cross-reference lists are correct, as well
+--  as making sure that all the comments on field name usage are consistent.
+
+--  Note that this is used both as a standalone program, and as a procedure
+--  called by XSinfo. This raises an unhandled exception if it finds any
+--  errors; we don't attempt any sophisticated error recovery.
 
 with Ada.Strings.Unbounded;         use Ada.Strings.Unbounded;
 with Ada.Strings.Unbounded.Text_IO; use Ada.Strings.Unbounded.Text_IO;
@@ -210,6 +213,7 @@ begin
    Set (Special, "Etype",                     True);
    Set (Special, "Evaluate_Once",             True);
    Set (Special, "First_Itype",               True);
+   Set (Special, "Has_Aspect_Specifications", True);
    Set (Special, "Has_Dynamic_Itype",         True);
    Set (Special, "Has_Dynamic_Range_Check",   True);
    Set (Special, "Has_Dynamic_Length_Check",  True);
@@ -633,9 +637,5 @@ begin
    Put_Line ("     OK");
    New_Line;
    Put_Line ("All tests completed successfully, no errors detected");
-
-exception
-   when Done =>
-      null;
 
 end CSinfo;

@@ -29,6 +29,8 @@ with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
+with Restrict; use Restrict;
+with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Util; use Sem_Util;
@@ -164,10 +166,10 @@ package body Exp_Strm is
              Object_Definition   => New_Occurrence_Of (Etype (Indx), Loc),
              Expression =>
                Make_Attribute_Reference (Loc,
-                 Prefix =>
+                 Prefix         =>
                    New_Occurrence_Of (Stream_Base_Type (Etype (Indx)), Loc),
                  Attribute_Name => Name_Input,
-                 Expressions => New_List (Make_Identifier (Loc, Name_S)))));
+                 Expressions    => New_List (Make_Identifier (Loc, Name_S)))));
 
          Append_To (Decls,
            Make_Object_Declaration (Loc,
@@ -177,10 +179,10 @@ package body Exp_Strm is
                    New_Occurrence_Of (Stream_Base_Type (Etype (Indx)), Loc),
              Expression =>
                Make_Attribute_Reference (Loc,
-                 Prefix =>
+                 Prefix         =>
                    New_Occurrence_Of (Stream_Base_Type (Etype (Indx)), Loc),
                  Attribute_Name => Name_Input,
-                 Expressions => New_List (Make_Identifier (Loc, Name_S)))));
+                 Expressions    => New_List (Make_Identifier (Loc, Name_S)))));
 
          Append_To (Ranges,
            Make_Range (Loc,
@@ -258,9 +260,9 @@ package body Exp_Strm is
              Expressions => New_List (
                Make_Identifier (Loc, Name_S),
                Make_Attribute_Reference (Loc,
-                 Prefix => Make_Identifier (Loc, Name_V),
+                 Prefix         => Make_Identifier (Loc, Name_V),
                  Attribute_Name => Name_First,
-                 Expressions => New_List (
+                 Expressions    => New_List (
                    Make_Integer_Literal (Loc, J))))));
 
          Append_To (Stms,
@@ -271,9 +273,9 @@ package body Exp_Strm is
              Expressions => New_List (
                Make_Identifier (Loc, Name_S),
                Make_Attribute_Reference (Loc,
-                 Prefix => Make_Identifier (Loc, Name_V),
+                 Prefix         => Make_Identifier (Loc, Name_V),
                  Attribute_Name => Name_Last,
-                 Expressions => New_List (
+                 Expressions    => New_List (
                    Make_Integer_Literal (Loc, J))))));
 
          Next_Index (Indx);
@@ -367,7 +369,7 @@ package body Exp_Strm is
           Expressions => New_List (
             Make_Identifier (Loc, Name_S),
             Make_Indexed_Component (Loc,
-              Prefix => Make_Identifier (Loc, Name_V),
+              Prefix      => Make_Identifier (Loc, Name_V),
               Expressions => Exl)));
 
       --  The corresponding stream attribute for the component type of the
@@ -405,7 +407,7 @@ package body Exp_Strm is
 
                      Discrete_Subtype_Definition =>
                        Make_Attribute_Reference (Loc,
-                         Prefix => Make_Identifier (Loc, Name_V),
+                         Prefix         => Make_Identifier (Loc, Name_V),
                          Attribute_Name => Name_Range,
 
                          Expressions => New_List (
@@ -455,6 +457,8 @@ package body Exp_Strm is
       Lib_RE  : RE_Id;
 
    begin
+      Check_Restriction (No_Default_Stream_Attributes, N);
+
       --  Compute the size of the stream element. This is either the size of
       --  the first subtype or if given the size of the Stream_Size attribute.
 
@@ -667,6 +671,8 @@ package body Exp_Strm is
       Libent  : Entity_Id;
 
    begin
+      Check_Restriction (No_Default_Stream_Attributes, N);
+
       --  Compute the size of the stream element. This is either the size of
       --  the first subtype or if given the size of the Stream_Size attribute.
 
@@ -892,7 +898,7 @@ package body Exp_Strm is
 
       Out_Formal :=
         Make_Selected_Component (Loc,
-          Prefix => New_Occurrence_Of (Pnam, Loc),
+          Prefix        => New_Occurrence_Of (Pnam, Loc),
           Selector_Name => Make_Identifier (Loc, Name_V));
 
       --  Generate Reads for the discriminants of the type. The discriminants
@@ -975,7 +981,7 @@ package body Exp_Strm is
 
       Append_To (Constrained_Stms,
         Make_Assignment_Statement (Loc,
-          Name => Out_Formal,
+          Name       => Out_Formal,
           Expression => Make_Identifier (Loc, Name_V)));
 
       if Is_Unchecked_Union (Typ) then
@@ -1026,7 +1032,7 @@ package body Exp_Strm is
          else
             D_Ref :=
               Make_Selected_Component (Loc,
-                Prefix => Make_Identifier (Loc, Name_V),
+                Prefix        => Make_Identifier (Loc, Name_V),
                 Selector_Name => New_Occurrence_Of (Disc, Loc));
          end if;
 
@@ -1034,7 +1040,7 @@ package body Exp_Strm is
            Make_Attribute_Reference (Loc,
              Prefix => New_Occurrence_Of (Etype (Disc), Loc),
                Attribute_Name => Name_Write,
-               Expressions => New_List (
+               Expressions    => New_List (
                  Make_Identifier (Loc, Name_S),
                  D_Ref)));
 
@@ -1177,7 +1183,7 @@ package body Exp_Strm is
          Set_No_Initialization (Obj_Decl);
       end if;
 
-      if Ada_Version >= Ada_05 then
+      if Ada_Version >= Ada_2005 then
          Stms := New_List (
            Make_Extended_Return_Statement (Loc,
              Return_Object_Declarations => New_List (Obj_Decl),
@@ -1245,7 +1251,7 @@ package body Exp_Strm is
             else
                Disc_Ref :=
                  Make_Selected_Component (Loc,
-                   Prefix => Make_Identifier (Loc, Name_V),
+                   Prefix        => Make_Identifier (Loc, Name_V),
                    Selector_Name => New_Occurrence_Of (Disc, Loc));
             end if;
 
@@ -1405,7 +1411,7 @@ package body Exp_Strm is
             else
                D_Ref :=
                   Make_Selected_Component (Loc,
-                    Prefix => Make_Identifier (Loc, Name_V),
+                    Prefix        => Make_Identifier (Loc, Name_V),
                     Selector_Name =>
                       New_Occurrence_Of (Entity (Name (VP)), Loc));
             end if;
@@ -1455,7 +1461,7 @@ package body Exp_Strm is
              Expressions => New_List (
                Make_Identifier (Loc, Name_S),
                Make_Selected_Component (Loc,
-                 Prefix => Make_Identifier (Loc, Name_V),
+                 Prefix        => Make_Identifier (Loc, Name_V),
                  Selector_Name => New_Occurrence_Of (C, Loc))));
       end Make_Field_Attribute;
 

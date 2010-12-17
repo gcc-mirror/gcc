@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2003-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +30,7 @@
 
 with Table;
 with VMS_Data; use VMS_Data;
+with VMS_Cmds; use VMS_Cmds;
 
 with GNAT.OS_Lib; use GNAT.OS_Lib;
 
@@ -91,29 +92,6 @@ package VMS_Conv is
 
    type Parameter_Array is array (Natural range <>) of Parameter_Type;
    type Parameter_Ref is access all Parameter_Array;
-
-   type Command_Type is
-     (Bind,
-      Chop,
-      Clean,
-      Compile,
-      Check,
-      Sync,
-      Elim,
-      Find,
-      Krunch,
-      Link,
-      List,
-      Make,
-      Metric,
-      Name,
-      Preprocess,
-      Pretty,
-      Shared,
-      Stack,
-      Stub,
-      Xref,
-      Undefined);
 
    type Alternate_Command is (Comp, Ls, Kr, Pp, Prep);
    --  Alternate command label for non VMS system use

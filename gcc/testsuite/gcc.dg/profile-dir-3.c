@@ -1,7 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fprofile-generate -fprofile-dir=. -fdump-tree-tree_profile" } */
-/* { dg-require-host-local "" } */
-/* { dg-final { scan-tree-dump " ./profile-dir-3.gcda" "tree_profile" } } */
+/* { dg-options "-O -fprofile-generate -fprofile-dir=. -fdump-ipa-tree_profile_ipa" } */
+/* { dg-final { scan-ipa-dump " ./profile-dir-3.gcda" "tree_profile_ipa" } } */
 
 int
 main(void)
@@ -9,5 +8,4 @@ main(void)
   return 0;
 }
 
-/* { dg-final { cleanup-coverage-files } } */
-/* { dg-final { cleanup-tree-dump "tree_profile" } } */
+/* { dg-final { cleanup-ipa-dump "tree_profile_ipa" } } */

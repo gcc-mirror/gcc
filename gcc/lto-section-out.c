@@ -1,6 +1,6 @@
 /* Functions for writing LTO sections.
 
-   Copyright (C) 2009 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "toplev.h"
 #include "tree.h"
 #include "expr.h"
 #include "params.h"
@@ -486,7 +485,7 @@ lto_destroy_simple_output_block (struct lto_simple_output_block *ob)
   struct lto_simple_header header;
   struct lto_output_stream *header_stream;
 
-  section_name = lto_get_section_name (ob->section_type, NULL);
+  section_name = lto_get_section_name (ob->section_type, NULL, NULL);
   lto_begin_section (section_name, !flag_wpa);
   free (section_name);
 

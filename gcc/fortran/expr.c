@@ -215,7 +215,7 @@ gfc_get_int_expr (int kind, locus *where, int value)
   p = gfc_get_constant_expr (BT_INTEGER, kind,
 			     where ? where : &gfc_current_locus);
 
-  mpz_init_set_si (p->value.integer, value);
+  mpz_set_si (p->value.integer, value);
 
   return p;
 }
@@ -868,31 +868,6 @@ done:
 }
 
 
-static match
-check_specification_function (gfc_expr *e)
-{
-  gfc_symbol *sym;
-
-  if (!e->symtree)
-    return MATCH_NO;
-
-  sym = e->symtree->n.sym;
-
-  /* F95, 7.1.6.2; F2003, 7.1.7  */
-  if (sym
-      && sym->attr.function
-      && sym->attr.pure
-      && !sym->attr.intrinsic
-      && !sym->attr.recursive
-      && sym->attr.proc != PROC_INTERNAL
-      && sym->attr.proc != PROC_ST_FUNCTION
-      && sym->attr.proc != PROC_UNKNOWN
-      && sym->formal == NULL)
-    return MATCH_YES;
-
-  return MATCH_NO;
-}
-
 /* Function to determine if an expression is constant or not.  This
    function expects that the expression has already been simplified.  */
 
@@ -901,6 +876,7 @@ gfc_is_constant_expr (gfc_expr *e)
 {
   gfc_constructor *c;
   gfc_actual_arglist *arg;
+  gfc_symbol *sym;
 
   if (e == NULL)
     return 1;
@@ -918,21 +894,40 @@ gfc_is_constant_expr (gfc_expr *e)
     case EXPR_FUNCTION:
     case EXPR_PPC:
     case EXPR_COMPCALL:
-      /* Specification functions are constant.  */
-      if (check_specification_function (e) == MATCH_YES)
-	return 1;
-
       /* Call to intrinsic with at least one argument.  */
       if (e->value.function.isym && e->value.function.actual)
 	{
 	  for (arg = e->value.function.actual; arg; arg = arg->next)
 	    if (!gfc_is_constant_expr (arg->expr))
 	      return 0;
-
-	  return 1;
 	}
-      else
-	return 0;
+
+      /* Make sure we have a symbol.  */
+      gcc_assert (e->symtree);
+
+      sym = e->symtree->n.sym;
+    
+      /* Specification functions are constant.  */
+      /* F95, 7.1.6.2; F2003, 7.1.7  */
+      if (sym
+	  && sym->attr.function
+	  && sym->attr.pure
+	  && !sym->attr.intrinsic
+	  && !sym->attr.recursive
+	  && sym->attr.proc != PROC_INTERNAL
+	  && sym->attr.proc != PROC_ST_FUNCTION
+	  && sym->attr.proc != PROC_UNKNOWN
+	  && sym->formal == NULL)
+	return 1;
+
+      if (e->value.function.isym
+	  && (e->value.function.isym->elemental
+	      || e->value.function.isym->pure
+	      || e->value.function.isym->inquiry
+	      || e->value.function.isym->transformational))
+	return 1;
+
+      return 0;
 
     case EXPR_CONSTANT:
     case EXPR_NULL:
@@ -1894,7 +1889,7 @@ gfc_simplify_expr (gfc_expr *p, int type)
 
       if (p->expr_type == EXPR_ARRAY && p->ref && p->ref->type == REF_ARRAY
 	  && p->ref->u.ar.type == AR_FULL)
-	  gfc_expand_constructor (p);
+	  gfc_expand_constructor (p, false);
 
       if (simplify_const_ref (p) == FAILURE)
 	return FAILURE;
@@ -2292,10 +2287,13 @@ check_inquiry (gfc_expr *e, int not_restricted)
 	   with LEN, as required by the standard.  */
 	if (i == 5 && not_restricted
 	    && ap->expr->symtree->n.sym->ts.type == BT_CHARACTER
-	    && ap->expr->symtree->n.sym->ts.u.cl->length == NULL)
+	    && (ap->expr->symtree->n.sym->ts.u.cl->length == NULL
+		|| ap->expr->symtree->n.sym->ts.deferred))
 	  {
-	    gfc_error ("Assumed character length variable '%s' in constant "
-		       "expression at %L", e->symtree->n.sym->name, &e->where);
+	    gfc_error ("Assumed or deferred character length variable '%s' "
+			" in constant expression at %L",
+			ap->expr->symtree->n.sym->name,
+			&ap->expr->where);
 	      return MATCH_ERROR;
 	  }
 	else if (not_restricted && check_init_expr (ap->expr) == FAILURE)
@@ -2305,6 +2303,12 @@ check_inquiry (gfc_expr *e, int not_restricted)
 	      && ap->expr->expr_type != EXPR_VARIABLE
 	      && check_restricted (ap->expr) == FAILURE)
 	  return MATCH_ERROR;
+
+	if (not_restricted == 0
+	    && ap->expr->expr_type == EXPR_VARIABLE
+	    && ap->expr->symtree->n.sym->attr.dummy
+	    && ap->expr->symtree->n.sym->attr.optional)
+	  return MATCH_NO;
     }
 
   return MATCH_YES;
@@ -2573,7 +2577,7 @@ check_init_expr (gfc_expr *e)
       if (t == FAILURE)
 	break;
 
-      t = gfc_expand_constructor (e);
+      t = gfc_expand_constructor (e, true);
       if (t == FAILURE)
 	break;
 
@@ -2609,7 +2613,7 @@ gfc_reduce_init_expr (gfc_expr *expr)
     {
       if (gfc_check_constructor_type (expr) == FAILURE)
 	return FAILURE;
-      if (gfc_expand_constructor (expr) == FAILURE)
+      if (gfc_expand_constructor (expr, true) == FAILURE)
 	return FAILURE;
     }
 
@@ -3037,23 +3041,14 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
 
   sym = lvalue->symtree->n.sym;
 
-  /* Check INTENT(IN), unless the object itself is the component or
-     sub-component of a pointer.  */
+  /* See if this is the component or subcomponent of a pointer.  */
   has_pointer = sym->attr.pointer;
-
   for (ref = lvalue->ref; ref; ref = ref->next)
     if (ref->type == REF_COMPONENT && ref->u.c.component->attr.pointer)
       {
 	has_pointer = 1;
 	break;
       }
-
-  if (!has_pointer && sym->attr.intent == INTENT_IN)
-    {
-      gfc_error ("Cannot assign to INTENT(IN) variable '%s' at %L",
-		 sym->name, &lvalue->where);
-      return FAILURE;
-    }
 
   /* 12.5.2.2, Note 12.26: The result variable is very similar to any other
      variable local to a function subprogram.  Its existence begins when
@@ -3232,8 +3227,8 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 {
   symbol_attribute attr;
   gfc_ref *ref;
-  int is_pure;
-  int pointer, check_intent_in, proc_pointer;
+  bool is_pure, rank_remap;
+  int proc_pointer;
 
   if (lvalue->symtree->n.sym->ts.type == BT_UNKNOWN
       && !lvalue->symtree->n.sym->attr.proc_pointer)
@@ -3253,26 +3248,18 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
       return FAILURE;
     }
 
-
-  /* Check INTENT(IN), unless the object itself is the component or
-     sub-component of a pointer.  */
-  check_intent_in = 1;
-  pointer = lvalue->symtree->n.sym->attr.pointer;
   proc_pointer = lvalue->symtree->n.sym->attr.proc_pointer;
 
+  rank_remap = false;
   for (ref = lvalue->ref; ref; ref = ref->next)
     {
-      if (pointer)
-	check_intent_in = 0;
-
       if (ref->type == REF_COMPONENT)
-	{
-	  pointer = ref->u.c.component->attr.pointer;
-	  proc_pointer = ref->u.c.component->attr.proc_pointer;
-	}
+	proc_pointer = ref->u.c.component->attr.proc_pointer;
 
       if (ref->type == REF_ARRAY && ref->next == NULL)
 	{
+	  int dim;
+
 	  if (ref->u.ar.type == AR_FULL)
 	    break;
 
@@ -3285,41 +3272,45 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 
 	  if (gfc_notify_std (GFC_STD_F2003,"Fortran 2003: Bounds "
 			      "specification for '%s' in pointer assignment "
-                              "at %L", lvalue->symtree->n.sym->name,
+			      "at %L", lvalue->symtree->n.sym->name,
 			      &lvalue->where) == FAILURE)
-            return FAILURE;
+	    return FAILURE;
 
-	  gfc_error ("Pointer bounds remapping at %L is not yet implemented "
-		     "in gfortran", &lvalue->where);
-	  /* TODO: See PR 29785. Add checks that all lbounds are specified and
-	     either never or always the upper-bound; strides shall not be
-	     present.  */
-	  return FAILURE;
+	  /* When bounds are given, all lbounds are necessary and either all
+	     or none of the upper bounds; no strides are allowed.  If the
+	     upper bounds are present, we may do rank remapping.  */
+	  for (dim = 0; dim < ref->u.ar.dimen; ++dim)
+	    {
+	      if (!ref->u.ar.start[dim])
+		{
+		  gfc_error ("Lower bound has to be present at %L",
+			     &lvalue->where);
+		  return FAILURE;
+		}
+	      if (ref->u.ar.stride[dim])
+		{
+		  gfc_error ("Stride must not be present at %L",
+			     &lvalue->where);
+		  return FAILURE;
+		}
+
+	      if (dim == 0)
+		rank_remap = (ref->u.ar.end[dim] != NULL);
+	      else
+		{
+		  if ((rank_remap && !ref->u.ar.end[dim])
+		      || (!rank_remap && ref->u.ar.end[dim]))
+		    {
+		      gfc_error ("Either all or none of the upper bounds"
+				 " must be specified at %L", &lvalue->where);
+		      return FAILURE;
+		    }
+		}
+	    }
 	}
     }
 
-  if (check_intent_in && lvalue->symtree->n.sym->attr.intent == INTENT_IN)
-    {
-      gfc_error ("Cannot assign to INTENT(IN) variable '%s' at %L",
-		 lvalue->symtree->n.sym->name, &lvalue->where);
-      return FAILURE;
-    }
-
-  if (!pointer && !proc_pointer
-	&& !(lvalue->ts.type == BT_CLASS && CLASS_DATA (lvalue)->attr.pointer))
-    {
-      gfc_error ("Pointer assignment to non-POINTER at %L", &lvalue->where);
-      return FAILURE;
-    }
-
   is_pure = gfc_pure (NULL);
-
-  if (is_pure && gfc_impure_variable (lvalue->symtree->n.sym)
-	&& lvalue->symtree->n.sym->value != rvalue)
-    {
-      gfc_error ("Bad pointer object in PURE procedure at %L", &lvalue->where);
-      return FAILURE;
-    }
 
   /* If rvalue is a NULL() or NULLIFY, we're done. Otherwise the type,
      kind, etc for lvalue and rvalue must match, and rvalue must be a
@@ -3455,11 +3446,49 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
       return FAILURE;
     }
 
-  if (lvalue->rank != rvalue->rank)
+  if (lvalue->rank != rvalue->rank && !rank_remap)
     {
-      gfc_error ("Different ranks in pointer assignment at %L",
-		 &lvalue->where);
+      gfc_error ("Different ranks in pointer assignment at %L", &lvalue->where);
       return FAILURE;
+    }
+
+  if (lvalue->ts.type == BT_CLASS && rvalue->ts.type == BT_DERIVED)
+    /* Make sure the vtab is present.  */
+    gfc_find_derived_vtab (rvalue->ts.u.derived);
+
+  /* Check rank remapping.  */
+  if (rank_remap)
+    {
+      mpz_t lsize, rsize;
+
+      /* If this can be determined, check that the target must be at least as
+	 large as the pointer assigned to it is.  */
+      if (gfc_array_size (lvalue, &lsize) == SUCCESS
+	  && gfc_array_size (rvalue, &rsize) == SUCCESS
+	  && mpz_cmp (rsize, lsize) < 0)
+	{
+	  gfc_error ("Rank remapping target is smaller than size of the"
+		     " pointer (%ld < %ld) at %L",
+		     mpz_get_si (rsize), mpz_get_si (lsize),
+		     &lvalue->where);
+	  return FAILURE;
+	}
+
+      /* The target must be either rank one or it must be simply contiguous
+	 and F2008 must be allowed.  */
+      if (rvalue->rank != 1)
+	{
+	  if (!gfc_is_simply_contiguous (rvalue, true))
+	    {
+	      gfc_error ("Rank remapping target must be rank 1 or"
+			 " simply contiguous at %L", &rvalue->where);
+	      return FAILURE;
+	    }
+	  if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Rank remapping"
+			      " target is not rank 1 at %L", &rvalue->where)
+		== FAILURE)
+	    return FAILURE;
+	}
     }
 
   /* Now punt if we are dealing with a NULLIFY(X) or X = NULL(X).  */
@@ -3543,7 +3572,7 @@ gfc_check_assign_symbol (gfc_symbol *sym, gfc_expr *rvalue)
   lvalue.where = sym->declared_at;
 
   if (sym->attr.pointer || sym->attr.proc_pointer
-      || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->attr.pointer
+      || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->attr.class_pointer
 	  && rvalue->expr_type == EXPR_NULL))
     r = gfc_check_pointer_assign (&lvalue, rvalue);
   else
@@ -3551,7 +3580,35 @@ gfc_check_assign_symbol (gfc_symbol *sym, gfc_expr *rvalue)
 
   gfc_free (lvalue.symtree);
 
-  return r;
+  if (r == FAILURE)
+    return r;
+  
+  if (sym->attr.pointer && rvalue->expr_type != EXPR_NULL)
+    {
+      /* F08:C461. Additional checks for pointer initialization.  */
+      symbol_attribute attr;
+      attr = gfc_expr_attr (rvalue);
+      if (attr.allocatable)
+	{
+	  gfc_error ("Pointer initialization target at %C "
+	             "must not be ALLOCATABLE ");
+	  return FAILURE;
+	}
+      if (!attr.target)
+	{
+	  gfc_error ("Pointer initialization target at %C "
+		     "must have the TARGET attribute");
+	  return FAILURE;
+	}
+      if (!attr.save)
+	{
+	  gfc_error ("Pointer initialization target at %C "
+		     "must have the SAVE attribute");
+	  return FAILURE;
+	}
+    }
+
+  return SUCCESS;
 }
 
 
@@ -4022,6 +4079,22 @@ gfc_is_coindexed (gfc_expr *e)
 }
 
 
+bool
+gfc_get_corank (gfc_expr *e)
+{
+  int corank;
+  gfc_ref *ref;
+  corank = e->symtree->n.sym->as ? e->symtree->n.sym->as->corank : 0;
+  for (ref = e->ref; ref; ref = ref->next)
+    {
+      if (ref->type == REF_ARRAY)
+	corank = ref->u.ar.as->corank;
+      gcc_assert (ref->type != REF_SUBSTRING);
+    }
+  return corank;
+}
+
+
 /* Check whether the expression has an ultimate allocatable component.
    Being itself allocatable does not count.  */
 bool
@@ -4181,4 +4254,243 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict)
     }
   
   return true;
+}
+
+
+/* Build call to an intrinsic procedure.  The number of arguments has to be
+   passed (rather than ending the list with a NULL value) because we may
+   want to add arguments but with a NULL-expression.  */
+
+gfc_expr*
+gfc_build_intrinsic_call (const char* name, locus where, unsigned numarg, ...)
+{
+  gfc_expr* result;
+  gfc_actual_arglist* atail;
+  gfc_intrinsic_sym* isym;
+  va_list ap;
+  unsigned i;
+
+  isym = gfc_find_function (name);
+  gcc_assert (isym);
+  
+  result = gfc_get_expr ();
+  result->expr_type = EXPR_FUNCTION;
+  result->ts = isym->ts;
+  result->where = where;
+  result->value.function.name = name;
+  result->value.function.isym = isym;
+
+  va_start (ap, numarg);
+  atail = NULL;
+  for (i = 0; i < numarg; ++i)
+    {
+      if (atail)
+	{
+	  atail->next = gfc_get_actual_arglist ();
+	  atail = atail->next;
+	}
+      else
+	atail = result->value.function.actual = gfc_get_actual_arglist ();
+
+      atail->expr = va_arg (ap, gfc_expr*);
+    }
+  va_end (ap);
+
+  return result;
+}
+
+
+/* Check if an expression may appear in a variable definition context
+   (F2008, 16.6.7) or pointer association context (F2008, 16.6.8).
+   This is called from the various places when resolving
+   the pieces that make up such a context.
+
+   Optionally, a possible error message can be suppressed if context is NULL
+   and just the return status (SUCCESS / FAILURE) be requested.  */
+
+gfc_try
+gfc_check_vardef_context (gfc_expr* e, bool pointer, const char* context)
+{
+  gfc_symbol* sym;
+  bool is_pointer;
+  bool check_intentin;
+  bool ptr_component;
+  symbol_attribute attr;
+  gfc_ref* ref;
+
+  if (!pointer && e->expr_type == EXPR_FUNCTION
+      && e->symtree->n.sym->result->attr.pointer)
+    {
+      if (!(gfc_option.allow_std & GFC_STD_F2008))
+	{
+	  if (context)
+	    gfc_error ("Fortran 2008: Pointer functions in variable definition"
+		       " context (%s) at %L", context, &e->where);
+	  return FAILURE;
+	}
+    }
+  else if (e->expr_type != EXPR_VARIABLE)
+    {
+      if (context)
+	gfc_error ("Non-variable expression in variable definition context (%s)"
+		   " at %L", context, &e->where);
+      return FAILURE;
+    }
+
+  gcc_assert (e->symtree);
+  sym = e->symtree->n.sym;
+
+  if (!pointer && sym->attr.flavor == FL_PARAMETER)
+    {
+      if (context)
+	gfc_error ("Named constant '%s' in variable definition context (%s)"
+		   " at %L", sym->name, context, &e->where);
+      return FAILURE;
+    }
+  if (!pointer && sym->attr.flavor != FL_VARIABLE
+      && !(sym->attr.flavor == FL_PROCEDURE && sym == sym->result)
+      && !(sym->attr.flavor == FL_PROCEDURE && sym->attr.proc_pointer))
+    {
+      if (context)
+	gfc_error ("'%s' in variable definition context (%s) at %L is not"
+		   " a variable", sym->name, context, &e->where);
+      return FAILURE;
+    }
+
+  /* Find out whether the expr is a pointer; this also means following
+     component references to the last one.  */
+  attr = gfc_expr_attr (e);
+  is_pointer = (attr.pointer || attr.proc_pointer);
+  if (pointer && !is_pointer)
+    {
+      if (context)
+	gfc_error ("Non-POINTER in pointer association context (%s)"
+		   " at %L", context, &e->where);
+      return FAILURE;
+    }
+
+  /* INTENT(IN) dummy argument.  Check this, unless the object itself is
+     the component of sub-component of a pointer.  Obviously,
+     procedure pointers are of no interest here.  */
+  check_intentin = true;
+  ptr_component = sym->attr.pointer;
+  for (ref = e->ref; ref && check_intentin; ref = ref->next)
+    {
+      if (ptr_component && ref->type == REF_COMPONENT)
+	check_intentin = false;
+      if (ref->type == REF_COMPONENT && ref->u.c.component->attr.pointer)
+	ptr_component = true;
+    }
+  if (check_intentin && sym->attr.intent == INTENT_IN)
+    {
+      if (pointer && is_pointer)
+	{
+	  if (context)
+	    gfc_error ("Dummy argument '%s' with INTENT(IN) in pointer"
+		       " association context (%s) at %L",
+		       sym->name, context, &e->where);
+	  return FAILURE;
+	}
+      if (!pointer && !is_pointer)
+	{
+	  if (context)
+	    gfc_error ("Dummy argument '%s' with INTENT(IN) in variable"
+		       " definition context (%s) at %L",
+		       sym->name, context, &e->where);
+	  return FAILURE;
+	}
+    }
+
+  /* PROTECTED and use-associated.  */
+  if (sym->attr.is_protected && sym->attr.use_assoc  && check_intentin)
+    {
+      if (pointer && is_pointer)
+	{
+	  if (context)
+	    gfc_error ("Variable '%s' is PROTECTED and can not appear in a"
+		       " pointer association context (%s) at %L",
+		       sym->name, context, &e->where);
+	  return FAILURE;
+	}
+      if (!pointer && !is_pointer)
+	{
+	  if (context)
+	    gfc_error ("Variable '%s' is PROTECTED and can not appear in a"
+		       " variable definition context (%s) at %L",
+		       sym->name, context, &e->where);
+	  return FAILURE;
+	}
+    }
+
+  /* Variable not assignable from a PURE procedure but appears in
+     variable definition context.  */
+  if (!pointer && gfc_pure (NULL) && gfc_impure_variable (sym))
+    {
+      if (context)
+	gfc_error ("Variable '%s' can not appear in a variable definition"
+		   " context (%s) at %L in PURE procedure",
+		   sym->name, context, &e->where);
+      return FAILURE;
+    }
+
+  /* Check variable definition context for associate-names.  */
+  if (!pointer && sym->assoc)
+    {
+      const char* name;
+      gfc_association_list* assoc;
+
+      gcc_assert (sym->assoc->target);
+
+      /* If this is a SELECT TYPE temporary (the association is used internally
+	 for SELECT TYPE), silently go over to the target.  */
+      if (sym->attr.select_type_temporary)
+	{
+	  gfc_expr* t = sym->assoc->target;
+
+	  gcc_assert (t->expr_type == EXPR_VARIABLE);
+	  name = t->symtree->name;
+
+	  if (t->symtree->n.sym->assoc)
+	    assoc = t->symtree->n.sym->assoc;
+	  else
+	    assoc = sym->assoc;
+	}
+      else
+	{
+	  name = sym->name;
+	  assoc = sym->assoc;
+	}
+      gcc_assert (name && assoc);
+
+      /* Is association to a valid variable?  */
+      if (!assoc->variable)
+	{
+	  if (context)
+	    {
+	      if (assoc->target->expr_type == EXPR_VARIABLE)
+		gfc_error ("'%s' at %L associated to vector-indexed target can"
+			   " not be used in a variable definition context (%s)",
+			   name, &e->where, context);
+	      else
+		gfc_error ("'%s' at %L associated to expression can"
+			   " not be used in a variable definition context (%s)",
+			   name, &e->where, context);
+	    }
+	  return FAILURE;
+	}
+
+      /* Target must be allowed to appear in a variable definition context.  */
+      if (gfc_check_vardef_context (assoc->target, pointer, NULL) == FAILURE)
+	{
+	  if (context)
+	    gfc_error ("Associate-name '%s' can not appear in a variable"
+		       " definition context (%s) at %L because its target"
+		       " at %L can not, either",
+		       name, context, &e->where,
+		       &assoc->target->where);
+	  return FAILURE;
+	}
+    }
+
+  return SUCCESS;
 }

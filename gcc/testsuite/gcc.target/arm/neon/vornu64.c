@@ -17,5 +17,4 @@ void test_vornu64 (void)
   out_uint64x1_t = vorn_u64 (arg0_uint64x1_t, arg1_uint64x1_t);
 }
 
-/* { dg-final { scan-assembler "vorn\[ 	\]+\[dD\]\[0-9\]+, \[dD\]\[0-9\]+, \[dD\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
 /* { dg-final { cleanup-saved-temps } } */

@@ -487,6 +487,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       const typename _Pair::first_type&
       operator()(const _Pair& __x) const
       { return __x.first; }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename _Pair2>
+        typename _Pair2::first_type&
+        operator()(_Pair2& __x) const
+        { return __x.first; }
+
+      template<typename _Pair2>
+        const typename _Pair2::first_type&
+        operator()(const _Pair2& __x) const
+        { return __x.first; }
+#endif
     };
 
   template<typename _Pair>

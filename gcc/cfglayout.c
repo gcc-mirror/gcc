@@ -374,7 +374,7 @@ struct rtl_opt_pass pass_into_cfg_layout_mode =
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
+  TV_CFG,                               /* tv_id */
   0,                                    /* properties_required */
   PROP_cfglayout,                       /* properties_provided */
   0,                                    /* properties_destroyed */
@@ -393,7 +393,7 @@ struct rtl_opt_pass pass_outof_cfg_layout_mode =
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
+  TV_CFG,                               /* tv_id */
   0,                                    /* properties_required */
   0,                                    /* properties_provided */
   PROP_cfglayout,                       /* properties_destroyed */
@@ -828,10 +828,8 @@ fixup_reorder_chain (void)
 				       : label_for_bb (e_fall->dest)), 0))
 		    {
 		      e_fall->flags &= ~EDGE_FALLTHRU;
-#ifdef ENABLE_CHECKING
-		      gcc_assert (could_fall_through
-				  (e_taken->src, e_taken->dest));
-#endif
+		      gcc_checking_assert (could_fall_through
+					   (e_taken->src, e_taken->dest));
 		      e_taken->flags |= EDGE_FALLTHRU;
 		      update_br_prob_note (bb);
 		      e = e_fall, e_fall = e_taken, e_taken = e;
@@ -852,10 +850,8 @@ fixup_reorder_chain (void)
 				     : label_for_bb (e_fall->dest)), 0))
 		{
 		  e_fall->flags &= ~EDGE_FALLTHRU;
-#ifdef ENABLE_CHECKING
-		  gcc_assert (could_fall_through
-			      (e_taken->src, e_taken->dest));
-#endif
+		  gcc_checking_assert (could_fall_through
+				       (e_taken->src, e_taken->dest));
 		  e_taken->flags |= EDGE_FALLTHRU;
 		  update_br_prob_note (bb);
 		  continue;
@@ -927,12 +923,7 @@ fixup_reorder_chain (void)
   /* Annoying special case - jump around dead jumptables left in the code.  */
   FOR_EACH_BB (bb)
     {
-      edge e;
-      edge_iterator ei;
-
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	if (e->flags & EDGE_FALLTHRU)
-	  break;
+      edge e = find_fallthru_edge (bb->succs);
 
       if (e && !can_fallthru (e->src, e->dest))
 	force_nonfallthru (e);
@@ -949,13 +940,15 @@ fixup_reorder_chain (void)
         FOR_EACH_EDGE (e, ei, bb->succs)
 	  if (e->goto_locus && !(e->flags & EDGE_ABNORMAL))
 	    {
-	      basic_block nb;
+	      edge e2;
+	      edge_iterator ei2;
+	      basic_block dest, nb;
 	      rtx end;
 
 	      insn = BB_END (e->src);
 	      end = PREV_INSN (BB_HEAD (e->src));
 	      while (insn != end
-		     && (!INSN_P (insn) || INSN_LOCATOR (insn) == 0))
+		     && (!NONDEBUG_INSN_P (insn) || INSN_LOCATOR (insn) == 0))
 		insn = PREV_INSN (insn);
 	      if (insn != end
 		  && locator_eq (INSN_LOCATOR (insn), (int) e->goto_locus))
@@ -966,11 +959,18 @@ fixup_reorder_chain (void)
 		  INSN_LOCATOR (BB_END (e->src)) = e->goto_locus;
 		  continue;
 		}
-	      if (e->dest != EXIT_BLOCK_PTR)
+	      dest = e->dest;
+	      if (dest == EXIT_BLOCK_PTR)
 		{
-		  insn = BB_HEAD (e->dest);
-		  end = NEXT_INSN (BB_END (e->dest));
-		  while (insn != end && !INSN_P (insn))
+		  /* Non-fallthru edges to the exit block cannot be split.  */
+		  if (!(e->flags & EDGE_FALLTHRU))
+		    continue;
+		}
+	      else
+		{
+		  insn = BB_HEAD (dest);
+		  end = NEXT_INSN (BB_END (dest));
+		  while (insn != end && !NONDEBUG_INSN_P (insn))
 		    insn = NEXT_INSN (insn);
 		  if (insn != end && INSN_LOCATOR (insn)
 		      && locator_eq (INSN_LOCATOR (insn), (int) e->goto_locus))
@@ -981,6 +981,18 @@ fixup_reorder_chain (void)
 		BB_END (nb) = emit_insn_after_noloc (gen_nop (), BB_END (nb),
 						     nb);
 	      INSN_LOCATOR (BB_END (nb)) = e->goto_locus;
+
+	      /* If there are other incoming edges to the destination block
+		 with the same goto locus, redirect them to the new block as
+		 well, this can prevent other such blocks from being created
+		 in subsequent iterations of the loop.  */
+	      for (ei2 = ei_start (dest->preds); (e2 = ei_safe_edge (ei2)); )
+		if (e2->goto_locus
+		    && !(e2->flags & (EDGE_ABNORMAL | EDGE_FALLTHRU))
+		    && locator_eq (e->goto_locus, e2->goto_locus))
+		  redirect_edge_and_branch (e2, nb);
+		else
+		  ei_next (&ei2);
 	    }
       }
 }
@@ -1019,7 +1031,6 @@ static void
 fixup_fallthru_exit_predecessor (void)
 {
   edge e;
-  edge_iterator ei;
   basic_block bb = NULL;
 
   /* This transformation is not valid before reload, because we might
@@ -1027,9 +1038,9 @@ fixup_fallthru_exit_predecessor (void)
      value.  */
   gcc_assert (reload_completed);
 
-  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
-    if (e->flags & EDGE_FALLTHRU)
-      bb = e->src;
+  e = find_fallthru_edge (EXIT_BLOCK_PTR->preds);
+  if (e)
+    bb = e->src;
 
   if (bb && bb->aux)
     {
@@ -1168,7 +1179,7 @@ duplicate_insn_chain (rtx from, rtx to)
 	      || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
 	    break;
 	  copy = emit_copy_of_insn_after (insn, get_last_insn ());
-          maybe_copy_epilogue_insn (insn, copy);
+          maybe_copy_prologue_epilogue_insn (insn, copy);
 	  break;
 
 	case CODE_LABEL:

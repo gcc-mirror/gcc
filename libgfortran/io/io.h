@@ -31,16 +31,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "libgfortran.h"
 
-#include <setjmp.h>
 #include <gthr.h>
-
-/* Basic types used in data transfers.  */
-
-typedef enum
-{ BT_NULL, BT_INTEGER, BT_LOGICAL, BT_CHARACTER, BT_REAL,
-  BT_COMPLEX
-}
-bt;
 
 /* Forward declarations.  */
 struct st_parameter_dt;
@@ -58,6 +49,8 @@ struct gfc_unit;
 #define is_internal_unit(dtp) ((dtp)->u.p.unit_is_internal)
 
 #define is_stream_io(dtp) ((dtp)->u.p.current_unit->flags.access == ACCESS_STREAM)
+
+#define is_char4_unit(dtp) ((dtp)->u.p.unit_is_internal && (dtp)->common.unit)
 
 /* The array_loop_spec contains the variables for the loops over index ranges
    that are encountered.  Since the variables can be negative, ssize_t
@@ -112,8 +105,8 @@ format_hash_entry;
 
 typedef struct namelist_type
 {
-  /* Object type, stored as GFC_DTYPE_xxxx.  */
-  dtype type;
+  /* Object type.  */
+  bt type;
 
   /* Object name.  */
   char * var_name;
@@ -433,7 +426,10 @@ typedef struct st_parameter_dt
 	  unsigned format_not_saved : 1;
 	  /* 14 unused bits.  */
 
-	  char last_char;
+	  /* Used for ungetc() style functionality. Possible values
+	     are an unsigned char, EOF, or EOF - 1 used to mark the
+	     field as not valid.  */
+	  int last_char;
 	  char nml_delim;
 
 	  int repeat_count;
@@ -444,7 +440,6 @@ typedef struct st_parameter_dt
 	  char *scratch;
 	  char *line_buffer;
 	  struct format_data *fmt;
-	  jmp_buf *eof_jump;
 	  namelist_info *ionml;
 	  /* A flag used to identify when a non-standard expanded namelist read
 	     has occurred.  */
@@ -641,6 +636,9 @@ internal_proto(type_name);
 
 extern void * read_block_form (st_parameter_dt *, int *);
 internal_proto(read_block_form);
+
+extern void * read_block_form4 (st_parameter_dt *, int *);
+internal_proto(read_block_form4);
 
 extern void *write_block (st_parameter_dt *, int);
 internal_proto(write_block);

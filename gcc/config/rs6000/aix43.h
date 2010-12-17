@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX version 4.3.
    Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006,
-   2007 Free Software Foundation, Inc.
+   2007, 2009, 2010 Free Software Foundation, Inc.
    Contributed by David Edelsohn (edelsohn@gnu.org).
 
    This file is part of GCC.
@@ -20,14 +20,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-/* Sometimes certain combinations of command options do not make sense
-   on a particular target machine.  You can define a macro
-   `OVERRIDE_OPTIONS' to take account of this.  This macro, if
-   defined, is executed once just after all the command options have
-   been parsed.
-
-   The macro SUBTARGET_OVERRIDE_OPTIONS is provided for subtargets, to
-   get control.  */
+/* The macro SUBTARGET_OVERRIDE_OPTIONS is provided for subtargets, to
+   get control in TARGET_OPTION_OVERRIDE.  */
 
 #define NON_POWERPC_MASKS (MASK_POWER | MASK_POWER2)
 #define SUBTARGET_OVERRIDE_OPTIONS					\

@@ -26,7 +26,7 @@ foo (int n)
   char image[N][N];
   char block[N][N];
 
-  /* Not vectorizable yet (cross-iteration cycle).  */
+  /* Vectorizable.  */
   diff = 0;
   for (i = 0; i < N; i++) {
     diff += (cb[i] - cc[i]);
@@ -34,11 +34,10 @@ foo (int n)
   ibar (&diff);
 
 
-  /* Not vectorizable yet (outer-loop: not attempted. 
-     inner-loop: cross iteration cycle; multi-dimensional arrays).  */
+  /* Vectorizable.  */
   diff = 0;
   for (i = 0; i < N; i++) {
-    for (i = 0; i < N; i++) {
+    for (j = 0; j < N; j++) {
       diff += (image[i][j] - block[i][j]);
     }
   }
@@ -86,6 +85,6 @@ foo (int n)
   fbar (a);
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 4 loops" 1 "vect" { target vect_extract_even_odd_wide } } } */
-/* { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect" { xfail vect_extract_even_odd_wide } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 6 loops" 1 "vect" { target vect_extract_even_odd_wide } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 5 loops" 1 "vect" { xfail vect_extract_even_odd_wide } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

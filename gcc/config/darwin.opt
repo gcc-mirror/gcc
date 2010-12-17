@@ -1,6 +1,6 @@
 ; Processor-independent options for Darwin.
 
-; Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2007, 2010 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -17,6 +17,141 @@
 ; You should have received a copy of the GNU General Public License
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
+
+; Various linker options have a -Z added so that they can get to specs
+; processing without interference.  Note that an option name with a
+; prefix that matches another option name, that also takes an
+; argument, being mapped to a -Z linker option, needs to be modified
+; so the prefix is different, otherwise a '*' after the shorter option
+; will match with the longer one.
+
+all_load
+Driver Alias(Zall_load)
+
+allowable_client
+Driver Separate Alias(Zallowable_client)
+
+arch_errors_fatal
+Driver Alias(Zarch_errors_fatal)
+
+bind_at_load
+Driver Alias(Zbind_at_load)
+
+bundle
+Driver Alias(Zbundle)
+
+bundle_loader
+Driver Separate Alias(Zbundle_loader)
+
+dead_strip
+Driver Alias(Zdead_strip)
+
+dependency-file
+C ObjC C++ ObjC++ Separate Alias(MF) MissingArgError(missing filename after %qs)
+
+dylib_file
+Driver Separate Alias(Zdylib_file)
+
+dynamic
+Driver Alias(Zdynamic)
+
+dynamiclib
+Driver Alias(Zdynamiclib)
+
+exported_symbols_list
+Driver Separate Alias(Zexported_symbols_list)
+
+filelist
+Driver RejectNegative Separate
+
+findirect-virtual-calls
+Driver RejectNegative
+
+flat_namespace
+Driver RejectNegative Alias(Zflat_namespace)
+
+force_cpusubtype_ALL
+Driver RejectNegative Alias(Zforce_cpusubtype_ALL)
+
+force_flat_namespace
+Driver RejectNegative Alias(Zforce_flat_namespace)
+
+framework
+Driver RejectNegative Separate
+
+fterminated-vtables
+Driver RejectNegative
+
+gfull
+Driver
+
+gused
+Driver
+
+image_base
+Driver Separate Alias(Zimage_base)
+
+init
+Driver Separate Alias(Zinit)
+
+install_name
+Driver Separate Alias(Zinstall_name)
+
+mconstant-cfstrings
+Target Report Var(darwin_constant_cfstrings) Init(1)
+Generate compile-time CFString objects
+
+multi_module
+Driver RejectNegative Alias(Zmulti_module)
+
+multiply_defined
+Driver RejectNegative Separate Alias(Zmultiply_defined)
+
+multiply_defined_unused
+Driver RejectNegative Separate Alias(Zmultiplydefinedunused)
+
+no_dead_strip_inits_and_terms
+Driver Alias(Zno_dead_strip_inits_and_terms)
+
+seg_addr_table
+Driver Separate Alias(Zseg_addr_table)
+
+seg_addr_table_filename
+Driver Separate Alias(Zfn_seg_addr_table_filename)
+
+segaddr
+Driver Separate Args(2) Alias(Zsegaddr)
+
+segs_read_only_addr
+Driver Separate Alias(Zsegs_read_only_addr)
+
+segs_read_write_addr
+Driver Separate Alias(Zsegs_read_write_addr)
+
+single_module
+Driver Alias(Zsingle_module)
+
+umbrella
+Driver Separate Alias(Zumbrella)
+
+unexported_symbols_list
+Driver Separate Alias(Zunexported_symbols_list)
+
+weak_reference_mismatches
+Driver Separate Alias(Zweak_reference_mismatches)
+
+Wnonportable-cfstrings
+Target Report Var(darwin_warn_nonportable_cfstrings) Init(1) Warning
+Warn if constant CFString objects contain non-portable characters
+
+; Use new-style pic stubs if this is true, x86 only so far.
+matt-stubs
+Target Report Var(darwin_macho_att_stub) Init(1)
+Generate AT&T-style stubs for Mach-O
+
+mdynamic-no-pic
+Target Common Report Mask(MACHO_DYNAMIC_NO_PIC)
+Generate code suitable for executables (NOT shared libs)
 
 mfix-and-continue
 Target Report Var(darwin_fix_and_continue)
@@ -45,3 +180,147 @@ Generate code for the kernel or loadable kernel extensions
 iframework
 Target RejectNegative C ObjC C++ ObjC++ Joined Separate 
 -iframework <dir>	Add <dir> to the end of the system framework include path
+
+Zall_load
+Driver
+
+Zallowable_client
+Driver Separate
+
+Zarch_errors_fatal
+Driver
+
+Zbind_at_load
+Driver
+
+Zbundle
+Driver
+
+Zbundle_loader
+Driver Separate
+
+Zdead_strip
+Driver
+
+Zdylib_file
+Driver Separate
+
+Zdynamic
+Driver
+
+Zdynamiclib
+Driver
+
+Zexported_symbols_list
+Driver Separate
+
+Zfn_seg_addr_table_filename
+Driver Separate
+
+Zflat_namespace
+Driver
+
+Zforce_cpusubtype_ALL
+Driver
+
+Zforce_flat_namespace
+Driver
+
+Zimage_base
+Driver Separate
+
+Zinit
+Driver Separate
+
+Zinstall_name
+Driver Separate
+
+Zmulti_module
+Driver
+
+Zmultiply_defined
+Driver Separate
+
+Zmultiplydefinedunused
+Driver Separate
+
+Zno_dead_strip_inits_and_terms
+Driver
+
+Zseg_addr_table
+Driver Separate
+
+Zsegaddr
+Driver Separate Args(2)
+
+Zsegs_read_only_addr
+Driver Separate
+
+Zsegs_read_write_addr
+Driver Separate
+
+Zsingle_module
+Driver
+
+Zumbrella
+Driver Separate
+
+Zunexported_symbols_list
+Driver Separate
+
+Zweak_reference_mismatches
+Driver Separate
+
+client_name
+Driver Separate
+
+compatibility_version
+Driver Separate
+
+current_version
+Driver Separate
+
+dylinker_install_name
+Driver Separate
+
+pagezero_size
+Driver Separate
+
+read_only_relocs
+Driver Separate
+
+sectalign
+Driver Separate Args(3)
+
+sectcreate
+Driver Separate Args(3)
+
+sectobjectsymbols
+Driver Separate Args(2)
+
+sectorder
+Driver Separate Args(3)
+
+seg1addr
+Driver Separate
+
+segcreate
+Driver Separate Args(3)
+
+segprot
+Driver Separate Args(3)
+
+segs_read_only_addr
+Driver Separate
+
+segs_read_write_addr
+Driver Separate
+
+sub_library
+Driver Separate
+
+sub_umbrella
+Driver Separate
+
+undefined
+Driver Separate

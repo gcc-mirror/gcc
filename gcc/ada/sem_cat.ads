@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -143,10 +143,10 @@ package Sem_Cat is
    --  T is the entity of the declared type.
 
    procedure Validate_Static_Object_Name (N : Node_Id);
-   --  In the elaboration code of a preelaborated library unit, check
-   --  that we do not have the evaluation of a primary that is a name of
-   --  an object, unless the name is a static expression (RM 10.2.1(8)).
-   --  Non-static constant and variable are the targets, generic parameters
+   --  In the elaboration code of a preelaborated library unit, check that we
+   --  do not have the evaluation of a primary that is a name of an object,
+   --  unless the name is a static expression (RM 10.2.1(8)). Non-static
+   --  constant and variable are the targets, generic parameters are not
    --  are not included because the generic declaration and body are
    --  preelaborable.
 

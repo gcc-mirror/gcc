@@ -1,7 +1,8 @@
-<sect1 id="manual.intro.setup.configure" xreflabel="Configuring">
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="manual.intro.setup.configure" xreflabel="Configuring">
 <?dbhtml filename="configure.html"?>
 
-<sect1info>
+<info><title>Configure</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -13,9 +14,9 @@
       options
     </keyword>
   </keywordset>
-</sect1info>
+</info>
 
-<title>Configure</title>
+
 
 <para>
   When configuring libstdc++, you'll have to configure the entire
@@ -29,8 +30,8 @@
   Here are all of the configure options specific to libstdc++.  Keep
   in mind that
    <!-- This SECnn should be the "Choosing Package Options" section. -->
-   <ulink url="http://sourceware.org/autobook/autobook/autobook_14.html">they
-   all have opposite forms as well</ulink> (enable/disable and
+   <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://sourceware.org/autobook/autobook/autobook_14.html">they
+   all have opposite forms as well</link> (enable/disable and
    with/without).  The defaults are for the <emphasis>current
    development sources</emphasis>, which may be different than those
    for released versions.
@@ -43,8 +44,8 @@
 <variablelist>
  <varlistentry><term><code>--enable-multilib</code>[default]</term>
  <listitem><para>This is part of the generic multilib support for building cross
-	compilers.  As such, targets like &quot;powerpc-elf&quot; will have
-	libstdc++ built many different ways:  &quot;-msoft-float&quot;
+	compilers.  As such, targets like "powerpc-elf" will have
+	libstdc++ built many different ways:  "-msoft-float"
 	and not, etc.  A different libstdc++ will be built for each of
 	the different multilib versions.  This option is on by default.
      </para>
@@ -68,15 +69,15 @@
 	libstdc++'s include files will be installed in
 	<code>${libdir}/gcc-lib/${target_alias}/${gcc_version}/include/g++</code>,
 	unless you also specify
-       <literal>--with-gxx-include-dir=<filename class="directory">dirname</filename></literal> during configuration.
+       <literal>--with-gxx-include-dir=</literal><filename class="directory">dirname</filename> during configuration.
      </para>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--with-gxx-include-dir=&lt;include-files dir&gt;</code></term>
  <listitem><para>Adds support for named libstdc++ include directory.  For instance,
 	the following puts all the libstdc++ headers into a directory
-	called &quot;4.4-20090404&quot; instead of the usual
-	&quot;c++/(version)&quot;.
+	called "4.4-20090404" instead of the usual
+	"c++/(version)".
      </para>
 	<programlisting>
    --with-gxx-include-dir=/foo/H-x86-gcc-3-c-gxx-inc/include/4.4-20090404</programlisting> </listitem></varlistentry>
@@ -89,7 +90,7 @@
 
  <varlistentry><term><code>--enable-cstdio=OPTION</code></term>
  <listitem><para>Select a target-specific I/O package. At the moment, the only
-	choice is to use 'stdio', a generic &quot;C&quot; abstraction.
+	choice is to use 'stdio', a generic "C" abstraction.
 	The default is 'stdio'. This option can change the library ABI.
      </para>
  </listitem></varlistentry>
@@ -105,9 +106,9 @@
 	choices are 'ieee_1003.1-2001' to specify an X/Open, Standard Unix
 	(IEEE Std. 1003.1-2001) model based on langinfo/iconv/catgets,
 	'gnu' to specify a model based on functionality from the GNU C
-	library (langinfo/iconv/gettext) (from <ulink url="http://sources.redhat.com/glibc/">glibc</ulink>, the GNU C
-	library), or 'generic' to use a generic &quot;C&quot;
-	abstraction which consists of &quot;C&quot; locale info.
+	library (langinfo/iconv/gettext) (from <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://sources.redhat.com/glibc/">glibc</link>, the GNU C
+	library), or 'generic' to use a generic "C"
+	abstraction which consists of "C" locale info.
      </para>
 
      <para>If not explicitly specified, the configure proccess tries
@@ -154,8 +155,8 @@
  <varlistentry><term><code>--enable-threads=OPTION</code></term>
  <listitem><para>Select a threading library.  A full description is
 	given in the
-	general <ulink url="http://gcc.gnu.org/install/configure.html">compiler
-	configuration instructions</ulink>. This option can change the
+	general <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/install/configure.html">compiler
+	configuration instructions</link>. This option can change the
 	library ABI.
      </para>
  </listitem></varlistentry>
@@ -218,13 +219,13 @@
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-c99</code></term>
- <listitem><para>The &quot;long long&quot; type was introduced in C99, along
+ <listitem><para>The "long long" type was introduced in C99, along
 	with many other functions for wide characters, and math
 	classification macros, etc.  If enabled, all C99 functions not
 	specified by the C++ standard will be put into <code>namespace
 	__gnu_cxx</code>, and then all these names will
 	be injected into namespace std, so that C99 functions can be
-	used &quot;as if&quot; they were in the C++ standard (as they
+	used "as if" they were in the C++ standard (as they
 	will eventually be in some future revision of the standard,
 	without a doubt).  By default, C99 support is on, assuming the
 	configure probes find all the necessary functions and bits
@@ -233,7 +234,7 @@
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-wchar_t</code>[default]</term>
- <listitem><para>Template specializations for the &quot;wchar_t&quot; type are
+ <listitem><para>Template specializations for the "wchar_t" type are
 	required for wide character conversion support.  Disabling
 	wide character specializations may be expedient for initial
 	porting efforts, but builds only a subset of what is required by
@@ -243,14 +244,14 @@
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-long-long  </code></term>
- <listitem><para>The &quot;long long&quot; type was introduced in C99.  It is
+ <listitem><para>The "long long" type was introduced in C99.  It is
 	provided as a GNU extension to C++98 in g++.  This flag builds
-	support for &quot;long long&quot; into the library (specialized
+	support for "long long" into the library (specialized
 	templates and the like for iostreams).  This option is on by default:
-	if enabled, users will have to either use the new-style &quot;C&quot;
+	if enabled, users will have to either use the new-style "C"
 	headers by default (i.e., &lt;cmath&gt; not &lt;math.h&gt;)
 	or add appropriate compile-time flags to all compile lines to
-	allow &quot;C&quot; visibility of this feature (on GNU/Linux,
+	allow "C" visibility of this feature (on GNU/Linux,
 	the flag is -D_ISOC99_SOURCE, which is added automatically via
 	CPLUSPLUS_CPP_SPEC's addition of _GNU_SOURCE).
 	This option can change the library ABI.
@@ -279,8 +280,8 @@
  <listitem><para>In 3.1 and later, tries to turn on symbol versioning in the
 	shared library (if a shared library has been
 	requested). Values for 'style' that are currently supported
-	are 'gnu', 'gnu-versioned-namespace', 'darwin', and
-	'darwin-export'. Both gnu- options require that a recent
+	are 'gnu', 'gnu-versioned-namespace', 'darwin',
+	'darwin-export', and 'sun'. Both gnu- options require that a recent
 	version of the GNU linker be in use. Both darwin options are
 	equivalent. With no style given, the configure script will try
 	to guess correct defaults for the host system, probe to see if
@@ -347,4 +348,4 @@
 
 </variablelist>
 
-</sect1>
+</section>

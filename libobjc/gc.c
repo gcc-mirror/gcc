@@ -23,15 +23,16 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#include "tconfig.h"
+#include "objc-private/common.h"
 #include "objc/objc.h"
-#include "objc/encoding.h"
 
+#if OBJC_WITH_GC
+
+#include "tconfig.h"
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
-
-#if OBJC_WITH_GC
+#include "objc/encoding.h"
 
 #include <gc.h>
 #include <limits.h>

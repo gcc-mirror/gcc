@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,6 +38,21 @@ with Table;
 with Types; use Types;
 
 package Lib is
+
+   type Compiler_State_Type is (Parsing, Analyzing);
+   Compiler_State : Compiler_State_Type;
+   --  Indicates current state of compilation. This is used to implement the
+   --  function In_Extended_Main_Source_Unit.
+
+   Parsing_Main_Extended_Source : Boolean := False;
+   --  Set True if we are currently parsing a file that is part of the main
+   --  extended source (the main unit, its spec, or one of its subunits). This
+   --  flag to implement In_Extended_Main_Source_Unit.
+
+   Analysing_Subunit_Of_Main : Boolean := False;
+   --  Set to True when analyzing a subunit of the main source. When True, if
+   --  the subunit is preprocessed and -gnateG is specified, then the
+   --  preprocessed file (.prep) is written.
 
    --------------------------------------------
    -- General Approach to Library Management --
@@ -342,6 +357,16 @@ package Lib is
    --      that the default priority is to be used (and is also used for
    --      entries that do not correspond to possible main programs).
 
+   --    Main_CPU
+   --      This field is used to indicate the affinity of a possible main
+   --      program, as set by a pragma CPU. A value of -1 indicates
+   --      that the default affinity is to be used (and is also used for
+   --      entries that do not correspond to possible main programs).
+
+   --    Has_Allocator
+   --      This flag is set if a subprogram unit has an allocator after the
+   --      BEGIN (it is used to set the AB flag in the M ALI line).
+
    --    OA_Setting
    --      This is a character field containing L if Optimize_Alignment mode
    --      was set locally, and O/T/S for Off/Time/Space default if not.
@@ -373,6 +398,9 @@ package Lib is
    Default_Main_Priority : constant Int := -1;
    --  Value used in Main_Priority field to indicate default main priority
 
+   Default_Main_CPU : constant Int := -1;
+   --  Value used in Main_CPU field to indicate default main affinity
+
    function Cunit            (U : Unit_Number_Type) return Node_Id;
    function Cunit_Entity     (U : Unit_Number_Type) return Entity_Id;
    function Dependency_Num   (U : Unit_Number_Type) return Nat;
@@ -382,9 +410,11 @@ package Lib is
    function Fatal_Error      (U : Unit_Number_Type) return Boolean;
    function Generate_Code    (U : Unit_Number_Type) return Boolean;
    function Ident_String     (U : Unit_Number_Type) return Node_Id;
+   function Has_Allocator    (U : Unit_Number_Type) return Boolean;
    function Has_RACW         (U : Unit_Number_Type) return Boolean;
    function Is_Compiler_Unit (U : Unit_Number_Type) return Boolean;
    function Loading          (U : Unit_Number_Type) return Boolean;
+   function Main_CPU         (U : Unit_Number_Type) return Int;
    function Main_Priority    (U : Unit_Number_Type) return Int;
    function Munit_Index      (U : Unit_Number_Type) return Nat;
    function OA_Setting       (U : Unit_Number_Type) return Character;
@@ -400,9 +430,11 @@ package Lib is
    procedure Set_Fatal_Error      (U : Unit_Number_Type; B : Boolean := True);
    procedure Set_Generate_Code    (U : Unit_Number_Type; B : Boolean := True);
    procedure Set_Has_RACW         (U : Unit_Number_Type; B : Boolean := True);
+   procedure Set_Has_Allocator    (U : Unit_Number_Type; B : Boolean := True);
    procedure Set_Is_Compiler_Unit (U : Unit_Number_Type; B : Boolean := True);
    procedure Set_Ident_String     (U : Unit_Number_Type; N : Node_Id);
    procedure Set_Loading          (U : Unit_Number_Type; B : Boolean := True);
+   procedure Set_Main_CPU         (U : Unit_Number_Type; P : Int);
    procedure Set_Main_Priority    (U : Unit_Number_Type; P : Int);
    procedure Set_OA_Setting       (U : Unit_Number_Type; C : Character);
    procedure Set_Unit_Name        (U : Unit_Number_Type; N : Unit_Name_Type);
@@ -638,10 +670,12 @@ private
    pragma Inline (Dependency_Num);
    pragma Inline (Fatal_Error);
    pragma Inline (Generate_Code);
+   pragma Inline (Has_Allocator);
    pragma Inline (Has_RACW);
    pragma Inline (Is_Compiler_Unit);
    pragma Inline (Increment_Serial_Number);
    pragma Inline (Loading);
+   pragma Inline (Main_CPU);
    pragma Inline (Main_Priority);
    pragma Inline (Munit_Index);
    pragma Inline (OA_Setting);
@@ -649,8 +683,10 @@ private
    pragma Inline (Set_Cunit_Entity);
    pragma Inline (Set_Fatal_Error);
    pragma Inline (Set_Generate_Code);
+   pragma Inline (Set_Has_Allocator);
    pragma Inline (Set_Has_RACW);
    pragma Inline (Set_Loading);
+   pragma Inline (Set_Main_CPU);
    pragma Inline (Set_Main_Priority);
    pragma Inline (Set_OA_Setting);
    pragma Inline (Set_Unit_Name);
@@ -669,6 +705,7 @@ private
       Dependency_Num   : Int;
       Ident_String     : Node_Id;
       Main_Priority    : Int;
+      Main_CPU         : Int;
       Serial_Number    : Nat;
       Version          : Word;
       Error_Location   : Source_Ptr;
@@ -678,6 +715,7 @@ private
       Is_Compiler_Unit : Boolean;
       Dynamic_Elab     : Boolean;
       Loading          : Boolean;
+      Has_Allocator    : Boolean;
       OA_Setting       : Character;
    end record;
 
@@ -696,19 +734,21 @@ private
       Dependency_Num   at 28 range 0 .. 31;
       Ident_String     at 32 range 0 .. 31;
       Main_Priority    at 36 range 0 .. 31;
-      Serial_Number    at 40 range 0 .. 31;
-      Version          at 44 range 0 .. 31;
-      Error_Location   at 48 range 0 .. 31;
-      Fatal_Error      at 52 range 0 ..  7;
-      Generate_Code    at 53 range 0 ..  7;
-      Has_RACW         at 54 range 0 ..  7;
-      Dynamic_Elab     at 55 range 0 ..  7;
-      Is_Compiler_Unit at 56 range 0 ..  7;
-      OA_Setting       at 57 range 0 ..  7;
-      Loading          at 58 range 0 .. 15;
+      Main_CPU         at 40 range 0 .. 31;
+      Serial_Number    at 44 range 0 .. 31;
+      Version          at 48 range 0 .. 31;
+      Error_Location   at 52 range 0 .. 31;
+      Fatal_Error      at 56 range 0 ..  7;
+      Generate_Code    at 57 range 0 ..  7;
+      Has_RACW         at 58 range 0 ..  7;
+      Dynamic_Elab     at 59 range 0 ..  7;
+      Is_Compiler_Unit at 60 range 0 ..  7;
+      OA_Setting       at 61 range 0 ..  7;
+      Loading          at 62 range 0 ..  7;
+      Has_Allocator    at 63 range 0 ..  7;
    end record;
 
-   for Unit_Record'Size use 60 * 8;
+   for Unit_Record'Size use 64 * 8;
    --  This ensures that we did not leave out any fields
 
    package Units is new Table.Table (
@@ -784,7 +824,7 @@ private
       With_Node   : Node_Id;
    end record;
 
-   --  The Load_Stack table contains a list of unit numbers (indices into the
+   --  The Load_Stack table contains a list of unit numbers (indexes into the
    --  unit table) of units being loaded on a single dependency chain, and a
    --  flag to indicate whether this unit is loaded through a limited_with
    --  clause. The First entry is the main unit. The second entry, if present

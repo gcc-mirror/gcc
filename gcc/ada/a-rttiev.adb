@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2005-2009, Free Software Foundation, Inc.        --
+--           Copyright (C) 2005-2010, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,7 @@
 with System.Task_Primitives.Operations;
 with System.Tasking.Utilities;
 with System.Soft_Links;
+with System.Interrupt_Management.Operations;
 
 with Ada.Containers.Doubly_Linked_Lists;
 pragma Elaborate_All (Ada.Containers.Doubly_Linked_Lists);
@@ -97,6 +98,12 @@ package body Ada.Real_Time.Timing_Events is
 
    begin
       System.Tasking.Utilities.Make_Independent;
+
+      --  Since this package may be elaborated before System.Interrupt,
+      --  we need to call Setup_Interrupt_Mask explicitly to ensure that
+      --  this task has the proper signal mask.
+
+      System.Interrupt_Management.Operations.Setup_Interrupt_Mask;
 
       --  We await the call to Start to ensure that Event_Queue_Lock has been
       --  initialized by the package executable part prior to accessing it in

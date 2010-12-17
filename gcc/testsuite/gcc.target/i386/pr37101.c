@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -msse2 -ftree-vectorize -march=nocona" } */
-/* { dg-require-effective-target sse2 } */
 
 typedef __SIZE_TYPE__ size_t;
 extern void *malloc (size_t);

@@ -1,5 +1,5 @@
 /* Linux host-specific hook definitions.
-   Copyright (C) 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007, 2008, 2010 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -20,8 +20,6 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include <sys/mman.h>
-#include <limits.h>
 #include "hosthooks.h"
 #include "hosthooks-def.h"
 

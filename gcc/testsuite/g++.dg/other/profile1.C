@@ -1,6 +1,6 @@
 // PR 11767
 // { dg-do run }
-// { dg-require-profiling "-fprofile-arcs" }
+// { dg-require-profiling "" }
 // { dg-options "-fnon-call-exceptions -fprofile-arcs" }
 
 #include <string>

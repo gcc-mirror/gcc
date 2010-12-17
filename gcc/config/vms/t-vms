@@ -24,15 +24,14 @@ LIMITS_H_TEST = false
 # Under VMS, directory names cannot contain dots.
 version:=$(shell echo $(BASEVER_c) | sed -e 's/\./_/g')
 
-# Temporary restriction: VMS_EXTRA_PARTS must be compiled by DEC C.
-#VMS_EXTRA_PARTS=vcrt0.o pcrt0.o
-VMS_EXTRA_PARTS=
-
-DECC=`echo $(CC) | sed -e 's/xgcc -B.*/decc$(exeext)/' -e 's/^gcc/decc/' -e 's/^decc/.\/decc/' -e 's/\(.*\)-gcc/\1-decc/'`
+VMS_EXTRA_PARTS=vcrt0.o pcrt0.o
 
 # Assemble startup files.
-$(T)vcrt0.o: $(CRT0_S) $(GCC_PASSES)
-	$(DECC) -c /names=as_is $(srcdir)/config/vms/vms-crt0.c -o $(T)vcrt0.o
+$(T)vcrt0.o: $(srcdir)/config/vms/vms-ucrt0.c $(GCC_PASSES)
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
+	-c -o $(T)vcrt0.o $(srcdir)/config/vms/vms-ucrt0.c
 
-$(T)pcrt0.o: $(CRT0_S) $(GCC_PASSES)
-	$(DECC) -c /names=as_is $(srcdir)/config/vms/vms-psxcrt0.c -o $(T)pcrt0.o
+$(T)pcrt0.o: $(srcdir)/config/vms/vms-ucrt0.c $(GCC_PASSES)
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
+	-c -o $(T)pcrt0.o -DCRT0_POSIX_EXIT $(srcdir)/config/vms/vms-ucrt0.c
+

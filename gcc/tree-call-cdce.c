@@ -541,9 +541,7 @@ gen_conditions_for_pow (gimple pow_call, VEC (gimple, heap) *conds,
   tree base, expn;
   enum tree_code bc;
 
-#ifdef ENABLE_CHECKING
-  gcc_assert (check_pow (pow_call));
-#endif
+  gcc_checking_assert (check_pow (pow_call));
 
   *nconds = 0;
 

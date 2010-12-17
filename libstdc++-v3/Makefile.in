@@ -57,6 +57,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/enable.m4 \
 	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
 	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/crossconfig.m4 \
 	$(top_srcdir)/linkage.m4 $(top_srcdir)/acinclude.m4 \
+	$(top_srcdir)/../config/gc++filt.m4 \
 	$(top_srcdir)/../config/tls.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
@@ -124,6 +125,7 @@ CTIME_CC = @CTIME_CC@
 CTIME_H = @CTIME_H@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
+CXXFILT = @CXXFILT@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 C_INCLUDE_DIR = @C_INCLUDE_DIR@

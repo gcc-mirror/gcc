@@ -1,7 +1,7 @@
 /* Tests for syntax checking of #pragma pack.
    Contributed by Mike Coleman <mcoleman2@kc.rr.com> */
 
-/* { dg-do compile { target *-*-linux* *-*-cygwin* powerpc*-*-eabi* } } */
+/* { dg-do compile } */
 
 #pragma pack(pop)               /* { dg-warning "without matching" } */
 

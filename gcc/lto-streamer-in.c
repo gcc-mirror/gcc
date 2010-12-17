@@ -355,6 +355,7 @@ lto_input_tree_ref (struct lto_input_block *ib, struct data_in *data_in,
     case LTO_const_decl_ref:
     case LTO_imported_decl_ref:
     case LTO_label_decl_ref:
+    case LTO_translation_unit_decl_ref:
       ix_u = lto_input_uleb128 (ib);
       result = lto_file_decl_data_get_var_decl (data_in->file_data, ix_u);
       break;
@@ -539,7 +540,7 @@ fixup_eh_region_pointers (struct function *fn, HOST_WIDE_INT root_region)
 
   /* Convert all the index numbers stored in pointer fields into
      pointers to the corresponding slots in the EH region array.  */
-  for (i = 0; VEC_iterate (eh_region, eh_array, i, r); i++)
+  FOR_EACH_VEC_ELT (eh_region, eh_array, i, r)
     {
       /* The array may contain NULL regions.  */
       if (r == NULL)
@@ -554,7 +555,7 @@ fixup_eh_region_pointers (struct function *fn, HOST_WIDE_INT root_region)
 
   /* Convert all the index numbers stored in pointer fields into
      pointers to the corresponding slots in the EH landing pad array.  */
-  for (i = 0; VEC_iterate (eh_landing_pad, lp_array, i, lp); i++)
+  FOR_EACH_VEC_ELT (eh_landing_pad, lp_array, i, lp)
     {
       /* The array may contain NULL landing pads.  */
       if (lp == NULL)
@@ -872,124 +873,6 @@ input_ssa_names (struct lto_input_block *ib, struct data_in *data_in,
     }
 }
 
-
-/* Fixup the reference tree OP for replaced VAR_DECLs with mismatched
-   types.  */
-
-static void
-maybe_fixup_handled_component (tree op)
-{
-  tree decl_type;
-  tree wanted_type;
-
-  while (handled_component_p (TREE_OPERAND (op, 0)))
-    op = TREE_OPERAND (op, 0);
-  if (TREE_CODE (TREE_OPERAND (op, 0)) != VAR_DECL)
-    return;
-
-  decl_type = TREE_TYPE (TREE_OPERAND (op, 0));
-
-  switch (TREE_CODE (op))
-    {
-    case COMPONENT_REF:
-      /* The DECL_CONTEXT of the field-decl is the record type we look for.  */
-      wanted_type = DECL_CONTEXT (TREE_OPERAND (op, 1));
-      break;
-
-    case ARRAY_REF:
-      if (TREE_CODE (decl_type) == ARRAY_TYPE
-	  && (TREE_TYPE (decl_type) == TREE_TYPE (op)
-	      || useless_type_conversion_p (TREE_TYPE (op),
-					    TREE_TYPE (decl_type))))
-	return;
-      /* An unknown size array type should be ok.  But we do not
-         lower the lower bound in all cases - ugh.  */
-      wanted_type = build_array_type (TREE_TYPE (op), NULL_TREE);
-      break;
-
-    case ARRAY_RANGE_REF:
-      if (TREE_CODE (decl_type) == ARRAY_TYPE
-	  && (TREE_TYPE (decl_type) == TREE_TYPE (TREE_TYPE (op))
-	      || useless_type_conversion_p (TREE_TYPE (TREE_TYPE (op)),
-					    TREE_TYPE (decl_type))))
-	return;
-      /* An unknown size array type should be ok.  But we do not
-         lower the lower bound in all cases - ugh.  */
-      wanted_type = build_array_type (TREE_TYPE (TREE_TYPE (op)), NULL_TREE);
-      break;
-
-    case BIT_FIELD_REF:
-    case VIEW_CONVERT_EXPR:
-      /* Very nice - nothing to do.  */
-      return;
-
-    case REALPART_EXPR:
-    case IMAGPART_EXPR:
-      if (TREE_CODE (decl_type) == COMPLEX_TYPE
-	  && (TREE_TYPE (decl_type) == TREE_TYPE (op)
-	      || useless_type_conversion_p (TREE_TYPE (op),
-					    TREE_TYPE (decl_type))))
-	return;
-      wanted_type = build_complex_type (TREE_TYPE (op));
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-
-  if (!useless_type_conversion_p (wanted_type, decl_type))
-    TREE_OPERAND (op, 0) = build1 (VIEW_CONVERT_EXPR, wanted_type,
-				   TREE_OPERAND (op, 0));
-}
-
-/* Fixup reference tree operands for substituted prevailing decls
-   with mismatched types in STMT.  This handles plain DECLs where
-   we need the stmt for context to lookup the required type.  */
-
-static void
-maybe_fixup_decls (gimple stmt)
-{
-  /* We have to fixup replaced decls here in case there were
-     inter-TU type mismatches.  Catch the most common cases
-     for now - this way we'll get testcases for the rest as
-     the type verifier will complain.  */
-  if (gimple_assign_single_p (stmt))
-    {
-      tree lhs = gimple_assign_lhs (stmt);
-      tree rhs = gimple_assign_rhs1 (stmt);
-
-      /* First catch loads and aggregate copies by adjusting the rhs.  */
-      if (TREE_CODE (rhs) == VAR_DECL)
-	{
-	  if (!useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (rhs)))
-	    gimple_assign_set_rhs1 (stmt, build1 (VIEW_CONVERT_EXPR,
-						  TREE_TYPE (lhs), rhs));
-	}
-      /* Then catch scalar stores.  */
-      else if (TREE_CODE (lhs) == VAR_DECL)
-	{
-	  if (!useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (rhs)))
-	    gimple_assign_set_lhs (stmt, build1 (VIEW_CONVERT_EXPR,
-						 TREE_TYPE (rhs), lhs));
-	}
-    }
-  else if (is_gimple_call (stmt))
-    {
-      tree lhs = gimple_call_lhs (stmt);
-
-      if (lhs && TREE_CODE (lhs) == VAR_DECL)
-	{
-	  if (!useless_type_conversion_p (TREE_TYPE (lhs),
-					  gimple_call_return_type (stmt)))
-	    gimple_call_set_lhs (stmt, build1 (VIEW_CONVERT_EXPR,
-					       gimple_call_return_type (stmt),
-					       lhs));
-	}
-
-      /* Arguments, especially for varargs functions will be funny...  */
-    }
-}
-
 /* Read a statement with tag TAG in function FN from block IB using
    descriptors in DATA_IN.  */
 
@@ -1064,21 +947,6 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 	  if (!op)
 	    continue;
 
-	  /* Fixup reference tree operands for substituted prevailing decls
-	     with mismatched types.  For plain VAR_DECLs we need to look
-	     at context to determine the wanted type - we do that below
-	     after the stmt is completed.  */
-	  if (TREE_CODE (op) == ADDR_EXPR
-	      && TREE_CODE (TREE_OPERAND (op, 0)) == VAR_DECL
-	      && !useless_type_conversion_p (TREE_TYPE (TREE_TYPE (op)),
-					     TREE_TYPE (TREE_OPERAND (op, 0))))
-	    {
-	      TREE_OPERAND (op, 0)
-		= build1 (VIEW_CONVERT_EXPR, TREE_TYPE (TREE_TYPE (op)),
-			  TREE_OPERAND (op, 0));
-	      continue;
-	    }
-
 	  /* Fixup FIELD_DECLs in COMPONENT_REFs, they are not handled
 	     by decl merging.  */
 	  if (TREE_CODE (op) == ADDR_EXPR)
@@ -1088,39 +956,65 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 	      if (TREE_CODE (op) == COMPONENT_REF)
 		{
 		  tree field, type, tem;
+		  tree closest_match = NULL_TREE;
 		  field = TREE_OPERAND (op, 1);
 		  type = DECL_CONTEXT (field);
 		  for (tem = TYPE_FIELDS (type); tem; tem = TREE_CHAIN (tem))
 		    {
-		      if (tem == field
-			  || (TREE_TYPE (tem) == TREE_TYPE (field)
-			      && DECL_NONADDRESSABLE_P (tem)
-				 == DECL_NONADDRESSABLE_P (field)
-			      && gimple_compare_field_offset (tem, field)))
+		      if (tem == field)
 			break;
+		      if (DECL_NONADDRESSABLE_P (tem)
+			  == DECL_NONADDRESSABLE_P (field)
+			  && gimple_compare_field_offset (tem, field))
+			{
+			  if (types_compatible_p (TREE_TYPE (tem),
+						  TREE_TYPE (field)))
+			    break;
+			  else
+			    closest_match = tem;
+			}
 		    }
 		  /* In case of type mismatches across units we can fail
 		     to unify some types and thus not find a proper
-		     field-decl here.  So only assert here if checking
-		     is enabled.  */
-#ifdef ENABLE_CHECKING
-		  gcc_assert (tem != NULL_TREE);
-#endif
-		  if (tem != NULL_TREE)
+		     field-decl here.  */
+		  if (tem == NULL_TREE)
+		    {
+		      /* Thus, emit a ODR violation warning.  */
+		      if (warning_at (gimple_location (stmt), 0,
+				      "use of type %<%E%> with two mismatching "
+				      "declarations at field %<%E%>",
+				      type, TREE_OPERAND (op, 1)))
+			{
+			  if (TYPE_FIELDS (type))
+			    inform (DECL_SOURCE_LOCATION (TYPE_FIELDS (type)),
+				    "original type declared here");
+			  inform (DECL_SOURCE_LOCATION (TREE_OPERAND (op, 1)),
+				  "field in mismatching type declared here");
+			  if (TYPE_NAME (TREE_TYPE (field))
+			      && (TREE_CODE (TYPE_NAME (TREE_TYPE (field)))
+				  == TYPE_DECL))
+			    inform (DECL_SOURCE_LOCATION
+				      (TYPE_NAME (TREE_TYPE (field))),
+				    "type of field declared here");
+			  if (closest_match
+			      && TYPE_NAME (TREE_TYPE (closest_match))
+			      && (TREE_CODE (TYPE_NAME
+				   (TREE_TYPE (closest_match))) == TYPE_DECL))
+			    inform (DECL_SOURCE_LOCATION
+				      (TYPE_NAME (TREE_TYPE (closest_match))),
+				    "type of mismatching field declared here");
+			}
+		      /* And finally fixup the types.  */
+		      TREE_OPERAND (op, 0)
+			= build1 (VIEW_CONVERT_EXPR, type,
+				  TREE_OPERAND (op, 0));
+		    }
+		  else
 		    TREE_OPERAND (op, 1) = tem;
 		}
 
-	      /* Preserve the last handled component for the fixup of
-	         its operand below.  */
-	      if (!handled_component_p (TREE_OPERAND (op, 0)))
-		break;
 	      op = TREE_OPERAND (op, 0);
 	    }
-
-	  /* Fixup reference tree operands for substituted prevailing decls
-	     with mismatched types.  */
-	  if (handled_component_p (op))
-	    maybe_fixup_handled_component (op);
 	}
       break;
 
@@ -1159,10 +1053,6 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
   /* Reset alias information.  */
   if (code == GIMPLE_CALL)
     gimple_call_reset_alias_info (stmt);
-
-  /* Fixup reference tree operands for substituted prevailing decls
-     with mismatched types.  */
-  maybe_fixup_decls (stmt);
 
   /* Mark the statement modified so its operand vectors can be filled in.  */
   gimple_set_modified (stmt, true);
@@ -1286,6 +1176,7 @@ input_function (tree fn_decl, struct data_in *data_in,
   struct bitpack_d bp;
   struct cgraph_node *node;
   tree args, narg, oarg;
+  int len;
 
   fn = DECL_STRUCT_FUNCTION (fn_decl);
   tag = input_record_start (ib);
@@ -1312,6 +1203,10 @@ input_function (tree fn_decl, struct data_in *data_in,
   fn->va_list_fpr_size = bp_unpack_value (&bp, 8);
   fn->va_list_gpr_size = bp_unpack_value (&bp, 8);
 
+  /* Input the function start and end loci.  */
+  fn->function_start_locus = lto_input_location (ib, data_in);
+  fn->function_end_locus = lto_input_location (ib, data_in);
+
   /* Input the current IL state of the function.  */
   fn->curr_properties = lto_input_uleb128 (ib);
 
@@ -1320,7 +1215,17 @@ input_function (tree fn_decl, struct data_in *data_in,
   fn->nonlocal_goto_save_area = lto_input_tree (ib, data_in);
 
   /* Read all the local symbols.  */
-  fn->local_decls = lto_input_tree (ib, data_in);
+  len = lto_input_sleb128 (ib);
+  if (len > 0)
+    {
+      int i;
+      VEC_safe_grow (tree, gc, fn->local_decls, len);
+      for (i = 0; i < len; i++)
+	{
+	  tree t = lto_input_tree (ib, data_in);
+	  VEC_replace (tree, fn->local_decls, i, t);
+	}
+    }
 
   /* Read all function arguments.  We need to re-map them here to the
      arguments of the merged function declaration.  */
@@ -1812,6 +1717,13 @@ unpack_ts_block_value_fields (struct bitpack_d *bp, tree expr)
   BLOCK_NUMBER (expr) = (unsigned) bp_unpack_value (bp, 31);
 }
 
+/* Unpack all the non-pointer fields of the TS_TRANSLATION_UNIT_DECL
+   structure of expression EXPR from bitpack BP.  */
+
+static void
+unpack_ts_translation_unit_decl_value_fields (struct bitpack_d *bp ATTRIBUTE_UNUSED, tree expr ATTRIBUTE_UNUSED)
+{
+}
 
 /* Unpack all the non-pointer fields in EXPR into a bit pack.  */
 
@@ -1867,6 +1779,9 @@ unpack_value_fields (struct bitpack_d *bp, tree expr)
       /* This is only used by High GIMPLE.  */
       gcc_unreachable ();
     }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
+    unpack_ts_translation_unit_decl_value_fields (bp, expr);
 }
 
 
@@ -1994,7 +1909,8 @@ static void
 lto_input_ts_common_tree_pointers (struct lto_input_block *ib,
 				   struct data_in *data_in, tree expr)
 {
-  TREE_TYPE (expr) = lto_input_tree (ib, data_in);
+  if (TREE_CODE (expr) != IDENTIFIER_NODE)
+    TREE_TYPE (expr) = lto_input_tree (ib, data_in);
 }
 
 
@@ -2033,6 +1949,13 @@ lto_input_ts_decl_minimal_tree_pointers (struct lto_input_block *ib,
 {
   DECL_NAME (expr) = lto_input_tree (ib, data_in);
   DECL_CONTEXT (expr) = lto_input_tree (ib, data_in);
+  /* We do not stream BLOCK_VARS but lazily construct it here.  */
+  if (DECL_CONTEXT (expr)
+      && TREE_CODE (DECL_CONTEXT (expr)) == BLOCK)
+    {
+      TREE_CHAIN (expr) = BLOCK_VARS (DECL_CONTEXT (expr));
+      BLOCK_VARS (DECL_CONTEXT (expr)) = expr;
+    }
   DECL_SOURCE_LOCATION (expr) = lto_input_location (ib, data_in);
 }
 
@@ -2061,6 +1984,13 @@ lto_input_ts_decl_common_tree_pointers (struct lto_input_block *ib,
        || TREE_CODE (expr) == PARM_DECL)
       && DECL_HAS_VALUE_EXPR_P (expr))
     SET_DECL_VALUE_EXPR (expr, lto_input_tree (ib, data_in));
+
+  if (TREE_CODE (expr) == VAR_DECL)
+    {
+      tree dexpr = lto_input_tree (ib, data_in);
+      if (dexpr)
+	SET_DECL_DEBUG_EXPR (expr, dexpr);
+    }
 }
 
 
@@ -2159,8 +2089,6 @@ lto_input_ts_type_tree_pointers (struct lto_input_block *ib,
   else if (TREE_CODE (expr) == FUNCTION_TYPE
 	   || TREE_CODE (expr) == METHOD_TYPE)
     TYPE_ARG_TYPES (expr) = lto_input_tree (ib, data_in);
-  else if (TREE_CODE (expr) == VECTOR_TYPE)
-    TYPE_DEBUG_REPRESENTATION_TYPE (expr) = lto_input_tree (ib, data_in);
 
   TYPE_SIZE (expr) = lto_input_tree (ib, data_in);
   TYPE_SIZE_UNIT (expr) = lto_input_tree (ib, data_in);
@@ -2249,20 +2177,33 @@ lto_input_ts_block_tree_pointers (struct lto_input_block *ib,
   unsigned i, len;
 
   BLOCK_SOURCE_LOCATION (expr) = lto_input_location (ib, data_in);
-  BLOCK_VARS (expr) = lto_input_chain (ib, data_in);
+  /* We do not stream BLOCK_VARS but lazily construct it when reading
+     in decls.  */
 
   len = lto_input_uleb128 (ib);
-  for (i = 0; i < len; i++)
+  if (len > 0)
     {
-      tree t = lto_input_tree (ib, data_in);
-      VEC_safe_push (tree, gc, BLOCK_NONLOCALIZED_VARS (expr), t);
+      VEC_reserve_exact (tree, gc, BLOCK_NONLOCALIZED_VARS (expr), len);
+      for (i = 0; i < len; i++)
+	{
+	  tree t = lto_input_tree (ib, data_in);
+	  VEC_quick_push (tree, BLOCK_NONLOCALIZED_VARS (expr), t);
+	}
     }
 
   BLOCK_SUPERCONTEXT (expr) = lto_input_tree (ib, data_in);
   BLOCK_ABSTRACT_ORIGIN (expr) = lto_input_tree (ib, data_in);
   BLOCK_FRAGMENT_ORIGIN (expr) = lto_input_tree (ib, data_in);
   BLOCK_FRAGMENT_CHAIN (expr) = lto_input_tree (ib, data_in);
-  BLOCK_SUBBLOCKS (expr) = lto_input_chain (ib, data_in);
+  /* We re-compute BLOCK_SUBBLOCKS of our parent here instead
+     of streaming it.  For non-BLOCK BLOCK_SUPERCONTEXTs we still
+     stream the child relationship explicitly.  */
+  if (BLOCK_SUPERCONTEXT (expr)
+      && TREE_CODE (BLOCK_SUPERCONTEXT (expr)) == BLOCK)
+    {
+      BLOCK_CHAIN (expr) = BLOCK_SUBBLOCKS (BLOCK_SUPERCONTEXT (expr));
+      BLOCK_SUBBLOCKS (BLOCK_SUPERCONTEXT (expr)) = expr;
+    }
 }
 
 
@@ -2296,10 +2237,14 @@ lto_input_ts_binfo_tree_pointers (struct lto_input_block *ib,
   BINFO_VPTR_FIELD (expr) = lto_input_tree (ib, data_in);
 
   len = lto_input_uleb128 (ib);
-  for (i = 0; i < len; i++)
+  if (len > 0)
     {
-      tree a = lto_input_tree (ib, data_in);
-      VEC_safe_push (tree, gc, BINFO_BASE_ACCESSES (expr), a);
+      VEC_reserve_exact (tree, gc, BINFO_BASE_ACCESSES (expr), len);
+      for (i = 0; i < len; i++)
+	{
+	  tree a = lto_input_tree (ib, data_in);
+	  VEC_quick_push (tree, BINFO_BASE_ACCESSES (expr), a);
+	}
     }
 
   BINFO_INHERITANCE_CHAIN (expr) = lto_input_tree (ib, data_in);
@@ -2329,6 +2274,34 @@ lto_input_ts_constructor_tree_pointers (struct lto_input_block *ib,
     }
 }
 
+
+/* Input a TS_TARGET_OPTION tree from IB into EXPR.  */
+
+static void
+lto_input_ts_target_option (struct lto_input_block *ib, tree expr)
+{
+  unsigned i, len;
+  struct bitpack_d bp;
+  struct cl_target_option *t = TREE_TARGET_OPTION (expr);
+
+  bp = lto_input_bitpack (ib);
+  len = sizeof (struct cl_target_option);
+  for (i = 0; i < len; i++)
+    ((unsigned char *)t)[i] = bp_unpack_value (&bp, 8);
+  if (bp_unpack_value (&bp, 32) != 0x12345678)
+    fatal_error ("cl_target_option size mismatch in LTO reader and writer");
+}
+
+/* Input a TS_TRANSLATION_UNIT_DECL tree from IB and DATA_IN into EXPR.  */
+
+static void
+lto_input_ts_translation_unit_decl_tree_pointers (struct lto_input_block *ib,
+						  struct data_in *data_in,
+						  tree expr)
+{
+  TRANSLATION_UNIT_LANGUAGE (expr) = xstrdup (input_string (data_in, ib));
+  VEC_safe_push (tree, gc, all_translation_units, expr);
+}
 
 /* Helper for lto_input_tree.  Read all pointer fields in EXPR from
    input block IB.  DATA_IN contains tables and descriptors for the
@@ -2414,9 +2387,10 @@ lto_input_tree_pointers (struct lto_input_block *ib, struct data_in *data_in,
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
-    {
-      sorry ("target optimization options not supported yet");
-    }
+    lto_input_ts_target_option (ib, expr);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
+    lto_input_ts_translation_unit_decl_tree_pointers (ib, data_in, expr);
 }
 
 
@@ -2427,27 +2401,26 @@ lto_input_tree_pointers (struct lto_input_block *ib, struct data_in *data_in,
 static void
 lto_register_var_decl_in_symtab (struct data_in *data_in, tree decl)
 {
-  /* Register symbols with file or global scope to mark what input
-     file has their definition.  */
-  if (decl_function_context (decl) == NULL_TREE)
-    {
-      /* Variable has file scope, not local. Need to ensure static variables
-	 between different files don't clash unexpectedly.  */
-      if (!TREE_PUBLIC (decl))
-        {
-	  /* ??? We normally pre-mangle names before we serialize them
-	     out.  Here, in lto1, we do not know the language, and
-	     thus cannot do the mangling again. Instead, we just
-	     append a suffix to the mangled name.  The resulting name,
-	     however, is not a properly-formed mangled name, and will
-	     confuse any attempt to unmangle it.  */
-	  const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-	  char *label;
+  tree context;
 
-	  ASM_FORMAT_PRIVATE_NAME (label, name, DECL_UID (decl));
-	  SET_DECL_ASSEMBLER_NAME (decl, get_identifier (label));
-          rest_of_decl_compilation (decl, 1, 0);
-        }
+  /* Variable has file scope, not local. Need to ensure static variables
+     between different files don't clash unexpectedly.  */
+  if (!TREE_PUBLIC (decl)
+      && !((context = decl_function_context (decl))
+	   && auto_var_in_fn_p (decl, context)))
+    {
+      /* ??? We normally pre-mangle names before we serialize them
+	 out.  Here, in lto1, we do not know the language, and
+	 thus cannot do the mangling again. Instead, we just
+	 append a suffix to the mangled name.  The resulting name,
+	 however, is not a properly-formed mangled name, and will
+	 confuse any attempt to unmangle it.  */
+      const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+      char *label;
+
+      ASM_FORMAT_PRIVATE_NAME (label, name, DECL_UID (decl));
+      SET_DECL_ASSEMBLER_NAME (decl, get_identifier (label));
+      rest_of_decl_compilation (decl, 1, 0);
     }
 
   /* If this variable has already been declared, queue the

@@ -142,8 +142,7 @@ namespace __parallel
     inline bool
     equal(_IIter1 __begin1, _IIter1 __end1, _IIter2 __begin2)
     {
-      return _GLIBCXX_STD_P::mismatch(__begin1, __end1, __begin2).first
-              == __end1;
+      return mismatch(__begin1, __end1, __begin2).first == __end1;
     }
 
   // Public interface
@@ -152,8 +151,7 @@ namespace __parallel
     equal(_IIter1 __begin1, _IIter1 __end1, _IIter2 __begin2, 
           _Predicate __pred)
     {
-      return _GLIBCXX_STD_P::mismatch(__begin1, __end1, __begin2, __pred).first
-              == __end1;
+      return mismatch(__begin1, __end1, __begin2, __pred).first == __end1;
     }
 
   // Sequential fallback

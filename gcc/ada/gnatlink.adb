@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,10 +41,10 @@ with Table;
 with Targparm; use Targparm;
 with Types;
 
-with Ada.Command_Line;     use Ada.Command_Line;
-with Ada.Exceptions;       use Ada.Exceptions;
+with Ada.Command_Line; use Ada.Command_Line;
+with Ada.Exceptions;   use Ada.Exceptions;
 
-with System.OS_Lib;        use System.OS_Lib;
+with System.OS_Lib; use System.OS_Lib;
 with System.CRTL;
 
 with Interfaces.C_Streams; use Interfaces.C_Streams;
@@ -159,10 +159,6 @@ procedure Gnatlink is
    --  Temporary file used by linker to pass list of object files on
    --  certain systems with limitations on size of arguments.
 
-   Lname : String_Access := null;
-   --  File used by linker for CLI target, used to concatenate all .il files
-   --  when the command line passed to ilasm is too long
-
    Debug_Flag_Present : Boolean := False;
    Verbose_Mode       : Boolean := False;
    Very_Verbose_Mode  : Boolean := False;
@@ -198,6 +194,13 @@ procedure Gnatlink is
 
    function Base_Name (File_Name : String) return String;
    --  Return just the file name part without the extension (if present)
+
+   procedure Check_Existing_Executable (File_Name : String);
+   --  Delete any existing executable to avoid accidentally updating the target
+   --  of a symbolic link, but produce a Fatail_Error if File_Name matches any
+   --  of the source file names. This avoids overwriting of extensionless
+   --  source files by accident on systems where executables do not have
+   --  extensions.
 
    procedure Delete (Name : String);
    --  Wrapper to unlink as status is ignored by this application
@@ -257,6 +260,32 @@ procedure Gnatlink is
 
       return File_Name (Findex1 .. Findex2 - 1);
    end Base_Name;
+
+   -------------------------------
+   -- Check_Existing_Executable --
+   -------------------------------
+
+   procedure Check_Existing_Executable (File_Name : String) is
+      Ename : String := File_Name;
+      Efile : File_Name_Type;
+      Sfile : File_Name_Type;
+
+   begin
+      Canonical_Case_File_Name (Ename);
+      Name_Len := 0;
+      Add_Str_To_Name_Buffer (Ename);
+      Efile := Name_Find;
+
+      for J in Units.Table'First .. Units.Last loop
+         Sfile := Units.Table (J).Sfile;
+         if Sfile = Efile then
+            Exit_With_Error ("executable name """ & File_Name & """ matches "
+              & "source file name """ & Get_Name_String (Sfile) & """");
+         end if;
+      end loop;
+
+      Delete (File_Name);
+   end Check_Existing_Executable;
 
    ------------
    -- Delete --
@@ -957,42 +986,7 @@ procedure Gnatlink is
       --  to read from a file instead of the command line is only triggered if
       --  a conservative threshold is passed.
 
-      if VM_Target = CLI_Target
-        and then Link_Bytes > Link_Max
-      then
-         Lname := new String'("l~" & Base_Name (Ali_File_Name.all) & ".il");
-
-         for J in Objs_Begin .. Objs_End loop
-            Copy_File (Linker_Objects.Table (J).all, Lname.all,
-                       Success => Closing_Status,
-                       Mode    => Append);
-         end loop;
-
-         --  Add the special objects list file option together with the name
-         --  of the temporary file to the objects file table.
-
-         Linker_Objects.Table (Objs_Begin) :=
-           new String'(Value (Object_File_Option_Ptr) & Lname.all);
-
-         --  The slots containing these object file names are then removed
-         --  from the objects table so they do not appear in the link. They
-         --  are removed by moving up the linker options and non-Ada object
-         --  files appearing after the Ada object list in the table.
-
-         declare
-            N : Integer;
-
-         begin
-            N := Objs_End - Objs_Begin + 1;
-
-            for J in Objs_End + 1 .. Linker_Objects.Last loop
-               Linker_Objects.Table (J - N + 1) := Linker_Objects.Table (J);
-            end loop;
-
-            Linker_Objects.Set_Last (Linker_Objects.Last - N + 1);
-         end;
-
-      elsif Object_List_File_Required
+      if Object_List_File_Required
         or else (Object_List_File_Supported
                    and then Link_Bytes > Link_Max)
       then
@@ -1537,7 +1531,6 @@ begin
 
    --  Initialize packages to be used
 
-   Namet.Initialize;
    Csets.Initialize;
    Snames.Initialize;
 
@@ -1561,7 +1554,6 @@ begin
    --  the binder generated file
 
    if Compile_Bind_File and then Standard_Gcc then
-
       Initialize_ALI;
       Name_Len := Ali_File_Name'Length;
       Name_Buffer (1 .. Name_Len) := Ali_File_Name.all;
@@ -1705,7 +1697,7 @@ begin
 
    if Linker_Path = null then
       if VM_Target = CLI_Target then
-         Linker_Path := System.OS_Lib.Locate_Exec_On_Path ("ilasm");
+         Linker_Path := System.OS_Lib.Locate_Exec_On_Path ("dotnet-ld");
 
          if Linker_Path = null then
             Exit_With_Error ("Couldn't locate ilasm");
@@ -1736,18 +1728,7 @@ begin
                       & Get_Target_Debuggable_Suffix.all);
    end if;
 
-   if VM_Target = CLI_Target then
-      Linker_Options.Increment_Last;
-      Linker_Options.Table (Linker_Options.Last) := new String'("/QUIET");
-
-      Linker_Options.Increment_Last;
-      Linker_Options.Table (Linker_Options.Last) := new String'("/DEBUG");
-
-      Linker_Options.Increment_Last;
-      Linker_Options.Table (Linker_Options.Last) :=
-        new String'("/OUTPUT=" & Output_File_Name.all);
-
-   elsif RTX_RTSS_Kernel_Module_On_Target then
+   if RTX_RTSS_Kernel_Module_On_Target then
       Linker_Options.Increment_Last;
       Linker_Options.Table (Linker_Options.Last) :=
         new String'("/OUT:" & Output_File_Name.all);
@@ -1761,16 +1742,7 @@ begin
         new String'(Output_File_Name.all);
    end if;
 
-   --  Delete existing executable, in case it is a symbolic link, to avoid
-   --  modifying the target of the symbolic link.
-
-   declare
-      Dummy : Boolean;
-      pragma Unreferenced (Dummy);
-
-   begin
-      Delete_File (Output_File_Name.all, Dummy);
-   end;
+   Check_Existing_Executable (Output_File_Name.all);
 
    --  Warn if main program is called "test", as that may be a built-in command
    --  on Unix. On non-Unix systems executables have a suffix, so the warning
@@ -1932,17 +1904,15 @@ begin
          IDENT_Op : Boolean := False;
 
       begin
-         if VM_Target = CLI_Target then
+         if AAMP_On_Target then
 
-            --  Remove extraneous flags not relevant for CIL. Also remove empty
-            --  arguments, since ilasm chokes on them.
+            --  Remove extraneous flags not relevant for AAMP
 
             for J in reverse Linker_Options.First .. Linker_Options.Last loop
                if Linker_Options.Table (J)'Length = 0
-                 or else Linker_Options.Table (J) (1 .. 2) = "-L"
-                 or else Linker_Options.Table (J) (1 .. 2) = "-l"
                  or else Linker_Options.Table (J) (1 .. 3) = "-Wl"
                  or else Linker_Options.Table (J) (1 .. 3) = "-sh"
+                 or else Linker_Options.Table (J) (1 .. 2) = "-O"
                  or else Linker_Options.Table (J) (1 .. 2) = "-g"
                then
                   Linker_Options.Table (J .. Linker_Options.Last - 1) :=
@@ -1960,10 +1930,12 @@ begin
             for J in reverse Linker_Options.First .. Linker_Options.Last loop
 
                --  Remove flags that are not accepted
+
                if Linker_Options.Table (J)'Length = 0
                  or else Linker_Options.Table (J) (1 .. 2) = "-l"
                  or else Linker_Options.Table (J) (1 .. 3) = "-Wl"
                  or else Linker_Options.Table (J) (1 .. 3) = "-sh"
+                 or else Linker_Options.Table (J) (1 .. 2) = "-O"
                  or else Linker_Options.Table (J) (1 .. 8) = "-Xlinker"
                  or else Linker_Options.Table (J) (1 .. 9) = "-mthreads"
                then
@@ -2146,15 +2118,16 @@ begin
 
                --  Remove duplicate IDENTIFICATION directives (VMS)
 
-               if Linker_Options.Table (J)'Length > 27
-                 and then Linker_Options.Table (J) (1 .. 28)
-                          = "--for-linker=IDENTIFICATION="
+               if Linker_Options.Table (J)'Length > 29
+                 and then Linker_Options.Table (J) (1 .. 30) =
+                            "--for-linker=--identification="
                then
                   if IDENT_Op then
                      Linker_Options.Table (J .. Linker_Options.Last - 1) :=
                        Linker_Options.Table (J + 1 .. Linker_Options.Last);
                      Linker_Options.Decrement_Last;
                      Num_Args := Num_Args - 1;
+
                   else
                      IDENT_Op := True;
                   end if;
@@ -2260,10 +2233,6 @@ begin
 
             if Tname_FD /= Invalid_FD then
                Delete (Tname);
-            end if;
-
-            if Lname /= null then
-               Delete (Lname.all & ASCII.NUL);
             end if;
 
             if not Success then

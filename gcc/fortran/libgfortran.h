@@ -93,6 +93,7 @@ typedef enum
   LIBERROR_DIRECT_EOR,
   LIBERROR_SHORT_RECORD,
   LIBERROR_CORRUPT_FILE,
+  LIBERROR_INQUIRE_INTERNAL_UNIT, /* Must be different from STAT_STOPPED_IMAGE.  */
   LIBERROR_LAST			/* Not a real error, the last error # + 1.  */
 }
 libgfortran_error_codes;
@@ -102,8 +103,7 @@ typedef enum
   GFC_STAT_UNLOCKED = 0,
   GFC_STAT_LOCKED,
   GFC_STAT_LOCKED_OTHER_IMAGE,
-  GFC_STAT_STOPPED_IMAGE,
-  GFC_INQUIRE_INTERNAL_UNIT  /* Must be different from STAT_STOPPED_IMAGE.  */
+  GFC_STAT_STOPPED_IMAGE
 }
 libgfortran_stat_codes;
 
@@ -122,16 +122,11 @@ libgfortran_stat_codes;
 #define GFC_DTYPE_TYPE_MASK 0x38
 #define GFC_DTYPE_SIZE_SHIFT 6
 
+/* Basic types.  BT_VOID is used by ISO C Binding so funcs like c_f_pointer
+   can take any arg with the pointer attribute as a param.  These are also
+   used in the run-time library for IO.  */
 typedef enum
-{
-  GFC_DTYPE_UNKNOWN = 0,
-  GFC_DTYPE_INTEGER,
-  /* TODO: recognize logical types.  */
-  GFC_DTYPE_LOGICAL,
-  GFC_DTYPE_REAL,
-  GFC_DTYPE_COMPLEX,
-  GFC_DTYPE_DERIVED,
-  GFC_DTYPE_CHARACTER
+{ BT_UNKNOWN = 0, BT_INTEGER, BT_LOGICAL, BT_REAL, BT_COMPLEX,
+  BT_DERIVED, BT_CHARACTER, BT_CLASS, BT_PROCEDURE, BT_HOLLERITH, BT_VOID
 }
-dtype;
-
+bt;

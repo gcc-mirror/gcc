@@ -107,6 +107,9 @@ m68k-*-*)
 	;;
 mep*-*-*)
 	;;
+microblaze*-*-*)
+	cpu_type=microblaze
+	;;
 mips*-*-*)
 	cpu_type=mips
 	;;
@@ -279,8 +282,10 @@ i[34567]86-*-elf*)
 x86_64-*-elf*)
 	;;
 i[34567]86-*-freebsd*)
+	tmake_file="${tmake_file} i386/t-freebsd"
 	;;
 x86_64-*-freebsd*)
+	tmake_file="${tmake_file} i386/t-freebsd"
 	;;
 i[34567]86-*-netbsdelf*)
 	;;
@@ -345,6 +350,8 @@ ia64*-*-elf*)
 	tmake_file="ia64/t-ia64"
 	;;
 ia64*-*-freebsd*)
+	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
+	tmake_file="ia64/t-ia64"
 	;;
 ia64*-*-linux*)
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o upc-crtbegin.o upc-crtbeginS.o upc-crtbeginT.o upc-crtend.o upc-crtendS.o upc-crtendT.o"
@@ -394,6 +401,9 @@ m68k-*-rtems*)
 mcore-*-elf)
 	;;
 mcore-*-pe*)
+	;;
+microblaze*-*-*)
+        tmake_file="microblaze/t-microblaze"
 	;;
 mips-sgi-irix[56]*)
 	;;
@@ -458,6 +468,7 @@ powerpc*-*-freebsd*)
 powerpc-*-netbsd*)
 	;;
 powerpc-*-eabispe*)
+	tmake_file="${tmake_file} rs6000/t-ppccomm"
 	;;
 powerpc-*-eabisimaltivec*)
 	;;
@@ -468,6 +479,7 @@ powerpc-*-elf*)
 powerpc-*-eabialtivec*)
 	;;
 powerpc-*-eabi*)
+	tmake_file="${tmake_file} rs6000/t-ppccomm"
 	;;
 powerpc-*-rtems*)
 	;;
@@ -597,6 +609,9 @@ i[34567]86-*-linux* | x86_64-*-linux* | \
   i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | \
   i[34567]86-*-gnu*)
 	tmake_file="${tmake_file} t-tls"
+	if test "$libgcc_cv_cfi" = "yes"; then
+		tmake_file="${tmake_file} t-stack i386/t-stack-i386"
+	fi
 	;;
 esac
 
@@ -606,7 +621,8 @@ i[34567]86-*-darwin* | x86_64-*-darwin* | \
   i[34567]86-*-linux* | x86_64-*-linux* | \
   i[34567]86-*-gnu* | \
   i[34567]86-*-solaris2* | \
-  i[34567]86-*-cygwin* | i[34567]86-*-mingw* | x86_64-*-mingw*)
+  i[34567]86-*-cygwin* | i[34567]86-*-mingw* | x86_64-*-mingw* | \
+  i[34567]86-*-freebsd* | x86_64-*-freebsd*)
 	if test "${host_address}" = 32; then
 		tmake_file="${tmake_file} t-softfp i386/${host_address}/t-fprules-softfp"
 	fi

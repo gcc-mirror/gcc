@@ -284,6 +284,8 @@ alpha_vms_fallback_frame_state (struct _Unwind_Context *context,
       /* ??? floating point registers ?  */
     }
 
+  fs->signal_frame = 1;
+
   return _URC_NO_REASON;
 }
 

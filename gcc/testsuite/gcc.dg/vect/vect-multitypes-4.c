@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_int } */
+/* { dg-add-options quad_vectors } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -20,7 +21,9 @@ unsigned int ib[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,
    access for peeling, and therefore will examine the option of
    using a peeling factor = VF-7%VF. This will result in a peeling factor 1,
    which will also align the access to 'ia[i+3]', and the loop could be
-   vectorized on all targets that support unaligned loads.  */
+   vectorized on all targets that support unaligned loads.
+   Without cost model on targets that support misaligned stores, no peeling
+   will be applied since we want to keep the four loads aligned.  */
 
 __attribute__ ((noinline))
 int main1 (int n)
@@ -50,7 +53,11 @@ int main1 (int n)
    using a peeling factor = VF-3%VF. This will result in a peeling factor
    1 if VF=4,2. This will not align the access to 'sa[i+3]', for which we 
    need to peel 5,1 iterations for VF=4,2 respectively, so the loop can not 
-   be vectorized.  */
+   be vectorized.  However, 'ia[i+3]' also gets aligned if we peel 5
+   iterations, so the loop is vectorizable on all targets that support
+   unaligned loads.
+   Without cost model on targets that support misaligned stores, no peeling
+   will be applied since we want to keep the four loads aligned.  */
 
 __attribute__ ((noinline))
 int main2 (int n)
@@ -85,11 +92,10 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { xfail {! vect_hw_misalign} } } } */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail { vect_no_align || vect_hw_misalign } } } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" { xfail {! vect_hw_misalign}  } } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" { xfail { vect_no_align || vect_hw_misalign } } } } */
-/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 8 "vect" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 4 "vect" { xfail { vect_no_align || vect_hw_misalign } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { xfail { vect_no_align } } } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 0 "vect" { target { vect_element_align}  } } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" { xfail { vect_no_align || vect_element_align } } } } */
+/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 8 "vect" { xfail { vect_no_align || vect_element_align } } } } */
+/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 4 "vect" { target { vect_element_align  } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
 

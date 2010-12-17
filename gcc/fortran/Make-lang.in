@@ -66,7 +66,7 @@ F95_OBJS = $(F95_PARSER_OBJS) $(FORTRAN_TARGET_OBJS) \
     fortran/trans.o fortran/trans-array.o fortran/trans-common.o \
     fortran/trans-const.o fortran/trans-decl.o fortran/trans-expr.o \
     fortran/trans-intrinsic.o fortran/trans-io.o fortran/trans-openmp.o \
-    fortran/trans-stmt.o fortran/trans-types.o
+    fortran/trans-stmt.o fortran/trans-types.o fortran/frontend-passes.o
 
 fortran_OBJS = $(F95_OBJS) gfortranspec.o
 
@@ -78,7 +78,7 @@ fortran: f951$(exeext)
 .PHONY: fortran
 
 gfortranspec.o: $(srcdir)/fortran/gfortranspec.c $(SYSTEM_H) $(TM_H) $(GCC_H) \
-	$(CONFIG_H) coretypes.h intl.h
+	$(CONFIG_H) coretypes.h intl.h $(OPTS_H)
 	(SHLIB_LINK='$(SHLIB_LINK)'; \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
 		$(INCLUDES) $(srcdir)/fortran/gfortranspec.c)
@@ -86,7 +86,7 @@ gfortranspec.o: $(srcdir)/fortran/gfortranspec.c $(SYSTEM_H) $(TM_H) $(GCC_H) \
 # Create the compiler driver gfortran.
 GFORTRAN_D_OBJS = $(GCC_OBJS) gfortranspec.o version.o prefix.o intl.o
 gfortran$(exeext): $(GFORTRAN_D_OBJS) $(EXTRA_GCC_OBJS) $(LIBDEPS)
-	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	  $(GFORTRAN_D_OBJS) $(EXTRA_GCC_OBJS) $(LIBS)
 
 # Create a version of the gfortran driver which calls the cross-compiler.
@@ -97,7 +97,7 @@ gfortran-cross$(exeext): gfortran$(exeext)
 # The compiler itself is called f951.
 f951$(exeext): $(F95_OBJS) \
 		$(C_STUB_OBJS) $(BACKEND) $(LIBDEPS) attribs.o
-	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 		$(F95_OBJS) $(C_STUB_OBJS) \
 		$(BACKEND) $(LIBS) attribs.o $(BACKENDLIBS)
 
@@ -340,6 +340,7 @@ fortran/f95-lang.o: $(GFORTRAN_TRANS_DEPS) fortran/mathbuiltins.def \
   libfuncs.h expr.h
 fortran/scanner.o: toplev.h fortran/cpp.h
 fortran/convert.o: $(GFORTRAN_TRANS_DEPS)
+fortran/frontend-passes.o: $(GFORTRAN_TRANS_DEPS)
 fortran/trans.o: $(GFORTRAN_TRANS_DEPS) tree-iterator.h
 fortran/trans-decl.o: $(GFORTRAN_TRANS_DEPS) gt-fortran-trans-decl.h \
   $(CGRAPH_H) $(TARGET_H) $(FUNCTION_H) $(FLAGS_H) $(RTL_H) $(GIMPLE_H) \
@@ -360,6 +361,6 @@ fortran/trans-common.o: $(GFORTRAN_TRANS_DEPS) $(TARGET_H) $(RTL_H)
 fortran/resolve.o: fortran/dependency.h fortran/data.h fortran/target-memory.h
 fortran/data.o: fortran/data.h
 fortran/options.o: $(PARAMS_H) $(TARGET_H) fortran/cpp.h
-fortran/cpp.o: fortran/cpp.c $(BASEVER) incpath.h incpath.o
+fortran/cpp.o: fortran/cpp.c incpath.h incpath.o cppbuiltin.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
-		-DBASEVER=$(BASEVER_s) $< $(OUTPUT_OPTION)
+		$< $(OUTPUT_OPTION)

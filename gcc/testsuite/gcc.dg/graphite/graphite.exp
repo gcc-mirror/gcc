@@ -43,6 +43,7 @@ set id_files          [lsort [glob -nocomplain $srcdir/$subdir/id-*.c ] ]
 set run_id_files      [lsort [glob -nocomplain $srcdir/$subdir/run-id-*.c ] ]
 set interchange_files [lsort [glob -nocomplain $srcdir/$subdir/interchange-*.c ] ]
 set block_files       [lsort [glob -nocomplain $srcdir/$subdir/block-*.c ] ]
+set vect_files        [lsort [glob -nocomplain $srcdir/$subdir/vect-*.c ] ]
 
 # Tests to be compiled.
 set dg-do-what-default compile
@@ -55,6 +56,14 @@ dg-runtest $run_id_files      "" "-O2 -fgraphite-identity"
 dg-runtest $interchange_files "" "-O2 -floop-interchange -fno-loop-block -fno-loop-strip-mine -ffast-math -fdump-tree-graphite-all"
 dg-runtest $block_files       "" "-O2 -floop-block -fno-loop-strip-mine -fno-loop-interchange -ffast-math -fdump-tree-graphite-all"
 
+# Vectorizer tests, to be run or compiled, depending on target capabilities.
+global DEFAULT_VECTCFLAGS
+set DEFAULT_VECTCFLAGS "-O2 -fgraphite-identity -ftree-vectorize -fno-vect-cost-model -fdump-tree-vect-details"
+
+if [check_vect_support_and_set_flags] {
+    dg-runtest $vect_files        "" $DEFAULT_VECTCFLAGS
+}
+
 # The default action for the rest of the files is 'compile'.
 set dg-do-what-default compile
 foreach f $scop_files        {lremove wait_to_run_files $f}
@@ -62,6 +71,7 @@ foreach f $id_files          {lremove wait_to_run_files $f}
 foreach f $run_id_files      {lremove wait_to_run_files $f}
 foreach f $interchange_files {lremove wait_to_run_files $f}
 foreach f $block_files       {lremove wait_to_run_files $f}
+foreach f $vect_files        {lremove wait_to_run_files $f}
 dg-runtest $wait_to_run_files "" "-ansi -pedantic-errors"
 
 # Clean up.

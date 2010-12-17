@@ -45,6 +45,15 @@ $(srcdir)/config/arm/arm-tune.md: $(srcdir)/config/arm/gentune.sh \
 		$(srcdir)/config/arm/arm-cores.def > \
 		$(srcdir)/config/arm/arm-tune.md
 
+arm.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+  $(RTL_H) $(TREE_H) $(OBSTACK_H) $(REGS_H) hard-reg-set.h \
+  insn-config.h conditions.h output.h \
+  $(INSN_ATTR_H) $(FLAGS_H) reload.h $(FUNCTION_H) \
+  $(EXPR_H) $(OPTABS_H) toplev.h $(RECOG_H) $(CGRAPH_H) \
+  $(GGC_H) except.h $(C_PRAGMA_H) $(INTEGRATE_H) $(TM_P_H) \
+  $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
+  intl.h libfuncs.h $(PARAMS_H)
+
 arm-c.o: $(srcdir)/config/arm/arm-c.c $(CONFIG_H) $(SYSTEM_H) \
     coretypes.h $(TM_H) $(TREE_H) output.h $(C_COMMON_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \

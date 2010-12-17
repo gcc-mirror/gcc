@@ -1,4 +1,4 @@
-/* IppDelimiterTag.java -- 
+/* IppDelimiterTag.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -42,57 +42,57 @@ package gnu.javax.print.ipp;
 /**
  * IPP Delimiter Tags as described in RFC 2910 section 3.5.1.
  * <p>
- * Every delimiter tag value can occur in the protocol field 
+ * Every delimiter tag value can occur in the protocol field
  * begin-attribute-group-tag and indicates that the following
  * attributes will be part of the named group.<br>
  * The end-of-attributes-tag signals the end of the attributes
  * section in the IPP request/response and therefore the beginning
- * of the data section (if any). 
+ * of the data section (if any).
  * </p>
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class IppDelimiterTag
 {
   /** Start of the operation attributes group section. */
   public static final byte OPERATION_ATTRIBUTES_TAG = 0x01;
-  
+
   /** Start of the job attributes group section. */
   public static final byte JOB_ATTRIBUTES_TAG = 0x02;
-  
+
   /** End of the attributes section and begin of data section. */
   public static final byte END_OF_ATTRIBUTES_TAG = 0x03;
-  
+
   /** Start of the printer attributes group section. */
   public static final byte PRINTER_ATTRIBUTES_TAG = 0x04;
-  
+
   /** Start of the unsupported attributes group section. */
   public static final byte UNSUPPORTED_ATTRIBUTES_TAG = 0x05;
-  
-    
+
+
   // 0x00 reserved for definition in a future IETF
   // standards track document
-  
+
   // 0x06-0x0f reserved for future delimiters in IETF
   // standards track documents
-    
+
   private IppDelimiterTag()
   {
     // not to be instantiated
   }
-    
+
   /**
-   * Tests if given value corresponds to a 
+   * Tests if given value corresponds to a
    * delimiter tag value.
-   * 
+   *
    * @param value the value to test for
    * @return <code>true</code> if, <code>false</code> otherwise.
    */
-  public static boolean isDelimiterTag(byte value) 
+  public static boolean isDelimiterTag(byte value)
   {
     if (value >= 0x01 && value <= 0x05)
       return true;
-    
+
     return false;
   }
 

@@ -1,3 +1,137 @@
+2010-11-24  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/libbid/bid_conf.h (BID_BIG_ENDIAN): Define in terms of
+	__FLOAT_WORD_ORDER__.
+	* config/libbid/bid_gcc_intrinsics.h (LIBGCC2_FLOAT_WORDS_BIG_ENDIAN):
+	Delete.
+
+2010-11-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR other/46202
+	* Makefile.in (install-strip): New phony target.
+
+2010-11-07  Ian Lance Taylor  <iant@google.com>
+
+	PR target/46089
+	* config/i386/morestack.S (__morestack_large_model): New
+	function.
+
+2010-10-23  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/libbid/bid_gcc_intrinsics.h (LIBGCC2_WORDS_BIG_ENDIAN):
+	Delete.
+	(LIBGCC2_FLOAT_WORDS_BIG_ENDIAN): Test __BYTE_ORDER__.
+
+2010-10-14  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/arm/bpabi.h: New file.
+	* config/frv/frv-abi.h: New file.
+
+2010-10-01  Ian Lance Taylor  <iant@google.com>
+
+	* config/t-stack(LIB2ADD_ST): Set instead of LIB2ADD.
+	* config/i386/t-stack-i386 (LIB2ADD_ST): Likewise.
+
+2010-10-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/45858
+	* config.host: Add the missing `$'.
+
+2010-09-30  Michael Eager  <eager@eagercon.com>
+
+	* config.host: Add microblaze*-*-*.
+	* config/microblaze/{divsi3.asm,divsi3_table.c,moddi3.asm,modsi3.asm,
+	muldi3_hard.asm,mulsi3.asm,stack_overflow_exit.asm,t-microblaze,
+	udivsi3.asm,umodsi3.asm}:  New.
+
+2010-09-28  Ian Lance Taylor  <iant@google.com>
+
+	* configure.ac: Adjust CFI test to test assembler directly rather
+	than checking gcc preprocessor macro.
+	* configure: Rebuild.
+
+2010-09-27  Ian Lance Taylor  <iant@google.com>
+
+	* configure.ac: Test whether assembler supports CFI directives.
+	* config.host: Only add t-stack and i386/t-stack-i386 to
+	tmake_file if libgcc_cv_cfi is "yes".
+	* configure: Rebuild.
+
+2010-09-27  Ian Lance Taylor  <iant@google.com>
+
+	* generic-morestack.h: New file.
+	* generic-morestack.c: New file.
+	* generic-morestack-thread.c: New file.
+	* config/i386/morestack.S: New file.
+	* config/t-stack: New file.
+	* config/i386/t-stack-i386: New file.
+	* config.host (i[34567]86-*-linux* and friends): Add t-stack and
+	i386/t-stack-i386 to tmake_file.
+
+2010-09-21  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* Makefile.in (libgcc-extra-parts):  Check for static archives and
+	invoke ranlib after installing them.
+	(gcc-extra-parts): Likewise.
+	(install-leaf): Likewise.
+
+2010-09-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
+2010-09-10  Kai Tietz  <kai.tietz@onevision.com>
+
+	* configure: Regenerated.
+
+2010-09-09  Gerald Pfeifer  <gerald@pfeifer.com>
+	    Andrew Pinski  <pinskia@gmail.com>
+
+	PR target/40959	
+	* config.host (ia64*-*-freebsd*): Set extra_parts.  Set tmake_file.
+
+2010-09-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/45524
+	* configure: Regenerated.
+
+2010-09-06  Andreas Schwab  <schwab@redhat.com>
+
+	* configure: Regenerate.
+
+2010-09-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/t-sol2 (__copysigntf3, __fabstf3): Disable for
+	64bit targets.
+	(__fixtfti, __fixunstfti, __floattitf, __floatuntitf): Enable only
+	for 64bit targets.
+
+2010-09-03  Uros Bizjak  <ubizjak@gmail.com>
+	    Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR target/45476
+	* Makefile.in (sifuncs, difuncs, tifuncs): Filter out
+	LIB2FUNCS_EXCLUDE functions.
+
+2010-09-03  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* configure.ac: Use the GCC_AC_ENABLE_DECIMAL_FLOAT macro.
+	Include dfp.m4.
+	* configure: Regenerate.
+
+2010-09-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config.host (i[34567]86-*-freebsd*, x86_64-*-freebsd*): Add
+	i386/t-freebsd to tmake_file.
+	* config/i386/t-freebsd: New file.
+	* config/i386/libgcc-bsd.ver: New file.
+
+2010-07-23  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config.host (powerpc*-eabispe*): Set tmake_file.
+	(powerpc*-eabi*): Likewise.
+	* config/rs6000/t-ppccomm (EXTRA_PARTS): Add crtbegin, crtend,
+	crtbeginS, crtendS, crtbeginT.
+
 2010-06-12  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config.host (mips64*-*-linux*, mips*-*-linux*): Add mips/t-crtfm
@@ -93,23 +227,23 @@
 
 2009-11-11  Jon Beniston <jon@beniston.com>
 
-        * config.host: Add lm32 targets.
-        * config/lm32: New directory.
-        * config/lm32/libgcc_lm32.h: New file.
-        * config/lm32/_mulsi3.c: New file.
-        * config/lm32/_udivmodsi4.c: New file.
-        * config/lm32/_divsi3.c: New file.
-        * config/lm32/_modsi3.c: New file.
-        * config/lm32/_udivsi3.c: New file.
-        * config/lm32/_umodsi3.c: New file.
-        * config/lm32/_lshrsi3.S: New file.
-        * config/lm32/_ashrsi3.S: New file.
-        * config/lm32/_ashlsi3.S: New file.
-        * config/lm32/crti.S: New file.
-        * config/lm32/crtn.S: New file.
-        * config/lm32/t-lm32: New file.
-        * config/lm32/t-elf: New file.
-        * config/lm32/t-uclinux: New file.
+	* config.host: Add lm32 targets.
+	* config/lm32: New directory.
+	* config/lm32/libgcc_lm32.h: New file.
+	* config/lm32/_mulsi3.c: New file.
+	* config/lm32/_udivmodsi4.c: New file.
+	* config/lm32/_divsi3.c: New file.
+	* config/lm32/_modsi3.c: New file.
+	* config/lm32/_udivsi3.c: New file.
+	* config/lm32/_umodsi3.c: New file.
+	* config/lm32/_lshrsi3.S: New file.
+	* config/lm32/_ashrsi3.S: New file.
+	* config/lm32/_ashlsi3.S: New file.
+	* config/lm32/crti.S: New file.
+	* config/lm32/crtn.S: New file.
+	* config/lm32/t-lm32: New file.
+	* config/lm32/t-elf: New file.
+	* config/lm32/t-uclinux: New file.
 
 2009-10-26  Nick Clifton  <nickc@redhat.com>
 

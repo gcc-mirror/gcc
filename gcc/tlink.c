@@ -1,8 +1,8 @@
 /* Scan linker error messages for missing template instantiations and provide
    them.
 
-   Copyright (C) 1995, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2007, 2008
-   Free Software Foundation, Inc.
+   Copyright (C) 1995, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2007, 2008,
+   2009, 2010 Free Software Foundation, Inc.
    Contributed by Jason Merrill (jason@cygnus.com).
 
 This file is part of GCC.
@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "demangle.h"
 #include "collect2.h"
-#include "libiberty.h"
 
 /* TARGET_64BIT may be defined to use driver specific functionality. */
 #undef TARGET_64BIT

@@ -22,9 +22,13 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-
-#include "objc/runtime.h"
-#include "objc/sarray.h"
+#include "objc-private/common.h"
+#include "objc/objc-api.h"
+#include "objc/thr.h"
+#include "objc-private/hash.h"
+#include "objc-private/objc-list.h" 
+#include "objc-private/runtime.h"
+#include "objc-private/sarray.h"
 #include "objc/encoding.h"
 
 /* Initial selector hash table size. Value doesn't matter much */
@@ -91,6 +95,40 @@ __objc_register_selectors_from_list (MethodList_t method_list)
   objc_mutex_unlock (__objc_runtime_mutex);
 }
 
+/* Temporary definition while we include objc/objc-api.h instead of
+   objc-private/module-abi-8.h.  It should go away once we include
+   module-abi-8.h.  */
+struct objc_method_description_list
+{
+  int count;
+  struct objc_method_description list[1];
+};
+
+/* The same as __objc_register_selectors_from_list, but works on a
+   struct objc_method_description_list* instead of a struct
+   objc_method_list*.  This is only used for protocols, which have
+   lists of method descriptions, not methods.
+   */
+void
+__objc_register_selectors_from_description_list 
+(struct objc_method_description_list *method_list)
+{
+  int i = 0;
+  
+  objc_mutex_lock (__objc_runtime_mutex);
+  while (i < method_list->count)
+    {
+      struct objc_method_description *method = &method_list->list[i];
+      if (method->name)
+	{
+	  method->name
+	    = __sel_register_typed_name ((const char *) method->name,
+					 method->types, 0, YES);
+	}
+      i += 1;
+    }
+  objc_mutex_unlock (__objc_runtime_mutex);
+}
 
 /* Register instance methods as class methods for root classes */
 void __objc_register_instance_methods_to_class (Class class)
@@ -158,6 +196,14 @@ void __objc_register_instance_methods_to_class (Class class)
     __objc_update_dispatch_table_for_class (class->class_pointer);
 }
 
+BOOL
+sel_isEqual (SEL s1, SEL s2)
+{
+  if (s1 == 0 || s2 == 0)
+    return s1 == s2;
+  else
+    return s1->sel_id == s2->sel_id;
+}
 
 /* Returns YES iff t1 and t2 have same method types, but we ignore
    the argframe layout */
@@ -282,18 +328,14 @@ sel_get_any_uid (const char *name)
   return (SEL) l->head;
 }
 
-/* return selector representing name */
-SEL
-sel_get_uid (const char *name)
-{
-  return sel_register_typed_name (name, 0);
-}
-
 /* Get name of selector.  If selector is unknown, the empty string "" 
    is returned */ 
-const char *sel_get_name (SEL selector)
+const char *sel_getName (SEL selector)
 {
   const char *ret;
+
+  if (selector == NULL)
+    return "<null selector>";
 
   objc_mutex_lock (__objc_runtime_mutex);
   if ((soffset_decode ((sidx)selector->sel_id) > 0)
@@ -305,6 +347,15 @@ const char *sel_get_name (SEL selector)
   return ret;
 }
 
+/* Traditional GNU Objective-C Runtime API.  */
+const char *sel_get_name (SEL selector)
+{
+  if (selector == NULL)
+    return 0;
+
+  return sel_getName (selector);
+}
+
 BOOL
 sel_is_mapped (SEL selector)
 {
@@ -312,13 +363,18 @@ sel_is_mapped (SEL selector)
   return ((idx > 0) && (idx <= __objc_selector_max_index));
 }
 
-
-const char *sel_get_type (SEL selector)
+const char *sel_getType (SEL selector)
 {
   if (selector)
     return selector->sel_types;
   else
     return 0;
+}
+
+/* Traditional GNU Objective-C Runtime API.  */
+const char *sel_get_type (SEL selector)
+{
+  return sel_getType (selector);
 }
 
 /* The uninstalled dispatch table */
@@ -462,7 +518,7 @@ __sel_register_typed_name (const char *name, const char *types,
 }
 
 SEL
-sel_register_name (const char *name)
+sel_registerName (const char *name)
 {
   SEL ret;
     
@@ -475,8 +531,15 @@ sel_register_name (const char *name)
   return ret;
 }
 
+/* Traditional GNU Objective-C Runtime API.  */
 SEL
-sel_register_typed_name (const char *name, const char *type)
+sel_register_name (const char *name)
+{
+  return sel_registerName (name);
+}
+
+SEL
+sel_registerTypedName (const char *name, const char *type)
 {
   SEL ret;
 
@@ -487,4 +550,24 @@ sel_register_typed_name (const char *name, const char *type)
   objc_mutex_unlock (__objc_runtime_mutex);
   
   return ret;
+}
+
+SEL
+sel_register_typed_name (const char *name, const char *type)
+{
+  return sel_registerTypedName (name, type);
+}
+
+/* return selector representing name */
+SEL
+sel_getUid (const char *name)
+{
+  return sel_registerTypedName (name, 0);
+}
+
+/* Traditional GNU Objective-C Runtime API.  */
+SEL
+sel_get_uid (const char *name)
+{
+  return sel_getUid (name);
 }

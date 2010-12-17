@@ -214,17 +214,6 @@ extern size_t reg_info_p_size;
 
 extern short *reg_renumber;
 
-/* Vector indexed by machine mode saying whether there are regs of that mode.  */
-
-extern bool have_regs_of_mode [MAX_MACHINE_MODE];
-
-/* For each hard register, the widest mode object that it can contain.
-   This will be a MODE_INT mode if the register can hold integers.  Otherwise
-   it will be a MODE_FLOAT or a MODE_CC mode, whichever is valid for the
-   register.  */
-
-extern enum machine_mode reg_raw_mode[FIRST_PSEUDO_REGISTER];
-
 /* Flag set by local-alloc or global-alloc if they decide to allocate
    something in a call-clobbered register.  */
 
@@ -236,12 +225,6 @@ extern int caller_save_needed;
 
 #ifndef CALLER_SAVE_PROFITABLE
 #define CALLER_SAVE_PROFITABLE(REFS, CALLS)  (4 * (CALLS) < (REFS))
-#endif
-
-/* On most machines a register class is likely to be spilled if it
-   only has one register.  */
-#ifndef CLASS_LIKELY_SPILLED_P
-#define CLASS_LIKELY_SPILLED_P(CLASS) (reg_class_size[(int) (CLASS)] == 1)
 #endif
 
 /* Select a register mode required for caller save of hard regno REGNO.  */
@@ -256,26 +239,79 @@ extern int caller_save_needed;
 #define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE) 0
 #endif
 
-/* 1 if the corresponding class does contain register of given
-   mode.  */
-extern char contains_reg_of_mode [N_REG_CLASSES] [MAX_MACHINE_MODE];
-
 typedef unsigned short move_table[N_REG_CLASSES];
 
-/* Maximum cost of moving from a register in one class to a register
-   in another class.  */
-extern move_table *move_cost[MAX_MACHINE_MODE];
+/* Target-dependent globals.  */
+struct target_regs {
+  /* For each starting hard register, the number of consecutive hard
+     registers that a given machine mode occupies.  */
+  unsigned char x_hard_regno_nregs[FIRST_PSEUDO_REGISTER][MAX_MACHINE_MODE];
 
-/* Specify number of hard registers given machine mode occupy.  */
-extern unsigned char hard_regno_nregs[FIRST_PSEUDO_REGISTER][MAX_MACHINE_MODE];
+  /* For each hard register, the widest mode object that it can contain.
+     This will be a MODE_INT mode if the register can hold integers.  Otherwise
+     it will be a MODE_FLOAT or a MODE_CC mode, whichever is valid for the
+     register.  */
+  enum machine_mode x_reg_raw_mode[FIRST_PSEUDO_REGISTER];
 
-/* Similar, but here we don't have to move if the first index is a
-   subset of the second so in that case the cost is zero.  */
-extern move_table *may_move_in_cost[MAX_MACHINE_MODE];
+  /* Vector indexed by machine mode saying whether there are regs of
+     that mode.  */
+  bool x_have_regs_of_mode[MAX_MACHINE_MODE];
 
-/* Similar, but here we don't have to move if the first index is a
-   superset of the second so in that case the cost is zero.  */
-extern move_table *may_move_out_cost[MAX_MACHINE_MODE];
+  /* 1 if the corresponding class contains a register of the given mode.  */
+  char x_contains_reg_of_mode[N_REG_CLASSES][MAX_MACHINE_MODE];
+
+  /* Maximum cost of moving from a register in one class to a register
+     in another class.  Based on TARGET_REGISTER_MOVE_COST.  */
+  move_table *x_move_cost[MAX_MACHINE_MODE];
+
+  /* Similar, but here we don't have to move if the first index is a
+     subset of the second so in that case the cost is zero.  */
+  move_table *x_may_move_in_cost[MAX_MACHINE_MODE];
+
+  /* Similar, but here we don't have to move if the first index is a
+     superset of the second so in that case the cost is zero.  */
+  move_table *x_may_move_out_cost[MAX_MACHINE_MODE];
+
+  /* Keep track of the last mode we initialized move costs for.  */
+  int x_last_mode_for_init_move_cost;
+
+  /* Record for each mode whether we can move a register directly to or
+     from an object of that mode in memory.  If we can't, we won't try
+     to use that mode directly when accessing a field of that mode.  */
+  char x_direct_load[NUM_MACHINE_MODES];
+  char x_direct_store[NUM_MACHINE_MODES];
+
+  /* Record for each mode whether we can float-extend from memory.  */
+  bool x_float_extend_from_mem[NUM_MACHINE_MODES][NUM_MACHINE_MODES];
+};
+
+extern struct target_regs default_target_regs;
+#if SWITCHABLE_TARGET
+extern struct target_regs *this_target_regs;
+#else
+#define this_target_regs (&default_target_regs)
+#endif
+
+#define hard_regno_nregs \
+  (this_target_regs->x_hard_regno_nregs)
+#define reg_raw_mode \
+  (this_target_regs->x_reg_raw_mode)
+#define have_regs_of_mode \
+  (this_target_regs->x_have_regs_of_mode)
+#define contains_reg_of_mode \
+  (this_target_regs->x_contains_reg_of_mode)
+#define move_cost \
+  (this_target_regs->x_move_cost)
+#define may_move_in_cost \
+  (this_target_regs->x_may_move_in_cost)
+#define may_move_out_cost \
+  (this_target_regs->x_may_move_out_cost)
+#define direct_load \
+  (this_target_regs->x_direct_load)
+#define direct_store \
+  (this_target_regs->x_direct_store)
+#define float_extend_from_mem \
+  (this_target_regs->x_float_extend_from_mem)
 
 /* Return an exclusive upper bound on the registers occupied by hard
    register (reg:MODE REGNO).  */

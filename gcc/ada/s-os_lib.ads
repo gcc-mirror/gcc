@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1995-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -203,8 +203,9 @@ package System.OS_Lib is
      (Name  : String;
       Fmode : Mode) return File_Descriptor;
    --  Creates new file with given name for writing, returning file descriptor
-   --  for subsequent use in Write calls. File descriptor returned is
-   --  Invalid_FD if file cannot be successfully created.
+   --  for subsequent use in Write calls. If the file already exists, it is
+   --  overwritten. File descriptor returned is Invalid_FD if file cannot be
+   --  successfully created.
 
    function Create_Output_Text_File (Name : String) return File_Descriptor;
    --  Creates new text file with given name suitable to redirect standard
@@ -687,9 +688,8 @@ package System.OS_Lib is
    --  (notably Unix systems) a simple file name may also work (if the
    --  executable can be located in the path).
    --
-   --  "Spawn" should be avoided in tasking applications, since there are
-   --  subtle interactions between creating a process and signals/locks
-   --  that can cause troubles.
+   --  Spawning processes from tasking programs is not recommended. See
+   --  "NOTE: Spawn in tasking programs" below.
    --
    --  Note: Arguments in Args that contain spaces and/or quotes such as
    --  "--GCC=gcc -v" or "--GCC=""gcc -v""" are not portable across all
@@ -716,7 +716,8 @@ package System.OS_Lib is
    --  by the operating system, or -1 under VxWorks and any other similar
    --  operating systems which have no notion of separately spawnable programs.
    --
-   --  "Spawn" should not be used in tasking applications.
+   --  Spawning processes from tasking programs is not recommended. See
+   --  "NOTE: Spawn in tasking programs" below.
 
    procedure Spawn
      (Program_Name           : String;
@@ -729,7 +730,8 @@ package System.OS_Lib is
    --  Standard Error output is also redirected.
    --  Return_Code is set to the status code returned by the operating system
    --
-   --  "Spawn" should not be used in tasking applications.
+   --  Spawning processes from tasking programs is not recommended. See
+   --  "NOTE: Spawn in tasking programs" below.
 
    procedure Spawn
      (Program_Name : String;
@@ -746,7 +748,8 @@ package System.OS_Lib is
    --  will be set to the status code returned by the operating system.
    --  Otherwise, Return_Code is undefined.
    --
-   --  "Spawn" should not be used in tasking applications.
+   --  Spawning processes from tasking programs is not recommended. See
+   --  "NOTE: Spawn in tasking programs" below.
 
    type Process_Id is private;
    --  A private type used to identify a process activated by the following
@@ -767,7 +770,8 @@ package System.OS_Lib is
    --  returned. Parameters are to be used as in Spawn. If Invalid_Pid is
    --  returned the program could not be spawned.
    --
-   --  "Non_Blocking_Spawn" should not be used in tasking applications.
+   --  Spawning processes from tasking programs is not recommended. See
+   --  "NOTE: Spawn in tasking programs" below.
    --
    --  This function will always return Invalid_Pid under VxWorks, since there
    --  is no notion of executables under this OS.
@@ -782,7 +786,8 @@ package System.OS_Lib is
    --  Standard Error output is also redirected. Invalid_Pid is returned
    --  if the program could not be spawned successfully.
    --
-   --  "Non_Blocking_Spawn" should not be used in tasking applications.
+   --  Spawning processes from tasking programs is not recommended. See
+   --  "NOTE: Spawn in tasking programs" below.
    --
    --  This function will always return Invalid_Pid under VxWorks, since there
    --  is no notion of executables under this OS.
@@ -800,7 +805,8 @@ package System.OS_Lib is
    --  file could not be created or if the program could not be spawned
    --  successfully.
    --
-   --  "Non_Blocking_Spawn" should not be used in tasking applications.
+   --  Spawning processes from tasking programs is not recommended. See
+   --  "NOTE: Spawn in tasking programs" below.
    --
    --  This function will always return Invalid_Pid under VxWorks, since there
    --  is no notion of executables under this OS.
@@ -825,6 +831,70 @@ package System.OS_Lib is
    --  Argument_List. Note that the result is allocated on the heap, and must
    --  be freed by the programmer (when it is no longer needed) to avoid
    --  memory leaks.
+
+   -------------------------------------
+   -- NOTE: Spawn in Tasking Programs --
+   -------------------------------------
+
+   --  Spawning processes in tasking programs using the above Spawn and
+   --  Non_Blocking_Spawn subprograms is not recommended, because there are
+   --  subtle interactions between creating a process and signals/locks that
+   --  can cause trouble. These issues are not specific to Ada; they depend
+   --  primarily on the operating system.
+
+   --  If you need to spawn processes in a tasking program, you will need to
+   --  understand the semantics of your operating system, and you are likely to
+   --  write non-portable code, because operating systems differ in this area.
+
+   --  The Spawn and Non_Blocking_Spawn subprograms call the following
+   --  operating system functions:
+
+   --     On Windows: spawnvp (blocking) or CreateProcess (non-blocking)
+
+   --     On Solaris: fork1, followed in the child process by execv
+
+   --     On other Unix-like systems, and on VMS: fork, followed in the child
+   --     process by execv.
+
+   --     On vxworks, nucleus, and RTX, spawning of processes is not supported
+
+   --  For details, look at the functions __gnat_portable_spawn and
+   --  __gnat_portable_no_block_spawn in adaint.c.
+
+   --  You should read the operating-system-specific documentation for the
+   --  above functions, paying special attention to subtle interactions with
+   --  threading, signals, locks, and file descriptors. Most of the issues are
+   --  related to the fact that on Unix, there is a window of time between fork
+   --  and execv; Windows does not have this problem, because spawning is done
+   --  in a single operation.
+
+   --  On Posix-compliant systems, such as Linux, fork duplicates just the
+   --  calling thread. (On Solaris, fork1 is the Posix-compliant version of
+   --  fork.)
+
+   --  You should avoid using signals while spawning. This includes signals
+   --  used internally by the Ada run-time system, such as timer signals used
+   --  to implement delay statements.
+
+   --  It is best to spawn any subprocesses very early, before the parent
+   --  process creates tasks, locks, or installs signal handlers. Certainly
+   --  avoid doing simultaneous spawns from multiple threads of the same
+   --  process.
+
+   --  There is no problem spawning a subprocess that uses tasking: the
+   --  problems are caused only by tasking in the parent.
+
+   --  If the parent is using tasking, and needs to spawn subprocesses at
+   --  arbitrary times, one technique is for the parent to spawn (very early)
+   --  a particular spawn-manager subprocess whose job is to spawn other
+   --  processes. The spawn-manager avoids tasking. The parent sends messages
+   --  to the spawn-manager requesting it to spawn processes, using whatever
+   --  inter-process communication mechanism you like, such as sockets.
+
+   --  In short, mixing spawning of subprocesses with tasking is a tricky
+   --  business, and should be avoided if possible, but if it is necessary,
+   --  the above guidelines should be followed, and you should beware of
+   --  portability problems.
 
    -------------------
    -- Miscellaneous --

@@ -1,6 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
-/* { dg-options "-O2 -march=i686" } */
+/* { dg-options "-O2 -mfancy-math-387" } */
 /* { dg-final { scan-assembler "fldpi" } } */
 
 long double atanl (long double);

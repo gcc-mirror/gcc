@@ -185,8 +185,9 @@ upc_expand_put (location_t loc, tree dest_addr, tree src, gimple_seq *pre_p)
   lib_args = tree_cons (NULL_TREE, dest_addr, NULL_TREE);
   if (op_mode == BLKmode)
     {
-      if (!is_gimple_addressable (src)
-          || is_gimple_non_addressable (src))
+      if (!(is_src_shared && INDIRECT_REF_P (src))
+          && (!is_gimple_addressable (src)
+              || is_gimple_non_addressable (src)))
         {
 	  /* We can't address the object - we have to copy
 	     to a local (non-shared) temporary.  */
@@ -275,8 +276,6 @@ upc_gimplify_lval (location_t loc, tree *expr_p,
         return upc_gimplify_field_ref (loc, expr_p, pre_p, post_p);
       break;
     case INDIRECT_REF:
-    case ALIGN_INDIRECT_REF:
-    case MISALIGNED_INDIRECT_REF:
       if (type0 && (TREE_CODE (type0) == POINTER_TYPE)
            && upc_shared_type_p (TREE_TYPE (type0)))
         return upc_gimplify_indirect_ref (loc, expr_p, pre_p, post_p);
@@ -934,8 +933,6 @@ upc_gimplify_expr (tree *expr_p,
       break;
 
     case INDIRECT_REF:
-    case ALIGN_INDIRECT_REF:
-    case MISALIGNED_INDIRECT_REF:
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
     case REALPART_EXPR:
@@ -1087,6 +1084,9 @@ upc_genericize (tree fndecl)
      now, and should be renamed.  */
   c_genericize (fndecl);
   /* Perform a full gimplify pass, because the UPC lowering rewrites
-     are implemented using the gimplify framework.  */
+     are implemented using the gimplify framework.  (The default
+     bitmap is used by the gimplify pass and must be initialized.) */
+  bitmap_obstack_initialize (NULL);
   gimplify_function_tree (fndecl);
+  bitmap_obstack_release (NULL);
 }

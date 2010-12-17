@@ -47,6 +47,10 @@
 // Define the base class to std::allocator.
 #include <bits/c++allocator.h>
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#include <type_traits> // For _GLIBCXX_HAS_NESTED_TYPE
+#endif
+
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
@@ -177,28 +181,55 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-   // A very basic implementation for now.  In general we have to wait for
-   // the availability of the infrastructure described in N2983:  we should
-   // try when either T has a move constructor which cannot throw or T is
-   // CopyContructible.
-   // NB: This code doesn't properly belong here, we should find a more
-   // suited place common to std::vector and std::deque.
-   template<typename _Tp,
-	    bool = __has_trivial_copy(typename _Tp::value_type)>
-     struct __shrink_to_fit
-     { static void _S_do_it(_Tp&) { } };
+  // A very basic implementation for now.  In general we have to wait for
+  // the availability of the infrastructure described in N2983:  we should
+  // try when either T has a move constructor which cannot throw or T is
+  // CopyContructible.
+  // NB: This code doesn't properly belong here, we should find a more
+  // suited place common to std::vector and std::deque.
+  template<typename _Tp,
+	   bool = __has_trivial_copy(typename _Tp::value_type)>
+    struct __shrink_to_fit
+    { static void _S_do_it(_Tp&) { } };
 
-   template<typename _Tp>
-     struct __shrink_to_fit<_Tp, true>
-     {
-       static void
-       _S_do_it(_Tp& __v)
-       {
-	 __try
-	   { _Tp(__v).swap(__v); }
-	 __catch(...) { }
-       }
-     };
+  template<typename _Tp>
+    struct __shrink_to_fit<_Tp, true>
+    {
+      static void
+      _S_do_it(_Tp& __v)
+      {
+	__try
+	  { _Tp(__v).swap(__v); }
+	__catch(...) { }
+      }
+    };
+
+
+  /// [allocator.tag]
+  struct allocator_arg_t { };
+
+  constexpr allocator_arg_t allocator_arg = allocator_arg_t();
+
+_GLIBCXX_HAS_NESTED_TYPE(allocator_type)
+
+  template<typename _Tp, typename _Alloc,
+	   bool = __has_allocator_type<_Tp>::value>
+    struct __uses_allocator_helper
+    : public false_type { };
+
+  template<typename _Tp, typename _Alloc>
+    struct __uses_allocator_helper<_Tp, _Alloc, true>
+    : public integral_constant<bool, is_convertible<_Alloc,
+				     typename _Tp::allocator_type>::value>
+    { };
+
+  /// [allocator.uses.trait]
+  template<typename _Tp, typename _Alloc>
+    struct uses_allocator
+    : public integral_constant<bool,
+			       __uses_allocator_helper<_Tp, _Alloc>::value>
+    { };
+
 #endif
 
 _GLIBCXX_END_NAMESPACE

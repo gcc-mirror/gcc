@@ -118,6 +118,12 @@ DEFPARAM (PARAM_EARLY_INLINER_MAX_ITERATIONS,
 	  10, 0, 0)
 
 /* Limit on probability of entry BB.  */
+DEFPARAM (PARAM_COMDAT_SHARING_PROBABILITY,
+	  "comdat-sharing-probability",
+	  "Probability that COMDAT function will be shared with different compilatoin unit",
+	  20, 0, 0)
+
+/* Limit on probability of entry BB.  */
 DEFPARAM (PARAM_PARTIAL_INLINING_ENTRY_PROBABILITY,
 	  "partial-inlining-entry-probability",
 	  "Maximum probability of the entry BB of split region (in percent relative to entry BB of the function) to make partial inlining happen",
@@ -191,7 +197,7 @@ DEFPARAM(PARAM_IPCP_UNIT_GROWTH,
 DEFPARAM(PARAM_EARLY_INLINING_INSNS,
 	 "early-inlining-insns",
 	 "Maximal estimated growth of function body caused by early inlining of single call",
-	 8, 0, 0)
+	 10, 0, 0)
 DEFPARAM(PARAM_LARGE_STACK_FRAME,
 	 "large-stack-frame",
 	 "The size of stack frame to be considered large",
@@ -225,6 +231,29 @@ DEFPARAM(PARAM_GCSE_AFTER_RELOAD_CRITICAL_FRACTION,
 	"gcse-after-reload-critical-fraction",
 	"The threshold ratio of critical edges execution count that permit performing redundancy elimination after reload",
         10, 0, 0)
+
+/* GCSE will use GCSE_COST_DISTANCE_RATION as a scaling factor
+   to calculate maximum distance for which an expression is allowed to move
+   from its rtx_cost.  */
+DEFPARAM(PARAM_GCSE_COST_DISTANCE_RATIO,
+	 "gcse-cost-distance-ratio",
+	 "Scaling factor in calculation of maximum distance an expression can be moved by GCSE optimizations",
+	 10, 0, 0)
+/* GCSE won't restrict distance for which an expression with rtx_cost greater
+   than COSTS_N_INSN(GCSE_UNRESTRICTED_COST) is allowed to move.  */
+DEFPARAM(PARAM_GCSE_UNRESTRICTED_COST,
+	 "gcse-unrestricted-cost",
+	 "Cost at which GCSE optimizations will not constraint the distance an expression can travel",
+	 3, 0, 0)
+
+/* How deep from a given basic block the dominator tree should be searched
+   for expressions to hoist to the block.  The value of 0 will avoid limiting
+   the search.  */
+DEFPARAM(PARAM_MAX_HOIST_DEPTH,
+	 "max-hoist-depth",
+	 "Maximum depth of search in the dominator tree for expressions to hoist",
+	 30, 0, 0)
+
 /* This parameter limits the number of insns in a loop that will be unrolled,
    and by how much the loop is unrolled.
 
@@ -444,7 +473,7 @@ DEFPARAM(PARAM_IV_ALWAYS_PRUNE_CAND_SET_BOUND,
 DEFPARAM(PARAM_SCEV_MAX_EXPR_SIZE,
  	 "scev-max-expr-size",
 	 "Bound on size of expressions used in the scalar evolutions analyzer",
-	 20, 0, 0)
+	 100, 0, 0)
 
 DEFPARAM(PARAM_OMEGA_MAX_VARS,
  	 "omega-max-vars",
@@ -809,6 +838,23 @@ DEFPARAM (PARAM_IPA_SRA_PTR_GROWTH_FACTOR,
 	  "a pointer to an aggregate with",
 	  2, 0, 0)
 
+DEFPARAM (PARAM_DEVIRT_TYPE_LIST_SIZE,
+	  "devirt-type-list-size",
+	  "Maximum size of a type list associated with each parameter for "
+	  "devirtualization",
+	  8, 0, 0)
+
+/* WHOPR partitioning configuration.  */
+
+DEFPARAM (PARAM_LTO_PARTITIONS,
+	  "lto-partitions",
+	  "Number of paritions program should be split to",
+	  32, 0, 0)
+
+DEFPARAM (MIN_PARTITION_SIZE,
+	  "lto-min-partition",
+	  "Size of minimal paritition for WHOPR (in estimated instructions)",
+	  1000, 0, 0)
 /*
 Local variables:
 mode:c

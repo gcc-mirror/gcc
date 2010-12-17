@@ -1,5 +1,5 @@
 /* Definitions of Tensilica's Xtensa target machine for GNU compiler.
-   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
@@ -21,9 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Get Xtensa configuration settings */
 #include "xtensa-config.h"
-
-/* Standard GCC variables that we reference.  */
-extern int optimize;
 
 /* External variables defined in xtensa.c.  */
 
@@ -74,20 +71,6 @@ extern unsigned xtensa_current_frame_size;
 #define HAVE_AS_TLS 0
 #endif
 
-#define OVERRIDE_OPTIONS override_options ()
-
-/* Reordering blocks for Xtensa is not a good idea unless the compiler
-   understands the range of conditional branches.  Currently all branch
-   relaxation for Xtensa is handled in the assembler, so GCC cannot do a
-   good job of reordering blocks.  Do not enable reordering unless it is
-   explicitly requested.  */
-#define OPTIMIZATION_OPTIONS(LEVEL, SIZE)				\
-  do									\
-    {									\
-      flag_reorder_blocks = 0;						\
-    }									\
-  while (0)
-
 
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS()					\
@@ -110,16 +93,6 @@ extern unsigned xtensa_current_frame_size;
 
 #define EXTRA_SPECS							\
   { "subtarget_cpp_spec", SUBTARGET_CPP_SPEC },
-
-#ifdef __XTENSA_EB__
-#define LIBGCC2_WORDS_BIG_ENDIAN 1
-#else
-#define LIBGCC2_WORDS_BIG_ENDIAN 0
-#endif
-
-/* Show we can debug even without a frame pointer.  */
-#define CAN_DEBUG_WITHOUT_FP
-
 
 /* Target machine storage layout */
 
@@ -547,9 +520,6 @@ extern const enum reg_class xtensa_regno_to_class[FIRST_PSEUDO_REGISTER];
    128-bit datatypes defined in TIE (e.g., for Vectra).  */
 #define STACK_BOUNDARY 128
 
-/* Functions do not pop arguments off the stack.  */
-#define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, SIZE) 0
-
 /* Use a fixed register window size of 8.  */
 #define WINDOW_SIZE 8
 
@@ -620,20 +590,6 @@ typedef struct xtensa_args
 
 #define INIT_CUMULATIVE_INCOMING_ARGS(CUM, FNTYPE, LIBNAME)		\
   init_cumulative_args (&CUM, 1)
-
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be available.)  */
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
-  function_arg_advance (&CUM, MODE, TYPE)
-
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-  function_arg (&CUM, MODE, TYPE, FALSE)
-
-#define FUNCTION_INCOMING_ARG(CUM, MODE, TYPE, NAMED) \
-  function_arg (&CUM, MODE, TYPE, TRUE)
-
-#define FUNCTION_ARG_BOUNDARY function_arg_boundary
 
 /* Profiling Xtensa code is typically done with the built-in profiling
    feature of Tensilica's instruction set simulator, which does not

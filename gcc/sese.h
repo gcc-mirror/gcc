@@ -55,9 +55,9 @@ typedef struct sese_s
 extern sese new_sese (edge, edge);
 extern void free_sese (sese);
 extern void sese_insert_phis_for_liveouts (sese, basic_block, edge, edge);
-extern void sese_adjust_liveout_phis (sese, htab_t, basic_block, edge, edge);
 extern void build_sese_loop_nests (sese);
-extern edge copy_bb_and_scalar_dependences (basic_block, sese, edge, htab_t);
+extern edge copy_bb_and_scalar_dependences (basic_block, sese, edge,
+					    VEC (tree, heap) *);
 extern struct loop *outermost_loop_in_sese (sese, basic_block);
 extern void insert_loop_close_phis (htab_t, loop_p);
 extern void insert_guard_phis (basic_block, edge, edge, htab_t, htab_t);
@@ -94,10 +94,6 @@ bb_in_region (basic_block bb, basic_block entry, basic_block exit)
        predecessors of EXIT are dominated by ENTRY.  */
     FOR_EACH_EDGE (e, ei, exit->preds)
       dominated_by_p (CDI_DOMINATORS, e->src, entry);
-
-    /* Check that there are no edges going out of the region: the
-       entry is post-dominated by the exit.  FIXME: This cannot be
-       checked right now as the CDI_POST_DOMINATORS are needed.  */
   }
 #endif
 
@@ -262,9 +258,6 @@ DEF_VEC_ALLOC_P (rename_map_elt, heap);
 extern void debug_rename_map (htab_t);
 extern hashval_t rename_map_elt_info (const void *);
 extern int eq_rename_map_elts (const void *, const void *);
-extern void set_rename (htab_t, tree, tree);
-extern void rename_nb_iterations (htab_t);
-extern void rename_sese_parameters (htab_t, sese);
 
 /* Constructs a new SCEV_INFO_STR structure for VAR and INSTANTIATED_BELOW.  */
 
@@ -313,9 +306,7 @@ recompute_all_dominators (void)
 {
   mark_irreducible_loops ();
   free_dominance_info (CDI_DOMINATORS);
-  free_dominance_info (CDI_POST_DOMINATORS);
   calculate_dominance_info (CDI_DOMINATORS);
-  calculate_dominance_info (CDI_POST_DOMINATORS);
 }
 
 typedef struct gimple_bb
@@ -387,6 +378,35 @@ nb_common_loops (sese region, gimple_bb_p gbb1, gimple_bb_p gbb2)
   loop_p common = find_common_loop (l1, l2);
 
   return sese_loop_depth (region, common);
+}
+
+/* Return true when DEF can be analyzed in REGION by the scalar
+   evolution analyzer.  */
+
+static inline bool
+scev_analyzable_p (tree def, sese region)
+{
+  loop_p loop;
+  tree scev;
+  tree type = TREE_TYPE (def);
+
+  /* When Graphite generates code for a scev, the code generator
+     expresses the scev in function of a single induction variable.
+     This is unsafe for floating point computations, as it may replace
+     a floating point sum reduction with a multiplication.  The
+     following test returns false for non integer types to avoid such
+     problems.  */
+  if (!INTEGRAL_TYPE_P (type)
+      && !POINTER_TYPE_P (type))
+    return false;
+
+  loop = loop_containing_stmt (SSA_NAME_DEF_STMT (def));
+  scev = scalar_evolution_in_region (region, loop, def);
+
+  return !chrec_contains_undetermined (scev)
+    && TREE_CODE (scev) != SSA_NAME
+    && (tree_does_not_contain_chrecs (scev)
+	|| evolution_function_is_affine_p (scev));
 }
 
 #endif

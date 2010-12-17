@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,24 +22,91 @@
 
 namespace gnu
 {
-#ifndef ATOMIC_INTEGRAL_LOCK_FREE
-# error "ATOMIC_INTEGRAL_LOCK_FREE must be a macro"
+#ifndef ATOMIC_CHAR_LOCK_FREE 
+# error "ATOMIC_CHAR_LOCK_FREE must be a macro"
 #else
-# if ATOMIC_INTEGRAL_LOCK_FREE != 0 \
-    && ATOMIC_INTEGRAL_LOCK_FREE != 1 && ATOMIC_INTEGRAL_LOCK_FREE != 2
-# error "ATOMIC_INTEGRAL_LOCK_FREE must be 0, 1, or 2"
+# if ATOMIC_CHAR_LOCK_FREE != 0 \
+    && ATOMIC_CHAR_LOCK_FREE != 1 && ATOMIC_CHAR_LOCK_FREE != 2
+# error "ATOMIC_CHAR_LOCK_FREE must be 0, 1, or 2"
+# endif
+#endif
+
+#ifndef ATOMIC_CHAR16_T_LOCK_FREE 
+# error "ATOMIC_CHAR16_T_LOCK_FREE must be a macro"
+#else
+# if ATOMIC_CHAR16_T_LOCK_FREE != 0 \
+    && ATOMIC_CHAR16_T_LOCK_FREE != 1 && ATOMIC_CHAR16_T_LOCK_FREE != 2
+# error "ATOMIC_CHAR16_T_LOCK_FREE must be 0, 1, or 2"
+# endif
+#endif
+
+#ifndef ATOMIC_CHAR32_T_LOCK_FREE 
+# error "ATOMIC_CHAR32_T_LOCK_FREE must be a macro"
+#else
+# if ATOMIC_CHAR32_T_LOCK_FREE != 0 \
+    && ATOMIC_CHAR32_T_LOCK_FREE != 1 && ATOMIC_CHAR32_T_LOCK_FREE != 2
+# error "ATOMIC_CHAR32_T_LOCK_FREE must be 0, 1, or 2"
+# endif
+#endif
+
+#ifndef ATOMIC_WCHAR_T_LOCK_FREE 
+# error "ATOMIC_WCHAR_T_LOCK_FREE must be a macro"
+#else
+# if ATOMIC_WCHAR_T_LOCK_FREE != 0 \
+    && ATOMIC_WCHAR_T_LOCK_FREE != 1 && ATOMIC_WCHAR_T_LOCK_FREE != 2
+# error "ATOMIC_WCHAR_T_LOCK_FREE must be 0, 1, or 2"
+# endif
+#endif
+
+#ifndef ATOMIC_SHORT_LOCK_FREE 
+# error "ATOMIC_SHORT_LOCK_FREE must be a macro"
+#else
+# if ATOMIC_SHORT_LOCK_FREE != 0 \
+    && ATOMIC_SHORT_LOCK_FREE != 1 && ATOMIC_SHORT_LOCK_FREE != 2
+# error "ATOMIC_SHORT_LOCK_FREE must be 0, 1, or 2"
+# endif
+#endif
+
+#ifndef ATOMIC_INT_LOCK_FREE 
+# error "ATOMIC_INT_LOCK_FREE must be a macro"
+#else
+# if ATOMIC_INT_LOCK_FREE != 0 \
+    && ATOMIC_INT_LOCK_FREE != 1 && ATOMIC_INT_LOCK_FREE != 2
+# error "ATOMIC_INT_LOCK_FREE must be 0, 1, or 2"
+# endif
+#endif
+
+#ifndef ATOMIC_LONG_LOCK_FREE 
+# error "ATOMIC_LONG_LOCK_FREE must be a macro"
+#else
+# if ATOMIC_LONG_LOCK_FREE != 0 \
+    && ATOMIC_LONG_LOCK_FREE != 1 && ATOMIC_LONG_LOCK_FREE != 2
+# error "ATOMIC_LONG_LOCK_FREE must be 0, 1, or 2"
+# endif
+#endif
+
+#ifndef ATOMIC_LLONG_LOCK_FREE 
+# error "ATOMIC_LLONG_LOCK_FREE must be a macro"
+#else
+# if ATOMIC_LLONG_LOCK_FREE != 0 \
+    && ATOMIC_LLONG_LOCK_FREE != 1 && ATOMIC_LLONG_LOCK_FREE != 2
+# error "ATOMIC_LLONG_LOCK_FREE must be 0, 1, or 2"
 # endif
 #endif
 
 #ifndef ATOMIC_ADDRESS_LOCK_FREE
 # error "ATOMIC_ADDRESS_LOCK_FREE must be a macro"
-# if ATOMIC_INTEGRAL_LOCK_FREE != 0 \
-    && ATOMIC_INTEGRAL_LOCK_FREE != 1 && ATOMIC_INTEGRAL_LOCK_FREE != 2
-# error "ATOMIC_INTEGRAL_LOCK_FREE must be 0, 1, or 2"
+# if ATOMIC_ADDRESS_LOCK_FREE != 0 \
+    && ATOMIC_ADDRESS_LOCK_FREE != 1 && ATOMIC_ADDRESS_LOCK_FREE != 2
+# error "ATOMIC_ADDRESS_LOCK_FREE must be 0, 1, or 2"
 # endif
 #endif
 
 #ifndef ATOMIC_FLAG_INIT
     #error "ATOMIC_FLAG_INIT_must_be_a_macro"
+#endif
+
+#ifndef ATOMIC_VAR_INIT
+    #error "ATOMIC_VAR_INIT_must_be_a_macro"
 #endif
 }

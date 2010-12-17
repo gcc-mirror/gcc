@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler,
    for Motorola M*CORE Processor.
    Copyright (C) 1993, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007,
-   2008, 2009 Free Software Foundation, Inc.
+   2008, 2009, 2010 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -85,36 +85,6 @@ extern char * mcore_current_function_name;
 /* The MCore ABI says that bitfields are unsigned by default.  */
 #define CC1_SPEC "-funsigned-bitfields"
 
-/* What options are we going to default to specific settings when
-   -O* happens; the user can subsequently override these settings.
-  
-   Omitting the frame pointer is a very good idea on the MCore.
-   Scheduling isn't worth anything on the current MCore implementation.  */
-#define OPTIMIZATION_OPTIONS(LEVEL,SIZE)	\
-{						\
-  if (LEVEL)					\
-    {						\
-      flag_no_function_cse = 1;			\
-      flag_omit_frame_pointer = 1;		\
-						\
-      if (LEVEL >= 2)				\
-        {					\
-          flag_caller_saves = 0;		\
-          flag_schedule_insns = 0;		\
-          flag_schedule_insns_after_reload = 0;	\
-        }					\
-    }						\
-  if (SIZE)					\
-    {						\
-      target_flags &= ~MASK_HARDLIT;		\
-    }						\
-}
-
-/* What options are we going to force to specific settings,
-   regardless of what the user thought he wanted.
-   We also use this for some post-processing of options.  */
-#define OVERRIDE_OPTIONS  mcore_override_options ()
-
 /* Target machine storage Layout.  */
 
 #define PROMOTE_MODE(MODE,UNSIGNEDP,TYPE)  	\
@@ -136,12 +106,6 @@ extern char * mcore_current_function_name;
    numbered.  */
 #define WORDS_BIG_ENDIAN (! TARGET_LITTLE_END)
 
-#define LIBGCC2_WORDS_BIG_ENDIAN 1
-#ifdef __MCORELE__
-#undef  LIBGCC2_WORDS_BIG_ENDIAN
-#define LIBGCC2_WORDS_BIG_ENDIAN 0
-#endif
-
 #define MAX_BITS_PER_WORD 32
 
 /* Width of a word, in units (bytes).  */
@@ -155,16 +119,10 @@ extern char * mcore_current_function_name;
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
 #define PARM_BOUNDARY  	32
 
-/* Doubles must be aligned to an 8 byte boundary.  */
-#define FUNCTION_ARG_BOUNDARY(MODE, TYPE) \
-  ((MODE != BLKmode && (GET_MODE_SIZE (MODE) == 8)) \
-   ? BIGGEST_ALIGNMENT : PARM_BOUNDARY)
-     
 /* Boundary (in *bits*) on which stack pointer should be aligned.  */
 #define STACK_BOUNDARY  (TARGET_8ALIGN ? 64 : 32)
 
 /* Largest increment in UNITS we allow the stack to grow in a single operation.  */
-extern int mcore_stack_increment;
 #define STACK_UNITS_MAXSTEP  4096
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
@@ -540,16 +498,6 @@ extern const enum reg_class reg_class_from_letter[];
 /* Offset of first parameter from the argument pointer register value.  */
 #define FIRST_PARM_OFFSET(FNDECL)  0
 
-/* Value is the number of byte of arguments automatically
-   popped when returning from a subroutine call.
-   FUNTYPE is the data type of the function (as a tree),
-   or for a library call it is an identifier node for the subroutine name.
-   SIZE is the number of bytes of arguments passed on the stack.
-
-   On the MCore, the callee does not pop any of its arguments that were passed
-   on the stack.  */
-#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) 0
-
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
@@ -605,18 +553,6 @@ extern const enum reg_class reg_class_from_letter[];
    the same reg.  */
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
   ((CUM) = 0)
-
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be
-   available.)  */
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	   \
- ((CUM) = (ROUND_REG ((CUM), (MODE))			   \
-	   + ((NAMED) * mcore_num_arg_regs (MODE, TYPE)))) \
-
-/* Define where to put the arguments to a function.  */
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-  mcore_function_arg (CUM, MODE, TYPE, NAMED)
 
 /* Call the function profiler with a given profile label.  */
 #define FUNCTION_PROFILER(STREAM,LABELNO)		\
@@ -816,6 +752,8 @@ extern const enum reg_class reg_class_from_letter[];
 /* Switch into a generic section.  */
 #undef  TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION  mcore_asm_named_section
+
+#define INCOMING_RETURN_ADDR_RTX gen_rtx_REG (SImode, LK_REG)
 
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */

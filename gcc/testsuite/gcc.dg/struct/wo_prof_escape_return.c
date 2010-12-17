@@ -1,5 +1,3 @@
-/* { dg-options "-O3 -fno-inline -fdump-ipa-all -fipa-struct-reorg -fwhole-program -combine" } */
-/* { dg-do compile } */
 /* { dg-do run } */
 
 #include <stdlib.h>
@@ -29,5 +27,5 @@ main ()
 }
 
 /*--------------------------------------------------------------------------*/
-/* { dg-final { scan-ipa-dump "is return type of function...Excluded" "ipa_struct_reorg" } } */
+/* { dg-final { scan-ipa-dump "is return type of function...Excluded" "ipa_struct_reorg" { xfail *-*-* } } } */
 /* { dg-final { cleanup-ipa-dump "*" } } */

@@ -27,8 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "vecprim.h"
 #include "vecir.h"
 #include "ggc.h"
-#include "tm.h"
-#include "hard-reg-set.h"
 #include "basic-block.h"
 #include "tree-ssa-operands.h"
 #include "tree-ssa-alias.h"
@@ -869,7 +867,6 @@ int gimple_call_arg_flags (const_gimple, unsigned);
 void gimple_call_reset_alias_info (gimple);
 bool gimple_assign_copy_p (gimple);
 bool gimple_assign_ssa_name_copy_p (gimple);
-bool gimple_assign_single_p (gimple);
 bool gimple_assign_unary_nop_p (gimple);
 void gimple_set_bb (gimple, struct basic_block_def *);
 void gimple_assign_set_rhs_from_tree (gimple_stmt_iterator *, tree);
@@ -879,7 +876,6 @@ tree gimple_get_lhs (const_gimple);
 void gimple_set_lhs (gimple, tree);
 void gimple_replace_lhs (gimple, tree);
 gimple gimple_copy (gimple);
-bool is_gimple_operand (const_tree);
 void gimple_set_modified (gimple, bool);
 void gimple_cond_get_ops_from_tree (tree, enum tree_code *, tree *, tree *);
 gimple gimple_build_cond_from_tree (tree, tree, tree);
@@ -887,6 +883,7 @@ void gimple_cond_set_condition_from_tree (gimple, tree);
 bool gimple_has_side_effects (const_gimple);
 bool gimple_rhs_has_side_effects (const_gimple);
 bool gimple_could_trap_p (gimple);
+bool gimple_could_trap_p_1 (gimple, bool, bool);
 bool gimple_assign_rhs_could_trap_p (gimple);
 void gimple_regimplify_operands (gimple, gimple_stmt_iterator *);
 bool empty_body_p (gimple_seq);
@@ -933,6 +930,8 @@ extern bool is_gimple_ip_invariant (const_tree);
 extern bool is_gimple_val (tree);
 /* Returns true iff T is a GIMPLE asm statement input.  */
 extern bool is_gimple_asm_val (tree);
+/* Returns true iff T is a valid address operand of a MEM_REF.  */
+bool is_gimple_mem_ref_addr (tree);
 /* Returns true iff T is a valid rhs for a MODIFY_EXPR where the LHS is a
    GIMPLE temporary, a renamed user variable, or something else,
    respectively.  */
@@ -942,8 +941,6 @@ extern bool is_gimple_mem_rhs (tree);
 /* Returns true iff T is a valid if-statement condition.  */
 extern bool is_gimple_condexpr (tree);
 
-/* Returns true iff T is a type conversion.  */
-extern bool is_gimple_cast (tree);
 /* Returns true iff T is a variable that does not need to live in memory.  */
 extern bool is_gimple_non_addressable (tree t);
 
@@ -955,6 +952,9 @@ extern tree get_call_expr_in (tree t);
 extern void recalculate_side_effects (tree);
 extern bool gimple_compare_field_offset (tree, tree);
 extern tree gimple_register_type (tree);
+extern tree gimple_register_canonical_type (tree);
+enum gtc_mode { GTC_MERGE = 0, GTC_DIAG = 1 };
+extern bool gimple_types_compatible_p (tree, tree, enum gtc_mode);
 extern void print_gimple_types_stats (void);
 extern void free_gimple_type_tables (void);
 extern tree gimple_unsigned_type (tree);
@@ -1900,7 +1900,10 @@ gimple_assign_rhs_code (const_gimple gs)
   enum tree_code code;
   GIMPLE_CHECK (gs, GIMPLE_ASSIGN);
 
-  code = gimple_expr_code (gs);
+  code = (enum tree_code) gs->gsbase.subcode;
+  /* While we initially set subcode to the TREE_CODE of the rhs for
+     GIMPLE_SINGLE_RHS assigns we do not update that subcode to stay
+     in sync when we rewrite stmts into SSA form or do SSA propagations.  */
   if (get_gimple_rhs_class (code) == GIMPLE_SINGLE_RHS)
     code = TREE_CODE (gimple_assign_rhs1 (gs));
 
@@ -1927,6 +1930,19 @@ static inline enum gimple_rhs_class
 gimple_assign_rhs_class (const_gimple gs)
 {
   return get_gimple_rhs_class (gimple_assign_rhs_code (gs));
+}
+
+/* Return true if GS is an assignment with a singleton RHS, i.e.,
+   there is no operator associated with the assignment itself.
+   Unlike gimple_assign_copy_p, this predicate returns true for
+   any RHS operand, including those that perform an operation
+   and do not have the semantics of a copy, such as COND_EXPR.  */
+
+static inline bool
+gimple_assign_single_p (gimple gs)
+{
+  return (is_gimple_assign (gs)
+          && gimple_assign_rhs_class (gs) == GIMPLE_SINGLE_RHS);
 }
 
 
@@ -2038,7 +2054,18 @@ gimple_call_fndecl (const_gimple gs)
 {
   tree addr = gimple_call_fn (gs);
   if (TREE_CODE (addr) == ADDR_EXPR)
-    return TREE_OPERAND (addr, 0);
+    {
+      tree fndecl = TREE_OPERAND (addr, 0);
+      if (TREE_CODE (fndecl) == MEM_REF)
+	{
+	  if (TREE_CODE (TREE_OPERAND (fndecl, 0)) == ADDR_EXPR
+	      && integer_zerop (TREE_OPERAND (fndecl, 1)))
+	    return TREE_OPERAND (TREE_OPERAND (fndecl, 0), 0);
+	  else
+	    return NULL_TREE;
+	}
+      return TREE_OPERAND (addr, 0);
+    }
   return NULL_TREE;
 }
 
@@ -4858,10 +4885,11 @@ void gimplify_and_update_call_from_tree (gimple_stmt_iterator *, tree);
 tree gimple_fold_builtin (gimple);
 bool fold_stmt (gimple_stmt_iterator *);
 bool fold_stmt_inplace (gimple);
-tree maybe_fold_offset_to_reference (location_t, tree, tree, tree);
 tree maybe_fold_offset_to_address (location_t, tree, tree, tree);
+tree maybe_fold_offset_to_reference (location_t, tree, tree, tree);
 tree maybe_fold_stmt_addition (location_t, tree, tree, tree);
 tree get_symbol_constant_value (tree);
+tree canonicalize_constructor_val (tree);
 bool may_propagate_address_into_dereference (tree, tree);
 extern tree maybe_fold_and_comparisons (enum tree_code, tree, tree, 
 					enum tree_code, tree, tree);

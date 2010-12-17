@@ -37,8 +37,8 @@
 
 #include <utility>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // Adds a const reference to a non-reference type.
   template<typename _Tp>
     struct __add_c_ref
@@ -64,10 +64,10 @@ namespace std
     struct _Head_base<_Idx, _Head, true>
     : public _Head
     {
-      _Head_base()
+      constexpr _Head_base()
       : _Head() { }
 
-      _Head_base(const _Head& __h)
+      constexpr _Head_base(const _Head& __h)
       : _Head(__h) { }
 
       template<typename _UHead>
@@ -77,16 +77,17 @@ namespace std
       _Head&       _M_head()       { return *this; }
       const _Head& _M_head() const { return *this; }
     
-      void _M_swap_impl(_Head&) { /* no-op */ }
+      void 
+      _M_swap_impl(_Head&) { /* no-op */ }
     };
 
   template<std::size_t _Idx, typename _Head>
     struct _Head_base<_Idx, _Head, false>
     {
-      _Head_base()
+      constexpr _Head_base()
       : _M_head_impl() { }
 
-      _Head_base(const _Head& __h)
+      constexpr _Head_base(const _Head& __h)
       : _M_head_impl(__h) { }
 
       template<typename _UHead>
@@ -147,11 +148,11 @@ namespace std
       _Inherited&       _M_tail()       { return *this; }
       const _Inherited& _M_tail() const { return *this; }
 
-      _Tuple_impl()
+      constexpr _Tuple_impl()
       : _Inherited(), _Base() { }
 
       explicit 
-      _Tuple_impl(const _Head& __head, const _Tail&... __tail)
+      constexpr _Tuple_impl(const _Head& __head, const _Tail&... __tail)
       : _Inherited(__tail...), _Base(__head) { }
 
       template<typename _UHead, typename... _UTail> 
@@ -160,11 +161,10 @@ namespace std
 	: _Inherited(std::forward<_UTail>(__tail)...),
 	  _Base(std::forward<_UHead>(__head)) { }
 
-      _Tuple_impl(const _Tuple_impl& __in)
-      : _Inherited(__in._M_tail()), _Base(__in._M_head()) { }
+      constexpr _Tuple_impl(const _Tuple_impl&) = default;
 
       _Tuple_impl(_Tuple_impl&& __in)
-      : _Inherited(std::move(__in._M_tail())),
+      : _Inherited(std::move(__in._M_tail())), 
 	_Base(std::forward<_Head>(__in._M_head())) { }
 
       template<typename... _UElements>
@@ -226,37 +226,37 @@ namespace std
       typedef _Tuple_impl<0, _Elements...> _Inherited;
 
     public:
-      tuple()
+      constexpr tuple()
       : _Inherited() { }
 
       explicit
-      tuple(const _Elements&... __elements)
+      constexpr tuple(const _Elements&... __elements)
       : _Inherited(__elements...) { }
 
-      template<typename... _UElements>
+      template<typename... _UElements, typename = typename
+	       std::enable_if<sizeof...(_UElements)
+			      == sizeof...(_Elements)>::type>
         explicit
         tuple(_UElements&&... __elements)
 	: _Inherited(std::forward<_UElements>(__elements)...) {	}
 
-      tuple(const tuple&) = default;
+      constexpr tuple(const tuple&) = default;
 
       tuple(tuple&& __in)
       : _Inherited(static_cast<_Inherited&&>(__in)) { }
 
-      template<typename... _UElements>
+      template<typename... _UElements, typename = typename
+	       std::enable_if<sizeof...(_UElements)
+			      == sizeof...(_Elements)>::type>
         tuple(const tuple<_UElements...>& __in)
-	: _Inherited(static_cast<const _Tuple_impl<0, _UElements...>&>(__in))
-	{ }
+        : _Inherited(static_cast<const _Tuple_impl<0, _UElements...>&>(__in))
+        { }
 
-      template<typename... _UElements>
+      template<typename... _UElements, typename = typename
+	       std::enable_if<sizeof...(_UElements)
+			      == sizeof...(_Elements)>::type>
         tuple(tuple<_UElements...>&& __in)
-	: _Inherited(static_cast<_Tuple_impl<0, _UElements...>&&>(__in)) { }
-
-      // XXX http://gcc.gnu.org/ml/libstdc++/2008-02/msg00047.html
-      template<typename... _UElements>
-        tuple(tuple<_UElements...>& __in)
-	: _Inherited(static_cast<const _Tuple_impl<0, _UElements...>&>(__in))
-	{ }
+        : _Inherited(static_cast<_Tuple_impl<0, _UElements...>&&>(__in)) { }
 
       tuple&
       operator=(const tuple& __in)
@@ -272,7 +272,9 @@ namespace std
 	return *this;
       }
 
-      template<typename... _UElements>
+      template<typename... _UElements, typename = typename
+	       std::enable_if<sizeof...(_UElements)
+			      == sizeof...(_Elements)>::type>
         tuple&
         operator=(const tuple<_UElements...>& __in)
         {
@@ -280,7 +282,9 @@ namespace std
 	  return *this;
 	}
 
-      template<typename... _UElements>
+      template<typename... _UElements, typename = typename
+	       std::enable_if<sizeof...(_UElements)
+			      == sizeof...(_Elements)>::type>
         tuple&
         operator=(tuple<_UElements...>&& __in)
         {
@@ -292,7 +296,6 @@ namespace std
       swap(tuple& __in)
       { _Inherited::_M_swap_impl(__in); }
     };
-
 
   template<>  
     class tuple<>
@@ -308,11 +311,11 @@ namespace std
       typedef _Tuple_impl<0, _T1, _T2> _Inherited;
 
     public:
-      tuple()
+      constexpr tuple()
       : _Inherited() { }
 
       explicit
-      tuple(const _T1& __a1, const _T2& __a2)
+      constexpr tuple(const _T1& __a1, const _T2& __a2)
       : _Inherited(__a1, __a2) { }
 
       template<typename _U1, typename _U2>
@@ -320,7 +323,7 @@ namespace std
         tuple(_U1&& __a1, _U2&& __a2)
 	: _Inherited(std::forward<_U1>(__a1), std::forward<_U2>(__a2)) { }
 
-      tuple(const tuple&) = default;
+      constexpr tuple(const tuple&) = default;
 
       tuple(tuple&& __in)
       : _Inherited(static_cast<_Inherited&&>(__in)) { }
@@ -385,8 +388,8 @@ namespace std
         tuple&
         operator=(pair<_U1, _U2>&& __in)
         {
-	  this->_M_head() = std::move(__in.first);
-	  this->_M_tail()._M_head() = std::move(__in.second);
+	  this->_M_head() = std::forward<_U1>(__in.first);
+	  this->_M_tail()._M_head() = std::forward<_U2>(__in.second);
 	  return *this;
 	}
 
@@ -397,6 +400,74 @@ namespace std
 	swap(this->_M_head(), __in._M_head());
 	swap(this->_M_tail()._M_head(), __in._M_tail()._M_head());	
       }
+    };
+
+  /// tuple (1-element).
+  template<typename _T1>
+    class tuple<_T1> : public _Tuple_impl<0, _T1>
+    {
+      typedef _Tuple_impl<0, _T1> _Inherited;
+
+    public:
+      constexpr tuple()
+      : _Inherited() { }
+
+      explicit
+      constexpr tuple(const _T1& __a1)
+      : _Inherited(__a1) { }
+
+      template<typename _U1, typename = typename
+	       std::enable_if<std::is_convertible<_U1, _T1>::value>::type>
+        explicit
+        tuple(_U1&& __a1)
+	: _Inherited(std::forward<_U1>(__a1)) { }
+
+      constexpr tuple(const tuple&) = default;
+
+      tuple(tuple&& __in)
+      : _Inherited(static_cast<_Inherited&&>(__in)) { }
+
+      template<typename _U1>
+        tuple(const tuple<_U1>& __in)
+	: _Inherited(static_cast<const _Tuple_impl<0, _U1>&>(__in)) { }
+
+      template<typename _U1>
+        tuple(tuple<_U1>&& __in)
+	: _Inherited(static_cast<_Tuple_impl<0, _U1>&&>(__in)) { }
+
+      tuple&
+      operator=(const tuple& __in)
+      {
+	static_cast<_Inherited&>(*this) = __in;
+	return *this;
+      }
+
+      tuple&
+      operator=(tuple&& __in)
+      {
+	static_cast<_Inherited&>(*this) = std::move(__in);
+	return *this;
+      }
+
+      template<typename _U1>
+        tuple&
+        operator=(const tuple<_U1>& __in)
+        {
+	  static_cast<_Inherited&>(*this) = __in;
+	  return *this;
+	}
+
+      template<typename _U1>
+        tuple&
+        operator=(tuple<_U1>&& __in)
+        {
+	  static_cast<_Inherited&>(*this) = std::move(__in);
+	  return *this;
+	}
+
+      void
+      swap(tuple& __in)
+      { _Inherited::_M_swap_impl(__in); }
     };
 
 
@@ -549,27 +620,10 @@ namespace std
       return __result_type(std::forward<_Elements>(__args)...);
     }
 
-  template<typename _Tp, bool = is_array<_Tp>::value>
-    struct __pa_add_rvalue_reference_helper
-    { typedef typename std::add_rvalue_reference<_Tp>::type __type; };
-
-  template<typename _Tp>
-    struct __pa_add_rvalue_reference_helper<_Tp, true>
-    { typedef _Tp& __type; };
-
-  template<typename _Tp>
-    struct __pa_add_rvalue_reference
-    : public __pa_add_rvalue_reference_helper<_Tp>
-    { };
-
   template<typename... _Elements>
-    inline tuple<typename __pa_add_rvalue_reference<_Elements>::__type...>
-    pack_arguments(_Elements&&... __args)
-    {
-      typedef tuple<typename __pa_add_rvalue_reference<_Elements>::__type...>
-	__result_type;
-      return __result_type(std::forward<_Elements>(__args)...);
-    }
+    inline tuple<_Elements&&...>
+    forward_as_tuple(_Elements&&... __args)
+    { return tuple<_Elements&&...>(std::forward<_Elements>(__args)...); }
 
   template<std::size_t...> struct __index_holder { };    
 
@@ -738,7 +792,8 @@ namespace std
       __do_cons(tuple<_Args...>&& __tuple,
 		const _Index_tuple<_Indexes...>&)
       { return _Tp(std::forward<_Args>(get<_Indexes>(__tuple))...); }
-}
+
+_GLIBCXX_END_NAMESPACE
 
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 

@@ -97,6 +97,20 @@ The callgraph:
 #include "diagnostic-core.h"
 #include "rtl.h"
 #include "ipa-utils.h"
+#include "lto-streamer.h"
+
+const char * const ld_plugin_symbol_resolution_names[]=
+{
+  "",
+  "undef",
+  "prevailing_def",
+  "prevailing_def_ironly",
+  "preempted_reg",
+  "preempted_ir",
+  "resolved_ir",
+  "resolved_exec",
+  "resolved_dyn"
+};
 
 static void cgraph_node_remove_callers (struct cgraph_node *node);
 static inline void cgraph_edge_remove_caller (struct cgraph_edge *e);
@@ -554,24 +568,29 @@ cgraph_same_body_alias_1 (tree alias, tree decl)
   return alias_node;
 }
 
-/* Attempt to mark ALIAS as an alias to DECL.  Return TRUE if successful.
+/* Attempt to mark ALIAS as an alias to DECL.  Return alias node if successful
+   and NULL otherwise. 
    Same body aliases are output whenever the body of DECL is output,
    and cgraph_node (ALIAS) transparently returns cgraph_node (DECL).   */
 
-bool
+struct cgraph_node *
 cgraph_same_body_alias (tree alias, tree decl)
 {
 #ifndef ASM_OUTPUT_DEF
   /* If aliases aren't supported by the assembler, fail.  */
-  return false;
+  return NULL;
 #endif
 
   /*gcc_assert (!assembler_name_hash);*/
 
-  return cgraph_same_body_alias_1 (alias, decl) != NULL;
+  return cgraph_same_body_alias_1 (alias, decl);
 }
 
-void
+/* Add thunk alias into callgraph.  The alias declaration is ALIAS and it
+   alises DECL with an adjustments made into the first parameter.
+   See comments in thunk_adjust for detail on the parameters.  */
+
+struct cgraph_node *
 cgraph_add_thunk (tree alias, tree decl, bool this_adjusting,
 		  HOST_WIDE_INT fixed_offset, HOST_WIDE_INT virtual_value,
 		  tree virtual_offset,
@@ -588,23 +607,23 @@ cgraph_add_thunk (tree alias, tree decl, bool this_adjusting,
   
   node = cgraph_same_body_alias_1 (alias, decl);
   gcc_assert (node);
-#ifdef ENABLE_CHECKING
-  gcc_assert (!virtual_offset
-  	      || tree_int_cst_equal (virtual_offset, size_int (virtual_value)));
-#endif
+  gcc_checking_assert (!virtual_offset
+		       || tree_int_cst_equal (virtual_offset,
+					      size_int (virtual_value)));
   node->thunk.fixed_offset = fixed_offset;
   node->thunk.this_adjusting = this_adjusting;
   node->thunk.virtual_value = virtual_value;
   node->thunk.virtual_offset_p = virtual_offset != NULL;
   node->thunk.alias = real_alias;
   node->thunk.thunk_p = true;
+  return node;
 }
 
 /* Returns the cgraph node assigned to DECL or NULL if no cgraph node
    is assigned.  */
 
 struct cgraph_node *
-cgraph_get_node (tree decl)
+cgraph_get_node_or_alias (const_tree decl)
 {
   struct cgraph_node key, *node = NULL, **slot;
 
@@ -613,7 +632,30 @@ cgraph_get_node (tree decl)
   if (!cgraph_hash)
     return NULL;
 
-  key.decl = decl;
+  key.decl = CONST_CAST2 (tree, const_tree, decl);
+
+  slot = (struct cgraph_node **) htab_find_slot (cgraph_hash, &key,
+						 NO_INSERT);
+
+  if (slot && *slot)
+    node = *slot;
+  return node;
+}
+
+/* Returns the cgraph node assigned to DECL or NULL if no cgraph node
+   is assigned.  */
+
+struct cgraph_node *
+cgraph_get_node (const_tree decl)
+{
+  struct cgraph_node key, *node = NULL, **slot;
+
+  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
+
+  if (!cgraph_hash)
+    return NULL;
+
+  key.decl = CONST_CAST2 (tree, const_tree, decl);
 
   slot = (struct cgraph_node **) htab_find_slot (cgraph_hash, &key,
 						 NO_INSERT);
@@ -954,11 +996,9 @@ cgraph_create_edge_1 (struct cgraph_node *caller, struct cgraph_node *callee,
      have not been loaded yet.  */
   if (call_stmt)
     {
-#ifdef ENABLE_CHECKING
-      /* This is rather pricely check possibly trigerring construction of
-	 call stmt hashtable.  */
-      gcc_assert (!cgraph_edge (caller, call_stmt));
-#endif
+      /* This is a rather expensive check possibly trigerring
+	 construction of call stmt hashtable.  */
+      gcc_checking_assert (!cgraph_edge (caller, call_stmt));
 
       gcc_assert (is_gimple_call (call_stmt));
     }
@@ -1211,9 +1251,18 @@ cgraph_update_edges_for_call_stmt_node (struct cgraph_node *node,
 	{
 	  /* See if the edge is already there and has the correct callee.  It
 	     might be so because of indirect inlining has already updated
-	     it.  */
-	  if (new_call && e->callee && e->callee->decl == new_call)
-	    return;
+	     it.  We also might've cloned and redirected the edge.  */
+	  if (new_call && e->callee)
+	    {
+	      struct cgraph_node *callee = e->callee;
+	      while (callee)
+		{
+		  if (callee->decl == new_call
+		      || callee->former_clone_of == new_call)
+		    return;
+		  callee = callee->clone_of;
+		}
+	    }
 
 	  /* Otherwise remove edge and create new one; we can't simply redirect
 	     since function has changed, so inline plan and other information
@@ -1687,6 +1736,7 @@ cgraph_mark_needed_node (struct cgraph_node *node)
 void
 cgraph_mark_address_taken_node (struct cgraph_node *node)
 {
+  gcc_assert (!node->global.inlined_to);
   cgraph_mark_reachable_node (node);
   node->address_taken = 1;
 }
@@ -1777,6 +1827,10 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
     fprintf (f, " (inline copy in %s/%i)",
 	     cgraph_node_name (node->global.inlined_to),
 	     node->global.inlined_to->uid);
+  if (node->same_comdat_group)
+    fprintf (f, " (same comdat group as %s/%i)",
+	     cgraph_node_name (node->same_comdat_group),
+	     node->same_comdat_group->uid);
   if (node->clone_of)
     fprintf (f, " (clone of %s/%i)",
 	     cgraph_node_name (node->clone_of),
@@ -1825,8 +1879,9 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
     fprintf (f, " local");
   if (node->local.externally_visible)
     fprintf (f, " externally_visible");
-  if (node->local.used_from_object_file)
-    fprintf (f, " used_from_object_file");
+  if (node->resolution != LDPR_UNKNOWN)
+    fprintf (f, " %s",
+ 	     ld_plugin_symbol_resolution_names[(int)node->resolution]);
   if (node->local.finalized)
     fprintf (f, " finalized");
   if (node->local.disregard_inline_limits)
@@ -1839,6 +1894,10 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
     fprintf (f, " redefined_extern_inline");
   if (TREE_ASM_WRITTEN (node->decl))
     fprintf (f, " asm_written");
+  if (node->only_called_at_startup)
+    fprintf (f, " only_called_at_startup");
+  if (node->only_called_at_exit)
+    fprintf (f, " only_called_at_exit");
 
   fprintf (f, "\n  called by: ");
   for (edge = node->callers; edge; edge = edge->next_caller)
@@ -1952,20 +2011,43 @@ debug_cgraph (void)
 void
 change_decl_assembler_name (tree decl, tree name)
 {
-  gcc_assert (!assembler_name_hash);
+  struct cgraph_node *node;
+  void **slot;
   if (!DECL_ASSEMBLER_NAME_SET_P (decl))
+    SET_DECL_ASSEMBLER_NAME (decl, name);
+  else
     {
+      if (name == DECL_ASSEMBLER_NAME (decl))
+	return;
+
+      if (assembler_name_hash
+	  && TREE_CODE (decl) == FUNCTION_DECL
+	  && (node = cgraph_get_node_or_alias (decl)) != NULL)
+	{
+	  tree old_name = DECL_ASSEMBLER_NAME (decl);
+	  slot = htab_find_slot_with_hash (assembler_name_hash, old_name,
+					   decl_assembler_name_hash (old_name),
+					   NO_INSERT);
+	  /* Inline clones are not hashed.  */
+	  if (slot && *slot == node)
+	    htab_clear_slot (assembler_name_hash, slot);
+	}
+      if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
+	  && DECL_RTL_SET_P (decl))
+	warning (0, "%D renamed after being referenced in assembly", decl);
+
       SET_DECL_ASSEMBLER_NAME (decl, name);
-      return;
     }
-  if (name == DECL_ASSEMBLER_NAME (decl))
-    return;
-
-  if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
-      && DECL_RTL_SET_P (decl))
-    warning (0, "%D renamed after being referenced in assembly", decl);
-
-  SET_DECL_ASSEMBLER_NAME (decl, name);
+  if (assembler_name_hash
+      && TREE_CODE (decl) == FUNCTION_DECL
+      && (node = cgraph_get_node_or_alias (decl)) != NULL)
+    {
+      slot = htab_find_slot_with_hash (assembler_name_hash, name,
+				       decl_assembler_name_hash (name),
+				       INSERT);
+      gcc_assert (!*slot);
+      *slot = node;
+    }
 }
 
 /* Add a top-level asm statement to the list.  */
@@ -2039,6 +2121,9 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
   new_edge->inline_failed = e->inline_failed;
   new_edge->indirect_inlining_edge = e->indirect_inlining_edge;
   new_edge->lto_stmt_uid = stmt_uid;
+  /* Clone flags that depend on call_stmt availability manually.  */
+  new_edge->can_throw_external = e->can_throw_external;
+  new_edge->call_stmt_cannot_inline_p = e->call_stmt_cannot_inline_p;
   if (update_original)
     {
       e->count -= new_edge->count;
@@ -2077,7 +2162,6 @@ cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
   new_node->analyzed = n->analyzed;
   new_node->local = n->local;
   new_node->local.externally_visible = false;
-  new_node->local.used_from_object_file = false;
   new_node->local.local = true;
   new_node->local.vtable_method = false;
   new_node->global = n->global;
@@ -2102,7 +2186,7 @@ cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
 	n->count = 0;
     }
 
-  for (i = 0; VEC_iterate (cgraph_edge_p, redirect_callers, i, e); i++)
+  FOR_EACH_VEC_ELT (cgraph_edge_p, redirect_callers, i, e)
     {
       /* Redirect calls to the old version node to point to its new
 	 version.  */
@@ -2191,10 +2275,8 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
   size_t i;
   struct ipa_replace_map *map;
 
-#ifdef ENABLE_CHECKING
   if (!flag_wpa)
-    gcc_assert  (tree_versionable_function_p (old_decl));
-#endif
+    gcc_checking_assert  (tree_versionable_function_p (old_decl));
 
   /* Make a new FUNCTION_DECL tree node */
   if (!args_to_skip)
@@ -2217,13 +2299,15 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
      ??? We cannot use COMDAT linkage because there is no
      ABI support for this.  */
   DECL_EXTERNAL (new_node->decl) = 0;
+  if (DECL_ONE_ONLY (old_decl))
+    DECL_SECTION_NAME (new_node->decl) = NULL;
   DECL_COMDAT_GROUP (new_node->decl) = 0;
   TREE_PUBLIC (new_node->decl) = 0;
   DECL_COMDAT (new_node->decl) = 0;
   DECL_WEAK (new_node->decl) = 0;
   new_node->clone.tree_map = tree_map;
   new_node->clone.args_to_skip = args_to_skip;
-  for (i = 0; VEC_iterate (ipa_replace_map_p, tree_map, i, map); i++)
+  FOR_EACH_VEC_ELT (ipa_replace_map_p, tree_map, i, map)
     {
       tree var = map->new_tree;
 
@@ -2253,7 +2337,7 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
       struct cgraph_node *orig_node;
       for (orig_node = old_node; orig_node->clone_of; orig_node = orig_node->clone_of)
         ;
-      for (arg = DECL_ARGUMENTS (orig_node->decl); arg; arg = TREE_CHAIN (arg), oldi++)
+      for (arg = DECL_ARGUMENTS (orig_node->decl); arg; arg = DECL_CHAIN (arg), oldi++)
 	{
 	  if (bitmap_bit_p (old_node->clone.combined_args_to_skip, oldi))
 	    {
@@ -2269,7 +2353,6 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
   else
     new_node->clone.combined_args_to_skip = args_to_skip;
   new_node->local.externally_visible = 0;
-  new_node->local.used_from_object_file = 0;
   new_node->local.local = 1;
   new_node->lowered = true;
   new_node->reachable = true;
@@ -2320,7 +2403,7 @@ cgraph_function_body_availability (struct cgraph_node *node)
      AVAIL_AVAILABLE here?  That would be good reason to preserve this
      bit.  */
 
-  else if (DECL_REPLACEABLE_P (node->decl) && !DECL_EXTERNAL (node->decl))
+  else if (decl_replaceable_p (node->decl) && !DECL_EXTERNAL (node->decl))
     avail = AVAIL_OVERWRITABLE;
   else avail = AVAIL_AVAILABLE;
 
@@ -2430,15 +2513,50 @@ cgraph_make_decl_local (tree decl)
 
   if (TREE_CODE (decl) == VAR_DECL)
     DECL_COMMON (decl) = 0;
-  else if (TREE_CODE (decl) == FUNCTION_DECL)
+  else gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
+
+  if (DECL_COMDAT (decl))
     {
+      /* It is possible that we are linking against library defining same COMDAT
+	 function.  To avoid conflict we need to rename our local name of the
+	 function just in the case WHOPR partitioning decide to make it hidden
+	 to avoid cross partition references.  */
+      if (flag_wpa)
+	{
+	  const char *old_name;
+
+	  old_name  = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+	  if (TREE_CODE (decl) == FUNCTION_DECL)
+	    {
+	      struct cgraph_node *node = cgraph_get_node_or_alias (decl);
+	      change_decl_assembler_name (decl,
+					  clone_function_name (decl, "local"));
+	      if (node->local.lto_file_data)
+		lto_record_renamed_decl (node->local.lto_file_data,
+					 old_name,
+					 IDENTIFIER_POINTER
+					   (DECL_ASSEMBLER_NAME (decl)));
+	    }
+	  else if (TREE_CODE (decl) == VAR_DECL)
+	    {
+	      struct varpool_node *vnode = varpool_get_node (decl);
+	      /* change_decl_assembler_name will warn here on vtables because
+		 C++ frontend still sets TREE_SYMBOL_REFERENCED on them.  */
+	      SET_DECL_ASSEMBLER_NAME (decl,
+				       clone_function_name (decl, "local"));
+	      if (vnode->lto_file_data)
+		lto_record_renamed_decl (vnode->lto_file_data,
+					 old_name,
+					 IDENTIFIER_POINTER
+					   (DECL_ASSEMBLER_NAME (decl)));
+	    }
+	}
+      DECL_SECTION_NAME (decl) = 0;
       DECL_COMDAT (decl) = 0;
-      DECL_COMDAT_GROUP (decl) = 0;
-      DECL_WEAK (decl) = 0;
-      DECL_EXTERNAL (decl) = 0;
     }
-  else
-    gcc_unreachable ();
+  DECL_COMDAT_GROUP (decl) = 0;
+  DECL_WEAK (decl) = 0;
+  DECL_EXTERNAL (decl) = 0;
   TREE_PUBLIC (decl) = 0;
   if (!DECL_RTL_SET_P (decl))
     return;
@@ -2472,6 +2590,7 @@ cgraph_make_node_local (struct cgraph_node *node)
 
       node->local.externally_visible = false;
       node->local.local = true;
+      node->resolution = LDPR_PREVAILING_DEF_IRONLY;
       gcc_assert (cgraph_function_body_availability (node) == AVAIL_LOCAL);
     }
 }
@@ -2492,37 +2611,50 @@ cgraph_set_nothrow_flag (struct cgraph_node *node, bool nothrow)
    if any to READONLY.  */
 
 void
-cgraph_set_readonly_flag (struct cgraph_node *node, bool readonly)
+cgraph_set_const_flag (struct cgraph_node *node, bool readonly, bool looping)
 {
   struct cgraph_node *alias;
+  /* Static constructors and destructors without a side effect can be
+     optimized out.  */
+  if (!looping && readonly)
+    {
+      if (DECL_STATIC_CONSTRUCTOR (node->decl))
+	DECL_STATIC_CONSTRUCTOR (node->decl) = 0;
+      if (DECL_STATIC_DESTRUCTOR (node->decl))
+	DECL_STATIC_DESTRUCTOR (node->decl) = 0;
+    }
   TREE_READONLY (node->decl) = readonly;
+  DECL_LOOPING_CONST_OR_PURE_P (node->decl) = looping;
   for (alias = node->same_body; alias; alias = alias->next)
-    TREE_READONLY (alias->decl) = readonly;
+    {
+      TREE_READONLY (alias->decl) = readonly;
+      DECL_LOOPING_CONST_OR_PURE_P (alias->decl) = looping;
+    }
 }
 
 /* Set DECL_PURE_P on NODE's decl and on same_body aliases of NODE
    if any to PURE.  */
 
 void
-cgraph_set_pure_flag (struct cgraph_node *node, bool pure)
+cgraph_set_pure_flag (struct cgraph_node *node, bool pure, bool looping)
 {
   struct cgraph_node *alias;
+  /* Static constructors and destructors without a side effect can be
+     optimized out.  */
+  if (!looping && pure)
+    {
+      if (DECL_STATIC_CONSTRUCTOR (node->decl))
+	DECL_STATIC_CONSTRUCTOR (node->decl) = 0;
+      if (DECL_STATIC_DESTRUCTOR (node->decl))
+	DECL_STATIC_DESTRUCTOR (node->decl) = 0;
+    }
   DECL_PURE_P (node->decl) = pure;
+  DECL_LOOPING_CONST_OR_PURE_P (node->decl) = looping;
   for (alias = node->same_body; alias; alias = alias->next)
-    DECL_PURE_P (alias->decl) = pure;
-}
-
-/* Set DECL_LOOPING_CONST_OR_PURE_P on NODE's decl and on
-   same_body aliases of NODE if any to LOOPING_CONST_OR_PURE.  */
-
-void
-cgraph_set_looping_const_or_pure_flag (struct cgraph_node *node,
-				       bool looping_const_or_pure)
-{
-  struct cgraph_node *alias;
-  DECL_LOOPING_CONST_OR_PURE_P (node->decl) = looping_const_or_pure;
-  for (alias = node->same_body; alias; alias = alias->next)
-    DECL_LOOPING_CONST_OR_PURE_P (alias->decl) = looping_const_or_pure;
+    {
+      DECL_PURE_P (alias->decl) = pure;
+      DECL_LOOPING_CONST_OR_PURE_P (alias->decl) = looping;
+    }
 }
 
 /* See if the frequency of NODE can be updated based on frequencies of its
@@ -2531,20 +2663,32 @@ bool
 cgraph_propagate_frequency (struct cgraph_node *node)
 {
   bool maybe_unlikely_executed = true, maybe_executed_once = true;
+  bool only_called_at_startup = true;
+  bool only_called_at_exit = true;
+  bool changed = false;
   struct cgraph_edge *edge;
+
   if (!node->local.local)
     return false;
   gcc_assert (node->analyzed);
-  if (node->frequency == NODE_FREQUENCY_HOT)
-    return false;
-  if (node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
-    return false;
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Processing frequency %s\n", cgraph_node_name (node));
+
   for (edge = node->callers;
-       edge && (maybe_unlikely_executed || maybe_executed_once);
+       edge && (maybe_unlikely_executed || maybe_executed_once
+	        || only_called_at_startup || only_called_at_exit);
        edge = edge->next_caller)
     {
+      if (edge->caller != node)
+	{
+          only_called_at_startup &= edge->caller->only_called_at_startup;
+	  /* It makes snese to put main() together with the static constructors.
+	     It will be executed for sure, but rest of functions called from
+	     main are definitly not at startup only.  */
+	  if (MAIN_NAME_P (DECL_NAME (edge->caller->decl)))
+	    only_called_at_startup = 0;
+          only_called_at_exit &= edge->caller->only_called_at_exit;
+	}
       if (!edge->frequency)
 	continue;
       switch (edge->caller->frequency)
@@ -2553,7 +2697,8 @@ cgraph_propagate_frequency (struct cgraph_node *node)
 	  break;
 	case NODE_FREQUENCY_EXECUTED_ONCE:
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "  Called by %s that is executed once\n", cgraph_node_name (node));
+	    fprintf (dump_file, "  Called by %s that is executed once\n",
+		     cgraph_node_name (node));
 	  maybe_unlikely_executed = false;
 	  if (edge->loop_nest)
 	    {
@@ -2565,27 +2710,52 @@ cgraph_propagate_frequency (struct cgraph_node *node)
 	case NODE_FREQUENCY_HOT:
 	case NODE_FREQUENCY_NORMAL:
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "  Called by %s that is normal or hot\n", cgraph_node_name (node));
+	    fprintf (dump_file, "  Called by %s that is normal or hot\n",
+		     cgraph_node_name (node));
 	  maybe_unlikely_executed = false;
 	  maybe_executed_once = false;
 	  break;
 	}
     }
-   if (maybe_unlikely_executed)
-     {
-       node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
+  if ((only_called_at_startup && !only_called_at_exit)
+      && !node->only_called_at_startup)
+    {
+       node->only_called_at_startup = true;
        if (dump_file)
-         fprintf (dump_file, "Node %s promoted to unlikely executed.\n", cgraph_node_name (node));
-       return true;
-     }
-   if (maybe_executed_once && node->frequency != NODE_FREQUENCY_EXECUTED_ONCE)
-     {
-       node->frequency = NODE_FREQUENCY_EXECUTED_ONCE;
+         fprintf (dump_file, "Node %s promoted to only called at startup.\n",
+		  cgraph_node_name (node));
+       changed = true;
+    }
+  if ((only_called_at_exit && !only_called_at_startup)
+      && !node->only_called_at_exit)
+    {
+       node->only_called_at_exit = true;
        if (dump_file)
-         fprintf (dump_file, "Node %s promoted to executed once.\n", cgraph_node_name (node));
-       return true;
-     }
-   return false;
+         fprintf (dump_file, "Node %s promoted to only called at exit.\n",
+		  cgraph_node_name (node));
+       changed = true;
+    }
+  /* These come either from profile or user hints; never update them.  */
+  if (node->frequency == NODE_FREQUENCY_HOT
+      || node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
+    return changed;
+  if (maybe_unlikely_executed)
+    {
+      node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
+      if (dump_file)
+	fprintf (dump_file, "Node %s promoted to unlikely executed.\n",
+		 cgraph_node_name (node));
+      changed = true;
+    }
+  else if (maybe_executed_once && node->frequency != NODE_FREQUENCY_EXECUTED_ONCE)
+    {
+      node->frequency = NODE_FREQUENCY_EXECUTED_ONCE;
+      if (dump_file)
+	fprintf (dump_file, "Node %s promoted to executed once.\n",
+		 cgraph_node_name (node));
+      changed = true;
+    }
+  return changed;
 }
 
 /* Return true when NODE can not return or throw and thus
@@ -2623,6 +2793,92 @@ cgraph_edge_cannot_lead_to_return (struct cgraph_edge *e)
     }
   else
     return cgraph_node_cannot_return (e->callee);
+}
+
+/* Return true when function NODE can be removed from callgraph
+   if all direct calls are eliminated.  */
+
+bool
+cgraph_can_remove_if_no_direct_calls_and_refs_p (struct cgraph_node *node)
+{
+  gcc_assert (!node->global.inlined_to);
+  /* Extern inlines can always go, we will use the external definition.  */
+  if (DECL_EXTERNAL (node->decl))
+    return true;
+  /* When function is needed, we can not remove it.  */
+  if (node->needed || node->reachable_from_other_partition)
+    return false;
+  if (DECL_STATIC_CONSTRUCTOR (node->decl)
+      || DECL_STATIC_DESTRUCTOR (node->decl))
+    return false;
+  /* Only COMDAT functions can be removed if externally visible.  */
+  if (node->local.externally_visible
+      && (!DECL_COMDAT (node->decl)
+	  || cgraph_used_from_object_file_p (node)))
+    return false;
+  return true;
+}
+
+/* Return true when function NODE can be excpected to be removed
+   from program when direct calls in this compilation unit are removed.
+
+   As a special case COMDAT functions are
+   cgraph_can_remove_if_no_direct_calls_p while the are not
+   cgraph_only_called_directly_p (it is possible they are called from other
+   unit)
+
+   This function behaves as cgraph_only_called_directly_p because eliminating
+   all uses of COMDAT function does not make it neccesarily disappear from
+   the program unless we are compiling whole program or we do LTO.  In this
+   case we know we win since dynamic linking will not really discard the
+   linkonce section.  */
+
+bool
+cgraph_will_be_removed_from_program_if_no_direct_calls (struct cgraph_node *node)
+{
+  gcc_assert (!node->global.inlined_to);
+  if (cgraph_used_from_object_file_p (node))
+    return false;
+  if (!in_lto_p && !flag_whole_program)
+    return cgraph_only_called_directly_p (node);
+  else
+    {
+       if (DECL_EXTERNAL (node->decl))
+         return true;
+      return cgraph_can_remove_if_no_direct_calls_p (node);
+    }
+}
+
+/* Return true when RESOLUTION indicate that linker will use
+   the symbol from non-LTo object files.  */
+
+bool
+resolution_used_from_other_file_p (enum ld_plugin_symbol_resolution resolution)
+{
+  return (resolution == LDPR_PREVAILING_DEF
+          || resolution == LDPR_PREEMPTED_REG
+          || resolution == LDPR_RESOLVED_EXEC
+          || resolution == LDPR_RESOLVED_DYN);
+}
+
+/* Return true when NODE is known to be used from other (non-LTO) object file.
+   Known only when doing LTO via linker plugin.  */
+
+bool
+cgraph_used_from_object_file_p (struct cgraph_node *node)
+{
+  struct cgraph_node *alias;
+
+  gcc_assert (!node->global.inlined_to);
+  if (!TREE_PUBLIC (node->decl) || DECL_EXTERNAL (node->decl))
+    return false;
+  if (resolution_used_from_other_file_p (node->resolution))
+    return true;
+  for (alias = node->same_body; alias; alias = alias->next)
+    if (TREE_PUBLIC (alias->decl)
+	&& resolution_used_from_other_file_p (alias->resolution))
+      return true;
+  return false;
 }
 
 #include "gt-cgraph.h"

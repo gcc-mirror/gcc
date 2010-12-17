@@ -54,7 +54,7 @@ import javax.security.auth.Refreshable;
  * This class represents a Kerberos ticket.  See the Kerberos
  * authentication RFC for more information:
  * <a href="http://www.ietf.org/rfc/rfc1510.txt">RFC 1510</a>.
- * 
+ *
  * @since 1.4
  */
 public class KerberosTicket
@@ -86,16 +86,16 @@ public class KerberosTicket
 
   /**
    * Create a new ticket given all the facts about it.
-   * 
+   *
    * Note that flags may be null or "short"; any flags not specified
    * will be taken to be false.
-   * 
+   *
    * If the key is not renewable, then renewTill may be null.
-   * 
+   *
    * If authTime is null, then it is taken to be the same as startTime.
-   * 
+   *
    * If clientAddresses is null, then the ticket can be used anywhere.
-   * 
+   *
    * @param asn1Encoding the contents of the ticket, as ASN1
    * @param client the client principal
    * @param server the server principal
@@ -279,7 +279,7 @@ public class KerberosTicket
   {
     return (Date) startTime.clone();
   }
-  
+
   /**
    * Return the end time for this ticket.
    */
@@ -287,7 +287,7 @@ public class KerberosTicket
   {
     return (Date) endTime.clone();
   }
-  
+
   /**
    * Return the renewal time for this ticket.  For a non-renewable
    * ticket, this will return null.
@@ -334,6 +334,39 @@ public class KerberosTicket
 
   public String toString()
   {
-    return "FIXME bob";
+    return getClass().getName() +
+      "[client=" + client +
+      ",server=" + server +
+      ",sessionKey=" + sessionKey +
+      ",flags=" + flags +
+      ",authTime=" + authTime +
+      ",startTime= " + startTime +
+      ",endTime=" + endTime +
+      ",renewTill=" + renewTill +
+      ",clientAddresses=" + clientAddresses +
+      "]";
   }
+
+  /**
+   * <p>
+   * Returns the type of the session key in accordance with
+   * RFC1510.  This usually corresponds to the encryption
+   * algorithm used by the key, though more than one algorithm
+   * may use the same key type (e.g. DES with different checksum
+   * mechanisms and chaining modes). Negative values are reserved
+   * for local use.  Non-negative values are for officially assigned
+   * type fields.  The RFC defines:
+   * </p>
+   * <ul>
+   * <li>0 &mdash; null</li>
+   * <li>1 &mdash; DES (in CBC mode with either MD4 or MD5 checksums)</li>
+   * </ul>
+   *
+   * @return the type of session key used by this ticket.
+   */
+  public final int getSessionKeyType()
+  {
+    return sessionKey.type;
+  }
+
 }

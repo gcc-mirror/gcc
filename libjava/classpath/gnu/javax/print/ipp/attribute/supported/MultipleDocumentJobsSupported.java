@@ -1,4 +1,4 @@
-/* MultipleDocumentJobsSupported.java -- 
+/* MultipleDocumentJobsSupported.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,35 +38,36 @@ exception statement from your version. */
 
 package gnu.javax.print.ipp.attribute.supported;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.EnumSyntax;
 import javax.print.attribute.SupportedValuesAttribute;
 
 /**
  * <code>MultipleDocumentJobsSupported</code> specifies if a printer
  * supported multiple documents in one job.
- *  
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public class MultipleDocumentJobsSupported extends EnumSyntax 
+public class MultipleDocumentJobsSupported extends EnumSyntax
   implements SupportedValuesAttribute
 {
-  
+
   /** Multiple documents per job are not supported. */
-  public static final MultipleDocumentJobsSupported NOT_SUPPORTED = 
+  public static final MultipleDocumentJobsSupported NOT_SUPPORTED =
     new MultipleDocumentJobsSupported(0);
-  
+
   /** Multiple documents per job are supported. */
-  public static final MultipleDocumentJobsSupported SUPPORTED = 
+  public static final MultipleDocumentJobsSupported SUPPORTED =
     new MultipleDocumentJobsSupported(1);
 
   private static final String[] stringTable = { "not-supported", "supported" };
-  
-  private static final MultipleDocumentJobsSupported[] enumValueTable = 
+
+  private static final MultipleDocumentJobsSupported[] enumValueTable =
     { NOT_SUPPORTED, SUPPORTED };
-  
+
   /**
    * Constructs a <code>MultipleDocumentJobsSupported</code> object.
-   * 
+   *
    * @param value the enum value
    */
   protected MultipleDocumentJobsSupported(int value)
@@ -79,7 +80,7 @@ public class MultipleDocumentJobsSupported extends EnumSyntax
    *
    * @return The class <code>MultipleDocumentJobsSupported</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return MultipleDocumentJobsSupported.class;
   }
@@ -93,7 +94,7 @@ public class MultipleDocumentJobsSupported extends EnumSyntax
   {
     return "multiple-document-jobs-supported";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.

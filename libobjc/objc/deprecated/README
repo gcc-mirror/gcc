@@ -1,0 +1,11 @@
+This directory contains declarations and features that are deprecated
+and that will be removed in future versions of the compiler.
+
+Note that files in this directory are not really usable headers on
+their own - they shouldn't be included directly by end users.  They
+are header fragments containing deprecated APIs that are still
+included (until removed) from the real headers in objc/.
+
+Files in this directory should not #include any other objc header.
+Any include that they need should be done in the real objc/ headers
+before including these fragments.

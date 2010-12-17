@@ -57,19 +57,16 @@ Boston, MA 02111-1307, USA.  */
 # define UPC_LINKER_SCRIPT "gccupc.ld"
 #endif
 
-#define DEFAULT_SWITCH_TAKES_ARG(CHAR) \
+#define GCC_SWITCH_TAKES_ARG(CHAR) \
   ((CHAR) == 'D' || (CHAR) == 'U' || (CHAR) == 'o' \
    || (CHAR) == 'e' || (CHAR) == 'T' || (CHAR) == 'u' \
    || (CHAR) == 'I' || (CHAR) == 'm' || (CHAR) == 'x' \
    || (CHAR) == 'L' || (CHAR) == 'A' || (CHAR) == 'V' \
    || (CHAR) == 'B' || (CHAR) == 'b')
 
-#ifndef SWITCH_TAKES_ARG
-#define SWITCH_TAKES_ARG DEFAULT_SWITCH_TAKES_ARG
-#endif
 
 /* This defines which multi-letter switches take arguments.  */
-#define DEFAULT_WORD_SWITCH_TAKES_ARG(STR)		\
+#define GCC_WORD_SWITCH_TAKES_ARG(STR)		\
  (!strcmp (STR, "Tdata") || !strcmp (STR, "Ttext")	\
   || !strcmp (STR, "Tbss") || !strcmp (STR, "include")	\
   || !strcmp (STR, "imacros") || !strcmp (STR, "aux-info") \
@@ -78,16 +75,12 @@ Boston, MA 02111-1307, USA.  */
   || !strcmp (STR, "isystem") || !strcmp (STR, "specs") \
   || !strcmp (STR, "Xlinker"))
 
-#ifndef WORD_SWITCH_TAKES_ARG
-#define WORD_SWITCH_TAKES_ARG DEFAULT_WORD_SWITCH_TAKES_ARG
-#endif
-
 #define NO_LINK_SWITCHES(STR) \
   (!strcmp (STR, "-fsyntax-only") || !strcmp (STR, "-c") \
   || !strcmp (STR, "-M") || !strcmp (STR, "-MM") \
   || !strcmp (STR, "-E") || !strcmp (STR, "-S"))
 
-#define INFO_ONLY_SWITCHES(STR) \
+#define GCC_INFO_ONLY_SWITCHES(STR) \
   (!strcmp (STR, "-v") || !strcmp(STR, "--verbose") \
   || !strcmp (STR, "--version") \
   || !strcmp (STR, "--help") \
@@ -351,8 +344,8 @@ main (int argc, char *argv[])
   const char *lib_dir = 0;
   const char *inc_dir = 0;
   const char *upc_exec_prefix = 0;
-  char *all_exec_args[ARG_MAX];
-  const char **exec_args = (const char **)all_exec_args;
+  const char *exec_args[ARG_MAX];
+  char *exec_arg_list[ARG_MAX];
 
 #ifdef DEBUG
   debug = 1;
@@ -420,10 +413,10 @@ main (int argc, char *argv[])
 	       explicit_linker_script = 1;
 	    }
 	  invoke_linker = invoke_linker && !NO_LINK_SWITCHES (arg);
-	  info_only = info_only && INFO_ONLY_SWITCHES (arg);
-	  if (((arg[2] == '\0') && SWITCH_TAKES_ARG (arg[1]))
-	      || WORD_SWITCH_TAKES_ARG (&arg[1])
-	      || ((arg[1] == '-') && WORD_SWITCH_TAKES_ARG (&arg[2])))
+	  info_only = info_only && GCC_INFO_ONLY_SWITCHES (arg);
+	  if (((arg[2] == '\0') && GCC_SWITCH_TAKES_ARG (arg[1]))
+	      || GCC_WORD_SWITCH_TAKES_ARG (&arg[1])
+	      || ((arg[1] == '-') && GCC_WORD_SWITCH_TAKES_ARG (&arg[2])))
 	    /* skip the following arg */
 	    ++i;
 	}
@@ -641,7 +634,18 @@ main (int argc, char *argv[])
     }
   exec_args[nargs++] = 0;
 
-  if (execv(exec_args[0], all_exec_args) < 0)
+  /* The 'execv' prototype indicates that the strings
+     pointed to by the argument pointers are not const
+     qualified.  Make a copy to be on the safe side.  */
+  for (i = 0; i < nargs; ++i)
+    {
+      const char *arg_copy = NULL;
+      if (exec_args[i] != NULL)
+        arg_copy = xstrdup (exec_args[i]);
+      exec_arg_list[i] = arg_copy;
+    }
+
+  if (execv(exec_args[0], exec_arg_list) < 0)
     {
       perror (exec_args[0]);
       exit (255);

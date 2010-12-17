@@ -26,6 +26,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 
 
+
+#define MATHFUNC(funcname) funcname ## l
+
 #if defined (HAVE_GFC_REAL_10) && defined (HAVE_FABSL) && defined (HAVE_FREXPL)
 
 extern GFC_REAL_10 rrspacing_r10 (GFC_REAL_10 s, int p);
@@ -36,14 +39,14 @@ rrspacing_r10 (GFC_REAL_10 s, int p)
 {
   int e;
   GFC_REAL_10 x;
-  x = fabsl (s);
+  x = MATHFUNC(fabs) (s);
   if (x == 0.)
     return 0.;
-  frexpl (s, &e);
+  MATHFUNC(frexp) (s, &e);
 #if defined (HAVE_LDEXPL)
-  return ldexpl (x, p - e);
+  return MATHFUNC(ldexp) (x, p - e);
 #else
-  return scalbnl (x, p - e);
+  return MATHFUNC(scalbn) (x, p - e);
 #endif
 
 }

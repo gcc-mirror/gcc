@@ -1,7 +1,7 @@
 /* Compute different info about registers.
    Copyright (C) 1987, 1988, 1991, 1992, 1993, 1994, 1995, 1996
    1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009  Free Software Foundation, Inc.
+   2009, 2010  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -43,9 +43,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "recog.h"
 #include "reload.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "output.h"
-#include "ggc.h"
 #include "timevar.h"
 #include "hashtab.h"
 #include "target.h"
@@ -58,39 +57,22 @@ along with GCC; see the file COPYING3.  If not see
 int max_regno;
 
 
-/* Register tables used by many passes.  */
+struct target_hard_regs default_target_hard_regs;
+struct target_regs default_target_regs;
+#if SWITCHABLE_TARGET
+struct target_hard_regs *this_target_hard_regs = &default_target_hard_regs;
+struct target_regs *this_target_regs = &default_target_regs;
+#endif
 
-/* Indexed by hard register number, contains 1 for registers
-   that are fixed use (stack pointer, pc, frame pointer, etc.).
-   These are the registers that cannot be used to allocate
-   a pseudo reg for general use.  */
-char fixed_regs[FIRST_PSEUDO_REGISTER];
-
-/* Same info as a HARD_REG_SET.  */
-HARD_REG_SET fixed_reg_set;
-
-/* Data for initializing the above.  */
+/* Data for initializing fixed_regs.  */
 static const char initial_fixed_regs[] = FIXED_REGISTERS;
 
-/* Indexed by hard register number, contains 1 for registers
-   that are fixed use or are clobbered by function calls.
-   These are the registers that cannot be used to allocate
-   a pseudo reg whose life crosses calls unless we are able
-   to save/restore them across the calls.  */
-char call_used_regs[FIRST_PSEUDO_REGISTER];
-
-/* Same info as a HARD_REG_SET.  */
-HARD_REG_SET call_used_reg_set;
-
-/* Data for initializing the above.  */
+/* Data for initializing call_used_regs.  */
 static const char initial_call_used_regs[] = CALL_USED_REGISTERS;
 
-/* This is much like call_used_regs, except it doesn't have to
-   be a superset of FIXED_REGISTERS. This vector indicates
-   what is really call clobbered, and is used when defining
-   regs_invalidated_by_call.  */
 #ifdef CALL_REALLY_USED_REGISTERS
-char call_really_used_regs[] = CALL_REALLY_USED_REGISTERS;
+/* Data for initializing call_really_used_regs.  */
+static const char initial_call_really_used_regs[] = CALL_REALLY_USED_REGISTERS;
 #endif
 
 #ifdef CALL_REALLY_USED_REGISTERS
@@ -99,27 +81,11 @@ char call_really_used_regs[] = CALL_REALLY_USED_REGISTERS;
 #define CALL_REALLY_USED_REGNO_P(X)  call_used_regs[X]
 #endif
 
-
-/* Contains registers that are fixed use -- i.e. in fixed_reg_set -- or
-   a function value return register or TARGET_STRUCT_VALUE_RTX or
-   STATIC_CHAIN_REGNUM.  These are the registers that cannot hold quantities
-   across calls even if we are willing to save and restore them.  */
-
-HARD_REG_SET call_fixed_reg_set;
-
 /* Indexed by hard register number, contains 1 for registers
    that are being used for global register decls.
    These must be exempt from ordinary flow analysis
    and are also considered fixed.  */
 char global_regs[FIRST_PSEUDO_REGISTER];
-
-/* Contains 1 for registers that are set or clobbered by calls.  */
-/* ??? Ideally, this would be just call_used_regs plus global_regs, but
-   for someone's bright idea to have call_used_regs strictly include
-   fixed_regs.  Which leaves us guessing as to the set of fixed_regs
-   that are actually preserved.  We know for sure that those associated
-   with the local stack frame are safe, but scant others.  */
-HARD_REG_SET regs_invalidated_by_call;
 
 /* Same information as REGS_INVALIDATED_BY_CALL but in regset form to be used
    in dataflow more conveniently.  */
@@ -129,16 +95,10 @@ regset regs_invalidated_by_call_regset;
    should not be reset after each function is compiled.  */
 static bitmap_obstack persistent_obstack;
 
-/* Table of register numbers in the order in which to try to use them.  */
+/* Used to initialize reg_alloc_order.  */
 #ifdef REG_ALLOC_ORDER
-int reg_alloc_order[FIRST_PSEUDO_REGISTER] = REG_ALLOC_ORDER;
-
-/* The inverse of reg_alloc_order.  */
-int inv_reg_alloc_order[FIRST_PSEUDO_REGISTER];
+static int initial_reg_alloc_order[FIRST_PSEUDO_REGISTER] = REG_ALLOC_ORDER;
 #endif
-
-/* For each reg class, a HARD_REG_SET saying which registers are in it.  */
-HARD_REG_SET reg_class_contents[N_REG_CLASSES];
 
 /* The same information, but as an array of unsigned ints.  We copy from
    these unsigned ints to the table above.  We do this so the tm.h files
@@ -150,62 +110,18 @@ HARD_REG_SET reg_class_contents[N_REG_CLASSES];
 static const unsigned int_reg_class_contents[N_REG_CLASSES][N_REG_INTS]
   = REG_CLASS_CONTENTS;
 
-/* For each reg class, number of regs it contains.  */
-unsigned int reg_class_size[N_REG_CLASSES];
-
-/* For each reg class, table listing all the classes contained in it.  */
-enum reg_class reg_class_subclasses[N_REG_CLASSES][N_REG_CLASSES];
-
-/* For each pair of reg classes,
-   a largest reg class contained in their union.  */
-enum reg_class reg_class_subunion[N_REG_CLASSES][N_REG_CLASSES];
-
-/* For each pair of reg classes,
-   the smallest reg class containing their union.  */
-enum reg_class reg_class_superunion[N_REG_CLASSES][N_REG_CLASSES];
-
 /* Array containing all of the register names.  */
-const char * reg_names[] = REGISTER_NAMES;
+static const char *const initial_reg_names[] = REGISTER_NAMES;
 
 /* Array containing all of the register class names.  */
 const char * reg_class_names[] = REG_CLASS_NAMES;
 
-/* For each hard register, the widest mode object that it can contain.
-   This will be a MODE_INT mode if the register can hold integers.  Otherwise
-   it will be a MODE_FLOAT or a MODE_CC mode, whichever is valid for the
-   register.  */
-enum machine_mode reg_raw_mode[FIRST_PSEUDO_REGISTER];
-
-/* 1 if there is a register of given mode.  */
-bool have_regs_of_mode [MAX_MACHINE_MODE];
-
-/* 1 if class does contain register of given mode.  */
-char contains_reg_of_mode [N_REG_CLASSES] [MAX_MACHINE_MODE];
-
-/* Maximum cost of moving from a register in one class to a register in
-   another class.  Based on TARGET_REGISTER_MOVE_COST.  */
-move_table *move_cost[MAX_MACHINE_MODE];
-
-/* Similar, but here we don't have to move if the first index is a subset
-   of the second so in that case the cost is zero.  */
-move_table *may_move_in_cost[MAX_MACHINE_MODE];
-
-/* Similar, but here we don't have to move if the first index is a superset
-   of the second so in that case the cost is zero.  */
-move_table *may_move_out_cost[MAX_MACHINE_MODE];
-
-/* Keep track of the last mode we initialized move costs for.  */
-static int last_mode_for_init_move_cost;
-
-/* Sample MEM values for use by memory_move_secondary_cost.  */
-static GTY(()) rtx top_of_stack[MAX_MACHINE_MODE];
+#define last_mode_for_init_move_cost \
+  (this_target_regs->x_last_mode_for_init_move_cost)
 
 /* No more global register variables may be declared; true once
    reginfo has been initialized.  */
 static int no_global_reg_vars = 0;
-
-/* Specify number of hard registers given machine mode occupy.  */
-unsigned char hard_regno_nregs[FIRST_PSEUDO_REGISTER][MAX_MACHINE_MODE];
 
 /* Given a register bitmap, turn on the bits in a HARD_REG_SET that
    correspond to the hard registers, if any, set in that map.  This
@@ -225,8 +141,9 @@ reg_set_to_hard_reg_set (HARD_REG_SET *to, const_bitmap from)
     }
 }
 
-/* Function called only once to initialize the above data on reg usage.
-   Once this is done, various switches may override.  */
+/* Function called only once per target_globals to initialize the
+   target_hard_regs structure.  Once this is done, various switches
+   may override.  */
 void
 init_reg_sets (void)
 {
@@ -250,10 +167,25 @@ init_reg_sets (void)
      CALL_USED_REGISTERS had the right number of initializers.  */
   gcc_assert (sizeof fixed_regs == sizeof initial_fixed_regs);
   gcc_assert (sizeof call_used_regs == sizeof initial_call_used_regs);
+#ifdef CALL_REALLY_USED_REGISTERS
+  gcc_assert (sizeof call_really_used_regs
+	      == sizeof initial_call_really_used_regs);
+#endif
+#ifdef REG_ALLOC_ORDER
+  gcc_assert (sizeof reg_alloc_order == sizeof initial_reg_alloc_order);
+#endif
+  gcc_assert (sizeof reg_names == sizeof initial_reg_names);
 
   memcpy (fixed_regs, initial_fixed_regs, sizeof fixed_regs);
   memcpy (call_used_regs, initial_call_used_regs, sizeof call_used_regs);
-  memset (global_regs, 0, sizeof global_regs);
+#ifdef CALL_REALLY_USED_REGISTERS
+  memcpy (call_really_used_regs, initial_call_really_used_regs,
+	  sizeof call_really_used_regs);
+#endif
+#ifdef REG_ALLOC_ORDER
+  memcpy (reg_alloc_order, initial_reg_alloc_order, sizeof reg_alloc_order);
+#endif
+  memcpy (reg_names, initial_reg_names, sizeof reg_names);
 }
 
 /* Initialize may_move_cost and friends for mode M.  */
@@ -409,20 +341,25 @@ init_reg_sets_1 (void)
     inv_reg_alloc_order[reg_alloc_order[i]] = i;
 #endif
 
-  /* This macro allows the fixed or call-used registers
-     and the register classes to depend on target flags.  */
+  /* Let the target tweak things if necessary.  */
 
-#ifdef CONDITIONAL_REGISTER_USAGE
-  CONDITIONAL_REGISTER_USAGE;
-#endif
+  targetm.conditional_register_usage ();
 
   /* Compute number of hard regs in each class.  */
 
   memset (reg_class_size, 0, sizeof reg_class_size);
   for (i = 0; i < N_REG_CLASSES; i++)
-    for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
-      if (TEST_HARD_REG_BIT (reg_class_contents[i], j))
-	reg_class_size[i]++;
+    {
+      bool any_nonfixed = false;
+      for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)	
+	if (TEST_HARD_REG_BIT (reg_class_contents[i], j))
+	  {
+	    reg_class_size[i]++;
+	    if (!fixed_regs[j])
+	      any_nonfixed = true;
+	  }
+      class_only_fixed_regs[i] = !any_nonfixed;
+    }
 
   /* Initialize the table of subunions.
      reg_class_subunion[I][J] gets the largest-numbered reg-class
@@ -530,11 +467,12 @@ init_reg_sets_1 (void)
       /* There are a couple of fixed registers that we know are safe to
 	 exclude from being clobbered by calls:
 
-	 The frame pointer is always preserved across calls.  The arg pointer
-	 is if it is fixed.  The stack pointer usually is, unless
-	 RETURN_POPS_ARGS, in which case an explicit CLOBBER will be present.
-	 If we are generating PIC code, the PIC offset table register is
-	 preserved across calls, though the target can override that.  */
+	 The frame pointer is always preserved across calls.  The arg
+	 pointer is if it is fixed.  The stack pointer usually is,
+	 unless TARGET_RETURN_POPS_ARGS, in which case an explicit
+	 CLOBBER will be present.  If we are generating PIC code, the
+	 PIC offset table register is preserved across calls, though the
+	 target can override that.  */
 
       if (i == STACK_POINTER_REGNUM)
 	;
@@ -545,7 +483,7 @@ init_reg_sets_1 (void)
 	}
       else if (i == FRAME_POINTER_REGNUM)
 	;
-#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
+#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
       else if (i == HARD_FRAME_POINTER_REGNUM)
 	;
 #endif
@@ -553,10 +491,9 @@ init_reg_sets_1 (void)
       else if (i == ARG_POINTER_REGNUM && fixed_regs[i])
 	;
 #endif
-#ifndef PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
-      else if (i == (unsigned) PIC_OFFSET_TABLE_REGNUM && fixed_regs[i])
+      else if (!PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
+	       && i == (unsigned) PIC_OFFSET_TABLE_REGNUM && fixed_regs[i])
 	;
-#endif
       else if (CALL_REALLY_USED_REGNO_P (i))
         {
 	  SET_HARD_REG_BIT (regs_invalidated_by_call, i);
@@ -686,8 +623,7 @@ init_fake_stack_mems (void)
    TO, using MODE.  */
 
 int
-register_move_cost (enum machine_mode mode, enum reg_class from,
-                    enum reg_class to)
+register_move_cost (enum machine_mode mode, reg_class_t from, reg_class_t to)
 {
   return targetm.register_move_cost (mode, from, to);
 }
@@ -702,10 +638,10 @@ memory_move_cost (enum machine_mode mode, enum reg_class rclass, bool in)
 /* Compute extra cost of moving registers to/from memory due to reloads.
    Only needed if secondary reloads are required for memory moves.  */
 int
-memory_move_secondary_cost (enum machine_mode mode, enum reg_class rclass,
+memory_move_secondary_cost (enum machine_mode mode, reg_class_t rclass,
 			    bool in)
 {
-  enum reg_class altclass;
+  reg_class_t altclass;
   int partial_cost = 0;
   /* We need a memory reference to feed to SECONDARY... macros.  */
   /* mem may be unused even if the SECONDARY_ macros are defined.  */
@@ -815,36 +751,69 @@ void
 fix_register (const char *name, int fixed, int call_used)
 {
   int i;
+  int reg, nregs;
 
   /* Decode the name and update the primary form of
      the register info.  */
 
-  if ((i = decode_reg_name (name)) >= 0)
+  if ((reg = decode_reg_name_and_count (name, &nregs)) >= 0)
     {
-      if ((i == STACK_POINTER_REGNUM
+      gcc_assert (nregs >= 1);
+      for (i = reg; i < reg + nregs; i++)
+	{
+	  if ((i == STACK_POINTER_REGNUM
 #ifdef HARD_FRAME_POINTER_REGNUM
-	   || i == HARD_FRAME_POINTER_REGNUM
+	       || i == HARD_FRAME_POINTER_REGNUM
 #else
-	   || i == FRAME_POINTER_REGNUM
+	       || i == FRAME_POINTER_REGNUM
 #endif
-	   )
-	  && (fixed == 0 || call_used == 0))
-	{
-	  static const char * const what_option[2][2] = {
-	    { "call-saved", "call-used" },
-	    { "no-such-option", "fixed" }};
+	       )
+	      && (fixed == 0 || call_used == 0))
+	    {
+	      switch (fixed)
+		{
+		case 0:
+		  switch (call_used)
+		    {
+		    case 0:
+		      error ("can%'t use %qs as a call-saved register", name);
+		      break;
 
-	  error ("can't use '%s' as a %s register", name,
-		 what_option[fixed][call_used]);
-	}
-      else
-	{
-	  fixed_regs[i] = fixed;
-	  call_used_regs[i] = call_used;
+		    case 1:
+		      error ("can%'t use %qs as a call-used register", name);
+		      break;
+
+		    default:
+		      gcc_unreachable ();
+		    }
+		  break;
+
+		case 1:
+		  switch (call_used)
+		    {
+		    case 1:
+		      error ("can%'t use %qs as a fixed register", name);
+		      break;
+
+		    case 0:
+		    default:
+		      gcc_unreachable ();
+		    }
+		  break;
+
+		default:
+		  gcc_unreachable ();
+		}
+	    }
+	  else
+	    {
+	      fixed_regs[i] = fixed;
+	      call_used_regs[i] = call_used;
 #ifdef CALL_REALLY_USED_REGISTERS
-	  if (fixed == 0)
-	    call_really_used_regs[i] = call_used;
+	      if (fixed == 0)
+		call_really_used_regs[i] = call_used;
 #endif
+	    }
 	}
     }
   else
@@ -857,6 +826,14 @@ fix_register (const char *name, int fixed, int call_used)
 void
 globalize_reg (int i)
 {
+#ifdef STACK_REGS
+  if (IN_RANGE (i, FIRST_STACK_REG, LAST_STACK_REG))
+    {
+      error ("stack register used for global register variable");
+      return;
+    }
+#endif
+
   if (fixed_regs[i] == 0 && no_global_reg_vars)
     error ("global register variable follows a function definition");
 
@@ -1038,7 +1015,7 @@ struct rtl_opt_pass pass_reginfo_init =
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
-  TV_NONE,                                    /* tv_id */
+  TV_NONE,                              /* tv_id */
   0,                                    /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
@@ -1232,7 +1209,7 @@ reg_scan_mark_refs (rtx x, rtx insn)
 /* Return nonzero if C1 is a subset of C2, i.e., if every register in C1
    is also in C2.  */
 int
-reg_class_subset_p (enum reg_class c1, enum reg_class c2)
+reg_class_subset_p (reg_class_t c1, reg_class_t c2)
 {
   return (c1 == c2
 	  || c2 == ALL_REGS
@@ -1242,7 +1219,7 @@ reg_class_subset_p (enum reg_class c1, enum reg_class c2)
 
 /* Return nonzero if there is a register that is in both C1 and C2.  */
 int
-reg_classes_intersect_p (enum reg_class c1, enum reg_class c2)
+reg_classes_intersect_p (reg_class_t c1, reg_class_t c2)
 {
   return (c1 == c2
 	  || c1 == ALL_REGS
@@ -1401,5 +1378,3 @@ finish_subregs_of_mode (void)
 }
 
 #endif /* CANNOT_CHANGE_MODE_CLASS */
-
-#include "gt-reginfo.h"

@@ -195,11 +195,11 @@ struct ready_list
 extern char *ready_try;
 extern struct ready_list ready;
 
-extern int max_issue (struct ready_list *, int, state_t, int *);
+extern int max_issue (struct ready_list *, int, state_t, bool, int *);
 
 extern void ebb_compute_jump_reg_dependencies (rtx, regset, regset, regset);
 
-extern edge find_fallthru_edge (basic_block);
+extern edge find_fallthru_edge_from (basic_block);
 
 extern void (* sched_init_only_bb) (basic_block, basic_block);
 extern basic_block (* sched_split_block) (basic_block, rtx);
@@ -1269,6 +1269,8 @@ extern void add_block (basic_block, basic_block);
 extern rtx bb_note (basic_block);
 extern void concat_note_lists (rtx, rtx *);
 extern rtx sched_emit_insn (rtx);
+extern rtx get_ready_element (int);
+extern int number_in_ready (void);
 
 
 /* Types and functions in sched-rgn.c.  */
@@ -1476,6 +1478,13 @@ sd_iterator_next (sd_iterator_def *it_ptr)
   for ((ITER) = sd_iterator_start ((INSN), (LIST_TYPES));	\
        sd_iterator_cond (&(ITER), &(DEP));			\
        sd_iterator_next (&(ITER)))
+
+#define IS_DISPATCH_ON 1
+#define IS_CMP 2
+#define DISPATCH_VIOLATION 3
+#define FITS_DISPATCH_WINDOW 4
+#define DISPATCH_INIT 5
+#define ADD_TO_DISPATCH_WINDOW 6
 
 extern int sd_lists_size (const_rtx, sd_list_types_def);
 extern bool sd_lists_empty_p (const_rtx, sd_list_types_def);

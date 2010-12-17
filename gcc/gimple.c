@@ -29,22 +29,27 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "gimple.h"
-#include "toplev.h"
 #include "diagnostic.h"
 #include "tree-flow.h"
 #include "value-prof.h"
 #include "flags.h"
 #include "alias.h"
 #include "demangle.h"
+#include "langhooks.h"
 
 /* Global type table.  FIXME lto, it should be possible to re-use some
    of the type hashing routines in tree.c (type_hash_canon, type_hash_lookup,
    etc), but those assume that types were built with the various
    build_*_type routines which is not the case with the streamer.  */
-static htab_t gimple_types;
-static struct pointer_map_t *type_hash_cache;
+static GTY((if_marked ("ggc_marked_p"), param_is (union tree_node)))
+  htab_t gimple_types;
+static GTY((if_marked ("ggc_marked_p"), param_is (union tree_node)))
+  htab_t gimple_canonical_types;
+static GTY((if_marked ("tree_int_map_marked_p"), param_is (struct tree_int_map)))
+  htab_t type_hash_cache;
 
-/* Global type comparison cache.  */
+/* Global type comparison cache.  This is by TYPE_UID for space efficiency
+   and thus cannot use and does not need GC.  */
 static htab_t gtc_visited;
 static struct obstack gtc_ob;
 
@@ -443,7 +448,6 @@ void
 gimple_cond_get_ops_from_tree (tree cond, enum tree_code *code_p,
                                tree *lhs_p, tree *rhs_p)
 {
-  location_t loc = EXPR_LOCATION (cond);
   gcc_assert (TREE_CODE_CLASS (TREE_CODE (cond)) == tcc_comparison
 	      || TREE_CODE (cond) == TRUTH_NOT_EXPR
 	      || is_gimple_min_invariant (cond)
@@ -456,14 +460,14 @@ gimple_cond_get_ops_from_tree (tree cond, enum tree_code *code_p,
     {
       *code_p = EQ_EXPR;
       gcc_assert (*lhs_p && *rhs_p == NULL_TREE);
-      *rhs_p = fold_convert_loc (loc, TREE_TYPE (*lhs_p), integer_zero_node);
+      *rhs_p = build_zero_cst (TREE_TYPE (*lhs_p));
     }
   /* Canonicalize conditionals of the form 'if (VAL)'  */
   else if (TREE_CODE_CLASS (*code_p) != tcc_comparison)
     {
       *code_p = NE_EXPR;
       gcc_assert (*lhs_p && *rhs_p == NULL_TREE);
-      *rhs_p = fold_convert_loc (loc, TREE_TYPE (*lhs_p), integer_zero_node);
+      *rhs_p = build_zero_cst (TREE_TYPE (*lhs_p));
     }
 }
 
@@ -1383,7 +1387,10 @@ walk_gimple_op (gimple stmt, walk_tree_fn callback_op,
 
     case GIMPLE_CALL:
       if (wi)
-	wi->is_lhs = false;
+	{
+	  wi->is_lhs = false;
+	  wi->val_only = true;
+	}
 
       ret = walk_tree (gimple_call_chain_ptr (stmt), callback_op, wi, pset);
       if (ret)
@@ -1395,21 +1402,32 @@ walk_gimple_op (gimple stmt, walk_tree_fn callback_op,
 
       for (i = 0; i < gimple_call_num_args (stmt); i++)
 	{
+	  if (wi)
+	    wi->val_only = is_gimple_reg_type (gimple_call_arg (stmt, i));
 	  ret = walk_tree (gimple_call_arg_ptr (stmt, i), callback_op, wi,
 			   pset);
 	  if (ret)
 	    return ret;
 	}
 
-      if (wi)
-	wi->is_lhs = true;
+      if (gimple_call_lhs (stmt))
+	{
+	  if (wi)
+	    {
+	      wi->is_lhs = true;
+	      wi->val_only = is_gimple_reg_type (gimple_call_lhs (stmt));
+	    }
 
-      ret = walk_tree (gimple_call_lhs_ptr (stmt), callback_op, wi, pset);
-      if (ret)
-	return ret;
+	  ret = walk_tree (gimple_call_lhs_ptr (stmt), callback_op, wi, pset);
+	  if (ret)
+	    return ret;
+	}
 
       if (wi)
-	wi->is_lhs = false;
+	{
+	  wi->is_lhs = false;
+	  wi->val_only = true;
+	}
       break;
 
     case GIMPLE_CATCH:
@@ -1731,7 +1749,10 @@ gimple_set_body (tree fndecl, gimple_seq seq)
 }
 
 
-/* Return the body of GIMPLE statements for function FN.  */
+/* Return the body of GIMPLE statements for function FN.  After the
+   CFG pass, the function body doesn't exist anymore because it has
+   been split up into basic blocks.  In this case, it returns
+   NULL.  */
 
 gimple_seq
 gimple_body (tree fndecl)
@@ -1851,15 +1872,14 @@ gimple_call_return_flags (const_gimple stmt)
     }
 }
 
+
 /* Return true if GS is a copy assignment.  */
 
 bool
 gimple_assign_copy_p (gimple gs)
 {
-  return gimple_code (gs) == GIMPLE_ASSIGN
-         && get_gimple_rhs_class (gimple_assign_rhs_code (gs))
-	    == GIMPLE_SINGLE_RHS
-	 && is_gimple_val (gimple_op (gs, 1));
+  return (gimple_assign_single_p (gs)
+	  && is_gimple_val (gimple_op (gs, 1)));
 }
 
 
@@ -1868,27 +1888,11 @@ gimple_assign_copy_p (gimple gs)
 bool
 gimple_assign_ssa_name_copy_p (gimple gs)
 {
-  return (gimple_code (gs) == GIMPLE_ASSIGN
-	  && (get_gimple_rhs_class (gimple_assign_rhs_code (gs))
-	      == GIMPLE_SINGLE_RHS)
+  return (gimple_assign_single_p (gs)
 	  && TREE_CODE (gimple_assign_lhs (gs)) == SSA_NAME
 	  && TREE_CODE (gimple_assign_rhs1 (gs)) == SSA_NAME);
 }
 
-
-/* Return true if GS is an assignment with a singleton RHS, i.e.,
-   there is no operator associated with the assignment itself.
-   Unlike gimple_assign_copy_p, this predicate returns true for
-   any RHS operand, including those that perform an operation
-   and do not have the semantics of a copy, such as COND_EXPR.  */
-
-bool
-gimple_assign_single_p (gimple gs)
-{
-  return (gimple_code (gs) == GIMPLE_ASSIGN
-          && get_gimple_rhs_class (gimple_assign_rhs_code (gs))
-	     == GIMPLE_SINGLE_RHS);
-}
 
 /* Return true if GS is an assignment with a unary RHS, but the
    operator has no effect on the assigned value.  The logic is adapted
@@ -1907,7 +1911,7 @@ gimple_assign_single_p (gimple gs)
 bool
 gimple_assign_unary_nop_p (gimple gs)
 {
-  return (gimple_code (gs) == GIMPLE_ASSIGN
+  return (is_gimple_assign (gs)
           && (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (gs))
               || gimple_assign_rhs_code (gs) == NON_LVALUE_EXPR)
           && gimple_assign_rhs1 (gs) != error_mark_node
@@ -2382,24 +2386,25 @@ gimple_rhs_has_side_effects (const_gimple s)
   return false;
 }
 
-
 /* Helper for gimple_could_trap_p and gimple_assign_rhs_could_trap_p.
-   Return true if S can trap.  If INCLUDE_LHS is true and S is a
-   GIMPLE_ASSIGN, the LHS of the assignment is also checked.
-   Otherwise, only the RHS of the assignment is checked.  */
+   Return true if S can trap.  When INCLUDE_MEM is true, check whether
+   the memory operations could trap.  When INCLUDE_STORES is true and
+   S is a GIMPLE_ASSIGN, the LHS of the assignment is also checked.  */
 
-static bool
-gimple_could_trap_p_1 (gimple s, bool include_lhs)
+bool
+gimple_could_trap_p_1 (gimple s, bool include_mem, bool include_stores)
 {
-  unsigned i, start;
   tree t, div = NULL_TREE;
   enum tree_code op;
 
-  start = (is_gimple_assign (s) && !include_lhs) ? 1 : 0;
+  if (include_mem)
+    {
+      unsigned i, start = (is_gimple_assign (s) && !include_stores) ? 1 : 0;
 
-  for (i = start; i < gimple_num_ops (s); i++)
-    if (tree_could_trap_p (gimple_op (s, i)))
-      return true;
+      for (i = start; i < gimple_num_ops (s); i++)
+	if (tree_could_trap_p (gimple_op (s, i)))
+	  return true;
+    }
 
   switch (gimple_code (s))
     {
@@ -2428,18 +2433,15 @@ gimple_could_trap_p_1 (gimple s, bool include_lhs)
     }
 
   return false;
-
 }
-
 
 /* Return true if statement S can trap.  */
 
 bool
 gimple_could_trap_p (gimple s)
 {
-  return gimple_could_trap_p_1 (s, true);
+  return gimple_could_trap_p_1 (s, true, true);
 }
-
 
 /* Return true if RHS of a GIMPLE_ASSIGN S can trap.  */
 
@@ -2447,7 +2449,7 @@ bool
 gimple_assign_rhs_could_trap_p (gimple s)
 {
   gcc_assert (is_gimple_assign (s));
-  return gimple_could_trap_p_1 (s, false);
+  return gimple_could_trap_p_1 (s, true, false);
 }
 
 
@@ -2509,7 +2511,8 @@ get_gimple_rhs_num_ops (enum tree_code code)
       || (SYM) == TRUTH_XOR_EXPR) ? GIMPLE_BINARY_RHS			    \
    : (SYM) == TRUTH_NOT_EXPR ? GIMPLE_UNARY_RHS				    \
    : ((SYM) == WIDEN_MULT_PLUS_EXPR					    \
-      || (SYM) == WIDEN_MULT_MINUS_EXPR) ? GIMPLE_TERNARY_RHS		    \
+      || (SYM) == WIDEN_MULT_MINUS_EXPR					    \
+      || (SYM) == FMA_EXPR) ? GIMPLE_TERNARY_RHS			    \
    : ((SYM) == COND_EXPR						    \
       || (SYM) == CONSTRUCTOR						    \
       || (SYM) == OBJ_TYPE_REF						    \
@@ -2534,15 +2537,6 @@ const unsigned char gimple_rhs_class_table[] = {
 /* For the definitive definition of GIMPLE, see doc/tree-ssa.texi.  */
 
 /* Validation of GIMPLE expressions.  */
-
-/* Return true if OP is an acceptable tree node to be used as a GIMPLE
-   operand.  */
-
-bool
-is_gimple_operand (const_tree op)
-{
-  return op && get_gimple_rhs_class (TREE_CODE (op)) == GIMPLE_SINGLE_RHS;
-}
 
 /* Returns true iff T is a valid RHS for an assignment to a renamed
    user -- or front-end generated artificial -- variable.  */
@@ -2595,7 +2589,8 @@ is_gimple_condexpr (tree t)
 bool
 is_gimple_addressable (tree t)
 {
-  return (is_gimple_id (t) || handled_component_p (t) || INDIRECT_REF_P (t));
+  return (is_gimple_id (t) || handled_component_p (t)
+	  || TREE_CODE (t) == MEM_REF);
 }
 
 /* Return true if T is a valid gimple constant.  */
@@ -2646,7 +2641,7 @@ is_gimple_address (const_tree t)
       op = TREE_OPERAND (op, 0);
     }
 
-  if (CONSTANT_CLASS_P (op) || INDIRECT_REF_P (op))
+  if (CONSTANT_CLASS_P (op) || TREE_CODE (op) == MEM_REF)
     return true;
 
   switch (TREE_CODE (op))
@@ -2706,8 +2701,18 @@ is_gimple_invariant_address (const_tree t)
     return false;
 
   op = strip_invariant_refs (TREE_OPERAND (t, 0));
+  if (!op)
+    return false;
 
-  return op && (CONSTANT_CLASS_P (op) || decl_address_invariant_p (op));
+  if (TREE_CODE (op) == MEM_REF)
+    {
+      const_tree op0 = TREE_OPERAND (op, 0);
+      return (TREE_CODE (op0) == ADDR_EXPR
+	      && (CONSTANT_CLASS_P (TREE_OPERAND (op0, 0))
+		  || decl_address_invariant_p (TREE_OPERAND (op0, 0))));
+    }
+
+  return CONSTANT_CLASS_P (op) || decl_address_invariant_p (op);
 }
 
 /* Return true if T is a gimple invariant address at IPA level
@@ -2924,16 +2929,7 @@ is_gimple_min_lval (tree t)
 {
   if (!(t = CONST_CAST_TREE (strip_invariant_refs (t))))
     return false;
-  return (is_gimple_id (t) || TREE_CODE (t) == INDIRECT_REF);
-}
-
-/* Return true if T is a typecast operation.  */
-
-bool
-is_gimple_cast (tree t)
-{
-  return (CONVERT_EXPR_P (t)
-          || TREE_CODE (t) == FIX_TRUNC_EXPR);
+  return (is_gimple_id (t) || TREE_CODE (t) == MEM_REF);
 }
 
 /* Return true if T is a valid function operand of a CALL_EXPR.  */
@@ -2942,6 +2938,18 @@ bool
 is_gimple_call_addr (tree t)
 {
   return (TREE_CODE (t) == OBJ_TYPE_REF || is_gimple_val (t));
+}
+
+/* Return true if T is a valid address operand of a MEM_REF.  */
+
+bool
+is_gimple_mem_ref_addr (tree t)
+{
+  return (is_gimple_reg (t)
+	  || TREE_CODE (t) == INTEGER_CST
+	  || (TREE_CODE (t) == ADDR_EXPR
+	      && (CONSTANT_CLASS_P (TREE_OPERAND (t, 0))
+		  || decl_address_invariant_p (TREE_OPERAND (t, 0)))));
 }
 
 /* If T makes a function call, return the corresponding CALL_EXPR operand.
@@ -2975,10 +2983,18 @@ get_base_address (tree t)
   while (handled_component_p (t))
     t = TREE_OPERAND (t, 0);
 
-  if (SSA_VAR_P (t)
+  if ((TREE_CODE (t) == MEM_REF
+       || TREE_CODE (t) == TARGET_MEM_REF)
+      && TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR)
+    t = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
+
+  if (TREE_CODE (t) == SSA_NAME
+      || DECL_P (t)
       || TREE_CODE (t) == STRING_CST
       || TREE_CODE (t) == CONSTRUCTOR
-      || INDIRECT_REF_P (t))
+      || INDIRECT_REF_P (t)
+      || TREE_CODE (t) == MEM_REF
+      || TREE_CODE (t) == TARGET_MEM_REF)
     return t;
   else
     return NULL_TREE;
@@ -3119,22 +3135,25 @@ static hashval_t gimple_type_hash (const void *);
 
 /* Structure used to maintain a cache of some type pairs compared by
    gimple_types_compatible_p when comparing aggregate types.  There are
-   four possible values for SAME_P:
+   three possible values for SAME_P:
 
    	-2: The pair (T1, T2) has just been inserted in the table.
-	-1: The pair (T1, T2) is currently being compared.
 	 0: T1 and T2 are different types.
 	 1: T1 and T2 are the same type.
 
-   This table is only used when comparing aggregate types to avoid
-   infinite recursion due to self-referential types.  */
+   The two elements in the SAME_P array are indexed by the comparison
+   mode gtc_mode.  */
+
 struct type_pair_d
 {
   unsigned int uid1;
   unsigned int uid2;
-  int same_p;
+  signed char same_p[2];
 };
 typedef struct type_pair_d *type_pair_t;
+
+DEF_VEC_P(type_pair_t);
+DEF_VEC_ALLOC_P(type_pair_t,heap);
 
 /* Return a hash value for the type pair pointed-to by P.  */
 
@@ -3186,13 +3205,62 @@ lookup_type_pair (tree t1, tree t2, htab_t *visited_p, struct obstack *ob_p)
       p = XOBNEW (ob_p, struct type_pair_d);
       p->uid1 = TYPE_UID (t1);
       p->uid2 = TYPE_UID (t2);
-      p->same_p = -2;
+      p->same_p[0] = -2;
+      p->same_p[1] = -2;
       *slot = (void *) p;
     }
 
   return p;
 }
 
+/* Per pointer state for the SCC finding.  The on_sccstack flag
+   is not strictly required, it is true when there is no hash value
+   recorded for the type and false otherwise.  But querying that
+   is slower.  */
+
+struct sccs
+{
+  unsigned int dfsnum;
+  unsigned int low;
+  bool on_sccstack;
+  union {
+    hashval_t hash;
+    signed char same_p;
+  } u;
+};
+
+static unsigned int next_dfs_num;
+static unsigned int gtc_next_dfs_num;
+
+
+/* GIMPLE type merging cache.  A direct-mapped cache based on TYPE_UID.  */
+
+typedef struct GTY(()) gimple_type_leader_entry_s {
+  tree type;
+  tree leader;
+} gimple_type_leader_entry;
+
+#define GIMPLE_TYPE_LEADER_SIZE 16381
+static GTY((length("GIMPLE_TYPE_LEADER_SIZE"))) gimple_type_leader_entry
+  *gimple_type_leader;
+
+/* Lookup an existing leader for T and return it or NULL_TREE, if
+   there is none in the cache.  */
+
+static tree
+gimple_lookup_type_leader (tree t)
+{
+  gimple_type_leader_entry *leader;
+
+  if (!gimple_type_leader)
+    return NULL_TREE;
+
+  leader = &gimple_type_leader[TYPE_UID (t) % GIMPLE_TYPE_LEADER_SIZE];
+  if (leader->type != t)
+    return NULL_TREE;
+
+  return leader->leader;
+}
 
 /* Return true if T1 and T2 have the same name.  If FOR_COMPLETION_P is
    true then if any type has no name return false, otherwise return
@@ -3287,33 +3355,84 @@ gimple_compare_field_offset (tree f1, tree f2)
   return false;
 }
 
-/* Return 1 iff T1 and T2 are structurally identical.
-   Otherwise, return 0.  */
+/* If the type T1 and the type T2 are a complete and an incomplete
+   variant of the same type return true.  */
 
-static int
-gimple_types_compatible_p (tree t1, tree t2)
+static bool
+gimple_compatible_complete_and_incomplete_subtype_p (tree t1, tree t2)
 {
-  type_pair_t p = NULL;
+  /* If one pointer points to an incomplete type variant of
+     the other pointed-to type they are the same.  */
+  if (TREE_CODE (t1) == TREE_CODE (t2)
+      && RECORD_OR_UNION_TYPE_P (t1)
+      && (!COMPLETE_TYPE_P (t1)
+	  || !COMPLETE_TYPE_P (t2))
+      && TYPE_QUALS (t1) == TYPE_QUALS (t2)
+      && compare_type_names_p (TYPE_MAIN_VARIANT (t1),
+			       TYPE_MAIN_VARIANT (t2), true))
+    return true;
+  return false;
+}
+
+static bool
+gimple_types_compatible_p_1 (tree, tree, enum gtc_mode, type_pair_t,
+			     VEC(type_pair_t, heap) **,
+			     struct pointer_map_t *, struct obstack *);
+
+/* DFS visit the edge from the callers type pair with state *STATE to
+   the pair T1, T2 while operating in FOR_MERGING_P mode.
+   Update the merging status if it is not part of the SCC containing the
+   callers pair and return it.
+   SCCSTACK, SCCSTATE and SCCSTATE_OBSTACK are state for the DFS walk done.  */
+
+static bool
+gtc_visit (tree t1, tree t2, enum gtc_mode mode,
+	   struct sccs *state,
+	   VEC(type_pair_t, heap) **sccstack,
+	   struct pointer_map_t *sccstate,
+	   struct obstack *sccstate_obstack)
+{
+  struct sccs *cstate = NULL;
+  type_pair_t p;
+  void **slot;
 
   /* Check first for the obvious case of pointer identity.  */
   if (t1 == t2)
-    return 1;
+    return true;
 
   /* Check that we have two types to compare.  */
   if (t1 == NULL_TREE || t2 == NULL_TREE)
-    return 0;
+    return false;
+
+  /* If the types have been previously registered and found equal
+     they still are.  */
+  if (mode == GTC_MERGE)
+    {
+      tree leader1 = gimple_lookup_type_leader (t1);
+      tree leader2 = gimple_lookup_type_leader (t2);
+      if (leader1 == t2
+	  || t1 == leader2
+	  || (leader1 && leader1 == leader2))
+	return true;
+    }
+  else if (mode == GTC_DIAG)
+    {
+      if (TYPE_CANONICAL (t1)
+	  && TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2))
+	return true;
+    }
 
   /* Can't be the same type if the types don't have the same code.  */
   if (TREE_CODE (t1) != TREE_CODE (t2))
-    return 0;
+    return false;
 
   /* Can't be the same type if they have different CV qualifiers.  */
   if (TYPE_QUALS (t1) != TYPE_QUALS (t2))
-    return 0;
+    return false;
 
   /* Void types are always the same.  */
   if (TREE_CODE (t1) == VOID_TYPE)
-    return 1;
+    return true;
 
   /* Do some simple checks before doing three hashtable queries.  */
   if (INTEGRAL_TYPE_P (t1)
@@ -3329,22 +3448,17 @@ gimple_types_compatible_p (tree t1, tree t2)
 	  || TYPE_PRECISION (t1) != TYPE_PRECISION (t2)
 	  || TYPE_MODE (t1) != TYPE_MODE (t2)
 	  || TYPE_UNSIGNED (t1) != TYPE_UNSIGNED (t2))
-	return 0;
+	return false;
 
       if (TREE_CODE (t1) == INTEGER_TYPE
 	  && (TYPE_IS_SIZETYPE (t1) != TYPE_IS_SIZETYPE (t2)
 	      || TYPE_STRING_FLAG (t1) != TYPE_STRING_FLAG (t2)))
-	return 0;
+	return false;
 
       /* That's all we need to check for float and fixed-point types.  */
       if (SCALAR_FLOAT_TYPE_P (t1)
 	  || FIXED_POINT_TYPE_P (t1))
-	return 1;
-
-      /* Perform cheap tail-recursion for vector and complex types.  */
-      if (TREE_CODE (t1) == VECTOR_TYPE
-	  || TREE_CODE (t1) == COMPLEX_TYPE)
-	return gimple_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2));
+	return true;
 
       /* For integral types fall thru to more complex checks.  */
     }
@@ -3354,35 +3468,69 @@ gimple_types_compatible_p (tree t1, tree t2)
       /* Can't be the same type if they have different alignment or mode.  */
       if (TYPE_ALIGN (t1) != TYPE_ALIGN (t2)
 	  || TYPE_MODE (t1) != TYPE_MODE (t2))
-	return 0;
+	return false;
     }
 
   /* If the hash values of t1 and t2 are different the types can't
      possibly be the same.  This helps keeping the type-pair hashtable
      small, only tracking comparisons for hash collisions.  */
   if (gimple_type_hash (t1) != gimple_type_hash (t2))
-    return 0;
+    return false;
 
-  /* If we've visited this type pair before (in the case of aggregates
-     with self-referential types), and we made a decision, return it.  */
+  /* Allocate a new cache entry for this comparison.  */
   p = lookup_type_pair (t1, t2, &gtc_visited, &gtc_ob);
-  if (p->same_p == 0 || p->same_p == 1)
+  if (p->same_p[mode] == 0 || p->same_p[mode] == 1)
     {
       /* We have already decided whether T1 and T2 are the
 	 same, return the cached result.  */
-      return p->same_p == 1;
+      return p->same_p[mode] == 1;
     }
-  else if (p->same_p == -1)
+
+  if ((slot = pointer_map_contains (sccstate, p)) != NULL)
+    cstate = (struct sccs *)*slot;
+  /* Not yet visited.  DFS recurse.  */
+  if (!cstate)
     {
-      /* We are currently comparing this pair of types, assume
-	 that they are the same and let the caller decide.  */
-      return 1;
+      gimple_types_compatible_p_1 (t1, t2, mode, p,
+				   sccstack, sccstate, sccstate_obstack);
+      cstate = (struct sccs *)* pointer_map_contains (sccstate, p);
+      state->low = MIN (state->low, cstate->low);
     }
+  /* If the type is still on the SCC stack adjust the parents low.  */
+  if (cstate->dfsnum < state->dfsnum
+      && cstate->on_sccstack)
+    state->low = MIN (cstate->dfsnum, state->low);
 
-  gcc_assert (p->same_p == -2);
+  /* Return the current lattice value.  We start with an equality
+     assumption so types part of a SCC will be optimistically
+     treated equal unless proven otherwise.  */
+  return cstate->u.same_p;
+}
 
-  /* Mark the (T1, T2) comparison in progress.  */
-  p->same_p = -1;
+/* Worker for gimple_types_compatible.
+   SCCSTACK, SCCSTATE and SCCSTATE_OBSTACK are state for the DFS walk done.  */
+
+static bool
+gimple_types_compatible_p_1 (tree t1, tree t2, enum gtc_mode mode,
+			     type_pair_t p,
+			     VEC(type_pair_t, heap) **sccstack,
+			     struct pointer_map_t *sccstate,
+			     struct obstack *sccstate_obstack)
+{
+  struct sccs *state;
+
+  gcc_assert (p->same_p[mode] == -2);
+
+  state = XOBNEW (sccstate_obstack, struct sccs);
+  *pointer_map_insert (sccstate, p) = state;
+
+  VEC_safe_push (type_pair_t, heap, *sccstack, p);
+  state->dfsnum = gtc_next_dfs_num++;
+  state->low = state->dfsnum;
+  state->on_sccstack = true;
+  /* Start with an equality assumption.  As we DFS recurse into child
+     SCCs this assumption may get revisited.  */
+  state->u.same_p = 1;
 
   /* If their attributes are not the same they can't be the same type.  */
   if (!attribute_list_equal (TYPE_ATTRIBUTES (t1), TYPE_ATTRIBUTES (t2)))
@@ -3391,10 +3539,18 @@ gimple_types_compatible_p (tree t1, tree t2)
   /* Do type-specific comparisons.  */
   switch (TREE_CODE (t1))
     {
+    case VECTOR_TYPE:
+    case COMPLEX_TYPE:
+      if (!gtc_visit (TREE_TYPE (t1), TREE_TYPE (t2), mode,
+		      state, sccstack, sccstate, sccstate_obstack))
+	goto different_types;
+      goto same_types;
+
     case ARRAY_TYPE:
       /* Array types are the same if the element types are the same and
 	 the number of elements are the same.  */
-      if (!gimple_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2))
+      if (!gtc_visit (TREE_TYPE (t1), TREE_TYPE (t2), mode,
+		      state, sccstack, sccstate, sccstate_obstack)
 	  || TYPE_STRING_FLAG (t1) != TYPE_STRING_FLAG (t2)
 	  || TYPE_NONALIASED_COMPONENT (t1) != TYPE_NONALIASED_COMPONENT (t2))
 	goto different_types;
@@ -3442,8 +3598,8 @@ gimple_types_compatible_p (tree t1, tree t2)
 
     case METHOD_TYPE:
       /* Method types should belong to the same class.  */
-      if (!gimple_types_compatible_p (TYPE_METHOD_BASETYPE (t1),
-				 TYPE_METHOD_BASETYPE (t2)))
+      if (!gtc_visit (TYPE_METHOD_BASETYPE (t1), TYPE_METHOD_BASETYPE (t2),
+		      mode, state, sccstack, sccstate, sccstate_obstack))
 	goto different_types;
 
       /* Fallthru  */
@@ -3451,40 +3607,47 @@ gimple_types_compatible_p (tree t1, tree t2)
     case FUNCTION_TYPE:
       /* Function types are the same if the return type and arguments types
 	 are the same.  */
-      if (!gimple_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+      if ((mode != GTC_DIAG
+	   || !gimple_compatible_complete_and_incomplete_subtype_p
+	         (TREE_TYPE (t1), TREE_TYPE (t2)))
+	  && !gtc_visit (TREE_TYPE (t1), TREE_TYPE (t2), mode,
+			 state, sccstack, sccstate, sccstate_obstack))
 	goto different_types;
+
+      if (!targetm.comp_type_attributes (t1, t2))
+	goto different_types;
+
+      if (TYPE_ARG_TYPES (t1) == TYPE_ARG_TYPES (t2))
+	goto same_types;
       else
 	{
-	  if (!targetm.comp_type_attributes (t1, t2))
+	  tree parms1, parms2;
+
+	  for (parms1 = TYPE_ARG_TYPES (t1), parms2 = TYPE_ARG_TYPES (t2);
+	       parms1 && parms2;
+	       parms1 = TREE_CHAIN (parms1), parms2 = TREE_CHAIN (parms2))
+	    {
+	      if ((mode == GTC_MERGE
+		   || !gimple_compatible_complete_and_incomplete_subtype_p
+		         (TREE_VALUE (parms1), TREE_VALUE (parms2)))
+		  && !gtc_visit (TREE_VALUE (parms1), TREE_VALUE (parms2), mode,
+				 state, sccstack, sccstate, sccstate_obstack))
+		goto different_types;
+	    }
+
+	  if (parms1 || parms2)
 	    goto different_types;
 
-	  if (TYPE_ARG_TYPES (t1) == TYPE_ARG_TYPES (t2))
-	    goto same_types;
-	  else
-	    {
-	      tree parms1, parms2;
-
-	      for (parms1 = TYPE_ARG_TYPES (t1), parms2 = TYPE_ARG_TYPES (t2);
-		   parms1 && parms2;
-		   parms1 = TREE_CHAIN (parms1), parms2 = TREE_CHAIN (parms2))
-		{
-		  if (!gimple_types_compatible_p (TREE_VALUE (parms1),
-					     TREE_VALUE (parms2)))
-		    goto different_types;
-		}
-
-	      if (parms1 || parms2)
-		goto different_types;
-
-	      goto same_types;
-	    }
+	  goto same_types;
 	}
 
     case OFFSET_TYPE:
       {
-	if (!gimple_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2))
-	    || !gimple_types_compatible_p (TYPE_OFFSET_BASETYPE (t1),
-					   TYPE_OFFSET_BASETYPE (t2)))
+	if (!gtc_visit (TREE_TYPE (t1), TREE_TYPE (t2), mode,
+			state, sccstack, sccstate, sccstate_obstack)
+	    || !gtc_visit (TYPE_OFFSET_BASETYPE (t1),
+			   TYPE_OFFSET_BASETYPE (t2), mode,
+			   state, sccstack, sccstate, sccstate_obstack))
 	  goto different_types;
 
 	goto same_types;
@@ -3500,38 +3663,23 @@ gimple_types_compatible_p (tree t1, tree t2)
 
 	/* If one pointer points to an incomplete type variant of
 	   the other pointed-to type they are the same.  */
-	if (TREE_CODE (TREE_TYPE (t1)) == TREE_CODE (TREE_TYPE (t2))
-	    && RECORD_OR_UNION_TYPE_P (TREE_TYPE (t1))
-	    && (!COMPLETE_TYPE_P (TREE_TYPE (t1))
-		|| !COMPLETE_TYPE_P (TREE_TYPE (t2)))
-	    && TYPE_QUALS (TREE_TYPE (t1)) == TYPE_QUALS (TREE_TYPE (t2))
-	    && compare_type_names_p (TYPE_MAIN_VARIANT (TREE_TYPE (t1)),
-				     TYPE_MAIN_VARIANT (TREE_TYPE (t2)), true))
-	  {
-	    /* Replace the pointed-to incomplete type with the
-	       complete one.
-	       ???  This simple name-based merging causes at least some
-	       of the ICEs in canonicalizing FIELD_DECLs during stmt
-	       read.  For example in GCC we have two different struct deps
-	       and we mismatch the use in struct cpp_reader in sched-int.h
-	       vs. mkdeps.c.  Of course the whole exercise is for TBAA
-	       with structs which contain pointers to incomplete types
-	       in one unit and to complete ones in another.  So we
-	       probably should merge these types only with more context.  */
-	    if (COMPLETE_TYPE_P (TREE_TYPE (t2)))
-	      TREE_TYPE (t1) = TREE_TYPE (t2);
-	    else
-	      TREE_TYPE (t2) = TREE_TYPE (t1);
-	    goto same_types;
-	  }
+	if (mode == GTC_DIAG
+	    && gimple_compatible_complete_and_incomplete_subtype_p
+	         (TREE_TYPE (t1), TREE_TYPE (t2)))
+	  goto same_types;
 
 	/* Otherwise, pointer and reference types are the same if the
 	   pointed-to types are the same.  */
-	if (gimple_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+	if (gtc_visit (TREE_TYPE (t1), TREE_TYPE (t2), mode,
+		       state, sccstack, sccstate, sccstate_obstack))
 	  goto same_types;
 
 	goto different_types;
       }
+
+    case NULLPTR_TYPE:
+      /* There is only one decltype(nullptr).  */
+      goto same_types;
 
     case INTEGER_TYPE:
     case BOOLEAN_TYPE:
@@ -3622,8 +3770,8 @@ gimple_types_compatible_p (tree t1, tree t2)
 	    if (DECL_NAME (f1) != DECL_NAME (f2)
 		|| DECL_NONADDRESSABLE_P (f1) != DECL_NONADDRESSABLE_P (f2)
 		|| !gimple_compare_field_offset (f1, f2)
-		|| !gimple_types_compatible_p (TREE_TYPE (f1),
-					       TREE_TYPE (f2)))
+		|| !gtc_visit (TREE_TYPE (f1), TREE_TYPE (f2), mode,
+			       state, sccstack, sccstate, sccstate_obstack))
 	      goto different_types;
 	  }
 
@@ -3641,32 +3789,153 @@ gimple_types_compatible_p (tree t1, tree t2)
 
   /* Common exit path for types that are not compatible.  */
 different_types:
-  p->same_p = 0;
-  return 0;
+  state->u.same_p = 0;
+  goto pop;
 
   /* Common exit path for types that are compatible.  */
 same_types:
-  p->same_p = 1;
-  return 1;
+  gcc_assert (state->u.same_p == 1);
+
+pop:
+  if (state->low == state->dfsnum)
+    {
+      type_pair_t x;
+
+      /* Pop off the SCC and set its cache values to the final
+         comparison result.  */
+      do
+	{
+	  struct sccs *cstate;
+	  x = VEC_pop (type_pair_t, *sccstack);
+	  cstate = (struct sccs *)*pointer_map_contains (sccstate, x);
+	  cstate->on_sccstack = false;
+	  x->same_p[mode] = state->u.same_p;
+	}
+      while (x != p);
+    }
+
+  return state->u.same_p;
 }
 
+/* Return true iff T1 and T2 are structurally identical.  When
+   FOR_MERGING_P is true the an incomplete type and a complete type
+   are considered different, otherwise they are considered compatible.  */
 
-
-
-/* Per pointer state for the SCC finding.  The on_sccstack flag
-   is not strictly required, it is true when there is no hash value
-   recorded for the type and false otherwise.  But querying that
-   is slower.  */
-
-struct sccs
+bool
+gimple_types_compatible_p (tree t1, tree t2, enum gtc_mode mode)
 {
-  unsigned int dfsnum;
-  unsigned int low;
-  bool on_sccstack;
-  hashval_t hash;
-};
+  VEC(type_pair_t, heap) *sccstack = NULL;
+  struct pointer_map_t *sccstate;
+  struct obstack sccstate_obstack;
+  type_pair_t p = NULL;
+  bool res;
 
-static unsigned int next_dfs_num;
+  /* Before starting to set up the SCC machinery handle simple cases.  */
+
+  /* Check first for the obvious case of pointer identity.  */
+  if (t1 == t2)
+    return true;
+
+  /* Check that we have two types to compare.  */
+  if (t1 == NULL_TREE || t2 == NULL_TREE)
+    return false;
+
+  /* If the types have been previously registered and found equal
+     they still are.  */
+  if (mode == GTC_MERGE)
+    {
+      tree leader1 = gimple_lookup_type_leader (t1);
+      tree leader2 = gimple_lookup_type_leader (t2);
+      if (leader1 == t2
+	  || t1 == leader2
+	  || (leader1 && leader1 == leader2))
+	return true;
+    }
+  else if (mode == GTC_DIAG)
+    {
+      if (TYPE_CANONICAL (t1)
+	  && TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2))
+	return true;
+    }
+
+  /* Can't be the same type if the types don't have the same code.  */
+  if (TREE_CODE (t1) != TREE_CODE (t2))
+    return false;
+
+  /* Can't be the same type if they have different CV qualifiers.  */
+  if (TYPE_QUALS (t1) != TYPE_QUALS (t2))
+    return false;
+
+  /* Void types are always the same.  */
+  if (TREE_CODE (t1) == VOID_TYPE)
+    return true;
+
+  /* Do some simple checks before doing three hashtable queries.  */
+  if (INTEGRAL_TYPE_P (t1)
+      || SCALAR_FLOAT_TYPE_P (t1)
+      || FIXED_POINT_TYPE_P (t1)
+      || TREE_CODE (t1) == VECTOR_TYPE
+      || TREE_CODE (t1) == COMPLEX_TYPE
+      || TREE_CODE (t1) == OFFSET_TYPE)
+    {
+      /* Can't be the same type if they have different alignment,
+	 sign, precision or mode.  */
+      if (TYPE_ALIGN (t1) != TYPE_ALIGN (t2)
+	  || TYPE_PRECISION (t1) != TYPE_PRECISION (t2)
+	  || TYPE_MODE (t1) != TYPE_MODE (t2)
+	  || TYPE_UNSIGNED (t1) != TYPE_UNSIGNED (t2))
+	return false;
+
+      if (TREE_CODE (t1) == INTEGER_TYPE
+	  && (TYPE_IS_SIZETYPE (t1) != TYPE_IS_SIZETYPE (t2)
+	      || TYPE_STRING_FLAG (t1) != TYPE_STRING_FLAG (t2)))
+	return false;
+
+      /* That's all we need to check for float and fixed-point types.  */
+      if (SCALAR_FLOAT_TYPE_P (t1)
+	  || FIXED_POINT_TYPE_P (t1))
+	return true;
+
+      /* For integral types fall thru to more complex checks.  */
+    }
+
+  else if (AGGREGATE_TYPE_P (t1) || POINTER_TYPE_P (t1))
+    {
+      /* Can't be the same type if they have different alignment or mode.  */
+      if (TYPE_ALIGN (t1) != TYPE_ALIGN (t2)
+	  || TYPE_MODE (t1) != TYPE_MODE (t2))
+	return false;
+    }
+
+  /* If the hash values of t1 and t2 are different the types can't
+     possibly be the same.  This helps keeping the type-pair hashtable
+     small, only tracking comparisons for hash collisions.  */
+  if (gimple_type_hash (t1) != gimple_type_hash (t2))
+    return false;
+
+  /* If we've visited this type pair before (in the case of aggregates
+     with self-referential types), and we made a decision, return it.  */
+  p = lookup_type_pair (t1, t2, &gtc_visited, &gtc_ob);
+  if (p->same_p[mode] == 0 || p->same_p[mode] == 1)
+    {
+      /* We have already decided whether T1 and T2 are the
+	 same, return the cached result.  */
+      return p->same_p[mode] == 1;
+    }
+
+  /* Now set up the SCC machinery for the comparison.  */
+  gtc_next_dfs_num = 1;
+  sccstate = pointer_map_create ();
+  gcc_obstack_init (&sccstate_obstack);
+  res = gimple_types_compatible_p_1 (t1, t2, mode, p,
+				     &sccstack, sccstate, &sccstate_obstack);
+  VEC_free (type_pair_t, heap, sccstack);
+  pointer_map_destroy (sccstate);
+  obstack_free (&sccstate_obstack, NULL);
+
+  return res;
+}
+
 
 static hashval_t
 iterative_hash_gimple_type (tree, hashval_t, VEC(tree, heap) **,
@@ -3684,12 +3953,15 @@ visit (tree t, struct sccs *state, hashval_t v,
        struct obstack *sccstate_obstack)
 {
   struct sccs *cstate = NULL;
+  struct tree_int_map m;
   void **slot;
 
   /* If there is a hash value recorded for this type then it can't
      possibly be part of our parent SCC.  Simply mix in its hash.  */
-  if ((slot = pointer_map_contains (type_hash_cache, t)))
-    return iterative_hash_hashval_t ((hashval_t) (size_t) *slot, v);
+  m.base.from = t;
+  if ((slot = htab_find_slot (type_hash_cache, &m, NO_INSERT))
+      && *slot)
+    return iterative_hash_hashval_t (((struct tree_int_map *) *slot)->to, v);
 
   if ((slot = pointer_map_contains (sccstate, t)) != NULL)
     cstate = (struct sccs *)*slot;
@@ -3755,11 +4027,8 @@ iterative_hash_gimple_type (tree type, hashval_t val,
   void **slot;
   struct sccs *state;
 
-#ifdef ENABLE_CHECKING
-  /* Not visited during this DFS walk nor during previous walks.  */
-  gcc_assert (!pointer_map_contains (type_hash_cache, type)
-	      && !pointer_map_contains (sccstate, type));
-#endif
+  /* Not visited during this DFS walk.  */
+  gcc_checking_assert (!pointer_map_contains (sccstate, type));
   state = XOBNEW (sccstate_obstack, struct sccs);
   *pointer_map_insert (sccstate, type) = state;
 
@@ -3844,13 +4113,29 @@ iterative_hash_gimple_type (tree type, hashval_t val,
 	v = visit (TYPE_METHOD_BASETYPE (type), state, v,
 		   sccstack, sccstate, sccstate_obstack);
 
-      v = visit (TREE_TYPE (type), state, v,
-		 sccstack, sccstate, sccstate_obstack);
+      /* For result types allow mismatch in completeness.  */
+      if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (type)))
+	{
+	  v = iterative_hash_hashval_t (TREE_CODE (TREE_TYPE (type)), v);
+	  v = iterative_hash_name
+	      (TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (type))), v);
+	}
+      else
+	v = visit (TREE_TYPE (type), state, v,
+		   sccstack, sccstate, sccstate_obstack);
 
       for (p = TYPE_ARG_TYPES (type), na = 0; p; p = TREE_CHAIN (p))
 	{
-	  v = visit (TREE_VALUE (p), state, v,
-		     sccstack, sccstate, sccstate_obstack);
+	  /* For argument types allow mismatch in completeness.  */
+	  if (RECORD_OR_UNION_TYPE_P (TREE_VALUE (p)))
+	    {
+	      v = iterative_hash_hashval_t (TREE_CODE (TREE_VALUE (p)), v);
+	      v = iterative_hash_name
+		  (TYPE_NAME (TYPE_MAIN_VARIANT (TREE_VALUE (p))), v);
+	    }
+	  else
+	    v = visit (TREE_VALUE (p), state, v,
+		       sccstack, sccstate, sccstate_obstack);
 	  na++;
 	}
 
@@ -3878,7 +4163,7 @@ iterative_hash_gimple_type (tree type, hashval_t val,
     }
 
   /* Record hash for us.  */
-  state->hash = v;
+  state->u.hash = v;
 
   /* See if we found an SCC.  */
   if (state->low == state->dfsnum)
@@ -3889,12 +4174,15 @@ iterative_hash_gimple_type (tree type, hashval_t val,
       do
 	{
 	  struct sccs *cstate;
+	  struct tree_int_map *m = ggc_alloc_cleared_tree_int_map ();
 	  x = VEC_pop (tree, *sccstack);
-	  gcc_assert (!pointer_map_contains (type_hash_cache, x));
 	  cstate = (struct sccs *)*pointer_map_contains (sccstate, x);
 	  cstate->on_sccstack = false;
-	  slot = pointer_map_insert (type_hash_cache, x);
-	  *slot = (void *) (size_t) cstate->hash;
+	  m->base.from = x;
+	  m->to = cstate->u.hash;
+	  slot = htab_find_slot (type_hash_cache, m, INSERT);
+	  gcc_assert (!*slot);
+	  *slot = (void *) m;
 	}
       while (x != type);
     }
@@ -3920,12 +4208,16 @@ gimple_type_hash (const void *p)
   struct obstack sccstate_obstack;
   hashval_t val;
   void **slot;
+  struct tree_int_map m;
 
   if (type_hash_cache == NULL)
-    type_hash_cache = pointer_map_create ();
+    type_hash_cache = htab_create_ggc (512, tree_int_map_hash,
+				       tree_int_map_eq, NULL);
 
-  if ((slot = pointer_map_contains (type_hash_cache, p)) != NULL)
-    return iterative_hash_hashval_t ((hashval_t) (size_t) *slot, 0);
+  m.base.from = CONST_CAST_TREE (t);
+  if ((slot = htab_find_slot (type_hash_cache, &m, NO_INSERT))
+      && *slot)
+    return iterative_hash_hashval_t (((struct tree_int_map *) *slot)->to, 0);
 
   /* Perform a DFS walk and pre-hash all reachable types.  */
   next_dfs_num = 1;
@@ -3948,7 +4240,8 @@ gimple_type_eq (const void *p1, const void *p2)
 {
   const_tree t1 = (const_tree) p1;
   const_tree t2 = (const_tree) p2;
-  return gimple_types_compatible_p (CONST_CAST_TREE (t1), CONST_CAST_TREE (t2));
+  return gimple_types_compatible_p (CONST_CAST_TREE (t1),
+				    CONST_CAST_TREE (t2), GTC_MERGE);
 }
 
 
@@ -3961,22 +4254,27 @@ tree
 gimple_register_type (tree t)
 {
   void **slot;
+  gimple_type_leader_entry *leader;
+  tree mv_leader = NULL_TREE;
 
   gcc_assert (TYPE_P (t));
 
-  /* In TYPE_CANONICAL we cache the result of gimple_register_type.
-     It is initially set to NULL during LTO streaming.  */
-  if (TYPE_CANONICAL (t))
-    return TYPE_CANONICAL (t);
+  if (!gimple_type_leader)
+    gimple_type_leader = ggc_alloc_cleared_vec_gimple_type_leader_entry_s
+				(GIMPLE_TYPE_LEADER_SIZE);
+  /* If we registered this type before return the cached result.  */
+  leader = &gimple_type_leader[TYPE_UID (t) % GIMPLE_TYPE_LEADER_SIZE];
+  if (leader->type == t)
+    return leader->leader;
 
   /* Always register the main variant first.  This is important so we
      pick up the non-typedef variants as canonical, otherwise we'll end
      up taking typedef ids for structure tags during comparison.  */
   if (TYPE_MAIN_VARIANT (t) != t)
-    gimple_register_type (TYPE_MAIN_VARIANT (t));
+    mv_leader = gimple_register_type (TYPE_MAIN_VARIANT (t));
 
   if (gimple_types == NULL)
-    gimple_types = htab_create (16381, gimple_type_hash, gimple_type_eq, 0);
+    gimple_types = htab_create_ggc (16381, gimple_type_hash, gimple_type_eq, 0);
 
   slot = htab_find_slot (gimple_types, t, INSERT);
   if (*slot
@@ -4032,6 +4330,84 @@ gimple_register_type (tree t)
 	  TYPE_NEXT_REF_TO (t) = NULL_TREE;
 	}
 
+      leader->type = t;
+      leader->leader = new_type;
+      t = new_type;
+    }
+  else
+    {
+      leader->type = t;
+      leader->leader = t;
+      /* We're the type leader.  Make our TYPE_MAIN_VARIANT valid.  */
+      if (TYPE_MAIN_VARIANT (t) != t
+	  && TYPE_MAIN_VARIANT (t) != mv_leader)
+	{
+	  /* Remove us from our main variant list as we are not the variant
+	     leader and the variant leader will change.  */
+	  tree tem = TYPE_MAIN_VARIANT (t);
+	  while (tem && TYPE_NEXT_VARIANT (tem) != t)
+	    tem = TYPE_NEXT_VARIANT (tem);
+	  if (tem)
+	    TYPE_NEXT_VARIANT (tem) = TYPE_NEXT_VARIANT (t);
+	  TYPE_NEXT_VARIANT (t) = NULL_TREE;
+	  /* Adjust our main variant.  Linking us into its variant list
+	     will happen at fixup time.  */
+	  TYPE_MAIN_VARIANT (t) = mv_leader;
+	}
+      *slot = (void *) t;
+    }
+
+  return t;
+}
+
+
+/* Returns nonzero if P1 and P2 are equal.  */
+
+static int
+gimple_canonical_type_eq (const void *p1, const void *p2)
+{
+  const_tree t1 = (const_tree) p1;
+  const_tree t2 = (const_tree) p2;
+  return gimple_types_compatible_p (CONST_CAST_TREE (t1),
+				    CONST_CAST_TREE (t2), GTC_DIAG);
+}
+
+/* Register type T in the global type table gimple_types.
+   If another type T', compatible with T, already existed in
+   gimple_types then return T', otherwise return T.  This is used by
+   LTO to merge identical types read from different TUs.  */
+
+tree
+gimple_register_canonical_type (tree t)
+{
+  void **slot;
+  tree orig_t = t;
+
+  gcc_assert (TYPE_P (t));
+
+  if (TYPE_CANONICAL (t))
+    return TYPE_CANONICAL (t);
+
+  /* Always register the type itself first so that if it turns out
+     to be the canonical type it will be the one we merge to as well.  */
+  t = gimple_register_type (t);
+
+  /* Always register the main variant first.  This is important so we
+     pick up the non-typedef variants as canonical, otherwise we'll end
+     up taking typedef ids for structure tags during comparison.  */
+  if (TYPE_MAIN_VARIANT (t) != t)
+    gimple_register_canonical_type (TYPE_MAIN_VARIANT (t));
+
+  if (gimple_canonical_types == NULL)
+    gimple_canonical_types = htab_create_ggc (16381, gimple_type_hash,
+					      gimple_canonical_type_eq, 0);
+
+  slot = htab_find_slot (gimple_canonical_types, t, INSERT);
+  if (*slot
+      && *(tree *)slot != t)
+    {
+      tree new_type = (tree) *((tree *) slot);
+
       TYPE_CANONICAL (t) = new_type;
       t = new_type;
     }
@@ -4040,6 +4416,9 @@ gimple_register_type (tree t)
       TYPE_CANONICAL (t) = t;
       *slot = (void *) t;
     }
+
+  /* Also cache the canonical type in the non-leaders.  */
+  TYPE_CANONICAL (orig_t) = t;
 
   return t;
 }
@@ -4060,6 +4439,26 @@ print_gimple_types_stats (void)
 	     htab_collisions (gimple_types));
   else
     fprintf (stderr, "GIMPLE type table is empty\n");
+  if (gimple_canonical_types)
+    fprintf (stderr, "GIMPLE canonical type table: size %ld, %ld elements, "
+	     "%ld searches, %ld collisions (ratio: %f)\n",
+	     (long) htab_size (gimple_canonical_types),
+	     (long) htab_elements (gimple_canonical_types),
+	     (long) gimple_canonical_types->searches,
+	     (long) gimple_canonical_types->collisions,
+	     htab_collisions (gimple_canonical_types));
+  else
+    fprintf (stderr, "GIMPLE canonical type table is empty\n");
+  if (type_hash_cache)
+    fprintf (stderr, "GIMPLE type hash table: size %ld, %ld elements, "
+	     "%ld searches, %ld collisions (ratio: %f)\n",
+	     (long) htab_size (type_hash_cache),
+	     (long) htab_elements (type_hash_cache),
+	     (long) type_hash_cache->searches,
+	     (long) type_hash_cache->collisions,
+	     htab_collisions (type_hash_cache));
+  else
+    fprintf (stderr, "GIMPLE type hash table is empty\n");
   if (gtc_visited)
     fprintf (stderr, "GIMPLE type comparison table: size %ld, %ld "
 	     "elements, %ld searches, %ld collisions (ratio: %f)\n",
@@ -4086,9 +4485,14 @@ free_gimple_type_tables (void)
       htab_delete (gimple_types);
       gimple_types = NULL;
     }
+  if (gimple_canonical_types)
+    {
+      htab_delete (gimple_canonical_types);
+      gimple_canonical_types = NULL;
+    }
   if (type_hash_cache)
     {
-      pointer_map_destroy (type_hash_cache);
+      htab_delete (type_hash_cache);
       type_hash_cache = NULL;
     }
   if (gtc_visited)
@@ -4097,6 +4501,7 @@ free_gimple_type_tables (void)
       obstack_free (&gtc_ob, NULL);
       gtc_visited = NULL;
     }
+  gimple_type_leader = NULL;
 }
 
 
@@ -4329,63 +4734,6 @@ gimple_get_alias_set (tree t)
       if (t1 != t)
 	return get_alias_set (t1);
     }
-  else if (POINTER_TYPE_P (t))
-    {
-      /* From the common C and C++ langhook implementation:
-
-	 Unfortunately, there is no canonical form of a pointer type.
-	 In particular, if we have `typedef int I', then `int *', and
-	 `I *' are different types.  So, we have to pick a canonical
-	 representative.  We do this below.
-
-	 Technically, this approach is actually more conservative that
-	 it needs to be.  In particular, `const int *' and `int *'
-	 should be in different alias sets, according to the C and C++
-	 standard, since their types are not the same, and so,
-	 technically, an `int **' and `const int **' cannot point at
-	 the same thing.
-
-	 But, the standard is wrong.  In particular, this code is
-	 legal C++:
-
-	 int *ip;
-	 int **ipp = &ip;
-	 const int* const* cipp = ipp;
-	 And, it doesn't make sense for that to be legal unless you
-	 can dereference IPP and CIPP.  So, we ignore cv-qualifiers on
-	 the pointed-to types.  This issue has been reported to the
-	 C++ committee.  */
-
-      /* In addition to the above canonicalization issue with LTO
-         we should also canonicalize `T (*)[]' to `T *' avoiding
-	 alias issues with pointer-to element types and pointer-to
-	 array types.
-
-	 Likewise we need to deal with the situation of incomplete
-	 pointed-to types and make `*(struct X **)&a' and
-	 `*(struct X {} **)&a' alias.  Otherwise we will have to
-	 guarantee that all pointer-to incomplete type variants
-	 will be replaced by pointer-to complete type variants if
-	 they are available.
-
-	 With LTO the convenient situation of using `void *' to
-	 access and store any pointer type will also become
-	 more apparent (and `void *' is just another pointer-to
-	 incomplete type).  Assigning alias-set zero to `void *'
-	 and all pointer-to incomplete types is a not appealing
-	 solution.  Assigning an effective alias-set zero only
-	 affecting pointers might be - by recording proper subset
-	 relationships of all pointer alias-sets.
-
-	 Pointer-to function types are another grey area which
-	 needs caution.  Globbing them all into one alias-set
-	 or the above effective zero set would work.  */
-
-      /* For now just assign the same alias-set to all pointers.
-         That's simple and avoids all the above problems.  */
-      if (t != ptr_type_node)
-	return get_alias_set (ptr_type_node);
-    }
 
   return -1;
 }
@@ -4418,7 +4766,7 @@ count_ptr_derefs (tree *tp, int *walk_subtrees, void *data)
       return NULL_TREE;
     }
 
-  if (INDIRECT_REF_P (*tp) && TREE_OPERAND (*tp, 0) == count_p->ptr)
+  if (TREE_CODE (*tp) == MEM_REF && TREE_OPERAND (*tp, 0) == count_p->ptr)
     {
       if (wi_p->is_lhs)
 	count_p->num_stores++;
@@ -4491,6 +4839,7 @@ get_base_loadstore (tree op)
     op = TREE_OPERAND (op, 0);
   if (DECL_P (op)
       || INDIRECT_REF_P (op)
+      || TREE_CODE (op) == MEM_REF
       || TREE_CODE (op) == TARGET_MEM_REF)
     return op;
   return NULL_TREE;
@@ -4528,7 +4877,6 @@ walk_stmt_load_store_addr_ops (gimple stmt, void *data,
 	  if (TREE_CODE (rhs) == ADDR_EXPR)
 	    ret |= visit_addr (stmt, TREE_OPERAND (rhs, 0), data);
 	  else if (TREE_CODE (rhs) == TARGET_MEM_REF
-                   && TMR_BASE (rhs) != NULL_TREE
 		   && TREE_CODE (TMR_BASE (rhs)) == ADDR_EXPR)
 	    ret |= visit_addr (stmt, TREE_OPERAND (TMR_BASE (rhs), 0), data);
 	  else if (TREE_CODE (rhs) == OBJ_TYPE_REF
@@ -4537,7 +4885,6 @@ walk_stmt_load_store_addr_ops (gimple stmt, void *data,
 						   0), data);
           lhs = gimple_assign_lhs (stmt);
 	  if (TREE_CODE (lhs) == TARGET_MEM_REF
-              && TMR_BASE (lhs) != NULL_TREE
               && TREE_CODE (TMR_BASE (lhs)) == ADDR_EXPR)
             ret |= visit_addr (stmt, TREE_OPERAND (TMR_BASE (lhs), 0), data);
 	}

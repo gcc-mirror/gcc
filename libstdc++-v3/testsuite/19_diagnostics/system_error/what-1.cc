@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2007, 2008, 2009
+// Copyright (C) 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -22,7 +22,6 @@
 
 #include <string>
 #include <system_error>
-#include <cstring>
 #include <testsuite_hooks.h>
 
 using namespace std;
@@ -39,8 +38,8 @@ void test01()
   // 2
   system_error obj2(error_code(), s);
 
-  VERIFY( strcmp(obj1.what(), s.data()) == 0 );
-  VERIFY( strcmp(obj2.what(), s.data()) == 0 );
+  VERIFY( string(obj1.what()).find(s.data()) != string::npos );
+  VERIFY( string(obj2.what()).find(s.data()) != string::npos );
 }
 
 void test02()
@@ -49,7 +48,7 @@ void test02()
   string s("lack of sunlight error");
   system_error x(error_code(), s);
   
-  VERIFY( strcmp(x.what(), s.data()) == 0 );
+  VERIFY( string(x.what()).find(s.data()) != string::npos );
 }
 
 int main(void)

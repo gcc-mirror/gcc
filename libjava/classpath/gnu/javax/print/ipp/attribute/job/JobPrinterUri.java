@@ -1,4 +1,4 @@
-/* JobPrinterUri.java -- 
+/* JobPrinterUri.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -47,7 +47,7 @@ import javax.print.attribute.URISyntax;
  * JobPrinterUri attribute as described in RFC 2911 section
  * 4.3.3 contains the URI of the printer which created and
  * processes a job.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class JobPrinterUri extends URISyntax implements Attribute
@@ -69,7 +69,7 @@ public final class JobPrinterUri extends URISyntax implements Attribute
    *
    * @return The class <code>JobPrinterUri</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return JobPrinterUri.class;
   }

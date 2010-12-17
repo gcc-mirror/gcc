@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "" }
+// { dg-require-namedlocale "en_US.ISO-8859-15" }
 
 // 2003-02-06  Petur Runolfsson  <peturr02@ru.is>
 

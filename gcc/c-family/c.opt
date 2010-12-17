@@ -37,8 +37,152 @@ C++
 Language
 ObjC++
 
+-all-warnings
+C ObjC C++ ObjC++ Warning Alias(Wall)
+
+-ansi
+C ObjC C++ ObjC++ Alias(ansi)
+
+-assert
+C ObjC C++ ObjC++ Separate Alias(A) MissingArgError(assertion missing after %qs)
+
+-assert=
+C ObjC C++ ObjC++ Joined Alias(A) MissingArgError(assertion missing after %qs)
+
+-comments
+C ObjC C++ ObjC++ Alias(C)
+
+-comments-in-macros
+C ObjC C++ ObjC++ Alias(CC)
+
+-define-macro
+C ObjC C++ ObjC++ Separate Alias(D) MissingArgError(macro name missing after %qs)
+
+-define-macro=
+C ObjC C++ ObjC++ Joined Alias(D) MissingArgError(macro name missing after %qs)
+
+-dependencies
+C ObjC C++ ObjC++ Alias(M)
+
+-dump
+C ObjC C++ ObjC++ Separate Alias(d)
+
+-dump=
+C ObjC C++ ObjC++ Joined Alias(d)
+
+-imacros
+C ObjC C++ ObjC++ Separate Alias(imacros) MissingArgError(missing filename after %qs)
+
+-imacros=
+C ObjC C++ ObjC++ Joined Alias(imacros) MissingArgError(missing filename after %qs)
+
+-include
+C ObjC C++ ObjC++ Separate Alias(include) MissingArgError(missing filename after %qs)
+
+-include=
+C ObjC C++ ObjC++ Joined Alias(include) MissingArgError(missing filename after %qs)
+
+-include-barrier
+C ObjC C++ ObjC++ Alias(I, -)
+
+-include-directory
+C ObjC C++ ObjC++ Separate Alias(I) MissingArgError(missing path after %qs)
+
+-include-directory=
+C ObjC C++ ObjC++ Joined Alias(I) MissingArgError(missing path after %qs)
+
+-include-directory-after
+C ObjC C++ ObjC++ Separate Alias(idirafter) MissingArgError(missing path after %qs)
+
+-include-directory-after=
+C ObjC C++ ObjC++ Joined Alias(idirafter) MissingArgError(missing path after %qs)
+
+-include-prefix
+C ObjC C++ ObjC++ Separate Alias(iprefix)
+
+-include-prefix=
+C ObjC C++ ObjC++ JoinedOrMissing Alias(iprefix)
+
+-include-with-prefix
+C ObjC C++ ObjC++ Separate Alias(iwithprefix)
+
+-include-with-prefix=
+C ObjC C++ ObjC++ JoinedOrMissing Alias(iwithprefix)
+
+-include-with-prefix-after
+C ObjC C++ ObjC++ Separate Alias(iwithprefix)
+
+-include-with-prefix-after=
+C ObjC C++ ObjC++ JoinedOrMissing Alias(iwithprefix)
+
+-include-with-prefix-before
+C ObjC C++ ObjC++ Separate Alias(iwithprefixbefore)
+
+-include-with-prefix-before=
+C ObjC C++ ObjC++ JoinedOrMissing Alias(iwithprefixbefore)
+
+-no-integrated-cpp
+Driver Alias(no-integrated-cpp)
+
+-no-line-commands
+C ObjC C++ ObjC++ Alias(P)
+
+-no-standard-includes
+C ObjC C++ ObjC++ Alias(nostdinc)
+
+-no-warnings
+C ObjC C++ ObjC++ Alias(w)
+
+-output
+C ObjC C++ ObjC++ Separate Alias(o)
+
+-output=
+C ObjC C++ ObjC++ Joined Alias(o)
+
 -output-pch=
 C UPC ObjC C++ ObjC++ Joined Separate
+
+-pedantic
+C ObjC C++ ObjC++ Alias(pedantic)
+
+-pedantic-errors
+C ObjC C++ ObjC++ Alias(pedantic-errors)
+
+-preprocess
+C ObjC C++ ObjC++ Undocumented Alias(E)
+
+-print-missing-file-dependencies
+C ObjC C++ ObjC++ Alias(MG)
+
+-trace-includes
+C ObjC C++ ObjC++ Alias(H)
+
+-traditional
+Driver Alias(traditional)
+
+-traditional-cpp
+C ObjC C++ ObjC++ Alias(traditional-cpp)
+
+-trigraphs
+C ObjC C++ ObjC++ Alias(trigraphs)
+
+-undefine-macro
+C ObjC C++ ObjC++ Separate Alias(U) MissingArgError(macro name missing after %qs)
+
+-undefine-macro=
+C ObjC C++ ObjC++ Joined Alias(U) MissingArgError(macro name missing after %qs)
+
+-user-dependencies
+C ObjC C++ ObjC++ Alias(MM)
+
+-verbose
+Common C ObjC C++ ObjC++ Alias(v)
+
+-write-dependencies
+C ObjC C++ ObjC++ NoDriverArg Separate Alias(MD) MissingArgError(missing filename after %qs)
+
+-write-user-dependencies
+C ObjC C++ ObjC++ NoDriverArg Separate Alias(MMD) MissingArgError(missing filename after %qs)
 
 A
 C UPC ObjC C++ ObjC++ Joined Separate
@@ -54,14 +198,14 @@ C UPC ObjC C++ ObjC++
 Do not discard comments in macro expansions
 
 D
-C UPC ObjC C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate MissingArgError(macro name missing after %qs)
 -D<macro>[=<val>]	Define a <macro> with <val> as its value.  If just <macro> is given, <val> is taken to be 1
 
 E
 C UPC ObjC C++ ObjC++ Undocumented Var(flag_preprocess_only)
 
 F
-C UPC ObjC C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate MissingArgError(missing path after %qs)
 -F <dir>	Add <dir> to the end of the main framework include path
 
 H
@@ -69,7 +213,7 @@ C UPC ObjC C++ ObjC++
 Print the name of header files as they are used
 
 I
-C UPC ObjC C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate MissingArgError(missing path after %qs)
 -I <dir>	Add <dir> to the end of the main include path
 
 M
@@ -77,11 +221,12 @@ C UPC ObjC C++ ObjC++
 Generate make dependencies
 
 MD
-C UPC ObjC C++ ObjC++ Separate
+C UPC ObjC C++ ObjC++ NoDriverArg Separate MissingArgError(missing filename after %qs)
 Generate make dependencies and compile
 
 MF
 C UPC ObjC C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate MissingArgError(missing filename after %qs)
 -MF <file>	Write dependency output to the given file
 
 MG
@@ -93,7 +238,7 @@ C UPC ObjC C++ ObjC++
 Like -M but ignore system header files
 
 MMD
-C UPC ObjC C++ ObjC++ Separate
+C UPC ObjC C++ ObjC++ NoDriverArg Separate MissingArgError(missing filename after %qs)
 Like -MD but ignore system header files
 
 MP
@@ -101,11 +246,11 @@ C UPC ObjC C++ ObjC++
 Generate phony targets for all headers
 
 MQ
-C UPC ObjC C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate MissingArgError(missing makefile target after %qs)
 -MQ <target>	Add a MAKE-quoted target
 
 MT
-C UPC ObjC C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate MissingArgError(missing makefile target after %qs)
 -MT <target>	Add an unquoted target
 
 P
@@ -113,7 +258,7 @@ C UPC ObjC C++ ObjC++
 Do not generate #line directives
 
 U
-C UPC ObjC C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate MissingArgError(macro name missing after %qs)
 -U<macro>	Undefine <macro>
 
 Wabi
@@ -168,7 +313,7 @@ C UPC ObjC C++ ObjC++ Warning
 Warn about possibly nested block comments, and C++ comments spanning more than one physical line
 
 Wcomments
-C UPC ObjC C++ ObjC++ Warning
+C UPC ObjC C++ ObjC++ Warning Alias(Wcomment)
 Synonym for -Wcomment
 
 Wconversion
@@ -220,7 +365,7 @@ C UPC ObjC C++ ObjC++
 ; Documented in common.opt
 
 Werror-implicit-function-declaration
-C UPC ObjC RejectNegative Warning
+C UPC ObjC RejectNegative Warning Alias(Werror=, implicit-function-declaration)
 This switch is deprecated; use -Werror=implicit-function-declaration instead
 
 Wfloat-equal
@@ -270,6 +415,10 @@ Wimplicit
 C UPC ObjC Var(warn_implicit) Init(-1) Warning
 Warn about implicit declarations
 
+Wdouble-promotion
+C ObjC C++ ObjC++ Var(warn_double_promotion) Warning
+Warn about implicit conversions from \"float\" to \"double\"
+
 Wimplicit-function-declaration
 C UPC ObjC Var(warn_implicit_function_declaration) Init(-1) Warning
 Warn about implicit function declarations
@@ -279,7 +428,7 @@ C UPC ObjC Var(warn_implicit_int) Init(-1) Warning
 Warn when a declaration does not specify a type
 
 Wimport
-C UPC ObjC C++ ObjC++ Undocumented
+C UPC ObjC C++ ObjC++ Undocumented Ignore
 
 Wint-to-pointer-cast
 C UPC ObjC C++ ObjC++ Var(warn_int_to_pointer_cast) Init(1) Warning
@@ -413,6 +562,10 @@ Wpragmas
 C UPC ObjC C++ ObjC++ Var(warn_pragmas) Init(1) Warning
 Warn about misuses of pragmas
 
+Wproperty-assign-default
+ObjC ObjC++ Var(warn_property_assign_default) Init(1) Warning
+Warn if a property for an Objective-C object has no assign semantics specified
+
 Wprotocol
 ObjC ObjC++ Var(warn_protocol) Init(1) Warning
 Warn if inherited methods are unimplemented
@@ -519,7 +672,7 @@ Warn when a register variable is declared volatile
 
 Wwrite-strings
 C UPC ObjC C++ ObjC++ Var(warn_write_strings) Warning
-In C++, nonzero means warn about deprecated conversion from string literals to `char *'.  In C, similar warning, except that the conversion is of course not deprecated by the ISO C standard.
+In C++, nonzero means warn about deprecated conversion from string literals to 'char *'.  In C, similar warning, except that the conversion is of course not deprecated by the ISO C standard.
 
 Wpointer-sign
 C UPC ObjC Var(warn_pointer_sign) Init(-1) Warning
@@ -542,11 +695,11 @@ C++ ObjC++ Var(flag_access_control) Init(1)
 Enforce class member access control semantics
 
 fall-virtual
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 falt-external-templates
-C++ ObjC++
-Change when template instances are emitted
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
+No longer supported
 
 fasm
 C UPC ObjC C++ ObjC++ Var(flag_no_asm, 0)
@@ -572,7 +725,7 @@ C++ ObjC++ Var(flag_conserve_space)
 Reduce the size of object files
 
 fconstant-string-class=
-ObjC ObjC++ Joined
+ObjC ObjC++ Joined MissingArgError(no class name specified with %qs)
 -fconst-string-class=<name>	Use class <name> for constant strings
 
 fdeduce-init-list
@@ -580,7 +733,7 @@ C++ ObjC++ Var(flag_deduce_init_list) Init(1)
 -fno-deduce-init-list	disable deduction of std::initializer_list for a template type parameter from a brace-enclosed initializer-list
 
 fdefault-inline
-C++ ObjC++
+C++ ObjC++ Ignore
 Does nothing.  Preserved for backward compatibility.
 
 fdirectives-only
@@ -599,7 +752,7 @@ C++ ObjC++ Var(flag_enforce_eh_specs) Init(1)
 Generate code to check exception specifications
 
 fenum-int-equiv
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 fexec-charset=
 C UPC ObjC C++ ObjC++ Joined RejectNegative
@@ -614,7 +767,7 @@ C UPC ObjC C++ ObjC++ Joined RejectNegative
 -finput-charset=<cset>	Specify the default character set for source files
 
 fexternal-templates
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 ffor-scope
 C++ ObjC++ Var(flag_new_for_scope) Init(1)
@@ -637,21 +790,21 @@ C UPC ObjC Var(flag_gnu89_inline) Init(-1)
 Use traditional GNU semantics for inline functions
 
 fguiding-decls
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 fhandle-exceptions
-C++ ObjC++ Optimization
+C++ ObjC++ Optimization Alias(fexceptions) Warn({-fhandle-exceptions has been renamed -fexceptions (and is now on by default)})
 
 fhonor-std
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 fhosted
 C UPC ObjC
 Assume normal C execution environment
 
 fhuge-objects
-C++ ObjC++
-Enable support for huge objects
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
+No longer supported
 
 fimplement-inlines
 C++ ObjC++ Var(flag_implement_inlines) Init(1)
@@ -670,7 +823,7 @@ C++ ObjC++ Var(flag_friend_injection)
 Inject friend functions into enclosing namespace
 
 flabels-ok
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 flax-vector-conversions
 C UPC ObjC C++ ObjC++ Var(flag_lax_vector_conversions)
@@ -681,10 +834,10 @@ C UPC ObjC C++ ObjC++ Var(flag_ms_extensions)
 Don't warn about uses of Microsoft extensions
 
 fname-mangling-version-
-C++ ObjC++ Joined
+C++ ObjC++ Joined Ignore Warn(switch %qs is no longer supported)
 
 fnew-abi
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 fnext-runtime
 ObjC ObjC++
@@ -698,7 +851,7 @@ fnonansi-builtins
 C++ ObjC++ Var(flag_no_nonansi_builtin, 0)
 
 fnonnull-objects
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 fnothrow-opt
 C++ ObjC++ Optimization Var(flag_nothrow_opt)
@@ -729,6 +882,10 @@ fobjc-sjlj-exceptions
 ObjC ObjC++ Var(flag_objc_sjlj_exceptions) Init(-1)
 Enable Objective-C setjmp exception handling runtime
 
+fobjc-std=objc1
+ObjC ObjC++ Var(flag_objc1_only)
+Conform to the Objective-C 1.0 language as implemented in GCC 4.0
+
 fopenmp
 C UPC ObjC C++ ObjC++ Var(flag_openmp)
 Enable OpenMP (implies -frecursive in Fortran)
@@ -738,7 +895,7 @@ C++ ObjC++
 Recognize C++ keywords like \"compl\" and \"xor\"
 
 foptional-diags
-C++ ObjC++
+C++ ObjC++ Ignore
 Does nothing.  Preserved for backward compatibility.
 
 fpch-deps
@@ -751,6 +908,10 @@ Look for and use PCH files even when preprocessing
 fpermissive
 C++ ObjC++
 Downgrade conformance errors to warnings
+
+fplan9-extensions
+C ObjC Var(flag_plan9_extensions)
+Enable Plan 9 language extensions
 
 fpreprocessed
 C UPC ObjC C++ ObjC++
@@ -793,7 +954,7 @@ C UPC ObjC C++ ObjC++ LTO Var(flag_signed_char)
 Make \"char\" signed by default
 
 fsquangle
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 fstats
 C++ ObjC++ Var(flag_detailed_statistics)
@@ -804,32 +965,32 @@ C++ ObjC++ Optimization Var(flag_strict_enums)
 Assume that values of enumeration type are always within the minimum range of that type
 
 fstrict-prototype
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 ftabstop=
 C UPC ObjC C++ ObjC++ Joined RejectNegative UInteger
 -ftabstop=<number>	Distance between tab stops for column reporting
 
 ftemplate-depth-
-C++ ObjC++ Joined RejectNegative UInteger Undocumented
+C++ ObjC++ Joined RejectNegative Undocumented Alias(ftemplate-depth=)
 
 ftemplate-depth=
 C++ ObjC++ Joined RejectNegative UInteger
 -ftemplate-depth=<number>	Specify maximum template instantiation depth
 
 fthis-is-variable
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 fthreadsafe-statics
 C++ ObjC++ Optimization Var(flag_threadsafe_statics) Init(1)
 -fno-threadsafe-statics	Do not generate thread-safe code for initializing local statics
 
 funsigned-bitfields
-C UPC ObjC C++ ObjC++ Var(flag_signed_bitfields, 0) VarExists
+C UPC ObjC C++ ObjC++ Var(flag_signed_bitfields, 0)
 When \"signed\" or \"unsigned\" is not given make the bitfield unsigned
 
 funsigned-char
-C UPC ObjC C++ ObjC++ LTO Var(flag_signed_char, 0) VarExists
+C UPC ObjC C++ ObjC++ LTO Var(flag_signed_char, 0)
 Make \"char\" unsigned by default
 
 fupc-debug
@@ -880,12 +1041,12 @@ C++ ObjC++ Var(flag_visibility_ms_compat)
 Changes visibility to match Microsoft Visual Studio by default
 
 fvtable-gc
-C++ ObjC++
-Discard unused virtual functions
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
+No longer supported
 
 fvtable-thunks
-C++ ObjC++
-Implement vtables using thunks
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
+No longer supported
 
 fweak
 C++ ObjC++ Var(flag_weak) Init(1)
@@ -900,8 +1061,8 @@ C UPC ObjC C++ ObjC++ Var(flag_working_directory) Init(-1)
 Generate a #line directive pointing at the current working directory
 
 fxref
-C++ ObjC++
-Emit cross referencing information
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
+No longer supported
 
 fzero-link
 ObjC ObjC++ Var(flag_zero_link)
@@ -924,11 +1085,11 @@ C UPC ObjC C++ ObjC++ Joined
 -femit-struct-debug-detailed=<spec-list>	Detailed reduced debug info for structs
 
 idirafter
-C UPC ObjC C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate MissingArgError(missing path after %qs)
 -idirafter <dir>	Add <dir> to the end of the system include path
 
 imacros
-C UPC ObjC C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate MissingArgError(missing filename after %qs)
 -imacros <file>	Accept definition of macros in <file>
 
 imultilib
@@ -936,7 +1097,7 @@ C UPC ObjC C++ ObjC++ Joined Separate
 -imultilib <dir>	Set <dir> to be the multilib include subdirectory
 
 include
-C UPC ObjC C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate MissingArgError(missing filename after %qs)
 -include <file>	Include the contents of <file> before other files
 
 iprefix
@@ -944,15 +1105,15 @@ C UPC ObjC C++ ObjC++ Joined Separate
 -iprefix <path>	Specify <path> as a prefix for next two options
 
 isysroot
-C UPC ObjC C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate MissingArgError(missing path after %qs)
 -isysroot <dir>	Set <dir> to be the system root directory
 
 isystem
-C UPC ObjC C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate MissingArgError(missing path after %qs)
 -isystem <dir>	Add <dir> to the start of the system include path
 
 iquote
-C UPC ObjC C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate MissingArgError(missing path after %qs)
 -iquote <dir>	Add <dir> to the end of the quote include path
 
 iwithprefix
@@ -964,10 +1125,13 @@ C UPC ObjC C++ ObjC++ Joined Separate
 -iwithprefixbefore <dir>	Add <dir> to the end of the main include path
 
 lang-asm
-C Undocumented
+C Undocumented RejectDriver
 
 lang-upc
 C UPC Undocumented
+
+no-integrated-cpp
+Driver
 
 nostdinc
 C UPC ObjC C++ ObjC++
@@ -993,10 +1157,6 @@ print-objc-runtime-info
 ObjC ObjC++
 Generate C header of platform-specific features
 
-print-pch-checksum
-C UPC ObjC C++ ObjC++
-Print a checksum of the executable for PCH validity checking, and stop
-
 remap
 C UPC ObjC C++ ObjC++
 Remap file names when including files
@@ -1017,7 +1177,7 @@ C ObjC
 Conform to the ISO 201X C standard draft (experimental and incomplete support)
 
 std=c89
-C UPC ObjC
+C ObjC Alias(std=c90)
 Conform to the ISO 1990 C standard
 
 std=c90
@@ -1029,7 +1189,7 @@ C UPC ObjC
 Conform to the ISO 1999 C standard
 
 std=c9x
-C UPC ObjC
+C UPC ObjC Alias(std=c99)
 Deprecated in favor of -std=c99
 
 std=gnu++98
@@ -1048,7 +1208,7 @@ C ObjC
 Conform to the ISO 201X C standard draft with GNU extensions (experimental and incomplete support)
 
 std=gnu89
-C UPC ObjC
+C UPC ObjC Alias(std=gnu90)
 Conform to the ISO 1990 C standard with GNU extensions
 
 std=gnu90
@@ -1060,11 +1220,11 @@ C UPC ObjC
 Conform to the ISO 1999 C standard with GNU extensions
 
 std=gnu9x
-C UPC ObjC
+C UPC ObjC Alias(std=gnu99)
 Deprecated in favor of -std=gnu99
 
 std=iso9899:1990
-C UPC ObjC
+C UPC ObjC Alias(std=c90)
 Conform to the ISO 1990 C standard
 
 std=iso9899:199409
@@ -1072,12 +1232,15 @@ C UPC ObjC
 Conform to the ISO 1990 C standard as amended in 1994
 
 std=iso9899:1999
-C UPC ObjC
+C UPC ObjC Alias(std=c99)
 Conform to the ISO 1999 C standard
 
 std=iso9899:199x
-C UPC ObjC
+C UPC ObjC Alias(std=c99)
 Deprecated in favor of -std=iso9899:1999
+
+traditional
+Driver
 
 traditional-cpp
 C UPC ObjC C++ ObjC++
@@ -1092,8 +1255,8 @@ C UPC ObjC C++ ObjC++ Var(flag_undef)
 Do not predefine system-specific and GCC-specific macros
 
 v
-Common C UPC ObjC C++ ObjC++
-Enable verbose output
+C UPC ObjC C++ ObjC++
+; Documented in common.opt
 
 w
 C UPC ObjC C++ ObjC++

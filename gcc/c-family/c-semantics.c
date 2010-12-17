@@ -1,5 +1,5 @@
 /* This file contains subroutine used by the C front-end to construct GENERIC.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Written by Benjamin Chelf (chelf@codesourcery.com).
 
@@ -27,11 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "splay-tree.h"
 #include "c-common.h"
-/* In order for the format checking to accept the C frontend
-   diagnostic framework extensions, you must define this token before
-   including toplev.h.  */
-#define GCC_DIAG_STYLE __gcc_cdiag__
-#include "toplev.h"
 #include "flags.h"
 #include "output.h"
 #include "tree-iterator.h"
@@ -143,4 +138,36 @@ build_case_label (location_t loc,
 		  tree low_value, tree high_value, tree label_decl)
 {
   return build_stmt (loc, CASE_LABEL_EXPR, low_value, high_value, label_decl);
+}
+
+/* Build a REALPART_EXPR or IMAGPART_EXPR, according to CODE, from ARG.  */
+
+tree
+build_real_imag_expr (location_t location, enum tree_code code, tree arg)
+{
+  tree ret;
+  tree arg_type = TREE_TYPE (arg);
+
+  gcc_assert (code == REALPART_EXPR || code == IMAGPART_EXPR);
+
+  if (TREE_CODE (arg_type) == COMPLEX_TYPE)
+    {
+      ret = build1 (code, TREE_TYPE (TREE_TYPE (arg)), arg);
+      SET_EXPR_LOCATION (ret, location);
+    }
+  else if (INTEGRAL_TYPE_P (arg_type) || SCALAR_FLOAT_TYPE_P (arg_type))
+    {
+      ret = (code == REALPART_EXPR
+	     ? arg
+	     : omit_one_operand_loc (location, arg_type,
+				     integer_zero_node, arg));
+    }
+  else
+    {
+      error_at (location, "wrong type argument to %s",
+		code == REALPART_EXPR ? "__real" : "__imag");
+      ret = error_mark_node;
+    }
+
+  return ret;
 }

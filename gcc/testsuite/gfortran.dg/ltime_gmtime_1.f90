@@ -5,5 +5,5 @@
   t = time()
   call ltime(t,x)
   call gmtime(t,y)
-  if (x(1) /= y(1) .or. x(2) /= y(2)) call abort
+  if (x(1) /= y(1) .or. mod(x(2),30) /= mod(y(2),30)) call abort
   end

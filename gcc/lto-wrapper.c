@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
    The above will print something like
    /tmp/ccwbQ8B2.lto.o
 
-   If -fwhopr is used instead, more than one file might be produced
+   If WHOPR is used instead, more than one file might be produced
    ./ccXj2DTk.lto.ltrans.o
    ./ccCJuXGv.lto.ltrans.o
 */
@@ -40,18 +40,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include <errno.h>
-#include <signal.h>
-#if ! defined( SIGCHLD ) && defined( SIGCLD )
-#  define SIGCHLD SIGCLD
-#endif
 #include "intl.h"
-#include "libiberty.h"
 #include "obstack.h"
-
-#ifndef HAVE_KILL
-#define kill(p,s) raise(s)
-#endif
 
 int debug;				/* true if -save-temps.  */
 int verbose;				/* true if -v.  */
@@ -303,6 +293,8 @@ run_gcc (unsigned argc, char *argv[])
   struct obstack env_obstack;
   bool seen_o = false;
   int parallel = 0;
+  int jobserver = 0;
+  bool no_partition = false;
 
   /* Get the driver and options.  */
   collect_gcc = getenv ("COLLECT_GCC");
@@ -365,22 +357,37 @@ run_gcc (unsigned argc, char *argv[])
 	if (strcmp (option, "-v") == 0)
 	  verbose = 1;
 
+	if (strcmp (option, "-flto-partition=none") == 0)
+	  no_partition = true;
 	/* We've handled these LTO options, do not pass them on.  */
-	if (strcmp (option, "-flto") == 0)
-	  lto_mode = LTO_MODE_LTO;
-	else if (strncmp (option, "-fwhopr", 7) == 0)
+	if (strncmp (option, "-flto=", 6) == 0
+	    || !strcmp (option, "-flto"))
 	  {
 	    lto_mode = LTO_MODE_WHOPR;
-	    if (option[7] == '=')
+	    if (option[5] == '=')
 	      {
-		parallel = atoi (option+8);
-		if (parallel <= 1)
-		  parallel = 0;
+		if (!strcmp (option + 6, "jobserver"))
+		  {
+		    jobserver = 1;
+		    parallel = 1;
+		  }
+		else
+		  {
+		    parallel = atoi (option + 6);
+		    if (parallel <= 1)
+		      parallel = 0;
+		  }
 	      }
 	  }
 	else
 	  *argv_ptr++ = option;
       }
+  if (no_partition)
+    {
+      lto_mode = LTO_MODE_LTO;
+      jobserver = 0;
+      parallel = 0;
+    }
 
   if (linker_output)
     {
@@ -414,7 +421,6 @@ run_gcc (unsigned argc, char *argv[])
 	argv_ptr[0] = linker_output;
       argv_ptr[1] = "-o";
       argv_ptr[2] = flto_out;
-      argv_ptr[3] = "-combine";
     }
   else if (lto_mode == LTO_MODE_WHOPR)
     {
@@ -450,15 +456,14 @@ run_gcc (unsigned argc, char *argv[])
       strcpy (tmp, ltrans_output_file);
 
       argv_ptr[2] = "-fwpa";
-      argv_ptr[3] = "-combine";
     }
   else
     fatal ("invalid LTO mode");
 
   /* Append the input objects and possible preceeding arguments.  */
   for (i = 1; i < argc; ++i)
-    argv_ptr[3 + i] = argv[i];
-  argv_ptr[3 + i] = NULL;
+    argv_ptr[2 + i] = argv[i];
+  argv_ptr[2 + i] = NULL;
 
   fork_execute (CONST_CAST (char **, new_argv));
 
@@ -567,23 +572,32 @@ cont:
 	{
 	  struct pex_obj *pex;
 	  char jobs[32];
+
 	  fprintf (mstream, "all:");
 	  for (i = 0; i < nr; ++i)
 	    fprintf (mstream, " \\\n\t%s", output_names[i]);
 	  fprintf (mstream, "\n");
 	  fclose (mstream);
-	  /* Avoid passing --jobserver-fd= and similar flags.  */
-	  putenv (xstrdup ("MAKEFLAGS="));
-	  putenv (xstrdup ("MFLAGS="));
+	  if (!jobserver)
+	    {
+	      /* Avoid passing --jobserver-fd= and similar flags 
+		 unless jobserver mode is explicitly enabled.  */
+	      putenv (xstrdup ("MAKEFLAGS="));
+	      putenv (xstrdup ("MFLAGS="));
+	    }
 	  new_argv[0] = getenv ("MAKE");
 	  if (!new_argv[0])
 	    new_argv[0] = "make";
 	  new_argv[1] = "-f";
 	  new_argv[2] = makefile;
-	  snprintf (jobs, 31, "-j%d", parallel);
-	  new_argv[3] = jobs;
-	  new_argv[4] = "all";
-	  new_argv[5] = NULL;
+	  i = 3;
+	  if (!jobserver)
+	    {
+	      snprintf (jobs, 31, "-j%d", parallel);
+	      new_argv[i++] = jobs;
+	    }
+	  new_argv[i++] = "all";
+	  new_argv[i++] = NULL;
 	  pex = collect_execute (CONST_CAST (char **, new_argv));
 	  collect_wait (new_argv[0], pex);
 	  maybe_unlink_file (makefile);

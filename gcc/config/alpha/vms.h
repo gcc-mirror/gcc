@@ -1,6 +1,6 @@
 /* Output variables, constants and external declarations, for GNU compiler.
    Copyright (C) 1996, 1997, 1998, 2000, 2001, 2002, 2004, 2005, 2007, 2008,
-   2009
+   2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -68,8 +68,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef POINTER_SIZE
 #define POINTER_SIZE 32
 #define POINTERS_EXTEND_UNSIGNED 0
-
-#define HANDLE_SYSV_PRAGMA 1
 
 #define MAX_OFILE_ALIGNMENT 524288  /* 8 x 2^16 by DEC Ada Test CD40VRA */
 
@@ -174,18 +172,6 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
   (CUM).num_args = 0;						\
   (CUM).atypes[0] = (CUM).atypes[1] = (CUM).atypes[2] = I64;	\
   (CUM).atypes[3] = (CUM).atypes[4] = (CUM).atypes[5] = I64;
-
-#undef FUNCTION_ARG_ADVANCE
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
-  if (targetm.calls.must_pass_in_stack (MODE, TYPE))			\
-    (CUM).num_args += 6;						\
-  else									\
-    {									\
-      if ((CUM).num_args < 6)						\
-        (CUM).atypes[(CUM).num_args] = alpha_arg_type (MODE);		\
-									\
-     (CUM).num_args += ALPHA_ARG_SIZE (MODE, TYPE, NAMED);		\
-    }
 
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
@@ -337,17 +323,16 @@ typedef struct crtl_name_spec
 /* The VMS convention is to always provide minimal debug info
    for a traceback unless specifically overridden.  */
 
-#undef OVERRIDE_OPTIONS
-#define OVERRIDE_OPTIONS                            \
-{                                                   \
+#undef SUBTARGET_OVERRIDE_OPTIONS
+#define SUBTARGET_OVERRIDE_OPTIONS                  \
+do {                                                \
   if (write_symbols == NO_DEBUG                     \
       && debug_info_level == DINFO_LEVEL_NONE)      \
     {                                               \
       write_symbols = VMS_DEBUG;                    \
       debug_info_level = DINFO_LEVEL_TERSE;         \
     }                                               \
-   override_options ();                             \
-}
+} while (0)
 
 /* Link with vms-dwarf2.o if -g (except -g0). This causes the
    VMS link to pull all the dwarf2 debug sections together.  */

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2009, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2010, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,6 +42,7 @@ with Ada.Unchecked_Deallocation;
 
 with Interfaces.C;
 
+with System.Multiprocessors;
 with System.Tasking.Debug;
 with System.Interrupt_Management;
 with System.OS_Primitives;
@@ -866,12 +867,30 @@ package body System.Task_Primitives.Operations is
       Last_Proc : processorid_t;  --  Last processor #
 
       use System.Task_Info;
+      use type System.Multiprocessors.CPU_Range;
+
    begin
       Self_ID.Common.LL.Thread := thr_self;
 
       Self_ID.Common.LL.LWP := lwp_self;
 
-      if Self_ID.Common.Task_Info /= null then
+      --  pragma CPU
+
+      if Self_ID.Common.Base_CPU /=
+         System.Multiprocessors.Not_A_Specific_CPU
+      then
+         --  The CPU numbering in pragma CPU starts at 1 while the subprogram
+         --  to set the affinity starts at 0, therefore we must substract 1.
+
+         Result :=
+           processor_bind
+             (P_LWPID, P_MYID, processorid_t (Self_ID.Common.Base_CPU) - 1,
+              null);
+         pragma Assert (Result = 0);
+
+      --  Task_Info
+
+      elsif Self_ID.Common.Task_Info /= null then
          if Self_ID.Common.Task_Info.New_LWP
            and then Self_ID.Common.Task_Info.CPU /= CPU_UNCHANGED
          then

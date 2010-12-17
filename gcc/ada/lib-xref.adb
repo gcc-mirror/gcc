@@ -241,14 +241,7 @@ package body Lib.Xref is
       --  The check for Present here is to protect against previously
       --  reported critical errors.
 
-      if Is_Concurrent_Type (Base_T)
-        and then Present (Corresponding_Record_Type (Base_T))
-      then
-         Prim_List := Primitive_Operations
-                       (Corresponding_Record_Type (Base_T));
-      else
-         Prim_List := Primitive_Operations (Base_T);
-      end if;
+      Prim_List := Primitive_Operations (Base_T);
 
       if No (Prim_List) then
          return;
@@ -468,11 +461,23 @@ package body Lib.Xref is
 
       if Comes_From_Source (N)
         and then Is_Ada_2005_Only (E)
-        and then Ada_Version < Ada_05
+        and then Ada_Version < Ada_2005
         and then Warn_On_Ada_2005_Compatibility
-        and then (Typ = 'm' or else Typ = 'r')
+        and then (Typ = 'm' or else Typ = 'r' or else Typ = 's')
       then
          Error_Msg_NE ("& is only defined in Ada 2005?", N, E);
+      end if;
+
+      --  Warn if reference to Ada 2012 entity not in Ada 2012 mode. We only
+      --  detect real explicit references (modifications and references).
+
+      if Comes_From_Source (N)
+        and then Is_Ada_2012_Only (E)
+        and then Ada_Version < Ada_2012
+        and then Warn_On_Ada_2012_Compatibility
+        and then (Typ = 'm' or else Typ = 'r')
+      then
+         Error_Msg_NE ("& is only defined in Ada 2012?", N, E);
       end if;
 
       --  Never collect references if not in main source unit. However, we omit
@@ -842,7 +847,7 @@ package body Lib.Xref is
 
          if Typ = 'p'
            and then Is_Subprogram (N)
-           and then Is_Overriding_Operation (N)
+           and then Present (Overridden_Operation (N))
          then
             Xrefs.Table (Indx).Typ := 'P';
          else
@@ -1167,7 +1172,7 @@ package body Lib.Xref is
 
             if Is_Type (Ent)
               and then Is_Tagged_Type (Ent)
-              and then Ent = Base_Type (Ent)
+              and then Is_Base_Type (Ent)
               and then In_Extended_Main_Source_Unit (Ent)
             then
                Generate_Prim_Op_References (Ent);
@@ -1276,7 +1281,7 @@ package body Lib.Xref is
             if Is_Type (Ent)
               and then Is_Tagged_Type (Ent)
               and then Is_Derived_Type (Ent)
-              and then Ent = Base_Type (Ent)
+              and then Is_Base_Type (Ent)
               and then In_Extended_Main_Source_Unit (Ent)
             then
                declare
@@ -1797,27 +1802,25 @@ package body Lib.Xref is
                      Ctyp := '*';
                   end if;
 
-                  --  Special handling for access parameter
+                  --  Special handling for access parameters and objects of
+                  --  an anonymous access type.
 
-                  declare
-                     K : constant Entity_Kind := Ekind (Etype (XE.Ent));
-
-                  begin
-                     if (K = E_Anonymous_Access_Type
-                           or else
-                         K = E_Anonymous_Access_Subprogram_Type
-                            or else K =
-                         E_Anonymous_Access_Protected_Subprogram_Type)
-                       and then Is_Formal (XE.Ent)
+                  if Ekind_In (Etype (XE.Ent),
+                               E_Anonymous_Access_Type,
+                               E_Anonymous_Access_Subprogram_Type,
+                               E_Anonymous_Access_Protected_Subprogram_Type)
+                  then
+                     if Is_Formal (XE.Ent)
+                       or else Ekind_In (XE.Ent, E_Variable, E_Constant)
                      then
                         Ctyp := 'p';
-
-                        --  Special handling for Boolean
-
-                     elsif Ctyp = 'e' and then Is_Boolean_Type (Ent) then
-                        Ctyp := 'b';
                      end if;
-                  end;
+
+                     --  Special handling for Boolean
+
+                  elsif Ctyp = 'e' and then Is_Boolean_Type (Ent) then
+                     Ctyp := 'b';
+                  end if;
                end if;
 
                --  Special handling for abstract types and operations
@@ -2160,8 +2163,8 @@ package body Lib.Xref is
                            end loop;
                         end;
 
-                     --  For array types, list index types as well.
-                     --  (This is not C, indices have distinct types).
+                     --  For array types, list index types as well. (This is
+                     --  not C, indexes have distinct types).
 
                      elsif Is_Array_Type (XE.Ent) then
                         declare
@@ -2180,7 +2183,7 @@ package body Lib.Xref is
                      --  on operation that was overridden.
 
                      if Is_Subprogram (XE.Ent)
-                       and then Is_Overriding_Operation (XE.Ent)
+                       and then Present (Overridden_Operation (XE.Ent))
                      then
                         Output_Overridden_Op (Overridden_Operation (XE.Ent));
                      end if;

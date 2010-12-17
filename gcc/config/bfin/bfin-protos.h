@@ -1,5 +1,5 @@
 /* Prototypes for Blackfin functions used in the md file & elsewhere.
-   Copyright (C) 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
    This file is part of GNU CC.
 
@@ -65,8 +65,6 @@
 
 #define Mmode enum machine_mode
 
-extern rtx function_arg (CUMULATIVE_ARGS *, Mmode, tree, int);
-extern void function_arg_advance (CUMULATIVE_ARGS *, Mmode, tree, int);
 extern bool function_arg_regno_p (int);
 
 extern const char *output_load_immediate (rtx *);
@@ -89,7 +87,6 @@ extern bool bfin_longcall_p (rtx, int);
 extern bool bfin_dsp_memref_p (rtx);
 extern bool bfin_expand_movmem (rtx, rtx, rtx, rtx);
 
-extern void conditional_register_usage (void);
 extern int bfin_register_move_cost (enum machine_mode, enum reg_class,
 				    enum reg_class);
 extern int bfin_memory_move_cost (enum machine_mode, enum reg_class, int in);
@@ -99,17 +96,15 @@ extern enum reg_class secondary_output_reload_class (enum reg_class, Mmode,
 						     rtx);
 extern char *section_asm_op_1 (SECT_ENUM_T);
 extern char *section_asm_op (SECT_ENUM_T);
-extern void override_options (void);
 extern void print_operand (FILE *,  rtx, char);
 extern void print_address_operand (FILE *, rtx);
 extern void split_di (rtx [], int, rtx [], rtx []);
 extern int split_load_immediate (rtx []);
 extern void emit_pic_move (rtx *, Mmode);
-extern void override_options (void);
 extern void asm_conditional_branch (rtx, rtx *, int, int);
 extern rtx bfin_gen_compare (rtx, Mmode);
 
-extern int bfin_local_alignment (tree, int);
+extern unsigned bfin_local_alignment (tree, unsigned);
 extern rtx bfin_va_arg (tree, tree);
 
 extern void bfin_expand_prologue (void);

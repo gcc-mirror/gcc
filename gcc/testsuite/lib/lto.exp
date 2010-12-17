@@ -32,7 +32,7 @@ proc lto_prune_warns { text } {
 
     # Sun ld warns about common symbols with differing sizes.  Unlike GNU ld
     # --warn-common (off by default), they cannot be disabled.
-    regsub -all "(^|\n)ld: warning: symbol `\[^\n\]*' has differing sizes:" $text "" text
+    regsub -all "(^|\n)ld: warning: symbol \[`'\]\[^\n\]*' has differing sizes:" $text "" text
     regsub -all "(^|\n)\[ \t\]*\[\(\]file \[^\n\]* value=\[^\n\]*; file \[^\n\]* value=\[^\n\]*\[)\];" $text "" text
     regsub -all "(^|\n)\[ \t\]*\[^\n\]* definition taken" $text "" text
 
@@ -64,8 +64,10 @@ proc lto_init { args } {
     # add it to site.exp directly.
     if ![info exists LTO_OPTIONS] {
 	set LTO_OPTIONS [list	\
-	    {-O0 -fwhopr}	\
-	    {-O2 -fwhopr}	\
+	    {-O0 -flto -flto-partition=none } \
+	    {-O2 -flto -flto-partition=none } \
+	    {-O0 -flto -flto-partition=1to1 } \
+	    {-O2 -flto -flto-partition=1to1 } \
 	    {-O0 -flto}		\
 	    {-O2 -flto}		\
 	]
@@ -163,6 +165,7 @@ proc lto-link-and-maybe-run { testname objlist dest optall optfile optstr } {
     global testcase
     global tool
     global compile_type
+    global board_info
 
     # Check that all of the objects were built successfully.
     foreach obj [split $objlist] {
@@ -177,9 +180,28 @@ proc lto-link-and-maybe-run { testname objlist dest optall optfile optstr } {
     set options ""
     lappend options "additional_flags=$optall $optfile"
 
+    set target_board [target_info name]
+    set relocatable 0
+
+    # Some LTO tests do relocatable linking. Some target boards set
+    # a linker script which can't be used for relocatable linking.
+    # Use the default linker script instead.
+    if { [lsearch -exact [split "$optall $optfile"] "-r"] >= 0 } {
+	set relocatable 1
+    }
+
+    if { $relocatable } {
+	set saved_ldscript [board_info $target_board ldscript]
+	set board_info($target_board,ldscript) ""
+    }
+
     # Link the objects into an executable.
     set comp_output [${tool}_target_compile "$objlist" $dest executable \
 		     "$options"]
+
+    if { $relocatable } {
+	set board_info($target_board,ldscript) $saved_ldscript
+    }
 
     # Prune unimportant visibility warnings before checking output.
     set comp_output [lto_prune_warns $comp_output]
@@ -277,12 +299,29 @@ proc lto-get-options-main { src } {
 		warning "lto.exp does not support dg-lto-do $dgdo"
 	    }
 	} elseif { ![string compare "dg-extra-ld-options" $cmd] } {
-	    set dg-extra-ld-options [lindex $op 2]
-	    verbose "dg-extra-ld-options for main is ${dg-extra-ld-options}"
+	    if { [llength $op] > 4 } {
+		error "[lindex $op 0]: too many arguments"
+	    } else {
+		if { [llength $op] == 3
+		     || ([llength $op] > 3
+			 && [dg-process-target [lindex $op 3]] == "S") } {
+		    set dg-extra-ld-options [lindex $op 2]
+		    verbose \
+			"dg-extra-ld-options for main is ${dg-extra-ld-options}"
+		}
+	    }
 	} elseif { ![string compare "dg-suppress-ld-options" $cmd] } {
-	    set dg-suppress-ld-options [lindex $op 2]
-	    verbose \
-	      "dg-suppress-ld-options for main is ${dg-suppress-ld-options}"
+	    if { [llength $op] > 4 } {
+		error "[lindex $op 0]: too many arguments"
+	    } else {
+		if { [llength $op] == 3
+		     || ([llength $op] > 3
+			 && [dg-process-target [lindex $op 3]] == "S") } {
+		    set dg-suppress-ld-options [lindex $op 2]
+		    verbose \
+			"dg-suppress-ld-options for main is ${dg-suppress-ld-options}"
+		}
+	    }
 	} elseif { ![string compare "dg-final" $cmd] } {
 	    if { [llength $op] > 3 } {
 		error "[lindex $op 0]: too many arguments"

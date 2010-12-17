@@ -26,6 +26,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 
 
+
+#define MATHFUNC(funcname) funcname ## l
+
 #if defined (HAVE_GFC_REAL_10) && defined (HAVE_SCALBNL) && defined (HAVE_FREXPL)
 
 extern GFC_REAL_10 set_exponent_r10 (GFC_REAL_10 s, GFC_INTEGER_4 i);
@@ -35,7 +38,7 @@ GFC_REAL_10
 set_exponent_r10 (GFC_REAL_10 s, GFC_INTEGER_4 i)
 {
   int dummy_exp;
-  return scalbnl (frexpl (s, &dummy_exp), i);
+  return MATHFUNC(scalbn) (MATHFUNC(frexp) (s, &dummy_exp), i);
 }
 
 #endif

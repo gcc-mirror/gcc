@@ -2,7 +2,7 @@
 # wanting multilib support.
 #
 # Copyright (C) 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-# 2005, 2006, 2007  Free Software Foundation, Inc.
+# 2005, 2006, 2007, 2008, 2010  Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -517,6 +517,7 @@ multi-do:
 				prefix="$(prefix)" \
 				exec_prefix="$(exec_prefix)" \
 				GCJFLAGS="$(GCJFLAGS) $${flags}" \
+				GOCFLAGS="$(GOCFLAGS) $${flags}" \
 				CXXFLAGS="$(CXXFLAGS) $${flags}" \
 				LIBCFLAGS="$(LIBCFLAGS) $${flags}" \
 				LIBCXXFLAGS="$(LIBCXXFLAGS) $${flags}" \
@@ -750,7 +751,7 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
         break
       fi
     done
-    ml_config_env='CC="${CC_}$flags" CXX="${CXX_}$flags" F77="${F77_}$flags" GCJ="${GCJ_}$flags" GFORTRAN="${GFORTRAN_}$flags"'
+    ml_config_env='CC="${CC_}$flags" CXX="${CXX_}$flags" F77="${F77_}$flags" GCJ="${GCJ_}$flags" GFORTRAN="${GFORTRAN_}$flags" GOC="${GOC_}$flags"'
 
     if [ "${with_target_subdir}" = "." ]; then
 	CC_=$CC' '
@@ -758,6 +759,7 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
 	F77_=$F77' '
 	GCJ_=$GCJ' '
 	GFORTRAN_=$GFORTRAN' '
+	GOC_=$GOC' '
     else
 	# Create a regular expression that matches any string as long
 	# as ML_POPDIR.
@@ -819,6 +821,18 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
 	    GFORTRAN_="${GFORTRAN_}"`echo "X${arg}" | sed -n "s/X\\(${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
 	  *)
 	    GFORTRAN_="${GFORTRAN_}${arg} " ;;
+	  esac
+	done
+
+	GOC_=
+	for arg in ${GOC}; do
+	  case $arg in
+	  -[BIL]"${ML_POPDIR}"/*)
+	    GOC_="${GOC_}"`echo "X${arg}" | sed -n "s/X\\(-[BIL]${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X-[BIL]${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
+	  "${ML_POPDIR}"/*)
+	    GOC_="${GOC_}"`echo "X${arg}" | sed -n "s/X\\(${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
+	  *)
+	    GOC_="${GOC_}${arg} " ;;
 	  esac
 	done
 

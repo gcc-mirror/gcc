@@ -1,6 +1,11 @@
 ! { dg-do run }
-! { dg-options "-fcray-pointer -fbounds-check" }
+! { dg-options "-fcray-pointer -fbounds-check -fno-inline" }
+!
 ! Series of routines for testing a Cray pointer implementation
+!
+! Note: Some of the test cases violate Fortran's alias rules;
+! the "-fno-inline option" for now prevents failures.
+!
 program craytest
   common /errors/errors(400)
   common /foo/foo ! To prevent optimizations

@@ -47,7 +47,7 @@ package Interfaces.C is
    type unsigned_char is mod (UCHAR_MAX + 1);
    for unsigned_char'Size use CHAR_BIT;
 
-   subtype plain_char is unsigned_char; -- ??? should be parametrized
+   subtype plain_char is unsigned_char; -- ??? should be parameterized
 
    --  Note: the Integer qualifications used in the declaration of ptrdiff_t
    --  avoid ambiguities when compiling in the presence of s-auxdec.ads and

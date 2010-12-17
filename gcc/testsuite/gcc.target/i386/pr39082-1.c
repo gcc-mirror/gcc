@@ -30,6 +30,6 @@ foo2 (void)
 int
 foo3 (int x)
 {
-  union un u = bar2 (x); /* { dg-message "note: The ABI of passing union with long double has changed in GCC 4.4" } */
+  union un u = bar2 (x); /* { dg-message "note: the ABI of passing union with long double has changed in GCC 4.4" } */
   return u.i;
 }

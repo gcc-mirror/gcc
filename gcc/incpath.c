@@ -100,7 +100,7 @@ add_env_var_paths (const char *env_var, int chain)
 {
   char *p, *q, *path;
 
-  GET_ENVIRONMENT (q, env_var);
+  q = getenv (env_var);
 
   if (!q)
     return;
@@ -239,7 +239,7 @@ remove_duplicates (cpp_reader *pfile, struct cpp_dir *head,
 	    }
 	}
       else if (!S_ISDIR (st.st_mode))
-	cpp_error_with_line (pfile, CPP_DL_ERROR, 0, 0,
+	cpp_error_with_line (pfile, CPP_DL_WARNING, 0, 0,
 			     "%s: not a directory", cur->name);
       else
 	{

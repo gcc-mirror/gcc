@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    machine modes used in the GNU compiler.
    Copyright (C) 1987, 1992, 1994, 1997, 1998, 2000, 2003, 2004, 2005,
-   2007  Free Software Foundation, Inc.
+   2007, 2010  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -191,7 +191,7 @@ INT_MODE (TI, 16);
    that need 1-word, 2-word, 80-bit, or 128-bit float types respectively.
 
    These are the IEEE mappings.  They can be overridden with
-   RESET_FLOAT_FORMAT or at runtime (in OVERRIDE_OPTIONS).  */
+   RESET_FLOAT_FORMAT or at runtime (in TARGET_OPTION_OVERRIDE).  */
 
 FLOAT_MODE (SF, 4, ieee_single_format);
 FLOAT_MODE (DF, 8, ieee_double_format);

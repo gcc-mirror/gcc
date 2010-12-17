@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "objc-act.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
+#include "target.h"
 #include "cp-objcp-common.h"
 
 enum c_language_kind c_language = clk_objcxx;
@@ -42,8 +43,6 @@ static tree objcxx_eh_personality (void);
 #define LANG_HOOKS_NAME "GNU Objective-C++"
 #undef LANG_HOOKS_INIT
 #define LANG_HOOKS_INIT objc_init
-#undef LANG_HOOKS_DECL_PRINTABLE_NAME
-#define LANG_HOOKS_DECL_PRINTABLE_NAME	objc_printable_name
 #undef LANG_HOOKS_GIMPLIFY_EXPR 
 #define LANG_HOOKS_GIMPLIFY_EXPR objc_gimplify_expr
 #undef LANG_HOOKS_INIT_TS
@@ -99,22 +98,27 @@ objcxx_init_ts (void)
   tree_contains_struct[CLASS_METHOD_DECL][TS_DECL_NON_COMMON] = 1;
   tree_contains_struct[INSTANCE_METHOD_DECL][TS_DECL_NON_COMMON] = 1;
   tree_contains_struct[KEYWORD_DECL][TS_DECL_NON_COMMON] = 1;
+  tree_contains_struct[PROPERTY_DECL][TS_DECL_NON_COMMON] = 1;
   
   tree_contains_struct[CLASS_METHOD_DECL][TS_DECL_WITH_VIS] = 1;
   tree_contains_struct[INSTANCE_METHOD_DECL][TS_DECL_WITH_VIS] = 1;
   tree_contains_struct[KEYWORD_DECL][TS_DECL_WITH_VIS] = 1;
+  tree_contains_struct[PROPERTY_DECL][TS_DECL_WITH_VIS] = 1;
 
   tree_contains_struct[CLASS_METHOD_DECL][TS_DECL_WRTL] = 1;
   tree_contains_struct[INSTANCE_METHOD_DECL][TS_DECL_WRTL] = 1;
   tree_contains_struct[KEYWORD_DECL][TS_DECL_WRTL] = 1;
+  tree_contains_struct[PROPERTY_DECL][TS_DECL_WRTL] = 1;
   
   tree_contains_struct[CLASS_METHOD_DECL][TS_DECL_MINIMAL] = 1;
   tree_contains_struct[INSTANCE_METHOD_DECL][TS_DECL_MINIMAL] = 1;
   tree_contains_struct[KEYWORD_DECL][TS_DECL_MINIMAL] = 1;
+  tree_contains_struct[PROPERTY_DECL][TS_DECL_MINIMAL] = 1;
   
   tree_contains_struct[CLASS_METHOD_DECL][TS_DECL_COMMON] = 1;
   tree_contains_struct[INSTANCE_METHOD_DECL][TS_DECL_COMMON] = 1;
   tree_contains_struct[KEYWORD_DECL][TS_DECL_COMMON] = 1;
+  tree_contains_struct[PROPERTY_DECL][TS_DECL_COMMON] = 1;
   
   /* C++ decls */
   tree_contains_struct[NAMESPACE_DECL][TS_DECL_NON_COMMON] = 1;
@@ -146,19 +150,8 @@ static tree
 objcxx_eh_personality (void)
 {
   if (!objcp_eh_personality_decl)
-    objcp_eh_personality_decl
-	= build_personality_function (USING_SJLJ_EXCEPTIONS
-				      ? "__gxx_personality_sj0"
-				      : "__gxx_personality_v0");
-
+    objcp_eh_personality_decl = build_personality_function ("gxx");
   return objcp_eh_personality_decl;
-}
-
-
-void
-finish_file (void)
-{
-  objc_finish_file ();
 }
 
 #include "gtype-objcp.h"

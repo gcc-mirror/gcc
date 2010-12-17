@@ -15,5 +15,5 @@ int foo (void)
   return *x;
 }
 
-/* { dg-final { scan-tree-dump "a.i\\\[1\\\]" "ccp1" } } */
+/* { dg-final { scan-tree-dump "MEM\\\[\\\(int \\\*\\\)&a \\\+ 4B\\\]" "ccp1" } } */
 /* { dg-final { cleanup-tree-dump "ccp1" } } */

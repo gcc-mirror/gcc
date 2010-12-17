@@ -21,10 +21,8 @@
 load_lib gcc-dg.exp
 
 # Set up flags used for tests that don't specify options.
+global DEFAULT_VECTCFLAGS
 set DEFAULT_VECTCFLAGS ""
-
-# These flags are used for all targets.
-lappend DEFAULT_VECTCFLAGS "-ftree-vectorize" "-fno-vect-cost-model"
 
 # If the target system supports vector instructions, the default action
 # for a test is 'run', otherwise it's 'compile'.  Save current default.
@@ -37,82 +35,15 @@ set save-dg-do-what-default ${dg-do-what-default}
 # Skip these tests for targets that do not support generating vector
 # code.  Set additional target-dependent vector flags, which can be
 # overridden by using dg-options in individual tests.
-if  [istarget "powerpc-*paired*"]  {
-   lappend DEFAULT_VECTCFLAGS "-mpaired"
-    if [check_750cl_hw_available] {
-        set dg-do-what-default run 
-    } else {
-        set dg-do-what-default compile
-    }
-} elseif [istarget "powerpc*-*-*"] {
-    # Skip targets not supporting -maltivec.
-    if ![is-effective-target powerpc_altivec_ok] {
-	return
-    }
-
-    lappend DEFAULT_VECTCFLAGS "-maltivec"
-    if [check_vsx_hw_available]  {
-      lappend DEFAULT_VECTCFLAGS "-mvsx" "-mno-allow-movmisalign"
-    }
-
-    if [check_vmx_hw_available] {
-	set dg-do-what-default run
-    } else {
-	if [is-effective-target ilp32] {
-	    # Specify a cpu that supports VMX for compile-only tests.
-	    lappend DEFAULT_VECTCFLAGS "-mcpu=970"
-	}
-	set dg-do-what-default compile
-    }
-} elseif { [istarget  "spu-*-*"] } {
-   set dg-do-what-default run
-} elseif { [istarget "i?86-*-*"] || [istarget "x86_64-*-*"] } {
-    if { ![check_effective_target_sse2] } then {
-	return
-    }
-    lappend DEFAULT_VECTCFLAGS "-msse2"
-    if [check_sse2_hw_available] {
-	set dg-do-what-default run
-    } else {
-	set dg-do-what-default compile
-    }
-} elseif { [istarget "mips*-*-*"]
-	   && [check_effective_target_mpaired_single]
-	   && [check_effective_target_nomips16] } {
-    lappend DEFAULT_VECTCFLAGS "-mpaired-single"
-    set dg-do-what-default run
-} elseif [istarget "sparc*-*-*"] {
-    lappend DEFAULT_VECTCFLAGS "-mcpu=ultrasparc" "-mvis"
-    if [check_effective_target_ultrasparc_hw] {
-	set dg-do-what-default run
-    } else {
-	set dg-do-what-default compile
-    }
-} elseif [istarget "alpha*-*-*"] {
-    # Alpha's vectorization capabilities are extremely limited.
-    # It's more effort than its worth disabling all of the tests
-    # that it cannot pass.  But if you actually want to see what
-    # does work, command out the return.
-    return
-
-    lappend DEFAULT_VECTCFLAGS "-mmax"
-    if [check_alpha_max_hw_available] {
-	set dg-do-what-default run
-    } else {
-	set dg-do-what-default compile
-    }
-} elseif [istarget "ia64-*-*"] {
-    set dg-do-what-default run
-} elseif [is-effective-target arm_neon_ok] {
-    eval lappend DEFAULT_VECTCFLAGS [add_options_for_arm_neon ""]
-    if [is-effective-target arm_neon_hw] {
-      set dg-do-what-default run
-    } else {
-      set dg-do-what-default compile
-    }
-} else {
+if ![check_vect_support_and_set_flags] {
     return
 }
+
+global VEC_FLAGS
+set VEC_FLAGS $DEFAULT_VECTCFLAGS
+
+# These flags are used for all targets.
+lappend DEFAULT_VECTCFLAGS "-ftree-vectorize" "-fno-vect-cost-model"
 
 # Initialize `dg'.
 dg-init
@@ -122,11 +53,21 @@ set O1_VECTCFLAGS $DEFAULT_VECTCFLAGS
 lappend O1_VECTCFLAGS "-O1"
 lappend O1_VECTCFLAGS "-fdump-tree-vect-details"
 
+global O_VECTCFLAGS
+set O_VECTCFLAGS $DEFAULT_VECTCFLAGS
+lappend O_VECTCFLAGS "-O"
+lappend O_VECTCFLAGS "-fdump-tree-vect-details"
+
 lappend DEFAULT_VECTCFLAGS "-O2"
 
 # Tests that should be run without generating dump info
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/nodump-*.\[cS\]]]  \
 	"" $DEFAULT_VECTCFLAGS
+
+# "-O -fdump-tree-veclower"
+lappend VEC_FLAGS "-O" "-fdump-tree-veclower"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vec-scal-*.\[cS\]]]  \
+        "" $VEC_FLAGS
 
 set VECT_SLP_CFLAGS $DEFAULT_VECTCFLAGS
 
@@ -282,6 +223,10 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/O3-*.\[cS\]]]  \
 # With -O1
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/O1-*.\[cS\]]]  \
         "" $O1_VECTCFLAGS
+
+# With -O
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/O-*.\[cS\]]]  \
+        "" $O_VECTCFLAGS
 
 # -fno-tree-reassoc
 set VECT_SLP_CFLAGS $SAVED_VECT_SLP_CFLAGS

@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Tensilica's Xtensa architecture.
-   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "tm_p.h"
 #include "function.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "optabs.h"
 #include "libfuncs.h"
@@ -117,6 +118,7 @@ const enum reg_class xtensa_regno_to_class[FIRST_PSEUDO_REGISTER] =
   ACC_REG,
 };
 
+static void xtensa_option_override (void);
 static enum internal_test map_test_to_internal_test (enum rtx_code);
 static rtx gen_int_relational (enum rtx_code, rtx, rtx, int *);
 static rtx gen_float_relational (enum rtx_code, rtx, rtx);
@@ -139,7 +141,15 @@ static tree xtensa_build_builtin_va_list (void);
 static bool xtensa_return_in_memory (const_tree, const_tree);
 static tree xtensa_gimplify_va_arg_expr (tree, tree, gimple_seq *,
 					 gimple_seq *);
+static void xtensa_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+					 const_tree, bool);
+static rtx xtensa_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+				const_tree, bool);
+static rtx xtensa_function_incoming_arg (CUMULATIVE_ARGS *,
+					 enum machine_mode, const_tree, bool);
 static rtx xtensa_function_value (const_tree, const_tree, bool);
+static unsigned int xtensa_function_arg_boundary (enum machine_mode,
+						  const_tree);
 static void xtensa_init_builtins (void);
 static tree xtensa_fold_builtin (tree, int, tree *, bool);
 static rtx xtensa_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
@@ -151,6 +161,20 @@ static void xtensa_trampoline_init (rtx, tree, rtx);
 
 static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
   REG_ALLOC_ORDER;
+
+/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
+
+static const struct default_options xtensa_option_optimization_table[] =
+  {
+    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    /* Reordering blocks for Xtensa is not a good idea unless the
+       compiler understands the range of conditional branches.
+       Currently all branch relaxation for Xtensa is handled in the
+       assembler, so GCC cannot do a good job of reordering blocks.
+       Do not enable reordering unless it is explicitly requested.  */
+    { OPT_LEVELS_ALL, OPT_freorder_blocks, NULL, 0 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
 
 
 /* This macro generates the assembly code for function exit,
@@ -171,7 +195,7 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 #define TARGET_ASM_SELECT_RTX_SECTION  xtensa_select_rtx_section
 
 #undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT | MASK_FUSED_MADD)
+#define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT)
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS xtensa_legitimize_address
@@ -200,6 +224,14 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 #define TARGET_SPLIT_COMPLEX_ARG hook_bool_const_tree_true
 #undef TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE xtensa_function_arg_advance
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG xtensa_function_arg
+#undef TARGET_FUNCTION_INCOMING_ARG
+#define TARGET_FUNCTION_INCOMING_ARG xtensa_function_incoming_arg
+#undef TARGET_FUNCTION_ARG_BOUNDARY
+#define TARGET_FUNCTION_ARG_BOUNDARY xtensa_function_arg_boundary
 
 #undef TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS xtensa_builtin_saveregs
@@ -237,6 +269,11 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE xtensa_asm_trampoline_template
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT xtensa_trampoline_init
+
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE xtensa_option_override
+#undef TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE xtensa_option_optimization_table
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1272,7 +1309,7 @@ xtensa_expand_nonlocal_goto (rtx *operands)
     containing_fp = force_reg (Pmode, containing_fp);
 
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__xtensa_nonlocal_goto"),
-		     0, VOIDmode, 2,
+		     LCT_NORMAL, VOIDmode, 2,
 		     containing_fp, Pmode,
 		     goto_handler, Pmode);
 }
@@ -1550,7 +1587,7 @@ xtensa_setup_frame_addresses (void)
 
   emit_library_call
     (gen_rtx_SYMBOL_REF (Pmode, "__xtensa_libgcc_window_spill"),
-     0, VOIDmode, 0);
+     LCT_NORMAL, VOIDmode, 0);
 }
 
 
@@ -1982,8 +2019,9 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, int incoming)
 
 /* Advance the argument to the next argument position.  */
 
-void
-function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type)
+static void
+xtensa_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			     const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   int words, max;
   int *arg_words;
@@ -2008,9 +2046,9 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type)
    or 0 if the argument is to be passed on the stack.  INCOMING_P is nonzero
    if this is an incoming argument to the current function.  */
 
-rtx
-function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
-	      int incoming_p)
+static rtx
+xtensa_function_arg_1 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		       const_tree type, bool incoming_p)
 {
   int regbase, words, max;
   int *arg_words;
@@ -2041,9 +2079,26 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
   return gen_rtx_REG (mode, regno);
 }
 
+/* Implement TARGET_FUNCTION_ARG.  */
 
-int
-function_arg_boundary (enum machine_mode mode, tree type)
+static rtx
+xtensa_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		     const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  return xtensa_function_arg_1 (cum, mode, type, false);
+}
+
+/* Implement TARGET_FUNCTION_INCOMING_ARG.  */
+
+static rtx
+xtensa_function_incoming_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			      const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  return xtensa_function_arg_1 (cum, mode, type, true);
+}
+
+static unsigned int
+xtensa_function_arg_boundary (enum machine_mode mode, const_tree type)
 {
   unsigned int alignment;
 
@@ -2065,8 +2120,8 @@ xtensa_return_in_msb (const_tree valtype)
 }
 
 
-void
-override_options (void)
+static void
+xtensa_option_override (void)
 {
   int regno;
   enum machine_mode mode;
@@ -2132,7 +2187,6 @@ override_options (void)
       flag_reorder_blocks = 1;
     }
 }
-
 
 /* A C compound statement to output to stdio stream STREAM the
    assembler syntax for an instruction operand X.  X is an RTL
@@ -2587,8 +2641,7 @@ xtensa_expand_prologue (void)
 				     : stack_pointer_rtx),
 			  plus_constant (stack_pointer_rtx, -total_size));
   RTX_FRAME_RELATED_P (insn) = 1;
-  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-					note_rtx, REG_NOTES (insn));
+  add_reg_note (insn, REG_FRAME_RELATED_EXPR, note_rtx);
 }
 
 
@@ -2681,11 +2734,11 @@ xtensa_build_builtin_va_list (void)
   DECL_FIELD_CONTEXT (f_reg) = record;
   DECL_FIELD_CONTEXT (f_ndx) = record;
 
-  TREE_CHAIN (record) = type_decl;
+  TYPE_STUB_DECL (record) = type_decl;
   TYPE_NAME (record) = type_decl;
   TYPE_FIELDS (record) = f_stk;
-  TREE_CHAIN (f_stk) = f_reg;
-  TREE_CHAIN (f_reg) = f_ndx;
+  DECL_CHAIN (f_stk) = f_reg;
+  DECL_CHAIN (f_reg) = f_ndx;
 
   layout_type (record);
   return record;
@@ -2739,8 +2792,8 @@ xtensa_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
   arg_words = crtl->args.info.arg_words;
 
   f_stk = TYPE_FIELDS (va_list_type_node);
-  f_reg = TREE_CHAIN (f_stk);
-  f_ndx = TREE_CHAIN (f_reg);
+  f_reg = DECL_CHAIN (f_stk);
+  f_ndx = DECL_CHAIN (f_reg);
 
   stk = build3 (COMPONENT_REF, TREE_TYPE (f_stk), valist, f_stk, NULL_TREE);
   reg = build3 (COMPONENT_REF, TREE_TYPE (f_reg), unshare_expr (valist),
@@ -2809,8 +2862,8 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
     }
 
   f_stk = TYPE_FIELDS (va_list_type_node);
-  f_reg = TREE_CHAIN (f_stk);
-  f_ndx = TREE_CHAIN (f_reg);
+  f_reg = DECL_CHAIN (f_stk);
+  f_ndx = DECL_CHAIN (f_reg);
 
   stk = build3 (COMPONENT_REF, TREE_TYPE (f_stk), valist,
 		f_stk, NULL_TREE);
@@ -3089,8 +3142,8 @@ xtensa_preferred_reload_class (rtx x, enum reg_class rclass, int isoutput)
 }
 
 
-enum reg_class
-xtensa_secondary_reload (bool in_p, rtx x, enum reg_class rclass,
+reg_class_t
+xtensa_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
 			 enum machine_mode mode, secondary_reload_info *sri)
 {
   int regno;
@@ -3540,7 +3593,7 @@ xtensa_trampoline_init (rtx m_tramp, tree fndecl, rtx chain)
   emit_move_insn (adjust_address (m_tramp, SImode, chain_off), chain);
   emit_move_insn (adjust_address (m_tramp, SImode, func_off), func);
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__xtensa_sync_caches"),
-		     0, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
+		     LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
 }
 
 

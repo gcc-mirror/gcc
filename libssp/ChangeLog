@@ -1,3 +1,25 @@
+2010-07-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (ssp_use_symver): Only check for Sun-style symbol
+	versioning on Solaris 2.
+	* configure: Regenerate.
+
+2010-07-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Check for Sun symbol versioning.
+	Check for memmove.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
+	* Makefile.am [LIBSSP_USE_SYMVER]: Protect version_arg,
+	version_dep with LIBSSP_USE_SYMVER_GNU.
+	[LIBSSP_USE_SYMVER_SUN]: Handle Sun symbol versioning.
+	* Makefile.in: Regenerate.
+
+	* ssp.map: Reformat.
+
+	* memmove-chk.c: Change guard to HAVE_MEMMOVE.
+
 2010-05-04  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR other/43620

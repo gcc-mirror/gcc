@@ -35,7 +35,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "../../libcpp/internal.h"
 #include "cpp.h"
 #include "incpath.h"
+#include "cppbuiltin.h"
 #include "mkdeps.h"
+
+#ifndef TARGET_CPU_CPP_BUILTINS
+# define TARGET_CPU_CPP_BUILTINS()
+#endif
 
 #ifndef TARGET_OS_CPP_BUILTINS
 # define TARGET_OS_CPP_BUILTINS()
@@ -110,12 +115,6 @@ gfc_cpp_option;
 static cpp_options *cpp_option = NULL;
 static cpp_reader *cpp_in = NULL;
 
-/* Defined in toplev.c.  */
-extern const char *asm_file_name;
-
-
-
-
 /* Encapsulates state used to convert a stream of cpp-tokens into
    a text file.  */
 static struct
@@ -156,85 +155,18 @@ static void dump_queued_macros (cpp_reader *);
 static void
 cpp_define_builtins (cpp_reader *pfile)
 {
-  int major, minor, patchlevel;
-
   /* Initialize CPP built-ins; '1' corresponds to 'flag_hosted'
      in C, defines __STDC_HOSTED__?!  */
   cpp_init_builtins (pfile, 0);
 
   /* Initialize GFORTRAN specific builtins.
      These are documented.  */
-  if (sscanf (BASEVER, "%d.%d.%d", &major, &minor, &patchlevel) != 3)
-    {
-      sscanf (BASEVER, "%d.%d", &major, &minor);
-      patchlevel = 0;
-    }
-  cpp_define_formatted (pfile, "__GNUC__=%d", major);
-  cpp_define_formatted (pfile, "__GNUC_MINOR__=%d", minor);
-  cpp_define_formatted (pfile, "__GNUC_PATCHLEVEL__=%d", patchlevel);
-
+  define_language_independent_builtin_macros (pfile);
   cpp_define (pfile, "__GFORTRAN__=1");
   cpp_define (pfile, "_LANGUAGE_FORTRAN=1");
 
-  if (gfc_option.flag_openmp)
+  if (gfc_option.gfc_flag_openmp)
     cpp_define (pfile, "_OPENMP=200805");
-
-
-  /* More builtins that might be useful, but are not documented
-     (in no particular order).  */
-  cpp_define_formatted (pfile, "__VERSION__=\"%s\"", version_string);
-
-  if (flag_pic)
-    {
-      cpp_define_formatted (pfile, "__pic__=%d", flag_pic);
-      cpp_define_formatted (pfile, "__PIC__=%d", flag_pic);
-    }
-  if (flag_pie)
-    {
-      cpp_define_formatted (pfile, "__pie__=%d", flag_pie);
-      cpp_define_formatted (pfile, "__PIE__=%d", flag_pie);
-    }
-
-  if (optimize_size)
-    cpp_define (pfile, "__OPTIMIZE_SIZE__");
-  if (optimize)
-    cpp_define (pfile, "__OPTIMIZE__");
-
-  if (fast_math_flags_set_p ())
-    cpp_define (pfile, "__FAST_MATH__");
-  if (flag_signaling_nans)
-    cpp_define (pfile, "__SUPPORT_SNAN__");
-
-  cpp_define_formatted (pfile, "__FINITE_MATH_ONLY__=%d", flag_finite_math_only);
-
-  /* Definitions for LP64 model. */
-  if (TYPE_PRECISION (long_integer_type_node) == 64
-      && POINTER_SIZE == 64
-      && TYPE_PRECISION (integer_type_node) == 32)
-    {
-      cpp_define (pfile, "_LP64");
-      cpp_define (pfile, "__LP64__");
-    }
-
-  /* Define NAME with value TYPE size_unit.
-     The C-side also defines __SIZEOF_WCHAR_T__, __SIZEOF_WINT_T__
-     __SIZEOF_PTRDIFF_T__, however, fortran seems to lack the
-     appropriate type nodes.  */
-
-#define define_type_sizeof(NAME, TYPE)                             \
-    cpp_define_formatted (pfile, NAME"="HOST_WIDE_INT_PRINT_DEC,   \
-                          tree_low_cst (TYPE_SIZE_UNIT (TYPE), 1))
-
-  define_type_sizeof ("__SIZEOF_INT__", integer_type_node);
-  define_type_sizeof ("__SIZEOF_LONG__", long_integer_type_node);
-  define_type_sizeof ("__SIZEOF_LONG_LONG__", long_long_integer_type_node);
-  define_type_sizeof ("__SIZEOF_SHORT__", short_integer_type_node);
-  define_type_sizeof ("__SIZEOF_FLOAT__", float_type_node);
-  define_type_sizeof ("__SIZEOF_DOUBLE__", double_type_node);
-  define_type_sizeof ("__SIZEOF_LONG_DOUBLE__", long_double_type_node);
-  define_type_sizeof ("__SIZEOF_SIZE_T__", size_type_node);
-
-#undef define_type_sizeof
 
   /* The defines below are necessary for the TARGET_* macros.
 
@@ -304,8 +236,8 @@ gfc_cpp_temporary_file (void)
 }
 
 void
-gfc_cpp_init_options (unsigned int argc,
-		      const char **argv ATTRIBUTE_UNUSED)
+gfc_cpp_init_options (unsigned int decoded_options_count,
+		      struct cl_decoded_option *decoded_options ATTRIBUTE_UNUSED)
 {
   /* Do not create any objects from libcpp here. If no
      preprocessing is requested, this would be wasted
@@ -337,7 +269,8 @@ gfc_cpp_init_options (unsigned int argc,
   gfc_cpp_option.prefix = NULL;
   gfc_cpp_option.sysroot = NULL;
 
-  gfc_cpp_option.deferred_opt = XNEWVEC (gfc_cpp_deferred_opt_t, argc);
+  gfc_cpp_option.deferred_opt = XNEWVEC (gfc_cpp_deferred_opt_t,
+					 decoded_options_count);
   gfc_cpp_option.deferred_opt_count = 0;
 }
 
@@ -353,7 +286,7 @@ gfc_cpp_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED
       result = 0;
       break;
 
-    case OPT_cpp:
+    case OPT_cpp_:
       gfc_cpp_option.temporary_filename = arg;
       break;
 
@@ -509,10 +442,10 @@ gfc_cpp_post_options (void)
 	  || gfc_cpp_option.dump_includes))
     gfc_fatal_error("To enable preprocessing, use -cpp");
 
-  cpp_in = cpp_create_reader (CLK_GNUC89, NULL, line_table);
   if (!gfc_cpp_enabled ())
     return;
 
+  cpp_in = cpp_create_reader (CLK_GNUC89, NULL, line_table);
   gcc_assert (cpp_in);
 
   /* The cpp_options-structure defines far more flags than those set here.
@@ -525,7 +458,7 @@ gfc_cpp_post_options (void)
   cpp_option->traditional = 1;
   cpp_option->cplusplus_comments = 0;
 
-  cpp_option->pedantic = pedantic;
+  cpp_option->cpp_pedantic = pedantic;
 
   cpp_option->dollars_in_ident = gfc_option.flag_dollar_ok;
   cpp_option->discard_comments = gfc_cpp_option.discard_comments;
@@ -1074,13 +1007,13 @@ cb_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
 {
   diagnostic_info diagnostic;
   diagnostic_t dlevel;
-  bool save_warn_system_headers = global_dc->warn_system_headers;
+  bool save_warn_system_headers = global_dc->dc_warn_system_headers;
   bool ret;
 
   switch (level)
     {
     case CPP_DL_WARNING_SYSHDR:
-      global_dc->warn_system_headers = 1;
+      global_dc->dc_warn_system_headers = 1;
       /* Fall through.  */
     case CPP_DL_WARNING:
       dlevel = DK_WARNING;
@@ -1111,7 +1044,7 @@ cb_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
     diagnostic_override_option_index (&diagnostic, OPT_Wcpp);
   ret = report_diagnostic (&diagnostic);
   if (level == CPP_DL_WARNING_SYSHDR)
-    global_dc->warn_system_headers = save_warn_system_headers;
+    global_dc->dc_warn_system_headers = save_warn_system_headers;
   return ret;
 }
 

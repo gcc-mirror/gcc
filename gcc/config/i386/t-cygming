@@ -1,4 +1,4 @@
-# Copyright (C) 2003, 2005, 2008, 2009 Free Software Foundation, Inc.
+# Copyright (C) 2003, 2005, 2008, 2009, 2010 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -17,7 +17,7 @@
 # <http://www.gnu.org/licenses/>.
 
 LIB1ASMSRC = i386/cygwin.asm
-LIB1ASMFUNCS = _chkstk
+LIB1ASMFUNCS = _chkstk _chkstk_ms
 
 # cygwin and mingw always have a limits.h, but, depending upon how we are
 # doing the build, it may not be installed yet.
@@ -30,26 +30,26 @@ LIBGCC2_INCLUDES = -I$(srcdir)/../winsup/w32api/include
 
 winnt.o: $(srcdir)/config/i386/winnt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) $(RTL_H) $(REGS_H) hard-reg-set.h output.h $(TREE_H) flags.h \
-  $(TM_P_H) toplev.h $(HASHTAB_H) $(GGC_H) $(LTO_STREAMER_H)
+  $(TM_P_H) $(HASHTAB_H) $(GGC_H) $(LTO_STREAMER_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	$(srcdir)/config/i386/winnt.c
 
 winnt-cxx.o: $(srcdir)/config/i386/winnt-cxx.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) $(TREE_H) flags.h \
-  $(TM_P_H) toplev.h $(HASHTAB_H) $(GGC_H)
+  $(TM_P_H) $(HASHTAB_H) $(GGC_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	$(srcdir)/config/i386/winnt-cxx.c
 
 
 winnt-stubs.o: $(srcdir)/config/i386/winnt-stubs.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) $(RTL_H) $(REGS_H) hard-reg-set.h output.h $(TREE_H) flags.h \
-  $(TM_P_H) toplev.h $(HASHTAB_H) $(GGC_H)
+  $(TM_P_H) $(HASHTAB_H) $(GGC_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	$(srcdir)/config/i386/winnt-stubs.c
 
 msformat-c.o: $(srcdir)/config/i386/msformat-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) $(RTL_H) $(REGS_H) hard-reg-set.h output.h $(TREE_H) flags.h \
-  $(TM_P_H) toplev.h $(HASHTAB_H) $(GGC_H)
+  $(TM_P_H) $(HASHTAB_H) $(GGC_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	$(srcdir)/config/i386/msformat-c.c
 
@@ -92,7 +92,7 @@ SHLIB_LINK = $(LN_S) -f $(SHLIB_MAP) $(SHLIB_MAP).def && \
 # libgcc.mk.  We want this delayed until actual install time.
 SHLIB_INSTALL = \
 	$$(mkinstalldirs) $$(DESTDIR)$$(slibdir)$(SHLIB_SLIBDIR_QUAL); \
-	$(INSTALL_PROGRAM) $(SHLIB_DIR)/$(SHLIB_SONAME) \
+	$(INSTALL) $(SHLIB_DIR)/$(SHLIB_SONAME) \
 	  $$(DESTDIR)$$(bindir)/$(SHLIB_SONAME); \
 	$(INSTALL_DATA) $(SHLIB_DIR)/$(SHLIB_IMPLIB) \
 	  $$(DESTDIR)$$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_IMPLIB)

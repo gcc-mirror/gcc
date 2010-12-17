@@ -117,8 +117,8 @@ package body Exp_Intr is
    ---------------------------------
 
    procedure Expand_Binary_Operator_Call (N : Node_Id) is
-      T1  : constant Entity_Id := Underlying_Type (Left_Opnd  (N));
-      T2  : constant Entity_Id := Underlying_Type (Right_Opnd (N));
+      T1  : constant Entity_Id := Underlying_Type (Etype (Left_Opnd  (N)));
+      T2  : constant Entity_Id := Underlying_Type (Etype (Right_Opnd (N)));
       TR  : constant Entity_Id := Etype (N);
       T3  : Entity_Id;
       Res : Node_Id;
@@ -127,6 +127,14 @@ package body Exp_Intr is
       --  Maximum of operand sizes
 
    begin
+      --  Nothing to do if the operands have the same modular type
+
+      if Base_Type (T1) = Base_Type (T2)
+        and then Is_Modular_Integer_Type (T1)
+      then
+         return;
+      end if;
+
       --  Use Unsigned_32 for sizes of 32 or below, else Unsigned_64
 
       if Siz > 32 then
@@ -139,8 +147,18 @@ package body Exp_Intr is
       --  subsequent reanalysis.
 
       Res := New_Copy (N);
-      Set_Etype (Res, Empty);
-      Set_Entity (Res, Empty);
+      Set_Etype (Res, T3);
+
+      case Nkind (N) is
+         when N_Op_And =>
+            Set_Entity (Res, Standard_Op_And);
+         when N_Op_Or =>
+            Set_Entity (Res, Standard_Op_Or);
+         when N_Op_Xor =>
+            Set_Entity (Res, Standard_Op_Xor);
+         when others =>
+            raise Program_Error;
+      end case;
 
       --  Convert operands to large enough intermediate type
 
@@ -851,7 +869,7 @@ package body Exp_Intr is
       Rtyp  : constant Entity_Id  := Underlying_Type (Root_Type (Typ));
       Pool  : constant Entity_Id  := Associated_Storage_Pool (Rtyp);
 
-      Desig_T   : constant Entity_Id  := Designated_Type (Typ);
+      Desig_T   : constant Entity_Id := Designated_Type (Typ);
       Gen_Code  : Node_Id;
       Free_Node : Node_Id;
       Deref     : Node_Id;
@@ -866,10 +884,6 @@ package body Exp_Intr is
       --  them to the tree, and that can disturb current value settings.
 
    begin
-      if No_Pool_Assigned (Rtyp) then
-         Error_Msg_N ("?deallocation from empty storage pool!", N);
-      end if;
-
       --  Nothing to do if we know the argument is null
 
       if Known_Null (N) then
@@ -1013,6 +1027,10 @@ package body Exp_Intr is
       Free_Node := Make_Free_Statement (Loc, Empty);
       Append_To (Stmts, Free_Node);
       Set_Storage_Pool (Free_Node, Pool);
+
+      --  Attach to tree before analysis of generated subtypes below.
+
+      Set_Parent (Stmts, Parent (N));
 
       --  Deal with storage pool
 

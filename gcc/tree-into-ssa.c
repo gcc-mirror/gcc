@@ -556,7 +556,7 @@ set_livein_block (tree var, basic_block bb)
 
 /* Return true if symbol SYM is marked for renaming.  */
 
-static inline bool
+bool
 symbol_marked_for_renaming (tree sym)
 {
   return bitmap_bit_p (SYMS_TO_RENAME (cfun), DECL_UID (sym));
@@ -960,11 +960,10 @@ prune_unused_phi_nodes (bitmap phis, bitmap kills, bitmap uses)
 	}
 
       /* If the phi node is already live, there is nothing to do.  */
-      if (bitmap_bit_p (live_phis, p))
+      if (!bitmap_set_bit (live_phis, p))
 	continue;
 
-      /* Mark the phi as live, and add the new uses to the worklist.  */
-      bitmap_set_bit (live_phis, p);
+      /* Add the new uses to the worklist.  */
       def_bb = BASIC_BLOCK (p);
       FOR_EACH_EDGE (e, ei, def_bb->preds)
 	{
@@ -1470,11 +1469,7 @@ dump_decl_set (FILE *file, bitmap set)
 
       EXECUTE_IF_SET_IN_BITMAP (set, 0, i, bi)
 	{
-	  struct tree_decl_minimal in;
-	  tree var;
-	  in.uid = i;
-	  var = (tree) htab_find_with_hash (gimple_referenced_vars (cfun),
-					    &in, i);
+	  tree var = referenced_var_lookup (i);
 	  if (var)
 	    print_generic_expr (file, var, 0);
 	  else
@@ -1997,7 +1992,7 @@ rewrite_update_phi_arguments (basic_block bb)
 	continue;
 
       phis = VEC_index (gimple_vec, phis_to_rewrite, e->dest->index);
-      for (i = 0; VEC_iterate (gimple, phis, i, phi); i++)
+      FOR_EACH_VEC_ELT (gimple, phis, i, phi)
 	{
 	  tree arg, lhs_sym, reaching_def = NULL;
 	  use_operand_p arg_p;
@@ -2068,8 +2063,6 @@ static void
 rewrite_update_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 		            basic_block bb)
 {
-  edge e;
-  edge_iterator ei;
   bool is_abnormal_phi;
   gimple_stmt_iterator gsi;
 
@@ -2085,13 +2078,7 @@ rewrite_update_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 
   /* Mark the LHS if any of the arguments flows through an abnormal
      edge.  */
-  is_abnormal_phi = false;
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    if (e->flags & EDGE_ABNORMAL)
-      {
-	is_abnormal_phi = true;
-	break;
-      }
+  is_abnormal_phi = bb_has_abnormal_pred (bb);
 
   /* If any of the PHI nodes is a replacement for a name in
      OLD_SSA_NAMES or it's one of the names in NEW_SSA_NAMES, then
@@ -2352,8 +2339,6 @@ rewrite_into_ssa (void)
   bitmap_head *dfs;
   basic_block bb;
 
-  timevar_push (TV_TREE_SSA_OTHER);
-
   /* Initialize operand data structures.  */
   init_ssa_operands ();
 
@@ -2393,7 +2378,6 @@ rewrite_into_ssa (void)
 
   fini_ssa_renamer ();
 
-  timevar_pop (TV_TREE_SSA_OTHER);
   return 0;
 }
 
@@ -2408,7 +2392,7 @@ struct gimple_opt_pass pass_build_ssa =
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
+  TV_TREE_SSA_OTHER,			/* tv_id */
   PROP_cfg | PROP_referenced_vars,	/* properties_required */
   PROP_ssa,				/* properties_provided */
   0,					/* properties_destroyed */
@@ -2843,17 +2827,10 @@ create_new_def_for (tree old_name, gimple stmt, def_operand_p def)
 
   if (gimple_code (stmt) == GIMPLE_PHI)
     {
-      edge e;
-      edge_iterator ei;
       basic_block bb = gimple_bb (stmt);
 
       /* If needed, mark NEW_NAME as occurring in an abnormal PHI node. */
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	if (e->flags & EDGE_ABNORMAL)
-	  {
-	    SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_name) = 1;
-	    break;
-	  }
+      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_name) = bb_has_abnormal_pred (bb);
     }
 
   register_new_name_mapping (new_name, old_name);
@@ -3014,12 +2991,10 @@ insert_updated_phi_nodes_for (tree var, bitmap_head *dfs, bitmap blocks,
   bitmap_iterator bi;
   unsigned i;
 
-#if defined ENABLE_CHECKING
   if (TREE_CODE (var) == SSA_NAME)
-    gcc_assert (is_old_name (var));
+    gcc_checking_assert (is_old_name (var));
   else
-    gcc_assert (symbol_marked_for_renaming (var));
-#endif
+    gcc_checking_assert (symbol_marked_for_renaming (var));
 
   /* Get all the definition sites for VAR.  */
   db = find_def_blocks_for (var);

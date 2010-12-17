@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -74,8 +74,8 @@ package body Prj.Strt is
         Table_Initial        => 10,
         Table_Increment      => 100,
         Table_Name           => "Prj.Strt.Choice_Lasts");
-   --  Used to store the indices of the choices in table Choices,
-   --  to distinguish nested case constructions.
+   --  Used to store the indexes of the choices in table Choices, to
+   --  distinguish nested case constructions.
 
    Choice_First : Choice_Node_Id := 0;
    --  Index in table Choices of the first case label of the current
@@ -109,6 +109,7 @@ package body Prj.Strt is
       Current_Project : Project_Node_Id;
       Current_Package : Project_Node_Id;
       External_Value  : out Project_Node_Id;
+      Expr_Kind       : in out Variable_Kind;
       Flags           : Processing_Flags);
    --  Parse an external reference. Current token is "external"
 
@@ -216,8 +217,7 @@ package body Prj.Strt is
             Set_Case_Insensitive
               (Reference, In_Tree,
                To => Attribute_Kind_Of (Current_Attribute) in
-                      Case_Insensitive_Associative_Array ..
-                        Optional_Index_Case_Insensitive_Associative_Array);
+                      All_Case_Insensitive_Associative_Array);
 
             --  Scan past the attribute name
 
@@ -230,18 +230,34 @@ package body Prj.Strt is
 
                if Token = Tok_Left_Paren then
                   Scan (In_Tree);
-                  Expect (Tok_String_Literal, "literal string");
 
-                  if Token = Tok_String_Literal then
+                  if Others_Allowed_For (Current_Attribute)
+                    and then Token = Tok_Others
+                  then
                      Set_Associative_Array_Index_Of
-                       (Reference, In_Tree, To => Token_Name);
+                       (Reference, In_Tree, To => All_Other_Names);
                      Scan (In_Tree);
-                     Expect (Tok_Right_Paren, "`)`");
 
-                     if Token = Tok_Right_Paren then
+                  else
+                     if Others_Allowed_For (Current_Attribute) then
+                        Expect
+                          (Tok_String_Literal, "literal string or others");
+                     else
+                        Expect (Tok_String_Literal, "literal string");
+                     end if;
+
+                     if Token = Tok_String_Literal then
+                        Set_Associative_Array_Index_Of
+                          (Reference, In_Tree, To => Token_Name);
                         Scan (In_Tree);
                      end if;
                   end if;
+               end if;
+
+               Expect (Tok_Right_Paren, "`)`");
+
+               if Token = Tok_Right_Paren then
+                  Scan (In_Tree);
                end if;
             end if;
          end if;
@@ -353,23 +369,38 @@ package body Prj.Strt is
       Current_Project : Project_Node_Id;
       Current_Package : Project_Node_Id;
       External_Value  : out Project_Node_Id;
+      Expr_Kind       : in out Variable_Kind;
       Flags           : Processing_Flags)
    is
       Field_Id : Project_Node_Id := Empty_Node;
+      Ext_List : Boolean         := False;
 
    begin
       External_Value :=
         Default_Project_Node
           (Of_Kind       => N_External_Value,
-           In_Tree       => In_Tree,
-           And_Expr_Kind => Single);
+           In_Tree       => In_Tree);
       Set_Location_Of (External_Value, In_Tree, To => Token_Ptr);
 
-      --  The current token is External
+      --  The current token is either external or external_as_list
 
-      --  Get the left parenthesis
-
+      Ext_List := Token = Tok_External_As_List;
       Scan (In_Tree);
+
+      if Ext_List then
+         Set_Expression_Kind_Of (External_Value, In_Tree, To => List);
+      else
+         Set_Expression_Kind_Of (External_Value, In_Tree, To => Single);
+      end if;
+
+      if Expr_Kind = Undefined then
+         if Ext_List then
+            Expr_Kind := List;
+         else
+            Expr_Kind := Single;
+         end if;
+      end if;
+
       Expect (Tok_Left_Paren, "`(`");
 
       --  Scan past the left parenthesis
@@ -398,6 +429,10 @@ package body Prj.Strt is
          case Token is
 
             when Tok_Right_Paren =>
+               if Ext_List then
+                  Error_Msg (Flags, "`,` expected", Token_Ptr);
+               end if;
+
                Scan (In_Tree); -- scan past right paren
 
             when Tok_Comma =>
@@ -433,7 +468,11 @@ package body Prj.Strt is
                end if;
 
             when others =>
-               Error_Msg (Flags, "`,` or `)` expected", Token_Ptr);
+               if Ext_List then
+                  Error_Msg (Flags, "`,` expected", Token_Ptr);
+               else
+                  Error_Msg (Flags, "`,` or `)` expected", Token_Ptr);
+               end if;
          end case;
       end if;
    end External_Reference;
@@ -1478,19 +1517,13 @@ package body Prj.Strt is
                end if;
             end if;
 
-         when Tok_External =>
-
-            --  An external reference is always a single string
-
-            if Expr_Kind = Undefined then
-               Expr_Kind := Single;
-            end if;
-
+         when Tok_External | Tok_External_As_List  =>
             External_Reference
               (In_Tree         => In_Tree,
                Flags           => Flags,
                Current_Project => Current_Project,
                Current_Package => Current_Package,
+               Expr_Kind       => Expr_Kind,
                External_Value  => Reference);
             Set_Current_Term (Term, In_Tree, To => Reference);
 

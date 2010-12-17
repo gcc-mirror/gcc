@@ -41,6 +41,7 @@ struct stream
   int (*close) (struct stream *);
 };
 
+
 /* Inline functions for doing file I/O given a stream.  */
 static inline ssize_t
 sread (stream * s, void * buf, ssize_t nbyte)
@@ -94,11 +95,20 @@ internal_proto(open_external);
 extern stream *open_internal (char *, int, gfc_offset);
 internal_proto(open_internal);
 
+extern stream *open_internal4 (char *, int, gfc_offset);
+internal_proto(open_internal4);
+
 extern char * mem_alloc_w (stream *, int *);
 internal_proto(mem_alloc_w);
 
 extern char * mem_alloc_r (stream *, int *);
 internal_proto(mem_alloc_r);
+
+extern gfc_char4_t * mem_alloc_w4 (stream *, int *);
+internal_proto(mem_alloc_w4);
+
+extern char * mem_alloc_r4 (stream *, int *);
+internal_proto(mem_alloc_r4);
 
 extern stream *input_stream (void);
 internal_proto(input_stream);
@@ -156,9 +166,6 @@ internal_proto(is_special);
 
 extern void flush_if_preconnected (stream *);
 internal_proto(flush_if_preconnected);
-
-extern void empty_internal_buffer(stream *);
-internal_proto(empty_internal_buffer);
 
 extern int stream_isatty (stream *);
 internal_proto(stream_isatty);

@@ -1985,7 +1985,7 @@ fix = {
 fix = {
     hackname = hpux_htonl;
     files    = netinet/in.h;
-    select   = "#ifndef _XOPEN_SOURCE_EXTENDED\n"
+    select   = "#ifndef _XOPEN_SOURCE_EXTENDED[ \t]*\n"
                "(/\\*\n"
                " \\* Macros for number representation conversion\\.\n"
                " \\*/\n"
@@ -2480,6 +2480,24 @@ fix = {
     c_fix       = format;
     c_fix_arg   = "extern __const ";
     test_text   = "extern const char limit; /* test limits */";
+};
+
+
+/*
+ *  IRIX 6.5 PTHREAD_*_INITIALIZER need an additional level of braces in
+ *  <pthread.h>.
+ */
+fix = {
+    hackname    = irix_pthread_init;
+    files       = pthread.h;
+    select      = "^(#define[ \t]+PTHREAD_.*_INITIALIZER[ \t]+)(\\{ 0 \\})";
+
+    mach	= "mips-sgi-irix6.5";
+    c_fix       = format;
+    c_fix_arg   = "%1{ %2 }";
+    test_text   = "#define PTHREAD_MUTEX_INITIALIZER	{ 0 }\n"
+		  "#define PTHREAD_COND_INITIALIZER	{ 0 }\n"
+		  "#define PTHREAD_RWLOCK_INITIALIZER	{ 0 }";
 };
 
 
@@ -3307,6 +3325,26 @@ fix = {
 
 
 /*
+ * Solaris 8 PTHREAD_COND_INITIALIZER lacks the __pthread_cond_magic field.
+ * COND_MAGIC is only defined in <synch.h> and pollutes the namespace, so
+ * use the value literally instead.
+ */
+fix = {
+    hackname = solaris_cond_init;
+    select = '@\(#\)pthread.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    files = pthread.h;
+    mach = '*-*-solaris2.8';
+    c_fix = format;
+    c_fix_arg = "%1, 0x4356%2";
+    c_fix_arg = "^(#define[ \t]+PTHREAD_COND_INITIALIZER[ \t]+"
+                "\\{.*0)(\\},[ \t]*0\\}.*)$";
+    test_text =
+    '#pragma ident	"@(#)pthread.h	1.29	01/07/07 SMI"'"\n"
+    '#define	PTHREAD_COND_INITIALIZER	{{{0}, 0}, 0}	/* = DEFAULTCV */';
+};
+
+
+/*
  * Sun Solaris 10 defines several C99 math macros in terms of
  * builtins specific to the Studio compiler, in particular not
  * compatible with the GNU compiler.
@@ -3670,6 +3708,34 @@ fix = {
     sed      = 's/defined(__cplusplus) && (__cplusplus < 54321L)/0/';
 
     test_text = "#if\tdefined(__cplusplus) && (__cplusplus < 54321L)";
+};
+
+
+/*
+ * On Solaris 8 and 9, __va_list needs to become a typedef for
+ * __builtin_va_list to make -Wmissing-format-attribute work.
+ */
+fix = {
+    hackname = solaris_sys_va_list;
+    files    = sys/va_list.h;
+    mach     = '*-*-solaris2.[89]';
+    select   = "#if.*__STDC__.*\n"
+	       "typedef void \\*__va_list;\n"
+	       "#else\n"
+	       "typedef char \\*__va_list;\n"
+	       "#endif";
+
+    c_fix    = format;
+    c_fix_arg = "#ifdef __GNUC__\n"
+		"typedef __builtin_va_list __va_list;\n"
+		"#else\n"
+		"%0\n"
+		"#endif";
+    test_text = "#if defined(__STDC__) && !defined(__ia64)\n"
+    		"typedef void *__va_list;\n"
+	        "#else\n"
+	        "typedef char *__va_list;\n"
+	        "#endif";
 };
 
 

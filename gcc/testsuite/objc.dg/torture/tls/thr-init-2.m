@@ -1,6 +1,6 @@
 // { dg-do run }
-// { dg-require-effective-target tls }
-/* { dg-skip-if "PR44140" { *-*-* } { "-flto" "-fwhopr" } { "" } } */
+// { dg-require-effective-target tls_runtime }
+// { dg-add-options tls }
 
 extern void _exit(int);
 

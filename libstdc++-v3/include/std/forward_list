@@ -22,7 +22,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file forward_list
+/** @file include/forward_list
  *  This is a Standard C++ Library header.
  */
 
@@ -36,9 +36,18 @@
 #else
 
 #include <bits/forward_list.h>
+#include <bits/range_access.h>
 
 #ifndef _GLIBCXX_EXPORT_TEMPLATE
 # include <bits/forward_list.tcc>
+#endif
+
+#ifdef _GLIBCXX_DEBUG
+# include <debug/forward_list>
+#endif
+
+#ifdef _GLIBCXX_PROFILE
+# include <profile/forward_list>
 #endif
 
 #endif // __GXX_EXPERIMENTAL_CXX0X__

@@ -2,12 +2,14 @@
 /* { dg-do run } */
 /* { dg-options "-g" } */
 
+#include "../nop.h"
+
 static inline void
 foo (int argx)
 {
   int varx = argx;
-  __asm__ volatile ("nop");			/* { dg-final { gdb-test 10 "argx" "25" } } */
-  __asm__ volatile ("nop" : : "g" (varx));	/* { dg-final { gdb-test 10 "varx" "25" } } */
+  __asm__ volatile (NOP);			/* { dg-final { gdb-test 12 "argx" "25" } } */
+  __asm__ volatile (NOP : : "g" (varx));	/* { dg-final { gdb-test 12 "varx" "25" } } */
 }
 
 int i;

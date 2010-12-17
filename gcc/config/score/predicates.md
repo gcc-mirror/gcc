@@ -89,7 +89,6 @@
 {
   int count = XVECLEN (op, 0);
   int dest_regno;
-  rtx src_addr;
   int i;
 
   /* Perform a quick check so we don't blow up below.  */
@@ -100,7 +99,6 @@
     return 0;
 
   dest_regno = REGNO (SET_DEST (XVECEXP (op, 0, 0)));
-  src_addr = XEXP (SET_SRC (XVECEXP (op, 0, 0)), 0);
 
   for (i = 1; i < count; i++)
     {
@@ -124,7 +122,6 @@
 {
   int count = XVECLEN (op, 0);
   int src_regno;
-  rtx dest_addr;
   int i;
 
   /* Perform a quick check so we don't blow up below.  */
@@ -135,7 +132,6 @@
     return 0;
 
   src_regno = REGNO (SET_SRC (XVECEXP (op, 0, 0)));
-  dest_addr = XEXP (SET_DEST (XVECEXP (op, 0, 0)), 0);
 
   for (i = 1; i < count; i++)
     {

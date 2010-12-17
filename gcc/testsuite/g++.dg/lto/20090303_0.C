@@ -1,5 +1,6 @@
 /* { dg-lto-do run } */
-/* { dg-lto-options {{-fwhopr -fPIC}} } */
+/* { dg-lto-options {{-flto -flto-partition=1to1 -fPIC}} } */
+/* { dg-lto-options {{-flto -flto-partition=1to1}} { target sparc*-*-* } } */
 /* { dg-suppress-ld-options {-fPIC} }  */
 void foobar(int *, int* __x)    ;
 int test_ints[30];

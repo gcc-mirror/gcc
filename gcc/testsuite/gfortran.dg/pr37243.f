@@ -53,10 +53,13 @@
       call schmd(V, 1, 18, 18)
       end
 
-      subroutine DAXPY
+      subroutine DAXPY(N,D,V,M,W,L)
+      INTEGER :: N, M, L
+      DOUBLE PRECISION D, V(1,1), W(1,1)
       end
 
-      FUNCTION DDOT ()
-      DOUBLE PRECISION DDOT
+      FUNCTION DDOT (N,V,M,W,L)
+      INTEGER :: N, M, L
+      DOUBLE PRECISION DDOT, V(1,1), W(1,1)
       DDOT = 1
       end

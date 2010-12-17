@@ -60,13 +60,6 @@ package Errout is
    --  the use of constructs not permitted by the library in use, or improper
    --  constructs in No_Run_Time mode).
 
-   type Compiler_State_Type is (Parsing, Analyzing);
-   Compiler_State : Compiler_State_Type;
-   --  Indicates current state of compilation. This is put in the Errout spec
-   --  because it affects the action of the error message handling. In
-   --  particular, an attempt is made by Errout to suppress cascaded error
-   --  messages in Parsing mode, but not in the other modes.
-
    Current_Error_Source_File : Source_File_Index
      renames Err_Vars.Current_Error_Source_File;
    --  Id of current messages. Used to post file name when unit changes. This
@@ -213,6 +206,10 @@ package Errout is
    --      a new line end the sequence from the point of view of this rule.
    --      The idea is that for any use of -gnatj, it will still be the case
    --      that a location reference appears only at the end of a line.
+
+   --      Note: the output of the string "at " is suppressed if the string
+   --      " from" or " from " immediately precedes the insertion character #.
+   --      Certain messages read better with from than at.
 
    --    Insertion character } (Right brace: insert type reference)
    --      The character } is replaced by a string describing the type
@@ -376,8 +373,14 @@ package Errout is
    Gname5 : aliased constant String := "gnat05";
    Vname5 : aliased constant String := "05";
 
-   Gname6 : aliased constant String := "gnat12";
-   Vname6 : aliased constant String := "12";
+   Gname6 : aliased constant String := "gnat2005";
+   Vname6 : aliased constant String := "2005";
+
+   Gname7 : aliased constant String := "gnat12";
+   Vname7 : aliased constant String := "12";
+
+   Gname8 : aliased constant String := "gnat2012";
+   Vname8 : aliased constant String := "2012";
 
    type Cstring_Ptr is access constant String;
 
@@ -387,7 +390,9 @@ package Errout is
                Gname3'Access,
                Gname4'Access,
                Gname5'Access,
-               Gname6'Access);
+               Gname6'Access,
+               Gname7'Access,
+               Gname8'Access);
 
    Vnames : array (Nat range <>) of Cstring_Ptr :=
               (Vname1'Access,
@@ -395,7 +400,9 @@ package Errout is
                Vname3'Access,
                Vname4'Access,
                Vname5'Access,
-               Vname6'Access);
+               Vname6'Access,
+               Vname7'Access,
+               Vname8'Access);
 
    -----------------------------------------------------
    -- Global Values Used for Error Message Insertions --

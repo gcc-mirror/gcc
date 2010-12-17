@@ -1,5 +1,6 @@
 /* GCC core type declarations.
-   Copyright (C) 2002, 2004, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -63,8 +64,14 @@ typedef const union tree_node *const_tree;
 typedef const union gimple_statement_d *const_gimple;
 union section;
 typedef union section section;
+struct gcc_options;
 struct cl_target_option;
 struct cl_optimization;
+struct cl_option;
+struct cl_decoded_option;
+struct cl_option_handlers;
+struct diagnostic_context;
+typedef struct diagnostic_context diagnostic_context;
 struct gimple_seq_d;
 typedef struct gimple_seq_d *gimple_seq;
 typedef const struct gimple_seq_d *const_gimple_seq;
@@ -104,6 +111,32 @@ enum tls_model {
   TLS_MODEL_LOCAL_EXEC
 };
 
+/* Types of unwind/exception handling info that can be generated.  */
+
+enum unwind_info_type
+{
+  UI_NONE,
+  UI_SJLJ,
+  UI_DWARF2,
+  UI_TARGET
+};
+
+/* Callgraph node profile representation.  */
+enum node_frequency {
+  /* This function most likely won't be executed at all.
+     (set only when profile feedback is available or via function attribute). */
+  NODE_FREQUENCY_UNLIKELY_EXECUTED,
+  /* For functions that are known to be executed once (i.e. constructors, destructors
+     and main function.  */
+  NODE_FREQUENCY_EXECUTED_ONCE,
+  /* The default value.  */
+  NODE_FREQUENCY_NORMAL,
+  /* Optimize this function hard
+     (set only when profile feedback is available or via function attribute). */
+  NODE_FREQUENCY_HOT
+};
+
+
 struct edge_def;
 typedef struct edge_def *edge;
 typedef const struct edge_def *const_edge;
@@ -118,6 +151,11 @@ typedef const struct basic_block_def *const_basic_block;
   _obstack_begin ((OBSTACK), OBSTACK_CHUNK_SIZE, 0,	\
 		  obstack_chunk_alloc,			\
 		  obstack_chunk_free)
+
+/* enum reg_class is target specific, so it should not appear in
+   target-independent code or interfaces, like the target hook declarations
+   in target.h.  */
+typedef int reg_class_t;
 
 #else
 

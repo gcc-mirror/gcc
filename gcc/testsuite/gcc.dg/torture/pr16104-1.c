@@ -1,9 +1,7 @@
 /* PR rtl-optimization/16104 */
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-msse2" } */
-/* { dg-require-effective-target sse2 } */
-
-#include "cpuid.h"
+/* { dg-require-effective-target sse2_runtime } */
 
 extern void abort (void);
 
@@ -76,14 +74,6 @@ do_test (void)
 int
 main (void)
 {
-  unsigned int eax, ebx, ecx, edx;
- 
-  if (!__get_cpuid (1, &eax, &ebx, &ecx, &edx))
-    return 0;
-
-  /* Run SSE2 test only if host has SSE2 support.  */
-  if (edx & bit_SSE2)
-    do_test ();
-
+  do_test ();
   return 0;
 }

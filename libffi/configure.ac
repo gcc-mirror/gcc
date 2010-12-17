@@ -43,7 +43,7 @@ TARGETDIR="unknown"
 case "$host" in
   alpha*-*-*)
 	TARGET=ALPHA; TARGETDIR=alpha;
-	# Support 128-bit long double, changable via command-line switch.
+	# Support 128-bit long double, changeable via command-line switch.
 	HAVE_LONG_DOUBLE='defined(__LONG_DOUBLE_128__)'
 	;;
 
@@ -80,7 +80,7 @@ case "$host" in
   i?86-*-freebsd* | i?86-*-openbsd*)
 	TARGET=X86_FREEBSD; TARGETDIR=x86
 	;;
-  i?86-win32* | i?86-*-cygwin* | i?86-*-mingw*)
+  i?86-win32* | i?86-*-cygwin* | i?86-*-mingw* | i?86-*-os2*)
 	TARGET=X86_WIN32; TARGETDIR=x86
 	# All mingw/cygwin/win32 builds require this for sharedlib
 	AM_LTLDFLAGS="-no-undefined"
@@ -130,6 +130,9 @@ case "$host" in
 	;;
   powerpc-*-freebsd*)
 	TARGET=POWERPC_FREEBSD; TARGETDIR=powerpc
+	;;
+ powerpc64-*-freebsd*)
+	TARGET=POWERPC; TARGETDIR=powerpc
 	;;
   powerpc*-*-rtems*)
 	TARGET=POWERPC; TARGETDIR=powerpc

@@ -69,6 +69,7 @@ private:
   void checkDestroyed();
 public:
   virtual ::java::lang::String * toString();
+  virtual jint getSessionKeyType();
 private:
   static const jlong serialVersionUID = 7395334370157380539LL;
   static const jint FORWARDABLE = 1;

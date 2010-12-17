@@ -599,23 +599,40 @@ chrec_apply (unsigned var,
   if (TREE_CODE (x) == INTEGER_CST && SCALAR_FLOAT_TYPE_P (type))
     x = build_real_from_int_cst (type, x);
 
-  if (evolution_function_is_affine_p (chrec))
+  switch (TREE_CODE (chrec))
     {
-      /* "{a, +, b} (x)"  ->  "a + b*x".  */
-      x = chrec_convert_rhs (type, x, NULL);
-      res = chrec_fold_multiply (TREE_TYPE (x), CHREC_RIGHT (chrec), x);
-      res = chrec_fold_plus (type, CHREC_LEFT (chrec), res);
+    case POLYNOMIAL_CHREC:
+      if (evolution_function_is_affine_p (chrec))
+	{
+	  if (CHREC_VARIABLE (chrec) != var)
+	    return build_polynomial_chrec
+	      (CHREC_VARIABLE (chrec),
+	       chrec_apply (var, CHREC_LEFT (chrec), x),
+	       chrec_apply (var, CHREC_RIGHT (chrec), x));
+
+	  /* "{a, +, b} (x)"  ->  "a + b*x".  */
+	  x = chrec_convert_rhs (type, x, NULL);
+	  res = chrec_fold_multiply (TREE_TYPE (x), CHREC_RIGHT (chrec), x);
+	  res = chrec_fold_plus (type, CHREC_LEFT (chrec), res);
+	}
+      else if (TREE_CODE (x) == INTEGER_CST
+	       && tree_int_cst_sgn (x) == 1)
+	/* testsuite/.../ssa-chrec-38.c.  */
+	res = chrec_evaluate (var, chrec, x, 0);
+      else
+	res = chrec_dont_know;
+      break;
+
+    CASE_CONVERT:
+      res = chrec_convert (TREE_TYPE (chrec),
+			   chrec_apply (var, TREE_OPERAND (chrec, 0), x),
+			   NULL);
+      break;
+
+    default:
+      res = chrec;
+      break;
     }
-
-  else if (TREE_CODE (chrec) != POLYNOMIAL_CHREC)
-    res = chrec;
-
-  else if (TREE_CODE (x) == INTEGER_CST
-	   && tree_int_cst_sgn (x) == 1)
-    /* testsuite/.../ssa-chrec-38.c.  */
-    res = chrec_evaluate (var, chrec, x, 0);
-  else
-    res = chrec_dont_know;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -630,6 +647,23 @@ chrec_apply (unsigned var,
     }
 
   return res;
+}
+
+/* For a given CHREC and an induction variable map IV_MAP that maps
+   (loop->num, expr) for every loop number of the current_loops an
+   expression, calls chrec_apply when the expression is not NULL.  */
+
+tree
+chrec_apply_map (tree chrec, VEC (tree, heap) *iv_map)
+{
+  int i;
+  tree expr;
+
+  FOR_EACH_VEC_ELT (tree, iv_map, i, expr)
+    if (expr)
+      chrec = chrec_apply (i, chrec, expr);
+
+  return chrec;
 }
 
 /* Replaces the initial condition in CHREC with INIT_COND.  */
@@ -1399,6 +1433,16 @@ eq_evolutions_p (const_tree chrec0, const_tree chrec1)
       return (CHREC_VARIABLE (chrec0) == CHREC_VARIABLE (chrec1)
 	      && eq_evolutions_p (CHREC_LEFT (chrec0), CHREC_LEFT (chrec1))
 	      && eq_evolutions_p (CHREC_RIGHT (chrec0), CHREC_RIGHT (chrec1)));
+
+    case PLUS_EXPR:
+    case MULT_EXPR:
+    case MINUS_EXPR:
+    case POINTER_PLUS_EXPR:
+      return eq_evolutions_p (TREE_OPERAND (chrec0, 0),
+			      TREE_OPERAND (chrec1, 0))
+	  && eq_evolutions_p (TREE_OPERAND (chrec0, 1),
+			      TREE_OPERAND (chrec1, 1));
+
     default:
       return false;
     }

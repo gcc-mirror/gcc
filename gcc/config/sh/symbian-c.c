@@ -1,5 +1,5 @@
 /* Routines for C compiler part of GCC for a Symbian OS targeted SH backend.
-   Copyright (C) 2004, 2005, 2007, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007, 2009, 2010 Free Software Foundation, Inc.
    Contributed by RedHat.
    Most of this code is stolen from i386/winnt.c.
 
@@ -29,7 +29,7 @@
 #include "tree.h"
 #include "expr.h"
 #include "tm_p.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "sh-symbian.h"
 
 
@@ -93,7 +93,7 @@ sh_symbian_is_dllimported (tree decl)
 	   && TREE_PUBLIC (decl)
 	   && !DECL_EXTERNAL (decl))
     {
-      error ("definition of static data member %q+D of dllimport'd class",
+      error ("definition of static data member %q+D of dllimport%'d class",
 	     decl);
       return false;
     }

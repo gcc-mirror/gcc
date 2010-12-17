@@ -1,4 +1,4 @@
-/* { dg-do run { target *-*-linux* } } */
+/* { dg-do run } */
 /* { dg-options "-O2 -msse2" } */
 /* { dg-require-effective-target sse2 } */
 

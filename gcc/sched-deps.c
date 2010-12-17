@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "rtl.h"
 #include "tm_p.h"
 #include "hard-reg-set.h"
@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "insn-attr.h"
 #include "except.h"
-#include "toplev.h"
 #include "recog.h"
 #include "sched-int.h"
 #include "params.h"
@@ -51,6 +50,12 @@ along with GCC; see the file COPYING3.  If not see
 #else
 #define CHECK (false)
 #endif
+
+/* In deps->last_pending_memory_flush marks JUMP_INSNs that weren't
+   added to the list because of flush_pending_lists, stands just
+   for itself and not for any other pending memory reads/writes.  */
+#define NON_FLUSH_JUMP_KIND REG_DEP_ANTI
+#define NON_FLUSH_JUMP_P(x) (REG_NOTE_KIND (x) == NON_FLUSH_JUMP_KIND)
 
 /* Holds current parameters for the dependency analyzer.  */
 struct sched_deps_info_def *sched_deps_info;
@@ -597,8 +602,8 @@ sched_insn_is_legitimate_for_speculation_p (const_rtx insn, ds_t ds)
     /* The following instructions, which depend on a speculatively scheduled
        instruction, cannot be speculatively scheduled along.  */
     {
-      if (may_trap_p (PATTERN (insn)))
-	/* If instruction might trap, it cannot be speculatively scheduled.
+      if (may_trap_or_fault_p (PATTERN (insn)))
+	/* If instruction might fault, it cannot be speculatively scheduled.
 	   For control speculation it's obvious why and for data speculation
 	   it's because the insn might get wrong input if speculation
 	   wasn't successful.  */
@@ -1520,9 +1525,7 @@ fixup_sched_groups (rtx insn)
 
   delete_all_dependences (insn);
 
-  prev_nonnote = prev_nonnote_insn (insn);
-  while (DEBUG_INSN_P (prev_nonnote))
-    prev_nonnote = prev_nonnote_insn (prev_nonnote);
+  prev_nonnote = prev_nonnote_nondebug_insn (insn);
   if (BLOCK_FOR_INSN (insn) == BLOCK_FOR_INSN (prev_nonnote)
       && ! sched_insns_conditions_mutex_p (insn, prev_nonnote))
     add_dependence (insn, prev_nonnote, REG_DEP_ANTI);
@@ -2485,7 +2488,7 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx insn)
 
 	    for (u = deps->last_pending_memory_flush; u; u = XEXP (u, 1))
 	      {
-		if (! JUMP_P (XEXP (u, 0)))
+		if (! NON_FLUSH_JUMP_P (u))
 		  add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 		else if (deps_may_trap_p (x))
 		  {
@@ -2698,9 +2701,7 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
   if (JUMP_P (insn))
     {
       rtx next;
-      next = next_nonnote_insn (insn);
-      while (next && DEBUG_INSN_P (next))
-	next = next_nonnote_insn (next);
+      next = next_nonnote_nondebug_insn (insn);
       if (next && BARRIER_P (next))
 	reg_pending_barrier = MOVE_BARRIER;
       else
@@ -2799,8 +2800,7 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
 			   REG_DEP_ANTI);
 
       for (u = deps->last_pending_memory_flush; u; u = XEXP (u, 1))
-	if (! JUMP_P (XEXP (u, 0))
-	    || !sel_sched_p ())
+	if (! NON_FLUSH_JUMP_P (u) || !sel_sched_p ())
 	  add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 
       EXECUTE_IF_SET_IN_REG_SET (reg_pending_uses, 0, i, rsi)
@@ -3245,8 +3245,15 @@ deps_analyze_insn (struct deps_desc *deps, rtx insn)
           if (deps->pending_flush_length++ > MAX_PENDING_LIST_LENGTH)
             flush_pending_lists (deps, insn, true, true);
           else
-            deps->last_pending_memory_flush
-              = alloc_INSN_LIST (insn, deps->last_pending_memory_flush);
+	    {
+	      deps->last_pending_memory_flush
+		= alloc_INSN_LIST (insn, deps->last_pending_memory_flush);
+	      /* Signal to sched_analyze_insn that this jump stands
+		 just for its own, not any other pending memory
+		 reads/writes flush_pending_lists had to flush.  */
+	      PUT_REG_NOTE_KIND (deps->last_pending_memory_flush,
+				 NON_FLUSH_JUMP_KIND);
+	    }
         }
 
       sched_analyze_insn (deps, PATTERN (insn), insn);
@@ -3369,10 +3376,8 @@ deps_start_bb (struct deps_desc *deps, rtx head)
      hard registers correct.  */
   if (! reload_completed && !LABEL_P (head))
     {
-      rtx insn = prev_nonnote_insn (head);
+      rtx insn = prev_nonnote_nondebug_insn (head);
 
-      while (insn && DEBUG_INSN_P (insn))
-	insn = prev_nonnote_insn (insn);
       if (insn && CALL_P (insn))
 	deps->in_post_call_group_p = post_call_initial;
     }

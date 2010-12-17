@@ -2,7 +2,7 @@
    that are called from within the C and C++ front-ends,
    respectively.
    Copyright (C) 1991, 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-   2004, 2005, 2007, 2009 Free Software Foundation, Inc.
+   2004, 2005, 2007, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -44,6 +44,11 @@ objc_is_object_ptr (tree ARG_UNUSED (arg))
   return 0;
 }
 
+bool objc_diagnose_private_ivar (tree ARG_UNUSED (arg))
+{
+  return false;
+}
+
 tree
 objc_lookup_ivar (tree other, tree ARG_UNUSED (arg))
 {
@@ -56,8 +61,19 @@ objc_check_decl (tree ARG_UNUSED (decl))
 {
 }
 
-int
-objc_is_reserved_word (tree ARG_UNUSED (ident))
+void
+objc_check_global_decl (tree ARG_UNUSED (decl))
+{
+}
+
+tree
+objc_non_volatilized_type (tree type)
+{
+  return type;
+}
+
+tree
+objc_common_type (tree ARG_UNUSED (type1), tree ARG_UNUSED (type2))
 {
   return 0;
 }
@@ -65,6 +81,13 @@ objc_is_reserved_word (tree ARG_UNUSED (ident))
 bool
 objc_compare_types (tree ARG_UNUSED (ltyp), tree ARG_UNUSED (rtyp),
 		    int ARG_UNUSED (argno), tree ARG_UNUSED (callee))
+{
+  return false;
+}
+
+bool
+objc_have_common_type (tree ARG_UNUSED (ltyp), tree ARG_UNUSED (rtyp),
+		       int ARG_UNUSED (argno), tree ARG_UNUSED (callee))
 {
   return false;
 }
@@ -103,27 +126,35 @@ objc_declare_class (tree ARG_UNUSED (list))
 }
 
 void
-objc_declare_protocols (tree ARG_UNUSED (list))
+objc_declare_protocols (tree ARG_UNUSED (list), tree ARG_UNUSED (attributes))
 {
 }
 
 void
 objc_start_protocol (tree ARG_UNUSED (proto),
-		     tree ARG_UNUSED (protorefs))
+		     tree ARG_UNUSED (protorefs),
+		     tree ARG_UNUSED (attribs))
+{
+}
+
+void 
+objc_set_method_opt (bool ARG_UNUSED (optional))
 {
 }
 
 void
 objc_start_class_interface (tree ARG_UNUSED (name),
 			    tree ARG_UNUSED (super),
-			    tree ARG_UNUSED (protos))
+			    tree ARG_UNUSED (protos),
+			    tree ARG_UNUSED (attribs))
 {
 }
 
 void
 objc_start_category_interface (tree ARG_UNUSED (name),
 			       tree ARG_UNUSED (categ),
-			       tree ARG_UNUSED (protos))
+			       tree ARG_UNUSED (protos),
+			       tree ARG_UNUSED (attribs))
 {
 }
 
@@ -143,12 +174,7 @@ objc_add_instance_variable (tree ARG_UNUSED (decl))
 }
 
 void
-objc_set_visibility (int ARG_UNUSED (vis))
-{
-}
-
-void
-objc_set_method_type (enum tree_code ARG_UNUSED (code))
+objc_set_visibility (objc_ivar_visibility_kind ARG_UNUSED (vis))
 {
 }
 
@@ -180,13 +206,18 @@ objc_finish_implementation (void)
 }
 
 void
-objc_add_method_declaration (tree ARG_UNUSED (signature))
+objc_add_method_declaration (bool ARG_UNUSED (is_class_method),
+			     tree ARG_UNUSED (signature),
+			     tree ARG_UNUSED (attributes))
 {
 }
 
-void
-objc_start_method_definition (tree ARG_UNUSED (signature))
+bool
+objc_start_method_definition (bool ARG_UNUSED (is_class_method),
+			      tree ARG_UNUSED (signature),
+			      tree ARG_UNUSED (attributes))
 {
+  return true;
 }
 
 void
@@ -194,16 +225,24 @@ objc_finish_method_definition (tree ARG_UNUSED (fndecl))
 {
 }
 
+bool 
+objc_method_decl (enum tree_code ARG_UNUSED(opcode))
+{
+  return false;
+}
+
 tree
 objc_build_keyword_decl (tree ARG_UNUSED (selector),
 			 tree ARG_UNUSED (type),
-			 tree ARG_UNUSED (identifier))
+			 tree ARG_UNUSED (identifier),
+			 tree ARG_UNUSED (attributes))
 {
   return 0;
 }
 
 tree
-objc_build_method_signature (tree ARG_UNUSED (rettype),
+objc_build_method_signature (bool ARG_UNUSED (is_class_method),
+			     tree ARG_UNUSED (rettype),
 			     tree ARG_UNUSED (selectors),
 			     tree ARG_UNUSED (optparms),
 			     bool ARG_UNUSED (ellipsis))
@@ -248,6 +287,12 @@ objc_get_class_reference (tree ARG_UNUSED (name))
 }
 
 tree
+objc_get_interface_ivars (tree ARG_UNUSED (fieldlist))
+{
+  return 0;
+}
+
+tree
 objc_get_protocol_qualified_type (tree ARG_UNUSED (name),
 				  tree ARG_UNUSED (protos))
 {
@@ -276,6 +321,72 @@ tree
 objc_get_class_ivars (tree ARG_UNUSED (name))
 {
   return 0;
+}
+
+void
+objc_add_property_declaration (location_t ARG_UNUSED (location), 
+			       tree ARG_UNUSED (decl),
+			       bool ARG_UNUSED (parsed_property_readonly),
+			       bool ARG_UNUSED (parsed_property_readwrite),
+			       bool ARG_UNUSED (parsed_property_assign),
+			       bool ARG_UNUSED (parsed_property_retain),
+			       bool ARG_UNUSED (parsed_property_copy),
+			       bool ARG_UNUSED (parsed_property_nonatomic),
+			       tree ARG_UNUSED (parsed_property_getter_ident),
+			       tree ARG_UNUSED (parsed_property_setter_ident))
+{
+}
+
+bool
+objc_is_property_ref (tree ARG_UNUSED (node))
+{
+  return 0;
+}
+
+tree
+objc_maybe_build_component_ref (tree ARG_UNUSED (datum), tree ARG_UNUSED (component))
+{
+  return 0;
+}
+
+tree
+objc_build_class_component_ref (tree ARG_UNUSED (datum), tree ARG_UNUSED (component))
+{
+  return 0;
+}
+
+tree
+objc_maybe_build_modify_expr (tree ARG_UNUSED (lhs), tree ARG_UNUSED (rhs))
+{
+  return 0;
+}
+
+tree
+objc_build_incr_expr_for_property_ref (location_t ARG_UNUSED (location),
+				       enum tree_code ARG_UNUSED (code),
+				       tree ARG_UNUSED (argument),
+				       tree ARG_UNUSED (increment))
+{
+  return 0;
+}
+
+void
+objc_add_synthesize_declaration (location_t ARG_UNUSED (start_locus), 
+				 tree ARG_UNUSED (property_and_ivar_list))
+{
+}
+
+void
+objc_add_dynamic_declaration (location_t ARG_UNUSED (start_locus), 
+			      tree ARG_UNUSED (property_list))
+{
+}
+
+const char *
+objc_maybe_printable_name (tree ARG_UNUSED (decl), 
+			   int ARG_UNUSED (v))
+{
+  return NULL;
 }
 
 tree
@@ -324,4 +435,29 @@ objc_generate_write_barrier (tree ARG_UNUSED (lhs),
 			     tree ARG_UNUSED (rhs))
 {
   return 0;
+}
+
+void
+objc_finish_foreach_loop (location_t ARG_UNUSED (location), tree ARG_UNUSED (object_expression),
+			  tree ARG_UNUSED (collection_expression), tree ARG_UNUSED (for_body),
+			  tree ARG_UNUSED (break_label), tree ARG_UNUSED (continue_label))
+{
+  return;
+}
+
+void
+objc_write_global_declarations (void)
+{
+}
+
+bool
+objc_string_ref_type_p (tree ARG_UNUSED (strp))
+{
+   return false;
+}
+
+void
+objc_check_format_arg (tree ARG_UNUSED (format_arg), 
+		       tree ARG_UNUSED (args_list))
+{
 }

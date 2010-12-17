@@ -45,18 +45,18 @@ import javax.print.PrintException;
 import javax.print.attribute.PrintRequestAttributeSet;
 
 /**
- * Implementation of the MultiDocPrintJob interface. Implementation 
+ * Implementation of the MultiDocPrintJob interface. Implementation
  * is specific to the <code>IppPrintService</code> implementation.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public class MultiDocPrintJobImpl extends DocPrintJobImpl 
+public class MultiDocPrintJobImpl extends DocPrintJobImpl
   implements MultiDocPrintJob
 {
 
   /**
    * Constructor forwarding arguments to the super constructor.
-   * 
+   *
    * @param service the print service instance.
    * @param user the user of this print service.
    * @param passwd the password of the user.

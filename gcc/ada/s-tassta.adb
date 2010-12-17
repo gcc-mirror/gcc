@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2009, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2010, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -473,6 +473,7 @@ package body System.Tasking.Stages is
      (Priority          : Integer;
       Size              : System.Parameters.Size_Type;
       Task_Info         : System.Task_Info.Task_Info_Type;
+      CPU               : Integer;
       Relative_Deadline : Ada.Real_Time.Time_Span;
       Num_Entries       : Task_Entry_Index;
       Master            : Master_Level;
@@ -489,6 +490,7 @@ package body System.Tasking.Stages is
       Success       : Boolean;
       Base_Priority : System.Any_Priority;
       Len           : Natural;
+      Base_CPU      : System.Multiprocessors.CPU_Range;
 
       pragma Unreferenced (Relative_Deadline);
       --  EDF scheduling is not supported by any of the target platforms so
@@ -521,6 +523,21 @@ package body System.Tasking.Stages is
         (if Priority = Unspecified_Priority
          then Self_ID.Common.Base_Priority
          else System.Any_Priority (Priority));
+
+      if CPU /= Unspecified_CPU
+        and then (CPU < Integer (System.Multiprocessors.CPU_Range'First)
+          or else CPU > Integer (System.Multiprocessors.CPU_Range'Last)
+          or else CPU > Integer (System.Multiprocessors.Number_Of_CPUs))
+      then
+         raise Tasking_Error with "CPU not in range";
+
+      --  Normal CPU affinity
+      else
+         Base_CPU :=
+           (if CPU = Unspecified_CPU
+            then Self_ID.Common.Base_CPU
+            else System.Multiprocessors.CPU_Range (CPU));
+      end if;
 
       --  Find parent P of new Task, via master level number
 
@@ -570,7 +587,7 @@ package body System.Tasking.Stages is
       end if;
 
       Initialize_ATCB (Self_ID, State, Discriminants, P, Elaborated,
-        Base_Priority, Task_Info, Size, T, Success);
+        Base_Priority, Base_CPU, Task_Info, Size, T, Success);
 
       if not Success then
          Free (T);
@@ -1093,11 +1110,6 @@ package body System.Tasking.Stages is
 
       --  Assume a size of the stack taken at this stage
 
-      Overflow_Guard :=
-        (if Size < Small_Stack_Limit
-         then Small_Overflow_Guard
-         else Big_Overflow_Guard);
-
       if not Parameters.Sec_Stack_Dynamic then
          Self_ID.Common.Compiler_Data.Sec_Stack_Addr :=
            Secondary_Stack'Address;
@@ -1109,22 +1121,6 @@ package body System.Tasking.Stages is
          Self_ID.Common.Task_Alternate_Stack := Task_Alternate_Stack'Address;
       end if;
 
-      Size := Size - Overflow_Guard;
-
-      if System.Stack_Usage.Is_Enabled then
-         STPO.Lock_RTS;
-         Initialize_Analyzer
-           (Self_ID.Common.Analyzer,
-            Self_ID.Common.Task_Image
-              (1 .. Self_ID.Common.Task_Image_Len),
-            Natural
-              (Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size),
-            Size,
-            SSE.To_Integer (Bottom_Of_Stack'Address));
-         STPO.Unlock_RTS;
-         Fill_Stack (Self_ID.Common.Analyzer);
-      end if;
-
       --  Set the guard page at the bottom of the stack. The call to unprotect
       --  the page is done in Terminate_Task
 
@@ -1134,6 +1130,29 @@ package body System.Tasking.Stages is
       --  the creator. Enter_Task sets Self_ID.LL.Thread
 
       Enter_Task (Self_ID);
+
+      --  Initialize dynamic stack usage
+
+      if System.Stack_Usage.Is_Enabled then
+         Overflow_Guard :=
+           (if Size < Small_Stack_Limit
+              then Small_Overflow_Guard
+              else Big_Overflow_Guard);
+
+         STPO.Lock_RTS;
+         Initialize_Analyzer
+           (Self_ID.Common.Analyzer,
+            Self_ID.Common.Task_Image
+              (1 .. Self_ID.Common.Task_Image_Len),
+            Natural
+              (Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size),
+            Size - Overflow_Guard,
+            SSE.To_Integer (Bottom_Of_Stack'Address),
+            SSE.To_Integer
+              (Self_ID.Common.Compiler_Data.Pri_Stack_Info.Limit));
+         STPO.Unlock_RTS;
+         Fill_Stack (Self_ID.Common.Analyzer);
+      end if;
 
       --  We setup the SEH (Structured Exception Handling) handler if supported
       --  on the target.

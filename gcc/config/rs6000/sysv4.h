@@ -1,6 +1,6 @@
 /* Target definitions for GNU compiler for PowerPC running System V.4
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-   2004, 2005, 2006, 2007, 2008, 2009  Free Software Foundation, Inc.
+   2004, 2005, 2006, 2007, 2008, 2009, 2010  Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
    This file is part of GCC.
@@ -41,16 +41,6 @@
 #undef	ASM_DEFAULT_SPEC
 #define	ASM_DEFAULT_SPEC "-mppc"
 
-/* Small data support types.  */
-enum rs6000_sdata_type {
-  SDATA_NONE,			/* No small data support.  */
-  SDATA_DATA,			/* Just put data in .sbss/.sdata, don't use relocs.  */
-  SDATA_SYSV,			/* Use r13 to point to .sdata/.sbss.  */
-  SDATA_EABI			/* Use r13 like above, r2 points to .sdata2/.sbss2.  */
-};
-
-extern enum rs6000_sdata_type rs6000_sdata;
-
 #define	TARGET_TOC		((target_flags & MASK_64BIT)		\
 				 || ((target_flags & (MASK_RELOCATABLE	\
 						      | MASK_MINIMAL_TOC)) \
@@ -70,24 +60,14 @@ extern enum rs6000_sdata_type rs6000_sdata;
 #define TARGET_SECURE_PLT	secure_plt
 #endif
 
-extern const char *rs6000_abi_name;
-extern const char *rs6000_sdata_name;
-extern const char *rs6000_tls_size_string; /* For -mtls-size= */
-
 #define SDATA_DEFAULT_SIZE 8
 
-/* Sometimes certain combinations of command options do not make sense
-   on a particular target machine.  You can define a macro
-   `OVERRIDE_OPTIONS' to take account of this.  This macro, if
-   defined, is executed once just after all the command options have
-   been parsed.
-
-   The macro SUBTARGET_OVERRIDE_OPTIONS is provided for subtargets, to
-   get control.  */
+/* The macro SUBTARGET_OVERRIDE_OPTIONS is provided for subtargets, to
+   get control in TARGET_OPTION_OVERRIDE.  */
 
 #define SUBTARGET_OVERRIDE_OPTIONS					\
 do {									\
-  if (!g_switch_set)							\
+  if (!global_options_set.x_g_switch_value)				\
     g_switch_value = SDATA_DEFAULT_SIZE;				\
 									\
   if (rs6000_abi_name == NULL)						\
@@ -229,7 +209,8 @@ do {									\
     }									\
 									\
   else if (TARGET_RELOCATABLE)						\
-    flag_pic = 2;							\
+    if (!flag_pic)							\
+      flag_pic = 2;							\
 } while (0)
 
 #ifndef RS6000_BI_ARCH
@@ -263,14 +244,6 @@ do {									\
 #undef	WORDS_BIG_ENDIAN
 #define	BYTES_BIG_ENDIAN (TARGET_BIG_ENDIAN)
 #define	WORDS_BIG_ENDIAN (TARGET_BIG_ENDIAN)
-
-/* Define this to set the endianness to use in libgcc2.c, which can
-   not depend on target_flags.  */
-#if !defined(__LITTLE_ENDIAN__) && !defined(__sun__)
-#define LIBGCC2_WORDS_BIG_ENDIAN 1
-#else
-#define LIBGCC2_WORDS_BIG_ENDIAN 0
-#endif
 
 /* Define cutoff for using external functions to save floating point.
    When optimizing for size, use external functions when profitable.  */
@@ -416,8 +389,6 @@ do {									\
    Some svr4 assemblers need to also have something extra said about the
    function's return value.  We allow for that here.  */
 
-extern int rs6000_pic_labelno;
-
 /* Override elfos.h definition.  */
 #undef	ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
@@ -515,17 +486,6 @@ do {									\
 		 reg_names[REGNO], reg_names[1], reg_names[1],		\
 		 reg_names[1]);						\
 } while (0)
-
-/* Switch  Recognition by gcc.c.  Add -G xx support.  */
-
-/* Override svr4.h definition.  */
-#undef	SWITCH_TAKES_ARG
-#define	SWITCH_TAKES_ARG(CHAR)						\
-  ((CHAR) == 'D' || (CHAR) == 'U' || (CHAR) == 'o'			\
-   || (CHAR) == 'e' || (CHAR) == 'T' || (CHAR) == 'u'			\
-   || (CHAR) == 'I' || (CHAR) == 'm' || (CHAR) == 'x'			\
-   || (CHAR) == 'L' || (CHAR) == 'A' || (CHAR) == 'V'			\
-   || (CHAR) == 'B' || (CHAR) == 'b' || (CHAR) == 'G')
 
 extern int fixuplabelno;
 
@@ -867,7 +827,7 @@ SVR4_ASM_SPEC \
 #define LINK_START_FREEBSD_SPEC	""
 
 #define LINK_OS_FREEBSD_SPEC "\
-  %{p:%nconsider using `-pg' instead of `-p' with gprof(1)} \
+  %{p:%nconsider using '-pg' instead of '-p' with gprof(1)} \
   %{v:-V} \
   %{assert*} %{R*} %{rpath*} %{defsym*} \
   %{shared:-Bshareable %{h*} %{soname*}} \
@@ -905,7 +865,7 @@ SVR4_ASM_SPEC \
 #define UCLIBC_DYNAMIC_LINKER "/lib/ld-uClibc.so.0"
 #if DEFAULT_LIBC == LIBC_UCLIBC
 #define CHOOSE_DYNAMIC_LINKER(G, U) "%{mglibc:" G ";:" U "}"
-#elif DEFAULT_LIBC == LIBC_GLIBC
+#elif !defined (DEFAULT_LIBC) || DEFAULT_LIBC == LIBC_GLIBC
 #define CHOOSE_DYNAMIC_LINKER(G, U) "%{muclibc:" U ";:" G "}"
 #else
 #error "Unsupported DEFAULT_LIBC"
@@ -1101,18 +1061,6 @@ ncrtn.o%s"
 
 /* Function name to call to do profiling.  */
 #define RS6000_MCOUNT "_mcount"
-
-/* Define this macro (to a value of 1) if you want to support the
-   Win32 style pragmas #pragma pack(push,<n>)' and #pragma
-   pack(pop)'.  The pack(push,<n>) pragma specifies the maximum
-   alignment (in bytes) of fields within a structure, in much the
-   same way as the __aligned__' and __packed__' __attribute__'s
-   do.  A pack value of zero resets the behavior to the default.
-   Successive invocations of this pragma cause the previous values to
-   be stacked, so that invocations of #pragma pack(pop)' will return
-   to the previous value.  */
-
-#define HANDLE_PRAGMA_PACK_PUSH_POP 1
 
 /* Select a format to encode pointers in exception handling data.  CODE
    is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is

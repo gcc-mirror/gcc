@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -95,6 +95,9 @@ package Ada.Characters.Handling is
    --  to use these routines when creating code that is intended to run in
    --  either Ada 95 or Ada 2005 mode.
 
+   --  We do however have to flag these if the pragma No_Obsolescent_Features
+   --  restriction is active (see Restrict.Check_Obsolescent_2005_Entity).
+
    function Is_Character (Item : Wide_Character) return Boolean;
    function Is_String    (Item : Wide_String)    return Boolean;
 
@@ -107,6 +110,9 @@ package Ada.Characters.Handling is
    --  not complain about this obsolescence, since in practice it is necessary
    --  to use these routines when creating code that is intended to run in
    --  either Ada 95 or Ada 2005 mode.
+
+   --  We do however have to flag these if the pragma No_Obsolescent_Features
+   --  restriction is active (see Restrict.Check_Obsolescent_2005_Entity).
 
    function To_Character
      (Item       : Wide_Character;

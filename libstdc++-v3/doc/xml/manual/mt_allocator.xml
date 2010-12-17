@@ -1,7 +1,8 @@
-<sect1 id="manual.ext.allocator.mt" xreflabel="mt allocator">
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="manual.ext.allocator.mt" xreflabel="mt allocator">
 <?dbhtml filename="mt_allocator.html"?>
 
-<sect1info>
+<info><title>mt_allocator</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -10,15 +11,15 @@
       allocator
     </keyword>
   </keywordset>
-</sect1info>
+</info>
 
-<title>mt_allocator</title>
+
 
 <para>
 </para>
 
-<sect2 id="allocator.mt.intro">
-<title>Intro</title>
+<section xml:id="allocator.mt.intro"><info><title>Intro</title></info>
+
 
 <para>
   The mt allocator [hereinafter referred to simply as "the allocator"]
@@ -40,14 +41,14 @@
   view - the "inner workings" of the allocator.
 </para>
 
-</sect2>
+</section>
 
 
-<sect2 id="allocator.mt.design_issues">
-<title>Design Issues</title>
+<section xml:id="allocator.mt.design_issues"><info><title>Design Issues</title></info>
 
-<sect3 id="allocator.mt.overview">
-<title>Overview</title>
+
+<section xml:id="allocator.mt.overview"><info><title>Overview</title></info>
+
 
 
 <para> There are three general components to the allocator: a datum
@@ -104,15 +105,15 @@ classes, namely member functions <code>allocate</code> and
 <code>deallocate</code>, plus others.
 </para>
 
-</sect3>
-</sect2>
+</section>
+</section>
 
-<sect2 id="allocator.mt.impl">
-<title>Implementation</title>
+<section xml:id="allocator.mt.impl"><info><title>Implementation</title></info>
 
 
-<sect3 id="allocator.mt.tune">
-<title>Tunable Parameters</title>
+
+<section xml:id="allocator.mt.tune"><info><title>Tunable Parameters</title></info>
+
 
 <para>Certain allocation parameters can be modified, or tuned. There
 exists a nested <code>struct __pool_base::_Tune</code> that contains all
@@ -166,10 +167,10 @@ int main()
 }
 </programlisting>
 
-</sect3>
+</section>
 
-<sect3 id="allocator.mt.init">
-<title>Initialization</title>
+<section xml:id="allocator.mt.init"><info><title>Initialization</title></info>
+
 
 <para>
 The static variables (pointers to freelists, tuning parameters etc)
@@ -276,10 +277,10 @@ The _S_initialize() function:
     a thread decides to return some blocks to the global freelist.
 </para>
 
-</sect3>
+</section>
 
-<sect3 id="allocator.mt.deallocation">
-<title>Deallocation Notes</title>
+<section xml:id="allocator.mt.deallocation"><info><title>Deallocation Notes</title></info>
+
 
 <para> Notes about deallocation. This allocator does not explicitly
 release memory. Because of this, memory debugging programs like
@@ -308,16 +309,16 @@ containers, this works, as an instance of the allocator is constructed
 as part of a container's constructor. However, this assumption is
 implementation-specific, and subject to change. For an example of a
 pool that frees memory, see the following
-    <ulink url="http://gcc.gnu.org/viewcvs/trunk/libstdc++-v3/testsuite/ext/mt_allocator/deallocate_local-6.cc?view=markup">
-    example.</ulink>
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/viewcvs/trunk/libstdc++-v3/testsuite/ext/mt_allocator/deallocate_local-6.cc?view=markup">
+    example.</link>
 </para>
 
-</sect3>
+</section>
 
-</sect2>
+</section>
 
-<sect2 id="allocator.mt.example_single">
-<title>Single Thread Example</title>
+<section xml:id="allocator.mt.example_single"><info><title>Single Thread Example</title></info>
+
 
 <para>
 Let's start by describing how the data on a freelist is laid out in memory.
@@ -408,10 +409,10 @@ after a set of performance measurements that showed that this is roughly 10%
 faster than maintaining a set of "last pointers" as well.
 </para>
 
-</sect2>
+</section>
 
-<sect2 id="allocator.mt.example_multi">
-<title>Multiple Thread Example</title>
+<section xml:id="allocator.mt.example_multi"><info><title>Multiple Thread Example</title></info>
+
 
 <para>
 In the ST example we never used the thread_id variable present in each block.
@@ -549,6 +550,6 @@ be improved to further reduce the risk of blocks being "bounced back
 and forth" between freelists.
 </para>
 
-</sect2>
+</section>
 
-</sect1>
+</section>

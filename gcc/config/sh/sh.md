@@ -8469,7 +8469,7 @@ label:
   ""
   "
 {
-  rtx insn, mem;
+  rtx mem;
 
   operands[2] = !can_create_pseudo_p () ? operands[0] : gen_reg_rtx (Pmode);
   operands[3] = !can_create_pseudo_p () ? operands[0] : gen_reg_rtx (Pmode);
@@ -8518,7 +8518,7 @@ label:
   mem = gen_rtx_MEM (Pmode, operands[3]);
   MEM_NOTRAP_P (mem) = 1;
   /* ??? Should we have a special alias set for the GOT?  */
-  insn = emit_move_insn (operands[0], mem);
+  emit_move_insn (operands[0], mem);
 
   DONE;
 }")
@@ -8685,7 +8685,7 @@ mov.l\\t1f,r4\\n\\
   ""
   "
 {
-  rtx dtpoffsym, insn;
+  rtx dtpoffsym;
   rtx t = (!can_create_pseudo_p ()
 	   ? operands[0]
 	   : gen_reg_rtx (GET_MODE (operands[0])));
@@ -8693,8 +8693,7 @@ mov.l\\t1f,r4\\n\\
   dtpoffsym = gen_sym2DTPOFF (operands[1]);
   PUT_MODE (dtpoffsym, Pmode);
   emit_move_insn (t, dtpoffsym);
-  insn = emit_move_insn (operands[0],
-			 gen_rtx_PLUS (Pmode, t, operands[2]));
+  emit_move_insn (operands[0], gen_rtx_PLUS (Pmode, t, operands[2]));
   DONE;
 }")
 
@@ -8736,11 +8735,11 @@ mov.l\\t1f,r0\\n\\
   ""
   "
 {
-  rtx tpoffsym, insn;
+  rtx tpoffsym;
 
   tpoffsym = gen_sym2TPOFF (operands[1]);
   PUT_MODE (tpoffsym, Pmode);
-  insn = emit_move_insn (operands[0], tpoffsym);
+  emit_move_insn (operands[0], tpoffsym);
   DONE;
 }")
 
@@ -9216,6 +9215,39 @@ mov.l\\t1f,r0\\n\\
   ""
   ""
   [(set_attr "length" "0")])
+
+;; Define movml instructions for SH2A target.  Currently they are
+;; used to push and pop all banked registers only.
+
+(define_insn "movml_push_banked"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	  (plus (match_dup 0) (const_int -32)))
+   (set (mem:SI (plus:SI (match_dup 0) (const_int 28))) (reg:SI R7_REG))
+   (set (mem:SI (plus:SI (match_dup 0) (const_int 24))) (reg:SI R6_REG))
+   (set (mem:SI (plus:SI (match_dup 0) (const_int 20))) (reg:SI R5_REG))
+   (set (mem:SI (plus:SI (match_dup 0) (const_int 16))) (reg:SI R4_REG))
+   (set (mem:SI (plus:SI (match_dup 0) (const_int 12))) (reg:SI R3_REG))
+   (set (mem:SI (plus:SI (match_dup 0) (const_int 8))) (reg:SI R2_REG))
+   (set (mem:SI (plus:SI (match_dup 0) (const_int 4))) (reg:SI R1_REG))
+   (set (mem:SI (plus:SI (match_dup 0) (const_int 0))) (reg:SI R0_REG))]
+  "TARGET_SH2A && REGNO (operands[0]) == 15"
+  "movml.l\tr7,@-r15"
+  [(set_attr "in_delay_slot" "no")])
+
+(define_insn "movml_pop_banked"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	  (plus (match_dup 0) (const_int 32)))
+   (set (reg:SI R0_REG) (mem:SI (plus:SI (match_dup 0) (const_int -32))))
+   (set (reg:SI R1_REG) (mem:SI (plus:SI (match_dup 0) (const_int -28))))
+   (set (reg:SI R2_REG) (mem:SI (plus:SI (match_dup 0) (const_int -24))))
+   (set (reg:SI R3_REG) (mem:SI (plus:SI (match_dup 0) (const_int -20))))
+   (set (reg:SI R4_REG) (mem:SI (plus:SI (match_dup 0) (const_int -16))))
+   (set (reg:SI R5_REG) (mem:SI (plus:SI (match_dup 0) (const_int -12))))
+   (set (reg:SI R6_REG) (mem:SI (plus:SI (match_dup 0) (const_int -8))))
+   (set (reg:SI R7_REG) (mem:SI (plus:SI (match_dup 0) (const_int -4))))]
+  "TARGET_SH2A && REGNO (operands[0]) == 15"
+  "movml.l\t@r15+,r7"
+  [(set_attr "in_delay_slot" "no")])
 
 ;; ------------------------------------------------------------------------
 ;; Scc instructions

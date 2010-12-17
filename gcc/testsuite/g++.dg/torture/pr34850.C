@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
 
 typedef unsigned char uint8_t;
 typedef unsigned int uint32_t;
@@ -11,7 +11,7 @@ extern "C" {
     extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__, __artificial__))
     void * memset (void *__dest, int __ch, size_t __len) throw () {
 	if (__builtin_constant_p (__len) && __len == 0)
-	    __warn_memset_zero_len (); /* { dg-warning "" } */
+	    __warn_memset_zero_len (); /* { dg-warning "declared with attribute warning" } */
     }
 }
 inline void clear_mem(void* ptr, u32bit n)    {
@@ -69,6 +69,7 @@ OctetString& OctetString::operator^=(const OctetString& k)    {
 	bits.clear();
     }
 }
-bool operator==(const OctetString& s1, const OctetString& s2)    {
+bool __attribute__((flatten))
+operator==(const OctetString& s1, const OctetString& s2)    {
     return (s1.bits_of() == s2.bits_of());
 }

@@ -50,37 +50,21 @@ _GLIBCXX_END_NAMESPACE
 #include <type_traits> // Brings in std::declval too.
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
-
-  /// identity
+  
+  /// forward (as per N3143)
   template<typename _Tp>
-    struct identity
+    inline _Tp&&
+    forward(typename std::remove_reference<_Tp>::type& __t) 
+    { return static_cast<_Tp&&>(__t); }
+
+  template<typename _Tp>
+    inline _Tp&&
+    forward(typename std::remove_reference<_Tp>::type&& __t) 
     {
-      typedef _Tp type;
-    };
-
-  /// forward (as per N2835)
-  /// Forward lvalues as rvalues.
-  template<typename _Tp>
-    inline typename enable_if<!is_lvalue_reference<_Tp>::value, _Tp&&>::type
-    forward(typename std::identity<_Tp>::type& __t)
-    { return static_cast<_Tp&&>(__t); }
-
-  /// Forward rvalues as rvalues.
-  template<typename _Tp>
-    inline typename enable_if<!is_lvalue_reference<_Tp>::value, _Tp&&>::type
-    forward(typename std::identity<_Tp>::type&& __t)
-    { return static_cast<_Tp&&>(__t); }
-
-  // Forward lvalues as lvalues.
-  template<typename _Tp>
-    inline typename enable_if<is_lvalue_reference<_Tp>::value, _Tp>::type
-    forward(typename std::identity<_Tp>::type __t)
-    { return __t; }
-
-  // Prevent forwarding rvalues as const lvalues.
-  template<typename _Tp>
-    inline typename enable_if<is_lvalue_reference<_Tp>::value, _Tp>::type
-    forward(typename std::remove_reference<_Tp>::type&& __t) = delete;
+      static_assert(!std::is_lvalue_reference<_Tp>::value, "template argument"
+		    " substituting _Tp is an lvalue reference type");
+      return static_cast<_Tp&&>(__t);
+    }
 
   /**
    *  @brief Move a value.
@@ -93,7 +77,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     move(_Tp&& __t)
     { return static_cast<typename std::remove_reference<_Tp>::type&&>(__t); }
 
-  /// declval, defined in <type_traits>.
+  /// declval, from type_traits.
 
   /**
    *  @brief Returns the actual address of the object or function
@@ -109,10 +93,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 _GLIBCXX_END_NAMESPACE
 
-#define _GLIBCXX_MOVE(_Tp) std::move(_Tp)
+#define _GLIBCXX_MOVE(__val) std::move(__val)
 #define _GLIBCXX_FORWARD(_Tp, __val) std::forward<_Tp>(__val)
 #else
-#define _GLIBCXX_MOVE(_Tp) (_Tp)
+#define _GLIBCXX_MOVE(__val) (__val)
 #define _GLIBCXX_FORWARD(_Tp, __val) (__val)
 #endif
 

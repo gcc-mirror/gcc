@@ -123,21 +123,21 @@ DEF_RTL_EXPR(ADDRESS, "address", "e", RTX_MATCH)
    ---------------------------------------------------------------------- */
 
 /* An annotation for variable assignment tracking.  */
-DEF_RTL_EXPR(DEBUG_INSN, "debug_insn", "iuuBieie", RTX_INSN)
+DEF_RTL_EXPR(DEBUG_INSN, "debug_insn", "iuuBeiie", RTX_INSN)
 
 /* An instruction that cannot jump.  */
-DEF_RTL_EXPR(INSN, "insn", "iuuBieie", RTX_INSN)
+DEF_RTL_EXPR(INSN, "insn", "iuuBeiie", RTX_INSN)
 
 /* An instruction that can possibly jump.
    Fields ( rtx->u.fld[] ) have exact same meaning as INSN's.  */
-DEF_RTL_EXPR(JUMP_INSN, "jump_insn", "iuuBieie0", RTX_INSN)
+DEF_RTL_EXPR(JUMP_INSN, "jump_insn", "iuuBeiie0", RTX_INSN)
 
 /* An instruction that can possibly call a subroutine
    but which will not change which instruction comes next
    in the current function.
    Field ( rtx->u.fld[8] ) is CALL_INSN_FUNCTION_USAGE.
    All other fields ( rtx->u.fld[] ) have exact same meaning as INSN's.  */
-DEF_RTL_EXPR(CALL_INSN, "call_insn", "iuuBieiee", RTX_INSN)
+DEF_RTL_EXPR(CALL_INSN, "call_insn", "iuuBeiiee", RTX_INSN)
 
 /* A marker that indicates that control will not flow through.  */
 DEF_RTL_EXPR(BARRIER, "barrier", "iuu00000", RTX_EXTRA)
@@ -706,10 +706,17 @@ DEF_RTL_EXPR(SS_TRUNCATE, "ss_truncate", "e", RTX_UNARY)
 /* Unsigned saturating truncate.  */
 DEF_RTL_EXPR(US_TRUNCATE, "us_truncate", "e", RTX_UNARY)
 
+/* Floating point multiply/add combined instruction.  */
+DEF_RTL_EXPR(FMA, "fma", "eee", RTX_TERNARY)
+
 /* Information about the variable and its location.  */
 /* Changed 'te' to 'tei'; the 'i' field is for recording
    initialization status of variables.  */
 DEF_RTL_EXPR(VAR_LOCATION, "var_location", "tei", RTX_EXTRA)
+
+/* Used in VAR_LOCATION for a pointer to a decl that is no longer
+   addressable.  */
+DEF_RTL_EXPR(DEBUG_IMPLICIT_PTR, "debug_implicit_ptr", "t", RTX_OBJ)
 
 /* All expressions from this point forward appear only in machine
    descriptions.  */

@@ -1,7 +1,6 @@
 /* { dg-require-effective-target vect_int } */
 
 #include <stdarg.h>
-#include <stdio.h>
 #include "tree-vect.h"
 
 #define N 16 
@@ -47,7 +46,6 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "basic block vectorized using SLP" 0 "slp" } } */
-/* { dg-final { scan-tree-dump-times "unsupported alignment in basic block." 1 "slp" } } */
+/* { dg-final { scan-tree-dump-times "basic block vectorized using SLP" 1 "slp"  { xfail  vect_no_align } } } */
 /* { dg-final { cleanup-tree-dump "slp" } } */
   

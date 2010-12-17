@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef  LINK_SPEC
 #define LINK_SPEC "--format:NLM --extensions:GNU" \
-	" %{static:%{!nostdlib:%{!nodefaultlib:%eStatic linking is not supported.\n}}}"
+	" %{static:%{!nostdlib:%{!nodefaultlib:%estatic linking is not supported\n}}}"
 
 #undef  LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC "%L %G"

@@ -1,5 +1,5 @@
 /* Linux-specific atomic operations for PA Linux.
-   Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
    Based on code contributed by CodeSourcery for ARM EABI Linux.
    Modifications for PA Linux by Helge Deller <deller@gmx.de>
 
@@ -92,7 +92,7 @@ __kernel_cmpxchg (int oldval, int newval, int *mem)
 									\
     do {								\
       tmp = *ptr;							\
-      failure = __kernel_cmpxchg (tmp, PFX_OP tmp INF_OP val, ptr);	\
+      failure = __kernel_cmpxchg (tmp, PFX_OP (tmp INF_OP val), ptr);	\
     } while (failure != 0);						\
 									\
     return tmp;								\
@@ -124,8 +124,8 @@ FETCH_AND_OP_WORD (nand, ~, &)
 									\
     do {								\
       oldval = *wordptr;						\
-      newval = ((PFX_OP ((oldval & mask) >> shift)			\
-                 INF_OP (unsigned int) val) << shift) & mask;		\
+      newval = ((PFX_OP (((oldval & mask) >> shift)			\
+                         INF_OP (unsigned int) val)) << shift) & mask;	\
       newval |= oldval & ~mask;						\
       failure = __kernel_cmpxchg (oldval, newval, wordptr);		\
     } while (failure != 0);						\
@@ -133,19 +133,19 @@ FETCH_AND_OP_WORD (nand, ~, &)
     return (RETURN & mask) >> shift;					\
   }
 
-SUBWORD_SYNC_OP (add,   , +, short, 2, oldval)
-SUBWORD_SYNC_OP (sub,   , -, short, 2, oldval)
-SUBWORD_SYNC_OP (or,    , |, short, 2, oldval)
-SUBWORD_SYNC_OP (and,   , &, short, 2, oldval)
-SUBWORD_SYNC_OP (xor,   , ^, short, 2, oldval)
-SUBWORD_SYNC_OP (nand, ~, &, short, 2, oldval)
+SUBWORD_SYNC_OP (add,   , +, unsigned short, 2, oldval)
+SUBWORD_SYNC_OP (sub,   , -, unsigned short, 2, oldval)
+SUBWORD_SYNC_OP (or,    , |, unsigned short, 2, oldval)
+SUBWORD_SYNC_OP (and,   , &, unsigned short, 2, oldval)
+SUBWORD_SYNC_OP (xor,   , ^, unsigned short, 2, oldval)
+SUBWORD_SYNC_OP (nand, ~, &, unsigned short, 2, oldval)
 
-SUBWORD_SYNC_OP (add,   , +, char, 1, oldval)
-SUBWORD_SYNC_OP (sub,   , -, char, 1, oldval)
-SUBWORD_SYNC_OP (or,    , |, char, 1, oldval)
-SUBWORD_SYNC_OP (and,   , &, char, 1, oldval)
-SUBWORD_SYNC_OP (xor,   , ^, char, 1, oldval)
-SUBWORD_SYNC_OP (nand, ~, &, char, 1, oldval)
+SUBWORD_SYNC_OP (add,   , +, unsigned char, 1, oldval)
+SUBWORD_SYNC_OP (sub,   , -, unsigned char, 1, oldval)
+SUBWORD_SYNC_OP (or,    , |, unsigned char, 1, oldval)
+SUBWORD_SYNC_OP (and,   , &, unsigned char, 1, oldval)
+SUBWORD_SYNC_OP (xor,   , ^, unsigned char, 1, oldval)
+SUBWORD_SYNC_OP (nand, ~, &, unsigned char, 1, oldval)
 
 #define OP_AND_FETCH_WORD(OP, PFX_OP, INF_OP)				\
   int HIDDEN								\
@@ -155,10 +155,10 @@ SUBWORD_SYNC_OP (nand, ~, &, char, 1, oldval)
 									\
     do {								\
       tmp = *ptr;							\
-      failure = __kernel_cmpxchg (tmp, PFX_OP tmp INF_OP val, ptr);	\
+      failure = __kernel_cmpxchg (tmp, PFX_OP (tmp INF_OP val), ptr);	\
     } while (failure != 0);						\
 									\
-    return PFX_OP tmp INF_OP val;					\
+    return PFX_OP (tmp INF_OP val);					\
   }
 
 OP_AND_FETCH_WORD (add,   , +)
@@ -168,19 +168,19 @@ OP_AND_FETCH_WORD (and,   , &)
 OP_AND_FETCH_WORD (xor,   , ^)
 OP_AND_FETCH_WORD (nand, ~, &)
 
-SUBWORD_SYNC_OP (add,   , +, short, 2, newval)
-SUBWORD_SYNC_OP (sub,   , -, short, 2, newval)
-SUBWORD_SYNC_OP (or,    , |, short, 2, newval)
-SUBWORD_SYNC_OP (and,   , &, short, 2, newval)
-SUBWORD_SYNC_OP (xor,   , ^, short, 2, newval)
-SUBWORD_SYNC_OP (nand, ~, &, short, 2, newval)
+SUBWORD_SYNC_OP (add,   , +, unsigned short, 2, newval)
+SUBWORD_SYNC_OP (sub,   , -, unsigned short, 2, newval)
+SUBWORD_SYNC_OP (or,    , |, unsigned short, 2, newval)
+SUBWORD_SYNC_OP (and,   , &, unsigned short, 2, newval)
+SUBWORD_SYNC_OP (xor,   , ^, unsigned short, 2, newval)
+SUBWORD_SYNC_OP (nand, ~, &, unsigned short, 2, newval)
 
-SUBWORD_SYNC_OP (add,   , +, char, 1, newval)
-SUBWORD_SYNC_OP (sub,   , -, char, 1, newval)
-SUBWORD_SYNC_OP (or,    , |, char, 1, newval)
-SUBWORD_SYNC_OP (and,   , &, char, 1, newval)
-SUBWORD_SYNC_OP (xor,   , ^, char, 1, newval)
-SUBWORD_SYNC_OP (nand, ~, &, char, 1, newval)
+SUBWORD_SYNC_OP (add,   , +, unsigned char, 1, newval)
+SUBWORD_SYNC_OP (sub,   , -, unsigned char, 1, newval)
+SUBWORD_SYNC_OP (or,    , |, unsigned char, 1, newval)
+SUBWORD_SYNC_OP (and,   , &, unsigned char, 1, newval)
+SUBWORD_SYNC_OP (xor,   , ^, unsigned char, 1, newval)
+SUBWORD_SYNC_OP (nand, ~, &, unsigned char, 1, newval)
 
 int HIDDEN
 __sync_val_compare_and_swap_4 (int *ptr, int oldval, int newval)
@@ -191,13 +191,13 @@ __sync_val_compare_and_swap_4 (int *ptr, int oldval, int newval)
     {
       actual_oldval = *ptr;
 
-      if (oldval != actual_oldval)
+      if (__builtin_expect (oldval != actual_oldval, 0))
 	return actual_oldval;
 
       fail = __kernel_cmpxchg (actual_oldval, newval, ptr);
   
-      if (!fail)
-	return oldval;
+      if (__builtin_expect (!fail, 1))
+	return actual_oldval;
     }
 }
 
@@ -216,8 +216,9 @@ __sync_val_compare_and_swap_4 (int *ptr, int oldval, int newval)
       {									\
 	actual_oldval = *wordptr;					\
 									\
-	if (((actual_oldval & mask) >> shift) != (unsigned int) oldval)	\
-          return (actual_oldval & mask) >> shift;			\
+	if (__builtin_expect (((actual_oldval & mask) >> shift)		\
+			      != (unsigned int) oldval, 0))		\
+	  return (actual_oldval & mask) >> shift;			\
 									\
 	actual_newval = (actual_oldval & ~mask)				\
 			| (((unsigned int) newval << shift) & mask);	\
@@ -225,13 +226,13 @@ __sync_val_compare_and_swap_4 (int *ptr, int oldval, int newval)
 	fail = __kernel_cmpxchg (actual_oldval, actual_newval,		\
 				 wordptr);				\
 									\
-	if (!fail)							\
-	  return oldval;						\
+	if (__builtin_expect (!fail, 1))				\
+	  return (actual_oldval & mask) >> shift;			\
       }									\
   }
 
-SUBWORD_VAL_CAS (short, 2)
-SUBWORD_VAL_CAS (char,  1)
+SUBWORD_VAL_CAS (unsigned short, 2)
+SUBWORD_VAL_CAS (unsigned char,  1)
 
 typedef unsigned char bool;
 
@@ -252,8 +253,8 @@ __sync_bool_compare_and_swap_4 (int *ptr, int oldval, int newval)
     return (oldval == actual_oldval);					\
   }
 
-SUBWORD_BOOL_CAS (short, 2)
-SUBWORD_BOOL_CAS (char,  1)
+SUBWORD_BOOL_CAS (unsigned short, 2)
+SUBWORD_BOOL_CAS (unsigned char,  1)
 
 int HIDDEN
 __sync_lock_test_and_set_4 (int *ptr, int val)
@@ -289,8 +290,8 @@ __sync_lock_test_and_set_4 (int *ptr, int val)
     return (oldval & mask) >> shift;					\
   }
 
-SUBWORD_TEST_AND_SET (short, 2)
-SUBWORD_TEST_AND_SET (char,  1)
+SUBWORD_TEST_AND_SET (unsigned short, 2)
+SUBWORD_TEST_AND_SET (unsigned char,  1)
 
 #define SYNC_LOCK_RELEASE(TYPE, WIDTH)					\
   void HIDDEN								\

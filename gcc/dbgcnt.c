@@ -22,7 +22,7 @@ See dbgcnt.def for usage information.  */
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "tm.h"
 #include "rtl.h"
 #include "output.h"
@@ -132,7 +132,7 @@ dbg_cnt_process_opt (const char *arg)
      {
        char *buffer = XALLOCAVEC (char, arg - start + 2);
        sprintf (buffer, "%*c", (int)(1 + (arg - start)), '^');
-       error ("Can not find a valid counter:value pair:");
+       error ("cannot find a valid counter:value pair:");
        error ("-fdbg-cnt=%s", start);
        error ("          %s", buffer);
      }

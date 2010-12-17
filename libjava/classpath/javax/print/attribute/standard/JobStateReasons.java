@@ -129,7 +129,7 @@ public final class JobStateReasons extends HashSet<JobStateReason>
     if (o == null)
       throw new NullPointerException("reason is null");  
     
-    return add(o);
+    return super.add(o);
   }
   
   /**

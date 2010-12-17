@@ -174,7 +174,7 @@ init_parameter_lattice_values (void)
 {
   tree parm, ssa_name;
 
-  for (parm = DECL_ARGUMENTS (cfun->decl); parm ; parm = TREE_CHAIN (parm))
+  for (parm = DECL_ARGUMENTS (cfun->decl); parm ; parm = DECL_CHAIN (parm))
     if (is_complex_reg (parm)
 	&& var_ann (parm) != NULL
 	&& (ssa_name = gimple_default_def (cfun, parm)) != NULL_TREE)
@@ -596,10 +596,10 @@ extract_component (gimple_stmt_iterator *gsi, tree t, bool imagpart_p,
     case VAR_DECL:
     case RESULT_DECL:
     case PARM_DECL:
-    case INDIRECT_REF:
     case COMPONENT_REF:
     case ARRAY_REF:
     case VIEW_CONVERT_EXPR:
+    case MEM_REF:
       {
 	tree inner_type = TREE_TYPE (TREE_TYPE (t));
 
@@ -662,12 +662,16 @@ static void
 update_complex_assignment (gimple_stmt_iterator *gsi, tree r, tree i)
 {
   gimple_stmt_iterator orig_si = *gsi;
+  gimple stmt;
 
   if (gimple_in_ssa_p (cfun))
     update_complex_components (gsi, gsi_stmt (*gsi), r, i);
 
   gimple_assign_set_rhs_with_ops (&orig_si, COMPLEX_EXPR, r, i);
-  update_stmt (gsi_stmt (orig_si));
+  stmt = gsi_stmt (orig_si);
+  update_stmt (stmt);
+  if (maybe_clean_eh_stmt (stmt))
+    gimple_purge_dead_eh_edges (gimple_bb (stmt));
 }
 
 
@@ -680,7 +684,7 @@ update_parameter_components (void)
   edge entry_edge = single_succ_edge (ENTRY_BLOCK_PTR);
   tree parm;
 
-  for (parm = DECL_ARGUMENTS (cfun->decl); parm ; parm = TREE_CHAIN (parm))
+  for (parm = DECL_ARGUMENTS (cfun->decl); parm ; parm = DECL_CHAIN (parm))
     {
       tree type = TREE_TYPE (parm);
       tree ssa_name, r, i;
@@ -778,17 +782,14 @@ expand_complex_move (gimple_stmt_iterator *gsi, tree type)
     {
       if (is_ctrl_altering_stmt (stmt))
 	{
-	  edge_iterator ei;
 	  edge e;
 
 	  /* The value is not assigned on the exception edges, so we need not
 	     concern ourselves there.  We do need to update on the fallthru
 	     edge.  Find it.  */
-	  FOR_EACH_EDGE (e, ei, gsi_bb (*gsi)->succs)
-	    if (e->flags & EDGE_FALLTHRU)
-	      goto found_fallthru;
-	  gcc_unreachable ();
-	found_fallthru:
+	  e = find_fallthru_edge (gsi_bb (*gsi)->succs);
+	  if (!e)
+	    gcc_unreachable ();
 
 	  r = build1 (REALPART_EXPR, inner_type, lhs);
 	  i = build1 (IMAGPART_EXPR, inner_type, lhs);

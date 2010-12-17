@@ -428,6 +428,11 @@ print_value (char *buf, const_rtx x, int verbose)
   char t[BUF_LEN];
   char *cur = buf;
 
+  if (!x)
+    {
+      safe_concat (buf, buf, "(nil)");
+      return;
+    }
   switch (GET_CODE (x))
     {
     case CONST_INT:

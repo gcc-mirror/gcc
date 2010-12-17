@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-mpreferred-stack-boundary=4 -msse" } */
 /* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target sse } */
 
 #include "sse-check.h"
 

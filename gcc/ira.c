@@ -168,8 +168,6 @@ along with GCC; see the file COPYING3.  If not see
        process.  It is done in each region on top-down traverse of the
        region tree (file ira-color.c).  There are following subpasses:
 
-       * Optional aggressive coalescing of allocnos in the region.
-
        * Putting allocnos onto the coloring stack.  IRA uses Briggs
          optimistic coloring which is a major improvement over
          Chaitin's coloring.  Therefore IRA does not spill allocnos at
@@ -319,11 +317,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "except.h"
 #include "reload.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "integrate.h"
 #include "ggc.h"
 #include "ira-int.h"
 
+
+struct target_ira default_target_ira;
+struct target_ira_int default_target_ira_int;
+#if SWITCHABLE_TARGET
+struct target_ira *this_target_ira = &default_target_ira;
+struct target_ira_int *this_target_ira_int = &default_target_ira_int;
+#endif
 
 /* A modified value of flag `-fira-verbose' used internally.  */
 int internal_flag_ira_verbose;
@@ -351,33 +356,6 @@ int ira_move_loops_num, ira_additional_jumps_num;
 
 HARD_REG_SET eliminable_regset;
 
-/* Map: hard regs X modes -> set of hard registers for storing value
-   of given mode starting with given hard register.  */
-HARD_REG_SET ira_reg_mode_hard_regset[FIRST_PSEUDO_REGISTER][NUM_MACHINE_MODES];
-
-/* Array analogous to target hook TARGET_MEMORY_MOVE_COST.  */
-short int ira_memory_move_cost[MAX_MACHINE_MODE][N_REG_CLASSES][2];
-
-/* Array based on TARGET_REGISTER_MOVE_COST.  */
-move_table *ira_register_move_cost[MAX_MACHINE_MODE];
-
-/* Similar to may_move_in_cost but it is calculated in IRA instead of
-   regclass.  Another difference is that we take only available hard
-   registers into account to figure out that one register class is a
-   subset of the another one.  */
-move_table *ira_may_move_in_cost[MAX_MACHINE_MODE];
-
-/* Similar to may_move_out_cost but it is calculated in IRA instead of
-   regclass.  Another difference is that we take only available hard
-   registers into account to figure out that one register class is a
-   subset of the another one.  */
-move_table *ira_may_move_out_cost[MAX_MACHINE_MODE];
-
-/* Register class subset relation: TRUE if the first class is a subset
-   of the second one considering only hard registers available for the
-   allocation.  */
-int ira_class_subset_p[N_REG_CLASSES][N_REG_CLASSES];
-
 /* Temporary hard reg set used for a different calculation.  */
 static HARD_REG_SET temp_hard_regset;
 
@@ -401,30 +379,8 @@ setup_reg_mode_hard_regset (void)
 }
 
 
-
-/* Hard registers that can not be used for the register allocator for
-   all functions of the current compilation unit.  */
-static HARD_REG_SET no_unit_alloc_regs;
-
-/* Array of the number of hard registers of given class which are
-   available for allocation.  The order is defined by the
-   allocation order.  */
-short ira_class_hard_regs[N_REG_CLASSES][FIRST_PSEUDO_REGISTER];
-
-/* Array of the number of hard registers of given class which are
-   available for allocation.  The order is defined by the
-   the hard register numbers.  */
-short ira_non_ordered_class_hard_regs[N_REG_CLASSES][FIRST_PSEUDO_REGISTER];
-
-/* The number of elements of the above array for given register
-   class.  */
-int ira_class_hard_regs_num[N_REG_CLASSES];
-
-/* Index (in ira_class_hard_regs) for given register class and hard
-   register (in general case a hard register can belong to several
-   register classes).  The index is negative for hard registers
-   unavailable for the allocation. */
-short ira_class_hard_reg_index[N_REG_CLASSES][FIRST_PSEUDO_REGISTER];
+#define no_unit_alloc_regs \
+  (this_target_ira_int->x_no_unit_alloc_regs)
 
 /* The function sets up the three arrays declared above.  */
 static void
@@ -441,8 +397,8 @@ setup_class_hard_regs (void)
       CLEAR_HARD_REG_SET (processed_hard_reg_set);
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	{
-	  ira_non_ordered_class_hard_regs[cl][0] = -1;
-	  ira_class_hard_reg_index[cl][0] = -1;
+	  ira_non_ordered_class_hard_regs[cl][i] = -1;
+	  ira_class_hard_reg_index[cl][i] = -1;
 	}
       for (n = 0, i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	{
@@ -469,10 +425,6 @@ setup_class_hard_regs (void)
       ira_assert (ira_class_hard_regs_num[cl] == n);
     }
 }
-
-/* Number of given class hard registers available for the register
-   allocation for given classes.  */
-int ira_available_class_regs[N_REG_CLASSES];
 
 /* Set up IRA_AVAILABLE_CLASS_REGS.  */
 static void
@@ -666,11 +618,8 @@ ira_debug_disposition (void)
 }
 
 
-
-/* For each reg class, table listing all the classes contained in it
-   (excluding the class itself.  Non-allocatable registers are
-   excluded from the consideration).  */
-static enum reg_class alloc_reg_class_subclasses[N_REG_CLASSES][N_REG_CLASSES];
+#define alloc_reg_class_subclasses \
+  (this_target_ira_int->x_alloc_reg_class_subclasses)
 
 /* Initialize the table of subclasses of each reg class.  */
 static void
@@ -711,36 +660,13 @@ setup_reg_subclasses (void)
 
 
 
-/* Number of cover classes.  Cover classes is non-intersected register
-   classes containing all hard-registers available for the
-   allocation.  */
-int ira_reg_class_cover_size;
-
-/* The array containing cover classes (see also comments for macro
-   IRA_COVER_CLASSES).  Only first IRA_REG_CLASS_COVER_SIZE elements are
-   used for this.  */
-enum reg_class ira_reg_class_cover[N_REG_CLASSES];
-
-/* The number of elements in the subsequent array.  */
-int ira_important_classes_num;
-
-/* The array containing non-empty classes (including non-empty cover
-   classes) which are subclasses of cover classes.  Such classes is
-   important for calculation of the hard register usage costs.  */
-enum reg_class ira_important_classes[N_REG_CLASSES];
-
-/* The array containing indexes of important classes in the previous
-   array.  The array elements are defined only for important
-   classes.  */
-int ira_important_class_nums[N_REG_CLASSES];
-
 /* Set the four global variables defined above.  */
 static void
 setup_cover_and_important_classes (void)
 {
   int i, j, n, cl;
   bool set_p;
-  const enum reg_class *cover_classes;
+  const reg_class_t *cover_classes;
   HARD_REG_SET temp_hard_regset2;
   static enum reg_class classes[LIM_REG_CLASSES + 1];
 
@@ -838,11 +764,6 @@ setup_cover_and_important_classes (void)
       = ira_reg_class_cover[j];
 }
 
-/* Map of all register classes to corresponding cover class containing
-   the given class.  If given class is not a subset of a cover class,
-   we translate it into the cheapest cover class.  */
-enum reg_class ira_class_translate[N_REG_CLASSES];
-
 /* Set up array IRA_CLASS_TRANSLATE.  */
 static void
 setup_class_translate (void)
@@ -931,7 +852,8 @@ setup_class_translate (void)
 }
 
 /* Order numbers of cover classes in original target cover class
-   array, -1 for non-cover classes.  */
+   array, -1 for non-cover classes.  This is only live during
+   reorder_important_classes.  */
 static int cover_class_order[N_REG_CLASSES];
 
 /* The function used to sort the important classes.  */
@@ -951,7 +873,7 @@ comp_reg_classes_func (const void *v1p, const void *v2p)
 }
 
 /* Reorder important classes according to the order of their cover
-   classes.  Set up array ira_important_class_nums too.  */
+   classes.  */
 static void
 reorder_important_classes (void)
 {
@@ -963,37 +885,7 @@ reorder_important_classes (void)
     cover_class_order[ira_reg_class_cover[i]] = i;
   qsort (ira_important_classes, ira_important_classes_num,
 	 sizeof (enum reg_class), comp_reg_classes_func);
-  for (i = 0; i < ira_important_classes_num; i++)
-    ira_important_class_nums[ira_important_classes[i]] = i;
 }
-
-/* The biggest important reg_class inside of intersection of the two
-   reg_classes (that is calculated taking only hard registers
-   available for allocation into account).  If the both reg_classes
-   contain no hard registers available for allocation, the value is
-   calculated by taking all hard-registers including fixed ones into
-   account.  */
-enum reg_class ira_reg_class_intersect[N_REG_CLASSES][N_REG_CLASSES];
-
-/* True if the two classes (that is calculated taking only hard
-   registers available for allocation into account) are
-   intersected.  */
-bool ira_reg_classes_intersect_p[N_REG_CLASSES][N_REG_CLASSES];
-
-/* Important classes with end marker LIM_REG_CLASSES which are
-   supersets with given important class (the first index).  That
-   includes given class itself.  This is calculated taking only hard
-   registers available for allocation into account.  */
-enum reg_class ira_reg_class_super_classes[N_REG_CLASSES][N_REG_CLASSES];
-
-/* The biggest important reg_class inside of union of the two
-   reg_classes (that is calculated taking only hard registers
-   available for allocation into account).  If the both reg_classes
-   contain no hard registers available for allocation, the value is
-   calculated by taking all hard-registers including fixed ones into
-   account.  In other words, the value is the corresponding
-   reg_class_subunion value.  */
-enum reg_class ira_reg_class_union[N_REG_CLASSES][N_REG_CLASSES];
 
 /* Set up the above reg class relations.  */
 static void
@@ -1137,11 +1029,6 @@ find_reg_class_closure (void)
 
 
 
-/* Map: hard register number -> cover class it belongs to.  If the
-   corresponding class is NO_REGS, the hard register is not available
-   for allocation.  */
-enum reg_class ira_hard_regno_cover_class[FIRST_PSEUDO_REGISTER];
-
 /* Set up the array above.  */
 static void
 setup_hard_regno_cover_class (void)
@@ -1167,37 +1054,19 @@ setup_hard_regno_cover_class (void)
 
 
 
-/* Map: register class x machine mode -> number of hard registers of
-   given class needed to store value of given mode.  If the number is
-   different, the size will be negative.  */
-int ira_reg_class_nregs[N_REG_CLASSES][MAX_MACHINE_MODE];
-
-/* Maximal value of the previous array elements.  */
-int ira_max_nregs;
-
 /* Form IRA_REG_CLASS_NREGS map.  */
 static void
 setup_reg_class_nregs (void)
 {
   int cl, m;
 
-  ira_max_nregs = -1;
   for (cl = 0; cl < N_REG_CLASSES; cl++)
     for (m = 0; m < MAX_MACHINE_MODE; m++)
-      {
-	ira_reg_class_nregs[cl][m] = CLASS_MAX_NREGS ((enum reg_class) cl,
-						      (enum machine_mode) m);
-	if (ira_max_nregs < ira_reg_class_nregs[cl][m])
-	  ira_max_nregs = ira_reg_class_nregs[cl][m];
-      }
+      ira_reg_class_nregs[cl][m] = CLASS_MAX_NREGS ((enum reg_class) cl,
+						    (enum machine_mode) m);
 }
 
 
-
-/* Array whose values are hard regset of hard registers available for
-   the allocation of given register class whose HARD_REGNO_MODE_OK
-   values for given mode are zero.  */
-HARD_REG_SET prohibited_class_mode_regs[N_REG_CLASSES][NUM_MACHINE_MODES];
 
 /* Set up PROHIBITED_CLASS_MODE_REGS.  */
 static void
@@ -1324,14 +1193,8 @@ ira_finish_once (void)
 }
 
 
-
-/* Array whose values are hard regset of hard registers for which
-   move of the hard register in given mode into itself is
-   prohibited.  */
-HARD_REG_SET ira_prohibited_mode_move_regs[NUM_MACHINE_MODES];
-
-/* Flag of that the above array has been initialized.  */
-static bool ira_prohibited_mode_move_regs_initialized_p = false;
+#define ira_prohibited_mode_move_regs_initialized_p \
+  (this_target_ira_int->x_ira_prohibited_mode_move_regs_initialized_p)
 
 /* Set up IRA_PROHIBITED_MODE_MOVE_REGS.  */
 static void
@@ -1346,7 +1209,7 @@ setup_prohibited_mode_move_regs (void)
   test_reg1 = gen_rtx_REG (VOIDmode, 0);
   test_reg2 = gen_rtx_REG (VOIDmode, 0);
   move_pat = gen_rtx_SET (VOIDmode, test_reg1, test_reg2);
-  move_insn = gen_rtx_INSN (VOIDmode, 0, 0, 0, 0, 0, move_pat, -1, 0);
+  move_insn = gen_rtx_INSN (VOIDmode, 0, 0, 0, 0, move_pat, 0, -1, 0);
   for (i = 0; i < NUM_MACHINE_MODES; i++)
     {
       SET_HARD_REG_SET (ira_prohibited_mode_move_regs[i]);
@@ -1354,9 +1217,9 @@ setup_prohibited_mode_move_regs (void)
 	{
 	  if (! HARD_REGNO_MODE_OK (j, (enum machine_mode) i))
 	    continue;
-	  SET_REGNO (test_reg1, j);
+	  SET_REGNO_RAW (test_reg1, j);
 	  PUT_MODE (test_reg1, (enum machine_mode) i);
-	  SET_REGNO (test_reg2, j);
+	  SET_REGNO_RAW (test_reg2, j);
 	  PUT_MODE (test_reg2, (enum machine_mode) i);
 	  INSN_CODE (move_insn) = -1;
 	  recog_memoized (move_insn);
@@ -1376,7 +1239,7 @@ setup_prohibited_mode_move_regs (void)
 static bool
 ira_bad_reload_regno_1 (int regno, rtx x)
 {
-  int x_regno;
+  int x_regno, n, i;
   ira_allocno_t a;
   enum reg_class pref;
 
@@ -1397,9 +1260,13 @@ ira_bad_reload_regno_1 (int regno, rtx x)
   /* If the pseudo conflicts with REGNO, then we consider REGNO a
      poor choice for a reload regno.  */
   a = ira_regno_allocno_map[x_regno];
-  if (TEST_HARD_REG_BIT (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a), regno))
-    return true;
-
+  n = ALLOCNO_NUM_OBJECTS (a);
+  for (i = 0; i < n; i++)
+    {
+      ira_object_t obj = ALLOCNO_OBJECT (a, i);
+      if (TEST_HARD_REG_BIT (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj), regno))
+	return true;
+    }
   return false;
 }
 
@@ -1520,7 +1387,7 @@ ira_setup_eliminable_regset (void)
       else
 	df_set_regs_ever_live (eliminables[i].from, true);
     }
-#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
   if (!TEST_HARD_REG_BIT (crtl->asm_clobbers, HARD_FRAME_POINTER_REGNUM))
     {
       SET_HARD_REG_BIT (eliminable_regset, HARD_FRAME_POINTER_REGNUM);
@@ -1742,33 +1609,73 @@ calculate_allocation_cost (void)
 static void
 check_allocation (void)
 {
-  ira_allocno_t a, conflict_a;
-  int hard_regno, conflict_hard_regno, nregs, conflict_nregs;
-  ira_allocno_conflict_iterator aci;
+  ira_allocno_t a;
+  int hard_regno, nregs, conflict_nregs;
   ira_allocno_iterator ai;
 
   FOR_EACH_ALLOCNO (a, ai)
     {
+      int n = ALLOCNO_NUM_OBJECTS (a);
+      int i;
+
       if (ALLOCNO_CAP_MEMBER (a) != NULL
 	  || (hard_regno = ALLOCNO_HARD_REGNO (a)) < 0)
 	continue;
       nregs = hard_regno_nregs[hard_regno][ALLOCNO_MODE (a)];
-      FOR_EACH_ALLOCNO_CONFLICT (a, conflict_a, aci)
-	if ((conflict_hard_regno = ALLOCNO_HARD_REGNO (conflict_a)) >= 0)
-	  {
-	    conflict_nregs
-	      = (hard_regno_nregs
-		 [conflict_hard_regno][ALLOCNO_MODE (conflict_a)]);
-	    if ((conflict_hard_regno <= hard_regno
-		 && hard_regno < conflict_hard_regno + conflict_nregs)
-		|| (hard_regno <= conflict_hard_regno
-		    && conflict_hard_regno < hard_regno + nregs))
-	      {
-		fprintf (stderr, "bad allocation for %d and %d\n",
-			 ALLOCNO_REGNO (a), ALLOCNO_REGNO (conflict_a));
-		gcc_unreachable ();
-	      }
-	  }
+      if (nregs == 1)
+	/* We allocated a single hard register.  */
+	n = 1;
+      else if (n > 1)
+	/* We allocated multiple hard registers, and we will test
+	   conflicts in a granularity of single hard regs.  */
+	nregs = 1;
+
+      for (i = 0; i < n; i++)
+	{
+	  ira_object_t obj = ALLOCNO_OBJECT (a, i);
+	  ira_object_t conflict_obj;
+	  ira_object_conflict_iterator oci;
+	  int this_regno = hard_regno;
+	  if (n > 1)
+	    {
+	      if (WORDS_BIG_ENDIAN)
+		this_regno += n - i - 1;
+	      else
+		this_regno += i;
+	    }
+	  FOR_EACH_OBJECT_CONFLICT (obj, conflict_obj, oci)
+	    {
+	      ira_allocno_t conflict_a = OBJECT_ALLOCNO (conflict_obj);
+	      int conflict_hard_regno = ALLOCNO_HARD_REGNO (conflict_a);
+	      if (conflict_hard_regno < 0)
+		continue;
+
+	      conflict_nregs
+		= (hard_regno_nregs
+		   [conflict_hard_regno][ALLOCNO_MODE (conflict_a)]);
+
+	      if (ALLOCNO_NUM_OBJECTS (conflict_a) > 1
+		  && conflict_nregs == ALLOCNO_NUM_OBJECTS (conflict_a))
+		{
+		  if (WORDS_BIG_ENDIAN)
+		    conflict_hard_regno += (ALLOCNO_NUM_OBJECTS (conflict_a)
+					    - OBJECT_SUBWORD (conflict_obj) - 1);
+		  else
+		    conflict_hard_regno += OBJECT_SUBWORD (conflict_obj);
+		  conflict_nregs = 1;
+		}
+
+	      if ((conflict_hard_regno <= this_regno
+		 && this_regno < conflict_hard_regno + conflict_nregs)
+		|| (this_regno <= conflict_hard_regno
+		    && conflict_hard_regno < this_regno + nregs))
+		{
+		  fprintf (stderr, "bad allocation for %d and %d\n",
+			   ALLOCNO_REGNO (a), ALLOCNO_REGNO (conflict_a));
+		  gcc_unreachable ();
+		}
+	    }
+	}
     }
 }
 #endif
@@ -2008,8 +1915,12 @@ validate_equiv_mem (rtx start, rtx reg, rtx memref)
       if (find_reg_note (insn, REG_DEAD, reg))
 	return 1;
 
-      if (CALL_P (insn) && ! MEM_READONLY_P (memref)
-	  && ! RTL_CONST_OR_PURE_CALL_P (insn))
+      /* This used to ignore readonly memory and const/pure calls.  The problem
+	 is the equivalent form may reference a pseudo which gets assigned a
+	 call clobbered hard reg.  When we later replace REG with its
+	 equivalent form, the value in the call-clobbered reg has been
+	 changed and all hell breaks loose.  */
+      if (CALL_P (insn))
 	return 0;
 
       note_stores (PATTERN (insn), validate_equiv_mem_from_store, NULL);
@@ -2454,7 +2365,7 @@ update_equiv_regs (void)
 	  if (!REG_P (dest)
 	      || (regno = REGNO (dest)) < FIRST_PSEUDO_REGISTER
 	      || reg_equiv[regno].init_insns == const0_rtx
-	      || (CLASS_LIKELY_SPILLED_P (reg_preferred_class (regno))
+	      || (targetm.class_likely_spilled_p (reg_preferred_class (regno))
 		  && MEM_P (src) && ! reg_equiv[regno].is_arg_equivalence))
 	    {
 	      /* This might be setting a SUBREG of a pseudo, a pseudo that is
@@ -2833,8 +2744,7 @@ pseudo_for_reload_consideration_p (int regno)
 {
   /* Consider spilled pseudos too for IRA because they still have a
      chance to get hard-registers in the reload when IRA is used.  */
-  return (reg_renumber[regno] >= 0
-	  || (ira_conflicts_p && flag_ira_share_spill_slots));
+  return (reg_renumber[regno] >= 0 || ira_conflicts_p);
 }
 
 /* Init LIVE_SUBREGS[ALLOCNUM] and LIVE_SUBREGS_USED[ALLOCNUM] using
@@ -3270,9 +3180,12 @@ ira (FILE *f)
   ira_assert (ira_conflicts_p || !loops_p);
 
   saved_flag_ira_share_spill_slots = flag_ira_share_spill_slots;
-  if (too_high_register_pressure_p ())
+  if (too_high_register_pressure_p () || cfun->calls_setjmp)
     /* It is just wasting compiler's time to pack spilled pseudos into
-       stack slots in this case -- prohibit it.  */
+       stack slots in this case -- prohibit it.  We also do this if
+       there is setjmp call because a variable not modified between
+       setjmp and longjmp the compiler is required to preserve its
+       value and sharing slots does not guarantee it.  */
     flag_ira_share_spill_slots = FALSE;
 
   ira_color ();

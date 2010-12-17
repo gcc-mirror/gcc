@@ -1,5 +1,6 @@
 /* PR target/13685 */
 /* { dg-options "-Os -msse" } */
+/* { dg-require-effective-target sse } */
 
 typedef float __m128 __attribute__ ((vector_size (16)));
 typedef int __m64 __attribute__ ((vector_size (8)));

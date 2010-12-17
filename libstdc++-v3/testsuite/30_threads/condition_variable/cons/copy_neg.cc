@@ -27,8 +27,7 @@ void test01()
 {
   // copy
   std::condition_variable c1;
-  std::condition_variable c2(c1);
+  std::condition_variable c2(c1); // { dg-error "deleted" }
 }
 
-// { dg-error "used here" "" { target *-*-* } 30 }
-// { dg-error "deleted function" "" { target *-*-* } 69 }
+// { dg-prune-output "include" }

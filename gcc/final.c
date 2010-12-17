@@ -62,11 +62,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "except.h"
 #include "function.h"
-#include "toplev.h"
+#include "rtl-error.h"
+#include "toplev.h" /* exact_log2, floor_log2 */
 #include "reload.h"
 #include "intl.h"
 #include "basic-block.h"
 #include "target.h"
+#include "targhooks.h"
 #include "debug.h"
 #include "expr.h"
 #include "cfglayout.h"
@@ -86,9 +88,7 @@ along with GCC; see the file COPYING3.  If not see
 				   declarations for e.g. AIX 4.x.  */
 #endif
 
-#if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
 #include "dwarf2out.h"
-#endif
 
 #ifdef DBX_DEBUGGING_INFO
 #include "dbxout.h"
@@ -98,8 +98,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "sdbout.h"
 #endif
 
-/* If we aren't using cc0, CC_STATUS_INIT shouldn't exist.  So define a
-   null default for it to save conditionalization later.  */
+/* Most ports that aren't using cc0 don't need to define CC_STATUS_INIT.
+   So define a null default for it to save conditionalization later.  */
 #ifndef CC_STATUS_INIT
 #define CC_STATUS_INIT
 #endif
@@ -498,33 +498,41 @@ get_attr_min_length (rtx insn)
 #define LABEL_ALIGN(LABEL) align_labels_log
 #endif
 
-#ifndef LABEL_ALIGN_MAX_SKIP
-#define LABEL_ALIGN_MAX_SKIP align_labels_max_skip
-#endif
-
 #ifndef LOOP_ALIGN
 #define LOOP_ALIGN(LABEL) align_loops_log
-#endif
-
-#ifndef LOOP_ALIGN_MAX_SKIP
-#define LOOP_ALIGN_MAX_SKIP align_loops_max_skip
 #endif
 
 #ifndef LABEL_ALIGN_AFTER_BARRIER
 #define LABEL_ALIGN_AFTER_BARRIER(LABEL) 0
 #endif
 
-#ifndef LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP
-#define LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP 0
-#endif
-
 #ifndef JUMP_ALIGN
 #define JUMP_ALIGN(LABEL) align_jumps_log
 #endif
 
-#ifndef JUMP_ALIGN_MAX_SKIP
-#define JUMP_ALIGN_MAX_SKIP align_jumps_max_skip
-#endif
+int
+default_label_align_after_barrier_max_skip (rtx insn ATTRIBUTE_UNUSED)
+{
+  return 0;
+}
+
+int
+default_loop_align_max_skip (rtx insn ATTRIBUTE_UNUSED)
+{
+  return align_loops_max_skip;
+}
+
+int
+default_label_align_max_skip (rtx insn ATTRIBUTE_UNUSED)
+{
+  return align_labels_max_skip;
+}
+
+int
+default_jump_align_max_skip (rtx insn ATTRIBUTE_UNUSED)
+{
+  return align_jumps_max_skip;
+}
 
 #ifndef ADDR_VEC_ALIGN
 static int
@@ -707,8 +715,8 @@ compute_alignments (void)
     {
       dump_flow_info (dump_file, TDF_DETAILS);
       flow_loops_dump (dump_file, NULL, 1);
-      loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
     }
+  loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
   FOR_EACH_BB (bb)
     if (bb->frequency > freq_max)
       freq_max = bb->frequency;
@@ -732,7 +740,7 @@ compute_alignments (void)
 	  continue;
 	}
       max_log = LABEL_ALIGN (label);
-      max_skip = LABEL_ALIGN_MAX_SKIP;
+      max_skip = targetm.asm_out.label_align_max_skip (label);
 
       FOR_EACH_EDGE (e, ei, bb->preds)
 	{
@@ -776,7 +784,7 @@ compute_alignments (void)
 	  if (max_log < log)
 	    {
 	      max_log = log;
-	      max_skip = JUMP_ALIGN_MAX_SKIP;
+	      max_skip = targetm.asm_out.jump_align_max_skip (label);
 	    }
 	}
       /* In case block is frequent and reached mostly by non-fallthru edge,
@@ -793,18 +801,15 @@ compute_alignments (void)
 	  if (max_log < log)
 	    {
 	      max_log = log;
-	      max_skip = LOOP_ALIGN_MAX_SKIP;
+	      max_skip = targetm.asm_out.loop_align_max_skip (label);
 	    }
 	}
       LABEL_TO_ALIGNMENT (label) = max_log;
       LABEL_TO_MAX_SKIP (label) = max_skip;
     }
 
-  if (dump_file)
-    {
-      loop_optimizer_finalize ();
-      free_dominance_info (CDI_DOMINATORS);
-    }
+  loop_optimizer_finalize ();
+  free_dominance_info (CDI_DOMINATORS);
   return 0;
 }
 
@@ -926,7 +931,7 @@ shorten_branches (rtx first ATTRIBUTE_UNUSED)
 	      if (max_log < log)
 		{
 		  max_log = log;
-		  max_skip = LABEL_ALIGN_MAX_SKIP;
+		  max_skip = targetm.asm_out.label_align_max_skip (insn);
 		}
 	    }
 	  /* ADDR_VECs only take room if read-only data goes into the text
@@ -939,7 +944,7 @@ shorten_branches (rtx first ATTRIBUTE_UNUSED)
 	      if (max_log < log)
 		{
 		  max_log = log;
-		  max_skip = LABEL_ALIGN_MAX_SKIP;
+		  max_skip = targetm.asm_out.label_align_max_skip (insn);
 		}
 	    }
 	  LABEL_TO_ALIGNMENT (insn) = max_log;
@@ -959,7 +964,7 @@ shorten_branches (rtx first ATTRIBUTE_UNUSED)
 		if (max_log < log)
 		  {
 		    max_log = log;
-		    max_skip = LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP;
+		    max_skip = targetm.asm_out.label_align_after_barrier_max_skip (label);
 		  }
 		break;
 	      }
@@ -1513,12 +1518,12 @@ dwarf2_debug_info_emitted_p (tree decl)
 
    FIRST is the first insn of the rtl for the function being compiled.
    FILE is the file to write assembler code to.
-   OPTIMIZE is nonzero if we should eliminate redundant
+   OPTIMIZE_P is nonzero if we should eliminate redundant
      test and compare insns.  */
 
 void
 final_start_function (rtx first ATTRIBUTE_UNUSED, FILE *file,
-		      int optimize ATTRIBUTE_UNUSED)
+		      int optimize_p ATTRIBUTE_UNUSED)
 {
   block_depth = 0;
 
@@ -1533,10 +1538,8 @@ final_start_function (rtx first ATTRIBUTE_UNUSED, FILE *file,
   if (!DECL_IGNORED_P (current_function_decl))
     debug_hooks->begin_prologue (last_linenum, last_filename);
 
-#if defined (DWARF2_UNWIND_INFO) || defined (TARGET_UNWIND_INFO)
   if (!dwarf2_debug_info_emitted_p (current_function_decl))
     dwarf2out_begin_prologue (0, NULL);
-#endif
 
 #ifdef LEAF_REG_REMAP
   if (current_function_uses_only_leaf_regs)
@@ -1545,12 +1548,10 @@ final_start_function (rtx first ATTRIBUTE_UNUSED, FILE *file,
 
   /* The Sun386i and perhaps other machines don't work right
      if the profiling code comes after the prologue.  */
-#ifdef PROFILE_BEFORE_PROLOGUE
-  if (crtl->profile)
+  if (targetm.profile_before_prologue () && crtl->profile)
     profile_function (file);
-#endif /* PROFILE_BEFORE_PROLOGUE */
 
-#if defined (DWARF2_UNWIND_INFO) && defined (HAVE_prologue)
+#if defined (HAVE_prologue)
   if (dwarf2out_do_frame ())
     dwarf2out_frame_debug (NULL_RTX, false);
 #endif
@@ -1590,10 +1591,8 @@ final_start_function (rtx first ATTRIBUTE_UNUSED, FILE *file,
 static void
 profile_after_prologue (FILE *file ATTRIBUTE_UNUSED)
 {
-#ifndef PROFILE_BEFORE_PROLOGUE
-  if (crtl->profile)
+  if (!targetm.profile_before_prologue () && crtl->profile)
     profile_function (file);
-#endif /* not PROFILE_BEFORE_PROLOGUE */
 }
 
 static void
@@ -1660,18 +1659,16 @@ final_end_function (void)
   if (!DECL_IGNORED_P (current_function_decl))
     debug_hooks->end_epilogue (last_linenum, last_filename);
 
-#if defined (DWARF2_UNWIND_INFO)
   if (!dwarf2_debug_info_emitted_p (current_function_decl)
       && dwarf2out_do_frame ())
     dwarf2out_end_epilogue (last_linenum, last_filename);
-#endif
 }
 
 /* Output assembler code for some insns: all or part of a function.
    For description of args, see `final_start_function', above.  */
 
 void
-final (rtx first, FILE *file, int optimize)
+final (rtx first, FILE *file, int optimize_p)
 {
   rtx insn;
   int max_uid = 0;
@@ -1686,7 +1683,7 @@ final (rtx first, FILE *file, int optimize)
 #ifdef HAVE_cc0
       /* If CC tracking across branches is enabled, record the insn which
 	 jumps to each branch only reached from one place.  */
-      if (optimize && JUMP_P (insn))
+      if (optimize_p && JUMP_P (insn))
 	{
 	  rtx lab = JUMP_LABEL (insn);
 	  if (lab && LABEL_NUSES (lab) == 1)
@@ -1716,7 +1713,7 @@ final (rtx first, FILE *file, int optimize)
 	insn_current_address = INSN_ADDRESSES (INSN_UID (insn));
 #endif /* HAVE_ATTR_length */
 
-      insn = final_scan_insn (insn, file, optimize, 0, &seen);
+      insn = final_scan_insn (insn, file, optimize_p, 0, &seen);
     }
 }
 
@@ -1812,7 +1809,7 @@ call_from_call_insn (rtx insn)
    first.  */
 
 rtx
-final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
+final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 		 int nopeepholes ATTRIBUTE_UNUSED, int *seen)
 {
 #ifdef HAVE_cc0
@@ -1837,21 +1834,18 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 
 	case NOTE_INSN_SWITCH_TEXT_SECTIONS:
 	  in_cold_section_p = !in_cold_section_p;
-#ifdef DWARF2_UNWIND_INFO
+
 	  if (dwarf2out_do_frame ())
 	    dwarf2out_switch_text_section ();
-	  else
-#endif
-	  if (!DECL_IGNORED_P (current_function_decl))
+	  else if (!DECL_IGNORED_P (current_function_decl))
 	    debug_hooks->switch_text_section ();
 
 	  switch_to_section (current_function_section ());
 	  break;
 
 	case NOTE_INSN_BASIC_BLOCK:
-#ifdef TARGET_UNWIND_INFO
-	  targetm.asm_out.unwind_emit (asm_out_file, insn);
-#endif
+	  if (targetm.asm_out.unwind_emit)
+	    targetm.asm_out.unwind_emit (asm_out_file, insn);
 
 	  if (flag_debug_asm)
 	    fprintf (asm_out_file, "\t%s basic block %d\n",
@@ -1894,7 +1888,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	  break;
 
 	case NOTE_INSN_EPILOGUE_BEG:
-#if defined (DWARF2_UNWIND_INFO) && defined (HAVE_epilogue)
+#if defined (HAVE_epilogue)
 	  if (dwarf2out_do_frame ())
 	    dwarf2out_cfi_begin_epilogue (insn);
 #endif
@@ -1903,9 +1897,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	  break;
 
 	case NOTE_INSN_CFA_RESTORE_STATE:
-#if defined (DWARF2_UNWIND_INFO)
 	  dwarf2out_frame_debug_restore_state ();
-#endif
 	  break;
 
 	case NOTE_INSN_FUNCTION_BEG:
@@ -2014,10 +2006,8 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
       break;
 
     case BARRIER:
-#if defined (DWARF2_UNWIND_INFO)
       if (dwarf2out_do_frame ())
 	dwarf2out_frame_debug (insn, false);
-#endif
       break;
 
     case CODE_LABEL:
@@ -2043,9 +2033,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 #endif
 	    }
 	}
-#ifdef HAVE_cc0
       CC_STATUS_INIT;
-#endif
 
       if (!DECL_IGNORED_P (current_function_decl) && LABEL_NAME (insn))
 	debug_hooks->label (insn);
@@ -2287,11 +2275,9 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 
 	    /* Record the delay slots' frame information before the branch.
 	       This is needed for delayed calls: see execute_cfa_program().  */
-#if defined (DWARF2_UNWIND_INFO)
 	    if (dwarf2out_do_frame ())
 	      for (i = 1; i < XVECLEN (body, 0); i++)
 		dwarf2out_frame_debug (XVECEXP (body, 0, i), false);
-#endif
 
 	    /* The first insn in this SEQUENCE might be a JUMP_INSN that will
 	       force the restoration of a comparison that was previously
@@ -2347,7 +2333,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	   and the next statement should reexamine the variable
 	   to compute the condition codes.  */
 
-	if (optimize)
+	if (optimize_p)
 	  {
 	    if (set
 		&& GET_CODE (SET_DEST (set)) == CC0
@@ -2532,7 +2518,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 #ifdef HAVE_peephole
 	/* Do machine-specific peephole optimizations if desired.  */
 
-	if (optimize && !flag_no_peephole && !nopeepholes)
+	if (optimize_p && !flag_no_peephole && !nopeepholes)
 	  {
 	    rtx next = peephole (insn);
 	    /* When peepholing, if there were notes within the peephole,
@@ -2543,7 +2529,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 
 		for (note = NEXT_INSN (insn); note != next;
 		     note = NEXT_INSN (note))
-		  final_scan_insn (note, file, optimize, nopeepholes, seen);
+		  final_scan_insn (note, file, optimize_p, nopeepholes, seen);
 
 		/* Put the notes in the proper position for a later
 		   rescan.  For example, the SH target can do this
@@ -2606,10 +2592,8 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 
 	current_output_insn = debug_insn = insn;
 
-#if defined (DWARF2_UNWIND_INFO)
 	if (CALL_P (insn) && dwarf2out_do_frame ())
 	  dwarf2out_frame_debug (insn, false);
-#endif
 
 	/* Find the proper template for this insn.  */
 	templ = get_insn_template (insn_code_number, insn);
@@ -2658,12 +2642,12 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	    return new_rtx;
 	  }
 
-#ifdef TARGET_UNWIND_INFO
 	/* ??? This will put the directives in the wrong place if
 	   get_insn_template outputs assembly directly.  However calling it
 	   before get_insn_template breaks if the insns is split.  */
-	targetm.asm_out.unwind_emit (asm_out_file, insn);
-#endif
+	if (targetm.asm_out.unwind_emit_before_insn
+	    && targetm.asm_out.unwind_emit)
+	  targetm.asm_out.unwind_emit (asm_out_file, insn);
 
 	if (CALL_P (insn))
 	  {
@@ -2711,14 +2695,16 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	/* If necessary, report the effect that the instruction has on
 	   the unwind info.   We've already done this for delay slots
 	   and call instructions.  */
-#if defined (DWARF2_UNWIND_INFO)
 	if (final_sequence == 0
 #if !defined (HAVE_prologue)
 	    && !ACCUMULATE_OUTGOING_ARGS
 #endif
 	    && dwarf2out_do_frame ())
 	  dwarf2out_frame_debug (insn, true);
-#endif
+
+	if (!targetm.asm_out.unwind_emit_before_insn
+	    && targetm.asm_out.unwind_emit)
+	  targetm.asm_out.unwind_emit (asm_out_file, insn);
 
 	current_output_insn = debug_insn = 0;
       }
@@ -3627,12 +3613,9 @@ output_addr_const (FILE *file, rtx x)
       break;
 
     default:
-#ifdef OUTPUT_ADDR_CONST_EXTRA
-      OUTPUT_ADDR_CONST_EXTRA (file, x, fail);
-      break;
+      if (targetm.asm_out.output_addr_const_extra (file, x))
+	break;
 
-    fail:
-#endif
       output_operand_lossage ("invalid expression as operand");
     }
 }
@@ -3824,10 +3807,11 @@ split_double (rtx value, rtx *first, rtx *second)
 	     Sign extend each half to HOST_WIDE_INT.  */
 	  unsigned HOST_WIDE_INT low, high;
 	  unsigned HOST_WIDE_INT mask, sign_bit, sign_extend;
+	  unsigned bits_per_word = BITS_PER_WORD;
 
 	  /* Set sign_bit to the most significant bit of a word.  */
 	  sign_bit = 1;
-	  sign_bit <<= BITS_PER_WORD - 1;
+	  sign_bit <<= bits_per_word - 1;
 
 	  /* Set mask so that all bits of the word are set.  We could
 	     have used 1 << BITS_PER_WORD instead of basing the
@@ -3850,7 +3834,7 @@ split_double (rtx value, rtx *first, rtx *second)
 	  /* Pick the higher word, shifted to the least significant
 	     bits, and sign-extend it.  */
 	  high = INTVAL (value);
-	  high >>= BITS_PER_WORD - 1;
+	  high >>= bits_per_word - 1;
 	  high >>= 1;
 	  high &= mask;
 	  if (high & sign_bit)
@@ -4245,18 +4229,12 @@ rest_of_handle_final (void)
   final (get_insns (), asm_out_file, optimize);
   final_end_function ();
 
-#ifdef TARGET_UNWIND_INFO
-  /* ??? The IA-64 ".handlerdata" directive must be issued before
-     the ".endp" directive that closes the procedure descriptor.  */
+  /* The IA-64 ".handlerdata" directive must be issued before the ".endp"
+     directive that closes the procedure descriptor.  Similarly, for x64 SEH.
+     Otherwise it's not strictly necessary, but it doesn't hurt either.  */
   output_function_exception_table (fnname);
-#endif
 
   assemble_end_function (current_function_decl, fnname);
-
-#ifndef TARGET_UNWIND_INFO
-  /* Otherwise, it feels unclean to switch sections in the middle.  */
-  output_function_exception_table (fnname);
-#endif
 
   user_defined_section_attribute = false;
 
@@ -4452,7 +4430,10 @@ rest_of_clean_state (void)
 
   delete_tree_ssa ();
 
-  if (targetm.binds_local_p (current_function_decl))
+  /* We can reduce stack alignment on call site only when we are sure that
+     the function body just produced will be actually used in the final
+     executable.  */
+  if (decl_binds_to_current_def_p (current_function_decl))
     {
       unsigned int pref = crtl->preferred_stack_boundary;
       if (crtl->stack_alignment_needed > crtl->preferred_stack_boundary)

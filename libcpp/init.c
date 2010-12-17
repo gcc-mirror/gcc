@@ -160,8 +160,8 @@ cpp_create_reader (enum c_lang lang, hash_table *table,
   CPP_OPTION (pfile, operator_names) = 1;
   CPP_OPTION (pfile, warn_trigraphs) = 2;
   CPP_OPTION (pfile, warn_endif_labels) = 1;
-  CPP_OPTION (pfile, warn_deprecated) = 1;
-  CPP_OPTION (pfile, warn_long_long) = 0;
+  CPP_OPTION (pfile, cpp_warn_deprecated) = 1;
+  CPP_OPTION (pfile, cpp_warn_long_long) = 0;
   CPP_OPTION (pfile, dollars_in_ident) = 1;
   CPP_OPTION (pfile, warn_dollars) = 1;
   CPP_OPTION (pfile, warn_variadic_macros) = 1;
@@ -323,7 +323,7 @@ cpp_destroy (cpp_reader *pfile)
    "builtin" macros: these are handled by builtin_macro() in
    macro.c.  Builtin is somewhat of a misnomer -- the property of
    interest is that these macros require special code to compute their
-   expansions.  The value is a "builtin_type" enumerator.
+   expansions.  The value is a "cpp_builtin_type" enumerator.
 
    operator_array holds the C++ named operators.  These are keywords
    which act as aliases for punctuators.  In C++, they cannot be
@@ -698,7 +698,7 @@ post_options (cpp_reader *pfile)
 {
   /* -Wtraditional is not useful in C++ mode.  */
   if (CPP_OPTION (pfile, cplusplus))
-    CPP_OPTION (pfile, warn_traditional) = 0;
+    CPP_OPTION (pfile, cpp_warn_traditional) = 0;
 
   /* Permanently disable macro expansion if we are rescanning
      preprocessed text.  Read preprocesed source in ISO mode.  */

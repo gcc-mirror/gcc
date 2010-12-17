@@ -1,5 +1,5 @@
 ;;  Machine description the Motorola MCore
-;;  Copyright (C) 1993, 1999, 2000, 2004, 2005, 2007
+;;  Copyright (C) 1993, 1999, 2000, 2004, 2005, 2007, 2009, 2010
 ;;  Free Software Foundation, Inc.
 ;;  Contributed by Motorola.
 
@@ -697,8 +697,6 @@
   ""
   "
 {
-  extern int flag_omit_frame_pointer;
-
   /* If this is an add to the frame pointer, then accept it as is so
      that we can later fold in the fp/sp offset from frame pointer
      elimination.  */

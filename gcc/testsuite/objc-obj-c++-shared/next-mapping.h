@@ -19,6 +19,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* Force a definition of nil that is compatible with GNU runtime.  */
+#undef  nil
+#define nil ((id)0)
+
 #define objc_get_class(C) objc_getClass(C)
 #define objc_get_meta_class(C) objc_getMetaClass(C)
 #define class_get_class_method(C, S) class_getClassMethod(C, S)

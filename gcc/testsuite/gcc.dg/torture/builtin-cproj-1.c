@@ -6,6 +6,7 @@
    Origin: Kaveh R. Ghazi,  April 9, 2010.  */
 
 /* { dg-do link } */
+/* { dg-add-options ieee } */
 
 /* All references to link_error should go away at compile-time.  The
    argument is the __LINE__ number.  It appears in the tree dump file

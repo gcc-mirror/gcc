@@ -16,7 +16,6 @@ extern "Java"
       namespace stream
       {
           class XMLEventWriter;
-          class XMLInputFactory;
           class XMLOutputFactory;
           class XMLStreamWriter;
       }
@@ -35,10 +34,10 @@ public: // actually protected
   XMLOutputFactory();
 public:
   static ::javax::xml::stream::XMLOutputFactory * newInstance();
+  static ::javax::xml::stream::XMLOutputFactory * newInstance(::java::lang::String *, ::java::lang::ClassLoader *);
 private:
   static ::java::lang::String * getFactoryClassName(::java::lang::ClassLoader *, jint);
 public:
-  static ::javax::xml::stream::XMLInputFactory * newInstance(::java::lang::String *, ::java::lang::ClassLoader *);
   virtual ::javax::xml::stream::XMLStreamWriter * createXMLStreamWriter(::java::io::Writer *) = 0;
   virtual ::javax::xml::stream::XMLStreamWriter * createXMLStreamWriter(::java::io::OutputStream *) = 0;
   virtual ::javax::xml::stream::XMLStreamWriter * createXMLStreamWriter(::java::io::OutputStream *, ::java::lang::String *) = 0;

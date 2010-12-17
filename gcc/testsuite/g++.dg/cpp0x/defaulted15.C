@@ -1,6 +1,8 @@
 // PR c++/38796
 // { dg-options -std=c++0x }
 
+#define SA(X) static_assert ((X), #X)
+
 struct A
 {
   A (int);
@@ -11,25 +13,33 @@ struct A
 struct B
 {
 private:
-  B() = default;		// { dg-error "access" }
+  B() = default;
 };
+
+SA(__has_trivial_constructor(B));
 
 struct C
 {
 protected:
-  ~C() = default;		// { dg-error "access" }
+  ~C() = default;
 };
+
+SA(__has_trivial_destructor(C));
 
 struct D
 {
 private:
-  D& operator= (const D&) = default; // { dg-error "access" }
+  D& operator= (const D&) = default;
 };
+
+SA(__has_trivial_assign(D));
 
 struct E
 {
-  explicit E (const E&) = default; // { dg-error "explicit" }
+  explicit E (const E&) = default;
 };
+
+SA(__has_trivial_copy(E));
 
 struct F
 {

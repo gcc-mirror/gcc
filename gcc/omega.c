@@ -2213,7 +2213,6 @@ omega_eliminate_redundant (omega_pb pb, bool expensive)
 			  || pb->geqs[e3].color == omega_red)
 			goto nextE3;
 
-		      alpha3 = alpha3;
 		      /* verify alpha1*v1+alpha2*v2 = alpha3*v3 */
 		      for (k = pb->num_vars; k >= 1; k--)
 			if (alpha3 * pb->geqs[e3].coef[k]

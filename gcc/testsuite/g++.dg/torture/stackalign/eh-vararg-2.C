@@ -1,3 +1,4 @@
+/* { dg-options "-Wno-abi" {target arm_eabi} } */
 /* { dg-do run } */
 
 #include <stdarg.h>

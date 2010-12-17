@@ -48,8 +48,8 @@
 
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   /**
    * @defgroup mutexes Mutexes
    * @ingroup concurrency
@@ -67,16 +67,17 @@ namespace std
   public:
     typedef __native_type* 			native_handle_type;
 
+#ifdef __GTHREAD_MUTEX_INIT
+    constexpr mutex() : _M_mutex(__GTHREAD_MUTEX_INIT) { }
+#else
     mutex()
     {
       // XXX EAGAIN, ENOMEM, EPERM, EBUSY(may), EINVAL(may)
-#ifdef __GTHREAD_MUTEX_INIT
-      __native_type __tmp = __GTHREAD_MUTEX_INIT;
-      _M_mutex = __tmp;
-#else
       __GTHREAD_MUTEX_INIT_FUNCTION(&_M_mutex);
-#endif
     }
+
+    ~mutex() { __gthread_mutex_destroy(&_M_mutex); }
+#endif
 
     mutex(const mutex&) = delete;
     mutex& operator=(const mutex&) = delete;
@@ -110,6 +111,45 @@ namespace std
     { return &_M_mutex; }
   };
 
+#ifndef __GTHREAD_RECURSIVE_MUTEX_INIT
+  // FIXME: gthreads doesn't define __gthread_recursive_mutex_destroy
+  // so we need to obtain a __gthread_mutex_t to destroy
+  class __destroy_recursive_mutex
+  {
+    template<typename _Mx, typename _Rm>
+      static void
+      _S_destroy_win32(_Mx* __mx, _Rm const* __rmx)
+      {
+        __mx->counter = __rmx->counter;
+        __mx->sema = __rmx->sema;
+        __gthread_mutex_destroy(__mx);
+      }
+
+  public:
+    // matches a gthr-win32.h recursive mutex
+    template<typename _Rm>
+      static typename enable_if<sizeof(&_Rm::sema), void>::type
+      _S_destroy(_Rm* __mx)
+      {
+        __gthread_mutex_t __tmp;
+        _S_destroy_win32(&__tmp, __mx);
+      }
+
+    // matches a recursive mutex with a member 'actual'
+    template<typename _Rm>
+      static typename enable_if<sizeof(&_Rm::actual), void>::type
+      _S_destroy(_Rm* __mx)
+      { __gthread_mutex_destroy(&__mx->actual); }
+
+    // matches when there's only one mutex type
+    template<typename _Rm>
+      static
+      typename enable_if<is_same<_Rm, __gthread_mutex_t>::value, void>::type
+      _S_destroy(_Rm* __mx)
+      { __gthread_mutex_destroy(__mx); }
+  };
+#endif
+
   /// recursive_mutex
   class recursive_mutex
   {
@@ -119,16 +159,18 @@ namespace std
   public:
     typedef __native_type* 			native_handle_type;
 
+#ifdef __GTHREAD_RECURSIVE_MUTEX_INIT
+    recursive_mutex() : _M_mutex(__GTHREAD_RECURSIVE_MUTEX_INIT) { }
+#else
     recursive_mutex()
     {
       // XXX EAGAIN, ENOMEM, EPERM, EBUSY(may), EINVAL(may)
-#ifdef __GTHREAD_RECURSIVE_MUTEX_INIT
-      __native_type __tmp = __GTHREAD_RECURSIVE_MUTEX_INIT;
-      _M_mutex = __tmp;
-#else
       __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION(&_M_mutex);
-#endif
     }
+
+    ~recursive_mutex()
+    { __destroy_recursive_mutex::_S_destroy(&_M_mutex); }
+#endif
 
     recursive_mutex(const recursive_mutex&) = delete;
     recursive_mutex& operator=(const recursive_mutex&) = delete;
@@ -178,15 +220,16 @@ namespace std
   public:
     typedef __native_type* 		  	native_handle_type;
 
+#ifdef __GTHREAD_MUTEX_INIT
+    timed_mutex() : _M_mutex(__GTHREAD_MUTEX_INIT) { }
+#else
     timed_mutex()
     {
-#ifdef __GTHREAD_MUTEX_INIT
-      __native_type __tmp = __GTHREAD_MUTEX_INIT;
-      _M_mutex = __tmp;
-#else
       __GTHREAD_MUTEX_INIT_FUNCTION(&_M_mutex);
-#endif
     }
+
+    ~timed_mutex() { __gthread_mutex_destroy(&_M_mutex); }
+#endif
 
     timed_mutex(const timed_mutex&) = delete;
     timed_mutex& operator=(const timed_mutex&) = delete;
@@ -282,16 +325,18 @@ namespace std
   public:
     typedef __native_type* 			native_handle_type;
 
+#ifdef __GTHREAD_RECURSIVE_MUTEX_INIT
+    recursive_timed_mutex() : _M_mutex(__GTHREAD_RECURSIVE_MUTEX_INIT) { }
+#else
     recursive_timed_mutex()
     {
       // XXX EAGAIN, ENOMEM, EPERM, EBUSY(may), EINVAL(may)
-#ifdef __GTHREAD_RECURSIVE_MUTEX_INIT
-      __native_type __tmp = __GTHREAD_RECURSIVE_MUTEX_INIT;
-      _M_mutex = __tmp;
-#else
       __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION(&_M_mutex);
-#endif
     }
+
+    ~recursive_timed_mutex()
+    { __destroy_recursive_mutex::_S_destroy(&_M_mutex); }
+#endif
 
     recursive_timed_mutex(const recursive_timed_mutex&) = delete;
     recursive_timed_mutex& operator=(const recursive_timed_mutex&) = delete;
@@ -381,9 +426,9 @@ namespace std
   /// and manage it.
   struct adopt_lock_t { };
 
-  extern const defer_lock_t	defer_lock;
-  extern const try_to_lock_t	try_to_lock;
-  extern const adopt_lock_t	adopt_lock;
+  constexpr defer_lock_t	defer_lock { };
+  constexpr try_to_lock_t	try_to_lock { };
+  constexpr adopt_lock_t	adopt_lock { };
 
   /// @brief  Scoped lock idiom.
   // Acquire the mutex here with a constructor call, then release with
@@ -679,18 +724,14 @@ namespace std
     __native_type  _M_once;
 
   public:
-    once_flag()
-    {
-      __native_type __tmp = __GTHREAD_ONCE_INIT;
-      _M_once = __tmp;
-    }
+    constexpr once_flag() : _M_once(__GTHREAD_ONCE_INIT) { }
 
     once_flag(const once_flag&) = delete;
     once_flag& operator=(const once_flag&) = delete;
 
     template<typename _Callable, typename... _Args>
       friend void
-      call_once(once_flag& __once, _Callable __f, _Args&&... __args);
+      call_once(once_flag& __once, _Callable&& __f, _Args&&... __args);
   };
 
 #ifdef _GLIBCXX_HAVE_TLS
@@ -718,15 +759,17 @@ namespace std
   /// call_once
   template<typename _Callable, typename... _Args>
     void
-    call_once(once_flag& __once, _Callable __f, _Args&&... __args)
+    call_once(once_flag& __once, _Callable&& __f, _Args&&... __args)
     {
 #ifdef _GLIBCXX_HAVE_TLS
-      auto __bound_functor = std::bind<void>(__f, __args...);
+      auto __bound_functor = std::bind<void>(std::forward<_Callable>(__f),
+          std::forward<_Args>(__args)...);
       __once_callable = &__bound_functor;
       __once_call = &__once_call_impl<decltype(__bound_functor)>;
 #else
       unique_lock<mutex> __functor_lock(__get_once_mutex());
-      __once_functor = std::bind<void>(__f, __args...);
+      __once_functor = std::bind<void>(std::forward<_Callable>(__f),
+          std::forward<_Args>(__args)...);
       __set_once_functor_lock_ptr(&__functor_lock);
 #endif
 
@@ -742,7 +785,7 @@ namespace std
     }
 
   // @} group mutexes
-}
+_GLIBCXX_END_NAMESPACE
 
 #endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1
 

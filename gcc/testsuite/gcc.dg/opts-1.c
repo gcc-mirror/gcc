@@ -5,5 +5,5 @@
 /* { dg-error "-fno-abi-version" "-fno-abi-version" { target *-*-* } 0 } */
 /* { dg-error "-fno-lto-compression-level" "-fno-lto-compression-level" { target *-*-* } 0 } */
 /* { dg-error "-fno-tree-parallelize-loops" "-fno-tree-parallelize-loops" { target *-*-* } 0 } */
-/* { dg-warning "-Wno-strict-overflow" "-Wno-strict-overflow" { target *-*-* } 0 } */
-/* { dg-warning "-Wno-strict-aliasing" "-Wno-strict-aliasing" { target *-*-* } 0 } */
+/* { dg-error "-Wno-strict-overflow" "-Wno-strict-overflow" { target *-*-* } 0 } */
+/* { dg-error "-Wno-strict-aliasing" "-Wno-strict-aliasing" { target *-*-* } 0 } */

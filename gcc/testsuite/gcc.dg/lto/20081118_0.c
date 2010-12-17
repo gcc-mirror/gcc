@@ -1,4 +1,4 @@
-/* { dg-lto-options {{-O2 -DOPTIMIZE -fwhopr} {-O0 -fwhopr}} } */
+/* { dg-lto-options {{-O2 -DOPTIMIZE -flto -flto-partition=1to1} {-O0 -flto -flto-partition=1to1}} } */
 
 extern void abort (void);
 extern int f (void);

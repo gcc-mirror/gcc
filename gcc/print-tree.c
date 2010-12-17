@@ -445,6 +445,8 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 
       if (code == VAR_DECL && DECL_IN_TEXT_SECTION (node))
 	fputs (" in-text-section", file);
+      if (code == VAR_DECL && DECL_IN_CONSTANT_POOL (node))
+	fputs (" in-constant-pool", file);
       if (code == VAR_DECL && DECL_COMMON (node))
 	fputs (" common", file);
       if (code == VAR_DECL && DECL_THREAD_LOCAL_P (node))
@@ -1017,7 +1019,7 @@ print_vec_tree (FILE *file, const char *prefix, VEC(tree,gc) *vec, int indent)
   fprintf (file, "%s <VEC", prefix);
   dump_addr (file, " ", vec);
 
-  for (ix = 0; VEC_iterate (tree, vec, ix, elt); ++ix)
+  FOR_EACH_VEC_ELT (tree, vec, ix, elt)
     {
       char temp[10];
       sprintf (temp, "elt %d", ix);

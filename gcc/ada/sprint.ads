@@ -76,7 +76,7 @@ package Sprint is
    --    Push exception label                %push_xxx_exception_label (label)
    --    Raise xxx error                     [xxx_error [when cond]]
    --    Raise xxx error with msg            [xxx_error [when cond], "msg"]
-   --    Rational literal                    See UR_Write for details
+   --    Rational literal                    [expression]
    --    Rem wi Treat_Fixed_As_Integer       x #rem y
    --    Reference                           expression'reference
    --    Shift nodes                         shift_name!(expr, count)

@@ -1,21 +1,23 @@
-<appendix id="appendix.gfdl-1.3">
+<appendix xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	  xml:id="appendix.gfdl-1.3">
+<info><title>GNU Free Documentation License</title></info>
   <?dbhtml filename="appendix_gfdl.html"?>
-  <title>GNU Free Documentation License</title>
+  
   <simpara>Version 1.3, 3 November 2008</simpara>
   <simpara>
-    Copyright &#169; 2000, 2001, 2002, 2007, 2008
-    <ulink url="http://www.fsf.org/">Free Software Foundation, Inc.</ulink>
+    Copyright © 2000, 2001, 2002, 2007, 2008
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.fsf.org/">Free Software Foundation, Inc.</link>
   </simpara>
   <simpara>
     Everyone is permitted to copy and distribute verbatim copies of this
     license document, but changing it is not allowed.
   </simpara>
-  <bridgehead id="fdl-1-section0" renderas="sect2">
+  <bridgehead xml:id="fdl-1-section0" renderas="sect2">
     0. PREAMBLE
   </bridgehead>
   <simpara>
     The purpose of this License is to make a manual, textbook, or other
-    functional and useful document &#8220;free&#8221; in the sense of freedom:
+    functional and useful document “free” in the sense of freedom:
     to assure everyone the effective freedom to copy and redistribute it, with
     or without modifying it, either commercially or
     noncommercially. Secondarily, this License preserves for the author and
@@ -23,7 +25,7 @@
     responsible for modifications made by others.
   </simpara>
   <simpara>
-    This License is a kind of &#8220;copyleft&#8221;, which means that
+    This License is a kind of “copyleft”, which means that
     derivative works of the document must themselves be free in the same
     sense. It complements the GNU General Public License, which is a copyleft
     license designed for free software.
@@ -37,7 +39,7 @@
     published as a printed book. We recommend this License principally for
     works whose purpose is instruction or reference.
   </simpara>
-  <bridgehead id="fdl-1-section1" renderas="sect2">
+  <bridgehead xml:id="fdl-1-section1" renderas="sect2">
     1. APPLICABILITY AND DEFINITIONS
   </bridgehead>
   <simpara>
@@ -45,21 +47,21 @@
     contains a notice placed by the copyright holder saying it can be
     distributed under the terms of this License. Such a notice grants a
     world-wide, royalty-free license, unlimited in duration, to use that work
-    under the conditions stated herein. The &#8220;Document&#8221;, below,
+    under the conditions stated herein. The “Document”, below,
     refers to any such manual or work. Any member of the public is a licensee,
-    and is addressed as &#8220;you&#8221;. You accept the license if you copy,
+    and is addressed as “you”. You accept the license if you copy,
     modify or distribute the work in a way requiring permission under
     copyright law.
   </simpara>
   <simpara>
-    A &#8220;Modified Version&#8221; of the Document means any work containing
+    A “Modified Version” of the Document means any work containing
     the Document or a portion of it, either copied verbatim, or with
     modifications and/or translated into another language.
   </simpara>
   <simpara>
-    A &#8220;Secondary Section&#8221; is a named appendix or a front-matter
+    A “Secondary Section” is a named appendix or a front-matter
     section of the Document that deals exclusively with the relationship of
-    the publishers or authors of the Document to the Document&#x2019;s overall
+    the publishers or authors of the Document to the Document’s overall
     subject (or to related matters) and contains nothing that could fall
     directly within that overall subject. (Thus, if the Document is in part a
     textbook of mathematics, a Secondary Section may not explain any
@@ -68,7 +70,7 @@
     philosophical, ethical or political position regarding them.
   </simpara>
   <simpara>
-    The &#8220;Invariant Sections&#8221; are certain Secondary Sections whose
+    The “Invariant Sections” are certain Secondary Sections whose
     titles are designated, as being those of Invariant Sections, in the notice
     that says that the Document is released under this License. If a section
     does not fit the above definition of Secondary then it is not allowed to
@@ -77,13 +79,13 @@
     there are none.
   </simpara>
   <simpara>
-    The &#8220;Cover Texts&#8221; are certain short passages of text that are
+    The “Cover Texts” are certain short passages of text that are
     listed, as Front-Cover Texts or Back-Cover Texts, in the notice that says
     that the Document is released under this License. A Front-Cover Text may
     be at most 5 words, and a Back-Cover Text may be at most 25 words.
   </simpara>
   <simpara>
-    A &#8220;Transparent&#8221; copy of the Document means a machine-readable
+    A “Transparent” copy of the Document means a machine-readable
     copy, represented in a format whose specification is available to the
     general public, that is suitable for revising the document
     straightforwardly with generic text editors or (for images composed of
@@ -94,7 +96,7 @@
     markup, or absence of markup, has been arranged to thwart or discourage
     subsequent modification by readers is not Transparent. An image format is
     not Transparent if used for any substantial amount of text. A copy that is
-    not &#8220;Transparent&#8221; is called &#8220;Opaque&#8221;.
+    not “Transparent” is called “Opaque”.
   </simpara>
   <simpara>
     Examples of suitable formats for Transparent copies include plain ASCII
@@ -108,26 +110,26 @@
     some word processors for output purposes only.
   </simpara>
   <simpara>
-    The &#8220;Title Page&#8221; means, for a printed book, the title page
+    The “Title Page” means, for a printed book, the title page
     itself, plus such following pages as are needed to hold, legibly, the
     material this License requires to appear in the title page. For works in
-    formats which do not have any title page as such, &#8220;Title Page&#8221;
-    means the text near the most prominent appearance of the work&#x2019;s
+    formats which do not have any title page as such, “Title Page”
+    means the text near the most prominent appearance of the work’s
     title, preceding the beginning of the body of the text.
   </simpara>
   <simpara>
-    The &#8220;publisher&#8221; means any person or entity that distributes
+    The “publisher” means any person or entity that distributes
     copies of the Document to the public.
   </simpara>
   <simpara>
-    A section &#8220;Entitled XYZ&#8221; means a named subunit of the Document
+    A section “Entitled XYZ” means a named subunit of the Document
     whose title either is precisely XYZ or contains XYZ in parentheses
     following text that translates XYZ in another language. (Here XYZ stands
     for a specific section name mentioned below, such as
-    &#8220;Acknowledgements&#8221;, &#8220;Dedications&#8221;,
-    &#8220;Endorsements&#8221;, or &#8220;History&#8221;.) To &#8220;Preserve
-    the Title&#8221; of such a section when you modify the Document means that
-    it remains a section &#8220;Entitled XYZ&#8221; according to this
+    “Acknowledgements”, “Dedications”,
+    “Endorsements”, or “History”.) To “Preserve
+    the Title” of such a section when you modify the Document means that
+    it remains a section “Entitled XYZ” according to this
     definition.
   </simpara>
   <simpara>
@@ -138,7 +140,7 @@
     these Warranty Disclaimers may have is void and has no effect on the
     meaning of this License.
   </simpara>
-  <bridgehead id="fdl-1-section2" renderas="sect2">
+  <bridgehead xml:id="fdl-1-section2" renderas="sect2">
     2. VERBATIM COPYING
   </bridgehead>
   <simpara>
@@ -156,13 +158,13 @@
     You may also lend copies, under the same conditions stated above, and you
     may publicly display copies.
   </simpara>
-  <bridgehead id="fdl-1-section3" renderas="sect2">
+  <bridgehead xml:id="fdl-1-section3" renderas="sect2">
     3. COPYING IN QUANTITY
   </bridgehead>
   <simpara>
     If you publish printed copies (or copies in media that commonly have
     printed covers) of the Document, numbering more than 100, and the
-    Document&#x2019;s license notice requires Cover Texts, you must enclose
+    Document’s license notice requires Cover Texts, you must enclose
     the copies in covers that carry, clearly and legibly, all these Cover
     Texts: Front-Cover Texts on the front cover, and Back-Cover Texts on the
     back cover. Both covers must also clearly and legibly identify you as the
@@ -195,7 +197,7 @@
     Document well before redistributing any large number of copies, to give
     them a chance to provide you with an updated version of the Document.
   </simpara>
-  <bridgehead id="fdl-1-section4" renderas="sect2">
+  <bridgehead xml:id="fdl-1-section4" renderas="sect2">
     4. MODIFICATIONS
   </bridgehead>
   <simpara>
@@ -252,7 +254,7 @@
     <listitem>
       <simpara>
         Preserve in that license notice the full lists of Invariant Sections
-        and required Cover Texts given in the Document&#x2019;s license
+        and required Cover Texts given in the Document’s license
         notice.
       </simpara>
     </listitem>
@@ -263,10 +265,10 @@
     </listitem>
     <listitem>
       <simpara>
-        Preserve the section Entitled &#8220;History&#8221;, Preserve its
+        Preserve the section Entitled “History”, Preserve its
         Title, and add to it an item stating at least the title, year, new
         authors, and publisher of the Modified Version as given on the Title
-        Page. If there is no section Entitled &#8220;History&#8221; in the
+        Page. If there is no section Entitled “History” in the
         Document, create one stating the title, year, authors, and publisher
         of the Document as given on its Title Page, then add an item
         describing the Modified Version as stated in the previous sentence.
@@ -277,7 +279,7 @@
         Preserve the network location, if any, given in the Document for
         public access to a Transparent copy of the Document, and likewise the
         network locations given in the Document for previous versions it was
-        based on.  These may be placed in the &#8220;History&#8221;
+        based on.  These may be placed in the “History”
         section. You may omit a network location for a work that was published
         at least four years before the Document itself, or if the original
         publisher of the version it refers to gives permission.
@@ -285,8 +287,8 @@
     </listitem>
     <listitem>
       <simpara>
-        For any section Entitled &#8220;Acknowledgements&#8221; or
-        &#8220;Dedications&#8221;, Preserve the Title of the section, and
+        For any section Entitled “Acknowledgements” or
+        “Dedications”, Preserve the Title of the section, and
         preserve in the section all the substance and tone of each of the
         contributor acknowledgements and/or dedications given therein.
       </simpara>
@@ -300,14 +302,14 @@
     </listitem>
     <listitem>
       <simpara>
-        Delete any section Entitled &#8220;Endorsements&#8221;. Such a section
+        Delete any section Entitled “Endorsements”. Such a section
         may not be included in the Modified Version.
       </simpara>
     </listitem>
     <listitem>
       <simpara>
         Do not retitle any existing section to be Entitled
-        &#8220;Endorsements&#8221; or to conflict in title with any Invariant
+        “Endorsements” or to conflict in title with any Invariant
         Section.
       </simpara>
     </listitem>
@@ -322,13 +324,13 @@
     that qualify as Secondary Sections and contain no material copied from the
     Document, you may at your option designate some or all of these sections
     as invariant. To do this, add their titles to the list of Invariant
-    Sections in the Modified Version&#x2019;s license notice. These titles
+    Sections in the Modified Version’s license notice. These titles
     must be distinct from any other section titles.
   </simpara>
   <simpara>
-    You may add a section Entitled &#8220;Endorsements&#8221;, provided it
+    You may add a section Entitled “Endorsements”, provided it
     contains nothing but endorsements of your Modified Version by various
-    parties &#8212; for example, statements of peer review or that the text
+    parties — for example, statements of peer review or that the text
     has been approved by an organization as the authoritative definition of a
     standard.
   </simpara>
@@ -348,7 +350,7 @@
     permission to use their names for publicity for or to assert or imply
     endorsement of any Modified Version.
   </simpara>
-  <bridgehead id="fdl-1-section5" renderas="sect2">
+  <bridgehead xml:id="fdl-1-section5" renderas="sect2">
     5. COMBINING DOCUMENTS
   </bridgehead>
   <simpara>
@@ -371,13 +373,13 @@
   </simpara>
   <simpara>
     In the combination, you must combine any sections Entitled
-    &#8220;History&#8221; in the various original documents, forming one
-    section Entitled &#8220;History&#8221;; likewise combine any sections
-    Entitled &#8220;Acknowledgements&#8221;, and any sections Entitled
-    &#8220;Dedications&#8221;. You must delete all sections Entitled
-    &#8220;Endorsements&#8221;.
+    “History” in the various original documents, forming one
+    section Entitled “History”; likewise combine any sections
+    Entitled “Acknowledgements”, and any sections Entitled
+    “Dedications”. You must delete all sections Entitled
+    “Endorsements”.
   </simpara>
-  <bridgehead id="fdl-1-section6" renderas="sect2">
+  <bridgehead xml:id="fdl-1-section6" renderas="sect2">
     6. COLLECTIONS OF DOCUMENTS
   </bridgehead>
   <simpara>
@@ -393,15 +395,15 @@
     License into the extracted document, and follow this License in all other
     respects regarding verbatim copying of that document.
   </simpara>
-  <bridgehead id="fdl-1-section7" renderas="sect2">
+  <bridgehead xml:id="fdl-1-section7" renderas="sect2">
     7. AGGREGATION WITH INDEPENDENT WORKS
   </bridgehead>
   <simpara>
     A compilation of the Document or its derivatives with other separate and
     independent documents or works, in or on a volume of a storage or
-    distribution medium, is called an &#8220;aggregate&#8221; if the copyright
+    distribution medium, is called an “aggregate” if the copyright
     resulting from the compilation is not used to limit the legal rights of
-    the compilation&#x2019;s users beyond what the individual works
+    the compilation’s users beyond what the individual works
     permit. When the Document is included in an aggregate, this License does
     not apply to the other works in the aggregate which are not themselves
     derivative works of the Document.
@@ -409,12 +411,12 @@
   <simpara>
     If the Cover Text requirement of section 3 is applicable to these copies
     of the Document, then if the Document is less than one half of the entire
-    aggregate, the Document&#x2019;s Cover Texts may be placed on covers that
+    aggregate, the Document’s Cover Texts may be placed on covers that
     bracket the Document within the aggregate, or the electronic equivalent of
     covers if the Document is in electronic form. Otherwise they must appear
     on printed covers that bracket the whole aggregate.
   </simpara>
-  <bridgehead id="fdl-1-section8" renderas="sect2">
+  <bridgehead xml:id="fdl-1-section8" renderas="sect2">
     8. TRANSLATION
   </bridgehead>
   <simpara>
@@ -431,12 +433,12 @@
     License or a notice or disclaimer, the original version will prevail.
   </simpara>
   <simpara>
-    If a section in the Document is Entitled &#8220;Acknowledgements&#8221;,
-    &#8220;Dedications&#8221;, or &#8220;History&#8221;, the requirement
+    If a section in the Document is Entitled “Acknowledgements”,
+    “Dedications”, or “History”, the requirement
     (section 4) to Preserve its Title (section 1) will typically require
     changing the actual title.
   </simpara>
-  <bridgehead id="fdl-1-section9" renderas="sect2">
+  <bridgehead xml:id="fdl-1-section9" renderas="sect2">
     9. TERMINATION
   </bridgehead>
   <simpara>
@@ -467,7 +469,7 @@
     reinstated, receipt of a copy of some or all of the same material does not
     give you any rights to use it.
   </simpara>
-  <bridgehead id="fdl-1-section10" renderas="sect2">
+  <bridgehead xml:id="fdl-1-section10" renderas="sect2">
     10. FUTURE REVISIONS OF THIS LICENSE
   </bridgehead>
   <simpara>
@@ -475,46 +477,46 @@
     Free Documentation License from time to time. Such new versions will be
     similar in spirit to the present version, but may differ in detail to
     address new problems or concerns. See
-    <ulink url="http://www.gnu.org/copyleft/">Copyleft</ulink>.
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.gnu.org/copyleft/">Copyleft</link>.
   </simpara>
   <simpara>
     Each version of the License is given a distinguishing version number. If
     the Document specifies that a particular numbered version of this License
-    &#8220;or any later version&#8221; applies to it, you have the option of
+    “or any later version” applies to it, you have the option of
     following the terms and conditions either of that specified version or of
     any later version that has been published (not as a draft) by the Free
     Software Foundation. If the Document does not specify a version number of
     this License, you may choose any version ever published (not as a draft)
     by the Free Software Foundation. If the Document specifies that a proxy
     can decide which future versions of this License can be used, that
-    proxy&#x2019;s public statement of acceptance of a version permanently
+    proxy’s public statement of acceptance of a version permanently
     authorizes you to choose that version for the Document.
   </simpara>
-  <bridgehead id="fdl-1-section11" renderas="sect2">
+  <bridgehead xml:id="fdl-1-section11" renderas="sect2">
     11. RELICENSING
   </bridgehead>
   <simpara>
-    &#8220;Massive Multiauthor Collaboration Site&#8221; (or &#8220;MMC
-    Site&#8221;) means any World Wide Web server that publishes copyrightable
+    “Massive Multiauthor Collaboration Site” (or “MMC
+    Site”) means any World Wide Web server that publishes copyrightable
     works and also provides prominent facilities for anybody to edit those
     works. A public wiki that anybody can edit is an example of such a
-    server. A &#8220;Massive Multiauthor Collaboration&#8221; (or
-    &#8220;MMC&#8221;) contained in the site means any set of copyrightable
+    server. A “Massive Multiauthor Collaboration” (or
+    “MMC”) contained in the site means any set of copyrightable
     works thus published on the MMC site.
   </simpara>
   <simpara>
-    &#8220;CC-BY-SA&#8221; means the Creative Commons Attribution-Share Alike
+    “CC-BY-SA” means the Creative Commons Attribution-Share Alike
     3.0 license published by Creative Commons Corporation, a not-for-profit
     corporation with a principal place of business in San Francisco,
     California, as well as future copyleft versions of that license published
     by that same organization.
   </simpara>
   <simpara>
-    &#8220;Incorporate&#8221; means to publish or republish a Document, in
+    “Incorporate” means to publish or republish a Document, in
     whole or in part, as part of another Document.
   </simpara>
   <simpara>
-    An MMC is &#8220;eligible for relicensing&#8221; if it is licensed under
+    An MMC is “eligible for relicensing” if it is licensed under
     this License, and if all works that were first published under this
     License somewhere other than this MMC, and subsequently incorporated in
     whole or in part into the MMC, (1) had no cover texts or invariant
@@ -525,7 +527,7 @@
     under CC-BY-SA on the same site at any time before August 1, 2009,
     provided the MMC is eligible for relicensing.
   </simpara>
-  <bridgehead id="fdl-1-addendum" renderas="sect2">
+  <bridgehead xml:id="fdl-1-addendum" renderas="sect2">
     ADDENDUM: How to use this License for your documents
   </bridgehead>
   <simpara>
@@ -533,16 +535,16 @@
     License in the document and put the following copyright and license
     notices just after the title page:
   </simpara>
-  <screen>Copyright &#169; YEAR YOUR NAME
+  <screen>Copyright © YEAR YOUR NAME
 
 Permission is granted to copy, distribute and/or modify this document under the
 terms of the GNU Free Documentation License, Version 1.3 or any later version
 published by the Free Software Foundation; with no Invariant Sections, no
 Front-Cover Texts, and no Back-Cover Texts. A copy of the license is included in
-the section entitled &#8220;GNU Free Documentation License&#8221;.</screen>
+the section entitled “GNU Free Documentation License”.</screen>
   <simpara>
     If you have Invariant Sections, Front-Cover Texts and Back-Cover Texts,
-    replace the &#8220;with&#8230; Texts.&#8221; line with this:
+    replace the “with… Texts.” line with this:
   </simpara>
   <screen>with the Invariant Sections being LIST THEIR TITLES, with the Front-Cover Texts
 being LIST, and with the Back-Cover Texts being LIST.</screen>

@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "rtl.h"
 #include "tm_p.h"
 #include "hard-reg-set.h"
@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "insn-attr.h"
 #include "except.h"
-#include "toplev.h"
 #include "recog.h"
 #include "cfglayout.h"
 #include "params.h"
@@ -137,7 +136,6 @@ begin_schedule_ready (rtx insn, rtx last)
       && last != PREV_INSN (insn))
     {
       edge e;
-      edge_iterator ei;
       basic_block bb;
 
       /* An obscure special case, where we do have partially dead
@@ -145,28 +143,24 @@ begin_schedule_ready (rtx insn, rtx last)
 	 In this case we can create new basic block.  It is
 	 always exactly one basic block last in the sequence.  */
 
-      FOR_EACH_EDGE (e, ei, last_bb->succs)
-	if (e->flags & EDGE_FALLTHRU)
-	  break;
+      e = find_fallthru_edge (last_bb->succs);
 
-#ifdef ENABLE_CHECKING
-      gcc_assert (!e || !(e->flags & EDGE_COMPLEX));
+      gcc_checking_assert (!e || !(e->flags & EDGE_COMPLEX));
 
-      gcc_assert (BLOCK_FOR_INSN (insn) == last_bb
-		  && !IS_SPECULATION_CHECK_P (insn)
-		  && BB_HEAD (last_bb) != insn
-		  && BB_END (last_bb) == insn);
+      gcc_checking_assert (BLOCK_FOR_INSN (insn) == last_bb
+			   && !IS_SPECULATION_CHECK_P (insn)
+			   && BB_HEAD (last_bb) != insn
+			   && BB_END (last_bb) == insn);
 
       {
 	rtx x;
 
 	x = NEXT_INSN (insn);
 	if (e)
-	  gcc_assert (NOTE_P (x) || LABEL_P (x));
+	  gcc_checking_assert (NOTE_P (x) || LABEL_P (x));
 	else
-	  gcc_assert (BARRIER_P (x));
+	  gcc_checking_assert (BARRIER_P (x));
       }
-#endif
 
       if (e)
 	{
@@ -588,14 +582,11 @@ schedule_ebbs (void)
       for (;;)
 	{
 	  edge e;
-	  edge_iterator ei;
 	  tail = BB_END (bb);
 	  if (bb->next_bb == EXIT_BLOCK_PTR
 	      || LABEL_P (BB_HEAD (bb->next_bb)))
 	    break;
-	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    if ((e->flags & EDGE_FALLTHRU) != 0)
-	      break;
+	  e = find_fallthru_edge (bb->succs);
 	  if (! e)
 	    break;
 	  if (e->probability <= probability_cutoff)

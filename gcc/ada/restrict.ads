@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -230,6 +230,21 @@ package Restrict is
    --  Equivalent to Check_Restriction (No_Implicit_Heap_Allocations, N).
    --  Provided for easy use by back end, which has to check this restriction.
 
+   procedure Check_Obsolescent_2005_Entity (E : Entity_Id; N : Node_Id);
+   --  This routine checks if the entity E is one of the obsolescent entries
+   --  in Ada.Characters.Handling in Ada 2005 and No_Obsolescent_Features
+   --  restriction is active. If so an appropriate message is given. N is
+   --  the node on which the message is to be placed. It's a bit kludgy to
+   --  have this highly specialized routine rather than some wonderful general
+   --  mechanism (e.g. a special pragma) to handle this case, but there are
+   --  only six cases, and it is not worth the effort to do something general.
+
+   procedure Check_Wide_Character_Restriction (E : Entity_Id; N : Node_Id);
+   --  This procedure checks if the No_Wide_Character restriction is active,
+   --  and if so, if N Comes_From_Source, and the root type of E is one of
+   --  [Wide_]Wide_Character or [Wide_]Wide_String, then the restriction
+   --  violation is recorded, and an appropriate message given.
+
    function Cunit_Boolean_Restrictions_Save
      return Save_Cunit_Boolean_Restrictions;
    --  This function saves the compilation unit restriction settings, and
@@ -277,7 +292,19 @@ package Restrict is
    --  used where the compiled code depends on whether the restriction is
    --  active. Always use Check_Restriction to record a violation. Note that
    --  this returns False if we only have a Restriction_Warnings set, since
-   --  restriction warnings should never affect generated code.
+   --  restriction warnings should never affect generated code. If you want
+   --  to know if a call to Check_Restriction is needed then use the function
+   --  Restriction_Check_Required instead.
+
+   function Restriction_Check_Required (R : All_Restrictions) return Boolean;
+   pragma Inline (Restriction_Check_Required);
+   --  Determines if either a Restriction_Warnings or Restrictions pragma has
+   --  been given for the specified restriction. If true, then a subsequent
+   --  call to Check_Restriction is required if the restriction is violated.
+   --  This must not be used to guard code generation that depends on whether
+   --  a restriction is active (see Restriction_Active above). Typically it
+   --  is used to avoid complex code to determine if a restriction is violated,
+   --  executing this code only if needed.
 
    function Restricted_Profile return Boolean;
    --  Tests if set of restrictions corresponding to Profile (Restricted) is

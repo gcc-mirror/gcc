@@ -1,4 +1,4 @@
-/* CharsetConfigured.java -- 
+/* CharsetConfigured.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -46,16 +46,16 @@ import javax.print.attribute.Attribute;
  * CharsetConfigured attribute as described in RFC 2911 section
  * 4.4.17 provides the charset which is configured by the
  * server to be used in the name and text syntax attribute types.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class CharsetConfigured extends CharsetSyntax 
+public final class CharsetConfigured extends CharsetSyntax
   implements Attribute
 {
 
   /**
    * Creates a <code>CharsetConfigured</code> object.
-   * 
+   *
    * @param value the charset string value.
    */
   public CharsetConfigured(String value)
@@ -68,7 +68,7 @@ public final class CharsetConfigured extends CharsetSyntax
    *
    * @return The class <code>CharsetConfigured</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return CharsetConfigured.class;
   }

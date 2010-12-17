@@ -1,5 +1,5 @@
 /* Cygwin host-specific hook definitions.
- Copyright (C) 2004, 2007 Free Software Foundation, Inc.
+ Copyright (C) 2004, 2007, 2010 Free Software Foundation, Inc.
 
  This file is part of GCC.
 
@@ -20,10 +20,8 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include <sys/mman.h>
 #include "hosthooks.h"
 #include "hosthooks-def.h"
-#include "toplev.h"
 #include "diagnostic.h"
 
 static void * cygwin_gt_pch_get_address (size_t, int fd);
@@ -54,14 +52,14 @@ cygwin_gt_pch_get_address (size_t sz, int fd)
   off_t p = lseek(fd, 0, SEEK_CUR);
 
   if (p == (off_t) -1)
-    fatal_error ("can't get position in PCH file: %m");
+    fatal_error ("can%'t get position in PCH file: %m");
 
    /* Cygwin requires that the underlying file be at least
       as large as the requested mapping.  */
   if ((size_t) p < sz)
   { 
     if ( ftruncate (fd, sz) == -1 )
-      fatal_error ("can't extend PCH file: %m");
+      fatal_error ("can%'t extend PCH file: %m");
   }
 
   base = mmap (NULL, sz, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
@@ -72,7 +70,7 @@ cygwin_gt_pch_get_address (size_t sz, int fd)
     munmap (base, sz);
 
   if (lseek (fd, p, SEEK_SET) == (off_t) -1 )
-    fatal_error ("can't set position in PCH file: %m");
+    fatal_error ("can%'t set position in PCH file: %m");
 
   return base;
 }

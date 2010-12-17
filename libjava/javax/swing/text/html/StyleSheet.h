@@ -57,7 +57,7 @@ public:
 private:
   ::javax::swing::text::Style * getResolvedStyle(::java::lang::String *, ::java::util::List *, ::javax::swing::text::html::HTML$Tag *);
   ::javax::swing::text::Style * resolveStyle(::java::lang::String *, ::java::util::List *, ::javax::swing::text::html::HTML$Tag *);
-  ::javax::swing::text::Style * resolveStyle(::java::lang::String *, JArray< ::java::lang::String * > *, JArray< ::java::util::Map * > *);
+  ::javax::swing::text::Style * resolveStyle(::java::lang::String *, JArray< ::java::lang::String * > *, ::java::util::List *);
 public:
   virtual ::javax::swing::text::Style * getRule(::java::lang::String *);
   virtual void addRule(::java::lang::String *);

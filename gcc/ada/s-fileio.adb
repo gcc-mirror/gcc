@@ -205,7 +205,7 @@ package body System.File_IO is
    begin
       if File = null then
          raise Status_Error with "file not open";
-      elsif File.Mode > Inout_File then
+      elsif File.Mode not in Read_File_Mode then
          raise Mode_Error with "file not readable";
       end if;
    end Check_Read_Status;
@@ -385,7 +385,7 @@ package body System.File_IO is
    end Errno_Message;
 
    function Errno_Message
-     (Name : String;
+     (Name  : String;
       Errno : Integer := OS_Lib.Errno) return String
    is
    begin
@@ -1183,7 +1183,7 @@ package body System.File_IO is
       --  reopen.
 
       if Mode = File.Mode
-        and then Mode <= Inout_File
+        and then Mode in Read_File_Mode
       then
          rewind (File.Stream);
 

@@ -313,8 +313,8 @@ begin
 
       when Pragma_Ada_05 | Pragma_Ada_2005 =>
          if Arg_Count = 0 then
-            Ada_Version := Ada_05;
-            Ada_Version_Explicit := Ada_05;
+            Ada_Version := Ada_2005;
+            Ada_Version_Explicit := Ada_2005;
          end if;
 
       ---------------------
@@ -323,11 +323,14 @@ begin
 
       --  These pragmas must be processed at parse time, since we want to set
       --  the Ada version properly at parse time to recognize the appropriate
-      --  Ada version syntax.
+      --  Ada version syntax. However, it is only the zero argument form that
+      --  must be processed at parse time.
 
       when Pragma_Ada_12 | Pragma_Ada_2012 =>
-         Ada_Version := Ada_12;
-         Ada_Version_Explicit := Ada_12;
+         if Arg_Count = 0 then
+            Ada_Version := Ada_2012;
+            Ada_Version_Explicit := Ada_2012;
+         end if;
 
       -----------
       -- Debug --
@@ -386,7 +389,7 @@ begin
 
          if Chars (Expression (Arg1)) = Name_On then
             Extensions_Allowed := True;
-            Ada_Version := Ada_12;
+            Ada_Version := Ada_2012;
          else
             Extensions_Allowed := False;
             Ada_Version := Ada_Version_Explicit;
@@ -979,6 +982,33 @@ begin
          end if;
       end Style_Checks;
 
+      -------------------------
+      -- Suppress_All (GNAT) --
+      -------------------------
+
+      --  pragma Suppress_All
+
+      --  This is a rather odd pragma, because other compilers allow it in
+      --  strange places. DEC allows it at the end of units, and Rational
+      --  allows it as a program unit pragma, when it would be more natural
+      --  if it were a configuration pragma.
+
+      --  Since the reason we provide this pragma is for compatibility with
+      --  these other compilers, we want to accomodate these strange placement
+      --  rules, and the easiest thing is simply to allow it anywhere in a
+      --  unit. If this pragma appears anywhere within a unit, then the effect
+      --  is as though a pragma Suppress (All_Checks) had appeared as the first
+      --  line of the current file, i.e. as the first configuration pragma in
+      --  the current unit.
+
+      --  To get this effect, we set the flag Has_Pragma_Suppress_All in the
+      --  compilation unit node for the current source file then in the last
+      --  stage of parsing a file, if this flag is set, we materialize the
+      --  Suppress (All_Checks) pragma, marked as not coming from Source.
+
+      when Pragma_Suppress_All =>
+         Set_Has_Pragma_Suppress_All (Cunit (Current_Source_Unit));
+
       ---------------------
       -- Warnings (GNAT) --
       ---------------------
@@ -1088,6 +1118,7 @@ begin
            Pragma_CPP_Constructor               |
            Pragma_CPP_Virtual                   |
            Pragma_CPP_Vtable                    |
+           Pragma_CPU                           |
            Pragma_C_Pass_By_Copy                |
            Pragma_Comment                       |
            Pragma_Common_Object                 |
@@ -1098,6 +1129,7 @@ begin
            Pragma_Convention                    |
            Pragma_Debug_Policy                  |
            Pragma_Detect_Blocking               |
+           Pragma_Default_Storage_Pool          |
            Pragma_Dimension                     |
            Pragma_Discard_Names                 |
            Pragma_Eliminate                     |
@@ -1120,7 +1152,7 @@ begin
            Pragma_Finalize_Storage_Only         |
            Pragma_Float_Representation          |
            Pragma_Ident                         |
-           Pragma_Implemented_By_Entry          |
+           Pragma_Implemented                   |
            Pragma_Implicit_Packing              |
            Pragma_Import                        |
            Pragma_Import_Exception              |
@@ -1128,6 +1160,8 @@ begin
            Pragma_Import_Object                 |
            Pragma_Import_Procedure              |
            Pragma_Import_Valued_Procedure       |
+           Pragma_Independent                   |
+           Pragma_Independent_Components        |
            Pragma_Initialize_Scalars            |
            Pragma_Inline                        |
            Pragma_Inline_Always                 |
@@ -1138,6 +1172,7 @@ begin
            Pragma_Interrupt_Handler             |
            Pragma_Interrupt_State               |
            Pragma_Interrupt_Priority            |
+           Pragma_Invariant                     |
            Pragma_Java_Constructor              |
            Pragma_Java_Interface                |
            Pragma_Keep_Names                    |
@@ -1156,10 +1191,11 @@ begin
            Pragma_Memory_Size                   |
            Pragma_No_Body                       |
            Pragma_No_Return                     |
-           Pragma_Obsolescent                   |
            Pragma_No_Run_Time                   |
            Pragma_No_Strict_Aliasing            |
            Pragma_Normalize_Scalars             |
+           Pragma_Obsolescent                   |
+           Pragma_Ordered                       |
            Pragma_Optimize                      |
            Pragma_Optimize_Alignment            |
            Pragma_Pack                          |
@@ -1169,6 +1205,7 @@ begin
            Pragma_Persistent_BSS                |
            Pragma_Postcondition                 |
            Pragma_Precondition                  |
+           Pragma_Predicate                     |
            Pragma_Preelaborate                  |
            Pragma_Preelaborate_05               |
            Pragma_Priority                      |
@@ -1191,13 +1228,13 @@ begin
            Pragma_Shared                        |
            Pragma_Shared_Passive                |
            Pragma_Short_Circuit_And_Or          |
+           Pragma_Short_Descriptors             |
            Pragma_Storage_Size                  |
            Pragma_Storage_Unit                  |
            Pragma_Static_Elaboration_Desired    |
            Pragma_Stream_Convert                |
            Pragma_Subtitle                      |
            Pragma_Suppress                      |
-           Pragma_Suppress_All                  |
            Pragma_Suppress_Debug_Info           |
            Pragma_Suppress_Exception_Locations  |
            Pragma_Suppress_Initialization       |

@@ -28,6 +28,7 @@ fast_install=@enable_fast_install@
 objdir=@objdir@
 
 invoked=`basename "$0"`
+id=$invoked
 case "$invoked" in
   as)
     original=$ORIGINAL_AS_FOR_TARGET
@@ -36,14 +37,15 @@ case "$invoked" in
     ;;
   collect-ld)
     # when using a linker plugin, gcc will always pass '-plugin' as the
-    # first option to the linker.
-    if test x"$1" = "x-plugin"; then
+    # first or second option to the linker.
+    if test x"$1" = "x-plugin" || test x"$2" = "x-plugin"; then
       original=$ORIGINAL_PLUGIN_LD_FOR_TARGET
     else
       original=$ORIGINAL_LD_FOR_TARGET
     fi
     prog=ld-new$exeext
     dir=ld
+    id=ld
     ;;
   nm)
     original=$ORIGINAL_NM_FOR_TARGET
@@ -68,9 +70,11 @@ case "$original" in
       # libtool has not relinked ld-new yet, but we cannot just use the
       # previous stage (because then the relinking would just never happen!).
       # So we take extra care to use prev-ld/ld-new *on recursive calls*.
+      eval LT_RCU="\${LT_RCU_$id}"
       test x"$LT_RCU" = x"1" && exec $scriptdir/../prev-$dir/$prog ${1+"$@"}
 
-      LT_RCU=1; export LT_RCU
+      eval LT_RCU_$id=1
+      export LT_RCU_$id
       $scriptdir/../$dir/$prog ${1+"$@"}
       result=$?
       exit $result
@@ -80,8 +84,6 @@ case "$original" in
     fi
     ;;
   *)
-    exec "$original" ${1+"$@"}
+    exec $original ${1+"$@"}
     ;;
 esac
-
-

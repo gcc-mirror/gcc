@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-fbounds-check" }
 ! Tests the fix for PR31257, in which achar caused an ICE because it had no
 ! charlen.
 !

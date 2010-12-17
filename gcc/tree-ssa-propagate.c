@@ -639,7 +639,7 @@ valid_gimple_rhs_p (tree expr)
    as a single GIMPLE_CALL statement.  If the arguments require
    further gimplification, return false.  */
 
-bool
+static bool
 valid_gimple_call_p (tree expr)
 {
   unsigned i, nargs;
@@ -649,8 +649,17 @@ valid_gimple_call_p (tree expr)
 
   nargs = call_expr_nargs (expr);
   for (i = 0; i < nargs; i++)
-    if (! is_gimple_operand (CALL_EXPR_ARG (expr, i)))
-      return false;
+    {
+      tree arg = CALL_EXPR_ARG (expr, i);
+      if (is_gimple_reg_type (arg))
+	{
+	  if (!is_gimple_val (arg))
+	    return false;
+	}
+      else
+	if (!is_gimple_lvalue (arg))
+	  return false;
+    }
 
   return true;
 }
@@ -751,8 +760,11 @@ update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
           /* No value is expected, and EXPR has no effect.
              Replace it with an empty statement.  */
           new_stmt = gimple_build_nop ();
-	  unlink_stmt_vdef (stmt);
-	  release_defs (stmt);
+	  if (gimple_in_ssa_p (cfun))
+	    {
+	      unlink_stmt_vdef (stmt);
+	      release_defs (stmt);
+	    }
         }
       else
         {
@@ -764,7 +776,8 @@ update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
           lhs = create_tmp_var (TREE_TYPE (expr), NULL);
           new_stmt = gimple_build_assign (lhs, expr);
           add_referenced_var (lhs);
-          lhs = make_ssa_name (lhs, new_stmt);
+	  if (gimple_in_ssa_p (cfun))
+	    lhs = make_ssa_name (lhs, new_stmt);
           gimple_assign_set_lhs (new_stmt, lhs);
 	  gimple_set_vuse (new_stmt, gimple_vuse (stmt));
 	  gimple_set_vdef (new_stmt, gimple_vdef (stmt));
@@ -863,7 +876,7 @@ static struct prop_stats_d prop_stats;
    PROP_VALUE. Return true if at least one reference was replaced.  */
 
 static bool
-replace_uses_in (gimple stmt, prop_value_t *prop_value)
+replace_uses_in (gimple stmt, ssa_prop_get_value_fn get_value)
 {
   bool replaced = false;
   use_operand_p use;
@@ -872,7 +885,7 @@ replace_uses_in (gimple stmt, prop_value_t *prop_value)
   FOR_EACH_SSA_USE_OPERAND (use, stmt, iter, SSA_OP_USE)
     {
       tree tuse = USE_FROM_PTR (use);
-      tree val = prop_value[SSA_NAME_VERSION (tuse)].value;
+      tree val = (*get_value) (tuse);
 
       if (val == tuse || val == NULL_TREE)
 	continue;
@@ -902,7 +915,7 @@ replace_uses_in (gimple stmt, prop_value_t *prop_value)
    values from PROP_VALUE.  */
 
 static void
-replace_phi_args_in (gimple phi, prop_value_t *prop_value)
+replace_phi_args_in (gimple phi, ssa_prop_get_value_fn get_value)
 {
   size_t i;
   bool replaced = false;
@@ -919,7 +932,7 @@ replace_phi_args_in (gimple phi, prop_value_t *prop_value)
 
       if (TREE_CODE (arg) == SSA_NAME)
 	{
-	  tree val = prop_value[SSA_NAME_VERSION (arg)].value;
+	  tree val = (*get_value) (arg);
 
 	  if (val && val != arg && may_propagate_copy (arg, val))
 	    {
@@ -969,13 +982,15 @@ replace_phi_args_in (gimple phi, prop_value_t *prop_value)
    Return TRUE when something changed.  */
 
 bool
-substitute_and_fold (prop_value_t *prop_value, ssa_prop_fold_stmt_fn fold_fn,
+substitute_and_fold (ssa_prop_get_value_fn get_value_fn,
+		     ssa_prop_fold_stmt_fn fold_fn,
 		     bool do_dce)
 {
   basic_block bb;
   bool something_changed = false;
+  unsigned i;
 
-  if (prop_value == NULL && !fold_fn)
+  if (!get_value_fn && !fold_fn)
     return false;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -983,15 +998,66 @@ substitute_and_fold (prop_value_t *prop_value, ssa_prop_fold_stmt_fn fold_fn,
 
   memset (&prop_stats, 0, sizeof (prop_stats));
 
-  /* Substitute values in every statement of every basic block.  */
+  /* Substitute lattice values at definition sites.  */
+  if (get_value_fn)
+    for (i = 1; i < num_ssa_names; ++i)
+      {
+	tree name = ssa_name (i);
+	tree val;
+	gimple def_stmt;
+	gimple_stmt_iterator gsi;
+
+	if (!name
+	    || !is_gimple_reg (name))
+	  continue;
+
+	def_stmt = SSA_NAME_DEF_STMT (name);
+	if (gimple_nop_p (def_stmt)
+	    /* Do not substitute ASSERT_EXPR rhs, this will confuse VRP.  */
+	    || (gimple_assign_single_p (def_stmt)
+		&& gimple_assign_rhs_code (def_stmt) == ASSERT_EXPR)
+	    || !(val = (*get_value_fn) (name))
+	    || !may_propagate_copy (name, val))
+	  continue;
+
+	gsi = gsi_for_stmt (def_stmt);
+	if (is_gimple_assign (def_stmt))
+	  {
+	    gimple_assign_set_rhs_with_ops (&gsi, TREE_CODE (val),
+					    val, NULL_TREE);
+	    gcc_assert (gsi_stmt (gsi) == def_stmt);
+	    if (maybe_clean_eh_stmt (def_stmt))
+	      gimple_purge_dead_eh_edges (gimple_bb (def_stmt));
+	    update_stmt (def_stmt);
+	  }
+	else if (is_gimple_call (def_stmt))
+	  {
+	    if (update_call_from_tree (&gsi, val)
+		&& maybe_clean_or_replace_eh_stmt (def_stmt, gsi_stmt (gsi)))
+	      gimple_purge_dead_eh_edges (gimple_bb (gsi_stmt (gsi)));
+	  }
+	else if (gimple_code (def_stmt) == GIMPLE_PHI)
+	  {
+	    gimple new_stmt = gimple_build_assign (name, val);
+	    gimple_stmt_iterator gsi2;
+	    SSA_NAME_DEF_STMT (name) = new_stmt;
+	    gsi2 = gsi_after_labels (gimple_bb (def_stmt));
+	    gsi_insert_before (&gsi2, new_stmt, GSI_SAME_STMT);
+	    remove_phi_node (&gsi, false);
+	  }
+
+	something_changed = true;
+      }
+
+  /* Propagate into all uses and fold.  */
   FOR_EACH_BB (bb)
     {
       gimple_stmt_iterator i;
 
       /* Propagate known values into PHI nodes.  */
-      if (prop_value)
+      if (get_value_fn)
 	for (i = gsi_start_phis (bb); !gsi_end_p (i); gsi_next (&i))
-	  replace_phi_args_in (gsi_stmt (i), prop_value);
+	  replace_phi_args_in (gsi_stmt (i), get_value_fn);
 
       /* Propagate known values into stmts.  Do a backward walk to expose
 	 more trivially deletable stmts.  */
@@ -1060,13 +1126,13 @@ substitute_and_fold (prop_value_t *prop_value, ssa_prop_fold_stmt_fn fold_fn,
 	    {
 	      did_replace = true;
 	      prop_stats.num_stmts_folded++;
+	      stmt = gsi_stmt (oldi);
+	      update_stmt (stmt);
 	    }
 
-	  /* Only replace real uses if we couldn't fold the
-	     statement using value range information.  */
-	  if (prop_value
-	      && !did_replace)
-	    did_replace |= replace_uses_in (stmt, prop_value);
+	  /* Replace real uses in the statement.  */
+	  if (get_value_fn)
+	    did_replace |= replace_uses_in (stmt, get_value_fn);
 
 	  /* If we made a replacement, fold the statement.  */
 	  if (did_replace)

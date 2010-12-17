@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "" }
+// { dg-require-namedlocale "is_IS" }
 
 // 2001-01-19 Benjamin Kosnik <bkoz@redhat.com>
 

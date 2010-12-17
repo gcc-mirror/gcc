@@ -23,14 +23,13 @@
 // <http://www.gnu.org/licenses/>.
 
 /**
- * @file bits/regex_executor.h
+ * @file bits/regex_grep_matcher.h
  * This is an internal header file, included by other library headers.
  * You should not attempt to use it directly.
  */
 
+_GLIBCXX_BEGIN_NAMESPACE(std)
 
-namespace std
-{
   template<typename _BiIter>
     class sub_match;
 
@@ -124,8 +123,7 @@ namespace __regex
   };
 
 } // namespace __regex
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #include <bits/regex_grep_matcher.tcc>
-
-/* vim: set ts=8 sw=2 sts=2: */

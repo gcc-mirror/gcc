@@ -240,20 +240,29 @@ release_ssa_name (tree var)
     }
 }
 
-/* Creates a duplicate of a ssa name NAME defined in statement STMT.  */
 
-tree
-duplicate_ssa_name (tree name, gimple stmt)
+/* Return the alias information associated with pointer T.  It creates a
+   new instance if none existed.  */
+
+struct ptr_info_def *
+get_ptr_info (tree t)
 {
-  tree new_name = make_ssa_name (SSA_NAME_VAR (name), stmt);
-  struct ptr_info_def *old_ptr_info = SSA_NAME_PTR_INFO (name);
+  struct ptr_info_def *pi;
 
-  if (old_ptr_info)
-    duplicate_ssa_name_ptr_info (new_name, old_ptr_info);
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (t)));
 
-  return new_name;
+  pi = SSA_NAME_PTR_INFO (t);
+  if (pi == NULL)
+    {
+      pi = ggc_alloc_cleared_ptr_info_def ();
+      pt_solution_reset (&pi->pt);
+      pi->align = 1;
+      pi->misalign = 0;
+      SSA_NAME_PTR_INFO (t) = pi;
+    }
+
+  return pi;
 }
-
 
 /* Creates a duplicate of the ptr_info_def at PTR_INFO for use by
    the SSA name NAME.  */
@@ -273,6 +282,21 @@ duplicate_ssa_name_ptr_info (tree name, struct ptr_info_def *ptr_info)
   *new_ptr_info = *ptr_info;
 
   SSA_NAME_PTR_INFO (name) = new_ptr_info;
+}
+
+
+/* Creates a duplicate of a ssa name NAME tobe defined by statement STMT.  */
+
+tree
+duplicate_ssa_name (tree name, gimple stmt)
+{
+  tree new_name = make_ssa_name (SSA_NAME_VAR (name), stmt);
+  struct ptr_info_def *old_ptr_info = SSA_NAME_PTR_INFO (name);
+
+  if (old_ptr_info)
+    duplicate_ssa_name_ptr_info (new_name, old_ptr_info);
+
+  return new_name;
 }
 
 
@@ -314,8 +338,8 @@ release_dead_ssa_names (void)
   int n = 0;
   referenced_var_iterator rvi;
 
-  /* Current defs point to various dead SSA names that in turn points to dead
-     statements so bunch of dead memory is held from releasing.  */
+  /* Current defs point to various dead SSA names that in turn point to
+     eventually dead variables so a bunch of memory is held live.  */
   FOR_EACH_REFERENCED_VAR (t, rvi)
     set_current_def (t, NULL);
   /* Now release the freelist.  */
@@ -332,12 +356,10 @@ release_dead_ssa_names (void)
     }
   FREE_SSANAMES (cfun) = NULL;
 
-  /* Cgraph edges has been invalidated and point to dead statement.  We need to
-     remove them now and will rebuild it before next IPA pass.  */
-  cgraph_node_remove_callees (cgraph_node (current_function_decl));
-
+  statistics_counter_event (cfun, "SSA names released", n);
   if (dump_file)
-    fprintf (dump_file, "Released %i names, %.2f%%\n", n, n * 100.0 / num_ssa_names);
+    fprintf (dump_file, "Released %i names, %.2f%%\n",
+	     n, n * 100.0 / num_ssa_names);
   return 0;
 }
 
@@ -351,7 +373,7 @@ struct gimple_opt_pass pass_release_ssa_names =
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
+  TV_TREE_SSA_OTHER,			/* tv_id */
   PROP_ssa,				/* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */

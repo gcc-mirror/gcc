@@ -33,11 +33,11 @@
 #include <sys/time.h>
 #endif
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   namespace chrono
   {
-    const bool system_clock::is_monotonic;
+    constexpr bool system_clock::is_monotonic;
 
     system_clock::time_point
     system_clock::now() throw ()
@@ -61,7 +61,7 @@ namespace std
     }
     
 #ifdef _GLIBCXX_USE_CLOCK_MONOTONIC
-    const bool monotonic_clock::is_monotonic;
+    constexpr bool monotonic_clock::is_monotonic;
     
     monotonic_clock::time_point
     monotonic_clock::now()
@@ -74,6 +74,7 @@ namespace std
     }
 #endif
   }
-}
+
+_GLIBCXX_END_NAMESPACE
 
 #endif // _GLIBCXX_USE_C99_STDINT_TR1

@@ -124,7 +124,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       typedef typename _Rep_type::const_iterator            iterator;
       typedef typename _Rep_type::const_iterator            const_iterator;
       typedef typename _Rep_type::const_reverse_iterator    reverse_iterator;
-      typedef typename _Rep_type::const_reverse_iterator    const_reverse_iterator;
+      typedef typename _Rep_type::const_reverse_iterator const_reverse_iterator;
       typedef typename _Rep_type::size_type                 size_type;
       typedef typename _Rep_type::difference_type           difference_type;
       //@}
@@ -197,7 +197,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  The contents of @a x are a valid, but unspecified %set.
        */
       set(set&& __x)
-      : _M_t(std::forward<_Rep_type>(__x._M_t)) { }
+      : _M_t(std::move(__x._M_t)) { }
 
       /**
        *  @brief  Builds a %set from an initializer_list.
@@ -409,6 +409,16 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	return std::pair<iterator, bool>(__p.first, __p.second);
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      std::pair<iterator, bool>
+      insert(value_type&& __x)
+      {
+	std::pair<typename _Rep_type::iterator, bool> __p =
+	  _M_t._M_insert_unique(std::move(__x));
+	return std::pair<iterator, bool>(__p.first, __p.second);
+      }
+#endif
+
       /**
        *  @brief Attempts to insert an element into the %set.
        *  @param  position  An iterator that serves as a hint as to where the
@@ -429,8 +439,14 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  Insertion requires logarithmic time (if the hint is not taken).
        */
       iterator
-      insert(iterator __position, const value_type& __x)
+      insert(const_iterator __position, const value_type& __x)
       { return _M_t._M_insert_unique_(__position, __x); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      iterator
+      insert(const_iterator __position, value_type&& __x)
+      { return _M_t._M_insert_unique_(__position, std::move(__x)); }
+#endif
 
       /**
        *  @brief A template function that attempts to insert a range
@@ -472,10 +488,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  This function erases an element, pointed to by the given iterator,
        *  from a %set.  Note that this function only erases the element, and
        *  that if the element is itself a pointer, the pointed-to memory is not
-       *  touched in any way.  Managing the pointer is the user's responsibility.
+       *  touched in any way.  Managing the pointer is the user's
+       *  responsibility.
        */
       iterator
-      erase(iterator __position)
+      erase(const_iterator __position)
       { return _M_t.erase(__position); }
 #else
       /**
@@ -485,7 +502,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  This function erases an element, pointed to by the given iterator,
        *  from a %set.  Note that this function only erases the element, and
        *  that if the element is itself a pointer, the pointed-to memory is not
-       *  touched in any way.  Managing the pointer is the user's responsibility.
+       *  touched in any way.  Managing the pointer is the user's
+       *  responsibility.
        */
       void
       erase(iterator __position)
@@ -523,7 +541,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  in any way.  Managing the pointer is the user's responsibility.
        */
       iterator
-      erase(iterator __first, iterator __last)
+      erase(const_iterator __first, const_iterator __last)
       { return _M_t.erase(__first, __last); }
 #else
       /**

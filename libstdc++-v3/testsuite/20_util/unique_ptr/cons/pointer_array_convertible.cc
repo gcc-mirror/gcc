@@ -37,4 +37,5 @@ test01()
 {
   std::unique_ptr<B[]> B_from_A(new A[3]); //{ dg-error "invalid conversion from" }
 }
-//{ dg-excess-errors "initialization" }
+
+// { dg-prune-output "include" }

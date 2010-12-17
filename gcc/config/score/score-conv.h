@@ -1,5 +1,5 @@
 /* score-conv.h for Sunplus S+CORE processor
-   Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2009, 2010 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -19,8 +19,6 @@
 
 #ifndef GCC_SCORE_CONV_H
 #define GCC_SCORE_CONV_H
-
-extern int target_flags;
 
 #define GP_REG_FIRST                    0U
 #define GP_REG_LAST                     31U
@@ -54,11 +52,14 @@ extern int target_flags;
 #define CE_REG_CLASS_P(C) \
   ((C) == HI_REG || (C) == LO_REG || (C) == CE_REGS)
 
-#define UIMM_IN_RANGE(V, W)    ((V) >= 0 && (V) < ((HOST_WIDE_INT) 1 << (W)))
+#define UIMM_IN_RANGE(V, W) \
+  ((V) >= 0 \
+   && ((unsigned HOST_WIDE_INT) (V) \
+       <= (((unsigned HOST_WIDE_INT) 2 << ((W) - 1)) - 1)))
 
 #define SIMM_IN_RANGE(V, W)                            \
-  ((V) >= (-1 * ((HOST_WIDE_INT) 1 << ((W) - 1)))      \
-   && (V) < (1 * ((HOST_WIDE_INT) 1 << ((W) - 1))))
+  ((V) >= ((HOST_WIDE_INT) -1 << ((W) - 1))      \
+   && (V) <= (((HOST_WIDE_INT) 1 << ((W) - 1)) - 1))
 
 #define IMM_IN_RANGE(V, W, S)  \
   ((S) ? SIMM_IN_RANGE (V, W) : UIMM_IN_RANGE (V, W))

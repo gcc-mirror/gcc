@@ -71,7 +71,7 @@ private:
   void writeStyle(::javax::swing::text::Style *);
   jboolean hasText(::javax::swing::text::Element *);
   ::javax::swing::text::StyledDocument * __attribute__((aligned(__alignof__( ::javax::swing::text::AbstractWriter)))) doc;
-  ::java::util::Stack * tagStack;
+  ::java::util::Deque * tagStack;
   jboolean inFontTag__;
 public:
   static ::java::lang::Class class$;

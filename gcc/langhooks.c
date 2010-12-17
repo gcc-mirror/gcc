@@ -62,13 +62,6 @@ lhd_pass_through_t (tree t)
   return t;
 }
 
-/* Do nothing (int).  */
-
-void
-lhd_do_nothing_i (int ARG_UNUSED (i))
-{
-}
-
 /* Do nothing (int, int, int).  Return NULL_TREE.  */
 
 tree
@@ -176,7 +169,7 @@ lhd_set_decl_assembler_name (tree decl)
      is less than the whole compilation.  Concatenate a distinguishing
      number - we use the DECL_UID.  */
 
-  if (TREE_PUBLIC (decl) || DECL_CONTEXT (decl) == NULL_TREE)
+  if (TREE_PUBLIC (decl) || DECL_FILE_SCOPE_P (decl))
     id = targetm.mangle_decl_assembler_name (decl, DECL_NAME (decl));
   else
     {
@@ -322,7 +315,7 @@ write_global_declarations (void)
   /* Process the decls in reverse order--earliest first.
      Put them into VEC from back to front, then take out from front.  */
 
-  for (i = 0, decl = globals; i < len; i++, decl = TREE_CHAIN (decl))
+  for (i = 0, decl = globals; i < len; i++, decl = DECL_CHAIN (decl))
     vec[len - i - 1] = decl;
 
   wrapup_global_declarations (vec, len);
@@ -335,8 +328,33 @@ write_global_declarations (void)
 
 /* Called to perform language-specific initialization of CTX.  */
 void
-lhd_initialize_diagnostics (struct diagnostic_context *ctx ATTRIBUTE_UNUSED)
+lhd_initialize_diagnostics (diagnostic_context *ctx ATTRIBUTE_UNUSED)
 {
+}
+
+/* Called to perform language-specific options initialization.  */
+void
+lhd_init_options (unsigned int decoded_options_count ATTRIBUTE_UNUSED,
+		  struct cl_decoded_option *decoded_options ATTRIBUTE_UNUSED)
+{
+}
+
+/* By default, always complain about options for the wrong language.  */
+bool
+lhd_complain_wrong_lang_p (const struct cl_option *option ATTRIBUTE_UNUSED)
+{
+  return true;
+}
+
+/* By default, no language-specific options are valid.  */
+bool
+lhd_handle_option (size_t code ATTRIBUTE_UNUSED,
+		   const char *arg ATTRIBUTE_UNUSED,
+		   int value ATTRIBUTE_UNUSED, int kind ATTRIBUTE_UNUSED,
+		   location_t loc ATTRIBUTE_UNUSED,
+		   const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED)
+{
+  return false;
 }
 
 /* The default function to print out name of current function that caused

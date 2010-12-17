@@ -1,4 +1,4 @@
-/* PrinterUpTime.java -- 
+/* PrinterUpTime.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -44,12 +44,12 @@ import javax.print.attribute.IntegerSyntax;
 /**
  * PrinterUpTime attribute as described in RFC 2911 section
  * 4.4.29 provides the uptime of the printer object. This
- * is a value in second starting at 1 after a initialization 
+ * is a value in second starting at 1 after a initialization
  * or reboot of the printer object.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class PrinterUpTime extends IntegerSyntax 
+public final class PrinterUpTime extends IntegerSyntax
   implements Attribute
 {
 
@@ -68,7 +68,7 @@ public final class PrinterUpTime extends IntegerSyntax
    *
    * @return The class <code>PrinterUpTime</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return PrinterUpTime.class;
   }

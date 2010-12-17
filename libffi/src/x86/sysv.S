@@ -48,6 +48,9 @@ ffi_call_SYSV:
 	movl  16(%ebp),%ecx
 	subl  %ecx,%esp
 
+        /* Align the stack pointer to 16-bytes */
+        andl  $0xfffffff0, %esp
+
 	movl  %esp,%eax
 
 	/* Place all of the ffi_prep_args in position  */
@@ -325,6 +328,25 @@ ffi_closure_raw_SYSV:
 	.size	ffi_closure_raw_SYSV, .-ffi_closure_raw_SYSV
 #endif
 
+#if defined __PIC__
+# if defined __sun__ && defined __svr4__
+/* 32-bit Solaris 2/x86 uses datarel encoding for PIC.  GNU ld before 2.22
+   doesn't correctly sort .eh_frame_hdr with mixed encodings, so match this.  */
+#  define FDE_ENCODING		0x30	/* datarel */
+#  define FDE_ENCODE(X)		X@GOTOFF
+# else
+#  define FDE_ENCODING		0x1b	/* pcrel sdata4 */
+#  if defined HAVE_AS_X86_PCREL
+#   define FDE_ENCODE(X)	X-.
+#  else
+#   define FDE_ENCODE(X)	X@rel
+#  endif
+# endif
+#else
+# define FDE_ENCODING		0	/* absolute */
+# define FDE_ENCODE(X)		X
+#endif
+
 	.section	.eh_frame,EH_FRAME_FLAGS,@progbits
 .Lframe1:
 	.long	.LECIE1-.LSCIE1	/* Length of Common Information Entry */
@@ -351,7 +373,7 @@ ffi_closure_raw_SYSV:
 	.byte	0x8	/* CIE RA Column */
 #ifdef __PIC__
 	.byte	0x1	/* .uleb128 0x1; Augmentation size */
-	.byte	0x1b	/* FDE Encoding (pcrel sdata4) */
+	.byte	FDE_ENCODING
 #endif
 	.byte	0xc	/* DW_CFA_def_cfa */
 	.byte	0x4	/* .uleb128 0x4 */
@@ -364,14 +386,8 @@ ffi_closure_raw_SYSV:
 	.long	.LEFDE1-.LASFDE1	/* FDE Length */
 .LASFDE1:
 	.long	.LASFDE1-.Lframe1	/* FDE CIE offset */
-#if defined __PIC__ && defined HAVE_AS_X86_PCREL
-	.long	.LFB1-.	/* FDE initial location */
-#elif defined __PIC__
-	.long	.LFB1@rel
-#else
-	.long	.LFB1
-#endif
-	.long	.LFE1-.LFB1	/* FDE address range */
+	.long	FDE_ENCODE(.LFB1)	/* FDE initial location */
+	.long	.LFE1-.LFB1		/* FDE address range */
 #ifdef __PIC__
 	.byte	0x0	/* .uleb128 0x0; Augmentation size */
 #endif
@@ -391,14 +407,8 @@ ffi_closure_raw_SYSV:
 	.long	.LEFDE2-.LASFDE2	/* FDE Length */
 .LASFDE2:
 	.long	.LASFDE2-.Lframe1	/* FDE CIE offset */
-#if defined __PIC__ && defined HAVE_AS_X86_PCREL
-	.long	.LFB2-.	/* FDE initial location */
-#elif defined __PIC__
-	.long	.LFB2@rel
-#else
-	.long	.LFB2
-#endif
-	.long	.LFE2-.LFB2	/* FDE address range */
+	.long	FDE_ENCODE(.LFB2)	/* FDE initial location */
+	.long	.LFE2-.LFB2		/* FDE address range */
 #ifdef __PIC__
 	.byte	0x0	/* .uleb128 0x0; Augmentation size */
 #endif
@@ -427,14 +437,8 @@ ffi_closure_raw_SYSV:
 	.long	.LEFDE3-.LASFDE3	/* FDE Length */
 .LASFDE3:
 	.long	.LASFDE3-.Lframe1	/* FDE CIE offset */
-#if defined __PIC__ && defined HAVE_AS_X86_PCREL
-	.long	.LFB3-.	/* FDE initial location */
-#elif defined __PIC__
-	.long	.LFB3@rel
-#else
-	.long	.LFB3
-#endif
-	.long	.LFE3-.LFB3	/* FDE address range */
+	.long	FDE_ENCODE(.LFB3)	/* FDE initial location */
+	.long	.LFE3-.LFB3		/* FDE address range */
 #ifdef __PIC__
 	.byte	0x0	/* .uleb128 0x0; Augmentation size */
 #endif

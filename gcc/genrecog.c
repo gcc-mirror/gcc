@@ -1,6 +1,6 @@
 /* Generate code from machine description to recognize rtl as insns.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -1761,19 +1761,10 @@ change_state (const char *oldpos, const char *newpos, const char *indent)
   int odepth = strlen (oldpos);
   int ndepth = strlen (newpos);
   int depth;
-  int old_has_insn, new_has_insn;
 
   /* Pop up as many levels as necessary.  */
   for (depth = odepth; strncmp (oldpos, newpos, depth) != 0; --depth)
     continue;
-
-  /* Hunt for the last [A-Z] in both strings.  */
-  for (old_has_insn = odepth - 1; old_has_insn >= 0; --old_has_insn)
-    if (ISUPPER (oldpos[old_has_insn]))
-      break;
-  for (new_has_insn = ndepth - 1; new_has_insn >= 0; --new_has_insn)
-    if (ISUPPER (newpos[new_has_insn]))
-      break;
 
   /* Go down to desired level.  */
   while (depth < ndepth)
@@ -2457,7 +2448,7 @@ write_header (void)
 #include \"flags.h\"\n\
 #include \"hard-reg-set.h\"\n\
 #include \"resource.h\"\n\
-#include \"toplev.h\"\n\
+#include \"diagnostic-core.h\"\n\
 #include \"reload.h\"\n\
 #include \"regs.h\"\n\
 #include \"tm-constrs.h\"\n\

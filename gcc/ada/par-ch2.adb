@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -291,7 +291,7 @@ package body Ch2 is
       --  Ada 2005 (AI-284): INTERFACE is a new reserved word but it is
       --  allowed as a pragma name.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Token = Tok_Interface
       then
          Prag_Name := Name_Interface;
@@ -501,11 +501,16 @@ package body Ch2 is
          Id_Present := False;
       end if;
 
-      if Identifier_Seen and not Id_Present then
-         Error_Msg_SC
-           ("|pragma argument identifier required here");
-         Error_Msg_SC
-           ("\since previous argument had identifier (RM 2.8(4))");
+      --  Diagnose error of "positional" argument for pragma appearing after
+      --  a "named" argument (quotes here are because that's not quite accurate
+      --  Ada RM terminology).
+
+      --  Since older GNAT versions did not generate this error, disable this
+      --  message in codepeer mode to help legacy code using codepeer.
+
+      if Identifier_Seen and not Id_Present and not CodePeer_Mode then
+         Error_Msg_SC ("|pragma argument identifier required here");
+         Error_Msg_SC ("\since previous argument had identifier (RM 2.8(4))");
       end if;
 
       if Id_Present then

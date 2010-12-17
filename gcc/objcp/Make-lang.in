@@ -54,18 +54,17 @@ OBJCXX_OBJS = objcp/objcp-act.o objcp/objcp-lang.o objcp/objcp-decl.o \
 
 obj-c++_OBJS = $(OBJCXX_OBJS) cc1objplus-checksum.o
 
-cc1objplus-dummy$(exeext): $(OBJCXX_OBJS) dummy-checksum.o $(BACKEND) \
-		$(LIBDEPS)
-	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-		$(OBJCXX_OBJS) dummy-checksum.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
-
-cc1objplus-checksum.c : cc1objplus-dummy$(exeext) build/genchecksum$(build_exeext)
-	build/genchecksum$(build_exeext) cc1objplus-dummy$(exeext) > $@
+cc1objplus-checksum.c : build/genchecksum$(build_exeext) checksum-options \
+	$(OBJCXX_OBJS) $(BACKEND) $(LIBDEPS)
+	build/genchecksum$(build_exeext) $(OBJCXX_OBJS) $(BACKEND) \
+		$(LIBDEPS) checksum-options > cc1objplus-checksum.c.tmp && \
+	$(srcdir)/../move-if-change cc1objplus-checksum.c.tmp \
+	cc1objplus-checksum.c
 
 cc1objplus-checksum.o : cc1objplus-checksum.c $(CONFIG_H) $(SYSTEM_H)
 
 cc1objplus$(exeext): $(OBJCXX_OBJS) cc1objplus-checksum.o $(BACKEND) $(LIBDEPS)
-	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 		$(OBJCXX_OBJS) cc1objplus-checksum.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
 
 # Objective C++ language specific files.
@@ -73,7 +72,7 @@ cc1objplus$(exeext): $(OBJCXX_OBJS) cc1objplus-checksum.o $(BACKEND) $(LIBDEPS)
 objcp/objcp-lang.o : objcp/objcp-lang.c \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(CXX_TREE_H) \
   $(C_COMMON_H) $(LANGHOOKS_DEF_H) objc/objc-act.h cp/cp-objcp-common.h \
-  gtype-objcp.h
+  $(TARGET_H) gtype-objcp.h
 
 objcp/objcp-decl.o : objcp/objcp-decl.c \
    $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(CXX_TREE_H) \

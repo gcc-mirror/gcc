@@ -143,7 +143,6 @@
    (UNSPEC_VUPKLS_V4SF  325)
    (UNSPEC_VUPKHU_V4SF  326)
    (UNSPEC_VUPKLU_V4SF  327)
-   (UNSPEC_VNMSUBFP	328)
 ])
 
 (define_constants
@@ -513,12 +512,13 @@
   "vsel %0,%3,%2,%1"
   [(set_attr "type" "vecperm")])
 
-;; Fused multiply add
-(define_insn "altivec_vmaddfp"
+;; Fused multiply add.
+
+(define_insn "*altivec_fmav4sf4"
   [(set (match_operand:V4SF 0 "register_operand" "=v")
-	(plus:V4SF (mult:V4SF (match_operand:V4SF 1 "register_operand" "v")
-			      (match_operand:V4SF 2 "register_operand" "v"))
-	  	   (match_operand:V4SF 3 "register_operand" "v")))]
+	(fma:V4SF (match_operand:V4SF 1 "register_operand" "v")
+		  (match_operand:V4SF 2 "register_operand" "v")
+		  (match_operand:V4SF 3 "register_operand" "v")))]
   "VECTOR_UNIT_ALTIVEC_P (V4SFmode)"
   "vmaddfp %0,%1,%2,%3"
   [(set_attr "type" "vecfloat")])
@@ -526,11 +526,11 @@
 ;; We do multiply as a fused multiply-add with an add of a -0.0 vector.
 
 (define_expand "altivec_mulv4sf3"
-  [(use (match_operand:V4SF 0 "register_operand" ""))
-   (use (match_operand:V4SF 1 "register_operand" ""))
-   (use (match_operand:V4SF 2 "register_operand" ""))]
-  "VECTOR_UNIT_ALTIVEC_P (V4SFmode) && TARGET_FUSED_MADD"
-  "
+  [(set (match_operand:V4SF 0 "register_operand" "")
+	(fma:V4SF (match_operand:V4SF 1 "register_operand" "")
+		  (match_operand:V4SF 2 "register_operand" "")
+		  (match_dup 3)))]
+  "VECTOR_UNIT_ALTIVEC_P (V4SFmode)"
 {
   rtx neg0;
 
@@ -539,11 +539,8 @@
   emit_insn (gen_altivec_vspltisw (neg0, constm1_rtx));
   emit_insn (gen_vashlv4si3 (neg0, neg0, neg0));
 
-  /* Use the multiply-add.  */
-  emit_insn (gen_altivec_vmaddfp (operands[0], operands[1], operands[2],
-				  gen_lowpart (V4SFmode, neg0)));
-  DONE;
-}")
+  operands[3] = gen_lowpart (V4SFmode, neg0);
+})
 
 ;; 32-bit integer multiplication
 ;; A_high = Operand_0 & 0xFFFF0000 >> 16
@@ -627,64 +624,13 @@
 }")
 
 ;; Fused multiply subtract 
-(define_expand "altivec_vnmsubfp"
-  [(match_operand:V4SF 0 "register_operand" "")
-   (match_operand:V4SF 1 "register_operand" "")
-   (match_operand:V4SF 2 "register_operand" "")
-   (match_operand:V4SF 3 "register_operand" "")]
-  "VECTOR_UNIT_ALTIVEC_P (V4SFmode)"
-{
-  if (TARGET_FUSED_MADD && HONOR_SIGNED_ZEROS (SFmode))
-    {
-       emit_insn (gen_altivec_vnmsubfp_1 (operands[0], operands[1],
-					  operands[2], operands[3]));
-       DONE;
-    }
-  else if (TARGET_FUSED_MADD && !HONOR_SIGNED_ZEROS (DFmode))
-    {
-       emit_insn (gen_altivec_vnmsubfp_2 (operands[0], operands[1],
-					  operands[2], operands[3]));
-       DONE;
-    }
-  else
-    {
-       emit_insn (gen_altivec_vnmsubfp_3 (operands[0], operands[1],
-					  operands[2], operands[3]));
-       DONE;
-    }
-})
-
-(define_insn "altivec_vnmsubfp_1"
+(define_insn "*altivec_vnmsubfp"
   [(set (match_operand:V4SF 0 "register_operand" "=v")
 	(neg:V4SF
-	 (minus:V4SF
-	  (mult:V4SF
-	   (match_operand:V4SF 1 "register_operand" "v")
-	   (match_operand:V4SF 2 "register_operand" "v"))
-	  (match_operand:V4SF 3 "register_operand" "v"))))]
-  "VECTOR_UNIT_ALTIVEC_P (V4SFmode) && TARGET_FUSED_MADD
-   && HONOR_SIGNED_ZEROS (SFmode)"
-  "vnmsubfp %0,%1,%2,%3"
-  [(set_attr "type" "vecfloat")])
-
-(define_insn "altivec_vnmsubfp_2"
-  [(set (match_operand:V4SF 0 "register_operand" "=v")
-	(minus:V4SF
-	 (match_operand:V4SF 3 "register_operand" "v")
-	 (mult:V4SF
-	  (match_operand:V4SF 1 "register_operand" "v")
-	  (match_operand:V4SF 2 "register_operand" "v"))))]
-  "VECTOR_UNIT_ALTIVEC_P (V4SFmode) && TARGET_FUSED_MADD
-   && !HONOR_SIGNED_ZEROS (SFmode)"
-  "vnmsubfp %0,%1,%2,%3"
-  [(set_attr "type" "vecfloat")])
-
-(define_insn "altivec_vnmsubfp_3"
-  [(set (match_operand:V4SF 0 "register_operand" "=v")
-	(unspec:V4SF [(match_operand:V4SF 1 "register_operand" "v")
-		       (match_operand:V4SF 2 "register_operand" "v")
-		       (match_operand:V4SF 3 "register_operand" "v")]
-		      UNSPEC_VNMSUBFP))]
+	 (fma:V4SF (match_operand:V4SF 1 "register_operand" "v")
+		   (match_operand:V4SF 2 "register_operand" "v")
+		   (neg:V4SF
+		    (match_operand:V4SF 3 "register_operand" "v")))))]
   "VECTOR_UNIT_ALTIVEC_P (V4SFmode)"
   "vnmsubfp %0,%1,%2,%3"
   [(set_attr "type" "vecfloat")])

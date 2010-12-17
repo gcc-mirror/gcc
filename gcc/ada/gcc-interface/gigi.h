@@ -57,11 +57,18 @@ extern void rest_of_type_decl_compilation (tree t);
 /* Start a new statement group chained to the previous group.  */
 extern void start_stmt_group (void);
 
-/* Add GNU_STMT to the current BLOCK_STMT node.  */
+/* Add GNU_STMT to the current statement group.  If it is an expression with
+   no effects, it is ignored.  */
 extern void add_stmt (tree gnu_stmt);
 
-/* Similar, but set the location of GNU_STMT to that of GNAT_NODE.  */
+/* Similar, but the statement is always added, regardless of side-effects.  */
+extern void add_stmt_force (tree gnu_stmt);
+
+/* Like add_stmt, but set the location of GNU_STMT to that of GNAT_NODE.  */
 extern void add_stmt_with_node (tree gnu_stmt, Node_Id gnat_node);
+
+/* Similar, but the statement is always added, regardless of side-effects.  */
+extern void add_stmt_with_node_force (tree gnu_stmt, Node_Id gnat_node);
 
 /* Return code corresponding to the current code group.  It is normally
    a STATEMENT_LIST, but may also be a BIND_EXPR or TRY_FINALLY_EXPR if
@@ -139,9 +146,10 @@ extern tree choices_to_gnu (tree operand, Node_Id choices);
 /* Given GNAT_ENTITY, an object (constant, variable, parameter, exception)
    and GNU_TYPE, its corresponding GCC type, set Esize and Alignment to the
    size and alignment used by Gigi.  Prefer SIZE over TYPE_SIZE if non-null.
-   BY_REF is true if the object is used by reference.  */
+   BY_REF is true if the object is used by reference and BY_DOUBLE_REF is
+   true if the object is used by double reference.  */
 extern void annotate_object (Entity_Id gnat_entity, tree gnu_type, tree size,
-			     bool by_ref);
+			     bool by_ref, bool by_double_ref);
 
 /* Given a type T, a FIELD_DECL F, and a replacement value R, return a new
    type with all size expressions that contain F updated by replacing F
@@ -259,6 +267,9 @@ extern void post_error_ne_tree_2 (const char *msg, Node_Id node, Entity_Id ent,
    if none.  */
 extern tree get_exception_label (char kind);
 
+/* Return the decl for the current elaboration procedure.  */
+extern tree get_elaboration_procedure (void);
+
 /* If nonzero, pretend we are allocating at global level.  */
 extern int force_global;
 
@@ -362,8 +373,20 @@ enum standard_datatypes
   ADT_all_others_decl,
   ADT_LAST};
 
+/* Define kind of exception information associated with raise statements.  */
+enum exception_info_kind
+{
+  /* Simple exception information: file:line.  */
+  exception_simple,
+  /* Range exception information: file:line + index, first, last.  */
+  exception_range,
+  /* Column exception information: file:line:column.  */
+  exception_column
+};
+
 extern GTY(()) tree gnat_std_decls[(int) ADT_LAST];
 extern GTY(()) tree gnat_raise_decls[(int) LAST_REASON_CODE + 1];
+extern GTY(()) tree gnat_raise_decls_ext[(int) LAST_REASON_CODE + 1];
 
 #define longest_float_type_node gnat_std_decls[(int) ADT_longest_float_type]
 #define except_type_node gnat_std_decls[(int) ADT_except_type]
@@ -403,6 +426,7 @@ extern int global_bindings_p (void);
 /* Enter and exit a new binding level.  */
 extern void gnat_pushlevel (void);
 extern void gnat_poplevel (void);
+extern void gnat_zaplevel (void);
 
 /* Set SUPERCONTEXT of the BLOCK for the current binding level to FNDECL
    and point FNDECL to this BLOCK.  */
@@ -442,6 +466,9 @@ extern tree gnat_signed_type (tree type_node);
 /* Return 1 if the types T1 and T2 are compatible, i.e. if they can be
    transparently converted to each other.  */
 extern int gnat_types_compatible_p (tree t1, tree t2);
+
+/* Return true if T, a FUNCTION_TYPE, has the specified list of flags.  */
+extern bool fntype_same_flags_p (const_tree, tree, bool, bool, bool);
 
 /* Create an expression whose value is that of EXPR,
    converted to type TYPE.  The TREE_TYPE of the value
@@ -500,9 +527,6 @@ extern void rest_of_record_type_compilation (tree record_type);
 
 /* Append PARALLEL_TYPE on the chain of parallel types for decl.  */
 extern void add_parallel_type (tree decl, tree parallel_type);
-
-/* Return the parallel type associated to a type, if any.  */
-extern tree get_parallel_type (tree type);
 
 /* Return a FUNCTION_TYPE node.  RETURN_TYPE is the type returned by the
    subprogram.  If it is VOID_TYPE, then we are dealing with a procedure,
@@ -760,6 +784,11 @@ extern tree build_unary_op (enum tree_code op_code, tree result_type,
 extern tree build_cond_expr (tree result_type, tree condition_operand,
                              tree true_operand, tree false_operand);
 
+/* Similar, but for COMPOUND_EXPR.  */
+
+extern tree build_compound_expr (tree result_type, tree stmt_operand,
+				 tree expr_operand);
+
 /* Similar, but for RETURN_EXPR.  */
 extern tree build_return_expr (tree ret_obj, tree ret_val);
 
@@ -785,9 +814,19 @@ extern tree build_call_0_expr (tree fundecl);
     (N_Raise_{Constraint,Storage,Program}_Error).  */
 extern tree build_call_raise (int msg, Node_Id gnat_node, char kind);
 
-/* Return a CONSTRUCTOR of TYPE whose list is LIST.  This is not the
+/* Similar to build_call_raise, for an index or range check exception as
+   determined by MSG, with extra information generated of the form
+   "INDEX out of range FIRST..LAST".  */
+extern tree build_call_raise_range (int msg, Node_Id gnat_node,
+				    tree index, tree first, tree last);
+
+/* Similar to build_call_raise, with extra information about the column
+   where the check failed.  */
+extern tree build_call_raise_column (int msg, Node_Id gnat_node);
+
+/* Return a CONSTRUCTOR of TYPE whose elements are V.  This is not the
    same as build_constructor in the language-independent tree.c.  */
-extern tree gnat_build_constructor (tree type, tree list);
+extern tree gnat_build_constructor (tree type, VEC(constructor_elt,gc) *v);
 
 /* Return a COMPONENT_REF to access a field that is given by COMPONENT,
    an IDENTIFIER_NODE giving the name of the field, FIELD, a FIELD_DECL,

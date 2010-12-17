@@ -1,5 +1,5 @@
 /* PR c/20043 */
-/* { dg-compile } */
+/* { dg-do compile } */
 /* { dg-options "-std=gnu99" } */
 
 typedef union { int *i; long *l; } U

@@ -1,6 +1,6 @@
 # -*- makefile -*-
 # GCC makefile fragment for MeP
-# Copyright (C) 2001, 2002, 2003, 2005, 2007, 2009
+# Copyright (C) 2001, 2002, 2003, 2005, 2007, 2009, 2010
 # Free Software Foundation, Inc.
 # Contributed by Red Hat Inc
 #
@@ -22,7 +22,7 @@
 
 # Force genpreds to be rebuilt in case MeP-Integrator changed the predicates
 
-GTM_H = tm.h $(tm_file_list) $(srcdir)/config/mep/mep-intrin.h
+GTM_H = tm.h $(tm_file_list) $(srcdir)/config/mep/mep-intrin.h insn-constants.h
 
 # Use -O0 instead of -O2 so we don't get complex relocations
 
@@ -33,7 +33,7 @@ CRTSTUFF_CFLAGS = -O0 $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
 TCFLAGS = -mlibrary
 
 mep-pragma.o: $(srcdir)/config/mep/mep-pragma.c $(CONFIG_H) $(SYSTEM_H) \
-	coretypes.h $(TM_H) $(TREE_H) $(RTL_H) toplev.h $(C_PRAGMA_H) \
+	coretypes.h $(TM_H) $(TREE_H) $(RTL_H) $(C_PRAGMA_H) \
 	$(CPPLIB_H) hard-reg-set.h output.h $(srcdir)/config/mep/mep-protos.h \
 	function.h insn-config.h reload.h $(TARGET_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

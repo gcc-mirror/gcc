@@ -33,7 +33,7 @@
 #include "tconfig.h"
 #include "tsystem.h"
 #ifndef inhibit_libc
-#include <link.h>
+#include <elf.h>		/* Get DT_CONFIG.  */
 #endif
 #include "coretypes.h"
 #include "tm.h"
@@ -58,6 +58,8 @@
 #endif
 
 #if defined(USE_PT_GNU_EH_FRAME)
+
+#include <link.h>
 
 #ifndef __RELOC_POINTER
 # define __RELOC_POINTER(ptr, base) ((ptr) + (base))

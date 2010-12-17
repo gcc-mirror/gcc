@@ -1,12 +1,11 @@
-<?xml version='1.0'?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
-[ ]>
-
-<chapter id="std.diagnostics" xreflabel="Diagnostics">
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="std.diagnostics" xreflabel="Diagnostics">
 <?dbhtml filename="diagnostics.html"?>
 
-<chapterinfo>
+<info><title>
+  Diagnostics
+  <indexterm><primary>Diagnostics</primary></indexterm>
+</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -15,19 +14,16 @@
       library
     </keyword>
   </keywordset>
-</chapterinfo>
+</info>
 
-<title>
-  Diagnostics
-  <indexterm><primary>Diagnostics</primary></indexterm>
-</title>
 
-<sect1 id="std.diagnostics.exceptions" xreflabel="Exceptions">
+
+<section xml:id="std.diagnostics.exceptions" xreflabel="Exceptions"><info><title>Exceptions</title></info>
   <?dbhtml filename="exceptions.html"?>
-  <title>Exceptions</title>
+  
 
-  <sect2 id="std.diagnostics.exceptions.api">
-    <title>API Reference</title>
+  <section xml:id="std.diagnostics.exceptions.api"><info><title>API Reference</title></info>
+    
     <para>
       All exception objects are defined in one of the standard header
       files: <filename>exception</filename>,
@@ -53,9 +49,9 @@
     
     <!-- Doxygen XML: api/group__exceptions.xml -->
       
-  </sect2>
-  <sect2 id="std.diagnostics.exceptions.data" xreflabel="Adding Data to Exceptions">
-    <title>Adding Data to <classname>exception</classname></title>
+  </section>
+  <section xml:id="std.diagnostics.exceptions.data" xreflabel="Adding Data to Exceptions"><info><title>Adding Data to <classname>exception</classname></title></info>
+    
     <para>
       The standard exception classes carry with them a single string as
       data (usually describing what went wrong or where the 'throw' took
@@ -76,11 +72,11 @@
    };
    </programlisting>
 
-  </sect2>
-</sect1>
+  </section>
+</section>
 
-<sect1 id="std.diagnostics.concept_checking" xreflabel="Concept Checking">
-  <title>Concept Checking</title>
+<section xml:id="std.diagnostics.concept_checking" xreflabel="Concept Checking"><info><title>Concept Checking</title></info>
+  
   <para>
     In 1999, SGI added <quote>concept checkers</quote> to their
     implementation of the STL: code which checked the template
@@ -88,7 +84,7 @@
     that the parameters being used met the requirements of the
     standard.  For example, the Standard requires that types passed as
     template parameters to <classname>vector</classname> be
-    &quot;Assignable&quot; (which means what you think it means).  The
+    "Assignable" (which means what you think it means).  The
     checking was done during compilation, and none of the code was
     executed at runtime.
    </para>
@@ -101,8 +97,8 @@
      The primary author of the checking code, Jeremy Siek, had already
      started work on a replacement implementation.  The new code has been
      formally reviewed and accepted into
-   <ulink url="http://www.boost.org/libs/concept_check/concept_check.htm">the
-   Boost libraries</ulink>, and we are pleased to incorporate it into the
+   <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.boost.org/libs/concept_check/concept_check.htm">the
+   Boost libraries</link>, and we are pleased to incorporate it into the
    GNU C++ library.
  </para>
  <para>
@@ -126,6 +122,6 @@
    checking described above.
  </para>
 
-</sect1>
+</section>
 
 </chapter>

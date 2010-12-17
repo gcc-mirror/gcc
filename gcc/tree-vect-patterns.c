@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-data-ref.h"
 #include "tree-vectorizer.h"
 #include "recog.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 
 /* Function prototypes */
 static void vect_pattern_recog_1
@@ -254,6 +254,11 @@ vect_recog_dot_prod_pattern (gimple last_stmt, tree *type_in, tree *type_out)
 
   prod_type = half_type;
   stmt = SSA_NAME_DEF_STMT (oprnd0);
+
+  /* It could not be the dot_prod pattern if the stmt is outside the loop.  */
+  if (!gimple_bb (stmt) || !flow_bb_inside_loop_p (loop, gimple_bb (stmt)))
+    return NULL;
+
   /* FORNOW.  Can continue analyzing the def-use chain when this stmt in a phi
      inside the loop (in case we are analyzing an outer-loop).  */
   if (!is_gimple_assign (stmt))
@@ -407,6 +412,7 @@ vect_recog_widen_mult_pattern (gimple last_stmt,
   vectype = get_vectype_for_scalar_type (half_type0);
   vectype_out = get_vectype_for_scalar_type (type);
   if (!vectype
+      || !vectype_out
       || !supportable_widening_operation (WIDEN_MULT_EXPR, last_stmt,
 					  vectype_out, vectype,
 					  &dummy, &dummy, &dummy_code,
@@ -714,8 +720,7 @@ vect_pattern_recog_1 (
       optab = optab_for_tree_code (code, type_in, optab_default);
       vec_mode = TYPE_MODE (type_in);
       if (!optab
-          || (icode = optab_handler (optab, vec_mode)->insn_code) ==
-              CODE_FOR_nothing
+          || (icode = optab_handler (optab, vec_mode)) == CODE_FOR_nothing
           || (insn_data[icode].operand[0].mode != TYPE_MODE (type_out)))
 	return;
     }
@@ -741,9 +746,7 @@ vect_pattern_recog_1 (
 
   /* Patterns cannot be vectorized using SLP, because they change the order of
      computation.  */
-  for (i = 0; VEC_iterate (gimple, LOOP_VINFO_REDUCTIONS (loop_vinfo), i,
-                           next);
-       i++)
+  FOR_EACH_VEC_ELT (gimple, LOOP_VINFO_REDUCTIONS (loop_vinfo), i, next)
     if (next == stmt)
       VEC_ordered_remove (gimple, LOOP_VINFO_REDUCTIONS (loop_vinfo), i); 
 }

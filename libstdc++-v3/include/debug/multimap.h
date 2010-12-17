@@ -49,6 +49,9 @@ namespace __debug
       typedef _GLIBCXX_STD_D::multimap<_Key, _Tp, _Compare, _Allocator> _Base;
       typedef __gnu_debug::_Safe_sequence<multimap> _Safe_base;
 
+      typedef typename _Base::const_iterator _Base_const_iterator;
+      typedef typename _Base::iterator _Base_iterator;
+      typedef __gnu_debug::_Equal_to<_Base_const_iterator> _Equal;
     public:
       // types:
       typedef _Key				     key_type;
@@ -59,9 +62,9 @@ namespace __debug
       typedef typename _Base::reference              reference;
       typedef typename _Base::const_reference        const_reference;
 
-      typedef __gnu_debug::_Safe_iterator<typename _Base::iterator, multimap>
+      typedef __gnu_debug::_Safe_iterator<_Base_iterator, multimap>
                                                      iterator;
-      typedef __gnu_debug::_Safe_iterator<typename _Base::const_iterator,
+      typedef __gnu_debug::_Safe_iterator<_Base_const_iterator,
                                            multimap> const_iterator;
 
       typedef typename _Base::size_type              size_type;
@@ -82,7 +85,9 @@ namespace __debug
       multimap(_InputIterator __first, _InputIterator __last,
 	       const _Compare& __comp = _Compare(),
 	       const _Allocator& __a = _Allocator())
-      : _Base(__gnu_debug::__check_valid_range(__first, __last), __last,
+	: _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
+								     __last)),
+		__gnu_debug::__base(__last),
 	      __comp, __a) { }
 
       multimap(const multimap& __x)
@@ -93,7 +98,7 @@ namespace __debug
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       multimap(multimap&& __x)
-      : _Base(std::forward<multimap>(__x)), _Safe_base()
+      : _Base(std::move(__x)), _Safe_base()
       { this->_M_swap(__x); }
 
       multimap(initializer_list<value_type> __l,
@@ -196,32 +201,59 @@ namespace __debug
       { return iterator(_Base::insert(__x), this); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename _Pair, typename = typename
+	       std::enable_if<std::is_convertible<_Pair,
+						  value_type>::value>::type>
+        iterator
+        insert(_Pair&& __x)
+        { return iterator(_Base::insert(std::forward<_Pair>(__x)), this); }
+#endif
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
       void
       insert(std::initializer_list<value_type> __list)
       { _Base::insert(__list); }
 #endif
 
       iterator
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      insert(const_iterator __position, const value_type& __x)
+#else
       insert(iterator __position, const value_type& __x)
+#endif
       {
 	__glibcxx_check_insert(__position);
 	return iterator(_Base::insert(__position.base(), __x), this);
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename _Pair, typename = typename
+	       std::enable_if<std::is_convertible<_Pair,
+						  value_type>::value>::type>
+        iterator
+        insert(const_iterator __position, _Pair&& __x)
+        {
+	  __glibcxx_check_insert(__position);
+	  return iterator(_Base::insert(__position.base(),
+					std::forward<_Pair>(__x)), this);
+	}
+#endif
 
       template<typename _InputIterator>
         void
         insert(_InputIterator __first, _InputIterator __last)
         {
 	  __glibcxx_check_valid_range(__first, __last);
-	  _Base::insert(__first, __last);
+	  _Base::insert(__gnu_debug::__base(__first),
+			__gnu_debug::__base(__last));
 	}
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       iterator
-      erase(iterator __position)
+      erase(const_iterator __position)
       {
 	__glibcxx_check_erase(__position);
-	__position._M_invalidate();
+	this->_M_invalidate_if(_Equal(__position.base()));
 	return iterator(_Base::erase(__position.base()), this);
       }
 #else
@@ -229,7 +261,7 @@ namespace __debug
       erase(iterator __position)
       {
 	__glibcxx_check_erase(__position);
-	__position._M_invalidate();
+	this->_M_invalidate_if(_Equal(__position.base()));
 	_Base::erase(__position.base());
       }
 #endif
@@ -237,28 +269,36 @@ namespace __debug
       size_type
       erase(const key_type& __x)
       {
-	std::pair<iterator, iterator> __victims = this->equal_range(__x);
+	std::pair<_Base_iterator, _Base_iterator> __victims =
+	  _Base::equal_range(__x);
 	size_type __count = 0;
-	while (__victims.first != __victims.second)
-	{
-	  iterator __victim = __victims.first++;
-	  __victim._M_invalidate();
-	  _Base::erase(__victim.base());
-	  ++__count;
-	}
+	_Base_iterator __victim = __victims.first;
+	while (__victim !=  __victims.second)
+	  {
+	    this->_M_invalidate_if(_Equal(__victim));
+	    _Base::erase(__victim++);
+	    ++__count;
+	  }
 	return __count;
       }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       iterator
-      erase(iterator __first, iterator __last)
+      erase(const_iterator __first, const_iterator __last)
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 151. can't currently clear() empty container
 	__glibcxx_check_erase_range(__first, __last);
-	while (__first != __last)
-	  this->erase(__first++);
-	return __last;
+	for (_Base_const_iterator __victim = __first.base();
+	     __victim != __last.base(); ++__victim)
+	  {
+	    _GLIBCXX_DEBUG_VERIFY(__victim != _Base::end(),
+				  _M_message(__gnu_debug::__msg_valid_range)
+				  ._M_iterator(__first, "first")
+				  ._M_iterator(__last, "last"));
+	    this->_M_invalidate_if(_Equal(__victim));
+	  }
+	return iterator(_Base::erase(__first.base(), __last.base()), this);
       }
 #else
       void
@@ -267,8 +307,16 @@ namespace __debug
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 151. can't currently clear() empty container
 	__glibcxx_check_erase_range(__first, __last);
-	while (__first != __last)
-	  this->erase(__first++);
+	for (_Base_iterator __victim = __first.base();
+	     __victim != __last.base(); ++__victim)
+	  {
+	    _GLIBCXX_DEBUG_VERIFY(__victim != _Base::end(),
+				  _M_message(__gnu_debug::__msg_valid_range)
+				  ._M_iterator(__first, "first")
+				  ._M_iterator(__last, "last"));
+	    this->_M_invalidate_if(_Equal(__victim));
+	  }
+	_Base::erase(__first.base(), __last.base());
       }
 #endif
 
@@ -281,7 +329,10 @@ namespace __debug
 
       void
       clear()
-      { this->erase(begin(), end()); }
+      {
+	this->_M_invalidate_all();
+	_Base::clear();
+      }
 
       // observers:
       using _Base::key_comp;
@@ -317,7 +368,6 @@ namespace __debug
       std::pair<iterator,iterator>
       equal_range(const key_type& __x)
       {
-	typedef typename _Base::iterator _Base_iterator;
 	std::pair<_Base_iterator, _Base_iterator> __res =
 	_Base::equal_range(__x);
 	return std::make_pair(iterator(__res.first, this),
@@ -327,9 +377,8 @@ namespace __debug
       std::pair<const_iterator,const_iterator>
       equal_range(const key_type& __x) const
       {
-	typedef typename _Base::const_iterator _Base_const_iterator;
 	std::pair<_Base_const_iterator, _Base_const_iterator> __res =
-	_Base::equal_range(__x);
+	  _Base::equal_range(__x);
 	return std::make_pair(const_iterator(__res.first, this),
 			      const_iterator(__res.second, this));
       }
@@ -344,9 +393,8 @@ namespace __debug
       void
       _M_invalidate_all()
       {
-	typedef typename _Base::const_iterator _Base_const_iterator;
 	typedef __gnu_debug::_Not_equal_to<_Base_const_iterator> _Not_equal;
-	this->_M_invalidate_if(_Not_equal(_M_base().end()));
+	this->_M_invalidate_if(_Not_equal(_Base::end()));
       }
     };
 

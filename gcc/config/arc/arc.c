@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on the Argonaut ARC cpu.
    Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-   2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2004, 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "expr.h"
 #include "recog.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "df.h"
 #include "tm_p.h"
@@ -93,7 +94,14 @@ static void arc_external_libcall (rtx);
 static bool arc_return_in_memory (const_tree, const_tree);
 static bool arc_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				   const_tree, bool);
+static rtx arc_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+			     const_tree, bool);
+static void arc_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+				      const_tree, bool);
+static unsigned int arc_function_arg_boundary (enum machine_mode, const_tree);
 static void arc_trampoline_init (rtx, tree, rtx);
+static void arc_option_override (void);
+static void arc_conditional_register_usage (void);
 
 
 /* ARC specific attributs.  */
@@ -129,6 +137,9 @@ static const struct attribute_spec arc_attribute_table[] =
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION arc_handle_option
 
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE arc_option_override
+
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS arc_rtx_costs
 #undef TARGET_ADDRESS_COST
@@ -143,6 +154,12 @@ static const struct attribute_spec arc_attribute_table[] =
 #define TARGET_RETURN_IN_MEMORY arc_return_in_memory
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE arc_pass_by_reference
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG arc_function_arg
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE arc_function_arg_advance
+#undef TARGET_FUNCTION_ARG_BOUNDARY
+#define TARGET_FUNCTION_ARG_BOUNDARY arc_function_arg_boundary
 #undef TARGET_CALLEE_COPIES
 #define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
 
@@ -154,6 +171,9 @@ static const struct attribute_spec arc_attribute_table[] =
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT arc_trampoline_init
+
+#undef TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE arc_conditional_register_usage
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -172,10 +192,11 @@ arc_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
     }
 }
 
-/* Called by OVERRIDE_OPTIONS to initialize various things.  */
+/* Implement TARGET_OPTION_OVERRIDE.
+   These need to be done at start up.  It's convenient to do them here.  */
 
-void
-arc_init (void)
+static void
+arc_option_override (void)
 {
   char *tmp;
   
@@ -2348,6 +2369,79 @@ arc_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
   return size > 8;
 }
 
+/* Round SIZE up to a word boundary.  */
+#define ROUND_ADVANCE(SIZE) \
+(((SIZE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+
+/* Round arg MODE/TYPE up to the next word boundary.  */
+#define ROUND_ADVANCE_ARG(MODE, TYPE) \
+((MODE) == BLKmode				\
+ ? ROUND_ADVANCE (int_size_in_bytes (TYPE))	\
+ : ROUND_ADVANCE (GET_MODE_SIZE (MODE)))
+
+/* Round CUM up to the necessary point for argument MODE/TYPE.  */
+#define ROUND_ADVANCE_CUM(CUM, MODE, TYPE) \
+((((MODE) == BLKmode ? TYPE_ALIGN (TYPE) : GET_MODE_BITSIZE (MODE)) \
+  > BITS_PER_WORD)	\
+ ? (((CUM) + 1) & ~1)	\
+ : (CUM))
+
+/* Return boolean indicating arg of type TYPE and mode MODE will be passed in
+   a reg.  This includes arguments that have to be passed by reference as the
+   pointer to them is passed in a reg if one is available (and that is what
+   we're given).  */
+#define PASS_IN_REG_P(CUM, MODE, TYPE) \
+((CUM) < MAX_ARC_PARM_REGS						\
+ && ((ROUND_ADVANCE_CUM ((CUM), (MODE), (TYPE))				\
+      + ROUND_ADVANCE_ARG ((MODE), (TYPE))				\
+      <= MAX_ARC_PARM_REGS)))
+
+/* Determine where to put an argument to a function.
+   Value is zero to push the argument on the stack,
+   or a hard register in which to store the argument.
+
+   MODE is the argument's machine mode.
+   TYPE is the data type of the argument (as a tree).
+    This is null for libcalls where that information may
+    not be available.
+   CUM is a variable of type CUMULATIVE_ARGS which gives info about
+    the preceding args and about the function being called.
+   NAMED is nonzero if this argument is a named parameter
+    (otherwise it is an extra parameter matching an ellipsis).  */
+/* On the ARC the first MAX_ARC_PARM_REGS args are normally in registers
+   and the rest are pushed.  */
+
+static rtx
+arc_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		  const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  return (PASS_IN_REG_P (*cum, mode, type)
+	  ? gen_rtx_REG (mode, ROUND_ADVANCE_CUM (*cum, mode, type))
+	  : NULL_RTX);
+}
+
+/* Worker function for TARGET_FUNCTION_ARG_ADVANCE.  */
+
+static void
+arc_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			  const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  *cum = (ROUND_ADVANCE_CUM (*cum, mode, type)
+	  + ROUND_ADVANCE_ARG (mode, type));
+}
+
+/* Worker function for TARGET_FUNCTION_ARG_BOUNDARY.  */
+
+static unsigned int
+arc_function_arg_boundary (enum machine_mode mode, const_tree type)
+{
+  return (type != NULL_TREE
+	  ? TYPE_ALIGN (type)
+	  : (GET_MODE_BITSIZE (mode) <= PARM_BOUNDARY
+	     ? PARM_BOUNDARY
+	     : 2 * PARM_BOUNDARY));
+}
+
 /* Trampolines.  */
 /* ??? This doesn't work yet because GCC will use as the address of a nested
    function the address of the trampoline.  We need to use that address
@@ -2383,3 +2477,16 @@ arc_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 
   emit_insn (gen_flush_icache (m_tramp));
 }
+
+/* Worker function for TARGET_CONDITIONAL_REGISTER_USAGE.  */
+
+static void
+arc_conditional_register_usage (void)
+{
+  if (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)
+    {
+      fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
+      call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
+    }
+}
+

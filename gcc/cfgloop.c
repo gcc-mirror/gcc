@@ -27,8 +27,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "obstack.h"
 #include "function.h"
 #include "basic-block.h"
-#include "toplev.h"
 #include "cfgloop.h"
+#include "diagnostic-core.h"
 #include "flags.h"
 #include "tree.h"
 #include "tree-flow.h"
@@ -130,7 +130,7 @@ flow_loop_dump (const struct loop *loop, FILE *file,
     {
       fprintf (file, "multiple latches:");
       latches = get_loop_latch_edges (loop);
-      for (i = 0; VEC_iterate (edge, latches, i, e); i++)
+      FOR_EACH_VEC_ELT (edge, latches, i, e)
 	fprintf (file, " %d", e->src->index);
       VEC_free (edge, heap, latches);
       fprintf (file, "\n");
@@ -209,7 +209,7 @@ flow_loops_free (struct loops *loops)
       loop_p loop;
 
       /* Free the loop descriptors.  */
-      for (i = 0; VEC_iterate (loop_p, loops->larray, i, loop); i++)
+      FOR_EACH_VEC_ELT (loop_p, loops->larray, i, loop)
 	{
 	  if (!loop)
 	    continue;
@@ -286,7 +286,7 @@ establish_preds (struct loop *loop, struct loop *father)
 
   VEC_truncate (loop_p, loop->superloops, 0);
   VEC_reserve (loop_p, gc, loop->superloops, depth);
-  for (i = 0; VEC_iterate (loop_p, father->superloops, i, ploop); i++)
+  FOR_EACH_VEC_ELT (loop_p, father->superloops, i, ploop)
     VEC_quick_push (loop_p, loop->superloops, ploop);
   VEC_quick_push (loop_p, loop->superloops, father);
 
@@ -339,7 +339,6 @@ alloc_loop (void)
   loop->exits = ggc_alloc_cleared_loop_exit ();
   loop->exits->next = loop->exits->prev = loop->exits;
   loop->can_be_parallel = false;
-  loop->single_iv = NULL_TREE;
 
   return loop;
 }
@@ -411,10 +410,7 @@ flow_loops_find (struct loops *loops)
 
       /* If we have an abnormal predecessor, do not consider the
 	 loop (not worth the problems).  */
-      FOR_EACH_EDGE (e, ei, header->preds)
-	if (e->flags & EDGE_ABNORMAL)
-	  break;
-      if (e)
+      if (bb_has_abnormal_pred (header))
 	continue;
 
       FOR_EACH_EDGE (e, ei, header->preds)
@@ -531,7 +527,7 @@ find_subloop_latch_edge_by_profile (VEC (edge, heap) *latches)
   edge e, me = NULL;
   gcov_type mcount = 0, tcount = 0;
 
-  for (i = 0; VEC_iterate (edge, latches, i, e); i++)
+  FOR_EACH_VEC_ELT (edge, latches, i, e)
     {
       if (e->count > mcount)
 	{
@@ -580,7 +576,7 @@ find_subloop_latch_edge_by_ivs (struct loop *loop ATTRIBUTE_UNUSED, VEC (edge, h
       latch = e;
 
   /* Verify that it dominates all the latch edges.  */
-  for (i = 0; VEC_iterate (edge, latches, i, e); i++)
+  FOR_EACH_VEC_ELT (edge, latches, i, e)
     if (!dominated_by_p (CDI_DOMINATORS, e->src, latch->src))
       return NULL;
 
@@ -599,7 +595,7 @@ find_subloop_latch_edge_by_ivs (struct loop *loop ATTRIBUTE_UNUSED, VEC (edge, h
       if (!bb || !flow_bb_inside_loop_p (loop, bb))
 	continue;
 
-      for (i = 0; VEC_iterate (edge, latches, i, e); i++)
+      FOR_EACH_VEC_ELT (edge, latches, i, e)
 	if (e != latch
 	    && PHI_ARG_DEF_FROM_EDGE (phi, e) == lop)
 	  return NULL;
@@ -697,7 +693,7 @@ merge_latch_edges (struct loop *loop)
 	fprintf (dump_file, "Merged latch edges of loop %d\n", loop->num);
 
       mfb_reis_set = pointer_set_create ();
-      for (i = 0; VEC_iterate (edge, latches, i, e); i++)
+      FOR_EACH_VEC_ELT (edge, latches, i, e)
 	pointer_set_insert (mfb_reis_set, e);
       latch = make_forwarder_block (loop->header, mfb_redirect_edges_in_set,
 				    NULL);
@@ -925,22 +921,16 @@ get_loop_body_in_bfs_order (const struct loop *loop)
       edge e;
       edge_iterator ei;
 
-      if (!bitmap_bit_p (visited, bb->index))
-	{
-	  /* This basic block is now visited */
-	  bitmap_set_bit (visited, bb->index);
-	  blocks[i++] = bb;
-	}
+      if (bitmap_set_bit (visited, bb->index))
+	/* This basic block is now visited */
+	blocks[i++] = bb;
 
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
 	  if (flow_bb_inside_loop_p (loop, e->dest))
 	    {
-	      if (!bitmap_bit_p (visited, e->dest->index))
-		{
-		  bitmap_set_bit (visited, e->dest->index);
-		  blocks[i++] = e->dest;
-		}
+	      if (bitmap_set_bit (visited, e->dest->index))
+		blocks[i++] = e->dest;
 	    }
 	}
 
@@ -1199,7 +1189,7 @@ add_bb_to_loop (basic_block bb, struct loop *loop)
   bb->loop_father = loop;
   bb->loop_depth = loop_depth (loop);
   loop->num_nodes++;
-  for (i = 0; VEC_iterate (loop_p, loop->superloops, i, ploop); i++)
+  FOR_EACH_VEC_ELT (loop_p, loop->superloops, i, ploop)
     ploop->num_nodes++;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
@@ -1224,7 +1214,7 @@ remove_bb_from_loops (basic_block bb)
 
   gcc_assert (loop != NULL);
   loop->num_nodes--;
-  for (i = 0; VEC_iterate (loop_p, loop->superloops, i, ploop); i++)
+  FOR_EACH_VEC_ELT (loop_p, loop->superloops, i, ploop)
     ploop->num_nodes--;
   bb->loop_father = NULL;
   bb->loop_depth = 0;
@@ -1370,36 +1360,36 @@ verify_loop_structure (void)
       if (loops_state_satisfies_p (LOOPS_HAVE_PREHEADERS)
 	  && EDGE_COUNT (loop->header->preds) != 2)
 	{
-	  error ("loop %d's header does not have exactly 2 entries", i);
+	  error ("loop %d%'s header does not have exactly 2 entries", i);
 	  err = 1;
 	}
       if (loops_state_satisfies_p (LOOPS_HAVE_SIMPLE_LATCHES))
 	{
 	  if (!single_succ_p (loop->latch))
 	    {
-	      error ("loop %d's latch does not have exactly 1 successor", i);
+	      error ("loop %d%'s latch does not have exactly 1 successor", i);
 	      err = 1;
 	    }
 	  if (single_succ (loop->latch) != loop->header)
 	    {
-	      error ("loop %d's latch does not have header as successor", i);
+	      error ("loop %d%'s latch does not have header as successor", i);
 	      err = 1;
 	    }
 	  if (loop->latch->loop_father != loop)
 	    {
-	      error ("loop %d's latch does not belong directly to it", i);
+	      error ("loop %d%'s latch does not belong directly to it", i);
 	      err = 1;
 	    }
 	}
       if (loop->header->loop_father != loop)
 	{
-	  error ("loop %d's header does not belong directly to it", i);
+	  error ("loop %d%'s header does not belong directly to it", i);
 	  err = 1;
 	}
       if (loops_state_satisfies_p (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS)
 	  && (loop_latch_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP))
 	{
-	  error ("loop %d's latch is marked as part of irreducible region", i);
+	  error ("loop %d%'s latch is marked as part of irreducible region", i);
 	  err = 1;
 	}
     }
@@ -1521,7 +1511,7 @@ verify_loop_structure (void)
 	      exit = get_exit_descriptions (e);
 	      if (!exit)
 		{
-		  error ("Exit %d->%d not recorded",
+		  error ("exit %d->%d not recorded",
 			 e->src->index, e->dest->index);
 		  err = 1;
 		}
@@ -1539,7 +1529,7 @@ verify_loop_structure (void)
 
 	      if (eloops != 0)
 		{
-		  error ("Wrong list of exited loops for edge  %d->%d",
+		  error ("wrong list of exited loops for edge  %d->%d",
 			 e->src->index, e->dest->index);
 		  err = 1;
 		}
@@ -1548,7 +1538,7 @@ verify_loop_structure (void)
 
       if (n_exits != htab_elements (current_loops->exits))
 	{
-	  error ("Too many loop exits recorded");
+	  error ("too many loop exits recorded");
 	  err = 1;
 	}
 
@@ -1621,15 +1611,30 @@ single_exit (const struct loop *loop)
     return NULL;
 }
 
-/* Returns true when BB has an edge exiting LOOP.  */
+/* Returns true when BB has an incoming edge exiting LOOP.  */
 
 bool
-is_loop_exit (struct loop *loop, basic_block bb)
+loop_exits_to_bb_p (struct loop *loop, basic_block bb)
 {
   edge e;
   edge_iterator ei;
 
   FOR_EACH_EDGE (e, ei, bb->preds)
+    if (loop_exit_edge_p (loop, e))
+      return true;
+
+  return false;
+}
+
+/* Returns true when BB has an outgoing edge exiting LOOP.  */
+
+bool
+loop_exits_from_bb_p (struct loop *loop, basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
     if (loop_exit_edge_p (loop, e))
       return true;
 

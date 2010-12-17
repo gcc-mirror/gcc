@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,8 @@ with Prj.Err;  use Prj.Err;
 with Prj.Ext;  use Prj.Ext;
 with Prj.Nmsc; use Prj.Nmsc;
 with Snames;
+
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 
 with GNAT.Case_Util; use GNAT.Case_Util;
 with GNAT.HTable;
@@ -76,9 +78,10 @@ package body Prj.Proc is
    --  the package or project with declarations Decl.
 
    procedure Check
-     (In_Tree : Project_Tree_Ref;
-      Project : Project_Id;
-      Flags   : Processing_Flags);
+     (In_Tree   : Project_Tree_Ref;
+      Project   : Project_Id;
+      Node_Tree : Prj.Tree.Project_Node_Tree_Ref;
+      Flags     : Processing_Flags);
    --  Set all projects to not checked, then call Recursive_Check for the
    --  main project Project. Project is set to No_Project if errors occurred.
    --  Current_Dir is for optimization purposes, avoiding extra system calls.
@@ -270,12 +273,13 @@ package body Prj.Proc is
    -----------
 
    procedure Check
-     (In_Tree : Project_Tree_Ref;
-      Project : Project_Id;
-      Flags   : Processing_Flags)
+     (In_Tree   : Project_Tree_Ref;
+      Project   : Project_Id;
+      Node_Tree : Prj.Tree.Project_Node_Tree_Ref;
+      Flags     : Processing_Flags)
    is
    begin
-      Process_Naming_Scheme (In_Tree, Project, Flags);
+      Process_Naming_Scheme (In_Tree, Project, Node_Tree, Flags);
 
       --  Set the Other_Part field for the units
 
@@ -346,7 +350,7 @@ package body Prj.Proc is
          Var := In_Tree.Variable_Elements.Table (V1);
          V1  := Var.Next;
 
-         --  Do not copy the value of attribute inker_Options if Restricted
+         --  Do not copy the value of attribute Linker_Options if Restricted
 
          if Restricted and then Var.Name = Snames.Name_Linker_Options then
             Var.Value.Values := Nil_String;
@@ -460,6 +464,10 @@ package body Prj.Proc is
       Lower : Boolean;
 
    begin
+      if Index = All_Other_Names then
+         return Index;
+      end if;
+
       Get_Name_String (Index);
       Lower := Case_Insensitive (Attr, Tree);
 
@@ -1015,15 +1023,17 @@ package body Prj.Proc is
                      From_Project_Node_Tree));
 
                declare
-                  Name    : constant Name_Id  := Name_Find;
-                  Default : Name_Id           := No_Name;
-                  Value   : Name_Id           := No_Name;
-
-                  Def_Var : Variable_Value;
+                  Name     : constant Name_Id   := Name_Find;
+                  Default  : Name_Id            := No_Name;
+                  Value    : Name_Id            := No_Name;
+                  Ext_List : Boolean            := False;
+                  Str_List : String_List_Access := null;
+                  Def_Var  : Variable_Value;
 
                   Default_Node : constant Project_Node_Id :=
-                    External_Default_Of
-                      (The_Current_Term, From_Project_Node_Tree);
+                                   External_Default_Of
+                                     (The_Current_Term,
+                                      From_Project_Node_Tree);
 
                begin
                   --  If there is a default value for the external reference,
@@ -1047,19 +1057,132 @@ package body Prj.Proc is
                      end if;
                   end if;
 
-                  Value :=
-                    Prj.Ext.Value_Of (From_Project_Node_Tree, Name, Default);
+                  Ext_List := Expression_Kind_Of
+                               (The_Current_Term,
+                                From_Project_Node_Tree) = List;
 
-                  if Value = No_Name then
-                     if not Quiet_Output then
-                        Error_Msg
-                          (Flags, "?undefined external reference",
-                           Location_Of
-                             (The_Current_Term, From_Project_Node_Tree),
-                           Project);
+                  if Ext_List then
+                     Value :=
+                       Prj.Ext.Value_Of
+                         (From_Project_Node_Tree, Name, No_Name);
+
+                     if Value /= No_Name then
+                        declare
+                           Sep   : constant String :=
+                                     Get_Name_String (Default);
+                           First : Positive := 1;
+                           Lst   : Natural;
+                           Done  : Boolean := False;
+                           Nmb   : Natural;
+
+                        begin
+                           Get_Name_String (Value);
+
+                           if Name_Len = 0
+                             or else Sep'Length = 0
+                             or else Name_Buffer (1 .. Name_Len) = Sep
+                           then
+                              Done := True;
+                           end if;
+
+                           if not Done and then Name_Len < Sep'Length then
+                              Str_List :=
+                                new String_List'
+                                  (1 => new String'
+                                       (Name_Buffer (1 .. Name_Len)));
+                              Done := True;
+                           end if;
+
+                           if not Done then
+                              if Name_Buffer (1 .. Sep'Length) = Sep then
+                                 First := Sep'Length + 1;
+                              end if;
+
+                              if Name_Len - First + 1 >= Sep'Length
+                                and then
+                                  Name_Buffer (Name_Len - Sep'Length + 1 ..
+                                                   Name_Len) = Sep
+                              then
+                                 Name_Len := Name_Len - Sep'Length;
+                              end if;
+
+                              if Name_Len = 0 then
+                                 Str_List :=
+                                   new String_List'(1 => new String'(""));
+                                 Done := True;
+                              end if;
+                           end if;
+
+                           if not Done then
+                              --  Count the number of string
+
+                              declare
+                                 Saved : constant Positive := First;
+                              begin
+
+                                 Nmb := 1;
+                                 loop
+                                    Lst :=
+                                      Index
+                                        (Source  =>
+                                             Name_Buffer (First .. Name_Len),
+                                         Pattern => Sep);
+                                    exit when Lst = 0;
+                                    Nmb := Nmb + 1;
+                                    First := Lst + Sep'Length;
+                                 end loop;
+
+                                 First := Saved;
+                              end;
+
+                              Str_List := new String_List (1 .. Nmb);
+
+                              --  Populate the string list
+
+                              Nmb := 1;
+                              loop
+                                 Lst :=
+                                   Index
+                                     (Source  =>
+                                          Name_Buffer (First .. Name_Len),
+                                      Pattern => Sep);
+
+                                 if Lst = 0 then
+                                    Str_List (Nmb) :=
+                                      new String'
+                                        (Name_Buffer (First .. Name_Len));
+                                    exit;
+
+                                 else
+                                    Str_List (Nmb) :=
+                                      new String'
+                                        (Name_Buffer (First .. Lst - 1));
+                                    Nmb := Nmb + 1;
+                                    First := Lst + Sep'Length;
+                                 end if;
+                              end loop;
+                           end if;
+                        end;
                      end if;
 
-                     Value := Empty_String;
+                  else
+                     --  Get the value
+
+                     Value :=
+                       Prj.Ext.Value_Of
+                         (From_Project_Node_Tree, Name, Default);
+
+                     if Value = No_Name then
+                        if not Quiet_Output then
+                           Error_Msg
+                             (Flags, "?undefined external reference",
+                              Location_Of
+                                (The_Current_Term, From_Project_Node_Tree),
+                              Project);
+                        end if;
+
+                        Value := Empty_String;
+                     end if;
                   end if;
 
                   case Kind is
@@ -1068,34 +1191,75 @@ package body Prj.Proc is
                         null;
 
                      when Single =>
-                        Add (Result.Value, Value);
-
-                     when List =>
-                        String_Element_Table.Increment_Last
-                          (In_Tree.String_Elements);
-
-                        if Last = Nil_String then
-                           Result.Values := String_Element_Table.Last
-                             (In_Tree.String_Elements);
+                        if Ext_List then
+                           null; -- error
 
                         else
-                           In_Tree.String_Elements.Table
-                             (Last).Next := String_Element_Table.Last
-                                       (In_Tree.String_Elements);
+                           Add (Result.Value, Value);
                         end if;
 
-                        Last := String_Element_Table.Last
-                                  (In_Tree.String_Elements);
-                        In_Tree.String_Elements.Table (Last) :=
-                          (Value    => Value,
-                           Display_Value => No_Name,
-                           Location      =>
-                             Location_Of
-                               (The_Current_Term, From_Project_Node_Tree),
-                           Flag     => False,
-                           Next     => Nil_String,
-                           Index    => 0);
+                     when List =>
+                        if not Ext_List or else Str_List /= null then
+                           String_Element_Table.Increment_Last
+                             (In_Tree.String_Elements);
 
+                           if Last = Nil_String then
+                              Result.Values :=
+                                String_Element_Table.Last
+                                  (In_Tree.String_Elements);
+
+                           else
+                              In_Tree.String_Elements.Table (Last).Next :=
+                                String_Element_Table.Last
+                                  (In_Tree.String_Elements);
+                           end if;
+
+                           Last :=
+                             String_Element_Table.Last
+                               (In_Tree.String_Elements);
+
+                           if Ext_List then
+                              for Ind in Str_List'Range loop
+                                 Name_Len := 0;
+                                 Add_Str_To_Name_Buffer (Str_List (Ind).all);
+                                 Value := Name_Find;
+                                 In_Tree.String_Elements.Table (Last) :=
+                                   (Value         => Value,
+                                    Display_Value => No_Name,
+                                    Location      =>
+                                      Location_Of
+                                        (The_Current_Term,
+                                         From_Project_Node_Tree),
+                                    Flag          => False,
+                                    Next          => Nil_String,
+                                    Index         => 0);
+
+                                 if Ind /= Str_List'Last then
+                                    String_Element_Table.Increment_Last
+                                      (In_Tree.String_Elements);
+                                    In_Tree.String_Elements.Table
+                                                              (Last).Next :=
+                                        String_Element_Table.Last
+                                          (In_Tree.String_Elements);
+                                    Last :=
+                                      String_Element_Table.Last
+                                        (In_Tree.String_Elements);
+                                 end if;
+                              end loop;
+
+                           else
+                              In_Tree.String_Elements.Table (Last) :=
+                                (Value         => Value,
+                                 Display_Value => No_Name,
+                                 Location      =>
+                                   Location_Of
+                                     (The_Current_Term,
+                                      From_Project_Node_Tree),
+                                 Flag          => False,
+                                 Next          => Nil_String,
+                                 Index         => 0);
+                           end if;
+                        end if;
                   end case;
                end;
 
@@ -1424,7 +1588,7 @@ package body Prj.Proc is
 
                      if Present (Project_Of_Renamed_Package) then
 
-                        --  Renamed package
+                        --  Renamed or extending package
 
                         declare
                            Project_Name : constant Name_Id :=
@@ -1462,8 +1626,6 @@ package body Prj.Proc is
                               In_Tree    => In_Tree);
                         end;
 
-                     --  Standard package declaration, not renaming
-
                      else
                         --  Set the default values of the attributes
 
@@ -1478,19 +1640,22 @@ package body Prj.Proc is
                                 (Current_Item, From_Project_Node_Tree)),
                            Project_Level => False);
 
-                        --  And process declarative items of the new package
-
-                        Process_Declarative_Items
-                          (Project                => Project,
-                           In_Tree                => In_Tree,
-                           Flags                  => Flags,
-                           From_Project_Node      => From_Project_Node,
-                           From_Project_Node_Tree => From_Project_Node_Tree,
-                           Pkg                    => New_Pkg,
-                           Item                   =>
-                             First_Declarative_Item_Of
-                               (Current_Item, From_Project_Node_Tree));
                      end if;
+
+                     --  Process declarative items (nothing to do when the
+                     --  package is renaming, as the first declarative item is
+                     --  null).
+
+                     Process_Declarative_Items
+                       (Project                => Project,
+                        In_Tree                => In_Tree,
+                        Flags                  => Flags,
+                        From_Project_Node      => From_Project_Node,
+                        From_Project_Node_Tree => From_Project_Node_Tree,
+                        Pkg                    => New_Pkg,
+                        Item                   =>
+                          First_Declarative_Item_Of
+                            (Current_Item, From_Project_Node_Tree));
                   end;
                end if;
 
@@ -2311,7 +2476,7 @@ package body Prj.Proc is
       Success := True;
 
       if Project /= No_Project then
-         Check (In_Tree, Project, Flags);
+         Check (In_Tree, Project, From_Project_Node_Tree, Flags);
       end if;
 
       --  If main project is an extending all project, set object directory of

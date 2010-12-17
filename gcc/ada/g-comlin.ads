@@ -33,20 +33,24 @@
 
 --  High level package for command line parsing and manipulation
 
---  Parsing the command line
---  ========================
+----------------------------------------
+-- Simple Parsing of the Command Line --
+----------------------------------------
 
 --  This package provides an interface for parsing command line arguments,
 --  when they are either read from Ada.Command_Line or read from a string list.
 --  As shown in the example below, one should first retrieve the switches
 --  (special command line arguments starting with '-' by default) and their
 --  parameters, and then the rest of the command line arguments.
-
---  This package is flexible enough to accommodate various needs: optional
---  switch parameters, various characters to separate a switch and its
---  parameter, whether to stop the parsing at the first non-switch argument
---  encountered, etc.
-
+--
+--  While it may appear easy to parse the command line arguments with
+--  Ada.Command_Line, there are in fact lots of special cases to handle in some
+--  applications. Those are fully managed by GNAT.Command_Line. Among these are
+--  switches with optional parameters, grouping switches (for instance "-ab"
+--  might mean the same as "-a -b"), various characters to separate a switch
+--  and its parameter (or none: "-a 1" and "-a1" are generally the same, which
+--  can introduce confusion with grouped switches),...
+--
 --  begin
 --     loop
 --        case Getopt ("a b: ad") is  -- Accepts '-a', '-ad', or '-b argument'
@@ -59,8 +63,7 @@
 --                    Put_Line ("Got ad");
 --                 end if;
 
---           when 'b' =>
---              Put_Line ("Got b + " & Parameter);
+--           when 'b' => Put_Line ("Got b + " & Parameter);
 
 --           when others =>
 --              raise Program_Error;         -- cannot occur!
@@ -80,6 +83,10 @@
 --     when Invalid_Switch    => Put_Line ("Invalid Switch " & Full_Switch);
 --     when Invalid_Parameter => Put_Line ("No parameter for " & Full_Switch);
 --  end;
+
+--------------
+-- Sections --
+--------------
 
 --  A more complicated example would involve the use of sections for the
 --  switches, as for instance in gnatmake. The same command line is used to
@@ -105,6 +112,10 @@
 --        --  The supported switches in Getopt might be different
 --     end loop;
 --  end;
+
+-------------------------------
+-- Parsing a List of Strings --
+-------------------------------
 
 --  The examples above show how to parse the command line when the arguments
 --  are read directly from Ada.Command_Line. However, these arguments can also
@@ -132,18 +143,15 @@
 --     end loop;
 --     Free (Parser);
 --  end;
---
---  Creating and manipulating the command line
---  ===========================================
 
---  This package provides mechanisms to create and modify command lines by
---  adding or removing arguments from them. The resulting command line is kept
---  as short as possible by coalescing arguments whenever possible.
+-------------------------------------------
+-- High-Level Command Line Configuration --
+-------------------------------------------
 
---  Complex command lines can thus be constructed, for example from a GUI
---  (although this package does not by itself depend upon any specific GUI
---  toolkit). For instance, if you are configuring the command line to use when
---  spawning a tool with the following characteristics:
+--  As shown above, the code is still relatively low-level. For instance, there
+--  is no way to indicate which switches are related (thus if "-l" and "--long"
+--  should have the same effect, your code will need to test for both cases).
+--  Likewise, it is difficult to handle more advanced constructs, like:
 
 --    * Specifying -gnatwa is the same as specifying -gnatwu -gnatwv, but
 --      shorter and more readable
@@ -153,23 +161,81 @@
 --      Of course, this can be combined with the above and -gnatwacd is the
 --      same as -gnatwc -gnatwd -gnatwu -gnatwv
 
---    * The switch -T is the same as -gnatwAB
+--    * The switch -T is the same as -gnatwAB (same as -gnatwA -gnatwB)
 
---    * A switch -foo takes one mandatory parameter
+--  With the above form of Getopt, you would receive "-gnatwa", "-T" or
+--  "-gnatwcd" in the examples above, and thus you require additional manual
+--  parsing of the switch.
 
---  These properties can be configured through this package with the following
---  calls:
+--  Instead, this package provides the type Command_Line_Configuration, which
+--  stores all the knowledge above. For instance:
 
 --     Config : Command_Line_Configuration;
+--     Define_Alias  (Config, "-gnatwa", "-gnatwu -gnatwv");
 --     Define_Prefix (Config, "-gnatw");
---     Define_Alias  (Config, "-gnatwa", "-gnatwuv");
 --     Define_Alias  (Config, "-T",      "-gnatwAB");
 
---  Using this configuration, one can then construct a command line for the
---  tool with:
+--  You then need to specify all possible switches in your application by
+--  calling Define_Switch, for instance:
+
+--     Define_Switch (Config, "-gnatwu", Help => "warn on unused entities");
+--     Define_Switch (Config, "-gnatwv", Help => "warn on unassigned var");
+--     ...
+
+--  Specifying the help message is optional, but makes it easy to then call
+--  the function
+--     Display_Help (Config);
+--  that will display a properly formatted help message for your application,
+--  listing all possible switches. That way you have a single place in which
+--  to maintain the list of switches and their meaning, rather than maintaing
+--  both the string to pass to Getopt and a subprogram to display the help.
+--  Both will properly stay synchronized.
+
+--  Once you have this Config, you just have to call
+--     Getopt (Config, Callback'Access);
+--  to parse the command line. The Callback will be called for each switch
+--  found on the command line (in the case of our example, that is "-gnatwu"
+--  and then "-gnatwv", not "-gnatwa" itself). This simplifies command line
+--  parsing a lot.
+
+--  In fact, this can be further automated for the most command case where the
+--  parameter passed to a switch is stored in a variable in the application.
+--  When a switch is defined, you only have to indicate where to store the
+--  value, and let Getopt do the rest. For instance:
+
+--     Optimization : aliased Integer;
+--     Verbose      : aliased Boolean;
+--
+--     Define_Switch (Config, Verbose'Access,
+--                    "-v", Long_Switch => "--verbose",
+--                    Help => "Output extra verbose information");
+--     Define_Switch (Config, Optimization'Access,
+--                    "-O?", Help => "Optimization level");
+--
+--     Getopt (Config);  --  No callback
+
+--  Since all switches are handled automatically, we don't even need to pass
+--  a callback to Getopt. Once getopt has been called, the two variables
+--  Optimization and Verbose have been properly initialized, either to the
+--  default value or to the value found on the command line.
+
+------------------------------------------------
+-- Creating and Manipulating the Command Line --
+------------------------------------------------
+
+--  This package provides mechanisms to create and modify command lines by
+--  adding or removing arguments from them. The resulting command line is kept
+--  as short as possible by coalescing arguments whenever possible.
+
+--  Complex command lines can thus be constructed, for example from a GUI
+--  (although this package does not by itself depend upon any specific GUI
+--  toolkit).
+
+--  Using the configuration defined earlier, one can then construct a command
+--  line for the tool with:
 
 --     Cmd : Command_Line;
---     Set_Configuration (Cmd, Config);
+--     Set_Configuration (Cmd, Config);   --  Config created earlier
 --     Add_Switch (Cmd, "-bar");
 --     Add_Switch (Cmd, "-gnatwu");
 --     Add_Switch (Cmd, "-gnatwv");  --  will be grouped with the above
@@ -204,46 +270,17 @@
 
 --  This is done by passing an extra argument to Add_Switch, as in:
 
---     Add_Switch (Cmd, "-foo", "arg1");
+--     Add_Switch (Cmd, "-foo", Parameter => "arg1");
 
 --  This ensures that "arg1" will always be treated as the argument to -foo,
 --  and will not be grouped with other parts of the command line.
 
---  Parsing the command line with grouped arguments
---  ===============================================
-
---  The command line construction facility can also be used in conjunction with
---  Getopt to interpret a command line. For example when implementing the tool
---  described above, you would do a first loop with Getopt to pass the switches
---  and their arguments, and create a temporary representation of the command
---  line as a Command_Line object. Finally, you can query each individual
---  switch from that object. For instance:
-
---    declare
---      Cmd  : Command_Line;
---      Iter : Command_Line_Iterator;
-
---    begin
---      while Getopt ("foo: gnatw! T bar") /= ASCII.NUL loop
---         Add_Switch (Cmd, Full_Switch, Parameter);
---      end loop;
-
---      Start (Cmd, Iter, Expanded => True);
---      while Has_More (Iter) loop
---        if Current_Switch (Iter) = "-gnatwu" then ..
---        elsif Current_Switch (Iter) = "-gnatwv" then ...
---        end if;
---        Next (Iter);
---      end loop;
-
---  The above means that your tool does not have to handle on its own whether
---  the user passed -gnatwa (in which case -gnatwu was indeed selected), or
---  just -gnatwu, or a combination of -gnatw switches as in -gnatwuv.
-
 with Ada.Command_Line;
+
 with GNAT.Directory_Operations;
 with GNAT.OS_Lib;
 with GNAT.Regexp;
+with GNAT.Strings;
 
 package GNAT.Command_Line is
 
@@ -329,6 +366,11 @@ package GNAT.Command_Line is
    --  Returns the full name of the last switch found (Getopt only returns the
    --  first character). Does not include the Switch_Char ('-' by default),
    --  unless the "*" option of Getopt is used (see below).
+
+   function Current_Section
+     (Parser : Opt_Parser := Command_Line_Parser) return String;
+   --  Return the name of the current section.
+   --  The list of valid sections is defined through Initialize_Option_Scan
 
    function Getopt
      (Switches    : String;
@@ -444,6 +486,24 @@ package GNAT.Command_Line is
    --  the parameter were concatenated. A space is returned if the switch and
    --  its argument were in two separate arguments.
 
+   Invalid_Section : exception;
+   --  Raised when an invalid section is selected by Goto_Section
+
+   Invalid_Switch : exception;
+   --  Raised when an invalid switch is detected in the command line
+
+   Invalid_Parameter : exception;
+   --  Raised when a parameter is missing, or an attempt is made to obtain a
+   --  parameter for a switch that does not allow a parameter
+
+   -----------------------------------------
+   -- Expansion of command line arguments --
+   -----------------------------------------
+   --  These subprograms take care of of expanding globbing patterns on the
+   --  command line. On Unix, such expansion is done by the shell before your
+   --  application is called. But on Windows you must do this expansion
+   --  yourself.
+
    type Expansion_Iterator is limited private;
    --  Type used during expansion of file names
 
@@ -475,37 +535,50 @@ package GNAT.Command_Line is
    --  If Expansion is called again after an empty string has been returned,
    --  then the exception GNAT.Directory_Operations.Directory_Error is raised.
 
-   Invalid_Section : exception;
-   --  Raised when an invalid section is selected by Goto_Section
-
-   Invalid_Switch : exception;
-   --  Raised when an invalid switch is detected in the command line
-
-   Invalid_Parameter : exception;
-   --  Raised when a parameter is missing, or an attempt is made to obtain a
-   --  parameter for a switch that does not allow a parameter
-
    -----------------
    -- Configuring --
    -----------------
 
+   --  The following subprograms are used to manipulate a command line
+   --  represented as a string (for instance "-g -O2"), as well as parsing
+   --  the switches from such a string. They provide high-level configurations
+   --  to define aliases (a switch is equivalent to one or more other switches)
+   --  or grouping of switches ("-gnatyac" is equivalent to "-gnatya" and
+   --  "-gnatyc").
+
+   --  See the top of this file for examples on how to use these subprograms
+
    type Command_Line_Configuration is private;
+
+   procedure Define_Section
+     (Config  : in out Command_Line_Configuration;
+      Section : String);
+   --  Indicates a new switch section. All switches belonging to the same
+   --  section are ordered together, preceded by the section. They are placed
+   --  at the end of the command line (as in "gnatmake somefile.adb -cargs -g")
+   --
+   --  The section name should not include the leading '-'. So for instance in
+   --  the case of gnatmake we would use:
+   --
+   --      Define_Section (Config, "cargs");
+   --      Define_Section (Config, "bargs");
 
    procedure Define_Alias
      (Config   : in out Command_Line_Configuration;
       Switch   : String;
-      Expanded : String);
+      Expanded : String;
+      Section  : String := "");
    --  Indicates that whenever Switch appears on the command line, it should
    --  be expanded as Expanded. For instance, for the GNAT compiler switches,
    --  we would define "-gnatwa" as an alias for "-gnatwcfijkmopruvz", ie some
    --  default warnings to be activated.
    --
-   --  Likewise, in some context you could define "--verbose" as an alias for
-   --  ("-v", "--full"), ie two switches.
+   --  This expansion is only done within the specified section, which must
+   --  have been defined first through a call to [Define_Section].
 
    procedure Define_Prefix
-     (Config   : in out Command_Line_Configuration;
-      Prefix   : String);
+     (Config : in out Command_Line_Configuration;
+      Prefix : String);
    --  Indicates that all switches starting with the given prefix should be
    --  grouped. For instance, for the GNAT compiler we would define "-gnatw" as
    --  a prefix, so that "-gnatwu -gnatwv" can be grouped into "-gnatwuv" It is
@@ -514,43 +587,190 @@ package GNAT.Command_Line is
    --  alphabetically.
 
    procedure Define_Switch
-     (Config : in out Command_Line_Configuration;
-      Switch : String);
+     (Config      : in out Command_Line_Configuration;
+      Switch      : String := "";
+      Long_Switch : String := "";
+      Help        : String := "";
+      Section     : String := "");
    --  Indicates a new switch. The format of this switch follows the getopt
    --  format (trailing ':', '?', etc for defining a switch with parameters).
-   --  The switches defined in the Command_Line_Configuration object are used
+   --
+   --  Switch should also start with the leading '-' (or any other characters).
+   --  They should all start with the same character, though. If this
+   --  character is not '-', you will need to call Initialize_Option_Scan to
+   --  set the proper character for the parser.
+   --
+   --  The switches defined in the command_line_configuration object are used
    --  when ungrouping switches with more that one character after the prefix.
+   --
+   --  Switch and Long_Switch (when specified) are aliases and can be used
+   --  interchangeably. There is no check that they both take an argument or
+   --  both take no argument.
+   --  Switch can be set to "*" to indicate that any switch is supported (in
+   --  which case Getopt will return '*', see its documentation).
+   --
+   --  Help is used by the Display_Help procedure to describe the supported
+   --  switches.
+   --
+   --  In_Section indicates in which section the switch is valid (you need to
+   --  first define the section through a call to Define_Section).
 
-   procedure Define_Section
-     (Config  : in out Command_Line_Configuration;
-      Section : String);
-   --  Indicates a new switch section. All switches belonging to the same
-   --  section are ordered together, preceded by the section. They are placed
-   --  at the end of the command line (as in "gnatmake somefile.adb -cargs -g")
+   procedure Define_Switch
+     (Config      : in out Command_Line_Configuration;
+      Output      : access Boolean;
+      Switch      : String := "";
+      Long_Switch : String := "";
+      Help        : String := "";
+      Section     : String := "";
+      Value       : Boolean := True);
+   --  See Define_Switch for a description of the parameters.
+   --  When the switch is found on the command line, Getopt will set
+   --  Output.all to Value.
+   --  Output is always initially set to "not Value", so that if the switch is
+   --  not found on the command line, Output still has a valid value.
+   --  The switch must not take any parameter.
+   --  Output must exist at least as long as Config, otherwise erroneous memory
+   --  access may happen.
+
+   procedure Define_Switch
+     (Config      : in out Command_Line_Configuration;
+      Output      : access Integer;
+      Switch      : String := "";
+      Long_Switch : String := "";
+      Help        : String := "";
+      Section     : String := "";
+      Initial     : Integer := 0;
+      Default     : Integer := 1);
+   --  See Define_Switch for a description of the parameters.
+   --  When the switch is found on the command line, Getopt will set
+   --  Output.all to the value of the switch's parameter. If the parameter is
+   --  not an integer, Invalid_Parameter is raised.
+   --  Output is always initialized to Initial. If the switch has an optional
+   --  argument which isn't specified by the user, then Output will be set to
+   --  Default.
+
+   procedure Define_Switch
+     (Config      : in out Command_Line_Configuration;
+      Output      : access GNAT.Strings.String_Access;
+      Switch      : String := "";
+      Long_Switch : String := "";
+      Help        : String := "";
+      Section     : String := "");
+   --  Set Output to the value of the switch's parameter when the switch is
+   --  found on the command line.
+   --  Output is always initialized to the empty string.
+
+   procedure Set_Usage
+     (Config : in out Command_Line_Configuration;
+      Usage  : String := "[switches] [arguments]";
+      Help   : String := "");
+   --  Defines the general format of the call to the application, and a short
+   --  help text. These are both displayed by Display_Help
+
+   procedure Display_Help (Config : Command_Line_Configuration);
+   --  Display the help for the tool (ie its usage, and its supported switches)
 
    function Get_Switches
      (Config      : Command_Line_Configuration;
-      Switch_Char : Character) return String;
-   --  Get the switches list as expected by Getopt. This list is built using
-   --  all switches defined previously via Define_Switch above.
+      Switch_Char : Character := '-';
+      Section     : String := "") return String;
+   --  Get the switches list as expected by Getopt, for a specific section of
+   --  the command line. This list is built using all switches defined
+   --  previously via Define_Switch above.
+
+   function Section_Delimiters
+     (Config : Command_Line_Configuration) return String;
+   --  Return a string suitable for use in Initialize_Option_Scan
 
    procedure Free (Config : in out Command_Line_Configuration);
    --  Free the memory used by Config
 
-   -------------
-   -- Editing --
-   -------------
+   type Switch_Handler is access procedure
+     (Switch    : String;
+      Parameter : String;
+      Section   : String);
+   --  Called when a switch is found on the command line.
+   --  [Switch] includes any leading '-' that was specified in Define_Switch.
+   --  This is slightly different from the functional version of Getopt above,
+   --  for which Full_Switch omits the first leading '-'.
+
+   Exit_From_Command_Line : exception;
+   --  Emitted when the program should exit.
+   --  This is called when Getopt below has seen -h, --help or an invalid
+   --  switch.
+
+   procedure Getopt
+     (Config   : Command_Line_Configuration;
+      Callback : Switch_Handler := null;
+      Parser   : Opt_Parser := Command_Line_Parser);
+   --  Similar to the standard Getopt function.
+   --  For each switch found on the command line, this calls Callback.
+   --
+   --  The list of valid switches are the ones from the configuration. The
+   --  switches that were declared through Define_Switch with an Output
+   --  parameter are never returned (and result in a modification of the Output
+   --  variable). This function will in fact never call [Callback] if all
+   --  switches were handled automatically and there is nothing left to do.
+   --
+   --  This procedure automatically adds -h and --help to the valid switches,
+   --  to display the help message and raises Exit_From_Command_Line.
+   --  If an invalid switch is specified on the command line, this procedure
+   --  will display an error message and raises Invalid_Switch again.
+   --
+   --  This function automatically expands switches:
+   --   * If Define_Prefix was called (for instance "-gnaty") and the user
+   --     specifies "-gnatycb" on the command line, then Getopt returns
+   --     "-gnatyc" and "-gnatyb" separately.
+   --   * If Define_Alias was called (for instance "-gnatya = -gnatycb") then
+   --     the latter is returned (in this case it also expands -gnaty as per
+   --     the above.
+   --  The goal is to make handling as easy as possible by leaving as much
+   --  work as possible to this package.
+   --
+   --  As opposed to the standard Getopt, this one will analyze all sections
+   --  as defined by Define_Section, and automatically jump from one section to
+   --  the next.
+
+   ------------------------------
+   -- Generating command lines --
+   ------------------------------
+
+   --  Once the command line configuration has been created, you can build your
+   --  own command line. This will be done in general because you need to spawn
+   --  external tools from your application.
+
+   --  Although it could be done by concatenating strings, the following
+   --  subprograms will properly take care of grouping switches when possible,
+   --  so as to keep the command line as short as possible. They also provide a
+   --  way to remove a switch from an existing command line.
+
+   --  For instance:
+   --      declare
+   --         Config : Command_Line_Configuration;
+   --         Line : Command_Line;
+   --         Args : Argument_List_Access;
+   --      begin
+   --         Define_Switch (Config, "-gnatyc");
+   --         Define_Switch (Config, ...);  --  for all valid switches
+   --         Define_Prefix (Config, "-gnaty");
+   --
+   --         Set_Configuration (Line, Config);
+   --         Add_Switch (Line, "-O2");
+   --         Add_Switch (Line, "-gnatyc");
+   --         Add_Switch (Line, "-gnatyd");
+   --
+   --         Build (Line, Args);
+   --         --   Args is now  ["-O2", "-gnatycd"]
+   --      end;
 
    type Command_Line is private;
 
    procedure Set_Configuration
      (Cmd    : in out Command_Line;
       Config : Command_Line_Configuration);
-   --  Set the configuration for this command line
-
    function Get_Configuration
      (Cmd : Command_Line) return Command_Line_Configuration;
-   --  Return the configuration used for that command line
+   --  Set or retrieve the configuration used for that command line
 
    procedure Set_Command_Line
      (Cmd                : in out Command_Line;
@@ -601,14 +821,16 @@ package GNAT.Command_Line is
    --  A Switch with a parameter will never be grouped with another switch to
    --  avoid ambiguities as to what the parameter applies to.
    --
-   --  Separator is the character that goes between the switches and its
-   --  parameter on the command line. If it is set to ASCII.NUL, then no
-   --  separator is applied, and they are concatenated.
-   --
    --  If the switch is part of a section, then it should be specified so that
    --  the switch is correctly placed in the command line, and the section
    --  added if not already present. For example, to add the -g switch into the
-   --  -cargs section, you need to pass (Cmd, "-g", Section => "-cargs").
+   --  -cargs section, you need to call (Cmd, "-g", Section => "-cargs").
+   --
+   --  [Separator] is ignored, and kept for backward compatibility only.
+   --  ??? It might be removed in future versions.
+   --
+   --  Invalid_Section is raised if Section was not defined in the
+   --  configuration of the command line.
    --
    --  Add_Before allows insertion of the switch at the beginning of the
    --  command line.
@@ -672,13 +894,15 @@ package GNAT.Command_Line is
    ---------------
    -- Iteration --
    ---------------
+   --  When a command line was created with the above, you can then iterate
+   --  over its contents using the following iterator.
 
    type Command_Line_Iterator is private;
 
    procedure Start
      (Cmd      : in out Command_Line;
       Iter     : in out Command_Line_Iterator;
-      Expanded : Boolean);
+      Expanded : Boolean := False);
    --  Start iterating over the command line arguments. If Expanded is true,
    --  then the arguments are not grouped and no alias is used. For instance,
    --  "-gnatwv" and "-gnatwu" would be returned instead of "-gnatwuv".
@@ -704,6 +928,18 @@ package GNAT.Command_Line is
 
    procedure Next (Iter : in out Command_Line_Iterator);
    --  Move to the next switch
+
+   procedure Build
+     (Line        : in out Command_Line;
+      Args        : out GNAT.OS_Lib.Argument_List_Access;
+      Expanded    : Boolean := False;
+      Switch_Char : Character := '-');
+   --  This is a wrapper using the Command_Line_Iterator. It provides a simple
+   --  way to get all switches (grouped as much as possible), and possibly
+   --  create an Opt_Parser.
+   --
+   --  Args must be freed by the caller.
+   --  Expanded has the same meaning as in Start.
 
 private
 
@@ -799,12 +1035,49 @@ private
    end record;
 
    Command_Line_Parser_Data : aliased Opt_Parser_Data
-     (Ada.Command_Line.Argument_Count);
+                                        (Ada.Command_Line.Argument_Count);
    --  The internal data used when parsing the command line
 
    type Opt_Parser is access all Opt_Parser_Data;
    Command_Line_Parser : constant Opt_Parser :=
                            Command_Line_Parser_Data'Access;
+
+   type Switch_Type is (Switch_Untyped,
+                        Switch_Boolean,
+                        Switch_Integer,
+                        Switch_String);
+
+   type Switch_Definition (Typ : Switch_Type := Switch_Untyped) is record
+      Switch      : GNAT.OS_Lib.String_Access;
+      Long_Switch : GNAT.OS_Lib.String_Access;
+      Section     : GNAT.OS_Lib.String_Access;
+      Help        : GNAT.OS_Lib.String_Access;
+
+      case Typ is
+         when Switch_Untyped =>
+            null;
+         when Switch_Boolean =>
+            Boolean_Output : access Boolean;
+            Boolean_Value  : Boolean;  --  will set Output to that value
+         when Switch_Integer =>
+            Integer_Output  : access Integer;
+            Integer_Initial : Integer;
+            Integer_Default : Integer;
+         when Switch_String =>
+            String_Output   : access GNAT.Strings.String_Access;
+      end case;
+   end record;
+   type Switch_Definitions is array (Natural range <>) of Switch_Definition;
+   type Switch_Definitions_List is access all Switch_Definitions;
+   --  [Switch] includes the leading '-'
+
+   type Alias_Definition is record
+      Alias     : GNAT.OS_Lib.String_Access;
+      Expansion : GNAT.OS_Lib.String_Access;
+      Section   : GNAT.OS_Lib.String_Access;
+   end record;
+   type Alias_Definitions is array (Natural range <>) of Alias_Definition;
+   type Alias_Definitions_List is access all Alias_Definitions;
 
    type Command_Line_Configuration_Record is record
       Prefixes : GNAT.OS_Lib.Argument_List_Access;
@@ -813,11 +1086,10 @@ private
       Sections : GNAT.OS_Lib.Argument_List_Access;
       --  The list of sections
 
-      Aliases    : GNAT.OS_Lib.Argument_List_Access;
-      Expansions : GNAT.OS_Lib.Argument_List_Access;
-      --  The aliases (Both arrays have the same bounds)
-
-      Switches : GNAT.OS_Lib.Argument_List_Access;
+      Aliases  : Alias_Definitions_List;
+      Usage    : GNAT.OS_Lib.String_Access;
+      Help     : GNAT.OS_Lib.String_Access;
+      Switches : Switch_Definitions_List;
       --  List of expected switches (Used when expanding switch groups)
    end record;
    type Command_Line_Configuration is access Command_Line_Configuration_Record;

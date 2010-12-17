@@ -103,7 +103,7 @@ public class CniStubPrinter
     out.println("#include <" + klass.name + ".h>");
     out.println();
 
-    Iterator i = klass.methods.iterator();
+    Iterator<?> i = klass.methods.iterator();
     boolean first = true;
     while (i.hasNext())
       {

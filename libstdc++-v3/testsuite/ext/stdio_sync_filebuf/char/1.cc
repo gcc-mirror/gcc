@@ -1,6 +1,7 @@
 // 2003-05-01 Petur Runolfsson <peturr02@ru.is>
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009 Free Software Foundation
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010 
+// Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +30,7 @@ void test01()
 
   bool test __attribute__((unused)) = true;
   const char* c_lit = "black pearl jasmine tea";
-  int size = strlen(c_lit);
+  unsigned size = strlen(c_lit);
   const char* name = "stdiobuf-1.txt";
 
   FILE* fout = fopen(name, "w");

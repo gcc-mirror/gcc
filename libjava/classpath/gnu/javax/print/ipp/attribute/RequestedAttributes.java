@@ -1,4 +1,4 @@
-/* RequestedAttributes.java -- 
+/* RequestedAttributes.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -48,15 +48,15 @@ import javax.print.attribute.Attribute;
 /**
  * <code>RequestedAttributes</code> specifies the requested
  * attributes in an IPP request operation.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class RequestedAttributes implements Attribute
 {
-  private ArrayList attributes;
+  private ArrayList<String> attributes;
 
   /**
-   * Creates a <code>RequestedAttributes</code> object with 
+   * Creates a <code>RequestedAttributes</code> object with
    * the initial value.
    *
    * @param value the string for the ipp name
@@ -67,29 +67,29 @@ public final class RequestedAttributes implements Attribute
   {
     if (value == null)
       throw new NullPointerException();
-    
-    attributes = new ArrayList();      
+
+    attributes = new ArrayList<String>();
     attributes.add(value);
   }
-  
+
   /**
    * Adds the IPP name value to the set.
-   * 
+   *
    * @param value the string for the ipp name
    */
   public void addValue(String value)
   {
     attributes.add(value);
   }
-  
+
   /**
    * Returns the values.
-   * 
+   *
    * @return The values as list.
    */
-  public List getValues() 
+  public String[] getValues()
   {
-    return attributes;    
+    return attributes.toArray(new String[attributes.size()]);
   }
 
   /**
@@ -97,7 +97,7 @@ public final class RequestedAttributes implements Attribute
    *
    * @return The class <code>DocumentFormat</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return RequestedAttributes.class;
   }
@@ -120,13 +120,13 @@ public final class RequestedAttributes implements Attribute
   public String toString()
   {
     CPStringBuilder b = new CPStringBuilder();
-    
+
     if (attributes.size() > 0)
       b.append(attributes.get(0));
-    
+
     for (int i=1; i < attributes.size(); i++)
       b.append(", " + attributes.get(i));
-    
+
     return b.toString();
-  }  
+  }
 }

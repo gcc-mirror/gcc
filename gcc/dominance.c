@@ -41,7 +41,7 @@
 #include "hard-reg-set.h"
 #include "obstack.h"
 #include "basic-block.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "et-forest.h"
 #include "timevar.h"
 #include "vecprim.h"
@@ -783,16 +783,20 @@ get_dominated_by_region (enum cdi_direction dir, basic_block *region,
 }
 
 /* Returns the list of basic blocks including BB dominated by BB, in the
-   direction DIR.  The vector will be sorted in preorder.  */
+   direction DIR up to DEPTH in the dominator tree.  The DEPTH of zero will
+   produce a vector containing all dominated blocks.  The vector will be sorted
+   in preorder.  */
 
 VEC (basic_block, heap) *
-get_all_dominated_blocks (enum cdi_direction dir, basic_block bb)
+get_dominated_to_depth (enum cdi_direction dir, basic_block bb, int depth)
 {
   VEC(basic_block, heap) *bbs = NULL;
   unsigned i;
+  unsigned next_level_start;
 
   i = 0;
   VEC_safe_push (basic_block, heap, bbs, bb);
+  next_level_start = 1; /* = VEC_length (basic_block, bbs); */
 
   do
     {
@@ -803,10 +807,22 @@ get_all_dominated_blocks (enum cdi_direction dir, basic_block bb)
 	   son;
 	   son = next_dom_son (dir, son))
 	VEC_safe_push (basic_block, heap, bbs, son);
+
+      if (i == next_level_start && --depth)
+	next_level_start = VEC_length (basic_block, bbs);
     }
-  while (i < VEC_length (basic_block, bbs));
+  while (i < next_level_start);
 
   return bbs;
+}
+
+/* Returns the list of basic blocks including BB dominated by BB, in the
+   direction DIR.  The vector will be sorted in preorder.  */
+
+VEC (basic_block, heap) *
+get_all_dominated_blocks (enum cdi_direction dir, basic_block bb)
+{
+  return get_dominated_to_depth (dir, bb, 0);
 }
 
 /* Redirect all edges pointing to BB to TO.  */
@@ -1181,7 +1197,7 @@ determine_dominators_for_sons (struct graph *g, VEC (basic_block, heap) *bbs,
   for (i = nc - 1; i >= 0; i--)
     {
       dom = NULL;
-      for (si = 0; VEC_iterate (int, sccs[i], si, a); si++)
+      FOR_EACH_VEC_ELT (int, sccs[i], si, a)
 	{
 	  bb = VEC_index (basic_block, bbs, a);
 	  FOR_EACH_EDGE (e, ei, bb->preds)
@@ -1194,7 +1210,7 @@ determine_dominators_for_sons (struct graph *g, VEC (basic_block, heap) *bbs,
 	}
 
       gcc_assert (dom != NULL);
-      for (si = 0; VEC_iterate (int, sccs[i], si, a); si++)
+      FOR_EACH_VEC_ELT (int, sccs[i], si, a)
 	{
 	  bb = VEC_index (basic_block, bbs, a);
 	  set_immediate_dominator (CDI_DOMINATORS, bb, dom);
@@ -1297,7 +1313,7 @@ iterate_fix_dominators (enum cdi_direction dir, VEC (basic_block, heap) *bbs,
 	 conservatively correct, setting the dominators using the
 	 heuristics in prune_bbs_to_update_dominators could
 	 create cycles in the dominance "tree", and cause ICE.  */
-      for (i = 0; VEC_iterate (basic_block, bbs, i, bb); i++)
+      FOR_EACH_VEC_ELT (basic_block, bbs, i, bb)
 	set_immediate_dominator (CDI_DOMINATORS, bb, NULL);
     }
 
@@ -1317,7 +1333,7 @@ iterate_fix_dominators (enum cdi_direction dir, VEC (basic_block, heap) *bbs,
 
   /* Construct the graph G.  */
   map = pointer_map_create ();
-  for (i = 0; VEC_iterate (basic_block, bbs, i, bb); i++)
+  FOR_EACH_VEC_ELT (basic_block, bbs, i, bb)
     {
       /* If the dominance tree is conservatively correct, split it now.  */
       if (conservative)
@@ -1329,7 +1345,7 @@ iterate_fix_dominators (enum cdi_direction dir, VEC (basic_block, heap) *bbs,
   g = new_graph (n + 1);
   for (y = 0; y < g->n_vertices; y++)
     g->vertices[y].data = BITMAP_ALLOC (NULL);
-  for (i = 0; VEC_iterate (basic_block, bbs, i, bb); i++)
+  FOR_EACH_VEC_ELT (basic_block, bbs, i, bb)
     {
       FOR_EACH_EDGE (e, ei, bb->preds)
 	{
@@ -1340,10 +1356,9 @@ iterate_fix_dominators (enum cdi_direction dir, VEC (basic_block, heap) *bbs,
 	  dom_i = (size_t) *pointer_map_contains (map, dom);
 
 	  /* Do not include parallel edges to G.  */
-	  if (bitmap_bit_p ((bitmap) g->vertices[dom_i].data, i))
+	  if (!bitmap_set_bit ((bitmap) g->vertices[dom_i].data, i))
 	    continue;
 
-	  bitmap_set_bit ((bitmap) g->vertices[dom_i].data, i);
 	  add_edge (g, dom_i, i);
 	}
     }

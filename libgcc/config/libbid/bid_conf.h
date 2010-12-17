@@ -516,7 +516,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 #ifndef BID_BIG_ENDIAN
-#define BID_BIG_ENDIAN LIBGCC2_FLOAT_WORDS_BIG_ENDIAN
+#define BID_BIG_ENDIAN __FLOAT_WORD_ORDER__ == __ORDER_BIG_ENDIAN__
 #endif
 
 #ifndef BID_THREAD

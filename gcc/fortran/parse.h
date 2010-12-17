@@ -42,6 +42,7 @@ typedef struct gfc_state_data
   gfc_symbol *sym;              /* Block name associated with this level */
   gfc_symtree *do_variable;     /* For DO blocks the iterator variable.  */
 
+  struct gfc_code *construct;
   struct gfc_code *head, *tail;
   struct gfc_state_data *previous;
 
@@ -68,5 +69,4 @@ match gfc_match_enumerator_def (void);
 void gfc_free_enum_history (void);
 extern bool gfc_matching_function;
 match gfc_match_prefix (gfc_typespec *);
-gfc_namespace* gfc_build_block_ns (gfc_namespace *);
 #endif  /* GFC_PARSE_H  */

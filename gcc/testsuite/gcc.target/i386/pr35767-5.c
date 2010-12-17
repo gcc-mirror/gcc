@@ -1,7 +1,6 @@
 /* Test that we generate aligned load when memory is aligned.  */
 /* { dg-do compile } */
 /* { dg-options "-O -msse2 -mtune=generic" } */
-/* { dg-require-effective-target sse2 } */
 /* { dg-final { scan-assembler-not "movups" } } */
 /* { dg-final { scan-assembler "movaps" } } */
 

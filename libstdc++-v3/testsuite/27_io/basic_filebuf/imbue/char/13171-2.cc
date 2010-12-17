@@ -1,4 +1,5 @@
-// { dg-require-namedlocale "" }
+// { dg-require-namedlocale "fr_FR" }
+// { dg-require-namedlocale "en_US" }
 // { dg-require-fork "" }
 // { dg-require-mkfifo "" }
 

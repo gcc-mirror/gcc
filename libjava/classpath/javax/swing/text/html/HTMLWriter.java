@@ -79,9 +79,9 @@ public class HTMLWriter
   private HTMLDocument htmlDoc = null; 
 
   /**
-   * Used to keep track of which embeded has been written out.
+   * Used to keep track of which embedded has been written out.
    */
-  private HashSet openEmbededTagHashSet = null;
+  private HashSet<HTML.Tag> openEmbeddedTagHashSet = null;
 
   private String new_line_str = "" + NEWLINE;
     
@@ -95,7 +95,7 @@ public class HTMLWriter
   private int doc_len = -1;
   private int doc_offset_remaining = -1;
   private int doc_len_remaining = -1;
-  private HashSet htmlFragmentParentHashSet = null;
+  private HashSet<Element> htmlFragmentParentHashSet = null;
   private Element startElem = null;
   private Element endElem = null;
   private boolean fg_pass_start_elem = false;
@@ -112,7 +112,7 @@ public class HTMLWriter
     super(writer, doc);
     outWriter = writer;
     htmlDoc = doc;
-    openEmbededTagHashSet = new HashSet();
+    openEmbeddedTagHashSet = new HashSet<HTML.Tag>();
   } // public HTMLWriter(Writer writer, HTMLDocument doc)
 
   /**
@@ -129,13 +129,13 @@ public class HTMLWriter
     super(writer, doc, pos, len);
     outWriter = writer;
     htmlDoc = doc;
-    openEmbededTagHashSet = new HashSet();
+    openEmbeddedTagHashSet = new HashSet<HTML.Tag>();
 
     doc_pos = pos;
     doc_offset_remaining = pos;
     doc_len = len;
     doc_len_remaining = len;
-    htmlFragmentParentHashSet = new HashSet();
+    htmlFragmentParentHashSet = new HashSet<Element>();
   } // public HTMLWriter(Writer writer, HTMLDocument doc, int pos, int len)
     
   /**
@@ -197,7 +197,8 @@ public class HTMLWriter
       } // else
 
     // NOTE: close out remaining open embeded tags.
-    Object[] tag_arr = openEmbededTagHashSet.toArray();
+    HTML.Tag[] tag_arr =
+      openEmbeddedTagHashSet.toArray(new HTML.Tag[openEmbeddedTagHashSet.size()]);
 
     for (int i = 0; i < tag_arr.length; i++)
       {
@@ -219,8 +220,8 @@ public class HTMLWriter
   protected void writeAttributes(AttributeSet attrSet)
     throws IOException
   {
-    Enumeration attrNameEnum = attrSet.getAttributeNames();
-        
+    Enumeration<?> attrNameEnum = attrSet.getAttributeNames();
+
     while (attrNameEnum.hasMoreElements())
       {
         Object key = attrNameEnum.nextElement();
@@ -502,7 +503,7 @@ public class HTMLWriter
   protected void writeEmbeddedTags(AttributeSet attrSet)
     throws IOException
   {
-    Enumeration attrNameEnum = attrSet.getAttributeNames();
+    Enumeration<?> attrNameEnum = attrSet.getAttributeNames();
 
     while (attrNameEnum.hasMoreElements())
       {
@@ -511,12 +512,12 @@ public class HTMLWriter
 
         if (key instanceof HTML.Tag)
           {
-            if (!openEmbededTagHashSet.contains(key))
+            if (!openEmbeddedTagHashSet.contains(key))
               {
                 writeRaw("<" + key);
                 writeAttributes((AttributeSet) value);
                 writeRaw(">");
-                openEmbededTagHashSet.add(key);
+                openEmbeddedTagHashSet.add((HTML.Tag) key);
               } // if(!openEmbededTagHashSet.contains(key))
           } // if(key instanceof HTML.Tag)
       } // while(attrNameEnum.hasMoreElements())
@@ -535,16 +536,17 @@ public class HTMLWriter
   protected void closeOutUnwantedEmbeddedTags(AttributeSet attrSet)
     throws IOException
   {
-    Object[] tag_arr = openEmbededTagHashSet.toArray();
+    HTML.Tag[] tag_arr =
+      openEmbeddedTagHashSet.toArray(new HTML.Tag[openEmbeddedTagHashSet.size()]);
 
     for (int i = 0; i < tag_arr.length; i++)
       {
-        HTML.Tag key = (HTML.Tag) tag_arr[i];
+        HTML.Tag key = tag_arr[i];
             
         if (!attrSet.isDefined(key))
           {
             writeRaw("</" + key.toString() + ">");
-            openEmbededTagHashSet.remove(key);
+            openEmbeddedTagHashSet.remove(key);
           } // if(!attrSet.isDefined(key))
       } // for(int i = 0; i < tag_arr.length; i++)
 
@@ -645,7 +647,7 @@ public class HTMLWriter
         if (matchNameAttribute(attrSet, HTML.Tag.TITLE))
           {
             boolean fg_is_end_tag = false;
-            Enumeration attrNameEnum = attrSet.getAttributeNames();
+            Enumeration<?> attrNameEnum = attrSet.getAttributeNames();
 
             while (attrNameEnum.hasMoreElements())
               {
@@ -860,7 +862,7 @@ public class HTMLWriter
           if (matchNameAttribute(attrSet, HTML.Tag.TITLE))
             {
               boolean fg_is_end_tag = false;
-              Enumeration attrNameEnum = attrSet.getAttributeNames();
+              Enumeration<?> attrNameEnum = attrSet.getAttributeNames();
 
               while (attrNameEnum.hasMoreElements())
                 {
@@ -996,7 +998,7 @@ public class HTMLWriter
   private void writeAllAttributes(AttributeSet attrSet)
     throws IOException
   {
-    Enumeration attrNameEnum = attrSet.getAttributeNames();
+    Enumeration<?> attrNameEnum = attrSet.getAttributeNames();
 
     while (attrNameEnum.hasMoreElements())
       {

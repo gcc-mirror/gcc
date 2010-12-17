@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,9 +51,8 @@ package body Ch8 is
    begin
       Scan; -- past USE
 
-      if Token = Tok_Type then
+      if Token = Tok_Type or else Token = Tok_All then
          return P_Use_Type_Clause;
-
       else
          return P_Use_Package_Clause;
       end if;
@@ -95,18 +94,35 @@ package body Ch8 is
    -- 8.4  Use Type Clause --
    --------------------------
 
-   --  USE_TYPE_CLAUSE ::= use type SUBTYPE_MARK {, SUBTYPE_MARK};
+   --  USE_TYPE_CLAUSE ::= use [ALL] type SUBTYPE_MARK {, SUBTYPE_MARK};
 
    --  The caller has checked that the initial token is USE, scanned it out
-   --  and that the current token is TYPE.
+   --  and that the current token is either ALL or TYPE.
+
+   --  Note: Use of ALL is an Ada 2012 feature
 
    --  Error recovery: cannot raise Error_Resync
 
    function P_Use_Type_Clause return Node_Id is
-      Use_Node : Node_Id;
+      Use_Node    : Node_Id;
+      All_Present : Boolean;
 
    begin
+      if Token = Tok_All then
+         if Ada_Version < Ada_2012 then
+            Error_Msg_SC ("|`USE ALL TYPE` is an Ada 2012 feature");
+            Error_Msg_SC ("\|unit must be compiled with -gnat2012 switch");
+         end if;
+
+         All_Present := True;
+         Scan; -- past ALL
+
+      else
+         All_Present := False;
+      end if;
+
       Use_Node := New_Node (N_Use_Type_Clause, Prev_Token_Ptr);
+      Set_All_Present (Use_Node, All_Present);
       Set_Subtype_Marks (Use_Node, New_List);
 
       if Ada_Version = Ada_83 then

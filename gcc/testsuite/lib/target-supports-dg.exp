@@ -90,6 +90,16 @@ proc dg-require-alias { args } {
     }
 }
 
+# If this target does not support the "ifunc" attribute, skip this
+# test.
+
+proc dg-require-ifunc { args } {
+    if { ![ check_ifunc_available ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+    }
+}
+
 # If this target's linker does not support the --gc-sections flag,
 # skip this test.
 
@@ -204,6 +214,14 @@ proc dg-require-host-local { args } {
     if [ is_remote host ] {
         upvar dg-do-what dg-do-what
         set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+    }
+}
+
+proc dg-require-linker-plugin { args } {
+    set linker_plugin_available [ check_linker_plugin_available ]
+    if { $linker_plugin_available == 0 } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
     }
 }
 

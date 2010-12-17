@@ -1,10 +1,9 @@
 // PR middle-end/40446
 // { dg-do run { target i?86-*-* x86_64-*-* } }
 // { dg-options "-O1 -msse2" }
-// { dg-require-effective-target sse2 }
+// { dg-require-effective-target sse2_runtime }
 
 #include <emmintrin.h>
-#include "cpuid.h"
 
 extern "C" void abort ();
 
@@ -34,14 +33,6 @@ sse2_test ()
 int
 main ()
 {
-  unsigned int eax, ebx, ecx, edx;
-
-  if (!__get_cpuid (1, &eax, &ebx, &ecx, &edx))
-    return 0;
-
-  /* Run SSE2 test only if host has SSE2 support.  */
-  if (edx & bit_SSE2)
-    sse2_test ();
-
+  sse2_test ();
   return 0;
 }

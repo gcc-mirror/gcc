@@ -61,9 +61,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    and so that its low 32 bits contain LOW_FPR.  */
 #define MERGE_GPRf(GPR, HIGH_FPR, LOW_FPR)	\
 	.set	noat;				\
-	mfc1	GPR, HIGH_FPR;			\
 	mfc1	$1, LOW_FPR;			\
+	mfc1	GPR, HIGH_FPR;			\
+	dsll	$1, $1, 32;			\
 	dsll	GPR, GPR, 32;			\
+	dsrl	$1, $1, 32;			\
 	or	GPR, GPR, $1;			\
 	.set	at
 

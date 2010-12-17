@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 
-#   Copyright (C) 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+#   Copyright (C) 1999, 2000, 2001, 2003, 2010 Free Software Foundation, Inc.
 
 # This file is part of GCC.
 
@@ -213,10 +213,12 @@ while(<$inf>) {
 
     # Now the ones that have to be replaced by special escapes
     # (which will be turned back into text by unmunge())
+    # Replace @@ before @{ and @} in order to parse @samp{@@} correctly.
     s/&/&amp;/g;
+    s/\@\@/&at;/g;
     s/\@\{/&lbrace;/g;
     s/\@\}/&rbrace;/g;
-    s/\@\@/&at;/g;
+    s/\@`\{(.)\}/&$1grave;/g;
 
     # Inside a verbatim block, handle @var, @samp and @url specially.
     if ($shift ne "") {
@@ -391,9 +393,11 @@ sub postprocess
     s/\@(?:code|kbd)\{([^\}]*)\}/C<$1>/g;
     s/\@(?:samp|strong|key|option|env|command|b)\{([^\}]*)\}/B<$1>/g;
     s/\@sc\{([^\}]*)\}/\U$1/g;
+    s/\@acronym\{([^\}]*)\}/\U$1/g;
     s/\@file\{([^\}]*)\}/F<$1>/g;
     s/\@w\{([^\}]*)\}/S<$1>/g;
     s/\@(?:dmn|math)\{([^\}]*)\}/$1/g;
+    s/\@\///g;
 
     # keep references of the form @ref{...}, print them bold
     s/\@(?:ref)\{([^\}]*)\}/B<$1>/g;
@@ -462,6 +466,7 @@ sub unmunge
     # Replace escaped symbols with their equivalents.
     local $_ = $_[0];
 
+    s/&(.)grave;/E<$1grave>/g;
     s/&lt;/E<lt>/g;
     s/&gt;/E<gt>/g;
     s/&lbrace;/\{/g;

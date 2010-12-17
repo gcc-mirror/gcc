@@ -1,5 +1,5 @@
 /* Name mangling for the 3.0 C++ ABI.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Written by Alex Samuel <samuel@codesourcery.com>
 
@@ -53,7 +53,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "cp-tree.h"
 #include "obstack.h"
-#include "toplev.h"
 #include "flags.h"
 #include "target.h"
 #include "cgraph.h"
@@ -307,7 +306,7 @@ dump_substitution_candidates (void)
   tree el;
 
   fprintf (stderr, "  ++ substitutions  ");
-  for (i = 0; VEC_iterate (tree, G.substitutions, i, el); ++i)
+  FOR_EACH_VEC_ELT (tree, G.substitutions, i, el)
     {
       const char *name = "???";
 
@@ -346,11 +345,19 @@ canonicalize_for_substitution (tree node)
   if (TYPE_P (node)
       && TYPE_CANONICAL (node) != node
       && TYPE_MAIN_VARIANT (node) != node)
+    {
       /* Here we want to strip the topmost typedef only.
          We need to do that so is_std_substitution can do proper
          name matching.  */
-    node = cp_build_qualified_type (TYPE_MAIN_VARIANT (node),
-                                    cp_type_quals (node));
+      if (TREE_CODE (node) == FUNCTION_TYPE)
+	/* Use build_qualified_type and TYPE_QUALS here to preserve
+	   the old buggy mangling of attribute noreturn with abi<5.  */
+	node = build_qualified_type (TYPE_MAIN_VARIANT (node),
+				     TYPE_QUALS (node));
+      else
+	node = cp_build_qualified_type (TYPE_MAIN_VARIANT (node),
+					cp_type_quals (node));
+    }
   return node;
 }
 
@@ -379,7 +386,7 @@ add_substitution (tree node)
     int i;
     tree candidate;
 
-    for (i = 0; VEC_iterate (tree, G.substitutions, i, candidate); i++)
+    FOR_EACH_VEC_ELT (tree, G.substitutions, i, candidate)
       {
 	gcc_assert (!(DECL_P (node) && node == candidate));
 	gcc_assert (!(TYPE_P (node) && TYPE_P (candidate)
@@ -1281,7 +1288,7 @@ nested_anon_class_index (tree type)
 {
   int index = 0;
   tree member = TYPE_FIELDS (TYPE_CONTEXT (type));
-  for (; member; member = TREE_CHAIN (member))
+  for (; member; member = DECL_CHAIN (member))
     if (DECL_IMPLICIT_TYPEDEF_P (member))
       {
 	tree memtype = TREE_TYPE (member);
@@ -1711,7 +1718,7 @@ write_local_name (tree function, const tree local_entity,
     {
       tree t;
       int i = 0;
-      for (t = DECL_ARGUMENTS (function); t; t = TREE_CHAIN (t))
+      for (t = DECL_ARGUMENTS (function); t; t = DECL_CHAIN (t))
 	{
 	  if (t == parm)
 	    i = 1;
@@ -1776,6 +1783,7 @@ write_type (tree type)
   if (type == error_mark_node)
     return;
 
+  type = canonicalize_for_substitution (type);
   if (find_substitution (type))
     return;
 
@@ -1934,17 +1942,16 @@ write_type (tree type)
               write_char ('E');
               break;
 
+	    case NULLPTR_TYPE:
+	      write_string ("Dn");
+	      break;
+
 	    case TYPEOF_TYPE:
 	      sorry ("mangling typeof, use decltype instead");
 	      break;
 
 	    case LANG_TYPE:
-	      if (NULLPTR_TYPE_P (type))
-		{
-		  write_string ("Dn");
-		  break;
-		}
-	      /* else fall through.  */
+	      /* fall through.  */
 
 	    default:
 	      gcc_unreachable ();
@@ -1977,6 +1984,12 @@ write_CV_qualifiers_for_type (const tree type)
      int[3]", the "const" is emitted with the "int", not with the
      array.  */
   cp_cv_quals quals = TYPE_QUALS (type);
+
+  /* Attribute const/noreturn are not reflected in mangling.  */
+  if (abi_version_at_least (5)
+      && (TREE_CODE (type) == FUNCTION_TYPE
+	  || TREE_CODE (type) == METHOD_TYPE))
+    return 0;
 
   if (quals & TYPE_QUAL_RESTRICT)
     {
@@ -2288,12 +2301,12 @@ write_method_parms (tree parm_types, const int method_p, const tree decl)
   if (method_p)
     {
       parm_types = TREE_CHAIN (parm_types);
-      parm_decl = parm_decl ? TREE_CHAIN (parm_decl) : NULL_TREE;
+      parm_decl = parm_decl ? DECL_CHAIN (parm_decl) : NULL_TREE;
 
       while (parm_decl && DECL_ARTIFICIAL (parm_decl))
 	{
 	  parm_types = TREE_CHAIN (parm_types);
-	  parm_decl = TREE_CHAIN (parm_decl);
+	  parm_decl = DECL_CHAIN (parm_decl);
 	}
     }
 
@@ -2476,7 +2489,7 @@ write_expression (tree expr)
       tree scope = TREE_OPERAND (expr, 0);
       tree member = TREE_OPERAND (expr, 1);
 
-      if (!abi_version_at_least (2))
+      if (!abi_version_at_least (2) && DECL_P (member))
 	{
 	  write_string ("sr");
 	  write_type (scope);

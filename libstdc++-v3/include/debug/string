@@ -107,13 +107,15 @@ namespace __gnu_debug
 
     template<typename _InputIterator>
       basic_string(_InputIterator __begin, _InputIterator __end,
-		     const _Allocator& __a = _Allocator())
-      : _Base(__gnu_debug::__check_valid_range(__begin, __end), __end, __a)
+		   const _Allocator& __a = _Allocator())
+      : _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__begin,
+								   __end)),
+	      __gnu_debug::__base(__end), __a)
       { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
     basic_string(basic_string&& __str)
-    : _Base(std::forward<_Base>(__str))
+    : _Base(std::move(__str))
     { }
 
     basic_string(std::initializer_list<_CharT> __l,
@@ -153,7 +155,7 @@ namespace __gnu_debug
     basic_string&
     operator=(basic_string&& __str)
     {
-      *static_cast<_Base*>(this) = std::forward<_Base>(__str);
+      *static_cast<_Base*>(this) = std::move(__str);
       this->_M_invalidate_all();
       return *this;
     }
@@ -350,7 +352,8 @@ namespace __gnu_debug
       append(_InputIterator __first, _InputIterator __last)
       {
 	__glibcxx_check_valid_range(__first, __last);
-	_Base::append(__first, __last);
+	_Base::append(__gnu_debug::__base(__first),
+		      __gnu_debug::__base(__last));
 	this->_M_invalidate_all();
 	return *this;
       }
@@ -376,7 +379,7 @@ namespace __gnu_debug
     basic_string&
     assign(basic_string&& __x)
     {
-      _Base::assign(std::forward<_Base>(__x));
+      _Base::assign(std::move(__x));
       this->_M_invalidate_all();
       return *this;
     }
@@ -421,7 +424,8 @@ namespace __gnu_debug
       assign(_InputIterator __first, _InputIterator __last)
       {
 	__glibcxx_check_valid_range(__first, __last);
-	_Base::assign(__first, __last);
+	_Base::assign(__gnu_debug::__base(__first),
+		      __gnu_debug::__base(__last));
 	this->_M_invalidate_all();
 	return *this;
       }
@@ -501,7 +505,8 @@ namespace __gnu_debug
       insert(iterator __p, _InputIterator __first, _InputIterator __last)
       {
 	__glibcxx_check_insert_range(__p, __first, __last);
-	_Base::insert(__p.base(), __first, __last);
+	_Base::insert(__p.base(), __gnu_debug::__base(__first),
+				  __gnu_debug::__base(__last));
 	this->_M_invalidate_all();
       }
 

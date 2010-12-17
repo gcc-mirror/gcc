@@ -339,6 +339,14 @@ namespace __gnu_test
   typedef transform<integral_types::type, atomics>::type atomics_tl;
 #endif
 
+  template<typename Tp>
+    struct numeric_limits
+    {
+      typedef Tp			value_type;
+      typedef std::numeric_limits<value_type>	type;
+    };
+
+  typedef transform<integral_types::type, numeric_limits>::type limits_tl;
 
   struct has_increment_operators
   {
@@ -383,6 +391,20 @@ namespace __gnu_test
 	  = &_Concept::__constraint;
       }
   };
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Tp>
+    void
+    constexpr_bitwise_operators()
+    {
+      constexpr _Tp a = _Tp();
+      constexpr _Tp b = _Tp();
+      constexpr _Tp c1 __attribute__((unused)) = a | b;
+      constexpr _Tp c2 __attribute__((unused)) = a & b;
+      constexpr _Tp c3 __attribute__((unused)) = a ^ b;
+      constexpr _Tp c4 __attribute__((unused)) = ~b;
+    }
+#endif
 
   template<typename _Tp>
     void
@@ -440,8 +462,35 @@ namespace __gnu_test
       }
   };
 
-  // Generator to test standard layout
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
+
+  struct constexpr_comparison_eq_ne
+  {
+    template<typename _Tp1, typename _Tp2 = _Tp1>
+      void 
+      operator()()
+      {
+	static_assert(_Tp1() == _Tp2(), "eq");
+	static_assert(!(_Tp1() != _Tp2()), "ne");
+      }
+  };
+
+  struct constexpr_comparison_operators
+  {
+    template<typename _Tp>
+      void 
+      operator()()
+      {
+	static_assert(!(_Tp() < _Tp()), "less");
+	static_assert(_Tp() <= _Tp(), "leq");
+	static_assert(!(_Tp() > _Tp()), "more");
+	static_assert(_Tp() >= _Tp(), "meq");
+	static_assert(_Tp() == _Tp(), "eq");
+	static_assert(!(_Tp() != _Tp()), "ne");
+      }
+  };
+
+  // Generator to test standard layout
   struct has_trivial_cons_dtor
   {
     template<typename _Tp>
@@ -540,7 +589,7 @@ namespace __gnu_test
 	struct _Concept
 	{
 	  void __constraint()
-	  { _Tp __v; }
+	  { _Tp __v __attribute__((unused)); }
 	};
 
 	void (_Concept::*__x)() __attribute__((unused))
@@ -587,6 +636,82 @@ namespace __gnu_test
 	  = &_Concept::__constraint;
       }
   };
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  // Generator to test default constructor.
+  struct constexpr_default_constructible
+  {
+    template<typename _Tp, bool _IsLitp = std::is_literal_type<_Tp>::value>
+      struct _Concept;
+
+    // NB: _Tp must be a literal type. 
+    // Have to have user-defined default ctor for this to work.
+    template<typename _Tp>
+      struct _Concept<_Tp, true>
+      {
+	void __constraint()
+	{ constexpr _Tp __obj; }
+      };
+
+    // Non-literal type, declare local static and verify no
+    // constructors generated for _Tp within the translation unit.
+    template<typename _Tp>
+      struct _Concept<_Tp, false>
+      {
+	void __constraint()
+	{ static _Tp __obj; }
+      };
+
+    template<typename _Tp>
+      void 
+      operator()()
+      {
+	_Concept<_Tp> c;
+	c.__constraint();
+      }
+  };
+
+  struct constexpr_single_value_constructible
+  {
+    template<typename _Ttesttype, typename _Tvaluetype, 
+	     bool _IsLitp = std::is_literal_type<_Ttesttype>::value>
+      struct _Concept;
+
+    // NB: _Tvaluetype and _Ttesttype must be literal types.
+    // Additional constraint on _Tvaluetype needed.  Either assume
+    // user-defined default ctor as per
+    // constexpr_default_constructible and provide no initializer,
+    // provide an initializer, or assume empty-list init-able. Choose
+    // the latter.
+    template<typename _Ttesttype, typename _Tvaluetype>
+      struct _Concept<_Ttesttype, _Tvaluetype, true>
+      {
+	void __constraint()
+	{
+	  constexpr _Tvaluetype __v { };
+	  constexpr _Ttesttype __obj(__v);
+	}
+      };
+
+    template<typename _Ttesttype, typename _Tvaluetype>
+      struct _Concept<_Ttesttype, _Tvaluetype, false>
+      {
+	void __constraint()
+	{ 
+	  const _Tvaluetype __v { };
+	  static _Ttesttype __obj(__v);
+	}
+      };
+
+    template<typename _Ttesttype, typename _Tvaluetype>
+      void
+      operator()()
+      {
+	_Concept<_Ttesttype, _Tvaluetype> c;
+	c.__constraint();
+      }
+  };
+#endif
 
   // Generator to test direct list initialization
 #ifdef __GXX_EXPERIMENTAL_CXX0X__

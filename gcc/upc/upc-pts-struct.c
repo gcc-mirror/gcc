@@ -63,7 +63,8 @@ upc_pts_init_type (void)
   ref = start_struct (loc, RECORD_TYPE, name, &null_struct_parse_info);
   /* Ensure that shared pointers have twice the alignment of a pointer.  */
   TYPE_ALIGN (ref) = 2 * TYPE_ALIGN (ptr_type_node);
-  upc_vaddr_field_node = build_decl (loc, FIELD_DECL, get_identifier ("vaddr"),
+  name = get_identifier ("vaddr");
+  upc_vaddr_field_node = build_decl (loc, FIELD_DECL, name,
 				build_pointer_type (char_type_node));
   fields = chainon (fields, upc_vaddr_field_node);
   DECL_NONADDRESSABLE_P (upc_vaddr_field_node) = 0;
@@ -71,23 +72,29 @@ upc_pts_init_type (void)
   upc_thread_field_node = build_decl (loc, FIELD_DECL, get_identifier ("thread"),
 			     c_common_type_for_size(UPC_PTS_THREAD_SIZE, 1));
   fields = chainon (fields, upc_thread_field_node);
-#if UPC_PTS_THREAD_SIZE == 8 || UPC_PTS_THREAD_SIZE == 16 || UPC_PTS_THREAD_SIZE == 32
-  DECL_NONADDRESSABLE_P (upc_thread_field_node) = 0;
-  DECL_INITIAL (upc_thread_field_node) = NULL_TREE;
-#else
-  DECL_NONADDRESSABLE_P (upc_thread_field_node) = 1;
-  DECL_INITIAL (upc_thread_field_node) = size_int (UPC_PTS_THREAD_SIZE);
-#endif
+  if (!(UPC_PTS_THREAD_SIZE % 8))
+    {
+      DECL_NONADDRESSABLE_P (upc_thread_field_node) = 0;
+      DECL_INITIAL (upc_thread_field_node) = NULL_TREE;
+    }
+  else
+    {
+      DECL_NONADDRESSABLE_P (upc_thread_field_node) = 1;
+      DECL_INITIAL (upc_thread_field_node) = size_int (UPC_PTS_THREAD_SIZE);
+    }
   upc_phase_field_node = build_decl (loc, FIELD_DECL, get_identifier ("phase"),
 			   c_common_type_for_size(UPC_PTS_PHASE_SIZE, 1));
   fields = chainon (fields, upc_phase_field_node);
-#if UPC_PTS_PHASE_SIZE == 8 || UPC_PTS_PHASE_SIZE == 16 || UPC_PTS_PHASE_SIZE == 32
-  DECL_NONADDRESSABLE_P (upc_phase_field_node) = 0;
-  DECL_INITIAL (upc_phase_field_node) = NULL_TREE;
-#else
-  DECL_NONADDRESSABLE_P (upc_phase_field_node) = 1;
-  DECL_INITIAL (upc_phase_field_node) = size_int (UPC_PTS_PHASE_SIZE);
-#endif
+  if (!(UPC_PTS_PHASE_SIZE % 8))
+    {
+      DECL_NONADDRESSABLE_P (upc_phase_field_node) = 0;
+      DECL_INITIAL (upc_phase_field_node) = NULL_TREE;
+    }
+  else
+    {
+      DECL_NONADDRESSABLE_P (upc_phase_field_node) = 1;
+      DECL_INITIAL (upc_phase_field_node) = size_int (UPC_PTS_PHASE_SIZE);
+    }
 #if !UPC_PTS_VADDR_FIRST
   fields = nreverse (fields);
 #endif

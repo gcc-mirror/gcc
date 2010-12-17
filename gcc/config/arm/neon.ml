@@ -709,7 +709,8 @@ let pf_su_8_64 = P8 :: P16 :: F32 :: su_8_64
 let ops =
   [
     (* Addition.  *)
-    Vadd, [], All (3, Dreg), "vadd", sign_invar_2, F32 :: su_8_64;
+    Vadd, [], All (3, Dreg), "vadd", sign_invar_2, F32 :: su_8_32;
+    Vadd, [No_op], All (3, Dreg), "vadd", sign_invar_2, [S64; U64];
     Vadd, [], All (3, Qreg), "vaddQ", sign_invar_2, F32 :: su_8_64;
     Vadd, [], Long, "vaddl", elts_same_2, su_8_32;
     Vadd, [], Wide, "vaddw", elts_same_2, su_8_32;
@@ -758,7 +759,8 @@ let ops =
     Vmls, [Saturating; Doubling], Long, "vqdmlsl", elts_same_io, [S16; S32];
 
     (* Subtraction.  *)
-    Vsub, [], All (3, Dreg), "vsub", sign_invar_2, F32 :: su_8_64;
+    Vsub, [], All (3, Dreg), "vsub", sign_invar_2, F32 :: su_8_32;
+    Vsub, [No_op], All (3, Dreg), "vsub", sign_invar_2,  [S64; U64];
     Vsub, [], All (3, Qreg), "vsubQ", sign_invar_2, F32 :: su_8_64;
     Vsub, [], Long, "vsubl", elts_same_2, su_8_32;
     Vsub, [], Wide, "vsubw", elts_same_2, su_8_32;
@@ -967,7 +969,8 @@ let ops =
       Use_operands [| Corereg; Dreg; Immed |],
       "vget_lane", get_lane, pf_su_8_32;
     Vget_lane,
-      [InfoWord;
+      [No_op;
+       InfoWord;
        Disassembles_as [Use_operands [| Corereg; Corereg; Dreg |]];
        Instruction_name ["vmov"]; Const_valuator (fun _ -> 0)],
       Use_operands [| Corereg; Dreg; Immed |],
@@ -989,7 +992,8 @@ let ops =
                 Instruction_name ["vmov"]],
       Use_operands [| Dreg; Corereg; Dreg; Immed |], "vset_lane",
       set_lane, pf_su_8_32;
-    Vset_lane, [Disassembles_as [Use_operands [| Dreg; Corereg; Corereg |]];
+    Vset_lane, [No_op;
+                Disassembles_as [Use_operands [| Dreg; Corereg; Corereg |]];
                 Instruction_name ["vmov"]; Const_valuator (fun _ -> 0)],
       Use_operands [| Dreg; Corereg; Dreg; Immed |], "vset_lane",
       set_lane_notype, [S64; U64];
@@ -1017,7 +1021,8 @@ let ops =
       Use_operands [| Dreg; Corereg |], "vdup_n", bits_1,
       pf_su_8_32;
     Vdup_n,
-      [Instruction_name ["vmov"];
+      [No_op;
+       Instruction_name ["vmov"];
        Disassembles_as [Use_operands [| Dreg; Corereg; Corereg |]]],
       Use_operands [| Dreg; Corereg |], "vdup_n", notype_1,
       [S64; U64];
@@ -1028,7 +1033,8 @@ let ops =
       Use_operands [| Qreg; Corereg |], "vdupQ_n", bits_1,
       pf_su_8_32;
     Vdup_n,
-      [Instruction_name ["vmov"];
+      [No_op;
+       Instruction_name ["vmov"];
        Disassembles_as [Use_operands [| Dreg; Corereg; Corereg |];
                         Use_operands [| Dreg; Corereg; Corereg |]]],
       Use_operands [| Qreg; Corereg |], "vdupQ_n", notype_1,
@@ -1043,7 +1049,8 @@ let ops =
       Use_operands [| Dreg; Corereg |],
       "vmov_n", bits_1, pf_su_8_32;
     Vmov_n,
-      [Builtin_name "vdup_n";
+      [No_op;
+       Builtin_name "vdup_n";
        Instruction_name ["vmov"];
        Disassembles_as [Use_operands [| Dreg; Corereg; Corereg |]]],
       Use_operands [| Dreg; Corereg |],
@@ -1056,7 +1063,8 @@ let ops =
       Use_operands [| Qreg; Corereg |],
       "vmovQ_n", bits_1, pf_su_8_32;
     Vmov_n,
-      [Builtin_name "vdupQ_n";
+      [No_op;
+       Builtin_name "vdupQ_n";
        Instruction_name ["vmov"];
        Disassembles_as [Use_operands [| Dreg; Corereg; Corereg |];
                         Use_operands [| Dreg; Corereg; Corereg |]]],
@@ -1613,23 +1621,28 @@ let ops =
       store_3, [P16; F32; U16; U32; S16; S32];
 
     (* Logical operations. And.  *)
-    Vand, [], All (3, Dreg), "vand", notype_2, su_8_64;
+    Vand, [], All (3, Dreg), "vand", notype_2, su_8_32;
+    Vand, [No_op], All (3, Dreg), "vand", notype_2, [S64; U64];
     Vand, [], All (3, Qreg), "vandQ", notype_2, su_8_64;
 
     (* Or.  *)
-    Vorr, [], All (3, Dreg), "vorr", notype_2, su_8_64;
+    Vorr, [], All (3, Dreg), "vorr", notype_2, su_8_32;
+    Vorr, [No_op], All (3, Dreg), "vorr", notype_2, [S64; U64];
     Vorr, [], All (3, Qreg), "vorrQ", notype_2, su_8_64;
 
     (* Eor.  *)
-    Veor, [], All (3, Dreg), "veor", notype_2, su_8_64;
+    Veor, [], All (3, Dreg), "veor", notype_2, su_8_32;
+    Veor, [No_op], All (3, Dreg), "veor", notype_2, [S64; U64];
     Veor, [], All (3, Qreg), "veorQ", notype_2, su_8_64;
 
     (* Bic (And-not).  *)
-    Vbic, [], All (3, Dreg), "vbic", notype_2, su_8_64;
+    Vbic, [], All (3, Dreg), "vbic", notype_2, su_8_32;
+    Vbic, [No_op], All (3, Dreg), "vbic", notype_2, [S64; U64];
     Vbic, [], All (3, Qreg), "vbicQ", notype_2, su_8_64;
 
     (* Or-not.  *)
-    Vorn, [], All (3, Dreg), "vorn", notype_2, su_8_64;
+    Vorn, [], All (3, Dreg), "vorn", notype_2, su_8_32;
+    Vorn, [No_op], All (3, Dreg), "vorn", notype_2, [S64; U64];
     Vorn, [], All (3, Qreg), "vornQ", notype_2, su_8_64;
   ]
 

@@ -124,11 +124,12 @@ along with GCC; see the file COPYING3.  If not see
 #undef LIB_SPEC
 #define LIB_SPEC \
   "%{compat-bsd:-lucb -lsocket -lnsl -lelf -laio} \
-   %{!shared:\
-     %{!symbolic:\
-       %{pthreads|pthread:-lpthread} \
-       %{!pthreads:%{!pthread:%{threads:-lthread}}} \
-       %{p|pg:-ldl} -lc}}"
+   %{!symbolic:\
+     %{pthreads|pthread:" \
+        LIB_THREAD_LDFLAGS_SPEC " -lpthread " LIB_TLS_SPEC "} \
+     %{!pthreads:%{!pthread:%{threads:" \
+	LIB_THREAD_LDFLAGS_SPEC " -lthread}}} \
+     %{p|pg:-ldl} -lc}"
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "crtend.o%s crtn.o%s"
@@ -191,14 +192,9 @@ along with GCC; see the file COPYING3.  If not see
 #undef SUPPORTS_INIT_PRIORITY
 #define SUPPORTS_INIT_PRIORITY 0
 
-/* This defines which switch letters take arguments.
-   It is as in svr4.h but with -R added.  */
-#undef SWITCH_TAKES_ARG
-#define SWITCH_TAKES_ARG(CHAR) \
-  (DEFAULT_SWITCH_TAKES_ARG(CHAR) \
-   || (CHAR) == 'R' \
-   || (CHAR) == 'h' \
-   || (CHAR) == 'z')
+/* collect2.c can only parse GNU nm -n output.  Solaris nm needs -png to
+   produce the same format.  */
+#define NM_FLAGS "-png"
 
 #define STDC_0_IN_SYSTEM_HEADERS 1
 

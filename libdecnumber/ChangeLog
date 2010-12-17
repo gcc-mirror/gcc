@@ -1,3 +1,49 @@
+2010-11-24  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* dconfig.h (LIBGCC2_FLOAT_WORDS_BIG_ENDIAN): Delete.
+	(WORDS_BIG_ENDIAN): Define based on value of __FLOAT_WORD_ORDER__.
+
+2010-10-23  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* dconfig.h (LIBGCC2_WORDS_BIG_ENDIAN): Delete.
+	(LIBGCC2_FLOAT_WORDS_BIG_ENDIAN): Test __BYTE_ORDER__.
+
+2010-09-10  Kai Tietz  <kai.tietz@onevision.com>
+
+       * configure: Regenerated.
+
+2010-09-08  Tristan Gingold  <gingold@adacore.com>
+
+	PR 44001
+	* Makefile.in (objext): New variable.
+	(bid_OBJS): Use $(objext) for extension.
+	(libdecnumber_a_OBJS): Ditto.
+	(mostlyclean): Ditto
+	(.c.o): Ditto.
+	Update dependencies.
+
+2010-09-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/45524
+	* configure.ac (enable_decimal_float): Set to
+	$default_decimal_float.
+	* configure: Regenerated.
+
+2010-09-06  Andreas Schwab  <schwab@redhat.com>
+
+	* configure: Regenerate.
+
+2010-09-03  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* configure.ac: Use the GCC_AC_ENABLE_DECIMAL_FLOAT macro.
+	* Makefile.in: Add aclocal.m4 dependency to dfp.m4.
+	* configure: Regenerate.
+	* aclocal.m4: Regenerate.
+
+2010-08-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure: Regenerate.
+
 2010-04-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* aclocal.m4: Regenerate.

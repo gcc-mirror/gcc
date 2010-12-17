@@ -332,7 +332,13 @@ GLIBCXX_3.4 {
     # std::basic_filebuf
     _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EEC*;
     _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EED*;
-    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE[0-3]*;
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE0*;
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE13*;
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE15*;
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE16*;
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE19*;
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE2*;
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE3*;
     _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE4openEPKc*;
     _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE4sync*;
     _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE[5-9]*;
@@ -740,6 +746,7 @@ GLIBCXX_3.4 {
     sqrtl;
     copysignf;
 
+#ifdef HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT
    # GLIBCXX_ABI compatibility only.
     # std::string
     _ZNKSs11_M_disjunctEPKc;
@@ -767,6 +774,7 @@ GLIBCXX_3.4 {
     _ZNSt11char_traitsI[cw]E2eqERK[cw]S2_;
 
     _ZNSt19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEppEv;
+#endif
 
     # std::locale::Impl _M_ members
     _ZNSt6locale5_Impl16_M_install_facetEPKNS_2idEPKNS_5facetE;
@@ -875,7 +883,9 @@ GLIBCXX_3.4.6 {
 
     _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE9showmanycEv;
 
+#ifdef HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT
     _ZNKSt15basic_stringbufIwSt11char_traitsIwESaIwEE3strEv;
+#endif
 
     _ZN9__gnu_cxx6__poolILb1EE13_M_initializeEv;
 
@@ -1174,7 +1184,21 @@ GLIBCXX_3.4.15 {
     _ZNSbIwSt11char_traitsIwESaIwEE4backEv;
     _ZNKSbIwSt11char_traitsIwESaIwEE4backEv;
 
+    # basic_filebuf::_M_get_ext_pos
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE14_M_get_ext_pos*;
+
+    # targets using emutls
+    __emutls_v._ZSt11__once_call;
+    __emutls_v._ZSt15__once_callable;
+
 } GLIBCXX_3.4.14;
+
+GLIBCXX_3.4.16 {
+
+    # std::future_category is now a function
+    _ZSt15future_categoryv;
+
+} GLIBCXX_3.4.15;
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
@@ -1345,5 +1369,11 @@ CXXABI_1.3.5 {
     _ZTIDn;
     _ZTIPDn;
     _ZTIPKDn;
+
+    # Default function.
+    _ZSt11_Hash_bytesPKv*;
+
+    # FNV hash.
+    _ZSt15_Fnv_hash_bytesPKv*;
 
 } CXXABI_1.3.4;

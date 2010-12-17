@@ -1,4 +1,4 @@
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,9 +20,14 @@
 #include <thread>
 #include <testsuite_performance.h>
 
+inline bool is_ready(std::shared_future<void>& f)
+{
+  return f.wait_for(std::chrono::microseconds(1));
+}
+
 void poll(std::shared_future<void> f)
 {
-  while (!f.is_ready())
+  while (!is_ready(f))
   { }
 }
 
@@ -46,7 +51,7 @@ int main()
   start_counters(time, resource);
 
   for (int i = 0; i < 1000000; ++i)
-    (void)f.is_ready();
+    (void)is_ready(f);
   p.set_value();
 
   for (int i=0; i < n; ++i)

@@ -51,6 +51,7 @@ load_gcc_lib target-supports.exp
 load_gcc_lib target-supports-dg.exp
 load_lib prune.exp
 load_lib dg-options.exp
+load_gcc_lib scanasm.exp
 load_gcc_lib target-libpath.exp
 load_gcc_lib timeout.exp
 load_gcc_lib timeout-dg.exp
@@ -631,6 +632,7 @@ proc check_v3_target_fileio { } {
     global et_fileio_saved
     global et_fileio_target_name
     global tool	
+    global srcdir
 
     if { ![info exists et_fileio_target_name] } {
 	set et_fileio_target_name ""
@@ -656,6 +658,8 @@ proc check_v3_target_fileio { } {
 	# the file functions
 	set src fileio[pid].cc
 	set exe fileio[pid].x
+	set testfile "cin_unget-1.txt"
+	v3-copy-files "$srcdir/data/$testfile"
 
 	set f [open $src "w"]
 	puts $f "#include <sys/types.h>"
@@ -663,20 +667,26 @@ proc check_v3_target_fileio { } {
 	puts $f "#include <fcntl.h>"
 	puts $f "#include <unistd.h>"
 	puts $f "#include <errno.h>"
+	puts $f "#include <string.h>"
 	puts $f "using namespace std;"	
 	puts $f "int main ()"
 	puts $f "{"
-	puts $f "  int fd  = open (\".\", O_RDONLY);"
+	puts $f "  int fd  = open (\"$testfile\", O_RDONLY);"
 	puts $f "  int ret = 0;"
+	puts $f "  char buf\[10\];"
 	puts $f "  if (fd == -1)"
-	puts $f "  {"
-	puts $f "    int err = errno;"
-	puts $f "    if (err == EIO || err == ENOSYS)"
-	puts $f "      ret = 1;"
-	puts $f "  }"
+	puts $f "    ret = 1;"
 	puts $f "  else"
 	puts $f "  {"
-	puts $f "    if (lseek (fd, 0, SEEK_CUR) == -1)"
+	puts $f "    if (lseek (fd, -1, SEEK_CUR) != -1 || errno != EINVAL)"
+	puts $f "      ret = 1;"
+	puts $f "    errno = 0;"
+	puts $f "    if (lseek (fd, 0, SEEK_CUR) != 0"
+	puts $f "        || read (fd, buf, 4) != 4"
+	puts $f "        || memcmp (buf, \"1234\", 4) != 0"
+	puts $f "        || lseek (fd, -2, SEEK_CUR) != 2"
+	puts $f "        || read (fd, buf, 2) != 2"
+	puts $f "        || memcmp (buf, \"34\", 2) != 0)"
 	puts $f "      ret = 1;"
 	puts $f "    close (fd);"
 	puts $f "  }"
@@ -830,99 +840,60 @@ proc check_v3_target_time { } {
     return $et_time_saved
 }
 
-proc check_v3_target_namedlocale { } {
-    global et_namedlocale_saved
-    global et_namedlocale_target_name
+proc check_v3_target_namedlocale { args } {
+    global et_namedlocale
     global tool	
 
-    if { ![info exists et_namedlocale_target_name] } {
-	set et_namedlocale_target_name ""
+    set et_namedlocale 0
+
+    # Set up, compile, and execute a C++ test program that tries to use
+    # the required named locale.
+    set exe nlocale[pid].x
+
+    if ![file exists ./$exe] {
+      set src nlocale[pid].cc
+
+      set f [open $src "w"]
+      puts $f "#include <locale>"
+      puts $f "#include <cstdio>"
+      puts $f "using namespace std;"	
+      puts $f "int main (int argc, char** argv)"
+      puts $f "{"
+      puts $f "  try"	
+      puts $f "  {"
+      puts $f "    locale(*(argv + 1));"
+      puts $f "    return 0;"
+      puts $f "  }"
+      puts $f "  catch(...)"
+      puts $f "  {"
+      puts $f "    printf(\"locale '%s' not supported\\n\", *(argv + 1));"
+      puts $f "    return 1;"
+      puts $f "  }"	
+      puts $f "}"
+      close $f
+
+      set lines [v3_target_compile $src $exe executable ""]
+      file delete $src
+
+      if ![string match "" $lines] {
+        verbose "check_v3_target_namedlocale: compilation failed" 2
+        return $et_namedlocale
+      }
+      # else No error message, compilation succeeded.
     }
+	
+    set result [${tool}_load "./$exe" "$args" ""]
+    set status [lindex $result 0]
 
-    # If the target has changed since we set the cached value, clear it.
-    set current_target [current_target_name]
-    if { $current_target != $et_namedlocale_target_name } {
-	verbose "check_v3_target_namedlocale: `$et_namedlocale_target_name'" 2
-	set et_namedlocale_target_name $current_target
-	if [info exists et_namedlocale_saved] {
-	    verbose "check_v3_target_namedlocale: removing cached result" 2
-	    unset et_namedlocale_saved
-	}
+    verbose "check_v3_target_namedlocale <$args>: status is <$status>" 2
+
+    if { $status == "pass" } {
+      set et_namedlocale 1
     }
-
-    if [info exists et_namedlocale_saved] {
-	verbose "check_v3_target_namedlocale: using cached result" 2
-    } else {
-	set et_namedlocale_saved 0
-
-	# Set up, compile, and execute a C++ test program that tries to use
-	# all the required named locales.
-	set src nlocale[pid].cc
-	set exe nlocale[pid].x
-
-	set f [open $src "w"]
-	puts $f "#include <locale>"
-	puts $f "using namespace std;"	
-	puts $f "int main ()"
-	puts $f "{"
-	puts $f "  try"	
-	puts $f "  {" 
-	puts $f "     locale(\"\");"
-	puts $f "     locale(\"de_DE\");"
-	puts $f "     locale(\"de_DE.ISO-8859-15@euro\");"
-	puts $f "     locale(\"de_DE@euro\");"
-	puts $f "     locale(\"en_GB\");"
-	puts $f "     locale(\"en_HK\");"
-	puts $f "     locale(\"en_PH\");"
-	puts $f "     locale(\"en_US\");"
-	puts $f "     locale(\"en_US.ISO-8859-1\");"
-	puts $f "     locale(\"en_US.ISO-8859-15\");"
-	puts $f "     locale(\"en_US.UTF-8\");"
-	puts $f "     locale(\"es_ES\");"
-	puts $f "     locale(\"es_MX\");"
-	puts $f "     locale(\"fr_FR\");"
-	puts $f "     locale(\"fr_FR@euro\");"
-	puts $f "     locale(\"is_IS\");"
-	puts $f "     locale(\"is_IS.UTF-8\");"
-	puts $f "     locale(\"it_IT\");"
-	puts $f "     locale(\"ja_JP.eucjp\");"
-	puts $f "     locale(\"ru_RU.ISO-8859-5\");"
-	puts $f "     locale(\"ru_RU.UTF-8\");"
-	puts $f "     locale(\"se_NO.UTF-8\");"
-	puts $f "     locale(\"ta_IN\");"
-	puts $f "     locale(\"zh_TW\");"
-	puts $f "     return 0;"
-	puts $f "  }"
-	puts $f "  catch(...)"
-	puts $f "  {"
-	puts $f "     return 1;"
-	puts $f "  }"	
-	puts $f "}"
-	close $f
-
-	set lines [v3_target_compile $src $exe executable ""]
-	file delete $src
-
-	if [string match "" $lines] {
-	    # No error message, compilation succeeded.
-	    set result [${tool}_load "./$exe" "" ""]
-	    set status [lindex $result 0]
-	    remote_file build delete $exe
-
-	    verbose "check_v3_target_namedlocale: status is <$status>" 2
-
-	    if { $status == "pass" } {
-		set et_namedlocale_saved 1
-	    }
-	} else {
-	    verbose "check_v3_target_namedlocale: compilation failed" 2
-	}
-    }
-    return $et_namedlocale_saved
+    return $et_namedlocale
 }
 
 proc check_v3_target_debug_mode { } {
-    global cxxflags
     global et_debug_mode
     global tool	
 
@@ -947,30 +918,128 @@ proc check_v3_target_debug_mode { } {
 	set et_debug_mode 0
 
 	# Set up and compile a C++ test program that depends
-	# on debug mode working.
+	# on debug mode activated.
 	set src debug_mode[pid].cc
 	set exe debug_mode[pid].exe
 
 	set f [open $src "w"]
-	puts $f "#include <string>"
-	puts $f "using namespace std;"	
+	puts $f "#ifndef _GLIBCXX_DEBUG"
+	puts $f "#  error No debug mode"
+	puts $f "#endif"
 	puts $f "int main()"
 	puts $f "{ return 0; }"
 	close $f
 
-	set cxxflags_saved $cxxflags
-	set cxxflags "$cxxflags -Werror -O0 -D_GLIBCXX_DEBUG"
 	set lines [v3_target_compile $src $exe executable ""]
-	set cxxflags $cxxflags_saved
 	file delete $src
 
 	if [string match "" $lines] {
 	    # No error message, compilation succeeded.
+	    remote_file build delete $exe
 	    set et_debug_mode 1
 	}
     }
     verbose "check_v3_target_debug_mode: $et_debug_mode" 2
     return $et_debug_mode
+}
+
+proc check_v3_target_profile_mode { } {
+    global et_profile_mode
+    global tool	
+
+    if { ![info exists et_profile_mode_target_name] } {
+	set et_profile_mode_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_profile_mode_target_name } {
+	verbose "check_v3_target_profile_mode: `$et_profile_mode_target_name'" 2
+	set et_profile_mode_target_name $current_target
+	if [info exists et_profile_mode] {
+	    verbose "check_v3_target_profile_mode: removing cached result" 2
+	    unset et_profile_mode
+	}
+    }
+
+    if [info exists et_profile_mode] {
+	verbose "check_v3_target_profile_mode: using cached result" 2
+    } else {
+	set et_profile_mode 0
+
+	# Set up and compile a C++ test program that depends
+	# on profile mode activated.
+	set src profile_mode[pid].cc
+	set exe profile_mode[pid].exe
+
+	set f [open $src "w"]
+	puts $f "#ifndef _GLIBCXX_PROFILE"
+	puts $f "#  error No profile mode"
+	puts $f "#endif"
+	puts $f "int main()"
+	puts $f "{ return 0; }"
+	close $f
+
+	set lines [v3_target_compile $src $exe executable ""]
+	file delete $src
+
+	if [string match "" $lines] {
+	    # No error message, compilation succeeded.
+	    remote_file build delete $exe
+	    set et_profile_mode 1
+	}
+    }
+    verbose "check_v3_target_profile_mode: $et_profile_mode" 2
+    return $et_profile_mode
+}
+
+proc check_v3_target_normal_mode { } {
+    global et_normal_mode
+    global tool	
+
+    if { ![info exists et_normal_mode_target_name] } {
+	set et_normal_mode_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_normal_mode_target_name } {
+	verbose "check_v3_target_normal_mode: `$et_normal_mode_target_name'" 2
+	set et_normal_mode_target_name $current_target
+	if [info exists et_normal_mode] {
+	    verbose "check_v3_target_normal_mode: removing cached result" 2
+	    unset et_normal_mode
+	}
+    }
+
+    if [info exists et_normal_mode] {
+	verbose "check_v3_target_normal_mode: using cached result" 2
+    } else {
+	set et_normal_mode 0
+
+	# Set up and compile a C++ test program that depends
+	# on normal mode activated.
+	set src normal_mode[pid].cc
+	set exe normal_mode[pid].exe
+
+	set f [open $src "w"]
+	puts $f "#if defined(_GLIBCXX_DEBUG) || defined(_GLIBCXX_PROFILE) || defined(_GLIBCXX_PARALLEL)"
+	puts $f "#  error No normal mode"
+	puts $f "#endif"
+	puts $f "int main()"
+	puts $f "{ return 0; }"
+	close $f
+
+	set lines [v3_target_compile $src $exe executable ""]
+	file delete $src
+
+	if [string match "" $lines] {
+	    # No error message, compilation succeeded.
+	    set et_normal_mode 1
+	}
+    }
+    verbose "check_v3_target_normal_mode: $et_normal_mode" 2
+    return $et_normal_mode
 }
 
 proc check_v3_target_parallel_mode { } {

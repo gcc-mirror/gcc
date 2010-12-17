@@ -1,5 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -msse -std=c99" } */
+/* { dg-require-effective-target sse } */
+/* { dg-require-effective-target c99_runtime } */
 
 #ifndef CHECK_H
 #define CHECK_H "sse-check.h"

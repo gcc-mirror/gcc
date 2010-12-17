@@ -1,5 +1,6 @@
 /* Language hooks common to C and ObjC front ends.
-   Copyright (C) 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 This file is part of GCC.
@@ -28,14 +29,18 @@ along with GCC; see the file COPYING3.  If not see
 #define LANG_HOOKS_IDENTIFIER_SIZE C_SIZEOF_STRUCT_LANG_IDENTIFIER
 #undef LANG_HOOKS_FINISH
 #define LANG_HOOKS_FINISH c_common_finish
+#undef LANG_HOOKS_OPTION_LANG_MASK
+#define LANG_HOOKS_OPTION_LANG_MASK c_common_option_lang_mask
+#undef LANG_HOOKS_COMPLAIN_WRONG_LANG_P
+#define LANG_HOOKS_COMPLAIN_WRONG_LANG_P c_common_complain_wrong_lang_p
+#undef LANG_HOOKS_INIT_OPTIONS_STRUCT
+#define LANG_HOOKS_INIT_OPTIONS_STRUCT c_common_init_options_struct
 #undef LANG_HOOKS_INIT_OPTIONS
 #define LANG_HOOKS_INIT_OPTIONS c_common_init_options
 #undef LANG_HOOKS_INITIALIZE_DIAGNOSTICS
 #define LANG_HOOKS_INITIALIZE_DIAGNOSTICS c_initialize_diagnostics
 #undef LANG_HOOKS_HANDLE_OPTION
 #define LANG_HOOKS_HANDLE_OPTION c_common_handle_option
-#undef LANG_HOOKS_MISSING_ARGUMENT
-#define LANG_HOOKS_MISSING_ARGUMENT c_common_missing_argument
 #undef LANG_HOOKS_POST_OPTIONS
 #define LANG_HOOKS_POST_OPTIONS c_common_post_options
 #undef LANG_HOOKS_GET_ALIAS_SET

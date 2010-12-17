@@ -93,29 +93,25 @@ gmtime_r (const time_t * timep, struct tm * result)
 
    Arguments:
 
-   DATE (optional) shall be scalar and of type default character, and
-   shall be of length at least 8 in order to contain the complete
-   value. It is an INTENT(OUT) argument. Its leftmost 8 characters
-   are assigned a value of the form CCYYMMDD, where CC is the century,
-   YY the year within the century, MM the month within the year, and
-   DD the day within the month. If there is no date available, they
-   are assigned blanks.
+   DATE (optional) shall be scalar and of type default character.
+   It is an INTENT(OUT) argument.  It is assigned a value of the
+   form CCYYMMDD, where CC is the century, YY the year within the
+   century, MM the month within the year, and DD the day within the
+   month.  If there is no date available, they are assigned blanks.
 
-   TIME (optional) shall be scalar and of type default character, and
-   shall be of length at least 10 in order to contain the complete
-   value. It is an INTENT(OUT) argument. Its leftmost 10 characters
-   are assigned a value of the form hhmmss.sss, where hh is the hour
-   of the day, mm is the minutes of the hour, and ss.sss is the
-   seconds and milliseconds of the minute. If there is no clock
-   available, they are assigned blanks.
+   TIME (optional) shall be scalar and of type default character.
+   It is an INTENT(OUT) argument. It is assigned a value of the
+   form hhmmss.sss, where hh is the hour of the day, mm is the
+   minutes of the hour, and ss.sss is the seconds and milliseconds
+   of the minute.  If there is no clock available, they are assigned
+   blanks.
 
-   ZONE (optional) shall be scalar and of type default character, and
-   shall be of length at least 5 in order to contain the complete
-   value. It is an INTENT(OUT) argument. Its leftmost 5 characters
-   are assigned a value of the form [+-]hhmm, where hh and mm are the
-   time difference with respect to Coordinated Universal Time (UTC) in
-   hours and parts of an hour expressed in minutes, respectively. If
-   there is no clock available, they are assigned blanks.
+   ZONE (optional) shall be scalar and of type default character.
+   It is an INTENT(OUT) argument.  It is assigned a value of the
+   form [+-]hhmm, where hh and mm are the time difference with
+   respect to Coordinated Universal Time (UTC) in hours and parts
+   of an hour expressed in minutes, respectively.  If there is no
+   clock available, they are assigned blanks.
 
    VALUES (optional) shall be of type default integer and of rank
    one. It is an INTENT(OUT) argument. Its size shall be at least
@@ -311,22 +307,13 @@ date_and_time (char *__date, char *__time, char *__zone,
     }
 
   if (__zone)
-    {
-      assert (__zone_len >= ZONE_LEN);
-      fstrcpy (__zone, ZONE_LEN, zone, ZONE_LEN);
-    }
+    fstrcpy (__zone, __zone_len, zone, ZONE_LEN);
 
   if (__time)
-    {
-      assert (__time_len >= TIME_LEN);
-      fstrcpy (__time, TIME_LEN, timec, TIME_LEN);
-    }
+    fstrcpy (__time, __time_len, timec, TIME_LEN);
 
   if (__date)
-    {
-      assert (__date_len >= DATE_LEN);
-      fstrcpy (__date, DATE_LEN, date, DATE_LEN);
-    }
+    fstrcpy (__date, __date_len, date, DATE_LEN);
 }
 
 
@@ -362,7 +349,7 @@ secnds (GFC_REAL_4 *x)
   /* Make the INTEGER*4 array for passing to date_and_time.  */
   gfc_array_i4 *avalues = internal_malloc_size (sizeof (gfc_array_i4));
   avalues->data = &values[0];
-  GFC_DESCRIPTOR_DTYPE (avalues) = ((GFC_DTYPE_REAL << GFC_DTYPE_TYPE_SHIFT)
+  GFC_DESCRIPTOR_DTYPE (avalues) = ((BT_REAL << GFC_DTYPE_TYPE_SHIFT)
 				        & GFC_DTYPE_TYPE_MASK) +
 				    (4 << GFC_DTYPE_SIZE_SHIFT);
 

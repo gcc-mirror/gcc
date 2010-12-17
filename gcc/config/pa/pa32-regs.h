@@ -1,5 +1,5 @@
 /* Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-   2008 Free Software Foundation, Inc.
+   2008, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -43,8 +43,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    has different fp units: define separate register sets for the 1.0
    and 1.1 fp units.  */
 
-#define FIRST_PSEUDO_REGISTER 89  /* 32 general regs + 56 fp regs +
-				     + 1 shift reg */
+#define FIRST_PSEUDO_REGISTER 90  /* 32 general regs + 56 fp regs +
+				     + 1 shift reg + frame pointer */
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
@@ -96,7 +96,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, \
-  0}
+  /* shift register and soft frame pointer */ \
+  0, 1}
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -117,26 +118,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   0, 0, 0, 0, 1, 1, 1, 1, \
   1, 1, 1, 1, 1, 1, 1, 1, \
   1, 1, 1, 1, 1, 1, 1, 1, \
-  1}
-
-#define CONDITIONAL_REGISTER_USAGE \
-{						\
-  int i;					\
-  if (!TARGET_PA_11)				\
-    {						\
-      for (i = 56; i < 88; i++) 		\
-	fixed_regs[i] = call_used_regs[i] = 1; 	\
-      for (i = 33; i < 88; i += 2) 		\
-	fixed_regs[i] = call_used_regs[i] = 1; 	\
-    }						\
-  if (TARGET_DISABLE_FPREGS || TARGET_SOFT_FLOAT)\
-    {						\
-      for (i = 32; i < 88; i++) 		\
-	fixed_regs[i] = call_used_regs[i] = 1; 	\
-    }						\
-  if (flag_pic)					\
-    fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;	\
-}
+  /* shift register and soft frame pointer */ \
+  1, 1}
 
 /* Allocate the call used registers first.  This should minimize
    the number of registers that need to be saved (as call used
@@ -172,7 +155,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    3,  4,  5,  6,  7,  8,  9, 10, 	\
   11, 12, 13, 14, 15, 16, 17, 18,	\
   /* special registers.  */		\
-   1, 30,  0, 88}
+   1, 30,  0, 88, 89}
 
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
@@ -304,12 +287,12 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FPUPPER_REGS, FP_REGS,
 #define REG_CLASS_CONTENTS	\
  {{0x00000000, 0x00000000, 0x00000000},	/* NO_REGS */			\
   {0x00000002, 0x00000000, 0x00000000},	/* R1_REGS */			\
-  {0xfffffffe, 0x00000000, 0x00000000},	/* GENERAL_REGS */		\
+  {0xfffffffe, 0x00000000, 0x02000000},	/* GENERAL_REGS */		\
   {0x00000000, 0xff000000, 0x00ffffff},	/* FPUPPER_REGS */		\
   {0x00000000, 0xffffffff, 0x00ffffff},	/* FP_REGS */			\
-  {0xfffffffe, 0xffffffff, 0x00ffffff},	/* GENERAL_OR_FP_REGS */	\
+  {0xfffffffe, 0xffffffff, 0x02ffffff},	/* GENERAL_OR_FP_REGS */	\
   {0x00000000, 0x00000000, 0x01000000},	/* SHIFT_REGS */		\
-  {0xfffffffe, 0xffffffff, 0x01ffffff}}	/* ALL_REGS */
+  {0xfffffffe, 0xffffffff, 0x03ffffff}}	/* ALL_REGS */
 
 /* The following macro defines cover classes for Integrated Register
    Allocator.  Cover classes is a set of non-intersected register
@@ -336,7 +319,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FPUPPER_REGS, FP_REGS,
 #define REGNO_REG_CLASS(REGNO)						\
   ((REGNO) == 0 ? NO_REGS 						\
    : (REGNO) == 1 ? R1_REGS						\
-   : (REGNO) < 32 ? GENERAL_REGS					\
+   : (REGNO) < 32 || (REGNO) == 89 ? GENERAL_REGS			\
    : (REGNO) < 56 ? FP_REGS						\
    : (REGNO) < 88 ? FPUPPER_REGS					\
    : SHIFT_REGS)
@@ -370,7 +353,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FPUPPER_REGS, FP_REGS,
  "%fr20", "%fr20R", "%fr21", "%fr21R", "%fr22", "%fr22R", "%fr23", "%fr23R", \
  "%fr24", "%fr24R", "%fr25", "%fr25R", "%fr26", "%fr26R", "%fr27", "%fr27R", \
  "%fr28", "%fr28R", "%fr29", "%fr29R", "%fr30", "%fr30R", "%fr31", "%fr31R", \
- "SAR"}
+ "SAR",   "sfp"}
 
 #define ADDITIONAL_REGISTER_NAMES \
 {{"%fr4L",32}, {"%fr5L",34}, {"%fr6L",36}, {"%fr7L",38},		\

@@ -1,6 +1,7 @@
 /* Tests for #pragma init and #pragma fini.  */
 
 /* { dg-do run { target *-*-solaris2.* } } */
+/* { dg-skip-if "no .pushsection/.popsection" { i?86-*-solaris2.8 && { ! gas } } } */
 
 extern void abort ();
 

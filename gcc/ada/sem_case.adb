@@ -32,7 +32,6 @@ with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
-with Sem_Case; use Sem_Case;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
@@ -43,23 +42,31 @@ with Sinfo;    use Sinfo;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
+with Ada.Unchecked_Deallocation;
+
 with GNAT.Heap_Sort_G;
 
 package body Sem_Case is
+
+   type Choice_Bounds is record
+     Lo   : Node_Id;
+     Hi   : Node_Id;
+     Node : Node_Id;
+   end record;
+   --  Represent one choice bounds entry with Lo and Hi values, Node points
+   --  to the choice node itself.
+
+   type Choice_Table_Type is array (Nat range <>) of Choice_Bounds;
+   --  Table type used to sort the choices present in a case statement, array
+   --  aggregate or record variant. The actual entries are stored in 1 .. Last,
+   --  but we have a 0 entry for convenience in sorting.
 
    -----------------------
    -- Local Subprograms --
    -----------------------
 
-   type Sort_Choice_Table_Type is array (Nat range <>) of Choice_Bounds;
-   --  This new array type is used as the actual table type for sorting
-   --  discrete choices. The reason for not using Choice_Table_Type, is that
-   --  in Sort_Choice_Table_Type we reserve entry 0 for the sorting algorithm
-   --  (this is not absolutely necessary but it makes the code more
-   --  efficient).
-
    procedure Check_Choices
-     (Choice_Table   : in out Sort_Choice_Table_Type;
+     (Choice_Table   : in out Choice_Table_Type;
       Bounds_Type    : Entity_Id;
       Subtyp         : Entity_Id;
       Others_Present : Boolean;
@@ -101,7 +108,7 @@ package body Sem_Case is
    -------------------
 
    procedure Check_Choices
-     (Choice_Table    : in out Sort_Choice_Table_Type;
+     (Choice_Table   : in out Choice_Table_Type;
       Bounds_Type    : Entity_Id;
       Subtyp         : Entity_Id;
       Others_Present : Boolean;
@@ -306,8 +313,16 @@ package body Sem_Case is
          Hi := Expr_Value (Choice_Table (J).Hi);
 
          if Lo <= Prev_Hi then
-            Prev_Choice := Choice_Table (J - 1).Node;
-            Choice      := Choice_Table (J).Node;
+            Choice := Choice_Table (J).Node;
+
+            --  Find first previous choice that overlaps
+
+            for K in 1 .. J - 1 loop
+               if Lo <= Expr_Value (Choice_Table (K).Hi) then
+                  Prev_Choice := Choice_Table (K).Node;
+                  exit;
+               end if;
+            end loop;
 
             if Sloc (Prev_Choice) <= Sloc (Choice) then
                Error_Msg_Sloc := Sloc (Prev_Choice);
@@ -321,7 +336,9 @@ package body Sem_Case is
             Issue_Msg (Prev_Hi + 1, Lo - 1);
          end if;
 
-         Prev_Hi := Hi;
+         if Hi > Prev_Hi then
+            Prev_Hi := Hi;
+         end if;
       end loop;
 
       if not Others_Present and then Expr_Value (Bounds_Hi) > Hi then
@@ -511,7 +528,7 @@ package body Sem_Case is
    --  Start of processing for Expand_Others_Choice
 
    begin
-      if Case_Table'Length = 0 then
+      if Case_Table'Last = 0 then
 
          --  Special case: only an others case is present.
          --  The others case covers the full range of the type.
@@ -537,9 +554,9 @@ package body Sem_Case is
          Exp_Hi := Type_High_Bound (Base_Type (Choice_Type));
       end if;
 
-      Lo := Expr_Value (Case_Table (Case_Table'First).Lo);
-      Hi := Expr_Value (Case_Table (Case_Table'First).Hi);
-      Previous_Hi := Expr_Value (Case_Table (Case_Table'First).Hi);
+      Lo := Expr_Value (Case_Table (1).Lo);
+      Hi := Expr_Value (Case_Table (1).Hi);
+      Previous_Hi := Expr_Value (Case_Table (1).Hi);
 
       --  Build the node for any missing choices that are smaller than any
       --  explicit choices given in the case.
@@ -551,7 +568,7 @@ package body Sem_Case is
       --  Build the nodes representing any missing choices that lie between
       --  the explicit ones given in the case.
 
-      for J in Case_Table'First + 1 .. Case_Table'Last loop
+      for J in 2 .. Case_Table'Last loop
          Lo := Expr_Value (Case_Table (J).Lo);
          Hi := Expr_Value (Case_Table (J).Hi);
 
@@ -588,7 +605,6 @@ package body Sem_Case is
 
    procedure No_OP (C : Node_Id) is
       pragma Warnings (Off, C);
-
    begin
       null;
    end No_OP;
@@ -599,6 +615,19 @@ package body Sem_Case is
 
    package body Generic_Choices_Processing is
 
+      --  The following type is used to gather the entries for the choice
+      --  table, so that we can then allocate the right length.
+
+      type Link;
+      type Link_Ptr is access all Link;
+
+      type Link is record
+         Val : Choice_Bounds;
+         Nxt : Link_Ptr;
+      end record;
+
+      procedure Free is new Ada.Unchecked_Deallocation (Link, Link_Ptr);
+
       ---------------------
       -- Analyze_Choices --
       ---------------------
@@ -606,20 +635,19 @@ package body Sem_Case is
       procedure Analyze_Choices
         (N              : Node_Id;
          Subtyp         : Entity_Id;
-         Choice_Table   : out Choice_Table_Type;
-         Last_Choice    : out Nat;
          Raises_CE      : out Boolean;
          Others_Present : out Boolean)
       is
-         pragma Assert (Choice_Table'First = 1);
-
          E : Entity_Id;
 
          Enode : Node_Id;
          --  This is where we post error messages for bounds out of range
 
-         Nb_Choices        : constant Nat := Choice_Table'Length;
-         Sort_Choice_Table : Sort_Choice_Table_Type (0 .. Nb_Choices);
+         Choice_List : Link_Ptr := null;
+         --  Gather list of choices
+
+         Num_Choices : Nat := 0;
+         --  Number of entries in Choice_List
 
          Choice_Type : constant Entity_Id := Base_Type (Subtyp);
          --  The actual type against which the discrete choices are resolved.
@@ -648,13 +676,17 @@ package body Sem_Case is
          Kind   : Node_Kind;
          --  The node kind of the current Choice
 
+         Delete_Choice : Boolean;
+         --  Set to True to delete the current choice
+
          Others_Choice : Node_Id := Empty;
          --  Remember others choice if it is present (empty otherwise)
 
          procedure Check (Choice : Node_Id; Lo, Hi : Node_Id);
          --  Checks the validity of the bounds of a choice. When the bounds
-         --  are static and no error occurred the bounds are entered into the
-         --  choices table so that they can be sorted later on.
+         --  are static and no error occurred the bounds are collected for
+         --  later entry into the choices table so that they can be sorted
+         --  later on.
 
          -----------
          -- Check --
@@ -706,8 +738,7 @@ package body Sem_Case is
 
                --  If the choice is an entity name, then it is a type, and we
                --  want to post the message on the reference to this entity.
-               --  Otherwise we want to post it on the lower bound of the
-               --  range.
+               --  Otherwise post it on the lower bound of the range.
 
                if Is_Entity_Name (Choice) then
                   Enode := Choice;
@@ -751,22 +782,20 @@ package body Sem_Case is
                end if;
             end if;
 
-            --  Store bounds in the table
+            --  Collect bounds in the list
 
             --  Note: we still store the bounds, even if they are out of range,
             --  since this may prevent unnecessary cascaded errors for values
             --  that are covered by such an excessive range.
 
-            Last_Choice := Last_Choice + 1;
-            Sort_Choice_Table (Last_Choice).Lo   := Lo;
-            Sort_Choice_Table (Last_Choice).Hi   := Hi;
-            Sort_Choice_Table (Last_Choice).Node := Choice;
+            Choice_List :=
+              new Link'(Val => (Lo, Hi, Choice), Nxt => Choice_List);
+            Num_Choices := Num_Choices + 1;
          end Check;
 
       --  Start of processing for Analyze_Choices
 
       begin
-         Last_Choice    := 0;
          Raises_CE      := False;
          Others_Present := False;
 
@@ -811,6 +840,7 @@ package body Sem_Case is
             else
                Choice := First (Get_Choices (Alt));
                while Present (Choice) loop
+                  Delete_Choice := False;
                   Analyze (Choice);
                   Kind := Nkind (Choice);
 
@@ -834,7 +864,49 @@ package body Sem_Case is
                      else
                         E := Entity (Choice);
 
-                        if not Is_Static_Subtype (E) then
+                        --  Case of predicated subtype
+
+                        if Has_Predicates (E) then
+
+                           --  Use of non-static predicate is an error
+
+                           if not Is_Discrete_Type (E)
+                             or else No (Static_Predicate (E))
+                           then
+                              Bad_Predicated_Subtype_Use
+                                ("cannot use subtype& with non-static "
+                                 & "predicate as case alternative", Choice, E);
+
+                              --  Static predicate case
+
+                           else
+                              declare
+                                 Copy : constant List_Id := Empty_List;
+                                 P    : Node_Id;
+                                 C    : Node_Id;
+
+                              begin
+                                 --  Loop through entries in predicate list,
+                                 --  converting to choices. Note that if the
+                                 --  list is empty, corresponding to a False
+                                 --  predicate, then no choices are inserted.
+
+                                 P := First (Static_Predicate (E));
+                                 while Present (P) loop
+                                    C := New_Copy (P);
+                                    Set_Sloc (C, Sloc (Choice));
+                                    Append_To (Copy, C);
+                                    Next (P);
+                                 end loop;
+
+                                 Insert_List_After (Choice, Copy);
+                                 Delete_Choice := True;
+                              end;
+                           end if;
+
+                        --  Not predicated subtype case
+
+                        elsif not Is_Static_Subtype (E) then
                            Process_Non_Static_Choice (Choice);
                         else
                            Check
@@ -847,6 +919,8 @@ package body Sem_Case is
                   elsif Kind = N_Subtype_Indication then
                      Resolve_Discrete_Subtype_Indication
                        (Choice, Expected_Type);
+
+                     --  Here for other than predicated subtype case
 
                      if Etype (Choice) /= Any_Type then
                         declare
@@ -911,7 +985,18 @@ package body Sem_Case is
                      Check (Choice, Choice, Choice);
                   end if;
 
-                  Next (Choice);
+                  --  Move to next choice, deleting the current one if the
+                  --  flag requesting this deletion is set True.
+
+                  declare
+                     C : constant Node_Id := Choice;
+                  begin
+                     Next (Choice);
+
+                     if Delete_Choice then
+                        Remove (C);
+                     end if;
+                  end;
                end loop;
 
                Process_Associated_Node (Alt);
@@ -920,65 +1005,47 @@ package body Sem_Case is
             Next (Alt);
          end loop;
 
-         Check_Choices
-           (Sort_Choice_Table (0 .. Last_Choice),
-            Bounds_Type,
-            Subtyp,
-            Others_Present or else (Choice_Type = Universal_Integer),
-            N);
+         --  Now we can create the Choice_Table, since we know how long
+         --  it needs to be so we can allocate exactly the right length.
 
-         --  Now copy the sorted discrete choices
+         declare
+            Choice_Table : Choice_Table_Type (0 .. Num_Choices);
 
-         for J in 1 .. Last_Choice loop
-            Choice_Table (Choice_Table'First - 1 + J) := Sort_Choice_Table (J);
-         end loop;
+         begin
+            --  Now copy the items we collected in the linked list into this
+            --  newly allocated table (leave entry 0 unused for sorting).
 
-         --  If no others choice we are all done, otherwise we have one more
-         --  step, which is to set the Others_Discrete_Choices field of the
-         --  others choice (to contain all otherwise unspecified choices).
-         --  Skip this if CE is known to be raised.
+            declare
+               T : Link_Ptr;
+            begin
+               for J in 1 .. Num_Choices loop
+                  T := Choice_List;
+                  Choice_List := T.Nxt;
+                  Choice_Table (J) := T.Val;
+                  Free (T);
+               end loop;
+            end;
 
-         if Others_Present and not Raises_CE then
-            Expand_Others_Choice
-              (Case_Table    => Choice_Table (1 .. Last_Choice),
-               Others_Choice => Others_Choice,
-               Choice_Type   => Bounds_Type);
-         end if;
+            Check_Choices
+              (Choice_Table,
+               Bounds_Type,
+               Subtyp,
+               Others_Present or else (Choice_Type = Universal_Integer),
+               N);
+
+            --  If no others choice we are all done, otherwise we have one more
+            --  step, which is to set the Others_Discrete_Choices field of the
+            --  others choice (to contain all otherwise unspecified choices).
+            --  Skip this if CE is known to be raised.
+
+            if Others_Present and not Raises_CE then
+               Expand_Others_Choice
+                 (Case_Table    => Choice_Table,
+                  Others_Choice => Others_Choice,
+                  Choice_Type   => Bounds_Type);
+            end if;
+         end;
       end Analyze_Choices;
-
-      -----------------------
-      -- Number_Of_Choices --
-      -----------------------
-
-      function Number_Of_Choices (N : Node_Id) return Nat is
-         Alt : Node_Id;
-         --  A case statement alternative or a record variant
-
-         Choice : Node_Id;
-         Count  : Nat := 0;
-
-      begin
-         if No (Get_Alternatives (N)) then
-            return 0;
-         end if;
-
-         Alt := First_Non_Pragma (Get_Alternatives (N));
-         while Present (Alt) loop
-
-            Choice := First (Get_Choices (Alt));
-            while Present (Choice) loop
-               if Nkind (Choice) /= N_Others_Choice then
-                  Count := Count + 1;
-               end if;
-
-               Next (Choice);
-            end loop;
-
-            Next_Non_Pragma (Alt);
-         end loop;
-
-         return Count;
-      end Number_Of_Choices;
 
    end Generic_Choices_Processing;
 

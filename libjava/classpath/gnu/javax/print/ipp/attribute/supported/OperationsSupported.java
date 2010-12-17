@@ -1,4 +1,4 @@
-/* OperationsSupported.java -- 
+/* OperationsSupported.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.javax.print.ipp.attribute.supported;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.EnumSyntax;
 import javax.print.attribute.SupportedValuesAttribute;
 
@@ -45,12 +46,12 @@ import javax.print.attribute.SupportedValuesAttribute;
  * <code>OperationsSupported</code> specifies the enums of the operations
  * supported by a given printer or job object. The attribute is further
  * specified in RFC 2911 section 4.4.15.
- *  
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class OperationsSupported extends EnumSyntax 
+public final class OperationsSupported extends EnumSyntax
   implements SupportedValuesAttribute
-{  
+{
   /*
    * Value               Operation Name
      -----------------   -------------------------------------
@@ -76,104 +77,104 @@ public final class OperationsSupported extends EnumSyntax
      0x0013-0x3FFF       reserved for future IETF standards track operations
      0x4000-0x8FFF       reserved for vendor extensions
    */
-  
+
   // standard ipp 1.1 operations
 
-  /** 
+  /**
    * Operation to print a job in one request/response. */
-  public static final OperationsSupported PRINT_JOB = 
+  public static final OperationsSupported PRINT_JOB =
     new OperationsSupported(0x02);
-  
+
   /** Operation to print a document from an URI */
-  public static final OperationsSupported PRINT_URI = 
+  public static final OperationsSupported PRINT_URI =
     new OperationsSupported(0x03);
-  
+
   /** Operation to validate a job before submission. */
-  public static final OperationsSupported VALIDATE_JOB = 
+  public static final OperationsSupported VALIDATE_JOB =
     new OperationsSupported(0x04);
-  
-  /** 
-   * Operation to create an initial job for use with multiple document per job. 
+
+  /**
+   * Operation to create an initial job for use with multiple document per job.
    */
-  public static final OperationsSupported CREATE_JOB = 
+  public static final OperationsSupported CREATE_JOB =
     new OperationsSupported(0x05);
-  
-  /** 
-   * Operation to send a document to a multidoc job created via CREATE_JOB 
+
+  /**
+   * Operation to send a document to a multidoc job created via CREATE_JOB
    */
-  public static final OperationsSupported SEND_DOCUMENT = 
+  public static final OperationsSupported SEND_DOCUMENT =
     new OperationsSupported(0x06);
-  
-  /** 
-   * Operation to send a document uri to a multidoc job created 
-   * via CREATE_JOB. The document accessible from this URI will be printed. 
+
+  /**
+   * Operation to send a document uri to a multidoc job created
+   * via CREATE_JOB. The document accessible from this URI will be printed.
    */
-  public static final OperationsSupported SEND_URI = 
+  public static final OperationsSupported SEND_URI =
     new OperationsSupported(0x07);
-  
+
   /** Operation to cancel a job by its ID or name.  */
-  public static final OperationsSupported CANCEL_JOB = 
+  public static final OperationsSupported CANCEL_JOB =
     new OperationsSupported(0x08);
-  
+
   /** Operation to get job attributes of a current job. */
-  public static final OperationsSupported GET_JOB_ATTRIBUTES = 
+  public static final OperationsSupported GET_JOB_ATTRIBUTES =
     new OperationsSupported(0x09);
-  
+
   /** Operation to pause a printer. */
-  public static final OperationsSupported PAUSE_PRINTER = 
+  public static final OperationsSupported PAUSE_PRINTER =
     new OperationsSupported(0x10);
-  
+
   /** Operation to get all currently queued or processed jobs. */
-  public static final OperationsSupported GET_JOBS = 
+  public static final OperationsSupported GET_JOBS =
     new OperationsSupported(0x0A);
-  
+
   /** Operation to get the attributes of a printer. */
-  public static final OperationsSupported GET_PRINTER_ATTRIBUTES = 
+  public static final OperationsSupported GET_PRINTER_ATTRIBUTES =
     new OperationsSupported(0x0B);
-  
+
   /** Operation to put a job on hold by its ID or name. */
-  public static final OperationsSupported HOLD_JOB = 
+  public static final OperationsSupported HOLD_JOB =
     new OperationsSupported(0x0C);
-  
+
   /** Operation to release a job by its ID or name. */
-  public static final OperationsSupported RELEASE_JOB = 
+  public static final OperationsSupported RELEASE_JOB =
     new OperationsSupported(0x0D);
-  
+
   /** Operation to restart a job by its ID or name. */
-  public static final OperationsSupported RESTART_JOB = 
+  public static final OperationsSupported RESTART_JOB =
     new OperationsSupported(0x0E);
-  
+
   /** Not yet an operation - reserved for futher use. */
-  public static final OperationsSupported RESERVED = 
+  public static final OperationsSupported RESERVED =
     new OperationsSupported(0x0F);
-  
+
   /** Operation to resume a printer. */
-  public static final OperationsSupported RESUME_PRINTER = 
+  public static final OperationsSupported RESUME_PRINTER =
     new OperationsSupported(0x11);
-  
+
   /** Operation to remove all jobs from a printer regardless of state. */
-  public static final OperationsSupported PURGE_JOBS = 
+  public static final OperationsSupported PURGE_JOBS =
     new OperationsSupported(0x12);
 
 
-  private static final String[] stringTable = { "print-job", "print-uri", 
+  private static final String[] stringTable = { "print-job", "print-uri",
                                                 "validate-job", "create-job",
-                                                "send-document", "send-uri", 
+                                                "send-document", "send-uri",
                                                 "cancel-job", "get-job-attributes",
-                                                "pause-printer", "get-jobs", 
+                                                "pause-printer", "get-jobs",
                                                 "get-printer-attributes", "hold-job",
                                                 "release-job", "restart-job", "reserved",
                                                 "resume-printer", "purge-job"};
-  
-  private static final OperationsSupported[] enumValueTable = 
+
+  private static final OperationsSupported[] enumValueTable =
     { PRINT_JOB, PRINT_URI, VALIDATE_JOB, CREATE_JOB, SEND_DOCUMENT, SEND_URI,
       CANCEL_JOB, GET_JOB_ATTRIBUTES, PAUSE_PRINTER, GET_JOBS, GET_PRINTER_ATTRIBUTES,
       HOLD_JOB, RELEASE_JOB, RESTART_JOB, RESERVED, RESUME_PRINTER, PURGE_JOBS};
-  
-  
+
+
   /**
    * Constructs a <code>OperationsSupported</code> object.
-   * 
+   *
    * @param value the enum value
    */
   protected OperationsSupported(int value)
@@ -186,7 +187,7 @@ public final class OperationsSupported extends EnumSyntax
    *
    * @return The class <code>OperationsSupported</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return OperationsSupported.class;
   }
@@ -200,7 +201,7 @@ public final class OperationsSupported extends EnumSyntax
   {
     return "operations-supported";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.
@@ -226,5 +227,5 @@ public final class OperationsSupported extends EnumSyntax
   protected int getOffset()
   {
     return 2;
-  } 
+  }
 }

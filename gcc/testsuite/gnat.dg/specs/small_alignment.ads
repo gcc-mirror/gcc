@@ -1,4 +1,4 @@
--- { dg-compile }
+-- { dg-do compile }
 
 package Small_Alignment is
 

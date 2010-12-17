@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    Renesas H8/300 (generic)
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
@@ -82,16 +82,6 @@ extern const char * const *h8_reg_names;
 
 #define LIB_SPEC "%{mrelax:-relax} %{g:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}"
 
-#define OPTIMIZATION_OPTIONS(LEVEL, SIZE)				 \
-  do									 \
-    {									 \
-      /* Basic block reordering is only beneficial on targets with cache \
-	 and/or variable-cycle branches where (cycle count taken !=	 \
-	 cycle count not taken).  */					 \
-      flag_reorder_blocks = 0;						 \
-    }									 \
-  while (0)
-
 /* Print subsidiary information on the compiler version in use.  */
 
 #define TARGET_VERSION fprintf (stderr, " (Renesas H8/300)");
@@ -129,28 +119,14 @@ extern const char * const *h8_reg_names;
 #endif
 #endif /* !IN_LIBGCC2 */
 
-/* Do things that must be done once at start up.  */
-
-#define OVERRIDE_OPTIONS			\
-  do						\
-    {						\
-      h8300_init_once ();			\
-    }						\
-  while (0)
-
 /* Default target_flags if no switches specified.  */
 
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_QUICKCALL)
 #endif
 
-/* Show we can debug even without a frame pointer.  */
-/* #define CAN_DEBUG_WITHOUT_FP */
-
-/* We want dwarf2 info available to gdb...  */
+/* We want dwarf2 info available to gdb.  */
 #define DWARF2_DEBUGGING_INFO        1
-/* ... but we don't actually support full dwarf2 EH.  */
-#define MUST_USE_SJLJ_EXCEPTIONS 1
 
 /* The return address is pushed on the stack.  */
 #define INCOMING_RETURN_ADDR_RTX   gen_rtx_MEM (Pmode, gen_rtx_REG (Pmode, STACK_POINTER_REGNUM))
@@ -265,12 +241,6 @@ extern const char * const *h8_reg_names;
 #define REG_ALLOC_ORDER				\
 /* r0 r1 r2 r3 r4 r5 r6 r7 mac ap rap  fp */	\
   { 2, 3, 0, 1, 4, 5, 6, 8,  7, 9, 10, 11 }
-
-#define CONDITIONAL_REGISTER_USAGE			\
-{							\
-  if (!TARGET_MAC)					\
-    fixed_regs[MAC_REG] = call_used_regs[MAC_REG] = 1;	\
-}
 
 #define HARD_REGNO_NREGS(REGNO, MODE)		\
   h8300_hard_regno_nregs ((REGNO), (MODE))
@@ -474,13 +444,6 @@ enum reg_class {
   ((C) == 'G' ? (VALUE) == CONST0_RTX (SFmode)	\
    : 0)
 
-/* Given an rtx X being reloaded into a reg required to be
-   in class CLASS, return the class of reg to actually use.
-   In general this is just CLASS; but on some machines
-   in some cases it is preferable to use a more restrictive class.  */
-
-#define PREFERRED_RELOAD_CLASS(X, CLASS)  (CLASS)
-
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 
@@ -535,17 +498,6 @@ enum reg_class {
    saved since the value is used before we know.  */
 
 #define FIRST_PARM_OFFSET(FNDECL) 0
-
-/* Value is the number of bytes of arguments automatically
-   popped when returning from a subroutine call.
-   FUNDECL is the declaration node of the function (as a tree),
-   FUNTYPE is the data type of the function (as a tree),
-   or for a library call it is an identifier node for the subroutine name.
-   SIZE is the number of bytes of arguments passed on the stack.
-
-   On the H8 the return does not pop anything.  */
-
-#define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, SIZE) 0
 
 /* Definitions for register eliminations.
 
@@ -639,35 +591,6 @@ struct cum_arg
 
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
  ((CUM).nbytes = 0, (CUM).libcall = LIBNAME)
-
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be available.)  */
-
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
- ((CUM).nbytes += ((MODE) != BLKmode					\
-  ? (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) & -UNITS_PER_WORD	\
-  : (int_size_in_bytes (TYPE) + UNITS_PER_WORD - 1) & -UNITS_PER_WORD))
-
-/* Define where to put the arguments to a function.
-   Value is zero to push the argument on the stack,
-   or a hard register in which to store the argument.
-
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
-   CUM is a variable of type CUMULATIVE_ARGS which gives info about
-    the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).  */
-
-/* On the H8/300 all normal args are pushed, unless -mquickcall in which
-   case the first 3 arguments are passed in registers.
-   See function `function_arg'.  */
-
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-  function_arg (&CUM, MODE, TYPE, NAMED)
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */

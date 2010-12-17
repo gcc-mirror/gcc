@@ -1,0 +1,97 @@
+; Options for the MicroBlaze port of the compiler
+;
+; Copyright 2009, 2010 Free Software Foundation, Inc.
+;
+; Contributed by Michael Eager <eager@eagercon.com>.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT
+; ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+; or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+; License for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.  */
+
+msoft-float
+Target Report RejectNegative Mask(SOFT_FLOAT)
+Use software emulation for floating point (default)
+
+mhard-float
+Target Report RejectNegative InverseMask(SOFT_FLOAT, HARD_FLOAT)
+Use hardware floating point instructions
+
+msmall-divides
+Target Mask(SMALL_DIVIDES)
+Use table lookup optimization for small signed integer divisions
+
+mcpu=
+Target RejectNegative Joined Var(microblaze_select_cpu)
+-mcpu=PROCESSOR		Use features of and schedule code for given CPU
+
+mmemcpy
+Target Mask(MEMCPY)
+Don't optimize block moves, use memcpy
+
+mxl-soft-mul
+Target Mask(SOFT_MUL)
+Use the soft multiply emulation (default)
+
+mxl-soft-div
+Target Mask(SOFT_DIV)
+Use the software emulation for divides (default)
+
+mxl-barrel-shift
+Target Mask(BARREL_SHIFT)
+Use the hardware barrel shifter instead of emulation
+
+mxl-pattern-compare
+Target Mask(PATTERN_COMPARE)
+Use pattern compare instructions
+
+mxl-stack-check
+Target Mask(STACK_CHECK)
+Check for stack overflow at runtime
+
+mxl-gp-opt
+Target Mask(XLGPOPT)
+Use GP relative sdata/sbss sections
+
+mno-clearbss
+Target RejectNegative
+Clear the BSS to zero and place zero initialized in BSS
+
+mxl-multiply-high
+Target Mask(MULTIPLY_HIGH)
+Use multiply high instructions for high part of 32x32 multiply
+
+mxl-float-convert
+Target Mask(FLOAT_CONVERT)
+Use hardware floating point converstion instructions
+
+mxl-float-sqrt
+Target Mask(FLOAT_SQRT)
+Use hardware floating point square root instruction
+
+mxl-mode-executable
+Target Mask(XL_MODE_EXECUTABLE)
+Description for mxl-mode-executable
+
+mxl-mode-xmdstub
+Target Mask(XL_MODE_XMDSTUB)
+Description for mxl-mode-xmdstub
+
+mxl-mode-bootstrap
+Target Mask(XL_MODE_BOOTSTRAP)
+Description for mxl-mode-bootstrap
+
+mxl-mode-novectors
+Target Mask(XL_MODE_NOVECTORS)
+Description for mxl-mode-novectors

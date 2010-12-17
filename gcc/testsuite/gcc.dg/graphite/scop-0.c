@@ -5,7 +5,7 @@ int toto()
 {
   /* Scop 1. */
   int i, j, k;
-  int a[100][100];
+  int a[201][100];
   int b[100];
   int N = foo ();
 

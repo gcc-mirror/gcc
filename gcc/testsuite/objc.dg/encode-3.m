@@ -1,10 +1,11 @@
 /* Method encoding tests for stand-alone @protocol declarations.  */
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
 /* { dg-do run } */
-
-#include <stdlib.h>
-#include "../objc-obj-c++-shared/Protocol1.h"
 /* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
+
+#include "../objc-obj-c++-shared/Protocol1.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 #ifdef __cplusplus
 #define ProtoBool bool
@@ -44,7 +45,7 @@ unsigned totsize, offs0, offs1, offs2, offs3, offs4, offs5, offs6, offs7;
 static void scan_initial(const char *pattern) {
   totsize = offs0 = offs1 = offs2 = offs3 = offs4 = offs5 = offs6 = offs7 = (unsigned)-1;
   sscanf(meth->types, pattern, &totsize, &offs0, &offs1, &offs2, &offs3,
-      &offs4, &offs5, &offs6, &offs7);
+	 &offs4, &offs5, &offs6, &offs7);
   CHECK_IF(!offs0 && offs1 == sizeof(id) && offs2 == offs1 + sizeof(SEL) && totsize >= offs2);
 }
 
@@ -65,7 +66,21 @@ int main(void) {
   CHECK_IF(offs3 == offs2 + sizeof(XXRect) && offs4 == offs3 + sizeof(int));
   CHECK_IF(totsize == offs4 + sizeof(int));
   meth = [proto descriptionForClassMethod: @selector(getEnum:enum:bool:)];
-  scan_initial("^i%u@%u:%u^{?=ff(__XXAngle=II)}%ui%uc%u");
+
+  /* Here we have the complication that 'enum Enum' could be encoded
+     as 'i' on __NEXT_RUNTIME_, and (most likely) as 'I' on the GNU
+     runtime.  So we get the @encode(enum Enum), then put it into the
+     string in place of the traditional 'i'.
+  */
+  /* scan_initial("^i%u@%u:%u^{?=ff(__XXAngle=II)}%ui%uc%u"); */
+  {
+    char pattern[1024];
+
+    sprintf (pattern, "^%s%%u@%%u:%%u^{?=ff(__XXAngle=II)}%%u%s%%uc%%u",
+	     @encode(enum Enum), @encode(enum Enum));
+    scan_initial(pattern);
+  }
+
   CHECK_IF(offs3 == offs2 + sizeof(XXPoint *) && offs4 == offs3 + sizeof(enum Enum));
   CHECK_IF(totsize == offs4 + sizeof(int));  /* 'ObjCBool' is really 'char' */
   meth = [proto descriptionForClassMethod: @selector(getBool:)];         

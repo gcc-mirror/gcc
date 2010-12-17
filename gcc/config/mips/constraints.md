@@ -86,8 +86,8 @@
 
 ;; Registers that can be used as the target of multiply-accumulate
 ;; instructions.  The core MIPS32 ISA provides a hi/lo madd,
-;; but the DSPr2 version allows any accumulator target.
-(define_register_constraint "ka" "ISA_HAS_DSPR2 ? ACC_REGS : MD_REGS")
+;; but the DSP version allows any accumulator target.
+(define_register_constraint "ka" "ISA_HAS_DSP_MULT ? ACC_REGS : MD_REGS")
 
 (define_constraint "kf"
   "@internal"

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 2004-2009, Free Software Foundation, Inc.          --
+--         Copyright (C) 2004-2010, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -232,7 +232,8 @@ package body System.Stack_Usage is
                "ENVIRONMENT TASK",
                My_Stack_Size,
                My_Stack_Size,
-               System.Storage_Elements.To_Integer (Bottom_Of_Stack'Address));
+               System.Storage_Elements.To_Integer (Bottom_Of_Stack'Address),
+               0);
 
             Fill_Stack (Environment_Task_Analyzer);
 
@@ -259,56 +260,96 @@ package body System.Stack_Usage is
       Stack_Used_When_Filling : Integer;
       Current_Stack_Level     : aliased Integer;
 
+      Guard : constant Integer := 256;
+      --  Guard space between the Current_Stack_Level'Address and the last
+      --  allocated byte on the stack.
+
    begin
-      --  Readjust the pattern size. When we arrive in this function, there is
-      --  already a given amount of stack used, that we won't analyze.
+      --  Easiest and most accurate method: the top of the stack is known.
 
-      Stack_Used_When_Filling :=
-        Stack_Size
-         (Analyzer.Bottom_Of_Stack,
-          To_Stack_Address (Current_Stack_Level'Address))
-          + Natural (Current_Stack_Level'Size);
-
-      if Stack_Used_When_Filling > Analyzer.Pattern_Size then
-         --  In this case, the known size of the stack is too small, we've
-         --  already taken more than expected, so there's no possible
-         --  computation
-
-         Analyzer.Pattern_Size := 0;
-      else
+      if Analyzer.Top_Pattern_Mark /= 0 then
          Analyzer.Pattern_Size :=
-           Analyzer.Pattern_Size - Stack_Used_When_Filling;
-      end if;
+           Stack_Size (Analyzer.Top_Pattern_Mark,
+                       To_Stack_Address (Current_Stack_Level'Address))
+           - Guard;
 
-      declare
-         Stack : aliased Stack_Slots
-                           (1 .. Analyzer.Pattern_Size / Bytes_Per_Pattern);
-
-      begin
-         Stack := (others => Analyzer.Pattern);
-
-         Analyzer.Stack_Overlay_Address := Stack'Address;
-
-         if Analyzer.Pattern_Size /= 0 then
-            Analyzer.Bottom_Pattern_Mark :=
-              To_Stack_Address (Stack (Bottom_Slot_Index_In (Stack))'Address);
-            Analyzer.Top_Pattern_Mark :=
-              To_Stack_Address (Stack (Top_Slot_Index_In (Stack))'Address);
+         if System.Parameters.Stack_Grows_Down then
+            Analyzer.Stack_Overlay_Address :=
+              To_Address (Analyzer.Top_Pattern_Mark);
          else
-            Analyzer.Bottom_Pattern_Mark := To_Stack_Address (Stack'Address);
-            Analyzer.Top_Pattern_Mark := To_Stack_Address (Stack'Address);
+            Analyzer.Stack_Overlay_Address :=
+              To_Address (Analyzer.Top_Pattern_Mark
+                            - Stack_Address (Analyzer.Pattern_Size));
          end if;
 
-         --  If Arr has been packed, the following assertion must be true (we
-         --  add the size of the element whose address is:
-         --    Min (Analyzer.Inner_Pattern_Mark, Analyzer.Outer_Pattern_Mark)):
+         declare
+            Pattern : aliased Stack_Slots
+                        (1 .. Analyzer.Pattern_Size / Bytes_Per_Pattern);
+            for Pattern'Address use Analyzer.Stack_Overlay_Address;
 
-         pragma Assert
-           (Analyzer.Pattern_Size = 0 or else
-            Analyzer.Pattern_Size =
-              Stack_Size
-                (Analyzer.Top_Pattern_Mark, Analyzer.Bottom_Pattern_Mark));
-      end;
+         begin
+            if System.Parameters.Stack_Grows_Down then
+               for J in reverse Pattern'Range loop
+                  Pattern (J) := Analyzer.Pattern;
+               end loop;
+
+               Analyzer.Bottom_Pattern_Mark :=
+                 To_Stack_Address (Pattern (Pattern'Last)'Address);
+
+            else
+               for J in Pattern'Range loop
+                  Pattern (J) := Analyzer.Pattern;
+               end loop;
+
+               Analyzer.Bottom_Pattern_Mark :=
+                 To_Stack_Address (Pattern (Pattern'First)'Address);
+            end if;
+         end;
+
+      else
+         --  Readjust the pattern size. When we arrive in this function, there
+         --  is already a given amount of stack used, that we won't analyze.
+
+         Stack_Used_When_Filling :=
+           Stack_Size (Analyzer.Bottom_Of_Stack,
+                       To_Stack_Address (Current_Stack_Level'Address));
+
+         if Stack_Used_When_Filling > Analyzer.Pattern_Size then
+
+            --  In this case, the known size of the stack is too small, we've
+            --  already taken more than expected, so there's no possible
+            --  computation
+
+            Analyzer.Pattern_Size := 0;
+         else
+            Analyzer.Pattern_Size :=
+              Analyzer.Pattern_Size - Stack_Used_When_Filling;
+         end if;
+
+         declare
+            Stack : aliased Stack_Slots
+              (1 .. Analyzer.Pattern_Size / Bytes_Per_Pattern);
+
+         begin
+            Stack := (others => Analyzer.Pattern);
+
+            Analyzer.Stack_Overlay_Address := Stack'Address;
+
+            if Analyzer.Pattern_Size /= 0 then
+               Analyzer.Bottom_Pattern_Mark :=
+                 To_Stack_Address
+                   (Stack (Bottom_Slot_Index_In (Stack))'Address);
+               Analyzer.Top_Pattern_Mark :=
+                 To_Stack_Address
+                   (Stack (Top_Slot_Index_In (Stack))'Address);
+            else
+               Analyzer.Bottom_Pattern_Mark :=
+                 To_Stack_Address (Stack'Address);
+               Analyzer.Top_Pattern_Mark :=
+                 To_Stack_Address (Stack'Address);
+            end if;
+         end;
+      end if;
    end Fill_Stack;
 
    -------------------------
@@ -321,17 +362,19 @@ package body System.Stack_Usage is
       My_Stack_Size    : Natural;
       Max_Pattern_Size : Natural;
       Bottom           : Stack_Address;
+      Top              : Stack_Address;
       Pattern          : Unsigned_32 := 16#DEAD_BEEF#)
    is
    begin
       --  Initialize the analyzer fields
 
-      Analyzer.Bottom_Of_Stack := Bottom;
-      Analyzer.Stack_Size      := My_Stack_Size;
-      Analyzer.Pattern_Size    := Max_Pattern_Size;
-      Analyzer.Pattern         := Pattern;
-      Analyzer.Result_Id       := Next_Id;
-      Analyzer.Task_Name       := (others => ' ');
+      Analyzer.Bottom_Of_Stack  := Bottom;
+      Analyzer.Stack_Size       := My_Stack_Size;
+      Analyzer.Pattern_Size     := Max_Pattern_Size;
+      Analyzer.Pattern          := Pattern;
+      Analyzer.Result_Id        := Next_Id;
+      Analyzer.Task_Name        := (others => ' ');
+      Analyzer.Top_Pattern_Mark := Top;
 
       --  Compute the task name, and truncate if bigger than Task_Name_Length
 

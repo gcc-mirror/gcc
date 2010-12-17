@@ -1,6 +1,6 @@
 /* { dg-do compile { target arm*-*-pe* } } */
 /* { dg-do compile { target i?86-pc-cygwin } } */
-/* { dg-do compile { target i?86-pc-mingw* } } */
+/* { dg-do compile { target i?86-*-mingw* x86_64-*-mingw* } } */
 
 __declspec (dllimport) int foo1;
 int foo1;	/* { dg-warning "redeclared without dllimport" } */

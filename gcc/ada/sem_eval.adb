@@ -642,9 +642,17 @@ package body Sem_Eval is
          --  types, since we may have two NaN values and they should never
          --  compare equal.
 
+         --  If the entity is a discriminant, the two expressions may be bounds
+         --  of components of objects of the same discriminated type. The
+         --  values of the discriminants are not static, and therefore the
+         --  result is unknown.
+
+         --  It would be better to comment individual branches of this test ???
+
          if Nkind_In (Lf, N_Identifier, N_Expanded_Name)
            and then Nkind_In (Rf, N_Identifier, N_Expanded_Name)
            and then Entity (Lf) = Entity (Rf)
+           and then Ekind (Entity (Lf)) /= E_Discriminant
            and then Present (Entity (Lf))
            and then not Is_Floating_Point_Type (Etype (L))
            and then not Is_Volatile_Reference (L)
@@ -2274,6 +2282,15 @@ package body Sem_Eval is
          return;
       end if;
 
+      --  Ignore if types involved have predicates
+
+      if Present (Predicate_Function (Etype (Left)))
+           or else
+         Present (Predicate_Function (Etype (Right)))
+      then
+         return;
+      end if;
+
       --  Case of right operand is a subtype name
 
       if Is_Entity_Name (Right) then
@@ -3865,13 +3882,13 @@ package body Sem_Eval is
                if No (Typ1) then
                   Typ1 := E;
 
-                  --  Before emitting an error, check for the presence of a
-                  --  mixed-mode operation that specifies a fixed point type.
+               --  Before emitting an error, check for the presence of a
+               --  mixed-mode operation that specifies a fixed point type.
 
                elsif Is_Relational
                  and then
                    (Is_Mixed_Mode_Operand (Left_Opnd (N))
-                    or else Is_Mixed_Mode_Operand (Right_Opnd (N)))
+                     or else Is_Mixed_Mode_Operand (Right_Opnd (N)))
                  and then Is_Fixed_Point_Type (E) /= Is_Fixed_Point_Type (Typ1)
 
                then
@@ -4540,6 +4557,8 @@ package body Sem_Eval is
       T2 : Entity_Id) return Boolean
    is
    begin
+      --  Scalar types
+
       if Is_Scalar_Type (T1) then
 
          --  Definitely compatible if we match
@@ -4562,9 +4581,9 @@ package body Sem_Eval is
          then
             return True;
 
-         --  Base types must match, but we don't check that (should
-         --  we???) but we do at least check that both types are
-         --  real, or both types are not real.
+         --  Base types must match, but we don't check that (should we???) but
+         --  we do at least check that both types are real, or both types are
+         --  not real.
 
          elsif Is_Real_Type (T1) /= Is_Real_Type (T2) then
             return False;
@@ -4598,10 +4617,16 @@ package body Sem_Eval is
             end;
          end if;
 
+      --  Access types
+
       elsif Is_Access_Type (T1) then
-         return not Is_Constrained (T2)
-           or else Subtypes_Statically_Match
-                     (Designated_Type (T1), Designated_Type (T2));
+         return (not Is_Constrained (T2)
+                  or else (Subtypes_Statically_Match
+                             (Designated_Type (T1), Designated_Type (T2))))
+           and then not (Can_Never_Be_Null (T2)
+                          and then not Can_Never_Be_Null (T1));
+
+      --  All other cases
 
       else
          return (Is_Composite_Type (T1) and then not Is_Constrained (T2))
@@ -4672,9 +4697,9 @@ package body Sem_Eval is
          --  If there was an error in either range, then just assume the types
          --  statically match to avoid further junk errors.
 
-         if Error_Posted (Scalar_Range (T1))
-              or else
-            Error_Posted (Scalar_Range (T2))
+         if No (Scalar_Range (T1)) or else No (Scalar_Range (T2))
+           or else Error_Posted (Scalar_Range (T1))
+           or else Error_Posted (Scalar_Range (T2))
          then
             return True;
          end if;
@@ -5407,8 +5432,8 @@ package body Sem_Eval is
          when N_Type_Conversion =>
             Why_Not_Static (Expression (N));
 
-            if not Is_Scalar_Type (Etype (Prefix (N)))
-              or else not Is_Static_Subtype (Etype (Prefix (N)))
+            if not Is_Scalar_Type (Entity (Subtype_Mark (N)))
+              or else not Is_Static_Subtype (Entity (Subtype_Mark (N)))
             then
                Error_Msg_N
                  ("static conversion requires static scalar subtype result " &

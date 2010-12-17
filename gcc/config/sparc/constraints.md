@@ -35,10 +35,10 @@
 
 ;; In the non-V9 case, coerce V9 'e' class to 'f', so we can use 'e' in the
 ;; MD file for V8 and V9.
-(define_register_constraint "e" "TARGET_V9 ? EXTRA_FP_REGS : FP_REGS"
+(define_register_constraint "e" "(TARGET_FPU ? (TARGET_V9 ? EXTRA_FP_REGS : FP_REGS) : NO_REGS)"
  "Any floating-point register")
 
-(define_register_constraint "f" "FP_REGS"
+(define_register_constraint "f" "(TARGET_FPU ? FP_REGS : NO_REGS)"
  "Lower floating-point register")
  
 (define_register_constraint "h" "(TARGET_V9 && TARGET_V8PLUS ? I64_REGS : NO_REGS)"

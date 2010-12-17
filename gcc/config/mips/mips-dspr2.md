@@ -224,22 +224,6 @@
   [(set_attr "type"	"imadd")
    (set_attr "mode"	"SI")])
 
-(define_expand "mips_madd<u>"
-  [(set (match_operand:DI 0 "register_operand")
-	(plus:DI
-	 (mult:DI (any_extend:DI (match_operand:SI 2 "register_operand"))
-		  (any_extend:DI (match_operand:SI 3 "register_operand")))
-	 (match_operand:DI 1 "register_operand")))]
-  "ISA_HAS_DSPR2 && !TARGET_64BIT")
-
-(define_expand "mips_msub<u>"
-  [(set (match_operand:DI 0 "register_operand")
-	(minus:DI
-	 (match_operand:DI 1 "register_operand")
-	 (mult:DI (any_extend:DI (match_operand:SI 2 "register_operand"))
-		  (any_extend:DI (match_operand:SI 3 "register_operand")))))]
-  "ISA_HAS_DSPR2 && !TARGET_64BIT")
-
 (define_insn "mulv2hi3"
   [(parallel
     [(set (match_operand:V2HI 0 "register_operand" "=d")
@@ -318,26 +302,6 @@
   "ISA_HAS_DSPR2 && !TARGET_64BIT"
   "mulsa.w.ph\t%q0,%z2,%z3"
   [(set_attr "type"	"imadd")
-   (set_attr "mode"	"SI")])
-
-(define_insn "mips_mult"
-  [(set (match_operand:DI 0 "register_operand" "=a")
-	(mult:DI
-	 (sign_extend:DI (match_operand:SI 1 "register_operand" "d"))
-	 (sign_extend:DI (match_operand:SI 2 "register_operand" "d"))))]
-  "ISA_HAS_DSPR2 && !TARGET_64BIT"
-  "mult\t%q0,%1,%2"
-  [(set_attr "type"	"imul")
-   (set_attr "mode"	"SI")])
-
-(define_insn "mips_multu"
-  [(set (match_operand:DI 0 "register_operand" "=a")
-	(mult:DI
-	 (zero_extend:DI (match_operand:SI 1 "register_operand" "d"))
-	 (zero_extend:DI (match_operand:SI 2 "register_operand" "d"))))]
-  "ISA_HAS_DSPR2 && !TARGET_64BIT"
-  "multu\t%q0,%1,%2"
-  [(set_attr "type"	"imul")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_precr_qb_ph"

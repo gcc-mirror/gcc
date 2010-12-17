@@ -35,16 +35,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "tree.h"
 #include "expr.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
 #include "df.h"
-
-/*
-#define FPU_REG_P(X)	((X)>=8 && (X)<14)
-#define CPU_REG_P(X)	((X)>=0 && (X)<8)
-*/
 
 /* this is the current value returned by the macro FIRST_PARM_OFFSET 
    defined in tm.h */
@@ -67,11 +63,11 @@ const struct real_format pdp11_f_format =
     encode_pdp11_f,
     decode_pdp11_f,
     2,
-    1,
     24,
     24,
     -127,
     127,
+    15,
     15,
     false,
     false,
@@ -88,11 +84,11 @@ const struct real_format pdp11_d_format =
     encode_pdp11_d,
     decode_pdp11_d,
     2,
-    1,
     56,
     56,
     -127,
     127,
+    15,
     15,
     false,
     false,
@@ -144,6 +140,7 @@ decode_pdp11_d (const struct real_format *fmt ATTRIBUTE_UNUSED,
 /* rtx cc0_reg_rtx; - no longer needed? */
 
 static bool pdp11_handle_option (size_t, const char *, int);
+static void pdp11_option_init_struct (struct gcc_options *);
 static rtx find_addr_reg (rtx); 
 static const char *singlemove_string (rtx *);
 static bool pdp11_assemble_integer (rtx, unsigned int, int);
@@ -155,6 +152,19 @@ static rtx pdp11_function_value (const_tree, const_tree, bool);
 static rtx pdp11_libcall_value (enum machine_mode, const_rtx);
 static bool pdp11_function_value_regno_p (const unsigned int);
 static void pdp11_trampoline_init (rtx, tree, rtx);
+static rtx pdp11_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+			       const_tree, bool);
+static void pdp11_function_arg_advance (CUMULATIVE_ARGS *,
+					enum machine_mode, const_tree, bool);
+static void pdp11_conditional_register_usage (void);
+
+/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
+
+static const struct default_options pdp11_option_optimization_table[] =
+  {
+    { OPT_LEVELS_3_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_BYTE_OP
@@ -178,12 +188,21 @@ static void pdp11_trampoline_init (rtx, tree, rtx);
 
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS \
-  (MASK_FPU | MASK_45 | MASK_ABSHI_BUILTIN | TARGET_UNIX_ASM_DEFAULT)
+  (MASK_FPU | MASK_45 | TARGET_UNIX_ASM_DEFAULT)
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION pdp11_handle_option
+#undef TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE pdp11_option_optimization_table
+#undef TARGET_OPTION_INIT_STRUCT
+#define TARGET_OPTION_INIT_STRUCT pdp11_option_init_struct
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS pdp11_rtx_costs
+
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG pdp11_function_arg
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE pdp11_function_arg_advance
 
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY pdp11_return_in_memory
@@ -198,7 +217,23 @@ static void pdp11_trampoline_init (rtx, tree, rtx);
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT pdp11_trampoline_init
 
-struct gcc_target targetm = TARGET_INITIALIZER;
+#undef  TARGET_SECONDARY_RELOAD
+#define TARGET_SECONDARY_RELOAD pdp11_secondary_reload
+
+#undef  TARGET_REGISTER_MOVE_COST 
+#define TARGET_REGISTER_MOVE_COST pdp11_register_move_cost
+
+#undef  TARGET_PREFERRED_RELOAD_CLASS
+#define TARGET_PREFERRED_RELOAD_CLASS pdp11_preferred_reload_class
+
+#undef  TARGET_PREFERRED_OUTPUT_RELOAD_CLASS
+#define TARGET_PREFERRED_OUTPUT_RELOAD_CLASS pdp11_preferred_output_reload_class
+
+#undef  TARGET_LEGITIMATE_ADDRESS_P
+#define TARGET_LEGITIMATE_ADDRESS_P pdp11_legitimate_address_p
+
+#undef  TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE pdp11_conditional_register_usage
 
 /* Implement TARGET_HANDLE_OPTION.  */
 
@@ -217,32 +252,14 @@ pdp11_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED,
     }
 }
 
-/* Nonzero if OP is a valid second operand for an arithmetic insn.  */
+/* Implement TARGET_OPTION_INIT_STRUCT.  */
 
-int
-arith_operand (rtx op, enum machine_mode mode)
+static void
+pdp11_option_init_struct (struct gcc_options *opts)
 {
-  return (register_operand (op, mode) || GET_CODE (op) == CONST_INT);
-}
-
-int
-const_immediate_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (GET_CODE (op) == CONST_INT);
-}
-
-int 
-immediate15_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-    return (GET_CODE (op) == CONST_INT && ((INTVAL (op) & 0x8000) == 0x0000));
-}
-
-int
-expand_shift_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-    return (GET_CODE (op) == CONST_INT 
-	    && abs (INTVAL(op)) > 1 
-	    && abs (INTVAL(op)) <= 4);
+  opts->x_flag_finite_math_only = 0;
+  opts->x_flag_trapping_math = 0;
+  opts->x_flag_signaling_nans = 0;
 }
 
 /*
@@ -290,7 +307,7 @@ pdp11_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
 	asm_fprintf (stream, "\tsub $%#wo, sp\n", fsize);
 
     /* save CPU registers  */
-    for (regno = 0; regno < 8; regno++)				
+    for (regno = R0_REGNUM; regno <= PC_REGNUM; regno++)				
       if (df_regs_ever_live_p (regno) && ! call_used_regs[regno])	
 	    if (! ((regno == FRAME_POINTER_REGNUM)			
 		   && frame_pointer_needed))				
@@ -300,7 +317,7 @@ pdp11_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
     /* via_ac specifies the ac to use for saving ac4, ac5 */
     via_ac = -1;
     
-    for (regno = 8; regno < FIRST_PSEUDO_REGISTER ; regno++) 
+    for (regno = AC0_REGNUM; regno <= AC5_REGNUM ; regno++) 
     {
 	/* ac0 - ac3 */						
 	if (LOAD_FPU_REG_P(regno)
@@ -361,7 +378,7 @@ pdp11_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
 	/* hope this is safe - m68k does it also .... */		
         df_set_regs_ever_live (FRAME_POINTER_REGNUM, false);
 								
-	for (i =7, j = 0 ; i >= 0 ; i--)				
+	for (i = PC_REGNUM, j = 0 ; i >= 0 ; i--)				
 	  if (df_regs_ever_live_p (i) && ! call_used_regs[i])		
 		j++;
 	
@@ -369,22 +386,22 @@ pdp11_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
 	k = 2*j;
 	
 	/* change fp -> r5 due to the compile error on libgcc2.c */
-	for (i =7 ; i >= 0 ; i--)					
+	for (i = PC_REGNUM ; i >= R0_REGNUM ; i--)					
 	  if (df_regs_ever_live_p (i) && ! call_used_regs[i])		
 		fprintf(stream, "\tmov %#" HOST_WIDE_INT_PRINT "o(r5), %s\n",
 			(-fsize-2*j--)&0xffff, reg_names[i]);
 
 	/* get ACs */						
-	via_ac = FIRST_PSEUDO_REGISTER -1;
+	via_ac = AC5_REGNUM;
 	
-	for (i = FIRST_PSEUDO_REGISTER; i > 7; i--)
+	for (i = AC5_REGNUM; i >= AC0_REGNUM; i--)
 	  if (df_regs_ever_live_p (i) && ! call_used_regs[i])
 	    {
 		via_ac = i;
 		k += 8;
 	    }
 	
-	for (i = FIRST_PSEUDO_REGISTER; i > 7; i--)
+	for (i = AC5_REGNUM; i >= AC0_REGNUM; i--)
 	{
 	    if (LOAD_FPU_REG_P(i)
 		&& df_regs_ever_live_p (i)
@@ -413,14 +430,14 @@ pdp11_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
     }								
     else								
     {		   
-	via_ac = FIRST_PSEUDO_REGISTER -1;
+      via_ac = AC5_REGNUM;
 	
 	/* get ACs */
-	for (i = FIRST_PSEUDO_REGISTER; i > 7; i--)
-	  if (df_regs_ever_live_p (i) && call_used_regs[i])
+	for (i = AC5_REGNUM; i >= AC0_REGNUM; i--)
+	  if (df_regs_ever_live_p (i) && ! call_used_regs[i])
 		via_ac = i;
 	
-	for (i = FIRST_PSEUDO_REGISTER; i > 7; i--)
+	for (i = AC5_REGNUM; i >= AC0_REGNUM; i--)
 	{
 	    if (LOAD_FPU_REG_P(i)
 		&& df_regs_ever_live_p (i)
@@ -438,7 +455,7 @@ pdp11_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
 	    }
 	}
 
-	for (i=7; i >= 0; i--)					
+	for (i = PC_REGNUM; i >= 0; i--)					
 	  if (df_regs_ever_live_p (i) && !call_used_regs[i])		
 		fprintf(stream, "\tmov (sp)+, %s\n", reg_names[i]);	
 								
@@ -685,12 +702,6 @@ output_move_quad (rtx *operands)
 
   gcc_assert (optype0 != RNDOP && optype1 != RNDOP);
   
-  /* check if we move a CPU reg to an FPU reg, or vice versa! */
-  if (optype0 == REGOP && optype1 == REGOP)
-      /* bogus - 64 bit cannot reside in CPU! */
-      gcc_assert (!CPU_REG_P(REGNO(operands[0]))
-		  && !CPU_REG_P (REGNO(operands[1])));
-  
   if (optype0 == REGOP || optype1 == REGOP)
   {
       /* check for use of clrd???? 
@@ -895,14 +906,13 @@ output_ascii (FILE *file, const char *p, int size)
 }
 
 
-/* --- stole from out-vax, needs changes */
-
 void
 print_operand_address (FILE *file, register rtx addr)
 {
-  register rtx reg1, reg2, breg, ireg;
+  register rtx breg;
   rtx offset;
-
+  int again = 0;
+  
  retry:
 
   switch (GET_CODE (addr))
@@ -913,6 +923,7 @@ print_operand_address (FILE *file, register rtx addr)
       else
 	fprintf (file, "@");
       addr = XEXP (addr, 0);
+      again = 1;
       goto retry;
 
     case REG:
@@ -930,8 +941,7 @@ print_operand_address (FILE *file, register rtx addr)
       break;
 
     case PLUS:
-      reg1 = 0;	reg2 = 0;
-      ireg = 0;	breg = 0;
+      breg = 0;
       offset = 0;
       if (CONSTANT_ADDRESS_P (XEXP (addr, 0))
 	  || GET_CODE (XEXP (addr, 0)) == MEM)
@@ -947,32 +957,20 @@ print_operand_address (FILE *file, register rtx addr)
 	}
       if (GET_CODE (addr) != PLUS)
 	;
-      else if (GET_CODE (XEXP (addr, 0)) == MULT)
-	{
-	  reg1 = XEXP (addr, 0);
-	  addr = XEXP (addr, 1);
-	}
-      else if (GET_CODE (XEXP (addr, 1)) == MULT)
-	{
-	  reg1 = XEXP (addr, 1);
-	  addr = XEXP (addr, 0);
-	}
       else if (GET_CODE (XEXP (addr, 0)) == REG)
 	{
-	  reg1 = XEXP (addr, 0);
+	  breg = XEXP (addr, 0);
 	  addr = XEXP (addr, 1);
 	}
       else if (GET_CODE (XEXP (addr, 1)) == REG)
 	{
-	  reg1 = XEXP (addr, 1);
+	  breg = XEXP (addr, 1);
 	  addr = XEXP (addr, 0);
 	}
-      if (GET_CODE (addr) == REG || GET_CODE (addr) == MULT)
+      if (GET_CODE (addr) == REG)
 	{
-	  if (reg1 == 0)
-	    reg1 = addr;
-	  else
-	    reg2 = addr;
+	  gcc_assert (breg == 0);
+	  breg = addr;
 	  addr = 0;
 	}
       if (offset != 0)
@@ -980,44 +978,22 @@ print_operand_address (FILE *file, register rtx addr)
 	  gcc_assert (addr == 0);
 	  addr = offset;
 	}
-      if (reg1 != 0 && GET_CODE (reg1) == MULT)
-	{
-	  breg = reg2;
-	  ireg = reg1;
-	}
-      else if (reg2 != 0 && GET_CODE (reg2) == MULT)
-	{
-	  breg = reg1;
-	  ireg = reg2;
-	}
-      else if (reg2 != 0 || GET_CODE (addr) == MEM)
-	{
-	  breg = reg2;
-	  ireg = reg1;
-	}
-      else
-	{
-	  breg = reg1;
-	  ireg = reg2;
-	}
       if (addr != 0)
-	output_address (addr);
+	output_addr_const_pdp11 (file, addr);
       if (breg != 0)
 	{
 	  gcc_assert (GET_CODE (breg) == REG);
 	  fprintf (file, "(%s)", reg_names[REGNO (breg)]);
 	}
-      if (ireg != 0)
-	{
-	  if (GET_CODE (ireg) == MULT)
-	    ireg = XEXP (ireg, 0);
-	  gcc_assert (GET_CODE (ireg) == REG);
-	  gcc_unreachable(); /* ??? */
-	  fprintf (file, "[%s]", reg_names[REGNO (ireg)]);
-	}
       break;
 
     default:
+      if (!again && GET_CODE (addr) == CONST_INT)
+	{
+	  /* Absolute (integer number) address.  */
+	  if (!TARGET_UNIX_ASM)
+	    fprintf (file, "@$");
+	}
       output_addr_const_pdp11 (file, addr);
     }
 }
@@ -1033,7 +1009,8 @@ pdp11_assemble_integer (rtx x, unsigned int size, int aligned_p)
       {
       case 1:
 	fprintf (asm_out_file, "\t.byte\t");
-	output_addr_const_pdp11 (asm_out_file, x);
+	output_addr_const_pdp11 (asm_out_file, GEN_INT (INTVAL (x) & 0xff));
+;
 	fprintf (asm_out_file, " /* char */\n");
 	return true;
 
@@ -1054,22 +1031,23 @@ static const int move_costs[N_REG_CLASSES][N_REG_CLASSES] =
              /* NO  MUL  GEN  LFPU  NLFPU FPU ALL */
 
 /* NO */     {  0,   0,   0,    0,    0,    0,   0},
-/* MUL */    {  0,   2,   2,   10,   22,   22,  22},
-/* GEN */    {  0,   2,   2,   10,   22,   22,  22},
-/* LFPU */   {  0,  10,  10,    2,    2,    2,  10},
-/* NLFPU */  {  0,  22,  22,    2,    2,    2,  22},
-/* FPU */    {  0,  22,  22,    2,    2,    2,  22},
-/* ALL */    {  0,  22,  22,   10,   22,   22,  22}
+/* MUL */    {  0,   2,   2,   22,   22,   22,  22},
+/* GEN */    {  0,   2,   2,   22,   22,   22,  22},
+/* LFPU */   {  0,  22,  22,    2,    2,    2,  22},
+/* NLFPU */  {  0,  22,  22,    2,   10,   10,  22},
+/* FPU */    {  0,  22,  22,    2,   10,   10,  22},
+/* ALL */    {  0,  22,  22,   22,   22,   22,  22}
 }  ;
 
 
 /* -- note that some moves are tremendously expensive, 
    because they require lots of tricks! do we have to 
    charge the costs incurred by secondary reload class 
-   -- as we do here with 22 -- or not ? */
+   -- as we do here with 10 -- or not ? */
 
-int 
-register_move_cost(enum reg_class c1, enum reg_class c2)
+static int 
+pdp11_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+			  reg_class_t c1, reg_class_t c2)
 {
     return move_costs[(int)c1][(int)c2];
 }
@@ -1217,13 +1195,13 @@ output_jump (enum rtx_code code, int inv, int length)
 	
     switch (length)
     {
-      case 1:
+      case 2:
 	
 	sprintf(buf, "%s %%l1", inv ? neg : pos);
 	
 	return buf;
 	
-      case 3:
+      case 6:
 	
 	sprintf(buf, "%s JMP_%d\n\tjmp %%l1\nJMP_%d:", inv ? pos : neg, x, x);
 	
@@ -1634,6 +1612,282 @@ legitimate_const_double_p (rtx address)
   return 0;
 }
 
+/* Implement CANNOT_CHANGE_MODE_CLASS.  */
+bool
+pdp11_cannot_change_mode_class (enum machine_mode from,
+				enum machine_mode to,
+				enum reg_class rclass)
+{
+  /* Also, FPU registers contain a whole float value and the parts of
+     it are not separately accessible.
+
+     So we disallow all mode changes involving FPRs.  */
+  if (FLOAT_MODE_P (from) != FLOAT_MODE_P (to))
+    return true;
+  
+  return reg_classes_intersect_p (FPU_REGS, rclass);
+}
+
+/* TARGET_PREFERRED_RELOAD_CLASS
+
+   Given an rtx X being reloaded into a reg required to be
+   in class CLASS, return the class of reg to actually use.
+   In general this is just CLASS; but on some machines
+   in some cases it is preferable to use a more restrictive class.  
+
+loading is easier into LOAD_FPU_REGS than FPU_REGS! */
+
+static reg_class_t
+pdp11_preferred_reload_class (rtx x, reg_class_t rclass)
+{
+  if (rclass == FPU_REGS)
+    return LOAD_FPU_REGS;
+  if (rclass == ALL_REGS)
+    {
+      if (FLOAT_MODE_P (GET_MODE (x)))
+	return LOAD_FPU_REGS;
+      else
+	return GENERAL_REGS;
+    }
+  return rclass;
+}
+
+/* TARGET_PREFERRED_OUTPUT_RELOAD_CLASS
+
+   Given an rtx X being reloaded into a reg required to be
+   in class CLASS, return the class of reg to actually use.
+   In general this is just CLASS; but on some machines
+   in some cases it is preferable to use a more restrictive class.  
+
+loading is easier into LOAD_FPU_REGS than FPU_REGS! */
+
+static reg_class_t
+pdp11_preferred_output_reload_class (rtx x, reg_class_t rclass)
+{
+  if (rclass == FPU_REGS)
+    return LOAD_FPU_REGS;
+  if (rclass == ALL_REGS)
+    {
+      if (FLOAT_MODE_P (GET_MODE (x)))
+	return LOAD_FPU_REGS;
+      else
+	return GENERAL_REGS;
+    }
+  return rclass;
+}
+
+
+/* TARGET_SECONDARY_RELOAD.
+
+   FPU registers AC4 and AC5 (class NO_LOAD_FPU_REGS) require an 
+   intermediate register (AC0-AC3: LOAD_FPU_REGS).  Everything else
+   can be loade/stored directly.  */
+static reg_class_t 
+pdp11_secondary_reload (bool in_p ATTRIBUTE_UNUSED,
+			rtx x,
+			reg_class_t reload_class,
+			enum machine_mode reload_mode ATTRIBUTE_UNUSED,
+			secondary_reload_info *sri ATTRIBUTE_UNUSED)
+{
+  if (reload_class != NO_LOAD_FPU_REGS || GET_CODE (x) != REG ||
+      REGNO_REG_CLASS (REGNO (x)) == LOAD_FPU_REGS)
+    return NO_REGS;
+  
+  return LOAD_FPU_REGS;
+}
+
+/* Target routine to check if register to register move requires memory.
+
+   The answer is yes if we're going between general register and FPU 
+   registers.  The mode doesn't matter in making this check.
+*/
+bool 
+pdp11_secondary_memory_needed (reg_class_t c1, reg_class_t c2, 
+			       enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  int fromfloat = (c1 == LOAD_FPU_REGS || c1 == NO_LOAD_FPU_REGS || 
+		   c1 == FPU_REGS);
+  int tofloat = (c2 == LOAD_FPU_REGS || c2 == NO_LOAD_FPU_REGS || 
+		 c2 == FPU_REGS);
+  
+  return (fromfloat != tofloat);
+}
+
+/* TARGET_LEGITIMATE_ADDRESS_P recognizes an RTL expression
+   that is a valid memory address for an instruction.
+   The MODE argument is the machine mode for the MEM expression
+   that wants to use this address.
+
+*/
+
+static bool
+pdp11_legitimate_address_p (enum machine_mode mode,
+			    rtx operand, bool strict)
+{
+    rtx xfoob;
+
+    /* accept @#address */
+    if (CONSTANT_ADDRESS_P (operand))
+      return true;
+    
+    switch (GET_CODE (operand))
+      {
+      case REG:
+	/* accept (R0) */
+	return !strict || REGNO_OK_FOR_BASE_P (REGNO (operand));
+    
+      case PLUS:
+	/* accept X(R0) */
+	return GET_CODE (XEXP (operand, 0)) == REG
+	  && (!strict || REGNO_OK_FOR_BASE_P (REGNO (XEXP (operand, 0))))
+	  && CONSTANT_ADDRESS_P (XEXP (operand, 1));
+
+      case PRE_DEC:
+	/* accept -(R0) */
+	return GET_CODE (XEXP (operand, 0)) == REG
+	  && (!strict || REGNO_OK_FOR_BASE_P (REGNO (XEXP (operand, 0))));
+
+      case POST_INC:
+	/* accept (R0)+ */
+	return GET_CODE (XEXP (operand, 0)) == REG
+	  && (!strict || REGNO_OK_FOR_BASE_P (REGNO (XEXP (operand, 0))));
+
+      case PRE_MODIFY:
+	/* accept -(SP) -- which uses PRE_MODIFY for byte mode */
+	return GET_CODE (XEXP (operand, 0)) == REG
+	  && REGNO (XEXP (operand, 0)) == STACK_POINTER_REGNUM
+	  && GET_CODE ((xfoob = XEXP (operand, 1))) == PLUS
+	  && GET_CODE (XEXP (xfoob, 0)) == REG
+	  && REGNO (XEXP (xfoob, 0)) == STACK_POINTER_REGNUM
+	  && CONSTANT_P (XEXP (xfoob, 1))
+	  && INTVAL (XEXP (xfoob,1)) == -2;
+
+      case POST_MODIFY:
+	/* accept (SP)+ -- which uses POST_MODIFY for byte mode */
+	return GET_CODE (XEXP (operand, 0)) == REG
+	  && REGNO (XEXP (operand, 0)) == STACK_POINTER_REGNUM
+	  && GET_CODE ((xfoob = XEXP (operand, 1))) == PLUS
+	  && GET_CODE (XEXP (xfoob, 0)) == REG
+	  && REGNO (XEXP (xfoob, 0)) == STACK_POINTER_REGNUM
+	  && CONSTANT_P (XEXP (xfoob, 1))
+	  && INTVAL (XEXP (xfoob,1)) == 2;
+
+      case MEM:
+	/* handle another level of indirection ! */
+	xfoob = XEXP (operand, 0);
+
+	/* (MEM:xx (MEM:xx ())) is not valid for SI, DI and currently
+	   also forbidden for float, because we have to handle this 
+	   in output_move_double and/or output_move_quad() - we could
+	   do it, but currently it's not worth it!!! 
+	   now that DFmode cannot go into CPU register file, 
+	   maybe I should allow float ... 
+	   but then I have to handle memory-to-memory moves in movdf ??  */
+	if (GET_MODE_BITSIZE(mode) > 16)
+	  return false;
+
+	/* accept @address */
+	if (CONSTANT_ADDRESS_P (xfoob))
+	  return true;
+
+	switch (GET_CODE (xfoob))
+	  {
+	  case REG:
+	    /* accept @(R0) - which is @0(R0) */
+	    return !strict || REGNO_OK_FOR_BASE_P(REGNO (xfoob));
+
+	  case PLUS:
+	    /* accept @X(R0) */
+	    return GET_CODE (XEXP (xfoob, 0)) == REG
+	      && (!strict || REGNO_OK_FOR_BASE_P (REGNO (XEXP (xfoob, 0))))
+	      && CONSTANT_ADDRESS_P (XEXP (xfoob, 1));
+
+	  case PRE_DEC:
+	    /* accept @-(R0) */
+	    return GET_CODE (XEXP (xfoob, 0)) == REG
+	      && (!strict || REGNO_OK_FOR_BASE_P (REGNO (XEXP (xfoob, 0))));
+
+	  case POST_INC:
+	    /* accept @(R0)+ */
+	    return GET_CODE (XEXP (xfoob, 0)) == REG
+	      && (!strict || REGNO_OK_FOR_BASE_P (REGNO (XEXP (xfoob, 0))));
+
+	  default:
+	    /* anything else is invalid */
+	    return false;
+	  }
+
+      default:
+	/* anything else is invalid */
+	return false;
+      }
+}
+/* Return the class number of the smallest class containing
+   reg number REGNO.  */
+enum reg_class
+pdp11_regno_reg_class (int regno)
+{ 
+  if (regno == FRAME_POINTER_REGNUM || regno == ARG_POINTER_REGNUM)
+    return GENERAL_REGS;
+  else if (regno > AC3_REGNUM)
+    return NO_LOAD_FPU_REGS;
+  else if (regno >= AC0_REGNUM)
+    return LOAD_FPU_REGS;
+  else if (regno & 1)
+    return MUL_REGS;
+  else
+    return GENERAL_REGS;
+}
+
+
+static int
+pdp11_sp_frame_offset (void)
+{
+  int offset = 0, regno;
+  offset = get_frame_size();
+  for (regno = 0; regno <= PC_REGNUM; regno++)
+    if (df_regs_ever_live_p (regno) && ! call_used_regs[regno])
+      offset += 2;
+  for (regno = AC0_REGNUM; regno <= AC5_REGNUM; regno++)
+    if (df_regs_ever_live_p (regno) && ! call_used_regs[regno])
+      offset += 8;
+  
+  return offset;
+}   
+
+/* Return the offset between two registers, one to be eliminated, and the other
+   its replacement, at the start of a routine.  */
+
+int
+pdp11_initial_elimination_offset (int from, int to)
+{
+  int spoff;
+  
+  if (from == ARG_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
+    return 4;
+  else if (from == FRAME_POINTER_REGNUM
+	   && to == HARD_FRAME_POINTER_REGNUM)
+    return 0;
+  else
+    {
+      gcc_assert (to == STACK_POINTER_REGNUM);
+
+      /* Get the size of the register save area.  */
+      spoff = pdp11_sp_frame_offset ();
+      if (from == FRAME_POINTER_REGNUM)
+	return spoff;
+
+      gcc_assert (from == ARG_POINTER_REGNUM);
+
+      /* If there is a frame pointer, that is saved too.  */
+      if (frame_pointer_needed)
+	spoff += 2;
+      
+      /* Account for the saved PC in the function call.  */
+      return spoff + 2;
+    }
+}    
+
 /* A copy of output_addr_const modified for pdp11 expression syntax.
    output_addr_const also gets called for %cDIGIT and %nDIGIT, which we don't
    use, and for debugging output, which we don't support with this port either.
@@ -1667,9 +1921,7 @@ output_addr_const_pdp11 (FILE *file, rtx x)
       break;
 
     case CONST_INT:
-      /* Should we check for constants which are too big?  Maybe cutting
-	 them off to 16 bits is OK?  */
-      fprintf (file, "%#ho", (unsigned short) INTVAL (x));
+      fprintf (file, "%#o", (int) INTVAL (x) & 0xffff);
       break;
 
     case CONST:
@@ -1744,14 +1996,12 @@ output_addr_const_pdp11 (FILE *file, rtx x)
 static bool
 pdp11_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
-  /* Should probably return DImode and DFmode in memory, lest
-     we fill up all regs!
-
-     have to, else we crash - exception: maybe return result in 
-     ac0 if DFmode and FPU present - compatibility problem with
-     libraries for non-floating point....  */
+  /* Integers 32 bits and under, and scalar floats (if FPU), are returned
+     in registers.  The rest go into memory.  */
   return (TYPE_MODE (type) == DImode
-	  || (TYPE_MODE (type) == DFmode && ! TARGET_AC0));
+	  || (FLOAT_MODE_P (TYPE_MODE (type)) && ! TARGET_AC0)
+	  || TREE_CODE (type) == VECTOR_TYPE
+	  || COMPLEX_MODE_P (TYPE_MODE (type)));
 }
 
 /* Worker function for TARGET_FUNCTION_VALUE.
@@ -1785,7 +2035,7 @@ pdp11_libcall_value (enum machine_mode mode,
 static bool
 pdp11_function_value_regno_p (const unsigned int regno)
 {
-  return (regno == 0) || (TARGET_AC0 && (regno == 8));
+  return (regno == RETVAL_REGNUM) || (TARGET_AC0 && (regno == AC0_REGNUM));
 }
 
 /* Worker function for TARGET_TRAMPOLINE_INIT.
@@ -1795,8 +2045,8 @@ pdp11_function_value_regno_p (const unsigned int regno)
 
    the following should work for shared I/D:
 
-   MV	#STATIC, $4	0x940Y	0x0000 <- STATIC; Y = STATIC_CHAIN_REGNUM
-   JMP	FUNCTION	0x0058  0x0000 <- FUNCTION
+   MOV	#STATIC, $4	01270Y	0x0000 <- STATIC; Y = STATIC_CHAIN_REGNUM
+   JMP	@#FUNCTION	000137  0x0000 <- FUNCTION
 */
 
 static void
@@ -1808,10 +2058,84 @@ pdp11_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   gcc_assert (!TARGET_SPLIT);
 
   mem = adjust_address (m_tramp, HImode, 0);
-  emit_move_insn (mem, GEN_INT (0x9400+STATIC_CHAIN_REGNUM));
+  emit_move_insn (mem, GEN_INT (012700+STATIC_CHAIN_REGNUM));
   mem = adjust_address (m_tramp, HImode, 2);
   emit_move_insn (mem, chain_value);
   mem = adjust_address (m_tramp, HImode, 4);
-  emit_move_insn (mem, GEN_INT (0x0058));
+  emit_move_insn (mem, GEN_INT (000137));
   emit_move_insn (mem, fnaddr);
 }
+
+/* Worker function for TARGET_FUNCTION_ARG.
+
+   Determine where to put an argument to a function.
+   Value is zero to push the argument on the stack,
+   or a hard register in which to store the argument.
+
+   MODE is the argument's machine mode.
+   TYPE is the data type of the argument (as a tree).
+    This is null for libcalls where that information may
+    not be available.
+   CUM is a variable of type CUMULATIVE_ARGS which gives info about
+    the preceding args and about the function being called.
+   NAMED is nonzero if this argument is a named parameter
+    (otherwise it is an extra parameter matching an ellipsis).  */
+
+static rtx
+pdp11_function_arg (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+		    enum machine_mode mode ATTRIBUTE_UNUSED,
+		    const_tree type ATTRIBUTE_UNUSED,
+		    bool named ATTRIBUTE_UNUSED)
+{
+  return NULL_RTX;
+}
+
+/* Worker function for TARGET_FUNCTION_ARG_ADVANCE.
+
+   Update the data in CUM to advance over an argument of mode MODE and
+   data type TYPE.  (TYPE is null for libcalls where that information
+   may not be available.)  */
+
+static void
+pdp11_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			    const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  *cum += (mode != BLKmode
+	   ? GET_MODE_SIZE (mode)
+	   : int_size_in_bytes (type));
+}
+
+/* Make sure everything's fine if we *don't* have an FPU.
+   This assumes that putting a register in fixed_regs will keep the
+   compiler's mitts completely off it.  We don't bother to zero it out
+   of register classes.  Also fix incompatible register naming with
+   the UNIX assembler.  */
+
+static void
+pdp11_conditional_register_usage (void)
+{
+  int i;
+  HARD_REG_SET x;
+  if (!TARGET_FPU)
+    {
+      COPY_HARD_REG_SET (x, reg_class_contents[(int)FPU_REGS]);
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++ )
+       if (TEST_HARD_REG_BIT (x, i))
+	fixed_regs[i] = call_used_regs[i] = 1;
+    }
+
+  if (TARGET_AC0)
+      call_used_regs[AC0_REGNUM] = 1;
+  if (TARGET_UNIX_ASM)
+    {
+      /* Change names of FPU registers for the UNIX assembler.  */
+      reg_names[8] = "fr0";
+      reg_names[9] = "fr1";
+      reg_names[10] = "fr2";
+      reg_names[11] = "fr3";
+      reg_names[12] = "fr4";
+      reg_names[13] = "fr5";
+    }
+}
+
+struct gcc_target targetm = TARGET_INITIALIZER;

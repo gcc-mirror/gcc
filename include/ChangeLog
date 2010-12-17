@@ -1,3 +1,34 @@
+2010-11-16  Ian Lance Taylor  <iant@google.com>
+
+	* simple-object.h (simple_object_attributes_merge): Declare,
+	replacing simple_object_attributes_compare.
+
+2010-11-04  Ian Lance Taylor  <iant@google.com>
+
+	* dwarf2.h (enum dwarf_source_language): Add DW_LANG_Go.
+
+2010-11-02  Ian Lance Taylor  <iant@google.com>
+
+	* simple-object.h: New file.
+
+2010-10-15  Dave Korn  <dave.korn.cygwin@gmail.com> 
+
+	Sync LD plugin patch series (part 1/6) with src/include/.
+	* plugin-api.h (LDPT_GNU_LD_VERSION): New ld_plugin_tag enum member.
+
+2010-10-06  Andi Kleen <ak@linux.intel.com>
+
+	* libiberty.h (setproctitle): Add prototype.
+
+2010-09-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2.h (DW_OP_GNU_implicit_pointer): New.
+
+2010-07-06  Ken Werner  <ken.werner@de.ibm.com>
+
+	* floatformat.h (floatformat_ieee_half_big): Add declaration.
+	(floatformat_ieee_half_little): Likewise.
+
 2010-06-21  Rafael Espindola  <espindola@google.com>
 
 	* plugin-api.h (ld_plugin_set_extra_library_path): New.

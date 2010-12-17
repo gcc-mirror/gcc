@@ -1,4 +1,4 @@
-/* MediaDefault.java -- 
+/* MediaDefault.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -49,15 +49,15 @@ import javax.print.attribute.TextSyntax;
 /**
  * MediaDefault attribute provides the default value of
  * the printer object for the media attribute.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class MediaDefault extends TextSyntax 
+public final class MediaDefault extends TextSyntax
   implements DefaultValueAttribute
 {
-  
+
   /**
-   * Creates a <code>MediaDefault</code> object with the 
+   * Creates a <code>MediaDefault</code> object with the
    * given value and locale.
    *
    * @param value the value for this syntax
@@ -70,13 +70,13 @@ public final class MediaDefault extends TextSyntax
   {
     super(value, locale);
   }
- 
+
   /**
    * Returns category of this class.
    *
    * @return The class <code>MediaDefault</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return MediaDefault.class;
   }
@@ -90,14 +90,14 @@ public final class MediaDefault extends TextSyntax
   {
     return "media-default";
   }
-  
+
   /**
    * Returns the equally enum of the standard attribute class
    * of this DefaultValuesAttribute enum.
-   * 
+   *
    * @return The enum of the standard attribute class.
    */
-  public Attribute getAssociatedAttribute() 
+  public Attribute getAssociatedAttribute()
   {
     return IppUtilities.getEnumAttribute("media" , getValue());
   }

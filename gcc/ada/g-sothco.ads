@@ -377,7 +377,7 @@ package GNAT.Sockets.Thin_Common is
 
    Read_End  : constant := 0;
    Write_End : constant := 1;
-   --  Indices into an Fd_Pair value providing access to each of the connected
+   --  Indexes into an Fd_Pair value providing access to each of the connected
    --  file descriptors.
 
    function Inet_Pton

@@ -29,14 +29,13 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "tm.h"
 #include "gcc.h"
 #include "jcf.h"
+#include "opts.h"
 
 /* Name of spec file.  */
 #define SPEC_FILE "libgcj.spec"
 
 /* This bit is set if we saw a `-xfoo' language specification.  */
 #define LANGSPEC	(1<<1)
-/* True if this arg is a parameter to the previous option-taking arg. */
-#define PARAM_ARG	(1<<2)
 /* True if this arg is a .java input file name. */
 #define JAVA_FILE_ARG	(1<<3)
 /* True if this arg is a .class input file name. */
@@ -68,9 +67,9 @@ static const char jvgenmain_spec[] =
 		   %<fcompile-resource* %<fassert %<fno-assert \
 		   %<femit-class-file %<femit-class-files %<fencoding*\
 		   %<fuse-boehm-gc %<fhash-synchronization %<fjni\
-		   %<findirect-dispatch %<fnew-verifier\
+		   %<findirect-dispatch\
 		   %<fno-store-check %<foutput-class-dir\
-		   %<fclasspath* %<fCLASSPATH* %<fbootclasspath*\
+		   %<fclasspath* %<fbootclasspath*\
 		   %<fextdirs*\
 		   %<fuse-divide-subroutine %<fno-use-divide-subroutine\
 		   %<fuse-atomic-builtins %<fno-use-atomic-builtins\
@@ -88,17 +87,13 @@ static char *
 find_spec_file (const char *dir)
 {
   char *spec;
-  int x;
   struct stat sb;
 
-  spec = XNEWVEC (char, strlen (dir) + sizeof (SPEC_FILE)
-		  + sizeof ("-specs=") + 4);
-  strcpy (spec, "-specs=");
-  x = strlen (spec);
-  strcat (spec, dir);
+  spec = XNEWVEC (char, strlen (dir) + sizeof (SPEC_FILE) + 4);
+  strcpy (spec, dir);
   strcat (spec, "/");
   strcat (spec, SPEC_FILE);
-  if (! stat (spec + x, &sb))
+  if (! stat (spec, &sb))
     return spec;
   free (spec);
   return NULL;
@@ -142,10 +137,11 @@ verify_class_name (const char *name)
 }
 
 void
-lang_specific_driver (int *in_argc, const char *const **in_argv,
+lang_specific_driver (struct cl_decoded_option **in_decoded_options,
+		      unsigned int *in_decoded_options_count,
 		      int *in_added_libraries)
 {
-  int i, j;
+  unsigned int i, j;
 
   int saw_save_temps = 0;
 
@@ -174,12 +170,8 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
      libraries.  */
   int added = 2;
 
-  /* Used to track options that take arguments, so we don't go wrapping
-     those with -xc++/-xnone.  */
-  const char *quote = NULL;
-
   /* The new argument list will be contained in this.  */
-  const char **arglist;
+  struct cl_decoded_option *new_decoded_options;
 
   /* Nonzero if we saw a `-xfoo' language specification on the
      command line.  Used to avoid adding our own -xc++ if the user
@@ -203,16 +195,16 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
   int *args;
 
   /* The total number of arguments with the new stuff.  */
-  int argc;
+  unsigned int argc;
 
   /* The argument list.  */
-  const char *const *argv;
+  struct cl_decoded_option *decoded_options;
 
   /* The number of libraries added in.  */
   int added_libraries;
 
   /* The total number of arguments with the new stuff.  */
-  int num_args = 1;
+  unsigned int num_args = 1;
 
   /* Nonzero if linking is supposed to happen.  */
   int will_link = 1;
@@ -226,184 +218,182 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
   /* If linking, nonzero if the BC-ABI is in use.  */
   int link_for_bc_abi = 0;
 
-  argc = *in_argc;
-  argv = *in_argv;
+  argc = *in_decoded_options_count;
+  decoded_options = *in_decoded_options;
   added_libraries = *in_added_libraries;
 
   args = XCNEWVEC (int, argc);
 
   for (i = 1; i < argc; i++)
     {
-      /* If the previous option took an argument, we swallow it here.  */
-      if (quote)
+      switch (decoded_options[i].opt_index)
 	{
-	  quote = NULL;
-	  args[i] |= PARAM_ARG;
+	case OPT_nostdlib:
+	case OPT_nodefaultlibs:
+	  library = 0;
+	  break;
+
+	case OPT_fmain_:
+	  main_class_name = decoded_options[i].arg;
+	  added--;
+	  break;
+
+	case OPT__help:
+	  want_spec_file = 0;
+	  break;
+
+	case OPT_v:
+	  if (argc == 2)
+	    {
+	      /* If they only gave us `-v', don't try to link
+		 in libgcj.  */ 
+	      library = 0;
+	    }
+	  break;
+
+	case OPT_x:
+	  saw_speclang = 1;
+	  break;
+
+	case OPT_C:
+	  saw_C = 1;
+	  want_spec_file = 0;
+	  if (library != 0)
+	    added -= 2;
+	  library = 0;
+	  will_link = 0;
+	  break;
+
+	case OPT_fcompile_resource_:
+	  saw_resource = 1;
+	  want_spec_file = 0;
+	  if (library != 0)
+	    --added;
+	  library = 0;
+	  will_link = 0;
+	  break;
+
+	case OPT_D:
+	  saw_D = 1;
+	  break;
+
+	case OPT_g:
+	case OPT_gcoff:
+	case OPT_gdwarf_:
+	case OPT_ggdb:
+	case OPT_gstabs:
+	case OPT_gstabs_:
+	case OPT_gvms:
+	case OPT_gxcoff:
+	case OPT_gxcoff_:
+	  saw_g = 1;
+	  break;
+
+	case OPT_O:
+	case OPT_Os:
+	case OPT_Ofast:
+	  saw_O = 1;
+	  break;
+
+	case OPT_o:
+	  saw_o = 1;
+	  break;
+
+	case OPT_fclasspath_:
+	case OPT_fbootclasspath_:
+	case OPT_extdirs:
+	  added -= 1;
+	  break;
+
+	case OPT_c:
+	case OPT_S:
+	case OPT_E:
+	case OPT_M:
+	case OPT_MM:
+	  /* Don't specify libraries if we won't link, since that would
+	     cause a warning.  */
+	  library = 0;
+	  added -= 2;
+
+	  /* Remember this so we can confirm -fmain option.  */
+	  will_link = 0;
+	  break;
+
+	case OPT_fsyntax_only:
+	  library = 0;
+	  will_link = 0;
 	  continue;
-	}
 
-      /* We don't do this anymore, since we don't get them with minus
-	 signs on them.  */
-      if (argv[i][0] == '\0' || argv[i][1] == '\0')
-	continue;
+	case OPT_save_temps:
+	  saw_save_temps = 1;
+	  break;
 
-      if (argv[i][0] == '-')
-	{
-	  if (library != 0 && (strcmp (argv[i], "-nostdlib") == 0
-			       || strcmp (argv[i], "-nodefaultlibs") == 0))
-	    {
-	      library = 0;
-	    }
-	  else if (strncmp (argv[i], "-fmain=", 7) == 0)
-	    {
-	      main_class_name = argv[i] + 7;
-	      added--;
-	    }
-	  else if (strcmp (argv[i], "-fhelp") == 0)
-	    want_spec_file = 0;
-	  else if (strcmp (argv[i], "-v") == 0)
-	    {
-	      if (argc == 2)
-		{
-		  /* If they only gave us `-v', don't try to link
-		     in libgcj.  */ 
-		  library = 0;
-		}
-	    }
-	  else if (strncmp (argv[i], "-x", 2) == 0)
-	    saw_speclang = 1;
-	  else if (strcmp (argv[i], "-C") == 0)
-	    {
-	      saw_C = 1;
-	      want_spec_file = 0;
-	      if (library != 0)
-		added -= 2;
-	      library = 0;
-	      will_link = 0;
-	    }
-	  else if (strncmp (argv[i], "-fcompile-resource=", 19) == 0)
-	    {
-	      saw_resource = 1;
-	      want_spec_file = 0;
-	      if (library != 0)
-		--added;
-	      library = 0;
-	      will_link = 0;
-	    }
-	  else if (argv[i][1] == 'D')
-	    saw_D = 1;
-	  else if (argv[i][1] == 'g')
-	    saw_g = 1;
-	  else if (argv[i][1] == 'O')
-	    saw_O = 1;
-	  else if ((argv[i][2] == '\0'
-		    && strchr ("bBVDUoeTuIYmLiAI", argv[i][1]) != NULL)
-		   || strcmp (argv[i], "-Tdata") == 0
-		   || strcmp (argv[i], "-MT") == 0
-		   || strcmp (argv[i], "-MF") == 0)
-	    {
-	      if (strcmp (argv[i], "-o") == 0)
-		saw_o = 1;
-	      quote = argv[i];
-	    }
-	  else if (strcmp (argv[i], "-classpath") == 0
-		   || strcmp (argv[i], "-bootclasspath") == 0
-		   || strcmp (argv[i], "-CLASSPATH") == 0
-		   || strcmp (argv[i], "-encoding") == 0
-		   || strcmp (argv[i], "-extdirs") == 0)
-	    {
-	      quote = argv[i];
-	      added -= 1;
-	    }
-	  else if (library != 0 
-		   && ((argv[i][2] == '\0'
-			&& strchr ("cSEM", argv[i][1]) != NULL)
-		       || strcmp (argv[i], "-MM") == 0))
-	    {
-	      /* Don't specify libraries if we won't link, since that would
-		 cause a warning.  */
-	      library = 0;
-	      added -= 2;
+	case OPT_static_libgcc:
+	case OPT_static:
+	  shared_libgcc = 0;
+	  break;
 
-	      /* Remember this so we can confirm -fmain option.  */
-	      will_link = 0;
-	    }
-	  else if (strcmp (argv[i], "-d") == 0)
-	    {
-	      /* `-d' option is for javac compatibility.  */
-	      quote = argv[i];
-	      added -= 1;
-	    }
-	  else if (strcmp (argv[i], "-fsyntax-only") == 0
-		   || strcmp (argv[i], "--syntax-only") == 0)
-	    {
-	      library = 0;
-	      will_link = 0;
+	case OPT_findirect_dispatch:
+	  link_for_bc_abi = 1;
+	  break;
+
+	case OPT_SPECIAL_input_file:
+	  {
+	    const char *arg = decoded_options[i].arg;
+	    int len;
+
+	    /* We don't do this anymore, since we don't get them with minus
+	       signs on them.  */
+	    if (arg[0] == '\0' || arg[1] == '\0')
 	      continue;
-	    }
-          else if (strcmp (argv[i], "-save-temps") == 0)
-	    saw_save_temps = 1;
-          else if (strcmp (argv[i], "-static-libgcc") == 0
-                   || strcmp (argv[i], "-static") == 0)
-	    shared_libgcc = 0;
-	  else if (strcmp (argv[i], "-findirect-dispatch") == 0
-		   || strcmp (argv[i], "--indirect-dispatch") == 0)
-	    {
-	      link_for_bc_abi = 1;
-	    }
-	  else
-	    /* Pass other options through.  */
-	    continue;
-	}
-      else
-	{
-	  int len; 
 
-	  if (saw_speclang)
-	    {
-	      saw_speclang = 0;
-	      continue;
-	    }
+	    if (saw_speclang)
+	      {
+		saw_speclang = 0;
+		continue;
+	      }
 
-	  if (saw_resource)
-	    {
-	      args[i] |= RESOURCE_FILE_ARG;
-	      added += 2;  /* for -xjava and -xnone */
-	    }
+	    if (saw_resource)
+	      {
+		args[i] |= RESOURCE_FILE_ARG;
+		added += 2;  /* for -xjava and -xnone */
+	      }
 
-	  if (argv[i][0] == '@')
-	    {
-	      args[i] |= INDIRECT_FILE_ARG;
-	      indirect_files_count++;
-	      added += 2;  /* for -xjava and -xnone */
-	    }
+	    if (arg[0] == '@')
+	      {
+		args[i] |= INDIRECT_FILE_ARG;
+		indirect_files_count++;
+		added += 2;  /* for -xjava and -xnone */
+	      }
 
-	  len = strlen (argv[i]);
-	  if (len > 5 && strcmp (argv[i] + len - 5, ".java") == 0)
-	    {
-	      args[i] |= JAVA_FILE_ARG;
-	      java_files_count++;
-	    }
-	  if (len > 6 && strcmp (argv[i] + len - 6, ".class") == 0)
-	    {
-	      args[i] |= CLASS_FILE_ARG;
-	      class_files_count++;
-	    }
-	  if (len > 4
-	      && (strcmp (argv[i] + len - 4, ".zip") == 0
-		  || strcmp (argv[i] + len - 4, ".jar") == 0))
-	    {
-	      args[i] |= ZIP_FILE_ARG;
-	      zip_files_count++;
-	    }
+	    len = strlen (arg);
+	    if (len > 5 && strcmp (arg + len - 5, ".java") == 0)
+	      {
+		args[i] |= JAVA_FILE_ARG;
+		java_files_count++;
+	      }
+	    if (len > 6 && strcmp (arg + len - 6, ".class") == 0)
+	      {
+		args[i] |= CLASS_FILE_ARG;
+		class_files_count++;
+	      }
+	    if (len > 4
+		&& (strcmp (arg + len - 4, ".zip") == 0
+		    || strcmp (arg + len - 4, ".jar") == 0))
+	      {
+		args[i] |= ZIP_FILE_ARG;
+		zip_files_count++;
+	      }
+	  }
+
+	default:
+	  /* Pass other options through.  */
+	  continue;
 	}
     }
 
-  if (quote)
-    fatal_error ("argument to %qs missing", quote);
-
   if (saw_D && ! main_class_name)
-    fatal_error ("can't specify %<-D%> without %<--main%>");
+    fatal_error ("can%'t specify %<-D%> without %<--main%>");
 
   if (main_class_name && ! verify_class_name (main_class_name))
     fatal_error ("%qs is not a valid class name", main_class_name);
@@ -475,112 +465,74 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 
   num_args += link_for_bc_abi;
 
-  arglist = XNEWVEC (const char *, num_args + 1);
+  new_decoded_options = XNEWVEC (struct cl_decoded_option, num_args);
   j = 0;
 
-  arglist[j++] = argv[0];
+  new_decoded_options[j++] = decoded_options[0];
 
   if (combine_inputs || indirect_files_count > 0)
-    arglist[j++] = "-ffilelist-file";
+    generate_option (OPT_ffilelist_file, NULL, 1, CL_DRIVER,
+		     &new_decoded_options[j++]);
 
   if (combine_inputs)
     {
-      arglist[j++] = "-xjava";
-      arglist[j++] = filelist_filename;
-      arglist[j++] = "-xnone";
+      generate_option (OPT_x, "java", 1, CL_DRIVER,
+		       &new_decoded_options[j++]);
+      generate_option_input_file (filelist_filename,
+				  &new_decoded_options[j++]);
+      generate_option (OPT_x, "none", 1, CL_DRIVER,
+		       &new_decoded_options[j++]);
     }
 
   if (java_files_count > 0)
-    arglist[j++] = "-fsaw-java-file";
+    generate_option (OPT_fsaw_java_file, NULL, 1, CL_DRIVER,
+		     &new_decoded_options[j++]);
 
   jcf_path_init ();
   for (i = 1; i < argc; i++, j++)
     {
-      arglist[j] = argv[i];
+      new_decoded_options[j] = decoded_options[i];
 
-      if ((args[i] & PARAM_ARG))
+      if (decoded_options[i].errors & CL_ERR_MISSING_ARG)
 	continue;
 
       if ((args[i] & RESOURCE_FILE_ARG) != 0)
 	{
-	  arglist[j++] = "-xjava";
-	  arglist[j++] = argv[i];
-	  arglist[j] = "-xnone";
+	  generate_option (OPT_x, "java", 1, CL_DRIVER,
+			   &new_decoded_options[j++]);
+	  new_decoded_options[j++] = decoded_options[i];
+	  generate_option (OPT_x, "none", 1, CL_DRIVER,
+			   &new_decoded_options[j]);
 	}
 
-      if (argv[i][0] == '-' && argv[i][1] == 'I')
+      switch (decoded_options[i].opt_index)
 	{
-	  const char *arg;
-	  if (argv[i][2] == '\0')
-	    {
-	      gcc_assert (i + 1 < argc && (args[i + 1] & PARAM_ARG) != 0);
-	      arg = argv[i + 1];
-	      /* Drop the argument.  */
-	      ++i;
-	    }
-	  else
-	    arg = &argv[i][2];
-	  jcf_path_include_arg (arg);
+	case OPT_I:
+	  jcf_path_include_arg (decoded_options[i].arg);
 	  --j;
 	  continue;
-	}
-      if (! strcmp (argv[i], "-classpath")
-	  || ! strcmp (argv[i], "-CLASSPATH"))
-	{
-	  jcf_path_classpath_arg (argv[i + 1]);
-	  ++i;
-	  --j;
-	  continue;
-	}
-      if (! strcmp (argv[i], "-bootclasspath"))
-	{
-	  jcf_path_bootclasspath_arg (argv[i + 1]);
-	  ++i;
-	  --j;
-	  continue;
-	}
-      if (! strncmp (argv[i], "-fCLASSPATH=", 12)
-	  || ! strncmp (argv[i], "-fclasspath=", 12))
-	{
-	  const char *p = strchr (argv[i], '=');
-	  jcf_path_classpath_arg (p + 1);
-	  --j;
-	  continue;
-	}
-      if (! strncmp (argv[i], "-fbootclasspath=", 16))
-	{
-	  const char *p = strchr (argv[i], '=');
-	  jcf_path_bootclasspath_arg (p + 1);
-	  --j;
-	  continue;
-	}
-      if (! strcmp (argv[i], "-extdirs"))
-	{
-	  jcf_path_extdirs_arg (argv[i + 1]);
-	  ++i;
-	  --j;
-	  continue;
-	}
 
-      if (strcmp (argv[i], "-encoding") == 0)
-	{
-	  arglist[j] = concat ("-f", argv[i]+1, "=", argv[i+1], NULL);
-	  i++;
+	case OPT_fclasspath_:
+	  jcf_path_classpath_arg (decoded_options[i].arg);
+	  --j;
 	  continue;
-	}
 
-      if (strcmp (argv[i], "-d") == 0)
-	{
-	  arglist[j] = concat ("-foutput-class-dir=", argv[i + 1], NULL);
-	  ++i;
+	case OPT_fbootclasspath_:
+	  jcf_path_bootclasspath_arg (decoded_options[i].arg);
+	  --j;
 	  continue;
-	}
 
-      if (spec_file == NULL && strncmp (argv[i], "-L", 2) == 0)
-	spec_file = find_spec_file (argv[i] + 2);
+	case OPT_extdirs:
+	  jcf_path_extdirs_arg (decoded_options[i].arg);
+	  --j;
+	  continue;
 
-      if (strncmp (argv[i], "-fmain=", 7) == 0)
-	{
+	case OPT_L:
+	  if (spec_file == NULL)
+	    spec_file = find_spec_file (decoded_options[i].arg);
+	  break;
+
+	case OPT_fmain_:
 	  if (! will_link)
 	    fatal_error ("cannot specify %<main%> class when not linking");
 	  --j;
@@ -589,9 +541,13 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 
       if ((args[i] & INDIRECT_FILE_ARG) != 0)
 	{
-	  arglist[j++] = "-xjava";
-	  arglist[j++] = argv[i]+1;  /* Drop '@'. */
-	  arglist[j] = "-xnone";
+	  generate_option (OPT_x, "java", 1, CL_DRIVER,
+			   &new_decoded_options[j++]);
+	  /* Drop '@'.  */
+	  generate_option_input_file (decoded_options[i].arg + 1,
+				      &new_decoded_options[j++]);
+	  generate_option (OPT_x, "none", 1, CL_DRIVER,
+			   &new_decoded_options[j]);
 	}
 
       if ((args[i] & (CLASS_FILE_ARG|ZIP_FILE_ARG)) && saw_C)
@@ -603,7 +559,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
       if (combine_inputs
 	  && (args[i] & (CLASS_FILE_ARG|JAVA_FILE_ARG|ZIP_FILE_ARG)) != 0)
 	{
-	  fputs (argv[i], filelist_file);
+	  fputs (decoded_options[i].arg, filelist_file);
 	  fputc ('\n', filelist_file);
 	  --j;
 	  continue;
@@ -613,7 +569,8 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
   /* Handle classpath setting.  We specify the bootclasspath since
      that requires the fewest changes to our existing code...  */
   jcf_path_seal (0);
-  arglist[j++] = jcf_path_compute ("-fbootclasspath=");
+  generate_option (OPT_fbootclasspath_, jcf_path_compute (""), 1,
+		   CL_DRIVER, &new_decoded_options[j++]);
 
   if (combine_inputs)
     {
@@ -623,33 +580,36 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 
   /* If we saw no -O or -g option, default to -g1, for javac compatibility. */
   if (saw_g + saw_O == 0)
-    arglist[j++] = "-g1";
+    generate_option (OPT_g, "1", 1, CL_DRIVER, &new_decoded_options[j++]);
 
   /* Read the specs file corresponding to libgcj.
      If we didn't find the spec file on the -L path, then we hope it
      is somewhere in the standard install areas.  */
   if (want_spec_file)
-    arglist[j++] = spec_file == NULL ? "-specs=libgcj.spec" : spec_file;
+    generate_option (OPT_specs_, spec_file == NULL ? "libgcj.spec" : spec_file,
+		     1, CL_DRIVER, &new_decoded_options[j++]);
 
   if (saw_C)
     {
-      arglist[j++] = "-fsyntax-only";
-      arglist[j++] = "-femit-class-files";
-      arglist[j++] = "-S";
-      arglist[j++] = "-o";
-      arglist[j++] = "NONE";
+      generate_option (OPT_fsyntax_only, NULL, 1, CL_DRIVER,
+		       &new_decoded_options[j++]);
+      generate_option (OPT_femit_class_files, NULL, 1, CL_DRIVER,
+		       &new_decoded_options[j++]);
+      generate_option (OPT_S, NULL, 1, CL_DRIVER, &new_decoded_options[j++]);
+      generate_option (OPT_o, "NONE", 1, CL_DRIVER,
+		       &new_decoded_options[j++]);
     }
   
   if (shared_libgcc)
-    arglist[j++] = "-shared-libgcc";
+    generate_option (OPT_shared_libgcc, NULL, 1, CL_DRIVER,
+		     &new_decoded_options[j++]);
 
   if (link_for_bc_abi)
-    arglist[j++] = "-s-bc-abi";
+    generate_option (OPT_s_bc_abi, NULL, 1, CL_DRIVER,
+		     &new_decoded_options[j++]);
 
-  arglist[j] = NULL;
-
-  *in_argc = j;
-  *in_argv = arglist;
+  *in_decoded_options_count = j;
+  *in_decoded_options = new_decoded_options;
   *in_added_libraries = added_libraries;
 }
 

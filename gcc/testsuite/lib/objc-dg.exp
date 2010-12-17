@@ -31,5 +31,44 @@ proc objc-dg-prune { system text } {
 # Modified dg-runtest that can cycle through a list of optimization options
 # as c-torture does.
 proc objc-dg-runtest { testcases default-extra-flags } {
-    return [gcc-dg-runtest $testcases ${default-extra-flags}]
+    global runtests
+
+    # Some callers set torture options themselves; don't override those.
+    set existing_torture_options [torture-options-exist]
+    if { $existing_torture_options == 0 } {
+	global DG_TORTURE_OPTIONS LTO_TORTURE_OPTIONS
+	torture-init
+	set-torture-options $DG_TORTURE_OPTIONS [list {}] $LTO_TORTURE_OPTIONS
+    }
+    dump-torture-options
+
+    foreach test $testcases {
+	global torture_with_loops torture_without_loops
+	# If we're only testing specific files and this isn't one of
+	# them, skip it.
+	if ![runtest_file_p $runtests $test] {
+	    continue
+        }
+
+	# Look for a loop within the source code - if we don't find one,
+	# don't pass -funroll[-all]-loops.
+	if [expr [search_for $test "for*("]+[search_for $test "while*("]] {
+	    set option_list $torture_with_loops
+	} else {
+	    set option_list $torture_without_loops
+	}
+
+	set nshort [file tail [file dirname $test]]/[file tail $test]
+
+	foreach flags $option_list {
+	    # combine flags so that dg-skip & xfail will see the extras.
+	    set combined_flags "$flags ${default-extra-flags}"
+	    verbose "Testing $nshort, $combined_flags" 1
+	    dg-test $test $combined_flags ""
+	}
+    }
+
+    if { $existing_torture_options == 0 } {
+	torture-finish
+    }
 }

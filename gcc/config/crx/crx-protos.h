@@ -32,10 +32,8 @@ extern enum reg_class crx_secondary_reload_class (enum reg_class, enum machine_m
 /* Passing function arguments.  */
 extern int crx_function_arg_regno_p (int);
 #ifdef TREE_CODE
-extern void crx_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode, tree, int);
 #ifdef RTX_CODE
 extern void crx_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx);
-extern rtx crx_function_arg (struct cumulative_args *, enum machine_mode, tree, int);
 #endif /* RTX_CODE */
 #endif /* TREE_CODE */
 

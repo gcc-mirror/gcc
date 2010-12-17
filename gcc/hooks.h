@@ -1,5 +1,5 @@
 /* General-purpose hooks.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
@@ -28,6 +28,7 @@
 extern bool hook_bool_void_false (void);
 extern bool hook_bool_void_true (void);
 extern bool hook_bool_bool_false (bool);
+extern bool hook_bool_bool_gcc_optionsp_false (bool, struct gcc_options *);
 extern bool hook_bool_const_int_const_int_true (const int, const int);
 extern bool hook_bool_mode_false (enum machine_mode);
 extern bool hook_bool_mode_true (enum machine_mode);
@@ -46,9 +47,9 @@ extern bool hook_bool_const_tree_hwi_hwi_const_tree_true (const_tree,
 							  HOST_WIDE_INT,
 							  const_tree);
 extern bool hook_bool_rtx_false (rtx);
+extern bool hook_bool_rtx_int_false (rtx, int);
 extern bool hook_bool_uintp_uintp_false (unsigned int *, unsigned int *);
 extern bool hook_bool_rtx_int_int_intp_bool_false (rtx, int, int, int *, bool);
-extern bool hook_bool_constcharptr_size_t_false (const char *, size_t);
 extern bool hook_bool_size_t_constcharptr_int_true (size_t, const char *, int);
 extern bool hook_bool_tree_tree_false (tree, tree);
 extern bool hook_bool_tree_tree_true (tree, tree);
@@ -56,15 +57,17 @@ extern bool hook_bool_tree_bool_false (tree, bool);
 
 extern void hook_void_void (void);
 extern void hook_void_constcharptr (const char *);
+extern void hook_void_rtx_int (rtx, int);
 extern void hook_void_FILEptr_constcharptr (FILE *, const char *);
 extern void hook_void_tree (tree);
 extern void hook_void_tree_treeptr (tree, tree *);
+extern void hook_void_int_int (int, int);
+extern void hook_void_gcc_optionsp (struct gcc_options *);
 
 extern int hook_int_const_tree_0 (const_tree);
 extern int hook_int_const_tree_const_tree_1 (const_tree, const_tree);
 extern int hook_int_rtx_0 (rtx);
 extern int hook_int_rtx_bool_0 (rtx, bool);
-extern int hook_int_size_t_constcharptr_int_0 (size_t, const char *, int);
 
 extern tree hook_tree_const_tree_null (const_tree);
 
@@ -73,7 +76,7 @@ extern tree hook_tree_tree_tree_tree_null (tree, tree, tree);
 extern tree hook_tree_tree_tree_tree_3rd_identity (tree, tree, tree);
 extern tree hook_tree_tree_int_treep_bool_null (tree, int, tree *, bool);
 
-extern unsigned hook_uint_uint_constcharptrptr_0 (unsigned, const char **);
+extern unsigned hook_uint_void_0 (void);
 
 extern bool default_can_output_mi_thunk_no_vcall (const_tree, HOST_WIDE_INT,
 						  HOST_WIDE_INT, const_tree);

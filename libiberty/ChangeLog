@@ -1,3 +1,162 @@
+2010-11-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* setproctitle.c [HAVE_SYS_PRCTL_H]: Include <sys/types.h>.
+
+2010-11-20  Anthony Green  <green@moxielogic.com>
+
+	* configure.ac: Turn PR_SET_NAME link test into a test for
+	sys/prctl.h.
+	* configure, config.in: Rebuilt.
+	* setproctitle.c: Test for HAVE_SYS_PRCTL_H.
+	(setproctitle) Test for PR_SET_NAME definition.
+
+2010-11-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR other/46202
+	* Makefile.in (install-strip): New phony target.
+	(install): Also mark as phony.
+
+2010-11-16  Ian Lance Taylor  <iant@google.com>
+
+	* simple-object.c (simple_object_attributes_merge): Rename from
+	simple_object_attributes_compare.  Call merge field.
+	* simple-object-common.h (struct simple_object_functions): Rename
+	attributes_compare field to attribute_merge.
+	* simple-object-elf.c (EM_SPARC): Define.
+	(EM_SPARC32PLUS): Define.
+	(simple_object_elf_attributes_merge): Renamed from
+	simple_object_elf_attributes_compare.  Permit EM_SPARC and
+	EM_SPARC32PLUS objects to be merged.
+	(simple_object_elf_functions): Update function name.
+	* simple-object-coff.c (simple_object_coff_attributes_merge):
+	Rename from simple_object_coff_attributes_compare.
+	(simple_object_coff_functions): Update function name.
+	* simple-object-mach-o.c (simple_object_mach_o_attributes_merge):
+	Renamed from simple_object_mach_o_attributes_compare.
+	(simple_object_mach_o_functions): Update function name.
+
+2010-11-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR other/42670
+	PR binutils/11137
+	* cp-demangle.c (d_make_demangle_mangled_name): New.
+	(d_demangle_callback): Use it on DCT_GLOBAL_XTORS.
+
+	* testsuite/demangle-expected: Updated.
+
+2010-11-14  Kai Tietz  <kai.tietz@onevision.com>
+
+	* simple-object-coff.c (simple_object_coff_read_strtab): Fix reading
+	offset.
+
+2010-11-12  Ian Lance Taylor  <iant@google.com>
+
+	PR other/46332
+	* cp-demangle.c (d_print_function_type): Don't print parentheses
+	if there are no modifiers to print.
+	* testsuite/demangle-expected: Tweak one test case, add another.
+
+2010-11-04  Richard Henderson  <rth@redhat.com>
+
+	* configure.ac (AC_CHECK_HEADERS): Add process.h.
+	(checkfuncs): Add dup3, spawnve, spawnvpe; sort the list.
+	(AC_CHECK_FUNCS): Add dup3, spawnve, spawnvpe.
+	* configure, config.in: Rebuild.
+	* pex-unix.c [HAVE_SPAWNVE] (pex_unix_exec_child): New function.
+	[HAVE_SPAWNVE] (save_and_install_fd, restore_fd): New functions.
+
+2010-11-02  Ian Lance Taylor  <iant@google.com>
+	    Dave Korn  <dave.korn.cygwin@gmail.com>
+	    Iain Sandoe  <iains@gcc.gnu.org>
+
+	* simple-object.c: New file.
+	* simple-object-common.h: New file.
+	* simple-object-elf.c: New file.
+	* simple-object-mach-o.c: New file.
+	* simple-object-coff.c: New file.
+	* simple-object.txh: New file.
+	* configure.ac: Add AC_TYPE_SSIZE_T.
+	* Makefile.in: Rebuild dependencies.
+	(CFILES): Add simple-object.c, simple-object-coff,
+	simple-object-elf.c, and simple-object-mach-o.c.
+	(REQUIRED_OFILES): Add corresponding object files.
+	* configure: Rebuild.
+	* config.in: Rebuild.
+	* functions.texi: Rebuild.
+
+2010-10-29  Ian Lance Taylor  <iant@google.com>
+
+	* setproctitle.c: Add space after function name in @deftypefn
+	comment.
+	* functions.texi: Rebuild.
+
+2010-10-26  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* aclocal.m4 (AC_LANG_FUNC_LINK_TRY(C)): Delete.
+	* configure: Regenerate.
+
+2010-10-07  Andi Kleen <ak@linux.intel.com>
+
+	* configure: Regenerate.
+	* configure.ac: Turn PR_SET_NAME check into link check.
+
+2010-10-06  Andi Kleen <ak@linux.intel.com>
+
+	* Makefile.in (CFILES): Add setproctitle.
+	(CONFIGURED_OFILES): Add setproctitle.
+	(setproctitle): Add rule.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Add checks for prctl PR_SET_NAME and setproctitle.
+	* setproctitle.c: Add file.
+	* functions.texi: Regenerate.
+
+2010-09-22 Tristan Gingold  <gingold@adacore.com>
+
+	* cplus-dem.c (ada_demangle): Add comments.
+	Handle stream and controlled type operations.
+	Decoding of some uppercase letters moved before separators.
+	* testsuite/demangle-expected: Add tests.
+
+2010-09-10  James Lyon  <jameslyon0@googlemail.com>
+
+	http://sourceware.org/bugzilla/show_bug.cgi?id=11572
+	* cp-demangle.c (d_find_pack): Add case for
+	DEMANGLE_COMPONENT_LAMBDA.
+	* testsuite/demangle-expected: Add regression test.
+
+2010-09-08  Tristan Gingold  <gingold@adacore.com>
+
+	PR 44001
+	* maint-tool (missing): Fix pattern for object file.
+	(deps): Use $(objext) for object extension.
+	* Makefile.in (objext): New variable.
+	Replace all occurences of .o with .$(objext)
+	Regenerate with maint-deps
+	* configure.ac (pexecute): Set to the basename.
+	* configure: Regenerate.
+
+2010-08-20  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* pex-common.c (pex_read_err): Set stderr_pipe to -1 if a
+	corresponding stream has been opened.
+	(pex_free): Close pipe file descriptors corresponding to child's
+	stdout and stderr before waiting.
+
+2010-08-13  Nick Clifton  <nickc@redhat.com>
+
+	* argv.c (expandargv): Limit the number of times that response
+	files are opened in order to prevent infinite recursion.
+
+2010-07-21  Pascal Obry  <obry@adacore.com>
+
+	* make-temp-file.c (choose_tmpdir): Append a dot to P_tmpdir if needed.
+
+2010-07-06  Ken Werner  <ken.werner@de.ibm.com>
+
+	* floatformat.c (floatformat_ieee_half_big): New variable.
+	(floatformat_ieee_half_little): Likewise.
+
 2010-06-14  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* libiberty.texi: Remove reference to GCC 3 and 2001 (thrice).

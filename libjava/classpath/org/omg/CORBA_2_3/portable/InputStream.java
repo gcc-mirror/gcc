@@ -99,6 +99,7 @@ public abstract class InputStream
    *
    * @return an abstract interface, unmarshaled from the stream
    */
+  @SuppressWarnings("unchecked") // Needed for API compatibility
   public Object read_abstract_interface(Class clz)
   {
     boolean isValue = read_boolean();
@@ -147,6 +148,7 @@ public abstract class InputStream
    *
    * @return an value type structure, unmarshaled from the stream
    */
+  @SuppressWarnings("unchecked") // Needed for API compatibility
   public Serializable read_value(Class clz)
   {
     return Vio.read(this, clz);

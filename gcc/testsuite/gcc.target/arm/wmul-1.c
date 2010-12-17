@@ -15,4 +15,4 @@ int mac(const short *a, const short *b, int sqr, int *sum)
   return sqr;
 }
 
-/* { dg-final { scan-assembler-times "smulbb" 2 } } */
+/* { dg-final { scan-assembler-times "smlabb" 2 } } */

@@ -620,7 +620,7 @@ package body Layout is
                    Name                   => New_Occurrence_Of (Ent, Loc),
                    Parameter_Associations => New_List (
                      Make_Selected_Component (Loc,
-                       Prefix        => Make_Identifier (Loc, Chars => Vname),
+                       Prefix        => Make_Identifier (Loc, Vname),
                        Selector_Name => New_Occurrence_Of (Comp, Loc))));
 
             else
@@ -628,7 +628,7 @@ package body Layout is
                  Make_Function_Call (Loc,
                    Name                   => New_Occurrence_Of (Ent, Loc),
                    Parameter_Associations => New_List (
-                     Make_Identifier (Loc, Chars => Vname)));
+                     Make_Identifier (Loc, Vname)));
             end if;
 
          else
@@ -727,7 +727,7 @@ package body Layout is
          Size := (Dynamic, Expr_From_SO_Ref (Loc, Component_Size (E)));
       end if;
 
-      --  Loop through indices
+      --  Loop through indexes
 
       Indx := First_Index (E);
       while Present (Indx) loop
@@ -988,7 +988,7 @@ package body Layout is
 
             N :=
               Make_Selected_Component (Loc,
-                Prefix        => Make_Identifier (Loc, Chars => Vname),
+                Prefix        => Make_Identifier (Loc, Vname),
                 Selector_Name => New_Occurrence_Of (Entity (N), Loc));
 
             --  Set the Etype attributes of the selected name and its prefix.
@@ -1059,7 +1059,7 @@ package body Layout is
          Size := (Dynamic, Expr_From_SO_Ref (Loc, Component_Size (E)));
       end if;
 
-      --  Loop to process array indices
+      --  Loop to process array indexes
 
       Indx := First_Index (E);
       while Present (Indx) loop
@@ -1990,7 +1990,7 @@ package body Layout is
                        Make_Function_Call (Loc,
                          Name => New_Occurrence_Of (RMS_Ent, Loc),
                          Parameter_Associations => New_List (
-                           Make_Identifier (Loc, Chars => Vname)));
+                           Make_Identifier (Loc, Vname)));
 
                   --  If the size is represented by a constant, then the
                   --  expression we want is a reference to this constant
@@ -2104,7 +2104,7 @@ package body Layout is
                            Discrim :=
                              Make_Selected_Component (Loc,
                                Prefix        =>
-                                 Make_Identifier (Loc, Chars => Vname),
+                                 Make_Identifier (Loc, Vname),
                                Selector_Name =>
                                  New_Occurrence_Of
                                    (Entity (Name (Vpart)), Loc));
@@ -2130,10 +2130,9 @@ package body Layout is
                               Append (
                                 Make_Selected_Component (Loc,
                                   Prefix        =>
-                                    Make_Identifier (Loc, Chars => Vname),
+                                    Make_Identifier (Loc, Vname),
                                   Selector_Name =>
-                                    New_Occurrence_Of
-                                      (D_Entity, Loc)),
+                                    New_Occurrence_Of (D_Entity, Loc)),
                                 D_List);
 
                               D_Entity := Next_Discriminant (D_Entity);
@@ -2568,14 +2567,9 @@ package body Layout is
                then
                   declare
                      S : constant Uint := Esize (CT);
-
                   begin
-                     if S = 8  or else
-                        S = 16 or else
-                        S = 32 or else
-                        S = 64
-                     then
-                        Set_Component_Size (E, Esize (CT));
+                     if Addressable (S) then
+                        Set_Component_Size (E, S);
                      end if;
                   end;
                end if;

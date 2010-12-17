@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "" }
+// { dg-require-namedlocale "en_GB" }
 
 // 2010-01-06  Paolo Carlini  <paolo.carlini@oracle.com>
 

@@ -8,5 +8,5 @@ struct A
 };
 void A::baz() volatile
 {
-  *this;			// { dg-warning "will not be accessed" }
+  *this;			// { dg-warning "indirection will not access" }
 }

@@ -4,6 +4,7 @@
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
 
 /* { dg-do compile { target { *-*-darwin* } } } */
+/* { dg-skip-if "NeXT-only" { *-*-* } { "-fgnu-runtime" } { "" } } */
 /* { dg-options "-freplace-objc-classes" } */
 
 #include "../objc-obj-c++-shared/Object1.h"

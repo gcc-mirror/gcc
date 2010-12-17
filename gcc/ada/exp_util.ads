@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -403,6 +403,10 @@ package Exp_Util is
    --  Force_Evaluation further guarantees that all evaluations will yield
    --  the same result.
 
+   function Fully_Qualified_Name_String (E : Entity_Id) return String_Id;
+   --  Generates the string literal corresponding to the fully qualified name
+   --  of entity E with an ASCII.NUL appended at the end of the name.
+
    procedure Generate_Poll_Call (N : Node_Id);
    --  If polling is active, then a call to the Poll routine is built,
    --  and then inserted before the given node N and analyzed.
@@ -558,6 +562,26 @@ package Exp_Util is
    --  and returns True if so. Returns False otherwise. It is an error to call
    --  this function if N is not of an access type.
 
+   function Make_Invariant_Call (Expr : Node_Id) return Node_Id;
+   --  Expr is an object of a type which Has_Invariants set (and which thus
+   --  also has an Invariant_Procedure set). If invariants are enabled, this
+   --  function returns a call to the Invariant procedure passing Expr as the
+   --  argument, and returns it unanalyzed. If invariants are not enabled,
+   --  returns a null statement.
+
+   function Make_Predicate_Call
+     (Typ  : Entity_Id;
+      Expr : Node_Id) return Node_Id;
+   --  Typ is a type with Predicate_Function set. This routine builds a call to
+   --  this function passing Expr as the argument, and returns it unanalyzed.
+
+   function Make_Predicate_Check
+     (Typ  : Entity_Id;
+      Expr : Node_Id) return Node_Id;
+   --  Typ is a type with Predicate_Function set. This routine builds a Check
+   --  pragma whose first argument is Predicate, and the second argument is a
+   --  call to the this predicate function with Expr as the argument.
+
    function Make_Subtype_From_Expr
      (E       : Node_Id;
       Unc_Typ : Entity_Id) return Node_Id;
@@ -574,6 +598,13 @@ package Exp_Util is
    --  temporaries that interfere with stack checking mechanism. Note that the
    --  caller has to check whether stack checking is actually enabled in order
    --  to guide the expansion (typically of a function call).
+
+   function Needs_Constant_Address
+     (Decl : Node_Id;
+      Typ  : Entity_Id) return Boolean;
+   --  Check whether the expression in an address clause is restricted to
+   --  consist of constants, when the object has a non-trivial initialization
+   --  or is controlled.
 
    function Non_Limited_Designated_Type (T : Entity_Id) return Entity_Id;
    --  An anonymous access type may designate a limited view. Check whether

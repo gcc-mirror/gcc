@@ -62,10 +62,13 @@ extern FILE *ira_dump_file;
 typedef struct live_range *live_range_t;
 typedef struct ira_allocno *ira_allocno_t;
 typedef struct ira_allocno_copy *ira_copy_t;
+typedef struct ira_object *ira_object_t;
 
 /* Definition of vector of allocnos and copies.  */
 DEF_VEC_P(ira_allocno_t);
 DEF_VEC_ALLOC_P(ira_allocno_t, heap);
+DEF_VEC_P(ira_object_t);
+DEF_VEC_ALLOC_P(ira_object_t, heap);
 DEF_VEC_P(ira_copy_t);
 DEF_VEC_ALLOC_P(ira_copy_t, heap);
 
@@ -189,7 +192,6 @@ extern ira_loop_tree_node_t ira_loop_nodes;
 #define IRA_LOOP_NODE(loop) IRA_LOOP_NODE_BY_INDEX ((loop)->num)
 
 
-
 /* The structure describes program points where a given allocno lives.
    To save memory we store allocno conflicts only for the same cover
    class allocnos which is enough to assign hard registers.  To find
@@ -198,8 +200,8 @@ extern ira_loop_tree_node_t ira_loop_nodes;
    intersected, the allocnos are in conflict.  */
 struct live_range
 {
-  /* Allocno whose live range is described by given structure.  */
-  ira_allocno_t allocno;
+  /* Object whose live range is described by given structure.  */
+  ira_object_t object;
   /* Program point range.  */
   int start, finish;
   /* Next structure describing program points where the allocno
@@ -221,6 +223,50 @@ extern int ira_max_point;
 /* Arrays of size IRA_MAX_POINT mapping a program point to the allocno
    live ranges with given start/finish point.  */
 extern live_range_t *ira_start_point_ranges, *ira_finish_point_ranges;
+
+/* A structure representing conflict information for an allocno
+   (or one of its subwords).  */
+struct ira_object
+{
+  /* The allocno associated with this record.  */
+  ira_allocno_t allocno;
+  /* Vector of accumulated conflicting conflict_redords with NULL end
+     marker (if OBJECT_CONFLICT_VEC_P is true) or conflict bit vector
+     otherwise.  Only ira_objects belonging to allocnos with the
+     same cover class are in the vector or in the bit vector.  */
+  void *conflicts_array;
+  /* Pointer to structures describing at what program point the
+     object lives.  We always maintain the list in such way that *the
+     ranges in the list are not intersected and ordered by decreasing
+     their program points*.  */
+  live_range_t live_ranges;
+  /* The subword within ALLOCNO which is represented by this object.
+     Zero means the lowest-order subword (or the entire allocno in case
+     it is not being tracked in subwords).  */
+  int subword;
+  /* Allocated size of the conflicts array.  */
+  unsigned int conflicts_array_size;
+  /* A unique number for every instance of this structure, which is used
+     to represent it in conflict bit vectors.  */
+  int id;
+  /* Before building conflicts, MIN and MAX are initialized to
+     correspondingly minimal and maximal points of the accumulated
+     live ranges.  Afterwards, they hold the minimal and maximal ids
+     of other ira_objects that this one can conflict with.  */
+  int min, max;
+  /* Initial and accumulated hard registers conflicting with this
+     object and as a consequences can not be assigned to the allocno.
+     All non-allocatable hard regs and hard regs of cover classes
+     different from given allocno one are included in the sets.  */
+  HARD_REG_SET conflict_hard_regs, total_conflict_hard_regs;
+  /* Number of accumulated conflicts in the vector of conflicting
+     objects.  */
+  int num_accumulated_conflicts;
+  /* TRUE if conflicts are represented by a vector of pointers to
+     ira_object structures.  Otherwise, we use a bit vector indexed
+     by conflict ID numbers.  */
+  unsigned int conflict_vec_p : 1;
+};
 
 /* A structure representing an allocno (allocation entity).  Allocno
    represents a pseudo-register in an allocation region.  If
@@ -301,35 +347,13 @@ struct ira_allocno
      list is chained by NEXT_COALESCED_ALLOCNO.  */
   ira_allocno_t first_coalesced_allocno;
   ira_allocno_t next_coalesced_allocno;
-  /* Pointer to structures describing at what program point the
-     allocno lives.  We always maintain the list in such way that *the
-     ranges in the list are not intersected and ordered by decreasing
-     their program points*.  */
-  live_range_t live_ranges;
-  /* Before building conflicts the two member values are
-     correspondingly minimal and maximal points of the accumulated
-     allocno live ranges.  After building conflicts the values are
-     correspondingly minimal and maximal conflict ids of allocnos with
-     which given allocno can conflict.  */
-  int min, max;
-  /* Vector of accumulated conflicting allocnos with NULL end marker
-     (if CONFLICT_VEC_P is true) or conflict bit vector otherwise.
-     Only allocnos with the same cover class are in the vector or in
-     the bit vector.  */
-  void *conflict_allocno_array;
-  /* The unique member value represents given allocno in conflict bit
-     vectors.  */
-  int conflict_id;
-  /* Allocated size of the previous array.  */
-  unsigned int conflict_allocno_array_size;
-  /* Initial and accumulated hard registers conflicting with this
-     allocno and as a consequences can not be assigned to the allocno.
-     All non-allocatable hard regs and hard regs of cover classes
-     different from given allocno one are included in the sets.  */
-  HARD_REG_SET conflict_hard_regs, total_conflict_hard_regs;
-  /* Number of accumulated conflicts in the vector of conflicting
-     allocnos.  */
-  int conflict_allocnos_num;
+  /* The number of objects tracked in the following array.  */
+  int num_objects;
+  /* An array of structures describing conflict information and live
+     ranges for each object associated with the allocno.  There may be
+     more than one such object in cases where the allocno represents a
+     multi-word register.  */
+  ira_object_t objects[2];
   /* Accumulated frequency of calls which given allocno
      intersects.  */
   int call_freq;
@@ -374,11 +398,6 @@ struct ira_allocno
   /* TRUE if the allocno was removed from the splay tree used to
      choose allocn for spilling (see ira-color.c::.  */
   unsigned int splay_removed_p : 1;
-  /* TRUE if conflicts for given allocno are represented by vector of
-     pointers to the conflicting allocnos.  Otherwise, we use a bit
-     vector where a bit with given index represents allocno with the
-     same number.  */
-  unsigned int conflict_vec_p : 1;
   /* Non NULL if we remove restoring value from given allocno to
      MEM_OPTIMIZED_DEST at loop exit (see ira-emit.c) because the
      allocno value is not changed inside the loop.  */
@@ -429,13 +448,6 @@ struct ira_allocno
 #define ALLOCNO_LOOP_TREE_NODE(A) ((A)->loop_tree_node)
 #define ALLOCNO_CAP(A) ((A)->cap)
 #define ALLOCNO_CAP_MEMBER(A) ((A)->cap_member)
-#define ALLOCNO_CONFLICT_ALLOCNO_ARRAY(A) ((A)->conflict_allocno_array)
-#define ALLOCNO_CONFLICT_ALLOCNO_ARRAY_SIZE(A) \
-  ((A)->conflict_allocno_array_size)
-#define ALLOCNO_CONFLICT_ALLOCNOS_NUM(A) \
-  ((A)->conflict_allocnos_num)
-#define ALLOCNO_CONFLICT_HARD_REGS(A) ((A)->conflict_hard_regs)
-#define ALLOCNO_TOTAL_CONFLICT_HARD_REGS(A) ((A)->total_conflict_hard_regs)
 #define ALLOCNO_NREFS(A) ((A)->nrefs)
 #define ALLOCNO_FREQ(A) ((A)->freq)
 #define ALLOCNO_HARD_REGNO(A) ((A)->hard_regno)
@@ -455,7 +467,6 @@ struct ira_allocno
 #define ALLOCNO_ASSIGNED_P(A) ((A)->assigned_p)
 #define ALLOCNO_MAY_BE_SPILLED_P(A) ((A)->may_be_spilled_p)
 #define ALLOCNO_SPLAY_REMOVED_P(A) ((A)->splay_removed_p)
-#define ALLOCNO_CONFLICT_VEC_P(A) ((A)->conflict_vec_p)
 #define ALLOCNO_MODE(A) ((A)->mode)
 #define ALLOCNO_COPIES(A) ((A)->allocno_copies)
 #define ALLOCNO_HARD_REG_COSTS(A) ((A)->hard_reg_costs)
@@ -477,10 +488,23 @@ struct ira_allocno
 #define ALLOCNO_TEMP(A) ((A)->temp)
 #define ALLOCNO_FIRST_COALESCED_ALLOCNO(A) ((A)->first_coalesced_allocno)
 #define ALLOCNO_NEXT_COALESCED_ALLOCNO(A) ((A)->next_coalesced_allocno)
-#define ALLOCNO_LIVE_RANGES(A) ((A)->live_ranges)
-#define ALLOCNO_MIN(A) ((A)->min)
-#define ALLOCNO_MAX(A) ((A)->max)
-#define ALLOCNO_CONFLICT_ID(A) ((A)->conflict_id)
+#define ALLOCNO_OBJECT(A,N) ((A)->objects[N])
+#define ALLOCNO_NUM_OBJECTS(A) ((A)->num_objects)
+
+#define OBJECT_ALLOCNO(C) ((C)->allocno)
+#define OBJECT_SUBWORD(C) ((C)->subword)
+#define OBJECT_CONFLICT_ARRAY(C) ((C)->conflicts_array)
+#define OBJECT_CONFLICT_VEC(C) ((ira_object_t *)(C)->conflicts_array)
+#define OBJECT_CONFLICT_BITVEC(C) ((IRA_INT_TYPE *)(C)->conflicts_array)
+#define OBJECT_CONFLICT_ARRAY_SIZE(C) ((C)->conflicts_array_size)
+#define OBJECT_CONFLICT_VEC_P(C) ((C)->conflict_vec_p)
+#define OBJECT_NUM_CONFLICTS(C) ((C)->num_accumulated_conflicts)
+#define OBJECT_CONFLICT_HARD_REGS(C) ((C)->conflict_hard_regs)
+#define OBJECT_TOTAL_CONFLICT_HARD_REGS(C) ((C)->total_conflict_hard_regs)
+#define OBJECT_MIN(C) ((C)->min)
+#define OBJECT_MAX(C) ((C)->max)
+#define OBJECT_CONFLICT_ID(C) ((C)->id)
+#define OBJECT_LIVE_RANGES(A) ((A)->live_ranges)
 
 /* Map regno -> allocnos with given regno (see comments for
    allocno member `next_regno_allocno').  */
@@ -491,12 +515,14 @@ extern ira_allocno_t *ira_regno_allocno_map;
    have NULL element value.  */
 extern ira_allocno_t *ira_allocnos;
 
-/* Sizes of the previous array.  */
+/* The size of the previous array.  */
 extern int ira_allocnos_num;
 
-/* Map conflict id -> allocno with given conflict id (see comments for
-   allocno member `conflict_id').  */
-extern ira_allocno_t *ira_conflict_id_allocno_map;
+/* Map a conflict id to its corresponding ira_object structure.  */
+extern ira_object_t *ira_object_id_map;
+
+/* The size of the previous array.  */
+extern int ira_objects_num;
 
 /* The following structure represents a copy of two allocnos.  The
    copies represent move insns or potential move insns usually because
@@ -564,9 +590,6 @@ extern int ira_overall_cost;
 extern int ira_reg_cost, ira_mem_cost;
 extern int ira_load_cost, ira_store_cost, ira_shuffle_cost;
 extern int ira_move_loops_num, ira_additional_jumps_num;
-
-/* Maximal value of element of array ira_reg_class_nregs.  */
-extern int ira_max_nregs;
 
 /* This page contains a bitset implementation called 'min/max sets' used to
    record conflicts in IRA.
@@ -577,6 +600,7 @@ extern int ira_max_nregs;
 
 /* The type used as elements in the array, and the number of bits in
    this type.  */
+
 #define IRA_INT_BITS HOST_BITS_PER_WIDE_INT
 #define IRA_INT_TYPE HOST_WIDE_INT
 
@@ -674,7 +698,7 @@ minmax_set_iter_init (minmax_set_iterator *i, IRA_INT_TYPE *vec, int min,
   i->word = i->nel == 0 ? 0 : vec[0];
 }
 
-/* Return TRUE if we have more elements to visit, in which case *N is
+/* Return TRUE if we have more allocnos to visit, in which case *N is
    set to the number of the element to be visited.  Otherwise, return
    FALSE.  */
 static inline bool
@@ -717,97 +741,164 @@ minmax_set_iter_next (minmax_set_iterator *i)
        minmax_set_iter_cond (&(ITER), &(N));			\
        minmax_set_iter_next (&(ITER)))
 
+struct target_ira_int {
+  /* Initialized once.  It is a maximal possible size of the allocated
+     struct costs.  */
+  int x_max_struct_costs_size;
+
+  /* Allocated and initialized once, and used to initialize cost values
+     for each insn.  */
+  struct costs *x_init_cost;
+
+  /* Allocated once, and used for temporary purposes.  */
+  struct costs *x_temp_costs;
+
+  /* Allocated once, and used for the cost calculation.  */
+  struct costs *x_op_costs[MAX_RECOG_OPERANDS];
+  struct costs *x_this_op_costs[MAX_RECOG_OPERANDS];
+
+  /* Classes used for cost calculation.  They may be different on
+     different iterations of the cost calculations or in different
+     optimization modes.  */
+  enum reg_class *x_cost_classes;
+
+  /* Hard registers that can not be used for the register allocator for
+     all functions of the current compilation unit.  */
+  HARD_REG_SET x_no_unit_alloc_regs;
+
+  /* Map: hard regs X modes -> set of hard registers for storing value
+     of given mode starting with given hard register.  */
+  HARD_REG_SET (x_ira_reg_mode_hard_regset
+		[FIRST_PSEUDO_REGISTER][NUM_MACHINE_MODES]);
+
+  /* Array based on TARGET_REGISTER_MOVE_COST.  Don't use
+     ira_register_move_cost directly.  Use function of
+     ira_get_may_move_cost instead.  */
+  move_table *x_ira_register_move_cost[MAX_MACHINE_MODE];
+
+  /* Similar to may_move_in_cost but it is calculated in IRA instead of
+     regclass.  Another difference we take only available hard registers
+     into account to figure out that one register class is a subset of
+     the another one.  Don't use it directly.  Use function of
+     ira_get_may_move_cost instead.  */
+  move_table *x_ira_may_move_in_cost[MAX_MACHINE_MODE];
+
+  /* Similar to may_move_out_cost but it is calculated in IRA instead of
+     regclass.  Another difference we take only available hard registers
+     into account to figure out that one register class is a subset of
+     the another one.  Don't use it directly.  Use function of
+     ira_get_may_move_cost instead.  */
+  move_table *x_ira_may_move_out_cost[MAX_MACHINE_MODE];
+
+  /* Register class subset relation: TRUE if the first class is a subset
+     of the second one considering only hard registers available for the
+     allocation.  */
+  int x_ira_class_subset_p[N_REG_CLASSES][N_REG_CLASSES];
+
+  /* Array of the number of hard registers of given class which are
+     available for allocation.  The order is defined by the the hard
+     register numbers.  */
+  short x_ira_non_ordered_class_hard_regs[N_REG_CLASSES][FIRST_PSEUDO_REGISTER];
+
+  /* Index (in ira_class_hard_regs; for given register class and hard
+     register (in general case a hard register can belong to several
+     register classes;.  The index is negative for hard registers
+     unavailable for the allocation.  */
+  short x_ira_class_hard_reg_index[N_REG_CLASSES][FIRST_PSEUDO_REGISTER];
+
+  /* Array whose values are hard regset of hard registers available for
+     the allocation of given register class whose HARD_REGNO_MODE_OK
+     values for given mode are zero.  */
+  HARD_REG_SET x_prohibited_class_mode_regs[N_REG_CLASSES][NUM_MACHINE_MODES];
+
+  /* The value is number of elements in the subsequent array.  */
+  int x_ira_important_classes_num;
+
+  /* The array containing non-empty classes (including non-empty cover
+     classes; which are subclasses of cover classes.  Such classes is
+     important for calculation of the hard register usage costs.  */
+  enum reg_class x_ira_important_classes[N_REG_CLASSES];
+
+  /* The biggest important class inside of intersection of the two
+     classes (that is calculated taking only hard registers available
+     for allocation into account;.  If the both classes contain no hard
+     registers available for allocation, the value is calculated with
+     taking all hard-registers including fixed ones into account.  */
+  enum reg_class x_ira_reg_class_intersect[N_REG_CLASSES][N_REG_CLASSES];
+
+  /* True if the two classes (that is calculated taking only hard
+     registers available for allocation into account; are
+     intersected.  */
+  bool x_ira_reg_classes_intersect_p[N_REG_CLASSES][N_REG_CLASSES];
+
+  /* Classes with end marker LIM_REG_CLASSES which are intersected with
+     given class (the first index;.  That includes given class itself.
+     This is calculated taking only hard registers available for
+     allocation into account.  */
+  enum reg_class x_ira_reg_class_super_classes[N_REG_CLASSES][N_REG_CLASSES];
+
+  /* The biggest important class inside of union of the two classes
+     (that is calculated taking only hard registers available for
+     allocation into account;.  If the both classes contain no hard
+     registers available for allocation, the value is calculated with
+     taking all hard-registers including fixed ones into account.  In
+     other words, the value is the corresponding reg_class_subunion
+     value.  */
+  enum reg_class x_ira_reg_class_union[N_REG_CLASSES][N_REG_CLASSES];
+
+  /* For each reg class, table listing all the classes contained in it
+     (excluding the class itself.  Non-allocatable registers are
+     excluded from the consideration;.  */
+  enum reg_class x_alloc_reg_class_subclasses[N_REG_CLASSES][N_REG_CLASSES];
+
+  /* Array whose values are hard regset of hard registers for which
+     move of the hard register in given mode into itself is
+     prohibited.  */
+  HARD_REG_SET x_ira_prohibited_mode_move_regs[NUM_MACHINE_MODES];
+
+  /* Flag of that the above array has been initialized.  */
+  bool x_ira_prohibited_mode_move_regs_initialized_p;
+};
+
+extern struct target_ira_int default_target_ira_int;
+#if SWITCHABLE_TARGET
+extern struct target_ira_int *this_target_ira_int;
+#else
+#define this_target_ira_int (&default_target_ira_int)
+#endif
+
+#define ira_reg_mode_hard_regset \
+  (this_target_ira_int->x_ira_reg_mode_hard_regset)
+#define ira_register_move_cost \
+  (this_target_ira_int->x_ira_register_move_cost)
+#define ira_may_move_in_cost \
+  (this_target_ira_int->x_ira_may_move_in_cost)
+#define ira_may_move_out_cost \
+  (this_target_ira_int->x_ira_may_move_out_cost)
+#define ira_class_subset_p \
+  (this_target_ira_int->x_ira_class_subset_p)
+#define ira_non_ordered_class_hard_regs \
+  (this_target_ira_int->x_ira_non_ordered_class_hard_regs)
+#define ira_class_hard_reg_index \
+  (this_target_ira_int->x_ira_class_hard_reg_index)
+#define prohibited_class_mode_regs \
+  (this_target_ira_int->x_prohibited_class_mode_regs)
+#define ira_important_classes_num \
+  (this_target_ira_int->x_ira_important_classes_num)
+#define ira_important_classes \
+  (this_target_ira_int->x_ira_important_classes)
+#define ira_reg_class_intersect \
+  (this_target_ira_int->x_ira_reg_class_intersect)
+#define ira_reg_classes_intersect_p \
+  (this_target_ira_int->x_ira_reg_classes_intersect_p)
+#define ira_reg_class_super_classes \
+  (this_target_ira_int->x_ira_reg_class_super_classes)
+#define ira_reg_class_union \
+  (this_target_ira_int->x_ira_reg_class_union)
+#define ira_prohibited_mode_move_regs \
+  (this_target_ira_int->x_ira_prohibited_mode_move_regs)
+
 /* ira.c: */
-
-/* Map: hard regs X modes -> set of hard registers for storing value
-   of given mode starting with given hard register.  */
-extern HARD_REG_SET ira_reg_mode_hard_regset
-                    [FIRST_PSEUDO_REGISTER][NUM_MACHINE_MODES];
-
-/* Array based on TARGET_REGISTER_MOVE_COST.  Don't use
-   ira_register_move_cost directly.  Use function of
-   ira_get_may_move_cost instead.  */
-extern move_table *ira_register_move_cost[MAX_MACHINE_MODE];
-
-/* Similar to may_move_in_cost but it is calculated in IRA instead of
-   regclass.  Another difference we take only available hard registers
-   into account to figure out that one register class is a subset of
-   the another one.  Don't use it directly.  Use function of
-   ira_get_may_move_cost instead.  */
-extern move_table *ira_may_move_in_cost[MAX_MACHINE_MODE];
-
-/* Similar to may_move_out_cost but it is calculated in IRA instead of
-   regclass.  Another difference we take only available hard registers
-   into account to figure out that one register class is a subset of
-   the another one.  Don't use it directly.  Use function of
-   ira_get_may_move_cost instead.  */
-extern move_table *ira_may_move_out_cost[MAX_MACHINE_MODE];
-
-/* Register class subset relation: TRUE if the first class is a subset
-   of the second one considering only hard registers available for the
-   allocation.  */
-extern int ira_class_subset_p[N_REG_CLASSES][N_REG_CLASSES];
-
-/* Array of the number of hard registers of given class which are
-   available for allocation.  The order is defined by the the hard
-   register numbers.  */
-extern short ira_non_ordered_class_hard_regs[N_REG_CLASSES][FIRST_PSEUDO_REGISTER];
-
-/* Index (in ira_class_hard_regs) for given register class and hard
-   register (in general case a hard register can belong to several
-   register classes).  The index is negative for hard registers
-   unavailable for the allocation. */
-extern short ira_class_hard_reg_index[N_REG_CLASSES][FIRST_PSEUDO_REGISTER];
-
-/* Array whose values are hard regset of hard registers available for
-   the allocation of given register class whose HARD_REGNO_MODE_OK
-   values for given mode are zero.  */
-extern HARD_REG_SET prohibited_class_mode_regs
-                    [N_REG_CLASSES][NUM_MACHINE_MODES];
-
-/* Array whose values are hard regset of hard registers for which
-   move of the hard register in given mode into itself is
-   prohibited.  */
-extern HARD_REG_SET ira_prohibited_mode_move_regs[NUM_MACHINE_MODES];
-
-/* The value is number of elements in the subsequent array.  */
-extern int ira_important_classes_num;
-
-/* The array containing non-empty classes (including non-empty cover
-   classes) which are subclasses of cover classes.  Such classes is
-   important for calculation of the hard register usage costs.  */
-extern enum reg_class ira_important_classes[N_REG_CLASSES];
-
-/* The array containing indexes of important classes in the previous
-   array.  The array elements are defined only for important
-   classes.  */
-extern int ira_important_class_nums[N_REG_CLASSES];
-
-/* The biggest important class inside of intersection of the two
-   classes (that is calculated taking only hard registers available
-   for allocation into account).  If the both classes contain no hard
-   registers available for allocation, the value is calculated with
-   taking all hard-registers including fixed ones into account.  */
-extern enum reg_class ira_reg_class_intersect[N_REG_CLASSES][N_REG_CLASSES];
-
-/* True if the two classes (that is calculated taking only hard
-   registers available for allocation into account) are
-   intersected.  */
-extern bool ira_reg_classes_intersect_p[N_REG_CLASSES][N_REG_CLASSES];
-
-/* Classes with end marker LIM_REG_CLASSES which are intersected with
-   given class (the first index).  That includes given class itself.
-   This is calculated taking only hard registers available for
-   allocation into account.  */
-extern enum reg_class ira_reg_class_super_classes[N_REG_CLASSES][N_REG_CLASSES];
-/* The biggest important class inside of union of the two classes
-   (that is calculated taking only hard registers available for
-   allocation into account).  If the both classes contain no hard
-   registers available for allocation, the value is calculated with
-   taking all hard-registers including fixed ones into account.  In
-   other words, the value is the corresponding reg_class_subunion
-   value.  */
-extern enum reg_class ira_reg_class_union[N_REG_CLASSES][N_REG_CLASSES];
 
 extern void *ira_allocate (size_t);
 extern void *ira_reallocate (void *, size_t);
@@ -846,25 +937,26 @@ extern void ira_traverse_loop_tree (bool, ira_loop_tree_node_t,
 extern ira_allocno_t ira_parent_allocno (ira_allocno_t);
 extern ira_allocno_t ira_parent_or_cap_allocno (ira_allocno_t);
 extern ira_allocno_t ira_create_allocno (int, bool, ira_loop_tree_node_t);
+extern void ira_create_allocno_objects (ira_allocno_t);
 extern void ira_set_allocno_cover_class (ira_allocno_t, enum reg_class);
-extern bool ira_conflict_vector_profitable_p (ira_allocno_t, int);
-extern void ira_allocate_allocno_conflict_vec (ira_allocno_t, int);
-extern void ira_allocate_allocno_conflicts (ira_allocno_t, int);
-extern void ira_add_allocno_conflict (ira_allocno_t, ira_allocno_t);
+extern bool ira_conflict_vector_profitable_p (ira_object_t, int);
+extern void ira_allocate_conflict_vec (ira_object_t, int);
+extern void ira_allocate_object_conflicts (ira_object_t, int);
+extern void ior_hard_reg_conflicts (ira_allocno_t, HARD_REG_SET *);
 extern void ira_print_expanded_allocno (ira_allocno_t);
-extern live_range_t ira_create_allocno_live_range (ira_allocno_t, int, int,
-						   live_range_t);
-extern live_range_t ira_copy_allocno_live_range_list (live_range_t);
-extern live_range_t ira_merge_allocno_live_ranges (live_range_t, live_range_t);
-extern bool ira_allocno_live_ranges_intersect_p (live_range_t, live_range_t);
-extern void ira_finish_allocno_live_range (live_range_t);
-extern void ira_finish_allocno_live_range_list (live_range_t);
+extern void ira_add_live_range_to_object (ira_object_t, int, int);
+extern live_range_t ira_create_live_range (ira_object_t, int, int,
+					   live_range_t);
+extern live_range_t ira_copy_live_range_list (live_range_t);
+extern live_range_t ira_merge_live_ranges (live_range_t, live_range_t);
+extern bool ira_live_ranges_intersect_p (live_range_t, live_range_t);
+extern void ira_finish_live_range (live_range_t);
+extern void ira_finish_live_range_list (live_range_t);
 extern void ira_free_allocno_updated_costs (ira_allocno_t);
 extern ira_copy_t ira_create_copy (ira_allocno_t, ira_allocno_t,
 				   int, bool, rtx, ira_loop_tree_node_t);
 extern void ira_add_allocno_copy_to_list (ira_copy_t);
 extern void ira_swap_allocno_copy_ends_if_necessary (ira_copy_t);
-extern void ira_remove_allocno_copy_from_list (ira_copy_t);
 extern ira_copy_t ira_add_allocno_copy (ira_allocno_t, ira_allocno_t, int,
 					bool, rtx, ira_loop_tree_node_t);
 
@@ -973,8 +1065,74 @@ ira_allocno_iter_cond (ira_allocno_iterator *i, ira_allocno_t *a)
 #define FOR_EACH_ALLOCNO(A, ITER)			\
   for (ira_allocno_iter_init (&(ITER));			\
        ira_allocno_iter_cond (&(ITER), &(A));)
+
+/* The iterator for all objects.  */
+typedef struct {
+  /* The number of the current element in ira_object_id_map.  */
+  int n;
+} ira_object_iterator;
 
+/* Initialize the iterator I.  */
+static inline void
+ira_object_iter_init (ira_object_iterator *i)
+{
+  i->n = 0;
+}
 
+/* Return TRUE if we have more objects to visit, in which case *OBJ is
+   set to the object to be visited.  Otherwise, return FALSE.  */
+static inline bool
+ira_object_iter_cond (ira_object_iterator *i, ira_object_t *obj)
+{
+  int n;
+
+  for (n = i->n; n < ira_objects_num; n++)
+    if (ira_object_id_map[n] != NULL)
+      {
+	*obj = ira_object_id_map[n];
+	i->n = n + 1;
+	return true;
+      }
+  return false;
+}
+
+/* Loop over all objects.  In each iteration, OBJ is set to the next
+   object.  ITER is an instance of ira_object_iterator used to iterate
+   the objects.  */
+#define FOR_EACH_OBJECT(OBJ, ITER)			\
+  for (ira_object_iter_init (&(ITER));			\
+       ira_object_iter_cond (&(ITER), &(OBJ));)
+
+/* The iterator for objects associated with an allocno.  */
+typedef struct {
+  /* The number of the element the allocno's object array.  */
+  int n;
+} ira_allocno_object_iterator;
+
+/* Initialize the iterator I.  */
+static inline void
+ira_allocno_object_iter_init (ira_allocno_object_iterator *i)
+{
+  i->n = 0;
+}
+
+/* Return TRUE if we have more objects to visit in allocno A, in which
+   case *O is set to the object to be visited.  Otherwise, return
+   FALSE.  */
+static inline bool
+ira_allocno_object_iter_cond (ira_allocno_object_iterator *i, ira_allocno_t a,
+			      ira_object_t *o)
+{
+  *o = ALLOCNO_OBJECT (a, i->n);
+  return i->n++ < ALLOCNO_NUM_OBJECTS (a);
+}
+
+/* Loop over all objects associated with allocno A.  In each
+   iteration, O is set to the next object.  ITER is an instance of
+   ira_allocno_object_iterator used to iterate the conflicts.  */
+#define FOR_EACH_ALLOCNO_OBJECT(A, O, ITER)			\
+  for (ira_allocno_object_iter_init (&(ITER));			\
+       ira_allocno_object_iter_cond (&(ITER), (A), &(O));)
 
 
 /* The iterator for copies.  */
@@ -1013,61 +1171,57 @@ ira_copy_iter_cond (ira_copy_iterator *i, ira_copy_t *cp)
 #define FOR_EACH_COPY(C, ITER)				\
   for (ira_copy_iter_init (&(ITER));			\
        ira_copy_iter_cond (&(ITER), &(C));)
-
-
 
-
-/* The iterator for allocno conflicts.  */
+/* The iterator for object conflicts.  */
 typedef struct {
 
   /* TRUE if the conflicts are represented by vector of allocnos.  */
-  bool allocno_conflict_vec_p;
+  bool conflict_vec_p;
 
   /* The conflict vector or conflict bit vector.  */
   void *vec;
 
   /* The number of the current element in the vector (of type
-     ira_allocno_t or IRA_INT_TYPE).  */
+     ira_object_t or IRA_INT_TYPE).  */
   unsigned int word_num;
 
   /* The bit vector size.  It is defined only if
-     ALLOCNO_CONFLICT_VEC_P is FALSE.  */
+     OBJECT_CONFLICT_VEC_P is FALSE.  */
   unsigned int size;
 
   /* The current bit index of bit vector.  It is defined only if
-     ALLOCNO_CONFLICT_VEC_P is FALSE.  */
+     OBJECT_CONFLICT_VEC_P is FALSE.  */
   unsigned int bit_num;
 
-  /* Allocno conflict id corresponding to the 1st bit of the bit
-     vector.  It is defined only if ALLOCNO_CONFLICT_VEC_P is
-     FALSE.  */
+  /* The object id corresponding to the 1st bit of the bit vector.  It
+     is defined only if OBJECT_CONFLICT_VEC_P is FALSE.  */
   int base_conflict_id;
 
   /* The word of bit vector currently visited.  It is defined only if
-     ALLOCNO_CONFLICT_VEC_P is FALSE.  */
+     OBJECT_CONFLICT_VEC_P is FALSE.  */
   unsigned IRA_INT_TYPE word;
-} ira_allocno_conflict_iterator;
+} ira_object_conflict_iterator;
 
 /* Initialize the iterator I with ALLOCNO conflicts.  */
 static inline void
-ira_allocno_conflict_iter_init (ira_allocno_conflict_iterator *i,
-				ira_allocno_t allocno)
+ira_object_conflict_iter_init (ira_object_conflict_iterator *i,
+			       ira_object_t obj)
 {
-  i->allocno_conflict_vec_p = ALLOCNO_CONFLICT_VEC_P (allocno);
-  i->vec = ALLOCNO_CONFLICT_ALLOCNO_ARRAY (allocno);
+  i->conflict_vec_p = OBJECT_CONFLICT_VEC_P (obj);
+  i->vec = OBJECT_CONFLICT_ARRAY (obj);
   i->word_num = 0;
-  if (i->allocno_conflict_vec_p)
+  if (i->conflict_vec_p)
     i->size = i->bit_num = i->base_conflict_id = i->word = 0;
   else
     {
-      if (ALLOCNO_MIN (allocno) > ALLOCNO_MAX (allocno))
+      if (OBJECT_MIN (obj) > OBJECT_MAX (obj))
 	i->size = 0;
       else
-	i->size = ((ALLOCNO_MAX (allocno) - ALLOCNO_MIN (allocno)
+	i->size = ((OBJECT_MAX (obj) - OBJECT_MIN (obj)
 		    + IRA_INT_BITS)
 		   / IRA_INT_BITS) * sizeof (IRA_INT_TYPE);
       i->bit_num = 0;
-      i->base_conflict_id = ALLOCNO_MIN (allocno);
+      i->base_conflict_id = OBJECT_MIN (obj);
       i->word = (i->size == 0 ? 0 : ((IRA_INT_TYPE *) i->vec)[0]);
     }
 }
@@ -1076,18 +1230,16 @@ ira_allocno_conflict_iter_init (ira_allocno_conflict_iterator *i,
    case *A is set to the allocno to be visited.  Otherwise, return
    FALSE.  */
 static inline bool
-ira_allocno_conflict_iter_cond (ira_allocno_conflict_iterator *i,
-				ira_allocno_t *a)
+ira_object_conflict_iter_cond (ira_object_conflict_iterator *i,
+			       ira_object_t *pobj)
 {
-  ira_allocno_t conflict_allocno;
+  ira_object_t obj;
 
-  if (i->allocno_conflict_vec_p)
+  if (i->conflict_vec_p)
     {
-      conflict_allocno = ((ira_allocno_t *) i->vec)[i->word_num];
-      if (conflict_allocno == NULL)
+      obj = ((ira_object_t *) i->vec)[i->word_num];
+      if (obj == NULL)
 	return false;
-      *a = conflict_allocno;
-      return true;
     }
   else
     {
@@ -1107,17 +1259,18 @@ ira_allocno_conflict_iter_cond (ira_allocno_conflict_iterator *i,
       for (; (i->word & 1) == 0; i->word >>= 1)
 	i->bit_num++;
 
-      *a = ira_conflict_id_allocno_map[i->bit_num + i->base_conflict_id];
-
-      return true;
+      obj = ira_object_id_map[i->bit_num + i->base_conflict_id];
     }
+
+  *pobj = obj;
+  return true;
 }
 
 /* Advance to the next conflicting allocno.  */
 static inline void
-ira_allocno_conflict_iter_next (ira_allocno_conflict_iterator *i)
+ira_object_conflict_iter_next (ira_object_conflict_iterator *i)
 {
-  if (i->allocno_conflict_vec_p)
+  if (i->conflict_vec_p)
     i->word_num++;
   else
     {
@@ -1126,14 +1279,13 @@ ira_allocno_conflict_iter_next (ira_allocno_conflict_iterator *i)
     }
 }
 
-/* Loop over all allocnos conflicting with ALLOCNO.  In each
-   iteration, A is set to the next conflicting allocno.  ITER is an
-   instance of ira_allocno_conflict_iterator used to iterate the
-   conflicts.  */
-#define FOR_EACH_ALLOCNO_CONFLICT(ALLOCNO, A, ITER)			\
-  for (ira_allocno_conflict_iter_init (&(ITER), (ALLOCNO));		\
-       ira_allocno_conflict_iter_cond (&(ITER), &(A));			\
-       ira_allocno_conflict_iter_next (&(ITER)))
+/* Loop over all objects conflicting with OBJ.  In each iteration,
+   CONF is set to the next conflicting object.  ITER is an instance
+   of ira_object_conflict_iterator used to iterate the conflicts.  */
+#define FOR_EACH_OBJECT_CONFLICT(OBJ, CONF, ITER)			\
+  for (ira_object_conflict_iter_init (&(ITER), (OBJ));			\
+       ira_object_conflict_iter_cond (&(ITER), &(CONF));		\
+       ira_object_conflict_iter_next (&(ITER)))
 
 
 

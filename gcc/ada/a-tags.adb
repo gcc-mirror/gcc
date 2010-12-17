@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -948,6 +948,24 @@ package body Ada.Tags is
    begin
       SSD (T).SSD_Table (Position).Kind := Value;
    end Set_Prim_Op_Kind;
+
+   ----------------------
+   -- Type_Is_Abstract --
+   ----------------------
+
+   function Type_Is_Abstract (T : Tag) return Boolean is
+      TSD_Ptr : Addr_Ptr;
+      TSD     : Type_Specific_Data_Ptr;
+
+   begin
+      if T = No_Tag then
+         raise Tag_Error;
+      end if;
+
+      TSD_Ptr := To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
+      TSD     := To_Type_Specific_Data_Ptr (TSD_Ptr.all);
+      return TSD.Type_Is_Abstract;
+   end Type_Is_Abstract;
 
    ------------------------
    -- Wide_Expanded_Name --

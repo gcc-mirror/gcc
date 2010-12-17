@@ -42,7 +42,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* The svr4 ABI for the i386 says that records and unions are returned
    in memory.  In the 64bit compilation we will turn this flag off in
-   override_options, as we never do pcc_struct_return scheme on this target.  */
+   ix86_option_override_internal, as we never do pcc_struct_return
+   scheme on this target.  */
 #undef DEFAULT_PCC_STRUCT_RETURN
 #define DEFAULT_PCC_STRUCT_RETURN 1
 
@@ -113,6 +114,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* The stack pointer needs to be moved while checking the stack.  */
 #define STACK_CHECK_MOVING_SP 1
 
+/* Static stack checking is supported by means of probes.  */
+#define STACK_CHECK_STATIC_BUILTIN 1
+
 /* This macro may be overridden in i386/k*bsd-gnu.h.  */
 #define REG_NAME(reg) reg
 
@@ -120,4 +124,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* i386 glibc provides __stack_chk_guard in %gs:0x14,
    x86_64 glibc provides it in %fs:0x28.  */
 #define TARGET_THREAD_SSP_OFFSET	(TARGET_64BIT ? 0x28 : 0x14)
+
+/* We steal the last transactional memory word.  */
+#define TARGET_CAN_SPLIT_STACK
+#define TARGET_THREAD_SPLIT_STACK_OFFSET (TARGET_64BIT ? 0x70 : 0x30)
 #endif

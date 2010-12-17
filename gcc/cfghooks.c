@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "tree-flow.h"
 #include "timevar.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "cfgloop.h"
 
 /* A pointer to one of the hooks containers.  */
@@ -906,9 +906,7 @@ duplicate_block (basic_block bb, edge e, basic_block after)
   if (bb->count < new_count)
     new_count = bb->count;
 
-#ifdef ENABLE_CHECKING
-  gcc_assert (can_duplicate_block_p (bb));
-#endif
+  gcc_checking_assert (can_duplicate_block_p (bb));
 
   new_bb = cfg_hooks->duplicate_block (bb);
   if (after)

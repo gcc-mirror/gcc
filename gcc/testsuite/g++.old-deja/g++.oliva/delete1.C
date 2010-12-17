@@ -28,5 +28,4 @@ struct baz : foo {
   virtual ~baz() {} // { dg-error "" } delete is private in vdtor
 } baz_;
 
-struct bad : baz {} bad_; // { dg-error "" } delete is private in vdtor
-// { dg-message "synthesized" "note" { target *-*-* } 31 }
+struct bad : baz {} bad_; // { dg-message "" } delete is private in vdtor

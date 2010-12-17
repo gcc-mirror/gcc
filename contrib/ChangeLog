@@ -1,3 +1,59 @@
+2010-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* make_sunver.pl: Use elfdump -s to extract symbols if possible,
+	readelf -s otherwise.
+
+2010-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* make_sunver.pl: Ignore entries without symbol name first.  Then do
+	not ignore symbols marked as 'R'.
+
+2010-10-18  Andi Kleen  <ak@linux.intel.com>
+
+	* gccbug.el: Remove.
+
+2010-10-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc_update: Run $GCC_HG pull and update separately.
+	Check parents for SVN revision.
+
+2010-10-11  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* test_recheck: New script.
+
+2010-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* texi2pod.pl: Replace @@ before @{ and @}, for @samp{@@}.
+	Also escape characters with grave accents, to be fixed ...
+	(unmunge): ... here.
+	(postprocess): Also handle @/ and @acronym{...}.
+
+2010-07-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* check_GNU_style.sh: Do not print warning messages when there are
+	no occurences.
+
+2010-09-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc_update: Handle hg, too.
+
+2010-07-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* make_sunver.pl: Remove extra whitespace in regexp.
+
+2010-07-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* check_GNU_style.sh: New.
+
+2010-07-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* make_sunver.pl: New file.
+
+2010-07-02  Iain Sandoe  <iains@gcc.gnu.org>
+
+       * compare-debug (Darwin): Remove '-x' flag from ld-based object
+       stripping.  Add a comment as to why we do it this way.
+
 2010-06-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	* compare-debug: Drop LTO sections.

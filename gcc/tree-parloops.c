@@ -314,10 +314,12 @@ loop_has_blocks_with_irreducible_flag (struct loop *loop)
 /* Assigns the address of OBJ in TYPE to an ssa name, and returns this name.
    The assignment statement is placed on edge ENTRY.  DECL_ADDRESS maps decls
    to their addresses that can be reused.  The address of OBJ is known to
-   be invariant in the whole function.  */
+   be invariant in the whole function.  Other needed statements are placed
+   right before GSI.  */
 
 static tree
-take_address_of (tree obj, tree type, edge entry, htab_t decl_address)
+take_address_of (tree obj, tree type, edge entry, htab_t decl_address,
+		 gimple_stmt_iterator *gsi)
 {
   int uid;
   void **dslot;
@@ -333,14 +335,25 @@ take_address_of (tree obj, tree type, edge entry, htab_t decl_address)
        handled_component_p (*var_p);
        var_p = &TREE_OPERAND (*var_p, 0))
     continue;
-  uid = DECL_UID (*var_p);
 
+  /* Canonicalize the access to base on a MEM_REF.  */
+  if (DECL_P (*var_p))
+    *var_p = build_simple_mem_ref (build_fold_addr_expr (*var_p));
+
+  /* Assign a canonical SSA name to the address of the base decl used
+     in the address and share it for all accesses and addresses based
+     on it.  */
+  uid = DECL_UID (TREE_OPERAND (TREE_OPERAND (*var_p, 0), 0));
   ielt.uid = uid;
   dslot = htab_find_slot_with_hash (decl_address, &ielt, uid, INSERT);
   if (!*dslot)
     {
-      addr = build_addr (*var_p, current_function_decl);
-      bvar = create_tmp_var (TREE_TYPE (addr), get_name (*var_p));
+      if (gsi == NULL)
+	return NULL;
+      addr = TREE_OPERAND (*var_p, 0);
+      bvar = create_tmp_var (TREE_TYPE (addr),
+			     get_name (TREE_OPERAND
+				         (TREE_OPERAND (*var_p, 0), 0)));
       add_referenced_var (bvar);
       stmt = gimple_build_assign (bvar, addr);
       name = make_ssa_name (bvar, stmt);
@@ -355,21 +368,22 @@ take_address_of (tree obj, tree type, edge entry, htab_t decl_address)
   else
     name = ((struct int_tree_map *) *dslot)->to;
 
-  if (var_p != &obj)
-    {
-      *var_p = build1 (INDIRECT_REF, TREE_TYPE (*var_p), name);
-      name = force_gimple_operand (build_addr (obj, current_function_decl),
-				   &stmts, true, NULL_TREE);
-      if (!gimple_seq_empty_p (stmts))
-	gsi_insert_seq_on_edge_immediate (entry, stmts);
-    }
+  /* Express the address in terms of the canonical SSA name.  */
+  TREE_OPERAND (*var_p, 0) = name;
+  if (gsi == NULL)
+    return build_fold_addr_expr_with_type (obj, type);
 
-  if (TREE_TYPE (name) != type)
+  name = force_gimple_operand (build_addr (obj, current_function_decl),
+			       &stmts, true, NULL_TREE);
+  if (!gimple_seq_empty_p (stmts))
+    gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+
+  if (!useless_type_conversion_p (type, TREE_TYPE (name)))
     {
       name = force_gimple_operand (fold_convert (type, name), &stmts, true,
 				   NULL_TREE);
       if (!gimple_seq_empty_p (stmts))
-	gsi_insert_seq_on_edge_immediate (entry, stmts);
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
     }
 
   return name;
@@ -431,7 +445,9 @@ struct elv_data
   struct walk_stmt_info info;
   edge entry;
   htab_t decl_address;
+  gimple_stmt_iterator *gsi;
   bool changed;
+  bool reset;
 };
 
 /* Eliminates references to local variables in *TP out of the single
@@ -455,8 +471,15 @@ eliminate_local_variables_1 (tree *tp, int *walk_subtrees, void *data)
 
       type = TREE_TYPE (t);
       addr_type = build_pointer_type (type);
-      addr = take_address_of (t, addr_type, dta->entry, dta->decl_address);
-      *tp = build1 (INDIRECT_REF, TREE_TYPE (*tp), addr);
+      addr = take_address_of (t, addr_type, dta->entry, dta->decl_address,
+			      dta->gsi);
+      if (dta->gsi == NULL && addr == NULL_TREE)
+	{
+	  dta->reset = true;
+	  return NULL_TREE;
+	}
+
+      *tp = build_simple_mem_ref (addr);
 
       dta->changed = true;
       return NULL_TREE;
@@ -485,7 +508,13 @@ eliminate_local_variables_1 (tree *tp, int *walk_subtrees, void *data)
 	return NULL_TREE;
 
       addr_type = TREE_TYPE (t);
-      addr = take_address_of (obj, addr_type, dta->entry, dta->decl_address);
+      addr = take_address_of (obj, addr_type, dta->entry, dta->decl_address,
+			      dta->gsi);
+      if (dta->gsi == NULL && addr == NULL_TREE)
+	{
+	  dta->reset = true;
+	  return NULL_TREE;
+	}
       *tp = addr;
 
       dta->changed = true;
@@ -498,27 +527,40 @@ eliminate_local_variables_1 (tree *tp, int *walk_subtrees, void *data)
   return NULL_TREE;
 }
 
-/* Moves the references to local variables in STMT out of the single
+/* Moves the references to local variables in STMT at *GSI out of the single
    entry single exit region starting at ENTRY.  DECL_ADDRESS contains
    addresses of the references that had their address taken
    already.  */
 
 static void
-eliminate_local_variables_stmt (edge entry, gimple stmt,
+eliminate_local_variables_stmt (edge entry, gimple_stmt_iterator *gsi,
 				htab_t decl_address)
 {
   struct elv_data dta;
+  gimple stmt = gsi_stmt (*gsi);
 
   memset (&dta.info, '\0', sizeof (dta.info));
   dta.entry = entry;
   dta.decl_address = decl_address;
   dta.changed = false;
+  dta.reset = false;
 
   if (gimple_debug_bind_p (stmt))
-    walk_tree (gimple_debug_bind_get_value_ptr (stmt),
-	       eliminate_local_variables_1, &dta.info, NULL);
+    {
+      dta.gsi = NULL;
+      walk_tree (gimple_debug_bind_get_value_ptr (stmt),
+		 eliminate_local_variables_1, &dta.info, NULL);
+      if (dta.reset)
+	{
+	  gimple_debug_bind_reset_value (stmt);
+	  dta.changed = true;
+	}
+    }
   else
-    walk_gimple_op (stmt, eliminate_local_variables_1, &dta.info);
+    {
+      dta.gsi = gsi;
+      walk_gimple_op (stmt, eliminate_local_variables_1, &dta.info);
+    }
 
   if (dta.changed)
     update_stmt (stmt);
@@ -542,6 +584,7 @@ eliminate_local_variables (edge entry, edge exit)
   VEC (basic_block, heap) *body = VEC_alloc (basic_block, heap, 3);
   unsigned i;
   gimple_stmt_iterator gsi;
+  bool has_debug_stmt = false;
   htab_t decl_address = htab_create (10, int_tree_map_hash, int_tree_map_eq,
 				     free);
   basic_block entry_bb = entry->src;
@@ -549,11 +592,20 @@ eliminate_local_variables (edge entry, edge exit)
 
   gather_blocks_in_sese_region (entry_bb, exit_bb, &body);
 
-  for (i = 0; VEC_iterate (basic_block, body, i, bb); i++)
+  FOR_EACH_VEC_ELT (basic_block, body, i, bb)
     if (bb != entry_bb && bb != exit_bb)
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	eliminate_local_variables_stmt (entry, gsi_stmt (gsi),
-					decl_address);
+	if (gimple_debug_bind_p (gsi_stmt (gsi)))
+	  has_debug_stmt = true;
+	else
+	  eliminate_local_variables_stmt (entry, &gsi, decl_address);
+
+  if (has_debug_stmt)
+    FOR_EACH_VEC_ELT (basic_block, body, i, bb)
+      if (bb != entry_bb && bb != exit_bb)
+	for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	  if (gimple_debug_bind_p (gsi_stmt (gsi)))
+	    eliminate_local_variables_stmt (entry, &gsi, decl_address);
 
   htab_delete (decl_address);
   VEC_free (basic_block, heap, body);
@@ -857,7 +909,6 @@ create_call_for_reduction_1 (void **slot, void *data)
   struct clsn_data *const clsn_data = (struct clsn_data *) data;
   gimple_stmt_iterator gsi;
   tree type = TREE_TYPE (PHI_RESULT (reduc->reduc_phi));
-  tree struct_type = TREE_TYPE (TREE_TYPE (clsn_data->load));
   tree load_struct;
   basic_block bb;
   basic_block new_bb;
@@ -866,7 +917,7 @@ create_call_for_reduction_1 (void **slot, void *data)
   tree tmp_load, name;
   gimple load;
 
-  load_struct = fold_build1 (INDIRECT_REF, struct_type, clsn_data->load);
+  load_struct = build_simple_mem_ref (clsn_data->load);
   t = build3 (COMPONENT_REF, type, load_struct, reduc->field, NULL_TREE);
 
   addr = build_addr (t, current_function_decl);
@@ -925,13 +976,12 @@ create_loads_for_reductions (void **slot, void *data)
   gimple stmt;
   gimple_stmt_iterator gsi;
   tree type = TREE_TYPE (gimple_assign_lhs (red->reduc_stmt));
-  tree struct_type = TREE_TYPE (TREE_TYPE (clsn_data->load));
   tree load_struct;
   tree name;
   tree x;
 
   gsi = gsi_after_labels (clsn_data->load_bb);
-  load_struct = fold_build1 (INDIRECT_REF, struct_type, clsn_data->load);
+  load_struct = build_simple_mem_ref (clsn_data->load);
   load_struct = build3 (COMPONENT_REF, type, load_struct, red->field,
 			NULL_TREE);
 
@@ -1012,7 +1062,6 @@ create_loads_and_stores_for_name (void **slot, void *data)
   gimple stmt;
   gimple_stmt_iterator gsi;
   tree type = TREE_TYPE (elt->new_name);
-  tree struct_type = TREE_TYPE (TREE_TYPE (clsn_data->load));
   tree load_struct;
 
   gsi = gsi_last_bb (clsn_data->store_bb);
@@ -1022,7 +1071,7 @@ create_loads_and_stores_for_name (void **slot, void *data)
   gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
 
   gsi = gsi_last_bb (clsn_data->load_bb);
-  load_struct = fold_build1 (INDIRECT_REF, struct_type, clsn_data->load);
+  load_struct = build_simple_mem_ref (clsn_data->load);
   t = build3 (COMPONENT_REF, type, load_struct, elt->field, NULL_TREE);
   stmt = gimple_build_assign (elt->new_name, t);
   SSA_NAME_DEF_STMT (elt->new_name) = stmt;
@@ -1090,7 +1139,7 @@ separate_decls_in_region (edge entry, edge exit, htab_t reduction_list,
   entry = single_succ_edge (entry_bb);
   gather_blocks_in_sese_region (entry_bb, exit_bb, &body);
 
-  for (i = 0; VEC_iterate (basic_block, body, i, bb); i++)
+  FOR_EACH_VEC_ELT (basic_block, body, i, bb)
     {
       if (bb != entry_bb && bb != exit_bb)
 	{
@@ -1118,7 +1167,7 @@ separate_decls_in_region (edge entry, edge exit, htab_t reduction_list,
      and discard those for which we know there's nothing we can
      do.  */
   if (has_debug_stmt)
-    for (i = 0; VEC_iterate (basic_block, body, i, bb); i++)
+    FOR_EACH_VEC_ELT (basic_block, body, i, bb)
       if (bb != entry_bb && bb != exit_bb)
 	{
 	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
@@ -1454,7 +1503,7 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
 	   initvar);
   cvar_next = PHI_ARG_DEF_FROM_EDGE (phi, loop_latch_edge (loop));
 
-  gsi = gsi_last_bb (loop->latch);
+  gsi = gsi_last_nondebug_bb (loop->latch);
   gcc_assert (gsi_stmt (gsi) == SSA_NAME_DEF_STMT (cvar_next));
   gsi_remove (&gsi, true);
 
@@ -1821,7 +1870,8 @@ try_create_reduction_list (loop_p loop, htab_t reduction_list)
 	  reduc_phi = NULL;
 	  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, val)
 	    {
-	      if (flow_bb_inside_loop_p (loop, gimple_bb (USE_STMT (use_p))))
+	      if (!gimple_debug_bind_p (USE_STMT (use_p))
+		  && flow_bb_inside_loop_p (loop, gimple_bb (USE_STMT (use_p))))
 		{
 		  reduc_phi = USE_STMT (use_p);
 		  break;

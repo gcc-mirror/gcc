@@ -124,9 +124,9 @@ cxx_print_type (FILE *file, tree node, int indent)
     fputs (" X()", file);
   if (TYPE_HAS_CONVERSION (node))
     fputs (" has-type-conversion", file);
-  if (TYPE_HAS_INIT_REF (node))
+  if (TYPE_HAS_COPY_CTOR (node))
     {
-      if (TYPE_HAS_CONST_INIT_REF (node))
+      if (TYPE_HAS_CONST_COPY_CTOR (node))
 	fputs (" X(constX&)", file);
       else
 	fputs (" X(X&)", file);
@@ -139,7 +139,7 @@ cxx_print_type (FILE *file, tree node, int indent)
     fputs (" delete", file);
   if (TYPE_GETS_DELETE (node) & 2)
     fputs (" delete[]", file);
-  if (TYPE_HAS_ASSIGN_REF (node))
+  if (TYPE_HAS_COPY_ASSIGN (node))
     fputs (" this=(X&)", file);
   if (CLASSTYPE_SORTED_FIELDS (node))
     fprintf (file, " sorted-fields %p",
@@ -206,6 +206,15 @@ cxx_print_xnode (FILE *file, tree node, int indent)
       fprintf (file, "index %d level %d orig_level %d",
 	       TEMPLATE_PARM_IDX (node), TEMPLATE_PARM_LEVEL (node),
 	       TEMPLATE_PARM_ORIG_LEVEL (node));
+      break;
+    case TEMPLATE_INFO:
+      print_node (file, "template", TI_TEMPLATE (node), indent+4);
+      print_node (file, "args", TI_ARGS (node), indent+4);
+      if (TI_PENDING_TEMPLATE_FLAG (node))
+	{
+	  indent_to (file, indent + 3);
+	  fprintf (file, "pending_template");
+	}
       break;
     default:
       break;

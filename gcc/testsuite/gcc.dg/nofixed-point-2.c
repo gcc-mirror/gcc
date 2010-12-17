@@ -9,7 +9,7 @@ f1 (void)
 }
 
 __typeof (0r)		       /* { dg-error "not supported" "reject fixed-point" } */
-b2 (void)		       /* { dg-warning "defaults to" } */
+b2 (void)		       /* { dg-bogus "defaults to" } */
 {
   return 0r;		       /* { dg-error "not supported" "reject fixed-point" } */
 }

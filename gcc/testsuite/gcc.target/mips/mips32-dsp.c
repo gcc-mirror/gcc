@@ -92,6 +92,12 @@
 /* { dg-final { scan-assembler "lhx?" } } */
 /* { dg-final { scan-assembler "lwx?" } } */
 /* { dg-final { scan-assembler "bposge32" } } */
+/* { dg-final { scan-assembler "madd" } } */
+/* { dg-final { scan-assembler "maddu" } } */
+/* { dg-final { scan-assembler "msub" } } */
+/* { dg-final { scan-assembler "msubu" } } */
+/* { dg-final { scan-assembler "mult" } } */
+/* { dg-final { scan-assembler "multu" } } */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -101,6 +107,7 @@ typedef short v2q15 __attribute__ ((vector_size(4)));
 
 typedef int q31;
 typedef int i32;
+typedef unsigned int ui32;
 typedef long long a64;
 
 NOMIPS16 void test_MIPS_DSP (void);
@@ -150,6 +157,7 @@ NOMIPS16 void test_MIPS_DSP ()
   v2q15 v2q15_a,v2q15_b,v2q15_c,v2q15_r,v2q15_s;
   q31 q31_a,q31_b,q31_c,q31_r,q31_s;
   i32 i32_a,i32_b,i32_c,i32_r,i32_s;
+  ui32 ui32_a,ui32_b,ui32_c;
   a64 a64_a,a64_b,a64_c,a64_r,a64_s;
 
   void *ptr_a;
@@ -1088,5 +1096,63 @@ NOMIPS16 void test_MIPS_DSP ()
   i32_r = __builtin_mips_bposge32 ();
   if (i32_r != i32_s)
     abort ();
+
+#ifndef __mips64
+  a64_a = 0x12345678;
+  i32_b = 0x80000000;
+  i32_c = 0x11112222;
+  a64_s = 0xF7776EEF12345678LL;
+  a64_r = __builtin_mips_madd (a64_a, i32_b, i32_c);
+  if (a64_r != a64_s)
+    abort ();
+#endif
+
+#ifndef __mips64
+  a64_a = 0x12345678;
+  ui32_b = 0x80000000;
+  ui32_c = 0x11112222;
+  a64_s = 0x0888911112345678LL;
+  a64_r = __builtin_mips_maddu (a64_a, ui32_b, ui32_c);
+  if (a64_r != a64_s)
+    abort ();
+#endif
+
+#ifndef __mips64
+  a64_a = 0x12345678;
+  i32_b = 0x80000000;
+  i32_c = 0x11112222;
+  a64_s = 0x0888911112345678LL;
+  a64_r = __builtin_mips_msub (a64_a, i32_b, i32_c);
+  if (a64_r != a64_s)
+    abort ();
+#endif
+
+#ifndef __mips64
+  a64_a = 0x12345678;
+  ui32_b = 0x80000000;
+  ui32_c = 0x11112222;
+  a64_s = 0xF7776EEF12345678LL;
+  a64_r = __builtin_mips_msubu (a64_a, ui32_b, ui32_c);
+  if (a64_r != a64_s)
+    abort ();
+#endif
+
+#ifndef __mips64
+  i32_a = 0x80000000;
+  i32_b = 0x11112222;
+  a64_s = 0xF7776EEF00000000LL;
+  a64_r = __builtin_mips_mult (i32_a, i32_b);
+  if (a64_r != a64_s)
+    abort ();
+#endif
+
+#ifndef __mips64
+  ui32_a = 0x80000000;
+  ui32_b = 0x11112222;
+  a64_s = 0x888911100000000LL;
+  a64_r = __builtin_mips_multu (ui32_a, ui32_b);
+  if (a64_r != a64_s)
+    abort ();
+#endif
 }
 

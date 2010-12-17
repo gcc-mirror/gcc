@@ -1,6 +1,7 @@
 /* Test for graceful encoding of const-qualified fields and parameters.  */
 /* Author: Ziemowit Laski  <zlaski@apple.com>  */
 /* { dg-do compile } */
+/* { dg-skip-if "" { *-*-* } { "-fnext-runtime" } { "" } } */
 
 struct Cxx {
   const struct Cxx *next;

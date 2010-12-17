@@ -144,6 +144,9 @@ typedef struct eni_weights_d
   /* Cost for omp construct.  */
   unsigned omp_cost;
 
+  /* Cost of return.  */
+  unsigned return_cost;
+
   /* True when time of statemnt should be estimated.  Thus i.e
      cost of switch statement is logarithmic rather than linear in number
      of cases.  */
@@ -185,6 +188,6 @@ extern tree remap_decl (tree decl, copy_body_data *id);
 extern tree remap_type (tree type, copy_body_data *id);
 extern gimple_seq copy_gimple_seq_and_replace_locals (gimple_seq seq);
 
-extern HOST_WIDE_INT estimated_stack_frame_size (void);
+extern HOST_WIDE_INT estimated_stack_frame_size (tree);
 
 #endif /* GCC_TREE_INLINE_H */

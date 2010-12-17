@@ -1,5 +1,6 @@
 // PR c++/13594 (secondary)
 
+// { dg-options "" }
 // { dg-do compile }
 
 namespace fool {

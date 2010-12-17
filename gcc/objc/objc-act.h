@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 
 bool objc_init (void);
 const char *objc_printable_name (tree, int);
-void objc_finish_file (void);
 tree objc_fold_obj_type_ref (tree, tree);
 int objc_gimplify_expr (tree *, gimple_seq *, gimple_seq *);
 tree objc_eh_runtime_type (tree);
@@ -37,8 +36,8 @@ tree objc_eh_personality (void);
 
 /* Objective-C structures */
 
-#define CLASS_LANG_SLOT_ELTS		5
-#define PROTOCOL_LANG_SLOT_ELTS		2
+#define CLASS_LANG_SLOT_ELTS		7
+#define PROTOCOL_LANG_SLOT_ELTS		7
 #define OBJC_INFO_SLOT_ELTS		2
 
 /* KEYWORD_DECL */
@@ -52,11 +51,107 @@ tree objc_eh_personality (void);
 #define METHOD_ADD_ARGS_ELLIPSIS_P(DECL) ((DECL)->decl_common.lang_flag_0)
 #define METHOD_DEFINITION(DECL) ((DECL)->decl_common.initial)
 #define METHOD_ENCODING(DECL) ((DECL)->decl_minimal.context)
+#define METHOD_TYPE_ATTRIBUTES(DECL) ((DECL)->decl_common.abstract_origin)
+#define METHOD_PROPERTY_CONTEXT(DECL) ((DECL)->decl_common.size_unit)
+
+
+/* PROPERTY_DECL.  A PROPERTY_DECL repesents a @property declaration
+   (when attached to the list of properties of an interface) or a
+   @synthesize or @dynamic declaration (when attached to the list of
+   properties of an implementation).  */
+
+/* TREE_TYPE is the type (int, float, etc) of the property.  */
+
+/* DECL_ARTIFICIAL is set to 1 if the PROPERTY_DECL is an artificial
+   property declaration created when the dot-syntax object.component
+   is used with no actual @property matching the component, but a
+   valid getter/setter.  */
+
+/* PROPERTY_NAME is the name of the property.  */
+#define PROPERTY_NAME(DECL) DECL_NAME(DECL)
+
+/* PROPERTY_GETTER_NAME is the identifier of the getter method.  */
+#define PROPERTY_GETTER_NAME(DECL) ((DECL)->decl_non_common.arguments)
+
+/* PROPERTY_SETTER_NAME is the identifier of the setter method.  */
+#define PROPERTY_SETTER_NAME(DECL) ((DECL)->decl_non_common.result)
+
+/* PROPERTY_READONLY can be 0 or 1.  */
+#define PROPERTY_READONLY(DECL) DECL_LANG_FLAG_0 (DECL)
+
+/* PROPERTY_NONATOMIC can be 0 or 1.  */
+#define PROPERTY_NONATOMIC(DECL) DECL_LANG_FLAG_1 (DECL)
+
+typedef enum objc_property_assign_semantics {
+  OBJC_PROPERTY_ASSIGN = 1,
+  OBJC_PROPERTY_RETAIN = 2,
+  OBJC_PROPERTY_COPY = 3
+} objc_property_assign_semantics;
+
+/* PROPERTY_ASSIGN_SEMANTICS can be OBJC_PROPERTY_ASSIGN,
+   OBJC_PROPERTY_RETAIN or OBJC_PROPERTY_COPY.  We need an integer to
+   store it, so we hijack the alignment, that properties don't
+   have.  */
+#define PROPERTY_ASSIGN_SEMANTICS(DECL) ((DECL)->decl_common.align)
+
+/* PROPERTY_IVAR_NAME is the identifier of the instance variable.
+   This is set only if the PROPERTY_DECL represents a @synthesize;
+   otherwise, it is set to TREE_NULL.  */
+#define PROPERTY_IVAR_NAME(DECL) ((DECL)->decl_common.initial)
+
+/* PROPERTY_DYNAMIC can be 0 or 1.  This is 1 if the PROPERTY_DECL
+   represents a @dynamic; otherwise, it is set to 0.  */
+#define PROPERTY_DYNAMIC(DECL) DECL_LANG_FLAG_2 (DECL)
+
+/* PROPERTY_HAS_NO_GETTER can be 0 or 1.  Normally it is 0, but if
+   this is an artificial PROPERTY_DECL that we generate even without a
+   getter, it is set to 1.  */
+#define PROPERTY_HAS_NO_GETTER(DECL) DECL_LANG_FLAG_3 (DECL)
+
+/* PROPERTY_HAS_NO_SETTER can be 0 or 1.  Normally it is 0, but if
+   this is an artificial PROPERTY_DECL that we generate even without a
+   setter, it is set to 1.  */
+#define PROPERTY_HAS_NO_SETTER(DECL) DECL_LANG_FLAG_4 (DECL)
+
+/* PROPERTY_OPTIONAL can be 0 or 1.  Normally it is 0, but if this is
+   a property declared as @optional in a @protocol, then it is set to
+   1.  */
+#define PROPERTY_OPTIONAL(DECL) DECL_LANG_FLAG_5 (DECL)
+
+/* PROPERTY_REF.  A PROPERTY_REF represents an 'object.property'
+   expression.  It is normally used for property access, but when
+   the Objective-C 2.0 "dot-syntax" (object.component) is used
+   with no matching property, a PROPERTY_REF is still created to
+   represent it, with an artificial PROPERTY_DECL.  */
+
+/* PROPERTY_REF_OBJECT is the object whose property we are
+   accessing.  */
+#define PROPERTY_REF_OBJECT(NODE) TREE_OPERAND (PROPERTY_REF_CHECK (NODE), 0)
+
+/* PROPERTY_REF_PROPERTY_DECL is the PROPERTY_DECL for the property
+   used in the expression.  From it, you can get the property type,
+   and the getter/setter names.  This PROPERTY_DECL could be artificial
+   if we are processing an 'object.component' syntax with no matching 
+   declared property.  */
+#define PROPERTY_REF_PROPERTY_DECL(NODE) TREE_OPERAND (PROPERTY_REF_CHECK (NODE), 1)
+
+/* PROPERTY_REF_GETTER_CALL is the getter call expression, ready to
+   use at gimplify time if needed.  Generating the getter call
+   requires modifying the selector table, and, in the case of
+   self/super, requires the context to be generated correctly.  The
+   gimplify stage is too late to do these things, so we generate the
+   getter call earlier instead, and keep it here in case we need to
+   use it.  */
+#define PROPERTY_REF_GETTER_CALL(NODE) TREE_OPERAND (PROPERTY_REF_CHECK (NODE), 2)
+
 
 /* CLASS_INTERFACE_TYPE, CLASS_IMPLEMENTATION_TYPE,
    CATEGORY_INTERFACE_TYPE, CATEGORY_IMPLEMENTATION_TYPE,
    PROTOCOL_INTERFACE_TYPE */
+/* CLASS_NAME is the name of the class.  */
 #define CLASS_NAME(CLASS) ((CLASS)->type.name)
+/* CLASS_SUPER_NAME is the name of the superclass, or, in the case of
+   categories, it is the name of the category itself.  */
 #define CLASS_SUPER_NAME(CLASS) (TYPE_CHECK (CLASS)->type.context)
 #define CLASS_IVARS(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 0)
 #define CLASS_RAW_IVARS(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 1)
@@ -65,12 +160,26 @@ tree objc_eh_personality (void);
 #define CLASS_STATIC_TEMPLATE(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 2)
 #define CLASS_CATEGORY_LIST(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 3)
 #define CLASS_PROTOCOL_LIST(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 4)
+#define TOTAL_CLASS_RAW_IVARS(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 5)
+
 #define PROTOCOL_NAME(CLASS) ((CLASS)->type.name)
 #define PROTOCOL_LIST(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 0)
 #define PROTOCOL_NST_METHODS(CLASS) ((CLASS)->type.minval)
 #define PROTOCOL_CLS_METHODS(CLASS) ((CLASS)->type.maxval)
 #define PROTOCOL_FORWARD_DECL(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 1)
 #define PROTOCOL_DEFINED(CLASS) TREE_USED (CLASS)
+#define PROTOCOL_OPTIONAL_CLS_METHODS(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 2)
+#define PROTOCOL_OPTIONAL_NST_METHODS(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 3)
+
+
+/* For CATEGORY_INTERFACE_TYPE, CLASS_INTERFACE_TYPE or PROTOCOL_INTERFACE_TYPE */
+#define CLASS_PROPERTY_DECL(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 6)
+/* For CLASS_IMPLEMENTATION_TYPE or CATEGORY_IMPLEMENTATION_TYPE. */
+#define IMPL_PROPERTY_DECL(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 6)
+
+/* TREE_DEPRECATED is used for a CLASS_INTERFACE_TYPE or PROTOCOL_INTERFACE_TYPE.  */
+
+/* TYPE_ATTRIBUTES is used for a CLASS_INTERFACE_TYPE or PROTOCOL_INTERFACE_TYPE.  */
 
 /* ObjC-specific information pertaining to RECORD_TYPEs are stored in
    the LANG_SPECIFIC structures, which may itself need allocating first.  */
@@ -139,6 +248,9 @@ struct GTY(()) hashed_entry {
 extern GTY ((length ("SIZEHASHTABLE"))) hash *nst_method_hash_list;
 extern GTY ((length ("SIZEHASHTABLE"))) hash *cls_method_hash_list;
 
+extern GTY ((length ("SIZEHASHTABLE"))) hash *cls_name_hash_list;
+extern GTY ((length ("SIZEHASHTABLE"))) hash *als_name_hash_list;
+
 #define SIZEHASHTABLE		257
 
 /* Objective-C/Objective-C++ @implementation list.  */
@@ -156,8 +268,7 @@ extern GTY(()) struct imp_entry *imp_list;
 extern GTY(()) int imp_count;	/* `@implementation' */
 extern GTY(()) int cat_count;	/* `@category' */
 
-extern GTY(()) enum tree_code objc_inherit_code;
-extern GTY(()) int objc_public_flag;
+extern GTY(()) objc_ivar_visibility_kind objc_ivar_visibility;
 
 /* Objective-C/Objective-C++ global tree enumeration.  */
 
@@ -183,8 +294,6 @@ enum objc_tree_index
     OCTI_NST_TYPE,
     OCTI_PROTO_TYPE,
 
-    OCTI_CLS_CHAIN,
-    OCTI_ALIAS_CHAIN,
     OCTI_INTF_CHAIN,
     OCTI_PROTO_CHAIN,
     OCTI_IMPL_CHAIN,
@@ -267,6 +376,15 @@ enum objc_tree_index
     OCTI_ASSIGN_GLOBAL_DECL,
     OCTI_ASSIGN_STRONGCAST_DECL,
 
+    OCTI_FAST_ENUM_STATE_TEMP,
+    OCTI_ENUM_MUTATION_DECL,
+
+    OCTI_GET_PROPERTY_DECL,
+    OCTI_SET_PROPERTY_DECL,
+    OCTI_COPY_STRUCT_DECL,
+    OCTI_GET_PROPERTY_STRUCT_DECL,
+    OCTI_SET_PROPERTY_STRUCT_DECL,
+
     OCTI_MAX
 };
 
@@ -318,8 +436,6 @@ extern GTY(()) tree objc_global_trees[OCTI_MAX];
 	(TREE_CODE (TYPE) == POINTER_TYPE				\
 	 && TREE_TYPE (TYPE) == objc_super_template)
 
-#define class_chain		objc_global_trees[OCTI_CLS_CHAIN]
-#define alias_chain		objc_global_trees[OCTI_ALIAS_CHAIN]
 #define interface_chain		objc_global_trees[OCTI_INTF_CHAIN]
 #define protocol_chain		objc_global_trees[OCTI_PROTO_CHAIN]
 #define implemented_classes	objc_global_trees[OCTI_IMPL_CHAIN]
@@ -431,5 +547,18 @@ extern GTY(()) tree objc_global_trees[OCTI_MAX];
 #define string_class_decl	objc_global_trees[OCTI_STRING_CLASS_DECL]
 #define internal_const_str_type	objc_global_trees[OCTI_INTERNAL_CNST_STR_TYPE]
 #define UOBJC_SUPER_decl	objc_global_trees[OCTI_SUPER_DECL]
+#define objc_fast_enumeration_state_template	\
+                                objc_global_trees[OCTI_FAST_ENUM_STATE_TEMP]
+#define objc_enumeration_mutation_decl		\
+                                objc_global_trees[OCTI_ENUM_MUTATION_DECL]
+
+/* Declarations of functions used when synthesizing property
+   accessors.  */
+#define objc_getProperty_decl       objc_global_trees[OCTI_GET_PROPERTY_DECL]
+#define objc_setProperty_decl       objc_global_trees[OCTI_SET_PROPERTY_DECL]
+#define objc_copyStruct_decl        objc_global_trees[OCTI_COPY_STRUCT_DECL]
+#define objc_getPropertyStruct_decl objc_global_trees[OCTI_GET_PROPERTY_STRUCT_DECL]
+#define objc_setPropertyStruct_decl objc_global_trees[OCTI_SET_PROPERTY_STRUCT_DECL]
+
 
 #endif /* GCC_OBJC_ACT_H */

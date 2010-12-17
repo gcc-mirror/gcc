@@ -30,10 +30,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "insn-config.h"
 #include "output.h"
+#include "basic-block.h"
 #include "flags.h"
 #include "tree.h"
 #include "function.h"
 #include "expr.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "recog.h"
 #include "ggc.h"
@@ -43,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "integrate.h"
 #include "target.h"
 #include "target-def.h"
+#include "df.h"
 
 /* First some local helper definitions.  */
 #define MMIX_FIRST_GLOBAL_REGNUM 32
@@ -111,6 +114,8 @@ rtx mmix_compare_op1;
 /* Intermediate for insn output.  */
 static int mmix_output_destination_register;
 
+static void mmix_option_override (void);
+static void mmix_asm_output_source_filename (FILE *, const char *);
 static void mmix_output_shiftvalue_op_from_str
   (FILE *, const char *, HOST_WIDEST_INT);
 static void mmix_output_shifted_value (FILE *, HOST_WIDEST_INT);
@@ -138,6 +143,14 @@ static rtx mmix_struct_value_rtx (tree, int);
 static enum machine_mode mmix_promote_function_mode (const_tree,
 						     enum machine_mode,
 	                                             int *, const_tree, int);
+static void mmix_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+				       const_tree, bool);
+static rtx mmix_function_arg_1 (const CUMULATIVE_ARGS *, enum machine_mode,
+				const_tree, bool, bool);
+static rtx mmix_function_incoming_arg (CUMULATIVE_ARGS *, enum machine_mode,
+				       const_tree, bool);
+static rtx mmix_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+			      const_tree, bool);
 static rtx mmix_function_value (const_tree, const_tree, bool);
 static rtx mmix_libcall_value (enum machine_mode, const_rtx);
 static bool mmix_function_value_regno_p (const unsigned int);
@@ -146,6 +159,16 @@ static bool mmix_pass_by_reference (CUMULATIVE_ARGS *,
 static bool mmix_frame_pointer_required (void);
 static void mmix_asm_trampoline_template (FILE *);
 static void mmix_trampoline_init (rtx, tree, rtx);
+static void mmix_conditional_register_usage (void);
+
+/* TARGET_OPTION_OPTIMIZATION_TABLE.  */
+
+static const struct default_options mmix_option_optimization_table[] =
+  {
+    { OPT_LEVELS_1_PLUS, OPT_fregmove, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
 
 /* Target structure macros.  Listed by node.  See `Using and Porting GCC'
    for a general description.  */
@@ -187,6 +210,11 @@ static void mmix_trampoline_init (rtx, tree, rtx);
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 #undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END mmix_file_end
+#undef TARGET_ASM_OUTPUT_SOURCE_FILENAME
+#define TARGET_ASM_OUTPUT_SOURCE_FILENAME mmix_asm_output_source_filename
+
+#undef TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE mmix_conditional_register_usage
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS mmix_rtx_costs
@@ -206,6 +234,12 @@ static void mmix_trampoline_init (rtx, tree, rtx);
 #undef TARGET_FUNCTION_VALUE_REGNO_P
 #define TARGET_FUNCTION_VALUE_REGNO_P mmix_function_value_regno_p
 
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG mmix_function_arg
+#undef TARGET_FUNCTION_INCOMING_ARG
+#define TARGET_FUNCTION_INCOMING_ARG mmix_function_incoming_arg
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE mmix_function_arg_advance
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX mmix_struct_value_rtx
 #undef TARGET_SETUP_INCOMING_VARARGS
@@ -228,15 +262,20 @@ static void mmix_trampoline_init (rtx, tree, rtx);
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT mmix_trampoline_init
 
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE mmix_option_override
+#undef TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE mmix_option_optimization_table
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Functions that are expansions for target macros.
    See Target Macros in `Using and Porting GCC'.  */
 
-/* OVERRIDE_OPTIONS.  */
+/* TARGET_OPTION_OVERRIDE.  */
 
-void
-mmix_override_options (void)
+static void
+mmix_option_override (void)
 {
   /* Should we err or should we warn?  Hmm.  At least we must neutralize
      it.  For example the wrong kind of case-tables will be generated with
@@ -293,8 +332,8 @@ mmix_constant_alignment (tree constant ATTRIBUTE_UNUSED, int basic_align)
 
 /* LOCAL_ALIGNMENT.  */
 
-int
-mmix_local_alignment (tree type ATTRIBUTE_UNUSED, int basic_align)
+unsigned
+mmix_local_alignment (tree type ATTRIBUTE_UNUSED, unsigned basic_align)
 {
   if (basic_align < 32)
     return 32;
@@ -302,9 +341,9 @@ mmix_local_alignment (tree type ATTRIBUTE_UNUSED, int basic_align)
   return basic_align;
 }
 
-/* CONDITIONAL_REGISTER_USAGE.  */
+/* TARGET_CONDITIONAL_REGISTER_USAGE.  */
 
-void
+static void
 mmix_conditional_register_usage (void)
 {
   int i;
@@ -345,9 +384,9 @@ mmix_conditional_register_usage (void)
    Those two macros must only be applied to function argument
    registers.  FIXME: for their current use in gcc, it'd be better
    with an explicit specific additional FUNCTION_INCOMING_ARG_REGNO_P
-   a'la FUNCTION_ARG / FUNCTION_INCOMING_ARG instead of forcing the
-   target to commit to a fixed mapping and for any unspecified
-   register use.  */
+   a'la TARGET_FUNCTION_ARG / TARGET_FUNCTION_INCOMING_ARG instead of
+   forcing the target to commit to a fixed mapping and for any
+   unspecified register use.  */
 
 int
 mmix_opposite_regno (int regno, int incoming)
@@ -598,15 +637,28 @@ mmix_initial_elimination_offset (int fromreg, int toreg)
     + (fromreg == MMIX_ARG_POINTER_REGNUM ? 0 : 8);
 }
 
-/* Return an rtx for a function argument to go in a register, and 0 for
-   one that must go on stack.  */
+static void
+mmix_function_arg_advance (CUMULATIVE_ARGS *argsp, enum machine_mode mode,
+			   const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  int arg_size = MMIX_FUNCTION_ARG_SIZE (mode, type);
 
-rtx
-mmix_function_arg (const CUMULATIVE_ARGS *argsp,
-		   enum machine_mode mode,
-		   tree type,
-		   int named ATTRIBUTE_UNUSED,
-		   int incoming)
+  argsp->regs = ((targetm.calls.must_pass_in_stack (mode, type)
+		  || (arg_size > 8
+		      && !TARGET_LIBFUNC
+		      && !argsp->lib))
+		 ? (MMIX_MAX_ARGS_IN_REGS) + 1
+		 : argsp->regs + (7 + arg_size) / 8);
+}
+
+/* Helper function for mmix_function_arg and mmix_function_incoming_arg.  */
+
+static rtx
+mmix_function_arg_1 (const CUMULATIVE_ARGS *argsp,
+		     enum machine_mode mode,
+		     const_tree type,
+		     bool named ATTRIBUTE_UNUSED,
+		     bool incoming)
 {
   /* Last-argument marker.  */
   if (type == void_type_node)
@@ -628,6 +680,27 @@ mmix_function_arg (const CUMULATIVE_ARGS *argsp,
 		    : MMIX_FIRST_ARG_REGNUM)
 		   + argsp->regs)
     : NULL_RTX;
+}
+
+/* Return an rtx for a function argument to go in a register, and 0 for
+   one that must go on stack.  */
+
+static rtx
+mmix_function_arg (CUMULATIVE_ARGS *argsp,
+		   enum machine_mode mode,
+		   const_tree type,
+		   bool named)
+{
+  return mmix_function_arg_1 (argsp, mode, type, named, false);
+}
+
+static rtx
+mmix_function_incoming_arg (CUMULATIVE_ARGS *argsp,
+			    enum machine_mode mode,
+			    const_tree type,
+			    bool named)
+{
+  return mmix_function_arg_1 (argsp, mode, type, named, true);
 }
 
 /* Returns nonzero for everything that goes by reference, 0 for
@@ -1243,9 +1316,9 @@ mmix_file_end (void)
   switch_to_section (data_section);
 }
 
-/* ASM_OUTPUT_SOURCE_FILENAME.  */
+/* TARGET_ASM_OUTPUT_SOURCE_FILENAME.  */
 
-void
+static void
 mmix_asm_output_source_filename (FILE *stream, const char *name)
 {
   fprintf (stream, "# 1 ");
@@ -1833,8 +1906,8 @@ mmix_asm_output_align (FILE *stream, int power)
 
 /* DBX_REGISTER_NUMBER.  */
 
-int
-mmix_dbx_register_number (int regno)
+unsigned
+mmix_dbx_register_number (unsigned regno)
 {
   /* Adjust the register number to the one it will be output as, dammit.
      It'd be nice if we could check the assumption that we're filling a
@@ -2042,14 +2115,12 @@ mmix_expand_prologue (void)
 							 offset)),
 			     tmpreg);
       RTX_FRAME_RELATED_P (insn) = 1;
-      REG_NOTES (insn)
-	= gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-			     gen_rtx_SET (VOIDmode,
-					  gen_rtx_MEM (DImode,
-						       plus_constant (stack_pointer_rtx,
-								      offset)),
-					  retreg),
-			     REG_NOTES (insn));
+      add_reg_note (insn, REG_FRAME_RELATED_EXPR,
+		    gen_rtx_SET (VOIDmode,
+				 gen_rtx_MEM (DImode,
+					      plus_constant (stack_pointer_rtx,
+							     offset)),
+				 retreg));
 
       offset -= 8;
     }

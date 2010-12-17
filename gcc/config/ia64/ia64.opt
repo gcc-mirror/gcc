@@ -1,4 +1,4 @@
-; Copyright (C) 2005, 2006, 2008 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2006, 2008, 2009, 2010 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -172,14 +172,10 @@ Soft limit on number of memory insns per instruction group, giving lower priorit
 
 msched-max-memory-insns-hard-limit
 Target Report Var(mflag_sched_mem_insns_hard_limit) Init(0)
-Disallow more than `msched-max-memory-insns' in instruction group. Otherwise, limit is `soft' (prefer non-memory operations when limit is reached)
+Disallow more than 'msched-max-memory-insns' in instruction group. Otherwise, limit is 'soft' (prefer non-memory operations when limit is reached)
 
 msel-sched-dont-check-control-spec
 Target Report Var(mflag_sel_sched_dont_check_control_spec) Init(0)
 Don't generate checks for control speculation in selective scheduling
-
-mfused-madd
-Target Report Mask(FUSED_MADD)
-Enable fused multiply/add and multiply/subtract instructions
 
 ; This comment is to ensure we retain the blank line above.

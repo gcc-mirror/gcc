@@ -823,13 +823,28 @@ package body Ada.Strings.Wide_Unbounded is
    procedure Find_Token
      (Source : Unbounded_Wide_String;
       Set    : Wide_Maps.Wide_Character_Set;
+      From   : Positive;
       Test   : Strings.Membership;
       First  : out Positive;
       Last   : out Natural)
    is
       SR : constant Shared_Wide_String_Access := Source.Reference;
    begin
-      Wide_Search.Find_Token (SR.Data (1 .. SR.Last), Set, Test, First, Last);
+      Wide_Search.Find_Token
+        (SR.Data (From .. SR.Last), Set, Test, First, Last);
+   end Find_Token;
+
+   procedure Find_Token
+     (Source : Unbounded_Wide_String;
+      Set    : Wide_Maps.Wide_Character_Set;
+      Test   : Strings.Membership;
+      First  : out Positive;
+      Last   : out Natural)
+   is
+      SR : constant Shared_Wide_String_Access := Source.Reference;
+   begin
+      Wide_Search.Find_Token
+        (SR.Data (1 .. SR.Last), Set, Test, First, Last);
    end Find_Token;
 
    ----------

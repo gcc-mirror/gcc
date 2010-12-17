@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-msse" } */
+/* { dg-require-effective-target sse } */
 
 #include "sse-check.h"
 

@@ -1,4 +1,4 @@
-/* DocumentAccessError.java -- 
+/* DocumentAccessError.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,12 +45,12 @@ import javax.print.attribute.TextSyntax;
 
 /**
  * DocumentAccessError attribute as described in RFC 2911 section
- * 3.1.6  Operation Response Status Codes and Status Message 
+ * 3.1.6  Operation Response Status Codes and Status Message
  * provides additional information for document access errors.
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class DocumentAccessError extends TextSyntax 
+public final class DocumentAccessError extends TextSyntax
   implements Attribute
 {
 
@@ -74,7 +74,7 @@ public final class DocumentAccessError extends TextSyntax
    *
    * @return The class <code>DocumentAccessError</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return DocumentAccessError.class;
   }

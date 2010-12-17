@@ -104,14 +104,6 @@ typedef struct stat gfstat_t;
 #define PATH_MAX 1024
 #endif
 
-#ifndef PROT_READ
-#define PROT_READ 1
-#endif
-
-#ifndef PROT_WRITE
-#define PROT_WRITE 2
-#endif
-
 /* These flags aren't defined on all targets (mingw32), so provide them
    here.  */
 #ifndef S_IRGRP
@@ -128,6 +120,46 @@ typedef struct stat gfstat_t;
 
 #ifndef S_IWOTH
 #define S_IWOTH 0
+#endif
+
+
+#ifndef HAVE_ACCESS
+
+#ifndef W_OK
+#define W_OK 2
+#endif
+
+#ifndef R_OK
+#define R_OK 4
+#endif
+
+#ifndef F_OK
+#define F_OK 0
+#endif
+
+/* Fallback implementation of access() on systems that don't have it.
+   Only modes R_OK, W_OK and F_OK are used in this file.  */
+
+static int
+fallback_access (const char *path, int mode)
+{
+  if ((mode & R_OK) && open (path, O_RDONLY) < 0)
+    return -1;
+
+  if ((mode & W_OK) && open (path, O_WRONLY) < 0)
+    return -1;
+
+  if (mode == F_OK)
+    {
+      gfstat_t st;
+      return stat (path, &st);
+    }
+
+  return 0;
+}
+
+#undef access
+#define access fallback_access
 #endif
 
 
@@ -149,10 +181,13 @@ typedef struct
 
   int active;			/* Length of valid bytes in the buffer */
 
-  int prot;
   int ndirty;			/* Dirty bytes starting at buffer_offset */
 
-  int special_file;		/* =1 if the fd refers to a special file */
+  int special_file;             /* =1 if the fd refers to a special file */
+
+  /* Cached stat(2) values.  */
+  dev_t st_dev;
+  ino_t st_ino;
 }
 unix_stream;
 
@@ -405,6 +440,10 @@ buf_flush (unix_stream * s)
   if (s->ndirty != 0)
     return -1;
 
+#ifdef _WIN32
+  _commit (s->fd);
+#endif
+
   return 0;
 }
 
@@ -594,7 +633,6 @@ buf_init (unix_stream * s)
 
 *********************************************************************/
 
-
 char *
 mem_alloc_r (stream * strm, int * len)
 {
@@ -612,6 +650,26 @@ mem_alloc_r (stream * strm, int * len)
   s->logical_offset = where + *len;
 
   return s->buffer + (where - s->buffer_offset);
+}
+
+
+char *
+mem_alloc_r4 (stream * strm, int * len)
+{
+  unix_stream * s = (unix_stream *) strm;
+  gfc_offset n;
+  gfc_offset where = s->logical_offset;
+
+  if (where < s->buffer_offset || where > s->buffer_offset + s->active)
+    return NULL;
+
+  n = s->buffer_offset + s->active - where;
+  if (*len > n)
+    *len = n;
+
+  s->logical_offset = where + *len;
+
+  return s->buffer + (where - s->buffer_offset) * 4;
 }
 
 
@@ -636,7 +694,28 @@ mem_alloc_w (stream * strm, int * len)
 }
 
 
-/* Stream read function for internal units.  */
+gfc_char4_t *
+mem_alloc_w4 (stream * strm, int * len)
+{
+  unix_stream * s = (unix_stream *) strm;
+  gfc_offset m;
+  gfc_offset where = s->logical_offset;
+  gfc_char4_t *result = (gfc_char4_t *) s->buffer;
+
+  m = where + *len;
+
+  if (where < s->buffer_offset)
+    return NULL;
+
+  if (m > s->file_length)
+    return NULL;
+
+  s->logical_offset = m;
+  return &result[where - s->buffer_offset];
+}
+
+
+/* Stream read function for character(kine=1) internal units.  */
 
 static ssize_t
 mem_read (stream * s, void * buf, ssize_t nbytes)
@@ -655,9 +734,26 @@ mem_read (stream * s, void * buf, ssize_t nbytes)
 }
 
 
-/* Stream write function for internal units. This is not actually used
-   at the moment, as all internal IO is formatted and the formatted IO
-   routines use mem_alloc_w_at.  */
+/* Stream read function for chracter(kind=4) internal units.  */
+
+static ssize_t
+mem_read4 (stream * s, void * buf, ssize_t nbytes)
+{
+  void *p;
+  int nb = nbytes;
+
+  p = mem_alloc_r (s, &nb);
+  if (p)
+    {
+      memcpy (buf, p, nb);
+      return (ssize_t) nb;
+    }
+  else
+    return 0;
+}
+
+
+/* Stream write function for character(kind=1) internal units.  */
 
 static ssize_t
 mem_write (stream * s, const void * buf, ssize_t nbytes)
@@ -670,6 +766,26 @@ mem_write (stream * s, const void * buf, ssize_t nbytes)
     {
       memcpy (p, buf, nb);
       return (ssize_t) nb;
+    }
+  else
+    return 0;
+}
+
+
+/* Stream write function for character(kind=4) internal units.  */
+
+static ssize_t
+mem_write4 (stream * s, const void * buf, ssize_t nwords)
+{
+  gfc_char4_t *p;
+  int nw = nwords;
+
+  p = mem_alloc_w4 (s, &nw);
+  if (p)
+    {
+      while (nw--)
+	*p++ = (gfc_char4_t) *((char *) buf);
+      return nwords;
     }
   else
     return 0;
@@ -750,16 +866,8 @@ mem_close (unix_stream * s)
   define functional equivalents of the following.
 *********************************************************************/
 
-/* empty_internal_buffer()-- Zero the buffer of Internal file */
-
-void
-empty_internal_buffer(stream *strm)
-{
-  unix_stream * s = (unix_stream *) strm;
-  memset(s->buffer, ' ', s->file_length);
-}
-
-/* open_internal()-- Returns a stream structure from an internal file */
+/* open_internal()-- Returns a stream structure from a character(kind=1)
+   internal file */
 
 stream *
 open_internal (char *base, int length, gfc_offset offset)
@@ -786,12 +894,40 @@ open_internal (char *base, int length, gfc_offset offset)
   return (stream *) s;
 }
 
+/* open_internal4()-- Returns a stream structure from a character(kind=4)
+   internal file */
+
+stream *
+open_internal4 (char *base, int length, gfc_offset offset)
+{
+  unix_stream *s;
+
+  s = get_mem (sizeof (unix_stream));
+  memset (s, '\0', sizeof (unix_stream));
+
+  s->buffer = base;
+  s->buffer_offset = offset;
+
+  s->logical_offset = 0;
+  s->active = s->file_length = length;
+
+  s->st.close = (void *) mem_close;
+  s->st.seek = (void *) mem_seek;
+  s->st.tell = (void *) mem_tell;
+  s->st.trunc = (void *) mem_truncate;
+  s->st.read = (void *) mem_read4;
+  s->st.write = (void *) mem_write4;
+  s->st.flush = (void *) mem_flush;
+
+  return (stream *) s;
+}
+
 
 /* fd_to_stream()-- Given an open file descriptor, build a stream
  * around it. */
 
 static stream *
-fd_to_stream (int fd, int prot)
+fd_to_stream (int fd)
 {
   gfstat_t statbuf;
   unix_stream *s;
@@ -803,24 +939,34 @@ fd_to_stream (int fd, int prot)
   s->buffer_offset = 0;
   s->physical_offset = 0;
   s->logical_offset = 0;
-  s->prot = prot;
 
   /* Get the current length of the file. */
 
   fstat (fd, &statbuf);
 
-  if (lseek (fd, 0, SEEK_CUR) == (gfc_offset) -1)
-    s->file_length = -1;
-  else
-    s->file_length = S_ISREG (statbuf.st_mode) ? statbuf.st_size : -1;
-
+  s->st_dev = statbuf.st_dev;
+  s->st_ino = statbuf.st_ino;
   s->special_file = !S_ISREG (statbuf.st_mode);
 
-  if (isatty (s->fd) || options.all_unbuffered
+  if (S_ISREG (statbuf.st_mode))
+    s->file_length = statbuf.st_size;
+  else if (S_ISBLK (statbuf.st_mode))
+    {
+      /* Hopefully more portable than ioctl(fd, BLKGETSIZE64, &size)?  */
+      gfc_offset cur = lseek (fd, 0, SEEK_CUR);
+      s->file_length = lseek (fd, 0, SEEK_END);
+      lseek (fd, cur, SEEK_SET);
+    }
+  else
+    s->file_length = -1;
+
+  if (!(S_ISREG (statbuf.st_mode) || S_ISBLK (statbuf.st_mode))
+      || options.all_unbuffered
       ||(options.unbuffered_preconnected && 
          (s->fd == STDIN_FILENO 
           || s->fd == STDOUT_FILENO 
-          || s->fd == STDERR_FILENO)))
+          || s->fd == STDERR_FILENO))
+      || isatty (s->fd))
     raw_init (s);
   else
     buf_init (s);
@@ -1103,7 +1249,7 @@ regular_file (st_parameter_open *opp, unit_flags *flags)
 stream *
 open_external (st_parameter_open *opp, unit_flags *flags)
 {
-  int fd, prot;
+  int fd;
 
   if (flags->status == STATUS_SCRATCH)
     {
@@ -1128,25 +1274,7 @@ open_external (st_parameter_open *opp, unit_flags *flags)
     return NULL;
   fd = fix_fd (fd);
 
-  switch (flags->action)
-    {
-    case ACTION_READ:
-      prot = PROT_READ;
-      break;
-
-    case ACTION_WRITE:
-      prot = PROT_WRITE;
-      break;
-
-    case ACTION_READWRITE:
-      prot = PROT_READ | PROT_WRITE;
-      break;
-
-    default:
-      internal_error (&opp->common, "open_external(): Bad action");
-    }
-
-  return fd_to_stream (fd, prot);
+  return fd_to_stream (fd);
 }
 
 
@@ -1156,7 +1284,7 @@ open_external (st_parameter_open *opp, unit_flags *flags)
 stream *
 input_stream (void)
 {
-  return fd_to_stream (STDIN_FILENO, PROT_READ);
+  return fd_to_stream (STDIN_FILENO);
 }
 
 
@@ -1172,7 +1300,7 @@ output_stream (void)
   setmode (STDOUT_FILENO, O_BINARY);
 #endif
 
-  s = fd_to_stream (STDOUT_FILENO, PROT_WRITE);
+  s = fd_to_stream (STDOUT_FILENO);
   return s;
 }
 
@@ -1189,7 +1317,7 @@ error_stream (void)
   setmode (STDERR_FILENO, O_BINARY);
 #endif
 
-  s = fd_to_stream (STDERR_FILENO, PROT_WRITE);
+  s = fd_to_stream (STDERR_FILENO);
   return s;
 }
 
@@ -1257,9 +1385,9 @@ int
 compare_file_filename (gfc_unit *u, const char *name, int len)
 {
   char path[PATH_MAX + 1];
-  gfstat_t st1;
+  gfstat_t st;
 #ifdef HAVE_WORKING_STAT
-  gfstat_t st2;
+  unix_stream *s;
 #else
 # ifdef __MINGW32__
   uint64_t id1, id2;
@@ -1272,12 +1400,12 @@ compare_file_filename (gfc_unit *u, const char *name, int len)
   /* If the filename doesn't exist, then there is no match with the
    * existing file. */
 
-  if (stat (path, &st1) < 0)
+  if (stat (path, &st) < 0)
     return 0;
 
 #ifdef HAVE_WORKING_STAT
-  fstat (((unix_stream *) (u->s))->fd, &st2);
-  return (st1.st_dev == st2.st_dev) && (st1.st_ino == st2.st_ino);
+  s = (unix_stream *) (u->s);
+  return (st.st_dev == s->st_dev) && (st.st_ino == s->st_ino);
 #else
 
 # ifdef __MINGW32__
@@ -1319,10 +1447,12 @@ find_file0 (gfc_unit *u, FIND_FILE0_DECL)
     return NULL;
 
 #ifdef HAVE_WORKING_STAT
-  if (u->s != NULL
-      && fstat (((unix_stream *) u->s)->fd, &st[1]) >= 0 &&
-      st[0].st_dev == st[1].st_dev && st[0].st_ino == st[1].st_ino)
-    return u;
+  if (u->s != NULL)
+    {
+      unix_stream *s = (unix_stream *) (u->s);
+      if (st[0].st_dev == s->st_dev && st[0].st_ino == s->st_ino)
+	return u;
+    }
 #else
 # ifdef __MINGW32__ 
   if (u->s && ((id1 = id_from_fd (((unix_stream *) u->s)->fd)) || id1))
@@ -1355,7 +1485,7 @@ gfc_unit *
 find_file (const char *file, gfc_charlen_type file_len)
 {
   char path[PATH_MAX + 1];
-  gfstat_t st[2];
+  gfstat_t st[1];
   gfc_unit *u;
 #if defined(__MINGW32__) && !HAVE_WORKING_STAT
   uint64_t id = 0ULL;
@@ -1492,15 +1622,11 @@ int
 file_exists (const char *file, gfc_charlen_type file_len)
 {
   char path[PATH_MAX + 1];
-  gfstat_t statbuf;
 
   if (unpack_filename (path, file, file_len))
     return 0;
 
-  if (stat (path, &statbuf) < 0)
-    return 0;
-
-  return 1;
+  return !(access (path, F_OK));
 }
 
 
@@ -1607,36 +1733,6 @@ inquire_unformatted (const char *string, int len)
 }
 
 
-#ifndef HAVE_ACCESS
-
-#ifndef W_OK
-#define W_OK 2
-#endif
-
-#ifndef R_OK
-#define R_OK 4
-#endif
-
-/* Fallback implementation of access() on systems that don't have it.
-   Only modes R_OK and W_OK are used in this file.  */
-
-static int
-fallback_access (const char *path, int mode)
-{
-  if ((mode & R_OK) && open (path, O_RDONLY) < 0)
-    return -1;
-
-  if ((mode & W_OK) && open (path, O_WRONLY) < 0)
-    return -1;
-
-  return 0;
-}
-
-#undef access
-#define access fallback_access
-#endif
-
-
 /* inquire_access()-- Given a fortran string, determine if the file is
  * suitable for access. */
 
@@ -1728,14 +1824,18 @@ stream_isatty (stream *s)
 }
 
 char *
+#ifdef HAVE_TTYNAME
+stream_ttyname (stream *s)
+{
+  return ttyname (((unix_stream *) s)->fd);
+}
+#else
 stream_ttyname (stream *s __attribute__ ((unused)))
 {
-#ifdef HAVE_TTYNAME
-  return ttyname (((unix_stream *) s)->fd);
-#else
   return NULL;
-#endif
 }
+#endif
+
 
 
 /* How files are stored:  This is an operating-system specific issue,

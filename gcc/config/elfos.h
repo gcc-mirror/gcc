@@ -65,10 +65,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define PCC_BITFIELD_TYPE_MATTERS 1
 #endif
 
-/* Handle #pragma weak and #pragma pack.  */
-
-#define HANDLE_SYSV_PRAGMA 1
-
 /* All ELF targets can support DWARF-2.  */
 
 #define DWARF2_DEBUGGING_INFO 1
@@ -282,7 +278,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
     {								\
       ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "function");	\
       ASM_DECLARE_RESULT (FILE, DECL_RESULT (DECL));		\
-      ASM_OUTPUT_LABEL (FILE, NAME);				\
+      ASM_OUTPUT_FUNCTION_LABEL (FILE, NAME, DECL);		\
     }								\
   while (0)
 #endif

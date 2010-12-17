@@ -5,9 +5,9 @@
 
 /* Test that the intrinsics compile with optimization.  All of them
    are defined as inline functions in {,x,e,p,t,s,w,a}mmintrin.h,
-   xopintrin.h, lwpintrin.h, popcntintrin.h and mm3dnow.h that
-   reference the proper builtin functions.  Defining away "extern" and
-   "__inline" results in all of them being compiled as proper
+   xopintrin.h, lwpintrin.h, tbmintrin.h, popcntintrin.h and mm3dnow.h
+   that reference the proper builtin functions.  Defining away "extern"
+   and "__inline" results in all of them being compiled as proper
    functions.  */
 
 #define extern
@@ -126,6 +126,8 @@
 #define __builtin_ia32_vinsertf128_si256(X, Y, C) __builtin_ia32_vinsertf128_si256(X, Y, 1)
 #define __builtin_ia32_roundpd256(V, M) __builtin_ia32_roundpd256(V, 1)
 #define __builtin_ia32_roundps256(V, M) __builtin_ia32_roundps256(V, 1)
+#define __builtin_ia32_vcvtps2ph(A, I) __builtin_ia32_vcvtps2ph(A, 1)
+#define __builtin_ia32_vcvtps2ph256(A, I) __builtin_ia32_vcvtps2ph256(A, 1)
 
 /* xopintrin.h */
 #define __builtin_ia32_vprotbi(A, B) __builtin_ia32_vprotbi(A,1)
@@ -139,7 +141,11 @@
 #define __builtin_ia32_lwpins32(D2, D1, F) __builtin_ia32_lwpins32 (D2, D1, 1)
 #define __builtin_ia32_lwpins64(D2, D1, F) __builtin_ia32_lwpins64 (D2, D1, 1)
 
-#pragma GCC target ("3dnow,sse4,sse4a,aes,pclmul,xop,abm,popcnt,lwp")
+/* tbmintrin.h */
+#define __builtin_ia32_bextri_u32(X, Y) __builtin_ia32_bextr_u32 (X, 1)
+#define __builtin_ia32_bextri_u64(X, Y) __builtin_ia32_bextr_u64 (X, 1)
+
+#pragma GCC target ("3dnow,sse4,sse4a,aes,pclmul,xop,abm,popcnt,lwp,tbm,fsgsbase,rdrnd,f16c")
 #include <wmmintrin.h>
 #include <smmintrin.h>
 #include <mm3dnow.h>

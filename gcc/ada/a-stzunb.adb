@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -513,6 +513,19 @@ package body Ada.Strings.Wide_Wide_Unbounded is
    ----------------
    -- Find_Token --
    ----------------
+
+   procedure Find_Token
+     (Source : Unbounded_Wide_Wide_String;
+      Set    : Wide_Wide_Maps.Wide_Wide_Character_Set;
+      From   : Positive;
+      Test   : Strings.Membership;
+      First  : out Positive;
+      Last   : out Natural)
+   is
+   begin
+      Wide_Wide_Search.Find_Token
+        (Source.Reference (From .. Source.Last), Set, Test, First, Last);
+   end Find_Token;
 
    procedure Find_Token
      (Source : Unbounded_Wide_Wide_String;

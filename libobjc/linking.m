@@ -23,17 +23,15 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-
+#include "objc-private/common.h"
 #include <objc/Object.h>
 #include <objc/NXConstStr.h>
 
-/* Generate references to Object and NXConstanstString classes since they are
-   needed by the runtime system to run correctly. */
-
+/* Generate references to Object class since it is needed by the
+   runtime system to run correctly.  */
 
 void __objc_linking (void)
 {
   [Object name];
-  [NXConstantString name];
 }
 

@@ -322,6 +322,9 @@ static struct demangle_component *
 d_make_name (struct d_info *, const char *, int);
 
 static struct demangle_component *
+d_make_demangle_mangled_name (struct d_info *, const char *);
+
+static struct demangle_component *
 d_make_builtin_type (struct d_info *,
                      const struct demangle_builtin_type_info *);
 
@@ -867,6 +870,17 @@ d_make_comp (struct d_info *di, enum demangle_component_type type,
       p->u.s_binary.right = right;
     }
   return p;
+}
+
+/* Add a new demangle mangled name component.  */
+
+static struct demangle_component *
+d_make_demangle_mangled_name (struct d_info *di, const char *s)
+{
+  if (d_peek_char (di) != '_' || d_peek_next_char (di) != 'Z')
+    return d_make_name (di, s, strlen (s));
+  d_advance (di, 2);
+  return d_encoding (di, 0);
 }
 
 /* Add a new name component.  */
@@ -3480,6 +3494,7 @@ d_find_pack (struct d_print_info *dpi,
     case DEMANGLE_COMPONENT_PACK_EXPANSION:
       return NULL;
       
+    case DEMANGLE_COMPONENT_LAMBDA:
     case DEMANGLE_COMPONENT_NAME:
     case DEMANGLE_COMPONENT_OPERATOR:
     case DEMANGLE_COMPONENT_BUILTIN_TYPE:
@@ -4545,20 +4560,17 @@ d_print_function_type (struct d_print_info *dpi,
                        struct d_print_mod *mods)
 {
   int need_paren;
-  int saw_mod;
   int need_space;
   struct d_print_mod *p;
   struct d_print_mod *hold_modifiers;
 
   need_paren = 0;
-  saw_mod = 0;
   need_space = 0;
   for (p = mods; p != NULL; p = p->next)
     {
       if (p->printed)
 	break;
 
-      saw_mod = 1;
       switch (p->mod->type)
 	{
 	case DEMANGLE_COMPONENT_POINTER:
@@ -4586,9 +4598,6 @@ d_print_function_type (struct d_print_info *dpi,
       if (need_paren)
 	break;
     }
-
-  if (d_left (dc) != NULL && ! saw_mod)
-    need_paren = 1;
 
   if (need_paren)
     {
@@ -4828,7 +4837,7 @@ d_demangle_callback (const char *mangled, int options,
 			  (type == DCT_GLOBAL_CTORS
 			   ? DEMANGLE_COMPONENT_GLOBAL_CONSTRUCTORS
 			   : DEMANGLE_COMPONENT_GLOBAL_DESTRUCTORS),
-			  d_make_name (&di, d_str (&di), strlen (d_str (&di))),
+			  d_make_demangle_mangled_name (&di, d_str (&di)),
 			  NULL);
 	d_advance (&di, strlen (d_str (&di)));
 	break;

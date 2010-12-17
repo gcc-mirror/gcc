@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "rtl.h"
 #include "tm_p.h"
 #include "hard-reg-set.h"
@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "insn-attr.h"
 #include "except.h"
-#include "toplev.h"
 #include "recog.h"
 #include "params.h"
 #include "target.h"
@@ -153,6 +152,7 @@ static void free_history_vect (VEC (expr_history_def, heap) **);
 
 static void move_bb_info (basic_block, basic_block);
 static void remove_empty_bb (basic_block, bool);
+static void sel_merge_blocks (basic_block, basic_block);
 static void sel_remove_loop_preheader (void);
 
 static bool insn_is_the_only_one_in_bb_p (insn_t);
@@ -687,7 +687,7 @@ merge_fences (fence_t f, insn_t insn,
 
       /* Find fallthrough edge.  */
       gcc_assert (BLOCK_FOR_INSN (insn)->prev_bb);
-      candidate = find_fallthru_edge (BLOCK_FOR_INSN (insn)->prev_bb);
+      candidate = find_fallthru_edge_from (BLOCK_FOR_INSN (insn)->prev_bb);
 
       if (!candidate
           || (candidate->src != BLOCK_FOR_INSN (last_scheduled_insn)
@@ -940,6 +940,7 @@ get_clear_regset_from_pool (void)
 void
 return_regset_to_pool (regset rs)
 {
+  gcc_assert (rs);
   regset_pool.diff--;
 
   if (regset_pool.n == regset_pool.s)
@@ -1173,6 +1174,9 @@ vinsn_init (vinsn_t vi, insn_t insn, bool force_unique_p)
   VINSN_COUNT (vi) = 0;
   vi->cost = -1;
 
+  if (INSN_NOP_P (insn))
+    return;
+
   if (DF_INSN_UID_SAFE_GET (INSN_UID (insn)) != NULL)
     init_id_from_df (VINSN_ID (vi), insn, force_unique_p);
   else
@@ -1254,9 +1258,12 @@ vinsn_delete (vinsn_t vi)
 {
   gcc_assert (VINSN_COUNT (vi) == 0);
 
-  return_regset_to_pool (VINSN_REG_SETS (vi));
-  return_regset_to_pool (VINSN_REG_USES (vi));
-  return_regset_to_pool (VINSN_REG_CLOBBERS (vi));
+  if (!INSN_NOP_P (VINSN_INSN_RTX (vi)))
+    {
+      return_regset_to_pool (VINSN_REG_SETS (vi));
+      return_regset_to_pool (VINSN_REG_USES (vi));
+      return_regset_to_pool (VINSN_REG_CLOBBERS (vi));
+    }
 
   free (vi);
 }
@@ -1593,7 +1600,7 @@ static void
 init_expr (expr_t expr, vinsn_t vi, int spec, int use, int priority,
 	   int sched_times, int orig_bb_index, ds_t spec_done_ds,
 	   ds_t spec_to_check_ds, int orig_sched_cycle,
-	   VEC(expr_history_def, heap) *history, bool target_available,
+	   VEC(expr_history_def, heap) *history, signed char target_available,
            bool was_substituted, bool was_renamed, bool needs_spec_check_p,
            bool cant_move)
 {
@@ -2860,18 +2867,38 @@ init_global_and_expr_for_insn (insn_t insn)
     bool force_unique_p;
     ds_t spec_done_ds;
 
-    /* Certain instructions cannot be cloned.  */
-    if (CANT_MOVE (insn)
-	|| INSN_ASM_P (insn)
-	|| SCHED_GROUP_P (insn)
-	|| prologue_epilogue_contains (insn)
-	/* Exception handling insns are always unique.  */
-	|| (cfun->can_throw_non_call_exceptions && can_throw_internal (insn))
-	/* TRAP_IF though have an INSN code is control_flow_insn_p ().  */
-	|| control_flow_insn_p (insn))
-      force_unique_p = true;
+    /* Certain instructions cannot be cloned, and frame related insns and
+       the insn adjacent to NOTE_INSN_EPILOGUE_BEG cannot be moved out of
+       their block.  */
+    if (prologue_epilogue_contains (insn))
+      {
+        if (RTX_FRAME_RELATED_P (insn))
+          CANT_MOVE (insn) = 1;
+        else
+          {
+            rtx note;
+            for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
+              if (REG_NOTE_KIND (note) == REG_SAVE_NOTE
+                  && ((enum insn_note) INTVAL (XEXP (note, 0))
+                      == NOTE_INSN_EPILOGUE_BEG))
+                {
+                  CANT_MOVE (insn) = 1;
+                  break;
+                }
+          }
+        force_unique_p = true;
+      }
     else
-      force_unique_p = false;
+      if (CANT_MOVE (insn)
+          || INSN_ASM_P (insn)
+          || SCHED_GROUP_P (insn)
+          /* Exception handling insns are always unique.  */
+          || (cfun->can_throw_non_call_exceptions && can_throw_internal (insn))
+          /* TRAP_IF though have an INSN code is control_flow_insn_p ().  */
+          || control_flow_insn_p (insn))
+        force_unique_p = true;
+      else
+        force_unique_p = false;
 
     if (targetm.sched.get_insn_spec_ds)
       {
@@ -3540,7 +3567,7 @@ sel_recompute_toporder (void)
 
 /* Tidy the possibly empty block BB.  */
 static bool
-maybe_tidy_empty_bb (basic_block bb, bool recompute_toporder_p)
+maybe_tidy_empty_bb (basic_block bb)
 {
   basic_block succ_bb, pred_bb;
   edge e;
@@ -3590,33 +3617,43 @@ maybe_tidy_empty_bb (basic_block bb, bool recompute_toporder_p)
 
           if (!(e->flags & EDGE_FALLTHRU))
             {
-              recompute_toporder_p |= sel_redirect_edge_and_branch (e, succ_bb);
+	      /* We can not invalidate computed topological order by moving
+	         the edge destination block (E->SUCC) along a fallthru edge.  */
+              sel_redirect_edge_and_branch (e, succ_bb);
               rescan_p = true;
               break;
             }
+	  /* If the edge is fallthru, but PRED_BB ends in a conditional jump
+	     to BB (so there is no non-fallthru edge from PRED_BB to BB), we
+	     still have to adjust it.  */
+	  else if (single_succ_p (pred_bb) && any_condjump_p (BB_END (pred_bb)))
+	    {
+	      /* If possible, try to remove the unneeded conditional jump.  */
+	      if (INSN_SCHED_TIMES (BB_END (pred_bb)) == 0
+		  && !IN_CURRENT_FENCE_P (BB_END (pred_bb)))
+		{
+		  if (!sel_remove_insn (BB_END (pred_bb), false, false))
+		    tidy_fallthru_edge (e);
+		}
+	      else
+		sel_redirect_edge_and_branch (e, succ_bb);
+	      rescan_p = true;
+	      break;
+	    }
         }
     }
 
-  /* If it is possible - merge BB with its predecessor.  */
   if (can_merge_blocks_p (bb->prev_bb, bb))
     sel_merge_blocks (bb->prev_bb, bb);
   else
-    /* Otherwise this is a block without fallthru predecessor.
-       Just delete it.  */
     {
+      /* This is a block without fallthru predecessor.  Just delete it.  */
       gcc_assert (pred_bb != NULL);
 
       if (in_current_region_p (pred_bb))
 	move_bb_info (pred_bb, bb);
       remove_empty_bb (bb, true);
     }
-
-  if (recompute_toporder_p)
-    sel_recompute_toporder ();
-
-#ifdef ENABLE_CHECKING
-  verify_backedges ();
-#endif
 
   return true;
 }
@@ -3631,7 +3668,7 @@ tidy_control_flow (basic_block xbb, bool full_tidying)
   insn_t first, last;
 
   /* First check whether XBB is empty.  */
-  changed = maybe_tidy_empty_bb (xbb, false);
+  changed = maybe_tidy_empty_bb (xbb);
   if (changed || !full_tidying)
     return changed;
 
@@ -3695,10 +3732,14 @@ tidy_control_flow (basic_block xbb, bool full_tidying)
          that contained that jump, becomes empty too.  In such case
          remove it too.  */
       if (sel_bb_empty_p (xbb->prev_bb))
-        changed = maybe_tidy_empty_bb (xbb->prev_bb, recompute_toporder_p);
-      else if (recompute_toporder_p)
+        changed = maybe_tidy_empty_bb (xbb->prev_bb);
+      if (recompute_toporder_p)
 	sel_recompute_toporder ();
     }
+
+#ifdef ENABLE_CHECKING
+  verify_backedges ();
+#endif
 
   return changed;
 }
@@ -3714,7 +3755,7 @@ purge_empty_blocks (void)
     {
       basic_block b = BASIC_BLOCK (BB_TO_BLOCK (i));
 
-      if (maybe_tidy_empty_bb (b, false))
+      if (maybe_tidy_empty_bb (b))
 	continue;
 
       i++;
@@ -4325,7 +4366,7 @@ sel_bb_head (basic_block bb)
       note = bb_note (bb);
       head = next_nonnote_insn (note);
 
-      if (head && BLOCK_FOR_INSN (head) != bb)
+      if (head && (BARRIER_P (head) || BLOCK_FOR_INSN (head) != bb))
 	head = NULL_RTX;
     }
 
@@ -4579,8 +4620,12 @@ cfg_preds_1 (basic_block bb, insn_t **preds, int *n, int *size)
       basic_block pred_bb = e->src;
       insn_t bb_end = BB_END (pred_bb);
 
-      /* ??? This code is not supposed to walk out of a region.  */
-      gcc_assert (in_current_region_p (pred_bb));
+      if (!in_current_region_p (pred_bb))
+	{
+	  gcc_assert (flag_sel_sched_pipelining_outer_loops
+		      && current_loop_nest);
+	  continue;
+	}
 
       if (sel_bb_empty_p (pred_bb))
 	cfg_preds_1 (pred_bb, preds, n, size);
@@ -4593,7 +4638,9 @@ cfg_preds_1 (basic_block bb, insn_t **preds, int *n, int *size)
 	}
     }
 
-  gcc_assert (*n != 0);
+  gcc_assert (*n != 0
+	      || (flag_sel_sched_pipelining_outer_loops
+		  && current_loop_nest));
 }
 
 /* Find all predecessors of BB and record them in PREDS and their number
@@ -4642,7 +4689,6 @@ bb_ends_ebb_p (basic_block bb)
 {
   basic_block next_bb = bb_next_bb (bb);
   edge e;
-  edge_iterator ei;
 
   if (next_bb == EXIT_BLOCK_PTR
       || bitmap_bit_p (forced_ebb_heads, next_bb->index)
@@ -4655,13 +4701,13 @@ bb_ends_ebb_p (basic_block bb)
   if (!in_current_region_p (next_bb))
     return true;
 
-  FOR_EACH_EDGE (e, ei, bb->succs)
-    if ((e->flags & EDGE_FALLTHRU) != 0)
-      {
-	gcc_assert (e->dest == next_bb);
-
-	return false;
-      }
+  e = find_fallthru_edge (bb->succs);
+  if (e)
+    {
+      gcc_assert (e->dest == next_bb);
+      
+      return false;
+    }
 
   return true;
 }
@@ -5019,16 +5065,18 @@ sel_add_bb (basic_block bb)
 static void
 sel_remove_bb (basic_block bb, bool remove_from_cfg_p)
 {
+  unsigned idx = bb->index;
+
   gcc_assert (bb != NULL && BB_NOTE_LIST (bb) == NULL_RTX);
 
   remove_bb_from_region (bb);
   return_bb_to_pool (bb);
-  bitmap_clear_bit (blocks_to_reschedule, bb->index);
+  bitmap_clear_bit (blocks_to_reschedule, idx);
 
   if (remove_from_cfg_p)
     delete_and_free_basic_block (bb);
 
-  rgn_setup_region (CONTAINING_RGN (bb->index));
+  rgn_setup_region (CONTAINING_RGN (idx));
 }
 
 /* Concatenate info of EMPTY_BB to info of MERGE_BB.  */
@@ -5041,50 +5089,6 @@ move_bb_info (basic_block merge_bb, basic_block empty_bb)
 		     &BB_NOTE_LIST (merge_bb));
   BB_NOTE_LIST (empty_bb) = NULL_RTX;
 
-}
-
-/* Remove an empty basic block EMPTY_BB.  When MERGE_UP_P is true, we put
-   EMPTY_BB's note lists into its predecessor instead of putting them
-   into the successor.  When REMOVE_FROM_CFG_P is true, also remove
-   the empty block.  */
-void
-sel_remove_empty_bb (basic_block empty_bb, bool merge_up_p,
-		     bool remove_from_cfg_p)
-{
-  basic_block merge_bb;
-
-  gcc_assert (sel_bb_empty_p (empty_bb));
-
-  if (merge_up_p)
-    {
-      merge_bb = empty_bb->prev_bb;
-      gcc_assert (EDGE_COUNT (empty_bb->preds) == 1
-		  && EDGE_PRED (empty_bb, 0)->src == merge_bb);
-    }
-  else
-    {
-      edge e;
-      edge_iterator ei;
-
-      merge_bb = bb_next_bb (empty_bb);
-
-      /* Redirect incoming edges (except fallthrough one) of EMPTY_BB to its
-         successor block.  */
-      for (ei = ei_start (empty_bb->preds);
-           (e = ei_safe_edge (ei)); )
-        {
-          if (! (e->flags & EDGE_FALLTHRU))
-            sel_redirect_edge_and_branch (e, merge_bb);
-          else
-            ei_next (&ei);
-        }
-
-      gcc_assert (EDGE_COUNT (empty_bb->succs) == 1
-		  && EDGE_SUCC (empty_bb, 0)->dest == merge_bb);
-    }
-
-  move_bb_info (merge_bb, empty_bb);
-  remove_empty_bb (empty_bb, remove_from_cfg_p);
 }
 
 /* Remove EMPTY_BB.  If REMOVE_FROM_CFG_P is false, remove EMPTY_BB from
@@ -5386,12 +5390,16 @@ sel_create_recovery_block (insn_t orig_insn)
 }
 
 /* Merge basic block B into basic block A.  */
-void
+static void
 sel_merge_blocks (basic_block a, basic_block b)
 {
-  sel_remove_empty_bb (b, true, false);
-  merge_blocks (a, b);
+  gcc_assert (sel_bb_empty_p (b)
+              && EDGE_COUNT (b->preds) == 1
+              && EDGE_PRED (b, 0)->src == b->prev_bb);
 
+  move_bb_info (b->prev_bb, b);
+  remove_empty_bb (b, false);
+  merge_blocks (a, b);
   change_loops_latches (b, a);
 }
 
@@ -5604,7 +5612,7 @@ setup_nop_and_exit_insns (void)
   gcc_assert (nop_pattern == NULL_RTX
 	      && exit_insn == NULL_RTX);
 
-  nop_pattern = gen_nop ();
+  nop_pattern = constm1_rtx;
 
   start_sequence ();
   emit_insn (nop_pattern);
@@ -5821,7 +5829,7 @@ make_region_from_loop_preheader (VEC(basic_block, heap) **loop_blocks)
 
   new_rgn_number = sel_create_new_region ();
 
-  for (i = 0; VEC_iterate (basic_block, *loop_blocks, i, bb); i++)
+  FOR_EACH_VEC_ELT (basic_block, *loop_blocks, i, bb)
     {
       gcc_assert (new_rgn_number >= 0);
 
@@ -6166,7 +6174,7 @@ sel_remove_loop_preheader (void)
         {
           /* If all preheader blocks are empty - dont create new empty region.
              Instead, remove them completely.  */
-          for (i = 0; VEC_iterate (basic_block, preheader_blocks, i, bb); i++)
+          FOR_EACH_VEC_ELT (basic_block, preheader_blocks, i, bb)
             {
               edge e;
               edge_iterator ei;

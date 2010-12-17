@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // 2007-06-05 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,7 +18,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <cstring>
+#include <string>
 #include <system_error>
 #include <testsuite_hooks.h>
 
@@ -33,14 +33,14 @@ int main()
   {
     std::system_error err1(e, s);
     VERIFY( err1.code() == e ); 
-    VERIFY( std::strcmp(err1.runtime_error::what(), s.c_str()) == 0 );
+    VERIFY( std::string(err1.what()).find(s) != std::string::npos );
   }
 
   // 2
   {
     std::system_error err2(95, std::system_category(), s);
     VERIFY( err2.code() == std::error_code(95, std::system_category()) ); 
-    VERIFY( std::strcmp(err2.runtime_error::what(), s.c_str()) == 0 );
+    VERIFY( std::string((err2.what(), s)).find(s) != std::string::npos );
   }
 
   return 0;

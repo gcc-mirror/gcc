@@ -35,7 +35,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "jcf.h"
 #include "java-except.h"
 #include "parse.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "ggc.h"
 #include "tree-iterator.h"
 #include "target.h"
@@ -1633,7 +1633,7 @@ lookup_field (tree *typep, tree name)
       tree save_field;
       int i;
 
-      for (field = TYPE_FIELDS (*typep); field; field = TREE_CHAIN (field))
+      for (field = TYPE_FIELDS (*typep); field; field = DECL_CHAIN (field))
 	if (DECL_NAME (field) == name)
 	  return field;
 
@@ -1762,7 +1762,8 @@ lookup_label (int pc)
   char buf[32];
   if (pc > highest_label_pc_this_method)
     highest_label_pc_this_method = pc;
-  ASM_GENERATE_INTERNAL_LABEL(buf, "LJpc=", start_label_pc_this_method + pc);
+  targetm.asm_out.generate_internal_label (buf, "LJpc=",
+					   start_label_pc_this_method + pc);
   name = get_identifier (buf);
   if (IDENTIFIER_LOCAL_VALUE (name))
     return IDENTIFIER_LOCAL_VALUE (name);
@@ -1782,7 +1783,7 @@ generate_name (void)
 {
   static int l_number = 0;
   char buff [32];
-  ASM_GENERATE_INTERNAL_LABEL(buff, "LJv", l_number);
+  targetm.asm_out.generate_internal_label (buff, "LJv", l_number);
   l_number++;
   return get_identifier (buff);
 }
@@ -1951,7 +1952,7 @@ attach_init_test_initialization_flags (void **entry, void *ptr)
       if (TREE_CODE (block) == BIND_EXPR)
         {
 	  tree body = BIND_EXPR_BODY (block);
-	  TREE_CHAIN (ite->value) = BIND_EXPR_VARS (block);
+	  DECL_CHAIN (ite->value) = BIND_EXPR_VARS (block);
 	  BIND_EXPR_VARS (block) = ite->value;
 	  body = build2 (COMPOUND_EXPR, void_type_node,
 			 build1 (DECL_EXPR, void_type_node, ite->value), body);
@@ -2238,7 +2239,7 @@ build_known_method_ref (tree method, tree method_type ATTRIBUTE_UNUSED,
 		    lookup_field (&class_type_node, methods_ident),
 		    NULL_TREE);
       for (meth = TYPE_METHODS (self_type);
-	   ; meth = TREE_CHAIN (meth))
+	   ; meth = DECL_CHAIN (meth))
 	{
 	  if (method == meth)
 	    break;
@@ -2295,7 +2296,7 @@ get_symbol_table_index (tree t, tree special,
   method_entry *e;
   unsigned i;
 
-  for (i = 0; VEC_iterate (method_entry, *symbol_table, i, e); i++)
+  FOR_EACH_VEC_ELT (method_entry, *symbol_table, i, e)
     if (t == e->method && special == e->special)
       goto done;
 
@@ -2642,7 +2643,7 @@ build_jni_stub (tree method)
       res_var = build_decl (input_location, VAR_DECL, get_identifier ("res"),
 			    TREE_TYPE (TREE_TYPE (method)));
       DECL_CONTEXT (res_var) = method;
-      TREE_CHAIN (env_var) = res_var;
+      DECL_CHAIN (env_var) = res_var;
     }
 
   method_args = DECL_ARGUMENTS (method);
@@ -2672,7 +2673,7 @@ build_jni_stub (tree method)
   /* All the arguments to this method become arguments to the
      underlying JNI function.  If we had to wrap object arguments in a
      special way, we would do that here.  */
-  for (tem = method_args; tem != NULL_TREE; tem = TREE_CHAIN (tem))
+  for (tem = method_args; tem != NULL_TREE; tem = DECL_CHAIN (tem))
     {
       int arg_bits = TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (tem)));
 #ifdef PARM_BOUNDARY
@@ -2918,7 +2919,7 @@ expand_java_field_op (int is_static, int is_putting, int field_ref_index)
       if (FIELD_FINAL (field_decl))
 	{
 	  if (DECL_CONTEXT (field_decl) != current_class)
-            error ("assignment to final field %q+D not in field's class",
+            error ("assignment to final field %q+D not in field%'s class",
                    field_decl);
 	  /* We used to check for assignments to final fields not
 	     occurring in the class initializer or in a constructor
@@ -3778,7 +3779,7 @@ promote_arguments (void)
   int i;
   tree arg;
   for (arg = DECL_ARGUMENTS (current_function_decl), i = 0;
-       arg != NULL_TREE;  arg = TREE_CHAIN (arg), i++)
+       arg != NULL_TREE;  arg = DECL_CHAIN (arg), i++)
     {
       tree arg_type = TREE_TYPE (arg);
       if (INTEGRAL_TYPE_P (arg_type)

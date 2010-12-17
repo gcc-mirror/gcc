@@ -27,29 +27,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "ggc.h"
 #include "ggc-internal.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "params.h"
 #include "hosthooks.h"
 #include "hosthooks-def.h"
 #include "plugin.h"
 #include "vec.h"
 #include "timevar.h"
-
-#ifdef HAVE_SYS_RESOURCE_H
-# include <sys/resource.h>
-#endif
-
-#ifdef HAVE_MMAP_FILE
-# include <sys/mman.h>
-# ifdef HAVE_MINCORE
-/* This is on Solaris.  */
-#  include <sys/types.h>
-# endif
-#endif
-
-#ifndef MAP_FAILED
-# define MAP_FAILED ((void *)-1)
-#endif
 
 /* When set, ggc_collect will do collection.  */
 bool ggc_force_collect;
@@ -146,14 +130,25 @@ ggc_scan_cache_tab (const_ggc_cache_tab_t ctp)
       }
 }
 
+/* Mark all the roots in the table RT.  */
+
+static void
+ggc_mark_root_tab (const_ggc_root_tab_t rt)
+{
+  size_t i;
+
+  for ( ; rt->base != NULL; rt++)
+    for (i = 0; i < rt->nelt; i++)
+      (*rt->cb) (*(void **) ((char *)rt->base + rt->stride * i));
+}
+
 /* Iterate through all registered roots and mark each element.  */
 
 void
 ggc_mark_roots (void)
 {
   const struct ggc_root_tab *const *rt;
-  const struct ggc_root_tab *rti;
-  const_ggc_root_tab_t rtp;
+  const_ggc_root_tab_t rtp, rti;
   const struct ggc_cache_tab *const *ct;
   const_ggc_cache_tab_t ctp;
   size_t i;
@@ -163,16 +158,10 @@ ggc_mark_roots (void)
       memset (rti->base, 0, rti->stride);
 
   for (rt = gt_ggc_rtab; *rt; rt++)
-    for (rti = *rt; rti->base != NULL; rti++)
-      for (i = 0; i < rti->nelt; i++)
-	(*rti->cb) (*(void **)((char *)rti->base + rti->stride * i));
+    ggc_mark_root_tab (*rt);
 
-  for (i = 0; VEC_iterate (const_ggc_root_tab_t, extra_root_vec, i, rtp); i++)
-    {
-      for (rti = rtp; rti->base != NULL; rti++)
-        for (i = 0; i < rti->nelt; i++)
-          (*rti->cb) (*(void **) ((char *)rti->base + rti->stride * i));
-    }
+  FOR_EACH_VEC_ELT (const_ggc_root_tab_t, extra_root_vec, i, rtp)
+    ggc_mark_root_tab (rtp);
 
   if (ggc_protect_identifiers)
     ggc_mark_stringpool ();
@@ -182,7 +171,7 @@ ggc_mark_roots (void)
   for (ct = gt_ggc_cache_rtab; *ct; ct++)
     ggc_scan_cache_tab (*ct);
 
-  for (i = 0; VEC_iterate (const_ggc_cache_tab_t, extra_cache_vec, i, ctp); i++)
+  FOR_EACH_VEC_ELT (const_ggc_cache_tab_t, extra_cache_vec, i, ctp)
     ggc_scan_cache_tab (ctp);
 
   if (! ggc_protect_identifiers)
@@ -475,7 +464,7 @@ write_pch_globals (const struct ggc_root_tab * const *tab,
 	    {
 	      if (fwrite (&ptr, sizeof (void *), 1, state->f)
 		  != 1)
-		fatal_error ("can't write PCH file: %m");
+		fatal_error ("can%'t write PCH file: %m");
 	    }
 	  else
 	    {
@@ -483,7 +472,7 @@ write_pch_globals (const struct ggc_root_tab * const *tab,
 		htab_find_with_hash (saving_htab, ptr, POINTER_HASH (ptr));
 	      if (fwrite (&new_ptr->new_addr, sizeof (void *), 1, state->f)
 		  != 1)
-		fatal_error ("can't write PCH file: %m");
+		fatal_error ("can%'t write PCH file: %m");
 	    }
 	}
 }
@@ -557,7 +546,7 @@ gt_pch_save (FILE *f)
   for (rt = gt_pch_scalar_rtab; *rt; rt++)
     for (rti = *rt; rti->base != NULL; rti++)
       if (fwrite (rti->base, rti->stride, 1, f) != 1)
-	fatal_error ("can't write PCH file: %m");
+	fatal_error ("can%'t write PCH file: %m");
 
   /* Write out all the global pointers, after translation.  */
   write_pch_globals (gt_ggc_rtab, &state);
@@ -569,17 +558,17 @@ gt_pch_save (FILE *f)
     long o;
     o = ftell (state.f) + sizeof (mmi);
     if (o == -1)
-      fatal_error ("can't get position in PCH file: %m");
+      fatal_error ("can%'t get position in PCH file: %m");
     mmi.offset = mmap_offset_alignment - o % mmap_offset_alignment;
     if (mmi.offset == mmap_offset_alignment)
       mmi.offset = 0;
     mmi.offset += o;
   }
   if (fwrite (&mmi, sizeof (mmi), 1, state.f) != 1)
-    fatal_error ("can't write PCH file: %m");
+    fatal_error ("can%'t write PCH file: %m");
   if (mmi.offset != 0
       && fseek (state.f, mmi.offset, SEEK_SET) != 0)
-    fatal_error ("can't write padding to PCH file: %m");
+    fatal_error ("can%'t write padding to PCH file: %m");
 
   ggc_pch_prepare_write (state.d, state.f);
 
@@ -634,7 +623,7 @@ gt_pch_restore (FILE *f)
   for (rt = gt_pch_scalar_rtab; *rt; rt++)
     for (rti = *rt; rti->base != NULL; rti++)
       if (fread (rti->base, rti->stride, 1, f) != 1)
-	fatal_error ("can't read PCH file: %m");
+	fatal_error ("can%'t read PCH file: %m");
 
   /* Read in all the global pointers, in 6 easy loops.  */
   for (rt = gt_ggc_rtab; *rt; rt++)
@@ -642,17 +631,17 @@ gt_pch_restore (FILE *f)
       for (i = 0; i < rti->nelt; i++)
 	if (fread ((char *)rti->base + rti->stride * i,
 		   sizeof (void *), 1, f) != 1)
-	  fatal_error ("can't read PCH file: %m");
+	  fatal_error ("can%'t read PCH file: %m");
 
   for (rt = gt_pch_cache_rtab; *rt; rt++)
     for (rti = *rt; rti->base != NULL; rti++)
       for (i = 0; i < rti->nelt; i++)
 	if (fread ((char *)rti->base + rti->stride * i,
 		   sizeof (void *), 1, f) != 1)
-	  fatal_error ("can't read PCH file: %m");
+	  fatal_error ("can%'t read PCH file: %m");
 
   if (fread (&mmi, sizeof (mmi), 1, f) != 1)
-    fatal_error ("can't read PCH file: %m");
+    fatal_error ("can%'t read PCH file: %m");
 
   result = host_hooks.gt_pch_use_address (mmi.preferred_base, mmi.size,
 					  fileno (f), mmi.offset);
@@ -662,10 +651,10 @@ gt_pch_restore (FILE *f)
     {
       if (fseek (f, mmi.offset, SEEK_SET) != 0
 	  || fread (mmi.preferred_base, mmi.size, 1, f) != 1)
-	fatal_error ("can't read PCH file: %m");
+	fatal_error ("can%'t read PCH file: %m");
     }
   else if (fseek (f, mmi.offset + mmi.size, SEEK_SET) != 0)
-    fatal_error ("can't read PCH file: %m");
+    fatal_error ("can%'t read PCH file: %m");
 
   ggc_pch_read (f, mmi.preferred_base);
 
@@ -851,8 +840,8 @@ void
 init_ggc_heuristics (void)
 {
 #if !defined ENABLE_GC_CHECKING && !defined ENABLE_GC_ALWAYS_COLLECT
-  set_param_value ("ggc-min-expand", ggc_min_expand_heuristic ());
-  set_param_value ("ggc-min-heapsize", ggc_min_heapsize_heuristic ());
+  set_default_param_value (GGC_MIN_EXPAND, ggc_min_expand_heuristic ());
+  set_default_param_value (GGC_MIN_HEAPSIZE, ggc_min_heapsize_heuristic ());
 #endif
 }
 

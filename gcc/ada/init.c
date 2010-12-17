@@ -86,6 +86,7 @@ extern void Raise_From_Signal_Handler (struct Exception_Data *, const char *);
 
 /* Global values computed by the binder.  */
 int   __gl_main_priority                 = -1;
+int   __gl_main_cpu                      = -1;
 int   __gl_time_slice_val                = -1;
 char  __gl_wc_encoding                   = 'n';
 char  __gl_locking_policy                = ' ';
@@ -1050,10 +1051,8 @@ __gnat_install_handler (void)
 #elif defined (VMS)
 
 /* Routine called from binder to override default feature values. */
-void __gnat_set_features ();
+void __gnat_set_features (void);
 int __gnat_features_set = 0;
-
-long __gnat_error_handler (int *, void *);
 
 #ifdef __IA64
 #define lib_get_curr_invo_context LIB$I64_GET_CURR_INVO_CONTEXT
@@ -1063,15 +1062,6 @@ long __gnat_error_handler (int *, void *);
 #define lib_get_curr_invo_context LIB$GET_CURR_INVO_CONTEXT
 #define lib_get_prev_invo_context LIB$GET_PREV_INVO_CONTEXT
 #define lib_get_invo_handle LIB$GET_INVO_HANDLE
-#endif
-
-#if defined (IN_RTS) && !defined (__IA64)
-
-/* The prehandler actually gets control first on a condition.  It swaps the
-   stack pointer and calls the handler (__gnat_error_handler).  */
-extern long __gnat_error_prehandler (void);
-
-extern char *__gnat_error_prehandler_stack;   /* Alternate signal stack */
 #endif
 
 /* Define macro symbols for the VMS conditions that become Ada exceptions.
@@ -1105,7 +1095,10 @@ struct cond_except {
   const struct Exception_Data *except;
 };
 
-struct descriptor_s {unsigned short len, mbz; __char_ptr32 adr; };
+struct descriptor_s {
+  unsigned short len, mbz;
+  __char_ptr32 adr;
+};
 
 /* Conditions that don't have an Ada exception counterpart must raise
    Non_Ada_Error.  Since this is defined in s-auxdec, it should only be
@@ -1262,7 +1255,7 @@ static const struct cond_except cond_except_table [] = {
 typedef int
 resignal_predicate (int code);
 
-const int *cond_resignal_table [] = {
+static const int * const cond_resignal_table [] = {
   &C$_SIGKILL,
   &CMA$_EXIT_THREAD,
   &SS$_DEBUG,
@@ -1273,7 +1266,7 @@ const int *cond_resignal_table [] = {
   0
 };
 
-const int facility_resignal_table [] = {
+static const int facility_resignal_table [] = {
   0x1380000, /* RDB */
   0x2220000, /* SQL */
   0
@@ -1301,15 +1294,15 @@ __gnat_default_resignal_p (int code)
 /* Static pointer to predicate that the __gnat_error_handler exception
    vector invokes to determine if it should resignal a condition.  */
 
-static resignal_predicate * __gnat_resignal_p = __gnat_default_resignal_p;
+static resignal_predicate *__gnat_resignal_p = __gnat_default_resignal_p;
 
 /* User interface to change the predicate pointer to PREDICATE. Reset to
    the default if PREDICATE is null.  */
 
 void
-__gnat_set_resignal_predicate (resignal_predicate * predicate)
+__gnat_set_resignal_predicate (resignal_predicate *predicate)
 {
-  if (predicate == 0)
+  if (predicate == NULL)
     __gnat_resignal_p = __gnat_default_resignal_p;
   else
     __gnat_resignal_p = predicate;
@@ -1323,9 +1316,7 @@ __gnat_set_resignal_predicate (resignal_predicate * predicate)
    and separated by line termination.  */
 
 static int
-copy_msg (msgdesc, message)
-     struct descriptor_s *msgdesc;
-     char *message;
+copy_msg (struct descriptor_s *msgdesc, char *message)
 {
   int len = strlen (message);
   int copy_len;
@@ -1352,7 +1343,7 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 {
   struct Exception_Data *exception = 0;
   Exception_Code base_code;
-  struct descriptor_s gnat_facility = {4,0,"GNAT"};
+  struct descriptor_s gnat_facility = {4, 0, "GNAT"};
   char message [Default_Exception_Msg_Max_Length];
 
   const char *msg = "";
@@ -1365,17 +1356,17 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 #ifdef IN_RTS
   /* See if it's an imported exception.  Beware that registered exceptions
      are bound to their base code, with the severity bits masked off.  */
-  base_code = Base_Code_In ((Exception_Code) sigargs [1]);
+  base_code = Base_Code_In ((Exception_Code) sigargs[1]);
   exception = Coded_Exception (base_code);
 
   if (exception)
     {
-      message [0] = 0;
+      message[0] = 0;
 
       /* Subtract PC & PSL fields which messes with PUTMSG.  */
-      sigargs [0] -= 2;
+      sigargs[0] -= 2;
       SYS$PUTMSG (sigargs, copy_msg, &gnat_facility, message);
-      sigargs [0] += 2;
+      sigargs[0] += 2;
       msg = message;
 
       exception->Name_Length = 19;
@@ -1405,13 +1396,13 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 	    exception = &storage_error;
 	    msg = "stack overflow (or erroneous memory access)";
 	  }
-	__gnat_adjust_context_for_raise (0, (void *)mechargs);
+	__gnat_adjust_context_for_raise (SS$_ACCVIO, (void *)mechargs);
 	break;
 
       case SS$_STKOVF:
 	exception = &storage_error;
 	msg = "stack overflow";
-	__gnat_adjust_context_for_raise (0, (void *)mechargs);
+	__gnat_adjust_context_for_raise (SS$_STKOVF, (void *)mechargs);
 	break;
 
       case SS$_HPARITH:
@@ -1420,11 +1411,7 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 #else
 	exception = &constraint_error;
 	msg = "arithmetic error";
-#ifndef __alpha__
-	/* No need to adjust pc on Alpha: the pc is already on the instruction
-	   after the trapping one.  */
-	__gnat_adjust_context_for_raise (0, (void *)mechargs);
-#endif
+	__gnat_adjust_context_for_raise (SS$_HPARITH, (void *)mechargs);
 #endif
 	break;
 
@@ -1448,8 +1435,8 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 	      /* Scan the VMS standard condition table for a match and fetch
 		 the associated GNAT exception pointer.  */
 	      for (i = 0;
-		   cond_except_table [i].cond &&
-		   !LIB$MATCH_COND (&sigargs [1], &cond_except_table [i].cond);
+		   cond_except_table[i].cond &&
+		   !LIB$MATCH_COND (&sigargs[1], &cond_except_table[i].cond);
 		   i++);
 	      exception = (struct Exception_Data *)
 		cond_except_table [i].except;
@@ -1463,22 +1450,16 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 #else
 	exception = &program_error;
 #endif
-	message [0] = 0;
+	message[0] = 0;
 	/* Subtract PC & PSL fields which messes with PUTMSG.  */
-	sigargs [0] -= 2;
+	sigargs[0] -= 2;
 	SYS$PUTMSG (sigargs, copy_msg, &gnat_facility, message);
-	sigargs [0] += 2;
+	sigargs[0] += 2;
 	msg = message;
 	break;
       }
 
   Raise_From_Signal_Handler (exception, msg);
-}
-
-long
-__gnat_error_handler (int *sigargs, void *mechargs)
-{
-  return __gnat_handle_vms_condition (sigargs, mechargs);
 }
 
 void
@@ -1487,22 +1468,7 @@ __gnat_install_handler (void)
   long prvhnd ATTRIBUTE_UNUSED;
 
 #if !defined (IN_RTS)
-  SYS$SETEXV (1, __gnat_error_handler, 3, &prvhnd);
-#endif
-
-  /* On alpha-vms, we avoid the global vector annoyance thanks to frame based
-     handlers to turn conditions into exceptions since GCC 3.4.  The global
-     vector is still required for earlier GCC versions.  We're resorting to
-     the __gnat_error_prehandler assembly function in this case.  */
-
-#if defined (IN_RTS) && defined (__alpha__)
-  if ((__GNUC__ * 10 + __GNUC_MINOR__) < 34)
-    {
-      char * c = (char *) xmalloc (2049);
-
-      __gnat_error_prehandler_stack = &c[2048];
-      SYS$SETEXV (1, __gnat_error_prehandler, 3, &prvhnd);
-    }
+  SYS$SETEXV (1, __gnat_handle_vms_condition, 3, &prvhnd);
 #endif
 
   __gnat_handler_installed = 1;
@@ -1521,17 +1487,20 @@ __gnat_install_handler (void)
 void
 __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
 {
-  /* Add one to the address of the instruction signaling the condition,
-     located in the sigargs array.  */
+  if (signo == SS$_HPARITH)
+    {
+      /* Sub one to the address of the instruction signaling the condition,
+         located in the sigargs array.  */
 
-  CHF$MECH_ARRAY * mechargs = (CHF$MECH_ARRAY *) ucontext;
-  CHF$SIGNAL_ARRAY * sigargs
-    = (CHF$SIGNAL_ARRAY *) mechargs->chf$q_mch_sig_addr;
+      CHF$MECH_ARRAY * mechargs = (CHF$MECH_ARRAY *) ucontext;
+      CHF$SIGNAL_ARRAY * sigargs
+        = (CHF$SIGNAL_ARRAY *) mechargs->chf$q_mch_sig_addr;
 
-  int vcount = sigargs->chf$is_sig_args;
-  int * pc_slot = & (&sigargs->chf$l_sig_name)[vcount-2];
+      int vcount = sigargs->chf$is_sig_args;
+      int * pc_slot = & (&sigargs->chf$l_sig_name)[vcount-2];
 
-  (*pc_slot) ++;
+      (*pc_slot)--;
+    }
 }
 
 #endif
@@ -1568,59 +1537,187 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
 
 #endif
 
+/* Easier interface for LIB$GET_LOGICAL: put the equivalence of NAME into BUF,
+   always NUL terminated.  In case of error or if the result is longer than
+   LEN (length of BUF) an empty string is written info BUF.  */
+
+static void
+__gnat_vms_get_logical (const char *name, char *buf, int len)
+{
+  struct descriptor_s name_desc, result_desc;
+  int status;
+  unsigned short rlen;
+
+  /* Build the descriptor for NAME.  */
+  name_desc.len = strlen (name);
+  name_desc.mbz = 0;
+  name_desc.adr = (char *)name;
+
+  /* Build the descriptor for the result.  */
+  result_desc.len = len;
+  result_desc.mbz = 0;
+  result_desc.adr = buf;
+
+  status = LIB$GET_LOGICAL (&name_desc, &result_desc, &rlen);
+
+  if ((status & 1) == 1 && rlen < len)
+    buf[rlen] = 0;
+  else
+    buf[0] = 0;
+}
+
+/* Size of a page on ia64 and alpha VMS.  */
+#define VMS_PAGESIZE 8192
+
+/* User mode.  */
+#define PSL__C_USER 3
+
+/* No access.  */
+#define PRT__C_NA 0
+
+/* Descending region.  */
+#define VA__M_DESCEND 1
+
+/* Get by virtual address.  */
+#define VA___REGSUM_BY_VA 1
+
+/* Memory region summary.  */
+struct regsum
+{
+  unsigned long long q_region_id;
+  unsigned int l_flags;
+  unsigned int l_region_protection;
+  void *pq_start_va;
+  unsigned long long q_region_size;
+  void *pq_first_free_va;
+};
+
+extern int SYS$GET_REGION_INFO (unsigned int, unsigned long long *,
+                                void *, void *, unsigned int,
+                                void *, unsigned int *);
+extern int SYS$EXPREG_64 (unsigned long long *, unsigned long long,
+                          unsigned int, unsigned int, void **,
+                          unsigned long long *);
+extern int SYS$SETPRT_64 (void *, unsigned long long, unsigned int,
+                          unsigned int, void **, unsigned long long *,
+                          unsigned int *);
+extern int SYS$PUTMSG (void *, int (*)(), void *, unsigned long long);
+
+/* Add a guard page in the memory region containing ADDR at ADDR +/- SIZE.
+   (The sign depends on the kind of the memory region).  */
+
+static int
+__gnat_set_stack_guard_page (void *addr, unsigned long size)
+{
+  int status;
+  void *ret_va;
+  unsigned long long ret_len;
+  unsigned int ret_prot;
+  void *start_va;
+  unsigned long long length;
+  unsigned int retlen;
+  struct regsum buffer;
+
+  /* Get the region for ADDR.  */
+  status = SYS$GET_REGION_INFO
+    (VA___REGSUM_BY_VA, NULL, addr, NULL, sizeof (buffer), &buffer, &retlen);
+
+  if ((status & 1) != 1)
+    return -1;
+
+  /* Extend the region.  */
+  status = SYS$EXPREG_64 (&buffer.q_region_id,
+                          size, 0, 0, &start_va, &length);
+
+  if ((status & 1) != 1)
+    return -1;
+
+  /* Create a guard page.  */
+  if (!(buffer.l_flags & VA__M_DESCEND))
+    start_va = (void *)((unsigned long long)start_va + length - VMS_PAGESIZE);
+
+  status = SYS$SETPRT_64 (start_va, VMS_PAGESIZE, PSL__C_USER, PRT__C_NA,
+                          &ret_va, &ret_len, &ret_prot);
+
+  if ((status & 1) != 1)
+    return -1;
+  return 0;
+}
+
+/* Read logicals to limit the stack(s) size.  */
+
+static void
+__gnat_set_stack_limit (void)
+{
+#ifdef __ia64__
+  void *sp;
+  unsigned long size;
+  char value[16];
+  char *e;
+
+  /* The main stack.  */
+  __gnat_vms_get_logical ("GNAT_STACK_SIZE", value, sizeof (value));
+  size = strtoul (value, &e, 0);
+  if (e > value && *e == 0)
+    {
+      asm ("mov %0=sp" : "=r" (sp));
+      __gnat_set_stack_guard_page (sp, size * 1024);
+    }
+
+  /* The register stack.  */
+  __gnat_vms_get_logical ("GNAT_RBS_SIZE", value, sizeof (value));
+  size = strtoul (value, &e, 0);
+  if (e > value && *e == 0)
+    {
+      asm ("mov %0=ar.bsp" : "=r" (sp));
+      __gnat_set_stack_guard_page (sp, size * 1024);
+    }
+#endif
+}
+
 /* Feature logical name and global variable address pair.
    If we ever add another feature logical to this list, the
    feature struct will need to be enhanced to take into account
    possible values for *gl_addr.  */
-struct feature {char *name; int* gl_addr;};
+struct feature {
+  const char *name;
+  int *gl_addr;
+};
 
-/* Default values for GNAT features set by environment. */
+/* Default values for GNAT features set by environment.  */
 int __gl_heap_size = 64;
 
-/* Array feature logical names and global variable addresses */
-static struct feature features[] = {
+/* Array feature logical names and global variable addresses.  */
+static const struct feature features[] = {
   {"GNAT$NO_MALLOC_64", &__gl_heap_size},
   {0, 0}
 };
 
-void __gnat_set_features ()
+void
+__gnat_set_features (void)
 {
-  struct descriptor_s name_desc, result_desc;
-  int i, status;
-  unsigned short rlen;
+  int i;
+  char buff[16];
 
-#define MAXEQUIV 10
-  char buff [MAXEQUIV];
-
-  /* Loop through features array and test name for enable/disable */
-  for (i=0; features [i].name; i++)
+  /* Loop through features array and test name for enable/disable.  */
+  for (i = 0; features[i].name; i++)
     {
-       name_desc.len = strlen (features [i].name);
-       name_desc.mbz = 0;
-       name_desc.adr = features [i].name;
+      __gnat_vms_get_logical (features[i].name, buff, sizeof (buff));
 
-       result_desc.len = MAXEQUIV - 1;
-       result_desc.mbz = 0;
-       result_desc.adr = buff;
-
-       status = LIB$GET_LOGICAL (&name_desc, &result_desc, &rlen);
-
-       if (((status & 1) == 1) && (rlen < MAXEQUIV))
-         buff [rlen] = 0;
-       else
-         strcpy (buff, "");
-
-       if ((strcmp (buff, "ENABLE") == 0) ||
-           (strcmp (buff, "TRUE") == 0) ||
-           (strcmp (buff, "1") == 0))
-          *features [i].gl_addr = 32;
-       else if ((strcmp (buff, "DISABLE") == 0) ||
-                (strcmp (buff, "FALSE") == 0) ||
-                (strcmp (buff, "0") == 0))
-          *features [i].gl_addr = 64;
+      if (strcmp (buff, "ENABLE") == 0
+          || strcmp (buff, "TRUE") == 0
+          || strcmp (buff, "1") == 0)
+        *features[i].gl_addr = 32;
+      else if (strcmp (buff, "DISABLE") == 0
+               || strcmp (buff, "FALSE") == 0
+               || strcmp (buff, "0") == 0)
+        *features[i].gl_addr = 64;
     }
 
-    __gnat_features_set = 1;
+  /* Features to artificially limit the stack size.  */
+  __gnat_set_stack_limit ();
+
+  __gnat_features_set = 1;
 }
 
 /*******************/

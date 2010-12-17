@@ -6,24 +6,141 @@
 @node Objective-C
 @comment  node-name,  next,  previous,  up
 
-@chapter GNU Objective-C runtime features
+@chapter GNU Objective-C features
 
-This document is meant to describe some of the GNU Objective-C runtime
-features.  It is not intended to teach you Objective-C, there are several
-resources on the Internet that present the language.  Questions and
-comments about this document to Ovidiu Predescu
-@email{ovidiu@@cup.hp.com}.
+This document is meant to describe some of the GNU Objective-C
+features.  It is not intended to teach you Objective-C.  There are
+several resources on the Internet that present the language.
 
 @menu
+* GNU Objective-C runtime API::
 * Executing code before main::
 * Type encoding::
 * Garbage Collection::
 * Constant string objects::
 * compatibility_alias::
+* Exceptions::
+* Synchronization::
+* Fast enumeration::
 @end menu
 
-@node Executing code before main, Type encoding, Objective-C, Objective-C
+@c =========================================================================
+@node GNU Objective-C runtime API
+@section GNU Objective-C runtime API
+
+This section is specific for the GNU Objective-C runtime.  If you are
+using a different runtime, you can skip it.
+
+The GNU Objective-C runtime provides an API that allows you to
+interact with the Objective-C runtime system, querying the live
+runtime structures and even manipulating them.  This allows you for
+example to inspect and navigate classes, methods and protocols; to
+define new classes or new methods, and even to modify existing classes
+or protocols.
+
+If you are using a ``Foundation'' library such as GNUstep-Base, this
+library will provide you with a rich set of functionality to do most
+of the inspection tasks, and you probably will only need direct access
+to the GNU Objective-C runtime API to define new classes or methods.
+
+@menu
+* Modern GNU Objective-C runtime API::
+* Traditional GNU Objective-C runtime API::
+@end menu
+
+@c =========================================================================
+@node Modern GNU Objective-C runtime API
+@subsection Modern GNU Objective-C runtime API
+
+The GNU Objective-C runtime provides an API which is similar to the
+one provided by the ``Objective-C 2.0'' Apple/NeXT Objective-C
+runtime.  The API is documented in the public header files of the GNU
+Objective-C runtime:
+
+@itemize @bullet
+
+@item
+@file{objc/objc.h}: this is the basic Objective-C header file,
+defining the basic Objective-C types such as @code{id}, @code{Class}
+and @code{BOOL}.  You have to include this header to do almost
+anything with Objective-C.
+
+@item
+@file{objc/runtime.h}: this header declares most of the public runtime
+API functions allowing you to inspect and manipulate the Objective-C
+runtime data structures.  These functions are fairly standardized
+across Objective-C runtimes and are almost identical to the Apple/NeXT
+Objective-C runtime ones.  It does not declare functions in some
+specialized areas (constructing and forwarding message invocations,
+threading) which are in the other headers below.  You have to include
+@file{objc/objc.h} and @file{objc/runtime.h} to use any of the
+functions, such as @code{class_getName()}, declared in
+@file{objc/runtime.h}.
+
+@item
+@file{objc/message.h}: this header declares public functions used to
+construct, deconstruct and forward message invocations.  Because
+messaging is done in quite a different way on different runtimes,
+functions in this header are specific to the GNU Objective-C runtime
+implementation.
+
+@item
+@file{objc/objc-exception.h}: this header declares some public
+functions related to Objective-C exceptions.  For example functions in
+this header allow you to throw an Objective-C exception from plain
+C/C++ code.
+
+@item
+@file{objc/objc-sync.h}: this header declares some public functions
+related to the Objective-C @code{@@synchronized()} syntax, allowing
+you to emulate an Objective-C @code{@@synchronized()} block in plain
+C/C++ code.
+
+@item
+@file{objc/thr.h}: this header declares a public runtime API threading
+layer that is only provided by the GNU Objective-C runtime.  It
+declares functions such as @code{objc_mutex_lock()}, which provide a
+platform-independent set of threading functions.
+
+@end itemize
+
+@c =========================================================================
+@node Traditional GNU Objective-C runtime API
+@subsection Traditional GNU Objective-C runtime API
+
+The GNU Objective-C runtime used to provide a different API, which we
+call the ``traditional'' GNU Objective-C runtime API.  Functions
+belonging to this API are easy to recognize because they use a
+different naming convention, such as @code{class_get_super_class()}
+(traditional API) instead of @code{class_getSuperclass()} (modern
+API).  Software using this API includes the file
+@file{objc/objc-api.h} where it is declared.
+
+The traditional API is deprecated but it is still supported in this
+release of the runtime; you can access it as usual by including
+@file{objc/objc-api.h}.
+
+If you are using the traditional API you are urged to upgrade your
+software to use the modern API because the traditional API requires
+access to private runtime internals to do anything serious with it;
+for this reason, there is no guarantee that future releases of the GNU
+Objective-C runtime library will be able to provide a fully compatible
+@file{objc/objc-api.h} as the private runtime internals change.  It is
+expected that the next release will hide a number of runtime internals
+making the traditional API nominally supported but fairly useless
+beyond very simple use cases.
+
+Finally, you can not include both @file{objc/objc-api.h} and
+@file{objc/runtime.h} at the same time.  The traditional and modern
+APIs unfortunately have some conflicting declarations (such as the one
+for @code{Method}) and can not be used at the same time.
+
+@c =========================================================================
+@node Executing code before main
 @section @code{+load}: Executing code before main
+
+This section is specific for the GNU Objective-C runtime.  If you are
+using a different runtime, you can skip it.
 
 The GNU Objective-C runtime provides a way that allows you to execute
 code before the execution of the program enters the @code{main}
@@ -103,11 +220,17 @@ instead of @code{+initialize}.
 @end menu
 
 
-@node What you can and what you cannot do in +load,  , Executing code before main, Executing code before main
+@node What you can and what you cannot do in +load
 @subsection What you can and what you cannot do in @code{+load}
 
-The @code{+load} implementation in the GNU runtime guarantees you the following
-things:
+@code{+load} is to be used only as a last resort.  Because it is
+executed very early, most of the Objective-C runtime machinery will
+not be ready when @code{+load} is executed; hence @code{+load} works
+best for executing C code that is independent on the Objective-C
+runtime.
+
+The @code{+load} implementation in the GNU runtime guarantees you the
+following things:
 
 @itemize @bullet
 
@@ -115,15 +238,12 @@ things:
 you can write whatever C code you like;
 
 @item
-you can send messages to Objective-C constant strings (@code{@@"this is a
-constant string"});
-
-@item
 you can allocate and send messages to objects whose class is implemented
 in the same file;
 
 @item
-the @code{+load} implementation of all super classes of a class are executed before the @code{+load} of that class is executed;
+the @code{+load} implementation of all super classes of a class are
+executed before the @code{+load} of that class is executed;
 
 @item
 the @code{+load} implementation of a class is executed before the
@@ -142,6 +262,10 @@ allocation of or sending messages to arbitrary objects;
 @item
 allocation of or sending messages to objects whose classes have a
 category implemented in the same file;
+
+@item
+sending messages to Objective-C constant strings (@code{@@"this is a
+constant string"});
 
 @end itemize
 
@@ -167,12 +291,16 @@ above apply to classes defined in bundle.
 
 
 
-@node Type encoding, Garbage Collection, Executing code before main, Objective-C
+@node Type encoding
 @section Type encoding
 
-The Objective-C compiler generates type encodings for all the
-types.  These type encodings are used at runtime to find out information
-about selectors and methods and about objects and classes.
+This is an advanced section.  Type encodings are used extensively by
+the compiler and by the runtime, but you generally do not need to know
+about them to use Objective-C.
+
+The Objective-C compiler generates type encodings for all the types.
+These type encodings are used at runtime to find out information about
+selectors and methods and about objects and classes.
 
 The types are encoded in the following way:
 
@@ -205,6 +333,8 @@ The types are encoded in the following way:
 @tab @code{f}
 @item @code{double}
 @tab @code{d}
+@item @code{long double}
+@tab @code{D}
 @item @code{void}
 @tab @code{v}
 @item @code{id}
@@ -215,6 +345,9 @@ The types are encoded in the following way:
 @tab @code{:}
 @item @code{char*}
 @tab @code{*}
+@item @code{enum}
+@tab an @code{enum} is encoded exactly as the integer type that the compiler uses for it, which depends on the enumeration
+values.  Often the compiler users @code{unsigned int}, which is then encoded as @code{I}.
 @item unknown type
 @tab @code{?}
 @item Complex types
@@ -225,15 +358,16 @@ The types are encoded in the following way:
 
 @c @sp 1
 
-The encoding of bit-fields has changed to allow bit-fields to be properly
-handled by the runtime functions that compute sizes and alignments of
-types that contain bit-fields.  The previous encoding contained only the
-size of the bit-field.  Using only this information it is not possible to
-reliably compute the size occupied by the bit-field.  This is very
-important in the presence of the Boehm's garbage collector because the
-objects are allocated using the typed memory facility available in this
-collector.  The typed memory allocation requires information about where
-the pointers are located inside the object.
+The encoding of bit-fields has changed to allow bit-fields to be
+properly handled by the runtime functions that compute sizes and
+alignments of types that contain bit-fields.  The previous encoding
+contained only the size of the bit-field.  Using only this information
+it is not possible to reliably compute the size occupied by the
+bit-field.  This is very important in the presence of the Boehm's
+garbage collector because the objects are allocated using the typed
+memory facility available in this collector.  The typed memory
+allocation requires information about where the pointers are located
+inside the object.
 
 The position in the bit-field is the position, counting in bits, of the
 bit closest to the beginning of the structure.
@@ -251,6 +385,8 @@ The non-atomic types are encoded as follows:
 @tab @samp{@{} followed by the name of the structure (or @samp{?} if the structure is unnamed), the @samp{=} sign, the type of the members and by @samp{@}}
 @item unions
 @tab @samp{(} followed by the name of the structure (or @samp{?} if the union is unnamed), the @samp{=} sign, the type of the members followed by @samp{)}
+@item vectors
+@tab @samp{![} followed by the vector_size (the number of bytes composing the vector) followed by a comma, followed by the alignment (in bytes) of the vector, followed by the type of the elements followed by @samp{]}
 @end multitable
 
 Here are some types and their encodings, as they are generated by the
@@ -277,6 +413,11 @@ struct @{
 @}
 @end smallexample
 @tab @code{@{?=i[3f]b128i3b131i2c@}}
+@item
+@smallexample
+int a __attribute__ ((vector_size (16)));
+@end smallexample
+@tab @code{![16,16i]} (alignment would depend on the machine)
 @end multitable
 
 @sp 1
@@ -300,6 +441,8 @@ Objective-C type specifiers:
 @tab @code{o}
 @item @code{bycopy}
 @tab @code{O}
+@item @code{byref}
+@tab @code{R}
 @item @code{oneway}
 @tab @code{V}
 @end multitable
@@ -310,22 +453,162 @@ The type specifiers are encoded just before the type.  Unlike types
 however, the type specifiers are only encoded when they appear in method
 argument types.
 
+Note how @code{const} interacts with pointers:
 
-@node Garbage Collection, Constant string objects, Type encoding, Objective-C
+@sp 1
+
+@multitable @columnfractions .25 .75
+@item Objective-C type
+@tab Compiler encoding
+@item
+@smallexample
+const int
+@end smallexample
+@tab @code{ri}
+@item
+@smallexample
+const int*
+@end smallexample
+@tab @code{^ri}
+@item
+@smallexample
+int *const
+@end smallexample
+@tab @code{r^i}
+@end multitable
+
+@sp 1
+
+@code{const int*} is a pointer to a @code{const int}, and so is
+encoded as @code{^ri}.  @code{int* const}, instead, is a @code{const}
+pointer to an @code{int}, and so is encoded as @code{r^i}.
+
+Finally, there is a complication when encoding @code{const char *}
+versus @code{char * const}.  Because @code{char *} is encoded as
+@code{*} and not as @code{^c}, there is no way to express the fact
+that @code{r} applies to the pointer or to the pointee.
+
+Hence, it is assumed as a convention that @code{r*} means @code{const
+char *} (since it is what is most often meant), and there is no way to
+encode @code{char *const}.  @code{char *const} would simply be encoded
+as @code{*}, and the @code{const} is lost.
+
+@menu
+* Legacy type encoding::
+* @@encode::
+* Method signatures::
+@end menu
+
+@node Legacy type encoding
+@subsection Legacy type encoding
+
+Unfortunately, historically GCC used to have a number of bugs in its
+encoding code.  The NeXT runtime expects GCC to emit type encodings in
+this historical format (compatible with GCC-3.3), so when using the
+NeXT runtime, GCC will introduce on purpose a number of incorrect
+encodings:
+
+@itemize @bullet
+
+@item
+the read-only qualifier of the pointee gets emitted before the '^'.
+The read-only qualifier of the pointer itself gets ignored, unless it
+is a typedef.  Also, the 'r' is only emitted for the outermost type.
+
+@item
+32-bit longs are encoded as 'l' or 'L', but not always.  For typedefs,
+the compiler uses 'i' or 'I' instead if encoding a struct field or a
+pointer.
+
+@item
+@code{enum}s are always encoded as 'i' (int) even if they are actually
+unsigned or long.
+
+@end itemize
+
+In addition to that, the NeXT runtime uses a different encoding for
+bitfields.  It encodes them as @code{b} followed by the size, without
+a bit offset or the underlying field type.
+
+@node @@encode
+@subsection @@encode
+
+GNU Objective-C supports the @code{@@encode} syntax that allows you to
+create a type encoding from a C/Objective-C type.  For example,
+@code{@@encode(int)} is compiled by the compiler into @code{"i"}.
+
+@code{@@encode} does not support type qualifiers other than
+@code{const}.  For example, @code{@@encode(const char*)} is valid and
+is compiled into @code{"r*"}, while @code{@@encode(bycopy char *)} is
+invalid and will cause a compilation error.
+
+@node Method signatures
+@subsection Method signatures
+
+This section documents the encoding of method types, which is rarely
+needed to use Objective-C.  You should skip it at a first reading; the
+runtime provides functions that will work on methods and can walk
+through the list of parameters and interpret them for you.  These
+functions are part of the public ``API'' and are the preferred way to
+interact with method signatures from user code.
+
+But if you need to debug a problem with method signatures and need to
+know how they are implemented (ie, the ``ABI''), read on.
+
+Methods have their ``signature'' encoded and made available to the
+runtime.  The ``signature'' encodes all the information required to
+dynamically build invocations of the method at runtime: return type
+and arguments.
+
+The ``signature'' is a null-terminated string, composed of the following:
+
+@itemize @bullet
+
+@item
+The return type, including type qualifiers.  For example, a method
+returning @code{int} would have @code{i} here.
+
+@item
+The total size (in bytes) required to pass all the parameters.  This
+includes the two hidden parameters (the object @code{self} and the
+method selector @code{_cmd}).
+
+@item
+Each argument, with the type encoding, followed by the offset (in
+bytes) of the argument in the list of parameters.
+
+@end itemize
+
+For example, a method with no arguments and returning @code{int} would
+have the signature @code{i8@@0:4} if the size of a pointer is 4.  The
+signature is interpreted as follows: the @code{i} is the return type
+(an @code{int}), the @code{8} is the total size of the parameters in
+bytes (two pointers each of size 4), the @code{@@0} is the first
+parameter (an object at byte offset @code{0}) and @code{:4} is the
+second parameter (a @code{SEL} at byte offset @code{4}).
+
+You can easily find more examples by running the ``strings'' program
+on an Objective-C object file compiled by GCC.  You'll see a lot of
+strings that look very much like @code{i8@@0:4}.  They are signatures
+of Objective-C methods.
+
+
+@node Garbage Collection
 @section Garbage Collection
 
-Support for a new memory management policy has been added by using a
-powerful conservative garbage collector, known as the
-Boehm-Demers-Weiser conservative garbage collector.  It is available from
-@w{@uref{http://www.hpl.hp.com/personal/Hans_Boehm/gc/}}.
+This section is specific for the GNU Objective-C runtime.  If you are
+using a different runtime, you can skip it.
 
-To enable the support for it you have to configure the compiler using an
-additional argument, @w{@option{--enable-objc-gc}}.  You need to have
-garbage collector installed before building the compiler.  This will
-build an additional runtime library which has several enhancements to
-support the garbage collector.  The new library has a new name,
-@file{libobjc_gc.a} to not conflict with the non-garbage-collected
-library.
+Support for garbage collection with the GNU runtime has been added by
+using a powerful conservative garbage collector, known as the
+Boehm-Demers-Weiser conservative garbage collector.
+
+To enable the support for it you have to configure the compiler using
+an additional argument, @w{@option{--enable-objc-gc}}.  This will
+build the boehm-gc library, and build an additional runtime library
+which has several enhancements to support the garbage collector.  The
+new library has a new name, @file{libobjc_gc.a} to not conflict with
+the non-garbage-collected library.
 
 When the garbage collector is used, the objects are allocated using the
 so-called typed memory allocation mechanism available in the
@@ -452,10 +735,6 @@ restrictions in doing this.
 @node compatibility_alias
 @section compatibility_alias
 
-This is a feature of the Objective-C compiler rather than of the
-runtime, anyway since it is documented nowhere and its existence was
-forgotten, we are documenting it here.
-
 The keyword @code{@@compatibility_alias} allows you to define a class name
 as equivalent to another class name.  For example:
 
@@ -476,3 +755,334 @@ There are some constraints on how this can be used---
 @item @code{GSWApplication} (the real class) must be an existing class.
 
 @end itemize
+
+@c =========================================================================
+@node Exceptions
+@section Exceptions
+
+GNU Objective-C provides exception support built into the language, as
+in the following example:
+
+@smallexample
+  @@try @{
+    @dots{}
+       @@throw expr;
+    @dots{}
+  @}
+  @@catch (AnObjCClass *exc) @{
+    @dots{}
+      @@throw expr;
+    @dots{}
+      @@throw;
+    @dots{}
+  @}
+  @@catch (AnotherClass *exc) @{
+    @dots{}
+  @}
+  @@catch (id allOthers) @{
+    @dots{}
+  @}
+  @@finally @{
+    @dots{}
+      @@throw expr;
+    @dots{}
+  @}
+@end smallexample
+
+The @code{@@throw} statement may appear anywhere in an Objective-C or
+Objective-C++ program; when used inside of a @code{@@catch} block, the
+@code{@@throw} may appear without an argument (as shown above), in
+which case the object caught by the @code{@@catch} will be rethrown.
+
+Note that only (pointers to) Objective-C objects may be thrown and
+caught using this scheme.  When an object is thrown, it will be caught
+by the nearest @code{@@catch} clause capable of handling objects of
+that type, analogously to how @code{catch} blocks work in C++ and
+Java.  A @code{@@catch(id @dots{})} clause (as shown above) may also
+be provided to catch any and all Objective-C exceptions not caught by
+previous @code{@@catch} clauses (if any).
+
+The @code{@@finally} clause, if present, will be executed upon exit
+from the immediately preceding @code{@@try @dots{} @@catch} section.
+This will happen regardless of whether any exceptions are thrown,
+caught or rethrown inside the @code{@@try @dots{} @@catch} section,
+analogously to the behavior of the @code{finally} clause in Java.
+
+There are several caveats to using the new exception mechanism:
+
+@itemize @bullet
+@item
+The @option{-fobjc-exceptions} command line option must be used when
+compiling Objective-C files that use exceptions.
+
+@item
+With the GNU runtime, exceptions are always implemented as ``native''
+exceptions and it is recommended that the @option{-fexceptions} and
+@option{-shared-libgcc} options are used when linking.
+
+@item
+With the NeXT runtime, although currently designed to be binary
+compatible with @code{NS_HANDLER}-style idioms provided by the
+@code{NSException} class, the new exceptions can only be used on Mac
+OS X 10.3 (Panther) and later systems, due to additional functionality
+needed in the NeXT Objective-C runtime.
+
+@item
+As mentioned above, the new exceptions do not support handling
+types other than Objective-C objects.   Furthermore, when used from
+Objective-C++, the Objective-C exception model does not interoperate with C++
+exceptions at this time.  This means you cannot @code{@@throw} an exception
+from Objective-C and @code{catch} it in C++, or vice versa
+(i.e., @code{throw @dots{} @@catch}).
+@end itemize
+
+@c =========================================================================
+@node Synchronization
+@section Synchronization
+
+GNU Objective-C provides support for synchronized blocks:
+
+@smallexample
+  @@synchronized (ObjCClass *guard) @{
+    @dots{}
+  @}
+@end smallexample
+
+Upon entering the @code{@@synchronized} block, a thread of execution
+shall first check whether a lock has been placed on the corresponding
+@code{guard} object by another thread.  If it has, the current thread
+shall wait until the other thread relinquishes its lock.  Once
+@code{guard} becomes available, the current thread will place its own
+lock on it, execute the code contained in the @code{@@synchronized}
+block, and finally relinquish the lock (thereby making @code{guard}
+available to other threads).
+
+Unlike Java, Objective-C does not allow for entire methods to be
+marked @code{@@synchronized}.  Note that throwing exceptions out of
+@code{@@synchronized} blocks is allowed, and will cause the guarding
+object to be unlocked properly.
+
+Because of the interactions between synchronization and exception
+handling, you can only use @code{@@synchronized} when compiling with
+exceptions enabled, that is with the command line option
+@option{-fobjc-exceptions}.
+
+
+@c =========================================================================
+@node Fast enumeration
+@section Fast enumeration
+
+@menu
+* Using fast enumeration::
+* c99-like fast enumeration syntax::
+* Fast enumeration details::
+* Fast enumeration protocol::
+@end menu
+
+@c ================================
+@node Using fast enumeration
+@subsection Using fast enumeration
+
+GNU Objective-C provides support for the fast enumeration syntax:
+
+@smallexample
+  id array = @dots{};
+  id object;
+
+  for (object in array)
+  @{
+    /* Do something with 'object' */
+  @}
+@end smallexample
+
+@code{array} needs to be an Objective-C object (usually a collection
+object, for example an array, a dictionary or a set) which implements
+the ``Fast Enumeration Protocol'' (see below).  If you are using a
+Foundation library such as GNUstep Base or Apple Cocoa Foundation, all
+collection objects in the library implement this protocol and can be
+used in this way.
+
+The code above would iterate over all objects in @code{array}.  For
+each of them, it assigns it to @code{object}, then executes the
+@code{Do something with 'object'} statements.
+
+Here is a fully worked-out example using a Foundation library (which
+provides the implementation of @code{NSArray}, @code{NSString} and
+@code{NSLog}):
+
+@smallexample
+  NSArray *array = [NSArray arrayWithObjects: @@"1", @@"2", @@"3", nil];
+  NSString *object;
+
+  for (object in array)
+    NSLog (@@"Iterating over %@@", object);
+@end smallexample
+
+
+@c ================================
+@node c99-like fast enumeration syntax
+@subsection c99-like fast enumeration syntax
+
+A c99-like declaration syntax is also allowed:
+
+@smallexample
+  id array = @dots{};
+
+  for (id object in array)
+  @{
+    /* Do something with 'object'  */
+  @}
+@end smallexample
+
+this is completely equivalent to:
+
+@smallexample
+  id array = @dots{};
+
+  @{
+    id object;
+    for (object in array)
+    @{
+      /* Do something with 'object'  */
+    @}
+  @}
+@end smallexample
+
+but can save some typing.
+
+Note that the option @option{-std=c99} is not required to allow this
+syntax in Objective-C.
+
+@c ================================
+@node Fast enumeration details
+@subsection Fast enumeration details
+
+Here is a more technical description with the gory details.  Consider the code
+
+@smallexample
+  for (@var{object expression} in @var{collection expression})
+  @{
+    @var{statements}
+  @}
+@end smallexample
+
+here is what happens when you run it:
+
+@itemize @bullet
+@item
+@code{@var{collection expression}} is evaluated exactly once and the
+result is used as the collection object to iterate over.  This means
+it is safe to write code such as @code{for (object in [NSDictionary
+keyEnumerator]) @dots{}}.
+
+@item
+the iteration is implemented by the compiler by repeatedly getting
+batches of objects from the collection object using the fast
+enumeration protocol (see below), then iterating over all objects in
+the batch.  This is faster than a normal enumeration where objects are
+retrieved one by one (hence the name ``fast enumeration'').
+
+@item
+if there are no objects in the collection, then
+@code{@var{object expression}} is set to @code{nil} and the loop
+immediately terminates.
+
+@item
+if there are objects in the collection, then for each object in the
+collection (in the order they are returned) @code{@var{object expression}}
+is set to the object, then @code{@var{statements}} are executed.
+
+@item
+@code{@var{statements}} can contain @code{break} and @code{continue}
+commands, which will abort the iteration or skip to the next loop
+iteration as expected.
+
+@item
+when the iteration ends because there are no more objects to iterate
+over, @code{@var{object expression}} is set to @code{nil}.  This allows
+you to determine whether the iteration finished because a @code{break}
+command was used (in which case @code{@var{object expression}} will remain
+set to the last object that was iterated over) or because it iterated
+over all the objects (in which case @code{@var{object expression}} will be
+set to @code{nil}).
+
+@item
+@code{@var{statements}} must not make any changes to the collection
+object; if they do, it is a hard error and the fast enumeration
+terminates by invoking @code{objc_enumerationMutation}, a runtime
+function that normally aborts the program but which can be customized
+by Foundation libraries via @code{objc_set_mutation_handler} to do
+something different, such as raising an exception.
+
+@end itemize
+
+@c ================================
+@node Fast enumeration protocol
+@subsection Fast enumeration protocol
+
+If you want your own collection object to be usable with fast
+enumeration, you need to have it implement the method
+
+@smallexample
+- (unsigned long) countByEnumeratingWithState: (NSFastEnumerationState *)state 
+                                      objects: (id *)objects
+                                        count: (unsigneld long)len;
+@end smallexample
+
+where @code{NSFastEnumerationState} must be defined in your code as follows:
+
+@smallexample
+typdef struct
+@{
+  unsigned long state;
+  id            *itemsPtr;
+  unsigned long *mutationsPtr;
+  unsigned long extra[5];
+@} NSFastEnumerationState;
+@end smallexample
+
+If no @code{NSFastEnumerationState} is defined in your code, the
+compiler will automatically replace @code{NSFastEnumerationState *}
+with @code{struct __objcFastEnumerationState *}, where that type is
+silently defined by the compiler in an identical way.  This can be
+confusing and we recommend that you define
+@code{NSFastEnumerationState} (as shown above) instead.
+
+The method is called repeatedly during a fast enumeration to retrieve
+batches of objects.  Each invocation of the method should retrieve the
+next batch of objects.
+
+The return value of the method is the number of objects in the current
+batch; this should not exceed @code{len}, which is the maximum size of
+a batch as requested by the caller.  The batch itself is returned in
+the @code{itemsPtr} field of the @code{NSFastEnumerationState} struct.
+
+To help with returning the objects, the @code{objects} array is a C
+array preallocated by the caller (on the stack) of size @code{len}.
+In many cases you can put the objects you want to return in that
+@code{objects} array, then do @code{itemsPtr = objects}.  But you
+don't have to; if your collection already has the objects to return in
+some form of C array, it could return them from there instead.
+
+The @code{state} and @code{extra} fields of the
+@code{NSFastEnumerationState} structure allows your collection object
+to keep track of the state of the enumeration.  In a simple array
+implementation, @code{state} may keep track of the index of the last
+object that was returned, and @code{extra} may be unused.
+
+The @code{mutationsPtr} field of the @code{NSFastEnumerationState} is
+used to keep track of mutations.  It should point to a number; before
+working on each object, the fast enumeration loop will check that this
+number has not changed.  If it has, a mutation has happened and the
+fast enumeration will abort.  So, @code{mutationsPtr} could be set to
+point to some sort of version number of your collection, which is
+increased by one every time there is a change (for example when an
+object is added or removed).  Or, if you are content with less strict
+mutation checks, it could point to the number of objects in your
+collection or some other value that can be checked to perform an
+approximate check that the collection has not been mutated.
+
+Finally, note how we declared the @code{len} argument and the return
+value to be of type @code{unsigned long}.  They could also be declared
+to be of type @code{unsigned int} and everything would still work.
+

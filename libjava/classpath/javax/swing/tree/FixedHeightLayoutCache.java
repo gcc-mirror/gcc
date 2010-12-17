@@ -484,7 +484,7 @@ public class FixedHeightLayoutCache
   {
     if (dirty)
       update();
-    Vector p = new Vector(parentPath.getPathCount());
+    Vector<TreePath> p = new Vector<TreePath>(parentPath.getPathCount());
     Object node;
     NodeRecord nr;
 
@@ -493,7 +493,7 @@ public class FixedHeightLayoutCache
         node = parentPath.getPathComponent(i);
         nr = nodes.get(node);
         if (nr.row >= 0)
-          p.add(node);
+          p.add((TreePath) node);
       }
     return p.elements();
   }

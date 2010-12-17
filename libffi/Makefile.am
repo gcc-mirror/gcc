@@ -65,6 +65,7 @@ AM_MAKEFLAGS = \
 	"exec_prefix=$(exec_prefix)" \
 	"infodir=$(infodir)" \
 	"libdir=$(libdir)" \
+	"mandir=$(mandir)" \
 	"prefix=$(prefix)" \
 	"AR=$(AR)" \
 	"AS=$(AS)" \

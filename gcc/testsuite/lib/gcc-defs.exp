@@ -250,9 +250,10 @@ proc gcc-set-multilib-library-path { compiler } {
     }
 
     set libpath ":${rootme}"
+    set options [lrange $compiler 1 end]
     set compiler [lindex $compiler 0]
     if { [is_remote host] == 0 && [which $compiler] != 0 } {
-	foreach i "[exec $compiler --print-multi-lib]" {
+	foreach i "[eval exec $compiler $options --print-multi-lib]" {
 	    set mldir ""
 	    regexp -- "\[a-z0-9=_/\.-\]*;" $i mldir
 	    set mldir [string trimright $mldir "\;@"]

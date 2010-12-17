@@ -263,6 +263,15 @@ package Exp_Ch9 is
    --  return the external version of a protected operation, which locks
    --  the object before invoking the internal protected subprogram body.
 
+   function Find_Master_Scope (E : Entity_Id) return Entity_Id;
+   --  When a type includes tasks, a master entity is created in the scope, to
+   --  be used by the runtime during activation. In general the master is the
+   --  immediate scope in which the type is declared, but in Ada2005, in the
+   --  presence of synchronized classwide interfaces, the immediate scope of
+   --  an anonymous access type may be a transient scope, which has no run-time
+   --  presence. In this case, the scope of the master is the innermost scope
+   --  that comes from source.
+
    function First_Protected_Operation (D : List_Id) return Node_Id;
    --  Given the declarations list for a protected body, find the
    --  first protected operation body.

@@ -14,10 +14,10 @@ template <typename T> class bar {
 };
 
 template <typename T> void foo(T) {
-  bar<T>().i = 0; // ok, I'm a friend
+  bar<T>().i; // ok, I'm a friend
 }
 template <typename T> void foo(T*) {
-  bar<T*>().i = 1; // { dg-error "" } not a friend
+  bar<T*>().i; // { dg-error "" } not a friend
 }
 
 int main() {

@@ -24,7 +24,7 @@ enum class Color3 {
   Red
 };
 
-enum class Color color;
+enum Color color;
 enum Color3 color3;
 
 void f(int);

@@ -235,7 +235,7 @@ winflush_nt (void)
   /* Does nothing as there is no problem under NT.  */
 }
 
-#else
+#else /* !RTX */
 
 static void winflush_init (void);
 
@@ -301,9 +301,27 @@ __gnat_is_windows_xp (void)
   return is_win_xp;
 }
 
-#endif
+#endif /* !RTX */
 
-#endif
+/* Get the bounds of the stack.  The stack pointer is supposed to be
+   initialized to BASE when a thread is created and the stack can be extended
+   to LIMIT before reaching a guard page.
+   Note: for the main thread, the system automatically extend the stack, so
+   LIMIT is only the current limit.  */
+
+void
+__gnat_get_stack_bounds (void **base, void **limit)
+{
+  NT_TIB *tib;
+
+  /* We know that the first field of the TEB is the TIB.  */
+  tib = (NT_TIB *)NtCurrentTeb ();
+
+  *base = tib->StackBase;
+  *limit = tib->StackLimit;
+}
+
+#endif /* !__MINGW32__ */
 
 #else
 
@@ -959,7 +977,7 @@ __gnat_get_task_options (void)
 
   /* Force VX_FP_TASK because it is almost always required */
   options |= VX_FP_TASK;
-#if defined (__SPE__)
+#if defined (__SPE__) && (! defined (__VXWORKSMILS__))
   options |= VX_SPE_TASK;
 #endif
 

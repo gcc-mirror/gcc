@@ -5,7 +5,7 @@
 /* { dg-skip-if "" { *-*-* } { "-O1" } { "" } } */
 /* { dg-options "-fdump-tree-ivcanon-details" } */
 
-static int a[199];
+int a[199];
 
 extern void abort (void);
 

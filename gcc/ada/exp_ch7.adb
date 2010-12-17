@@ -392,7 +392,7 @@ package body Exp_Ch7 is
           Typ   => Typ,
           Stmts => Make_Deep_Array_Body (Initialize_Case, Typ)));
 
-      if not Is_Inherently_Limited_Type (Typ) then
+      if not Is_Immutably_Limited_Type (Typ) then
          Set_TSS (Typ,
            Make_Deep_Proc (
              Prim  => Adjust_Case,
@@ -502,7 +502,7 @@ package body Exp_Ch7 is
           Typ   => Typ,
           Stmts => Make_Deep_Record_Body (Initialize_Case, Typ)));
 
-      if not Is_Inherently_Limited_Type (Typ) then
+      if not Is_Immutably_Limited_Type (Typ) then
          Set_TSS (Typ,
            Make_Deep_Proc (
              Prim  => Adjust_Case,
@@ -832,7 +832,7 @@ package body Exp_Ch7 is
    begin
       if Is_Derived_Type (Typ)
         and then Comes_From_Source (E)
-        and then not Is_Overriding_Operation (E)
+        and then not Present (Overridden_Operation (E))
       then
          --  We know that the explicit operation on the type does not override
          --  the inherited operation of the parent, and that the derivation
@@ -1098,7 +1098,7 @@ package body Exp_Ch7 is
       --  releasing or some finalizations are needed or in the context
       --  of tasking
 
-      if Uses_Sec_Stack  (Current_Scope)
+      if Uses_Sec_Stack (Current_Scope)
         and then not Sec_Stack_Needed_For_Return (Current_Scope)
       then
          null;
@@ -1701,7 +1701,7 @@ package body Exp_Ch7 is
 
          return
            Make_Selected_Component (Loc,
-             Prefix =>
+             Prefix        =>
                Make_Selected_Component (Loc,
                  Prefix        => R,
                  Selector_Name => Make_Identifier (Loc, Name_uController)),
@@ -1739,11 +1739,7 @@ package body Exp_Ch7 is
          end if;
 
       else
-         if Is_Dynamic_Scope (E) then
-            S := E;
-         else
-            S := Enclosing_Dynamic_Scope (E);
-         end if;
+         S := Nearest_Dynamic_Scope (E);
 
          --  When the finalization chain entity is 'Error', it means that there
          --  should not be any chain at that level and that the enclosing one
@@ -2312,10 +2308,10 @@ package body Exp_Ch7 is
                 Name => Name,
                 Parameter_Associations => New_List (
                   Make_Attribute_Reference (Loc,
-                    Prefix =>
+                    Prefix         =>
                       Make_Selected_Component (Loc,
-                        Prefix => New_Reference_To (
-                          Defining_Identifier (Param), Loc),
+                        Prefix        =>
+                          New_Reference_To (Defining_Identifier (Param), Loc),
                         Selector_Name =>
                           Make_Identifier (Loc, Name_uObject)),
                     Attribute_Name => Name_Unchecked_Access))));
@@ -2541,7 +2537,7 @@ package body Exp_Ch7 is
 
       function One_Component return List_Id;
       --  Create one statement to initialize/adjust/finalize one array
-      --  component, designated by a full set of indices.
+      --  component, designated by a full set of indexes.
 
       function One_Dimension (N : Int) return List_Id;
       --  Create loop to deal with one dimension of the array. The single
@@ -2609,9 +2605,9 @@ package body Exp_Ch7 is
                         Defining_Identifier => Index,
                         Discrete_Subtype_Definition =>
                           Make_Attribute_Reference (Loc,
-                            Prefix => Make_Identifier (Loc, Name_V),
+                            Prefix          => Make_Identifier (Loc, Name_V),
                             Attribute_Name  => Name_Range,
-                            Expressions => New_List (
+                            Expressions     => New_List (
                               Make_Integer_Literal (Loc, N))),
                         Reverse_Present => Prim = Finalize_Case)),
                 Statements => One_Dimension (N + 1)));
@@ -2725,7 +2721,7 @@ package body Exp_Ch7 is
       Res            : constant List_Id := New_List;
 
    begin
-      if Is_Inherently_Limited_Type (Typ) then
+      if Is_Immutably_Limited_Type (Typ) then
          Controller_Typ := RTE (RE_Limited_Record_Controller);
       else
          Controller_Typ := RTE (RE_Record_Controller);
@@ -2751,17 +2747,19 @@ package body Exp_Ch7 is
                    Parameter_Associations =>
                      New_List (New_Copy_Tree (Obj_Ref))));
 
-               Append_To (Res, Make_Attach_Call (
-                 Obj_Ref      => New_Copy_Tree (Obj_Ref),
-                 Flist_Ref    => Make_Identifier (Loc, Name_L),
-                 With_Attach => Make_Identifier (Loc, Name_B)));
+               Append_To (Res,
+                 Make_Attach_Call
+                   (Obj_Ref     => New_Copy_Tree (Obj_Ref),
+                    Flist_Ref   => Make_Identifier (Loc, Name_L),
+                    With_Attach => Make_Identifier (Loc, Name_B)));
             end if;
 
          when Adjust_Case =>
             Append_List_To (Res,
-              Make_Adjust_Call (Controller_Ref, Controller_Typ,
-                Make_Identifier (Loc, Name_L),
-                Make_Identifier (Loc, Name_B)));
+              Make_Adjust_Call
+                (Controller_Ref, Controller_Typ,
+                 Make_Identifier (Loc, Name_L),
+                 Make_Identifier (Loc, Name_B)));
 
             --  When the type is also a controlled type by itself,
             --  adjust it and attach it to the finalization chain.
@@ -2774,17 +2772,18 @@ package body Exp_Ch7 is
                    Parameter_Associations =>
                      New_List (New_Copy_Tree (Obj_Ref))));
 
-               Append_To (Res, Make_Attach_Call (
-                 Obj_Ref      => New_Copy_Tree (Obj_Ref),
-                 Flist_Ref    => Make_Identifier (Loc, Name_L),
-                 With_Attach => Make_Identifier (Loc, Name_B)));
+               Append_To (Res,
+                 Make_Attach_Call
+                   (Obj_Ref     => New_Copy_Tree (Obj_Ref),
+                    Flist_Ref   => Make_Identifier (Loc, Name_L),
+                    With_Attach => Make_Identifier (Loc, Name_B)));
             end if;
 
          when Finalize_Case =>
             if Is_Controlled (Typ) then
                Append_To (Res,
                  Make_Implicit_If_Statement (Obj_Ref,
-                   Condition => Make_Identifier (Loc, Name_B),
+                   Condition       => Make_Identifier (Loc, Name_B),
                    Then_Statements => New_List (
                      Make_Procedure_Call_Statement (Loc,
                        Name => New_Reference_To (RTE (RE_Finalize_One), Loc),
@@ -2801,9 +2800,11 @@ package body Exp_Ch7 is
             end if;
 
             Append_List_To (Res,
-              Make_Final_Call (Controller_Ref, Controller_Typ,
-                Make_Identifier (Loc, Name_B)));
+              Make_Final_Call
+                (Controller_Ref, Controller_Typ,
+                 Make_Identifier (Loc, Name_B)));
       end case;
+
       return Res;
    end Make_Deep_Record_Body;
 

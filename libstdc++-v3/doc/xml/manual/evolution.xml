@@ -1,7 +1,8 @@
-<sect1 id="appendix.porting.api" xreflabel="api">
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="appendix.porting.api" xreflabel="api">
 <?dbhtml filename="api.html"?>
 
-<sect1info>
+<info><title>API Evolution and Deprecation History</title>
   <keywordset>
     <keyword>ISO C++</keyword>
     <keyword>api</keyword>
@@ -9,16 +10,16 @@
     <keyword>deprecation</keyword>
     <keyword>history</keyword>
   </keywordset>
-</sect1info>
+</info>
 
-<title>API Evolution and Deprecation History</title>
+
 
 <para>
 A list of user-visible changes, in chronological order
 </para>
 
-<sect2 id="api.rel_300">
-<title><constant>3.0</constant></title>
+<section xml:id="api.rel_300"><info><title><constant>3.0</constant></title></info>
+
 
   <para>
 Extensions moved to <filename class="directory">include/ext</filename>.
@@ -39,10 +40,10 @@ deactivates the warning.)
 
 
 
-</sect2>
+</section>
 
-<sect2 id="api.rel_310">
-<title><constant>3.1</constant></title>
+<section xml:id="api.rel_310"><info><title><constant>3.1</constant></title></info>
+
   <para>
   </para>
 
@@ -65,10 +66,10 @@ Extensions to tree data structures added in <filename class="headerfile">ext/rb_
 Removal of <filename class="headerfile">ext/tree</filename>, moved to <filename class="headerfile">backward/tree.h</filename>.
 </para>
 
-</sect2>
+</section>
 
-<sect2 id="api.rel_320">
-<title><constant>3.2</constant></title>
+<section xml:id="api.rel_320"><info><title><constant>3.2</constant></title></info>
+
   <para>
   </para>
 <para>Symbol versioning introduced for shared library.</para>
@@ -89,16 +90,16 @@ Removal of <filename class="headerfile">ext/tree</filename>, moved to <filename 
 <para>Error handling in iostreams cleaned up, made consistent. </para>
 
 
-</sect2>
+</section>
 
-<sect2 id="api.rel_330">
-<title><constant>3.3</constant></title>
+<section xml:id="api.rel_330"><info><title><constant>3.3</constant></title></info>
+
   <para>
   </para>
-</sect2>
+</section>
 
-<sect2 id="api.rel_340">
-<title><constant>3.4</constant></title>
+<section xml:id="api.rel_340"><info><title><constant>3.4</constant></title></info>
+
   <para>
   </para>
 <para>
@@ -161,13 +162,14 @@ _Alloc_traits</code> have been removed.
    underlying allocator was not user-configurable.
    </para>
 
-<table frame='all'>
+<table frame="all">
 <title>Extension Allocators</title>
-<tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<colspec colname='c1'></colspec>
-<colspec colname='c2'></colspec>
-<colspec colname='c3'></colspec>
-<colspec colname='c4'></colspec>
+
+<tgroup cols="4" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
 
   <thead>
     <row>
@@ -225,12 +227,13 @@ _Alloc_traits</code> have been removed.
    the first released version of GCC that included the extension allocator.
    </para>
 
-<table frame='all'>
+<table frame="all">
 <title>Extension Allocators Continued</title>
-<tgroup cols='3' align='left' colsep='1' rowsep='1'>
-<colspec colname='c1'></colspec>
-<colspec colname='c2'></colspec>
-<colspec colname='c3'></colspec>
+
+<tgroup cols="3" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
 
 <thead>
   <row>
@@ -277,10 +280,10 @@ Extension <filename class="headerfile">ext/demangle.h</filename> added.
 </para>
 
 
-</sect2>
+</section>
 
-<sect2 id="api.rel_400">
-<title><constant>4.0</constant></title>
+<section xml:id="api.rel_400"><info><title><constant>4.0</constant></title></info>
+
   <para>
   </para>
 <para>
@@ -300,10 +303,10 @@ Removal of <filename class="headerfile">ext/demangle.h</filename>.
 </para>
 
 
-</sect2>
+</section>
 
-<sect2 id="api.rel_410">
-<title><constant>4.1</constant></title>
+<section xml:id="api.rel_410"><info><title><constant>4.1</constant></title></info>
+
   <para>
   </para>
 
@@ -324,10 +327,10 @@ types, namespace <code>pb_assoc</code>.
 <para> Extension for policy-based <code>basic_string</code> first added: <code>__gnu_cxx::__versa_string</code> in <filename class="headerfile">ext/vstring.h</filename>.
 </para>
 
-</sect2>
+</section>
 
-<sect2 id="api.rel_420">
-<title><constant>4.2</constant></title>
+<section xml:id="api.rel_420"><info><title><constant>4.2</constant></title></info>
+
   <para>
   </para>
 
@@ -360,10 +363,10 @@ __gnu_cxx::__debug</code>.</para>
 and <filename class="headerfile">ext/throw_allocator.h</filename>.
 </para>
 
-</sect2>
+</section>
 
-<sect2 id="api.rel_430">
-<title><constant>4.3</constant></title>
+<section xml:id="api.rel_430"><info><title><constant>4.3</constant></title></info>
+
   <para>
   </para>
 
@@ -448,11 +451,11 @@ PCH binary files no longer installed. Instead, the source files are installed.
 Namespace pb_ds moved to __gnu_pb_ds.
 </para>
 
-</sect2>
+</section>
 
 
-<sect2 id="api.rel_440">
-<title><constant>4.4</constant></title>
+<section xml:id="api.rel_440"><info><title><constant>4.4</constant></title></info>
+
   <para>
   </para>
 
@@ -558,10 +561,10 @@ for non-standard pointer types has been added
 to <classname>vector</classname>
 and <classname>forward_list</classname>.
 </para>
-</sect2>
+</section>
 
-<sect2 id="api.rel_450">
-<title><constant>4.5</constant></title>
+<section xml:id="api.rel_450"><info><title><constant>4.5</constant></title></info>
+
   <para>
   </para>
 
@@ -623,6 +626,6 @@ now defaults to zero.
 
 <para> Extensions modified: <filename class="headerfile">ext/throw_allocator.h</filename>.
 </para>
-</sect2>
+</section>
 
-</sect1>
+</section>

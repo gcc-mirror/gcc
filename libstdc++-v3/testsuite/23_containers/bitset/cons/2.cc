@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +33,7 @@ test01()
 
   X x;
   std::string s(x);
-  std::bitset<32> b1(x);
+  std::bitset<32> b1(static_cast<const char*>(x));
   std::bitset<32> b2(s);
   VERIFY( b1 == b2 );
 }

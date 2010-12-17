@@ -9,6 +9,6 @@ int foo(int i)
 }
 
 /* { dg-final { scan-tree-dump "&a\\\[\[iD\]\\\." "ccp1" } } */
-/* { dg-final { scan-tree-dump "= a\\\[\[iD\]\\\." "forwprop1" } } */
+/* { dg-final { scan-tree-dump "= .*&a\\\]\\\[\[iD\]\\\." "forwprop1" } } */
 /* { dg-final { cleanup-tree-dump "ccp1" } } */
 /* { dg-final { cleanup-tree-dump "forwprop1" } } */

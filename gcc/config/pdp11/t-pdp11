@@ -34,3 +34,11 @@ dp-bit.c: $(srcdir)/config/fp-bit.c
 	cat $(srcdir)/config/fp-bit.c > dp-bit.c
 
 MULTILIB_OPTIONS = msoft-float
+
+# Because the pdp11 POINTER_SIZE is only 16, in dwarf2out.c,
+# DWARF_ARANGES_PAD_SIZE is 0, thus a loop in output_aranges that checks
+# (i < (unsigned) DWARF_ARANGES_PAD_SIZE) elicits a warning that the
+# comparison is always false.
+# We could say "-Werror -Wno-error=type-limits", alas, not all supported
+# gcc bootstrap compilers support the latter option.
+dwarf2out.o-warn = -Wno-error

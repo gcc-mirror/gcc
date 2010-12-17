@@ -1,5 +1,5 @@
 /* { dg-lto-do link } */
-/* { dg-lto-options {{-O3 -fwhopr -fPIC -r -nostdlib}} } */
+/* { dg-lto-options {{-O3 -flto -flto-partition=1to1 -fPIC -r -nostdlib}} } */
 
 struct Foo { int f1, f2, f3, f4, f5; };
 

@@ -1,3 +1,10 @@
+# On Debian, Ubuntu and other derivative distributions, the 32bit libraries
+# are found in /lib32 and /usr/lib32, /lib64 and /usr/lib64 are symlinks to
+# /lib and /usr/lib, while other distributions install libraries into /lib64
+# and /usr/lib64.  The LSB does not enforce the use of /lib64 and /usr/lib64,
+# it doesn't tell anything about the 32bit libraries on those systems.  Set
+# MULTILIB_OSDIRNAMES according to what is found on the target.
+
 MULTILIB_OPTIONS = m64/m31
 MULTILIB_DIRNAMES = 64 32
-MULTILIB_OSDIRNAMES = ../lib64 ../lib
+MULTILIB_OSDIRNAMES = ../lib64 $(if $(wildcard $(shell echo $(SYSTEM_HEADER_DIR))/../../usr/lib32),../lib32,../lib)

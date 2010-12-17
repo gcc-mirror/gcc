@@ -248,7 +248,7 @@ public class StateEdit
    */
   protected void removeRedundantState()
   {
-    Iterator i = preState.keySet().iterator();
+    Iterator<Object> i = preState.keySet().iterator();
     while (i.hasNext())
       {
 	Object key = i.next();

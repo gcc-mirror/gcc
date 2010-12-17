@@ -1249,7 +1249,8 @@ package body Exp_Ch11 is
 
    begin
       --  There is no expansion needed when compiling for the JVM since the
-      --  JVM has a built-in exception mechanism. See 4jexcept.ads for details.
+      --  JVM has a built-in exception mechanism. See cil/gnatlib/a-except.ads
+      --  for details.
 
       if VM_Target /= No_VM then
          return;
@@ -1264,7 +1265,7 @@ package body Exp_Ch11 is
           Object_Definition   => New_Occurrence_Of (Standard_String, Loc),
           Expression          =>
             Make_String_Literal (Loc,
-              Strval => Full_Qualified_Name (Id))));
+              Strval => Fully_Qualified_Name_String (Id))));
 
       Set_Is_Statically_Allocated (Exname);
 
@@ -2006,7 +2007,7 @@ package body Exp_Ch11 is
 
    procedure Warn_If_No_Propagation (N : Node_Id) is
    begin
-      if Restriction_Active (No_Exception_Propagation)
+      if Restriction_Check_Required (No_Exception_Propagation)
         and then Warn_On_Non_Local_Exception
       then
          Warn_No_Exception_Propagation_Active (N);

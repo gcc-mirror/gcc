@@ -49,7 +49,6 @@ public: // actually protected
   XMLEventFactory();
 public:
   static ::javax::xml::stream::XMLEventFactory * newInstance();
-public: // actually package-private
   static ::javax::xml::stream::XMLEventFactory * newInstance(::java::lang::String *, ::java::lang::ClassLoader *);
 private:
   static ::java::lang::String * getFactoryClassName(::java::lang::ClassLoader *, jint);

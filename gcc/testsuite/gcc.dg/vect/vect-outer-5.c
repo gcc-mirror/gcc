@@ -1,6 +1,6 @@
 /* { dg-require-effective-target vect_float } */
+/* { dg-add-options quad_vectors } */
 
-#include <stdio.h>
 #include <stdarg.h>
 #include <signal.h>
 #include "tree-vect.h"

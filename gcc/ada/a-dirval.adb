@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                             (POSIX Version)                              --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,7 +47,7 @@ package body Ada.Directories.Validity is
    -- Is_Valid_Path_Name --
    ------------------------
 
-   function Is_Valid_Path_Name   (Name : String) return Boolean is
+   function Is_Valid_Path_Name (Name : String) return Boolean is
    begin
       --  A path name cannot be empty and cannot contain any NUL character
 

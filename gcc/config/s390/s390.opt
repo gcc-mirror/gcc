@@ -42,10 +42,6 @@ mesa
 Target Report RejectNegative Negative(mzarch) InverseMask(ZARCH)
 ESA/390 architecture
 
-mfused-madd
-Target Report Mask(FUSED_MADD)
-Enable fused multiply/add instructions
-
 mhard-dfp
 Target Report Mask(HARD_DFP)
 Enable decimal floating point hardware support

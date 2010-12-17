@@ -233,7 +233,7 @@ set mips_option_groups {
     fp "-mfp(32|64)"
     gp "-mgp(32|64)"
     long "-mlong(32|64)"
-    mips16 "-mips16|-mno-mips16"
+    mips16 "-mips16|-mno-mips16|-mflip-mips16"
     mips3d "-mips3d|-mno-mips3d"
     optimization "-O(|[0-3s])"
     pic "-f(no-|)(pic|PIC)"
@@ -509,6 +509,14 @@ proc mips_have_option_p { upstatus option } {
 		$option]
 }
 
+# Return true if the options described by UPSTATUS require MIPS16 support.
+proc mips_using_mips16_p { upstatus } {
+    upvar $upstatus status
+
+    return [expr { [mips_have_option_p status "-mips16"]
+		   || [mips_have_option_p status "-mflip-mips16"] }]
+}
+
 # Return true if the test described by UPSTATUS requires option OPTION.
 proc mips_have_test_option_p { upstatus option } {
     upvar $upstatus status
@@ -763,7 +771,7 @@ proc mips-dg-finish {} {
 #
 #          START                        END
 #            |                           |
-#         -mips16                     -mno-mips16
+#         -mips16/-mflip-mips16       -mno-mips16
 #            |                           |
 #         -mips3d                     -mno-mips3d
 #            |                           |
@@ -1011,7 +1019,7 @@ proc mips-dg-options { args } {
 	    # EABI doesn't support -mabicalls.
 	    # EABI doesn't support the combination -mgp32 -mfp64.
 	    set force_abi 1
-	} elseif { [mips_have_option_p options "-mips16"]
+	} elseif { [mips_using_mips16_p options]
 		   && ![mips_same_option_p $abi "-mabi=32"]
 		   && ![mips_same_option_p $abi "-mabi=o64"]
 		   && (![mips_have_option_p options "addressing=absolute"]
@@ -1048,7 +1056,7 @@ proc mips-dg-options { args } {
 		mips_make_test_option options "-mfp32"
 	    }
 	}
-	if { [mips_have_option_p options "-mips16"]
+	if { [mips_using_mips16_p options]
 	     && ![mips_same_option_p $abi "-mabi=32"]
 	     && ![mips_same_option_p $abi "-mabi=o64"]
 	     && (![mips_have_option_p options "addressing=absolute"]

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,9 +91,6 @@ package body GPrep is
    procedure Display_Copyright;
    --  Display the copyright notice
 
-   procedure Obsolescent_Check (S : Source_Ptr);
-   --  Null procedure, needed by instantiation of Scng below
-
    procedure Post_Scan;
    --  Null procedure, needed by instantiation of Scng below
 
@@ -103,7 +100,6 @@ package body GPrep is
       Errutil.Error_Msg_S,
       Errutil.Error_Msg_SC,
       Errutil.Error_Msg_SP,
-      Obsolescent_Check,
       Errutil.Style);
    --  The scanner for the preprocessor
 
@@ -172,7 +168,6 @@ package body GPrep is
       --  Do some initializations (order is important here!)
 
       Csets.Initialize;
-      Namet.Initialize;
       Snames.Initialize;
       Stringt.Initialize;
       Prep.Initialize;
@@ -311,16 +306,6 @@ package body GPrep is
    begin
       New_Line (Outfile.all);
    end New_EOL_To_Outfile;
-
-   -----------------------
-   -- Obsolescent_Check --
-   -----------------------
-
-   procedure Obsolescent_Check (S : Source_Ptr) is
-      pragma Warnings (Off, S);
-   begin
-      null;
-   end Obsolescent_Check;
 
    ---------------
    -- Post_Scan --

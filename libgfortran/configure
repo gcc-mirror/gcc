@@ -597,12 +597,19 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
+ac_c_werror_flag=
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 IEEE_FLAGS
 FPU_HOST_HEADER
+LIBGFOR_BUILD_QUAD_FALSE
+LIBGFOR_BUILD_QUAD_TRUE
+LIBQUADINCLUDE
+LIBQUADLIB_DEP
+LIBQUADLIB
+LIBQUADSPEC
 extra_ldflags_libgfortran
 ac_ct_FC
 FCFLAGS
@@ -630,6 +637,10 @@ RANLIB
 AR
 AS
 SECTION_FLAGS
+LIBGFOR_USE_SYMVER_SUN_FALSE
+LIBGFOR_USE_SYMVER_SUN_TRUE
+LIBGFOR_USE_SYMVER_GNU_FALSE
+LIBGFOR_USE_SYMVER_GNU_TRUE
 LIBGFOR_USE_SYMVER_FALSE
 LIBGFOR_USE_SYMVER_TRUE
 AM_CFLAGS
@@ -3404,6 +3415,9 @@ esac
 
 
 
+# Create a spec file, so that compile/link tests don't fail
+test -f libgfortran.spec || touch libgfortran.spec
+
 # Check the compiler.
 # The same as in boehm-gc and libstdc++. Have to borrow it from there.
 # We must force CC to /not/ be precious variables; otherwise
@@ -4414,13 +4428,13 @@ fi
 # Check for symbol versioning (copied from libssp).
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether symbol versioning is supported" >&5
 $as_echo_n "checking whether symbol versioning is supported... " >&6; }
+save_LDFLAGS="$LDFLAGS"
+LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
 cat > conftest.map <<EOF
 FOO_1.0 {
   global: *foo*; bar; local: *;
 };
 EOF
-save_LDFLAGS="$LDFLAGS"
-LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
 
 if test x$gcc_no_link = xyes; then
   as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
@@ -4437,21 +4451,72 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  gfortran_use_symver=yes
+  gfortran_use_symver=gnu
 else
   gfortran_use_symver=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
+if test x$gfortran_use_symver = xno; then
+  case "$target_os" in
+    solaris2*)
+      LDFLAGS="$save_LDFLAGS"
+      LDFLAGS="$LDFLAGS -fPIC -shared -Wl,-M,./conftest.map"
+      # Sun ld cannot handle wildcards and treats all entries as undefined.
+      cat > conftest.map <<EOF
+FOO_1.0 {
+  global: foo; local: *;
+};
+EOF
+      if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int foo;
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gfortran_use_symver=sun
+else
+  gfortran_use_symver=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+      ;;
+  esac
+fi
 LDFLAGS="$save_LDFLAGS"
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gfortran_use_symver" >&5
 $as_echo "$gfortran_use_symver" >&6; }
- if test "x$gfortran_use_symver" = xyes; then
+ if test "x$gfortran_use_symver" != xno; then
   LIBGFOR_USE_SYMVER_TRUE=
   LIBGFOR_USE_SYMVER_FALSE='#'
 else
   LIBGFOR_USE_SYMVER_TRUE='#'
   LIBGFOR_USE_SYMVER_FALSE=
+fi
+
+ if test "x$gfortran_use_symver" = xgnu; then
+  LIBGFOR_USE_SYMVER_GNU_TRUE=
+  LIBGFOR_USE_SYMVER_GNU_FALSE='#'
+else
+  LIBGFOR_USE_SYMVER_GNU_TRUE='#'
+  LIBGFOR_USE_SYMVER_GNU_FALSE=
+fi
+
+ if test "x$gfortran_use_symver" = xsun; then
+  LIBGFOR_USE_SYMVER_SUN_TRUE=
+  LIBGFOR_USE_SYMVER_SUN_FALSE='#'
+else
+  LIBGFOR_USE_SYMVER_SUN_TRUE='#'
+  LIBGFOR_USE_SYMVER_SUN_FALSE=
 fi
 
 
@@ -11307,7 +11372,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11310 "configure"
+#line 11375 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11413,7 +11478,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11416 "configure"
+#line 11481 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15387,8 +15452,7 @@ _ACEOF
 $as_echo_n "checking for type equivalent to int8_t... " >&6; }
   case "$ac_cv_sizeof_char" in
     1) acx_cv_type_int8_t=char ;;
-    *) { as_fn_set_status please report a bug
-as_fn_error "no 8-bit type" "$LINENO" 5; }
+    *) as_fn_error "no 8-bit type, please report a bug" "$LINENO" 5
   esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_type_int8_t" >&5
 $as_echo "$acx_cv_type_int8_t" >&6; }
@@ -15398,8 +15462,7 @@ $as_echo_n "checking for type equivalent to int16_t... " >&6; }
   case "$ac_cv_sizeof_int:$ac_cv_sizeof_short" in
     2:*) acx_cv_type_int16_t=int ;;
     *:2) acx_cv_type_int16_t=short ;;
-    *) { as_fn_set_status please report a bug
-as_fn_error "no 16-bit type" "$LINENO" 5; }
+    *) as_fn_error "no 16-bit type, please report a bug" "$LINENO" 5
   esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_type_int16_t" >&5
 $as_echo "$acx_cv_type_int16_t" >&6; }
@@ -15409,8 +15472,7 @@ $as_echo_n "checking for type equivalent to int32_t... " >&6; }
   case "$ac_cv_sizeof_int:$ac_cv_sizeof_long" in
     4:*) acx_cv_type_int32_t=int ;;
     *:4) acx_cv_type_int32_t=long ;;
-    *) { as_fn_set_status please report a bug
-as_fn_error "no 32-bit type" "$LINENO" 5; }
+    *) as_fn_error "no 32-bit type, please report a bug" "$LINENO" 5
   esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_type_int32_t" >&5
 $as_echo "$acx_cv_type_int32_t" >&6; }
@@ -15437,8 +15499,7 @@ $as_echo_n "checking for type equivalent to intptr_t... " >&6; }
     2) acx_cv_type_intptr_t=int16_t ;;
     4) acx_cv_type_intptr_t=int32_t ;;
     8) acx_cv_type_intptr_t=int64_t ;;
-    *) { as_fn_set_status please report a bug
-as_fn_error "no equivalent for intptr_t" "$LINENO" 5; }
+    *) as_fn_error "no equivalent for intptr_t, please report a bug" "$LINENO" 5
   esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_type_intptr_t" >&5
 $as_echo "$acx_cv_type_intptr_t" >&6; }
@@ -24111,188 +24172,6 @@ $as_echo "#define HAVE_CLOG 1" >>confdefs.h
 fi
 
 
-# Check for a isfinite macro that works on long doubles.
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether isfinite is broken" >&5
-$as_echo_n "checking whether isfinite is broken... " >&6; }
-if test "${libgfor_cv_have_broken_isfinite+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-
-  libgfor_check_for_broken_isfinite_save_LIBS=$LIBS
-  LIBS="$LIBS -lm"
-  if test "$cross_compiling" = yes; then :
-
-case "${target}" in
-  hppa*-*-hpux*) libgfor_cv_have_broken_isfinite=yes ;;
-  *) libgfor_cv_have_broken_isfinite=no ;;
-esac
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <math.h>
-#include <float.h>
-int main ()
-{
-#ifdef isfinite
-#ifdef LDBL_MAX
-  if (!isfinite(LDBL_MAX)) return 1;
-#endif
-#ifdef DBL_MAX
-  if (!isfinite(DBL_MAX)) return 1;
-#endif
-#endif
-return 0;
-}
-_ACEOF
-if ac_fn_c_try_run "$LINENO"; then :
-  libgfor_cv_have_broken_isfinite=no
-else
-  libgfor_cv_have_broken_isfinite=yes
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-
-  LIBS=$libgfor_check_for_broken_isfinite_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgfor_cv_have_broken_isfinite" >&5
-$as_echo "$libgfor_cv_have_broken_isfinite" >&6; }
-if test x"$libgfor_cv_have_broken_isfinite" = xyes; then
-
-$as_echo "#define HAVE_BROKEN_ISFINITE 1" >>confdefs.h
-
-fi
-
-# Check for a isnan macro that works on long doubles.
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether isnan is broken" >&5
-$as_echo_n "checking whether isnan is broken... " >&6; }
-if test "${libgfor_cv_have_broken_isnan+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-
-  libgfor_check_for_broken_isnan_save_LIBS=$LIBS
-  LIBS="$LIBS -lm"
-  if test "$cross_compiling" = yes; then :
-
-case "${target}" in
-  hppa*-*-hpux*) libgfor_cv_have_broken_isnan=yes ;;
-  *) libgfor_cv_have_broken_isnan=no ;;
-esac
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <math.h>
-#include <float.h>
-int main ()
-{
-#ifdef isnan
-#ifdef LDBL_MAX
-  {
-    long double x;
-    x = __builtin_nanl ("");
-    if (!isnan(x)) return 1;
-    if (isnan(LDBL_MAX)) return 1;
-#ifdef NAN
-    x = (long double) NAN;
-    if (!isnan(x)) return 1;
-#endif
-  }
-#endif
-#ifdef DBL_MAX
-  {
-    double y;
-    y = __builtin_nan ("");
-    if (!isnan(y)) return 1;
-    if (isnan(DBL_MAX)) return 1;
-#ifdef NAN
-    y = (double) NAN;
-    if (!isnan(y)) return 1;
-#endif
-  }
-#endif
-#endif
-return 0;
-}
-_ACEOF
-if ac_fn_c_try_run "$LINENO"; then :
-  libgfor_cv_have_broken_isnan=no
-else
-  libgfor_cv_have_broken_isnan=yes
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-
-  LIBS=$libgfor_check_for_broken_isnan_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgfor_cv_have_broken_isnan" >&5
-$as_echo "$libgfor_cv_have_broken_isnan" >&6; }
-if test x"$libgfor_cv_have_broken_isnan" = xyes; then
-
-$as_echo "#define HAVE_BROKEN_ISNAN 1" >>confdefs.h
-
-fi
-
-# Check for a fpclassify macro that works on long doubles.
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether fpclassify is broken" >&5
-$as_echo_n "checking whether fpclassify is broken... " >&6; }
-if test "${libgfor_cv_have_broken_fpclassify+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-
-  libgfor_check_for_broken_fpclassify_save_LIBS=$LIBS
-  LIBS="$LIBS -lm"
-  if test "$cross_compiling" = yes; then :
-
-case "${target}" in
-  hppa*-*-hpux*) libgfor_cv_have_broken_fpclassify=yes ;;
-  *) libgfor_cv_have_broken_fpclassify=no ;;
-esac
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <math.h>
-#include <float.h>
-int main ()
-{
-#ifdef fpclassify
-#ifdef LDBL_MAX
-        if (fpclassify(LDBL_MAX) == FP_NAN
-            || fpclassify(LDBL_MAX) == FP_INFINITE) return 1;
-#endif
-#ifdef DBL_MAX
-        if (fpclassify(DBL_MAX) == FP_NAN
-            || fpclassify(DBL_MAX) == FP_INFINITE) return 1;
-#endif
-#endif
-return 0;
-}
-_ACEOF
-if ac_fn_c_try_run "$LINENO"; then :
-  libgfor_cv_have_broken_fpclassify=no
-else
-  libgfor_cv_have_broken_fpclassify=yes
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-
-  LIBS=$libgfor_check_for_broken_fpclassify_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgfor_cv_have_broken_fpclassify" >&5
-$as_echo "$libgfor_cv_have_broken_fpclassify" >&6; }
-if test x"$libgfor_cv_have_broken_fpclassify" = xyes; then
-
-$as_echo "#define HAVE_BROKEN_FPCLASSIFY 1" >>confdefs.h
-
-fi
-
 # Check whether the system has a working stat()
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the target stat is reliable" >&5
@@ -24415,6 +24294,131 @@ $as_echo "$libgfor_cv_have_broken_powf" >&6; }
 $as_echo "#define HAVE_BROKEN_POWF 1" >>confdefs.h
 
   fi
+
+
+# Check whether we have a __float128 type
+
+  LIBQUADSPEC=
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we have a usable __float128 type" >&5
+$as_echo_n "checking whether we have a usable __float128 type... " >&6; }
+if test "${libgfor_cv_have_float128+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* no header */
+
+int
+main ()
+{
+
+  typedef _Complex float __attribute__((mode(TC))) __complex128;
+
+  __float128 x;
+  x = __builtin_huge_valq() - 2.e1000Q;
+
+  __complex128 z1, z2;
+  z1 = x;
+  z2 = 2.Q;
+
+  z1 /= z2;
+  z1 /= 7.Q;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  libgfor_cv_have_float128=yes
+else
+  libgfor_cv_have_float128=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgfor_cv_have_float128" >&5
+$as_echo "$libgfor_cv_have_float128" >&6; }
+
+  if test "x$libgfor_cv_have_float128" = xyes; then
+
+$as_echo "#define HAVE_FLOAT128 1" >>confdefs.h
+
+
+                                ac_xsave_c_werror_flag=$ac_c_werror_flag
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether --as-needed works" >&5
+$as_echo_n "checking whether --as-needed works... " >&6; }
+if test "${libgfor_cv_have_as_needed+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+      save_LDFLAGS="$LDFLAGS"
+      LDFLAGS="$LDFLAGS -Wl,--as-needed -lm -Wl,--no-as-needed"
+      libgfor_cv_have_as_needed=no
+
+ac_c_werror_flag=yes
+      if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  libgfor_cv_have_as_needed=yes
+else
+  libgfor_cv_have_as_needed=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+      LDFLAGS="$save_LDFLAGS"
+      ac_c_werror_flag=$ac_xsave_c_werror_flag
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgfor_cv_have_as_needed" >&5
+$as_echo "$libgfor_cv_have_as_needed" >&6; }
+
+        if test "x$libgfor_cv_have_as_needed" = xyes; then
+      LIBQUADSPEC="%{static-libgfortran:--as-needed} -lquadmath %{static-libgfortran:--no-as-needed}"
+    else
+      LIBQUADSPEC="-lquadmath"
+    fi
+    if test -f ../libquadmath/libquadmath.la; then
+      LIBQUADLIB=../libquadmath/libquadmath.la
+      LIBQUADLIB_DEP=../libquadmath/libquadmath.la
+      LIBQUADINCLUDE='-I$(srcdir)/../libquadmath'
+    else
+      LIBQUADLIB="-lquadmath"
+      LIBQUADLIB_DEP=
+      LIBQUADINCLUDE=
+    fi
+  fi
+
+
+
+
+
+
+     if test "x$libgfor_cv_have_float128" = xyes; then
+  LIBGFOR_BUILD_QUAD_TRUE=
+  LIBGFOR_BUILD_QUAD_FALSE='#'
+else
+  LIBGFOR_BUILD_QUAD_TRUE='#'
+  LIBGFOR_BUILD_QUAD_FALSE=
+fi
+
 
 
 # Check for GNU libc feenableexcept
@@ -24963,8 +24967,8 @@ else
   multilib_arg=
 fi
 
-# Write our Makefile.
-ac_config_files="$ac_config_files Makefile"
+# Write our Makefile and spec file.
+ac_config_files="$ac_config_files Makefile libgfortran.spec"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -25089,6 +25093,18 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGFOR_USE_SYMVER_TRUE}" && test -z "${LIBGFOR_USE_SYMVER_FALSE}"; then
   as_fn_error "conditional \"LIBGFOR_USE_SYMVER\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGFOR_USE_SYMVER_GNU_TRUE}" && test -z "${LIBGFOR_USE_SYMVER_GNU_FALSE}"; then
+  as_fn_error "conditional \"LIBGFOR_USE_SYMVER_GNU\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGFOR_USE_SYMVER_SUN_TRUE}" && test -z "${LIBGFOR_USE_SYMVER_SUN_FALSE}"; then
+  as_fn_error "conditional \"LIBGFOR_USE_SYMVER_SUN\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGFOR_BUILD_QUAD_TRUE}" && test -z "${LIBGFOR_BUILD_QUAD_FALSE}"; then
+  as_fn_error "conditional \"LIBGFOR_BUILD_QUAD\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
@@ -26084,6 +26100,7 @@ do
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "gstdint.h") CONFIG_COMMANDS="$CONFIG_COMMANDS gstdint.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+    "libgfortran.spec") CONFIG_FILES="$CONFIG_FILES libgfortran.spec" ;;
 
   *) as_fn_error "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

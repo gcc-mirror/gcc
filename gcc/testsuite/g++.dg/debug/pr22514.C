@@ -8,6 +8,6 @@ namespace s
   template<int i> struct list : _List_base<i>
   {
     using _List_base<i>::_M_impl;
-  }
-}  /* { dg-error "expected unqualified-id before '\}'" } */
+  } // { dg-error "after struct definition" }
+}
 s::list<1> OutputModuleListType;

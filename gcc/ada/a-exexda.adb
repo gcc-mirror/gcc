@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -556,16 +556,60 @@ package body Exception_Data is
    -------------------------
 
    procedure Set_Exception_C_Msg
-     (Id   : Exception_Id;
-      Msg1 : System.Address;
-      Line : Integer        := 0;
-      Msg2 : System.Address := System.Null_Address)
+     (Id     : Exception_Id;
+      Msg1   : System.Address;
+      Line   : Integer        := 0;
+      Column : Integer        := 0;
+      Msg2   : System.Address := System.Null_Address)
    is
       Excep  : constant EOA := Get_Current_Excep.all;
-      Val    : Integer := Line;
       Remind : Integer;
-      Size   : Integer := 1;
       Ptr    : Natural;
+
+      procedure Append_Number (Number : Integer);
+      --  Append given number to Excep.Msg
+
+      -------------------
+      -- Append_Number --
+      -------------------
+
+      procedure Append_Number (Number : Integer) is
+         Val  : Integer;
+         Size : Integer;
+
+      begin
+         if Number <= 0 then
+            return;
+         end if;
+
+         --  Compute the number of needed characters
+
+         Size := 1;
+         Val := Number;
+         while Val > 0 loop
+            Val := Val / 10;
+            Size := Size + 1;
+         end loop;
+
+         --  If enough characters are available, put the line number
+
+         if Excep.Msg_Length <= Exception_Msg_Max_Length - Size then
+            Excep.Msg (Excep.Msg_Length + 1) := ':';
+            Excep.Msg_Length := Excep.Msg_Length + Size;
+            Val := Number;
+            Size := 0;
+
+            while Val > 0 loop
+               Remind := Val rem 10;
+               Val := Val / 10;
+               Excep.Msg (Excep.Msg_Length - Size) :=
+                 Character'Val (Remind + Character'Pos ('0'));
+               Size := Size + 1;
+            end loop;
+         end if;
+      end Append_Number;
+
+   --  Start of processing for Set_Exception_C_Msg
 
    begin
       Exception_Propagation.Setup_Exception (Excep, Excep);
@@ -583,34 +627,8 @@ package body Exception_Data is
          Excep.Msg (Excep.Msg_Length) := To_Ptr (Msg1) (Excep.Msg_Length);
       end loop;
 
-      --  Append line number if present
-
-      if Line > 0 then
-
-         --  Compute the number of needed characters
-
-         while Val > 0 loop
-            Val := Val / 10;
-            Size := Size + 1;
-         end loop;
-
-         --  If enough characters are available, put the line number
-
-         if Excep.Msg_Length <= Exception_Msg_Max_Length - Size then
-            Excep.Msg (Excep.Msg_Length + 1) := ':';
-            Excep.Msg_Length := Excep.Msg_Length + Size;
-            Val := Line;
-            Size := 0;
-
-            while Val > 0 loop
-               Remind := Val rem 10;
-               Val := Val / 10;
-               Excep.Msg (Excep.Msg_Length - Size) :=
-                 Character'Val (Remind + Character'Pos ('0'));
-               Size := Size + 1;
-            end loop;
-         end if;
-      end if;
+      Append_Number (Line);
+      Append_Number (Column);
 
       --  Append second message if present
 

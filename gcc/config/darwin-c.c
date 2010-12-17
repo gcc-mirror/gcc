@@ -1,5 +1,5 @@
 /* Darwin support needed only by C/C++ frontends.
-   Copyright (C) 2001, 2003, 2004, 2005, 2007, 2008
+   Copyright (C) 2001, 2003, 2004, 2005, 2007, 2008, 2010
    Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
@@ -28,7 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "incpath.h"
 #include "c-family/c-common.h"
 #include "c-family/c-pragma.h"
-#include "toplev.h"
+#include "c-family/c-format.h"
+#include "diagnostic-core.h"
 #include "flags.h"
 #include "tm_p.h"
 #include "cppdefault.h"
@@ -588,7 +589,7 @@ version_as_macro (void)
   return result;
 
  fail:
-  error ("Unknown value %qs of -mmacosx-version-min",
+  error ("unknown value %qs of -mmacosx-version-min",
 	 darwin_macosx_version_min);
   return "1000";
 }
@@ -607,8 +608,27 @@ darwin_cpp_builtins (cpp_reader *pfile)
      to be defined and won't work if it isn't.  */
   builtin_define_with_value ("__APPLE_CC__", "1", false);
 
+  if (darwin_constant_cfstrings)
+    builtin_define ("__CONSTANT_CFSTRINGS__");
+
   builtin_define_with_value ("__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__",
 			     version_as_macro(), false);
+
+  /* Since we do not (at 4.6) support ObjC gc for the NeXT runtime, the
+     following will cause a syntax error if one tries to compile gc attributed
+     items.  However, without this, NeXT system headers cannot be parsed 
+     properly (on systems >= darwin 9).  */
+  if (flag_objc_gc)
+    {
+      builtin_define ("__strong=__attribute__((objc_gc(strong)))");
+      builtin_define ("__weak=__attribute__((objc_gc(weak)))");
+      builtin_define ("__OBJC_GC__");
+    }
+  else
+    {
+      builtin_define ("__strong=");
+      builtin_define ("__weak=");
+    }
 }
 
 /* Handle C family front-end options.  */
@@ -641,3 +661,54 @@ handle_c_option (size_t code,
 #define TARGET_HANDLE_C_OPTION handle_c_option
 
 struct gcc_targetcm targetcm = TARGETCM_INITIALIZER;
+
+/* Allow ObjC* access to CFStrings.  */
+tree
+darwin_objc_construct_string (tree str)
+{
+  if (!darwin_constant_cfstrings)
+    {
+    /* Even though we are not using CFStrings, place our literal
+       into the cfstring_htab hash table, so that the
+       darwin_constant_cfstring_p() function will see it.  */
+      darwin_enter_string_into_cfstring_table (str);
+      /* Fall back to NSConstantString.  */
+      return NULL_TREE;
+    }
+
+  return darwin_build_constant_cfstring (str);
+}
+
+/* The string ref type is created as CFStringRef by <CFBase.h> therefore, we
+   must match for it explicitly, since it's outside the gcc code.  */
+
+bool
+darwin_cfstring_ref_p (const_tree strp)
+{
+  tree tn;
+  if (!strp || TREE_CODE (strp) != POINTER_TYPE)
+    return false;
+
+  tn = TYPE_NAME (strp);
+  if (tn) 
+    tn = DECL_NAME (tn);
+  return (tn 
+	  && IDENTIFIER_POINTER (tn)
+	  && !strncmp (IDENTIFIER_POINTER (tn), "CFStringRef", 8));
+}
+
+/* At present the behavior of this is undefined and it does nothing.  */
+void
+darwin_check_cfstring_format_arg (tree ARG_UNUSED (format_arg), 
+				  tree ARG_UNUSED (args_list))
+{
+}
+
+/* The extra format types we recognize.  */
+EXPORTED_CONST format_kind_info darwin_additional_format_types[] = {
+  { "CFString",   NULL,  NULL, NULL, NULL, 
+    NULL, NULL, 
+    FMT_FLAG_ARG_CONVERT|FMT_FLAG_PARSE_ARG_CONVERT_EXTERNAL, 0, 0, 0, 0, 0, 0,
+    NULL, NULL
+  }
+};

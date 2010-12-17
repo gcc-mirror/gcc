@@ -1,6 +1,6 @@
 ; Darwin options for PPC port.
 ;
-; Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2007, 2010 Free Software Foundation, Inc.
 ; Contributed by Aldy Hernandez <aldy@quesejoda.com>.
 ;
 ; This file is part of GCC.
@@ -19,6 +19,20 @@
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
 
+Waltivec-long-deprecated
+Driver Alias(mwarn-altivec-long)
+
+faltivec
+Driver
+
+; -ffix-and-continue and -findirect-data are for compatibility for old
+; compilers.
+ffix-and-continue
+Driver RejectNegative Alias(mfix-and-continue)
+
+findirect-data
+Driver RejectNegative Alias(mfix-and-continue)
+
 m64
 Target RejectNegative Negative(m32) Mask(64BIT)
 Generate 64-bit code
@@ -26,7 +40,3 @@ Generate 64-bit code
 m32
 Target RejectNegative Negative(m64) InverseMask(64BIT)
 Generate 32-bit code
-
-mdynamic-no-pic
-Target Report Mask(MACHO_DYNAMIC_NO_PIC)
-Generate code suitable for executables (NOT shared libs)

@@ -1,4 +1,5 @@
-/* { dg-do compile { target { { sh-*-* sh[1234ble]*-*-* } && nonpic } } } */
+/* { dg-do compile { target { { { sh-*-* sh[1234ble]*-*-* } && { ! sh2a*-*-* } } && nonpic } } } */
+/* { dg-skip-if "" { "sh*-*-*" } { "-m2a*" } { "" } } */
 /* { dg-options "-O" } */
 extern void foo ();
 

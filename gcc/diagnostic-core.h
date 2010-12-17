@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_DIAGNOSTIC_CORE_H
 
 #include "input.h"
+#include "bversion.h"
 
 /* Constants used to discriminate diagnostics.  */
 typedef enum

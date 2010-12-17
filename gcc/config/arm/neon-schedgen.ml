@@ -1,7 +1,6 @@
 (* Emission of the core of the Cortex-A8 NEON scheduling description.
    Copyright (C) 2007, 2010 Free Software Foundation, Inc.
    Contributed by CodeSourcery.
-
    This file is part of GCC.
 
    GCC is free software; you can redistribute it and/or modify it under
@@ -21,7 +20,14 @@
 
 (* This scheduling description generator works as follows.
    - Each group of instructions has source and destination requirements
-     specified.  The source requirements may be specified using
+     specified and a list of cores supported. This is then filtered
+     and per core scheduler descriptions are generated out.
+     The reservations generated are prefixed by the name of the
+     core and the check is performed on the basis of what the tuning
+     string is. Running this will generate Neon scheduler descriptions
+     for all cores supported.
+
+     The source requirements may be specified using
      Source (the stage at which all source operands not otherwise
      described are read), Source_m (the stage at which Rm operands are
      read), Source_n (likewise for Rn) and Source_d (likewise for Rd).
@@ -83,6 +89,17 @@ type reservation =
 | Ls of int
 | Fmul_then_fadd | Fmul_then_fadd_2
 
+type core = CortexA8 | CortexA9
+let allCores = [CortexA8; CortexA9]
+let coreStr = function
+    CortexA8 -> "cortex_a8"
+  | CortexA9 -> "cortex_a9"
+
+let tuneStr = function
+    CortexA8 -> "cortexa8"
+   | CortexA9 -> "cortexa9"
+
+
 (* This table must be kept as short as possible by conflating
    entries with the same availability behavior.
 
@@ -90,129 +107,136 @@ type reservation =
    Second components: availability requirements, in the order in which
    they should appear in the comments in the .md file.
    Third components: reservation info
+   Fourth components: List of supported cores.
 *)
 let availability_table = [
   (* NEON integer ALU instructions.  *)
   (* vbit vbif vbsl vorr vbic vnot vcls vclz vcnt vadd vand vorr
      veor vbic vorn ddd qqq *)
-  "neon_int_1", [Source n2; Dest n3], ALU;
+  "neon_int_1", [Source n2; Dest n3], ALU, allCores;
   (* vadd vsub qqd vsub ddd qqq *)
-  "neon_int_2", [Source_m n1; Source_n n2; Dest n3], ALU;
+  "neon_int_2", [Source_m n1; Source_n n2; Dest n3], ALU, allCores;
   (* vsum vneg dd qq vadd vsub qdd *)
-  "neon_int_3", [Source n1; Dest n3], ALU;
+  "neon_int_3", [Source n1; Dest n3], ALU, allCores;
   (* vabs vceqz vcgez vcbtz vclez vcltz vadh vradh vsbh vrsbh dqq *)
   (* vhadd vrhadd vqadd vtst ddd qqq *)
-  "neon_int_4", [Source n2; Dest n4], ALU;
+  "neon_int_4", [Source n2; Dest n4], ALU, allCores;
   (* vabd qdd vhsub vqsub vabd vceq vcge vcgt vmax vmin vfmx vfmn ddd ddd *)
-  "neon_int_5", [Source_m n1; Source_n n2; Dest n4], ALU;
+  "neon_int_5", [Source_m n1; Source_n n2; Dest n4], ALU, allCores;
   (* vqneg vqabs dd qq *)
-  "neon_vqneg_vqabs", [Source n1; Dest n4], ALU;
+  "neon_vqneg_vqabs", [Source n1; Dest n4], ALU, allCores;
   (* vmov vmvn *)
-  "neon_vmov", [Dest n3], ALU;
+  "neon_vmov", [Dest n3], ALU, allCores;
   (* vaba *)
-  "neon_vaba", [Source_n n2; Source_m n1; Source_d n3; Dest n6], ALU;
+  "neon_vaba", [Source_n n2; Source_m n1; Source_d n3; Dest n6], ALU, allCores;
   "neon_vaba_qqq",
-    [Source_n n2; Source_m n1; Source_d n3; Dest_n_after (1, n6)], ALU_2cycle;
+    [Source_n n2; Source_m n1; Source_d n3; Dest_n_after (1, n6)], 
+   ALU_2cycle, allCores;
   (* vsma *)
-  "neon_vsma", [Source_m n1; Source_d n3; Dest n6], ALU;
+  "neon_vsma", [Source_m n1; Source_d n3; Dest n6], ALU, allCores;
 
   (* NEON integer multiply instructions.  *)
   (* vmul, vqdmlh, vqrdmlh *)
   (* vmul, vqdmul, qdd 16/8 long 32/16 long *)
-  "neon_mul_ddd_8_16_qdd_16_8_long_32_16_long", [Source n2; Dest n6], Mul;
-  "neon_mul_qqq_8_16_32_ddd_32", [Source n2; Dest_n_after (1, n6)], Mul_2cycle;
+  "neon_mul_ddd_8_16_qdd_16_8_long_32_16_long", [Source n2; Dest n6], 
+   Mul, allCores;
+  "neon_mul_qqq_8_16_32_ddd_32", [Source n2; Dest_n_after (1, n6)], 
+   Mul_2cycle, allCores;
   (* vmul, vqdmul again *)
   "neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar",
-    [Source_n n2; Source_m n1; Dest_n_after (1, n6)], Mul_2cycle;
+    [Source_n n2; Source_m n1; Dest_n_after (1, n6)], Mul_2cycle, allCores;
   (* vmla, vmls *)
   "neon_mla_ddd_8_16_qdd_16_8_long_32_16_long",
-    [Source_n n2; Source_m n2; Source_d n3; Dest n6], Mul;
+    [Source_n n2; Source_m n2; Source_d n3; Dest n6], Mul, allCores;
   "neon_mla_qqq_8_16",
-    [Source_n n2; Source_m n2; Source_d n3; Dest_n_after (1, n6)], Mul_2cycle;
+    [Source_n n2; Source_m n2; Source_d n3; Dest_n_after (1, n6)], 
+   Mul_2cycle, allCores;
   "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long",
-    [Source_n n2; Source_m n1; Source_d n3; Dest_n_after (1, n6)], Mul_2cycle;
+    [Source_n n2; Source_m n1; Source_d n3; Dest_n_after (1, n6)], 
+   Mul_2cycle, allCores;
   "neon_mla_qqq_32_qqd_32_scalar",
-    [Source_n n2; Source_m n1; Source_d n3; Dest_n_after (3, n6)], Mul_4cycle;
+    [Source_n n2; Source_m n1; Source_d n3; Dest_n_after (3, n6)], 
+   Mul_4cycle, allCores;
   (* vmul, vqdmulh, vqrdmulh *)
   (* vmul, vqdmul *)
   "neon_mul_ddd_16_scalar_32_16_long_scalar",
-    [Source_n n2; Source_m n1; Dest n6], Mul;
+    [Source_n n2; Source_m n1; Dest n6], Mul, allCores;
   "neon_mul_qqd_32_scalar",
-    [Source_n n2; Source_m n1; Dest_n_after (3, n6)], Mul_4cycle;
+    [Source_n n2; Source_m n1; Dest_n_after (3, n6)], Mul_4cycle, allCores;
   (* vmla, vmls *)
   (* vmla, vmla, vqdmla, vqdmls *)
   "neon_mla_ddd_16_scalar_qdd_32_16_long_scalar",
-    [Source_n n2; Source_m n1; Source_d n3; Dest n6], Mul;
+    [Source_n n2; Source_m n1; Source_d n3; Dest n6], Mul, allCores;
 
   (* NEON integer shift instructions.  *)
   (* vshr/vshl immediate, vshr_narrow, vshl_vmvh, vsli_vsri_ddd *)
-  "neon_shift_1", [Source n1; Dest n3], Shift;
-  (* vqshl, vrshr immediate; vqshr, vqmov, vrshr, vqrshr narrow;
+  "neon_shift_1", [Source n1; Dest n3], Shift, allCores;
+  (* vqshl, vrshr immediate; vqshr, vqmov, vrshr, vqrshr narrow, allCores;
      vqshl_vrshl_vqrshl_ddd *)
-  "neon_shift_2", [Source n1; Dest n4], Shift;
+  "neon_shift_2", [Source n1; Dest n4], Shift, allCores;
   (* vsli, vsri and vshl for qqq *)
-  "neon_shift_3", [Source n1; Dest_n_after (1, n3)], Shift_2cycle;
-  "neon_vshl_ddd", [Source n1; Dest n1], Shift;
+  "neon_shift_3", [Source n1; Dest_n_after (1, n3)], Shift_2cycle, allCores;
+  "neon_vshl_ddd", [Source n1; Dest n1], Shift, allCores;
   "neon_vqshl_vrshl_vqrshl_qqq", [Source n1; Dest_n_after (1, n4)],
-    Shift_2cycle;
-  "neon_vsra_vrsra", [Source_m n1; Source_d n3; Dest n6], Shift;
+    Shift_2cycle, allCores;
+  "neon_vsra_vrsra", [Source_m n1; Source_d n3; Dest n6], Shift, allCores;
 
   (* NEON floating-point instructions.  *)
   (* vadd, vsub, vabd, vmul, vceq, vcge, vcgt, vcage, vcagt, vmax, vmin *)
   (* vabs, vneg, vceqz, vcgez, vcgtz, vclez, vcltz, vrecpe, vrsqrte, vcvt *)
-  "neon_fp_vadd_ddd_vabs_dd", [Source n2; Dest n5], Fadd;
+  "neon_fp_vadd_ddd_vabs_dd", [Source n2; Dest n5], Fadd, allCores;
   "neon_fp_vadd_qqq_vabs_qq", [Source n2; Dest_n_after (1, n5)],
-    Fadd_2cycle;
+    Fadd_2cycle, allCores;
   (* vsum, fvmx, vfmn *)
-  "neon_fp_vsum", [Source n1; Dest n5], Fadd;
-  "neon_fp_vmul_ddd", [Source_n n2; Source_m n1; Dest n5], Fmul;
+  "neon_fp_vsum", [Source n1; Dest n5], Fadd, allCores;
+  "neon_fp_vmul_ddd", [Source_n n2; Source_m n1; Dest n5], Fmul, allCores;
   "neon_fp_vmul_qqd", [Source_n n2; Source_m n1; Dest_n_after (1, n5)],
-    Fmul_2cycle;
+    Fmul_2cycle, allCores;
   (* vmla, vmls *)
   "neon_fp_vmla_ddd",
-    [Source_n n2; Source_m n2; Source_d n3; Dest n9], Fmul_then_fadd;
+    [Source_n n2; Source_m n2; Source_d n3; Dest n9], Fmul_then_fadd, allCores;
   "neon_fp_vmla_qqq",
     [Source_n n2; Source_m n2; Source_d n3; Dest_n_after (1, n9)],
-    Fmul_then_fadd_2;
+    Fmul_then_fadd_2, allCores;
   "neon_fp_vmla_ddd_scalar",
-    [Source_n n2; Source_m n1; Source_d n3; Dest n9], Fmul_then_fadd;
+    [Source_n n2; Source_m n1; Source_d n3; Dest n9], Fmul_then_fadd, allCores;
   "neon_fp_vmla_qqq_scalar",
     [Source_n n2; Source_m n1; Source_d n3; Dest_n_after (1, n9)],
-    Fmul_then_fadd_2;
-  "neon_fp_vrecps_vrsqrts_ddd", [Source n2; Dest n9], Fmul_then_fadd;
+    Fmul_then_fadd_2, allCores;
+  "neon_fp_vrecps_vrsqrts_ddd", [Source n2; Dest n9], Fmul_then_fadd, allCores;
   "neon_fp_vrecps_vrsqrts_qqq", [Source n2; Dest_n_after (1, n9)],
-    Fmul_then_fadd_2;
+    Fmul_then_fadd_2, allCores;
 
   (* NEON byte permute instructions.  *)
   (* vmov; vtrn and vswp for dd; vzip for dd; vuzp for dd; vrev; vext for dd *)
-  "neon_bp_simple", [Source n1; Dest n2], Permute 1;
-  (* vswp for qq; vext for qqq; vtbl with {Dn} or {Dn, Dn1};
+  "neon_bp_simple", [Source n1; Dest n2], Permute 1, allCores;
+  (* vswp for qq; vext for qqq; vtbl with {Dn} or {Dn, Dn1}, allCores;
      similarly for vtbx *)
-  "neon_bp_2cycle", [Source n1; Dest_n_after (1, n2)], Permute 2;
+  "neon_bp_2cycle", [Source n1; Dest_n_after (1, n2)], Permute 2, allCores;
   (* all the rest *)
-  "neon_bp_3cycle", [Source n1; Dest_n_after (2, n2)], Permute 3;
+  "neon_bp_3cycle", [Source n1; Dest_n_after (2, n2)], Permute 3, allCores;
 
   (* NEON load/store instructions.  *)
-  "neon_ldr", [Dest n1], Ls 1;
-  "neon_str", [Source n1], Ls 1;
-  "neon_vld1_1_2_regs", [Dest_n_after (1, n1)], Ls 2;
-  "neon_vld1_3_4_regs", [Dest_n_after (2, n1)], Ls 3;
-  "neon_vld2_2_regs_vld1_vld2_all_lanes", [Dest_n_after (1, n2)], Ls 2;
-  "neon_vld2_4_regs", [Dest_n_after (2, n2)], Ls 3;
-  "neon_vld3_vld4", [Dest_n_after (3, n2)], Ls 4;
-  "neon_vst1_1_2_regs_vst2_2_regs", [Source n1], Ls 2;
-  "neon_vst1_3_4_regs", [Source n1], Ls 3;
-  "neon_vst2_4_regs_vst3_vst4", [Source n1], Ls 4;
-  "neon_vst3_vst4", [Source n1], Ls 4;
-  "neon_vld1_vld2_lane", [Source n1; Dest_n_after (2, n2)], Ls 3;
-  "neon_vld3_vld4_lane", [Source n1; Dest_n_after (4, n2)], Ls 5;
-  "neon_vst1_vst2_lane", [Source n1], Ls 2;
-  "neon_vst3_vst4_lane", [Source n1], Ls 3;
-  "neon_vld3_vld4_all_lanes", [Dest_n_after (1, n2)], Ls 3;
+  "neon_ldr", [Dest n1], Ls 1, allCores;
+  "neon_str", [Source n1], Ls 1, allCores;
+  "neon_vld1_1_2_regs", [Dest_n_after (1, n1)], Ls 2, allCores;
+  "neon_vld1_3_4_regs", [Dest_n_after (2, n1)], Ls 3, allCores;
+  "neon_vld2_2_regs_vld1_vld2_all_lanes", [Dest_n_after (1, n2)], Ls 2, allCores;
+  "neon_vld2_4_regs", [Dest_n_after (2, n2)], Ls 3, allCores;
+  "neon_vld3_vld4", [Dest_n_after (3, n2)], Ls 4, allCores;
+  "neon_vst1_1_2_regs_vst2_2_regs", [Source n1], Ls 2, allCores;
+  "neon_vst1_3_4_regs", [Source n1], Ls 3, allCores;
+  "neon_vst2_4_regs_vst3_vst4", [Source n1], Ls 4, allCores;
+  "neon_vst3_vst4", [Source n1], Ls 4, allCores;
+  "neon_vld1_vld2_lane", [Source n1; Dest_n_after (2, n2)], Ls 3, allCores;
+  "neon_vld3_vld4_lane", [Source n1; Dest_n_after (4, n2)], Ls 5, allCores;
+  "neon_vst1_vst2_lane", [Source n1], Ls 2, allCores;
+  "neon_vst3_vst4_lane", [Source n1], Ls 3, allCores;
+  "neon_vld3_vld4_all_lanes", [Dest_n_after (1, n2)], Ls 3, allCores;
 
   (* NEON register transfer instructions.  *)
-  "neon_mcr", [Dest n2], Permute 1;
-  "neon_mcr_2_mcrr", [Dest n2], Permute 2;
+  "neon_mcr", [Dest n2], Permute 1, allCores;
+  "neon_mcr_2_mcrr", [Dest n2], Permute 2, allCores;
   (* MRC instructions are in the .tpl file.  *)
 ]
 
@@ -221,7 +245,7 @@ let availability_table = [
    required.  (It is also possible that an entry in the table has no
    source requirements.)  *)
 let calculate_sources =
-  List.map (fun (name, avail, res) ->
+  List.map (fun (name, avail, res, cores) ->
               let earliest_stage =
                 List.fold_left
                   (fun cur -> fun info ->
@@ -331,7 +355,7 @@ let pick_latency largest worst guards =
    of one bypass from this producer to any particular consumer listed
    in LATENCIES.)  Use a hash table to collate bypasses with the
    same latency and guard.  *)
-let collate_bypasses (producer_name, _, _, _) largest latencies =
+let collate_bypasses (producer_name, _, _, _) largest latencies core =
   let ht = Hashtbl.create 42 in
   let keys = ref [] in
     List.iter (
@@ -350,7 +374,7 @@ let collate_bypasses (producer_name, _, _, _) largest latencies =
               (if (try ignore (Hashtbl.find ht (guard, latency)); false
                    with Not_found -> true) then
                  keys := (guard, latency) :: !keys);
-              Hashtbl.add ht (guard, latency) consumer
+              Hashtbl.add ht (guard, latency) ((coreStr core) ^ "_" ^ consumer)
             end
     ) latencies;
     (* The hash table now has bypasses collated so that ones with the
@@ -372,7 +396,7 @@ let collate_bypasses (producer_name, _, _, _) largest latencies =
    the output in such a way that all bypasses with the same producer
    and latency are together, and so that bypasses with the worst-case
    latency are ignored.  *)
-let worst_case_latencies_and_bypasses =
+let worst_case_latencies_and_bypasses core =
   let rec f (worst_acc, bypasses_acc) prev xs =
     match xs with
       [] -> (worst_acc, bypasses_acc)
@@ -400,7 +424,7 @@ let worst_case_latencies_and_bypasses =
           (* Having got the largest latency, collect all bypasses for
              this producer and filter out those with that larger
              latency.  Record the others for later emission.  *)
-          let bypasses = collate_bypasses producer largest latencies in
+          let bypasses = collate_bypasses producer largest latencies core in
             (* Go on to process remaining producers, having noted
                the result for this one.  *)
             f ((producer_name, producer_avail, largest,
@@ -444,14 +468,18 @@ let write_comment producer avail =
     in
       f avail 0
 
+
 (* Emit a define_insn_reservation for each producer.  The latency
    written in will be its worst-case latency.  *)
-let emit_insn_reservations =
-  List.iter (
+let emit_insn_reservations core =
+  let corestring = coreStr core in
+  let tunestring = tuneStr core
+  in  List.iter (
      fun (producer, avail, latency, reservation) ->
         write_comment producer avail;
-        Printf.printf "(define_insn_reservation \"%s\" %d\n" producer latency;
-        Printf.printf "  (and (eq_attr \"tune\" \"cortexa8\")\n";
+        Printf.printf "(define_insn_reservation \"%s_%s\" %d\n" 
+            corestring producer latency;
+            Printf.printf "  (and (eq_attr \"tune\" \"%s\")\n" tunestring;
         Printf.printf "       (eq_attr \"neon_type\" \"%s\"))\n" producer;
         let str =
           match reservation with
@@ -467,7 +495,7 @@ let emit_insn_reservations =
 	  | Fmul_then_fadd -> "fmul_then_fadd"
 	  | Fmul_then_fadd_2 -> "fmul_then_fadd_2"
         in
-          Printf.printf "  \"cortex_a8_neon_%s\")\n\n" str
+          Printf.printf "  \"%s_neon_%s\")\n\n" corestring str
     )
 
 (* Given a guard description, return the name of the C function to
@@ -480,10 +508,12 @@ let guard_fn g =
   | Guard_none -> assert false
 
 (* Emit a define_bypass for each bypass.  *)
-let emit_bypasses =
+let emit_bypasses core =
   List.iter (
       fun (producer, consumers, latency, guard) ->
-        Printf.printf "(define_bypass %d \"%s\"\n" latency producer;
+        Printf.printf "(define_bypass %d \"%s_%s\"\n" 
+	latency (coreStr core) producer;
+
         if guard = Guard_none then
           Printf.printf "               \"%s\")\n\n" consumers
         else
@@ -493,11 +523,21 @@ let emit_bypasses =
           end
     )
 
+
+let calculate_per_core_availability_table core availability_table =
+  let table = calculate_sources availability_table in
+  let worst_cases, bypasses = worst_case_latencies_and_bypasses core table in
+    emit_insn_reservations core (List.rev worst_cases);
+    Printf.printf ";; Exceptions to the default latencies.\n\n";
+    emit_bypasses core bypasses
+
+let calculate_core_availability_table core availability_table =
+let filter_core = List.filter (fun (_, _, _, cores) 
+				   -> List.exists ((=) core) cores)
+in calculate_per_core_availability_table core (filter_core availability_table)
+
+
 (* Program entry point.  *)
 let main =
-  let table = calculate_sources availability_table in
-  let worst_cases, bypasses = worst_case_latencies_and_bypasses table in
-    emit_insn_reservations (List.rev worst_cases);
-    Printf.printf ";; Exceptions to the default latencies.\n\n";
-    emit_bypasses bypasses
-
+  List.map (fun core -> calculate_core_availability_table 
+		core availability_table) allCores

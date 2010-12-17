@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for iq2000.
-   Copyright (C) 2003, 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2007, 2009, 2010 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -24,7 +24,6 @@ extern int              iq2000_check_split (rtx, enum machine_mode);
 extern int              iq2000_reg_mode_ok_for_base_p (rtx, enum machine_mode, int);
 extern const char *     iq2000_fill_delay_slot (const char *, enum delay_type, rtx *, rtx);
 extern const char *     iq2000_move_1word (rtx *, rtx, int);
-extern void             override_options (void);
 extern HOST_WIDE_INT    iq2000_debugger_offset (rtx, HOST_WIDE_INT);
 extern void             final_prescan_insn (rtx, rtx *, int);
 extern HOST_WIDE_INT    compute_frame_size (HOST_WIDE_INT);
@@ -43,8 +42,6 @@ extern void             gen_conditional_branch (rtx *, enum machine_mode);
 
 #ifdef TREE_CODE
 extern void             init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx);
-extern void             function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode, tree, int);
-extern struct rtx_def * function_arg (CUMULATIVE_ARGS *, enum machine_mode, const_tree, int);
 extern bool 		iq2000_function_value_regno_p (const unsigned int);
 #endif
 

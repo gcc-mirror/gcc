@@ -1,5 +1,5 @@
 /* The implementation of exception handling primitives for Objective-C.
-   Copyright (C) 2004, 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,11 +22,74 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "objc-private/common.h"
 #include <stdlib.h>
 #include "config.h"
-#include "objc/objc-api.h"
+#include "objc/runtime.h"
+#include "objc/objc-exception.h"
 #include "unwind.h"
 #include "unwind-pe.h"
+#include <string.h> /* For memcpy */
+
+/* This hook allows libraries to sepecify special actions when an
+   exception is thrown without a handler in place.  This is deprecated
+   in favour of objc_set_uncaught_exception_handler ().
+ */
+void (*_objc_unexpected_exception) (id exception); /* !T:SAFE */
+
+
+/* 'is_kind_of_exception_matcher' is our default exception matcher -
+   it determines if the object 'exception' is of class 'catch_class',
+   or of a subclass.
+*/
+static int
+is_kind_of_exception_matcher (Class catch_class, id exception)
+{
+  /* NULL catch_class is catch-all (eg, @catch (id object)).  */
+  if (catch_class == Nil)
+    return 1;
+
+  /* If exception is nil (eg, @throw nil;), then it can only be catched
+   * by a catch-all (eg, @catch (id object)).
+   */
+  if (exception != nil)
+    {
+      Class c;
+
+      for (c = exception->class_pointer; c != Nil; 
+	   c = class_getSuperclass (c))
+	if (c == catch_class)
+	  return 1;
+    }
+  return 0;
+}
+
+/* The exception matcher currently in use.  */
+static objc_exception_matcher
+__objc_exception_matcher = is_kind_of_exception_matcher;
+
+objc_exception_matcher
+objc_setExceptionMatcher (objc_exception_matcher new_matcher)
+{
+  objc_exception_matcher old_matcher = __objc_exception_matcher;
+  __objc_exception_matcher = new_matcher;
+  return old_matcher;
+}
+
+/* The uncaught exception handler currently in use.  */
+static objc_uncaught_exception_handler
+__objc_uncaught_exception_handler = NULL;
+
+objc_uncaught_exception_handler
+objc_setUncaughtExceptionHandler (objc_uncaught_exception_handler 
+				  new_handler)
+{
+  objc_uncaught_exception_handler old_handler 
+    = __objc_uncaught_exception_handler;
+  __objc_uncaught_exception_handler = new_handler;
+  return old_handler;
+}
+
 
 
 #ifdef __ARM_EABI_UNWINDER__
@@ -84,11 +147,6 @@ struct lsda_header_info
   unsigned char call_site_encoding;
 };
 
-/* This hook allows libraries to sepecify special actions when an
-   exception is thrown without a handler in place.
- */
-void (*_objc_unexpected_exception) (id exception); /* !T:SAFE */
-
 static const unsigned char *
 parse_lsda_header (struct _Unwind_Context *context, const unsigned char *p,
 		   struct lsda_header_info *info)
@@ -133,9 +191,11 @@ get_ttype_entry (struct lsda_header_info *info, _uleb128_t i)
   
   ptr = (_Unwind_Ptr) (info->TType - (i * 4));
   ptr = _Unwind_decode_target2 (ptr);
-  
+
+  /* NULL ptr means catch-all.  Note that if the class is not found,
+     this will abort the program.  */
   if (ptr)
-    return objc_get_class ((const char *) ptr);
+    return objc_getRequiredClass ((const char *) ptr);
   else
     return 0;
 }
@@ -151,33 +211,15 @@ get_ttype_entry (struct lsda_header_info *info, _Unwind_Word i)
   read_encoded_value_with_base (info->ttype_encoding, info->ttype_base,
 				info->TType - i, &ptr);
 
-  /* NULL ptr means catch-all.  */
+  /* NULL ptr means catch-all.  Note that if the class is not found,
+     this will abort the program.  */
   if (ptr)
-    return objc_get_class ((const char *) ptr);
+    return objc_getRequiredClass ((const char *) ptr);
   else
     return 0;
 }
 
 #endif
-
-/* Like unto the method of the same name on Object, but takes an id.  */
-/* ??? Does this bork the meta-type system?  Can/should we look up an
-   isKindOf method on the id?  */
-
-static int
-isKindOf (id value, Class target)
-{
-  Class c;
-
-  /* NULL target is catch-all.  */
-  if (target == 0)
-    return 1;
-
-  for (c = value->class_pointer; c; c = class_get_super_class (c))
-    if (c == target)
-      return 1;
-  return 0;
-}
 
 /* Using a different personality function name causes link failures
    when trying to mix code using different exception handling models.  */
@@ -406,7 +448,7 @@ PERSONALITY_FUNCTION (int version,
 
 	      Class catch_type = get_ttype_entry (&info, ar_filter);
 
-	      if (isKindOf (xh->value, catch_type))
+	      if ((*__objc_exception_matcher) (catch_type, xh->value))
 		{
 		  handler_switch_value = ar_filter;
 		  saw_handler = 1;
@@ -473,14 +515,14 @@ __objc_exception_cleanup (_Unwind_Reason_Code code __attribute__((unused)),
 }
 
 void
-objc_exception_throw (id value)
+objc_exception_throw (id exception)
 {
   struct ObjcException *header = calloc (1, sizeof (*header));
-  
+
   memcpy (&header->base.exception_class, &__objc_exception_class,
 	  sizeof (__objc_exception_class));
   header->base.exception_cleanup = __objc_exception_cleanup;
-  header->value = value;
+  header->value = exception;
 
 #ifdef SJLJ_EXCEPTIONS
   _Unwind_SjLj_RaiseException (&header->base);
@@ -488,10 +530,22 @@ objc_exception_throw (id value)
   _Unwind_RaiseException (&header->base);
 #endif
 
-  /* Some sort of unwinding error.  */
+  /* No exception handler was installed.  Call the uncaught exception
+     handler if any is defined.
+   */
+  if (__objc_uncaught_exception_handler != 0)
+    {
+      (*__objc_uncaught_exception_handler) (exception);
+    }
+
+  /* As a last resort support the old, deprecated way of setting an
+     uncaught exception handler.
+  */
   if (_objc_unexpected_exception != 0)
     {
-      (*_objc_unexpected_exception) (value);
+      (*_objc_unexpected_exception) (exception);
     }
+
   abort ();
 }
+

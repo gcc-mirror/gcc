@@ -22,11 +22,14 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-
-#include "objc/sarray.h"
-#include "objc/runtime.h"
+#include "objc-private/common.h"
+#include "objc-private/sarray.h"
+#include "objc/runtime.h" /* For objc_malloc */
+#include "objc/thr.h"     /* For objc_mutex_lock */
+#include "objc-private/runtime.h"
 #include <stdio.h>
-#include "assert.h"
+#include <string.h> /* For memset */
+#include <assert.h> /* For assert */
 
 int nbuckets = 0;					/* !T:MUTEX */
 int nindices = 0;					/* !T:MUTEX */

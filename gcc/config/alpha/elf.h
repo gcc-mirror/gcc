@@ -121,7 +121,7 @@ do {									\
 #undef  ASM_OUTPUT_ALIGNED_LOCAL
 #define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\
 do {									\
-  if ((SIZE) <= g_switch_value)						\
+  if ((SIZE) <= (unsigned HOST_WIDE_INT) g_switch_value)		\
     switch_to_section (sbss_section);					\
   else									\
     switch_to_section (bss_section);					\
@@ -399,9 +399,6 @@ do {									\
 #define ENDFILE_SPEC \
   "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
    %{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
-
-/* We support #pragma.  */
-#define HANDLE_SYSV_PRAGMA 1
 
 /* Select a format to encode pointers in exception handling data.  CODE
    is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is

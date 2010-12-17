@@ -1,4 +1,14 @@
 /* { dg-require-alias "" } */
+/* { dg-require-visibility "" } */
+
+#ifndef __USER_LABEL_PREFIX__
+#define PREFIX ""
+#else
+#define xstr(s) str(s)
+#define str(s)  #s
+#define PREFIX  xstr(__USER_LABEL_PREFIX__)
+#endif
+
 typedef unsigned short int __uint16_t;
 enum
 {
@@ -12,7 +22,7 @@ typedef __uint16_t __ctype_mask_t;
 extern const __ctype_mask_t *__C_ctype_b;
 extern
 __typeof (__C_ctype_b)
-     __C_ctype_b __asm__ ("" "__GI___C_ctype_b")
+   __C_ctype_b __asm__ (PREFIX "__GI___C_ctype_b")
   __attribute__ ((visibility ("hidden")));
      static const __ctype_mask_t __C_ctype_b_data[] = {
      };

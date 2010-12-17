@@ -272,9 +272,7 @@ for_each_index (tree *addr_p, bool (*cbck) (tree, tree *, void *), void *data)
 	case SSA_NAME:
 	  return cbck (*addr_p, addr_p, data);
 
-	case MISALIGNED_INDIRECT_REF:
-	case ALIGN_INDIRECT_REF:
-	case INDIRECT_REF:
+	case MEM_REF:
 	  nxt = &TREE_OPERAND (*addr_p, 0);
 	  return cbck (*addr_p, nxt, data);
 
@@ -325,6 +323,10 @@ for_each_index (tree *addr_p, bool (*cbck) (tree, tree *, void *), void *data)
 	      && !cbck (*addr_p, idx, data))
 	    return false;
 	  idx = &TMR_INDEX (*addr_p);
+	  if (*idx
+	      && !cbck (*addr_p, idx, data))
+	    return false;
+	  idx = &TMR_INDEX2 (*addr_p);
 	  if (*idx
 	      && !cbck (*addr_p, idx, data))
 	    return false;
@@ -908,19 +910,7 @@ rewrite_reciprocal (gimple_stmt_iterator *bsi)
   add_referenced_var (var);
   DECL_GIMPLE_REG_P (var) = 1;
 
-  /* For vectors, create a VECTOR_CST full of 1's.  */
-  if (TREE_CODE (type) == VECTOR_TYPE)
-    {
-      int i, len;
-      tree list = NULL_TREE;
-      real_one = build_real (TREE_TYPE (type), dconst1);
-      len = TYPE_VECTOR_SUBPARTS (type);
-      for (i = 0; i < len; i++)
-	list = tree_cons (NULL, real_one, list);
-      real_one = build_vector (type, list);
-    }
-  else
-    real_one = build_real (type, dconst1);
+  real_one = build_one_cst (type);
 
   stmt1 = gimple_build_assign_with_ops (RDIV_EXPR,
 		var, real_one, gimple_assign_rhs2 (stmt));
@@ -1443,7 +1433,7 @@ free_mem_ref_locs (mem_ref_locs_p accs)
   if (!accs)
     return;
 
-  for (i = 0; VEC_iterate (mem_ref_loc_p, accs->locs, i, loc); i++)
+  FOR_EACH_VEC_ELT (mem_ref_loc_p, accs->locs, i, loc)
     free (loc);
   VEC_free (mem_ref_loc_p, heap, accs->locs);
   free (accs);
@@ -1464,7 +1454,7 @@ memref_free (void *obj)
   BITMAP_FREE (mem->indep_ref);
   BITMAP_FREE (mem->dep_ref);
 
-  for (i = 0; VEC_iterate (mem_ref_locs_p, mem->accesses_in_loop, i, accs); i++)
+  FOR_EACH_VEC_ELT (mem_ref_locs_p, mem->accesses_in_loop, i, accs)
     free_mem_ref_locs (accs);
   VEC_free (mem_ref_locs_p, heap, mem->accesses_in_loop);
 
@@ -1930,7 +1920,7 @@ get_all_locs_in_loop (struct loop *loop, mem_ref_p ref,
       accs = VEC_index (mem_ref_locs_p, ref->accesses_in_loop, loop->num);
       if (accs)
 	{
-	  for (i = 0; VEC_iterate (mem_ref_loc_p, accs->locs, i, loc); i++)
+	  FOR_EACH_VEC_ELT (mem_ref_loc_p, accs->locs, i, loc)
 	    VEC_safe_push (mem_ref_loc_p, heap, *locs, loc);
 	}
     }
@@ -1949,7 +1939,7 @@ rewrite_mem_refs (struct loop *loop, mem_ref_p ref, tree tmp_var)
   VEC (mem_ref_loc_p, heap) *locs = NULL;
 
   get_all_locs_in_loop (loop, ref, &locs);
-  for (i = 0; VEC_iterate (mem_ref_loc_p, locs, i, loc); i++)
+  FOR_EACH_VEC_ELT (mem_ref_loc_p, locs, i, loc)
     rewrite_mem_ref_loc (loc, tmp_var);
   VEC_free (mem_ref_loc_p, heap, locs);
 }
@@ -1983,11 +1973,13 @@ gen_lsm_tmp_name (tree ref)
 
   switch (TREE_CODE (ref))
     {
-    case MISALIGNED_INDIRECT_REF:
-    case ALIGN_INDIRECT_REF:
-    case INDIRECT_REF:
+    case MEM_REF:
       gen_lsm_tmp_name (TREE_OPERAND (ref, 0));
       lsm_tmp_name_add ("_");
+      break;
+
+    case ADDR_EXPR:
+      gen_lsm_tmp_name (TREE_OPERAND (ref, 0));
       break;
 
     case BIT_FIELD_REF:
@@ -2111,7 +2103,7 @@ execute_sm (struct loop *loop, VEC (edge, heap) *exits, mem_ref_p ref)
      all dependencies.  */
   gsi_insert_on_edge (loop_latch_edge (loop), load);
 
-  for (i = 0; VEC_iterate (edge, exits, i, ex); i++)
+  FOR_EACH_VEC_ELT (edge, exits, i, ex)
     {
       store = gimple_build_assign (unshare_expr (ref->mem), tmp_var);
       gsi_insert_on_edge (ex, store);
@@ -2150,11 +2142,12 @@ ref_always_accessed_p (struct loop *loop, mem_ref_p ref, bool stored_p)
   tree base;
 
   base = get_base_address (ref->mem);
-  if (INDIRECT_REF_P (base))
+  if (INDIRECT_REF_P (base)
+      || TREE_CODE (base) == MEM_REF)
     base = TREE_OPERAND (base, 0);
 
   get_all_locs_in_loop (loop, ref, &locs);
-  for (i = 0; VEC_iterate (mem_ref_loc_p, locs, i, loc); i++)
+  FOR_EACH_VEC_ELT (mem_ref_loc_p, locs, i, loc)
     {
       if (!get_lim_data (loc->stmt))
 	continue;
@@ -2169,7 +2162,8 @@ ref_always_accessed_p (struct loop *loop, mem_ref_p ref, bool stored_p)
 	  lhs = get_base_address (gimple_get_lhs (loc->stmt));
 	  if (!lhs)
 	    continue;
-	  if (INDIRECT_REF_P (lhs))
+	  if (INDIRECT_REF_P (lhs)
+	      || TREE_CODE (lhs) == MEM_REF)
 	    lhs = TREE_OPERAND (lhs, 0);
 	  if (lhs != base)
 	    continue;
@@ -2374,7 +2368,7 @@ loop_suitable_for_sm (struct loop *loop ATTRIBUTE_UNUSED,
   unsigned i;
   edge ex;
 
-  for (i = 0; VEC_iterate (edge, exits, i, ex); i++)
+  FOR_EACH_VEC_ELT (edge, exits, i, ex)
     if (ex->flags & EDGE_ABNORMAL)
       return false;
 
@@ -2541,19 +2535,19 @@ tree_ssa_lim_finalize (void)
   VEC_free (mem_ref_p, heap, memory_accesses.refs_list);
   htab_delete (memory_accesses.refs);
 
-  for (i = 0; VEC_iterate (bitmap, memory_accesses.refs_in_loop, i, b); i++)
+  FOR_EACH_VEC_ELT (bitmap, memory_accesses.refs_in_loop, i, b)
     BITMAP_FREE (b);
   VEC_free (bitmap, heap, memory_accesses.refs_in_loop);
 
-  for (i = 0; VEC_iterate (bitmap, memory_accesses.all_refs_in_loop, i, b); i++)
+  FOR_EACH_VEC_ELT (bitmap, memory_accesses.all_refs_in_loop, i, b)
     BITMAP_FREE (b);
   VEC_free (bitmap, heap, memory_accesses.all_refs_in_loop);
 
-  for (i = 0; VEC_iterate (bitmap, memory_accesses.clobbered_vops, i, b); i++)
+  FOR_EACH_VEC_ELT (bitmap, memory_accesses.clobbered_vops, i, b)
     BITMAP_FREE (b);
   VEC_free (bitmap, heap, memory_accesses.clobbered_vops);
 
-  for (i = 0; VEC_iterate (htab_t, memory_accesses.vop_ref_map, i, h); i++)
+  FOR_EACH_VEC_ELT (htab_t, memory_accesses.vop_ref_map, i, h)
     htab_delete (h);
   VEC_free (htab_t, heap, memory_accesses.vop_ref_map);
 

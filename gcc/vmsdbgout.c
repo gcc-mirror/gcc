@@ -106,25 +106,13 @@ static unsigned int file_info_table_in_use;
    table.  */
 #define FILE_TABLE_INCREMENT 64
 
-/* A structure to hold basic information for the VMS end
-   routine.  */
+typedef char *char_p;
+DEF_VEC_P(char_p);
+DEF_VEC_ALLOC_P(char_p,heap);
 
-typedef struct vms_func_struct
-{
-  const char *vms_func_name;
-  unsigned funcdef_number;
-}
-vms_func_node;
-
-typedef struct vms_func_struct *vms_func_ref;
-
-static unsigned int func_table_allocated;
-static unsigned int func_table_in_use;
-#define FUNC_TABLE_INCREMENT 256
-
-/* A pointer to the base of a table that contains frame description
-   information for each routine.  */
-static vms_func_ref func_table;
+static VEC(char_p,heap) *funcnam_table;
+static VEC(unsigned,heap) *funcnum_table;
+#define FUNC_TABLE_INITIAL 256
 
 /* Local pointer to the name of the main input file.  Initialized in
    vmsdbgout_init.  */
@@ -149,7 +137,6 @@ static unsigned int line_info_table_in_use;
 /* Forward declarations for functions defined in this file.  */
 static char *full_name (const char *);
 static unsigned int lookup_filename (const char *);
-static void addr_const_to_string (char *, rtx);
 static int write_debug_header (DST_HEADER *, const char *, int);
 static int write_debug_addr (const char *, const char *, int);
 static int write_debug_data1 (unsigned int, const char *, int);
@@ -180,10 +167,12 @@ static void vmsdbgout_source_line (unsigned int, const char *, int, bool);
 static void vmsdbgout_begin_prologue (unsigned int, const char *);
 static void vmsdbgout_end_prologue (unsigned int, const char *);
 static void vmsdbgout_end_function (unsigned int);
+static void vmsdbgout_begin_epilogue (unsigned int, const char *);
 static void vmsdbgout_end_epilogue (unsigned int, const char *);
 static void vmsdbgout_begin_function (tree);
 static void vmsdbgout_decl (tree);
 static void vmsdbgout_global_decl (tree);
+static void vmsdbgout_type_decl (tree, int);
 static void vmsdbgout_abstract_function (tree);
 
 /* The debug hooks structure.  */
@@ -202,13 +191,13 @@ const struct gcc_debug_hooks vmsdbg_debug_hooks
    vmsdbgout_source_line,
    vmsdbgout_begin_prologue,
    vmsdbgout_end_prologue,
-   debug_nothing_int_charstar,  /* begin_epilogue */
+   vmsdbgout_begin_epilogue,
    vmsdbgout_end_epilogue,
    vmsdbgout_begin_function,
    vmsdbgout_end_function,
    vmsdbgout_decl,
    vmsdbgout_global_decl,
-   debug_nothing_tree_int,	  /* type_decl */
+   vmsdbgout_type_decl,		  /* type_decl */
    debug_nothing_tree_tree_tree_bool, /* imported_module_or_decl */
    debug_nothing_tree,		  /* deferred_inline_function */
    vmsdbgout_abstract_function,
@@ -221,7 +210,8 @@ const struct gcc_debug_hooks vmsdbg_debug_hooks
    debug_nothing_rtx_rtx,	  /* copy_call_info */
    debug_nothing_uid,		  /* virtual_call */
    debug_nothing_tree_tree,	  /* set_name */
-   0                              /* start_end_main_source_file */
+   0,                             /* start_end_main_source_file */
+   TYPE_SYMTAB_IS_ADDRESS         /* tree_type_symtab_field */
 };
 
 /* Definitions of defaults for assembler-dependent names of various
@@ -285,6 +275,9 @@ static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 #endif
 #ifndef FUNC_PROLOG_LABEL
 #define FUNC_PROLOG_LABEL	"LVFP"
+#endif
+#ifndef FUNC_EPILOG_LABEL
+#define FUNC_EPILOG_LABEL	"LVEB"
 #endif
 #ifndef FUNC_END_LABEL
 #define FUNC_END_LABEL		"LVFE"
@@ -425,136 +418,6 @@ static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 #endif
 
 
-/* General utility functions.  */
-
-/* Convert an integer constant expression into assembler syntax.  Addition and
-   subtraction are the only arithmetic that may appear in these expressions.
-   This is an adaptation of output_addr_const in final.c.  Here, the target
-   of the conversion is a string buffer.  We can't use output_addr_const
-   directly, because it writes to a file.  */
-
-static void
-addr_const_to_string (char *str, rtx x)
-{
-  char buf1[256];
-  char buf2[256];
-
- restart:
-  str[0] = '\0';
-  switch (GET_CODE (x))
-    {
-    case PC:
-      gcc_assert (flag_pic);
-      strcat (str, ",");
-      break;
-
-    case SYMBOL_REF:
-      ASM_NAME_TO_STRING (buf1, XSTR (x, 0));
-      strcat (str, buf1);
-      break;
-
-    case LABEL_REF:
-      ASM_GENERATE_INTERNAL_LABEL (buf1, "L", CODE_LABEL_NUMBER (XEXP (x, 0)));
-      ASM_NAME_TO_STRING (buf2, buf1);
-      strcat (str, buf2);
-      break;
-
-    case CODE_LABEL:
-      ASM_GENERATE_INTERNAL_LABEL (buf1, "L", CODE_LABEL_NUMBER (x));
-      ASM_NAME_TO_STRING (buf2, buf1);
-      strcat (str, buf2);
-      break;
-
-    case CONST_INT:
-      sprintf (buf1, HOST_WIDE_INT_PRINT_DEC, INTVAL (x));
-      strcat (str, buf1);
-      break;
-
-    case CONST:
-      /* This used to output parentheses around the expression, but that does
-         not work on the 386 (either ATT or BSD assembler).  */
-      addr_const_to_string (buf1, XEXP (x, 0));
-      strcat (str, buf1);
-      break;
-
-    case CONST_DOUBLE:
-      if (GET_MODE (x) == VOIDmode)
-	{
-	  /* We can use %d if the number is one word and positive.  */
-	  if (CONST_DOUBLE_HIGH (x))
-	    sprintf (buf1, HOST_WIDE_INT_PRINT_DOUBLE_HEX,
-		     CONST_DOUBLE_HIGH (x), CONST_DOUBLE_LOW (x));
-	  else if (CONST_DOUBLE_LOW (x) < 0)
-	    sprintf (buf1, HOST_WIDE_INT_PRINT_HEX, CONST_DOUBLE_LOW (x));
-	  else
-	    sprintf (buf1, HOST_WIDE_INT_PRINT_DEC,
-		     CONST_DOUBLE_LOW (x));
-	  strcat (str, buf1);
-	}
-      else
-	/* We can't handle floating point constants;
-	   TARGET_PRINT_OPERAND must handle them.  */
-	output_operand_lossage ("floating constant misused");
-      break;
-
-    case PLUS:
-      /* Some assemblers need integer constants to appear last (eg masm).  */
-      if (CONST_INT_P (XEXP (x, 0)))
-	{
-	  addr_const_to_string (buf1, XEXP (x, 1));
-	  strcat (str, buf1);
-	  if (INTVAL (XEXP (x, 0)) >= 0)
-	    strcat (str, "+");
-	  addr_const_to_string (buf1, XEXP (x, 0));
-	  strcat (str, buf1);
-	}
-      else
-	{
-	  addr_const_to_string (buf1, XEXP (x, 0));
-	  strcat (str, buf1);
-	  if (INTVAL (XEXP (x, 1)) >= 0)
-	    strcat (str, "+");
-	  addr_const_to_string (buf1, XEXP (x, 1));
-	  strcat (str, buf1);
-	}
-      break;
-
-    case MINUS:
-      /* Avoid outputting things like x-x or x+5-x, since some assemblers
-         can't handle that.  */
-      x = simplify_subtraction (x);
-      if (GET_CODE (x) != MINUS)
-	goto restart;
-
-      addr_const_to_string (buf1, XEXP (x, 0));
-      strcat (str, buf1);
-      strcat (str, "-");
-      if (CONST_INT_P (XEXP (x, 1))
-	  && INTVAL (XEXP (x, 1)) < 0)
-	{
-	  strcat (str, "(");
-	  addr_const_to_string (buf1, XEXP (x, 1));
-	  strcat (str, buf1);
-	  strcat (str, ")");
-	}
-      else
-	{
-	  addr_const_to_string (buf1, XEXP (x, 1));
-	  strcat (str, buf1);
-	}
-      break;
-
-    case ZERO_EXTEND:
-    case SIGN_EXTEND:
-      addr_const_to_string (buf1, XEXP (x, 0));
-      strcat (str, buf1);
-      break;
-
-    default:
-      output_operand_lossage ("invalid expression as operand");
-    }
-}
-
 /* Output the debug header HEADER.  Also output COMMENT if flag_verbose_asm is
    set.  Return the header size.  Just return the size if DOSIZEONLY is
    nonzero.  */
@@ -744,7 +607,7 @@ write_modbeg (int dosizeonly)
   modbeg.dst_b_modbeg_flags.dst_v_modbeg_version = 1;
   modbeg.dst_b_modbeg_flags.dst_v_modbeg_unused = 0;
   modbeg.dst_b_modbeg_unused = 0;
-  modbeg.dst_l_modbeg_language = module_language;
+  modbeg.dst_l_modbeg_language = (DST_LANGUAGE) module_language;
   modbeg.dst_w_version_major = DST_K_VERSION_MAJOR;
   modbeg.dst_w_version_minor = DST_K_VERSION_MINOR;
   modbeg.dst_b_modbeg_name = strlen (module_name);
@@ -805,9 +668,8 @@ write_rtnbeg (int rtnnum, int dosizeonly)
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
   DST_ROUTINE_BEGIN rtnbeg;
   DST_PROLOG prolog;
-  vms_func_ref fde = &func_table[rtnnum];
 
-  rtnname = fde->vms_func_name;
+  rtnname = VEC_index (char_p, funcnam_table, rtnnum);
   rtnnamelen = strlen (rtnname);
   rtnentryname = concat (rtnname, "..en", NULL);
 
@@ -823,7 +685,7 @@ write_rtnbeg (int rtnnum, int dosizeonly)
 	 + string count byte + string length */
       header.dst__header_length.dst_w_length
 	= DST_K_DST_HEADER_SIZE - 1 + 1 + 4 + 1 + strlen (go);
-      header.dst__header_type.dst_w_type = 0x17;
+      header.dst__header_type.dst_w_type = DST_K_TBG;
 
       totsize += write_debug_header (&header, "transfer", dosizeonly);
 
@@ -878,7 +740,9 @@ write_rtnbeg (int rtnnum, int dosizeonly)
       totsize += write_debug_header (&prolog.dst_a_prolog_header, "prolog",
 				     dosizeonly);
 
-      ASM_GENERATE_INTERNAL_LABEL (label, FUNC_PROLOG_LABEL, fde->funcdef_number);
+      ASM_GENERATE_INTERNAL_LABEL
+        (label, FUNC_PROLOG_LABEL,
+	 VEC_index (unsigned, funcnum_table, rtnnum));
       totsize += write_debug_addr (label, "prolog breakpoint addr",
 				   dosizeonly);
     }
@@ -896,8 +760,6 @@ write_rtnend (int rtnnum, int dosizeonly)
   char label1[MAX_ARTIFICIAL_LABEL_BYTES];
   char label2[MAX_ARTIFICIAL_LABEL_BYTES];
   int totsize;
-  vms_func_ref fde = &func_table[rtnnum];
-  int corrected_rtnnum = fde->funcdef_number;
 
   totsize = 0;
 
@@ -912,8 +774,12 @@ write_rtnend (int rtnnum, int dosizeonly)
   totsize += write_debug_data1 (rtnend.dst_b_rtnend_unused, "unused",
 				dosizeonly);
 
-  ASM_GENERATE_INTERNAL_LABEL (label1, FUNC_BEGIN_LABEL, corrected_rtnnum);
-  ASM_GENERATE_INTERNAL_LABEL (label2, FUNC_END_LABEL, corrected_rtnnum);
+  ASM_GENERATE_INTERNAL_LABEL
+   (label1, FUNC_BEGIN_LABEL,
+    VEC_index (unsigned, funcnum_table, rtnnum));
+  ASM_GENERATE_INTERNAL_LABEL
+   (label2, FUNC_END_LABEL,
+    VEC_index (unsigned, funcnum_table, rtnnum));
   totsize += write_debug_delta4 (label2, label1, "routine size", dosizeonly);
 
   return totsize;
@@ -1319,6 +1185,38 @@ vmsdbgout_end_function (unsigned int line)
     (*dwarf2_debug_hooks.end_function) (line);
 }
 
+/* Output a marker (i.e. a label) for the beginning of the epilogue.
+   This gets called *before* the epilogue code has been generated.  */
+
+static void
+vmsdbgout_begin_epilogue (unsigned int line, const char *file)
+{
+  char label[MAX_ARTIFICIAL_LABEL_BYTES];
+  static int save_current_function_funcdef_no = -1;
+
+  if (write_symbols == VMS_AND_DWARF2_DEBUG)
+    (*dwarf2_debug_hooks.begin_epilogue) (line, file);
+
+  if (debug_info_level > DINFO_LEVEL_NONE)
+    {
+      if (save_current_function_funcdef_no != current_function_funcdef_no)
+	{
+	  /* Output a label to mark the endpoint of the code generated for this
+	     function.  */
+	  ASM_GENERATE_INTERNAL_LABEL (label, FUNC_EPILOG_LABEL,
+				       current_function_funcdef_no);
+
+	  ASM_OUTPUT_LABEL (asm_out_file, label);
+
+	  save_current_function_funcdef_no = current_function_funcdef_no;
+
+	  /* VMS PCA expects every PC range to correlate to some line and
+	     file.  */
+	  vmsdbgout_source_line (line, file, 0, true);
+	}
+    }
+}
+
 /* Output a marker (i.e. a label) for the absolute end of the generated code
    for a function definition.  This gets called *after* the epilogue code has
    been generated.  */
@@ -1383,30 +1281,20 @@ vmsdbgout_ignore_block (const_tree block)
   return retval;
 }
 
-/* Add an entry for function DECL into the func_table.  */
+/* Add an entry for function DECL into the funcnam_table.  */
 
 static void
 vmsdbgout_begin_function (tree decl)
 {
   const char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
-  vms_func_ref fde;
 
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
     (*dwarf2_debug_hooks.begin_function) (decl);
 
-  if (func_table_in_use == func_table_allocated)
-    {
-      func_table_allocated += FUNC_TABLE_INCREMENT;
-      func_table
-        = (vms_func_ref) xrealloc (func_table,
-				   func_table_allocated * sizeof (vms_func_node));
-    }
-
   /* Add the new entry to the end of the function name table.  */
-  fde = &func_table[func_table_in_use++];
-  fde->vms_func_name = xstrdup (name);
-  fde->funcdef_number = current_function_funcdef_no;
-
+  VEC_safe_push (char_p, heap, funcnam_table, xstrdup (name));
+  VEC_safe_push (unsigned, heap, funcnum_table,
+		 current_function_funcdef_no);
 }
 
 static char fullname_buff [4096];
@@ -1423,13 +1311,9 @@ full_name (const char *filename)
   fgetname (fp, fullname_buff, 1);
   fclose (fp);
 #else
-  getcwd (fullname_buff, sizeof (fullname_buff));
-
-  strcat (fullname_buff, "/");
-  strcat (fullname_buff, filename);
-
-  /* ??? Insert hairy code here to translate Unix style file specification
-     to VMS style.  */
+  /* Unix paths really mess up VMS debug. Better to just output the
+     base filename.  */
+  strcpy (fullname_buff, filename);
 #endif
 
   return fullname_buff;
@@ -1586,13 +1470,11 @@ vmsdbgout_init (const char *main_input_filename)
   /* Allocate the initial hunk of the file_info_table.  */
   file_info_table = XCNEWVEC (dst_file_info_entry, FILE_TABLE_INCREMENT);
   file_info_table_allocated = FILE_TABLE_INCREMENT;
-
-  /* Skip the first entry - file numbers begin at 1 */
+  /* Skip the first entry - file numbers begin at 1.  */
   file_info_table_in_use = 1;
 
-  func_table = (vms_func_ref) xcalloc (FUNC_TABLE_INCREMENT, sizeof (vms_func_node));
-  func_table_allocated = FUNC_TABLE_INCREMENT;
-  func_table_in_use = 1;
+  funcnam_table = VEC_alloc (char_p, heap, FUNC_TABLE_INITIAL);
+  funcnum_table = VEC_alloc (unsigned, heap, FUNC_TABLE_INITIAL);
 
   /* Allocate the initial hunk of the line_info_table.  */
   line_info_table = XCNEWVEC (dst_line_info_entry, LINE_INFO_TABLE_INCREMENT);
@@ -1667,6 +1549,15 @@ vmsdbgout_global_decl (tree decl)
 /* Not implemented in VMS Debug.  */
 
 static void
+vmsdbgout_type_decl (tree decl, int local)
+{
+  if (write_symbols == VMS_AND_DWARF2_DEBUG)
+    (*dwarf2_debug_hooks.type_decl) (decl, local);
+}
+
+/* Not implemented in VMS Debug.  */
+
+static void
 vmsdbgout_abstract_function (tree decl)
 {
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
@@ -1679,7 +1570,7 @@ vmsdbgout_abstract_function (tree decl)
 static void
 vmsdbgout_finish (const char *main_input_filename ATTRIBUTE_UNUSED)
 {
-  unsigned int i;
+  unsigned int i, ifunc;
   int totsize;
 
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
@@ -1699,7 +1590,7 @@ vmsdbgout_finish (const char *main_input_filename ATTRIBUTE_UNUSED)
   ASM_OUTPUT_ALIGN (asm_out_file, 0);
 
   totsize = write_modbeg (1);
-  for (i = 1; i < func_table_in_use; i++)
+  FOR_EACH_VEC_ELT (unsigned, funcnum_table, i, ifunc)
     {
       totsize += write_rtnbeg (i, 1);
       totsize += write_rtnend (i, 1);
@@ -1707,7 +1598,7 @@ vmsdbgout_finish (const char *main_input_filename ATTRIBUTE_UNUSED)
   totsize += write_pclines (1);
 
   write_modbeg (0);
-  for (i = 1; i < func_table_in_use; i++)
+  FOR_EACH_VEC_ELT (unsigned, funcnum_table, i, ifunc)
     {
       write_rtnbeg (i, 0);
       write_rtnend (i, 0);
@@ -1734,9 +1625,7 @@ vmsdbgout_finish (const char *main_input_filename ATTRIBUTE_UNUSED)
 #include <vms/stsdef.h>
 #include <vms/iodef.h>
 #include <vms/fatdef.h>
-#include <errno.h>
 #include <vms/descrip.h>
-#include <string.h>
 #include <unixlib.h>
 
 #define MAXPATH 256

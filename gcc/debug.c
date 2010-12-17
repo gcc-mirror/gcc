@@ -20,6 +20,7 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "tree.h"
 #include "debug.h"
 
 /* The do-nothing debug hooks.  */
@@ -57,7 +58,8 @@ const struct gcc_debug_hooks do_nothing_debug_hooks =
   debug_nothing_rtx_rtx,	         /* copy_call_info */
   debug_nothing_uid,		         /* virtual_call */
   debug_nothing_tree_tree,		 /* set_name */
-  0                                      /* start_end_main_source_file */
+  0,                                     /* start_end_main_source_file */
+  TYPE_SYMTAB_IS_ADDRESS                 /* tree_type_symtab_field */
 };
 
 /* This file contains implementations of each debug hook that do

@@ -1,5 +1,6 @@
 // { dg-do run }
 // { dg-require-effective-target tls }
+// { dg-add-options tls }
 // { dg-additional-sources "static-1a.mm" }
 
 extern "C" {

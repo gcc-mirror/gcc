@@ -27,7 +27,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 include(`mtype.m4')dnl
 
-`#if defined (HAVE_'real_type`) && defined (HAVE_FABS'Q`) && defined (HAVE_FREXP'Q`)
+mathfunc_macro
+
+`#if defined (HAVE_'real_type`) && 'hasmathfunc(fabs) && hasmathfunc(frexp)`
 
 extern 'real_type` rrspacing_r'kind` ('real_type` s, int p);
 export_proto(rrspacing_r'kind`);
@@ -37,14 +39,14 @@ rrspacing_r'kind` ('real_type` s, int p)
 {
   int e;
   'real_type` x;
-  x = fabs'q` (s);
+  x = MATHFUNC(fabs) (s);
   if (x == 0.)
     return 0.;
-  frexp'q` (s, &e);
-#if defined (HAVE_LDEXP'Q`)
-  return ldexp'q` (x, p - e);
+  MATHFUNC(frexp) (s, &e);
+#if 'hasmathfunc(ldexp)`
+  return MATHFUNC(ldexp) (x, p - e);
 #else
-  return scalbn'q` (x, p - e);
+  return MATHFUNC(scalbn) (x, p - e);
 #endif
 
 }

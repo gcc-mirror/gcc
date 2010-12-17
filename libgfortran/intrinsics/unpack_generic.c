@@ -250,6 +250,7 @@ unpack1 (gfc_array_char *ret, const gfc_array_char *vector,
 		   mask, (gfc_array_i16 *) field);
       return;
 #endif
+
     case GFC_DTYPE_REAL_4:
       unpack1_r4 ((gfc_array_r4 *) ret, (gfc_array_r4 *) vector,
 		  mask, (gfc_array_r4 *) field);
@@ -260,18 +261,26 @@ unpack1 (gfc_array_char *ret, const gfc_array_char *vector,
 		  mask, (gfc_array_r8 *) field);
       return;
 
-#ifdef HAVE_GFC_REAL_10
+/* FIXME: This here is a hack, which will have to be removed when
+   the array descriptor is reworked.  Currently, we don't store the
+   kind value for the type, but only the size.  Because on targets with
+   __float128, we have sizeof(logn double) == sizeof(__float128),
+   we cannot discriminate here and have to fall back to the generic
+   handling (which is suboptimal).  */
+#if !defined(GFC_REAL_16_IS_FLOAT128)
+# ifdef HAVE_GFC_REAL_10
     case GFC_DTYPE_REAL_10:
       unpack1_r10 ((gfc_array_r10 *) ret, (gfc_array_r10 *) vector,
 		   mask, (gfc_array_r10 *) field);
-	  return;
-#endif
+      return;
+# endif
 
-#ifdef HAVE_GFC_REAL_16
+# ifdef HAVE_GFC_REAL_16
     case GFC_DTYPE_REAL_16:
       unpack1_r16 ((gfc_array_r16 *) ret, (gfc_array_r16 *) vector,
 		   mask, (gfc_array_r16 *) field);
       return;
+# endif
 #endif
 
     case GFC_DTYPE_COMPLEX_4:
@@ -284,18 +293,26 @@ unpack1 (gfc_array_char *ret, const gfc_array_char *vector,
 		  mask, (gfc_array_c8 *) field);
       return;
 
-#ifdef HAVE_GFC_COMPLEX_10
+/* FIXME: This here is a hack, which will have to be removed when
+   the array descriptor is reworked.  Currently, we don't store the
+   kind value for the type, but only the size.  Because on targets with
+   __float128, we have sizeof(logn double) == sizeof(__float128),
+   we cannot discriminate here and have to fall back to the generic
+   handling (which is suboptimal).  */
+#if !defined(GFC_REAL_16_IS_FLOAT128)
+# ifdef HAVE_GFC_COMPLEX_10
     case GFC_DTYPE_COMPLEX_10:
       unpack1_c10 ((gfc_array_c10 *) ret, (gfc_array_c10 *) vector,
 		   mask, (gfc_array_c10 *) field);
       return;
-#endif
+# endif
 
-#ifdef HAVE_GFC_COMPLEX_16
+# ifdef HAVE_GFC_COMPLEX_16
     case GFC_DTYPE_COMPLEX_16:
       unpack1_c16 ((gfc_array_c16 *) ret, (gfc_array_c16 *) vector,
 		   mask, (gfc_array_c16 *) field);
       return;
+# endif
 #endif
 
     case GFC_DTYPE_DERIVED_2:
@@ -443,6 +460,7 @@ unpack0 (gfc_array_char *ret, const gfc_array_char *vector,
 		   mask, (GFC_INTEGER_16 *) field);
       return;
 #endif
+
     case GFC_DTYPE_REAL_4:
       unpack0_r4 ((gfc_array_r4 *) ret, (gfc_array_r4 *) vector,
 		  mask, (GFC_REAL_4 *) field);
@@ -453,18 +471,26 @@ unpack0 (gfc_array_char *ret, const gfc_array_char *vector,
 		  mask, (GFC_REAL_8  *) field);
       return;
 
-#ifdef HAVE_GFC_REAL_10
+/* FIXME: This here is a hack, which will have to be removed when
+   the array descriptor is reworked.  Currently, we don't store the
+   kind value for the type, but only the size.  Because on targets with
+   __float128, we have sizeof(logn double) == sizeof(__float128),
+   we cannot discriminate here and have to fall back to the generic
+   handling (which is suboptimal).  */
+#if !defined(GFC_REAL_16_IS_FLOAT128)
+# ifdef HAVE_GFC_REAL_10
     case GFC_DTYPE_REAL_10:
       unpack0_r10 ((gfc_array_r10 *) ret, (gfc_array_r10 *) vector,
 		   mask, (GFC_REAL_10 *) field);
       return;
-#endif
+# endif
 
-#ifdef HAVE_GFC_REAL_16
+# ifdef HAVE_GFC_REAL_16
     case GFC_DTYPE_REAL_16:
       unpack0_r16 ((gfc_array_r16 *) ret, (gfc_array_r16 *) vector,
 		   mask, (GFC_REAL_16 *) field);
       return;
+# endif
 #endif
 
     case GFC_DTYPE_COMPLEX_4:
@@ -477,19 +503,28 @@ unpack0 (gfc_array_char *ret, const gfc_array_char *vector,
 		  mask, (GFC_COMPLEX_8 *) field);
       return;
 
-#ifdef HAVE_GFC_COMPLEX_10
+/* FIXME: This here is a hack, which will have to be removed when
+   the array descriptor is reworked.  Currently, we don't store the
+   kind value for the type, but only the size.  Because on targets with
+   __float128, we have sizeof(logn double) == sizeof(__float128),
+   we cannot discriminate here and have to fall back to the generic
+   handling (which is suboptimal).  */
+#if !defined(GFC_REAL_16_IS_FLOAT128)
+# ifdef HAVE_GFC_COMPLEX_10
     case GFC_DTYPE_COMPLEX_10:
       unpack0_c10 ((gfc_array_c10 *) ret, (gfc_array_c10 *) vector,
 		   mask, (GFC_COMPLEX_10 *) field);
       return;
-#endif
+# endif
 
-#ifdef HAVE_GFC_COMPLEX_16
+# ifdef HAVE_GFC_COMPLEX_16
     case GFC_DTYPE_COMPLEX_16:
       unpack0_c16 ((gfc_array_c16 *) ret, (gfc_array_c16 *) vector,
 		   mask, (GFC_COMPLEX_16 *) field);
       return;
+# endif
 #endif
+
     case GFC_DTYPE_DERIVED_2:
       if (GFC_UNALIGNED_2(ret->data) || GFC_UNALIGNED_2(vector->data)
 	  || GFC_UNALIGNED_2(field))
@@ -522,6 +557,7 @@ unpack0 (gfc_array_char *ret, const gfc_array_char *vector,
 		      mask, (GFC_INTEGER_8 *) field);
 	  return;
 	}
+
 #ifdef HAVE_GFC_INTEGER_16
     case GFC_DTYPE_DERIVED_16:
       if (GFC_UNALIGNED_16(ret->data) || GFC_UNALIGNED_16(vector->data)
@@ -534,6 +570,7 @@ unpack0 (gfc_array_char *ret, const gfc_array_char *vector,
 	  return;
 	}
 #endif
+
     }
 
   memset (&tmp, 0, sizeof (tmp));

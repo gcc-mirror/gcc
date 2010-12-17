@@ -62,7 +62,7 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   asm_fprintf ("%s", n); /* { dg-warning "format" "bad argument types" } */
 
   /* Wrong number of arguments.  */
-  asm_fprintf ("%d%d", i); /* { dg-warning "arguments" "wrong number of args" } */
+  asm_fprintf ("%d%d", i); /* { dg-warning "matching" "wrong number of args" } */
   asm_fprintf ("%d", i, i); /* { dg-warning "arguments" "wrong number of args" } */
   /* Miscellaneous bogus constructions.  */
   asm_fprintf (""); /* { dg-warning "zero-length" "warning for empty format" } */

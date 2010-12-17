@@ -16,7 +16,7 @@ class(t1),allocatable :: x,y
 type(t2) :: z
 
 
-!!! first example (works)
+!!! first example (static)
 
 z%j = 5
 allocate(x,MOLD=z)
@@ -25,22 +25,22 @@ select type (x)
 type is (t2)
   print *,x%j
   if (x%j/=4) call abort
+  x%j = 5
 class default
   call abort()
 end select
 
 
-!!! second example (fails)
-!!! FIXME: uncomment once implemented (cf. PR 44541)
+!!! second example (dynamic, PR 44541)
 
-! allocate(y,MOLD=x)
-! 
-! select type (y)
-! type is (t2)
-!   print *,y%j
-!   if (y%j/=4) call abort
-! class default
-!   call abort()
-! end select
+allocate(y,MOLD=x)
+
+select type (y)
+type is (t2)
+  print *,y%j
+  if (y%j/=4) call abort
+class default
+  call abort()
+end select
 
 end

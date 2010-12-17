@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "" }
+// { dg-require-namedlocale "fr_FR" }
 
 // Copyright (C) 2003, 2005, 2009 Free Software Foundation, Inc.
 //

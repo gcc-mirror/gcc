@@ -45,15 +45,15 @@ import javax.print.attribute.standard.PrinterResolution;
 
 
 /**
- * The <code>PrinterResolutionDefault</code> attribute provides 
+ * The <code>PrinterResolutionDefault</code> attribute provides
  * the default value for the job attribute printer-resolution.
- *  
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class PrinterResolutionDefault extends ResolutionSyntax
   implements DefaultValueAttribute
 {
-  
+
   /**
    * Creates a <code>ResolutionSyntax</code> object with the given arguments.
    *
@@ -68,20 +68,20 @@ public final class PrinterResolutionDefault extends ResolutionSyntax
   {
     super(crossFeedResolution, feedResolution, units);
   }
-  
+
   /**
    * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
   {
     if(! (obj instanceof PrinterResolutionDefault))
       return false;
-    
+
     return super.equals(obj);
   }
 
@@ -90,7 +90,7 @@ public final class PrinterResolutionDefault extends ResolutionSyntax
    *
    * @return The class <code>PrinterResolutionDefault</code> itself.
    */
-  public Class getCategory()
+  public Class<? extends Attribute> getCategory()
   {
     return PrinterResolutionDefault.class;
   }
@@ -104,16 +104,16 @@ public final class PrinterResolutionDefault extends ResolutionSyntax
   {
     return "printer-resolution-default";
   }
-  
+
   /**
    * Returns the equally enum of the standard attribute class
    * of this DefaultValuesAttribute enum.
-   * 
+   *
    * @return The enum of the standard attribute class.
    */
-  public Attribute getAssociatedAttribute() 
+  public Attribute getAssociatedAttribute()
   {
-    return new PrinterResolution(getCrossFeedResolutionDphi(), 
+    return new PrinterResolution(getCrossFeedResolutionDphi(),
                                  getFeedResolutionDphi(), 1);
   }
 }

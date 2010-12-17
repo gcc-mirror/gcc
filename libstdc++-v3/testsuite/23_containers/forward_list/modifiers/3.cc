@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,8 +22,6 @@
 #include <forward_list>
 #include <testsuite_hooks.h>
 
-bool test __attribute__((unused)) = true;
-
 // This test verifies the following:
 //   cbegin
 //   erase_after one iterator
@@ -31,17 +29,20 @@ bool test __attribute__((unused)) = true;
 void
 test01()
 {
+  bool test __attribute__((unused)) = true;
+
   std::forward_list<int> fl({0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
 
   std::forward_list<int>::const_iterator pos = fl.cbegin();
   ++pos;
-  VERIFY(*pos == 1);
+  VERIFY( *pos == 1 );
 
-  fl.erase_after(pos);
+  std::forward_list<int>::iterator pos2 = fl.erase_after(pos);
 
-  VERIFY(*pos == 1);
+  VERIFY( *pos == 1 );
   ++pos;
-  VERIFY(*pos == 3);
+  VERIFY( *pos == 3 );
+  VERIFY( pos == pos2 );
 }
 
 // This test verifies the following:
@@ -51,33 +52,40 @@ test01()
 void
 test02()
 {
+  bool test __attribute__((unused)) = true;
+
   std::forward_list<int> fl({0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
 
   std::forward_list<int>::const_iterator pos = fl.cbegin();
   ++pos;
-  VERIFY(*pos == 1);
+  VERIFY( *pos == 1 );
 
   std::forward_list<int>::iterator stop = fl.begin();
   ++stop;
   ++stop;
   ++stop;
   ++stop;
-  VERIFY(*stop == 4);
+  VERIFY( *stop == 4 );
 
-  fl.erase_after(pos, stop);
+  std::forward_list<int>::iterator pos2 = fl.erase_after(pos, stop);
 
-  VERIFY(*pos == 1);
+  VERIFY( pos2 == stop );
+  VERIFY( *pos == 1 );
   ++pos;
-  VERIFY(*pos == 4);
-  VERIFY(std::distance(fl.begin(), fl.end()) == 8);
+  VERIFY( *pos == 4 );
+  VERIFY( std::distance(fl.begin(), fl.end()) == 8 );
 
-  fl.erase_after(pos, fl.end());
-  VERIFY(++pos == fl.end());
-  VERIFY(std::distance(fl.begin(), fl.end()) == 3);
+  std::forward_list<int>::iterator pos3
+    = fl.erase_after(pos, fl.end());
+  VERIFY( pos3 == fl.end() );
+  VERIFY( ++pos == fl.end() );
+  VERIFY( std::distance(fl.begin(), fl.end()) == 3 );
 
-  fl.erase_after(fl.before_begin(), pos);
-  VERIFY(std::distance(fl.begin(), fl.end()) == 0);
-  VERIFY(fl.empty());
+  std::forward_list<int>::iterator pos4
+    = fl.erase_after(fl.before_begin(), pos);
+  VERIFY( pos4 == pos );
+  VERIFY( std::distance(fl.begin(), fl.end()) == 0 );
+  VERIFY( fl.empty() );
 }
 
 int

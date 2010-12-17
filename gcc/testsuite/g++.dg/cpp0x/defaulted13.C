@@ -7,22 +7,22 @@ struct NonCopyable {
 };
 
 template<>
-NonCopyable<int>::NonCopyable(NonCopyable<int> const&) = delete; // { dg-error "deleted" }
+NonCopyable<int>::NonCopyable(NonCopyable<int> const&) = delete; // { dg-error "declared" }
 
 template<typename T>
 NonCopyable<T>::NonCopyable(NonCopyable<T> const&) = default;
 
 template<>
-NonCopyable<double>::NonCopyable(NonCopyable<double> const&) = delete; // { dg-error "deleted" }
+NonCopyable<double>::NonCopyable(NonCopyable<double> const&) = delete; // { dg-error "declared" }
 
 
 int main()
 {
   NonCopyable<double> nc_dbl;
-  NonCopyable<double> nc_dbl_cpy(nc_dbl); // { dg-error "used here" }
+  NonCopyable<double> nc_dbl_cpy(nc_dbl); // { dg-error "use" }
 
   NonCopyable<int> nc_int;
-  NonCopyable<int> nc_int_cpy(nc_int); // { dg-error "used here" }
+  NonCopyable<int> nc_int_cpy(nc_int); // { dg-error "use" }
 
   NonCopyable<char> nc_char;
   NonCopyable<char> nc_char_cpy(nc_char);

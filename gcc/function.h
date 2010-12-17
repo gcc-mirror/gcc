@@ -226,11 +226,6 @@ struct GTY(()) function_subsections {
   const char *cold_section_label;
   const char *hot_section_end_label;
   const char *cold_section_end_label;
-
-  /* String to be used for name of cold text sections, via
-     targetm.asm_out.named_section.  */
-
-  const char *unlikely_text_section_name;
 };
 
 /* Describe an empty area of space in the stack frame.  These can be chained
@@ -468,6 +463,37 @@ extern GTY(()) struct rtl_data x_rtl;
    want to do differently.  */
 #define crtl (&x_rtl)
 
+struct GTY(()) stack_usage
+{
+  /* # of bytes of static stack space allocated by the function.  */
+  HOST_WIDE_INT static_stack_size;
+
+  /* # of bytes of dynamic stack space allocated by the function.  This is
+     meaningful only if has_unbounded_dynamic_stack_size is zero.  */
+  HOST_WIDE_INT dynamic_stack_size;
+
+  /* # of bytes of space pushed onto the stack after the prologue.  If
+     !ACCUMULATE_OUTGOING_ARGS, it contains the outgoing arguments.  */
+  int pushed_stack_size;
+
+  /* # of dynamic allocations in the function.  */
+  unsigned int dynamic_alloc_count : 31;
+
+  /* Nonzero if the amount of stack space allocated dynamically cannot
+     be bounded at compile-time.  */
+  unsigned int has_unbounded_dynamic_stack_size : 1;
+};
+
+#define current_function_static_stack_size (cfun->su->static_stack_size)
+#define current_function_dynamic_stack_size (cfun->su->dynamic_stack_size)
+#define current_function_pushed_stack_size (cfun->su->pushed_stack_size)
+#define current_function_dynamic_alloc_count (cfun->su->dynamic_alloc_count)
+#define current_function_has_unbounded_dynamic_stack_size \
+  (cfun->su->has_unbounded_dynamic_stack_size)
+#define current_function_allocates_dynamic_stack_space    \
+  (current_function_dynamic_stack_size != 0               \
+   || current_function_has_unbounded_dynamic_stack_size)
+
 /* This structure can save all the important global and static variables
    describing the status of the current function.  */
 
@@ -486,6 +512,9 @@ struct GTY(()) function {
   /* The loops in this function.  */
   struct loops *x_current_loops;
 
+  /* The stack usage of this function.  */
+  struct stack_usage *su;
+
   /* Value histograms attached to particular statements.  */
   htab_t GTY((skip)) value_histograms;
 
@@ -503,8 +532,8 @@ struct GTY(()) function {
      pointer.  */
   tree nonlocal_goto_save_area;
 
-  /* List of function local variables, functions, types and constants.  */
-  tree local_decls;
+  /* Vector of function local variables, functions, types and constants.  */
+  VEC(tree,gc) *local_decls;
 
   /* For md files.  */
 
@@ -608,6 +637,17 @@ struct GTY(()) function {
      function.  */
   unsigned int is_thunk : 1;
 };
+
+/* Add the decl D to the local_decls list of FUN.  */
+
+static inline void
+add_local_decl (struct function *fun, tree d)
+{
+  VEC_safe_push (tree, gc, fun->local_decls, d);
+}
+
+#define FOR_EACH_LOCAL_DECL(FUN, I, D)		\
+  FOR_EACH_VEC_ELT_REVERSE (tree, (FUN)->local_decls, I, D)
 
 /* If va_list_[gf]pr_size is set to this, it means we don't know how
    many units need to be saved.  */

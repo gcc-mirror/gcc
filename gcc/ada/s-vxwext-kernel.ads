@@ -61,6 +61,9 @@ package System.VxWorks.Ext is
       Parameter : System.Address := System.Null_Address) return int;
    pragma Import (C, Interrupt_Connect, "intConnect");
 
+   function Interrupt_Context return int;
+   pragma Import (C, Interrupt_Context, "intContext");
+
    function Interrupt_Number_To_Vector
      (intNum : int) return Interrupt_Vector;
    pragma Import (C, Interrupt_Number_To_Vector, "__gnat_inum_to_ivec");

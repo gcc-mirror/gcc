@@ -1,5 +1,5 @@
 /* score3.c for Sunplus S+CORE processor
-   Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Sunnorth
 
    This file is part of GCC.
@@ -29,7 +29,7 @@
 #include "conditions.h"
 #include "insn-attr.h"
 #include "recog.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "output.h"
 #include "tree.h"
 #include "function.h"
@@ -290,7 +290,7 @@ score3_classify_address (struct score3_address_info *info,
 }
 
 bool
-score3_return_in_memory (tree type, tree fndecl ATTRIBUTE_UNUSED)
+score3_return_in_memory (const_tree type, const_tree fndecl ATTRIBUTE_UNUSED)
 {
     return ((TYPE_MODE (type) == BLKmode)
             || (int_size_in_bytes (type) > 2 * UNITS_PER_WORD)
@@ -439,7 +439,7 @@ score3_legitimize_address (rtx x)
    is a named (fixed) argument rather than a variable one.  */
 static void
 score3_classify_arg (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
-                     tree type, int named, struct score3_arg_info *info)
+                     const_tree type, bool named, struct score3_arg_info *info)
 {
   int even_reg_p;
   unsigned int num_words, max_regs;
@@ -575,7 +575,7 @@ score3_select_rtx_section (enum machine_mode mode, rtx x,
 
 /* Implement TARGET_IN_SMALL_DATA_P.  */
 bool
-score3_in_small_data_p (tree decl)
+score3_in_small_data_p (const_tree decl)
 {
   HOST_WIDE_INT size;
 
@@ -634,17 +634,19 @@ score3_asm_file_end (void)
     }
 }
 
-/* Implement OVERRIDE_OPTIONS macro.  */
+/* Implement TARGET_OPTION_OVERRIDE hook.  */
 void
-score3_override_options (void)
+score3_option_override (void)
 {
   flag_pic = false;
   if (!flag_pic)
-    score3_sdata_max = g_switch_set ? g_switch_value : SCORE3_DEFAULT_SDATA_MAX;
+    score3_sdata_max = (global_options_set.x_g_switch_value
+			? g_switch_value
+			: SCORE3_DEFAULT_SDATA_MAX);
   else
     {
       score3_sdata_max = 0;
-      if (g_switch_set && (g_switch_value != 0))
+      if (global_options_set.x_g_switch_value && (g_switch_value != 0))
         warning (0, "-fPIC and -G are incompatible");
     }
 
@@ -797,10 +799,10 @@ score3_initial_elimination_offset (int from,
     }
 }
 
-/* Implement FUNCTION_ARG_ADVANCE macro.  */
+/* Implement TARGET_FUNCTION_ARG_ADVANCE hook.  */
 void
 score3_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-                             tree type, int named)
+                             const_tree type, bool named)
 {
   struct score3_arg_info info;
   score3_classify_arg (cum, mode, type, named, &info);
@@ -820,10 +822,10 @@ score3_arg_partial_bytes (CUMULATIVE_ARGS *cum,
   return info.stack_words > 0 ? info.reg_words * UNITS_PER_WORD : 0;
 }
 
-/* Implement FUNCTION_ARG macro.  */
+/* Implement TARGET_FUNCTION_ARG hook.  */
 rtx
 score3_function_arg (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
-                     tree type, int named)
+                     const_tree type, bool named)
 {
   struct score3_arg_info info;
 
@@ -857,7 +859,8 @@ score3_function_arg (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
    VALTYPE is the return type and MODE is VOIDmode.  For libcalls,
    VALTYPE is null and MODE is the mode of the return value.  */
 rtx
-score3_function_value (tree valtype, tree func, enum machine_mode mode)
+score3_function_value (const_tree valtype, const_tree func,
+		       enum machine_mode mode)
 {
   if (valtype)
     {
@@ -909,7 +912,7 @@ score3_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   emit_move_insn (mem, chain_value);
 
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, FFCACHE),
-                     0, VOIDmode, 2,
+                     LCT_NORMAL, VOIDmode, 2,
                      addr, Pmode,
                      GEN_INT (TRAMPOLINE_SIZE), SImode);
 #undef FFCACHE
@@ -1221,7 +1224,7 @@ score3_return_addr (int count, rtx frame ATTRIBUTE_UNUSED)
 void
 score3_print_operand (FILE *file, rtx op, int c)
 {
-  enum rtx_code code = -1;
+  enum rtx_code code = UNKNOWN;
   if (!PRINT_OPERAND_PUNCT_VALID_P (c))
     code = GET_CODE (op);
 

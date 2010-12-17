@@ -10,7 +10,7 @@ program main
     enumerator :: blue = 1  
   end enum junk  ! { dg-error "Syntax error" }
 
-  blue = 10  ! { dg-error " assign to a named constant" }
+  blue = 10  ! { dg-error "Unexpected assignment" }
 
 end program main  ! { dg-error "Expecting END ENUM" }
  ! { dg-error "Unexpected end of file" "" { target "*-*-*" } 0 }

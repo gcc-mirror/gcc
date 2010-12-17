@@ -1,5 +1,5 @@
 /* Output routines for Sunplus S+CORE processor
-   Copyright (C) 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Sunnorth.
 
    This file is part of GCC.
@@ -29,6 +29,7 @@
 #include "conditions.h"
 #include "insn-attr.h"
 #include "recog.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "output.h"
 #include "tree.h"
@@ -50,6 +51,15 @@
 #include "score3.h"
 #include "df.h"
 
+static void score_option_override (void);
+
+/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
+static const struct default_options score_option_optimization_table[] =
+  {
+    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
+
 #undef  TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START           score_asm_file_start
 
@@ -66,6 +76,10 @@
 #define TARGET_DEFAULT_TARGET_FLAGS     TARGET_DEFAULT
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION            score_handle_option
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE          score_option_override
+#undef TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE score_option_optimization_table
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS	score_legitimize_address
@@ -92,13 +106,19 @@
 #define TARGET_PROMOTE_FUNCTION_MODE    default_promote_function_mode_always_promote
 
 #undef TARGET_PROMOTE_PROTOTYPES
-#define TARGET_PROMOTE_PROTOTYPES       hook_bool_tree_true
+#define TARGET_PROMOTE_PROTOTYPES       hook_bool_const_tree_true
 
 #undef TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK       must_pass_in_stack_var_size
 
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES        score_arg_partial_bytes
+
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG             score_function_arg
+
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE     score_function_arg_advance
 
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE        score_pass_by_reference
@@ -118,6 +138,9 @@
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE            score_can_eliminate
 
+#undef TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE score_conditional_register_usage
+
 #undef TARGET_ASM_TRAMPOLINE_TEMPLATE
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE	score_asm_trampoline_template
 #undef TARGET_TRAMPOLINE_INIT
@@ -132,7 +155,7 @@ enum reg_class score_char_to_class[256];
    small structures are returned in a register.
    Objects with varying size must still be returned in memory.  */
 static bool
-score_return_in_memory (tree type, tree fndecl ATTRIBUTE_UNUSED)
+score_return_in_memory (const_tree type, const_tree fndecl ATTRIBUTE_UNUSED)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
     return score7_return_in_memory (type, fndecl);
@@ -145,7 +168,7 @@ score_return_in_memory (tree type, tree fndecl ATTRIBUTE_UNUSED)
 /* Return nonzero when an argument must be passed by reference.  */
 static bool
 score_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
-                         enum machine_mode mode, tree type,
+                         enum machine_mode mode, const_tree type,
                          bool named ATTRIBUTE_UNUSED)
 {
   /* If we have a variable-sized parameter, we have no choice.  */
@@ -160,12 +183,11 @@ score_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
                        tree function)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_output_mi_thunk (file, thunk_fndecl, delta,
-                                   vcall_offset, function);
+    score7_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function);
   else if (TARGET_SCORE3)
-    return score3_output_mi_thunk (file, thunk_fndecl, delta,
-                                   vcall_offset, function);
-  gcc_unreachable ();
+    score3_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function);
+  else
+    gcc_unreachable ();
 }
 
 /* Implement TARGET_FUNCTION_OK_FOR_SIBCALL.  */
@@ -181,11 +203,11 @@ static void
 score_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_function_prologue (file, size);
+    score7_function_prologue (file, size);
   else if (TARGET_SCORE3)
-    return score3_function_prologue (file, size);
-
-  gcc_unreachable ();
+    score3_function_prologue (file, size);
+  else
+    gcc_unreachable ();
 }
 
 /* Do any necessary cleanup after a function to restore stack, frame,
@@ -195,11 +217,11 @@ score_function_epilogue (FILE *file,
                          HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_function_epilogue (file, size);
+    score7_function_epilogue (file, size);
   else if (TARGET_SCORE3)
-    return score3_function_epilogue (file, size);
-
-  gcc_unreachable ();
+    score3_function_epilogue (file, size);
+  else
+    gcc_unreachable ();
 }
 
 /* Implement TARGET_SCHED_ISSUE_RATE.  */
@@ -225,7 +247,7 @@ score_select_rtx_section (enum machine_mode mode, rtx x,
 
 /* Implement TARGET_IN_SMALL_DATA_P.  */
 static bool
-score_in_small_data_p (tree decl)
+score_in_small_data_p (const_tree decl)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
     return score7_in_small_data_p (decl);
@@ -273,11 +295,11 @@ static void
 score_asm_file_end (void)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_asm_file_end ();
+    score7_asm_file_end ();
   else if (TARGET_SCORE3)
-    return score3_asm_file_end ();
-
-  gcc_unreachable ();
+    score3_asm_file_end ();
+  else
+    gcc_unreachable ();
 }
 
 #define MASK_ALL_CPU_BITS \
@@ -345,16 +367,16 @@ score_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
     }
 }
 
-/* Implement OVERRIDE_OPTIONS macro.  */
-void
-score_override_options (void)
+/* Implement TARGET_OPTION_OVERRIDE hook.  */
+static void
+score_option_override (void)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_override_options ();
+    score7_option_override ();
   else if (TARGET_SCORE3)
-    return score3_override_options ();
-
-  return score7_override_options ();
+    score3_option_override ();
+  else
+    score7_option_override ();
 }
 
 /* Implement REGNO_REG_CLASS macro.  */
@@ -469,17 +491,17 @@ score_init_cumulative_args (CUMULATIVE_ARGS *cum,
   memset (cum, 0, sizeof (CUMULATIVE_ARGS));
 }
 
-/* Implement FUNCTION_ARG_ADVANCE macro.  */
-void
+/* Implement TARGET_FUNCTION_ARG_ADVANCE hook.  */
+static void
 score_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-                            tree type, int named)
+                            const_tree type, bool named)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_function_arg_advance (cum, mode, type, named);
+    score7_function_arg_advance (cum, mode, type, named);
   else if (TARGET_SCORE3)
-    return score3_function_arg_advance (cum, mode, type, named);
-
-  gcc_unreachable ();
+    score3_function_arg_advance (cum, mode, type, named);
+  else
+    gcc_unreachable ();
 }
 
 /* Implement TARGET_ARG_PARTIAL_BYTES macro.  */
@@ -495,10 +517,10 @@ score_arg_partial_bytes (CUMULATIVE_ARGS *cum,
   gcc_unreachable ();
 }
 
-/* Implement FUNCTION_ARG macro.  */
-rtx
-score_function_arg (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
-                    tree type, int named)
+/* Implement TARGET_FUNCTION_ARG hook.  */
+static rtx
+score_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+                    const_tree type, bool named)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
     return score7_function_arg (cum, mode, type, named);
@@ -512,7 +534,7 @@ score_function_arg (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
    VALTYPE is the return type and MODE is VOIDmode.  For libcalls,
    VALTYPE is null and MODE is the mode of the return value.  */
 rtx
-score_function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
+score_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED,
                       enum machine_mode mode)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
@@ -528,11 +550,11 @@ static void
 score_asm_trampoline_template (FILE *f)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_asm_trampoline_template (f);
+    score7_asm_trampoline_template (f);
   else if (TARGET_SCORE3)
-    return score3_asm_trampoline_template (f);
-
-  gcc_unreachable ();
+    score3_asm_trampoline_template (f);
+  else
+    gcc_unreachable ();
 }
 
 /* Implement TARGET_TRAMPOLINE_INIT.  */
@@ -541,11 +563,11 @@ score_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 {
   /* ??? These two routines are identical.  */
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_trampoline_init (m_tramp, fndecl, chain_value);
+    score7_trampoline_init (m_tramp, fndecl, chain_value);
   else if (TARGET_SCORE3)
-    return score3_trampoline_init (m_tramp, fndecl, chain_value);
-
-  gcc_unreachable ();
+    score3_trampoline_init (m_tramp, fndecl, chain_value);
+  else
+    gcc_unreachable ();
 }
 
 /* This function is used to implement REG_MODE_OK_FOR_BASE_P macro.  */
@@ -561,7 +583,7 @@ score_regno_mode_ok_for_base_p (int regno, int strict)
 }
 
 /* Implement TARGET_LEGITIMIZE_ADDRESS_P.  */
-bool
+static bool
 score_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
@@ -658,11 +680,11 @@ void
 score_print_operand (FILE *file, rtx op, int c)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_print_operand (file, op, c);
+    score7_print_operand (file, op, c);
   else if (TARGET_SCORE3)
-    return score3_print_operand (file, op, c);
-
-  gcc_unreachable ();
+    score3_print_operand (file, op, c);
+  else
+    gcc_unreachable ();
 }
 
 /* Implement PRINT_OPERAND_ADDRESS macro.  */
@@ -670,11 +692,11 @@ void
 score_print_operand_address (FILE *file, rtx x)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_print_operand_address (file, x);
+    score7_print_operand_address (file, x);
   else if (TARGET_SCORE3)
-    return score3_print_operand_address (file, x);
-
-  gcc_unreachable ();
+    score3_print_operand_address (file, x);
+  else
+    gcc_unreachable ();
 }
 
 /* Implement SELECT_CC_MODE macro.  */
@@ -708,11 +730,11 @@ void
 score_prologue (void)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_prologue ();
+    score7_prologue ();
   else if (TARGET_SCORE3)
-    return score3_prologue ();
-
-  gcc_unreachable ();
+    score3_prologue ();
+  else
+    gcc_unreachable ();
 }
 
 /* Generate the epilogue instructions in a S+core function.  */
@@ -720,11 +742,11 @@ void
 score_epilogue (int sibcall_p)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_epilogue (sibcall_p);
+    score7_epilogue (sibcall_p);
   else if (TARGET_SCORE3)
-    return score3_epilogue (sibcall_p);
-
-  gcc_unreachable ();
+    score3_epilogue (sibcall_p);
+  else
+    gcc_unreachable ();
 }
 
 /* Call and sibcall pattern all need call this function.  */
@@ -732,11 +754,11 @@ void
 score_call (rtx *ops, bool sib)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_call (ops, sib);
+    score7_call (ops, sib);
   else if (TARGET_SCORE3)
-    return score3_call (ops, sib);
-
-  gcc_unreachable ();
+    score3_call (ops, sib);
+  else
+    gcc_unreachable ();
 }
 
 /* Call value and sibcall value pattern all need call this function.  */
@@ -744,22 +766,22 @@ void
 score_call_value (rtx *ops, bool sib)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_call_value (ops, sib);
+    score7_call_value (ops, sib);
   else if (TARGET_SCORE3)
-    return score3_call_value (ops, sib);
-
-  gcc_unreachable ();
+    score3_call_value (ops, sib);
+  else
+    gcc_unreachable ();
 }
 
 void
 score_movsicc (rtx *ops)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_movsicc (ops);
+    score7_movsicc (ops);
   else if (TARGET_SCORE3)
-    return score3_movsicc (ops);
-
-  gcc_unreachable ();
+    score3_movsicc (ops);
+  else
+    gcc_unreachable ();
 }
 
 /* Machine Split  */
@@ -767,22 +789,22 @@ void
 score_movdi (rtx *ops)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_movdi (ops);
+    score7_movdi (ops);
   else if (TARGET_SCORE3)
-    return score3_movdi (ops);
-
-  gcc_unreachable ();
+    score3_movdi (ops);
+  else
+    gcc_unreachable ();
 }
 
 void
 score_zero_extract_andi (rtx *ops)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_zero_extract_andi (ops);
+    score7_zero_extract_andi (ops);
   else if (TARGET_SCORE3)
-    return score3_zero_extract_andi (ops);
-
-  gcc_unreachable ();
+    score3_zero_extract_andi (ops);
+  else
+    gcc_unreachable ();
 }
 
 /* Output asm insn for move.  */
@@ -1211,6 +1233,14 @@ score_block_move (rtx *ops)
         }
     }
   return false;
+}
+
+static void
+score_conditional_register_usage (void)
+{
+   if (!flag_pic)
+     fixed_regs[PIC_OFFSET_TABLE_REGNUM] =
+     call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 0;
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;

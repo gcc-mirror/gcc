@@ -1,6 +1,6 @@
 /* Operating system specific defines to be used when targeting GCC for
    Interix
-   Copyright (C) 1994, 1995, 1999, 2002, 2004, 2007
+   Copyright (C) 1994, 1995, 1999, 2002, 2004, 2007, 2010
    Free Software Foundation, Inc.
    Donn Terry, Softway Systems, Inc. (donn@softway.com)
    Modified from code
@@ -58,18 +58,8 @@ for windows/multi thread */
 #define STARTFILE_SPEC  \
   "%{!shared:%{pg:gcrt0%O%s}%{!pg:%{p:mcrt0%O%s}%{!p:crt0%O%s}}} %{shared:crti%O%s}"
 
-#undef WORD_SWITCH_TAKES_ARG
-#define WORD_SWITCH_TAKES_ARG(STR)					\
- ((DEFAULT_WORD_SWITCH_TAKES_ARG (STR)					\
- || !strcmp(STR, "rpath"))						\
-  && strcmp (STR, "Tdata") && strcmp (STR, "Ttext")			\
-  && strcmp (STR, "Tbss"))
-
 
 #define STDC_0_IN_SYSTEM_HEADERS 1
-
-#define HANDLE_SYSV_PRAGMA 1
-#undef HANDLE_PRAGMA_WEAK  /* until the link format can handle it */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 

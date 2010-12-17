@@ -84,7 +84,7 @@ namespace __profile
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       multimap(multimap&& __x)
-      : _Base(std::forward<multimap>(__x))
+      : _Base(std::move(__x))
       { }
 
       multimap(initializer_list<value_type> __l,
@@ -186,28 +186,47 @@ namespace __profile
       { return iterator(_Base::insert(__x)); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename _Pair, typename = typename
+	       std::enable_if<std::is_convertible<_Pair,
+						  value_type>::value>::type>
+        iterator
+        insert(_Pair&& __x)
+        { return iterator(_Base::insert(std::forward<_Pair>(__x))); }
+#endif
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
       void
       insert(std::initializer_list<value_type> __list)
       { _Base::insert(__list); }
 #endif
 
       iterator
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      insert(const_iterator __position, const value_type& __x)
+#else
       insert(iterator __position, const value_type& __x)
-      {
-	return iterator(_Base::insert(__position, __x));
-      }
+#endif
+      { return iterator(_Base::insert(__position, __x)); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename _Pair, typename = typename
+	       std::enable_if<std::is_convertible<_Pair,
+						  value_type>::value>::type>
+        iterator
+        insert(const_iterator __position, _Pair&& __x)
+        { return iterator(_Base::insert(__position,
+					std::forward<_Pair>(__x))); }
+#endif
 
       template<typename _InputIterator>
         void
         insert(_InputIterator __first, _InputIterator __last)
-        {
-	  _Base::insert(__first, __last);
-	}
+        { _Base::insert(__first, __last); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       iterator
-      erase(iterator __position)
-      { return _Base::erase(__position); }
+      erase(const_iterator __position)
+      { return iterator(_Base::erase(__position)); }
 #else
       void
       erase(iterator __position)
@@ -230,30 +249,17 @@ namespace __profile
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       iterator
-      erase(iterator __first, iterator __last)
-      {
-	// _GLIBCXX_RESOLVE_LIB_DEFECTS
-	// 151. can't currently clear() empty container
-	while (__first != __last)
-	  this->erase(__first++);
-	return __last;
-      }
+      erase(const_iterator __first, const_iterator __last)
+      { return iterator(_Base::erase(__first, __last)); }
 #else
       void
       erase(iterator __first, iterator __last)
-      {
-	// _GLIBCXX_RESOLVE_LIB_DEFECTS
-	// 151. can't currently clear() empty container
-	while (__first != __last)
-	  this->erase(__first++);
-      }
+      { _Base::erase(__first, __last); }
 #endif
 
       void
       swap(multimap& __x)
-      {
-	_Base::swap(__x);
-      }
+      { _Base::swap(__x); }
 
       void
       clear()

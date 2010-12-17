@@ -473,8 +473,9 @@ struct group_info
      hard_frame_pointer.  */
   bool frame_related;
 
-  /* A mem wrapped around the base pointer for the group in order to
-     do read dependency.  */
+  /* A mem wrapped around the base pointer for the group in order to do
+     read dependency.  It must be given BLKmode in order to encompass all
+     the possible offsets from the base.  */
   rtx base_mem;
 
   /* Canonized version of base_mem's address.  */
@@ -705,7 +706,7 @@ get_group_info (rtx base)
       *slot = gi = (group_info_t) pool_alloc (rtx_group_info_pool);
       gi->rtx_base = base;
       gi->id = rtx_group_next_id++;
-      gi->base_mem = gen_rtx_MEM (QImode, base);
+      gi->base_mem = gen_rtx_MEM (BLKmode, base);
       gi->canon_base_addr = canon_rtx (base);
       gi->store1_n = BITMAP_ALLOC (NULL);
       gi->store1_p = BITMAP_ALLOC (NULL);
@@ -963,11 +964,10 @@ set_usage_bits (group_info_t group, HOST_WIDE_INT offset, HOST_WIDE_INT width)
 	    ai = i;
 	  }
 
-	if (bitmap_bit_p (store1, ai))
+	if (!bitmap_set_bit (store1, ai))
 	  bitmap_set_bit (store2, ai);
 	else
 	  {
-	    bitmap_set_bit (store1, ai);
 	    if (i < 0)
 	      {
 		if (group->offset_map_size_n < ai)
@@ -1232,11 +1232,8 @@ set_position_unneeded (store_info_t s_info, int pos)
 {
   if (__builtin_expect (s_info->is_large, false))
     {
-      if (!bitmap_bit_p (s_info->positions_needed.large.bmap, pos))
-	{
-	  s_info->positions_needed.large.count++;
-	  bitmap_set_bit (s_info->positions_needed.large.bmap, pos);
-	}
+      if (bitmap_set_bit (s_info->positions_needed.large.bmap, pos))
+	s_info->positions_needed.large.count++;
     }
   else
     s_info->positions_needed.small_bitmask
@@ -1393,10 +1390,8 @@ record_store (rtx body, bb_info_t bb_info)
 
       gcc_assert (GET_MODE (mem) != BLKmode);
 
-      if (bitmap_bit_p (store1, spill_alias_set))
+      if (!bitmap_set_bit (store1, spill_alias_set))
 	bitmap_set_bit (store2, spill_alias_set);
-      else
-	bitmap_set_bit (store1, spill_alias_set);
 
       if (clear_alias_group->offset_map_size_p < spill_alias_set)
 	clear_alias_group->offset_map_size_p = spill_alias_set;
@@ -2326,7 +2321,8 @@ get_call_args (rtx call_insn, tree fn, rtx *args, int nargs)
        arg = TREE_CHAIN (arg), idx++)
     {
       enum machine_mode mode = TYPE_MODE (TREE_VALUE (arg));
-      rtx reg = FUNCTION_ARG (args_so_far, mode, NULL_TREE, 1), link, tmp;
+      rtx reg, link, tmp;
+      reg = targetm.calls.function_arg (&args_so_far, mode, NULL_TREE, true);
       if (!reg || !REG_P (reg) || GET_MODE (reg) != mode
 	  || GET_MODE_CLASS (mode) != MODE_INT)
 	return false;
@@ -2360,7 +2356,7 @@ get_call_args (rtx call_insn, tree fn, rtx *args, int nargs)
       if (tmp)
 	args[idx] = tmp;
 
-      FUNCTION_ARG_ADVANCE (args_so_far, mode, NULL_TREE, 1);
+      targetm.calls.function_arg_advance (&args_so_far, mode, NULL_TREE, true);
     }
   if (arg != void_list_node || idx != nargs)
     return false;
@@ -2777,7 +2773,7 @@ dse_step2_init (void)
   unsigned int i;
   group_info_t group;
 
-  for (i = 0; VEC_iterate (group_info_t, rtx_group_vec, i, group); i++)
+  FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, i, group)
     {
       /* For all non stack related bases, we only consider a store to
 	 be deletable if there are two or more stores for that
@@ -2829,7 +2825,7 @@ dse_step2_nospill (void)
      unused.  */
   current_position = 1;
 
-  for (i = 0; VEC_iterate (group_info_t, rtx_group_vec, i, group); i++)
+  FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, i, group)
     {
       bitmap_iterator bi;
       unsigned int j;
@@ -3072,7 +3068,7 @@ scan_reads_nospill (insn_info_t insn_info, bitmap gen, bitmap kill)
   /* If this insn reads the frame, kill all the frame related stores.  */
   if (insn_info->frame_read)
     {
-      for (i = 0; VEC_iterate (group_info_t, rtx_group_vec, i, group); i++)
+      FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, i, group)
 	if (group->process_globally && group->frame_related)
 	  {
 	    if (kill)
@@ -3083,7 +3079,7 @@ scan_reads_nospill (insn_info_t insn_info, bitmap gen, bitmap kill)
 
   while (read_info)
     {
-      for (i = 0; VEC_iterate (group_info_t, rtx_group_vec, i, group); i++)
+      FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, i, group)
 	{
 	  if (group->process_globally)
 	    {
@@ -3123,7 +3119,7 @@ scan_reads_nospill (insn_info_t insn_info, bitmap gen, bitmap kill)
 		     base.  */
 		  if ((read_info->group_id < 0)
 		      && canon_true_dependence (group->base_mem,
-						QImode,
+						GET_MODE (group->base_mem),
 						group->canon_base_addr,
 						read_info->mem, NULL_RTX,
 						rtx_varies_p))
@@ -3264,7 +3260,7 @@ dse_step3_exit_block_scan (bb_info_t bb_info)
       unsigned int i;
       group_info_t group;
 
-      for (i = 0; VEC_iterate (group_info_t, rtx_group_vec, i, group); i++)
+      FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, i, group)
 	{
 	  if (group->process_globally && group->frame_related)
 	    bitmap_ior_into (bb_info->gen, group->group_kill);
@@ -3346,7 +3342,7 @@ dse_step3 (bool for_spills)
 	      group_info_t group;
 
 	      all_ones = BITMAP_ALLOC (NULL);
-	      for (j = 0; VEC_iterate (group_info_t, rtx_group_vec, j, group); j++)
+	      FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, j, group)
 		bitmap_ior_into (all_ones, group->group_kill);
 	    }
 	  if (!bb_info->out)
@@ -3748,7 +3744,7 @@ dse_step7 (bool global_done)
   group_info_t group;
   basic_block bb;
 
-  for (i = 0; VEC_iterate (group_info_t, rtx_group_vec, i, group); i++)
+  FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, i, group)
     {
       free (group->offset_map_n);
       free (group->offset_map_p);

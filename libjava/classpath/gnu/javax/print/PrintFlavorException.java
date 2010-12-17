@@ -1,4 +1,4 @@
-/* PrintFlavorException.java -- 
+/* PrintFlavorException.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -46,21 +46,21 @@ import javax.print.PrintException;
  * A <code>PrintException</code> further refining the exception
  * cause by providing an implementation of the print exception
  * interface <code>FlavorException</code>.
- * 
+ *
  * @see javax.print.PrintException
  * @see javax.print.FlavorException
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public class PrintFlavorException extends PrintException 
+public class PrintFlavorException extends PrintException
   implements FlavorException
 {
   private DocFlavor[] flavors;
-  
+
   /**
    * Constructs a <code>PrintFlavorException</code>
    * with the given unsupported doc flavor array
-   * 
+   *
    * @param unsupportedFlavors the unsupported document flavors.
    */
   public PrintFlavorException(DocFlavor[] unsupportedFlavors)
@@ -72,7 +72,7 @@ public class PrintFlavorException extends PrintException
   /**
    * Constructs a <code>PrintFlavorException</code>
    * with the given unsupported doc flavor array
-   * 
+   *
    * @param e chained exception
    * @param unsupportedFlavors the unsupported document flavors.
    */
@@ -85,7 +85,7 @@ public class PrintFlavorException extends PrintException
   /**
    * Constructs a <code>PrintFlavorException</code>
    * with the given unsupported doc flavor array
-   * 
+   *
    * @param s detailed message
    * @param unsupportedFlavors the unsupported document flavors.
    */
@@ -98,12 +98,12 @@ public class PrintFlavorException extends PrintException
   /**
    * Constructs a <code>PrintFlavorException</code>
    * with the given unsupported doc flavor array
-   * 
+   *
    * @param s detailed message
    * @param e chained exception
    * @param unsupportedFlavors the unsupported document flavors.
    */
-  public PrintFlavorException(String s, Exception e, 
+  public PrintFlavorException(String s, Exception e,
     DocFlavor[] unsupportedFlavors)
   {
     super(s, e);

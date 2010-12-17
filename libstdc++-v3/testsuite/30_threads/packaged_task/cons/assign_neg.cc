@@ -29,8 +29,7 @@ void test01()
   // assign
   std::packaged_task<int()> p1;
   std::packaged_task<int()> p2;
-  p1 = p2;
+  p1 = p2;			// { dg-error "deleted" }
 }
 
-// { dg-error "used here" "" { target *-*-* } 32 }
-// { dg-error "deleted function" "" { target *-*-* } 1228 }
+// { dg-prune-output "include" }

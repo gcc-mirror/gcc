@@ -105,6 +105,15 @@ package Ada.Strings.Wide_Fixed is
    procedure Find_Token
      (Source : Wide_String;
       Set    : Wide_Maps.Wide_Character_Set;
+      From   : Positive;
+      Test   : Membership;
+      First  : out Positive;
+      Last   : out Natural);
+   pragma Ada_2012 (Find_Token);
+
+   procedure Find_Token
+     (Source : Wide_String;
+      Set    : Wide_Maps.Wide_Character_Set;
       Test   : Membership;
       First  : out Positive;
       Last   : out Natural);

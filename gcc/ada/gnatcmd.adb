@@ -26,6 +26,7 @@
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 
 with Csets;
+with Hostparm; use Hostparm;
 with Makeutl;  use Makeutl;
 with MLib.Tgt; use MLib.Tgt;
 with MLib.Utl;
@@ -46,16 +47,14 @@ with Table;
 with Targparm;
 with Tempdir;
 with Types;    use Types;
-with Hostparm; use Hostparm;
---  Used to determine if we are in VMS or not for error message purposes
+with VMS_Conv; use VMS_Conv;
+with VMS_Cmds; use VMS_Cmds;
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 with Ada.Command_Line;        use Ada.Command_Line;
 with Ada.Text_IO;             use Ada.Text_IO;
 
-with GNAT.OS_Lib;             use GNAT.OS_Lib;
-
-with VMS_Conv;                use VMS_Conv;
+with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 procedure GNATCmd is
    Project_Node_Tree : Project_Node_Tree_Ref;
@@ -320,6 +319,50 @@ procedure GNATCmd is
       Status      : Integer;
       Success     : Boolean;
 
+      procedure Add_To_Response_File
+        (File_Name  : String;
+         Check_File : Boolean := True);
+      --  Include the file name passed as parameter in the response file for
+      --  the tool being called. If the response file can not be written then
+      --  the file name is passed in the parameter list of the tool. If the
+      --  Check_File parameter is True then the procedure verifies the
+      --  existence of the file before adding it to the response file.
+
+      --------------------------
+      -- Add_To_Response_File --
+      --------------------------
+
+      procedure Add_To_Response_File
+        (File_Name  : String;
+         Check_File : Boolean := True)
+      is
+      begin
+         Name_Len := 0;
+
+         Add_Str_To_Name_Buffer (File_Name);
+
+         if not Check_File or else
+           Is_Regular_File (Name_Buffer (1 .. Name_Len))
+         then
+            if FD /= Invalid_FD then
+               Name_Len := Name_Len + 1;
+               Name_Buffer (Name_Len) := ASCII.LF;
+
+               Status := Write (FD, Name_Buffer (1)'Address, Name_Len);
+
+               if Status /= Name_Len then
+                  Osint.Fail ("disk full");
+               end if;
+            else
+               Last_Switches.Increment_Last;
+               Last_Switches.Table (Last_Switches.Last) :=
+                 new String'(File_Name);
+            end if;
+         end if;
+      end Add_To_Response_File;
+
+   --  Start of processing for Check_Files
+
    begin
       --  Check if there is at least one argument that is not a switch or if
       --  there is a -files= switch.
@@ -364,11 +407,13 @@ procedure GNATCmd is
       if Add_Sources then
 
          --  For gnatcheck, gnatpp, and gnatmetric, create a temporary file
-         --  and put the list of sources in it.
+         --  and put the list of sources in it. For gnatstack create a
+         --  temporary file with the list of .ci files.
 
          if The_Command = Check  or else
             The_Command = Pretty or else
-            The_Command = Metric
+            The_Command = Metric or else
+            The_Command = Stack
          then
             Tempdir.Create_Temp_File (FD, Temp_File_Name);
             Last_Switches.Increment_Last;
@@ -390,27 +435,39 @@ procedure GNATCmd is
                   if Check_Project (Proj.Project, Project) then
                      declare
                         Main : String_List_Id;
-                        File : String_Access;
 
                      begin
                         --  Include binder generated files for main programs
 
                         Main := Proj.Project.Mains;
                         while Main /= Nil_String loop
-                           File :=
-                             new String'
-                               (Get_Name_String
-                                 (Proj.Project.Object_Directory.Name)        &
-                                B_Start.all                                  &
-                                MLib.Fil.Ext_To
-                                  (Get_Name_String
-                                     (Project_Tree.String_Elements.Table
-                                        (Main).Value),
-                                   "ci"));
+                           Add_To_Response_File
+                             (Get_Name_String
+                                (Proj.Project.Object_Directory.Name) &
+                              B_Start.all                            &
+                              MLib.Fil.Ext_To
+                                (Get_Name_String
+                                   (Project_Tree.String_Elements.Table
+                                      (Main).Value),
+                                 "ci"));
 
-                           if Is_Regular_File (File.all) then
-                              Last_Switches.Increment_Last;
-                              Last_Switches.Table (Last_Switches.Last) := File;
+                           --  When looking for the .ci file for a binder
+                           --  generated file, look for both b~xxx and b__xxx
+                           --  as gprbuild always uses b__ as the prefix of
+                           --  such files.
+
+                           if not Is_Regular_File (Name_Buffer (1 .. Name_Len))
+                             and then B_Start.all /= "b__"
+                           then
+                              Add_To_Response_File
+                                (Get_Name_String
+                                   (Proj.Project.Object_Directory.Name) &
+                                 "b__"                                  &
+                                 MLib.Fil.Ext_To
+                                   (Get_Name_String
+                                      (Project_Tree.String_Elements.Table
+                                         (Main).Value),
+                                    "ci"));
                            end if;
 
                            Main :=
@@ -423,17 +480,27 @@ procedure GNATCmd is
                            --  files that contains the initialization and
                            --  finalization of the library.
 
-                           File :=
-                             new String'
-                               (Get_Name_String
-                                 (Proj.Project.Object_Directory.Name)        &
-                                B_Start.all                                  &
-                                Get_Name_String (Proj.Project.Library_Name)  &
-                                ".ci");
+                           Add_To_Response_File
+                             (Get_Name_String
+                                (Proj.Project.Object_Directory.Name)      &
+                              B_Start.all                                 &
+                              Get_Name_String (Proj.Project.Library_Name) &
+                              ".ci");
 
-                           if Is_Regular_File (File.all) then
-                              Last_Switches.Increment_Last;
-                              Last_Switches.Table (Last_Switches.Last) := File;
+                           --  When looking for the .ci file for a binder
+                           --  generated file, look for both b~xxx and b__xxx
+                           --  as gprbuild always uses b__ as the prefix of
+                           --  such files.
+
+                           if not Is_Regular_File (Name_Buffer (1 .. Name_Len))
+                               and then B_Start.all /= "b__"
+                           then
+                              Add_To_Response_File
+                                (Get_Name_String
+                                   (Proj.Project.Object_Directory.Name)      &
+                                 "b__"                                       &
+                                 Get_Name_String (Proj.Project.Library_Name) &
+                                 ".ci");
                            end if;
                         end if;
                      end;
@@ -542,16 +609,14 @@ procedure GNATCmd is
                         end if;
 
                         if not Subunit then
-                           Last_Switches.Increment_Last;
-                           Last_Switches.Table (Last_Switches.Last) :=
-                             new String'
-                               (Get_Name_String
-                                 (Unit.File_Names
-                                   (Impl).Project. Object_Directory.Name)  &
-                                MLib.Fil.Ext_To
-                                  (Get_Name_String
-                                     (Unit.File_Names (Impl).Display_File),
-                                   "ci"));
+                           Add_To_Response_File
+                             (Get_Name_String
+                                (Unit.File_Names
+                                   (Impl).Project. Object_Directory.Name) &
+                              MLib.Fil.Ext_To
+                                (Get_Name_String
+                                   (Unit.File_Names (Impl).Display_File),
+                                 "ci"));
                         end if;
                      end if;
 
@@ -563,16 +628,14 @@ procedure GNATCmd is
                      if Check_Project
                           (Unit.File_Names (Spec).Project, Project)
                      then
-                        Last_Switches.Increment_Last;
-                        Last_Switches.Table (Last_Switches.Last) :=
-                          new String'
-                            (Get_Name_String
-                              (Unit.File_Names
-                                (Spec).Project. Object_Directory.Name)     &
-                             Dir_Separator                                 &
-                             MLib.Fil.Ext_To
-                               (Get_Name_String (Unit.File_Names (Spec).File),
-                                "ci"));
+                        Add_To_Response_File
+                          (Get_Name_String
+                             (Unit.File_Names
+                                (Spec).Project. Object_Directory.Name) &
+                           Dir_Separator                               &
+                           MLib.Fil.Ext_To
+                             (Get_Name_String (Unit.File_Names (Spec).File),
+                              "ci"));
                      end if;
                   end if;
 
@@ -587,30 +650,12 @@ procedure GNATCmd is
                                   (Unit.File_Names (Kind).Project, Project)
                        and then not Unit.File_Names (Kind).Locally_Removed
                      then
-                        Name_Len := 0;
-                        Add_Char_To_Name_Buffer ('"');
-                        Add_Str_To_Name_Buffer
-                          (Get_Name_String
-                            (Unit.File_Names (Kind).Path.Display_Name));
-                        Add_Char_To_Name_Buffer ('"');
-
-                        if FD /= Invalid_FD then
-                           Name_Len := Name_Len + 1;
-                           Name_Buffer (Name_Len) := ASCII.LF;
-                           Status :=
-                             Write (FD, Name_Buffer (1)'Address, Name_Len);
-
-                           if Status /= Name_Len then
-                              Osint.Fail ("disk full");
-                           end if;
-
-                        else
-                           Last_Switches.Increment_Last;
-                           Last_Switches.Table (Last_Switches.Last) :=
-                             new String'(Get_Name_String
-                                          (Unit.File_Names
-                                            (Kind).Path.Display_Name));
-                        end if;
+                        Add_To_Response_File
+                          (""""                                         &
+                           Get_Name_String
+                             (Unit.File_Names (Kind).Path.Display_Name) &
+                           """",
+                           Check_File => False);
                      end if;
                   end loop;
                end if;
@@ -805,8 +850,6 @@ procedure GNATCmd is
          Success      => Unused,
          Return_Code  => Return_Code,
          Err_To_Out   => True);
-
-      Close (FD);
 
       --  Read the output of the invocation of gnatmake
 
@@ -1320,9 +1363,7 @@ procedure GNATCmd is
 begin
    --  Initializations
 
-   Namet.Initialize;
    Csets.Initialize;
-
    Snames.Initialize;
 
    Project_Node_Tree := new Project_Node_Tree_Data;
@@ -1351,6 +1392,19 @@ begin
    --  Osint.Program_Name to handle the mapping of GNAAMP tool names.
 
    Targparm.Get_Target_Parameters;
+
+   --  Put the command line in environment variable GNAT_DRIVER_COMMAND_LINE,
+   --  so that the spawned tool may know the way the GNAT driver was invoked.
+
+   Name_Len := 0;
+   Add_Str_To_Name_Buffer (Command_Name);
+
+   for J in 1 .. Argument_Count loop
+      Add_Char_To_Name_Buffer (' ');
+      Add_Str_To_Name_Buffer (Argument (J));
+   end loop;
+
+   Setenv ("GNAT_DRIVER_COMMAND_LINE", Name_Buffer (1 .. Name_Len));
 
    --  Add the directory where the GNAT driver is invoked in front of the path,
    --  if the GNAT driver is invoked with directory information. Do not do this
@@ -1528,6 +1582,15 @@ begin
            Program_Name (Command_List (The_Command).Unixcmd.all, "gnat");
       end if;
 
+      --  For the tools where the GNAT driver processes the project files,
+      --  allow shared library projects to import projects that are not shared
+      --  library projects, to avoid adding a switch for these tools. For the
+      --  builder (gnatmake), if a shared library project imports a project
+      --  that is not a shared library project and the appropriate switch is
+      --  not specified, the invocation of gnatmake will fail.
+
+      Opt.Unchecked_Shared_Lib_Imports := True;
+
       --  Locate the executable for the command
 
       Exec_Path := Locate_Exec_On_Path (Program.all);
@@ -1660,8 +1723,9 @@ begin
                   elsif Argv'Length > 3
                     and then Argv (Argv'First + 1 .. Argv'First + 2) = "aP"
                   then
-                     Add_Search_Project_Directory
-                       (Project_Node_Tree, Argv (Argv'First + 3 .. Argv'Last));
+                     Prj.Env.Add_Directories
+                       (Project_Node_Tree.Project_Path,
+                        Argv (Argv'First + 3 .. Argv'Last));
 
                      Remove_Switch (Arg_Num);
 

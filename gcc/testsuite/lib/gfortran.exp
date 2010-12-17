@@ -103,11 +103,22 @@ proc gfortran_link_flags { paths } {
       if [file exists "${gccpath}/libgfortran/libgforbegin.a"] {
           append flags "-L${gccpath}/libgfortran "
       }
+      if [file exists "${gccpath}/libquadmath/.libs/libquadmath.a"] {
+          # Some targets use libquadmath.a%s in their specs, so they need a -B option
+          # for uninstalled testing.
+          append flags "-B${gccpath}/libquadmath/.libs "
+          append flags "-L${gccpath}/libquadmath/.libs "
+          append ld_library_path ":${gccpath}/libquadmath/.libs"
+      }
+      if [file exists "${gccpath}/libquadmath/.libs/libquadmath.${shlib_ext}"] {
+	  append flags "-L${gccpath}/libquadmath/.libs "
+	  append ld_library_path ":${gccpath}/libquadmath/.libs"
+      }
       if [file exists "${gccpath}/libiberty/libiberty.a"] {
           append flags "-L${gccpath}/libiberty "
       }
       append ld_library_path \
-	[gcc-set-multilib-library-path $GFORTRAN_UNDER_TEST]
+	[gcc-set-multilib-library-path $GFORTRAN_UNDER_TEST ]
     }
 
     set_ld_library_path_env_vars
@@ -150,7 +161,12 @@ proc gfortran_init { args } {
 	    if { [is_remote host] || ! [info exists TESTING_IN_BUILD_TREE] } {
 		set GFORTRAN_UNDER_TEST [transform gfortran]
 	    } else {
-		set GFORTRAN_UNDER_TEST [findfile $base_dir/../../gfortran "$base_dir/../../gfortran -B$base_dir/../../" [findfile $base_dir/gfortran "$base_dir/gfortran -B$base_dir/" [transform gfortran]]]
+		if [info exists TOOL_OPTIONS] {
+	            set specpath [get_multilibs ${TOOL_OPTIONS}]
+		} else {
+		    set specpath [get_multilibs]
+		}
+		set GFORTRAN_UNDER_TEST [findfile $base_dir/../../gfortran "$base_dir/../../gfortran -B$base_dir/../../ -B$specpath/libgfortran/" [findfile $base_dir/gfortran "$base_dir/gfortran -B$base_dir/" [transform gfortran]]]
 	    }
 	}
     }

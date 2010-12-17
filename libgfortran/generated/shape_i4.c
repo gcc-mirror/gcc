@@ -41,13 +41,23 @@ shape_4 (gfc_array_i4 * const restrict ret,
   int n;
   index_type stride;
   index_type extent;
+  int rank;
+
+  rank = GFC_DESCRIPTOR_RANK (array);
+
+  if (ret->data == NULL)
+    {
+      GFC_DIMENSION_SET(ret->dim[0], 0, rank - 1, 1);
+      ret->offset = 0;
+      ret->data = internal_malloc_size (sizeof (GFC_INTEGER_4) * rank);
+    }
 
   stride = GFC_DESCRIPTOR_STRIDE(ret,0);
 
   if (GFC_DESCRIPTOR_EXTENT(ret,0) < 1)
     return;
 
-  for (n = 0; n < GFC_DESCRIPTOR_RANK (array); n++)
+  for (n = 0; n < rank; n++)
     {
       extent = GFC_DESCRIPTOR_EXTENT(array,n);
       ret->data[n * stride] = extent > 0 ? extent : 0 ;

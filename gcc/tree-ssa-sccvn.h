@@ -72,6 +72,8 @@ typedef const struct vn_phi_s *const_vn_phi_t;
 typedef struct vn_reference_op_struct
 {
   enum tree_code opcode;
+  /* Constant offset this op adds or -1 if it is variable.  */
+  HOST_WIDE_INT off;
   tree type;
   tree op0;
   tree op1;
@@ -167,7 +169,7 @@ typedef struct vn_ssa_aux
 extern vn_ssa_aux_t VN_INFO (tree);
 extern vn_ssa_aux_t VN_INFO_GET (tree);
 tree vn_get_expr_for (tree);
-bool run_scc_vn (bool);
+bool run_scc_vn (void);
 void free_scc_vn (void);
 tree vn_nary_op_lookup (tree, vn_nary_op_t *);
 tree vn_nary_op_lookup_stmt (gimple, vn_nary_op_t *);

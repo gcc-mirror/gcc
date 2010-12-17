@@ -1,15 +1,11 @@
-<?xml version='1.0'?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
-[ ]>
+<book xmlns="http://docbook.org/ns/docbook" version="5.0">
 
-<book>
-
-<article id="api" xreflabel="API">
+<article xml:id="api" xreflabel="API">
 <?dbhtml filename="api.html"?>
 
-<articleinfo>
-  <title>API Documentation</title>
+<title>The GNU C++ Library API Reference</title>
+
+<info>
   <copyright>
     <year>
       2008
@@ -18,8 +14,8 @@
       2010
     </year>
     <holder>
-      <ulink url="http://www.fsf.org/">FSF
-      </ulink>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.fsf.org/">FSF
+      </link>
     </holder>
   </copyright>
   <legalnotice>
@@ -28,7 +24,7 @@
       </link>
     </para>
   </legalnotice>
-</articleinfo>
+</info>
  
 <para>
   The GNU C++ library sources have been specially formatted so that
@@ -47,38 +43,44 @@
 <itemizedlist>
   <listitem>
     <para>
-      <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-html-USERS-3.4/index.html">for the 3.4 release
-      </ulink>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-html-USERS-3.4/index.html">for the 3.4 release
+      </link>
     </para>
   </listitem>
   <listitem>
     <para>
-      <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-html-USERS-4.1/index.html">for the 4.1 release
-      </ulink>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-html-USERS-4.1/index.html">for the 4.1 release
+      </link>
     </para>
   </listitem>
   <listitem>
     <para>
-      <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-html-USERS-4.2/index.html">for the 4.2 release
-      </ulink>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-html-USERS-4.2/index.html">for the 4.2 release
+      </link>
     </para>
   </listitem>
   <listitem>
     <para>
-      <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-html-USERS-4.3/index.html">for the 4.3 release
-      </ulink>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-html-USERS-4.3/index.html">for the 4.3 release
+      </link>
     </para>
   </listitem>
   <listitem>
     <para>
-      <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-html-USERS-4.4/index.html">for the 4.4 release
-      </ulink>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-html-USERS-4.4/index.html">for the 4.4 release
+      </link>
     </para>
   </listitem>
   <listitem>
     <para>
-      <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/index.html">&quot;the latest collection&quot;
-      </ulink>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-api-4.5/index.html">for the 4.5 release
+      </link>
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/index.html">"the latest collection"
+      </link>
       (For the main development tree; see the date on the first page.)
     </para>
   </listitem>
@@ -89,7 +91,7 @@
   gcc.org site in a directory located at
    <literal>&lt;URL:ftp://gcc.gnu.org/pub/gcc/libstdc++/doxygen/&gt;</literal>.
    You will almost certainly need to use one of the
-   <ulink url="http://gcc.gnu.org/mirrors.html">mirror sites</ulink> to download
+   <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/mirrors.html">mirror sites</link> to download
    the tarball. After unpacking, simply load libstdc++-html-*/index.html
    into a browser.
 </para>

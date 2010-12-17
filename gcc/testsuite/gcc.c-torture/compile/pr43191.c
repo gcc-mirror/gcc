@@ -1,3 +1,4 @@
+/* { dg-skip-if "Ints are 16 bits" { "pdp11-*-*" } { "*" } { "" } } */ 
 struct S0
 {
 };

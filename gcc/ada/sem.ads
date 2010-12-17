@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -461,6 +461,9 @@ package Sem is
 
       Save_Check_Policy_List : Node_Id;
       --  Save contents of Check_Policy_List on entry to restore on exit
+
+      Save_Default_Storage_Pool : Node_Id;
+      --  Save contents of Default_Storage_Pool on entry to restore on exit
 
       Is_Transient : Boolean;
       --  Marks transient scopes (see Exp_Ch7 body for details)

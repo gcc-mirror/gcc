@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -275,6 +275,15 @@ package Ada.Strings.Wide_Wide_Unbounded is
    function Count
      (Source : Unbounded_Wide_Wide_String;
       Set    : Wide_Wide_Maps.Wide_Wide_Character_Set) return Natural;
+
+   procedure Find_Token
+     (Source : Unbounded_Wide_Wide_String;
+      Set    : Wide_Wide_Maps.Wide_Wide_Character_Set;
+      From   : Positive;
+      Test   : Membership;
+      First  : out Positive;
+      Last   : out Natural);
+   pragma Ada_2012 (Find_Token);
 
    procedure Find_Token
      (Source : Unbounded_Wide_Wide_String;

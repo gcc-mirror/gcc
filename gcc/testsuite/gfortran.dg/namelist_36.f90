@@ -1,4 +1,4 @@
-! { dg-compile }
+! { dg-do compile }
 !
 ! Private types and types with private components
 ! are acceptable in local namelists.

@@ -34,6 +34,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "input.h"
 #include "javaop.h"
 #include "java-tree.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "parse.h"
 #include "ggc.h"
@@ -42,6 +43,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "cgraph.h"
 #include "vecprim.h"
 #include "bitmap.h"
+#include "target.h"
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
@@ -78,9 +80,6 @@ static GTY(()) tree parse_roots[2];
 
 /* The METHOD_DECL for the current method.  */
 #define current_method parse_roots[1]
-
-/* A list of TRANSLATION_UNIT_DECLs for the files to be compiled.  */
-static GTY(()) VEC(tree,gc) *current_file_list;
 
 /* Line 0 in current file, if compiling from bytecode. */
 static location_t file_start_location;
@@ -557,12 +556,12 @@ handle_constant (JCF *jcf, int index, enum cpool_tag purpose)
 
     case CONSTANT_Long:
       index = handle_long_constant (jcf, cpool, CONSTANT_Long, index,
-				    WORDS_BIG_ENDIAN);
+				    targetm.words_big_endian ());
       break;
       
     case CONSTANT_Double:
       index = handle_long_constant (jcf, cpool, CONSTANT_Double, index,
-				    FLOAT_WORDS_BIG_ENDIAN);
+				    targetm.float_words_big_endian ());
       break;
 
     case CONSTANT_Float:
@@ -1073,7 +1072,7 @@ get_constant (JCF *jcf, int index)
 	hi = JPOOL_UINT (jcf, index);
 	lo = JPOOL_UINT (jcf, index+1);
 
-	if (FLOAT_WORDS_BIG_ENDIAN)
+	if (targetm.float_words_big_endian ())
 	  buf[0] = hi, buf[1] = lo;
 	else
 	  buf[0] = lo, buf[1] = hi;
@@ -1570,7 +1569,7 @@ parse_class_file (void)
   gen_indirect_dispatch_tables (current_class);
 
   for (method = TYPE_METHODS (current_class);
-       method != NULL_TREE; method = TREE_CHAIN (method))
+       method != NULL_TREE; method = DECL_CHAIN (method))
     {
       JCF *jcf = current_jcf;
 
@@ -1682,7 +1681,7 @@ predefined_filename_p (tree node)
   unsigned ix;
   tree f;
 
-  for (ix = 0; VEC_iterate (tree, predefined_filenames, ix, f); ix++)
+  FOR_EACH_VEC_ELT (tree, predefined_filenames, ix, f)
     if (f == node)
       return 1;
 
@@ -1706,7 +1705,7 @@ java_emit_static_constructor (void)
 
       tree decl 
 	= build_decl (input_location, FUNCTION_DECL, name,
-		      build_function_type (void_type_node, void_list_node));
+		      build_function_type_list (void_type_node, NULL_TREE));
 
       tree resdecl = build_decl (input_location,
 				 RESULT_DECL, NULL_TREE, void_type_node);
@@ -1733,7 +1732,7 @@ java_emit_static_constructor (void)
 
 
 void
-java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
+java_parse_file (void)
 {
   int filename_count = 0;
   location_t save_location = input_location;
@@ -1751,7 +1750,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
       int avail = 2000;
       finput = fopen (main_input_filename, "r");
       if (finput == NULL)
-	fatal_error ("can't open %s: %m", input_filename);
+	fatal_error ("can%'t open %s: %m", input_filename);
       list = XNEWVEC (char, avail);
       next = list;
       for (;;)
@@ -1839,9 +1838,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	    duplicate_class_warning (IDENTIFIER_POINTER (node));
 	  else
 	    {
-	      tree file_decl = build_decl (input_location,
-					   TRANSLATION_UNIT_DECL, node, NULL);
-	      VEC_safe_push (tree, gc, current_file_list, file_decl);
+	      build_translation_unit_decl (node);
 	      IS_A_COMMAND_LINE_FILENAME_P (node) = 1;
 	    }
 	}
@@ -1859,16 +1856,18 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
       const char *resource_filename;
       
       /* Only one resource file may be compiled at a time.  */
-      assert (VEC_length (tree, current_file_list) == 1);
+      assert (VEC_length (tree, all_translation_units) == 1);
 
-      resource_filename = IDENTIFIER_POINTER (DECL_NAME (VEC_index (tree, current_file_list, 0)));
+      resource_filename
+	= IDENTIFIER_POINTER
+	    (DECL_NAME (VEC_index (tree, all_translation_units, 0)));
       compile_resource_file (resource_name, resource_filename);
 
       goto finish;
     }
 
   current_jcf = main_jcf;
-  for (ix = 0; VEC_iterate (tree, current_file_list, ix, node); ix++)
+  FOR_EACH_VEC_ELT (tree, all_translation_units, ix, node)
     {
       unsigned char magic_string[4];
       char *real_path;
@@ -1886,11 +1885,11 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 
       /* Close previous descriptor, if any */
       if (finput && fclose (finput))
-	fatal_error ("can't close input file %s: %m", main_input_filename);
+	fatal_error ("can%'t close input file %s: %m", main_input_filename);
       
       finput = fopen (filename, "rb");
       if (finput == NULL)
-	fatal_error ("can't open %s: %m", filename);
+	fatal_error ("can%'t open %s: %m", filename);
 
 #ifdef IO_BUFFER_SIZE
       setvbuf (finput, xmalloc (IO_BUFFER_SIZE),
@@ -1955,7 +1954,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	}
     }
 
-  for (ix = 0; VEC_iterate (tree, current_file_list, ix, node); ix++)
+  FOR_EACH_VEC_ELT (tree, all_translation_units, ix, node)
     {
       input_location = DECL_SOURCE_LOCATION (node);
       if (CLASS_FILE_P (node))

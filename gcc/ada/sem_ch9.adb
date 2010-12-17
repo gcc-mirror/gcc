@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
@@ -44,6 +45,7 @@ with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch5;  use Sem_Ch5;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Ch13; use Sem_Ch13;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
@@ -104,14 +106,14 @@ package body Sem_Ch9 is
          Analyze (T_Name);
 
          if Is_Task_Type (Etype (T_Name))
-           or else (Ada_Version >= Ada_05
+           or else (Ada_Version >= Ada_2005
                       and then Ekind (Etype (T_Name)) = E_Class_Wide_Type
                       and then Is_Interface (Etype (T_Name))
                       and then Is_Task_Interface (Etype (T_Name)))
          then
             Resolve (T_Name);
          else
-            if Ada_Version >= Ada_05 then
+            if Ada_Version >= Ada_2005 then
                Error_Msg_N ("expect task name or task interface class-wide "
                           & "object for ABORT", T_Name);
             else
@@ -192,11 +194,11 @@ package body Sem_Ch9 is
          return;
       end if;
 
-      --  In order to process the parameters, we create a defining
-      --  identifier that can be used as the name of the scope. The
-      --  name of the accept statement itself is not a defining identifier,
-      --  and we cannot use its name directly because the task may have
-      --  any number of accept statements for the same entry.
+      --  In order to process the parameters, we create a defining identifier
+      --  that can be used as the name of the scope. The name of the accept
+      --  statement itself is not a defining identifier, and we cannot use
+      --  its name directly because the task may have any number of accept
+      --  statements for the same entry.
 
       if Present (Index) then
          Accept_Id := New_Internal_Entity
@@ -275,7 +277,6 @@ package body Sem_Ch9 is
          if Entry_Nam = Scope_Stack.Table (J).Entity then
             Error_Msg_N ("duplicate accept statement for same entry", N);
          end if;
-
       end loop;
 
       declare
@@ -402,7 +403,7 @@ package body Sem_Ch9 is
       Check_Restriction (Max_Asynchronous_Select_Nesting, N);
       Check_Restriction (No_Select_Statements, N);
 
-      if Ada_Version >= Ada_05 then
+      if Ada_Version >= Ada_2005 then
          Trigger := Triggering_Statement (Triggering_Alternative (N));
 
          Analyze (Trigger);
@@ -448,7 +449,7 @@ package body Sem_Ch9 is
 
       --  Ada 2005 (AI-345): The trigger may be a dispatching call
 
-      if Ada_Version >= Ada_05 then
+      if Ada_Version >= Ada_2005 then
          Analyze (Trigger);
          Check_Triggering_Statement (Trigger, N, Is_Disp_Select);
       end if;
@@ -878,18 +879,33 @@ package body Sem_Ch9 is
       Generate_Definition (Def_Id);
       Tasking_Used := True;
 
+      --  Case of no discrete subtype definition
+
       if No (D_Sdef) then
          Set_Ekind (Def_Id, E_Entry);
+
+      --  Processing for discrete subtype definition present
+
       else
          Enter_Name (Def_Id);
          Set_Ekind (Def_Id, E_Entry_Family);
          Analyze (D_Sdef);
          Make_Index (D_Sdef, N, Def_Id);
+
+         --  Check subtype with predicate in entry family
+
+         Bad_Predicated_Subtype_Use
+           ("subtype& has predicate, not allowed in entry family",
+            D_Sdef, Etype (D_Sdef));
       end if;
+
+      --  Decorate Def_Id
 
       Set_Etype          (Def_Id, Standard_Void_Type);
       Set_Convention     (Def_Id, Convention_Entry);
       Set_Accept_Address (Def_Id, New_Elmt_List);
+
+      --  Process formals
 
       if Present (Formals) then
          Set_Scope (Def_Id, Current_Scope);
@@ -904,6 +920,7 @@ package body Sem_Ch9 is
       end if;
 
       Generate_Reference_To_Formals (Def_Id);
+      Analyze_Aspect_Specifications (N, Def_Id, Aspect_Specifications (N));
    end Analyze_Entry_Declaration;
 
    ---------------------------------------
@@ -1122,11 +1139,11 @@ package body Sem_Ch9 is
       Process_End_Label (N, 'e', Current_Scope);
    end Analyze_Protected_Definition;
 
-   ----------------------------
-   -- Analyze_Protected_Type --
-   ----------------------------
+   ----------------------------------------
+   -- Analyze_Protected_Type_Declaration --
+   ----------------------------------------
 
-   procedure Analyze_Protected_Type (N : Node_Id) is
+   procedure Analyze_Protected_Type_Declaration (N : Node_Id) is
       Def_Id : constant Entity_Id := Defining_Identifier (N);
       E      : Entity_Id;
       T      : Entity_Id;
@@ -1134,7 +1151,7 @@ package body Sem_Ch9 is
    begin
       if No_Run_Time_Mode then
          Error_Msg_CRT ("protected type", N);
-         return;
+         goto Leave;
       end if;
 
       Tasking_Used := True;
@@ -1158,7 +1175,7 @@ package body Sem_Ch9 is
       Set_Stored_Constraint  (T, No_Elist);
       Push_Scope (T);
 
-      if Ada_Version >= Ada_05 then
+      if Ada_Version >= Ada_2005 then
          Check_Interfaces (N, T);
       end if;
 
@@ -1177,6 +1194,27 @@ package body Sem_Ch9 is
       Set_Is_Constrained (T, not Has_Discriminants (T));
 
       Analyze (Protected_Definition (N));
+
+      --  In the case where the protected type is declared at a nested level
+      --  and the No_Local_Protected_Objects restriction applies, issue a
+      --  warning that objects of the type will violate the restriction.
+
+      if Restriction_Check_Required (No_Local_Protected_Objects)
+        and then not Is_Library_Level_Entity (T)
+        and then Comes_From_Source (T)
+      then
+         Error_Msg_Sloc := Restrictions_Loc (No_Local_Protected_Objects);
+
+         if Error_Msg_Sloc = No_Location then
+            Error_Msg_N
+              ("objects of this type will violate " &
+               "`No_Local_Protected_Objects`?", N);
+         else
+            Error_Msg_N
+              ("objects of this type will violate " &
+               "`No_Local_Protected_Objects`?#", N);
+         end if;
+      end if;
 
       --  Protected types with entries are controlled (because of the
       --  Protection component if nothing else), same for any protected type
@@ -1233,7 +1271,10 @@ package body Sem_Ch9 is
             Process_Full_View (N, T, Def_Id);
          end if;
       end if;
-   end Analyze_Protected_Type;
+
+      <<Leave>>
+         Analyze_Aspect_Specifications (N, Def_Id, Aspect_Specifications (N));
+   end Analyze_Protected_Type_Declaration;
 
    ---------------------
    -- Analyze_Requeue --
@@ -1402,18 +1443,17 @@ package body Sem_Ch9 is
          Entry_Id := Entity (Entry_Name);
       end if;
 
-      --  Ada 2005 (AI05-0030): Potential dispatching requeue statement. The
+      --  Ada 2012 (AI05-0030): Potential dispatching requeue statement. The
       --  target type must be a concurrent interface class-wide type and the
-      --  entry name must be a procedure, flagged by pragma Implemented_By_
-      --  Entry.
+      --  target must be a procedure, flagged by pragma Implemented.
 
       Is_Disp_Req :=
-        Ada_Version >= Ada_05
+        Ada_Version >= Ada_2012
           and then Present (Target_Obj)
           and then Is_Class_Wide_Type (Etype (Target_Obj))
           and then Is_Concurrent_Interface (Etype (Target_Obj))
           and then Ekind (Entry_Id) = E_Procedure
-          and then Implemented_By_Entry (Entry_Id);
+          and then Has_Rep_Pragma (Entry_Id, Name_Implemented);
 
       --  Resolve entry, and check that it is subtype conformant with the
       --  enclosing construct if this construct has formals (RM 9.5.4(5)).
@@ -1441,11 +1481,13 @@ package body Sem_Ch9 is
                return;
             end if;
 
-            --  Ada 2005 (AI05-0030): Perform type conformance after skipping
+            --  Ada 2012 (AI05-0030): Perform type conformance after skipping
             --  the first parameter of Entry_Id since it is the interface
             --  controlling formal.
 
-            if Is_Disp_Req then
+            if Ada_Version >= Ada_2012
+              and then Is_Disp_Req
+            then
                declare
                   Enclosing_Formal : Entity_Id;
                   Target_Formal    : Entity_Id;
@@ -1629,11 +1671,11 @@ package body Sem_Ch9 is
       end if;
    end Analyze_Selective_Accept;
 
-   ------------------------------
-   -- Analyze_Single_Protected --
-   ------------------------------
+   ------------------------------------------
+   -- Analyze_Single_Protected_Declaration --
+   ------------------------------------------
 
-   procedure Analyze_Single_Protected (N : Node_Id) is
+   procedure Analyze_Single_Protected_Declaration (N : Node_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
       Id     : constant Node_Id    := Defining_Identifier (N);
       T      : Entity_Id;
@@ -1663,6 +1705,7 @@ package body Sem_Ch9 is
           Defining_Identifier => O_Name,
           Object_Definition   => Make_Identifier (Loc,  Chars (T)));
 
+      Move_Aspects (N, O_Decl);
       Rewrite (N, T_Decl);
       Insert_After (N, O_Decl);
       Mark_Rewrite_Insertion (O_Decl);
@@ -1682,14 +1725,15 @@ package body Sem_Ch9 is
       --  procedure directly. Otherwise the node would be expanded twice, with
       --  disastrous result.
 
-      Analyze_Protected_Type (N);
-   end Analyze_Single_Protected;
+      Analyze_Protected_Type_Declaration (N);
+      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
+   end Analyze_Single_Protected_Declaration;
 
-   -------------------------
-   -- Analyze_Single_Task --
-   -------------------------
+   -------------------------------------
+   -- Analyze_Single_Task_Declaration --
+   -------------------------------------
 
-   procedure Analyze_Single_Task (N : Node_Id) is
+   procedure Analyze_Single_Task_Declaration (N : Node_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
       Id     : constant Node_Id    := Defining_Identifier (N);
       T      : Entity_Id;
@@ -1720,13 +1764,15 @@ package body Sem_Ch9 is
       --  entity is the new object declaration. The single_task_declaration
       --  is not used further in semantics or code generation, but is scanned
       --  when generating debug information, and therefore needs the updated
-      --  Sloc information for the entity (see Sprint).
+      --  Sloc information for the entity (see Sprint). Aspect specifications
+      --  are moved from the single task node to the object declaration node.
 
       O_Decl :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => O_Name,
           Object_Definition   => Make_Identifier (Loc, Chars (T)));
 
+      Move_Aspects (N, O_Decl);
       Rewrite (N, T_Decl);
       Insert_After (N, O_Decl);
       Mark_Rewrite_Insertion (O_Decl);
@@ -1746,8 +1792,9 @@ package body Sem_Ch9 is
       --  procedure directly. Otherwise the node would be expanded twice, with
       --  disastrous result.
 
-      Analyze_Task_Type (N);
-   end Analyze_Single_Task;
+      Analyze_Task_Type_Declaration (N);
+      Analyze_Aspect_Specifications (N, Id, Aspect_Specifications (N));
+   end Analyze_Single_Task_Declaration;
 
    -----------------------
    -- Analyze_Task_Body --
@@ -1913,11 +1960,11 @@ package body Sem_Ch9 is
       Process_End_Label (N, 'e', Current_Scope);
    end Analyze_Task_Definition;
 
-   -----------------------
-   -- Analyze_Task_Type --
-   -----------------------
+   -----------------------------------
+   -- Analyze_Task_Type_Declaration --
+   -----------------------------------
 
-   procedure Analyze_Task_Type (N : Node_Id) is
+   procedure Analyze_Task_Type_Declaration (N : Node_Id) is
       Def_Id : constant Entity_Id := Defining_Identifier (N);
       T      : Entity_Id;
 
@@ -1944,7 +1991,7 @@ package body Sem_Ch9 is
       Set_Stored_Constraint  (T, No_Elist);
       Push_Scope (T);
 
-      if Ada_Version >= Ada_05 then
+      if Ada_Version >= Ada_2005 then
          Check_Interfaces (N, T);
       end if;
 
@@ -1970,8 +2017,23 @@ package body Sem_Ch9 is
          Analyze_Task_Definition (Task_Definition (N));
       end if;
 
-      if not Is_Library_Level_Entity (T) then
-         Check_Restriction (No_Task_Hierarchy, N);
+      --  In the case where the task type is declared at a nested level and the
+      --  No_Task_Hierarchy restriction applies, issue a warning that objects
+      --  of the type will violate the restriction.
+
+      if Restriction_Check_Required (No_Task_Hierarchy)
+        and then not Is_Library_Level_Entity (T)
+        and then Comes_From_Source (T)
+      then
+         Error_Msg_Sloc := Restrictions_Loc (No_Task_Hierarchy);
+
+         if Error_Msg_Sloc = No_Location then
+            Error_Msg_N
+              ("objects of this type will violate `No_Task_Hierarchy`?", N);
+         else
+            Error_Msg_N
+              ("objects of this type will violate `No_Task_Hierarchy`?#", N);
+         end if;
       end if;
 
       End_Scope;
@@ -2001,7 +2063,9 @@ package body Sem_Ch9 is
             Process_Full_View (N, T, Def_Id);
          end if;
       end if;
-   end Analyze_Task_Type;
+
+      Analyze_Aspect_Specifications (N, Def_Id, Aspect_Specifications (N));
+   end Analyze_Task_Type_Declaration;
 
    -----------------------------------
    -- Analyze_Terminate_Alternative --
@@ -2035,7 +2099,7 @@ package body Sem_Ch9 is
 
       --  Ada 2005 (AI-345): The trigger may be a dispatching call
 
-      if Ada_Version >= Ada_05 then
+      if Ada_Version >= Ada_2005 then
          Analyze (Trigger);
          Check_Triggering_Statement (Trigger, N, Is_Disp_Select);
       end if;
@@ -2077,7 +2141,7 @@ package body Sem_Ch9 is
         and then Nkind (Trigger) not in N_Delay_Statement
         and then Nkind (Trigger) /= N_Entry_Call_Statement
       then
-         if Ada_Version < Ada_05 then
+         if Ada_Version < Ada_2005 then
             Error_Msg_N
              ("triggering statement must be delay or entry call", Trigger);
 
@@ -2157,18 +2221,10 @@ package body Sem_Ch9 is
                   --  Entry family with non-static bounds
 
                   else
-                     --  If restriction is set, then this is an error
+                     --  Record an unknown count restriction, and if the
+                     --  restriction is active, post a message or warning.
 
-                     if Restrictions.Set (R) then
-                        Error_Msg_N
-                          ("static subtype required by Restriction pragma",
-                           DSD);
-
-                     --  Otherwise we record an unknown count restriction
-
-                     else
-                        Check_Restriction (R, D);
-                     end if;
+                     Check_Restriction (R, D);
                   end if;
                end;
             end if;
@@ -2371,7 +2427,7 @@ package body Sem_Ch9 is
       --  It is not possible to have a dispatching trigger if we are not in
       --  Ada 2005 mode.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Nkind (Trigger) = N_Procedure_Call_Statement
         and then Present (Parameter_Associations (Trigger))
       then

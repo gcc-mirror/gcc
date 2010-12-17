@@ -1,7 +1,8 @@
-<sect1 id="manual.intro.using.exceptions" xreflabel="Using Exceptions">
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="manual.intro.using.exceptions" xreflabel="Using Exceptions">
 <?dbhtml filename="using_exceptions.html"?>
 
-<sect1info>
+<info><title>Exceptions</title>
   <keywordset>
     <keyword>
       C++
@@ -25,9 +26,7 @@
       -fno-exceptions
     </keyword>
   </keywordset>
-</sect1info>
-
-<title>Exceptions</title>
+</info>
 
 <para>
 The C++ language provides language support for stack unwinding
@@ -48,8 +47,8 @@ exception neutrality and exception safety.
 </para>
 
 
-<sect2 id="intro.using.exception.safety" xreflabel="Exception Safety">
-<title>Exception Safety</title>
+<section xml:id="intro.using.exception.safety" xreflabel="Exception Safety"><info><title>Exception Safety</title></info>
+
 
   <para>
     What is exception-safe code?
@@ -121,11 +120,11 @@ exception neutrality and exception safety.
   </listitem>
 </itemizedlist>
 
-</sect2>
+</section>
 
 
-<sect2 id="intro.using.exception.propagating" xreflabel="Exceptions Neutrality">
-<title>Exception Neutrality</title>
+<section xml:id="intro.using.exception.propagating" xreflabel="Exceptions Neutrality"><info><title>Exception Neutrality</title></info>
+
   <para>
     Simply put, once thrown an exception object should continue in
     flight unless handled explicitly. In practice, this means
@@ -201,10 +200,10 @@ exception neutrality and exception safety.
   </listitem>
 </itemizedlist>
 
-</sect2>
+</section>
 
-<sect2 id="intro.using.exception.no" xreflabel="-fno-exceptions">
-<title>Doing without</title>
+<section xml:id="intro.using.exception.no" xreflabel="-fno-exceptions"><info><title>Doing without</title></info>
+
   <para>
     C++ is a language that strives to be as efficient as is possible
     in delivering features. As such, considerable care is used by both
@@ -217,7 +216,7 @@ exception neutrality and exception safety.
     support <literal>try</literal> and <literal>catch</literal> blocks
     and thrown objects. (Language support
     for <literal>-fno-exceptions</literal> is documented in the GNU
-    GCC <ulink url="http://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code-Gen-Options">manual</ulink>.)
+    GCC <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code-Gen-Options">manual</link>.)
   </para>
 
   <para>Before detailing the library support
@@ -353,13 +352,13 @@ exception neutrality and exception safety.
 </para>
 
 
-</sect2>
+</section>
 
-<sect2 id="intro.using.exception.compat">
-<title>Compatibility</title>
+<section xml:id="intro.using.exception.compat"><info><title>Compatibility</title></info>
 
-<sect3 id="using.exception.compat.c">
-<title>With <literal>C</literal></title>
+
+<section xml:id="using.exception.compat.c"><info><title>With <literal>C</literal></title></info>
+
 <para>
   C language code that is expecting to interoperate with C++ should be
   compiled with <literal>-fexceptions</literal>. This will make
@@ -381,10 +380,10 @@ is called.
   with <literal>-fexceptions</literal>.
 </para>
 
-</sect3>
+</section>
 
-<sect3 id="using.exception.compat.posix">
-<title>With <literal>POSIX</literal> thread cancellation</title>
+<section xml:id="using.exception.compat.posix"><info><title>With <literal>POSIX</literal> thread cancellation</title></info>
+
 
 <para>
   GNU systems re-use some of the exception handling mechanisms to
@@ -424,28 +423,27 @@ is called.
 <programlisting>
   catch(const __cxxabiv1::__forced_unwind&amp;)
   {
-    this->_M_setstate(ios_base::badbit);
+    this-&gt;_M_setstate(ios_base::badbit);
     throw;
   }
   catch(...)
-  { this->_M_setstate(ios_base::badbit); }
+  { this-&gt;_M_setstate(ios_base::badbit); }
 </programlisting>
 
 
-</sect3>
-</sect2>
+</section>
+</section>
 
-<bibliography id="using.exceptions.biblio">
-<title>Bibliography</title>
+<bibliography xml:id="using.exceptions.biblio"><info><title>Bibliography</title></info>
+
 
   <biblioentry>
-    <biblioid class="uri">
-      <ulink url="http://www.opengroup.org/austin">
-	<citetitle>
-	  System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)
-	</citetitle>
-      </ulink>
-    </biblioid>
+    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.opengroup.org/austin" class="uri">
+      </biblioid>
+      <citetitle>
+	System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)
+      </citetitle>
+
     <pagenums>
       2.9.5 Thread Cancellation
     </pagenums>
@@ -459,17 +457,13 @@ is called.
   </biblioentry>
 
   <biblioentry>
-    <biblioid class="uri">
-      <ulink url="http://www.boost.org/community/error_handling.html">
-	<citetitle>
-	  Error and Exception Handling
-	</citetitle>
-      </ulink>
-    </biblioid>
-    <author>
-      <firstname>David</firstname>
-      <surname>Abrahams </surname>
-    </author>
+    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.boost.org/community/error_handling.html" class="uri">
+      </biblioid>
+      <citetitle>
+	Error and Exception Handling
+      </citetitle>
+      
+    <author><personname><firstname>David</firstname><surname>Abrahams </surname></personname></author>
     <publisher>
       <publishername>
 	Boost
@@ -479,17 +473,13 @@ is called.
 
 
   <biblioentry>
-    <biblioid class="uri">
-      <ulink url="http://www.boost.org/community/exception_safety.html">
-	<citetitle>
-	  Exception-Safety in Generic Components
-	</citetitle>
-      </ulink>
-    </biblioid>
-    <author>
-      <firstname>David</firstname>
-      <surname>Abrahams</surname>
-    </author>
+    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.boost.org/community/exception_safety.html" class="uri">
+      </biblioid>
+      <citetitle>
+	Exception-Safety in Generic Components
+      </citetitle>
+      
+    <author><personname><firstname>David</firstname><surname>Abrahams</surname></personname></author>
     <publisher>
       <publishername>
 	Boost
@@ -498,17 +488,12 @@ is called.
   </biblioentry>
 
   <biblioentry>
-    <biblioid class="uri">
-      <ulink url="www.open-std.org/jtc1/sc22/wg21/docs/papers/1997/N1077.pdf">
-	<citetitle>
-	  Standard Library Exception Policy
-	</citetitle>
-      </ulink>
-    </biblioid>
-    <author>
-      <firstname>Matt</firstname>
-      <surname>Austern</surname>
-    </author>
+    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="www.open-std.org/jtc1/sc22/wg21/docs/papers/1997/N1077.pdf" class="uri">
+      </biblioid>
+      <citetitle>
+	Standard Library Exception Policy
+      </citetitle>
+    <author><personname><firstname>Matt</firstname><surname>Austern</surname></personname></author>
     <publisher>
       <publishername>
 	WG21 N1077
@@ -517,17 +502,13 @@ is called.
   </biblioentry>
 
   <biblioentry>
-    <biblioid class="uri">
-      <ulink url="http://gcc.gnu.org/ml/gcc-patches/2001-03/msg00661.html">
-	<citetitle>
-	  ia64 c++ abi exception handling
-	</citetitle>
-      </ulink>
-    </biblioid>
-    <author>
-      <firstname>Richard</firstname>
-      <surname>Henderson</surname>
-    </author>
+    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/gcc-patches/2001-03/msg00661.html" class="uri">
+      </biblioid>
+      <citetitle>
+	ia64 c++ abi exception handling
+      </citetitle>
+
+    <author><personname><firstname>Richard</firstname><surname>Henderson</surname></personname></author>
     <publisher>
       <publishername>
 	GNU
@@ -536,42 +517,32 @@ is called.
   </biblioentry>
 
   <biblioentry>
-    <biblioid class="uri">
-      <ulink url="http://www.research.att.com/~bs/3rd_safe.pdf">
-	<citetitle>
-	  Appendix E: Standard-Library Exception Safety
-	</citetitle>
-      </ulink>
-    </biblioid>
-    <author>
-      <firstname>Bjarne</firstname>
-      <surname>Stroustrup</surname>
-    </author>
+    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.research.att.com/~bs/3rd_safe.pdf" class="uri">
+      </biblioid>
+      <citetitle>
+	Appendix E: Standard-Library Exception Safety
+      </citetitle>
+    <author><personname><firstname>Bjarne</firstname><surname>Stroustrup</surname></personname></author>
   </biblioentry>
 
   <biblioentry>
-    <title>
+    <citetitle>
       Exceptional C++
-    </title>
+    </citetitle>
     <pagenums>
       Exception-Safety Issues and Techniques
     </pagenums>
-    <author>
-      <firstname>Herb</firstname>
-      <surname>Sutter</surname>
-    </author>
+    <author><personname><firstname>Herb</firstname><surname>Sutter</surname></personname></author>
   </biblioentry>
 
   <biblioentry>
-    <biblioid class="uri">
-      <ulink url="http://gcc.gnu.org/PR25191">
-	<citetitle>
-	  GCC Bug 25191: exception_defines.h #defines try/catch
-	</citetitle>
-      </ulink>
+    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/PR25191" class="uri">
     </biblioid>
+    <citetitle>
+      GCC Bug 25191: exception_defines.h #defines try/catch
+    </citetitle>
   </biblioentry>
 
 </bibliography>
 
-</sect1>
+</section>

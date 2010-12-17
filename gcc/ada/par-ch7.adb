@@ -37,7 +37,9 @@ package body Ch7 is
    --  This routine scans out a package declaration, package body, or a
    --  renaming declaration or generic instantiation starting with PACKAGE
 
-   --  PACKAGE_DECLARATION ::= PACKAGE_SPECIFICATION;
+   --  PACKAGE_DECLARATION ::=
+   --    PACKAGE_SPECIFICATION
+   --      [ASPECT_SPECIFICATIONS];
 
    --  PACKAGE_SPECIFICATION ::=
    --    package DEFINING_PROGRAM_UNIT_NAME is
@@ -58,6 +60,11 @@ package body Ch7 is
 
    --  PACKAGE_BODY_STUB ::=
    --    package body DEFINING_IDENTIFIER is separate;
+
+   --  PACKAGE_INSTANTIATION ::=
+   --    package DEFINING_PROGRAM_UNIT_NAME is
+   --      new generic_package_NAME [GENERIC_ACTUAL_PART]
+   --        [ASPECT_SPECIFICATIONS];
 
    --  The value in Pf_Flags indicates which of these possible declarations
    --  is acceptable to the caller:
@@ -85,7 +92,10 @@ package body Ch7 is
 
    --  Error recovery: cannot raise Error_Resync
 
-   function P_Package (Pf_Flags : Pf_Rec) return Node_Id is
+   function P_Package
+     (Pf_Flags : Pf_Rec;
+      Decl     : Node_Id := Empty) return Node_Id
+   is
       Package_Node       : Node_Id;
       Specification_Node : Node_Id;
       Name_Node          : Node_Id;
@@ -109,7 +119,7 @@ package body Ch7 is
       --  Case of package body. Note that we demand a package body if that
       --  is the only possibility (even if the BODY keyword is not present)
 
-      if Token = Tok_Body or else Pf_Flags = Pf_Pbod then
+      if Token = Tok_Body or else Pf_Flags = Pf_Pbod_Pexp then
          if not Pf_Flags.Pbod then
             Error_Msg_SC ("package body cannot appear here!");
          end if;
@@ -185,7 +195,7 @@ package body Ch7 is
                Set_Name (Package_Node, P_Qualified_Simple_Name);
                Set_Generic_Associations
                  (Package_Node, P_Generic_Actual_Part_Opt);
-               TF_Semicolon;
+               P_Aspect_Specifications (Package_Node);
                Pop_Scope_Stack;
 
             --  Case of package declaration or package specification
@@ -239,7 +249,11 @@ package body Ch7 is
                   Discard_Junk_List (P_Sequence_Of_Statements (SS_None));
                end if;
 
-               End_Statements (Specification_Node);
+               if Nkind (Package_Node) = N_Package_Declaration then
+                  End_Statements (Specification_Node, Package_Node);
+               else
+                  End_Statements (Specification_Node, Decl);
+               end if;
             end if;
 
             return Package_Node;

@@ -19,7 +19,7 @@ contains
     class(vector_class),        intent(in)    :: v
 
     select type (v)
-    class is (bad_id)                    ! { dg-error "is not an accessible derived type" }
+    class is (bad_id)                    ! { dg-error " error in CLASS IS specification" }
        this%elements(:) = v%elements(:)  ! { dg-error "is not a member of" }
     end select
 

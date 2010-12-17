@@ -107,12 +107,14 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   context->permissive = false;
   context->opt_permissive = 0;
   context->fatal_errors = false;
-  context->inhibit_warnings = false;
-  context->warn_system_headers = false;
+  context->dc_inhibit_warnings = false;
+  context->dc_warn_system_headers = false;
+  context->max_errors = 0;
   context->internal_error = NULL;
   diagnostic_starter (context) = default_diagnostic_starter;
   diagnostic_finalizer (context) = default_diagnostic_finalizer;
   context->option_enabled = NULL;
+  context->option_state = NULL;
   context->option_name = NULL;
   context->last_module = 0;
   context->x_data = NULL;
@@ -215,6 +217,17 @@ diagnostic_action_after_output (diagnostic_context *context,
       if (context->fatal_errors)
 	{
 	  fnotice (stderr, "compilation terminated due to -Wfatal-errors.\n");
+	  diagnostic_finish (context);
+	  exit (FATAL_EXIT_CODE);
+	}
+      if (context->max_errors != 0
+	  && ((unsigned) (diagnostic_kind_count (context, DK_ERROR)
+			  + diagnostic_kind_count (context, DK_SORRY))
+	      >= context->max_errors))
+	{
+	  fnotice (stderr,
+		   "compilation terminated due to -fmax-errors=%u.\n",
+		   context->max_errors);
 	  diagnostic_finish (context);
 	  exit (FATAL_EXIT_CODE);
 	}
@@ -435,7 +448,8 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 
       /* This tests if the user provided the appropriate -Wfoo or
 	 -Wno-foo option.  */
-      if (! context->option_enabled (diagnostic->option_index))
+      if (! context->option_enabled (diagnostic->option_index,
+				     context->option_state))
 	return false;
 
       /* This tests for #pragma diagnostic changes.  */

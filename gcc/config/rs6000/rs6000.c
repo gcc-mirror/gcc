@@ -41,6 +41,7 @@
 #include "output.h"
 #include "basic-block.h"
 #include "integrate.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "ggc.h"
 #include "hashtab.h"
@@ -50,6 +51,7 @@
 #include "langhooks.h"
 #include "reload.h"
 #include "cfglayout.h"
+#include "cfgloop.h"
 #include "sched-int.h"
 #include "gimple.h"
 #include "tree-flow.h"
@@ -72,6 +74,7 @@
 
 /* Structure used to define the rs6000 stack */
 typedef struct rs6000_stack {
+  int reload_completed;		/* stack info won't change from here on */
   int first_gp_reg_save;	/* first callee saved GP register used */
   int first_fp_reg_save;	/* first callee saved FP register used */
   int first_altivec_reg_save;	/* first callee saved AltiVec register used */
@@ -108,6 +111,7 @@ typedef struct rs6000_stack {
   int spe_padding_size;
   HOST_WIDE_INT total_size;	/* total bytes allocated for stack */
   int spe_64bit_regs_used;
+  int savres_strategy;
 } rs6000_stack_t;
 
 /* A C structure for machine-specific, per-function data.
@@ -135,7 +139,6 @@ typedef struct GTY(()) machine_function
 
 /* Target cpu type */
 
-enum processor_type rs6000_cpu;
 struct rs6000_cpu_select rs6000_select[3] =
 {
   /* switch		name,			tune	arch */
@@ -144,85 +147,33 @@ struct rs6000_cpu_select rs6000_select[3] =
   { (const char *)0,	"-mtune=",		1,	0 },
 };
 
-/* Always emit branch hint bits.  */
-static GTY(()) bool rs6000_always_hint;
+/* String variables to hold the various options.  */
+static const char *rs6000_sched_insert_nops_str;
+static const char *rs6000_sched_costly_dep_str;
+static const char *rs6000_recip_name;
 
-/* Schedule instructions for group formation.  */
-static GTY(()) bool rs6000_sched_groups;
-
-/* Align branch targets.  */
-static GTY(()) bool rs6000_align_branch_targets;
-
-/* Support for -msched-costly-dep option.  */
-const char *rs6000_sched_costly_dep_str;
-enum rs6000_dependence_cost rs6000_sched_costly_dep;
-
-/* Support for -minsert-sched-nops option.  */
-const char *rs6000_sched_insert_nops_str;
-enum rs6000_nop_insertion rs6000_sched_insert_nops;
+#ifdef USING_ELFOS_H
+static const char *rs6000_abi_name;
+static const char *rs6000_sdata_name;
+#endif
 
 /* Support targetm.vectorize.builtin_mask_for_load.  */
 static GTY(()) tree altivec_builtin_mask_for_load;
-
-/* Size of long double.  */
-int rs6000_long_double_type_size;
-
-/* IEEE quad extended precision long double. */
-int rs6000_ieeequad;
-
-/* Nonzero to use AltiVec ABI.  */
-int rs6000_altivec_abi;
-
-/* Nonzero if we want SPE SIMD instructions.  */
-int rs6000_spe;
-
-/* Nonzero if we want SPE ABI extensions.  */
-int rs6000_spe_abi;
-
-/* Nonzero if floating point operations are done in the GPRs.  */
-int rs6000_float_gprs = 0;
-
-/* Nonzero if we want Darwin's struct-by-value-in-regs ABI.  */
-int rs6000_darwin64_abi;
 
 /* Set to nonzero once AIX common-mode calls have been defined.  */
 static GTY(()) int common_mode_defined;
 
 /* Label number of label created for -mrelocatable, to call to so we can
    get the address of the GOT section */
-int rs6000_pic_labelno;
+static int rs6000_pic_labelno;
 
 #ifdef USING_ELFOS_H
-/* Which abi to adhere to */
-const char *rs6000_abi_name;
-
-/* Semantics of the small data area */
-enum rs6000_sdata_type rs6000_sdata = SDATA_DATA;
-
-/* Which small data model to use */
-const char *rs6000_sdata_name = (char *)0;
-
 /* Counter for labels which are to be placed in .fixup.  */
 int fixuplabelno = 0;
 #endif
 
-/* Bit size of immediate TLS offsets and string from which it is decoded.  */
-int rs6000_tls_size = 32;
-const char *rs6000_tls_size_string;
-
-/* ABI enumeration available for subtarget to use.  */
-enum rs6000_abi rs6000_current_abi;
-
 /* Whether to use variant of AIX ABI for PowerPC64 Linux.  */
 int dot_symbols;
-
-/* Debug flags */
-const char *rs6000_debug_name;
-int rs6000_debug_stack;		/* debug stack applications */
-int rs6000_debug_arg;		/* debug argument handling */
-int rs6000_debug_reg;		/* debug register classes */
-int rs6000_debug_addr;		/* debug memory addressing */
-int rs6000_debug_cost;		/* debug rtx_costs */
 
 /* Specify the machine mode that pointers have.  After generation of rtl, the
    compiler makes no further distinction between pointers and any other objects
@@ -253,14 +204,6 @@ static enum insn_code rs6000_vector_reload[NUM_MACHINE_MODES][2];
 tree rs6000_builtin_types[RS6000_BTI_MAX];
 tree rs6000_builtin_decls[RS6000_BUILTIN_COUNT];
 
-const char *rs6000_traceback_name;
-static enum {
-  traceback_default = 0,
-  traceback_none,
-  traceback_part,
-  traceback_full
-} rs6000_traceback;
-
 /* Flag to say the TOC is initialized */
 int toc_initialized;
 char toc_label_name[10];
@@ -274,13 +217,6 @@ static GTY(()) section *private_data_section;
 static GTY(()) section *read_only_private_data_section;
 static GTY(()) section *sdata2_section;
 static GTY(()) section *toc_section;
-
-/* Control alignment for fields within structures.  */
-/* String from -malign-XXXXX.  */
-int rs6000_alignment_flags;
-
-/* Code model for 64-bit linux.  */
-enum rs6000_cmodel cmodel;
 
 /* True for any options that were explicitly set.  */
 static struct {
@@ -350,9 +286,6 @@ enum rs6000_recip_mask {
      reciprocal square root estimate, since it isn't accurate enough.  */
   RECIP_LOW_PRECISION	= (RECIP_ALL & ~(RECIP_DF_RSQRT | RECIP_V2DF_RSQRT))
 };
-
-static unsigned int rs6000_recip_control;
-static const char *rs6000_recip_name;
 
 /* -mrecip options.  */
 static struct
@@ -948,6 +881,9 @@ static const enum rs6000_btc builtin_classify[(int)RS6000_BUILTIN_COUNT] =
 #undef RS6000_BUILTIN
 #undef RS6000_BUILTIN_EQUATE
 
+/* Support for -mveclibabi=<xxx> to control which vector library to use.  */
+static tree (*rs6000_veclib_handler) (tree, tree, tree);
+
 
 static bool rs6000_function_ok_for_sibcall (tree, tree);
 static const char *rs6000_invalid_within_doloop (const_rtx);
@@ -988,9 +924,10 @@ static rtx rs6000_emit_stack_reset (rs6000_stack_t *, rtx, rtx, int, bool);
 static rtx rs6000_make_savres_rtx (rs6000_stack_t *, rtx, int,
 				   enum machine_mode, bool, bool, bool);
 static bool rs6000_reg_live_or_pic_offset_p (int);
+static tree rs6000_builtin_vectorized_libmass (tree, tree, tree);
 static tree rs6000_builtin_vectorized_function (tree, tree, tree);
-static int rs6000_savres_strategy (rs6000_stack_t *, bool, int, int);
 static void rs6000_restore_saved_cr (rtx, int);
+static bool rs6000_output_addr_const_extra (FILE *, rtx);
 static void rs6000_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void rs6000_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void rs6000_output_mi_thunk (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT,
@@ -1030,6 +967,9 @@ static void rs6000_xcoff_file_start (void);
 static void rs6000_xcoff_file_end (void);
 #endif
 static int rs6000_variable_issue (FILE *, int, rtx, int);
+static int rs6000_register_move_cost (enum machine_mode,
+				      reg_class_t, reg_class_t);
+static int rs6000_memory_move_cost (enum machine_mode, reg_class_t, bool);
 static bool rs6000_rtx_costs (rtx, int, int, int *, bool);
 static bool rs6000_debug_rtx_costs (rtx, int, int, int *, bool);
 static int rs6000_debug_address_cost (rtx, bool);
@@ -1075,6 +1015,9 @@ static bool rs6000_builtin_support_vector_misalignment (enum
 							machine_mode,
 							const_tree,
 							int, bool);
+static int rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt,
+                                              tree, int);
+static enum machine_mode rs6000_preferred_simd_mode (enum machine_mode);
 
 static void def_builtin (int, const char *, tree, int);
 static bool rs6000_vector_alignment_reachable (const_tree, bool);
@@ -1123,8 +1066,11 @@ static rtx altivec_expand_vec_init_builtin (tree, tree, rtx);
 static rtx altivec_expand_vec_set_builtin (tree);
 static rtx altivec_expand_vec_ext_builtin (tree, rtx);
 static int get_element_number (tree, tree);
+static void rs6000_option_override (void);
+static void rs6000_option_init_struct (struct gcc_options *);
+static void rs6000_option_default_params (void);
 static bool rs6000_handle_option (size_t, const char *, int);
-static void rs6000_parse_tls_size_option (void);
+static int rs6000_loop_align_max_skip (rtx);
 static void rs6000_parse_yes_no_option (const char *, const char *, int *);
 static int first_altivec_reg_to_save (void);
 static unsigned int compute_vrsave_mask (void);
@@ -1145,20 +1091,27 @@ static int rs6000_tls_symbol_ref_1 (rtx *, void *);
 static const char *rs6000_get_some_local_dynamic_name (void);
 static int rs6000_get_some_local_dynamic_name_1 (rtx *, void *);
 static rtx rs6000_complex_function_value (enum machine_mode);
-static rtx rs6000_spe_function_arg (CUMULATIVE_ARGS *,
-				    enum machine_mode, tree);
+static rtx rs6000_spe_function_arg (const CUMULATIVE_ARGS *,
+				    enum machine_mode, const_tree);
 static void rs6000_darwin64_record_arg_advance_flush (CUMULATIVE_ARGS *,
-						      HOST_WIDE_INT);
+						      HOST_WIDE_INT, int);
 static void rs6000_darwin64_record_arg_advance_recurse (CUMULATIVE_ARGS *,
-							tree, HOST_WIDE_INT);
+							const_tree,
+							HOST_WIDE_INT);
 static void rs6000_darwin64_record_arg_flush (CUMULATIVE_ARGS *,
 					      HOST_WIDE_INT,
 					      rtx[], int *);
 static void rs6000_darwin64_record_arg_recurse (CUMULATIVE_ARGS *,
 						const_tree, HOST_WIDE_INT,
 						rtx[], int *);
-static rtx rs6000_darwin64_record_arg (CUMULATIVE_ARGS *, const_tree, int, bool);
-static rtx rs6000_mixed_function_arg (enum machine_mode, tree, int);
+static rtx rs6000_darwin64_record_arg (CUMULATIVE_ARGS *, const_tree, bool, bool);
+static rtx rs6000_mixed_function_arg (enum machine_mode, const_tree, int);
+static void rs6000_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+					 const_tree, bool);
+static rtx rs6000_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+				const_tree, bool);
+static unsigned int rs6000_function_arg_boundary (enum machine_mode,
+						  const_tree);
 static void rs6000_move_block_from_reg (int regno, rtx x, int nregs);
 static void setup_incoming_varargs (CUMULATIVE_ARGS *,
 				    enum machine_mode, tree,
@@ -1240,15 +1193,16 @@ bool (*rs6000_cannot_change_mode_class_ptr) (enum machine_mode,
 					     enum reg_class)
   = rs6000_cannot_change_mode_class;
 
-static enum reg_class rs6000_secondary_reload (bool, rtx, enum reg_class,
-					       enum machine_mode,
-					       struct secondary_reload_info *);
+static reg_class_t rs6000_secondary_reload (bool, rtx, reg_class_t,
+					    enum machine_mode,
+					    struct secondary_reload_info *);
 
-static const enum reg_class *rs6000_ira_cover_classes (void);
+static const reg_class_t *rs6000_ira_cover_classes (void);
 
 const int INSN_NOT_AVAILABLE = -1;
 static enum machine_mode rs6000_eh_return_filter_mode (void);
 static bool rs6000_can_eliminate (const int, const int);
+static void rs6000_conditional_register_usage (void);
 static void rs6000_trampoline_init (rtx, tree, rtx);
 
 /* Hash table stuff for keeping track of TOC entries.  */
@@ -1274,6 +1228,15 @@ struct GTY(()) builtin_hash_struct
 };
 
 static GTY ((param_is (struct builtin_hash_struct))) htab_t builtin_hash_table;
+
+static bool rs6000_valid_attribute_p (tree, tree, tree, int);
+static void rs6000_function_specific_save (struct cl_target_option *);
+static void rs6000_function_specific_restore (struct cl_target_option *);
+static void rs6000_function_specific_print (FILE *, int,
+					    struct cl_target_option *);
+static bool rs6000_can_inline_p (tree, tree);
+static void rs6000_set_current_function (tree);
+
 
 /* Default register names.  */
 char rs6000_reg_names[][8] =
@@ -1343,6 +1306,13 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #endif
   { NULL,        0, 0, false, false, false, NULL }
 };
+
+/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
+static const struct default_options rs6000_option_optimization_table[] =
+  {
+    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    { OPT_LEVELS_NONE, 0, NULL, 0 }
+  };
 
 #ifndef MASK_STRICT_ALIGN
 #define MASK_STRICT_ALIGN 0
@@ -1414,6 +1384,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE rs6000_output_function_epilogue
 
+#undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
+#define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA rs6000_output_addr_const_extra
+
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS rs6000_legitimize_address
 
@@ -1462,11 +1435,17 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #define TARGET_VECTORIZE_BUILTIN_CONVERSION rs6000_builtin_conversion
 #undef TARGET_VECTORIZE_BUILTIN_VEC_PERM
 #define TARGET_VECTORIZE_BUILTIN_VEC_PERM rs6000_builtin_vec_perm
-#undef TARGET_SUPPORT_VECTOR_MISALIGNMENT
-#define TARGET_SUPPORT_VECTOR_MISALIGNMENT		\
+#undef TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT
+#define TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT		\
   rs6000_builtin_support_vector_misalignment
-#undef TARGET_VECTOR_ALIGNMENT_REACHABLE
-#define TARGET_VECTOR_ALIGNMENT_REACHABLE rs6000_vector_alignment_reachable
+#undef TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE
+#define TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE rs6000_vector_alignment_reachable
+#undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
+#define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST \
+  rs6000_builtin_vectorization_cost
+#undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
+#define TARGET_VECTORIZE_PREFERRED_SIMD_MODE \
+  rs6000_preferred_simd_mode
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS rs6000_init_builtins
@@ -1502,6 +1481,10 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_INVALID_WITHIN_DOLOOP
 #define TARGET_INVALID_WITHIN_DOLOOP rs6000_invalid_within_doloop
 
+#undef TARGET_REGISTER_MOVE_COST
+#define TARGET_REGISTER_MOVE_COST rs6000_register_move_cost
+#undef TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST rs6000_memory_move_cost
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS rs6000_rtx_costs
 #undef TARGET_ADDRESS_COST
@@ -1537,6 +1520,12 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #define TARGET_PASS_BY_REFERENCE rs6000_pass_by_reference
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES rs6000_arg_partial_bytes
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE rs6000_function_arg_advance
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG rs6000_function_arg
+#undef TARGET_FUNCTION_ARG_BOUNDARY
+#define TARGET_FUNCTION_ARG_BOUNDARY rs6000_function_arg_boundary
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST rs6000_build_builtin_va_list
@@ -1561,6 +1550,21 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION rs6000_handle_option
+
+#undef TARGET_ASM_LOOP_ALIGN_MAX_SKIP
+#define TARGET_ASM_LOOP_ALIGN_MAX_SKIP rs6000_loop_align_max_skip
+
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE rs6000_option_override
+
+#undef TARGET_OPTION_INIT_STRUCT
+#define TARGET_OPTION_INIT_STRUCT rs6000_option_init_struct
+
+#undef TARGET_OPTION_DEFAULT_PARAMS
+#define TARGET_OPTION_DEFAULT_PARAMS rs6000_option_default_params
+
+#undef TARGET_OPTION_OPTIMIZATION_TABLE
+#define TARGET_OPTION_OPTIMIZATION_TABLE rs6000_option_optimization_table
 
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION \
@@ -1627,13 +1631,221 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE rs6000_can_eliminate
 
+#undef TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE rs6000_conditional_register_usage
+
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT rs6000_trampoline_init
 
 #undef TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE rs6000_function_value
 
+#undef TARGET_OPTION_VALID_ATTRIBUTE_P
+#define TARGET_OPTION_VALID_ATTRIBUTE_P rs6000_valid_attribute_p
+
+#undef TARGET_OPTION_SAVE
+#define TARGET_OPTION_SAVE rs6000_function_specific_save
+
+#undef TARGET_OPTION_RESTORE
+#define TARGET_OPTION_RESTORE rs6000_function_specific_restore
+
+#undef TARGET_OPTION_PRINT
+#define TARGET_OPTION_PRINT rs6000_function_specific_print
+
+#undef TARGET_CAN_INLINE_P
+#define TARGET_CAN_INLINE_P rs6000_can_inline_p
+
+#undef TARGET_SET_CURRENT_FUNCTION
+#define TARGET_SET_CURRENT_FUNCTION rs6000_set_current_function
+
 struct gcc_target targetm = TARGET_INITIALIZER;
+
+
+/* Simplifications for entries below.  */
+
+enum {
+  POWERPC_BASE_MASK = MASK_POWERPC | MASK_NEW_MNEMONICS,
+  POWERPC_7400_MASK = POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_ALTIVEC
+};
+
+/* Some OSs don't support saving the high part of 64-bit registers on context
+   switch.  Other OSs don't support saving Altivec registers.  On those OSs, we
+   don't touch the MASK_POWERPC64 or MASK_ALTIVEC settings; if the user wants
+   either, the user must explicitly specify them and we won't interfere with
+   the user's specification.  */
+
+enum {
+  POWER_MASKS = MASK_POWER | MASK_POWER2 | MASK_MULTIPLE | MASK_STRING,
+  POWERPC_MASKS = (POWERPC_BASE_MASK | MASK_PPC_GPOPT | MASK_STRICT_ALIGN
+		   | MASK_PPC_GFXOPT | MASK_POWERPC64 | MASK_ALTIVEC
+		   | MASK_MFCRF | MASK_POPCNTB | MASK_FPRND | MASK_MULHW
+		   | MASK_DLMZB | MASK_CMPB | MASK_MFPGPR | MASK_DFP
+		   | MASK_POPCNTD | MASK_VSX | MASK_ISEL | MASK_NO_UPDATE
+		   | MASK_RECIP_PRECISION)
+};
+
+/* Masks for instructions set at various powerpc ISAs.  */
+enum {
+  ISA_2_1_MASKS = MASK_MFCRF,
+  ISA_2_2_MASKS = (ISA_2_1_MASKS | MASK_POPCNTB),
+  ISA_2_4_MASKS = (ISA_2_2_MASKS | MASK_FPRND),
+
+  /* For ISA 2.05, do not add MFPGPR, since it isn't in ISA 2.06, and don't add
+     ALTIVEC, since in general it isn't a win on power6.  In ISA 2.04, fsel,
+     fre, fsqrt, etc. were no longer documented as optional.  Group masks by
+     server and embedded. */
+  ISA_2_5_MASKS_EMBEDDED = (ISA_2_2_MASKS | MASK_CMPB | MASK_RECIP_PRECISION
+			    | MASK_PPC_GFXOPT | MASK_PPC_GPOPT),
+  ISA_2_5_MASKS_SERVER = (ISA_2_5_MASKS_EMBEDDED | MASK_DFP),
+
+  /* For ISA 2.06, don't add ISEL, since in general it isn't a win, but
+     altivec is a win so enable it.  */
+  ISA_2_6_MASKS_EMBEDDED = (ISA_2_5_MASKS_EMBEDDED | MASK_POPCNTD),
+  ISA_2_6_MASKS_SERVER = (ISA_2_5_MASKS_SERVER | MASK_POPCNTD | MASK_ALTIVEC
+			  | MASK_VSX)
+};
+
+/* This table occasionally claims that a processor does not support a
+   particular feature even though it does, but the feature is slower than the
+   alternative.  Thus, it shouldn't be relied on as a complete description of
+   the processor's support.
+
+   Please keep this list in order, and don't forget to update the documentation
+   in invoke.texi when adding a new processor or flag.  */
+
+struct rs6000_ptt
+{
+  const char *const name;		/* Canonical processor name.  */
+  const enum processor_type processor;	/* Processor type enum value.  */
+  const int target_enable;		/* Target flags to enable.  */
+};
+
+static struct rs6000_ptt const processor_target_table[] =
+{
+  {"401", PROCESSOR_PPC403, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
+  {"403", PROCESSOR_PPC403,
+   POWERPC_BASE_MASK | MASK_SOFT_FLOAT | MASK_STRICT_ALIGN},
+  {"405", PROCESSOR_PPC405,
+   POWERPC_BASE_MASK | MASK_SOFT_FLOAT | MASK_MULHW | MASK_DLMZB},
+  {"405fp", PROCESSOR_PPC405,
+   POWERPC_BASE_MASK | MASK_MULHW | MASK_DLMZB},
+  {"440", PROCESSOR_PPC440,
+   POWERPC_BASE_MASK | MASK_SOFT_FLOAT | MASK_MULHW | MASK_DLMZB},
+  {"440fp", PROCESSOR_PPC440,
+   POWERPC_BASE_MASK | MASK_MULHW | MASK_DLMZB},
+  {"464", PROCESSOR_PPC440,
+   POWERPC_BASE_MASK | MASK_SOFT_FLOAT | MASK_MULHW | MASK_DLMZB},
+  {"464fp", PROCESSOR_PPC440,
+   POWERPC_BASE_MASK | MASK_MULHW | MASK_DLMZB},
+  {"476", PROCESSOR_PPC476,
+   POWERPC_BASE_MASK | MASK_SOFT_FLOAT | MASK_PPC_GFXOPT | MASK_MFCRF
+   | MASK_POPCNTB | MASK_FPRND | MASK_CMPB | MASK_MULHW | MASK_DLMZB},
+  {"476fp", PROCESSOR_PPC476,
+   POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_MFCRF | MASK_POPCNTB
+   | MASK_FPRND | MASK_CMPB | MASK_MULHW | MASK_DLMZB},
+  {"505", PROCESSOR_MPCCORE, POWERPC_BASE_MASK},
+  {"601", PROCESSOR_PPC601,
+   MASK_POWER | POWERPC_BASE_MASK | MASK_MULTIPLE | MASK_STRING},
+  {"602", PROCESSOR_PPC603, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
+  {"603", PROCESSOR_PPC603, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
+  {"603e", PROCESSOR_PPC603, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
+  {"604", PROCESSOR_PPC604, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
+  {"604e", PROCESSOR_PPC604e, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
+  {"620", PROCESSOR_PPC620,
+   POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_POWERPC64},
+  {"630", PROCESSOR_PPC630,
+   POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_POWERPC64},
+  {"740", PROCESSOR_PPC750, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
+  {"7400", PROCESSOR_PPC7400, POWERPC_7400_MASK},
+  {"7450", PROCESSOR_PPC7450, POWERPC_7400_MASK},
+  {"750", PROCESSOR_PPC750, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
+  {"801", PROCESSOR_MPCCORE, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
+  {"821", PROCESSOR_MPCCORE, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
+  {"823", PROCESSOR_MPCCORE, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
+  {"8540", PROCESSOR_PPC8540, POWERPC_BASE_MASK | MASK_STRICT_ALIGN
+   | MASK_ISEL},
+  /* 8548 has a dummy entry for now.  */
+  {"8548", PROCESSOR_PPC8540, POWERPC_BASE_MASK | MASK_STRICT_ALIGN
+   | MASK_ISEL},
+  {"a2", PROCESSOR_PPCA2,
+   POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_POWERPC64 | MASK_POPCNTB
+   | MASK_CMPB | MASK_NO_UPDATE },
+  {"e300c2", PROCESSOR_PPCE300C2, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
+  {"e300c3", PROCESSOR_PPCE300C3, POWERPC_BASE_MASK},
+  {"e500mc", PROCESSOR_PPCE500MC, POWERPC_BASE_MASK | MASK_PPC_GFXOPT
+   | MASK_ISEL},
+  {"e500mc64", PROCESSOR_PPCE500MC64, POWERPC_BASE_MASK | MASK_POWERPC64
+   | MASK_PPC_GFXOPT | MASK_ISEL},
+  {"860", PROCESSOR_MPCCORE, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
+  {"970", PROCESSOR_POWER4,
+   POWERPC_7400_MASK | MASK_PPC_GPOPT | MASK_MFCRF | MASK_POWERPC64},
+  {"cell", PROCESSOR_CELL,
+   POWERPC_7400_MASK  | MASK_PPC_GPOPT | MASK_MFCRF | MASK_POWERPC64},
+  {"common", PROCESSOR_COMMON, MASK_NEW_MNEMONICS},
+  {"ec603e", PROCESSOR_PPC603, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
+  {"G3", PROCESSOR_PPC750, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
+  {"G4",  PROCESSOR_PPC7450, POWERPC_7400_MASK},
+  {"G5", PROCESSOR_POWER4,
+   POWERPC_7400_MASK | MASK_PPC_GPOPT | MASK_MFCRF | MASK_POWERPC64},
+  {"titan", PROCESSOR_TITAN,
+   POWERPC_BASE_MASK | MASK_MULHW | MASK_DLMZB},
+  {"power", PROCESSOR_POWER, MASK_POWER | MASK_MULTIPLE | MASK_STRING},
+  {"power2", PROCESSOR_POWER,
+   MASK_POWER | MASK_POWER2 | MASK_MULTIPLE | MASK_STRING},
+  {"power3", PROCESSOR_PPC630,
+   POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_POWERPC64},
+  {"power4", PROCESSOR_POWER4,
+   POWERPC_BASE_MASK | MASK_POWERPC64 | MASK_PPC_GPOPT | MASK_PPC_GFXOPT
+   | MASK_MFCRF},
+  {"power5", PROCESSOR_POWER5,
+   POWERPC_BASE_MASK | MASK_POWERPC64 | MASK_PPC_GPOPT | MASK_PPC_GFXOPT
+   | MASK_MFCRF | MASK_POPCNTB},
+  {"power5+", PROCESSOR_POWER5,
+   POWERPC_BASE_MASK | MASK_POWERPC64 | MASK_PPC_GPOPT | MASK_PPC_GFXOPT
+   | MASK_MFCRF | MASK_POPCNTB | MASK_FPRND},
+  {"power6", PROCESSOR_POWER6,
+   POWERPC_BASE_MASK | MASK_POWERPC64 | MASK_PPC_GPOPT | MASK_PPC_GFXOPT
+   | MASK_MFCRF | MASK_POPCNTB | MASK_FPRND | MASK_CMPB | MASK_DFP
+   | MASK_RECIP_PRECISION},
+  {"power6x", PROCESSOR_POWER6,
+   POWERPC_BASE_MASK | MASK_POWERPC64 | MASK_PPC_GPOPT | MASK_PPC_GFXOPT
+   | MASK_MFCRF | MASK_POPCNTB | MASK_FPRND | MASK_CMPB | MASK_DFP
+   | MASK_MFPGPR | MASK_RECIP_PRECISION},
+  {"power7", PROCESSOR_POWER7,   /* Don't add MASK_ISEL by default */
+   POWERPC_7400_MASK | MASK_POWERPC64 | MASK_PPC_GPOPT | MASK_MFCRF
+   | MASK_POPCNTB | MASK_FPRND | MASK_CMPB | MASK_DFP | MASK_POPCNTD
+   | MASK_VSX | MASK_RECIP_PRECISION},
+  {"powerpc", PROCESSOR_POWERPC, POWERPC_BASE_MASK},
+  {"powerpc64", PROCESSOR_POWERPC64,
+   POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_POWERPC64},
+  {"rios", PROCESSOR_RIOS1, MASK_POWER | MASK_MULTIPLE | MASK_STRING},
+  {"rios1", PROCESSOR_RIOS1, MASK_POWER | MASK_MULTIPLE | MASK_STRING},
+  {"rios2", PROCESSOR_RIOS2,
+   MASK_POWER | MASK_POWER2 | MASK_MULTIPLE | MASK_STRING},
+  {"rsc", PROCESSOR_PPC601, MASK_POWER | MASK_MULTIPLE | MASK_STRING},
+  {"rsc1", PROCESSOR_PPC601, MASK_POWER | MASK_MULTIPLE | MASK_STRING},
+  {"rs64", PROCESSOR_RS64A,
+   POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_POWERPC64}
+};
+
+/* Look up a processor name for -mcpu=xxx and -mtune=xxx.  Return -1 if the
+   name is invalid.  */
+
+static int
+rs6000_cpu_name_lookup (const char *name)
+{
+  size_t i;
+
+  if (name != NULL)
+    {
+      for (i = 0; i < ARRAY_SIZE (processor_target_table); i++)
+	if (! strcmp (name, processor_target_table[i].name))
+	  return (int)i;
+    }
+
+  return -1;
+}
+
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
@@ -1817,16 +2029,23 @@ rs6000_debug_reg_print (int first_regno, int last_regno, const char *reg_name)
     }
 }
 
+#define DEBUG_FMT_D "%-32s= %d\n"
+#define DEBUG_FMT_S "%-32s= %s\n"
+
 /* Print various interesting information with -mdebug=reg.  */
 static void
 rs6000_debug_reg_global (void)
 {
+  static const char *const tf[2] = { "false", "true" };
   const char *nl = (const char *)0;
   int m;
   char costly_num[20];
   char nop_num[20];
   const char *costly_str;
   const char *nop_str;
+  const char *trace_str;
+  const char *abi_str;
+  const char *cmodel_str;
 
   /* Map enum rs6000_vector to string.  */
   static const char *rs6000_debug_vector_unit[] = {
@@ -1906,6 +2125,14 @@ rs6000_debug_reg_global (void)
       fputs ("\n", stderr);
     }
 
+  if (rs6000_cpu_index >= 0)
+    fprintf (stderr, DEBUG_FMT_S, "cpu",
+	     processor_target_table[rs6000_cpu_index].name);
+
+  if (rs6000_tune_index >= 0)
+    fprintf (stderr, DEBUG_FMT_S, "tune",
+	     processor_target_table[rs6000_tune_index].name);
+
   switch (rs6000_sched_costly_dep)
     {
     case max_dep_latency:
@@ -1934,6 +2161,8 @@ rs6000_debug_reg_global (void)
       break;
     }
 
+  fprintf (stderr, DEBUG_FMT_S, "sched_costly_dep", costly_str);
+
   switch (rs6000_sched_insert_nops)
     {
     case sched_finish_regroup_exact:
@@ -1954,21 +2183,85 @@ rs6000_debug_reg_global (void)
       break;
     }
 
-  fprintf (stderr,
-	   "always_hint                     = %s\n"
-	   "align_branch_targets            = %s\n"
-	   "sched_restricted_insns_priority = %d\n"
-	   "sched_costly_dep                = %s\n"
-	   "sched_insert_nops               = %s\n\n",
-	   rs6000_always_hint ? "true" : "false",
-	   rs6000_align_branch_targets ? "true" : "false",
-	   (int)rs6000_sched_restricted_insns_priority,
-	   costly_str, nop_str);
+  fprintf (stderr, DEBUG_FMT_S, "sched_insert_nops", nop_str);
+
+  switch (rs6000_sdata)
+    {
+    default:
+    case SDATA_NONE:
+      break;
+
+    case SDATA_DATA:
+      fprintf (stderr, DEBUG_FMT_S, "sdata", "data");
+      break;
+
+    case SDATA_SYSV:
+      fprintf (stderr, DEBUG_FMT_S, "sdata", "sysv");
+      break;
+
+    case SDATA_EABI:
+      fprintf (stderr, DEBUG_FMT_S, "sdata", "eabi");
+      break;
+
+    }
+
+  switch (rs6000_traceback)
+    {
+    case traceback_default:	trace_str = "default";	break;
+    case traceback_none:	trace_str = "none";	break;
+    case traceback_part:	trace_str = "part";	break;
+    case traceback_full:	trace_str = "full";	break;
+    default:			trace_str = "unknown";	break;
+    }
+
+  fprintf (stderr, DEBUG_FMT_S, "traceback", trace_str);
+
+  switch (rs6000_current_cmodel)
+    {
+    case CMODEL_SMALL:	cmodel_str = "small";	break;
+    case CMODEL_MEDIUM:	cmodel_str = "medium";	break;
+    case CMODEL_LARGE:	cmodel_str = "large";	break;
+    default:		cmodel_str = "unknown";	break;
+    }
+
+  fprintf (stderr, DEBUG_FMT_S, "cmodel", cmodel_str);
+
+  switch (rs6000_current_abi)
+    {
+    case ABI_NONE:	abi_str = "none";	break;
+    case ABI_AIX:	abi_str = "aix";	break;
+    case ABI_V4:	abi_str = "V4";		break;
+    case ABI_DARWIN:	abi_str = "darwin";	break;
+    default:		abi_str = "unknown";	break;
+    }
+
+  fprintf (stderr, DEBUG_FMT_S, "abi", abi_str);
+
+  if (rs6000_altivec_abi)
+    fprintf (stderr, DEBUG_FMT_S, "altivec_abi", "true");
+
+  if (rs6000_spe_abi)
+    fprintf (stderr, DEBUG_FMT_S, "spe_abi", "true");
+
+  if (rs6000_darwin64_abi)
+    fprintf (stderr, DEBUG_FMT_S, "darwin64_abi", "true");
+
+  if (rs6000_float_gprs)
+    fprintf (stderr, DEBUG_FMT_S, "float_gprs", "true");
+
+  fprintf (stderr, DEBUG_FMT_S, "always_hint", tf[!!rs6000_always_hint]);
+  fprintf (stderr, DEBUG_FMT_S, "align_branch",
+	   tf[!!rs6000_align_branch_targets]);
+  fprintf (stderr, DEBUG_FMT_D, "tls_size", rs6000_tls_size);
+  fprintf (stderr, DEBUG_FMT_D, "long_double_size",
+	   rs6000_long_double_type_size);
+  fprintf (stderr, DEBUG_FMT_D, "sched_restricted_insns_priority",
+	   (int)rs6000_sched_restricted_insns_priority);
 }
 
 /* Initialize the various global tables that are based on register size.  */
 static void
-rs6000_init_hard_regno_mode_ok (void)
+rs6000_init_hard_regno_mode_ok (bool global_init_p)
 {
   int r, m, c;
   int align64;
@@ -2219,16 +2512,13 @@ rs6000_init_hard_regno_mode_ok (void)
 
   if (rs6000_recip_control)
     {
-      if (!TARGET_FUSED_MADD)
-	warning (0, "-mrecip requires -mfused-madd");
       if (!flag_finite_math_only)
 	warning (0, "-mrecip requires -ffinite-math or -ffast-math");
       if (flag_trapping_math)
 	warning (0, "-mrecip requires -fno-trapping-math or -ffast-math");
       if (!flag_reciprocal_math)
 	warning (0, "-mrecip requires -freciprocal-math or -ffast-math");
-      if (TARGET_FUSED_MADD && flag_finite_math_only && !flag_trapping_math
-	  && flag_reciprocal_math)
+      if (flag_finite_math_only && !flag_trapping_math && flag_reciprocal_math)
 	{
 	  if (RS6000_RECIP_HAVE_RE_P (SFmode)
 	      && (rs6000_recip_control & RECIP_SF_DIV) != 0)
@@ -2264,40 +2554,43 @@ rs6000_init_hard_regno_mode_ok (void)
 	}
     }
 
-  if (TARGET_DEBUG_REG)
-    rs6000_debug_reg_global ();
+  if (global_init_p || TARGET_DEBUG_TARGET)
+    {
+      if (TARGET_DEBUG_REG)
+	rs6000_debug_reg_global ();
 
-  if (TARGET_DEBUG_COST || TARGET_DEBUG_REG)
-    fprintf (stderr,
-	     "SImode variable mult cost       = %d\n"
-	     "SImode constant mult cost       = %d\n"
-	     "SImode short constant mult cost = %d\n"
-	     "DImode multipliciation cost     = %d\n"
-	     "SImode division cost            = %d\n"
-	     "DImode division cost            = %d\n"
-	     "Simple fp operation cost        = %d\n"
-	     "DFmode multiplication cost      = %d\n"
-	     "SFmode division cost            = %d\n"
-	     "DFmode division cost            = %d\n"
-	     "cache line size                 = %d\n"
-	     "l1 cache size                   = %d\n"
-	     "l2 cache size                   = %d\n"
-	     "simultaneous prefetches         = %d\n"
-	     "\n",
-	     rs6000_cost->mulsi,
-	     rs6000_cost->mulsi_const,
-	     rs6000_cost->mulsi_const9,
-	     rs6000_cost->muldi,
-	     rs6000_cost->divsi,
-	     rs6000_cost->divdi,
-	     rs6000_cost->fp,
-	     rs6000_cost->dmul,
-	     rs6000_cost->sdiv,
-	     rs6000_cost->ddiv,
-	     rs6000_cost->cache_line_size,
-	     rs6000_cost->l1_cache_size,
-	     rs6000_cost->l2_cache_size,
-	     rs6000_cost->simultaneous_prefetches);
+      if (TARGET_DEBUG_COST || TARGET_DEBUG_REG)
+	fprintf (stderr,
+		 "SImode variable mult cost       = %d\n"
+		 "SImode constant mult cost       = %d\n"
+		 "SImode short constant mult cost = %d\n"
+		 "DImode multipliciation cost     = %d\n"
+		 "SImode division cost            = %d\n"
+		 "DImode division cost            = %d\n"
+		 "Simple fp operation cost        = %d\n"
+		 "DFmode multiplication cost      = %d\n"
+		 "SFmode division cost            = %d\n"
+		 "DFmode division cost            = %d\n"
+		 "cache line size                 = %d\n"
+		 "l1 cache size                   = %d\n"
+		 "l2 cache size                   = %d\n"
+		 "simultaneous prefetches         = %d\n"
+		 "\n",
+		 rs6000_cost->mulsi,
+		 rs6000_cost->mulsi_const,
+		 rs6000_cost->mulsi_const9,
+		 rs6000_cost->muldi,
+		 rs6000_cost->divsi,
+		 rs6000_cost->divdi,
+		 rs6000_cost->fp,
+		 rs6000_cost->dmul,
+		 rs6000_cost->sdiv,
+		 rs6000_cost->ddiv,
+		 rs6000_cost->cache_line_size,
+		 rs6000_cost->l1_cache_size,
+		 rs6000_cost->l2_cache_size,
+		 rs6000_cost->simultaneous_prefetches);
+    }
 }
 
 #if TARGET_MACHO
@@ -2310,19 +2603,11 @@ darwin_rs6000_override_options (void)
      off.  */
   rs6000_altivec_abi = 1;
   TARGET_ALTIVEC_VRSAVE = 1;
-  if (DEFAULT_ABI == ABI_DARWIN)
-  {
-    if (MACHO_DYNAMIC_NO_PIC_P)
-      {
-        if (flag_pic)
-            warning (0, "-mdynamic-no-pic overrides -fpic or -fPIC");
-        flag_pic = 0;
-      }
-    else if (flag_pic == 1)
-      {
-        flag_pic = 2;
-      }
-  }
+
+  if (DEFAULT_ABI == ABI_DARWIN
+      && TARGET_64BIT)
+      darwin_one_byte_bool = 1;
+
   if (TARGET_64BIT && ! TARGET_POWERPC64)
     {
       target_flags |= MASK_POWERPC64;
@@ -2362,182 +2647,26 @@ darwin_rs6000_override_options (void)
 #define RS6000_DEFAULT_LONG_DOUBLE_SIZE 64
 #endif
 
-/* Override command line options.  Mostly we process the processor
-   type and sometimes adjust other TARGET_ options.  */
+/* Override command line options.  Mostly we process the processor type and
+   sometimes adjust other TARGET_ options.  */
 
-void
-rs6000_override_options (const char *default_cpu)
+static bool
+rs6000_option_override_internal (bool global_init_p)
 {
-  size_t i, j;
-  struct rs6000_cpu_select *ptr;
+  bool ret = true;
+  const char *default_cpu = OPTION_TARGET_CPU_DEFAULT;
   int set_masks;
-
-  /* Simplifications for entries below.  */
-
-  enum {
-    POWERPC_BASE_MASK = MASK_POWERPC | MASK_NEW_MNEMONICS,
-    POWERPC_7400_MASK = POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_ALTIVEC
-  };
-
-  /* This table occasionally claims that a processor does not support
-     a particular feature even though it does, but the feature is slower
-     than the alternative.  Thus, it shouldn't be relied on as a
-     complete description of the processor's support.
-
-     Please keep this list in order, and don't forget to update the
-     documentation in invoke.texi when adding a new processor or
-     flag.  */
-  static struct ptt
-    {
-      const char *const name;		/* Canonical processor name.  */
-      const enum processor_type processor; /* Processor type enum value.  */
-      const int target_enable;	/* Target flags to enable.  */
-    } const processor_target_table[]
-      = {{"401", PROCESSOR_PPC403, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
-	 {"403", PROCESSOR_PPC403,
-	  POWERPC_BASE_MASK | MASK_SOFT_FLOAT | MASK_STRICT_ALIGN},
-	 {"405", PROCESSOR_PPC405,
-	  POWERPC_BASE_MASK | MASK_SOFT_FLOAT | MASK_MULHW | MASK_DLMZB},
-	 {"405fp", PROCESSOR_PPC405,
-	  POWERPC_BASE_MASK | MASK_MULHW | MASK_DLMZB},
-	 {"440", PROCESSOR_PPC440,
-	  POWERPC_BASE_MASK | MASK_SOFT_FLOAT | MASK_MULHW | MASK_DLMZB},
-	 {"440fp", PROCESSOR_PPC440,
-	  POWERPC_BASE_MASK | MASK_MULHW | MASK_DLMZB},
-	 {"464", PROCESSOR_PPC440,
-	  POWERPC_BASE_MASK | MASK_SOFT_FLOAT | MASK_MULHW | MASK_DLMZB},
-	 {"464fp", PROCESSOR_PPC440,
-	  POWERPC_BASE_MASK | MASK_MULHW | MASK_DLMZB},
- 	 {"476", PROCESSOR_PPC476,
-	  POWERPC_BASE_MASK | MASK_SOFT_FLOAT | MASK_PPC_GFXOPT | MASK_MFCRF
-	  | MASK_POPCNTB | MASK_FPRND | MASK_CMPB | MASK_MULHW | MASK_DLMZB},
- 	 {"476fp", PROCESSOR_PPC476,
-	  POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_MFCRF | MASK_POPCNTB
-	  | MASK_FPRND | MASK_CMPB | MASK_MULHW | MASK_DLMZB},
-	 {"505", PROCESSOR_MPCCORE, POWERPC_BASE_MASK},
-	 {"601", PROCESSOR_PPC601,
-	  MASK_POWER | POWERPC_BASE_MASK | MASK_MULTIPLE | MASK_STRING},
-	 {"602", PROCESSOR_PPC603, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
-	 {"603", PROCESSOR_PPC603, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
-	 {"603e", PROCESSOR_PPC603, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
-	 {"604", PROCESSOR_PPC604, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
-	 {"604e", PROCESSOR_PPC604e, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
-	 {"620", PROCESSOR_PPC620,
-	  POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_POWERPC64},
-	 {"630", PROCESSOR_PPC630,
-	  POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_POWERPC64},
-	 {"740", PROCESSOR_PPC750, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
-	 {"7400", PROCESSOR_PPC7400, POWERPC_7400_MASK},
-	 {"7450", PROCESSOR_PPC7450, POWERPC_7400_MASK},
-	 {"750", PROCESSOR_PPC750, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
-	 {"801", PROCESSOR_MPCCORE, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
-	 {"821", PROCESSOR_MPCCORE, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
-	 {"823", PROCESSOR_MPCCORE, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
-	 {"8540", PROCESSOR_PPC8540, POWERPC_BASE_MASK | MASK_STRICT_ALIGN
-	  | MASK_ISEL},
-	 /* 8548 has a dummy entry for now.  */
-	 {"8548", PROCESSOR_PPC8540, POWERPC_BASE_MASK | MASK_STRICT_ALIGN
-	  | MASK_ISEL},
- 	 {"a2", PROCESSOR_PPCA2,
- 	  POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_POWERPC64 | MASK_POPCNTB
- 	  | MASK_CMPB | MASK_NO_UPDATE },
-	 {"e300c2", PROCESSOR_PPCE300C2, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
-	 {"e300c3", PROCESSOR_PPCE300C3, POWERPC_BASE_MASK},
-	 {"e500mc", PROCESSOR_PPCE500MC, POWERPC_BASE_MASK | MASK_PPC_GFXOPT
-	  | MASK_ISEL},
-	 {"e500mc64", PROCESSOR_PPCE500MC64, POWERPC_BASE_MASK | MASK_POWERPC64
-	  | MASK_PPC_GFXOPT | MASK_ISEL},
-	 {"860", PROCESSOR_MPCCORE, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
-	 {"970", PROCESSOR_POWER4,
-	  POWERPC_7400_MASK | MASK_PPC_GPOPT | MASK_MFCRF | MASK_POWERPC64},
-	 {"cell", PROCESSOR_CELL,
-	  POWERPC_7400_MASK  | MASK_PPC_GPOPT | MASK_MFCRF | MASK_POWERPC64},
-	 {"common", PROCESSOR_COMMON, MASK_NEW_MNEMONICS},
-	 {"ec603e", PROCESSOR_PPC603, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
-	 {"G3", PROCESSOR_PPC750, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
-	 {"G4",  PROCESSOR_PPC7450, POWERPC_7400_MASK},
-	 {"G5", PROCESSOR_POWER4,
-	  POWERPC_7400_MASK | MASK_PPC_GPOPT | MASK_MFCRF | MASK_POWERPC64},
-	 {"titan", PROCESSOR_TITAN,
-	  POWERPC_BASE_MASK | MASK_MULHW | MASK_DLMZB},
-	 {"power", PROCESSOR_POWER, MASK_POWER | MASK_MULTIPLE | MASK_STRING},
-	 {"power2", PROCESSOR_POWER,
-	  MASK_POWER | MASK_POWER2 | MASK_MULTIPLE | MASK_STRING},
-	 {"power3", PROCESSOR_PPC630,
-	  POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_POWERPC64},
-	 {"power4", PROCESSOR_POWER4,
-	  POWERPC_BASE_MASK | MASK_POWERPC64 | MASK_PPC_GPOPT | MASK_PPC_GFXOPT
-	  | MASK_MFCRF},
-	 {"power5", PROCESSOR_POWER5,
-	  POWERPC_BASE_MASK | MASK_POWERPC64 | MASK_PPC_GPOPT | MASK_PPC_GFXOPT
-	  | MASK_MFCRF | MASK_POPCNTB},
-	 {"power5+", PROCESSOR_POWER5,
-	  POWERPC_BASE_MASK | MASK_POWERPC64 | MASK_PPC_GPOPT | MASK_PPC_GFXOPT
-	  | MASK_MFCRF | MASK_POPCNTB | MASK_FPRND},
- 	 {"power6", PROCESSOR_POWER6,
-	  POWERPC_BASE_MASK | MASK_POWERPC64 | MASK_PPC_GPOPT | MASK_PPC_GFXOPT
-	  | MASK_MFCRF | MASK_POPCNTB | MASK_FPRND | MASK_CMPB | MASK_DFP
-	  | MASK_RECIP_PRECISION},
-	 {"power6x", PROCESSOR_POWER6,
-	  POWERPC_BASE_MASK | MASK_POWERPC64 | MASK_PPC_GPOPT | MASK_PPC_GFXOPT
-	  | MASK_MFCRF | MASK_POPCNTB | MASK_FPRND | MASK_CMPB | MASK_DFP
-	  | MASK_MFPGPR | MASK_RECIP_PRECISION},
-	 {"power7", PROCESSOR_POWER7,
-	  POWERPC_7400_MASK | MASK_POWERPC64 | MASK_PPC_GPOPT | MASK_MFCRF
-	  | MASK_POPCNTB | MASK_FPRND | MASK_CMPB | MASK_DFP | MASK_POPCNTD
-	  | MASK_VSX| MASK_RECIP_PRECISION},	/* Don't add MASK_ISEL by default */
-	 {"powerpc", PROCESSOR_POWERPC, POWERPC_BASE_MASK},
-	 {"powerpc64", PROCESSOR_POWERPC64,
-	  POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_POWERPC64},
-	 {"rios", PROCESSOR_RIOS1, MASK_POWER | MASK_MULTIPLE | MASK_STRING},
-	 {"rios1", PROCESSOR_RIOS1, MASK_POWER | MASK_MULTIPLE | MASK_STRING},
-	 {"rios2", PROCESSOR_RIOS2,
-	  MASK_POWER | MASK_POWER2 | MASK_MULTIPLE | MASK_STRING},
-	 {"rsc", PROCESSOR_PPC601, MASK_POWER | MASK_MULTIPLE | MASK_STRING},
-	 {"rsc1", PROCESSOR_PPC601, MASK_POWER | MASK_MULTIPLE | MASK_STRING},
-	 {"rs64", PROCESSOR_RS64A,
-	  POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_POWERPC64}
-      };
-
-  const size_t ptt_size = ARRAY_SIZE (processor_target_table);
-
-  /* Some OSs don't support saving the high part of 64-bit registers on
-     context switch.  Other OSs don't support saving Altivec registers.
-     On those OSs, we don't touch the MASK_POWERPC64 or MASK_ALTIVEC
-     settings; if the user wants either, the user must explicitly specify
-     them and we won't interfere with the user's specification.  */
-
-  enum {
-    POWER_MASKS = MASK_POWER | MASK_POWER2 | MASK_MULTIPLE | MASK_STRING,
-    POWERPC_MASKS = (POWERPC_BASE_MASK | MASK_PPC_GPOPT | MASK_STRICT_ALIGN
-		     | MASK_PPC_GFXOPT | MASK_POWERPC64 | MASK_ALTIVEC
-		     | MASK_MFCRF | MASK_POPCNTB | MASK_FPRND | MASK_MULHW
-		     | MASK_DLMZB | MASK_CMPB | MASK_MFPGPR | MASK_DFP
-		     | MASK_POPCNTD | MASK_VSX | MASK_ISEL | MASK_NO_UPDATE
-		     | MASK_RECIP_PRECISION)
-  };
-
-  /* Masks for instructions set at various powerpc ISAs.  */
-  enum {
-    ISA_2_1_MASKS = MASK_MFCRF,
-    ISA_2_2_MASKS = (ISA_2_1_MASKS | MASK_POPCNTB | MASK_FPRND),
-
-    /* For ISA 2.05, do not add MFPGPR, since it isn't in ISA 2.06, and
-       don't add ALTIVEC, since in general it isn't a win on power6.  */
-    ISA_2_5_MASKS = (ISA_2_2_MASKS | MASK_CMPB | MASK_RECIP_PRECISION
-		     | MASK_DFP),
-
-    /* For ISA 2.06, don't add ISEL, since in general it isn't a win, but
-       altivec is a win so enable it.  */
-    ISA_2_6_MASKS = (ISA_2_5_MASKS | MASK_ALTIVEC | MASK_POPCNTD
-		     | MASK_VSX | MASK_RECIP_PRECISION)
-  };
+  int cpu_index;
+  int tune_index;
+  struct cl_target_option *main_target_opt
+    = ((global_init_p || target_option_default_node == NULL)
+       ? NULL : TREE_TARGET_OPTION (target_option_default_node));
 
   /* Numerous experiment shows that IRA based loop pressure
      calculation works better for RTL loop invariant motion on targets
      with enough (>= 32) registers.  It is an expensive optimization.
      So it is on only for peak performance.  */
-  if (optimize >= 3)
+  if (optimize >= 3 && global_init_p)
     flag_ira_loop_pressure = 1;
 
   /* Set the pointer size.  */
@@ -2566,33 +2695,42 @@ rs6000_override_options (const char *default_cpu)
   set_masks &= ~target_flags_explicit;
 
   /* Identify the processor type.  */
-  rs6000_select[0].string = default_cpu;
-  rs6000_cpu = TARGET_POWERPC64 ? PROCESSOR_DEFAULT64 : PROCESSOR_DEFAULT;
-
-  for (i = 0; i < ARRAY_SIZE (rs6000_select); i++)
+  if (!default_cpu)
     {
-      ptr = &rs6000_select[i];
-      if (ptr->string != (char *)0 && ptr->string[0] != '\0')
-	{
-	  for (j = 0; j < ptt_size; j++)
-	    if (! strcmp (ptr->string, processor_target_table[j].name))
-	      {
-		if (ptr->set_tune_p)
-		  rs6000_cpu = processor_target_table[j].processor;
-
-		if (ptr->set_arch_p)
-		  {
-		    target_flags &= ~set_masks;
-		    target_flags |= (processor_target_table[j].target_enable
-				     & set_masks);
-		  }
-		break;
-	      }
-
-	  if (j == ptt_size)
-	    error ("bad value (%s) for %s switch", ptr->string, ptr->name);
-	}
+      if (TARGET_POWERPC64)
+	default_cpu = "powerpc64";
+      else if (TARGET_POWERPC)
+	default_cpu = "powerpc";
     }
+
+  /* Process the -mcpu=<xxx> and -mtune=<xxx> argument.  If the user changed
+     the cpu in a target attribute or pragma, but did not specify a tuning
+     option, use the cpu for the tuning option rather than the option specified
+     with -mtune on the command line.  */
+  if (rs6000_cpu_index > 0)
+    cpu_index = rs6000_cpu_index;
+  else if (main_target_opt != NULL && main_target_opt->x_rs6000_cpu_index > 0)
+    rs6000_cpu_index = cpu_index = main_target_opt->x_rs6000_cpu_index;
+  else
+    rs6000_cpu_index = cpu_index = rs6000_cpu_name_lookup (default_cpu);
+
+  if (rs6000_tune_index > 0)
+    tune_index = rs6000_tune_index;
+  else
+    rs6000_tune_index = tune_index = cpu_index;
+
+  if (cpu_index >= 0)
+    {
+      target_flags &= ~set_masks;
+      target_flags |= (processor_target_table[cpu_index].target_enable
+		       & set_masks);
+    }
+
+  rs6000_cpu = ((tune_index >= 0)
+		? processor_target_table[tune_index].processor
+		: (TARGET_POWERPC64
+		   ? PROCESSOR_DEFAULT64
+		   : PROCESSOR_DEFAULT));
 
   if (rs6000_cpu == PROCESSOR_PPCE300C2 || rs6000_cpu == PROCESSOR_PPCE300C3
       || rs6000_cpu == PROCESSOR_PPCE500MC || rs6000_cpu == PROCESSOR_PPCE500MC64)
@@ -2600,7 +2738,7 @@ rs6000_override_options (const char *default_cpu)
       if (TARGET_ALTIVEC)
 	error ("AltiVec not supported in this target");
       if (TARGET_SPE)
-	error ("Spe not supported in this target");
+	error ("SPE not supported in this target");
     }
 
   /* Disable Cell microcode if we are optimizing for the Cell
@@ -2671,37 +2809,41 @@ rs6000_override_options (const char *default_cpu)
 	{
 	  warning (0, msg);
 	  target_flags &= ~ MASK_VSX;
+	  target_flags_explicit |= MASK_VSX;
 	}
     }
 
   /* For the newer switches (vsx, dfp, etc.) set some of the older options,
      unless the user explicitly used the -mno-<option> to disable the code.  */
   if (TARGET_VSX)
-    target_flags |= (ISA_2_6_MASKS & (target_flags_explicit & ~ISA_2_6_MASKS));
+    target_flags |= (ISA_2_6_MASKS_SERVER & ~target_flags_explicit);
+  else if (TARGET_POPCNTD)
+    target_flags |= (ISA_2_6_MASKS_EMBEDDED & ~target_flags_explicit);
   else if (TARGET_DFP)
-    target_flags |= (ISA_2_5_MASKS & (target_flags_explicit & ~ISA_2_5_MASKS));
+    target_flags |= (ISA_2_5_MASKS_SERVER & ~target_flags_explicit);
+  else if (TARGET_CMPB)
+    target_flags |= (ISA_2_5_MASKS_EMBEDDED & ~target_flags_explicit);
+  else if (TARGET_FPRND)
+    target_flags |= (ISA_2_4_MASKS & ~target_flags_explicit);
+  else if (TARGET_POPCNTB)
+    target_flags |= (ISA_2_2_MASKS & ~target_flags_explicit);
   else if (TARGET_ALTIVEC)
-    target_flags |= (MASK_PPC_GFXOPT & (target_flags_explicit & ~MASK_PPC_GFXOPT));
+    target_flags |= (MASK_PPC_GFXOPT & ~target_flags_explicit);
 
-  /* Set debug flags */
-  if (rs6000_debug_name)
+  /* E500mc does "better" if we inline more aggressively.  Respect the
+     user's opinion, though.  */
+  if (rs6000_block_move_inline_limit == 0
+      && (rs6000_cpu == PROCESSOR_PPCE500MC
+	  || rs6000_cpu == PROCESSOR_PPCE500MC64))
+    rs6000_block_move_inline_limit = 128;
+
+  /* store_one_arg depends on expand_block_move to handle at least the
+     size of reg_parm_stack_space.  */
+  if (rs6000_block_move_inline_limit < (TARGET_POWERPC64 ? 64 : 32))
+    rs6000_block_move_inline_limit = (TARGET_POWERPC64 ? 64 : 32);
+
+  if (global_init_p)
     {
-      if (! strcmp (rs6000_debug_name, "all"))
-	rs6000_debug_stack = rs6000_debug_arg = rs6000_debug_reg
-	  = rs6000_debug_addr = rs6000_debug_cost = 1;
-      else if (! strcmp (rs6000_debug_name, "stack"))
-	rs6000_debug_stack = 1;
-      else if (! strcmp (rs6000_debug_name, "arg"))
-	rs6000_debug_arg = 1;
-      else if (! strcmp (rs6000_debug_name, "reg"))
-	rs6000_debug_reg = 1;
-      else if (! strcmp (rs6000_debug_name, "addr"))
-	rs6000_debug_addr = 1;
-      else if (! strcmp (rs6000_debug_name, "cost"))
-	rs6000_debug_cost = 1;
-      else
-	error ("unknown -mdebug-%s switch", rs6000_debug_name);
-
       /* If the appropriate debug option is enabled, replace the target hooks
 	 with debug versions that call the real version and then prints
 	 debugging information.  */
@@ -2729,32 +2871,50 @@ rs6000_override_options (const char *default_cpu)
 	  rs6000_mode_dependent_address_ptr
 	    = rs6000_debug_mode_dependent_address;
 	}
-    }
 
-  if (rs6000_traceback_name)
-    {
-      if (! strncmp (rs6000_traceback_name, "full", 4))
-	rs6000_traceback = traceback_full;
-      else if (! strncmp (rs6000_traceback_name, "part", 4))
-	rs6000_traceback = traceback_part;
-      else if (! strncmp (rs6000_traceback_name, "no", 2))
-	rs6000_traceback = traceback_none;
-      else
-	error ("unknown -mtraceback arg %qs; expecting %<full%>, %<partial%> or %<none%>",
-	       rs6000_traceback_name);
+      if (rs6000_veclibabi_name)
+	{
+	  if (strcmp (rs6000_veclibabi_name, "mass") == 0)
+	    rs6000_veclib_handler = rs6000_builtin_vectorized_libmass;
+	  else
+	    {
+	      error ("unknown vectorization library ABI type (%s) for "
+		     "-mveclibabi= switch", rs6000_veclibabi_name);
+	      ret = false;
+	    }
+	}
     }
 
   if (!rs6000_explicit_options.long_double)
-    rs6000_long_double_type_size = RS6000_DEFAULT_LONG_DOUBLE_SIZE;
+    {
+      if (main_target_opt != NULL
+	  && (main_target_opt->x_rs6000_long_double_type_size
+	      != RS6000_DEFAULT_LONG_DOUBLE_SIZE))
+	error ("target attribute or pragma changes long double size");
+      else
+	rs6000_long_double_type_size = RS6000_DEFAULT_LONG_DOUBLE_SIZE;
+    }
 
 #ifndef POWERPC_LINUX
   if (!rs6000_explicit_options.ieee)
     rs6000_ieeequad = 1;
 #endif
 
+  /* Disable VSX and Altivec silently if the user switched cpus to power7 in a
+     target attribute or pragma which automatically enables both options,
+     unless the altivec ABI was set.  This is set by default for 64-bit, but
+     not for 32-bit.  */
+  if (main_target_opt != NULL && !main_target_opt->x_rs6000_altivec_abi)
+    target_flags &= ~((MASK_VSX | MASK_ALTIVEC) & ~target_flags_explicit);
+
   /* Enable Altivec ABI for AIX -maltivec.  */
   if (TARGET_XCOFF && (TARGET_ALTIVEC || TARGET_VSX))
-    rs6000_altivec_abi = 1;
+    {
+      if (main_target_opt != NULL && !main_target_opt->x_rs6000_altivec_abi)
+	error ("target attribute or pragma changes AltiVec ABI");
+      else
+	rs6000_altivec_abi = 1;
+    }
 
   /* The AltiVec ABI is the default for PowerPC-64 GNU/Linux.  For
      PowerPC-32 GNU/Linux, -maltivec implies the AltiVec ABI.  It can
@@ -2763,31 +2923,39 @@ rs6000_override_options (const char *default_cpu)
     {
       if (!rs6000_explicit_options.altivec_abi
 	  && (TARGET_64BIT || TARGET_ALTIVEC || TARGET_VSX))
-	rs6000_altivec_abi = 1;
+	{
+	  if (main_target_opt != NULL &&
+	      !main_target_opt->x_rs6000_altivec_abi)
+	    error ("target attribute or pragma changes AltiVec ABI");
+	  else
+	    rs6000_altivec_abi = 1;
+	}
 
       /* Enable VRSAVE for AltiVec ABI, unless explicitly overridden.  */
       if (!rs6000_explicit_options.vrsave)
 	TARGET_ALTIVEC_VRSAVE = rs6000_altivec_abi;
     }
 
-  /* Set the Darwin64 ABI as default for 64-bit Darwin.  */
-  if (DEFAULT_ABI == ABI_DARWIN && TARGET_64BIT)
+  /* Set the Darwin64 ABI as default for 64-bit Darwin.  
+     So far, the only darwin64 targets are also MACH-O.  */
+  if (TARGET_MACHO
+      && DEFAULT_ABI == ABI_DARWIN 
+      && TARGET_64BIT)
     {
-      rs6000_darwin64_abi = 1;
-#if TARGET_MACHO
-      darwin_one_byte_bool = 1;
-#endif
-      /* Default to natural alignment, for better performance.  */
-      rs6000_alignment_flags = MASK_ALIGN_NATURAL;
+      if (main_target_opt != NULL && !main_target_opt->x_rs6000_darwin64_abi)
+	error ("target attribute or pragma changes darwin64 ABI");
+      else
+	{
+	  rs6000_darwin64_abi = 1;
+	  /* Default to natural alignment, for better performance.  */
+	  rs6000_alignment_flags = MASK_ALIGN_NATURAL;
+	}
     }
 
   /* Place FP constants in the constant pool instead of TOC
      if section anchors enabled.  */
   if (flag_section_anchors)
     TARGET_NO_FP_IN_TOC = 1;
-
-  /* Handle -mtls-size option.  */
-  rs6000_parse_tls_size_option ();
 
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
   SUBTARGET_OVERRIDE_OPTIONS;
@@ -2812,12 +2980,20 @@ rs6000_override_options (const char *default_cpu)
       /* For the powerpc-eabispe configuration, we set all these by
 	 default, so let's unset them if we manually set another
 	 CPU that is not the E500.  */
-      if (!rs6000_explicit_options.spe_abi)
-	rs6000_spe_abi = 0;
-      if (!rs6000_explicit_options.spe)
-	rs6000_spe = 0;
-      if (!rs6000_explicit_options.float_gprs)
-	rs6000_float_gprs = 0;
+      if (main_target_opt != NULL
+	  && ((main_target_opt->x_rs6000_spe_abi != rs6000_spe_abi)
+	      || (main_target_opt->x_rs6000_spe != rs6000_spe)
+	      || (main_target_opt->x_rs6000_float_gprs != rs6000_float_gprs)))
+	error ("target attribute or pragma changes SPE ABI");
+      else
+	{
+	  if (!rs6000_explicit_options.spe_abi)
+	    rs6000_spe_abi = 0;
+	  if (!rs6000_explicit_options.spe)
+	    rs6000_spe = 0;
+	  if (!rs6000_explicit_options.float_gprs)
+	    rs6000_float_gprs = 0;
+	}
       if (!(target_flags_explicit & MASK_ISEL))
 	target_flags &= ~MASK_ISEL;
     }
@@ -2890,76 +3066,83 @@ rs6000_override_options (const char *default_cpu)
 				    atoi (rs6000_sched_insert_nops_str));
     }
 
+  if (global_init_p)
+    {
 #ifdef TARGET_REGNAMES
-  /* If the user desires alternate register names, copy in the
-     alternate names now.  */
-  if (TARGET_REGNAMES)
-    memcpy (rs6000_reg_names, alt_reg_names, sizeof (rs6000_reg_names));
+      /* If the user desires alternate register names, copy in the
+	 alternate names now.  */
+      if (TARGET_REGNAMES)
+	memcpy (rs6000_reg_names, alt_reg_names, sizeof (rs6000_reg_names));
 #endif
 
-  /* Set aix_struct_return last, after the ABI is determined.
-     If -maix-struct-return or -msvr4-struct-return was explicitly
-     used, don't override with the ABI default.  */
-  if (!rs6000_explicit_options.aix_struct_ret)
-    aix_struct_return = (DEFAULT_ABI != ABI_V4 || DRAFT_V4_STRUCT_RET);
+      /* Set aix_struct_return last, after the ABI is determined.
+	 If -maix-struct-return or -msvr4-struct-return was explicitly
+	 used, don't override with the ABI default.  */
+      if (!rs6000_explicit_options.aix_struct_ret)
+	aix_struct_return = (DEFAULT_ABI != ABI_V4 || DRAFT_V4_STRUCT_RET);
 
 #if 0
-  /* IBM XL compiler defaults to unsigned bitfields.  */
-  if (TARGET_XL_COMPAT)
-    flag_signed_bitfields = 0;
+      /* IBM XL compiler defaults to unsigned bitfields.  */
+      if (TARGET_XL_COMPAT)
+	flag_signed_bitfields = 0;
 #endif
 
-  if (TARGET_LONG_DOUBLE_128 && !TARGET_IEEEQUAD)
-    REAL_MODE_FORMAT (TFmode) = &ibm_extended_format;
+      if (TARGET_LONG_DOUBLE_128 && !TARGET_IEEEQUAD)
+	REAL_MODE_FORMAT (TFmode) = &ibm_extended_format;
 
-  if (TARGET_TOC)
-    ASM_GENERATE_INTERNAL_LABEL (toc_label_name, "LCTOC", 1);
+      if (TARGET_TOC)
+	ASM_GENERATE_INTERNAL_LABEL (toc_label_name, "LCTOC", 1);
 
-  /* We can only guarantee the availability of DI pseudo-ops when
-     assembling for 64-bit targets.  */
-  if (!TARGET_64BIT)
-    {
-      targetm.asm_out.aligned_op.di = NULL;
-      targetm.asm_out.unaligned_op.di = NULL;
-    }
-
-  /* Set branch target alignment, if not optimizing for size.  */
-  if (!optimize_size)
-    {
-      /* Cell wants to be aligned 8byte for dual issue.  Titan wants to be
-	 aligned 8byte to avoid misprediction by the branch predictor.  */
-      if (rs6000_cpu == PROCESSOR_TITAN
-	  || rs6000_cpu == PROCESSOR_CELL)
+      /* We can only guarantee the availability of DI pseudo-ops when
+	 assembling for 64-bit targets.  */
+      if (!TARGET_64BIT)
 	{
-	  if (align_functions <= 0)
-	    align_functions = 8;
-	  if (align_jumps <= 0)
-	    align_jumps = 8;
-	  if (align_loops <= 0)
-	    align_loops = 8;
- 	}
-      if (rs6000_align_branch_targets)
-	{
-	  if (align_functions <= 0)
-	    align_functions = 16;
-	  if (align_jumps <= 0)
-	    align_jumps = 16;
-	  if (align_loops <= 0)
-	    align_loops = 16;
+	  targetm.asm_out.aligned_op.di = NULL;
+	  targetm.asm_out.unaligned_op.di = NULL;
 	}
-      if (align_jumps_max_skip <= 0)
-	align_jumps_max_skip = 15;
-      if (align_loops_max_skip <= 0)
-	align_loops_max_skip = 15;
+
+
+      /* Set branch target alignment, if not optimizing for size.  */
+      if (!optimize_size)
+	{
+	  /* Cell wants to be aligned 8byte for dual issue.  Titan wants to be
+	     aligned 8byte to avoid misprediction by the branch predictor.  */
+	  if (rs6000_cpu == PROCESSOR_TITAN
+	      || rs6000_cpu == PROCESSOR_CELL)
+	    {
+	      if (align_functions <= 0)
+		align_functions = 8;
+	      if (align_jumps <= 0)
+		align_jumps = 8;
+	      if (align_loops <= 0)
+		align_loops = 8;
+	    }
+	  if (rs6000_align_branch_targets)
+	    {
+	      if (align_functions <= 0)
+		align_functions = 16;
+	      if (align_jumps <= 0)
+		align_jumps = 16;
+	      if (align_loops <= 0)
+		{
+		  can_override_loop_align = 1;
+		  align_loops = 16;
+		}
+	    }
+	  if (align_jumps_max_skip <= 0)
+	    align_jumps_max_skip = 15;
+	  if (align_loops_max_skip <= 0)
+	    align_loops_max_skip = 15;
+	}
+
+      /* Arrange to save and restore machine status around nested functions.  */
+      init_machine_status = rs6000_init_machine_status;
+
+      /* We should always be splitting complex arguments, but we can't break
+	 Linux and Darwin ABIs at the moment.  For now, only AIX is fixed.  */
+      if (DEFAULT_ABI != ABI_AIX)
+	targetm.calls.split_complex_arg = NULL;
     }
-
-  /* Arrange to save and restore machine status around nested functions.  */
-  init_machine_status = rs6000_init_machine_status;
-
-  /* We should always be splitting complex arguments, but we can't break
-     Linux and Darwin ABIs at the moment.  For now, only AIX is fixed.  */
-  if (DEFAULT_ABI != ABI_AIX)
-    targetm.calls.split_complex_arg = NULL;
 
   /* Initialize rs6000_cost with the appropriate target costs.  */
   if (optimize_size)
@@ -3078,20 +3261,29 @@ rs6000_override_options (const char *default_cpu)
 	gcc_unreachable ();
       }
 
-  if (!PARAM_SET_P (PARAM_SIMULTANEOUS_PREFETCHES))
-    set_param_value ("simultaneous-prefetches",
-		     rs6000_cost->simultaneous_prefetches);
-  if (!PARAM_SET_P (PARAM_L1_CACHE_SIZE))
-    set_param_value ("l1-cache-size", rs6000_cost->l1_cache_size);
-  if (!PARAM_SET_P (PARAM_L1_CACHE_LINE_SIZE))
-    set_param_value ("l1-cache-line-size", rs6000_cost->cache_line_size);
-  if (!PARAM_SET_P (PARAM_L2_CACHE_SIZE))
-    set_param_value ("l2-cache-size", rs6000_cost->l2_cache_size);
+  if (global_init_p)
+    {
+      maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES,
+			     rs6000_cost->simultaneous_prefetches,
+			     global_options.x_param_values,
+			     global_options_set.x_param_values);
+      maybe_set_param_value (PARAM_L1_CACHE_SIZE, rs6000_cost->l1_cache_size,
+			     global_options.x_param_values,
+			     global_options_set.x_param_values);
+      maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE,
+			     rs6000_cost->cache_line_size,
+			     global_options.x_param_values,
+			     global_options_set.x_param_values);
+      maybe_set_param_value (PARAM_L2_CACHE_SIZE, rs6000_cost->l2_cache_size,
+			     global_options.x_param_values,
+			     global_options_set.x_param_values);
 
-  /* If using typedef char *va_list, signal that __builtin_va_start (&ap, 0)
-     can be optimized to ap = __builtin_next_arg (0).  */
-  if (DEFAULT_ABI != ABI_V4)
-    targetm.expand_builtin_va_start = NULL;
+      /* If using typedef char *va_list, signal that
+	 __builtin_va_start (&ap, 0) can be optimized to
+	 ap = __builtin_next_arg (0).  */
+      if (DEFAULT_ABI != ABI_V4)
+	targetm.expand_builtin_va_start = NULL;
+    }
 
   /* Set up single/double float flags.  
      If TARGET_HARD_FLOAT is set, but neither single or double is set, 
@@ -3109,6 +3301,16 @@ rs6000_override_options (const char *default_cpu)
     if (TARGET_E500_DOUBLE)
       rs6000_single_float = rs6000_double_float = 1;
   }
+
+  if (main_target_opt)
+    {
+      if (main_target_opt->x_rs6000_single_float != rs6000_single_float)
+	error ("target attribute or pragma changes single precision floating "
+	       "point");
+      if (main_target_opt->x_rs6000_double_float != rs6000_double_float)
+	error ("target attribute or pragma changes double precision floating "
+	       "point");
+    }
 
   /* If not explicitly specified via option, decide whether to generate indexed
      load/store instructions.  */
@@ -3150,9 +3352,10 @@ rs6000_override_options (const char *default_cpu)
 
 	      if (i == ARRAY_SIZE (recip_options))
 		{
-		  error ("Unknown option for -mrecip=%s", q);
+		  error ("unknown option for -mrecip=%s", q);
 		  invert = false;
 		  mask = 0;
+		  ret = false;
 		}
 	    }
 
@@ -3163,9 +3366,26 @@ rs6000_override_options (const char *default_cpu)
 	}
     }
 
-  rs6000_init_hard_regno_mode_ok ();
+  rs6000_init_hard_regno_mode_ok (global_init_p);
+
+  /* Save the initial options in case the user does function specific options */
+  if (global_init_p)
+    target_option_default_node = target_option_current_node
+      = build_target_option_node ();
+
+  return ret;
 }
 
+/* Implement TARGET_OPTION_OVERRIDE.  On the RS/6000 this is used to
+   define the target cpu type.  */
+
+static void
+rs6000_option_override (void)
+{
+  (void) rs6000_option_override_internal (true);
+}
+
+
 /* Implement targetm.vectorize.builtin_mask_for_load.  */
 static tree
 rs6000_builtin_mask_for_load (void)
@@ -3174,6 +3394,38 @@ rs6000_builtin_mask_for_load (void)
     return altivec_builtin_mask_for_load;
   else
     return 0;
+}
+
+/* Implement LOOP_ALIGN. */
+int
+rs6000_loop_align (rtx label)
+{
+  basic_block bb;
+  int ninsns;
+
+  /* Don't override loop alignment if -falign-loops was specified. */
+  if (!can_override_loop_align)
+    return align_loops_log;
+
+  bb = BLOCK_FOR_INSN (label);
+  ninsns = num_loop_insns(bb->loop_father);
+
+  /* Align small loops to 32 bytes to fit in an icache sector, otherwise return default. */
+  if (ninsns > 4 && ninsns <= 8
+      && (rs6000_cpu == PROCESSOR_POWER4
+	  || rs6000_cpu == PROCESSOR_POWER5
+	  || rs6000_cpu == PROCESSOR_POWER6
+	  || rs6000_cpu == PROCESSOR_POWER7))
+    return 5;
+  else
+    return align_loops_log;
+}
+
+/* Implement TARGET_LOOP_ALIGN_MAX_SKIP. */
+static int
+rs6000_loop_align_max_skip (rtx label)
+{
+  return (1 << rs6000_loop_align (label)) - 1;
 }
 
 /* Implement targetm.vectorize.builtin_conversion.
@@ -3327,18 +3579,24 @@ rs6000_builtin_support_vector_misalignment (enum machine_mode mode,
   if (TARGET_VSX)
     {
       /* Return if movmisalign pattern is not supported for this mode.  */
-      if (optab_handler (movmisalign_optab, mode)->insn_code ==
-          CODE_FOR_nothing)
+      if (optab_handler (movmisalign_optab, mode) == CODE_FOR_nothing)
         return false;
 
       if (misalignment == -1)
 	{
-	  /* misalignment factor is unknown at compile time but we know
+	  /* Misalignment factor is unknown at compile time but we know
 	     it's word aligned.  */
 	  if (rs6000_vector_alignment_reachable (type, is_packed))
-	    return true;
+            {
+              int element_size = TREE_INT_CST_LOW (TYPE_SIZE (type));
+
+              if (element_size == 64 || element_size == 32)
+               return true;
+            }
+
 	  return false;
 	}
+
       /* VSX supports word-aligned vector.  */
       if (misalignment % 4 == 0)
 	return true;
@@ -3404,6 +3662,148 @@ rs6000_builtin_vec_perm (tree type, tree *mask_element_type)
   return d;
 }
 
+
+/* Implement targetm.vectorize.builtin_vectorization_cost.  */
+static int
+rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
+                                   tree vectype, int misalign)
+{
+  unsigned elements;
+
+  switch (type_of_cost)
+    {
+      case scalar_stmt:
+      case scalar_load:
+      case scalar_store:
+      case vector_stmt:
+      case vector_load:
+      case vector_store:
+      case vec_to_scalar:
+      case scalar_to_vec:
+      case cond_branch_not_taken:
+      case vec_perm:
+        return 1;
+
+      case cond_branch_taken:
+        return 3;
+
+      case unaligned_load:
+        if (TARGET_VSX && TARGET_ALLOW_MOVMISALIGN)
+          {
+            elements = TYPE_VECTOR_SUBPARTS (vectype);
+            if (elements == 2)
+              /* Double word aligned.  */
+              return 2;
+
+            if (elements == 4)
+              {
+                switch (misalign)
+                  {
+                    case 8:
+                      /* Double word aligned.  */
+                      return 2;
+
+                    case -1:
+                      /* Unknown misalignment.  */
+                    case 4:
+                    case 12:
+                      /* Word aligned.  */
+                      return 22;
+
+                    default:
+                      gcc_unreachable ();
+                  }
+              }
+          }
+
+        if (TARGET_ALTIVEC)
+          /* Misaligned loads are not supported.  */
+          gcc_unreachable ();
+
+        return 2;
+
+      case unaligned_store:
+        if (TARGET_VSX && TARGET_ALLOW_MOVMISALIGN)
+          {
+            elements = TYPE_VECTOR_SUBPARTS (vectype);
+            if (elements == 2)
+              /* Double word aligned.  */
+              return 2;
+
+            if (elements == 4)
+              {
+                switch (misalign)
+                  {
+                    case 8:
+                      /* Double word aligned.  */
+                      return 2;
+
+                    case -1:
+                      /* Unknown misalignment.  */
+                    case 4:
+                    case 12:
+                      /* Word aligned.  */
+                      return 23;
+
+                    default:
+                      gcc_unreachable ();
+                  }
+              }
+          }
+
+        if (TARGET_ALTIVEC)
+          /* Misaligned stores are not supported.  */
+          gcc_unreachable ();
+
+        return 2;
+
+      default:
+        gcc_unreachable ();
+    }
+}
+
+/* Implement targetm.vectorize.preferred_simd_mode.  */
+
+static enum machine_mode
+rs6000_preferred_simd_mode (enum machine_mode mode)
+{
+  if (TARGET_VSX)
+    switch (mode)
+      {
+      case DFmode:
+	return V2DFmode;
+      default:;
+      }
+  if (TARGET_ALTIVEC || TARGET_VSX)
+    switch (mode)
+      {
+      case SFmode:
+	return V4SFmode;
+      case DImode:
+	return V2DImode;
+      case SImode:
+	return V4SImode;
+      case HImode:
+	return V8HImode;
+      case QImode:
+	return V16QImode;
+      default:;
+      }
+  if (TARGET_SPE)
+    switch (mode)
+      {
+      case SFmode:
+	return V2SFmode;
+      case SImode:
+	return V2SImode;
+      default:;
+      }
+  if (TARGET_PAIRED_FLOAT
+      && mode == SFmode)
+    return V2SFmode;
+  return word_mode;
+}
+
 /* Handle generic options of the form -mfoo=yes/no.
    NAME is the option name.
    VALUE is the option value.
@@ -3422,39 +3822,28 @@ rs6000_parse_yes_no_option (const char *name, const char *value, int *flag)
     error ("unknown -m%s= option specified: '%s'", name, value);
 }
 
-/* Validate and record the size specified with the -mtls-size option.  */
+/* Implement TARGET_OPTION_INIT_STRUCT.  */
 
 static void
-rs6000_parse_tls_size_option (void)
-{
-  if (rs6000_tls_size_string == 0)
-    return;
-  else if (strcmp (rs6000_tls_size_string, "16") == 0)
-    rs6000_tls_size = 16;
-  else if (strcmp (rs6000_tls_size_string, "32") == 0)
-    rs6000_tls_size = 32;
-  else if (strcmp (rs6000_tls_size_string, "64") == 0)
-    rs6000_tls_size = 64;
-  else
-    error ("bad value %qs for -mtls-size switch", rs6000_tls_size_string);
-}
-
-void
-optimization_options (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
+rs6000_option_init_struct (struct gcc_options *opts)
 {
   if (DEFAULT_ABI == ABI_DARWIN)
     /* The Darwin libraries never set errno, so we might as well
        avoid calling them when that's the only reason we would.  */
-    flag_errno_math = 0;
+    opts->x_flag_errno_math = 0;
 
+  /* Enable section anchors by default.  */
+  if (!TARGET_MACHO)
+    opts->x_flag_section_anchors = 1;
+}
+
+/* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
+
+static void
+rs6000_option_default_params (void)
+{
   /* Double growth factor to counter reduced min jump length.  */
-  set_param_value ("max-grow-copy-bb-insns", 16);
-
-  /* Enable section anchors by default.
-     Skip section anchors for Objective C and Objective C++
-     until front-ends fixed.  */
-  if (!TARGET_MACHO && lang_hooks.name[4] != 'O')
-    flag_section_anchors = 2;
+  set_default_param_value (PARAM_MAX_GROW_COPY_BB_INSNS, 16);
 }
 
 static enum fpu_type_t
@@ -3467,6 +3856,145 @@ rs6000_parse_fpu_option (const char *option)
   if (!strcmp("dp_full", option)) return FPU_DF_FULL;
   error("unknown value %s for -mfpu", option);
   return FPU_NONE;
+}
+
+
+/* Handler for the Mathematical Acceleration Subsystem (mass) interface to a
+   library with vectorized intrinsics.  */
+
+static tree
+rs6000_builtin_vectorized_libmass (tree fndecl, tree type_out, tree type_in)
+{
+  char name[32];
+  const char *suffix = NULL;
+  tree fntype, new_fndecl, bdecl = NULL_TREE;
+  int n_args = 1;
+  const char *bname;
+  enum machine_mode el_mode, in_mode;
+  int n, in_n;
+
+  /* Libmass is suitable for unsafe math only as it does not correctly support
+     parts of IEEE with the required precision such as denormals.  Only support
+     it if we have VSX to use the simd d2 or f4 functions.
+     XXX: Add variable length support.  */
+  if (!flag_unsafe_math_optimizations || !TARGET_VSX)
+    return NULL_TREE;
+
+  el_mode = TYPE_MODE (TREE_TYPE (type_out));
+  n = TYPE_VECTOR_SUBPARTS (type_out);
+  in_mode = TYPE_MODE (TREE_TYPE (type_in));
+  in_n = TYPE_VECTOR_SUBPARTS (type_in);
+  if (el_mode != in_mode
+      || n != in_n)
+    return NULL_TREE;
+
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+    {
+      enum built_in_function fn = DECL_FUNCTION_CODE (fndecl);
+      switch (fn)
+	{
+	case BUILT_IN_ATAN2:
+	case BUILT_IN_HYPOT:
+	case BUILT_IN_POW:
+	  n_args = 2;
+	  /* fall through */
+
+	case BUILT_IN_ACOS:
+	case BUILT_IN_ACOSH:
+	case BUILT_IN_ASIN:
+	case BUILT_IN_ASINH:
+	case BUILT_IN_ATAN:
+	case BUILT_IN_ATANH:
+	case BUILT_IN_CBRT:
+	case BUILT_IN_COS:
+	case BUILT_IN_COSH:
+	case BUILT_IN_ERF:
+	case BUILT_IN_ERFC:
+	case BUILT_IN_EXP2:
+	case BUILT_IN_EXP:
+	case BUILT_IN_EXPM1:
+	case BUILT_IN_LGAMMA:
+	case BUILT_IN_LOG10:
+	case BUILT_IN_LOG1P:
+	case BUILT_IN_LOG2:
+	case BUILT_IN_LOG:
+	case BUILT_IN_SIN:
+	case BUILT_IN_SINH:
+	case BUILT_IN_SQRT:
+	case BUILT_IN_TAN:
+	case BUILT_IN_TANH:
+	  bdecl = implicit_built_in_decls[fn];
+	  suffix = "d2";				/* pow -> powd2 */
+	  if (el_mode != DFmode
+	      || n != 2)
+	    return NULL_TREE;
+	  break;
+
+	case BUILT_IN_ATAN2F:
+	case BUILT_IN_HYPOTF:
+	case BUILT_IN_POWF:
+	  n_args = 2;
+	  /* fall through */
+
+	case BUILT_IN_ACOSF:
+	case BUILT_IN_ACOSHF:
+	case BUILT_IN_ASINF:
+	case BUILT_IN_ASINHF:
+	case BUILT_IN_ATANF:
+	case BUILT_IN_ATANHF:
+	case BUILT_IN_CBRTF:
+	case BUILT_IN_COSF:
+	case BUILT_IN_COSHF:
+	case BUILT_IN_ERFF:
+	case BUILT_IN_ERFCF:
+	case BUILT_IN_EXP2F:
+	case BUILT_IN_EXPF:
+	case BUILT_IN_EXPM1F:
+	case BUILT_IN_LGAMMAF:
+	case BUILT_IN_LOG10F:
+	case BUILT_IN_LOG1PF:
+	case BUILT_IN_LOG2F:
+	case BUILT_IN_LOGF:
+	case BUILT_IN_SINF:
+	case BUILT_IN_SINHF:
+	case BUILT_IN_SQRTF:
+	case BUILT_IN_TANF:
+	case BUILT_IN_TANHF:
+	  bdecl = implicit_built_in_decls[fn];
+	  suffix = "4";					/* powf -> powf4 */
+	  if (el_mode != SFmode
+	      || n != 4)
+	    return NULL_TREE;
+	  break;
+
+	default:
+	  return NULL_TREE;
+	}
+    }
+  else
+    return NULL_TREE;
+
+  gcc_assert (suffix != NULL);
+  bname = IDENTIFIER_POINTER (DECL_NAME (bdecl));
+  strcpy (name, bname + sizeof ("__builtin_") - 1);
+  strcat (name, suffix);
+
+  if (n_args == 1)
+    fntype = build_function_type_list (type_out, type_in, NULL);
+  else if (n_args == 2)
+    fntype = build_function_type_list (type_out, type_in, type_in, NULL);
+  else
+    gcc_unreachable ();
+
+  /* Build a function declaration for the vectorized function.  */
+  new_fndecl = build_decl (BUILTINS_LOCATION,
+			   FUNCTION_DECL, get_identifier (name), fntype);
+  TREE_PUBLIC (new_fndecl) = 1;
+  DECL_EXTERNAL (new_fndecl) = 1;
+  DECL_IS_NOVOPS (new_fndecl) = 1;
+  TREE_READONLY (new_fndecl) = 1;
+
+  return new_fndecl;
 }
 
 /* Returns a function decl for a vectorized version of the builtin function
@@ -3552,6 +4080,22 @@ rs6000_builtin_vectorized_function (tree fndecl, tree type_out,
 	  if (VECTOR_UNIT_ALTIVEC_P (V4SFmode))
 	    return rs6000_builtin_decls[ALTIVEC_BUILTIN_VRFIM];
 	  break;
+	case BUILT_IN_FMA:
+	  if (VECTOR_UNIT_VSX_P (V2DFmode)
+	      && out_mode == DFmode && out_n == 2
+	      && in_mode == DFmode && in_n == 2)
+	    return rs6000_builtin_decls[VSX_BUILTIN_XVMADDDP];
+	  break;
+	case BUILT_IN_FMAF:
+	  if (VECTOR_UNIT_VSX_P (V4SFmode)
+	      && out_mode == SFmode && out_n == 4
+	      && in_mode == SFmode && in_n == 4)
+	    return rs6000_builtin_decls[VSX_BUILTIN_XVMADDSP];
+	  else if (VECTOR_UNIT_ALTIVEC_P (V4SFmode)
+	      && out_mode == SFmode && out_n == 4
+	      && in_mode == SFmode && in_n == 4)
+	    return rs6000_builtin_decls[ALTIVEC_BUILTIN_VMADDFP];
+	  break;
 	case BUILT_IN_TRUNC:
 	  if (VECTOR_UNIT_VSX_P (V2DFmode)
 	      && out_mode == DFmode && out_n == 2
@@ -3635,6 +4179,10 @@ rs6000_builtin_vectorized_function (tree fndecl, tree type_out,
 	}
     }
 
+  /* Generate calls to libmass if appropriate.  */
+  if (rs6000_veclib_handler)
+    return rs6000_veclib_handler (fndecl, type_out, type_in);
+
   return NULL_TREE;
 }
 
@@ -3646,6 +4194,7 @@ rs6000_handle_option (size_t code, const char *arg, int value)
 {
   enum fpu_type_t fpu_type = FPU_NONE;
   int isel;
+  char *p, *q;
 
   switch (code)
     {
@@ -3685,9 +4234,11 @@ rs6000_handle_option (size_t code, const char *arg, int value)
 #if defined (HAVE_LD_LARGE_TOC) && defined (TARGET_USES_LINUX64_OPT)
     case OPT_mcmodel_:
       if (strcmp (arg, "small") == 0)
-	cmodel = CMODEL_SMALL;
+	rs6000_current_cmodel = CMODEL_SMALL;
+      else if (strcmp (arg, "medium") == 0)
+	rs6000_current_cmodel = CMODEL_MEDIUM;
       else if (strcmp (arg, "large") == 0)
-	cmodel = CMODEL_LARGE;
+	rs6000_current_cmodel = CMODEL_LARGE;
       else
 	{
 	  error ("invalid option for -mcmodel: '%s'", arg);
@@ -3788,7 +4339,45 @@ rs6000_handle_option (size_t code, const char *arg, int value)
       break;
 
     case OPT_mdebug_:
-      rs6000_debug_name = arg;
+      p = ASTRDUP (arg);
+      rs6000_debug = 0;
+
+      while ((q = strtok (p, ",")) != NULL)
+	{
+	  unsigned mask = 0;
+	  bool invert;
+
+	  p = NULL;
+	  if (*q == '!')
+	    {
+	      invert = true;
+	      q++;
+	    }
+	  else
+	    invert = false;
+
+	  if (! strcmp (q, "all"))
+	    mask = MASK_DEBUG_ALL;
+	  else if (! strcmp (q, "stack"))
+	    mask = MASK_DEBUG_STACK;
+	  else if (! strcmp (q, "arg"))
+	    mask = MASK_DEBUG_ARG;
+	  else if (! strcmp (q, "reg"))
+	    mask = MASK_DEBUG_REG;
+	  else if (! strcmp (q, "addr"))
+	    mask = MASK_DEBUG_ADDR;
+	  else if (! strcmp (q, "cost"))
+	    mask = MASK_DEBUG_COST;
+	  else if (! strcmp (q, "target"))
+	    mask = MASK_DEBUG_TARGET;
+	  else
+	    error ("unknown -mdebug-%s switch", q);
+
+	  if (invert)
+	    rs6000_debug &= ~mask;
+	  else	
+	    rs6000_debug |= mask;
+	}
       break;
 
 #ifdef TARGET_USES_SYSV4_OPT
@@ -3801,7 +4390,14 @@ rs6000_handle_option (size_t code, const char *arg, int value)
       break;
 
     case OPT_mtls_size_:
-      rs6000_tls_size_string = arg;
+      if (strcmp (arg, "16") == 0)
+	rs6000_tls_size = 16;
+      else if (strcmp (arg, "32") == 0)
+	rs6000_tls_size = 32;
+      else if (strcmp (arg, "64") == 0)
+	rs6000_tls_size = 64;
+      else
+	error ("bad value %qs for -mtls-size switch", arg);
       break;
 
     case OPT_mrelocatable:
@@ -3861,25 +4457,25 @@ rs6000_handle_option (size_t code, const char *arg, int value)
       else if (! strcmp (arg, "d64"))
 	{
 	  rs6000_darwin64_abi = 1;
-	  warning (0, "Using darwin64 ABI");
+	  warning (0, "using darwin64 ABI");
 	}
       else if (! strcmp (arg, "d32"))
 	{
 	  rs6000_darwin64_abi = 0;
-	  warning (0, "Using old darwin ABI");
+	  warning (0, "using old darwin ABI");
 	}
 
       else if (! strcmp (arg, "ibmlongdouble"))
 	{
 	  rs6000_explicit_options.ieee = true;
 	  rs6000_ieeequad = 0;
-	  warning (0, "Using IBM extended precision long double");
+	  warning (0, "using IBM extended precision long double");
 	}
       else if (! strcmp (arg, "ieeelongdouble"))
 	{
 	  rs6000_explicit_options.ieee = true;
 	  rs6000_ieeequad = 1;
-	  warning (0, "Using IEEE extended precision long double");
+	  warning (0, "using IEEE extended precision long double");
 	}
 
       else
@@ -3891,14 +4487,28 @@ rs6000_handle_option (size_t code, const char *arg, int value)
 
     case OPT_mcpu_:
       rs6000_select[1].string = arg;
+      rs6000_cpu_index = rs6000_cpu_name_lookup (arg);
+      if (rs6000_cpu_index < 0)
+	error ("bad value (%s) for -mcpu", arg);
       break;
 
     case OPT_mtune_:
       rs6000_select[2].string = arg;
+      rs6000_tune_index = rs6000_cpu_name_lookup (arg);
+      if (rs6000_tune_index < 0)
+	error ("bad value (%s) for -mtune", arg);
       break;
 
     case OPT_mtraceback_:
-      rs6000_traceback_name = arg;
+      if (! strncmp (arg, "full", 4))
+	rs6000_traceback = traceback_full;
+      else if (! strncmp (arg, "part", 4))
+	rs6000_traceback = traceback_part;
+      else if (! strncmp (arg, "no", 2))
+	rs6000_traceback = traceback_none;
+      else
+	error ("unknown -mtraceback arg %qs; expecting %<full%>, "
+	       "%<partial%> or %<none%>", arg);
       break;
 
     case OPT_mfloat_gprs_:
@@ -3921,7 +4531,7 @@ rs6000_handle_option (size_t code, const char *arg, int value)
       rs6000_long_double_type_size = RS6000_DEFAULT_LONG_DOUBLE_SIZE;
       if (value != 64 && value != 128)
 	{
-	  error ("Unknown switch -mlong-double-%s", arg);
+	  error ("unknown switch -mlong-double-%s", arg);
 	  rs6000_long_double_type_size = RS6000_DEFAULT_LONG_DOUBLE_SIZE;
 	  return false;
 	}
@@ -4071,7 +4681,7 @@ rs6000_file_start (void)
 
       if (rs6000_sdata && g_switch_value)
 	{
-	  fprintf (file, "%s -G " HOST_WIDE_INT_PRINT_UNSIGNED, start,
+	  fprintf (file, "%s -G %d", start,
 		   g_switch_value);
 	  start = "";
 	}
@@ -4974,7 +5584,7 @@ rs6000_special_round_type_align (tree type, unsigned int computed,
 
   /* Skip all non field decls */
   while (field != NULL && TREE_CODE (field) != FIELD_DECL)
-    field = TREE_CHAIN (field);
+    field = DECL_CHAIN (field);
 
   if (field != NULL && field != type)
     {
@@ -5006,7 +5616,7 @@ darwin_rs6000_special_round_type_align (tree type, unsigned int computed,
     tree field = TYPE_FIELDS (type);
     /* Skip all non field decls */
     while (field != NULL && TREE_CODE (field) != FIELD_DECL)
-      field = TREE_CHAIN (field);
+      field = DECL_CHAIN (field);
     if (! field)
       break;
     /* A packed field does not contribute any extra alignment.  */
@@ -5062,7 +5672,7 @@ small_data_operand (rtx op ATTRIBUTE_UNUSED,
       /* We have to be careful here, because it is the referenced address
 	 that must be 32k from _SDA_BASE_, not just the symbol.  */
       summand = INTVAL (XEXP (sum, 1));
-      if (summand < 0 || (unsigned HOST_WIDE_INT) summand > g_switch_value)
+      if (summand < 0 || summand > g_switch_value)
 	return 0;
 
       sym_ref = XEXP (sum, 0);
@@ -5135,7 +5745,7 @@ virtual_stack_registers_memory_p (rtx op)
     return false;
 
   return (regnum >= FIRST_VIRTUAL_REGISTER
-	  && regnum <= LAST_VIRTUAL_REGISTER);
+	  && regnum <= LAST_VIRTUAL_POINTER_REGISTER);
 }
 
 static bool
@@ -5934,6 +6544,17 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
       return x;
     }
 
+  /* Likewise for (lo_sum (high ...) ...) output we have generated.  */
+  if (GET_CODE (x) == LO_SUM
+      && GET_CODE (XEXP (x, 0)) == HIGH)
+    {
+      push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
+		   BASE_REG_CLASS, Pmode, VOIDmode, 0, 0,
+		   opnum, (enum reload_type)type);
+      *win = 1;
+      return x;
+    }
+
 #if TARGET_MACHO
   if (DEFAULT_ABI == ABI_DARWIN && flag_pic
       && GET_CODE (x) == LO_SUM
@@ -6372,10 +6993,13 @@ rs6000_offsettable_memref_p (rtx op)
 }
 
 /* Change register usage conditional on target flags.  */
-void
+static void
 rs6000_conditional_register_usage (void)
 {
   int i;
+
+  if (TARGET_DEBUG_TARGET)
+    fprintf (stderr, "rs6000_conditional_register_usage called\n");
 
   /* Set MQ register fixed (already call_used) if not POWER
      architecture (RIOS1, RIOS2, RSC, and PPC601) so that it will not
@@ -6665,6 +7289,40 @@ rs6000_eliminate_indexed_memrefs (rtx operands[2])
     operands[1]
       = replace_equiv_address (operands[1],
 			       copy_addr_to_reg (XEXP (operands[1], 0)));
+}
+
+/* Return true if memory accesses to DECL are known to never straddle
+   a 32k boundary.  */
+
+static bool
+offsettable_ok_by_alignment (tree decl)
+{
+  unsigned HOST_WIDE_INT dsize, dalign;
+
+  /* Presume any compiler generated symbol_ref is suitably aligned.  */
+  if (!decl)
+    return true;
+
+  if (TREE_CODE (decl) != VAR_DECL
+      && TREE_CODE (decl) != PARM_DECL
+      && TREE_CODE (decl) != RESULT_DECL
+      && TREE_CODE (decl) != FIELD_DECL)
+    return true;
+
+  if (!DECL_SIZE_UNIT (decl))
+    return false;
+
+  if (!host_integerp (DECL_SIZE_UNIT (decl), 1))
+    return false;
+
+  dsize = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+  if (dsize <= 1)
+    return true;
+  if (dsize > 32768)
+    return false;
+
+  dalign = DECL_ALIGN_UNIT (decl);
+  return dalign >= dsize;
 }
 
 /* Emit a move from SOURCE to DEST in mode MODE.  */
@@ -6980,11 +7638,16 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
       /* If this is a SYMBOL_REF that refers to a constant pool entry,
 	 and we have put it in the TOC, we just need to make a TOC-relative
 	 reference to it.  */
-      if (TARGET_TOC
-	  && GET_CODE (operands[1]) == SYMBOL_REF
-	  && constant_pool_expr_p (operands[1])
-	  && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (operands[1]),
-					      get_pool_mode (operands[1])))
+      if ((TARGET_TOC
+	   && GET_CODE (operands[1]) == SYMBOL_REF
+	   && constant_pool_expr_p (operands[1])
+	   && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (operands[1]),
+					       get_pool_mode (operands[1])))
+	  || (TARGET_CMODEL == CMODEL_MEDIUM
+	      && GET_CODE (operands[1]) == SYMBOL_REF
+	      && !CONSTANT_POOL_ADDRESS_P (operands[1])
+	      && SYMBOL_REF_LOCAL_P (operands[1])
+	      && offsettable_ok_by_alignment (SYMBOL_REF_DECL (operands[1]))))
 	{
 	  rtx reg = NULL_RTX;
 	  if (TARGET_CMODEL != CMODEL_SMALL)
@@ -7121,14 +7784,22 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
    function doing the returning, or @code{NULL} for libcalls.
 
    The AIX ABI for the RS/6000 specifies that all structures are
-   returned in memory.  The Darwin ABI does the same.  The SVR4 ABI
-   specifies that structures <= 8 bytes are returned in r3/r4, but a
-   draft put them in memory, and GCC used to implement the draft
+   returned in memory.  The Darwin ABI does the same.
+   
+   For the Darwin 64 Bit ABI, a function result can be returned in
+   registers or in memory, depending on the size of the return data
+   type.  If it is returned in registers, the value occupies the same
+   registers as it would if it were the first and only function
+   argument.  Otherwise, the function places its result in memory at
+   the location pointed to by GPR3.
+   
+   The SVR4 ABI specifies that structures <= 8 bytes are returned in r3/r4, 
+   but a draft put them in memory, and GCC used to implement the draft
    instead of the final standard.  Therefore, aix_struct_return
    controls this instead of DEFAULT_ABI; V.4 targets needing backward
    compatibility can change DRAFT_V4_STRUCT_RET to override the
    default, and -m switches get the final word.  See
-   rs6000_override_options for more details.
+   rs6000_option_override_internal for more details.
 
    The PPC32 SVR4 ABI uses IEEE double extended for long double, if 128-bit
    long double support is enabled.  These values are returned in memory.
@@ -7139,9 +7810,9 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
 static bool
 rs6000_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
-  /* In the darwin64 abi, try to use registers for larger structs
-     if possible.  */
-  if (rs6000_darwin64_abi
+  /* For the Darwin64 ABI, test if we can fit the return value in regs.  */
+  if (TARGET_MACHO
+      && rs6000_darwin64_abi
       && TREE_CODE (type) == RECORD_TYPE
       && int_size_in_bytes (type) > 0)
     {
@@ -7153,7 +7824,7 @@ rs6000_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
       valcum.vregno = ALTIVEC_ARG_MIN_REG;
       /* Do a trial code generation as if this were going to be passed
 	 as an argument; if any part goes in memory, we return NULL.  */
-      valret = rs6000_darwin64_record_arg (&valcum, type, 1, true);
+      valret = rs6000_darwin64_record_arg (&valcum, type, true, true);
       if (valret)
 	return false;
       /* Otherwise fall through to more conventional ABI rules.  */
@@ -7212,10 +7883,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
   cum->call_cookie = ((DEFAULT_ABI == ABI_V4 && libcall)
 		      ? CALL_LIBCALL : CALL_NORMAL);
   cum->sysv_gregno = GP_ARG_MIN_REG;
-  cum->stdarg = fntype
-    && (TYPE_ARG_TYPES (fntype) != 0
-	&& (TREE_VALUE (tree_last  (TYPE_ARG_TYPES (fntype)))
-	    != void_type_node));
+  cum->stdarg = stdarg_p (fntype);
 
   cum->nargs_prototype = 0;
   if (incoming || cum->prototype)
@@ -7339,8 +8007,8 @@ function_arg_padding (enum machine_mode mode, const_tree type)
    Quadword align Altivec vectors.
    Quadword align large synthetic vector types.   */
 
-int
-function_arg_boundary (enum machine_mode mode, tree type)
+static unsigned int
+rs6000_function_arg_boundary (enum machine_mode mode, const_tree type)
 {
   if (DEFAULT_ABI == ABI_V4
       && (GET_MODE_SIZE (mode) == 8
@@ -7357,7 +8025,9 @@ function_arg_boundary (enum machine_mode mode, tree type)
 	   || (type && TREE_CODE (type) == VECTOR_TYPE
 	       && int_size_in_bytes (type) >= 16))
     return 128;
-  else if (rs6000_darwin64_abi && mode == BLKmode
+  else if (TARGET_MACHO
+ 	   && rs6000_darwin64_abi
+ 	   && mode == BLKmode
 	   && type && TYPE_ALIGN (type) > 64)
     return 128;
   else
@@ -7368,12 +8038,13 @@ function_arg_boundary (enum machine_mode mode, tree type)
    the parameter area.  NWORDS of the parameter area are already used.  */
 
 static unsigned int
-rs6000_parm_start (enum machine_mode mode, tree type, unsigned int nwords)
+rs6000_parm_start (enum machine_mode mode, const_tree type,
+		   unsigned int nwords)
 {
   unsigned int align;
   unsigned int parm_offset;
 
-  align = function_arg_boundary (mode, type) / PARM_BOUNDARY - 1;
+  align = rs6000_function_arg_boundary (mode, type) / PARM_BOUNDARY - 1;
   parm_offset = DEFAULT_ABI == ABI_V4 ? 2 : 6;
   return nwords + (-(parm_offset + nwords) & align);
 }
@@ -7381,7 +8052,7 @@ rs6000_parm_start (enum machine_mode mode, tree type, unsigned int nwords)
 /* Compute the size (in words) of a function argument.  */
 
 static unsigned long
-rs6000_arg_size (enum machine_mode mode, tree type)
+rs6000_arg_size (enum machine_mode mode, const_tree type)
 {
   unsigned long size;
 
@@ -7400,17 +8071,31 @@ rs6000_arg_size (enum machine_mode mode, tree type)
 
 static void
 rs6000_darwin64_record_arg_advance_flush (CUMULATIVE_ARGS *cum,
-					  HOST_WIDE_INT bitpos)
+					  HOST_WIDE_INT bitpos, int final)
 {
   unsigned int startbit, endbit;
   int intregs, intoffset;
   enum machine_mode mode;
+
+  /* Handle the situations where a float is taking up the first half
+     of the GPR, and the other half is empty (typically due to
+     alignment restrictions). We can detect this by a 8-byte-aligned
+     int field, or by seeing that this is the final flush for this
+     argument. Count the word and continue on.  */
+  if (cum->floats_in_gpr == 1
+      && (cum->intoffset % 64 == 0
+	  || (cum->intoffset == -1 && final)))
+    {
+      cum->words++;
+      cum->floats_in_gpr = 0;
+    }
 
   if (cum->intoffset == -1)
     return;
 
   intoffset = cum->intoffset;
   cum->intoffset = -1;
+  cum->floats_in_gpr = 0;
 
   if (intoffset % BITS_PER_WORD != 0)
     {
@@ -7430,6 +8115,12 @@ rs6000_darwin64_record_arg_advance_flush (CUMULATIVE_ARGS *cum,
   endbit = (bitpos + BITS_PER_WORD - 1) & -BITS_PER_WORD;
   intregs = (endbit - startbit) / BITS_PER_WORD;
   cum->words += intregs;
+  /* words should be unsigned. */
+  if ((unsigned)cum->words < (endbit/BITS_PER_WORD))
+    {
+      int pad = (endbit/BITS_PER_WORD) - cum->words;
+      cum->words += pad;
+    }
 }
 
 /* The darwin64 ABI calls for us to recurse down through structs,
@@ -7439,12 +8130,12 @@ rs6000_darwin64_record_arg_advance_flush (CUMULATIVE_ARGS *cum,
 
 static void
 rs6000_darwin64_record_arg_advance_recurse (CUMULATIVE_ARGS *cum,
-					    tree type,
+					    const_tree type,
 					    HOST_WIDE_INT startbitpos)
 {
   tree f;
 
-  for (f = TYPE_FIELDS (type); f ; f = TREE_CHAIN (f))
+  for (f = TYPE_FIELDS (type); f ; f = DECL_CHAIN (f))
     if (TREE_CODE (f) == FIELD_DECL)
       {
 	HOST_WIDE_INT bitpos = startbitpos;
@@ -7464,19 +8155,67 @@ rs6000_darwin64_record_arg_advance_recurse (CUMULATIVE_ARGS *cum,
 	  rs6000_darwin64_record_arg_advance_recurse (cum, ftype, bitpos);
 	else if (USE_FP_FOR_ARG_P (cum, mode, ftype))
 	  {
-	    rs6000_darwin64_record_arg_advance_flush (cum, bitpos);
+	    rs6000_darwin64_record_arg_advance_flush (cum, bitpos, 0);
 	    cum->fregno += (GET_MODE_SIZE (mode) + 7) >> 3;
-	    cum->words += (GET_MODE_SIZE (mode) + 7) >> 3;
+	    /* Single-precision floats present a special problem for
+	       us, because they are smaller than an 8-byte GPR, and so
+	       the structure-packing rules combined with the standard
+	       varargs behavior mean that we want to pack float/float
+	       and float/int combinations into a single register's
+	       space. This is complicated by the arg advance flushing,
+	       which works on arbitrarily large groups of int-type
+	       fields.  */
+	    if (mode == SFmode)
+	      {
+		if (cum->floats_in_gpr == 1)
+		  {
+		    /* Two floats in a word; count the word and reset
+		       the float count.  */
+		    cum->words++;
+		    cum->floats_in_gpr = 0;
+		  }
+		else if (bitpos % 64 == 0)
+		  {
+		    /* A float at the beginning of an 8-byte word;
+		       count it and put off adjusting cum->words until
+		       we see if a arg advance flush is going to do it
+		       for us.  */
+		    cum->floats_in_gpr++;
+		  }
+		else
+		  {
+		    /* The float is at the end of a word, preceded
+		       by integer fields, so the arg advance flush
+		       just above has already set cum->words and
+		       everything is taken care of.  */
+		  }
+	      }
+	    else
+	      cum->words += (GET_MODE_SIZE (mode) + 7) >> 3;
 	  }
 	else if (USE_ALTIVEC_FOR_ARG_P (cum, mode, type, 1))
 	  {
-	    rs6000_darwin64_record_arg_advance_flush (cum, bitpos);
+	    rs6000_darwin64_record_arg_advance_flush (cum, bitpos, 0);
 	    cum->vregno++;
 	    cum->words += 2;
 	  }
 	else if (cum->intoffset == -1)
 	  cum->intoffset = bitpos;
       }
+}
+
+/* Check for an item that needs to be considered specially under the darwin 64
+   bit ABI.  These are record types where the mode is BLK or the structure is
+   8 bytes in size.  */
+static int
+rs6000_darwin64_struct_check_p (enum machine_mode mode, const_tree type)
+{
+  return rs6000_darwin64_abi
+	 && ((mode == BLKmode 
+	      && TREE_CODE (type) == RECORD_TYPE 
+	      && int_size_in_bytes (type) > 0)
+	  || (type && TREE_CODE (type) == RECORD_TYPE 
+	      && int_size_in_bytes (type) == 8)) ? 1 : 0;
 }
 
 /* Update the data in CUM to advance over an argument
@@ -7487,11 +8226,10 @@ rs6000_darwin64_record_arg_advance_recurse (CUMULATIVE_ARGS *cum,
    with MODE and TYPE set to that of the pointer to the arg, not the arg
    itself.  */
 
-void
-function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-		      tree type, int named, int depth)
+static void
+rs6000_function_arg_advance_1 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			       const_tree type, bool named, int depth)
 {
-  int size;
 
   /* Only tick off an argument if we're not recursing.  */
   if (depth == 0)
@@ -7555,11 +8293,9 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	   && cum->sysv_gregno <= GP_ARG_MAX_REG)
     cum->sysv_gregno++;
 
-  else if (rs6000_darwin64_abi
-	   && mode == BLKmode
-    	   && TREE_CODE (type) == RECORD_TYPE
-	   && (size = int_size_in_bytes (type)) > 0)
+  else if (TARGET_MACHO && rs6000_darwin64_struct_check_p (mode, type))
     {
+      int size = int_size_in_bytes (type);
       /* Variable sized types have size == -1 and are
 	 treated as if consisting entirely of ints.
 	 Pad to 16 byte boundary if needed.  */
@@ -7576,10 +8312,20 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	     { int; double; int; } [powerpc alignment].  We have to
 	     grovel through the fields for these too.  */
 	  cum->intoffset = 0;
+	  cum->floats_in_gpr = 0;
 	  rs6000_darwin64_record_arg_advance_recurse (cum, type, 0);
 	  rs6000_darwin64_record_arg_advance_flush (cum,
-						    size * BITS_PER_UNIT);
+						    size * BITS_PER_UNIT, 1);
 	}
+	  if (TARGET_DEBUG_ARG)
+	    {
+	      fprintf (stderr, "function_adv: words = %2d, align=%d, size=%d",
+		       cum->words, TYPE_ALIGN (type), size);
+	      fprintf (stderr, 
+	           "nargs = %4d, proto = %d, mode = %4s (darwin64 abi)\n",
+		       cum->nargs_prototype, cum->prototype,
+		       GET_MODE_NAME (mode));
+	    }
     }
   else if (DEFAULT_ABI == ABI_V4)
     {
@@ -7675,6 +8421,13 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     }
 }
 
+static void
+rs6000_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			     const_tree type, bool named)
+{
+  rs6000_function_arg_advance_1 (cum, mode, type, named, 0);
+}
+
 static rtx
 spe_build_register_parallel (enum machine_mode mode, int gregno)
 {
@@ -7713,8 +8466,8 @@ spe_build_register_parallel (enum machine_mode mode, int gregno)
 
 /* Determine where to put a SIMD argument on the SPE.  */
 static rtx
-rs6000_spe_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-			 tree type)
+rs6000_spe_function_arg (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			 const_tree type)
 {
   int gregno = cum->sysv_gregno;
 
@@ -7844,7 +8597,7 @@ rs6000_darwin64_record_arg_recurse (CUMULATIVE_ARGS *cum, const_tree type,
 {
   tree f;
 
-  for (f = TYPE_FIELDS (type); f ; f = TREE_CHAIN (f))
+  for (f = TYPE_FIELDS (type); f ; f = DECL_CHAIN (f))
     if (TREE_CODE (f) == FIELD_DECL)
       {
 	HOST_WIDE_INT bitpos = startbitpos;
@@ -7909,7 +8662,7 @@ rs6000_darwin64_record_arg_recurse (CUMULATIVE_ARGS *cum, const_tree type,
 
 static rtx
 rs6000_darwin64_record_arg (CUMULATIVE_ARGS *orig_cum, const_tree type,
-			    int named, bool retval)
+			    bool named, bool retval)
 {
   rtx rvec[FIRST_PSEUDO_REGISTER];
   int k = 1, kbase = 1;
@@ -7954,7 +8707,8 @@ rs6000_darwin64_record_arg (CUMULATIVE_ARGS *orig_cum, const_tree type,
 /* Determine where to place an argument in 64-bit mode with 32-bit ABI.  */
 
 static rtx
-rs6000_mixed_function_arg (enum machine_mode mode, tree type, int align_words)
+rs6000_mixed_function_arg (enum machine_mode mode, const_tree type,
+			   int align_words)
 {
   int n_units;
   int i, k;
@@ -8025,9 +8779,9 @@ rs6000_mixed_function_arg (enum machine_mode mode, tree type, int align_words)
    with MODE and TYPE set to that of the pointer to the arg, not the arg
    itself.  */
 
-rtx
-function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-	      tree type, int named)
+static rtx
+rs6000_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		     const_tree type, bool named)
 {
   enum rs6000_abi abi = DEFAULT_ABI;
 
@@ -8056,8 +8810,7 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
       return GEN_INT (cum->call_cookie);
     }
 
-  if (rs6000_darwin64_abi && mode == BLKmode
-      && TREE_CODE (type) == RECORD_TYPE)
+  if (TARGET_MACHO && rs6000_darwin64_struct_check_p (mode, type))
     {
       rtx rslt = rs6000_darwin64_record_arg (cum, type, named, false);
       if (rslt != NULL_RTX)
@@ -8314,9 +9067,7 @@ rs6000_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     return 0;
 
   /* In this complicated case we just disable the partial_nregs code.  */
-  if (rs6000_darwin64_abi && mode == BLKmode
-      && TREE_CODE (type) == RECORD_TYPE
-      && int_size_in_bytes (type) > 0)
+  if (TARGET_MACHO && rs6000_darwin64_struct_check_p (mode, type))
     return 0;
 
   align_words = rs6000_parm_start (mode, type, cum->words);
@@ -8477,7 +9228,7 @@ setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
   /* Skip the last named argument.  */
   next_cum = *cum;
-  function_arg_advance (&next_cum, mode, type, 1, 0);
+  rs6000_function_arg_advance_1 (&next_cum, mode, type, true, 0);
 
   if (DEFAULT_ABI == ABI_V4)
     {
@@ -8668,13 +9419,13 @@ rs6000_build_builtin_va_list (void)
   DECL_FIELD_CONTEXT (f_ovf) = record;
   DECL_FIELD_CONTEXT (f_sav) = record;
 
-  TREE_CHAIN (record) = type_decl;
+  TYPE_STUB_DECL (record) = type_decl;
   TYPE_NAME (record) = type_decl;
   TYPE_FIELDS (record) = f_gpr;
-  TREE_CHAIN (f_gpr) = f_fpr;
-  TREE_CHAIN (f_fpr) = f_res;
-  TREE_CHAIN (f_res) = f_ovf;
-  TREE_CHAIN (f_ovf) = f_sav;
+  DECL_CHAIN (f_gpr) = f_fpr;
+  DECL_CHAIN (f_fpr) = f_res;
+  DECL_CHAIN (f_res) = f_ovf;
+  DECL_CHAIN (f_ovf) = f_sav;
 
   layout_type (record);
 
@@ -8699,12 +9450,12 @@ rs6000_va_start (tree valist, rtx nextarg)
     }
 
   f_gpr = TYPE_FIELDS (TREE_TYPE (va_list_type_node));
-  f_fpr = TREE_CHAIN (f_gpr);
-  f_res = TREE_CHAIN (f_fpr);
-  f_ovf = TREE_CHAIN (f_res);
-  f_sav = TREE_CHAIN (f_ovf);
+  f_fpr = DECL_CHAIN (f_gpr);
+  f_res = DECL_CHAIN (f_fpr);
+  f_ovf = DECL_CHAIN (f_res);
+  f_sav = DECL_CHAIN (f_ovf);
 
-  valist = build_va_arg_indirect_ref (valist);
+  valist = build_simple_mem_ref (valist);
   gpr = build3 (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
   fpr = build3 (COMPONENT_REF, TREE_TYPE (f_fpr), unshare_expr (valist),
 		f_fpr, NULL_TREE);
@@ -8789,6 +9540,50 @@ rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
       return build_va_arg_indirect_ref (t);
     }
 
+  /* We need to deal with the fact that the darwin ppc64 ABI is defined by an
+     earlier version of gcc, with the property that it always applied alignment
+     adjustments to the va-args (even for zero-sized types).  The cheapest way
+     to deal with this is to replicate the effect of the part of 
+     std_gimplify_va_arg_expr that carries out the align adjust, for the case 
+     of relevance.  
+     We don't need to check for pass-by-reference because of the test above.
+     We can return a simplifed answer, since we know there's no offset to add.  */
+
+  if (TARGET_MACHO
+      && rs6000_darwin64_abi 
+      && integer_zerop (TYPE_SIZE (type)))
+    {
+      unsigned HOST_WIDE_INT align, boundary;
+      tree valist_tmp = get_initialized_tmp_var (valist, pre_p, NULL);
+      align = PARM_BOUNDARY / BITS_PER_UNIT;
+      boundary = rs6000_function_arg_boundary (TYPE_MODE (type), type);
+      if (boundary > MAX_SUPPORTED_STACK_ALIGNMENT)
+	boundary = MAX_SUPPORTED_STACK_ALIGNMENT;
+      boundary /= BITS_PER_UNIT;
+      if (boundary > align)
+	{
+	  tree t ;
+	  /* This updates arg ptr by the amount that would be necessary
+	     to align the zero-sized (but not zero-alignment) item.  */
+	  t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
+		  fold_build2 (POINTER_PLUS_EXPR,
+			       TREE_TYPE (valist),
+			       valist_tmp, size_int (boundary - 1)));
+	  gimplify_and_add (t, pre_p);
+
+	  t = fold_convert (sizetype, valist_tmp);
+	  t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
+		  fold_convert (TREE_TYPE (valist),
+				fold_build2 (BIT_AND_EXPR, sizetype, t,
+					     size_int (-boundary))));
+	  t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
+	  gimplify_and_add (t, pre_p);
+	}
+      /* Since it is zero-sized there's no increment for the item itself. */
+      valist_tmp = fold_convert (build_pointer_type (type), valist_tmp);
+      return build_va_arg_indirect_ref (valist_tmp);
+    }
+
   if (DEFAULT_ABI != ABI_V4)
     {
       if (targetm.calls.split_complex_arg && TREE_CODE (type) == COMPLEX_TYPE)
@@ -8820,10 +9615,10 @@ rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
     }
 
   f_gpr = TYPE_FIELDS (TREE_TYPE (va_list_type_node));
-  f_fpr = TREE_CHAIN (f_gpr);
-  f_res = TREE_CHAIN (f_fpr);
-  f_ovf = TREE_CHAIN (f_res);
-  f_sav = TREE_CHAIN (f_ovf);
+  f_fpr = DECL_CHAIN (f_gpr);
+  f_res = DECL_CHAIN (f_fpr);
+  f_ovf = DECL_CHAIN (f_res);
+  f_sav = DECL_CHAIN (f_ovf);
 
   valist = build_va_arg_indirect_ref (valist);
   gpr = build3 (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
@@ -8993,7 +9788,7 @@ def_builtin (int mask, const char *name, tree type, int code)
     {
       tree t;
       if (rs6000_builtin_decls[code])
-	fatal_error ("internal error: builtin function to %s already processed.",
+	fatal_error ("internal error: builtin function to %s already processed",
 		     name);
 
       rs6000_builtin_decls[code] = t =
@@ -9046,7 +9841,7 @@ def_builtin (int mask, const char *name, tree type, int code)
 
 static const struct builtin_description bdesc_3arg[] =
 {
-  { MASK_ALTIVEC, CODE_FOR_altivec_vmaddfp, "__builtin_altivec_vmaddfp", ALTIVEC_BUILTIN_VMADDFP },
+  { MASK_ALTIVEC, CODE_FOR_fmav4sf4, "__builtin_altivec_vmaddfp", ALTIVEC_BUILTIN_VMADDFP },
   { MASK_ALTIVEC, CODE_FOR_altivec_vmhaddshs, "__builtin_altivec_vmhaddshs", ALTIVEC_BUILTIN_VMHADDSHS },
   { MASK_ALTIVEC, CODE_FOR_altivec_vmhraddshs, "__builtin_altivec_vmhraddshs", ALTIVEC_BUILTIN_VMHRADDSHS },
   { MASK_ALTIVEC, CODE_FOR_altivec_vmladduhm, "__builtin_altivec_vmladduhm", ALTIVEC_BUILTIN_VMLADDUHM},
@@ -9056,7 +9851,7 @@ static const struct builtin_description bdesc_3arg[] =
   { MASK_ALTIVEC, CODE_FOR_altivec_vmsumshm, "__builtin_altivec_vmsumshm", ALTIVEC_BUILTIN_VMSUMSHM },
   { MASK_ALTIVEC, CODE_FOR_altivec_vmsumuhs, "__builtin_altivec_vmsumuhs", ALTIVEC_BUILTIN_VMSUMUHS },
   { MASK_ALTIVEC, CODE_FOR_altivec_vmsumshs, "__builtin_altivec_vmsumshs", ALTIVEC_BUILTIN_VMSUMSHS },
-  { MASK_ALTIVEC, CODE_FOR_altivec_vnmsubfp, "__builtin_altivec_vnmsubfp", ALTIVEC_BUILTIN_VNMSUBFP },
+  { MASK_ALTIVEC, CODE_FOR_nfmsv4sf4, "__builtin_altivec_vnmsubfp", ALTIVEC_BUILTIN_VNMSUBFP },
   { MASK_ALTIVEC, CODE_FOR_altivec_vperm_v2df, "__builtin_altivec_vperm_2df", ALTIVEC_BUILTIN_VPERM_2DF },
   { MASK_ALTIVEC, CODE_FOR_altivec_vperm_v2di, "__builtin_altivec_vperm_2di", ALTIVEC_BUILTIN_VPERM_2DI },
   { MASK_ALTIVEC, CODE_FOR_altivec_vperm_v4sf, "__builtin_altivec_vperm_4sf", ALTIVEC_BUILTIN_VPERM_4SF },
@@ -9098,15 +9893,15 @@ static const struct builtin_description bdesc_3arg[] =
   { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_perm", ALTIVEC_BUILTIN_VEC_PERM },
   { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_sel", ALTIVEC_BUILTIN_VEC_SEL },
 
-  { MASK_VSX, CODE_FOR_vsx_fmaddv2df4, "__builtin_vsx_xvmadddp", VSX_BUILTIN_XVMADDDP },
-  { MASK_VSX, CODE_FOR_vsx_fmsubv2df4, "__builtin_vsx_xvmsubdp", VSX_BUILTIN_XVMSUBDP },
-  { MASK_VSX, CODE_FOR_vsx_fnmaddv2df4, "__builtin_vsx_xvnmadddp", VSX_BUILTIN_XVNMADDDP },
-  { MASK_VSX, CODE_FOR_vsx_fnmsubv2df4, "__builtin_vsx_xvnmsubdp", VSX_BUILTIN_XVNMSUBDP },
+  { MASK_VSX, CODE_FOR_fmav2df4, "__builtin_vsx_xvmadddp", VSX_BUILTIN_XVMADDDP },
+  { MASK_VSX, CODE_FOR_fmsv2df4, "__builtin_vsx_xvmsubdp", VSX_BUILTIN_XVMSUBDP },
+  { MASK_VSX, CODE_FOR_nfmav2df4, "__builtin_vsx_xvnmadddp", VSX_BUILTIN_XVNMADDDP },
+  { MASK_VSX, CODE_FOR_nfmsv2df4, "__builtin_vsx_xvnmsubdp", VSX_BUILTIN_XVNMSUBDP },
 
-  { MASK_VSX, CODE_FOR_vsx_fmaddv4sf4, "__builtin_vsx_xvmaddsp", VSX_BUILTIN_XVMADDSP },
-  { MASK_VSX, CODE_FOR_vsx_fmsubv4sf4, "__builtin_vsx_xvmsubsp", VSX_BUILTIN_XVMSUBSP },
-  { MASK_VSX, CODE_FOR_vsx_fnmaddv4sf4, "__builtin_vsx_xvnmaddsp", VSX_BUILTIN_XVNMADDSP },
-  { MASK_VSX, CODE_FOR_vsx_fnmsubv4sf4, "__builtin_vsx_xvnmsubsp", VSX_BUILTIN_XVNMSUBSP },
+  { MASK_VSX, CODE_FOR_fmav4sf4, "__builtin_vsx_xvmaddsp", VSX_BUILTIN_XVMADDSP },
+  { MASK_VSX, CODE_FOR_fmsv4sf4, "__builtin_vsx_xvmsubsp", VSX_BUILTIN_XVMSUBSP },
+  { MASK_VSX, CODE_FOR_nfmav4sf4, "__builtin_vsx_xvnmaddsp", VSX_BUILTIN_XVNMADDSP },
+  { MASK_VSX, CODE_FOR_nfmsv4sf4, "__builtin_vsx_xvnmsubsp", VSX_BUILTIN_XVNMSUBSP },
 
   { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_msub", VSX_BUILTIN_VEC_MSUB },
   { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_nmadd", VSX_BUILTIN_VEC_NMADD },
@@ -9151,12 +9946,12 @@ static const struct builtin_description bdesc_3arg[] =
   { MASK_VSX, CODE_FOR_vsx_xxsldwi_v16qi, "__builtin_vsx_xxsldwi_16qi", VSX_BUILTIN_XXSLDWI_16QI },
   { MASK_VSX, CODE_FOR_nothing, "__builtin_vsx_xxsldwi", VSX_BUILTIN_VEC_XXSLDWI },
 
-  { 0, CODE_FOR_paired_msub, "__builtin_paired_msub", PAIRED_BUILTIN_MSUB },
-  { 0, CODE_FOR_paired_madd, "__builtin_paired_madd", PAIRED_BUILTIN_MADD },
+  { 0, CODE_FOR_fmsv2sf4, "__builtin_paired_msub", PAIRED_BUILTIN_MSUB },
+  { 0, CODE_FOR_fmav2sf4, "__builtin_paired_madd", PAIRED_BUILTIN_MADD },
   { 0, CODE_FOR_paired_madds0, "__builtin_paired_madds0", PAIRED_BUILTIN_MADDS0 },
   { 0, CODE_FOR_paired_madds1, "__builtin_paired_madds1", PAIRED_BUILTIN_MADDS1 },
-  { 0, CODE_FOR_paired_nmsub, "__builtin_paired_nmsub", PAIRED_BUILTIN_NMSUB },
-  { 0, CODE_FOR_paired_nmadd, "__builtin_paired_nmadd", PAIRED_BUILTIN_NMADD },
+  { 0, CODE_FOR_nfmsv2sf4, "__builtin_paired_nmsub", PAIRED_BUILTIN_NMSUB },
+  { 0, CODE_FOR_nfmav2sf4, "__builtin_paired_nmadd", PAIRED_BUILTIN_NMADD },
   { 0, CODE_FOR_paired_sum0, "__builtin_paired_sum0", PAIRED_BUILTIN_SUM0 },
   { 0, CODE_FOR_paired_sum1, "__builtin_paired_sum1", PAIRED_BUILTIN_SUM1 },
   { 0, CODE_FOR_selv2sf4, "__builtin_paired_selv2sf4", PAIRED_BUILTIN_SELV2SF4 },
@@ -10373,12 +11168,18 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
       || arg2 == error_mark_node)
     return const0_rtx;
 
-  switch (icode)
+  /* Check and prepare argument depending on the instruction code.
+
+     Note that a switch statement instead of the sequence of tests
+     would be incorrect as many of the CODE_FOR values could be
+     CODE_FOR_nothing and that would yield multiple alternatives
+     with identical values.  We'd never reach here at runtime in
+     this case.  */
+  if (icode == CODE_FOR_altivec_vsldoi_v4sf
+      || icode == CODE_FOR_altivec_vsldoi_v4si
+      || icode == CODE_FOR_altivec_vsldoi_v8hi
+      || icode == CODE_FOR_altivec_vsldoi_v16qi)
     {
-    case CODE_FOR_altivec_vsldoi_v4sf:
-    case CODE_FOR_altivec_vsldoi_v4si:
-    case CODE_FOR_altivec_vsldoi_v8hi:
-    case CODE_FOR_altivec_vsldoi_v16qi:
       /* Only allow 4-bit unsigned literals.  */
       STRIP_NOPS (arg2);
       if (TREE_CODE (arg2) != INTEGER_CST
@@ -10387,16 +11188,16 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
 	  error ("argument 3 must be a 4-bit unsigned literal");
 	  return const0_rtx;
 	}
-      break;
-
-    case CODE_FOR_vsx_xxpermdi_v2df:
-    case CODE_FOR_vsx_xxpermdi_v2di:
-    case CODE_FOR_vsx_xxsldwi_v16qi:
-    case CODE_FOR_vsx_xxsldwi_v8hi:
-    case CODE_FOR_vsx_xxsldwi_v4si:
-    case CODE_FOR_vsx_xxsldwi_v4sf:
-    case CODE_FOR_vsx_xxsldwi_v2di:
-    case CODE_FOR_vsx_xxsldwi_v2df:
+    }
+  else if (icode == CODE_FOR_vsx_xxpermdi_v2df
+           || icode == CODE_FOR_vsx_xxpermdi_v2di
+           || icode == CODE_FOR_vsx_xxsldwi_v16qi
+           || icode == CODE_FOR_vsx_xxsldwi_v8hi
+           || icode == CODE_FOR_vsx_xxsldwi_v4si
+           || icode == CODE_FOR_vsx_xxsldwi_v4sf
+           || icode == CODE_FOR_vsx_xxsldwi_v2di
+           || icode == CODE_FOR_vsx_xxsldwi_v2df)
+    {
       /* Only allow 2-bit unsigned literals.  */
       STRIP_NOPS (arg2);
       if (TREE_CODE (arg2) != INTEGER_CST
@@ -10405,10 +11206,10 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
 	  error ("argument 3 must be a 2-bit unsigned literal");
 	  return const0_rtx;
 	}
-      break;
-
-    case CODE_FOR_vsx_set_v2df:
-    case CODE_FOR_vsx_set_v2di:
+    }
+  else if (icode == CODE_FOR_vsx_set_v2df
+           || icode == CODE_FOR_vsx_set_v2di)
+    {
       /* Only allow 1-bit unsigned literals.  */
       STRIP_NOPS (arg2);
       if (TREE_CODE (arg2) != INTEGER_CST
@@ -10417,10 +11218,6 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
 	  error ("argument 3 must be a 1-bit unsigned literal");
 	  return const0_rtx;
 	}
-      break;
-
-    default:
-      break;
     }
 
   if (target == 0
@@ -11400,7 +12197,7 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	gcc_assert (TARGET_ALTIVEC);
 
 	arg = CALL_EXPR_ARG (exp, 0);
-	gcc_assert (TREE_CODE (TREE_TYPE (arg)) == POINTER_TYPE);
+	gcc_assert (POINTER_TYPE_P (TREE_TYPE (arg)));
 	op = expand_expr (arg, NULL_RTX, Pmode, EXPAND_NORMAL);
 	addr = memory_address (mode, op);
 	if (fcode == ALTIVEC_BUILTIN_MASK_FOR_STORE)
@@ -13078,9 +13875,7 @@ expand_block_move (rtx operands[])
   if (bytes <= 0)
     return 1;
 
-  /* store_one_arg depends on expand_block_move to handle at least the size of
-     reg_parm_stack_space.  */
-  if (bytes > (TARGET_POWERPC64 ? 64 : 32))
+  if (bytes > rs6000_block_move_inline_limit)
     return 0;
 
   for (offset = 0; bytes > 0; offset += move_bytes, bytes -= move_bytes)
@@ -13682,9 +14477,7 @@ rs6000_check_sdmode (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
     case RESULT_DECL:
     case SSA_NAME:
     case REAL_CST:
-    case INDIRECT_REF:
-    case ALIGN_INDIRECT_REF:
-    case MISALIGNED_INDIRECT_REF:
+    case MEM_REF:
     case VIEW_CONVERT_EXPR:
       if (TYPE_MODE (TREE_TYPE (*tp)) == SDmode)
 	return *tp;
@@ -13728,14 +14521,15 @@ rs6000_reload_register_type (enum reg_class rclass)
    For VSX and Altivec, we may need a register to convert sp+offset into
    reg+sp.  */
 
-static enum reg_class
+static reg_class_t
 rs6000_secondary_reload (bool in_p,
 			 rtx x,
-			 enum reg_class rclass,
+			 reg_class_t rclass_i,
 			 enum machine_mode mode,
 			 secondary_reload_info *sri)
 {
-  enum reg_class ret = ALL_REGS;
+  enum reg_class rclass = (enum reg_class) rclass_i;
+  reg_class_t ret = ALL_REGS;
   enum insn_code icode;
   bool default_p = false;
 
@@ -14127,11 +14921,11 @@ rs6000_secondary_reload_inner (rtx reg, rtx mem, rtx scratch, bool store_p)
    account for the Altivec and Floating registers being subsets of the VSX
    register set under VSX, but distinct register sets on pre-VSX machines.  */
 
-static const enum reg_class *
+static const reg_class_t *
 rs6000_ira_cover_classes (void)
 {
-  static const enum reg_class cover_pre_vsx[] = IRA_COVER_CLASSES_PRE_VSX;
-  static const enum reg_class cover_vsx[]     = IRA_COVER_CLASSES_VSX;
+  static const reg_class_t cover_pre_vsx[] = IRA_COVER_CLASSES_PRE_VSX;
+  static const reg_class_t cover_vsx[]     = IRA_COVER_CLASSES_VSX;
 
   return (TARGET_VSX) ? cover_vsx : cover_pre_vsx;
 }
@@ -14162,7 +14956,7 @@ rs6000_alloc_sdmode_stack_slot (void)
       }
 
   /* Check for any SDmode parameters of the function.  */
-  for (t = DECL_ARGUMENTS (cfun->decl); t; t = TREE_CHAIN (t))
+  for (t = DECL_ARGUMENTS (cfun->decl); t; t = DECL_CHAIN (t))
     {
       if (TREE_TYPE (t) == error_mark_node)
 	continue;
@@ -14561,6 +15355,8 @@ rs6000_got_register (rtx value ATTRIBUTE_UNUSED)
   return pic_offset_table_rtx;
 }
 
+static rs6000_stack_t stack_info;
+
 /* Function to init struct machine_function.
    This will be called, via a pointer variable,
    from push_function_context.  */
@@ -14568,6 +15364,7 @@ rs6000_got_register (rtx value ATTRIBUTE_UNUSED)
 static struct machine_function *
 rs6000_init_machine_status (void)
 {
+  stack_info.reload_completed = 0;
   return ggc_alloc_cleared_machine_function ();
 }
 
@@ -15262,7 +16059,8 @@ print_operand (FILE *file, rtx x, int code)
 	{
 	  const char *name = XSTR (x, 0);
 #if TARGET_MACHO
-	  if (MACHOPIC_INDIRECT
+	  if (darwin_emit_branch_islands
+	      && MACHOPIC_INDIRECT
 	      && machopic_classify_symbol (x) == MACHOPIC_UNDEFINED_FUNCTION)
 	    name = machopic_indirection_name (x, /*stub_p=*/true);
 #endif
@@ -15456,9 +16254,9 @@ print_operand_address (FILE *file, rtx x)
     gcc_unreachable ();
 }
 
-/* Implement OUTPUT_ADDR_CONST_EXTRA for address X.  */
+/* Implement TARGET_OUTPUT_ADDR_CONST_EXTRA.  */
 
-bool
+static bool
 rs6000_output_addr_const_extra (FILE *file, rtx x)
 {
   if (GET_CODE (x) == UNSPEC)
@@ -15867,53 +16665,12 @@ rs6000_generate_compare (rtx cmp, enum machine_mode mode)
 }
 
 
-/* Emit the RTL for an sCOND pattern.  */
+/* Emit the RTL for an sISEL pattern.  */
 
 void
-rs6000_emit_sISEL (enum machine_mode mode, rtx operands[])
+rs6000_emit_sISEL (enum machine_mode mode ATTRIBUTE_UNUSED, rtx operands[])
 {
-  rtx condition_rtx;
-  enum machine_mode op_mode;
-  enum rtx_code cond_code;
-  rtx result = operands[0];
-
-  condition_rtx = rs6000_generate_compare (operands[1], mode);
-  cond_code = GET_CODE (condition_rtx);
-
-  op_mode = GET_MODE (XEXP (operands[1], 0));
-  if (op_mode == VOIDmode)
-    op_mode = GET_MODE (XEXP (operands[1], 1));
-
-  if (TARGET_POWERPC64 && GET_MODE (result) == DImode)
-    {
-      PUT_MODE (condition_rtx, DImode);
-      if (cond_code == GEU || cond_code == GTU || cond_code == LEU
-         || cond_code == LTU)
-       emit_insn (gen_isel_unsigned_di (result, condition_rtx,
-					force_reg (DImode, const1_rtx),
-					force_reg (DImode, const0_rtx),
-					XEXP (condition_rtx, 0)));
-      else
-       emit_insn (gen_isel_signed_di (result, condition_rtx,
-				      force_reg (DImode, const1_rtx),
-				      force_reg (DImode, const0_rtx),
-				      XEXP (condition_rtx, 0)));
-    }
-  else
-    {
-      PUT_MODE (condition_rtx, SImode);
-      if (cond_code == GEU || cond_code == GTU || cond_code == LEU
-	 || cond_code == LTU)
-       emit_insn (gen_isel_unsigned_si (result, condition_rtx,
-					force_reg (SImode, const1_rtx),
-					force_reg (SImode, const0_rtx),
-					XEXP (condition_rtx, 0)));
-      else
-       emit_insn (gen_isel_signed_si (result, condition_rtx,
-				      force_reg (SImode, const1_rtx),
-				      force_reg (SImode, const0_rtx),
-				      XEXP (condition_rtx, 0)));
-    }
+  rs6000_emit_int_cmove (operands[0], operands[1], const1_rtx, const0_rtx);
 }
 
 void
@@ -16231,7 +16988,7 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
 	if (rev_code == UNKNOWN)
 	  return NULL_RTX;
 
-	nor_code = optab_handler (one_cmpl_optab, (int)dmode)->insn_code;
+	nor_code = optab_handler (one_cmpl_optab, dmode);
 	if (nor_code == CODE_FOR_nothing)
 	  return NULL_RTX;
 
@@ -16276,7 +17033,7 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
 	    gcc_unreachable ();
 	  }
 
-	ior_code = optab_handler (ior_optab, (int)dmode)->insn_code;
+	ior_code = optab_handler (ior_optab, dmode);
 	if (ior_code == CODE_FOR_nothing)
 	  return NULL_RTX;
 
@@ -16580,6 +17337,9 @@ rs6000_emit_int_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
 {
   rtx condition_rtx, cr;
   enum machine_mode mode = GET_MODE (dest);
+  enum rtx_code cond_code;
+  rtx (*isel_func) (rtx, rtx, rtx, rtx, rtx);
+  bool signedp;
 
   if (mode != SImode && (!TARGET_POWERPC64 || mode != DImode))
     return 0;
@@ -16588,26 +17348,36 @@ rs6000_emit_int_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
      compare, it just looks at the CRx bits set by a previous compare
      instruction.  */
   condition_rtx = rs6000_generate_compare (op, mode);
+  cond_code = GET_CODE (condition_rtx);
   cr = XEXP (condition_rtx, 0);
+  signedp = GET_MODE (cr) == CCmode;
 
-  if (mode == SImode)
+  isel_func = (mode == SImode
+	       ? (signedp ? gen_isel_signed_si : gen_isel_unsigned_si)
+	       : (signedp ? gen_isel_signed_di : gen_isel_unsigned_di));
+
+  switch (cond_code)
     {
-      if (GET_MODE (cr) == CCmode)
-	emit_insn (gen_isel_signed_si (dest, condition_rtx,
-				       true_cond, false_cond, cr));
-      else
-	emit_insn (gen_isel_unsigned_si (dest, condition_rtx,
-					 true_cond, false_cond, cr));
+    case LT: case GT: case LTU: case GTU: case EQ:
+      /* isel handles these directly.  */
+      break;
+
+    default:
+      /* We need to swap the sense of the comparison.  */
+      {
+	rtx t = true_cond;
+	true_cond = false_cond;
+	false_cond = t;
+	PUT_CODE (condition_rtx, reverse_condition (cond_code));
+      }
+      break;
     }
-  else
-    {
-      if (GET_MODE (cr) == CCmode)
-	emit_insn (gen_isel_signed_di (dest, condition_rtx,
-				       true_cond, false_cond, cr));
-      else
-	emit_insn (gen_isel_unsigned_di (dest, condition_rtx,
-					 true_cond, false_cond, cr));
-    }
+
+  false_cond = force_reg (mode, false_cond);
+  if (true_cond != const0_rtx)
+    true_cond = force_reg (mode, true_cond);
+
+  emit_insn (isel_func (dest, condition_rtx, true_cond, false_cond, cr));
 
   return 1;
 }
@@ -16618,13 +17388,16 @@ output_isel (rtx *operands)
   enum rtx_code code;
 
   code = GET_CODE (operands[1]);
+
   if (code == GE || code == GEU || code == LE || code == LEU || code == NE)
     {
+      gcc_assert (GET_CODE (operands[2]) == REG
+		  && GET_CODE (operands[3]) == REG);
       PUT_CODE (operands[1], reverse_condition (code));
       return "isel %0,%3,%2,%j1";
     }
-  else
-    return "isel %0,%2,%3,%j1";
+
+  return "isel %0,%2,%3,%j1";
 }
 
 void
@@ -16635,7 +17408,9 @@ rs6000_emit_minmax (rtx dest, enum rtx_code code, rtx op0, rtx op1)
   rtx target;
 
   /* VSX/altivec have direct min/max insns.  */
-  if ((code == SMAX || code == SMIN) && VECTOR_UNIT_ALTIVEC_OR_VSX_P (mode))
+  if ((code == SMAX || code == SMIN)
+      && (VECTOR_UNIT_ALTIVEC_OR_VSX_P (mode)
+	  || (mode == SFmode && VECTOR_UNIT_VSX_P (DFmode))))
     {
       emit_insn (gen_rtx_SET (VOIDmode,
 			      dest,
@@ -17474,6 +18249,107 @@ is_altivec_return_reg (rtx reg, void *xyes)
 }
 
 
+/* Determine the strategy for savings/restoring registers.  */
+
+enum {
+  SAVRES_MULTIPLE = 0x1,
+  SAVE_INLINE_FPRS = 0x2,
+  SAVE_INLINE_GPRS = 0x4,
+  REST_INLINE_FPRS = 0x8,
+  REST_INLINE_GPRS = 0x10,
+  SAVE_NOINLINE_GPRS_SAVES_LR = 0x20,
+  SAVE_NOINLINE_FPRS_SAVES_LR = 0x40,
+  REST_NOINLINE_FPRS_DOESNT_RESTORE_LR = 0x80
+};
+
+static int
+rs6000_savres_strategy (rs6000_stack_t *info,
+			bool using_static_chain_p)
+{
+  int strategy = 0;
+
+  if (TARGET_MULTIPLE
+      && !TARGET_POWERPC64
+      && !(TARGET_SPE_ABI && info->spe_64bit_regs_used)
+      && info->first_gp_reg_save < 31
+      && no_global_regs_above (info->first_gp_reg_save, /*gpr=*/true))
+    strategy |= SAVRES_MULTIPLE;
+
+  if (crtl->calls_eh_return
+      || cfun->machine->ra_need_lr
+      || info->total_size > 32767)
+    strategy |= (SAVE_INLINE_FPRS | REST_INLINE_FPRS
+		 | SAVE_INLINE_GPRS | REST_INLINE_GPRS);
+
+  if (info->first_fp_reg_save == 64
+      || FP_SAVE_INLINE (info->first_fp_reg_save)
+      /* The out-of-line FP routines use double-precision stores;
+	 we can't use those routines if we don't have such stores.  */
+      || (TARGET_HARD_FLOAT && !TARGET_DOUBLE_FLOAT)
+      || !no_global_regs_above (info->first_fp_reg_save, /*gpr=*/false))
+    strategy |= SAVE_INLINE_FPRS | REST_INLINE_FPRS;
+
+  if (info->first_gp_reg_save == 32
+      || GP_SAVE_INLINE (info->first_gp_reg_save)
+      || !((strategy & SAVRES_MULTIPLE)
+	   || no_global_regs_above (info->first_gp_reg_save, /*gpr=*/true)))
+    strategy |= SAVE_INLINE_GPRS | REST_INLINE_GPRS;
+
+  /* Don't bother to try to save things out-of-line if r11 is occupied
+     by the static chain.  It would require too much fiddling and the
+     static chain is rarely used anyway.  */
+  if (using_static_chain_p)
+    strategy |= SAVE_INLINE_FPRS | SAVE_INLINE_GPRS;
+
+  /* If we are going to use store multiple, then don't even bother
+     with the out-of-line routines, since the store-multiple
+     instruction will always be smaller.  */
+  if ((strategy & SAVRES_MULTIPLE))
+    strategy |= SAVE_INLINE_GPRS;
+
+  /* The situation is more complicated with load multiple.  We'd
+     prefer to use the out-of-line routines for restores, since the
+     "exit" out-of-line routines can handle the restore of LR and the
+     frame teardown.  However if doesn't make sense to use the
+     out-of-line routine if that is the only reason we'd need to save
+     LR, and we can't use the "exit" out-of-line gpr restore if we
+     have saved some fprs; In those cases it is advantageous to use
+     load multiple when available.  */
+  if ((strategy & SAVRES_MULTIPLE)
+      && (!info->lr_save_p
+	  || info->first_fp_reg_save != 64))
+    strategy |= REST_INLINE_GPRS;
+
+  /* We can only use load multiple or the out-of-line routines to
+     restore if we've used store multiple or out-of-line routines
+     in the prologue, i.e. if we've saved all the registers from
+     first_gp_reg_save.  Otherwise, we risk loading garbage.  */
+  if ((strategy & (SAVE_INLINE_GPRS | SAVRES_MULTIPLE)) == SAVE_INLINE_GPRS)
+    strategy |= REST_INLINE_GPRS;
+
+  /* Saving CR interferes with the exit routines used on the SPE, so
+     just punt here.  */
+  if (TARGET_SPE_ABI
+      && info->spe_64bit_regs_used
+      && info->cr_save_p)
+    strategy |= REST_INLINE_GPRS;
+
+#ifdef POWERPC_LINUX
+  if (TARGET_64BIT)
+    {
+      if (!(strategy & SAVE_INLINE_FPRS))
+	strategy |= SAVE_NOINLINE_FPRS_SAVES_LR;
+      else if (!(strategy & SAVE_INLINE_GPRS)
+	       && info->first_fp_reg_save == 64)
+	strategy |= SAVE_NOINLINE_GPRS_SAVES_LR;
+    }
+#else
+  if (TARGET_AIX && !(strategy & REST_INLINE_FPRS))
+    strategy |= REST_NOINLINE_FPRS_DOESNT_RESTORE_LR;
+#endif
+  return strategy;
+}
+
 /* Calculate the stack information for the current function.  This is
    complicated by having two separate calling sequences, the AIX calling
    sequence and the V.4 calling sequence.
@@ -17574,15 +18450,26 @@ is_altivec_return_reg (rtx reg, void *xyes)
 static rs6000_stack_t *
 rs6000_stack_info (void)
 {
-  static rs6000_stack_t info;
-  rs6000_stack_t *info_ptr = &info;
+#ifdef ENABLE_CHECKING
+  static rs6000_stack_t info_save;
+#endif
+  rs6000_stack_t *info_ptr = &stack_info;
   int reg_size = TARGET_32BIT ? 4 : 8;
   int ehrd_size;
   int save_align;
   int first_gp;
   HOST_WIDE_INT non_fixed_size;
+  bool using_static_chain_p;
 
-  memset (&info, 0, sizeof (info));
+#ifdef ENABLE_CHECKING
+  memcpy (&info_save, &stack_info, sizeof stack_info);
+#else
+  if (reload_completed && info_ptr->reload_completed)
+    return info_ptr;
+#endif
+
+  memset (&stack_info, 0, sizeof (stack_info));
+  info_ptr->reload_completed = reload_completed;
 
   if (TARGET_SPE)
     {
@@ -17638,23 +18525,6 @@ rs6000_stack_info (void)
   /* Does this function call anything?  */
   info_ptr->calls_p = (! current_function_is_leaf
 		       || cfun->machine->ra_needs_full_frame);
-
-  /* Determine if we need to save the link register.  */
-  if ((DEFAULT_ABI == ABI_AIX
-       && crtl->profile
-       && !TARGET_PROFILE_KERNEL)
-#ifdef TARGET_RELOCATABLE
-      || (TARGET_RELOCATABLE && (get_pool_size () != 0))
-#endif
-      || (info_ptr->first_fp_reg_save != 64
-	  && !FP_SAVE_INLINE (info_ptr->first_fp_reg_save))
-      || (DEFAULT_ABI == ABI_V4 && cfun->calls_alloca)
-      || info_ptr->calls_p
-      || rs6000_ra_ever_killed ())
-    {
-      info_ptr->lr_save_p = 1;
-      df_set_regs_ever_live (LR_REGNO, true);
-    }
 
   /* Determine if we need to save the condition code registers.  */
   if (df_regs_ever_live_p (CR2_REGNO)
@@ -17824,6 +18694,33 @@ rs6000_stack_info (void)
   info_ptr->total_size = RS6000_ALIGN (non_fixed_size + info_ptr->fixed_size,
 				       ABI_STACK_BOUNDARY / BITS_PER_UNIT);
 
+  /* Determine if we need to save the link register.  */
+  if (info_ptr->calls_p
+      || (DEFAULT_ABI == ABI_AIX
+	  && crtl->profile
+	  && !TARGET_PROFILE_KERNEL)
+      || (DEFAULT_ABI == ABI_V4 && cfun->calls_alloca)
+#ifdef TARGET_RELOCATABLE
+      || (TARGET_RELOCATABLE && (get_pool_size () != 0))
+#endif
+      || rs6000_ra_ever_killed ())
+    info_ptr->lr_save_p = 1;
+
+  using_static_chain_p = (cfun->static_chain_decl != NULL_TREE
+			  && df_regs_ever_live_p (STATIC_CHAIN_REGNUM)
+			  && call_used_regs[STATIC_CHAIN_REGNUM]);
+  info_ptr->savres_strategy = rs6000_savres_strategy (info_ptr,
+						      using_static_chain_p);
+
+  if (!(info_ptr->savres_strategy & SAVE_INLINE_GPRS)
+      || !(info_ptr->savres_strategy & SAVE_INLINE_FPRS)
+      || !(info_ptr->savres_strategy & REST_INLINE_GPRS)
+      || !(info_ptr->savres_strategy & REST_INLINE_FPRS))
+    info_ptr->lr_save_p = 1;
+
+  if (info_ptr->lr_save_p)
+    df_set_regs_ever_live (LR_REGNO, true);
+
   /* Determine if we need to allocate any stack frame:
 
      For AIX we need to push the stack if a frame pointer is needed
@@ -17875,6 +18772,10 @@ rs6000_stack_info (void)
   if (! info_ptr->cr_save_p)
     info_ptr->cr_save_offset = 0;
 
+#ifdef ENABLE_CHECKING
+  gcc_assert (!(reload_completed && info_save.reload_completed)
+	      || memcmp (&info_save, &stack_info, sizeof stack_info) == 0);
+#endif
   return info_ptr;
 }
 
@@ -18202,7 +19103,8 @@ rs6000_emit_load_toc_table (int fromprolog)
       char buf[30];
       rtx lab, tmp1, tmp2, got;
 
-      ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);
+      lab = gen_label_rtx ();
+      ASM_GENERATE_INTERNAL_LABEL (buf, "L", CODE_LABEL_NUMBER (lab));
       lab = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
       if (flag_pic == 2)
 	got = gen_rtx_SYMBOL_REF (Pmode, toc_label_name);
@@ -18215,8 +19117,7 @@ rs6000_emit_load_toc_table (int fromprolog)
 	  tmp2 = gen_reg_rtx (Pmode);
 	}
       emit_insn (gen_load_toc_v4_PIC_1 (lab));
-      emit_move_insn (tmp1,
-			     gen_rtx_REG (Pmode, LR_REGNO));
+      emit_move_insn (tmp1, gen_rtx_REG (Pmode, LR_REGNO));
       emit_insn (gen_load_toc_v4_PIC_3b (tmp2, tmp1, got, lab));
       emit_insn (gen_load_toc_v4_PIC_3c (dest, tmp2, got, lab));
     }
@@ -18243,8 +19144,7 @@ rs6000_emit_load_toc_table (int fromprolog)
 	  symL = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
 
 	  emit_insn (gen_load_toc_v4_PIC_1 (symF));
-	  emit_move_insn (dest,
-			  gen_rtx_REG (Pmode, LR_REGNO));
+	  emit_move_insn (dest, gen_rtx_REG (Pmode, LR_REGNO));
 	  emit_insn (gen_load_toc_v4_PIC_2 (temp0, dest, symL, symF));
 	}
       else
@@ -18413,42 +19313,6 @@ rs6000_aix_asm_output_dwarf_table_ref (char * frame_table_label)
   fprintf (asm_out_file, "\t.ref %s\n",
 	   TARGET_STRIP_NAME_ENCODING (frame_table_label));
 }
-
-/* If _Unwind_* has been called from within the same module,
-   toc register is not guaranteed to be saved to 40(1) on function
-   entry.  Save it there in that case.  */
-
-void
-rs6000_aix_emit_builtin_unwind_init (void)
-{
-  rtx mem;
-  rtx stack_top = gen_reg_rtx (Pmode);
-  rtx opcode_addr = gen_reg_rtx (Pmode);
-  rtx opcode = gen_reg_rtx (SImode);
-  rtx tocompare = gen_reg_rtx (SImode);
-  rtx no_toc_save_needed = gen_label_rtx ();
-
-  mem = gen_frame_mem (Pmode, hard_frame_pointer_rtx);
-  emit_move_insn (stack_top, mem);
-
-  mem = gen_frame_mem (Pmode,
-		       gen_rtx_PLUS (Pmode, stack_top,
-				     GEN_INT (2 * GET_MODE_SIZE (Pmode))));
-  emit_move_insn (opcode_addr, mem);
-  emit_move_insn (opcode, gen_rtx_MEM (SImode, opcode_addr));
-  emit_move_insn (tocompare, gen_int_mode (TARGET_32BIT ? 0x80410014
-					   : 0xE8410028, SImode));
-
-  do_compare_rtx_and_jump (opcode, tocompare, EQ, 1,
-			   SImode, NULL_RTX, NULL_RTX,
-			   no_toc_save_needed, -1);
-
-  mem = gen_frame_mem (Pmode,
-		       gen_rtx_PLUS (Pmode, stack_top,
-				     GEN_INT (5 * GET_MODE_SIZE (Pmode))));
-  emit_move_insn (mem, gen_rtx_REG (Pmode, 2));
-  emit_label (no_toc_save_needed);
-}
 
 /* This ties together stack memory (MEM with an alias set of frame_alias_set)
    and the change to the stack pointer.  */
@@ -18546,6 +19410,137 @@ rs6000_emit_allocate_stack (HOST_WIDE_INT size, rtx copy_reg)
 		gen_rtx_SET (VOIDmode, stack_reg,
 			     gen_rtx_PLUS (Pmode, stack_reg,
 					   GEN_INT (-size))));
+}
+
+#define PROBE_INTERVAL (1 << STACK_CHECK_PROBE_INTERVAL_EXP)
+
+#if PROBE_INTERVAL > 32768
+#error Cannot use indexed addressing mode for stack probing
+#endif
+
+/* Emit code to probe a range of stack addresses from FIRST to FIRST+SIZE,
+   inclusive.  These are offsets from the current stack pointer.  */
+
+static void
+rs6000_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
+{
+  /* See if we have a constant small number of probes to generate.  If so,
+     that's the easy case.  */
+  if (first + size <= 32768)
+    {
+      HOST_WIDE_INT i;
+
+      /* Probe at FIRST + N * PROBE_INTERVAL for values of N from 1 until
+	 it exceeds SIZE.  If only one probe is needed, this will not
+	 generate any code.  Then probe at FIRST + SIZE.  */
+      for (i = PROBE_INTERVAL; i < size; i += PROBE_INTERVAL)
+	emit_stack_probe (plus_constant (stack_pointer_rtx, -(first + i)));
+
+      emit_stack_probe (plus_constant (stack_pointer_rtx, -(first + size)));
+    }
+
+  /* Otherwise, do the same as above, but in a loop.  Note that we must be
+     extra careful with variables wrapping around because we might be at
+     the very top (or the very bottom) of the address space and we have
+     to be able to handle this case properly; in particular, we use an
+     equality test for the loop condition.  */
+  else
+    {
+      HOST_WIDE_INT rounded_size;
+      rtx r12 = gen_rtx_REG (Pmode, 12);
+      rtx r0 = gen_rtx_REG (Pmode, 0);
+
+      /* Sanity check for the addressing mode we're going to use.  */
+      gcc_assert (first <= 32768);
+
+      /* Step 1: round SIZE to the previous multiple of the interval.  */
+
+      rounded_size = size & -PROBE_INTERVAL;
+
+
+      /* Step 2: compute initial and final value of the loop counter.  */
+
+      /* TEST_ADDR = SP + FIRST.  */
+      emit_insn (gen_rtx_SET (VOIDmode, r12,
+			      plus_constant (stack_pointer_rtx, -first)));
+
+      /* LAST_ADDR = SP + FIRST + ROUNDED_SIZE.  */
+      if (rounded_size > 32768)
+	{
+	  emit_move_insn (r0, GEN_INT (-rounded_size));
+	  emit_insn (gen_rtx_SET (VOIDmode, r0,
+				  gen_rtx_PLUS (Pmode, r12, r0)));
+	}
+      else
+	emit_insn (gen_rtx_SET (VOIDmode, r0,
+			        plus_constant (r12, -rounded_size)));
+
+
+      /* Step 3: the loop
+
+	 while (TEST_ADDR != LAST_ADDR)
+	   {
+	     TEST_ADDR = TEST_ADDR + PROBE_INTERVAL
+	     probe at TEST_ADDR
+	   }
+
+	 probes at FIRST + N * PROBE_INTERVAL for values of N from 1
+	 until it is equal to ROUNDED_SIZE.  */
+
+      if (TARGET_64BIT)
+	emit_insn (gen_probe_stack_rangedi (r12, r12, r0));
+      else
+	emit_insn (gen_probe_stack_rangesi (r12, r12, r0));
+
+
+      /* Step 4: probe at FIRST + SIZE if we cannot assert at compile-time
+	 that SIZE is equal to ROUNDED_SIZE.  */
+
+      if (size != rounded_size)
+	emit_stack_probe (plus_constant (r12, rounded_size - size));
+    }
+}
+
+/* Probe a range of stack addresses from REG1 to REG2 inclusive.  These are
+   absolute addresses.  */
+
+const char *
+output_probe_stack_range (rtx reg1, rtx reg2)
+{
+  static int labelno = 0;
+  char loop_lab[32], end_lab[32];
+  rtx xops[2];
+
+  ASM_GENERATE_INTERNAL_LABEL (loop_lab, "LPSRL", labelno);
+  ASM_GENERATE_INTERNAL_LABEL (end_lab, "LPSRE", labelno++);
+
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, loop_lab);
+
+  /* Jump to END_LAB if TEST_ADDR == LAST_ADDR.  */
+  xops[0] = reg1;
+  xops[1] = reg2;
+  if (TARGET_64BIT)
+    output_asm_insn ("{cmp|cmpd} 0,%0,%1", xops);
+  else
+    output_asm_insn ("{cmp|cmpw} 0,%0,%1", xops);
+
+  fputs ("\tbeq 0,", asm_out_file);
+  assemble_name_raw (asm_out_file, end_lab);
+  fputc ('\n', asm_out_file);
+
+  /* TEST_ADDR = TEST_ADDR + PROBE_INTERVAL.  */
+  xops[1] = GEN_INT (-PROBE_INTERVAL);
+  output_asm_insn ("{cal %0,%1(%0)|addi %0,%0,%1}", xops);
+
+  /* Probe at TEST_ADDR and branch.  */
+  output_asm_insn ("{st|stw} 0,0(%0)", xops);
+  fprintf (asm_out_file, "\tb ");
+  assemble_name_raw (asm_out_file, loop_lab);
+  fputc ('\n', asm_out_file);
+
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, end_lab);
+
+  return "";
 }
 
 /* Add to 'insn' a note which is PATTERN (INSN) but with REG replaced
@@ -18870,7 +19865,7 @@ rs6000_savres_routine_name (rs6000_stack_t *info, int regno,
 	}
     }
   else if (DEFAULT_ABI == ABI_DARWIN)
-    sorry ("Out-of-line save/restore routines not supported on Darwin");
+    sorry ("out-of-line save/restore routines not supported on Darwin");
 
   sprintf (savres_routine_name, "%s%d%s", prefix, regno, suffix);
 
@@ -19029,113 +20024,20 @@ rs6000_make_savres_rtx (rs6000_stack_t *info,
 static bool
 rs6000_reg_live_or_pic_offset_p (int reg)
 {
-  return ((df_regs_ever_live_p (reg)
+  /* If the function calls eh_return, claim used all the registers that would
+     be checked for liveness otherwise.  This is required for the PIC offset
+     register with -mminimal-toc on AIX, as it is advertised as "fixed" for
+     register allocation purposes in this case.  */
+
+  return (((crtl->calls_eh_return || df_regs_ever_live_p (reg))
            && (!call_used_regs[reg]
                || (reg == RS6000_PIC_OFFSET_TABLE_REGNUM
+		   && !TARGET_SINGLE_PIC_BASE
                    && TARGET_TOC && TARGET_MINIMAL_TOC)))
           || (reg == RS6000_PIC_OFFSET_TABLE_REGNUM
+	      && !TARGET_SINGLE_PIC_BASE
               && ((DEFAULT_ABI == ABI_V4 && flag_pic != 0)
                   || (DEFAULT_ABI == ABI_DARWIN && flag_pic))));
-}
-
-enum {
-  SAVRES_MULTIPLE = 0x1,
-  SAVRES_INLINE_FPRS = 0x2,
-  SAVRES_INLINE_GPRS = 0x4,
-  SAVRES_NOINLINE_GPRS_SAVES_LR = 0x8,
-  SAVRES_NOINLINE_FPRS_SAVES_LR = 0x10,
-  SAVRES_NOINLINE_FPRS_DOESNT_RESTORE_LR = 0x20
-};
-
-/* Determine the strategy for savings/restoring registers.  */
-
-static int
-rs6000_savres_strategy (rs6000_stack_t *info, bool savep,
-			int using_static_chain_p, int sibcall)
-{
-  bool using_multiple_p;
-  bool common;
-  bool savres_fprs_inline;
-  bool savres_gprs_inline;
-  bool noclobber_global_gprs
-    = no_global_regs_above (info->first_gp_reg_save, /*gpr=*/true);
-  int strategy;
-
-  using_multiple_p = (TARGET_MULTIPLE && ! TARGET_POWERPC64
-		      && (!TARGET_SPE_ABI
-			  || info->spe_64bit_regs_used == 0)
-		      && info->first_gp_reg_save < 31
-		      && noclobber_global_gprs);
-  /* Don't bother to try to save things out-of-line if r11 is occupied
-     by the static chain.  It would require too much fiddling and the
-     static chain is rarely used anyway.  */
-  common = (using_static_chain_p
-	    || sibcall
-	    || crtl->calls_eh_return
-	    || !info->lr_save_p
-	    || cfun->machine->ra_need_lr
-	    || info->total_size > 32767);
-  savres_fprs_inline = (common
-			|| info->first_fp_reg_save == 64
-			|| !no_global_regs_above (info->first_fp_reg_save,
-						  /*gpr=*/false)
-			/* The out-of-line FP routines use
-			   double-precision stores; we can't use those
-			   routines if we don't have such stores.  */
-			|| (TARGET_HARD_FLOAT && !TARGET_DOUBLE_FLOAT)
-			|| FP_SAVE_INLINE (info->first_fp_reg_save));
-  savres_gprs_inline = (common
-			/* Saving CR interferes with the exit routines
-			   used on the SPE, so just punt here.  */
-			|| (!savep
-			    && TARGET_SPE_ABI
-			    && info->spe_64bit_regs_used != 0
-			    && info->cr_save_p != 0)
-			|| info->first_gp_reg_save == 32
-			|| !noclobber_global_gprs
-			|| GP_SAVE_INLINE (info->first_gp_reg_save));
-
-  if (savep)
-    /* If we are going to use store multiple, then don't even bother
-     with the out-of-line routines, since the store-multiple instruction
-     will always be smaller.  */
-    savres_gprs_inline = savres_gprs_inline || using_multiple_p;
-  else
-    {
-      /* The situation is more complicated with load multiple.  We'd
-         prefer to use the out-of-line routines for restores, since the
-         "exit" out-of-line routines can handle the restore of LR and
-         the frame teardown.  But we can only use the out-of-line
-         routines if we know that we've used store multiple or
-         out-of-line routines in the prologue, i.e. if we've saved all
-         the registers from first_gp_reg_save.  Otherwise, we risk
-         loading garbage from the stack.  Furthermore, we can only use
-         the "exit" out-of-line gpr restore if we haven't saved any
-         fprs.  */
-      bool saved_all = !savres_gprs_inline || using_multiple_p;
-
-      if (saved_all && info->first_fp_reg_save != 64)
-	/* We can't use the exit routine; use load multiple if it's
-	   available.  */
-	savres_gprs_inline = savres_gprs_inline || using_multiple_p;
-    }
-
-  strategy = (using_multiple_p
-	      | (savres_fprs_inline << 1)
-	      | (savres_gprs_inline << 2));
-#ifdef POWERPC_LINUX
-  if (TARGET_64BIT)
-    {
-      if (!savres_fprs_inline)
-	strategy |= SAVRES_NOINLINE_FPRS_SAVES_LR;
-      else if (!savres_gprs_inline && info->first_fp_reg_save == 64)
-	strategy |= SAVRES_NOINLINE_GPRS_SAVES_LR;
-    }
-#else
-  if (TARGET_AIX && !savres_fprs_inline)
-    strategy |= SAVRES_NOINLINE_FPRS_DOESNT_RESTORE_LR;
-#endif
-  return strategy;
 }
 
 /* Emit function prologue as insns.  */
@@ -19160,6 +20062,12 @@ rs6000_emit_prologue (void)
 			      && call_used_regs[STATIC_CHAIN_REGNUM]);
   HOST_WIDE_INT sp_offset = 0;
 
+  if (flag_stack_usage)
+    current_function_static_stack_size = info->total_size;
+
+  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK && info->total_size)
+    rs6000_emit_probe_stack_range (STACK_CHECK_PROTECT, info->total_size);
+
   if (TARGET_FIX_AND_CONTINUE)
     {
       /* gdb on darwin arranges to forward a function from the old
@@ -19180,12 +20088,10 @@ rs6000_emit_prologue (void)
       reg_size = 8;
     }
 
-  strategy = rs6000_savres_strategy (info, /*savep=*/true,
-				     /*static_chain_p=*/using_static_chain_p,
-				     /*sibcall=*/0);
+  strategy = info->savres_strategy;
   using_store_multiple = strategy & SAVRES_MULTIPLE;
-  saving_FPRs_inline = strategy & SAVRES_INLINE_FPRS;
-  saving_GPRs_inline = strategy & SAVRES_INLINE_GPRS;
+  saving_FPRs_inline = strategy & SAVE_INLINE_FPRS;
+  saving_GPRs_inline = strategy & SAVE_INLINE_GPRS;
 
   /* For V.4, update stack before we do any saving and set back pointer.  */
   if (! WORLD_SAVE_P (info)
@@ -19355,8 +20261,8 @@ rs6000_emit_prologue (void)
 			     gen_rtx_REG (Pmode, LR_REGNO));
       RTX_FRAME_RELATED_P (insn) = 1;
 
-      if (!(strategy & (SAVRES_NOINLINE_GPRS_SAVES_LR
-			| SAVRES_NOINLINE_FPRS_SAVES_LR)))
+      if (!(strategy & (SAVE_NOINLINE_GPRS_SAVES_LR
+			| SAVE_NOINLINE_FPRS_SAVES_LR)))
 	{
 	  addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
 			       GEN_INT (info->lr_save_offset + sp_offset));
@@ -19416,7 +20322,7 @@ rs6000_emit_prologue (void)
 				    DFmode,
 				    /*savep=*/true, /*gpr=*/false,
 				    /*lr=*/(strategy
-					    & SAVRES_NOINLINE_FPRS_SAVES_LR)
+					    & SAVE_NOINLINE_FPRS_SAVES_LR)
 					   != 0);
       insn = emit_insn (par);
       rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
@@ -19543,7 +20449,7 @@ rs6000_emit_prologue (void)
 				    reg_mode,
 				    /*savep=*/true, /*gpr=*/true,
 				    /*lr=*/(strategy
-					    & SAVRES_NOINLINE_GPRS_SAVES_LR)
+					    & SAVE_NOINLINE_GPRS_SAVES_LR)
 					   != 0);
       insn = emit_insn (par);
       rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
@@ -19597,22 +20503,6 @@ rs6000_emit_prologue (void)
     {
       unsigned int i, regno;
 
-      /* In AIX ABI we need to pretend we save r2 here.  */
-      if (TARGET_AIX)
-	{
-	  rtx addr, reg, mem;
-
-	  reg = gen_rtx_REG (reg_mode, 2);
-	  addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-			       GEN_INT (sp_offset + 5 * reg_size));
-	  mem = gen_frame_mem (reg_mode, addr);
-
-	  insn = emit_move_insn (mem, reg);
-	  rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
-				NULL_RTX, NULL_RTX);
-	  PATTERN (insn) = gen_blockage ();
-	}
-
       for (i = 0; ; ++i)
 	{
 	  regno = EH_RETURN_DATA_REGNO (i);
@@ -19624,6 +20514,51 @@ rs6000_emit_prologue (void)
 			   + reg_size * (int) i,
 			   info->total_size);
 	}
+    }
+
+  /* In AIX ABI we need to make sure r2 is really saved.  */
+  if (TARGET_AIX && crtl->calls_eh_return)
+    {
+      rtx tmp_reg, tmp_reg_si, hi, lo, compare_result, toc_save_done, jump;
+      long toc_restore_insn;
+
+      gcc_assert (frame_reg_rtx == frame_ptr_rtx
+		  || frame_reg_rtx == sp_reg_rtx);
+      tmp_reg = gen_rtx_REG (Pmode, 11);
+      tmp_reg_si = gen_rtx_REG (SImode, 11);
+      if (using_static_chain_p)
+	emit_move_insn (gen_rtx_REG (Pmode, 0), tmp_reg);
+      gcc_assert (saving_GPRs_inline && saving_FPRs_inline);
+      emit_move_insn (tmp_reg, gen_rtx_REG (Pmode, LR_REGNO));
+      /* Peek at instruction to which this function returns.  If it's
+	 restoring r2, then we know we've already saved r2.  We can't
+	 unconditionally save r2 because the value we have will already
+	 be updated if we arrived at this function via a plt call or
+	 toc adjusting stub.  */
+      emit_move_insn (tmp_reg_si, gen_rtx_MEM (SImode, tmp_reg));
+      toc_restore_insn = TARGET_32BIT ? 0x80410014 : 0xE8410028;
+      hi = gen_int_mode (toc_restore_insn & ~0xffff, SImode);
+      emit_insn (gen_xorsi3 (tmp_reg_si, tmp_reg_si, hi));
+      compare_result = gen_rtx_REG (CCUNSmode, CR0_REGNO);
+      validate_condition_mode (EQ, CCUNSmode);
+      lo = gen_int_mode (toc_restore_insn & 0xffff, SImode);
+      emit_insn (gen_rtx_SET (VOIDmode, compare_result,
+			      gen_rtx_COMPARE (CCUNSmode, tmp_reg_si, lo)));
+      toc_save_done = gen_label_rtx ();
+      jump = gen_rtx_IF_THEN_ELSE (VOIDmode,
+				   gen_rtx_EQ (VOIDmode, compare_result,
+					       const0_rtx),
+				   gen_rtx_LABEL_REF (VOIDmode, toc_save_done),
+				   pc_rtx);
+      jump = emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, jump));
+      JUMP_LABEL (jump) = toc_save_done;
+      LABEL_NUSES (toc_save_done) += 1;
+
+      emit_frame_save (frame_reg_rtx, frame_ptr_rtx, reg_mode, 2,
+		       sp_offset + 5 * reg_size, info->total_size);
+      emit_label (toc_save_done);
+      if (using_static_chain_p)
+	emit_move_insn (tmp_reg, gen_rtx_REG (Pmode, 0));
     }
 
   /* Save CR if we use any that must be preserved.  */
@@ -19755,6 +20690,9 @@ rs6000_emit_prologue (void)
       insn = emit_insn (generate_set_vrsave (reg, info, 0));
     }
 
+  if (TARGET_SINGLE_PIC_BASE)
+    return; /* Do not set PIC register */
+
   /* If we are using RS6000_PIC_OFFSET_TABLE_REGNUM, we need to set it up.  */
   if ((TARGET_TOC && TARGET_MINIMAL_TOC && get_pool_size () != 0)
       || (DEFAULT_ABI == ABI_V4
@@ -19822,19 +20760,23 @@ rs6000_output_function_prologue (FILE *file,
 
   /* Write .extern for any function we will call to save and restore
      fp values.  */
-  if (info->first_fp_reg_save < 64
-      && !FP_SAVE_INLINE (info->first_fp_reg_save))
+  if (info->first_fp_reg_save < 64)
     {
       char *name;
       int regno = info->first_fp_reg_save - 32;
 
-      name = rs6000_savres_routine_name (info, regno, /*savep=*/true,
-					 /*gpr=*/false, /*lr=*/false);
-      fprintf (file, "\t.extern %s\n", name);
-
-      name = rs6000_savres_routine_name (info, regno, /*savep=*/false,
-					 /*gpr=*/false, /*lr=*/true);
-      fprintf (file, "\t.extern %s\n", name);
+      if ((info->savres_strategy & SAVE_INLINE_FPRS) == 0)
+	{
+	  name = rs6000_savres_routine_name (info, regno, /*savep=*/true,
+					     /*gpr=*/false, /*lr=*/false);
+	  fprintf (file, "\t.extern %s\n", name);
+	}
+      if ((info->savres_strategy & REST_INLINE_FPRS) == 0)
+	{
+	  name = rs6000_savres_routine_name (info, regno, /*savep=*/false,
+					     /*gpr=*/false, /*lr=*/true);
+	  fprintf (file, "\t.extern %s\n", name);
+	}
     }
 
   /* Write .extern for AIX common mode routines, if needed.  */
@@ -19980,11 +20922,10 @@ rs6000_emit_epilogue (int sibcall)
       reg_size = 8;
     }
 
-  strategy = rs6000_savres_strategy (info, /*savep=*/false,
-				     /*static_chain_p=*/0, sibcall);
+  strategy = info->savres_strategy;
   using_load_multiple = strategy & SAVRES_MULTIPLE;
-  restoring_FPRs_inline = strategy & SAVRES_INLINE_FPRS;
-  restoring_GPRs_inline = strategy & SAVRES_INLINE_GPRS;
+  restoring_FPRs_inline = sibcall || (strategy & REST_INLINE_FPRS);
+  restoring_GPRs_inline = sibcall || (strategy & REST_INLINE_GPRS);
   using_mtcr_multiple = (rs6000_cpu == PROCESSOR_PPC601
 			 || rs6000_cpu == PROCESSOR_PPC603
 			 || rs6000_cpu == PROCESSOR_PPC750
@@ -20002,7 +20943,7 @@ rs6000_emit_epilogue (int sibcall)
 				     && !frame_pointer_needed));
   restore_lr = (info->lr_save_p
 		&& (restoring_FPRs_inline
-		    || (strategy & SAVRES_NOINLINE_FPRS_DOESNT_RESTORE_LR))
+		    || (strategy & REST_NOINLINE_FPRS_DOESNT_RESTORE_LR))
 		&& (restoring_GPRs_inline
 		    || info->first_fp_reg_save < 64));
 
@@ -20641,7 +21582,7 @@ rs6000_emit_epilogue (int sibcall)
   if (!sibcall)
     {
       rtvec p;
-      bool lr = (strategy & SAVRES_NOINLINE_FPRS_DOESNT_RESTORE_LR) == 0;
+      bool lr = (strategy & REST_NOINLINE_FPRS_DOESNT_RESTORE_LR) == 0;
       if (! restoring_FPRs_inline)
 	p = rtvec_alloc (4 + 64 - info->first_fp_reg_save);
       else
@@ -20872,7 +21813,7 @@ rs6000_output_function_epilogue (FILE *file,
 	  int next_parm_info_bit = 31;
 
 	  for (decl = DECL_ARGUMENTS (current_function_decl);
-	       decl; decl = TREE_CHAIN (decl))
+	       decl; decl = DECL_CHAIN (decl))
 	    {
 	      rtx parameter = DECL_INCOMING_RTL (decl);
 	      enum machine_mode mode = GET_MODE (parameter);
@@ -21311,7 +22252,7 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
       struct toc_hash_struct *h;
       void * * found;
 
-      /* Create toc_hash_table.  This can't be done at OVERRIDE_OPTIONS
+      /* Create toc_hash_table.  This can't be done at TARGET_OPTION_OVERRIDE
 	 time because GGC is not initialized at that point.  */
       if (toc_hash_table == NULL)
 	toc_hash_table = htab_create_ggc (1021, toc_hash_function,
@@ -24199,7 +25140,7 @@ rs6000_elf_in_small_data_p (const_tree decl)
       HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (decl));
 
       if (size > 0
-	  && (unsigned HOST_WIDE_INT) size <= g_switch_value
+	  && size <= g_switch_value
 	  /* If it's not public, and we're not going to reference it there,
 	     there's no need to put it in the small data section.  */
 	  && (rs6000_sdata != SDATA_DATA || TREE_PUBLIC (decl)))
@@ -24256,7 +25197,16 @@ rs6000_fatal_bad_address (rtx op)
 
 #if TARGET_MACHO
 
-static tree branch_island_list = 0;
+typedef struct branch_island_d {
+  tree function_name;
+  tree label_name;
+  int line_number;
+} branch_island;
+
+DEF_VEC_O(branch_island);
+DEF_VEC_ALLOC_O(branch_island,gc);
+
+static VEC(branch_island,gc) *branch_islands;
 
 /* Remember to generate a branch island for far calls to the given
    function.  */
@@ -24265,37 +25215,29 @@ static void
 add_compiler_branch_island (tree label_name, tree function_name,
 			    int line_number)
 {
-  tree branch_island = build_tree_list (function_name, label_name);
-  TREE_TYPE (branch_island) = build_int_cst (NULL_TREE, line_number);
-  TREE_CHAIN (branch_island) = branch_island_list;
-  branch_island_list = branch_island;
+  branch_island *bi = VEC_safe_push (branch_island, gc, branch_islands, NULL);
+
+  bi->function_name = function_name;
+  bi->label_name = label_name;
+  bi->line_number = line_number;
 }
 
-#define BRANCH_ISLAND_LABEL_NAME(BRANCH_ISLAND)     TREE_VALUE (BRANCH_ISLAND)
-#define BRANCH_ISLAND_FUNCTION_NAME(BRANCH_ISLAND)  TREE_PURPOSE (BRANCH_ISLAND)
-#define BRANCH_ISLAND_LINE_NUMBER(BRANCH_ISLAND)    \
-		TREE_INT_CST_LOW (TREE_TYPE (BRANCH_ISLAND))
-
-/* Generate far-jump branch islands for everything on the
-   branch_island_list.  Invoked immediately after the last instruction
-   of the epilogue has been emitted; the branch-islands must be
-   appended to, and contiguous with, the function body.  Mach-O stubs
-   are generated in machopic_output_stub().  */
+/* Generate far-jump branch islands for everything recorded in
+   branch_islands.  Invoked immediately after the last instruction of
+   the epilogue has been emitted; the branch islands must be appended
+   to, and contiguous with, the function body.  Mach-O stubs are
+   generated in machopic_output_stub().  */
 
 static void
 macho_branch_islands (void)
 {
   char tmp_buf[512];
-  tree branch_island;
 
-  for (branch_island = branch_island_list;
-       branch_island;
-       branch_island = TREE_CHAIN (branch_island))
+  while (!VEC_empty (branch_island, branch_islands))
     {
-      const char *label =
-	IDENTIFIER_POINTER (BRANCH_ISLAND_LABEL_NAME (branch_island));
-      const char *name  =
-	IDENTIFIER_POINTER (BRANCH_ISLAND_FUNCTION_NAME (branch_island));
+      branch_island *bi = VEC_last (branch_island, branch_islands);
+      const char *label = IDENTIFIER_POINTER (bi->label_name);
+      const char *name = IDENTIFIER_POINTER (bi->function_name);
       char name_buf[512];
       /* Cheap copy of the details from the Darwin ASM_OUTPUT_LABELREF().  */
       if (name[0] == '*' || name[0] == '&')
@@ -24309,7 +25251,7 @@ macho_branch_islands (void)
       strcat (tmp_buf, label);
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
       if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
-	dbxout_stabd (N_SLINE, BRANCH_ISLAND_LINE_NUMBER (branch_island));
+	dbxout_stabd (N_SLINE, bi->line_number);
 #endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */
       if (flag_pic)
 	{
@@ -24346,11 +25288,10 @@ macho_branch_islands (void)
       output_asm_insn (tmp_buf, 0);
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
       if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
-	dbxout_stabd (N_SLINE, BRANCH_ISLAND_LINE_NUMBER (branch_island));
+	dbxout_stabd (N_SLINE, bi->line_number);
 #endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */
+      VEC_pop (branch_island, branch_islands);
     }
-
-  branch_island_list = 0;
 }
 
 /* NO_PREVIOUS_DEF checks in the link list whether the function name is
@@ -24359,11 +25300,11 @@ macho_branch_islands (void)
 static int
 no_previous_def (tree function_name)
 {
-  tree branch_island;
-  for (branch_island = branch_island_list;
-       branch_island;
-       branch_island = TREE_CHAIN (branch_island))
-    if (function_name == BRANCH_ISLAND_FUNCTION_NAME (branch_island))
+  branch_island *bi;
+  unsigned ix;
+
+  FOR_EACH_VEC_ELT (branch_island, branch_islands, ix, bi)
+    if (function_name == bi->function_name)
       return 0;
   return 1;
 }
@@ -24374,22 +25315,14 @@ no_previous_def (tree function_name)
 static tree
 get_prev_label (tree function_name)
 {
-  tree branch_island;
-  for (branch_island = branch_island_list;
-       branch_island;
-       branch_island = TREE_CHAIN (branch_island))
-    if (function_name == BRANCH_ISLAND_FUNCTION_NAME (branch_island))
-      return BRANCH_ISLAND_LABEL_NAME (branch_island);
-  return 0;
+  branch_island *bi;
+  unsigned ix;
+
+  FOR_EACH_VEC_ELT (branch_island, branch_islands, ix, bi)
+    if (function_name == bi->function_name)
+      return bi->label_name;
+  return NULL_TREE;
 }
-
-#ifndef DARWIN_LINKER_GENERATES_ISLANDS
-#define DARWIN_LINKER_GENERATES_ISLANDS 0
-#endif
-
-/* KEXTs still need branch islands.  */
-#define DARWIN_GENERATE_ISLANDS (!DARWIN_LINKER_GENERATES_ISLANDS \
-				 || flag_mkernel || flag_apple_kext)
 
 /* INSN is either a function call or a millicode call.  It may have an
    unconditional jump in its delay slot.
@@ -24401,7 +25334,7 @@ output_call (rtx insn, rtx *operands, int dest_operand_number,
 	     int cookie_operand_number)
 {
   static char buf[256];
-  if (DARWIN_GENERATE_ISLANDS
+  if (darwin_emit_branch_islands
       && GET_CODE (operands[dest_operand_number]) == SYMBOL_REF
       && (INTVAL (operands[cookie_operand_number]) & CALL_LONG))
     {
@@ -25072,7 +26005,7 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int *total,
 	  || (outer_code == COMPARE
 	      && (satisfies_constraint_I (x)
 		  || satisfies_constraint_K (x)))
-	  || (outer_code == EQ
+	  || ((outer_code == EQ || outer_code == NE)
 	      && (satisfies_constraint_I (x)
 		  || satisfies_constraint_K (x)
 		  || (mode == SImode
@@ -25255,7 +26188,11 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int *total,
       return false;
 
     case POPCOUNT:
-      *total = COSTS_N_INSNS (6);
+      *total = COSTS_N_INSNS (TARGET_POPCNTD ? 1 : 6);
+      return false;
+
+    case PARITY:
+      *total = COSTS_N_INSNS (TARGET_CMPB ? 2 : 6);
       return false;
 
     case NOT:
@@ -25450,9 +26387,9 @@ rs6000_debug_address_cost (rtx x, bool speed)
 /* A C expression returning the cost of moving data from a register of class
    CLASS1 to one of CLASS2.  */
 
-int
+static int
 rs6000_register_move_cost (enum machine_mode mode,
-			   enum reg_class from, enum reg_class to)
+			   reg_class_t from, reg_class_t to)
 {
   int ret;
 
@@ -25464,8 +26401,8 @@ rs6000_register_move_cost (enum machine_mode mode,
 	from = to;
 
       if (from == FLOAT_REGS || from == ALTIVEC_REGS || from == VSX_REGS)
-	ret = (rs6000_memory_move_cost (mode, from, 0)
-	       + rs6000_memory_move_cost (mode, GENERAL_REGS, 0));
+	ret = (rs6000_memory_move_cost (mode, from, false)
+	       + rs6000_memory_move_cost (mode, GENERAL_REGS, false));
 
       /* It's more expensive to move CR_REGS than CR0_REGS because of the
 	 shift.  */
@@ -25510,9 +26447,9 @@ rs6000_register_move_cost (enum machine_mode mode,
 /* A C expressions returning the cost of moving data of MODE from a register to
    or from memory.  */
 
-int
-rs6000_memory_move_cost (enum machine_mode mode, enum reg_class rclass,
-			 int in ATTRIBUTE_UNUSED)
+static int
+rs6000_memory_move_cost (enum machine_mode mode, reg_class_t rclass,
+			 bool in ATTRIBUTE_UNUSED)
 {
   int ret;
 
@@ -25615,112 +26552,65 @@ rs6000_load_constant_and_splat (enum machine_mode mode, REAL_VALUE_TYPE dconst)
   return reg;
 }
 
-/* Generate a FMADD instruction:
-	dst = (m1 * m2) + a
-
-   generating different RTL based on the fused multiply/add switch.  */
+/* Generate an FMA instruction.  */
 
 static void
-rs6000_emit_madd (rtx dst, rtx m1, rtx m2, rtx a)
+rs6000_emit_madd (rtx target, rtx m1, rtx m2, rtx a)
 {
-  enum machine_mode mode = GET_MODE (dst);
+  enum machine_mode mode = GET_MODE (target);
+  rtx dst;
 
-  if (!TARGET_FUSED_MADD)
-    {
-      /* For the simple ops, use the generator function, rather than assuming
-	 that the RTL is standard.  */
-      enum insn_code mcode = optab_handler (smul_optab, mode)->insn_code;
-      enum insn_code acode = optab_handler (add_optab, mode)->insn_code;
-      gen_2arg_fn_t gen_mul = (gen_2arg_fn_t) GEN_FCN (mcode);
-      gen_2arg_fn_t gen_add = (gen_2arg_fn_t) GEN_FCN (acode);
-      rtx mreg = gen_reg_rtx (mode);
+  dst = expand_ternary_op (mode, fma_optab, m1, m2, a, target, 0);
+  gcc_assert (dst != NULL);
 
-      gcc_assert (mcode != CODE_FOR_nothing && acode != CODE_FOR_nothing);
-      emit_insn (gen_mul (mreg, m1, m2));
-      emit_insn (gen_add (dst, mreg, a));
-    }
-
-  else
-    emit_insn (gen_rtx_SET (VOIDmode, dst,
-			    gen_rtx_PLUS (mode,
-					  gen_rtx_MULT (mode, m1, m2),
-					  a)));
+  if (dst != target)
+    emit_move_insn (target, dst);
 }
 
-/* Generate a FMSUB instruction:
-	dst = (m1 * m2) - a
-
-   generating different RTL based on the fused multiply/add switch.  */
+/* Generate a FMSUB instruction: dst = fma(m1, m2, -a).  */
 
 static void
-rs6000_emit_msub (rtx dst, rtx m1, rtx m2, rtx a)
+rs6000_emit_msub (rtx target, rtx m1, rtx m2, rtx a)
 {
-  enum machine_mode mode = GET_MODE (dst);
+  enum machine_mode mode = GET_MODE (target);
+  rtx dst;
 
-  if (!TARGET_FUSED_MADD
-      || (mode == V4SFmode && VECTOR_UNIT_ALTIVEC_P (V4SFmode)))
-    {
-      /* For the simple ops, use the generator function, rather than assuming
-	 that the RTL is standard.  */
-      enum insn_code mcode = optab_handler (smul_optab, mode)->insn_code;
-      enum insn_code scode = optab_handler (add_optab, mode)->insn_code;
-      gen_2arg_fn_t gen_mul = (gen_2arg_fn_t) GEN_FCN (mcode);
-      gen_2arg_fn_t gen_sub = (gen_2arg_fn_t) GEN_FCN (scode);
-      rtx mreg = gen_reg_rtx (mode);
-
-      gcc_assert (mcode != CODE_FOR_nothing && scode != CODE_FOR_nothing);
-      emit_insn (gen_mul (mreg, m1, m2));
-      emit_insn (gen_sub (dst, mreg, a));
-    }
-
+  /* Altivec does not support fms directly;
+     generate in terms of fma in that case.  */
+  if (optab_handler (fms_optab, mode) != CODE_FOR_nothing)
+    dst = expand_ternary_op (mode, fms_optab, m1, m2, a, target, 0);
   else
-    emit_insn (gen_rtx_SET (VOIDmode, dst,
-			    gen_rtx_MINUS (mode,
-					   gen_rtx_MULT (mode, m1, m2),
-					   a)));
+    {
+      a = expand_unop (mode, neg_optab, a, NULL_RTX, 0);
+      dst = expand_ternary_op (mode, fma_optab, m1, m2, a, target, 0);
+    }
+  gcc_assert (dst != NULL);
+
+  if (dst != target)
+    emit_move_insn (target, dst);
 }
-
-/* Generate a FNMSUB instruction:
-	dst = - ((m1 * m2) - a)
-
-   Which is equivalent to (except in the prescence of -0.0):
-	dst = a - (m1 * m2)
-
-   generating different RTL based on the fast-math and fused multiply/add
-   switches.  */
+    
+/* Generate a FNMSUB instruction: dst = -fma(m1, m2, -a).  */
 
 static void
 rs6000_emit_nmsub (rtx dst, rtx m1, rtx m2, rtx a)
 {
   enum machine_mode mode = GET_MODE (dst);
+  rtx r;
 
-  if (!TARGET_FUSED_MADD)
-    {
-      /* For the simple ops, use the generator function, rather than assuming
-	 that the RTL is standard.  */
-      enum insn_code mcode = optab_handler (smul_optab, mode)->insn_code;
-      enum insn_code scode = optab_handler (sub_optab, mode)->insn_code;
-      gen_2arg_fn_t gen_mul = (gen_2arg_fn_t) GEN_FCN (mcode);
-      gen_2arg_fn_t gen_sub = (gen_2arg_fn_t) GEN_FCN (scode);
-      rtx mreg = gen_reg_rtx (mode);
+  /* This is a tad more complicated, since the fnma_optab is for
+     a different expression: fma(-m1, m2, a), which is the same
+     thing except in the case of signed zeros.
 
-      gcc_assert (mcode != CODE_FOR_nothing && scode != CODE_FOR_nothing);
-      emit_insn (gen_mul (mreg, m1, m2));
-      emit_insn (gen_sub (dst, a, mreg));
-    }
+     Fortunately we know that if FMA is supported that FNMSUB is
+     also supported in the ISA.  Just expand it directly.  */
 
-  else
-    {
-      rtx m = gen_rtx_MULT (mode, m1, m2);
+  gcc_assert (optab_handler (fma_optab, mode) != CODE_FOR_nothing);
 
-      if (!HONOR_SIGNED_ZEROS (mode))
-	emit_insn (gen_rtx_SET (VOIDmode, dst, gen_rtx_MINUS (mode, a, m)));
-
-      else
-	emit_insn (gen_rtx_SET (VOIDmode, dst,
-				gen_rtx_NEG (mode,
-					     gen_rtx_MINUS (mode, m, a))));
-    }
+  r = gen_rtx_NEG (mode, a);
+  r = gen_rtx_FMA (mode, m1, m2, r);
+  r = gen_rtx_NEG (mode, r);
+  emit_insn (gen_rtx_SET (VOIDmode, dst, r));
 }
 
 /* Newton-Raphson approximation of floating point divide with just 2 passes
@@ -25733,7 +26623,7 @@ rs6000_emit_swdiv_high_precision (rtx dst, rtx n, rtx d)
 {
   enum machine_mode mode = GET_MODE (dst);
   rtx x0, e0, e1, y1, u0, v0;
-  enum insn_code code = optab_handler (smul_optab, mode)->insn_code;
+  enum insn_code code = optab_handler (smul_optab, mode);
   gen_2arg_fn_t gen_mul = (gen_2arg_fn_t) GEN_FCN (code);
   rtx one = rs6000_load_constant_and_splat (mode, dconst1);
 
@@ -25771,7 +26661,7 @@ rs6000_emit_swdiv_low_precision (rtx dst, rtx n, rtx d)
 {
   enum machine_mode mode = GET_MODE (dst);
   rtx x0, e0, e1, e2, y1, y2, y3, u0, v0, one;
-  enum insn_code code = optab_handler (smul_optab, mode)->insn_code;
+  enum insn_code code = optab_handler (smul_optab, mode);
   gen_2arg_fn_t gen_mul = (gen_2arg_fn_t) GEN_FCN (code);
 
   gcc_assert (code != CODE_FOR_nothing);
@@ -25842,7 +26732,7 @@ rs6000_emit_swrsqrt (rtx dst, rtx src)
   REAL_VALUE_TYPE dconst3_2;
   int i;
   rtx halfthree;
-  enum insn_code code = optab_handler (smul_optab, mode)->insn_code;
+  enum insn_code code = optab_handler (smul_optab, mode);
   gen_2arg_fn_t gen_mul = (gen_2arg_fn_t) GEN_FCN (code);
 
   gcc_assert (code != CODE_FOR_nothing);
@@ -25891,7 +26781,7 @@ rs6000_emit_popcount (rtx dst, rtx src)
   if (TARGET_POPCNTD)
     {
       if (mode == SImode)
-	emit_insn (gen_popcntwsi2 (dst, src));
+	emit_insn (gen_popcntdsi2 (dst, src));
       else
 	emit_insn (gen_popcntddi2 (dst, src));
       return;
@@ -25930,6 +26820,23 @@ rs6000_emit_parity (rtx dst, rtx src)
   rtx tmp;
 
   tmp = gen_reg_rtx (mode);
+
+  /* Use the PPC ISA 2.05 prtyw/prtyd instruction if we can.  */
+  if (TARGET_CMPB)
+    {
+      if (mode == SImode)
+	{
+	  emit_insn (gen_popcntbsi2 (tmp, src));
+	  emit_insn (gen_paritysi2_cmpb (dst, tmp));
+	}
+      else
+	{
+	  emit_insn (gen_popcntbdi2 (tmp, src));
+	  emit_insn (gen_paritydi2_cmpb (dst, tmp));
+	}
+      return;
+    }
+
   if (mode == SImode)
     {
       /* Is mult+shift >= shift+xor+shift+xor?  */
@@ -26030,10 +26937,8 @@ rs6000_function_value (const_tree valtype,
   unsigned int regno;
 
   /* Special handling for structs in darwin64.  */
-  if (rs6000_darwin64_abi
-      && TYPE_MODE (valtype) == BLKmode
-      && TREE_CODE (valtype) == RECORD_TYPE
-      && int_size_in_bytes (valtype) > 0)
+  if (TARGET_MACHO 
+      && rs6000_darwin64_struct_check_p (TYPE_MODE (valtype), valtype))
     {
       CUMULATIVE_ARGS valcum;
       rtx valret;
@@ -26043,7 +26948,7 @@ rs6000_function_value (const_tree valtype,
       valcum.vregno = ALTIVEC_ARG_MIN_REG;
       /* Do a trial code generation as if this were going to be passed as
 	 an argument; if any part goes in memory, we return NULL.  */
-      valret = rs6000_darwin64_record_arg (&valcum, valtype, 1, true);
+      valret = rs6000_darwin64_record_arg (&valcum, valtype, true, true);
       if (valret)
 	return valret;
       /* Otherwise fall through to standard ABI rules.  */
@@ -26398,6 +27303,651 @@ rs6000_final_prescan_insn (rtx insn, rtx *operand ATTRIBUTE_UNUSED,
 		    "emitting conditional microcode insn %s\t[%s] #%d",
 		    temp, insn_data[INSN_CODE (insn)].name, INSN_UID (insn));
     }
+}
+
+
+/* Mask options that we want to support inside of attribute((target)) and
+   #pragma GCC target operations.  Note, we do not include things like
+   64/32-bit, endianess, hard/soft floating point, etc. that would have
+   different calling sequences.  */
+
+struct rs6000_opt_mask {
+  const char *name;		/* option name */
+  int mask;			/* mask to set */
+  bool invert;			/* invert sense of mask */
+  bool valid_target;		/* option is a target option */
+};
+
+static struct rs6000_opt_mask const rs6000_opt_masks[] =
+{
+  { "altivec",		MASK_ALTIVEC,		false, true  },
+  { "cmpb",		MASK_CMPB,		false, true  },
+  { "dlmzb",		MASK_DLMZB,		false, true  },
+  { "fprnd",		MASK_FPRND,		false, true  },
+  { "hard-dfp",		MASK_DFP,		false, true  },
+  { "isel",		MASK_ISEL,		false, true  },
+  { "mfcrf",		MASK_MFCRF,		false, true  },
+  { "mfpgpr",		MASK_MFPGPR,		false, true  },
+  { "mulhw",		MASK_MULHW,		false, true  },
+  { "multiple",		MASK_MULTIPLE,		false, true  },
+  { "update",		MASK_NO_UPDATE,		true , true  },
+  { "popcntb",		MASK_POPCNTB,		false, true  },
+  { "popcntd",		MASK_POPCNTD,		false, true  },
+  { "powerpc-gfxopt",	MASK_PPC_GFXOPT,	false, true  },
+  { "powerpc-gpopt",	MASK_PPC_GPOPT,		false, true  },
+  { "recip-precision",	MASK_RECIP_PRECISION,	false, true  },
+  { "string",		MASK_STRING,		false, true  },
+  { "vsx",		MASK_VSX,		false, true  },
+#ifdef MASK_64BIT
+#if TARGET_AIX_OS
+  { "aix64",		MASK_64BIT,		false, false },
+  { "aix32",		MASK_64BIT,		true,  false },
+#else
+  { "64",		MASK_64BIT,		false, false },
+  { "32",		MASK_64BIT,		true,  false },
+#endif
+#endif
+#ifdef MASK_EABI
+  { "eabi",		MASK_EABI,		false, false },
+#endif
+#ifdef MASK_LITTLE_ENDIAN
+  { "little",		MASK_LITTLE_ENDIAN,	false, false },
+  { "big",		MASK_LITTLE_ENDIAN,	true,  false },
+#endif
+#ifdef MASK_RELOCATABLE
+  { "relocatable",	MASK_RELOCATABLE,	false, false },
+#endif
+#ifdef MASK_STRICT_ALIGN
+  { "strict-align",	MASK_STRICT_ALIGN,	false, false },
+#endif
+  { "power",		MASK_POWER,		false, false },
+  { "power2",		MASK_POWER2,		false, false },
+  { "powerpc",		MASK_POWERPC,		false, false },
+  { "soft-float",	MASK_SOFT_FLOAT,	false, false },
+  { "string",		MASK_STRING,		false, false },
+};
+
+/* Option variables that we want to support inside attribute((target)) and
+   #pragma GCC target operations.  */
+
+struct rs6000_opt_var {
+  const char *name;		/* option name */
+  size_t global_offset;		/* offset of the option in global_options.  */
+  size_t target_offset;		/* offset of the option in target optiosn.  */
+};
+
+static struct rs6000_opt_var const rs6000_opt_vars[] =
+{
+  { "friz",
+    offsetof (struct gcc_options, x_TARGET_FRIZ),
+    offsetof (struct cl_target_option, x_TARGET_FRIZ), },
+  { "avoid-indexed-addresses",
+    offsetof (struct gcc_options, x_TARGET_AVOID_XFORM),
+    offsetof (struct cl_target_option, x_TARGET_AVOID_XFORM) },
+  { "paired",
+    offsetof (struct gcc_options, x_rs6000_paired_float),
+    offsetof (struct cl_target_option, x_rs6000_paired_float), },
+  { "longcall",
+    offsetof (struct gcc_options, x_rs6000_default_long_calls),
+    offsetof (struct cl_target_option, x_rs6000_default_long_calls), },
+};
+
+/* Inner function to handle attribute((target("..."))) and #pragma GCC target
+   parsing.  Return true if there were no errors.  */
+
+static bool
+rs6000_inner_target_options (tree args, bool attr_p)
+{
+  bool ret = true;
+
+  if (args == NULL_TREE)
+    ;
+
+  else if (TREE_CODE (args) == STRING_CST)
+    {
+      char *p = ASTRDUP (TREE_STRING_POINTER (args));
+      char *q;
+
+      while ((q = strtok (p, ",")) != NULL)
+	{
+	  bool error_p = false;
+	  bool not_valid_p = false;
+	  const char *cpu_opt = NULL;
+
+	  p = NULL;
+	  if (strncmp (q, "cpu=", 4) == 0)
+	    {
+	      int cpu_index = rs6000_cpu_name_lookup (q+4);
+	      if (cpu_index >= 0)
+		rs6000_cpu_index = cpu_index;
+	      else
+		{
+		  error_p = true;
+		  cpu_opt = q+4;
+		}
+	    }
+	  else if (strncmp (q, "tune=", 5) == 0)
+	    {
+	      int tune_index = rs6000_cpu_name_lookup (q+5);
+	      if (tune_index >= 0)
+		rs6000_tune_index = tune_index;
+	      else
+		{
+		  error_p = true;
+		  cpu_opt = q+5;
+		}
+	    }
+	  else
+	    {
+	      size_t i;
+	      bool invert = false;
+	      char *r = q;
+
+	      error_p = true;
+	      if (strncmp (r, "no-", 3) == 0)
+		{
+		  invert = true;
+		  r += 3;
+		}
+
+	      for (i = 0; i < ARRAY_SIZE (rs6000_opt_masks); i++)
+		if (strcmp (r, rs6000_opt_masks[i].name) == 0)
+		  {
+		    int mask = rs6000_opt_masks[i].mask;
+
+		    if (!rs6000_opt_masks[i].valid_target)
+		      not_valid_p = true;
+		    else
+		      {
+			error_p = false;
+			target_flags_explicit |= mask;
+
+			if (rs6000_opt_masks[i].invert)
+			  invert = !invert;
+
+			if (invert)
+			  target_flags &= ~mask;
+			else
+			  target_flags |= mask;
+		      }
+		    break;
+		  }
+
+	      if (error_p && !not_valid_p)
+		{
+		  for (i = 0; i < ARRAY_SIZE (rs6000_opt_vars); i++)
+		    if (strcmp (r, rs6000_opt_vars[i].name) == 0)
+		      {
+			size_t j = rs6000_opt_vars[i].global_offset;
+			((int *) &global_options)[j] = !invert;
+			error_p = false;
+			break;
+		      }
+		}
+	    }
+
+	  if (error_p)
+	    {
+	      const char *eprefix, *esuffix;
+
+	      ret = false;
+	      if (attr_p)
+		{
+		  eprefix = "__attribute__((__target__(";
+		  esuffix = ")))";
+		}
+	      else
+		{
+		  eprefix = "#pragma GCC target ";
+		  esuffix = "";
+		}
+
+	      if (cpu_opt)
+		error ("invalid cpu \"%s\" for %s\"%s\"%s", cpu_opt, eprefix,
+		       q, esuffix);
+	      else if (not_valid_p)
+		error ("%s\"%s\"%s is not allowed", eprefix, q, esuffix);
+	      else
+		error ("%s\"%s\"%s is invalid", eprefix, q, esuffix);
+	    }
+	}
+    }
+
+  else if (TREE_CODE (args) == TREE_LIST)
+    {
+      do
+	{
+	  tree value = TREE_VALUE (args);
+	  if (value)
+	    {
+	      bool ret2 = rs6000_inner_target_options (value, attr_p);
+	      if (!ret2)
+		ret = false;
+	    }
+	  args = TREE_CHAIN (args);
+	}
+      while (args != NULL_TREE);
+    }
+
+  else
+    gcc_unreachable ();
+
+  return ret;
+}
+
+/* Print out the target options as a list for -mdebug=target.  */
+
+static void
+rs6000_debug_target_options (tree args, const char *prefix)
+{
+  if (args == NULL_TREE)
+    fprintf (stderr, "%s<NULL>", prefix);
+
+  else if (TREE_CODE (args) == STRING_CST)
+    {
+      char *p = ASTRDUP (TREE_STRING_POINTER (args));
+      char *q;
+
+      while ((q = strtok (p, ",")) != NULL)
+	{
+	  p = NULL;
+	  fprintf (stderr, "%s\"%s\"", prefix, q);
+	  prefix = ", ";
+	}
+    }
+
+  else if (TREE_CODE (args) == TREE_LIST)
+    {
+      do
+	{
+	  tree value = TREE_VALUE (args);
+	  if (value)
+	    {
+	      rs6000_debug_target_options (value, prefix);
+	      prefix = ", ";
+	    }
+	  args = TREE_CHAIN (args);
+	}
+      while (args != NULL_TREE);
+    }
+
+  else
+    gcc_unreachable ();
+
+  return;
+}
+
+
+/* Hook to validate attribute((target("..."))).  */
+
+static bool
+rs6000_valid_attribute_p (tree fndecl,
+			  tree ARG_UNUSED (name),
+			  tree args,
+			  int flags)
+{
+  struct cl_target_option cur_target;
+  bool ret;
+  tree old_optimize = build_optimization_node ();
+  tree new_target, new_optimize;
+  tree func_optimize = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl);
+
+  gcc_assert ((fndecl != NULL_TREE) && (args != NULL_TREE));
+
+  if (TARGET_DEBUG_TARGET)
+    {
+      tree tname = DECL_NAME (fndecl);
+      fprintf (stderr, "\n==================== rs6000_valid_attribute_p:\n");
+      if (tname)
+	fprintf (stderr, "function: %.*s\n",
+		 (int) IDENTIFIER_LENGTH (tname),
+		 IDENTIFIER_POINTER (tname));
+      else
+	fprintf (stderr, "function: unknown\n");
+  
+      fprintf (stderr, "args:");
+      rs6000_debug_target_options (args, " ");
+      fprintf (stderr, "\n");
+
+      if (flags)
+	fprintf (stderr, "flags: 0x%x\n", flags);
+
+      fprintf (stderr, "--------------------\n");
+    }
+
+  old_optimize = build_optimization_node ();
+  func_optimize = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl);
+
+  /* If the function changed the optimization levels as well as setting target
+     options, start with the optimizations specified.  */
+  if (func_optimize && func_optimize != old_optimize)
+    cl_optimization_restore (&global_options,
+			     TREE_OPTIMIZATION (func_optimize));
+
+  /* The target attributes may also change some optimization flags, so update
+     the optimization options if necessary.  */
+  cl_target_option_save (&cur_target, &global_options);
+  rs6000_cpu_index = rs6000_tune_index = -1;
+  ret = rs6000_inner_target_options (args, true);
+
+  /* Set up any additional state.  */
+  if (ret)
+    {
+      ret = rs6000_option_override_internal (false);
+      new_target = build_target_option_node ();
+    }
+  else
+    new_target = NULL;
+
+  new_optimize = build_optimization_node ();
+
+  if (!new_target)
+    ret = false;
+
+  else if (fndecl)
+    {
+      DECL_FUNCTION_SPECIFIC_TARGET (fndecl) = new_target;
+
+      if (old_optimize != new_optimize)
+	DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl) = new_optimize;
+    }
+
+  cl_target_option_restore (&global_options, &cur_target);
+
+  if (old_optimize != new_optimize)
+    cl_optimization_restore (&global_options,
+			     TREE_OPTIMIZATION (old_optimize));
+
+  return ret;
+}
+
+
+/* Hook to validate the current #pragma GCC target and set the state, and
+   update the macros based on what was changed.  If ARGS is NULL, then
+   POP_TARGET is used to reset the options.  */
+
+bool
+rs6000_pragma_target_parse (tree args, tree pop_target)
+{
+  tree cur_tree;
+  bool ret;
+
+  if (TARGET_DEBUG_TARGET)
+    {
+      fprintf (stderr, "\n==================== rs6000_pragma_target_parse\n");
+      fprintf (stderr, "args:");
+      rs6000_debug_target_options (args, " ");
+      fprintf (stderr, "\n");
+
+      if (pop_target)
+	{
+	  fprintf (stderr, "pop_target:\n");
+	  debug_tree (pop_target);
+	}
+      else
+	fprintf (stderr, "pop_target: <NULL>\n");
+
+      fprintf (stderr, "--------------------\n");
+    }
+
+  if (! args)
+    {
+      ret = true;
+      cur_tree = ((pop_target)
+		  ? pop_target
+		  : target_option_default_node);
+      cl_target_option_restore (&global_options,
+				TREE_TARGET_OPTION (cur_tree));
+    }
+  else
+    {
+      rs6000_cpu_index = rs6000_tune_index = -1;
+      ret = rs6000_inner_target_options (args, false);
+      cur_tree = build_target_option_node ();
+
+      if (!cur_tree)
+	ret = false;
+    }
+
+  if (cur_tree)
+    target_option_current_node = cur_tree;
+
+  return ret;
+}
+
+
+/* Remember the last target of rs6000_set_current_function.  */
+static GTY(()) tree rs6000_previous_fndecl;
+
+/* Establish appropriate back-end context for processing the function
+   FNDECL.  The argument might be NULL to indicate processing at top
+   level, outside of any function scope.  */
+static void
+rs6000_set_current_function (tree fndecl)
+{
+  tree old_tree = (rs6000_previous_fndecl
+		   ? DECL_FUNCTION_SPECIFIC_TARGET (rs6000_previous_fndecl)
+		   : NULL_TREE);
+
+  tree new_tree = (fndecl
+		   ? DECL_FUNCTION_SPECIFIC_TARGET (fndecl)
+		   : NULL_TREE);
+
+  if (TARGET_DEBUG_TARGET)
+    {
+      bool print_final = false;
+      fprintf (stderr, "\n==================== rs6000_set_current_function");
+
+      if (fndecl)
+	fprintf (stderr, ", fndecl %s (%p)",
+		 (DECL_NAME (fndecl)
+		  ? IDENTIFIER_POINTER (DECL_NAME (fndecl))
+		  : "<unknown>"), (void *)fndecl);
+
+      if (rs6000_previous_fndecl)
+	fprintf (stderr, ", prev_fndecl (%p)", (void *)rs6000_previous_fndecl);
+
+      fprintf (stderr, "\n");
+      if (new_tree)
+	{
+	  fprintf (stderr, "\nnew fndecl target specific options:\n");
+	  debug_tree (new_tree);
+	  print_final = true;
+	}
+
+      if (old_tree)
+	{
+	  fprintf (stderr, "\nold fndecl target specific options:\n");
+	  debug_tree (old_tree);
+	  print_final = true;
+	}
+
+      if (print_final)
+	fprintf (stderr, "--------------------\n");
+    }
+
+  /* Only change the context if the function changes.  This hook is called
+     several times in the course of compiling a function, and we don't want to
+     slow things down too much or call target_reinit when it isn't safe.  */
+  if (fndecl && fndecl != rs6000_previous_fndecl)
+    {
+      rs6000_previous_fndecl = fndecl;
+      if (old_tree == new_tree)
+	;
+
+      else if (new_tree)
+	{
+	  cl_target_option_restore (&global_options,
+				    TREE_TARGET_OPTION (new_tree));
+	  target_reinit ();
+	}
+
+      else if (old_tree)
+	{
+	  struct cl_target_option *def
+	    = TREE_TARGET_OPTION (target_option_current_node);
+
+	  cl_target_option_restore (&global_options, def);
+	  target_reinit ();
+	}
+    }
+}
+
+
+/* Save the current options */
+
+static void
+rs6000_function_specific_save (struct cl_target_option *ptr)
+{
+  ptr->rs6000_target_flags_explicit = target_flags_explicit;
+}
+
+/* Restore the current options */
+
+static void
+rs6000_function_specific_restore (struct cl_target_option *ptr)
+{
+  target_flags_explicit = ptr->rs6000_target_flags_explicit;
+  (void) rs6000_option_override_internal (false);
+}
+
+/* Print the current options */
+
+static void
+rs6000_function_specific_print (FILE *file, int indent,
+				struct cl_target_option *ptr)
+{
+  size_t i;
+  int flags = ptr->x_target_flags;
+
+  /* Print the various mask options.  */
+  for (i = 0; i < ARRAY_SIZE (rs6000_opt_masks); i++)
+    if ((flags & rs6000_opt_masks[i].mask) != 0)
+      {
+	flags &= ~ rs6000_opt_masks[i].mask;
+	fprintf (file, "%*s-m%s%s\n", indent, "",
+		 rs6000_opt_masks[i].invert ? "no-" : "",
+		 rs6000_opt_masks[i].name);
+      }
+
+  /* Print the various options that are variables.  */
+  for (i = 0; i < ARRAY_SIZE (rs6000_opt_vars); i++)
+    {
+      size_t j = rs6000_opt_vars[i].target_offset;
+      if (((signed char *) ptr)[j])
+	fprintf (file, "%*s-m%s\n", indent, "",
+		 rs6000_opt_vars[i].name);
+    }
+}
+
+
+/* Hook to determine if one function can safely inline another.  */
+
+static bool
+rs6000_can_inline_p (tree caller, tree callee)
+{
+  bool ret = false;
+  tree caller_tree = DECL_FUNCTION_SPECIFIC_TARGET (caller);
+  tree callee_tree = DECL_FUNCTION_SPECIFIC_TARGET (callee);
+
+  /* If callee has no option attributes, then it is ok to inline.  */
+  if (!callee_tree)
+    ret = true;
+
+  /* If caller has no option attributes, but callee does then it is not ok to
+     inline.  */
+  else if (!caller_tree)
+    ret = false;
+
+  else
+    {
+      struct cl_target_option *caller_opts = TREE_TARGET_OPTION (caller_tree);
+      struct cl_target_option *callee_opts = TREE_TARGET_OPTION (callee_tree);
+
+      /* Callee's options should a subset of the caller's, i.e. a vsx function
+	 can inline an altivec function but a non-vsx function can't inline a
+	 vsx function.  */
+      if ((caller_opts->x_target_flags & callee_opts->x_target_flags)
+	  == callee_opts->x_target_flags)
+	ret = true;
+    }
+
+  if (TARGET_DEBUG_TARGET)
+    fprintf (stderr, "rs6000_can_inline_p:, caller %s, callee %s, %s inline\n",
+	     (DECL_NAME (caller)
+	      ? IDENTIFIER_POINTER (DECL_NAME (caller))
+	      : "<unknown>"),
+	     (DECL_NAME (callee)
+	      ? IDENTIFIER_POINTER (DECL_NAME (callee))
+	      : "<unknown>"),
+	     (ret ? "can" : "cannot"));
+
+  return ret;
+}
+
+/* Allocate a stack temp and fixup the address so it meets the particular
+   memory requirements (either offetable or REG+REG addressing).  */
+
+rtx
+rs6000_allocate_stack_temp (enum machine_mode mode,
+			    bool offsettable_p,
+			    bool reg_reg_p)
+{
+  rtx stack = assign_stack_temp (mode, GET_MODE_SIZE (mode), 0);
+  rtx addr = XEXP (stack, 0);
+  int strict_p = (reload_in_progress || reload_completed);
+
+  if (!legitimate_indirect_address_p (addr, strict_p))
+    {
+      if (offsettable_p
+	  && !rs6000_legitimate_offset_address_p (mode, addr, strict_p))
+	stack = replace_equiv_address (stack, copy_addr_to_reg (addr));
+
+      else if (reg_reg_p && !legitimate_indexed_address_p (addr, strict_p))
+	stack = replace_equiv_address (stack, copy_addr_to_reg (addr));
+    }
+
+  return stack;
+}
+
+/* Given a memory reference, if it is not a reg or reg+reg addressing, convert
+   to such a form to deal with memory reference instructions like STFIWX that
+   only take reg+reg addressing.  */
+
+rtx
+rs6000_address_for_fpconvert (rtx x)
+{
+  int strict_p = (reload_in_progress || reload_completed);
+  rtx addr;
+
+  gcc_assert (MEM_P (x));
+  addr = XEXP (x, 0);
+  if (! legitimate_indirect_address_p (addr, strict_p)
+      && ! legitimate_indexed_address_p (addr, strict_p))
+    {
+      if (GET_CODE (addr) == PRE_INC || GET_CODE (addr) == PRE_DEC)
+	{
+	  rtx reg = XEXP (addr, 0);
+	  HOST_WIDE_INT size = GET_MODE_SIZE (GET_MODE (x));
+	  rtx size_rtx = GEN_INT ((GET_CODE (addr) == PRE_DEC) ? -size : size);
+	  gcc_assert (REG_P (reg));
+	  emit_insn (gen_add3_insn (reg, reg, size_rtx));
+	  addr = reg;
+	}
+      else if (GET_CODE (addr) == PRE_MODIFY)
+	{
+	  rtx reg = XEXP (addr, 0);
+	  rtx expr = XEXP (addr, 1);
+	  gcc_assert (REG_P (reg));
+	  gcc_assert (GET_CODE (expr) == PLUS);
+	  emit_insn (gen_add3_insn (reg, XEXP (expr, 0), XEXP (expr, 1)));
+	  addr = reg;
+	}
+
+      x = replace_equiv_address (x, copy_addr_to_reg (addr));
+    }
+
+  return x;
 }
 
 #include "gt-rs6000.h"

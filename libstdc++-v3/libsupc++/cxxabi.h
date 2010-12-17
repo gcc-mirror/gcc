@@ -53,7 +53,7 @@
 #ifdef __cplusplus
 #define _GLIBCXX_NOTHROW throw() 
 #else
-#define _GLIBCXX_NOTHROW __attribute__((nothrow))
+#define _GLIBCXX_NOTHROW __attribute__((__nothrow__))
 #endif
 
 #ifdef __cplusplus
@@ -68,55 +68,55 @@ namespace __cxxabiv1
   // Allocate array.
   void* 
   __cxa_vec_new(size_t __element_count, size_t __element_size, 
-		size_t __padding_size, __cxa_cdtor_type constructor,
-		__cxa_cdtor_type destructor);
+		size_t __padding_size, __cxa_cdtor_type __constructor,
+		__cxa_cdtor_type __destructor);
 
   void*
   __cxa_vec_new2(size_t __element_count, size_t __element_size,
-		 size_t __padding_size, __cxa_cdtor_type constructor,
-		 __cxa_cdtor_type destructor, void *(*__alloc) (size_t), 
+		 size_t __padding_size, __cxa_cdtor_type __constructor,
+		 __cxa_cdtor_type __destructor, void *(*__alloc) (size_t), 
 		 void (*__dealloc) (void*));
 
   void*
   __cxa_vec_new3(size_t __element_count, size_t __element_size,
-		 size_t __padding_size, __cxa_cdtor_type constructor,
-		 __cxa_cdtor_type destructor, void *(*__alloc) (size_t), 
+		 size_t __padding_size, __cxa_cdtor_type __constructor,
+		 __cxa_cdtor_type __destructor, void *(*__alloc) (size_t), 
 		 void (*__dealloc) (void*, size_t));
 
   // Construct array.
   __cxa_vec_ctor_return_type
   __cxa_vec_ctor(void* __array_address, size_t __element_count,
-		 size_t __element_size, __cxa_cdtor_type constructor,
-		 __cxa_cdtor_type destructor);
+		 size_t __element_size, __cxa_cdtor_type __constructor,
+		 __cxa_cdtor_type __destructor);
 
   __cxa_vec_ctor_return_type
-  __cxa_vec_cctor(void* dest_array, void* src_array, size_t element_count, 
-		  size_t element_size, 
-		  __cxa_cdtor_return_type (*constructor) (void*, void*), 
-		  __cxa_cdtor_type destructor);
+  __cxa_vec_cctor(void* __dest_array, void* __src_array,
+		  size_t __element_count, size_t __element_size, 
+		  __cxa_cdtor_return_type (*__constructor) (void*, void*), 
+		  __cxa_cdtor_type __destructor);
  
   // Destruct array.
   void 
   __cxa_vec_dtor(void* __array_address, size_t __element_count,
-		 size_t __element_size, __cxa_cdtor_type destructor);
+		 size_t __element_size, __cxa_cdtor_type __destructor);
   
   void 
-  __cxa_vec_cleanup(void* __array_address, size_t __element_count,
-		    size_t __s, __cxa_cdtor_type destructor) _GLIBCXX_NOTHROW;
+  __cxa_vec_cleanup(void* __array_address, size_t __element_count, size_t __s,
+		    __cxa_cdtor_type __destructor) _GLIBCXX_NOTHROW;
   
   // Destruct and release array.
   void 
   __cxa_vec_delete(void* __array_address, size_t __element_size,
-		   size_t __padding_size, __cxa_cdtor_type destructor);
+		   size_t __padding_size, __cxa_cdtor_type __destructor);
 
   void 
   __cxa_vec_delete2(void* __array_address, size_t __element_size,
-		    size_t __padding_size, __cxa_cdtor_type destructor,
+		    size_t __padding_size, __cxa_cdtor_type __destructor,
 		    void (*__dealloc) (void*));
                   
   void 
   __cxa_vec_delete3(void* __array_address, size_t __element_size,
-		    size_t __padding_size, __cxa_cdtor_type destructor,
+		    size_t __padding_size, __cxa_cdtor_type __destructor,
 		    void (*__dealloc) (void*, size_t));
 
   int 

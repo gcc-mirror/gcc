@@ -28,9 +28,13 @@ BEGIN {
 	n_opts = 0
 	n_langs = 0
 	n_target_save = 0
+	n_extra_vars = 0
+	n_extra_target_vars = 0
 	n_extra_masks = 0
+	n_extra_c_includes = 0
+	n_extra_h_includes = 0
+	have_save = 0;
 	quote = "\042"
-	comma = ","
 	FS=SUBSEP
 }
 
@@ -44,6 +48,59 @@ BEGIN {
 			# Make sure the declarations are put in source order
 			target_save_decl[n_target_save] = $2
 			n_target_save++
+		}
+		else if ($1 == "Variable") {
+			extra_vars[n_extra_vars] = $2
+			n_extra_vars++
+		}
+		else if ($1 == "TargetVariable") {
+			# Combination of TargetSave and Variable
+			extra_vars[n_extra_vars] = $2
+			n_extra_vars++
+
+			var = $2
+			sub(" *=.*", "", var)
+			orig_var = var
+			name = var
+			type = var
+			sub("^.*[ *]", "", name)
+			sub(" *" name "$", "", type)
+			target_save_decl[n_target_save] = type " x_" name
+			n_target_save++
+
+			extra_target_vars[n_extra_target_vars] = name
+			n_extra_target_vars++
+		}
+		else if ($1 == "HeaderInclude") {
+			extra_h_includes[n_extra_h_includes++] = $2;
+		}
+		else if ($1 == "SourceInclude")  {
+			extra_c_includes[n_extra_c_includes++] = $2;
+		}
+		else if ($1 == "Enum")  {
+			props = $2
+			name = opt_args("Name", props)
+			type = opt_args("Type", props)
+			unknown_error = opt_args("UnknownError", props)
+			enum_names[n_enums] = name
+			enum_type[name] = type
+			enum_index[name] = n_enums
+			enum_unknown_error[name] = unknown_error
+			enum_help[name] = $3
+			n_enums++
+		}
+		else if ($1 == "EnumValue")  {
+			props = $2
+			enum_name = opt_args("Enum", props)
+			string = opt_args("String", props)
+			value = opt_args("Value", props)
+			val_flags = "0"
+			val_flags = val_flags \
+			  test_flag("Canonical", props, "| CL_ENUM_CANONICAL") \
+			  test_flag("DriverOnly", props, "| CL_ENUM_DRIVER_ONLY")
+			enum_data[enum_name] = enum_data[enum_name] \
+			  "  { " quote string quote ", " value ", " val_flags \
+			  " },\n"
 		}
 		else {
 			name = opt_args("Mask", $1)
@@ -67,11 +124,46 @@ print ""
 print "#ifndef OPTIONS_H"
 print "#define OPTIONS_H"
 print ""
-print "extern int target_flags;"
-print "extern int target_flags_explicit;"
+print "#include \"flag-types.h\""
 print ""
 
-have_save = 0;
+if (n_extra_h_includes > 0) {
+	for (i = 0; i < n_extra_h_includes; i++) {
+		print "#include " quote extra_h_includes[i] quote
+	}
+	print ""
+}
+
+print "#if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)"
+print "#ifndef GENERATOR_FILE"
+print "#if !defined(GCC_DRIVER) && !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS)"
+print "struct GTY(()) gcc_options"
+print "#else"
+print "struct gcc_options"
+print "#endif"
+print "{"
+print "#endif"
+
+for (i = 0; i < n_extra_vars; i++) {
+	var = extra_vars[i]
+	sub(" *=.*", "", var)
+	orig_var = var
+	name = var
+	type = var
+	type_after = var
+	sub("^.*[ *]", "", name)
+	sub("\\[.*\\]$", "", name)
+	sub("\\[.*\\]$", "", type)
+	sub(" *" name "$", "", type)
+	sub("^.*" name, "", type_after)
+	var_seen[name] = 1
+	print "#ifdef GENERATOR_FILE"
+	print "extern " orig_var ";"
+	print "#else"
+	print "  " type " x_" name type_after ";"
+	print "#define " name " global_options.x_" name
+	print "#endif"
+}
 
 for (i = 0; i < n_opts; i++) {
 	if (flag_set_p("Save", flags[i]))
@@ -85,8 +177,30 @@ for (i = 0; i < n_opts; i++) {
 		continue;
 
 	var_seen[name] = 1;
+	print "#ifdef GENERATOR_FILE"
 	print "extern " var_type(flags[i]) name ";"
+	print "#else"
+	print "  " var_type(flags[i]) "x_" name ";"
+	print "#define " name " global_options.x_" name
+	print "#endif"
 }
+for (i = 0; i < n_opts; i++) {
+	name = static_var(opts[i], flags[i]);
+	if (name != "") {
+		print "#ifndef GENERATOR_FILE"
+		print "  " var_type(flags[i]) "x_" name ";"
+		print "#define x_" name " do_not_use"
+		print "#endif"
+	}
+}
+print "#ifndef GENERATOR_FILE"
+print "};"
+print "extern struct gcc_options global_options;"
+print "extern const struct gcc_options global_options_init;"
+print "extern struct gcc_options global_options_set;"
+print "#define target_flags_explicit global_options_set.x_target_flags"
+print "#endif"
+print "#endif"
 print ""
 
 # All of the optimization switches gathered together so they can be saved and restored.
@@ -105,9 +219,11 @@ print "{";
 n_opt_char = 2;
 n_opt_short = 0;
 n_opt_int = 0;
+n_opt_enum = 1;
 n_opt_other = 0;
-var_opt_char[0] = "unsigned char optimize";
-var_opt_char[1] = "unsigned char optimize_size";
+var_opt_char[0] = "unsigned char x_optimize";
+var_opt_char[1] = "unsigned char x_optimize_size";
+var_opt_enum[0] = "enum fp_contract_mode x_flag_fp_contract_mode";
 
 for (i = 0; i < n_opts; i++) {
 	if (flag_set_p("Optimization", flags[i])) {
@@ -121,16 +237,19 @@ for (i = 0; i < n_opts; i++) {
 		var_opt_seen[name]++;
 		otype = var_type_struct(flags[i]);
 		if (otype ~ "^((un)?signed +)?int *$")
-			var_opt_int[n_opt_int++] = otype name;
+			var_opt_int[n_opt_int++] = otype "x_" name;
 
 		else if (otype ~ "^((un)?signed +)?short *$")
-			var_opt_short[n_opt_short++] = otype name;
+			var_opt_short[n_opt_short++] = otype "x_" name;
 
 		else if (otype ~ "^((un)?signed +)?char *$")
-			var_opt_char[n_opt_char++] = otype name;
+			var_opt_char[n_opt_char++] = otype "x_" name;
+
+		else if (otype ~ ("^enum +[_" alnum "]+ *$"))
+			var_opt_enum[n_opt_enum++] = otype "x_" name;
 
 		else
-			var_opt_other[n_opt_other++] = otype name;
+			var_opt_other[n_opt_other++] = otype "x_" name;
 	}
 }
 
@@ -140,6 +259,10 @@ for (i = 0; i < n_opt_other; i++) {
 
 for (i = 0; i < n_opt_int; i++) {
 	print "  " var_opt_int[i] ";";
+}
+
+for (i = 0; i < n_opt_enum; i++) {
+	print "  " var_opt_enum[i] ";";
 }
 
 for (i = 0; i < n_opt_short; i++) {
@@ -161,18 +284,22 @@ print "{";
 n_target_char = 0;
 n_target_short = 0;
 n_target_int = 0;
+n_target_enum = 0;
 n_target_other = 0;
 
 for (i = 0; i < n_target_save; i++) {
-	if (target_save_decl[i] ~ "^((un)?signed +)?int +[_a-zA-Z0-9]+$")
+	if (target_save_decl[i] ~ "^((un)?signed +)?int +[_" alnum "]+$")
 		var_target_int[n_target_int++] = target_save_decl[i];
 
-	else if (target_save_decl[i] ~ "^((un)?signed +)?short +[_a-zA-Z0-9]+$")
+	else if (target_save_decl[i] ~ "^((un)?signed +)?short +[_" alnum "]+$")
 		var_target_short[n_target_short++] = target_save_decl[i];
 
-	else if (target_save_decl[i] ~ "^((un)?signed +)?char +[_a-zA-Z0-9]+$")
+	else if (target_save_decl[i] ~ "^((un)?signed +)?char +[_ " alnum "]+$")
 		var_target_char[n_target_char++] = target_save_decl[i];
 
+	else if (target_save_decl[i] ~ ("^enum +[_" alnum "]+ +[_" alnum "]+$")) {
+		var_target_enum[n_target_enum++] = target_save_decl[i];
+	}
 	else
 		var_target_other[n_target_other++] = target_save_decl[i];
 }
@@ -190,24 +317,31 @@ if (have_save) {
 			var_save_seen[name]++;
 			otype = var_type_struct(flags[i])
 			if (otype ~ "^((un)?signed +)?int *$")
-				var_target_int[n_target_int++] = otype name;
+				var_target_int[n_target_int++] = otype "x_" name;
 
 			else if (otype ~ "^((un)?signed +)?short *$")
-				var_target_short[n_target_short++] = otype name;
+				var_target_short[n_target_short++] = otype "x_" name;
 
 			else if (otype ~ "^((un)?signed +)?char *$")
-				var_target_char[n_target_char++] = otype name;
+				var_target_char[n_target_char++] = otype "x_" name;
+
+			else if (otype ~ ("^enum +[_" alnum "]+ +[_" alnum "]+"))
+				var_target_enum[n_target_enum++] = otype "x_" name;
 
 			else
-				var_target_other[n_target_other++] = otype name;
+				var_target_other[n_target_other++] = otype "x_" name;
 		}
 	}
 } else {
-	var_target_int[n_target_int++] = "int target_flags";
+	var_target_int[n_target_int++] = "int x_target_flags";
 }
 
 for (i = 0; i < n_target_other; i++) {
 	print "  " var_target_other[i] ";";
+}
+
+for (i = 0; i < n_target_enum; i++) {
+	print "  " var_target_enum[i] ";";
 }
 
 for (i = 0; i < n_target_int; i++) {
@@ -226,19 +360,19 @@ print "};";
 print "";
 print "";
 print "/* Save optimization variables into a structure.  */"
-print "extern void cl_optimization_save (struct cl_optimization *);";
+print "extern void cl_optimization_save (struct cl_optimization *, struct gcc_options *);";
 print "";
 print "/* Restore optimization variables from a structure.  */";
-print "extern void cl_optimization_restore (struct cl_optimization *);";
+print "extern void cl_optimization_restore (struct gcc_options *, struct cl_optimization *);";
 print "";
 print "/* Print optimization variables from a structure.  */";
 print "extern void cl_optimization_print (FILE *, int, struct cl_optimization *);";
 print "";
 print "/* Save selected option variables into a structure.  */"
-print "extern void cl_target_option_save (struct cl_target_option *);";
+print "extern void cl_target_option_save (struct cl_target_option *, struct gcc_options *);";
 print "";
 print "/* Restore selected option variables from a structure.  */"
-print "extern void cl_target_option_restore (struct cl_target_option *);";
+print "extern void cl_target_option_restore (struct gcc_options *, struct cl_target_option *);";
 print "";
 print "/* Print target option variables from a structure.  */";
 print "extern void cl_target_option_print (FILE *, int, struct cl_target_option *);";
@@ -308,7 +442,7 @@ print ""
 
 for (i = 0; i < n_langs; i++) {
 	macros[i] = "CL_" langs[i]
-	gsub( "[^A-Za-z0-9_]", "X", macros[i] )
+	gsub( "[^" alnum "_]", "X", macros[i] )
 	s = substr("            ", length (macros[i]))
 	print "#define " macros[i] s " (1 << " i ")"
     }
@@ -321,6 +455,7 @@ print "{"
 for (i = 0; i < n_opts; i++)
 	back_chain[i] = "N_OPTS";
 
+enum_value = 0
 for (i = 0; i < n_opts; i++) {
 	# Combine the flags of identical switches.  Switches
 	# appear many times if they are handled by many front
@@ -332,6 +467,14 @@ for (i = 0; i < n_opts; i++) {
 
 	len = length (opts[i]);
 	enum = opt_enum(opts[i])
+	enum_string = enum " = " enum_value ","
+
+	# Aliases do not get enumeration names.
+	if ((flag_set_p("Alias.*", flags[i]) \
+	     && !flag_set_p("SeparateAlias", flags[i])) \
+	    || flag_set_p("Ignore", flags[i])) {
+		enum_string = "/* " enum_string " */"
+	}
 
 	# If this switch takes joined arguments, back-chain all
 	# subsequent switches to it for which it is a prefix.  If
@@ -346,20 +489,21 @@ for (i = 0; i < n_opts; i++) {
 		}
 	}
 
-	s = substr("                                         ", length (enum))
-	if (i + 1 == n_opts)
-		comma = ""
+	s = substr("                                          ",
+		   length (enum_string))
 
 	if (help[i] == "")
 		hlp = "0"
 	else
 		hlp = "N_(\"" help[i] "\")";
 
-	print "  " enum "," s "/* -" opts[i] " */"
+	print "  " enum_string s "/* -" opts[i] " */"
+	enum_value++
 }
 
 print "  N_OPTS,"
 print "  OPT_SPECIAL_unknown,"
+print "  OPT_SPECIAL_ignore,"
 print "  OPT_SPECIAL_program_name,"
 print "  OPT_SPECIAL_input_file"
 print "};"

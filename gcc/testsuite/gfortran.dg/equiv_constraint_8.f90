@@ -9,7 +9,7 @@ pure integer function test(j)
   common /z/ i
   integer :: k
   equivalence(i,k) ! { dg-error "EQUIVALENCE object in the pure" }
-  k=1 ! { dg-error "in PURE procedure at" }
+  k=1 ! { dg-error "variable definition context" }
   test=i*j
 end function test
 end

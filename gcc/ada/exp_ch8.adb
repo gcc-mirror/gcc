@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,16 +25,22 @@
 
 with Atree;    use Atree;
 with Einfo;    use Einfo;
+with Exp_Ch4;  use Exp_Ch4;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
+with Namet;    use Namet;
+with Nmake;    use Nmake;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
 with Sem;      use Sem;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
+with Snames;   use Snames;
 with Stand;    use Stand;
+with Tbuild;   use Tbuild;
 
 package body Exp_Ch8 is
 
@@ -265,7 +271,7 @@ package body Exp_Ch8 is
       --  eventually we plan to expand the functions that are treated as
       --  build-in-place to include other composite result types.
 
-      if Ada_Version >= Ada_05
+      if Ada_Version >= Ada_2005
         and then Is_Build_In_Place_Function_Call (Nam)
       then
          Make_Build_In_Place_Call_In_Anonymous_Context (Nam);
@@ -349,6 +355,74 @@ package body Exp_Ch8 is
 
       elsif Nkind (Nam) = N_Explicit_Dereference then
          Force_Evaluation (Prefix (Nam));
+      end if;
+
+      --  Check whether this is a renaming of a predefined equality on an
+      --  untagged record type (AI05-0123).
+
+      if Is_Entity_Name (Nam)
+        and then Chars (Entity (Nam)) = Name_Op_Eq
+        and then Scope (Entity (Nam)) = Standard_Standard
+        and then Ada_Version >= Ada_2012
+      then
+         declare
+            Loc : constant Source_Ptr := Sloc (N);
+            Id  : constant Entity_Id  := Defining_Entity (N);
+            Typ : constant Entity_Id  := Etype (First_Formal (Id));
+
+            Decl    : Node_Id;
+            Body_Id : constant Entity_Id :=
+                        Make_Defining_Identifier (Sloc (N), Chars (Id));
+
+         begin
+            if Is_Record_Type (Typ)
+              and then not Is_Tagged_Type (Typ)
+              and then not Is_Frozen (Typ)
+            then
+               --  Build body for renamed equality, to capture its current
+               --  meaning. It may be redefined later, but the renaming is
+               --  elaborated where it occurs. This is technically known as
+               --  Squirreling semantics. Renaming is rewritten as a subprogram
+               --  declaration, and the body is inserted at the end of the
+               --  current declaration list to prevent premature freezing.
+
+               Set_Alias (Id, Empty);
+               Set_Has_Completion (Id, False);
+               Rewrite (N,
+                 Make_Subprogram_Declaration (Sloc (N),
+                   Specification => Specification (N)));
+               Set_Has_Delayed_Freeze (Id);
+
+               Decl := Make_Subprogram_Body (Loc,
+                         Specification              =>
+                           Make_Function_Specification (Loc,
+                             Defining_Unit_Name       => Body_Id,
+                             Parameter_Specifications =>
+                               Copy_Parameter_List (Id),
+                             Result_Definition        =>
+                               New_Occurrence_Of (Standard_Boolean, Loc)),
+                         Declarations               => Empty_List,
+                         Handled_Statement_Sequence => Empty);
+
+               Set_Handled_Statement_Sequence (Decl,
+                 Make_Handled_Sequence_Of_Statements (Loc,
+                   Statements => New_List (
+                     Make_Simple_Return_Statement (Loc,
+                       Expression =>
+                         Expand_Record_Equality
+                           (Id,
+                            Typ => Typ,
+                            Lhs =>
+                              Make_Identifier (Loc, Chars (First_Formal (Id))),
+                            Rhs =>
+                              Make_Identifier
+                                (Loc, Chars (Next_Formal (First_Formal (Id)))),
+                            Bodies => Declarations (Decl))))));
+
+               Append (Decl, List_Containing (N));
+               Set_Debug_Info_Needed (Body_Id);
+            end if;
+         end;
       end if;
    end Expand_N_Subprogram_Renaming_Declaration;
 

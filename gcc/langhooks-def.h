@@ -1,5 +1,5 @@
 /* Default macros to initialize the lang_hooks data structure.
-   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "hooks.h"
 
-struct diagnostic_context;
 struct diagnostic_info;
 
 /* Note to creators of new hooks:
@@ -38,7 +37,6 @@ struct diagnostic_info;
 
 extern void lhd_do_nothing (void);
 extern void lhd_do_nothing_t (tree);
-extern void lhd_do_nothing_i (int);
 extern void lhd_do_nothing_f (struct function *);
 extern tree lhd_pass_through_t (tree);
 extern bool lhd_post_options (const char **);
@@ -51,7 +49,7 @@ extern void lhd_print_tree_nothing (FILE *, tree, int);
 extern const char *lhd_decl_printable_name (tree, int);
 extern const char *lhd_dwarf_name (tree, int);
 extern int lhd_types_compatible_p (tree, tree);
-extern void lhd_print_error_function (struct diagnostic_context *,
+extern void lhd_print_error_function (diagnostic_context *,
 				      const char *, struct diagnostic_info *);
 extern void lhd_set_decl_assembler_name (tree);
 extern bool lhd_warn_unused_global_decl (const_tree);
@@ -65,7 +63,12 @@ extern tree lhd_expr_to_decl (tree, bool *, bool *);
 extern tree lhd_builtin_function (tree);
 
 /* Declarations of default tree inlining hooks.  */
-extern void lhd_initialize_diagnostics (struct diagnostic_context *);
+extern void lhd_initialize_diagnostics (diagnostic_context *);
+extern void lhd_init_options (unsigned int,
+			      struct cl_decoded_option *);
+extern bool lhd_complain_wrong_lang_p (const struct cl_option *);
+extern bool lhd_handle_option (size_t, const char *, int, int, location_t,
+			       const struct cl_option_handlers *);
 extern tree lhd_callgraph_analyze_expr (tree *, int *);
 
 
@@ -82,11 +85,13 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
 #define LANG_HOOKS_IDENTIFIER_SIZE	sizeof (struct lang_identifier)
 #define LANG_HOOKS_INIT			hook_bool_void_false
 #define LANG_HOOKS_FINISH		lhd_do_nothing
-#define LANG_HOOKS_PARSE_FILE		lhd_do_nothing_i
-#define LANG_HOOKS_INIT_OPTIONS		hook_uint_uint_constcharptrptr_0
+#define LANG_HOOKS_PARSE_FILE		lhd_do_nothing
+#define LANG_HOOKS_OPTION_LANG_MASK	hook_uint_void_0
+#define LANG_HOOKS_INIT_OPTIONS_STRUCT	hook_void_gcc_optionsp
+#define LANG_HOOKS_INIT_OPTIONS		lhd_init_options
 #define LANG_HOOKS_INITIALIZE_DIAGNOSTICS lhd_initialize_diagnostics
-#define LANG_HOOKS_HANDLE_OPTION	hook_int_size_t_constcharptr_int_0
-#define LANG_HOOKS_MISSING_ARGUMENT	hook_bool_constcharptr_size_t_false
+#define LANG_HOOKS_COMPLAIN_WRONG_LANG_P lhd_complain_wrong_lang_p
+#define LANG_HOOKS_HANDLE_OPTION	lhd_handle_option
 #define LANG_HOOKS_POST_OPTIONS		lhd_post_options
 #define LANG_HOOKS_MISSING_NORETURN_OK_P hook_bool_tree_true
 #define LANG_HOOKS_GET_ALIAS_SET	lhd_get_alias_set
@@ -179,7 +184,6 @@ extern tree lhd_make_node (enum tree_code);
 #define LANG_HOOKS_GET_ARRAY_DESCR_INFO	NULL
 #define LANG_HOOKS_GET_SUBRANGE_BOUNDS	NULL
 #define LANG_HOOKS_RECONSTRUCT_COMPLEX_TYPE reconstruct_complex_type
-#define LANG_HOOKS_HASH_TYPES		true
 
 #define LANG_HOOKS_FOR_TYPES_INITIALIZER { \
   LANG_HOOKS_MAKE_TYPE, \
@@ -196,8 +200,7 @@ extern tree lhd_make_node (enum tree_code);
   LANG_HOOKS_TYPE_HASH_EQ, \
   LANG_HOOKS_GET_ARRAY_DESCR_INFO, \
   LANG_HOOKS_GET_SUBRANGE_BOUNDS, \
-  LANG_HOOKS_RECONSTRUCT_COMPLEX_TYPE, \
-  LANG_HOOKS_HASH_TYPES \
+  LANG_HOOKS_RECONSTRUCT_COMPLEX_TYPE \
 }
 
 /* Declaration hooks.  */
@@ -265,10 +268,12 @@ extern void lhd_end_section (void);
   LANG_HOOKS_IDENTIFIER_SIZE, \
   LANG_HOOKS_FREE_LANG_DATA, \
   LANG_HOOKS_TREE_SIZE, \
+  LANG_HOOKS_OPTION_LANG_MASK, \
+  LANG_HOOKS_INIT_OPTIONS_STRUCT, \
   LANG_HOOKS_INIT_OPTIONS, \
   LANG_HOOKS_INITIALIZE_DIAGNOSTICS, \
+  LANG_HOOKS_COMPLAIN_WRONG_LANG_P, \
   LANG_HOOKS_HANDLE_OPTION, \
-  LANG_HOOKS_MISSING_ARGUMENT, \
   LANG_HOOKS_POST_OPTIONS, \
   LANG_HOOKS_INIT, \
   LANG_HOOKS_FINISH, \

@@ -72,7 +72,7 @@ int main (void)
 /* main && main1 together: */
 /* { dg-final { scan-tree-dump-times "vectorized 2 loops" 2 "vect" { target powerpc*-*-* i?86-*-* x86_64-*-* } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" { target { vect_no_align && {! vector_alignment_reachable} } } } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 3 "vect" { xfail { { vect_no_align } || {! vector_alignment_reachable} } } } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 3 "vect" { xfail { { vect_no_align } || { { ! vector_alignment_reachable} || vect_element_align } } } } } */
 
 /* in main1: */
 /* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { target !powerpc*-*-* !i?86-*-* !x86_64-*-* } } } */

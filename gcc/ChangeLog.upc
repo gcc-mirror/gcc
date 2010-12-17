@@ -1,3 +1,7 @@
+2010-12-15  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 167307 into gupc branch.
+
 2010-10-19  Gary Funck  <gary@intrepid.com>
 
 	* c-typeck.c: Fix typo in previous fix
@@ -8,7 +12,7 @@
 	* c-typeck.c: Fix bug: Cast of (shared <type> * shared) not
 	  diagnosed as an error
 
-	  The conversion from any type (shared or not) ot
+	  The conversion from any type (shared or not) to
 	  a shared type is likely either meanigless or an error.  This update
 	  makes any conversion to a shared type, an error.
 
@@ -114,7 +118,7 @@
 
 	* c-common.c: Fix bug: segfault on incomplete array definition.
 
-	  This turned out to be bit complicated.   The logic in
+	  This turned out to be a bit complicated.   The logic in
 	  upc_lang_layout_decl had to be re-arranged to avoid trying to lookup
 	  the THREADS identifier in the case where the blocking factor has
 	  been set to indefinite ([]).  This can happen when indefinite array
@@ -193,7 +197,7 @@
 	  pointer-to-shared nor an intger expression.  The update implements a
 	  fix for both issues.
 
-	  See also: gcc/c-parser.c gcc/DATESTAMP gcc/upc/upc-act.c
+	  See also: gcc/c-parser.c gcc/upc/upc-act.c
 
 2010-09-23  Gary Funck  <gary@intrepid.com>
 
@@ -252,7 +256,7 @@
 
 2010-09-11  Gary Funck  <gary@intrepid.com>
 
-	* REVISION, c-decl.c: Fix Bug 402: ICE: '[*]' layout factor on
+	* c-decl.c: Fix Bug 402: ICE: '[*]' layout factor on
 	  multi-dimensional shared array with dynamic threads.
 
 	  This declaration caused an internatl compiler error when compiled
@@ -267,8 +271,7 @@
 
 	  Also, added a test case.
 
-	  See also: gcc/DATESTAMP gcc/REVISION gcc/c-decl.c
-	  libupc/testsuite/libupc.upc/intrepid/test18.upc
+	  See also: libupc/testsuite/libupc.upc/intrepid/test18.upc
 
 2010-07-11  Gary Funck  <gary@intrepid.com>
 

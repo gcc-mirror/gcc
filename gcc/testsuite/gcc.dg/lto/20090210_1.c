@@ -1,4 +1,4 @@
-/* { dg-options "-fPIC" }  */
+/* { dg-options "-fPIC" { target { ! sparc*-*-* } } } */
 static void
 f (int n)
 {

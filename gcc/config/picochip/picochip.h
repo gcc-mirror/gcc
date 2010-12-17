@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler for picoChip
-   Copyright (C) 2001, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2008, 2009, 2010 Free Software Foundation, Inc.
 
-   Contributed by picoChip Designs Ltd. (http://www.picochip.com)
+   Contributed by Picochip Ltd. (http://www.picochip.com)
    Maintained by Daniel Towner (daniel.towner@picochip.com) and
    Hariharan Sandanagobalane (hariharan@picochip.com).
 
@@ -60,19 +60,19 @@ extern enum picochip_dfa_type picochip_schedule_type;
 
 /* Translate requests for particular AEs into their respective ISA
    options. Note that byte access is enabled by default. */
-#define TARGET_OPTION_TRANSLATE_TABLE			      \
-  { "-mae=ANY",   "-mmul-type=none -mno-byte-access" },	      \
-  { "-mae=ANY2",  "-mmul-type=none -mno-byte-access" },	      \
-  { "-mae=ANY3",  "-mmul-type=none" },			      \
-  { "-mae=STAN",  "-mmul-type=none -mno-byte-access" },	      \
-  { "-mae=STAN2", "-mmul-type=mac -mno-byte-access" },	      \
-  { "-mae=STAN3", "-mmul-type=mac " },			      \
-  { "-mae=MAC",   "-mmul-type=mac -mno-byte-access" },	      \
-  { "-mae=MUL",   "-mmul-type=mul" },			      \
-  { "-mae=MEM",   "-mmul-type=mul" },			      \
-  { "-mae=MEM2",  "-mmul-type=mul" },			      \
-  { "-mae=CTRL",  "-mmul-type=mul" },			      \
-  { "-mae=CTRL2", "-mmul-type=mul" }
+#define DRIVER_SELF_SPECS					\
+  "%{mae=ANY:-mmul-type=none -mno-byte-access} %<mae=ANY",	\
+  "%{mae=ANY2:-mmul-type=none -mno-byte-access} %<mae=ANY2",	\
+  "%{mae=ANY3:-mmul-type=none} %<mae=ANY3",			\
+  "%{mae=STAN:-mmul-type=none -mno-byte-access} %<mae=STAN",	\
+  "%{mae=STAN2:-mmul-type=mac -mno-byte-access} %<mae=STAN2",	\
+  "%{mae=STAN3:-mmul-type=mac} %<mae=STAN3",			\
+  "%{mae=MAC:-mmul-type=mac -mno-byte-access} %<mae=MAC",	\
+  "%{mae=MUL:-mmul-type=mul} %<mae=MUL",			\
+  "%{mae=MEM:-mmul-type=mul} %<mae=MEM",			\
+  "%{mae=MEM2:-mmul-type=mul} %<mae=MEM2",			\
+  "%{mae=CTRL:-mmul-type=mul} %<mae=CTRL",			\
+  "%{mae=CTRL2:-mmul-type=mul} %<mae=CTRL2"
 
 /* Specify the default options, so that the multilib build doesn't
    need to provide special cases for the defaults. */
@@ -83,14 +83,6 @@ extern enum picochip_dfa_type picochip_schedule_type;
 #define TARGET_HAS_MUL_UNIT (picochip_has_mul_unit)
 #define TARGET_HAS_MAC_UNIT (picochip_has_mac_unit)
 #define TARGET_HAS_MULTIPLY (picochip_has_mac_unit || picochip_has_mul_unit)
-
-/* Allow some options to be overriden.  In particular, the 2nd
-   scheduling pass option is switched off, and a machine dependent
-   reorganisation ensures that it is run later on, after the second
-   jump optimisation. */
-#define OVERRIDE_OPTIONS picochip_override_options()
-
-#define CAN_DEBUG_WITHOUT_FP 1
 
 #define TARGET_VERSION fprintf(stderr, "(picoChip)");
 
@@ -361,8 +353,6 @@ extern const enum reg_class picochip_regno_reg_class[FIRST_PSEUDO_REGISTER];
 
 #define REGNO_OK_FOR_INDEX_P(REGNO) 0
 
-#define PREFERRED_RELOAD_CLASS(X, CLASS) CLASS
-
 #define CLASS_MAX_NREGS(CLASS, MODE) picochip_class_max_nregs(CLASS, MODE)
 
 
@@ -406,36 +396,13 @@ extern const enum reg_class picochip_regno_reg_class[FIRST_PSEUDO_REGISTER];
 
 #define PUSH_ARGS 0
 
-/* Functions don't pop their args.  */
-#define RETURN_POPS_ARGS(FNDECL, FNTYPE, STACK) 0
-
 /* Passing Arguments in Registers  */
 
 /* Store the offset of the next argument. */
 #define CUMULATIVE_ARGS unsigned
 
-/* Decide how function arguments are handled. */
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-  picochip_function_arg (CUM, MODE, TYPE, NAMED)
-
-/* Incoming arguments are always the same as normal arguments, except
-   for a function which uses variadic arguments, in which case all
-   arguments are effectively passed on the stack. */
-#define FUNCTION_INCOMING_ARG(CUM, MODE, TYPE, NAMED) \
-  picochip_incoming_function_arg(CUM, MODE, TYPE, NAMED)
-
 #define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT,N_NAMED_ARGS) \
   ((CUM) = 0)
-
-#define FUNCTION_ARG_ADVANCE(CUM,MODE,TYPE,NAMED) \
-  (CUM) = picochip_arg_advance (CUM, MODE, TYPE, NAMED)
-
-/* Originally this used TYPE_ALIGN to determine the
-   alignment.  Unfortunately, this fails in some cases, because the
-   type is unknown (e.g., libcall's). Instead, use GET_MODE_ALIGNMENT
-   since the mode is always present. */
-#define FUNCTION_ARG_BOUNDARY(MODE,TYPE) \
-  picochip_get_function_arg_boundary(MODE)
 
 /* The first 6 registers can hold parameters.  */
 #define FUNCTION_ARG_REGNO_P(REGNO) ((REGNO) < 6)
@@ -576,7 +543,7 @@ do {                                                                         \
 
 #define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)  \
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 15),    \
-  sprintf ((OUTPUT), "%s___%d", (NAME), (LABELNO)))
+  sprintf ((OUTPUT), "%s___%lu", (NAME), (unsigned long)(LABELNO)))
 
 /* Macros Controlling Initialization Routines  */
 
@@ -648,7 +615,7 @@ do {                                                                         \
 /* Assembler Commands for Alignment  */
 
 #define ASM_OUTPUT_SKIP(STREAM,BYTES) \
-  fprintf(STREAM, ".skip %u\n", BYTES);
+  fprintf(STREAM, ".skip "HOST_WIDE_INT_PRINT_UNSIGNED"\n", BYTES);
 #define ASM_OUTPUT_ALIGN(STREAM,POWER) \
   fprintf(STREAM, ".align %u\n", 1 << POWER);
 

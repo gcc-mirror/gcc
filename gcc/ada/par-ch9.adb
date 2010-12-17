@@ -40,11 +40,19 @@ package body Ch9 is
    function P_Entry_Body_Formal_Part               return Node_Id;
    function P_Entry_Declaration                    return Node_Id;
    function P_Entry_Index_Specification            return Node_Id;
-   function P_Protected_Definition                 return Node_Id;
    function P_Protected_Operation_Declaration_Opt  return Node_Id;
    function P_Protected_Operation_Items            return List_Id;
-   function P_Task_Definition                      return Node_Id;
    function P_Task_Items                           return List_Id;
+
+   function P_Protected_Definition (Decl : Node_Id) return Node_Id;
+   --  Parses protected definition and following aspect specifications if
+   --  present. The argument is the declaration node to which the aspect
+   --  specifications are to be attached.
+
+   function P_Task_Definition (Decl : Node_Id) return Node_Id;
+   --  Parses task definition and following aspect specifications if present.
+   --  The argument is the declaration node to which the aspect specifications
+   --  are to be attached.
 
    -----------------------------
    -- 9.1  Task (also 10.1.3) --
@@ -52,11 +60,13 @@ package body Ch9 is
 
    --  TASK_TYPE_DECLARATION ::=
    --    task type DEFINING_IDENTIFIER [KNOWN_DISCRIMINANT_PART]
-   --      [is [new INTERFACE_LIST with] TASK_DEFINITION];
+   --      [is [new INTERFACE_LIST with] TASK_DEFINITION]
+   --        [ASPECT_SPECIFICATIONS];
 
    --  SINGLE_TASK_DECLARATION ::=
    --    task DEFINING_IDENTIFIER
-   --      [is [new INTERFACE_LIST with] TASK_DEFINITION];
+   --      [is [new INTERFACE_LIST with] TASK_DEFINITION]
+   --        [ASPECT_SPECIFICATIONS];
 
    --  TASK_BODY ::=
    --    task body DEFINING_IDENTIFIER is
@@ -143,10 +153,17 @@ package body Ch9 is
             end if;
          end if;
 
-         --  Parse optional task definition. Note that P_Task_Definition scans
-         --  out the semicolon as well as the task definition itself.
+         --  If we have aspect definitions present here, then we do not have
+         --  a task definition present.
 
-         if Token = Tok_Semicolon then
+         if Aspect_Specifications_Present then
+            P_Aspect_Specifications (Task_Node);
+
+         --  Parse optional task definition. Note that P_Task_Definition scans
+         --  out the semicolon and possible aspect specifications as well as
+         --  the task definition itself.
+
+         elsif Token = Tok_Semicolon then
 
             --  A little check, if the next token after semicolon is
             --  Entry, then surely the semicolon should really be IS
@@ -156,10 +173,13 @@ package body Ch9 is
             if Token = Tok_Entry then
                Error_Msg_SP -- CODEFIX
                  ("|"";"" should be IS");
-               Set_Task_Definition (Task_Node, P_Task_Definition);
+               Set_Task_Definition (Task_Node, P_Task_Definition (Task_Node));
             else
                Pop_Scope_Stack; -- Remove unused entry
             end if;
+
+         --  Here we have a task definition
+
          else
             TF_Is; -- must have IS if no semicolon
 
@@ -168,7 +188,7 @@ package body Ch9 is
             if Token = Tok_New then
                Scan; --  past NEW
 
-               if Ada_Version < Ada_05 then
+               if Ada_Version < Ada_2005 then
                   Error_Msg_SP ("task interface is an Ada 2005 extension");
                   Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
                end if;
@@ -194,7 +214,7 @@ package body Ch9 is
                end if;
             end if;
 
-            Set_Task_Definition (Task_Node, P_Task_Definition);
+            Set_Task_Definition (Task_Node, P_Task_Definition (Task_Node));
          end if;
 
          return Task_Node;
@@ -233,7 +253,7 @@ package body Ch9 is
 
    --  Error recovery:  cannot raise Error_Resync
 
-   function P_Task_Definition return Node_Id is
+   function P_Task_Definition (Decl : Node_Id) return Node_Id is
       Def_Node  : Node_Id;
 
    begin
@@ -253,7 +273,7 @@ package body Ch9 is
          end loop;
       end if;
 
-      End_Statements (Def_Node);
+      End_Statements (Def_Node, Decl);
       return Def_Node;
    end P_Task_Definition;
 
@@ -347,11 +367,13 @@ package body Ch9 is
 
    --  PROTECTED_TYPE_DECLARATION ::=
    --    protected type DEFINING_IDENTIFIER [KNOWN_DISCRIMINANT_PART]
-   --      is [new INTERFACE_LIST with] PROTECTED_DEFINITION;
+   --      is [new INTERFACE_LIST with] PROTECTED_DEFINITION
+   --        [ASPECT_SPECIFICATIONS];
 
    --  SINGLE_PROTECTED_DECLARATION ::=
    --    protected DEFINING_IDENTIFIER
    --    is [new INTERFACE_LIST with] PROTECTED_DEFINITION;
+   --      [ASPECT_SPECIFICATIONS];
 
    --  PROTECTED_BODY ::=
    --    protected body DEFINING_IDENTIFIER is
@@ -464,8 +486,8 @@ package body Ch9 is
                    End_Label           => Empty));
 
                SIS_Entry_Active := False;
-               End_Statements (Protected_Definition (Protected_Node));
-               Scan; -- past semicolon
+               End_Statements
+                 (Protected_Definition (Protected_Node), Protected_Node);
                return Protected_Node;
             end if;
 
@@ -480,7 +502,7 @@ package body Ch9 is
          if Token = Tok_New then
             Scan; --  past NEW
 
-            if Ada_Version < Ada_05 then
+            if Ada_Version < Ada_2005 then
                Error_Msg_SP ("protected interface is an Ada 2005 extension");
                Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
             end if;
@@ -503,7 +525,8 @@ package body Ch9 is
             Scan; -- past WITH
          end if;
 
-         Set_Protected_Definition (Protected_Node, P_Protected_Definition);
+         Set_Protected_Definition
+           (Protected_Node, P_Protected_Definition (Protected_Node));
          return Protected_Node;
       end if;
    end P_Protected;
@@ -538,7 +561,7 @@ package body Ch9 is
 
    --  Error recovery: cannot raise Error_Resync
 
-   function P_Protected_Definition return Node_Id is
+   function P_Protected_Definition (Decl : Node_Id) return Node_Id is
       Def_Node  : Node_Id;
       Item_Node : Node_Id;
 
@@ -584,7 +607,7 @@ package body Ch9 is
          end loop Declaration_Loop;
       end loop Private_Loop;
 
-      End_Statements (Def_Node);
+      End_Statements (Def_Node, Decl);
       return Def_Node;
    end P_Protected_Definition;
 
@@ -639,8 +662,8 @@ package body Ch9 is
             Is_Overriding := True;
          end if;
 
-         if (Is_Overriding or else Not_Overriding) then
-            if Ada_Version < Ada_05 then
+         if Is_Overriding or else Not_Overriding then
+            if Ada_Version < Ada_2005 then
                Error_Msg_SP ("overriding indicator is an Ada 2005 extension");
                Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
 
@@ -651,7 +674,7 @@ package body Ch9 is
                Set_Must_Not_Override (Decl, Not_Overriding);
 
             elsif Token = Tok_Function or else Token = Tok_Procedure then
-               Decl := P_Subprogram (Pf_Decl);
+               Decl := P_Subprogram (Pf_Decl_Pexp);
 
                Set_Must_Override     (Specification (Decl), Is_Overriding);
                Set_Must_Not_Override (Specification (Decl), Not_Overriding);
@@ -682,7 +705,7 @@ package body Ch9 is
             return P_Entry_Declaration;
 
          elsif Token = Tok_Function or else Token = Tok_Procedure then
-            return P_Subprogram (Pf_Decl);
+            return P_Subprogram (Pf_Decl_Pexp);
 
          elsif Token = Tok_Identifier then
             L := New_List;
@@ -754,7 +777,7 @@ package body Ch9 is
                  or else
                Token = Tok_Not or else Bad_Spelling_Of (Tok_Not)
          then
-            Append (P_Subprogram (Pf_Decl_Pbod), Item_List);
+            Append (P_Subprogram (Pf_Decl_Pbod_Pexp), Item_List);
 
          elsif Token = Tok_Pragma or else Bad_Spelling_Of (Tok_Pragma) then
             P_Pragmas_Opt (Item_List);
@@ -787,6 +810,7 @@ package body Ch9 is
    --    [OVERRIDING_INDICATOR]
    --    entry DEFINING_IDENTIFIER [(DISCRETE_SUBTYPE_DEFINITION)]
    --      PARAMETER_PROFILE;
+   --        [ASPECT_SPECIFICATIONS];
 
    --  The caller has checked that the initial token is ENTRY, NOT or
    --  OVERRIDING.
@@ -823,8 +847,8 @@ package body Ch9 is
          Is_Overriding := True;
       end if;
 
-      if (Is_Overriding or else Not_Overriding) then
-         if Ada_Version < Ada_05 then
+      if Is_Overriding or else Not_Overriding then
+         if Ada_Version < Ada_2005 then
             Error_Msg_SP ("overriding indicator is an Ada 2005 extension");
             Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
 
@@ -900,7 +924,7 @@ package body Ch9 is
          Discard_Junk_Node (P_Expression_No_Right_Paren);
       end if;
 
-      TF_Semicolon;
+      P_Aspect_Specifications (Decl_Node);
       return Decl_Node;
 
    exception

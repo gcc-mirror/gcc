@@ -1,4 +1,4 @@
-# Copyright (C) 2003, 2008 Free Software Foundation, Inc.
+# Copyright (C) 2003, 2008, 2009, 2010 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -45,7 +45,6 @@ LIB1ASMFUNCS	= _mulsi3 \
 		  _save_28c \
 		  _save_29c \
 		  _save_31c \
-		  _save_varargs \
 		  _save_interrupt \
 		  _save_all_interrupt \
                   _callt_save_20 \
@@ -69,12 +68,10 @@ LIB1ASMFUNCS	= _mulsi3 \
 		  _callt_save_28c \
 		  _callt_save_29c \
 		  _callt_save_31c \
-		  _callt_save_varargs \
 		  _callt_save_interrupt \
 		  _callt_save_all_interrupt \
 		  _callt_save_r2_r29 \
 		  _callt_save_r2_r31 \
-		  _callt_save_r6_r9 \
 		  _negdi2 \
 		  _cmpdi2 \
 		  _ucmpdi2 \
@@ -106,7 +103,7 @@ INSTALL_LIBGCC    = install-multilib
 TCFLAGS = -mno-app-regs -msmall-sld -Wa,-mwarn-signed-overflow -Wa,-mwarn-unsigned-overflow
 
 v850-c.o: $(srcdir)/config/v850/v850-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  $(TM_H) $(CPPLIB_H) $(TREE_H) $(C_PRAGMA_H) toplev.h $(GGC_H) $(TM_P_H)
+  $(TM_H) $(CPPLIB_H) $(TREE_H) $(C_PRAGMA_H) $(GGC_H) $(TM_P_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/v850/v850-c.c 
 

@@ -42,7 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 	{							\
 	  builtin_define ("__MINGW64__");			\
 	  builtin_define_std ("WIN64");				\
-	  builtin_define_std ("_WIN64");			\
+	  builtin_define ("_WIN64");				\
 	}							\
     }								\
   while (0)
@@ -77,7 +77,7 @@ along with GCC; see the file COPYING3.  If not see
    kernel32.  */
 #undef LIB_SPEC
 #define LIB_SPEC "%{pg:-lgmon} %{mwindows:-lgdi32 -lcomdlg32} \
-                  -luser32 -lkernel32 -ladvapi32 -lshell32"
+                  -ladvapi32 -lshell32 -luser32 -lkernel32"
 
 /* Weak symbols do not get resolved if using a Windows dll import lib.
    Make the unwind registration references strong undefs.  */
@@ -134,14 +134,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef STANDARD_STARTFILE_PREFIX_2
 #define STANDARD_STARTFILE_PREFIX_2 ""
 #endif
-
-/* Put all *tf routines in libgcc.  */
-#undef LIBGCC2_HAS_TF_MODE
-#define LIBGCC2_HAS_TF_MODE 1
-#undef LIBGCC2_TF_CEXT
-#define LIBGCC2_TF_CEXT q
-#undef TF_SIZE
-#define TF_SIZE 113
 
 /* Output STRING, a string representing a filename, to FILE.
    We canonicalize it to be in Unix format (backslashes are replaced
@@ -231,7 +223,7 @@ __enable_execute_stack (void *addr)					\
 
 /* For 64-bit Windows we can't use DW2 unwind info. Also for multilib
    builds we can't use it, too.  */
-#if !TARGET_64BIT && !defined (TARGET_BI_ARCH)
+#if !TARGET_64BIT_DEFAULT && !defined (TARGET_BI_ARCH)
 #define MD_UNWIND_SUPPORT "config/i386/w32-unwind.h"
 #endif
 
@@ -245,5 +237,5 @@ __enable_execute_stack (void *addr)					\
 #define LIBGCC_SONAME "libgcc_s" LIBGCC_EH_EXTN "-1.dll"
 
 /* We should find a way to not have to update this manually.  */
-#define LIBGCJ_SONAME "libgcj" /*LIBGCC_EH_EXTN*/ "-11.dll"
+#define LIBGCJ_SONAME "libgcj" /*LIBGCC_EH_EXTN*/ "-12.dll"
 

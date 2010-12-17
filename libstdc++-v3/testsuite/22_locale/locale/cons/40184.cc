@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "" }
+// { dg-require-namedlocale "ja_JP.eucjp" }
 
 // Copyright (C) 2009 Free Software Foundation
 //

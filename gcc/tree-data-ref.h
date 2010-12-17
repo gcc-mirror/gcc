@@ -193,6 +193,7 @@ struct data_reference
 #define DR_ACCESS_FN(DR, I)        VEC_index (tree, DR_ACCESS_FNS (DR), I)
 #define DR_NUM_DIMENSIONS(DR)      VEC_length (tree, DR_ACCESS_FNS (DR))
 #define DR_IS_READ(DR)             (DR)->is_read
+#define DR_IS_WRITE(DR)            (!DR_IS_READ (DR))
 #define DR_BASE_ADDRESS(DR)        (DR)->innermost.base_address
 #define DR_OFFSET(DR)              (DR)->innermost.offset
 #define DR_INIT(DR)                (DR)->innermost.init
@@ -417,6 +418,39 @@ extern void create_rdg_vertices (struct graph *, VEC (gimple, heap) *);
 extern bool dr_may_alias_p (const struct data_reference *,
 			    const struct data_reference *);
 
+
+/* Return true when the base objects of data references A and B are
+   the same memory object.  */
+
+static inline bool
+same_data_refs_base_objects (data_reference_p a, data_reference_p b)
+{
+  return DR_NUM_DIMENSIONS (a) == DR_NUM_DIMENSIONS (b)
+    && operand_equal_p (DR_BASE_OBJECT (a), DR_BASE_OBJECT (b), 0);
+}
+
+/* Return true when the data references A and B are accessing the same
+   memory object with the same access functions.  */
+
+static inline bool
+same_data_refs (data_reference_p a, data_reference_p b)
+{
+  unsigned int i;
+
+  /* The references are exactly the same.  */
+  if (operand_equal_p (DR_REF (a), DR_REF (b), 0))
+    return true;
+
+  if (!same_data_refs_base_objects (a, b))
+    return false;
+
+  for (i = 0; i < DR_NUM_DIMENSIONS (a); i++)
+    if (!eq_evolutions_p (DR_ACCESS_FN (a, i), DR_ACCESS_FN (b, i)))
+      return false;
+
+  return true;
+}
+
 /* Return true when the DDR contains two data references that have the
    same access functions.  */
 
@@ -440,7 +474,7 @@ ddr_is_anti_dependent (ddr_p ddr)
 {
   return (DDR_ARE_DEPENDENT (ddr) == NULL_TREE
 	  && DR_IS_READ (DDR_A (ddr))
-	  && !DR_IS_READ (DDR_B (ddr))
+	  && DR_IS_WRITE (DDR_B (ddr))
 	  && !same_access_functions (ddr));
 }
 
@@ -564,6 +598,7 @@ index_in_loop_nest (int var, VEC (loop_p, heap) *loop_nest)
 }
 
 void stores_from_loop (struct loop *, VEC (gimple, heap) **);
+void stores_zero_from_loop (struct loop *, VEC (gimple, heap) **);
 void remove_similar_memory_refs (VEC (gimple, heap) **);
 bool rdg_defs_used_in_other_loops_p (struct graph *, int);
 bool have_similar_memory_accesses (gimple, gimple);

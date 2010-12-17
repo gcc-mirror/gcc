@@ -1,3 +1,734 @@
+2010-11-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.h (parse_optimize_options): Declare.
+	* c-cppbuiltin.c, c-format.c, c-gimplify.c, c-lex.c, c-omp.c,
+	c-pch.c, c-pragma.c, c-semantics.c: Don't include toplev.h.
+
+2010-11-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-opts.c (check_deps_environment_vars): Use getenv instead of
+	GET_ENVIRONMENT.
+	* c-pch.c (O_BINARY): Don't define here.
+	* c-pragma.h: Include "cpplib.h" instead of <cpplib.h>.
+
+2010-11-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Pass &global_options to
+	targetm.except_unwind_info.
+
+2010-11-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-opts.c (c_common_handle_option): Pass location to
+	set_struct_debug_option.
+
+2010-11-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (visibility_options): Move from ../opts.c.
+	* c-common.h (struct visibility_flags, visibility_options):
+	Declare here.
+	* c-opts.c (finish_options): Rename to c_finish_options.
+	(c_common_init): Update call to finish_options.
+
+2010-11-22  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/34033
+	* c-lex.c (lex_string): Check that each string in an Objective-C
+	string concat sequence starts with either one or zero '@', and
+	that there are no spurious '@' signs at the end.
+
+2010-11-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-pragma.c: Remove conditionals on HANDLE_PRAGMA_PACK,
+	HANDLE_PRAGMA_PACK_PUSH_POP, HANDLE_PRAGMA_WEAK and
+	HANDLE_PRAGMA_VISIBILITY.
+	* c-pragma.h (HANDLE_PRAGMA_WEAK, HANDLE_PRAGMA_PACK,
+	HANDLE_PRAGMA_VISIBILITY): Don't define.
+	(HANDLE_SYSV_PRAGMA, HANDLE_PRAGMA_PACK_PUSH_POP): Don't test.
+
+2010-11-20  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c++/16189
+	PR c++/36888
+	PR c++/45331
+	* c-common.h (keyword_begins_type_specifier): Declare.
+	(keyword_is_storage_class_specifier): Declare.
+	(keyword_is_type_qualifier): Declare.
+	* c-common.c (keyword_begins_type_specifier): New function.
+	(keyword_is_storage_class_specifier): New function.
+	(keyword_is_type_qualifier): Declare.
+
+2010-11-19  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/46547
+	* c-common.c (in_late_binary_op): Define.
+	(c_common_truthvalue_conversion): Check in_late_binary_op before
+	calling c_save_expr.
+	* c-common.h (in_late_binary_op): Declare.
+
+2010-11-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-opts.c (c_common_handle_option): Update calls to
+	set_struct_debug_option.
+
+2010-11-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-common.h (objc_declare_protocols): Added additional argument.
+	* stub-objc.c (objc_declare_protocol): Same change.
+	
+2010-11-18  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c/33193
+	* c-common.h (build_real_imag_expr): Declare.
+	* c-semantics.c (build_real_imag_expr): Define.
+
+2010-11-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-opts.c (c_common_parse_file): Take no arguments.
+	* c-common.h (c_common_parse_file): Update prototype.
+
+2010-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/46401
+	* c-common.c (warning_candidate_p): Don't track non-const calls
+	or STRING_CSTs.
+
+2010-11-15  Ian Lance Taylor  <iant@google.com>
+
+	* c-lex.c (init_c_lex): Set macro debug callbacks if
+	flag_dump_go_spec is set.
+
+2010-11-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-common.h (objc_build_incr_expr_for_property_ref): New.
+	* stub-objc.c (objc_build_incr_expr_for_property_ref): New.
+
+2010-11-15  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR preprocessor/45038
+	* c-cppbuiltin.c (c_cpp_builtins): Use different format for C++
+	dialects.
+
+2010-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.h (c_family_lang_mask): Declare.
+	* c-opts.c (c_family_lang_mask): Make extern.
+	* c-pragma.c (handle_pragma_diagnostic): Use
+	control_warning_option.
+
+2010-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (parse_optimize_options): Update call to
+	decode_options.
+	* c-common.h (c_common_handle_option): Update prototype.
+	* c-opts.c (c_common_handle_option): Take location_t parameter and
+	pass it to other functions.
+
+2010-11-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-opts.c (warning_as_error_callback): Remove.
+	(c_common_initialize_diagnostics): Don't call
+	register_warning_as_error_callback.
+	(c_common_handle_option): Handle -Werror=normalized= here.
+
+2010-11-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (handle_mode_attribute): Use %' and word "signedness"
+	in diagnostic.
+	* c-opts.c (c_common_parse_file): Start diagnostics with lowercase
+	letter.
+	* c-pragma.c (handle_pragma_target, handle_pragma_optimize):
+	Remove trailing '.' from diagnostics.
+	* c.opt (Wwrite-strings_: Avoid '`' in help text.
+
+2010-11-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (parse_optimize_options): Pass global_dc to
+	decode_options.
+	* c-opts.c (c_common_handle_option): Pass &global_options to
+	set_Wstrict_aliasing.
+	* c.opt (v): Don't mark Common or document here.
+
+2010-11-06  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR target/44981
+	* c-format.c (format_type): New type gcc_objc_string_format_type.
+	(valid_stringptr_type_p): New.
+	(handle_format_arg_attribute): Use valid_stringptr_type_p ().
+	(check_format_string): Pass expected type, use 
+	valid_stringptr_type_p (), check that the format string types are
+	consistent with the format specification.
+	(decode_format_attr): Warn if NSString is used outside objective-c.
+	(format_types_orig): Add NSString.
+	(format_name): New.
+	(format_flags): New.
+	(check_format_arg): Handle format strings requiring an external parser.
+	first_target_format_type: New variable.
+	(handle_format_attribute): Set up first_target_format_type, pass the
+	expected format arg string type to check_format_string().
+	* c-common.h (FMT_FLAG_PARSE_ARG_CONVERT_EXTERNAL):  New flag.
+	* stub-objc.c (objc_string_ref_type_p): New.
+	(objc_check_format_arg): New.
+
+2010-11-04  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Fixed using the Objective-C 2.0 dot-syntax with class names.	
+	* c-common.h (objc_build_class_component_ref): New.
+	* stub-objc.c (objc_build_class_component_ref): New.
+
+2010-11-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c.opt (Wproperty-assign-default): New option.
+
+2010-11-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Implemented -fobjc-std=objc1 flag.
+	* c.opt (fobjc-std=objc1): New option.
+
+2010-11-01  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Implemented format and noreturn attributes for Objective-C methods.
+	* c-common.c (handle_noreturn_attribute): Recognize 'noreturn'
+	attribute for Objective-C methods.
+
+2010-10-31  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (conversion_warning, warn_for_collisions_1): Use
+	EXPR_LOC_OR_HERE.
+
+2010-10-30  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Implemented Objective-C 2.0 @property, @synthesize and @dynamic.
+	* c-common.h (enum rid): Removed RID_COPIES and RID_IVAR.
+	(objc_add_property_declaration): Removed arguments for copies and
+	ivar.
+	(objc_build_getter_call): Renamed to
+	objc_maybe_build_component_ref.
+	(objc_build_setter_call): Renamed to objc_maybe_build_modify_expr.
+	(objc_is_property_ref): New.
+	* c-common.c (c_common_reswords): Removed copies and ivar.
+	* stub-objc.c (objc_add_property_declaration): Removed arguments
+	for copies and ivar.
+	(objc_build_getter_call): Renamed to
+	objc_maybe_build_component_ref.
+	(objc_build_setter_call): Renamed to objc_maybe_build_modify_expr.
+	(objc_is_property_ref): New.
+	
+2010-10-29  Arnaud Charlet  <charlet@adacore.com>
+	    Matthew Gingell  <gingell@adacore.com>
+
+	* c-ada-spec.c (separate_class_package): New function.
+	(pp_ada_tree_identifier): Prefix references to C++ classes with the
+	name of their enclosing package.
+	(print_ada_declaration): Use separate_class_package.
+
+2010-10-27  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (c_common_reswords): Add __is_literal_type.
+	* c-common.h (enum rid): Add RID_IS_LITERAL_TYPE.
+
+	* c-common.c (check_case_value): Remove special C++ code.
+
+2010-10-27  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-common.h (enum rid): Added RID_READWRITE, RID_ASSIGN,
+	RID_RETAIN, RID_COPY and RID_NONATOMIC.  Updated RID_FIRST_PATTR
+	and RID_LAST_PATTR.
+	(objc_add_property_declaration): Added additional arguments.
+	(objc_property_attribute_kind): Removed.
+	(objc_set_property_attr): Removed.
+	* c-common.c (c_common_reswords): Added readwrite, assign, retain,
+	copy and nonatomic.
+	* stub-objc.c (objc_add_property_declaration): Added additional
+	arguments.
+	(objc_set_property_attr): Removed.
+	
+2010-10-27  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-common.h (objc_add_property_variable): Renamed to
+	objc_add_property_declaration.  Added location argument.
+	* stub-objc.c (objc_add_property_variable): Same change.
+	
+2010-10-23  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-common.h (objc_maybe_printable_name): New.
+	* stub-objc.c (objc_maybe_printable_name): New.
+
+2010-10-22  Artjoms Sinkarovs <artyom.shinakroff@gmail.com>
+	Andrew Pinski <pinskia@gmail.com>
+
+	* c-common.h (c_common_mark_addressable_vec): Declare.
+	* c-common.c (c_common_mark_addressable_vec): New function.
+
+2010-10-20  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-common.h (objc_set_method_type): Removed.
+	(objc_add_method_declaration): Added boolean argument.
+	(objc_start_method_definition): Same change.
+	(objc_build_method_signature): Same change.
+	* stub-objc.c (objc_set_method_type): Removed.
+	(objc_add_method_declaration): Added boolean argument.
+	(objc_start_method_definition): Same change.
+	(objc_build_method_signature): Same change.
+
+2010-10-20  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-common.h (finish_file): Removed.
+	(objc_write_global_declarations): New.
+	* c-opts.c (c_common_parse_file): Do not call finish_file.
+	* stub-objc.c (objc_write_global_declarations): New.
+	
+2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Implemented parsing @synthesize and @dynamic for
+	Objective-C/Objective-C++.
+	* c-common.h (enum rid): Add RID_AT_SYNTHESIZE and RID_AT_DYNAMIC.
+	(objc_add_synthesize_declaration): New.
+	(objc_add_dynamic_declaration): New.
+	* c-common.c (c_common_reswords): Add synthesize and dynamic.
+	* stub-objc.c (objc_add_synthesize_declaration): New.
+	(objc_add_dynamic_declaration): New.
+	
+2010-10-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/46041
+	* c-cppbuiltin.c (mode_has_fma): Move function here from
+	builtins.c.  Don't use the fma optab, instead just use the
+	HAVE_fma* macros, so that __FP_FAST_FMA* will be defined when
+	using -save-temps.
+
+2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Merge from 'apple/trunk' branch on FSF servers.
+
+	2005-11-08  Fariborz Jahanian <fjahanian@apple.com>
+
+        Radar 4330422
+	* c-common.h (objc_non_volatilized_type): New declaration
+	* stub-objc.c (objc_non_volatilized_type): New stub.
+
+2010-10-17  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Merge from 'apple/trunk' branch on FSF servers.
+
+	2006-03-27 Fariborz Jahanian <fjahanian@apple.com>
+
+        Radar 4133425
+	* c-common.h (objc_diagnose_private_ivar): New decl.
+	* stub-objc.c (objc_diagnose_private_ivar): New stub.
+
+2010-10-17  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* c-common.c (c_common_reswords): Add package, RID_AT_PACKAGE.
+	* c-common.h (enum rid): Add RID_AT_PACKAGE.
+	(objc_ivar_visibility_kind): New enum.
+	(objc_set_visibility): Adjust prototype to use visibility enum.
+	* stub-objc.c (objc_set_visibility): Adjust stub to use
+	visibility enum.
+
+2010-10-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* c-cppbuiltin.c (builtin_define_float_constants): Emit
+	__FP_FAST_FMA, __FP_FAST_FMAF, and __FP_FAST_FMAL if the machine
+	has the appropriate fma builtins.
+	(c_cpp_builtins): Adjust call to builtin_define_float_constants.
+
+2010-10-14  Iain Sandoe  <iains@gcc.gnu.org>
+
+	merge from FSF apple 'trunk' branch.
+	2006 Fariborz Jahanian <fjahanian@apple.com>
+
+	Radars 4436866, 4505126, 4506903, 4517826
+	* c-common.c (c_common_resword): Define @property and its attributes.
+	* c-common.h: Define property attribute enum entries.
+	(OBJC_IS_PATTR_KEYWORD): New.
+	(objc_property_attribute_kind): New enum.
+	Declare objc_set_property_attr (), objc_add_property_variable (),
+	objc_build_getter_call () and objc_build_setter_call ().
+	* stub-objc.c (objc_set_property_attr): New stub.
+	(objc_add_property_variable): Likewise.
+	(objc_build_getter_call): Likewise.
+	(objc_build_setter_call) Likewise.
+
+2010-10-13  Iain Sandoe  <iains@gcc.gnu.org>
+
+	merge from FSF apple 'trunk' branch.
+	2006-04-26 Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 3803157 (method attributes)
+	* c-common.c (handle_deprecated_attribute): Recognize
+	objc methods as valid declarations.
+	* c-common.h: Declare objc_method_decl ().
+	* stub-objc.c (objc_method_decl): New stub.
+
+2010-10-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (parse_optimize_options): Call
+	decode_cmdline_options_to_array_default_mask before
+	decode_options.  Update arguments to decode_options.
+	* c-common.h (c_common_init_options_struct): Declare.
+	* c-opts.c (c_common_init_options_struct): New.  Split out from
+	c_common_init_options.
+
+2010-10-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Implemented fast enumeration for Objective-C.
+	* c-common.h (objc_finish_foreach_loop): New.
+	* stub-objc.c (objc_finish_foreach_loop): New.
+
+2010-10-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.h (struct diagnostic_context): Don't declare here.
+	(c_common_initialize_diagnostics): Declare using
+	diagnostic_context typedef.
+	* c-opts.c (c_common_handle_option): Pass global_dc to
+	handle_generated_option.
+
+2010-10-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-opts.c (c_common_handle_option): Pass &global_options_set to
+	handle_generated_option.
+
+2010-10-03  Ian Lance Taylor  <iant@google.com>
+
+	* c.opt (-fplan9-extensions): New option.
+
+2010-10-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* c-cppbuiltin.c (define__GNUC__, builtin_define_type_precision):
+	Remove.
+	(c_cpp_builtins): Call functions from cppbuiltin.c instead
+	of duplicating code.
+
+2010-09-30  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* c-common.c: Add two new entries for @optional
+	and @required keywords.
+
+	merge from FSF 'apple/trunk' branch.
+	2006-01-30  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4386773
+	* c-common.h (RID_AT_OPTIONAL, RID_AT_REQUIRED): Two new
+	objective-c keywords.
+	(objc_set_method_opt): New declaration.
+	* stub-objc.c (objc_set_method_opt): New stub.
+	
+2010-09-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (handle_optimize_attribute): Pass &global_options to
+	cl_optimization_save and cl_optimization_restore.
+	* c-opts.c (c_common_handle_option): Pass &global_options to
+	handle_generated_option.
+	* c-pragma.c (handle_pragma_diagnostic): Use option_flag_var.
+	(handle_pragma_pop_options, handle_pragma_reset_options): Pass
+	&global_options to cl_optimization_restore.
+
+2010-09-30  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-lex.c (c_lex_with_flags): Updated comments for CPP_AT_NAME
+	Objective-C/Objective-C++ keywords.
+
+2010-09-29  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Merge from 'apple/trunk' branch on FSF servers.	
+	
+	2005-10-04  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4281748
+	* c-common.h (objc_check_global_decl): New declaration.
+	* stub-objc.c (objc_check_global_decl): New stub.
+
+2010-09-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt: Don't use VarExists.
+
+2010-09-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (c_cpp_error): Update names of diagnostic_context
+	members.
+	* c-cppbuiltin.c (c_cpp_builtins_optimize_pragma): Update names of
+	cl_optimization members.
+	* c-opts.c (warning_as_error_callback, c_common_handle_option,
+	sanitize_cpp_opts, finish_options): Update names of cpp_options
+	members.
+
+2010-09-29  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-common.h (OBJC_IS_CXX_KEYWORD): New macro.  Updated comments.
+	(objc_is_reserved_word): Removed.
+	* c-common.c: Updated comments.
+	* c-lex.c (c_lex_with_flags): Use OBJC_IS_CXX_KEYWORD instead of
+	objc_is_reserved_word.
+	* stub-objc.c (objc_is_reserved_word): Removed.
+
+2010-09-28  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* c-common.h (objc_add_method_declaration): Adjust prototype to 
+	include attributes.
+	(objc_start_method_definition): Likewise.
+	(objc_build_keyword_decl): Likewise.
+	* stub-objc.c:(objc_add_method_declaration): Handle attributes.
+	(objc_start_method_definition): Likewise.
+	(objc_build_keyword_decl): Likewise.
+
+2010-09-28  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* c-common.h (objc_start_class_interface): Adjust prototype.
+	(objc_start_category_interface): Likewise.
+	(objc_start_protocol): Likewise.
+	* stub-objc.c (objc_start_protocol): Adjust for extra argument.
+	(objc_start_class_interface): Likewise.
+	(objc_start_category_interface): Likewise.
+
+2010-09-27  Ian Lance Taylor  <iant@google.com>
+
+	* c-common.c (c_common_attribute_table): Add no_split_stack.
+	(handle_no_split_stack_attribute): New static function.
+
+2010-09-27  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Merge from 'apple/trunk' branch on FSF servers.	
+
+	2005-12-15  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4229905	
+	* c-common.h (objc_have_common_type): New declaration.
+	* stub-objc.c (objc_have_common_type): New stub.
+
+	2005-06-22  Ziemowit Laski  <zlaski@apple.com>
+
+	Radar 4154928
+	* c-common.h (objc_common_type): New prototype.
+	* stub-objc.c (objc_common_type): New stub.	
+
+2010-09-24  Jan Hubicka  <jh@suse.cz>
+
+	* c-common.c (handle_leaf_attribute): New function.
+	(struct attribute_spec c_common_att): Add leaf.
+
+2010-09-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (-all-warnings, -ansi, -assert, -assert=, -comments,
+	-comments-in-macros, -define-macro, -define-macro=, -dependencies,
+	-dump, -dump=, -imacros, -imacros=, -include, -include=,
+	-include-barrier, -include-directory, -include-directory=,
+	-include-directory-after, -include-directory-after=,
+	-include-prefix, -include-prefix=, -include-with-prefix,
+	-include-with-prefix=, -include-with-prefix-after,
+	-include-with-prefix-after=, -include-with-prefix-before,
+	-include-with-prefix-before=, -no-integrated-cpp,
+	-no-line-commands, -no-standard-includes, -no-warnings, -output,
+	-output=, -pedantic, -pedantic-errors, -preprocess,
+	-print-missing-file-dependencies, -trace-includes, -traditional,
+	-traditional-cpp, -trigraphs, -undefine-macro, -undefine-macro=,
+	-user-dependencies, -verbose, -write-dependencies,
+	-write-user-dependencies, no-integrated-cpp, traditional): New.
+
+2010-09-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/23710
+	* c-common.h (objc_start_method_definition): Return bool instead
+	of void.
+	* stub-objc.c (objc_start_method_definition): Return bool instead
+	of void.
+
+2010-09-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/25965
+	* c-common.h (objc_get_interface_ivars): New declaration.
+	* stub-objc.c (objc_get_interface_ivars): New stub.
+
+2010-09-15  Ian Lance Taylor  <iant@google.com>
+
+	* c-common.c (parse_optimize_options): Do not capitalize warning
+	messages.  Remove period at end of warning message.
+
+2010-09-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-common.c (handle_alias_ifunc_attribute): New, broken out of	...
+	(handle_alias_attribute): ... here.
+	(handle_ifunc_attribute): New.
+
+2010-09-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-common.h (do_warn_double_promotion): Declare.
+	* c-common.c (do_warn_double_promotion): Define.
+
+2010-09-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* c.opt (Wdouble-promotion): New.
+
+2010-09-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (falt-external-templates, fhuge-objects, fvtable-gc,
+	fvtable-thunks, fxref): Mark no longer supported in help text.
+
+2010-09-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (Wimport, fall-virtual, falt-external-templates,
+	fdefault-inline, fenum-int-equiv, fexternal-templates,
+	fguiding-decls, fhonor-std, fhuge-objects, flabels-ok,
+	fname-mangling-version-, fnew-abi, fnonnull-objects,
+	foptional-diags, fsquangle, fstrict-prototype, fthis-is-variable,
+	fvtable-gc, fvtable-thunks, fxref): Mark with Ignore and Warn as
+	applicable.
+	(fhandle-exceptions): Mark with Alias and Warn.
+	* c-opts.c (c_common_handle_option): Don't handle options marked
+	as ignored.
+
+2010-09-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (Wcomments, Werror-implicit-function-declaration,
+	ftemplate-depth-, std=c89, std=c9x, std=gnu89, std=gnu9x,
+	std=iso9899:1990, std=iso9899:1999, std=iso9899:199x): Mark as
+	aliases.
+	* c-common.c (option_codes): Use OPT_Wcomment instead of
+	OPT_Wcomments.
+	* c-opts.c (warning_as_error_callback, c_common_handle_option):
+	Don't handle options marked as aliases.
+
+2010-08-25  Richard Guenther  <rguenther@suse.de>
+
+	* c-common.c (c_common_get_alias_set): Remove special
+	handling for pointers.
+
+2010-08-20  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-common.c: Use FOR_EACH_VEC_ELT.
+	* c-gimplify.c: Likewise.
+	* c-pragma.c: Likewise.
+
+2010-08-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (MDX): Change back to MD.  Mark NoDriverArg instead of
+	RejectDriver.
+	(MMDX): Change back to MMD.  Mark NoDriverArg instead of
+	RejectDriver.
+	* c-opts.c (c_common_handle_option): Use OPT_MD and OPT_MMD
+	instead of OPT_MDX and OPT_MMDX.
+
+2010-08-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (MDX, MMDX, lang-asm): Mark RejectDriver.
+
+2010-08-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (MD, MMD): Change to MDX and MMDX.
+	* c-opts.c (c_common_handle_option): Use OPT_MMD and OPT_MMDX.
+
+2010-08-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-opts.c (c_common_handle_option): Call handle_generated_option
+	instead of handle_option.
+
+2010-08-08  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-pragma.c (add_to_renaming_pragma_list): Fix call to VEC_safe_push.
+	(maybe_apply_renaming_pragma): Delete unneeded declarations.
+
+2010-08-08  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-pragma.c (pending_redefinition): Declare.  Declare a VEC of it.
+	(pending_redefine_extname): Change type to a VEC.
+	(add_to_renaming_pragma_list): Update for new type of
+	pending_redefine_extname.
+	(maybe_apply_renaming_pragma): Likewise.
+
+2010-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* c-ada-spec.c (dump_ada_template): Mark underlying instance type as
+	visited.
+	(dump_generic_ada_node): Code clean up. Use TREE_VISITED flag to
+	decide whether a type has already been declared/seen.
+	Do not go to the original type.
+	(dump_nested_types): New parameter forward.
+	Generate forward declaration if needed and mark type as visited.
+	(print_ada_declaration): Call dump_nested_types if not already done.
+	Mark types as visited.
+
+2010-08-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (-print-pch-checksum): Remove option.
+	* c-opts.c (c_common_handle_option): Don't handle
+	OPT_print_pch_checksum.
+
+2010-07-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.h (c_common_handle_option): Update prototype and return
+	value type.
+	* c-opts.c (c_common_handle_option): Update prototype and return
+	value type.  Update calls to handle_option and
+	enable_warning_as_error.
+
+2010-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/45079
+	* c-pretty-print.c (pp_c_expression): Handle C_MAYBE_CONST_EXPR.
+
+2010-07-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.h (c_common_missing_argument): Remove.
+	* c-opts.c (c_common_missing_argument): Remove.
+	* c.opt (A, D, F, I, MD, MMD, MQ, MT, U, fconstant-string-class=,
+	idirafter, imacros, include, isysroot, isystem, iquote): Add
+	MissingArgError.
+	* c-objc-common.h (LANG_HOOKS_MISSING_ARGUMENT): Remove.
+
+2010-07-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.h (c_common_option_lang_mask,
+	c_common_initialize_diagnostics, c_common_complain_wrong_lang_p):
+	New.
+	(c_common_init_options): Update prototype.
+	* c-opts.c (c_common_option_lang_mask): New.
+	(c_common_initialize_diagnostics): Split out of
+	c_common_init_options.
+	(accept_all_c_family_options, c_common_complain_wrong_lang_p):
+	New.
+	(c_common_init_options): Update prototype.  Use decoded options in
+	search for -lang-asm.
+
+2010-07-15  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-common.c: Carefully replace TREE_CHAIN with DECL_CHAIN.
+	* c-format.c: Likewise.
+
+2010-07-08  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c-common.h: Include diagnostic-core.h. Error if already
+	included.
+	* c-semantics.c: Do not define GCC_DIAG_STYLE here.
+
+2010-07-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c-family/c-common.c (IN_GCC_FRONTEND): Do not undef.
+	Do not include expr.h
+	(vector_mode_valid_p): Move here.
+
+2010-06-21  DJ Delorie  <dj@redhat.com>
+
+	* c-pragma.c (handle_pragma_diagnostic): Add push/pop,
+	allow these pragmas anywhere.
+
+2010-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/44509
+	* c-cppbuiltin.c: Include gt-c-family-c-cppbuiltin.h.
+	(lazy_hex_fp_values, lazy_hex_fp_value_count): Add GTY(()) markers.
+	(lazy_hex_fp_value, builtin_define_with_hex_fp_value): Use
+	ggc_strdup instead of xstrdup.
+
+2010-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-cppbuiltin.c: Include cpp-id-data.h.
+	(lazy_hex_fp_values, lazy_hex_fp_value_count): New variables.
+	(lazy_hex_fp_value): New function.
+	(builtin_define_with_hex_fp_value): Provide definitions lazily.
+
+2010-06-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c-gimplify.c: Do not include tree-flow.h
+
 2010-06-29  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR other/44034

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1998-2009, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2010, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -646,26 +646,26 @@ package body System.Tasking.Protected_Objects.Operations is
             end if;
          end if;
 
-      elsif Mode < Asynchronous_Call then
-
-         --  Simple_Call or Conditional_Call
-
-         if Single_Lock then
-            STPO.Lock_RTS;
-            Entry_Calls.Wait_For_Completion (Entry_Call);
-            STPO.Unlock_RTS;
-
-         else
-            STPO.Write_Lock (Self_ID);
-            Entry_Calls.Wait_For_Completion (Entry_Call);
-            STPO.Unlock (Self_ID);
-         end if;
-
-         Block.Cancelled := Entry_Call.State = Cancelled;
-
       else
-         pragma Assert (False);
-         null;
+         case Mode is
+            when Simple_Call | Conditional_Call =>
+               if Single_Lock then
+                  STPO.Lock_RTS;
+                  Entry_Calls.Wait_For_Completion (Entry_Call);
+                  STPO.Unlock_RTS;
+
+               else
+                  STPO.Write_Lock (Self_ID);
+                  Entry_Calls.Wait_For_Completion (Entry_Call);
+                  STPO.Unlock (Self_ID);
+               end if;
+
+               Block.Cancelled := Entry_Call.State = Cancelled;
+
+            when Asynchronous_Call | Timed_Call =>
+               pragma Assert (False);
+               null;
+         end case;
       end if;
 
       Initialization.Undefer_Abort_Nestable (Self_ID);
@@ -958,7 +958,7 @@ package body System.Tasking.Protected_Objects.Operations is
          Send_Trace_Info (POT_Call, Entry_Index (E), Timeout);
       end if;
 
-      Initialization.Defer_Abort (Self_Id);
+      Initialization.Defer_Abort_Nestable (Self_Id);
       Lock_Entries (Object, Ceiling_Violation);
 
       if Ceiling_Violation then
@@ -1009,7 +1009,7 @@ package body System.Tasking.Protected_Objects.Operations is
          end if;
 
          Entry_Call_Successful := Entry_Call.State = Done;
-         Initialization.Undefer_Abort (Self_Id);
+         Initialization.Undefer_Abort_Nestable (Self_Id);
          Entry_Calls.Check_Exception (Self_Id, Entry_Call);
          return;
       end if;
@@ -1025,7 +1025,7 @@ package body System.Tasking.Protected_Objects.Operations is
 
       --  ??? Do we need to yield in case Yielded is False
 
-      Initialization.Undefer_Abort (Self_Id);
+      Initialization.Undefer_Abort_Nestable (Self_Id);
       Entry_Call_Successful := Entry_Call.State = Done;
       Entry_Calls.Check_Exception (Self_Id, Entry_Call);
    end Timed_Protected_Entry_Call;

@@ -184,8 +184,13 @@ has_c_linkage (const_tree decl ATTRIBUTE_UNUSED)
 void
 c_initialize_diagnostics (diagnostic_context *context)
 {
-  pretty_printer *base = context->printer;
-  c_pretty_printer *pp = XNEW (c_pretty_printer);
+  pretty_printer *base;
+  c_pretty_printer *pp;
+
+  c_common_initialize_diagnostics (context);
+
+  base = context->printer;
+  pp = XNEW (c_pretty_printer);
   memcpy (pp_base (pp), base, sizeof (pretty_printer));
   pp_c_pretty_printer_init (pp);
   context->printer = (pretty_printer *) pp;

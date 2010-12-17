@@ -63,8 +63,11 @@ mslow-bytes
 Target Report Mask(SLOW_BYTES)
 Prefer word accesses over byte accesses
 
+; Maximum size we are allowed to grow the stack in a single operation.
+; If we want more, we must do it in increments of at most this size.
+; If this value is 0, we don't check at all.
 mstack-increment=
-Target RejectNegative Joined UInteger Var(mcore_stack_increment) VarExists
+Target RejectNegative Joined UInteger Var(mcore_stack_increment) Init(STACK_UNITS_MAXSTEP)
 Set the maximum amount for a single stack increment operation
 
 mwide-bitfields

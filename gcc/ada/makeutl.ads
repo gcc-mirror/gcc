@@ -43,6 +43,9 @@ package Makeutl is
    Project_Tree : constant Project_Tree_Ref := new Project_Tree_Data;
    --  The project tree
 
+   Source_Info_Option : constant String := "--source-info=";
+   --  Switch to indicate the source info file
+
    Subdirs_Option : constant String := "--subdirs=";
    --  Switch used to indicate that the real directories (object, exec,
    --  library, ...) are subdirectories of those in the project file.
@@ -51,6 +54,14 @@ package Makeutl is
                                     "--unchecked-shared-lib-imports";
    --  Command line switch to allow shared library projects to import projects
    --  that are not shared library projects.
+
+   Single_Compile_Per_Obj_Dir_Switch : constant String :=
+                                         "--single-compile-per-obj-dir";
+   --  Switch to forbid simultaneous compilations for the same object directory
+   --  when project files are used.
+
+   Create_Map_File_Switch : constant String := "--create-map-file";
+   --  Switch to create a map file when an executable is linked
 
    procedure Add
      (Option : String_Access;
@@ -61,6 +72,9 @@ package Makeutl is
       To     : in out String_List_Access;
       Last   : in out Natural);
    --  Add a string to a list of strings
+
+   function Create_Binder_Mapping_File return Path_Name_Type;
+   --  Create a binder mapping file and returns its path name
 
    function Create_Name (Name : String) return File_Name_Type;
    function Create_Name (Name : String) return Name_Id;
@@ -91,7 +105,9 @@ package Makeutl is
    --  True if the unit is in one of the project file, but the file name is not
    --  one of its source. Returns False otherwise.
 
-   function Check_Source_Info_In_ALI (The_ALI : ALI.ALI_Id) return Boolean;
+   function Check_Source_Info_In_ALI
+     (The_ALI : ALI.ALI_Id;
+      Tree    : Project_Tree_Ref) return Boolean;
    --  Check whether all file references in ALI are still valid (i.e. the
    --  source files are still associated with the same units). Return True
    --  if everything is still valid.
