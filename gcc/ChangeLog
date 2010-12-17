@@ -1,3 +1,9 @@
+2010-12-17  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* config/arm/arm.c (arm_select_cc_mode): Before calling
+	arm_select_dominance_cc_mode for AND or IOR operations, ensure
+	that op is NE or EQ.
+
 2010-12-17  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR middle-end/46761
