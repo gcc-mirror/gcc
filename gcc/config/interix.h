@@ -50,7 +50,6 @@ for windows/multi thread */
 		   %{shared:--shared -Bdynamic} \
 		   %{G:--shared -Bdynamic} \
 		   %{symbolic:--shared -Bsymbolic -Bdynamic} \
-		   %{soname*:--soname %*} \
    		   %{rpath*:--rpath %*} \
 		   "
 

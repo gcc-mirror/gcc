@@ -1,3 +1,9 @@
+2010-12-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/interix.opt: New.
+	* config/interix.h (LINK_SPEC): Don't handle -soname*.
+	* config.gcc (i[34567]86-*-interix3*): Use interix.opt.
+
 2010-12-17  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/arm/arm.md (maddhisi4, *maddhidi4): Use the canonical
