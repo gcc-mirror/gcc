@@ -10,7 +10,7 @@
 
 /* Definition of TItype follows same logic as in gcc.dg/titype-1.c,
    but must be a #define to avoid giving the type a name.  */
-#if defined(__LP64__) && !defined(__hppa__)
+#if (defined(__LP64__) && !defined(__hppa__)) || defined(__SPU__)
 #define TItype int __attribute__ ((mode (TI)))
 #else
 #define TItype long
