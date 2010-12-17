@@ -39,7 +39,7 @@ int test (id object)
     {
       dummy++;
     }
-  @catch (i) /* { dg-error "expected declaration specifiers or ..... before .i." } */
+  @catch (i) /* { dg-error "unknown type name .i." } */
     {
       dummy++;
     }
