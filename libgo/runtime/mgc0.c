@@ -27,7 +27,7 @@ struct BlockList
 };
 
 static bool finstarted;
-static Lock finqlock = LOCK_INITIALIZER;
+static pthread_mutex_t finqlock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t finqcond = PTHREAD_COND_INITIALIZER;
 static Finalizer *finq;
 static int32 fingwait;
@@ -284,7 +284,7 @@ sweep(void)
 			sweepspan(s);
 }
 
-static Lock gcsema = LOCK_INITIALIZER;
+static pthread_mutex_t gcsema = PTHREAD_MUTEX_INITIALIZER;
 
 // Initialized from $GOGC.  GOGC=off means no gc.
 //
@@ -327,8 +327,8 @@ runtime_gc(int32 force __attribute__ ((unused)))
 	if(gcpercent < 0)
 		return;
 
-	runtime_lock(&finqlock);
-	runtime_lock(&gcsema);
+	pthread_mutex_lock(&finqlock);
+	pthread_mutex_lock(&gcsema);
 	m->locks++;	// disable gc during the mallocs in newproc
 	t0 = runtime_nanotime();
 	runtime_stoptheworld();
@@ -345,7 +345,7 @@ runtime_gc(int32 force __attribute__ ((unused)))
 	mstats.pause_ns += t1 - t0;
 	if(mstats.debuggc)
 		runtime_printf("pause %llu\n", (unsigned long long)t1-t0);
-	runtime_unlock(&gcsema);
+	pthread_mutex_unlock(&gcsema);
 	runtime_starttheworld();
 
 	// finqlock is still held.
@@ -362,7 +362,7 @@ runtime_gc(int32 force __attribute__ ((unused)))
 		}
 	}
 	m->locks--;
-	runtime_unlock(&finqlock);
+	pthread_mutex_unlock(&finqlock);
 }
 
 static void
@@ -373,16 +373,16 @@ runfinq(void* dummy)
 	USED(dummy);
 
 	for(;;) {
-		runtime_lock(&finqlock);
+		pthread_mutex_lock(&finqlock);
 		f = finq;
 		finq = nil;
 		if(f == nil) {
 			fingwait = 1;
-			pthread_cond_wait(&finqcond, &finqlock.mutex);
-			runtime_unlock(&finqlock);
+			pthread_cond_wait(&finqcond, &finqlock);
+			pthread_mutex_unlock(&finqlock);
 			continue;
 		}
-		runtime_unlock(&finqlock);
+		pthread_mutex_unlock(&finqlock);
 		for(; f; f=next) {
 			void *params[1];
 

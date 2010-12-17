@@ -7,32 +7,67 @@
 void
 runtime_initlock(Lock *l)
 {
-	if(pthread_mutex_init(&l->mutex, NULL) != 0)
-		runtime_throw("pthread_mutex_init failed");
+	l->key = 0;
+	if(sem_init(&l->sem, 0, 0) != 0)
+		runtime_throw("sem_init failed");
+}
+
+static uint32
+runtime_xadd(uint32 volatile *val, int32 delta)
+{
+	uint32 oval, nval;
+
+	for(;;){
+		oval = *val;
+		nval = oval + delta;
+		if(runtime_cas(val, oval, nval))
+			return nval;
+	}
+}
+
+// noinline so that runtime_lock doesn't have to split the stack.
+static void runtime_lock_full(Lock *l) __attribute__ ((noinline));
+
+static void
+runtime_lock_full(Lock *l)
+{
+	if(sem_wait(&l->sem) != 0)
+		runtime_throw("sem_wait failed");
 }
 
 void
 runtime_lock(Lock *l)
 {
-	if(pthread_mutex_lock(&l->mutex) != 0)
-		runtime_throw("lock failed");
+	if(m->locks < 0)
+		runtime_throw("lock count");
+	m->locks++;
+
+	if(runtime_xadd(&l->key, 1) > 1)	// someone else has it; wait
+		runtime_lock_full(l);
+}
+
+static void runtime_unlock_full(Lock *l) __attribute__ ((noinline));
+
+static void
+runtime_unlock_full(Lock *l)
+{
+	if(sem_post(&l->sem) != 0)
+		runtime_throw("sem_post failed");
 }
 
 void
 runtime_unlock(Lock *l)
 {
-	if(pthread_mutex_unlock(&l->mutex) != 0)
-		runtime_throw("unlock failed");
+	m->locks--;
+	if(m->locks < 0)
+		runtime_throw("lock count");
+
+	if(runtime_xadd(&l->key, -1) > 0)	// someone else is waiting
+		runtime_unlock_full(l);
 }
 
 void
 runtime_destroylock(Lock *l)
 {
-	pthread_mutex_destroy(&l->mutex);
-}
-
-bool
-runtime_trylock(Lock *l)
-{
-	return pthread_mutex_trylock(&l->mutex) == 0;
+	sem_destroy(&l->sem);
 }

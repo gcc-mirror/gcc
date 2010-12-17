@@ -67,7 +67,7 @@ __go_sigsend(int32 s)
 		mask = sig.mask;
 		if(mask & bit)
 			break;		// signal already in queue
-		if(cas(&sig.mask, mask, mask|bit)) {
+		if(runtime_cas(&sig.mask, mask, mask|bit)) {
 			// Added to queue.
 			// Only send a wakeup for the first signal in each round.
 			if(mask == 0)
@@ -86,7 +86,7 @@ func Sigrecv() (m uint32) {
 	noteclear(&sig);
 	for(;;) {
 		m = sig.mask;
-		if(cas(&sig.mask, m, 0))
+		if(runtime_cas(&sig.mask, m, 0))
 			break;
 	}
 }
