@@ -11784,7 +11784,9 @@ resolve_symbol (gfc_symbol *sym)
       for (ns = gfc_current_ns->parent; ns; ns = ns->parent)
 	{
 	  symtree = gfc_find_symtree (ns->sym_root, sym->name);
-	  if (symtree && symtree->n.sym->generic)
+	  if (symtree && (symtree->n.sym->generic ||
+			  (symtree->n.sym->attr.flavor == FL_PROCEDURE
+			   && sym->ns->construct_entities)))
 	    {
 	      this_symtree = gfc_find_symtree (gfc_current_ns->sym_root,
 					       sym->name);
