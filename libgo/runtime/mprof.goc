@@ -14,7 +14,7 @@ package runtime
 typedef struct __go_open_array Slice;
 
 // NOTE(rsc): Everything here could use cas if contention became an issue.
-static Lock proflock = LOCK_INITIALIZER;
+static Lock proflock;
 
 // Per-call-stack allocation information.
 // Lookup by hashing call stack into a linked-list hash table.
@@ -183,6 +183,12 @@ found:
 		}
 	}
 	return nil;
+}
+
+void
+runtime_Mprof_Init()
+{
+	runtime_initlock(&proflock);
 }
 
 // Called by malloc to record a profiled block.

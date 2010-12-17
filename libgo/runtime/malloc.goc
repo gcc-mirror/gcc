@@ -270,6 +270,9 @@ runtime_allocmcache(void)
 void
 runtime_mallocinit(void)
 {
+	runtime_initfintab();
+	runtime_Mprof_Init();
+
 	runtime_SysMemInit();
 	runtime_InitSizes();
 	runtime_MHeap_Init(&runtime_mheap, runtime_SysAlloc);
