@@ -131,7 +131,7 @@ move_or_delete_vzeroupper_2 (basic_block bb,
   int count = BLOCK_INFO (bb)->count;
 
   if (dump_file)
-    fprintf (dump_file, " BB [%i] entry: upper 128bits: %d\n",
+    fprintf (dump_file, " [bb %i] entry: upper 128bits: %d\n",
 	     bb->index, state);
 
   /* BB_END changes when it is deleted.  */
@@ -267,7 +267,7 @@ move_or_delete_vzeroupper_2 (basic_block bb,
     }
 
   if (dump_file)
-    fprintf (dump_file, " BB [%i] exit: upper 128bits: %d\n",
+    fprintf (dump_file, " [bb %i] exit: upper 128bits: %d\n",
 	     bb->index, state);
 }
 
@@ -282,7 +282,7 @@ move_or_delete_vzeroupper_1 (basic_block block)
   enum upper_128bits_state state;
 
   if (dump_file)
-    fprintf (dump_file, " Process BB [%i]: status: %d\n",
+    fprintf (dump_file, " Process [bb %i]: status: %d\n",
 	     block->index, BLOCK_INFO (block)->processed);
 
   if (BLOCK_INFO (block)->processed)
@@ -331,7 +331,7 @@ rescan_move_or_delete_vzeroupper (basic_block block)
   enum upper_128bits_state state;
 
   if (dump_file)
-    fprintf (dump_file, " Rescan BB [%i]: status: %d\n",
+    fprintf (dump_file, " Rescan [bb %i]: status: %d\n",
 	     block->index, BLOCK_INFO (block)->rescanned);
 
   if (BLOCK_INFO (block)->rescanned)
@@ -359,6 +359,9 @@ rescan_move_or_delete_vzeroupper (basic_block block)
     {
       if (state == used)
 	BLOCK_INFO (block)->state = state;
+      if (dump_file)
+	fprintf (dump_file, " [bb %i] exit: upper 128bits: %d\n",
+		 block->index, BLOCK_INFO (block)->state);
     }
   else
     move_or_delete_vzeroupper_2 (block, state);
