@@ -18108,6 +18108,10 @@ value_dependent_expression_p (tree expression)
       return ((value_dependent_expression_p (TREE_OPERAND (expression, 0)))
 	      || (value_dependent_expression_p (TREE_OPERAND (expression, 2))));
 
+    case ARRAY_REF:
+      return ((value_dependent_expression_p (TREE_OPERAND (expression, 0)))
+	      || (value_dependent_expression_p (TREE_OPERAND (expression, 1))));
+
     case ADDR_EXPR:
       {
 	tree op = TREE_OPERAND (expression, 0);
