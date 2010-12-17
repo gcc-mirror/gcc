@@ -1,3 +1,11 @@
+2010-12-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (move_or_delete_vzeroupper_2): Replace
+	"BB [%i]" with "[bb %i]" in dump.
+	(move_or_delete_vzeroupper_1): Likewise.
+	(rescan_move_or_delete_vzeroupper): Likewise.  Always dump
+	upper 128bit state at exit.
+
 2010-12-17  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/interix.opt: New.
