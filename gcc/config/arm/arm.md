@@ -1793,11 +1793,11 @@
 
 (define_insn "maddhisi4"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(plus:SI (match_operand:SI 3 "s_register_operand" "r")
-		 (mult:SI (sign_extend:SI
-			   (match_operand:HI 1 "s_register_operand" "%r"))
+	(plus:SI (mult:SI (sign_extend:SI
+			   (match_operand:HI 1 "s_register_operand" "r"))
 			  (sign_extend:SI
-			   (match_operand:HI 2 "s_register_operand" "r")))))]
+			   (match_operand:HI 2 "s_register_operand" "r")))
+		 (match_operand:SI 3 "s_register_operand" "r")))]
   "TARGET_DSP_MULTIPLY"
   "smlabb%?\\t%0, %1, %2, %3"
   [(set_attr "insn" "smlaxy")
@@ -1807,11 +1807,11 @@
 (define_insn "*maddhidi4"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
 	(plus:DI
-	  (match_operand:DI 3 "s_register_operand" "0")
 	  (mult:DI (sign_extend:DI
-	 	    (match_operand:HI 1 "s_register_operand" "%r"))
+	 	    (match_operand:HI 1 "s_register_operand" "r"))
 		   (sign_extend:DI
-		    (match_operand:HI 2 "s_register_operand" "r")))))]
+		    (match_operand:HI 2 "s_register_operand" "r")))
+	  (match_operand:DI 3 "s_register_operand" "0")))]
   "TARGET_DSP_MULTIPLY"
   "smlalbb%?\\t%Q0, %R0, %1, %2"
   [(set_attr "insn" "smlalxy")

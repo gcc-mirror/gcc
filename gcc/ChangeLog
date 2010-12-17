@@ -1,3 +1,9 @@
+2010-12-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/arm/arm.md (maddhisi4, *maddhidi4): Use the canonical
+	operand order for plus.
+	Drop redundant % from constraints.
+
 2010-12-17  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/t-spu-elf (LIB2FUNCS_EXCLUDE): Add _floattisf and
