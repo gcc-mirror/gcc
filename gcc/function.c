@@ -5712,6 +5712,8 @@ used_types_insert (tree t)
       break;
     else
       t = TREE_TYPE (t);
+  if (TREE_CODE (t) == ERROR_MARK)
+    return;
   if (TYPE_NAME (t) == NULL_TREE
       || TYPE_NAME (t) == TYPE_NAME (TYPE_MAIN_VARIANT (t)))
     t = TYPE_MAIN_VARIANT (t);

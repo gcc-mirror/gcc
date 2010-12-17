@@ -433,6 +433,22 @@ c_parser_next_token_is_keyword (c_parser *parser, enum rid keyword)
   return c_parser_peek_token (parser)->keyword == keyword;
 }
 
+/* Return a pointer to the next-but-one token from PARSER, reading it
+   in if necessary.  The next token is already read in.  */
+
+static c_token *
+c_parser_peek_2nd_token (c_parser *parser)
+{
+  if (parser->tokens_avail >= 2)
+    return &parser->tokens[1];
+  gcc_assert (parser->tokens_avail == 1);
+  gcc_assert (parser->tokens[0].type != CPP_EOF);
+  gcc_assert (parser->tokens[0].type != CPP_PRAGMA_EOL);
+  c_lex_one_token (parser, &parser->tokens[1]);
+  parser->tokens_avail = 2;
+  return &parser->tokens[1];
+}
+
 /* Return true if TOKEN can start a type name,
    false otherwise.  */
 static bool
@@ -497,13 +513,46 @@ c_token_starts_typename (c_token *token)
     }
 }
 
+enum c_lookahead_kind {
+  /* Always treat unknown identifiers as typenames.  */
+  cla_prefer_type,
+
+  /* Could be parsing a nonabstract declarator.  Only treat an identifier
+     as a typename if followed by another identifier or a star.  */
+  cla_nonabstract_decl,
+
+  /* Never treat identifiers as typenames.  */
+  cla_prefer_id
+};
+
 /* Return true if the next token from PARSER can start a type name,
-   false otherwise.  */
+   false otherwise.  LA specifies how to do lookahead in order to
+   detect unknown type names.  If unsure, pick CLA_PREFER_ID.  */
+
 static inline bool
-c_parser_next_token_starts_typename (c_parser *parser)
+c_parser_next_tokens_start_typename (c_parser *parser, enum c_lookahead_kind la)
 {
   c_token *token = c_parser_peek_token (parser);
-  return c_token_starts_typename (token);
+  if (c_token_starts_typename (token))
+    return true;
+
+  /* Try a bit harder to detect an unknown typename.  */
+  if (la != cla_prefer_id
+      && token->type == CPP_NAME
+      && token->id_kind == C_ID_ID
+
+      /* Do not try too hard when we could have "object in array".  */
+      && !parser->objc_could_be_foreach_context
+
+      && (la == cla_prefer_type
+	  || c_parser_peek_2nd_token (parser)->type == CPP_NAME
+	  || c_parser_peek_2nd_token (parser)->type == CPP_MULT)
+
+      /* Only unknown identifiers.  */
+      && !lookup_name (token->value))
+    return true;
+
+  return false;
 }
 
 /* Return true if TOKEN is a type qualifier, false otherwise.  */
@@ -631,8 +680,6 @@ c_token_starts_declaration (c_token *token)
     return false;
 }
 
-static c_token *c_parser_peek_2nd_token (c_parser *parser);
-
 /* Return true if the next token from PARSER can start declaration
    specifiers, false otherwise.  */
 static inline bool
@@ -677,34 +724,10 @@ c_parser_next_tokens_start_declaration (c_parser *parser)
   if (c_token_starts_declaration (token))
     return true;
 
-  /* Try a bit harder to detect an unknown typename.  */
-  if (token->type == CPP_NAME
-      && token->id_kind == C_ID_ID
-      && (c_parser_peek_2nd_token (parser)->type == CPP_NAME
-          || c_parser_peek_2nd_token (parser)->type == CPP_MULT)
-      && !lookup_name (token->value)
-
-      /* Do not try too hard when we could have "object in array".  */
-      && !parser->objc_could_be_foreach_context)
+  if (c_parser_next_tokens_start_typename (parser, cla_nonabstract_decl))
     return true;
 
   return false;
-}
-
-/* Return a pointer to the next-but-one token from PARSER, reading it
-   in if necessary.  The next token is already read in.  */
-
-static c_token *
-c_parser_peek_2nd_token (c_parser *parser)
-{
-  if (parser->tokens_avail >= 2)
-    return &parser->tokens[1];
-  gcc_assert (parser->tokens_avail == 1);
-  gcc_assert (parser->tokens[0].type != CPP_EOF);
-  gcc_assert (parser->tokens[0].type != CPP_PRAGMA_EOL);
-  c_lex_one_token (parser, &parser->tokens[1]);
-  parser->tokens_avail = 2;
-  return &parser->tokens[1];
 }
 
 /* Consume the next token from PARSER.  */
@@ -1076,7 +1099,7 @@ static void c_parser_declaration_or_fndef (c_parser *, bool, bool, bool,
 static void c_parser_static_assert_declaration_no_semi (c_parser *);
 static void c_parser_static_assert_declaration (c_parser *);
 static void c_parser_declspecs (c_parser *, struct c_declspecs *, bool, bool,
-				bool);
+				bool, enum c_lookahead_kind);
 static struct c_typespec c_parser_enum_specifier (c_parser *);
 static struct c_typespec c_parser_struct_or_union_specifier (c_parser *);
 static tree c_parser_struct_declaration (c_parser *);
@@ -1425,7 +1448,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       fndef_ok = !nested;
     }
 
-  c_parser_declspecs (parser, specs, true, true, start_attr_ok);
+  c_parser_declspecs (parser, specs, true, true, start_attr_ok, cla_nonabstract_decl);
   if (parser->error)
     {
       c_parser_skip_to_end_of_block_or_statement (parser);
@@ -1922,12 +1945,16 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
 
 static void
 c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
-		    bool scspec_ok, bool typespec_ok, bool start_attr_ok)
+		    bool scspec_ok, bool typespec_ok, bool start_attr_ok,
+		    enum c_lookahead_kind la)
 {
   bool attrs_ok = start_attr_ok;
   bool seen_type = specs->typespec_kind != ctsk_none;
-  while ((c_parser_next_token_is (parser, CPP_NAME)
-	  && c_parser_peek_token (parser)->id_kind != C_ID_ID)
+
+  if (!typespec_ok)
+    gcc_assert (la == cla_prefer_id);
+
+  while (c_parser_next_token_is (parser, CPP_NAME)
 	 || c_parser_next_token_is (parser, CPP_KEYWORD)
 	 || (c_dialect_objc () && c_parser_next_token_is (parser, CPP_LESS)))
     {
@@ -1935,21 +1962,14 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
       tree attrs;
       location_t loc = c_parser_peek_token (parser)->location;
 
-      if (!c_parser_next_token_is_qualifier (parser))
-        {
-	  /* Exit for TYPENAMEs after any type because they can appear as a
-	     field name.  */
-          if (seen_type && c_parser_next_token_is (parser, CPP_NAME))
-            break;
-
-          /* If we cannot accept a type, and the next token must start one,
-	     exit.  Do the same if we already have seen a tagged definition,
-	     since it would be an error anyway and likely the user has simply
-	     forgotten a semicolon.  */
-          if ((!typespec_ok || specs->typespec_kind == ctsk_tagdef)
-	      && c_parser_next_token_starts_typename (parser))
-            break;
-        }
+      /* If we cannot accept a type, exit if the next token must start
+	 one.  Also, if we already have seen a tagged definition,
+	 a typename would be an error anyway and likely the user
+	 has simply forgotten a semicolon, so we exit.  */
+      if ((!typespec_ok || specs->typespec_kind == ctsk_tagdef)
+	  && c_parser_next_tokens_start_typename (parser, la)
+	  && !c_parser_next_token_is_qualifier (parser))
+	break;
 
       if (c_parser_next_token_is (parser, CPP_NAME))
 	{
@@ -1966,20 +1986,34 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	      continue;
 	    }
 
-	  /* Now at a C_ID_TYPENAME or C_ID_CLASSNAME.  */
+	  gcc_assert (!c_parser_next_token_is_qualifier (parser));
+
+	  /* If we cannot accept a type, and the next token must start one,
+	     exit.  Do the same if we already have seen a tagged definition,
+	     since it would be an error anyway and likely the user has simply
+	     forgotten a semicolon.  */
+	  if (seen_type || !c_parser_next_tokens_start_typename (parser, la))
+	    break;
+
+	  /* Now at an unknown typename (C_ID_ID), a C_ID_TYPENAME or
+	     a C_ID_CLASSNAME.  */
 	  c_parser_consume_token (parser);
 	  seen_type = true;
 	  attrs_ok = true;
-	  if (kind == C_ID_TYPENAME
-	      && (!c_dialect_objc ()
-		  || c_parser_next_token_is_not (parser, CPP_LESS)))
+	  if (kind == C_ID_ID)
+	    {
+	      error ("unknown type name %qE", value);
+	      t.kind = ctsk_typedef;
+	      t.spec = error_mark_node;
+	    }
+	  else if (kind == C_ID_TYPENAME
+	           && (!c_dialect_objc ()
+	               || c_parser_next_token_is_not (parser, CPP_LESS)))
 	    {
 	      t.kind = ctsk_typedef;
 	      /* For a typedef name, record the meaning, not the name.
 		 In case of 'foo foo, bar;'.  */
 	      t.spec = lookup_name (value);
-	      t.expr = NULL_TREE;
-	      t.expr_const_operands = true;
 	    }
 	  else
 	    {
@@ -1989,9 +2023,9 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	      if (c_parser_next_token_is (parser, CPP_LESS))
 		proto = c_parser_objc_protocol_refs (parser);
 	      t.spec = objc_get_protocol_qualified_type (value, proto);
-	      t.expr = NULL_TREE;
-	      t.expr_const_operands = true;
 	    }
+	  t.expr = NULL_TREE;
+	  t.expr_const_operands = true;
 	  declspecs_add_type (loc, specs, t);
 	  continue;
 	}
@@ -2498,7 +2532,7 @@ c_parser_struct_declaration (c_parser *parser)
     }
   specs = build_null_declspecs ();
   decl_loc = c_parser_peek_token (parser)->location;
-  c_parser_declspecs (parser, specs, false, true, true);
+  c_parser_declspecs (parser, specs, false, true, true, cla_nonabstract_decl);
   if (parser->error)
     return NULL_TREE;
   if (!specs->declspecs_seen_p)
@@ -2644,7 +2678,7 @@ c_parser_typeof_specifier (c_parser *parser)
       in_typeof--;
       return ret;
     }
-  if (c_parser_next_token_starts_typename (parser))
+  if (c_parser_next_tokens_start_typename (parser, cla_prefer_id))
     {
       struct c_type_name *type = c_parser_type_name (parser);
       c_inhibit_evaluation_warnings--;
@@ -2765,7 +2799,7 @@ c_parser_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
       struct c_declspecs *quals_attrs = build_null_declspecs ();
       struct c_declarator *inner;
       c_parser_consume_token (parser);
-      c_parser_declspecs (parser, quals_attrs, false, false, true);
+      c_parser_declspecs (parser, quals_attrs, false, false, true, cla_prefer_id);
       inner = c_parser_declarator (parser, type_seen_p, kind, seen_id);
       if (inner == NULL)
 	return NULL;
@@ -2917,12 +2951,12 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
       bool star_seen;
       tree dimen;
       c_parser_consume_token (parser);
-      c_parser_declspecs (parser, quals_attrs, false, false, true);
+      c_parser_declspecs (parser, quals_attrs, false, false, true, cla_prefer_id);
       static_seen = c_parser_next_token_is_keyword (parser, RID_STATIC);
       if (static_seen)
 	c_parser_consume_token (parser);
       if (static_seen && !quals_attrs->declspecs_seen_p)
-	c_parser_declspecs (parser, quals_attrs, false, false, true);
+	c_parser_declspecs (parser, quals_attrs, false, false, true, cla_prefer_id);
       if (!quals_attrs->declspecs_seen_p)
 	quals_attrs = NULL;
       /* If "static" is present, there must be an array dimension.
@@ -3010,7 +3044,13 @@ c_parser_parms_declarator (c_parser *parser, bool id_list_ok, tree attrs)
   if (id_list_ok
       && !attrs
       && c_parser_next_token_is (parser, CPP_NAME)
-      && c_parser_peek_token (parser)->id_kind == C_ID_ID)
+      && c_parser_peek_token (parser)->id_kind == C_ID_ID
+      
+      /* Look ahead to detect typos in type names.  */
+      && c_parser_peek_2nd_token (parser)->type != CPP_NAME
+      && c_parser_peek_2nd_token (parser)->type != CPP_MULT
+      && c_parser_peek_2nd_token (parser)->type != CPP_OPEN_PAREN
+      && c_parser_peek_2nd_token (parser)->type != CPP_OPEN_SQUARE)
     {
       tree list = NULL_TREE, *nextp = &list;
       while (c_parser_next_token_is (parser, CPP_NAME)
@@ -3173,9 +3213,7 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
       if (parser->error)
 	return NULL;
       c_parser_set_source_position_from_token (token);
-      if (token->type == CPP_NAME
-	  && c_parser_peek_2nd_token (parser)->type != CPP_COMMA
-	  && c_parser_peek_2nd_token (parser)->type != CPP_CLOSE_PAREN)
+      if (c_parser_next_tokens_start_typename (parser, cla_prefer_type))
 	{
 	  error ("unknown type name %qE", token->value);
 	  parser->error = true;
@@ -3194,7 +3232,7 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
       declspecs_add_attrs (specs, attrs);
       attrs = NULL_TREE;
     }
-  c_parser_declspecs (parser, specs, true, true, true);
+  c_parser_declspecs (parser, specs, true, true, true, cla_nonabstract_decl);
   finish_declspecs (specs);
   pending_xref_error ();
   prefix_attrs = specs->attrs;
@@ -3484,14 +3522,17 @@ c_parser_type_name (c_parser *parser)
   struct c_declarator *declarator;
   struct c_type_name *ret;
   bool dummy = false;
-  c_parser_declspecs (parser, specs, false, true, true);
+  c_parser_declspecs (parser, specs, false, true, true, cla_prefer_type);
   if (!specs->declspecs_seen_p)
     {
       c_parser_error (parser, "expected specifier-qualifier-list");
       return NULL;
     }
-  pending_xref_error ();
-  finish_declspecs (specs);
+  if (specs->type != error_mark_node)
+    {
+      pending_xref_error ();
+      finish_declspecs (specs);
+    }
   declarator = c_parser_declarator (parser,
 				    specs->typespec_kind != ctsk_none,
 				    C_DTR_ABSTRACT, &dummy);
@@ -5619,7 +5660,8 @@ c_parser_cast_expression (c_parser *parser, struct c_expr *after)
   /* If the expression begins with a parenthesized type name, it may
      be either a cast or a compound literal; we need to see whether
      the next character is '{' to tell the difference.  If not, it is
-     an unary expression.  */
+     an unary expression.  Full detection of unknown typenames here
+     would require a 3-token lookahead.  */
   if (c_parser_next_token_is (parser, CPP_OPEN_PAREN)
       && c_token_starts_typename (c_parser_peek_2nd_token (parser)))
     {
@@ -6181,16 +6223,16 @@ c_parser_postfix_expression (c_parser *parser)
 	    }
 	  t1 = c_parser_type_name (parser);
 	  if (t1 == NULL)
-	    {
-	      expr.value = error_mark_node;
-	      break;
-	    }
+	    parser->error = true;
 	  if (!c_parser_require (parser, CPP_COMMA, "expected %<,%>"))
+            gcc_assert (parser->error);
+	  if (parser->error)
 	    {
 	      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
 	      expr.value = error_mark_node;
 	      break;
 	    }
+
 	  {
 	    tree type = groktypename (t1, NULL, NULL);
 	    tree offsetof_ref;
@@ -7436,7 +7478,7 @@ c_parser_objc_type_name (c_parser *parser)
       else
 	break;
     }
-  if (c_parser_next_token_starts_typename (parser))
+  if (c_parser_next_tokens_start_typename (parser, cla_prefer_type))
     type_name = c_parser_type_name (parser);
   if (type_name)
     type = groktypename (type_name, NULL, NULL);

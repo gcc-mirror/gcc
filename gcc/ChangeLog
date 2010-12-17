@@ -1,3 +1,29 @@
+2010-12-17  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR c/20385
+	* function.c (used_types_insert): Handle ERROR_MARK.
+	* c-decl.c (grokdeclarator): Handle ERROR_MARK.
+	(declspecs_add_type): Leave error_mark_node in specs->type.
+	(finish_declspecs): Change it to integer_type_node here.
+	* c-parser.c (c_parser_peek_2nd_token): Move earlier.
+	(enum c_lookahead_kind): New.
+	(c_parser_next_token_starts_typename): New name of
+	c_parser_next_tokens_start_typename.  Accept lookahead enum
+	and handle it here instead of...
+	(c_parser_next_tokens_start_declaration): ... here.  Call it.
+	(c_parser_declspecs): Accept another argument.  Do not exit
+	on C_ID_ID if it is guessed to be an unknown typename.
+	(c_parser_parms_declarator): Use 2nd token to distinguish a K&R
+	declaration from an ANSI declaration starting with an unknown
+	typename.
+	(c_parser_struct_declaration, c_parser_objc_type_name,
+	c_parser_typeof_specifier, c_parser_declarator,
+	c_parser_direct_declarator_inner): Adjust calls.
+	(c_parser_parameter_declaration): Likewise.
+	(c_parser_type_name): Pass back an error_mark_node to the caller.
+	(c_parser_postfix_expression): Do error recovery when 
+	c_parser_type_name returns NULL.
+
 2010-12-17  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/netware.h (ASM_SPEC, SIZE_TYPE, PTRDIFF_TYPE):

@@ -1,3 +1,11 @@
+2010-12-17  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR c/20385
+	* objc.dg/tls/init-2.m: Adjust.
+	* gcc.dg/noncompile/920923-1.c: Adjust.
+	* gcc.dg/noncompile/pr44517.c: Adjust.
+	* gcc.dg/declspec-18.c: New test.
+
 2010-12-17  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* gcc.dg/titype-1.c: Enable TImode on __SPU__.

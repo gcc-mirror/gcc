@@ -11,4 +11,4 @@ struct S
 {
   S(); 			/* { dg-error "expected specifier-qualifier-list before 'S'" } */
 };
-__thread S s;		/* { dg-error "expected" } two errors here */
+__thread S s;		/* { dg-error "unknown type name" } */
