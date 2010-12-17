@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime initialization 
-   Copyright (C) 1993, 1995, 1996, 1997, 2002, 2009
+   Copyright (C) 1993, 1995, 1996, 1997, 2002, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
    +load support contributed by Ovidiu Predescu <ovidiu@net-community.com>
@@ -26,10 +26,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "objc-private/common.h"
 #include "objc-private/error.h"
-#include "objc/objc-api.h"
+#include "objc/runtime.h"
 #include "objc/thr.h"
 #include "objc-private/hash.h"
 #include "objc-private/objc-list.h" 
+#include "objc-private/module-abi-8.h" 
 #include "objc-private/runtime.h"
 #include "objc-private/objc-sync.h" /* For __objc_sync_init() */
 #include "objc-private/protocols.h" /* For __objc_protocols_init(),
@@ -68,7 +69,7 @@ objc_mutex_t __objc_runtime_mutex = 0;
 int __objc_runtime_threads_alive = 1;			/* !T:MUTEX */
 
 /* Check compiler vs runtime version.  */
-static void init_check_module_version (Module_t);
+static void init_check_module_version (struct objc_module *);
 
 /* Assign isa links to protos.  */
 static void __objc_init_protocols (struct objc_protocol_list *protos);
@@ -83,11 +84,13 @@ static void __objc_class_add_protocols (Class, struct objc_protocol_list *);
    class or a category is loaded into the runtime.  This may e.g. help
    a dynamic loader determine the classes that have been loaded when
    an object file is dynamically linked in.  */
-void (*_objc_load_callback) (Class class, Category *category); /* !T:SAFE */
+/* TODO: This needs to be declared in a public file with the new API.  */
+void (*_objc_load_callback) (Class class, struct objc_category *category); /* !T:SAFE */
 
-/* Is all categories/classes resolved?  */
+/* Are all categories/classes resolved?  */
 BOOL __objc_dangling_categories = NO;           /* !T:UNUSED */
 
+/* TODO: This needs to go into objc-private/selector.h.  */
 extern SEL
 __sel_register_typed_name (const char *name, const char *types, 
 			   struct objc_selector *orig, BOOL is_const);
@@ -101,9 +104,9 @@ static void objc_send_load (void);
    methods were not executed before. The algorithm ensures that when
    the +load method of a class is executed all the superclasses have
    been already received the +load message.  */
-static void __objc_create_classes_tree (Module_t module);
+static void __objc_create_classes_tree (struct objc_module *module);
 
-static void __objc_call_callback (Module_t module);
+static void __objc_call_callback (struct objc_module *module);
 
 /* A special version that works only before the classes are completely
    installed in the runtime.  */
@@ -163,7 +166,7 @@ static Class  class_superclass_of_class (Class class)
     return Nil;
 
   /* Lookup the superclass of non-root classes.  */
-  return objc_lookup_class (super_class_name);
+  return objc_getClass (super_class_name);
 }
 
 
@@ -176,11 +179,13 @@ static Class  class_superclass_of_class (Class class)
 static objc_class_tree *
 create_tree_of_subclasses_inherited_from (Class bottom_class, Class upper)
 {
-  Class superclass = bottom_class->super_class ?
-			objc_lookup_class ((char *) bottom_class->super_class)
-		      : Nil;
-					
+  Class superclass;
   objc_class_tree *tree, *prev;
+
+  if (bottom_class->super_class)
+    superclass = objc_getClass ((char *) bottom_class->super_class);
+  else
+    superclass = Nil;
 
   DEBUG_PRINTF ("create_tree_of_subclasses_inherited_from:");
   DEBUG_PRINTF ("bottom_class = %s, upper = %s\n",
@@ -371,7 +376,7 @@ __objc_tree_print (objc_class_tree *tree, int level)
    added to the class methods.  */
 
 static void
-__objc_send_message_in_list (MethodList_t method_list, Class class, SEL op)
+__objc_send_message_in_list (struct objc_method_list *method_list, Class class, SEL op)
 {
   int i;
 
@@ -384,7 +389,7 @@ __objc_send_message_in_list (MethodList_t method_list, Class class, SEL op)
   /* Search the method list.  */
   for (i = 0; i < method_list->method_count; i++)
     {
-      Method_t mth = &method_list->method_list[i];
+      struct objc_method *mth = &method_list->method_list[i];
 
       if (mth->method_name && sel_eq (mth->method_name, op)
 	  && ! objc_hash_is_key_in_hash (__objc_load_methods, mth->method_imp))
@@ -410,10 +415,10 @@ __objc_send_load (objc_class_tree *tree,
 {
   static SEL load_sel = 0;
   Class class = tree->class;
-  MethodList_t method_list = class->class_pointer->methods;
+  struct objc_method_list *method_list = class->class_pointer->methods;
 
   if (! load_sel)
-    load_sel = sel_register_name ("load");
+    load_sel = sel_registerName ("load");
 
   __objc_send_message_in_list (method_list, class, load_sel);
 }
@@ -475,7 +480,7 @@ objc_init_statics (void)
 	   *statics_in_module; statics_in_module++)
 	{
 	  struct objc_static_instances *statics = *statics_in_module;
-	  Class class = objc_lookup_class (statics->class_name);
+	  Class class = objc_getClass (statics->class_name);
 
 	  if (! class)
 	    {
@@ -536,30 +541,31 @@ objc_init_statics (void)
    module compiled.  (_GLOBAL_$I$...) The purpose of this function is
    to gather the module pointers so that they may be processed by the
    initialization routines as soon as possible.  */
-
 void
-__objc_exec_class (Module_t module)
+__objc_exec_class (struct objc_module *module)
 {
-  /* Have we processed any constructors previously?  This flag is used to
-     indicate that some global data structures need to be built.  */
+  /* Have we processed any constructors previously?  This flag is used
+     to indicate that some global data structures need to be
+     built.  */
   static BOOL previous_constructors = 0;
 
   static struct objc_list *unclaimed_categories = 0;
 
-  /* The symbol table (defined in objc-api.h) generated by gcc */
-  Symtab_t symtab = module->symtab;
+  /* The symbol table (defined in objc-private/module-abi-8.h)
+     generated by gcc.  */
+  struct objc_symtab *symtab = module->symtab;
 
-  /* The statics in this module */
+  /* The statics in this module.  */
   struct objc_static_instances **statics
     = symtab->defs[symtab->cls_def_cnt + symtab->cat_def_cnt];
 
-  /* Entry used to traverse hash lists */
+  /* Entry used to traverse hash lists.  */
   struct objc_list **cell;
 
-  /* The table of selector references for this module */
+  /* The table of selector references for this module.  */
   SEL selectors = symtab->refs; 
 
-  /* dummy counter */
+  /* dummy counter.  */
   int i;
 
   DEBUG_PRINTF ("received module: %s\n", module->name);
@@ -628,15 +634,15 @@ __objc_exec_class (Module_t module)
 
       /* Check to see if the superclass is known in this point. If it's not
 	 add the class to the unresolved_classes list.  */
-      if (superclass && ! objc_lookup_class (superclass))
+      if (superclass && ! objc_getClass (superclass))
 	unresolved_classes = list_cons (class, unresolved_classes);
    }
 
   /* Process category information from the module.  */
   for (i = 0; i < symtab->cat_def_cnt; ++i)
     {
-      Category_t category = symtab->defs[i + symtab->cls_def_cnt];
-      Class class = objc_lookup_class (category->class_name);
+      struct objc_category *category = symtab->defs[i + symtab->cls_def_cnt];
+      Class class = objc_getClass (category->class_name);
       
       /* If the class for the category exists then append its methods.  */
       if (class)
@@ -682,8 +688,8 @@ __objc_exec_class (Module_t module)
      categories to objects.  */
   for (cell = &unclaimed_categories; *cell; )
     {
-      Category_t category = (*cell)->head;
-      Class class = objc_lookup_class (category->class_name);
+      struct objc_category *category = (*cell)->head;
+      Class class = objc_getClass (category->class_name);
       
       if (class)
 	{
@@ -713,7 +719,7 @@ __objc_exec_class (Module_t module)
 	cell = &(*cell)->tail;
     }
   
-  if (unclaimed_proto_list && objc_lookup_class ("Protocol"))
+  if (unclaimed_proto_list && objc_getClass ("Protocol"))
     {
       list_mapcar (unclaimed_proto_list,
 		   (void (*) (void *))__objc_init_protocols);
@@ -740,7 +746,7 @@ objc_send_load (void)
     {
       Class class = unresolved_classes->head;
 
-      while (objc_lookup_class ((char *) class->super_class))
+      while (objc_getClass ((char *) class->super_class))
 	{
 	  list_remove_head (&unresolved_classes);
 	  if (unresolved_classes)
@@ -758,7 +764,7 @@ objc_send_load (void)
 
   /* Special check.  If 'Object', which is used by meta-classes, has
      not been loaded yet, delay sending of +load.  */
-  if (! objc_lookup_class ("Object"))
+  if (! objc_getClass ("Object"))
     return;
 
   /* Iterate over all modules in the __objc_module_list and call on
@@ -786,11 +792,11 @@ objc_send_load (void)
 }
 
 static void
-__objc_create_classes_tree (Module_t module)
+__objc_create_classes_tree (struct objc_module *module)
 {
   /* The runtime mutex is locked in this point */
 
-  Symtab_t symtab = module->symtab;
+  struct objc_symtab *symtab = module->symtab;
   int i;
 
   /* Iterate thru classes defined in this module and insert them in
@@ -804,11 +810,11 @@ __objc_create_classes_tree (Module_t module)
 }
 
 static void
-__objc_call_callback (Module_t module)
+__objc_call_callback (struct objc_module *module)
 {
   /* The runtime mutex is locked in this point.  */
 
-  Symtab_t symtab = module->symtab;
+  struct objc_symtab *symtab = module->symtab;
   int i;
 
   /* Iterate thru classes defined in this module and call the callback
@@ -827,9 +833,9 @@ __objc_call_callback (Module_t module)
      since they were already added in the class.  */
   for (i = 0; i < symtab->cat_def_cnt; i++)
     {
-      Category_t category = symtab->defs[i + symtab->cls_def_cnt];
-      Class class = objc_lookup_class (category->class_name);
-      
+      struct objc_category *category = symtab->defs[i + symtab->cls_def_cnt];
+      Class class = objc_getClass (category->class_name);
+
       if (_objc_load_callback)
 	_objc_load_callback (class, category);
     }
@@ -838,9 +844,9 @@ __objc_call_callback (Module_t module)
 /* Sanity check the version of gcc used to compile `module'.  */
 
 static void
-init_check_module_version (Module_t module)
+init_check_module_version (struct objc_module *module)
 {
-  if ((module->version != OBJC_VERSION) || (module->size != sizeof (Module)))
+  if ((module->version != OBJC_VERSION) || (module->size != sizeof (struct objc_module)))
     {
       _objc_abort ("Module %s version %d doesn't match runtime %d\n",
 		   module->name, (int)module->version, OBJC_VERSION);
@@ -878,7 +884,7 @@ __objc_init_protocol (struct objc_protocol *protocol)
   static Class proto_class = 0;
 
   if (! proto_class)
-    proto_class = objc_get_class ("Protocol");
+    proto_class = objc_getClass ("Protocol");
 
   if (((size_t)protocol->class_pointer) == PROTOCOL_VERSION)
     {
@@ -925,7 +931,7 @@ __objc_init_protocols (struct objc_protocol_list *protos)
   objc_mutex_lock (__objc_runtime_mutex);
 
   if (! proto_class)
-    proto_class = objc_lookup_class ("Protocol");
+    proto_class = objc_getClass ("Protocol");
 
   if (! proto_class)
     {
