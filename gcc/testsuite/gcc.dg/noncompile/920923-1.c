@@ -2,13 +2,13 @@
 typedef BYTE unsigned char;	/* { dg-error "expected" } */
 typedef int item_n;
 typedef int perm_set;
-struct PENT { caddr_t v_addr; };/* { dg-error "expected" } */
+struct PENT { caddr_t v_addr; };/* { dg-error "unknown type name" } */
 typedef struct PENT prec;
 typedef struct PENT *prec_t;
 prec_t mem_hash;
 BYTE *mem_base;			/* { dg-error "unknown type name" } */
 struct PTE {
-     BYTE *p_page;		/* { dg-error "expected" } */
+     BYTE *p_page;		/* { dg-error "unknown type name" } */
      perm_set p_perms;
 };
 typedef struct PTE pte;
@@ -56,7 +56,7 @@ int va_op;
 caddr_t v_addr;			/* { dg-error "unknown type name" } */
 {
      register prec_t bucket;
-     register caddr_t p_addr;	/* { dg-error "expected|undeclared" } */
+     register caddr_t p_addr;	/* { dg-error "unknown type name" } */
      bucket = mem_hash+((((v_addr)>>ITEMBITS))&hash_mask);  /* { dg-error "undeclared" } */
      do {
 	  if (bucket->v_addr == ((v_addr)>>ITEMBITS) {	/* { dg-error "expected|undeclared|no member" } */
