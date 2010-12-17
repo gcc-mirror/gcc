@@ -1,3 +1,9 @@
+2010-12-17  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR middle-end/46761
+	* graphite-clast-to-gimple.c (graphite_create_new_loop_guard): Prefer
+	to use unadjusted UB.
+
 2010-12-17  Dodji Seketeli  <dodji@redhat.com>
 
 	* dwarf2out.c (gen_type_die_with_usage): Do not try to emit debug

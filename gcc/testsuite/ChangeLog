@@ -1,3 +1,8 @@
+2010-12-17  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR middle-end/46761
+	* gcc.dg/graphite/pr46761.c: New.
+
 2010-12-17  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/46849
