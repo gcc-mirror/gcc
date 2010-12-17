@@ -1,3 +1,8 @@
+2010-12-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/46849
+	* gfortran.dg/block_9.f08: New.
+
 2010-12-17  Dodji Seketeli  <dodji@redhat.com>
 
 	* g++.dg/debug/dwarf2/self-ref-1.C: New test.
