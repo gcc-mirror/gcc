@@ -1,3 +1,20 @@
+2010-12-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/i386/netware.h (ASM_SPEC, SIZE_TYPE, PTRDIFF_TYPE):
+	Define.
+	* config/i386/nto.h (LIB_SPEC, ASM_SPEC): Define.
+	(DBX_REGISTER_NUMBER): Undefine.
+	* config/i386/sol2.h (SIZE_TYPE, PTRDIFF_TYPE): Define.
+	* config/i386/vxworksae.h (ASM_SPEC, SIZE_TYPE, PTRDIFF_TYPE):
+	Define.
+	* config.gcc (i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu |
+	i[34567]86-*-knetbsd*-gnu | i[34567]86-*-gnu* |
+	i[34567]86-*-kopensolaris*-gnu, x86_64-*-linux* |
+	x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu,
+	i[3456x]86-*-netware*, i[34567]86-*-nto-qnx*,
+	i[34567]86-*-solaris2*,
+	i[4567]86-wrs-vxworks|i[4567]86-wrs-vxworksae): Don't use svr4.h.
+
 2010-12-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (move_or_delete_vzeroupper_2): Replace
