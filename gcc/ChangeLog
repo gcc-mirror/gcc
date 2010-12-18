@@ -1,3 +1,14 @@
+2010-12-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/46915
+	* config/pa/pa.c (branch_to_delay_slot_p): Use next_active_insn instead
+	of next_real_insn.  Search forward checking for both ASM_INPUT and
+	ASM_OPERANDS asms until exit condition is found.
+	(branch_needs_nop_p): Likewise.
+	(use_skip_p): New function.
+	(output_cbranch): Use use_skip_p.
+	(output_bb, output_bvb): Likewise.
+
 2010-12-18  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR target/36834
