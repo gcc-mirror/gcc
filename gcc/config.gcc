@@ -709,6 +709,7 @@ alpha*-*-freebsd*)
 	;;
 alpha*-*-netbsd*)
 	tm_file="${tm_file} netbsd.h alpha/elf.h netbsd-elf.h alpha/netbsd.h"
+	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	target_cpu_default="MASK_GAS"
 	tmake_file="${tmake_file} alpha/t-alpha alpha/t-ieee"
 	;;
@@ -774,10 +775,12 @@ arm*-*-freebsd*)
 	;;
 arm*-*-netbsdelf*)
 	tm_file="dbxelf.h elfos.h netbsd.h netbsd-elf.h arm/elf.h arm/aout.h arm/arm.h arm/netbsd-elf.h"
+	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	tmake_file="${tmake_file} arm/t-arm arm/t-netbsd"
 	;;
 arm*-*-netbsd*)
 	tm_file="arm/aout.h arm/arm.h netbsd.h netbsd-aout.h arm/netbsd.h"
+	extra_options="${extra_options} netbsd.opt"
 	tmake_file="t-netbsd arm/t-arm arm/t-netbsd"
 	extra_parts=""
 	use_collect2=yes
@@ -1191,15 +1194,18 @@ x86_64-*-freebsd*)
 	;;
 i[34567]86-*-netbsdelf*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h netbsd.h netbsd-elf.h i386/netbsd-elf.h"
+	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	;;
 i[34567]86-*-netbsd*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h netbsd.h netbsd-aout.h i386/netbsd.h"
+	extra_options="${extra_options} netbsd.opt"
 	tmake_file="${tmake_file} t-netbsd"
 	extra_parts=""
 	use_collect2=yes
 	;;
 x86_64-*-netbsd*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h netbsd.h netbsd-elf.h i386/x86-64.h i386/netbsd64.h"
+	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	tmake_file="${tmake_file} i386/t-crtstuff"
 	;;
 i[34567]86-*-openbsd2.*|i[34567]86-*openbsd3.[0123])
@@ -1695,6 +1701,7 @@ m68k*-*-netbsdelf*)
 	default_m68k_cpu=68020
 	default_cf_cpu=5475
 	tm_file="${tm_file} dbxelf.h elfos.h netbsd.h netbsd-elf.h m68k/netbsd-elf.h"
+	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	tm_defines="${tm_defines} MOTOROLA=1"
 	;;
 m68k*-*-openbsd*)
@@ -1809,6 +1816,7 @@ mips-sgi-irix6.5*)
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	target_cpu_default="MASK_ABICALLS"
 	tm_file="elfos.h ${tm_file} mips/elf.h netbsd.h netbsd-elf.h mips/netbsd.h"
+	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	;;
 mips64*-*-linux* | mipsisa64*-*-linux*)
 	tm_file="dbxelf.h elfos.h linux.h glibc-stdint.h ${tm_file} mips/linux.h mips/linux64.h"
@@ -2027,6 +2035,7 @@ powerpc*-*-freebsd*)
 	;;
 powerpc-*-netbsd*)
 	tm_file="${tm_file} dbxelf.h elfos.h netbsd.h netbsd-elf.h freebsd-spec.h rs6000/sysv4.h rs6000/netbsd.h"
+	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	tmake_file="${tmake_file} rs6000/t-netbsd"
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	;;
@@ -2292,7 +2301,11 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 	case ${target} in
 	sh*-*-linux*)	tmake_file="${tmake_file} sh/t-linux"
 			tm_file="${tm_file} linux.h glibc-stdint.h sh/linux.h" ;;
-	sh*-*-netbsd*)	tm_file="${tm_file} netbsd.h netbsd-elf.h sh/netbsd-elf.h" ;;
+	sh*-*-netbsd*)
+			tm_file="${tm_file} netbsd.h netbsd-elf.h sh/netbsd-elf.h"
+			extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
+
+			;;
 	sh*-superh-elf)	if test x$with_libgloss != xno; then
                                 with_libgloss=yes
                                 tm_file="${tm_file} sh/newlib.h"
@@ -2493,6 +2506,7 @@ sparc-*-linux*)
 	;;
 sparc-*-netbsdelf*)
 	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h netbsd.h netbsd-elf.h sparc/netbsd-elf.h"
+	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	extra_options="${extra_options} sparc/long-double-switch.opt"
 	;;
 sparc*-*-solaris2*)
@@ -2580,6 +2594,7 @@ sparc64-*-freebsd*|ultrasparc-*-freebsd*)
 sparc64-*-netbsd*)
 	tm_file="sparc/biarch64.h ${tm_file}"
 	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h netbsd.h netbsd-elf.h sparc/netbsd-elf.h"
+	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	extra_options="${extra_options} sparc/long-double-switch.opt"
 	tmake_file="${tmake_file} sparc/t-netbsd64"
 	;;
@@ -2653,9 +2668,11 @@ vax-*-linux*)
 	;;
 vax-*-netbsdelf*)
 	tm_file="${tm_file} elfos.h netbsd.h netbsd-elf.h vax/elf.h vax/netbsd-elf.h"
+	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	;;
 vax-*-netbsd*)
 	tm_file="${tm_file} netbsd.h netbsd-aout.h vax/netbsd.h"
+	extra_options="${extra_options} netbsd.opt"
 	tmake_file=t-netbsd
 	extra_parts=""
 	use_collect2=yes

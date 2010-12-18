@@ -1,3 +1,12 @@
+2010-12-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/netbsd.opt, config/netbsd-elf.opt: New files.
+	* config.gcc (alpha*-*-netbsd*, arm*-*-netbsdelf*, arm*-*-netbsd*,
+	i[34567]86-*-netbsdelf*, i[34567]86-*-netbsd*, x86_64-*-netbsd*,
+	m68k*-*-netbsdelf*, mips*-*-netbsd*, powerpc-*-netbsd*,
+	sh*-*-netbsd*, sparc-*-netbsdelf*, sparc64-*-netbsd*,
+	vax-*-netbsdelf*, vax-*-netbsd*): Use these .opt files.
+
 2010-12-17  Richard Henderson  <rth@redhat.com>
 
 	* regcprop.c (find_oldest_value_reg): Continue search instead of
