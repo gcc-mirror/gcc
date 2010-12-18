@@ -1,3 +1,12 @@
+2010-12-18  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_init): Call using_eh_for_cleanups.
+	(objc_init_exceptions): Renamed to objc_maybe_warn_exceptions.  Do
+	not call using_eh_for_cleanups.
+	(objc_begin_try_stmt): Do not call objc_init_exceptions.
+	(objc_build_throw_stmt): Updated call to
+	objc_maybe_warn_exceptions.
+
 2010-12-18  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc/objc-act.c (objc_eh_personality): Select personality name on

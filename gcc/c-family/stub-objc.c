@@ -455,3 +455,8 @@ void
 objc_finish_function (void)
 {
 }
+
+void
+objc_maybe_warn_exceptions (location_t ARG_UNUSED (loc))
+{
+}

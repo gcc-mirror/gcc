@@ -626,6 +626,11 @@ objc_init (void)
   if (print_struct_values && !flag_compare_debug)
     generate_struct_by_value_array ();
 
+#ifndef OBJCPLUS
+  if (flag_objc_exceptions && !flag_objc_sjlj_exceptions)
+    using_eh_for_cleanups ();
+#endif
+
   return true;
 }
 
@@ -5036,32 +5041,26 @@ objc_eh_personality (void)
 }
 #endif
 
-static void
-objc_init_exceptions (location_t loc)
+void
+objc_maybe_warn_exceptions (location_t loc)
 {
-  static bool done = false;
-
   /* -fobjc-exceptions is required to enable Objective-C exceptions.
      For example, on Darwin, ObjC exceptions require a sufficiently
      recent version of the runtime, so the user must ask for them
      explicitly.  On other platforms, at the moment -fobjc-exceptions
      triggers -fexceptions which again is required for exceptions to
-     work.
-  */
-  /* TODO: we only really need one error message when the flag is missing.  */
+     work.  */
   if (!flag_objc_exceptions)
     {
-      error_at (loc, "%<-fobjc-exceptions%> is required to enable Objective-C exception syntax");
+      /* Warn only once per compilation unit.  */
+      static bool warned = false;
+
+      if (!warned)
+	{
+	  error_at (loc, "%<-fobjc-exceptions%> is required to enable Objective-C exception syntax");
+	  warned = true;
+	}
     }
-
-  if (done)
-    return;
-  done = true;
-
-#ifndef OBJCPLUS
-  if (!flag_objc_sjlj_exceptions)
-    using_eh_for_cleanups ();
-#endif
 }
 
 /* Build __builtin_eh_pointer, or the moral equivalent.  In the case
@@ -5365,8 +5364,6 @@ objc_begin_try_stmt (location_t try_locus, tree body)
   c->end_try_locus = input_location;
   cur_try_context = c;
 
-  objc_init_exceptions (try_locus);
-
   /* Collect the list of local variables.  We'll mark them as volatile
      at the end of compilation of this function to prevent them being
      clobbered by setjmp/longjmp.  */
@@ -5573,7 +5570,7 @@ objc_build_throw_stmt (location_t loc, tree throw_expr)
 {
   tree args;
 
-  objc_init_exceptions (loc); 
+  objc_maybe_warn_exceptions (loc);
 
   if (throw_expr == NULL)
     {

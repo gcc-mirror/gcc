@@ -7547,6 +7547,7 @@ c_parser_objc_try_catch_finally_statement (c_parser *parser)
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_AT_TRY));
   c_parser_consume_token (parser);
   location = c_parser_peek_token (parser)->location;
+  objc_maybe_warn_exceptions (location);
   stmt = c_parser_compound_statement (parser);
   objc_begin_try_stmt (location, stmt);
 
@@ -7628,6 +7629,7 @@ c_parser_objc_synchronized_statement (c_parser *parser)
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_AT_SYNCHRONIZED));
   c_parser_consume_token (parser);
   loc = c_parser_peek_token (parser)->location;
+  objc_maybe_warn_exceptions (loc);
   if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     {
       expr = c_parser_expression (parser).value;

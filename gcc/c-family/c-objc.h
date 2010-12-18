@@ -106,6 +106,7 @@ extern bool objc_is_property_ref (tree);
 extern bool objc_string_ref_type_p (tree);
 extern void objc_check_format_arg (tree, tree);
 extern void objc_finish_function (void);
+extern void objc_maybe_warn_exceptions (location_t);
 
 /* The following are provided by the C and C++ front-ends, and called by
    ObjC/ObjC++.  */

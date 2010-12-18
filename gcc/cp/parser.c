@@ -22692,6 +22692,7 @@ cp_parser_objc_try_catch_finally_statement (cp_parser *parser)
 
   cp_parser_require_keyword (parser, RID_AT_TRY, RT_AT_TRY);
   location = cp_lexer_peek_token (parser->lexer)->location;
+  objc_maybe_warn_exceptions (location);
   /* NB: The @try block needs to be wrapped in its own STATEMENT_LIST
      node, lest it get absorbed into the surrounding block.  */
   stmt = push_stmt_list ();
@@ -22784,6 +22785,7 @@ cp_parser_objc_synchronized_statement (cp_parser *parser)
   cp_parser_require_keyword (parser, RID_AT_SYNCHRONIZED, RT_AT_SYNCHRONIZED);
 
   location = cp_lexer_peek_token (parser->lexer)->location;
+  objc_maybe_warn_exceptions (location);
   cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN);
   lock = cp_parser_expression (parser, false, NULL);
   cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
