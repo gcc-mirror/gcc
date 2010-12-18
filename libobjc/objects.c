@@ -123,11 +123,8 @@ object_setClass (id object, Class class_)
     }
 }
 
-/*
-  Hook functions for memory allocation and disposal.  Deprecated
-  and currently unused.
-*/
-
+/* Hook functions for memory allocation and disposal.  Deprecated and
+   currently unused.  */
 id (*_objc_object_alloc) (Class)   = 0;
 id (*_objc_object_dispose) (id)    = 0;
 id (*_objc_object_copy) (id)       = 0;

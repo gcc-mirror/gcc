@@ -59,38 +59,41 @@ sarray_remove_garbage (void)
   vp = first_free_data;
   first_free_data = NULL;
 
-  while (vp) {
-    np = *vp;
-    objc_free (vp);
-    vp = np;
-  }
+  while (vp)
+    {
+      np = *vp;
+      objc_free (vp);
+      vp = np;
+    }
   
   objc_mutex_unlock (__objc_runtime_mutex);
 }
 
-/* Free a block of dynamically allocated memory.  If we are in multi-threaded
-   mode, it is ok to free it.  If not, we add it to the garbage heap to be
-   freed later. */
-
+/* Free a block of dynamically allocated memory.  If we are in
+   multi-threaded mode, it is ok to free it.  If not, we add it to the
+   garbage heap to be freed later. */
 static void
 sarray_free_garbage (void *vp)
 {
   objc_mutex_lock (__objc_runtime_mutex);
   
-  if (__objc_runtime_threads_alive == 1) {
-    objc_free (vp);
-    if (first_free_data)
-      sarray_remove_garbage ();
-  }
-  else {
-    *(void **)vp = first_free_data;
-    first_free_data = vp;
-  }
-      
+  if (__objc_runtime_threads_alive == 1)
+    {
+      objc_free (vp);
+      if (first_free_data)
+	sarray_remove_garbage ();
+    }
+  else
+    {
+      *(void **)vp = first_free_data;
+      first_free_data = vp;
+    }
+
   objc_mutex_unlock (__objc_runtime_mutex);
 }
 
-/* sarray_at_put : copies data in such a way as to be thread reader safe. */
+/* sarray_at_put copies data in such a way as to be thread reader
+   safe.  */
 void
 sarray_at_put (struct sarray *array, sidx index, void *element)
 {
@@ -134,63 +137,63 @@ sarray_at_put (struct sarray *array, sidx index, void *element)
 #endif
   
   if ((*the_bucket)->elems[eoffset] == element)
-    return;		/* great! we just avoided a lazy copy */
+    return;		/* Great! we just avoided a lazy copy.  */
 
 #ifdef OBJC_SPARSE3
 
-  /* First, perform lazy copy/allocation of index if needed */
+  /* First, perform lazy copy/allocation of index if needed.  */
 
-  if ((*the_index) == array->empty_index) {
-
-    /* The index was previously empty, allocate a new */
-    new_index = (struct sindex *) objc_malloc (sizeof (struct sindex));
-    memcpy (new_index, array->empty_index, sizeof (struct sindex));
-    new_index->version.version = array->version.version;
-    *the_index = new_index;                     /* Prepared for install. */
-    the_bucket = &((*the_index)->buckets[boffset]);
-    
-    nindices += 1;
-  } else if ((*the_index)->version.version != array->version.version) {
-
-    /* This index must be lazy copied */
-    struct sindex *old_index = *the_index;
-    new_index = (struct sindex *) objc_malloc (sizeof (struct sindex));
-    memcpy (new_index, old_index, sizeof (struct sindex));
-    new_index->version.version = array->version.version;
-    *the_index = new_index;                     /* Prepared for install. */
-    the_bucket = &((*the_index)->buckets[boffset]);
-    
-    nindices += 1;
-  }
-
+  if ((*the_index) == array->empty_index)
+    {
+      /* The index was previously empty, allocate a new.  */
+      new_index = (struct sindex *) objc_malloc (sizeof (struct sindex));
+      memcpy (new_index, array->empty_index, sizeof (struct sindex));
+      new_index->version.version = array->version.version;
+      *the_index = new_index;                     /* Prepared for install. */
+      the_bucket = &((*the_index)->buckets[boffset]);
+      
+      nindices += 1;
+    }
+  else if ((*the_index)->version.version != array->version.version)
+    {
+      /* This index must be lazy copied.  */
+      struct sindex *old_index = *the_index;
+      new_index = (struct sindex *) objc_malloc (sizeof (struct sindex));
+      memcpy (new_index, old_index, sizeof (struct sindex));
+      new_index->version.version = array->version.version;
+      *the_index = new_index;                     /* Prepared for install. */
+      the_bucket = &((*the_index)->buckets[boffset]);
+      
+      nindices += 1;
+    }
+  
 #endif /* OBJC_SPARSE3 */
-
-  /* next, perform lazy allocation/copy of the bucket if needed */
-
-  if ((*the_bucket) == array->empty_bucket) {
-
-    /* The bucket was previously empty (or something like that), */
-    /* allocate a new.  This is the effect of `lazy' allocation */  
-    new_bucket = (struct sbucket *) objc_malloc (sizeof (struct sbucket));
-    memcpy ((void *) new_bucket, (const void *) array->empty_bucket, 
-	    sizeof (struct sbucket));
-    new_bucket->version.version = array->version.version;
-    *the_bucket = new_bucket;                   /* Prepared for install. */
-    
-    nbuckets += 1;
-
-  } else if ((*the_bucket)->version.version != array->version.version) {
-
-    /* Perform lazy copy. */
-    struct sbucket *old_bucket = *the_bucket;
-    new_bucket = (struct sbucket *) objc_malloc (sizeof (struct sbucket));
-    memcpy (new_bucket, old_bucket, sizeof (struct sbucket));
-    new_bucket->version.version = array->version.version;
-    *the_bucket = new_bucket;                   /* Prepared for install. */
-    
-    nbuckets += 1;
-
-  }
+  
+  /* Next, perform lazy allocation/copy of the bucket if needed.  */
+  if ((*the_bucket) == array->empty_bucket)
+    {
+      /* The bucket was previously empty (or something like that),
+	 allocate a new.  This is the effect of `lazy' allocation.  */  
+      new_bucket = (struct sbucket *) objc_malloc (sizeof (struct sbucket));
+      memcpy ((void *) new_bucket, (const void *) array->empty_bucket, 
+	      sizeof (struct sbucket));
+      new_bucket->version.version = array->version.version;
+      *the_bucket = new_bucket;                   /* Prepared for install. */
+      
+      nbuckets += 1;
+      
+    }
+  else if ((*the_bucket)->version.version != array->version.version)
+    {
+      /* Perform lazy copy.  */
+      struct sbucket *old_bucket = *the_bucket;
+      new_bucket = (struct sbucket *) objc_malloc (sizeof (struct sbucket));
+      memcpy (new_bucket, old_bucket, sizeof (struct sbucket));
+      new_bucket->version.version = array->version.version;
+      *the_bucket = new_bucket;                   /* Prepared for install. */
+      
+      nbuckets += 1;
+    }
   (*the_bucket)->elems[eoffset] = element;
 }
 
@@ -217,16 +220,16 @@ sarray_new (int size, void *default_element)
 
   assert (size > 0);
 
-  /* Allocate core array */
+  /* Allocate core array.  */
   arr = (struct sarray *) objc_malloc (sizeof (struct sarray));
   arr->version.version = 0;
   
-  /* Initialize members */
+  /* Initialize members.  */
 #ifdef OBJC_SPARSE3
   arr->capacity = num_indices*INDEX_CAPACITY;
   new_indices = (struct sindex **) 
     objc_malloc (sizeof (struct sindex *) * num_indices);
-
+  
   arr->empty_index = (struct sindex *) objc_malloc (sizeof (struct sindex));
   arr->empty_index->version.version = 0;
   
@@ -279,10 +282,9 @@ sarray_new (int size, void *default_element)
 }
 
 
-/* Reallocate the sparse array to hold `newsize' entries
-   Note: We really allocate and then free.  We have to do this to ensure that
-   any concurrent readers notice the update. */
-
+/* Reallocate the sparse array to hold `newsize' entries Note: We
+   really allocate and then free.  We have to do this to ensure that
+   any concurrent readers notice the update.  */
 void 
 sarray_realloc (struct sarray *array, int newsize)
 {
@@ -308,31 +310,29 @@ sarray_realloc (struct sarray *array, int newsize)
 
   assert (newsize > 0);
 
-  /* The size is the same, just ignore the request */
+  /* The size is the same, just ignore the request.  */
   if (rounded_size <= array->capacity)
     return;
 
   assert (array->ref_count == 1);	/* stop if lazy copied... */
 
-  /* We are asked to extend the array -- allocate new bucket table, */
-  /* and insert empty_bucket in newly allocated places. */
+  /* We are asked to extend the array -- allocate new bucket table,
+     and insert empty_bucket in newly allocated places.  */
   if (rounded_size > array->capacity) 
     {
-
 #ifdef OBJC_SPARSE3
       new_max_index += 4;
       rounded_size = (new_max_index + 1) * INDEX_CAPACITY;
-      
 #else /* OBJC_SPARSE2 */
       new_max_index += 4;
       rounded_size = (new_max_index + 1) * BUCKET_SIZE;
 #endif
       
-      /* update capacity */
+      /* Update capacity.  */
       array->capacity = rounded_size;
 
 #ifdef OBJC_SPARSE3
-      /* alloc to force re-read by any concurrent readers. */
+      /* Alloc to force re-read by any concurrent readers.  */
       old_indices = array->indices;
       new_indices = (struct sindex **)
 	objc_malloc ((new_max_index + 1) * sizeof (struct sindex *));
@@ -342,34 +342,35 @@ sarray_realloc (struct sarray *array, int newsize)
 	objc_malloc ((new_max_index + 1) * sizeof (struct sbucket *));
 #endif
 
-      /* copy buckets below old_max_index (they are still valid) */
-      for (counter = 0; counter <= old_max_index; counter++ ) {
+      /* Copy buckets below old_max_index (they are still valid).  */
+      for (counter = 0; counter <= old_max_index; counter++ )
+	{
 #ifdef OBJC_SPARSE3
-	new_indices[counter] = old_indices[counter];
+	  new_indices[counter] = old_indices[counter];
 #else /* OBJC_SPARSE2 */
-	new_buckets[counter] = old_buckets[counter];
+	  new_buckets[counter] = old_buckets[counter];
 #endif
-      }
+	}
 
 #ifdef OBJC_SPARSE3
-      /* reset entries above old_max_index to empty_bucket */
+      /* Reset entries above old_max_index to empty_bucket.  */
       for (counter = old_max_index + 1; counter <= new_max_index; counter++)
 	new_indices[counter] = array->empty_index;
 #else /* OBJC_SPARSE2 */
-      /* reset entries above old_max_index to empty_bucket */
+      /* Reset entries above old_max_index to empty_bucket.  */
       for (counter = old_max_index + 1; counter <= new_max_index; counter++)
 	new_buckets[counter] = array->empty_bucket;
 #endif
       
 #ifdef OBJC_SPARSE3
-      /* install the new indices */
+      /* Install the new indices.  */
       array->indices = new_indices;
 #else /* OBJC_SPARSE2 */
       array->buckets = new_buckets;
 #endif
 
 #ifdef OBJC_SPARSE3
-      /* free the old indices */
+      /* Free the old indices.  */
       sarray_free_garbage (old_indices);
 #else /* OBJC_SPARSE2 */
       sarray_free_garbage (old_buckets);
@@ -382,7 +383,6 @@ sarray_realloc (struct sarray *array, int newsize)
 
 
 /* Free a sparse array allocated with sarray_new */
-
 void 
 sarray_free (struct sarray *array) {
 #ifdef OBJC_SPARSE3
@@ -405,75 +405,77 @@ sarray_free (struct sarray *array) {
   old_buckets = array->buckets;
 #endif
 
-  /* Free all entries that do not point to empty_bucket */
-  for (counter = 0; counter <= old_max_index; counter++ ) {
+  /* Free all entries that do not point to empty_bucket.  */
+  for (counter = 0; counter <= old_max_index; counter++ )
+    {
 #ifdef OBJC_SPARSE3
-    struct sindex *idx = old_indices[counter];
-    if ((idx != array->empty_index) &&
-       (idx->version.version == array->version.version)) {
-      int c2; 
-      for (c2 = 0; c2 < INDEX_SIZE; c2++) {
-	struct sbucket *bkt = idx->buckets[c2];
-	if ((bkt != array->empty_bucket) &&
-	   (bkt->version.version == array->version.version))
-	  {
-	    sarray_free_garbage (bkt);
-	    nbuckets -= 1;
-	  }
-      }
-      sarray_free_garbage (idx);
+      struct sindex *idx = old_indices[counter];
+      if ((idx != array->empty_index)
+	  && (idx->version.version == array->version.version))
+	{
+	  int c2; 
+	  for (c2 = 0; c2 < INDEX_SIZE; c2++)
+	    {
+	      struct sbucket *bkt = idx->buckets[c2];
+	      if ((bkt != array->empty_bucket)
+		  && (bkt->version.version == array->version.version))
+		{
+		  sarray_free_garbage (bkt);
+		  nbuckets -= 1;
+		}
+	    }
+	  sarray_free_garbage (idx);
+	  nindices -= 1;
+	}
+#else /* OBJC_SPARSE2 */
+      struct sbucket *bkt = old_buckets[counter];
+      if ((bkt != array->empty_bucket)
+	  && (bkt->version.version == array->version.version))
+	{
+	  sarray_free_garbage (bkt);
+	  nbuckets -= 1;
+	}
+#endif
+    }
+  
+#ifdef OBJC_SPARSE3  
+  /* Free empty_index.  */
+  if (array->empty_index->version.version == array->version.version)
+    {
+      sarray_free_garbage (array->empty_index);
       nindices -= 1;
     }
-#else /* OBJC_SPARSE2 */
-    struct sbucket *bkt = old_buckets[counter];
-    if ((bkt != array->empty_bucket) &&
-	(bkt->version.version == array->version.version))
-      {
-	sarray_free_garbage (bkt);
-	nbuckets -= 1;
-      }
-#endif
-  }
-	
-#ifdef OBJC_SPARSE3  
-  /* free empty_index */
-  if (array->empty_index->version.version == array->version.version) {
-    sarray_free_garbage (array->empty_index);
-    nindices -= 1;
-  }
 #endif
 
-  /* free empty_bucket */
-  if (array->empty_bucket->version.version == array->version.version) {
-    sarray_free_garbage (array->empty_bucket);
-    nbuckets -= 1;
-  }
+  /* Free empty_bucket.  */
+  if (array->empty_bucket->version.version == array->version.version)
+    {
+      sarray_free_garbage (array->empty_bucket);
+      nbuckets -= 1;
+    }
   idxsize -= (old_max_index + 1);
   narrays -= 1;
-
+  
 #ifdef OBJC_SPARSE3
-  /* free bucket table */
+  /* Free bucket table.  */
   sarray_free_garbage (array->indices);
-
 #else
-  /* free bucket table */
+  /* Free bucket table.  */
   sarray_free_garbage (array->buckets);
-
 #endif
   
   /* If this is a copy of another array, we free it (which might just
-   * decrement its reference count so it will be freed when no longer in use).
-   */
+     decrement its reference count so it will be freed when no longer
+     in use).  */
   if (array->is_copy_of)
     sarray_free (array->is_copy_of);
 
-  /* free array */
+  /* Free array.  */
   sarray_free_garbage (array);
 }
 
-/* This is a lazy copy.  Only the core of the structure is actually */
-/* copied.   */
-
+/* This is a lazy copy.  Only the core of the structure is actually
+   copied.  */
 struct sarray *
 sarray_lazy_copy (struct sarray *oarr)
 {
@@ -487,7 +489,7 @@ sarray_lazy_copy (struct sarray *oarr)
   struct sbucket **new_buckets;
 #endif
 
-  /* Allocate core array */
+  /* Allocate core array.  */
   arr = (struct sarray *) objc_malloc (sizeof (struct sarray)); /* !!! */
   arr->version.version = oarr->version.version + 1;
 #ifdef OBJC_SPARSE3
@@ -500,13 +502,13 @@ sarray_lazy_copy (struct sarray *oarr)
   arr->capacity = oarr->capacity;
   
 #ifdef OBJC_SPARSE3
-  /* Copy bucket table */
+  /* Copy bucket table.  */
   new_indices = (struct sindex **) 
     objc_malloc (sizeof (struct sindex *) * num_indices);
   memcpy (new_indices, oarr->indices, sizeof (struct sindex *) * num_indices);
   arr->indices = new_indices;
 #else 
-  /* Copy bucket table */
+  /* Copy bucket table.  */
   new_buckets = (struct sbucket **) 
     objc_malloc (sizeof (struct sbucket *) * num_indices);
   memcpy (new_buckets, oarr->buckets, sizeof (struct sbucket *) * num_indices);
