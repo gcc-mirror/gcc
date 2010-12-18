@@ -1,3 +1,11 @@
+2010-12-18  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc/objc-act.c (objc_eh_personality): Select personality name on
+	runtime.
+	(objc_init_exceptions): New.
+	(objc_begin_try_stmt): Use objc_init_exceptions.
+	(objc_build_throw_stmt): Likewise.
+
 2010-12-10  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_in_class_extension): New.
