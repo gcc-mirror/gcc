@@ -2285,6 +2285,32 @@ Expression::make_complex(const mpfr_t* real, const mpfr_t* imag, Type* type,
   return new Complex_expression(real, imag, type, location);
 }
 
+// Find a named object in an expression.
+
+class Find_named_object : public Traverse
+{
+ public:
+  Find_named_object(Named_object* no)
+    : Traverse(traverse_expressions),
+      no_(no), found_(false)
+  { }
+
+  // Whether we found the object.
+  bool
+  found() const
+  { return this->found_; }
+
+ protected:
+  int
+  expression(Expression**);
+
+ private:
+  // The object we are looking for.
+  Named_object* no_;
+  // Whether we found it.
+  bool found_;
+};
+
 // A reference to a const in an expression.
 
 class Const_expression : public Expression
@@ -2294,6 +2320,10 @@ class Const_expression : public Expression
     : Expression(EXPRESSION_CONST_REFERENCE, location),
       constant_(constant), type_(NULL), seen_(false)
   { }
+
+  Named_object*
+  named_object()
+  { return this->constant_; }
 
   const std::string&
   name() const
@@ -2565,6 +2595,19 @@ Const_expression::do_determine_type(const Type_context* context)
 void
 Const_expression::do_check_types(Gogo*)
 {
+  if (this->type_ != NULL && this->type_->is_error_type())
+    return;
+
+  Expression* init = this->constant_->const_value()->expr();
+  Find_named_object find_named_object(this->constant_);
+  Expression::traverse(&init, &find_named_object);
+  if (find_named_object.found())
+    {
+      this->report_error(_("constant refers to itself"));
+      this->type_ = Type::make_error_type();
+      return;
+    }
+
   if (this->type_ == NULL || this->type_->is_abstract())
     return;
 
@@ -2680,6 +2723,32 @@ Expression::make_const_reference(Named_object* constant,
 				 source_location location)
 {
   return new Const_expression(constant, location);
+}
+
+// Find a named object in an expression.
+
+int
+Find_named_object::expression(Expression** pexpr)
+{
+  switch ((*pexpr)->classification())
+    {
+    case Expression::EXPRESSION_CONST_REFERENCE:
+      if (static_cast<Const_expression*>(*pexpr)->named_object() == this->no_)
+	break;
+      return TRAVERSE_CONTINUE;
+    case Expression::EXPRESSION_VAR_REFERENCE:
+      if ((*pexpr)->var_expression()->named_object() == this->no_)
+	break;
+      return TRAVERSE_CONTINUE;
+    case Expression::EXPRESSION_FUNC_REFERENCE:
+      if ((*pexpr)->func_expression()->named_object() == this->no_)
+	break;
+      return TRAVERSE_CONTINUE;
+    default:
+      return TRAVERSE_CONTINUE;
+    }
+  this->found_ = true;
+  return TRAVERSE_EXIT;
 }
 
 // The nil value.

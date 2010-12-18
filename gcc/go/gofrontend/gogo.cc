@@ -3056,7 +3056,7 @@ Variable::Variable(Type* type, Expression* init, bool is_global,
   : type_(type), init_(init), preinit_(NULL), location_(location),
     is_global_(is_global), is_parameter_(is_parameter),
     is_receiver_(is_receiver), is_varargs_parameter_(false),
-    is_address_taken_(false), init_is_lowered_(false),
+    is_address_taken_(false), seen_(false), init_is_lowered_(false),
     type_from_init_tuple_(false), type_from_range_index_(false),
     type_from_range_value_(false), type_from_chan_element_(false),
     is_type_switch_var_(false)
@@ -3090,7 +3090,18 @@ Variable::lower_init_expression(Gogo* gogo, Named_object* function)
 {
   if (this->init_ != NULL && !this->init_is_lowered_)
     {
+      if (this->seen_)
+	{
+	  // We will give an error elsewhere, this is just to prevent
+	  // an infinite loop.
+	  return;
+	}
+      this->seen_ = true;
+
       gogo->lower_expression(function, &this->init_);
+
+      this->seen_ = false;
+
       this->init_is_lowered_ = true;
     }
 }
@@ -3209,7 +3220,7 @@ Variable::type_from_chan_element(Expression* expr, bool report_error) const
 // with type determination, then this should be unnecessary.
 
 Type*
-Variable::type() const
+Variable::type()
 {
   // A variable in a type switch with a nil case will have the wrong
   // type here.  This gets fixed up in determine_type, below.
@@ -3224,14 +3235,26 @@ Variable::type() const
       type = NULL;
     }
 
+  if (this->seen_)
+    {
+      if (this->type_ == NULL || !this->type_->is_error_type())
+	{
+	  error_at(this->location_, "variable initializer refers to itself");
+	  this->type_ = Type::make_error_type();
+	}
+      return this->type_;
+    }
+
+  this->seen_ = true;
+
   if (type != NULL)
-    return type;
+    ;
   else if (this->type_from_init_tuple_)
-    return this->type_from_tuple(init, false);
+    type = this->type_from_tuple(init, false);
   else if (this->type_from_range_index_ || this->type_from_range_value_)
-    return this->type_from_range(init, this->type_from_range_index_, false);
+    type = this->type_from_range(init, this->type_from_range_index_, false);
   else if (this->type_from_chan_element_)
-    return this->type_from_chan_element(init, false);
+    type = this->type_from_chan_element(init, false);
   else
     {
       gcc_assert(init != NULL);
@@ -3244,9 +3267,21 @@ Variable::type() const
 
       if (type->is_void_type())
 	type = Type::make_error_type();
-
-      return type;
     }
+
+  this->seen_ = false;
+
+  return type;
+}
+
+// Fetch the type from a const pointer, in which case it should have
+// been set already.
+
+Type*
+Variable::type() const
+{
+  gcc_assert(this->type_ != NULL);
+  return this->type_;
 }
 
 // Set the type if necessary.

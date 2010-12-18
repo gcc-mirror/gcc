@@ -1039,6 +1039,9 @@ class Variable
 
   // Get the type of the variable.
   Type*
+  type();
+
+  Type*
   type() const;
 
   // Return whether the type is defined yet.
@@ -1258,6 +1261,8 @@ class Variable
   bool is_varargs_parameter_ : 1;
   // Whether something takes the address of this variable.
   bool is_address_taken_ : 1;
+  // True if we have seen this variable in a traversal.
+  bool seen_ : 1;
   // True if we have lowered the initialization expression.
   bool init_is_lowered_ : 1;
   // True if init is a tuple used to set the type.
