@@ -1,3 +1,8 @@
+2010-12-18  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/darwin.h (GCC_DRIVER_HOST_INITIALIZATION):
+	Only expose when not building for target.
+
 2010-12-17  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/netbsd.opt, config/netbsd-elf.opt: New files.

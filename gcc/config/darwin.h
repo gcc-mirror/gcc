@@ -963,10 +963,11 @@ __enable_execute_stack (void *addr)                                     \
 
 #define TARGET_HAS_TARGETCM 1
 
-extern void darwin_driver_init (unsigned int *decoded_options_count,
-				struct cl_decoded_option **decoded_options);
+#ifndef USED_FOR_TARGET
+extern void darwin_driver_init (unsigned int *,struct cl_decoded_option **);
 #define GCC_DRIVER_HOST_INITIALIZATION \
   darwin_driver_init (&decoded_options_count, &decoded_options)
+#endif
 
 /* The Apple assembler and linker do not support constructor priorities.  */
 #undef SUPPORTS_INIT_PRIORITY
