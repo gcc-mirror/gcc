@@ -1,3 +1,16 @@
+2010-12-18  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR target/36834
+	* config/i386/i386.c (ix86_keep_aggregate_return_pointer):
+	New local function.
+	(ix86_return_pops_args): Use ix86_keep_aggregate_return_pointer
+	function instead of KEEP_AGGREGATE_RETURN_POINTER.
+	(ix86_handle_callee_pop_aggregate_return): New handler.
+	(ix86_attribute_table): Add new attribute
+	callee_pop_aggregate_return.
+	* doc/extend.texi (callee_pop_aggregate_return): Add
+	attribute documentation.
+
 2010-12-18  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/darwin.h (SUBTARGET_C_COMMON_OVERRIDE_OPTIONS):
