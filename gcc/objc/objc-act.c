@@ -5028,10 +5028,41 @@ tree
 objc_eh_personality (void)
 {
   if (!flag_objc_sjlj_exceptions && !objc_eh_personality_decl)
-    objc_eh_personality_decl = build_personality_function ("gnu_objc");
+    objc_eh_personality_decl = build_personality_function 
+				(flag_next_runtime
+						? "objc"
+						: "gnu_objc");
   return objc_eh_personality_decl;
 }
 #endif
+
+static void
+objc_init_exceptions (location_t loc)
+{
+  static bool done = false;
+
+  /* -fobjc-exceptions is required to enable Objective-C exceptions.
+     For example, on Darwin, ObjC exceptions require a sufficiently
+     recent version of the runtime, so the user must ask for them
+     explicitly.  On other platforms, at the moment -fobjc-exceptions
+     triggers -fexceptions which again is required for exceptions to
+     work.
+  */
+  /* TODO: we only really need one error message when the flag is missing.  */
+  if (!flag_objc_exceptions)
+    {
+      error_at (loc, "%<-fobjc-exceptions%> is required to enable Objective-C exception syntax");
+    }
+
+  if (done)
+    return;
+  done = true;
+
+#ifndef OBJCPLUS
+  if (!flag_objc_sjlj_exceptions)
+    using_eh_for_cleanups ();
+#endif
+}
 
 /* Build __builtin_eh_pointer, or the moral equivalent.  In the case
    of Darwin, we'll arrange for it to be initialized (and associated
@@ -5334,17 +5365,7 @@ objc_begin_try_stmt (location_t try_locus, tree body)
   c->end_try_locus = input_location;
   cur_try_context = c;
 
-  /* -fobjc-exceptions is required to enable Objective-C exceptions.
-     For example, on Darwin, ObjC exceptions require a sufficiently
-     recent version of the runtime, so the user must ask for them
-     explicitly.  On other platforms, at the moment -fobjc-exceptions
-     triggers -fexceptions which again is required for exceptions to
-     work.
-  */
-  if (!flag_objc_exceptions)
-    {
-      error_at (try_locus, "%<-fobjc-exceptions%> is required to enable Objective-C exception syntax");
-    }
+  objc_init_exceptions (try_locus);
 
   /* Collect the list of local variables.  We'll mark them as volatile
      at the end of compilation of this function to prevent them being
@@ -5552,10 +5573,7 @@ objc_build_throw_stmt (location_t loc, tree throw_expr)
 {
   tree args;
 
-  if (!flag_objc_exceptions)
-    {
-      error_at (loc, "%<-fobjc-exceptions%> is required to enable Objective-C exception syntax");
-    }
+  objc_init_exceptions (loc); 
 
   if (throw_expr == NULL)
     {
