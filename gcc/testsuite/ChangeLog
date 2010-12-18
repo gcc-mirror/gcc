@@ -1,3 +1,8 @@
+2010-12-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/46232
+	* gcc.dg/tree-ssa/pr14814.c: Add -fno-tree-sra.
+
 2010-12-18  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* fobjc-exceptions.m: Update dg-error syntax.
