@@ -1,5 +1,10 @@
 2010-12-18  Iain Sandoe  <iains@gcc.gnu.org>
 
+	* config/darwin.h (SUBTARGET_C_COMMON_OVERRIDE_OPTIONS):
+	Only set sjlj exceptions for NeXT/m32.
+
+2010-12-18  Iain Sandoe  <iains@gcc.gnu.org>
+
 	* config/darwin.h (GCC_DRIVER_HOST_INITIALIZATION):
 	Only expose when not building for target.
 
