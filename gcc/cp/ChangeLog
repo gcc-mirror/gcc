@@ -1,3 +1,8 @@
+2010-12-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* pt.c (most_specialized_class): Use ngettext to determine
+	"candidates are:" / "candidate is" message.
+
 2010-12-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/46670
