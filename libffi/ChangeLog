@@ -1,3 +1,15 @@
+2010-12-18  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR libffi/29152
+	PR libffi/42378
+	* src/powerpc/darwin_closure.S: Provide Darwin64 implementation,
+	update comments.
+	* src/powerpc/ffitarget.h (POWERPC_DARWIN64): New,
+	(FFI_TRAMPOLINE_SIZE): Update for Darwin64.
+	* src/powerpc/darwin.S: Provide Darwin64 implementation,
+	update comments.
+	* src/powerpc/ffi_darwin.c: Likewise.
+	
 2010-12-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (libffi_cv_as_ascii_pseudo_op): Use double
