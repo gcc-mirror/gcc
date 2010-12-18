@@ -5436,6 +5436,19 @@ ix86_eax_live_at_start_p (void)
   return REGNO_REG_SET_P (df_get_live_out (ENTRY_BLOCK_PTR), 0);
 }
 
+static bool
+ix86_keep_aggregate_return_pointer (tree fntype)
+{
+  tree attr;
+
+  attr = lookup_attribute ("callee_pop_aggregate_return",
+			   TYPE_ATTRIBUTES (fntype));
+  if (attr)
+    return (TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attr))) == 0);
+
+  return KEEP_AGGREGATE_RETURN_POINTER != 0;
+}
+
 /* Value is the number of bytes of arguments automatically
    popped when returning from a subroutine call.
    FUNDECL is the declaration node of the function (as a tree),
@@ -5480,7 +5493,7 @@ ix86_return_pops_args (tree fundecl, tree funtype, int size)
 
   /* Lose any fake structure return argument if it is passed on the stack.  */
   if (aggregate_value_p (TREE_TYPE (funtype), fundecl)
-      && !KEEP_AGGREGATE_RETURN_POINTER)
+      && !ix86_keep_aggregate_return_pointer (funtype))
     {
       int nregs = ix86_function_regparm (funtype, fundecl);
       if (nregs == 0)
@@ -29060,6 +29073,58 @@ x86_order_regs_for_local_alloc (void)
      reg_alloc_order [pos++] = 0;
 }
 
+/* Handle a "callee_pop_aggregate_return" attribute; arguments as
+   in struct attribute_spec handler.  */
+static tree
+ix86_handle_callee_pop_aggregate_return (tree *node, tree name,
+					      tree args,
+					      int flags ATTRIBUTE_UNUSED,
+					      bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_TYPE
+      && TREE_CODE (*node) != METHOD_TYPE
+      && TREE_CODE (*node) != FIELD_DECL
+      && TREE_CODE (*node) != TYPE_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute only applies to functions",
+	       name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+  if (TARGET_64BIT)
+    {
+      warning (OPT_Wattributes, "%qE attribute only available for 32-bit",
+	       name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+  if (is_attribute_p ("callee_pop_aggregate_return", name))
+    {
+      tree cst;
+
+      cst = TREE_VALUE (args);
+      if (TREE_CODE (cst) != INTEGER_CST)
+	{
+	  warning (OPT_Wattributes,
+		   "%qE attribute requires an integer constant argument",
+		   name);
+	  *no_add_attrs = true;
+	}
+      else if (compare_tree_int (cst, 0) != 0
+	       && compare_tree_int (cst, 1) != 0)
+	{
+	  warning (OPT_Wattributes,
+		   "argument to %qE attribute is neither zero, nor one",
+		   name);
+	  *no_add_attrs = true;
+	}
+
+      return NULL_TREE;
+    }
+
+  return NULL_TREE;
+}
+
 /* Handle a "ms_abi" or "sysv" attribute; arguments as in
    struct attribute_spec.handler.  */
 static tree
@@ -32229,6 +32294,8 @@ static const struct attribute_spec ix86_attribute_table[] =
   { "ms_abi", 0, 0, false, true, true, ix86_handle_abi_attribute },
   { "sysv_abi", 0, 0, false, true, true, ix86_handle_abi_attribute },
   { "ms_hook_prologue", 0, 0, true, false, false, ix86_handle_fndecl_attribute },
+  { "callee_pop_aggregate_return", 1, 1, false, true, true,
+    ix86_handle_callee_pop_aggregate_return },
   /* End element.  */
   { NULL,        0, 0, false, false, false, NULL }
 };
