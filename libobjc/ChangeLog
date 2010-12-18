@@ -1,3 +1,18 @@
+2010-12-18  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* class.c: Tidied up comments and indentation.  No code changes.
+	* error.c: Same.
+	* exception.c: Same.
+	* init.c: Same.
+	* ivars.c: Same.
+	* memory.c: Same.
+	* objc-foreach.c: Same.
+	* objc-sync.c: Same.
+	* objects.c: Same.
+	* protocols.c: Same.
+	* sarray.c: Same.
+	* thr.c: Same.
+
 2010-12-17  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* init.c: Include objc/runtime.h and objc-private/module-abi-8.h

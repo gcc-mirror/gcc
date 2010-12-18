@@ -69,9 +69,7 @@ __objc_protocols_add_protocol (const char *name, Protocol *object)
      Objective-C programs while trying to catch a problem that has
      never been seen in practice, so we don't do it.  */
   if (! objc_hash_is_key_in_hash (__protocols_hashtable, name))
-    {
-      objc_hash_add (&__protocols_hashtable, name, object);
-    }
+    objc_hash_add (&__protocols_hashtable, name, object);
 
   objc_mutex_unlock (__protocols_hashtable_lock);
 }
