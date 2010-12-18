@@ -7,19 +7,19 @@ int dummy (int number, Object *o)
 {
   @try {            /* { dg-error ".-fobjc-exceptions. is required to enable Objective-C exception syntax" } */
     number++;
-    @throw o;     /* { dg-error ".-fobjc-exceptions. is required to enable Objective-C exception syntax" } */
+    @throw o;       /* Nothing, error has already been produced.  */
   }
   @catch (id object)
     {
       number++;
-      @throw;       /* { dg-error ".-fobjc-exceptions. is required to enable Objective-C exception syntax" } */
+      @throw;       /* Nothing, error has already been produced.  */
     }
   @finally
     {
       number++;
     }
   
-  @synchronized (o) /* { dg-error ".-fobjc-exceptions. is required to enable Objective-C exception syntax" } */
+  @synchronized (o) /* Nothing, error has already been produced.  */
     {
       number++;
     }

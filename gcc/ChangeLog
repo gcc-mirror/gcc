@@ -1,3 +1,10 @@
+2010-12-18  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-parser.c (c_parser_objc_try_catch_finally_statement): Call
+	objc_maybe_warn_exceptions.
+	(c_parser_objc_synchronized_statement): Call
+	objc_maybe_warn_exceptions.
+	
 2010-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/46985

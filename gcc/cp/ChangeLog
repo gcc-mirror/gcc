@@ -1,3 +1,9 @@
+2010-12-18  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* parser.c (cp_parser_objc_try_catch_finally_statement): Call
+	objc_maybe_warn_exceptions.
+	(cp_parser_objc_synchronized_statement): Same change.
+	
 2010-12-18  Joseph Myers  <joseph@codesourcery.com>
 
 	* pt.c (most_specialized_class): Use ngettext to determine

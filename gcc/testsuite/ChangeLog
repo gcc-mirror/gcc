@@ -1,3 +1,12 @@
+2010-12-18  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/fobjc-exceptions-1.m: Updated.
+	* objc.dg/fobjc-exceptions-2.m: New.
+	* objc.dg/fobjc-exceptions-3.m: New.
+	* obj-c++.dg/fobjc-exceptions-1.mm: New.
+	* obj-c++.dg/fobjc-exceptions-2.mm: New.
+	* obj-c++.dg/fobjc-exceptions-3.mm: New.
+	
 2010-12-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46974
@@ -15,7 +24,7 @@
 
 2010-12-18  Iain Sandoe  <iains@gcc.gnu.org>
 
-	* fobjc-exceptions.m: Update dg-error syntax.
+	* objc.dg/fobjc-exceptions.m: Update dg-error syntax.
 
 2010-12-18  Kai Tietz  <kai.tietz@onevision.com>
 
