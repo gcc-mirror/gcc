@@ -1,3 +1,7 @@
+2010-12-17  Ahmad Sharif  <asharif@google.com>
+
+	* gcc.target/i386/max-stack-align.c: New testcase.
+
 2010-12-17  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/exceptions-4.m: Adjust for change in error message.
