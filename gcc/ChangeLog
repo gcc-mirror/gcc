@@ -1,3 +1,9 @@
+2010-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46985
+	* tree-scalar-evolution.c (instantiate_scev_r): If chrec is NULL,
+	return it immediately.
+
 2010-12-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/46915
