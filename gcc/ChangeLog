@@ -1,3 +1,14 @@
+2010-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46969
+	* tree-parloops.c (struct reduction_info): Add reduc_version.
+	(reduction_info_hash): Return reduc_version field.
+	(reduction_phi): Set reduc_version to gimple_uid (phi).
+	(build_new_reduction): Set reduc_version to SSA_NAME_VERSION of
+	phi result.
+	(set_reduc_phi_uids): New function.
+	(gather_scalar_reductions): Call it at the end through htab_traverse.
+
 2010-12-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-parser.c (c_parser_objc_try_catch_finally_statement): Call

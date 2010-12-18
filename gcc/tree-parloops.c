@@ -168,6 +168,8 @@ struct reduction_info
   gimple reduc_stmt;		/* reduction statement.  */
   gimple reduc_phi;		/* The phi node defining the reduction.  */
   enum tree_code reduction_code;/* code for the reduction operation.  */
+  unsigned reduc_version;	/* SSA_NAME_VERSION of original reduc_phi
+				   result.  */
   gimple keep_res;		/* The PHI_RESULT of this phi is the resulting value
 				   of the reduction variable when existing the loop. */
   tree initial_value;		/* The initial value of the reduction var before entering the loop.  */
@@ -195,7 +197,7 @@ reduction_info_hash (const void *aa)
 {
   const struct reduction_info *a = (const struct reduction_info *) aa;
 
-  return htab_hash_pointer (a->reduc_phi);
+  return a->reduc_version;
 }
 
 static struct reduction_info *
@@ -207,6 +209,7 @@ reduction_phi (htab_t reduction_list, gimple phi)
     return NULL;
 
   tmpred.reduc_phi = phi;
+  tmpred.reduc_version = gimple_uid (phi);
   red = (struct reduction_info *) htab_find (reduction_list, &tmpred);
 
   return red;
@@ -1774,9 +1777,20 @@ build_new_reduction (htab_t reduction_list, gimple reduc_stmt, gimple phi)
 
   new_reduction->reduc_stmt = reduc_stmt;
   new_reduction->reduc_phi = phi;
+  new_reduction->reduc_version = SSA_NAME_VERSION (gimple_phi_result (phi));
   new_reduction->reduction_code = gimple_assign_rhs_code (reduc_stmt);
   slot = htab_find_slot (reduction_list, new_reduction, INSERT);
   *slot = new_reduction;
+}
+
+/* Callback for htab_traverse.  Sets gimple_uid of reduc_phi stmts.  */
+
+static int
+set_reduc_phi_uids (void **slot, void *data ATTRIBUTE_UNUSED)
+{
+  struct reduction_info *const red = (struct reduction_info *) *slot;
+  gimple_set_uid (red->reduc_phi, red->reduc_version);
+  return 1;
 }
 
 /* Detect all reductions in the LOOP, insert them into REDUCTION_LIST.  */
@@ -1810,7 +1824,12 @@ gather_scalar_reductions (loop_p loop, htab_t reduction_list)
               build_new_reduction (reduction_list, reduc_stmt, phi);
         }
     }
-    destroy_loop_vec_info (simple_loop_info, true);
+  destroy_loop_vec_info (simple_loop_info, true);
+
+  /* As gimple_uid is used by the vectorizer in between vect_analyze_loop_form
+     and destroy_loop_vec_info, we can set gimple_uid of reduc_phi stmts
+     only now.  */
+  htab_traverse (reduction_list, set_reduc_phi_uids, NULL);
 }
 
 /* Try to initialize NITER for code generation part.  */
