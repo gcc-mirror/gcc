@@ -1,3 +1,7 @@
+2010-12-18  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* gcc.target/powerpc/darwin-split-ld-stret.c: New test.
+
 2010-12-17  Ahmad Sharif  <asharif@google.com>
 
 	* gcc.target/i386/max-stack-align.c: New testcase.
