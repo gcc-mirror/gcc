@@ -442,8 +442,26 @@ gfc_interpret_derived (unsigned char *buffer, size_t buffer_size, gfc_expr *resu
   /* The attributes of the derived type need to be bolted to the floor.  */
   result->expr_type = EXPR_STRUCTURE;
 
-  type = gfc_typenode_for_spec (&result->ts);
   cmp = result->ts.u.derived->components;
+
+  if (result->ts.u.derived->from_intmod == INTMOD_ISO_C_BINDING
+      && (result->ts.u.derived->intmod_sym_id == ISOCBINDING_PTR
+	  || result->ts.u.derived->intmod_sym_id == ISOCBINDING_FUNPTR))
+    {
+      gfc_constructor *c;
+      gfc_expr *e;
+      /* Needed as gfc_typenode_for_spec as gfc_typenode_for_spec
+	 sets this to BT_INTEGER.  */
+      result->ts.type = BT_DERIVED;
+      e = gfc_get_constant_expr (cmp->ts.type, cmp->ts.kind, &result->where); 
+      c = gfc_constructor_append_expr (&result->value.constructor, e, NULL);
+      c->n.component = cmp;
+      gfc_target_interpret_expr (buffer, buffer_size, e);
+      e->ts.is_iso_c = 1;
+      return int_size_in_bytes (ptr_type_node);
+    }
+
+  type = gfc_typenode_for_spec (&result->ts);
 
   /* Run through the derived type components.  */
   for (;cmp; cmp = cmp->next)
@@ -483,6 +501,7 @@ gfc_interpret_derived (unsigned char *buffer, size_t buffer_size, gfc_expr *resu
 	 sizes of the components are multiples of BITS_PER_UNIT,
 	 i.e. there are, e.g., no bit fields.  */
 
+      gcc_assert (cmp->backend_decl);
       ptr = TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (cmp->backend_decl));
       gcc_assert (ptr % 8 == 0);
       ptr = ptr/8 + TREE_INT_CST_LOW (DECL_FIELD_OFFSET (cmp->backend_decl));

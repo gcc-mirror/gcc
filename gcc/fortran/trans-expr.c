@@ -4514,26 +4514,30 @@ gfc_trans_structure_assign (tree dest, gfc_expr * expr)
 
   gfc_start_block (&block);
   cm = expr->ts.u.derived->components;
+
+  if (expr->ts.u.derived->from_intmod == INTMOD_ISO_C_BINDING
+      && (expr->ts.u.derived->intmod_sym_id == ISOCBINDING_PTR
+          || expr->ts.u.derived->intmod_sym_id == ISOCBINDING_FUNPTR))
+    {
+      gfc_se se, lse;
+
+      gcc_assert (cm->backend_decl == NULL);
+      gfc_init_se (&se, NULL);
+      gfc_init_se (&lse, NULL);
+      gfc_conv_expr (&se, gfc_constructor_first (expr->value.constructor)->expr);
+      lse.expr = dest;
+      gfc_add_modify (&block, lse.expr,
+		      fold_convert (TREE_TYPE (lse.expr), se.expr));
+
+      return gfc_finish_block (&block);
+    } 
+
   for (c = gfc_constructor_first (expr->value.constructor);
        c; c = gfc_constructor_next (c), cm = cm->next)
     {
       /* Skip absent members in default initializers.  */
       if (!c->expr)
 	continue;
-
-      /* Handle c_null_(fun)ptr.  */
-      if (c && c->expr && c->expr->ts.is_iso_c)
-	{
-	  field = cm->backend_decl;
-	  tmp = fold_build3_loc (input_location, COMPONENT_REF,
-				 TREE_TYPE (field),
-				 dest, field, NULL_TREE);
-	  tmp = fold_build2_loc (input_location, MODIFY_EXPR, TREE_TYPE (tmp),
-				 tmp, fold_convert (TREE_TYPE (tmp),
-						    null_pointer_node));
-	  gfc_add_expr_to_block (&block, tmp);
-	  continue;
-	}
 
       field = cm->backend_decl;
       tmp = fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field),
@@ -4664,8 +4668,10 @@ gfc_conv_expr (gfc_se * se, gfc_expr * expr)
   if (expr->ts.type == BT_DERIVED && expr->ts.u.derived
       && expr->ts.u.derived->attr.is_iso_c)
     {
-      if (expr->symtree->n.sym->intmod_sym_id == ISOCBINDING_NULL_PTR
-          || expr->symtree->n.sym->intmod_sym_id == ISOCBINDING_NULL_FUNPTR)
+      if (expr->expr_type == EXPR_VARIABLE
+	  && (expr->symtree->n.sym->intmod_sym_id == ISOCBINDING_NULL_PTR
+	      || expr->symtree->n.sym->intmod_sym_id
+		 == ISOCBINDING_NULL_FUNPTR))
         {
 	  /* Set expr_type to EXPR_NULL, which will result in
 	     null_pointer_node being used below.  */
