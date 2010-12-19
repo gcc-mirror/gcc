@@ -23,8 +23,10 @@
 // <http://www.gnu.org/licenses/>.
 
 /**
- * @file ext/pointer.h
- * @author Bob Walters
+ *  @file ext/pointer.h
+ *  This file is a GNU extension to the Standard C++ Library.
+ *
+ *  @author Bob Walters
  *
  * Provides reusable _Pointer_adapter for assisting in the development of
  * custom pointer types that can be used with the standard containers via

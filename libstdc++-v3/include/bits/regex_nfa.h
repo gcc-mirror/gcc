@@ -23,9 +23,9 @@
 // <http://www.gnu.org/licenses/>.
 
 /**
- * @file bits/regex_nfa.h
- * This is an internal header file, included by other library headers.
- * You should not attempt to use it directly.
+ *  @file bits/regex_nfa.h
+ *  This is an internal header file, included by other library headers.
+ *  Do not attempt to use it directly. @headername{regex}
  */
 
 _GLIBCXX_BEGIN_NAMESPACE(std)

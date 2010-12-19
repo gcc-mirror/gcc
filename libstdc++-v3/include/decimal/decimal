@@ -21,7 +21,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file include/decimal/decimal
+/** @file decimal/decimal
  *  This is a Standard C++ Library header.
  */
 

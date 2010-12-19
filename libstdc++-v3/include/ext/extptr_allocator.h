@@ -23,8 +23,10 @@
 // <http://www.gnu.org/licenses/>.
 
 /**
- * @file ext/extptr_allocator.h
- * @author Bob Walters
+ *  @file ext/extptr_allocator.h
+ *  This file is a GNU extension to the Standard C++ Library.
+ *
+ *  @author Bob Walters
  *
  * An example allocator which uses an alternative pointer type from
  * bits/pointer.h.  Supports test cases which confirm container support

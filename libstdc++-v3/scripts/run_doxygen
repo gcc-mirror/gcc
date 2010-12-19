@@ -13,7 +13,7 @@
 
 
 # We can check now that the version of doxygen is >= this variable.
-DOXYVER=1.6.1
+DOXYVER=1.7.2
 
 find_doxygen() {
     local -r v_required=`echo $DOXYVER |  \

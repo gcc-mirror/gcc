@@ -24,9 +24,8 @@
 // <http://www.gnu.org/licenses/>.
 
 /** @file ext/vstring_util.h
- *  This file is a GNU extension to the Standard C++ Library.
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{ext/vstring.h}
  */
 
 #ifndef _VSTRING_UTIL_H
@@ -52,10 +51,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     {
       typedef typename _Alloc::template rebind<_CharT>::other _CharT_alloc_type;
 
-      typedef _Traits					    traits_type;      
+      typedef _Traits					    traits_type;
       typedef typename _Traits::char_type		    value_type;
       typedef typename _CharT_alloc_type::size_type	    size_type;
-      typedef typename _CharT_alloc_type::difference_type   difference_type;      
+      typedef typename _CharT_alloc_type::difference_type   difference_type;
       typedef typename _CharT_alloc_type::pointer	    pointer;
       typedef typename _CharT_alloc_type::const_pointer	    const_pointer;
 
@@ -64,29 +63,29 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       __normal_iterator<pointer, __gnu_cxx::
 			__versa_string<_CharT, _Traits, _Alloc,
 				       __sso_string_base> >
-        __sso_iterator;
+	__sso_iterator;
       typedef __gnu_cxx::
       __normal_iterator<const_pointer, __gnu_cxx::
 			__versa_string<_CharT, _Traits, _Alloc,
 				       __sso_string_base> >
-        __const_sso_iterator;
+	__const_sso_iterator;
 
       // For __rc_string.
       typedef __gnu_cxx::
       __normal_iterator<pointer, __gnu_cxx::
 			__versa_string<_CharT, _Traits, _Alloc,
 				       __rc_string_base> >
-        __rc_iterator;
+	__rc_iterator;
       typedef __gnu_cxx::
       __normal_iterator<const_pointer, __gnu_cxx::
 			__versa_string<_CharT, _Traits, _Alloc,
 				       __rc_string_base> >
-        __const_rc_iterator;
+	__const_rc_iterator;
 
-      // NB:  When the allocator is empty, deriving from it saves space 
+      // NB:  When the allocator is empty, deriving from it saves space
       // (http://www.cantrip.org/emptyopt.html).
       template<typename _Alloc1>
-        struct _Alloc_hider
+	struct _Alloc_hider
 	: public _Alloc1
 	{
 	  _Alloc_hider(_CharT* __ptr)
@@ -115,7 +114,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	if (__n == 1)
 	  traits_type::assign(*__d, *__s);
 	else
-	  traits_type::move(__d, __s, __n);	  
+	  traits_type::move(__d, __s, __n);
       }
 
       static void
@@ -124,15 +123,15 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	if (__n == 1)
 	  traits_type::assign(*__d, __c);
 	else
-	  traits_type::assign(__d, __n, __c);	  
+	  traits_type::assign(__d, __n, __c);
       }
 
       // _S_copy_chars is a separate template to permit specialization
       // to optimize for the common case of pointers as iterators.
       template<typename _Iterator>
-        static void
-        _S_copy_chars(_CharT* __p, _Iterator __k1, _Iterator __k2)
-        {
+	static void
+	_S_copy_chars(_CharT* __p, _Iterator __k1, _Iterator __k2)
+	{
 	  for (; __k1 != __k2; ++__k1, ++__p)
 	    traits_type::assign(*__p, *__k1); // These types are off.
 	}

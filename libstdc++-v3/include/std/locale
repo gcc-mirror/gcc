@@ -28,7 +28,7 @@
 // ISO C++ 14882: 22.1  Locales
 //
 
-/** @file locale
+/** @file include/locale
  *  This is a Standard C++ Library header.
  */
 

@@ -24,7 +24,7 @@
 
 /** @file bits/unordered_map.h
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{unordered_map}
  */
 
 #ifndef _UNORDERED_MAP_H

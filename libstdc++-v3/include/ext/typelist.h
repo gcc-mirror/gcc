@@ -33,9 +33,11 @@
 // purpose. It is provided "as is" without express or implied warranty.
 
 /**
- * @file typelist.h
- * Contains typelist_chain definitions.
- * Typelists are an idea by Andrei Alexandrescu.
+ *  @file ext/typelist.h
+ *  This file is a GNU extension to the Standard C++ Library.
+ *
+ *  Contains typelist_chain definitions.
+ *  Typelists are an idea by Andrei Alexandrescu.
  */
 
 #ifndef _TYPELIST_H
@@ -89,7 +91,7 @@ namespace typelist
 
   template<typename Typelist, typename T>
     struct contains;
- 
+
   template<typename Typelist, template<typename T> class Pred>
     struct filter;
 
@@ -120,7 +122,7 @@ namespace typelist
   template<typename T1, typename T2, typename T3, typename T4, typename T5>
     struct create5;
 
-  template<typename T1, typename T2, typename T3, 
+  template<typename T1, typename T2, typename T3,
 	   typename T4, typename T5, typename T6>
     struct create6;
 } // namespace typelist
@@ -130,7 +132,7 @@ _GLIBCXX_END_NAMESPACE
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
-namespace typelist 
+namespace typelist
 {
 namespace detail
 {
@@ -245,7 +247,7 @@ namespace detail
     {
     private:
       typedef typename append_typelist_<Tl>::type 		rest_type;
-      
+
     public:
       typedef typename append<Hd, node<rest_type> >::type::root	type;
     };
@@ -270,7 +272,7 @@ namespace detail
 	  value = contains_<Tl, T>::value
 	};
     };
-  
+
   template<typename Tl, typename T>
     struct contains_<chain<T, Tl>, T>
     {
@@ -297,7 +299,7 @@ namespace detail
 	{
 	  include_hd = Pred<Hd>::value
 	};
-      
+
       typedef typename chain_filter_<Tl, Pred>::type 		rest_type;
       typedef chain<Hd, rest_type> 				chain_type;
 
@@ -313,7 +315,7 @@ namespace detail
     {
       typedef Hd 						type;
     };
-  
+
   template<typename Hd, typename Tl, int i>
     struct chain_at_index_<chain<Hd, Tl>, i>
     {
@@ -328,7 +330,7 @@ namespace detail
     {
       typedef null_type 					type;
     };
-  
+
   template<class Hd, class Tl, template<typename T> class Transform>
     struct chain_transform_<chain<Hd, Tl>, Transform>
     {
@@ -462,7 +464,7 @@ namespace typelist
     private:
       typedef typename Typelist::root 				root_type;
       typedef detail::chain_at_index_<root_type, i> 		index_type;
-      
+
     public:
       typedef typename index_type::type 			type;
     };
@@ -523,14 +525,14 @@ namespace typelist
       typedef node<_GLIBCXX_TYPELIST_CHAIN4(T1,T2,T3,T4)>	type;
     };
 
-  template<typename T1, typename T2, typename T3, 
+  template<typename T1, typename T2, typename T3,
 	   typename T4, typename T5>
     struct create5
     {
       typedef node<_GLIBCXX_TYPELIST_CHAIN5(T1,T2,T3,T4,T5)>	type;
     };
 
-  template<typename T1, typename T2, typename T3, 
+  template<typename T1, typename T2, typename T3,
 	   typename T4, typename T5, typename T6>
     struct create6
     {
@@ -541,4 +543,3 @@ _GLIBCXX_END_NAMESPACE
 
 
 #endif
-

@@ -37,7 +37,6 @@
 
 /** @file ext/debug_allocator.h
  *  This file is a GNU extension to the Standard C++ Library.
- *  You should only include this header if you are using GCC 3 or later.
  */
 
 #ifndef _DEBUG_ALLOCATOR_H

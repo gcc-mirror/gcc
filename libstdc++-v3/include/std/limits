@@ -23,7 +23,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file limits
+/** @file include/limits
  *  This is a Standard C++ Library header.
  */
 
@@ -154,11 +154,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   */
   enum float_round_style
   {
-    round_indeterminate       = -1,    ///< Self-explanatory.
-    round_toward_zero         = 0,     ///< Self-explanatory.
-    round_to_nearest          = 1,     ///< To the nearest representable value.
-    round_toward_infinity     = 2,     ///< Self-explanatory.
-    round_toward_neg_infinity = 3      ///< Self-explanatory.
+    round_indeterminate       = -1,    /// Intermediate.
+    round_toward_zero         = 0,     /// To zero.
+    round_to_nearest          = 1,     /// To the nearest representable value.
+    round_toward_infinity     = 2,     /// To infinity.
+    round_toward_neg_infinity = 3      /// To negative infinity.
   };
 
   /**
