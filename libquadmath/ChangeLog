@@ -1,3 +1,9 @@
+2010-12-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46520
+	* configure.ac: Do not call AC_CHECK_LIB for gcc_no_link.
+	* configure: Regenerate
+
 2010-12-13  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46625

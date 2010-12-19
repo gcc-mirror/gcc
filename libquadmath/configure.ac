@@ -109,8 +109,19 @@ esac
 AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
 
-AC_CHECK_LIB([m],[sqrtl],[AC_DEFINE([HAVE_SQRTL],[1],[libm includes sqrtl])])
-AC_CHECK_LIB([m],[cbrtl],[AC_DEFINE([HAVE_CBRTL],[1],[libm includes cbrtl])])
+# If available, sqrtl and cbrtl speed up the calculation -
+# but they are not required
+if test x$gcc_no_link != xyes; then
+  AC_CHECK_LIB([m],[sqrtl],[AC_DEFINE([HAVE_SQRTL],[1],[libm includes sqrtl])])
+  AC_CHECK_LIB([m],[cbrtl],[AC_DEFINE([HAVE_CBRTL],[1],[libm includes cbrtl])])
+else
+  if test "x$ac_cv_lib_m_sqrtl" = x""yes; then
+    AC_DEFINE([HAVE_SQRTL],[1],[libm includes sqrtl])  
+  fi
+  if test "x$ac_cv_lib_m_cbrtl" = x""yes; then
+    AC_DEFINE([HAVE_CBRTL],[1],[libm includes cbrtl])  
+  fi
+fi
 
 # Check for symbol versioning (copied from libssp).
 AC_MSG_CHECKING([whether symbol versioning is supported])
