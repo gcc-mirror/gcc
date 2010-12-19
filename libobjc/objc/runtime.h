@@ -962,6 +962,15 @@ objc_EXPORT void *objc_calloc(size_t nelem, size_t size);
 objc_EXPORT void objc_free(void *mem);
 
 
+/** Implementation: the following functions are in gc.c.  */
+
+/* Mark the instance variable as inaccessible to the garbage
+   collector.  */
+objc_EXPORT void class_ivar_set_gcinvisible (Class _class,
+					     const char* ivarname,
+					     BOOL gcInvisible);
+
+
 /** Implementation: the following functions are in encoding.c.  */
 
 /* Traditional GNU Objective-C Runtime functions that are currently

@@ -44,10 +44,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <assert.h> /* For assert */
 #include <string.h> /* For strlen */
 
-/* Temporarily while we include objc/objc-api.h instead of objc-private/module-abi-8.h.  */
-#define _CLS_IN_CONSTRUCTION 0x10L
-#define CLS_IS_IN_CONSTRUCTION(cls) __CLS_ISINFO(cls, _CLS_IN_CONSTRUCTION)
-
 /* This is how we hack STRUCT_VALUE to be 1 or 0.   */
 #define gen_rtx(args...) 1
 #define gen_rtx_MEM(args...) 1
@@ -331,7 +327,8 @@ class_getMethodImplementation (Class class_, SEL selector)
   return get_imp (class_, selector);
 }
 
-/* Given a method, return its implementation.  */
+/* Given a method, return its implementation.  This has been replaced
+   by method_getImplementation() in the modern API.  */
 IMP
 method_get_imp (struct objc_method * method)
 {
