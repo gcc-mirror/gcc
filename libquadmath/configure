@@ -11748,7 +11748,10 @@ esac
 
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for sqrtl in -lm" >&5
+# If available, sqrtl and cbrtl speed up the calculation -
+# but they are not required
+if test x$gcc_no_link != xyes; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sqrtl in -lm" >&5
 $as_echo_n "checking for sqrtl in -lm... " >&6; }
 if test "${ac_cv_lib_m_sqrtl+set}" = set; then :
   $as_echo_n "(cached) " >&6
@@ -11793,7 +11796,7 @@ $as_echo "#define HAVE_SQRTL 1" >>confdefs.h
 
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for cbrtl in -lm" >&5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for cbrtl in -lm" >&5
 $as_echo_n "checking for cbrtl in -lm... " >&6; }
 if test "${ac_cv_lib_m_cbrtl+set}" = set; then :
   $as_echo_n "(cached) " >&6
@@ -11838,6 +11841,18 @@ $as_echo "#define HAVE_CBRTL 1" >>confdefs.h
 
 fi
 
+else
+  if test "x$ac_cv_lib_m_sqrtl" = x""yes; then
+
+$as_echo "#define HAVE_SQRTL 1" >>confdefs.h
+
+  fi
+  if test "x$ac_cv_lib_m_cbrtl" = x""yes; then
+
+$as_echo "#define HAVE_CBRTL 1" >>confdefs.h
+
+  fi
+fi
 
 # Check for symbol versioning (copied from libssp).
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether symbol versioning is supported" >&5
