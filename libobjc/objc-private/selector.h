@@ -45,6 +45,10 @@ BOOL sel_is_mapped (SEL aSel);
 SEL
 sel_get_any_uid (const char *name);
 
+SEL
+__sel_register_typed_name (const char *name, const char *types, 
+			   struct objc_selector *orig, BOOL is_const);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
