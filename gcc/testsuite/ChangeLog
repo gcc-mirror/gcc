@@ -1,5 +1,11 @@
 2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc.dg/gnu-api-2-objc.m: Fixed test to test objc_lookUpClass,
+	not objc_lookupClass.
+	* obj-c++.dg/gnu-api-2-objc.mm: Same change.
+	
+2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc.dg/gnu-api-2-objc_msg_lookup.m: New.
 	* obj-c++.dg/gnu-api-2-objc_msg_lookup.mm: New.	
 

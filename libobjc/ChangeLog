@@ -1,5 +1,15 @@
 2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* class.c (objc_lookupClass): Renamed to objc_lookUpClass.
+	* protocols.c: Updated all calls to objc_lookupClass to call
+	objc_lookUpClass instead.
+	* sendmsg.c (objc_lookupClass): Do not declare.
+	(get_imp): Update call to objc_lookupClass to call
+	objc_lookUpClass instead.
+	* objc/runtime.h (objc_lookupClass): Renamed to objc_lookUpClass.
+
+2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc/runtime.h (class_ivar_set_gcinvisible): Declare.
 	* sendmsg.c (_CLS_IN_CONSTRUCTION, CLS_IS_IN_CONSTRUCTION): Do not
 	define.  Updated comments.

@@ -427,7 +427,7 @@ objc_EXPORT Class objc_getClass (const char *name);
    the runtime.  Return Nil if not.  This function does not call the
    objc_get_unknown_class_handler function if the class is not
    found.  */
-objc_EXPORT Class objc_lookupClass (const char *name);
+objc_EXPORT Class objc_lookUpClass (const char *name);
 
 /* Return the meta class associated to the class with name 'name', if
    it is already registered with the runtime.  First, it finds the

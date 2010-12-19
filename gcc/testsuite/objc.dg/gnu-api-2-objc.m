@@ -204,9 +204,9 @@ int main(int argc, void **args)
       abort ();
   }
 
-  printf ("Testing objc_lookupClass ()...\n");
+  printf ("Testing objc_lookUpClass ()...\n");
   {
-    if (strcmp (class_getName (objc_lookupClass ("MyRootClass")),
+    if (strcmp (class_getName (objc_lookUpClass ("MyRootClass")),
 		"MyRootClass") != 0)
       abort ();
   }
