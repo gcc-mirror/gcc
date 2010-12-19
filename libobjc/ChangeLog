@@ -1,5 +1,10 @@
 2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc/Object.h: Include deprecated/typedstream.h and
+	deprecated/hash.h instead of typedstream.h.  Updated comments.
+
+2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* Makefile.in (OBJC_DEPRECATED_H): Added objc_msg_sendv.h.
 	* objc/deprecated/objc_msg_sendv.h: New.
 	* objc/message.h: Do not define retval_t, apply_t, arglist,

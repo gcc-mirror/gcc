@@ -27,7 +27,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define __object_INCLUDE_GNU
 
 #include "objc.h"
-#include "typedstream.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,6 +55,10 @@ extern "C" {
 - (BOOL)isEqual: (id)anObject;
 @end
 
+/* All of the following includes were deprecated in GCC 4.6 and will
+   be removed in the next release.  */
+#include "deprecated/hash.h"
+#include "deprecated/typedstream.h"
 #include "deprecated/Object.h"
 
 #ifdef __cplusplus
