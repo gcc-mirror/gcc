@@ -964,10 +964,15 @@ extern int sparc_mode_class[];
    not be a register used by the prologue.  */
 #define STATIC_CHAIN_REGNUM (TARGET_ARCH64 ? 5 : 2)
 
+/* Register which holds the global offset table, if any.  */
+
+#define GLOBAL_OFFSET_TABLE_REGNUM 23
+
 /* Register which holds offset table for position-independent
    data references.  */
 
-#define PIC_OFFSET_TABLE_REGNUM (flag_pic ? 23 : INVALID_REGNUM)
+#define PIC_OFFSET_TABLE_REGNUM \
+  (flag_pic ? GLOBAL_OFFSET_TABLE_REGNUM : INVALID_REGNUM)
 
 /* Pick a default value we can notice from override_options:
    !v9: Default is on.
