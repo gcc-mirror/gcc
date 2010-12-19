@@ -135,6 +135,7 @@ OBJC_DEPRECATED_H = \
   METHOD_NULL.h \
   MetaClass.h \
   Object.h \
+  Protocol.h \
   STR.h \
   hash.h \
   objc-list.h \
