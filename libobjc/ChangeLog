@@ -1,5 +1,13 @@
 2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-private/runtime.h (__objc_selector_max_index,
+	__objc_init_selector_tables, __objc_register_selectors_from_class,
+	__objc_register_selectors_from_list,
+	__objc_register_selectors_from_description_list): Moved to ...
+	* objc-private/selector.h: ... here.
+
+2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-private/runtime.h (__objc_class_links_resolved): Removed.
 	(__objc_print_dtable_stats): Removed.
 	(__sel_register_typed_name): Removed.

@@ -53,15 +53,10 @@ extern "C" {
 #endif /* __cplusplus */
 
 extern void __objc_add_class_to_hash(Class);   /* (objc-class.c) */
-extern void __objc_init_selector_tables(void); /* (objc-sel.c) */
 extern void __objc_init_class_tables(void);    /* (objc-class.c) */
 extern void __objc_init_dispatch_tables(void); /* (objc-dispatch.c) */
 extern void __objc_install_premature_dtable(Class); /* (objc-dispatch.c) */
 extern void __objc_resolve_class_links(void);  /* (objc-class.c) */
-extern void __objc_register_selectors_from_class(Class); /* (objc-sel.c) */
-extern void __objc_register_selectors_from_list (struct objc_method_list *); /* (selector.c) */
-extern void __objc_register_selectors_from_description_list
-(struct objc_method_description_list *method_list); /* (selector.c) */
 extern void __objc_update_dispatch_table_for_class (Class);/* (objc-msg.c) */
 
 extern int  __objc_init_thread_system(void);    /* thread.c */
@@ -75,9 +70,6 @@ extern struct objc_method * search_for_method_in_list(struct objc_method_list * 
 
 extern void
 __objc_update_classes_with_methods (struct objc_method *method_a, struct objc_method *method_b); /* class.c */
-
-/* Number of selectors stored in each of the selector  tables */
-extern unsigned int __objc_selector_max_index;
 
 /* Mutex locking __objc_selector_max_index and its arrays. */
 extern objc_mutex_t __objc_runtime_mutex;
