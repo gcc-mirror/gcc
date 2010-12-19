@@ -1,3 +1,9 @@
+2010-12-19  Andi Kleen	<ak@linux.intel.com>
+
+	PR lto/46905
+	* collect2.c (main): Handle -fno-lto.
+	* opts.c (common_handle_option): Handle -fno-lto.
+
 2010-12-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/46729

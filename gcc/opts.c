@@ -1670,7 +1670,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_flto:
-      opts->x_flag_lto = "";
+      opts->x_flag_lto = value ? "" : NULL;
       break;
 
     case OPT_w:
