@@ -790,10 +790,6 @@ class_addMethod (Class class_, SEL selector, IMP implementation,
   return YES;
 }
 
-/* Temporarily, until we include objc/runtime.h.  */
-extern IMP
-method_setImplementation (struct objc_method * method, IMP implementation);
-
 IMP
 class_replaceMethod (Class class_, SEL selector, IMP implementation,
 		     const char *method_types)

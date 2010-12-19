@@ -1,5 +1,9 @@
 2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* sendmsg.c (method_setImplementation): Do not declare.
+
+2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc/message.h: Updated comments.
 	* objc/runtime.h: Updated comments.
 	
