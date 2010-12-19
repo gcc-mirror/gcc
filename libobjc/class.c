@@ -501,7 +501,7 @@ objc_getClass (const char *name)
 }
 
 Class
-objc_lookupClass (const char *name)
+objc_lookUpClass (const char *name)
 {
   if (name == NULL)
     return Nil;

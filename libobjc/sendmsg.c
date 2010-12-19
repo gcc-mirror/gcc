@@ -228,9 +228,6 @@ __objc_resolve_instance_method (Class class, SEL sel)
   return NULL;
 }
 
-/* Temporary definition until we include objc/runtime.h.  */
-objc_EXPORT Class objc_lookupClass (const char *name);
-
 /* Given a class and selector, return the selector's
    implementation.  */
 inline
@@ -292,7 +289,7 @@ get_imp (Class class, SEL sel)
 		     need to obtain the class from the meta class,
 		     which we do using the fact that both the class
 		     and the meta-class have the same name.  */
-		  Class realClass = objc_lookupClass (class->name);
+		  Class realClass = objc_lookUpClass (class->name);
 		  if (realClass)
 		    res = __objc_resolve_class_method (realClass, sel);
 		}

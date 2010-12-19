@@ -204,9 +204,9 @@ int main ()
       abort ();
   }
 
-  std::cout << "Testing objc_lookupClass ()...\n";
+  std::cout << "Testing objc_lookUpClass ()...\n";
   {
-    if (std::strcmp (class_getName (objc_lookupClass ("MyRootClass")),
+    if (std::strcmp (class_getName (objc_lookUpClass ("MyRootClass")),
 			"MyRootClass") != 0)
       abort ();
   }
