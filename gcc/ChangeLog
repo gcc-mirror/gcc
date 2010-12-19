@@ -1,3 +1,29 @@
+2010-12-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/46729
+	* config/sparc/sparc.h (GLOBAL_OFFSET_TABLE_REGNUM): New macro.
+	(PIC_OFFSET_TABLE_REGNUM): Rewrite in terms of above macro.
+	* config/sparc/sparc.c (pic_helper_needed): Delete.
+	(global_offset_table): Likewise.
+	(pic_helper_symbol): Rename to...
+	(got_helper_rtx): ...this.
+	(global_offset_table_rtx): New global variable.
+	(sparc_got_symbol): Likewise.
+	(sparc_got): New static function.
+	(check_pic): Use local variable and call sparc_got.
+	(sparc_tls_symbol): Initialize to NULL_RTX.
+	(sparc_tls_got): In non-PIC mode, reload the GOT register for Sun TLS
+	and 32-bit ABI and copy the GOT symbol to a new register otherwise.
+	(get_pc_thunk_name): Rename local variable.
+	(gen_load_pcrel_sym): New wrapper around load_pcrel_sym{si,di}.
+	(load_pic_register): Rename to...
+	(load_got_register): ...this.  Adjust and call gen_load_pcrel_sym.
+	(sparc_expand_prologue): Do not test flag_pic.
+	(sparc_output_mi_thunk): Use pic_offset_table_rtx directly.
+	(sparc_file_end): Test got_helper_rtx instead of pic_helper_needed.
+	Rename local variable and do not call get_pc_thunk_name again.
+	* config/sparc/sparc.md (load_pcrel_sym): Add operand #3.
+
 2010-12-19  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR middle-end/46674

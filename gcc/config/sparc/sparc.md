@@ -1113,14 +1113,15 @@
 
 ;; Load in operand 0 the (absolute) address of operand 1, which is a symbolic
 ;; value subject to a PC-relative relocation.  Operand 2 is a helper function
-;; that adds the PC value at the call point to operand 0.
+;; that adds the PC value at the call point to register #(operand 3).
 
 (define_insn "load_pcrel_sym<P:mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
 	(unspec:P [(match_operand:P 1 "symbolic_operand" "")
-		   (match_operand:P 2 "call_address_operand" "")] UNSPEC_LOAD_PCREL_SYM))
+		   (match_operand:P 2 "call_address_operand" "")
+		   (match_operand:P 3 "const_int_operand" "")] UNSPEC_LOAD_PCREL_SYM))
    (clobber (reg:P 15))]
-  ""
+  "REGNO (operands[0]) == INTVAL (operands[3])"
 {
   if (flag_delayed_branch)
     return "sethi\t%%hi(%a1-4), %0\n\tcall\t%a2\n\t add\t%0, %%lo(%a1+4), %0";
