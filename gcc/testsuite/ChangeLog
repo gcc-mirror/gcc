@@ -1,3 +1,8 @@
+2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/gnu-api-2-resolve-method.m: Include objc/message.h.
+	* obj-c++.dg/gnu-api-2-resolve-method.m: Include objc/message.h.
+
 2010-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/46969

@@ -1,5 +1,17 @@
 2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* Makefile.in (OBJC_DEPRECATED_H): Added objc_msg_sendv.h.
+	* objc/deprecated/objc_msg_sendv.h: New.
+	* objc/message.h: Do not define retval_t, apply_t, arglist,
+	arglist_t, objc_msg_sendv, now in
+	objc/deprecated/objc_msg_sendv.h.
+	* objc/objc.h: Do not include message.h; include
+	objc/deprecated/objc_msg_sendv.h instead.  Tidied up comments.
+	* sendmsg.c: Include objc/message.h.
+	* thr.c: Include objc/message.h.
+	
+2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc/objc-exception.h: Include objc-decls.h.  Mark all
 	functions with objc_EXPORT.
 	* objc/objc-sync.h: Same change.

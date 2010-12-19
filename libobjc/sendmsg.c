@@ -34,6 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "coretypes.h"
 #include "tm.h"
 #include "objc/runtime.h"
+#include "objc/message.h"          /* For objc_msg_lookup(), objc_msg_lookup_super().  */
 #include "objc/thr.h"
 #include "objc-private/module-abi-8.h"
 #include "objc-private/runtime.h"

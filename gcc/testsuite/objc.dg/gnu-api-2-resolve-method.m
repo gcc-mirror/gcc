@@ -9,6 +9,10 @@
 /* To get the modern GNU Objective-C Runtime API, you include
    objc/runtime.h.  */
 #include <objc/runtime.h>
+
+/* For __objc_msg_forward2.  */
+#include <objc/message.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
