@@ -1,3 +1,8 @@
+2010-12-19  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gcc.target/arm/vfp-1.c (test_ldst): New test for VFP
+	load/store immediate indexes.
+
 2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/gnu-api-2-resolve-method.m: Include objc/message.h.

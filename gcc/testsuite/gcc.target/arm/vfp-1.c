@@ -125,3 +125,15 @@ void test_convert () {
   d1 = u1;
 }
 
+void test_ldst (float f[], double d[]) {
+  /* { dg-final { scan-assembler "flds.+ \\\[r0, #1020\\\]" } } */
+  /* { dg-final { scan-assembler "flds.+ \\\[r0, #-1020\\\]" } } */
+  /* { dg-final { scan-assembler "add.+ r0, #1024" } } */
+  /* { dg-final { scan-assembler "fsts.+ \\\[r0, #0\\\]$" } } */
+  f[256] = f[255] + f[-255];
+
+  /* { dg-final { scan-assembler "fldd.+ \\\[r1, #1016\\\]" } } */
+  /* { dg-final { scan-assembler "fldd.+ \\\[r1, #-1016\\\]" } } */
+  /* { dg-final { scan-assembler "fstd.+ \\\[r1, #256\\\]" } } */
+  d[32] = d[127] + d[-127];
+}

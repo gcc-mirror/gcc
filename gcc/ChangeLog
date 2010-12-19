@@ -1,3 +1,9 @@
+2010-12-19  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/arm/arm.c (arm_legitimate_index_p): Add VFP load/store
+	index range case. Change to SF/DFmode tests to avoid capturing HFmode.
+	(thumb2_legitimate_index_p): Same.
+
 2010-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/46969
