@@ -1,5 +1,12 @@
 2010-12-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/basic_string.h (operator+(basic_string<>&&,
+	basic_string<>&&)): Optimize better.
+	* include/ext/vstring.h (operator+(__versa_string<>&&,
+	__versa_string<>&)): Likewise.
+
+2010-12-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* testsuite/21_strings/basic_string/operators/char/4.cc: New.
 	* testsuite/21_strings/basic_string/operators/wchar_t/4.cc: Likewise.
 	* testsuite/ext/vstring/operators/2.cc: Likewise.
