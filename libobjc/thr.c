@@ -38,6 +38,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "tm.h"
 #include "defaults.h"
 #include "objc/thr.h"
+#include "objc/message.h" /* For objc_msg_lookup().  */
 #include "objc/runtime.h"
 #include "objc-private/runtime.h"
 #include <gthr.h>
