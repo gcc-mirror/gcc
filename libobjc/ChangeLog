@@ -1,5 +1,11 @@
 2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc/objc-exception.h: Include objc-decls.h.  Mark all
+	functions with objc_EXPORT.
+	* objc/objc-sync.h: Same change.
+
+2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* Protocol.m: Moved all methods, with the exception of -isEqual:,
 	into the 'Deprecated' category.
 	* objc/Protocol.h: Removed all methods, moved to
