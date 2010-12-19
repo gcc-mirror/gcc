@@ -391,7 +391,7 @@ static rtx sparc_builtin_saveregs (void);
 static int epilogue_renumber (rtx *, int);
 static bool sparc_assemble_integer (rtx, unsigned int, int);
 static int set_extends (rtx);
-static void load_pic_register (void);
+static void load_got_register (void);
 static int save_or_restore_regs (int, int, rtx, int, int);
 static void emit_save_or_restore_regs (int);
 static void sparc_asm_function_prologue (FILE *, HOST_WIDE_INT);
@@ -3020,26 +3020,39 @@ sparc_cannot_force_const_mem (rtx x)
     }
 }
 
-/* PIC support.  */
-static GTY(()) bool pic_helper_needed = false;
-static GTY(()) rtx pic_helper_symbol;
-static GTY(()) rtx global_offset_table;
+/* Global Offset Table support.  */
+static GTY(()) rtx got_helper_rtx = NULL_RTX;
+static GTY(()) rtx global_offset_table_rtx = NULL_RTX;
+
+/* Return the SYMBOL_REF for the Global Offset Table.  */
+
+static GTY(()) rtx sparc_got_symbol = NULL_RTX;
+
+static rtx
+sparc_got (void)
+{
+  if (!sparc_got_symbol)
+    sparc_got_symbol = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
+
+  return sparc_got_symbol;
+}
 
 /* Ensure that we are not using patterns that are not OK with PIC.  */
 
 int
 check_pic (int i)
 {
+  rtx op;
+
   switch (flag_pic)
     {
     case 1:
-      gcc_assert (GET_CODE (recog_data.operand[i]) != SYMBOL_REF
-	  	  && (GET_CODE (recog_data.operand[i]) != CONST
-	          || (GET_CODE (XEXP (recog_data.operand[i], 0)) == MINUS
-		      && (XEXP (XEXP (recog_data.operand[i], 0), 0)
-			  == global_offset_table)
-		      && (GET_CODE (XEXP (XEXP (recog_data.operand[i], 0), 1))
-			  == CONST))));
+      op = recog_data.operand[i];
+      gcc_assert (GET_CODE (op) != SYMBOL_REF
+	  	  && (GET_CODE (op) != CONST
+		      || (GET_CODE (XEXP (op, 0)) == MINUS
+			  && XEXP (XEXP (op, 0), 0) == sparc_got ()
+			  && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST)));
     case 2:
     default:
       return 1;
@@ -3274,9 +3287,9 @@ sparc_legitimate_address_p (enum machine_mode mode, rtx addr, bool strict)
   return 1;
 }
 
-/* Construct the SYMBOL_REF for the tls_get_offset function.  */
+/* Return the SYMBOL_REF for the tls_get_addr function.  */
 
-static GTY(()) rtx sparc_tls_symbol;
+static GTY(()) rtx sparc_tls_symbol = NULL_RTX;
 
 static rtx
 sparc_tls_get_addr (void)
@@ -3287,21 +3300,28 @@ sparc_tls_get_addr (void)
   return sparc_tls_symbol;
 }
 
+/* Return the Global Offset Table to be used in TLS mode.  */
+
 static rtx
 sparc_tls_got (void)
 {
-  rtx temp;
+  /* In PIC mode, this is just the PIC offset table.  */
   if (flag_pic)
     {
       crtl->uses_pic_offset_table = 1;
       return pic_offset_table_rtx;
     }
 
-  if (!global_offset_table)
-    global_offset_table = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
-  temp = gen_reg_rtx (Pmode);
-  emit_move_insn (temp, global_offset_table);
-  return temp;
+  /* In non-PIC mode, Sun as (unlike GNU as) emits PC-relative relocations for
+     the GOT symbol with the 32-bit ABI, so we reload the GOT register.  */
+  if (TARGET_SUN_TLS && TARGET_ARCH32)
+    {
+      load_got_register ();
+      return global_offset_table_rtx;
+    }
+
+  /* In all other cases, we load a new pseudo with the GOT symbol.  */
+  return copy_to_reg (sparc_got ());
 }
 
 /* Return true if X contains a thread-local symbol.  */
@@ -3741,59 +3761,69 @@ sparc_mode_dependent_address_p (const_rtx addr)
 static void
 get_pc_thunk_name (char name[32], unsigned int regno)
 {
-  const char *pic_name = reg_names[regno];
+  const char *reg_name = reg_names[regno];
 
   /* Skip the leading '%' as that cannot be used in a
      symbol name.  */
-  pic_name += 1;
+  reg_name += 1;
 
   if (USE_HIDDEN_LINKONCE)
-    sprintf (name, "__sparc_get_pc_thunk.%s", pic_name);
+    sprintf (name, "__sparc_get_pc_thunk.%s", reg_name);
   else
     ASM_GENERATE_INTERNAL_LABEL (name, "LADDPC", regno);
 }
 
-/* Emit code to load the PIC register.  */
+/* Wrapper around the load_pcrel_sym{si,di} patterns.  */
 
-static void
-load_pic_register (void)
+static rtx
+gen_load_pcrel_sym (rtx op0, rtx op1, rtx op2, rtx op3)
 {
   int orig_flag_pic = flag_pic;
+  rtx insn;
 
-  if (TARGET_VXWORKS_RTP)
-    {
-      emit_insn (gen_vxworks_load_got ());
-      emit_use (pic_offset_table_rtx);
-      return;
-    }
-
-  /* If we haven't initialized the special PIC symbols, do so now.  */
-  if (!pic_helper_needed)
-    {
-      char name[32];
-
-      pic_helper_needed = true;
-
-      get_pc_thunk_name (name, REGNO (pic_offset_table_rtx));
-      pic_helper_symbol = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (name));
-
-      global_offset_table = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
-    }
-
+  /* The load_pcrel_sym{si,di} patterns require absolute addressing.  */
   flag_pic = 0;
   if (TARGET_ARCH64)
-    emit_insn (gen_load_pcrel_symdi (pic_offset_table_rtx, global_offset_table,
-				     pic_helper_symbol));
+    insn = gen_load_pcrel_symdi (op0, op1, op2, op3);
   else
-    emit_insn (gen_load_pcrel_symsi (pic_offset_table_rtx, global_offset_table,
-				     pic_helper_symbol));
+    insn = gen_load_pcrel_symsi (op0, op1, op2, op3);
   flag_pic = orig_flag_pic;
+
+  return insn;
+}
+
+/* Emit code to load the GOT register.  */
+
+static void
+load_got_register (void)
+{
+  /* In PIC mode, this will retrieve pic_offset_table_rtx.  */
+  if (!global_offset_table_rtx)
+    global_offset_table_rtx = gen_rtx_REG (Pmode, GLOBAL_OFFSET_TABLE_REGNUM);
+
+  if (TARGET_VXWORKS_RTP)
+    emit_insn (gen_vxworks_load_got ());
+  else
+    {
+      /* The GOT symbol is subject to a PC-relative relocation so we need a
+	 helper function to add the PC value and thus get the final value.  */
+      if (!got_helper_rtx)
+	{
+	  char name[32];
+	  get_pc_thunk_name (name, GLOBAL_OFFSET_TABLE_REGNUM);
+	  got_helper_rtx = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (name));
+	}
+
+      emit_insn (gen_load_pcrel_sym (global_offset_table_rtx, sparc_got (),
+				     got_helper_rtx,
+				     GEN_INT (GLOBAL_OFFSET_TABLE_REGNUM)));
+    }
 
   /* Need to emit this whether or not we obey regdecls,
      since setjmp/longjmp can cause life info to screw up.
      ??? In the case where we don't obey regdecls, this is not sufficient
      since we may not fall out the bottom.  */
-  emit_use (pic_offset_table_rtx);
+  emit_use (global_offset_table_rtx);
 }
 
 /* Emit a call instruction with the pattern given by PAT.  ADDR is the
@@ -4479,7 +4509,7 @@ gen_stack_pointer_dec (rtx decrement)
 
 /* Expand the function prologue.  The prologue is responsible for reserving
    storage for the frame, saving the call-saved registers and loading the
-   PIC register if needed.  */
+   GOT register if needed.  */
 
 void
 sparc_expand_prologue (void)
@@ -4587,9 +4617,9 @@ sparc_expand_prologue (void)
   if (num_gfregs)
     emit_save_or_restore_regs (SORR_SAVE);
 
-  /* Load the PIC register if needed.  */
-  if (flag_pic && crtl->uses_pic_offset_table)
-    load_pic_register ();
+  /* Load the GOT register if needed.  */
+  if (crtl->uses_pic_offset_table)
+    load_got_register ();
 }
 
 /* This function generates the assembly code for function entry, which boils
@@ -9157,7 +9187,7 @@ sparc_rtx_costs (rtx x, int code, int outer_code, int *total,
 /* Emit the sequence of insns SEQ while preserving the registers REG and REG2.
    This is achieved by means of a manual dynamic stack space allocation in
    the current frame.  We make the assumption that SEQ doesn't contain any
-   function calls, with the possible exception of calls to the PIC helper.  */
+   function calls, with the possible exception of calls to the GOT helper.  */
 
 static void
 emit_and_preserve (rtx seq, rtx reg, rtx reg2)
@@ -9320,20 +9350,19 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
     {
       /* The hoops we have to jump through in order to generate a sibcall
 	 without using delay slots...  */
-      rtx spill_reg, spill_reg2, seq, scratch = gen_rtx_REG (Pmode, 1);
+      rtx spill_reg, seq, scratch = gen_rtx_REG (Pmode, 1);
 
       if (flag_pic)
         {
 	  spill_reg = gen_rtx_REG (word_mode, 15);  /* %o7 */
-	  spill_reg2 = gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM);
 	  start_sequence ();
-	  /* Delay emitting the PIC helper function because it needs to
+	  /* Delay emitting the GOT helper function because it needs to
 	     change the section and we are emitting assembly code.  */
-	  load_pic_register ();  /* clobbers %o7 */
+	  load_got_register ();  /* clobbers %o7 */
 	  scratch = sparc_legitimize_pic_address (funexp, scratch);
 	  seq = get_insns ();
 	  end_sequence ();
-	  emit_and_preserve (seq, spill_reg, spill_reg2);
+	  emit_and_preserve (seq, spill_reg, pic_offset_table_rtx);
 	}
       else if (TARGET_ARCH32)
 	{
@@ -9484,17 +9513,15 @@ sparc_output_dwarf_dtprel (FILE *file, int size, rtx x)
 static void
 sparc_file_end (void)
 {
-  /* If need to emit the special PIC helper function, do so now.  */
-  if (pic_helper_needed)
+  /* If we need to emit the special GOT helper function, do so now.  */
+  if (got_helper_rtx)
     {
-      unsigned int regno = REGNO (pic_offset_table_rtx);
-      const char *pic_name = reg_names[regno];
-      char name[32];
+      const char *name = XSTR (got_helper_rtx, 0);
+      const char *reg_name = reg_names[GLOBAL_OFFSET_TABLE_REGNUM];
 #ifdef DWARF2_UNWIND_INFO
       bool do_cfi;
 #endif
 
-      get_pc_thunk_name (name, regno);
       if (USE_HIDDEN_LINKONCE)
 	{
 	  tree decl = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
@@ -9529,10 +9556,10 @@ sparc_file_end (void)
 #endif
       if (flag_delayed_branch)
 	fprintf (asm_out_file, "\tjmp\t%%o7+8\n\t add\t%%o7, %s, %s\n",
-		 pic_name, pic_name);
+		 reg_name, reg_name);
       else
 	fprintf (asm_out_file, "\tadd\t%%o7, %s, %s\n\tjmp\t%%o7+8\n\t nop\n",
-		 pic_name, pic_name);
+		 reg_name, reg_name);
 #ifdef DWARF2_UNWIND_INFO
       if (do_cfi)
 	fprintf (asm_out_file, "\t.cfi_endproc\n");
