@@ -203,25 +203,26 @@
 2010-12-17  Dodji Seketeli  <dodji@redhat.com>
 
 	* dwarf2out.c (gen_type_die_with_usage): Do not try to emit debug
-    	info for a redundant typedef that has DECL_ORIGINAL_TYPE set. Use
-    	that underlying type instead.
+	info for a redundant typedef that has DECL_ORIGINAL_TYPE set. Use
+	that underlying type instead.
 
 2010-12-16  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/44563 
-	* ipa-inline.c: Update doplevel comment. 
-	(cgraph_estimate_size_after_inlining): Remove times attribute. 
-	(cgraph_mark_inline_edge): Update. 
-	(cgraph_mark_inline): Remove. 
-	(cgraph_estimate_growth): Update. 
-	(cgraph_check_inline_limits): Remove one only argument. 
-	(cgraph_edge_badness): Update. 
-	(cgraph_decide_recursive_inlining): Update. 
-	(cgraph_decide_inlining_of_small_function): Fix handling of tree_can_inline_p 
-	and call_stmt_cannot_inline_p. 
-	(cgraph_flatten): Likewise. 
-	(cgraph_decide_inlining): Update. 
-	(cgraph_decide_inlining_incrementally): Fix handling of call_stmt_cannot_inline_p. 
+	* ipa-inline.c: Update doplevel comment.
+	(cgraph_estimate_size_after_inlining): Remove times attribute.
+	(cgraph_mark_inline_edge): Update.
+	(cgraph_mark_inline): Remove.
+	(cgraph_estimate_growth): Update.
+	(cgraph_check_inline_limits): Remove one only argument.
+	(cgraph_edge_badness): Update.
+	(cgraph_decide_recursive_inlining): Update.
+	(cgraph_decide_inlining_of_small_function): Fix handling of
+	tree_can_inline_p  and call_stmt_cannot_inline_p.
+	(cgraph_flatten): Likewise.
+	(cgraph_decide_inlining): Update.
+	(cgraph_decide_inlining_incrementally): Fix handling of
+	call_stmt_cannot_inline_p.
 
 2010-12-16  Joseph Myers  <joseph@codesourcery.com>
 
@@ -481,8 +482,8 @@
 
 2010-12-14  Jan Hubicka  <jh@suse.cz>
 
-	* tree.c (get_file_function_name): Avoid using random seed on GLOBAL_sub_I
-	and GLOBAL_sub_D.
+	* tree.c (get_file_function_name): Avoid using random seed on
+	GLOBAL_sub_I and GLOBAL_sub_D.
 
 2010-12-15  Martin Jambor  <mjambor@suse.cz>
 
@@ -544,7 +545,7 @@
 2010-12-14  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/46928
-	* tree-data-ref.c (analyze_overlapping_iterations): Handle "A[p] == A[p]"
+	* tree-data-ref.c (analyze_overlapping_iterations): Handle A[p] == A[p]
 	in data dependence analysis with p a parameter of the loop.
 
 2010-12-14  Sebastian Pop  <sebastian.pop@amd.com>
@@ -610,7 +611,8 @@
 2010-12-14  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/46667
-	* varasm.c (assemble_start_function): Do not call resolve_unique_section.
+	* varasm.c (assemble_start_function): Do not call
+	resolve_unique_section.
 	* cfgexpand.c (gimple_expand_cfg): Resolve it here.
 
 2010-12-14  Alexander Monakov  <amonakov@ispras.ru>
@@ -632,7 +634,8 @@
 2010-12-13  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/45388
-	* ipa.c (cgraph_build_static_cdtor_1): Break out from ... ; add FINAL parameter.
+	* ipa.c (cgraph_build_static_cdtor_1): Break out from ...  Add FINAL
+	parameter.
 	(cgraph_build_static_cdtor): ... here.
 	(build_cdtor): Use cgraph_build_static_cdtor_1.
 
