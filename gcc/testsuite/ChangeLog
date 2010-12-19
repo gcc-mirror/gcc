@@ -1,3 +1,8 @@
+2010-12-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR testsuite/45342
+	* gcc.dg/tls/thr-cse-1.c: Fix match on hppa*-*-hpux*.
+
 2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/gnu-api-2-objc.m: Fixed test to test objc_lookUpClass,
