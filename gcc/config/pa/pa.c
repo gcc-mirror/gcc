@@ -6097,35 +6097,92 @@ pa_scalar_mode_supported_p (enum machine_mode mode)
 }
 
 /* Return TRUE if INSN, a jump insn, has an unfilled delay slot and
-   it branches to the next real instruction.  Otherwise, return FALSE.  */
+   it branches into the delay slot.  Otherwise, return FALSE.  */
 
 static bool
 branch_to_delay_slot_p (rtx insn)
 {
+  rtx jump_insn;
+
   if (dbr_sequence_length ())
     return FALSE;
 
-  return next_real_insn (JUMP_LABEL (insn)) == next_real_insn (insn);
+  jump_insn = next_active_insn (JUMP_LABEL (insn));
+  while (insn)
+    {
+      insn = next_active_insn (insn);
+      if (jump_insn == insn)
+	return TRUE;
+
+      /* We can't rely on the length of asms.  So, we return FALSE when
+	 the branch is followed by an asm.  */
+      if (!insn
+	  || GET_CODE (PATTERN (insn)) == ASM_INPUT
+	  || extract_asm_operands (PATTERN (insn)) != NULL_RTX
+	  || get_attr_length (insn) > 0)
+	break;
+    }
+
+  return FALSE;
 }
 
-/* Return TRUE if INSN, a jump insn, needs a nop in its delay slot.
+/* Return TRUE if INSN, a forward jump insn, needs a nop in its delay slot.
 
    This occurs when INSN has an unfilled delay slot and is followed
-   by an ASM_INPUT.  Disaster can occur if the ASM_INPUT is empty and
-   the jump branches into the delay slot.  So, we add a nop in the delay
-   slot just to be safe.  This messes up our instruction count, but we
-   don't know how big the ASM_INPUT insn is anyway.  */
+   by an asm.  Disaster can occur if the asm is empty and the jump
+   branches into the delay slot.  So, we add a nop in the delay slot
+   when this occurs.  */
 
 static bool
 branch_needs_nop_p (rtx insn)
 {
-  rtx next_insn;
+  rtx jump_insn;
 
   if (dbr_sequence_length ())
     return FALSE;
 
-  next_insn = next_real_insn (insn);
-  return GET_CODE (PATTERN (next_insn)) == ASM_INPUT;
+  jump_insn = next_active_insn (JUMP_LABEL (insn));
+  while (insn)
+    {
+      insn = next_active_insn (insn);
+      if (!insn || jump_insn == insn)
+	return TRUE;
+
+      if (!(GET_CODE (PATTERN (insn)) == ASM_INPUT
+	   || extract_asm_operands (PATTERN (insn)) != NULL_RTX)
+	  && get_attr_length (insn) > 0)
+	break;
+    }
+
+  return FALSE;
+}
+
+/* Return TRUE if INSN, a forward jump insn, can use nullification
+   to skip the following instruction.  This avoids an extra cycle due
+   to a mis-predicted branch when we fall through.  */
+
+static bool
+use_skip_p (rtx insn)
+{
+  rtx jump_insn = next_active_insn (JUMP_LABEL (insn));
+
+  while (insn)
+    {
+      insn = next_active_insn (insn);
+
+      /* We can't rely on the length of asms, so we can't skip asms.  */
+      if (!insn
+	  || GET_CODE (PATTERN (insn)) == ASM_INPUT
+	  || extract_asm_operands (PATTERN (insn)) != NULL_RTX)
+	break;
+      if (get_attr_length (insn) == 4
+	  && jump_insn == next_active_insn (insn))
+	return TRUE;
+      if (get_attr_length (insn) > 0)
+	break;
+    }
+
+  return FALSE;
 }
 
 /* This routine handles all the normal conditional branch sequences we
@@ -6139,7 +6196,7 @@ const char *
 output_cbranch (rtx *operands, int negated, rtx insn)
 {
   static char buf[100];
-  int useskip = 0;
+  bool useskip;
   int nullify = INSN_ANNULLED_BRANCH_P (insn);
   int length = get_attr_length (insn);
   int xdelay;
@@ -6177,12 +6234,7 @@ output_cbranch (rtx *operands, int negated, rtx insn)
   /* A forward branch over a single nullified insn can be done with a
      comclr instruction.  This avoids a single cycle penalty due to
      mis-predicted branch if we fall through (branch not taken).  */
-  if (length == 4
-      && next_real_insn (insn) != 0
-      && get_attr_length (next_real_insn (insn)) == 4
-      && JUMP_LABEL (insn) == next_nonnote_insn (next_real_insn (insn))
-      && nullify)
-    useskip = 1;
+  useskip = (length == 4 && nullify) ? use_skip_p (insn) : FALSE;
 
   switch (length)
     {
@@ -6470,7 +6522,7 @@ const char *
 output_bb (rtx *operands ATTRIBUTE_UNUSED, int negated, rtx insn, int which)
 {
   static char buf[100];
-  int useskip = 0;
+  bool useskip;
   int nullify = INSN_ANNULLED_BRANCH_P (insn);
   int length = get_attr_length (insn);
   int xdelay;
@@ -6496,13 +6548,7 @@ output_bb (rtx *operands ATTRIBUTE_UNUSED, int negated, rtx insn, int which)
   /* A forward branch over a single nullified insn can be done with a
      extrs instruction.  This avoids a single cycle penalty due to
      mis-predicted branch if we fall through (branch not taken).  */
-
-  if (length == 4
-      && next_real_insn (insn) != 0
-      && get_attr_length (next_real_insn (insn)) == 4
-      && JUMP_LABEL (insn) == next_nonnote_insn (next_real_insn (insn))
-      && nullify)
-    useskip = 1;
+  useskip = (length == 4 && nullify) ? use_skip_p (insn) : FALSE;
 
   switch (length)
     {
@@ -6661,7 +6707,7 @@ const char *
 output_bvb (rtx *operands ATTRIBUTE_UNUSED, int negated, rtx insn, int which)
 {
   static char buf[100];
-  int useskip = 0;
+  bool useskip;
   int nullify = INSN_ANNULLED_BRANCH_P (insn);
   int length = get_attr_length (insn);
   int xdelay;
@@ -6687,13 +6733,7 @@ output_bvb (rtx *operands ATTRIBUTE_UNUSED, int negated, rtx insn, int which)
   /* A forward branch over a single nullified insn can be done with a
      extrs instruction.  This avoids a single cycle penalty due to
      mis-predicted branch if we fall through (branch not taken).  */
-
-  if (length == 4
-      && next_real_insn (insn) != 0
-      && get_attr_length (next_real_insn (insn)) == 4
-      && JUMP_LABEL (insn) == next_nonnote_insn (next_real_insn (insn))
-      && nullify)
-    useskip = 1;
+  useskip = (length == 4 && nullify) ? use_skip_p (insn) : FALSE;
 
   switch (length)
     {
