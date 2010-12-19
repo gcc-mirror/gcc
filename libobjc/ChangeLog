@@ -1,5 +1,14 @@
 2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* Protocol.m: Moved all methods, with the exception of -isEqual:,
+	into the 'Deprecated' category.
+	* objc/Protocol.h: Removed all methods, moved to
+	objc/deprecated/Protocol.h.  Include objc/deprecated/Protocol.h.
+	* objc/deprecated/Protocol.h: New.
+	* Makefile.in (OBJC_DEPRECATED_H): Added Protocol.h.
+	
+2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* init.c: Include objc-private/selector.h.  Do not declare
 	__sel_register_typed_name.
 	* objc-private/selector.h (__sel_register_typed_name): Declare.
