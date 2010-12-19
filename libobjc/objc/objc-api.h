@@ -26,24 +26,27 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef __objc_api_INCLUDE_GNU
 #define __objc_api_INCLUDE_GNU
 
-/*
-  This file declares the "traditional" GNU Objective-C Runtime API.
-  It is the API supported by older versions of the GNU Objective-C
-  Runtime.  Include this file to use it.
+/* This file declares the "traditional" GNU Objective-C Runtime API.
+   It is the API supported by older versions of the GNU Objective-C
+   Runtime.  Include this file to use it.
 
-  This API is being replaced by the "modern" GNU Objective-C Runtime
-  API, which is declared in objc/runtime.h.  The "modern" API is very
-  similar to the API used by the modern Apple/NeXT runtime.
+   This API is being replaced by the "modern" GNU Objective-C Runtime
+   API, which is declared in objc/runtime.h.  The "modern" API is very
+   similar to the API used by the modern Apple/NeXT runtime.
 
-  Because the two APIs have some conflicting definitions (in
-  particular, Method and Category are defined differently) you should
-  include either objc/objc-api.h (to use the traditional GNU
-  Objective-C Runtime API) or objc/runtime.h (to use the modern GNU
-  Objective-C Runtime API), but not both.
-*/
+   The last version of GCC supporting the traditional API is GCC 4.6.
+   This file will not exist in later versions of GCC.
+
+   Because the two APIs have some conflicting definitions (in
+   particular, Method and Category are defined differently) you should
+   include either objc/objc-api.h (to use the traditional GNU
+   Objective-C Runtime API) or objc/runtime.h (to use the modern GNU
+   Objective-C Runtime API), but not both.  */
 #ifdef __objc_runtime_INCLUDE_GNU
 # error You can not include both objc/objc-api.h and objc/runtime.h.  Include objc/objc-api.h for the traditional GNU Objective-C Runtime API and objc/runtime.h for the modern one.
 #endif
+
+/* TODO: A deprecation warning any time the file is included ? */
 
 #include "objc.h"
 #ifndef GNU_LIBOBJC_COMPILING_LIBOBJC_ITSELF
@@ -182,6 +185,8 @@ typedef struct objc_category Category, *Category_t;
 ** objc_get_class if the runtime is not able to find the class.
 ** This may e.g. try to load in the class using dynamic loading.
 ** The function is guaranteed to be passed a non-NULL name string.
+** In the Modern API, this is replaced by
+** objc_setGetUnknownClassHandler ().
 */
 objc_EXPORT Class (*_objc_lookup_class)(const char *name);
 
