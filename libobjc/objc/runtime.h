@@ -876,6 +876,14 @@ objc_EXPORT Protocol **protocol_copyProtocolList (Protocol *protocol, unsigned i
 
 /* TODO: Add all the other functions in the API.  */
 
+/** Implementation: the following hook is in init.c.  */
+
+/* This is a hook which is called by __objc_exec_class every time a
+   class or a category is loaded into the runtime.  This may e.g. help
+   a dynamic loader determine the classes that have been loaded when
+   an object file is dynamically linked in.  */
+objc_EXPORT void (*_objc_load_callback)(Class _class, struct objc_category *category);
+
 
 /** Implementation: the following functions are in objc-foreach.c.  */
 

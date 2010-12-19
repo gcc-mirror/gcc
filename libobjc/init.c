@@ -83,11 +83,7 @@ static void __objc_init_protocol (struct objc_protocol *protocol);
 /* Add protocol to class.  */
 static void __objc_class_add_protocols (Class, struct objc_protocol_list *);
 
-/* This is a hook which is called by __objc_exec_class every time a
-   class or a category is loaded into the runtime.  This may e.g. help
-   a dynamic loader determine the classes that have been loaded when
-   an object file is dynamically linked in.  */
-/* TODO: This needs to be declared in a public file with the new API.  */
+/* Load callback hook.  */
 void (*_objc_load_callback) (Class class, struct objc_category *category); /* !T:SAFE */
 
 /* Are all categories/classes resolved?  */
@@ -724,6 +720,10 @@ __objc_exec_class (struct objc_module *module)
   objc_send_load ();
 
   objc_mutex_unlock (__objc_runtime_mutex);
+
+  /* TODO: Do we need to add a call to __objc_resolve_class_links()
+     here ?  gnustep-base does it manually after it loads a module.
+     Shouldn't we do it automatically ?  */
 }
 
 static void
