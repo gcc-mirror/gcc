@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-std=gnu++0x -fno-inline -save-temps" }
+// { dg-options "-std=gnu++0x -fno-inline -save-temps -g0" }
 // { dg-final { scan-assembler-not "_ZNSt8weak_ptrIiEC2Ev" } }
 
 // Copyright (C) 2010 Free Software Foundation, Inc.
