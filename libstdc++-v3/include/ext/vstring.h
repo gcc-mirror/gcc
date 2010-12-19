@@ -2118,7 +2118,13 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     inline __versa_string<_CharT, _Traits, _Alloc, _Base>
     operator+(__versa_string<_CharT, _Traits, _Alloc, _Base>&& __lhs,
 	      __versa_string<_CharT, _Traits, _Alloc, _Base>&& __rhs)
-    { return std::move(__lhs.append(__rhs)); }
+    {
+      const auto __size = __lhs.size() + __rhs.size();
+      const bool __cond = (__size > __lhs.capacity()
+			   && __size <= __rhs.capacity());
+      return __cond ? std::move(__rhs.insert(0, __lhs))
+	            : std::move(__lhs.append(__rhs));
+    }
 
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
