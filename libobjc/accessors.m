@@ -106,8 +106,18 @@ objc_getProperty (id self, SEL __attribute__((unused)) _cmd, ptrdiff_t offset, B
     {
       id *pointer_to_ivar = (id *)((char *)self + offset);
 
+
       if (is_atomic == NO)
-	return AUTORELEASE (RETAIN (*pointer_to_ivar));
+	{
+	  /* Note that in this case, we do not RETAIN/AUTORELEASE the
+	     returned value.  The programmer should do it if it is
+	     needed.  Since access is non-atomic, other threads can be
+	     ignored and the caller has full control of what happens
+	     to the object and whether it needs to be RETAINed or not,
+	     so it makes sense to leave the decision to him/her.  This
+	     is also what the Apple/NeXT runtime does.  */
+	  return *pointer_to_ivar;
+	}
       else
 	{
 	  objc_mutex_t lock = accessors_locks[ACCESSORS_HASH (pointer_to_ivar)];
