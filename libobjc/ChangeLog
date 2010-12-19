@@ -1,5 +1,11 @@
 2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	PR libobjc/47012
+	* accessors.m (objc_getProperty): If not atomic, do not
+	retain/autorelease the returned value. (Problem reported by
+
+2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-private/runtime.h (__objc_selector_max_index,
 	__objc_init_selector_tables, __objc_register_selectors_from_class,
 	__objc_register_selectors_from_list,
