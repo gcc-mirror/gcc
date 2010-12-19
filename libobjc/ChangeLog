@@ -1,5 +1,24 @@
 2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc/encoding.h: Updated comments.
+	* objc/runtime.h: Updated comments.
+	(objc_setGetUnknownClassHandler): Mark with objc_EXPORT.
+	(objc_sizeof_type): Same.
+	(objc_alignof_type): Same.
+	(objc_aligned_size): Same.
+	(objc_promoted_size): Same.
+	(objc_skip_type_qualifiers): Same.
+	(objc_skip_typespec): Same.
+	(objc_skip_offset): Same.
+	(objc_skip_argspec): Same.
+	(objc_get_type_qualifiers): Same.
+	(objc_layout_structure): Same.
+	(objc_layout_structure_next_member): Same.
+	(objc_layout_finish_structure): Same.
+	(objc_layout_structure_get_info): Same.
+	
+2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* init.c: Updated comments.
 	* objc/objc-api.h: Updated comments.
 	* objc/runtime.h (_objc_load_callback): Declare.
