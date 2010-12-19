@@ -1,3 +1,18 @@
+2010-12-19  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR middle-end/46674
+	PR middle-end/46221
+	* varasm.c (symbol_alias_set_t): New typedef for derived pointer_set
+	wrapper class.
+	(symbol_alias_set_create): New wrapper function.
+	(symbol_alias_set_destroy): Likewise.
+	(symbol_alias_set_contains): Likewise.
+	(symbol_alias_set_insert): Likewise.
+	(compute_visible_aliases): Use the above and return symbol_alias_set_t,
+	not a pointer_set.
+	(remove_unreachable_alias_pairs): Adjust likewise to match.
+	(finish_aliases_1): Likewise.
+
 2010-12-19  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* config/arm/arm.c (arm_legitimate_index_p): Add VFP load/store
