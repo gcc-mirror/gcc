@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.6-b20101113\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-11-13 12:12+0000\n"
-"PO-Revision-Date: 2010-12-12 11:49+0100\n"
+"PO-Revision-Date: 2010-12-19 13:09+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -31508,7 +31508,7 @@ msgid "target of initialization might be a candidate for a format attribute"
 msgstr "målet för initialisering kan vara en kandidat för ett formatattribut"
 
 #: cp/typeck.c:7389
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "left-hand side of assignment might be a candidate for a format attribute"
 msgstr "vänsterhandssida av tilldelning kan vara en kandidat för ett formatattribut"
 
@@ -31973,7 +31973,7 @@ msgid "pointer to member type %qT incompatible with object type %qT"
 msgstr "pekare-på-medlemstyp %qT är inkompatibel med objekttyp %qT"
 
 #: cp/typeck2.c:1600
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid value-initialization of reference type"
 msgstr "ogiltig värdeinitiering av referenstyper"
 
@@ -32048,14 +32048,14 @@ msgid "Expected array subscript at %C"
 msgstr "Förväntade vektorindex vid %C"
 
 #: fortran/array.c:106
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Unexpected '*' in coarray subscript at %C"
-msgstr "Förväntade vektorindex vid %C"
+msgstr "Oväntad \"*\" i co-vektorindex vid %C"
 
 #: fortran/array.c:130
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Strides not allowed in coarray subscript at %C"
-msgstr "Förväntade vektorindex vid %C"
+msgstr "Steg är inte tillåtna i co-vektorindex vid %C"
 
 #: fortran/array.c:138
 #, gcc-internal-format
@@ -32080,9 +32080,9 @@ msgid "Coarrays disabled at %C, use -fcoarray= to enable"
 msgstr ""
 
 #: fortran/array.c:221
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Unexpected coarray designator at %C"
-msgstr "Förväntade vektorindex vid %C"
+msgstr "Oväntad co-vektorbeteckning vid %C"
 
 #: fortran/array.c:236
 #, gcc-internal-format
@@ -32090,14 +32090,14 @@ msgid "Too few codimensions at %C, expected %d not %d"
 msgstr ""
 
 #: fortran/array.c:246
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Unexpected '*' for codimension %d of %d at %C"
-msgstr "Förväntade en annan dimension i vektordeklaration vid %C"
+msgstr "Oväntad \"*\" för co-dimension %d av %d vid %C"
 
 #: fortran/array.c:249
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Invalid form of coarray reference at %C"
-msgstr "Felaktig form av vektorreferens vid %C"
+msgstr "Felaktig form av co-vektorreferens vid %C"
 
 #: fortran/array.c:254
 #, gcc-internal-format
@@ -32110,9 +32110,9 @@ msgid "Variable '%s' at %L in this context must be constant"
 msgstr "Variabeln \"%s\" vid %L i detta sammanhang måste vara en konstant"
 
 #: fortran/array.c:309
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Expression at %L in this context must be constant"
-msgstr "Variabeln \"%s\" vid %L i detta sammanhang måste vara en konstant"
+msgstr "Uttrycket vid %L i detta sammanhang måste vara konstant"
 
 #: fortran/array.c:400
 #, gcc-internal-format
@@ -32120,7 +32120,7 @@ msgid "Expected expression in array specification at %C"
 msgstr "Förväntade uttryck i vektorspecifikation vid %C"
 
 #: fortran/array.c:479
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Bad array specification for implied-shape array at %C"
 msgstr "Felaktig vektorspecifikation för en förmodat formad vektor vid %C"
 
@@ -32160,9 +32160,9 @@ msgid "Fortran 2008: Array specification at %C with more than 7 dimensions"
 msgstr "Fortran 2008: Vektorspecifikation vid %C har mer än 7 dimensioner"
 
 #: fortran/array.c:563
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Fortran 2008: Coarray declaration at %C"
-msgstr "Fortran 2003:  FINAL-procedurdeklaration vid %C"
+msgstr "Fortran 2008: Co-vektordeklaration vid %C"
 
 #: fortran/array.c:651
 #, gcc-internal-format
@@ -32190,9 +32190,9 @@ msgid "Fortran 2003: Array constructor including type specification at %C"
 msgstr "Fortran 2003: Vektorkonstruerare med typspecifikation vid %C"
 
 #: fortran/array.c:1041 fortran/match.c:2885
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Type-spec at %L cannot contain a deferred type parameter"
-msgstr "Vektor \"%s\" vid %L kan inte ha en fördröjd form"
+msgstr "Typspecifikation vid %L kan inte innehålla ha en fördröjd typparameter"
 
 #: fortran/array.c:1057
 #, gcc-internal-format
@@ -32267,9 +32267,9 @@ msgid "'%s' argument of '%s' intrinsic at %L must be double precision"
 msgstr "\"%s\"-argumentet till inbyggd \"%s\" vid %L måste ha dubbel precision"
 
 #: fortran/check.c:236
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Expected coarray variable as '%s' argument to the %s intrinsic at %L"
-msgstr "Saknar argument till inbyggd %s vid %L"
+msgstr "Co-vektorindex förväntades som \"%s\"-argument till inbyggd %s vid %L"
 
 #: fortran/check.c:253
 #, gcc-internal-format
@@ -32282,14 +32282,14 @@ msgid "'%s' argument of '%s' intrinsic at %L must be an array"
 msgstr "\"%s\"-argumentet till inbyggd \"%s\" vid %L måste vara en vektor"
 
 #: fortran/check.c:292
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "'%s' at %L must be nonnegative"
-msgstr "UNIT-tal i sats vid %L måste vara ickenegativt"
+msgstr "\"%s\" vid %L måste vara ickenegativt"
 
 #: fortran/check.c:318
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "'%s' at %L must be less than or equal to BIT_SIZE('%s')"
-msgstr "Argument till LOG vid %L får inte vara mindre än eller lika med noll"
+msgstr "\"%s\" vid %L får inte vara mindre än eller lika med BIT_SIZE(\"%s\")"
 
 #: fortran/check.c:328
 #, gcc-internal-format
@@ -32302,9 +32302,9 @@ msgid "'%s' at %L must be less than or equal to the BIT_SIZE of INTEGER(KIND=%d)
 msgstr ""
 
 #: fortran/check.c:381
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "'%s + %s' at %L must be less than or equal to BIT_SIZE('%s')"
-msgstr "Argument till LOG vid %L får inte vara mindre än eller lika med noll"
+msgstr "\"%s + %s\" vid %L får inte vara mindre än eller lika med BIT_SIZE(\"%s\")"
 
 #: fortran/check.c:399
 #, gcc-internal-format
@@ -32342,9 +32342,9 @@ msgid "'%s' argument of '%s' intrinsic at %L must be a variable"
 msgstr "\"%s\"-argumentet till inbyggd \"%s\" vid %L måste vara en variabel"
 
 #: fortran/check.c:548
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "'dim' argument of '%s' intrinsic at %L is not a valid codimension index"
-msgstr "\"dim\"-argumentet till inbyggd \"%s\" vid %L är inte ett giltigt dimensionsindex"
+msgstr "\"dim\"-argumentet till inbyggd \"%s\" vid %L är inte ett giltigt co-dimensionsindex"
 
 #: fortran/check.c:594
 #, gcc-internal-format
@@ -32393,9 +32393,9 @@ msgid "NULL pointer at %L is not permitted as actual argument of '%s' intrinsic 
 msgstr "NULL-pekare vid %L är inte tillåtet som aktuellt argument till inbyggd funktion \"%s\""
 
 #: fortran/check.c:929
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Extension: Negative argument N at %L"
-msgstr "Utökning: argumentlistefunktionen vid %C"
+msgstr "Utökning: Negativt argument N vid %L"
 
 #: fortran/check.c:1101 fortran/check.c:1260
 #, gcc-internal-format
@@ -32440,9 +32440,9 @@ msgid "'%s' argument of '%s' intrinsic at %L must be default real"
 msgstr "\"%s\"-argumentet till inbyggd \"%s\" vid %L måste vara standard reell"
 
 #: fortran/check.c:1495
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "GNU extension: non-default INTEGERkind argument to %s intrinsic at %L"
-msgstr "Saknar argument till inbyggd %s vid %L"
+msgstr "GNU-utvidgning: INTEGER-sorts argument som inte är standardargument till inbyggd %s vid %L"
 
 #: fortran/check.c:1555
 #, gcc-internal-format
@@ -32505,9 +32505,9 @@ msgid "'%s' argument of '%s' intrinsic at %L must be of rank 1 or 2"
 msgstr "\"%s\"-argumentet till inbyggd \"%s\" vid %L måste ha ordning 1 eller 2"
 
 #: fortran/check.c:2465
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "'%s' argument of '%s' intrinsic at %L must be INTEGER"
-msgstr "\"%s\"-argumentet till inbyggd \"%s\" vid %L måste vara POINTER"
+msgstr "\"%s\"-argumentet till inbyggd \"%s\" vid %L måste vara INTEGER"
 
 #: fortran/check.c:2534
 #, gcc-internal-format
@@ -32595,9 +32595,9 @@ msgid "Fortran 2008: SELECTED_REAL_KIND with neither 'P' nor 'R' argument at %L"
 msgstr ""
 
 #: fortran/check.c:3200
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Fortran 2008: '%s' intrinsic with RADIX argument at %L"
-msgstr "Fortran 2003: inbyggd \"%s\" vid KIND-argument vid %L"
+msgstr "Fortran 2008: inbyggd \"%s\" med RADIX-argument vid %L"
 
 #: fortran/check.c:3235
 #, gcc-internal-format
@@ -32605,14 +32605,14 @@ msgid "'source' argument of 'shape' intrinsic at %L must not be an assumed size 
 msgstr "\"source\"-argumentet till inbyggd \"shape\" vid %L får inte vara en vektor med antagen storlek"
 
 #: fortran/check.c:3312
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "'%s' argument of '%s' intrinsic at %L must be be an interoperable data entity"
-msgstr "\"%s\"-argumentet till inbyggd \"%s\" vid %L måste vara en vektor"
+msgstr "\"%s\"-argumentet till inbyggd \"%s\" vid %L måste vara en interoperabel dataenhet"
 
 #: fortran/check.c:3341
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "GNU extension: non double precisionREAL argument to %s intrinsic at %L"
-msgstr "Saknar argument till inbyggd %s vid %L"
+msgstr "GNU-utvidgning: REAL-argument utan dubbel precision till inbyggd %s vid %L"
 
 #: fortran/check.c:3354
 #, gcc-internal-format
@@ -32625,9 +32625,9 @@ msgid "'%s' argument of '%s' intrinsic at %L is not a valid dimension index"
 msgstr "\"%s\"-argumentet till inbyggd \"%s\" vid %L är inte ett giltigt dimensionsindex"
 
 #: fortran/check.c:3634
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s argument to IMAGE_INDEX must be a rank one array at %L"
-msgstr "Aktuellt argument till \"%s\" skall vara en pekare vid %L"
+msgstr "%s-argument till IMAGE_INDEX skall vara en vektor av ordning ett vid %L"
 
 #: fortran/check.c:3654
 #, gcc-internal-format
@@ -32702,9 +32702,9 @@ msgid "failure to simplify substring reference in DATA statement at %L"
 msgstr "misslyckades att förenkla delsträngreferens i DATA-sats vid %L"
 
 #: fortran/data.c:158
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Initialization string starting at %L was truncated to fit the variable (%d/%d)"
-msgstr "initieringssträng avhuggen för att stämma med variabel vid %L"
+msgstr "Initieringssträng som startar vid %L höggs av för att stämma med variabeln (%d/%d)"
 
 #: fortran/data.c:244
 #, gcc-internal-format
@@ -32762,9 +32762,9 @@ msgid "Bad INTENT specification at %C"
 msgstr "Felaktig INTENT-specifikation vid %C"
 
 #: fortran/decl.c:665
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Fortran 2003: deferred type parameter at %C"
-msgstr "Fortran 2003:  Procedurpekare vid %C"
+msgstr "Fortran 2003: fördröjd typparameter vid %C"
 
 #: fortran/decl.c:702
 #, gcc-internal-format
@@ -32802,7 +32802,7 @@ msgid "Procedure '%s' at %L must have the BIND(C) attribute to be C interoperabl
 msgstr "Proceduren \"%s\" vid %L måste ha attributet BIND(C) för att vara C-interoperativ"
 
 #: fortran/decl.c:1005
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Type '%s' at %L is a parameter to the BIND(C) procedure '%s' but is not C interoperable because derived type '%s' is not C interoperable"
 msgstr "Typen \"%s\" vid %L är en parameter till BIND(C)-proceduren \"%s\" men är inte interoperativ med C för att den härledda typen \"%s\" inte är interoperativ med C"
 
@@ -32872,14 +32872,14 @@ msgid "Variable '%s' at %C with an initializer already appears in a DATA stateme
 msgstr "Variabeln \"%s\" vid %C med en initierare finns redan i en DATA-sats"
 
 #: fortran/decl.c:1405
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Can't initialize implied-shape array at %L with scalar"
-msgstr "det går inte att initiera en flerdimensionell vektor med initierare"
+msgstr "Det går inte att initiera en vektor med förmodad form vid %L med en skalär"
 
 #: fortran/decl.c:1423
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Non-constant lower bound in implied-shape declaration at %L"
-msgstr "Syntaxfel i datadeklaration vid %C"
+msgstr "Lägre gräns som inte är konstant i förmodat formad deklaration vid %L"
 
 #: fortran/decl.c:1518
 #, gcc-internal-format
@@ -32917,24 +32917,24 @@ msgid "Initialization of pointer at %C is not allowed in a PURE procedure"
 msgstr "Initiering av pekare vid %C är inte tillåtet i en PURE-procedur"
 
 #: fortran/decl.c:1706
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Error in pointer initialization at %C"
-msgstr "Utökning: Gammaldags initiering vid %C"
+msgstr "Fel i pekarinitiering vid %C"
 
 #: fortran/decl.c:1713
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Fortran 2008: non-NULL pointer initialization at %C"
-msgstr "Fortran 2003:  FINAL-procedurdeklaration vid %C"
+msgstr "Fortran 2008: annan pekarinitiering än NULL vid %C"
 
 #: fortran/decl.c:1774
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Non-PARAMETER symbol '%s' at %L can't be implied-shape"
-msgstr "CHARACTER(*)-funktion \"%s\" vid %L kan inte ha pekarvärde"
+msgstr "Icke-PARAMETER-symbolen \"%s\" vid %L kan inte förmodad form"
 
 #: fortran/decl.c:1785
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Fortran 2008: Implied-shape array at %L"
-msgstr "Fortran 2008: \"G0\" i format vid %L"
+msgstr "Fortran 2008: Vektor med förmodad form vid %L"
 
 #: fortran/decl.c:1849 fortran/decl.c:6232
 #, gcc-internal-format
@@ -33043,14 +33043,14 @@ msgstr "BYTE-typ använd vid %C är inte tillgänglig på målmaskinen"
 
 #: fortran/decl.c:2523 fortran/decl.c:2554 fortran/decl.c:2584
 #: fortran/decl.c:2668
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Fortran 2008: TYPE with intrinsic-type-spec at %C"
-msgstr "Fortran 2003: VOLATILE-attribut vid %C"
+msgstr "Fortran 2008: TYPE med inbyggd typspecifikation vid %C"
 
 #: fortran/decl.c:2579
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Extension: DOUBLE COMPLEX at %C"
-msgstr "Utökning: BYTE-typ vid %C"
+msgstr "Utökning: DOUBLE COMPLEX vid %C"
 
 #: fortran/decl.c:2616
 #, gcc-internal-format
@@ -33109,9 +33109,9 @@ msgid "Syntax error in IMPORT statement at %C"
 msgstr "Syntaxfel i IMPORT-sats vid %C"
 
 #: fortran/decl.c:3331
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Missing codimension specification at %C"
-msgstr "Dimensionsspecifikation saknas vid %C"
+msgstr "Co-dimensionsspecifikation saknas vid %C"
 
 #: fortran/decl.c:3333
 #, gcc-internal-format
@@ -33149,9 +33149,9 @@ msgid "Fortran 2003: ASYNCHRONOUS attribute at %C"
 msgstr "Fortran 2003: ASYNCHRONOUS-attribut vid %C"
 
 #: fortran/decl.c:3502
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Fortran 2008: CONTIGUOUS attribute at %C"
-msgstr "Fortran 2003: ASYNCHRONOUS-attribut vid %C"
+msgstr "Fortran 2008: CONTIGUOUS-attribut vid %C"
 
 #: fortran/decl.c:3548 fortran/decl.c:6509
 #, gcc-internal-format
@@ -33253,9 +33253,9 @@ msgid "Syntax error in data declaration at %C"
 msgstr "Syntaxfel i datadeklaration vid %C"
 
 #: fortran/decl.c:4172
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Fortran 2008: IMPURE procedure at %C"
-msgstr "Fortran 2003:  Procedurpekare vid %C"
+msgstr "Fortran 2008: IMPURE-procedur vid %C"
 
 #: fortran/decl.c:4185
 #, gcc-internal-format
@@ -33375,9 +33375,9 @@ msgid "BIND(C) attribute at %L can only be used for variables or common blocks"
 msgstr "Attribut BIND(C) vid %L kan endast användas för variabler och common-block"
 
 #: fortran/decl.c:5177
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Fortran 2008 obsolescent feature: ENTRY statement at %C"
-msgstr "Fortran 2003: modulnatur i USE-sats vid %C"
+msgstr "Fortran 2008: föråldrad funktion: ENTRY-sats vid %C"
 
 #: fortran/decl.c:5187
 #, gcc-internal-format
@@ -33485,9 +33485,9 @@ msgid "Unexpected END statement at %C"
 msgstr "Oväntad END-sats vid %C"
 
 #: fortran/decl.c:5862
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Fortran 2008: END statement instead of %s statement at %L"
-msgstr "Fortran 2008: CONTAINS-sats utan FUNCTION- eller SUBROUTINE-sats vid %C"
+msgstr "Fortran 2008: END-sats istället för %s-sats vid %L"
 
 #. We would have required END [something].
 #: fortran/decl.c:5870
@@ -33526,9 +33526,9 @@ msgid "Dimensions specified for %s at %L after its initialisation"
 msgstr "Dimensioner angivna för %s vid %L efter dess initiering"
 
 #: fortran/decl.c:6006
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Missing array specification at %L in CODIMENSION statement"
-msgstr "Vektorspecifikation saknas vid %L i DIMENSION-sats"
+msgstr "Vektorspecifikation saknas vid %L i CODIMENSION-sats"
 
 #: fortran/decl.c:6015
 #, gcc-internal-format
@@ -33591,9 +33591,9 @@ msgid "Cray pointer declaration at %C requires -fcray-pointer flag"
 msgstr "Cray-pekardeklaration vid %C kräver flaggan -fcray-pointer"
 
 #: fortran/decl.c:6380
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Fortran 2008: CONTIGUOUS statement at %C"
-msgstr "Fortran 2003: ASYNCHRONOUS-sats vid %C"
+msgstr "Fortran 2008: CONTIGUOUS-sats vid %C"
 
 #: fortran/decl.c:6460
 #, gcc-internal-format
@@ -33881,9 +33881,9 @@ msgid "Expected binding name at %C"
 msgstr "Bindningsnamn förväntades vid %C"
 
 #: fortran/decl.c:7894
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Fortran 2008: PROCEDURE list at %C"
-msgstr "Fortran 2003: PROCEDURE-sats vid %C"
+msgstr "Fortran 2008: PROCEDURE-lista vid %C"
 
 #: fortran/decl.c:7907
 #, gcc-internal-format
@@ -33906,9 +33906,9 @@ msgid "Type '%s' containing DEFERRED binding at %C is not ABSTRACT"
 msgstr "Typen \"%s\" som innehåller en DEFERRED-bindning vid %C är inte ABSTRACT"
 
 #: fortran/decl.c:7951
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "There is already a procedure with binding name '%s' for the derived type '%s' at %C"
-msgstr "Det finns redan en procedur med bindningsnamn \"%s\" för den härledda typen \"%s\" vid %C"
+msgstr "Det finns redan en procedur med bindningsnamnet \"%s\" för den härledda typen \"%s\" vid %C"
 
 #: fortran/decl.c:8000
 #, gcc-internal-format
@@ -34086,9 +34086,9 @@ msgid "Invalid initialization expression for ALLOCATABLE component '%s' in struc
 msgstr "Ogiltigt initieringsuttryck för ALLOCATABLE-komponent \"%s\" i postkonstrueraren vid %L"
 
 #: fortran/expr.c:2293
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Assumed or deferred character length variable '%s'  in constant expression at %L"
-msgstr "Teckenlängdsvariabel \"%s\" med förmodad längd i konstant uttryck vid %L"
+msgstr "Teckenlängdsvariabel \"%s\" med förmodad eller fördröjd längd i konstant uttryck vid %L"
 
 #: fortran/expr.c:2359
 #, gcc-internal-format
@@ -34291,9 +34291,9 @@ msgid "Lower bound has to be present at %L"
 msgstr ""
 
 #: fortran/expr.c:3292
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Stride must not be present at %L"
-msgstr "Variabeln får inte vara polymorfisk i tilldelningen vid %L"
+msgstr "Steg får inte finnas vid %L"
 
 #: fortran/expr.c:3304
 #, gcc-internal-format
@@ -34301,9 +34301,9 @@ msgid "Either all or none of the upper bounds must be specified at %L"
 msgstr ""
 
 #: fortran/expr.c:3329
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Pointer object at %L shall not have a coindex"
-msgstr "Externt objekt \"%s\" vid %L kan inte ha en initierare"
+msgstr "Pekarobjektet vid %L kan inte ha ett co-index"
 
 #: fortran/expr.c:3350
 #, gcc-internal-format
@@ -34361,9 +34361,9 @@ msgid "Rank remapping target must be rank 1 or simply contiguous at %L"
 msgstr ""
 
 #: fortran/expr.c:3487
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Fortran 2008: Rank remapping target is not rank 1 at %L"
-msgstr "Fortran 2008: \"G0\" i format vid %L"
+msgstr "Fortran 2008: Målet för ordningsommappning är inte av ordning 1 vid %L"
 
 #: fortran/expr.c:3511
 #, gcc-internal-format
@@ -34386,29 +34386,29 @@ msgid "Pointer assignment target has PROTECTED attribute at %L"
 msgstr "Pekartilldelningsmålet har attributet PROTECTED vid %L"
 
 #: fortran/expr.c:3545
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Data target at %L shall not have a coindex"
-msgstr "Dataöverföringselement vid %L får inte ha POINTER-komponenter"
+msgstr "Datamålet vid %L får inte ha co-index"
 
 #: fortran/expr.c:3593
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Pointer initialization target at %C must not be ALLOCATABLE "
-msgstr "Pekarinitiering vid %C kräver \"=>\", inte \"=\""
+msgstr "Pekarinitieringens mål vid %C får inte vara ALLOCATABLE "
 
 #: fortran/expr.c:3599
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Pointer initialization target at %C must have the TARGET attribute"
-msgstr "Komponent vid %C måste ha attributet POINTER"
+msgstr "Målet för perkarinitieringen vid %C måste ha attributet TARGET"
 
 #: fortran/expr.c:3605
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Pointer initialization target at %C must have the SAVE attribute"
-msgstr "Komponent vid %C måste ha attributet POINTER"
+msgstr "Målet för pekarinitieringen vid %C måste ha attributet SAVE"
 
 #: fortran/expr.c:4327
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Fortran 2008: Pointer functions in variable definition context (%s) at %L"
-msgstr "Fortran 2003: Exponent som inte är heltal i ett initieringsuttryck vid %L"
+msgstr "Fortran 2008: Pekarfunktioner i variabeldefinitionssammanhang (%s) vid %L"
 
 #: fortran/expr.c:4335
 #, gcc-internal-format
@@ -34421,9 +34421,9 @@ msgid "Named constant '%s' in variable definition context (%s) at %L"
 msgstr ""
 
 #: fortran/expr.c:4355
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "'%s' in variable definition context (%s) at %L is not a variable"
-msgstr "Argument till \"%s\" vid %L är inte en variabel"
+msgstr "\"%s\" i variabeldefinitionssammanhang (%s) vid %L är inte en variabel"
 
 #: fortran/expr.c:4367
 #, gcc-internal-format
@@ -34431,9 +34431,9 @@ msgid "Non-POINTER in pointer association context (%s) at %L"
 msgstr ""
 
 #: fortran/expr.c:4389
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Dummy argument '%s' with INTENT(IN) in pointer association context (%s) at %L"
-msgstr "Attrappvariabeln \"%s\" är inte tillåten i uttrycket vid %L"
+msgstr "Attrappargument \"%s\" med INTENT(IN) i pekarassociationssammanhang (%s) vid %L"
 
 #: fortran/expr.c:4397
 #, gcc-internal-format
@@ -34441,19 +34441,19 @@ msgid "Dummy argument '%s' with INTENT(IN) in variable definition context (%s) a
 msgstr ""
 
 #: fortran/expr.c:4410
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Variable '%s' is PROTECTED and can not appear in a pointer association context (%s) at %L"
-msgstr "Variabeln \"%s\" kan inte förekomma i uttrycket vid %L"
+msgstr "Variabeln \"%s\" är PROTECTED och kan inte förekomma i ett pekarassociationssammanhang (%s) vid %L"
 
 #: fortran/expr.c:4418
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Variable '%s' is PROTECTED and can not appear in a variable definition context (%s) at %L"
-msgstr "Variabeln \"%s\" kan inte förekomma i uttrycket vid %L"
+msgstr "Variabeln \"%s\" är PROTECTED och kan inte förekomma i ett variabeldefinitionssammanhang (%s) vid %L"
 
 #: fortran/expr.c:4430
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Variable '%s' can not appear in a variable definition context (%s) at %L in PURE procedure"
-msgstr "Variabeln \"%s\" kan inte förekomma i uttrycket vid %L"
+msgstr "Variabeln \"%s\" kan inte förekomma i ett variabeldefinitionssammanhang (%s) vid %L"
 
 #: fortran/expr.c:4471
 #, gcc-internal-format
@@ -34481,9 +34481,9 @@ msgid "can't open input file: %s"
 msgstr "Kan inte öppna indatafil: %s"
 
 #: fortran/gfortranspec.c:139
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "overflowed output arg list for %qs"
-msgstr "spill i utargumentlistan för \"%s\""
+msgstr "spill i utargumentlistan för %qs"
 
 #: fortran/gfortranspec.c:292
 #, gcc-internal-format
@@ -34531,9 +34531,9 @@ msgid "Expected 'END INTERFACE ASSIGNMENT (=)' at %C"
 msgstr "\"END INTERFACE ASSIGNMENT (=)\" förväntades vid %C"
 
 #: fortran/interface.c:349
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Expecting 'END INTERFACE OPERATOR (%s)' at %C, but got %s"
-msgstr "\"END INTERFACE OPERATOR (%s)\" förväntades vid %C"
+msgstr "\"END INTERFACE OPERATOR (%s)\" förväntades vid %C, men fick %s"
 
 #: fortran/interface.c:363
 #, gcc-internal-format
@@ -34626,19 +34626,19 @@ msgid "'%s' at %L is not a module procedure"
 msgstr "\"%s\" vid %L är inte en modulprocedur"
 
 #: fortran/interface.c:1426
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Rank mismatch in argument '%s' at %L (scalar and rank-%d)"
-msgstr "Ordning stämmer inte i argument \"%s\" vid %L (%d och %d)"
+msgstr "Ordning stämmer inte i argument \"%s\" vid %L (skalär och ordning %d)"
 
 #: fortran/interface.c:1431
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Rank mismatch in argument '%s' at %L (rank-%d and scalar)"
-msgstr "Ordning stämmer inte i argument \"%s\" vid %L (%d och %d)"
+msgstr "Ordning stämmer inte i argument \"%s\" vid %L (ordning %d och skalär)"
 
 #: fortran/interface.c:1436
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Rank mismatch in argument '%s' at %L (rank-%d and rank-%d)"
-msgstr "Ordning stämmer inte i argument \"%s\" vid %L (%d och %d)"
+msgstr "Ordning stämmer inte i argument \"%s\" vid %L (ordning %d och ordning %d)"
 
 #: fortran/interface.c:1478
 #, gcc-internal-format
@@ -34661,24 +34661,24 @@ msgid "Type mismatch in argument '%s' at %L; passed %s to %s"
 msgstr "Typ stämmer inte i argument \"%s\" vid %L; skickade %s till %s"
 
 #: fortran/interface.c:1535
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Actual argument to '%s' at %L must be polymorphic"
-msgstr "Aktuellt argument till \"%s\" skall vara en pekare vid %L"
+msgstr "Aktuellt argument till \"%s\" vid %L måste vara polymorft"
 
 #: fortran/interface.c:1543
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Actual argument to '%s' at %L must have the same declared type"
-msgstr "\"%s\"- och \"%s\"-argumenten till inbyggd \"%s\" vid %L måste ha samma typ"
+msgstr "Aktuellt arkument till \"%s\" vid %L måste ha samma deklarerade typ"
 
 #: fortran/interface.c:1558 fortran/interface.c:1588
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Actual argument to '%s' at %L must be a coarray"
-msgstr "Aktuellt argument till \"%s\" skall vara en pekare vid %L"
+msgstr "Aktuellt argument till \"%s\" vid %L måste vara en co-vektor"
 
 #: fortran/interface.c:1568
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Actual argument to '%s' at %L must be a coarray and not coindexed"
-msgstr "Aktuellt argument till \"%s\" skall vara en pekare vid %L"
+msgstr "Aktuellt argument till \"%s\" vid %L måste vara en co-vektor och inte ett co-index"
 
 #: fortran/interface.c:1576
 #, gcc-internal-format
@@ -34686,14 +34686,14 @@ msgid "Actual argument to '%s' at %L must be a coarray and thus shall not have a
 msgstr ""
 
 #: fortran/interface.c:1600
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Corank mismatch in argument '%s' at %L (%d and %d)"
-msgstr "Ordning stämmer inte i argument \"%s\" vid %L (%d och %d)"
+msgstr "Co-ordning stämmer inte i argument \"%s\" vid %L (%d och %d)"
 
 #: fortran/interface.c:1613
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Actual argument to '%s' at %L must be simply contiguous"
-msgstr "Aktuellt argument till \"%s\" skall vara en pekare vid %L"
+msgstr "Aktuellt argument till \"%s\" vid %L måste vara enkelt sammanhängande"
 
 #: fortran/interface.c:1629
 #, gcc-internal-format
@@ -34801,9 +34801,9 @@ msgid "Coindexed actual argument at %L to pointer dummy '%s'"
 msgstr ""
 
 #: fortran/interface.c:2190
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Coindexed actual argument at %L to allocatable dummy '%s' requires INTENT(IN)"
-msgstr "Aktuellt argument vid %L måste gå att definiera som attrappargument \"%s\" är INTENT = OUT/INOUT"
+msgstr "Co-indexerat aktuellt argument vid %L till allokerbar attrapp \"%s\" kräver INTENT(IN)"
 
 #: fortran/interface.c:2204
 #, gcc-internal-format
@@ -34821,9 +34821,9 @@ msgid "Actual argument for '%s' must be ALLOCATABLE at %L"
 msgstr "Aktuellt argument till \"%s\" skall vara en ALLOCATABLE vid %L"
 
 #: fortran/interface.c:2257
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Array-section actual argument with vector subscripts at %L is incompatible with INTENT(OUT), INTENT(INOUT), VOLATILE or ASYNCHRONOUS attribute of the dummy argument '%s'"
-msgstr "Vektorsektion som aktuellt argument med vektorindex vid %L är inte kompatibelt med attributet INTENT(OUT), INTENT(INOUT) eller VOLATILE på attrappargument \"%s\""
+msgstr "Vektorsektion som aktuellt argument med vektorindex vid %L är inte kompatibelt med attributet INTENT(OUT), INTENT(INOUT), VOLATILE eller ASYNCHRONOUS på attrappargumentet \"%s\""
 
 #: fortran/interface.c:2275
 #, gcc-internal-format
@@ -34866,14 +34866,14 @@ msgid "Procedure argument at %L is local to a PURE procedure and has the POINTER
 msgstr "Procedurargument vid %L är lokalt i en PURE-procedur och har attributet POINTER"
 
 #: fortran/interface.c:2608
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Coindexed actual argument at %L in PURE procedure is passed to an INTENT(%s) argument"
-msgstr "Procedurargument vid %L är lokalt i en PURE-procedur och skickas till ett INTENT(%s)-argument"
+msgstr "Co-indexerat aktuellt argument vid %L i en PURE-procedur skickas till ett INTENT(%s)-argument"
 
 #: fortran/interface.c:2616
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Coindexed actual argument at %L in PURE procedure is passed to a POINTER dummy argument"
-msgstr "Procedurargument vid %L är lokalt i en PURE-procedur och skickas till ett INTENT(%s)-argument"
+msgstr "Co-indexerat aktuell argument vid %L i en PURE-procedur skickas till ett POINTER-attrappargument"
 
 #: fortran/interface.c:2627
 #, gcc-internal-format
@@ -34931,7 +34931,7 @@ msgid "Can't find keyword named '%s' in call to '%s' at %L"
 msgstr "Nyckelord med namnet \"%s\" saknas i anrop till \"%s\" vid %L"
 
 #: fortran/intrinsic.c:3523
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Argument '%s' appears twice in call to '%s' at %L"
 msgstr "Argument \"%s\" förekommer två gånger i anrop till \"%s\" vid %L"
 
@@ -34981,9 +34981,9 @@ msgid "Conversion from %s to %s at %L"
 msgstr "Konvertering från %s till %s vid %L"
 
 #: fortran/intrinsic.c:4311 fortran/intrinsic.c:4323
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Possible change of value in conversion from %s to %s at %L"
-msgstr "Utökning: Konvertering från %s till %s vid %L"
+msgstr "Möjligändring avvärde vid konvertering från %s till %s vid %L"
 
 #: fortran/intrinsic.c:4385
 #, gcc-internal-format
@@ -35076,9 +35076,9 @@ msgid "%s in format string at %L"
 msgstr "%s i formatsträng vid %L"
 
 #: fortran/io.c:1178
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Extraneous characters in format at %L"
-msgstr "Utökning: Tabulatortecken i format vid %C"
+msgstr "Överflödiga tecken i format vid %L"
 
 #: fortran/io.c:1200
 #, gcc-internal-format
@@ -35181,14 +35181,14 @@ msgid "Fortran 95 requires default INTEGER in %s tag at %L"
 msgstr "Fortran 95 kräver standard-INTEGER i %s-tagg vid %L"
 
 #: fortran/io.c:1502
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Fortran 2008: Nondefault LOGICAL in %s tag at %L"
-msgstr "Fortran 95 kräver standard-INTEGER i %s-tagg vid %L"
+msgstr "Fortran 2008: Icke-standard LOGICAL i %s-tagg vid %L"
 
 #: fortran/io.c:1510
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Fortran 2008: NEWUNIT specifier at %L"
-msgstr "Fortran 2008: \"G0\" i format vid %L"
+msgstr "Fortran 2008: NEWUNIT-specificerare vid %L"
 
 #: fortran/io.c:1528
 #, gcc-internal-format
@@ -35226,9 +35226,9 @@ msgid "NEWUNIT specifier must have FILE= or STATUS='scratch' at %C"
 msgstr "NEWUNIT-specificerare måste ha FILE= eller STATUS='scratch' vid %C"
 
 #: fortran/io.c:1849
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "OPEN statement at %C must have UNIT or NEWUNIT specified"
-msgstr "INQUIRE-sats vid %L kräver antingen FILE- eller UNIT-specificerare"
+msgstr "OPEN-sats vid %C måste ha antingen UNIT eller NEWUNIT angivet"
 
 #: fortran/io.c:1881
 #, gcc-internal-format
@@ -35527,9 +35527,9 @@ msgid "Embedded space in NAME= specifier at %C"
 msgstr "Inbäddad blank i NAME=-specificerare vid %C"
 
 #: fortran/match.c:972
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Loop variable at %C cannot be a coarray"
-msgstr "Slingvariabel vid %C får inte vara en subkomponent"
+msgstr "Slingvariabel vid %C får inte vara en co-vektor"
 
 #: fortran/match.c:978
 #, gcc-internal-format
@@ -35602,14 +35602,14 @@ msgid "Unexpected junk after ELSE IF statement at %C"
 msgstr "Oväntat skräp efter ELSE-IF-sats vid %C"
 
 #: fortran/match.c:1744
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Image control statement CRITICAL at %C in PURE procedure"
-msgstr "PRINT-sats vid %C är inte tillåten inuti PURE-procedur"
+msgstr "Bildstyrningssats CRITICAL vid %C i PURE-procedur"
 
 #: fortran/match.c:1748
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Fortran 2008: CRITICAL statement at %C"
-msgstr "Fortran 2003: CLASS-sats vid %C"
+msgstr "Fortran 2008: CRITICAL-sats vid %C"
 
 #: fortran/match.c:1760
 #, gcc-internal-format
@@ -35617,19 +35617,19 @@ msgid "Nested CRITICAL block at %C"
 msgstr ""
 
 #: fortran/match.c:1812
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Expected association list at %C"
-msgstr "Komma förväntades i I/O-lista vid %C"
+msgstr "Associationslista förväntades vid %C"
 
 #: fortran/match.c:1825
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Expected association at %C"
-msgstr "Förväntade vektorindex vid %C"
+msgstr "Association förväntade vid %C"
 
 #: fortran/match.c:1834
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Duplicate name '%s' in association at %C"
-msgstr "Dubblerad %s-specifikation vid %C"
+msgstr "Dubblerat namn \"%s\" i association vid %C"
 
 #: fortran/match.c:1842
 #, gcc-internal-format
@@ -35637,54 +35637,54 @@ msgid "Association target at %C must not be coindexed"
 msgstr ""
 
 #: fortran/match.c:1860
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Expected ')' or ',' at %C"
-msgstr "\",\" förväntades vid %C"
+msgstr "\")\" eller \",\" förväntades vid %C"
 
 #: fortran/match.c:1878
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Junk after ASSOCIATE statement at %C"
-msgstr "Dubblerad PRIVATE-sats vid %C"
+msgstr "Skräp efter ASSOCIATE-sats vid %C"
 
 #: fortran/match.c:2025
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Name '%s' in %s statement at %C is unknown"
-msgstr "Namnet \"%s\" i %s-sats vid %C är inte ett slingnamn"
+msgstr "Namnet \"%s\" i %s-sats vid %C är okänt"
 
 #: fortran/match.c:2033
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Name '%s' in %s statement at %C is not a construct name"
-msgstr "Namnet \"%s\" i %s-sats vid %C är inte ett slingnamn"
+msgstr "Namnet \"%s\" i %s-sats vid %C är inte ett konstruktionsnamn"
 
 #: fortran/match.c:2045
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s statement at %C leaves CRITICAL construct"
-msgstr "%s-sats vid %C lämnar ett OpenMP strukturerat block"
+msgstr "%s-sats vid %C lämnar CRITICAL-konstruktion"
 
 #: fortran/match.c:2055
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s statement at %C is not within a construct"
-msgstr "%s-sats vid %C är inte inne i en slinga"
+msgstr "%s-sats vid %C är inte inne i en konstruktion"
 
 #: fortran/match.c:2058
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s statement at %C is not within construct '%s'"
-msgstr "%s-sats vid %C är inte i slingan \"%s\""
+msgstr "%s-sats vid %C är inte inne i konstruktionen \"%s\""
 
 #: fortran/match.c:2082
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "CYCLE statement at %C is not applicable to non-loop construct '%s'"
-msgstr "%s-sats vid %C är inte i slingan \"%s\""
+msgstr "CYCLE-sats vid %C är inte tillämpbar på icke-slingkonstruktionen \"%s\""
 
 #: fortran/match.c:2087
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Fortran 2008: EXIT statement with no do-construct-name at %C"
-msgstr "Fortran 2003: IMPORT-sats vid %C"
+msgstr "Fortran 2008: EXIT-sats utan något do-konstruktionsnamn vid %C"
 
 #: fortran/match.c:2093
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s statement at %C is not applicable to construct '%s'"
-msgstr "%s-sats vid %C är inte i slingan \"%s\""
+msgstr "%s-sats vid %C är inte i tillämpbar på konstruktionen \"%s\""
 
 #: fortran/match.c:2100
 #, gcc-internal-format
@@ -35697,9 +35697,9 @@ msgid "EXIT statement at %C terminating !$OMP DO loop"
 msgstr "EXIT-sats vid %C avslutar !$OMP DO-slinga"
 
 #: fortran/match.c:2129
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "CYCLE statement at %C to non-innermost collapsed !$OMP DO loop"
-msgstr "EXIT-sats vid %C avslutar !$OMP DO-slinga"
+msgstr "CYCLE vid %C till kollapsad !$OMP DO-slinga som inte är innerst"
 
 #: fortran/match.c:2193
 #, gcc-internal-format
@@ -35707,14 +35707,14 @@ msgid "Image control statement STOP at %C in CRITICAL block"
 msgstr ""
 
 #: fortran/match.c:2201
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "STOP code at %L must be either INTEGER or CHARACTER type"
-msgstr "UNIT-specifikation vid %L måste vara ett INTEGER-uttryck eller en CHARACTER-variabel"
+msgstr "STOP-kod vid %L måste antingen vara av INTEGER- eller CHARACTER-typ"
 
 #: fortran/match.c:2208
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "STOP code at %L must be scalar"
-msgstr "Vektorindex vid %L måste vara skalärt"
+msgstr "STOP-kod vid %L måste vara skalär"
 
 #: fortran/match.c:2216
 #, gcc-internal-format
@@ -35722,9 +35722,9 @@ msgid "STOP code at %L must be default character KIND=%d"
 msgstr ""
 
 #: fortran/match.c:2224
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "STOP code at %L must be default integer KIND=%d"
-msgstr "Cray-pekare vid %C måste vara ett heltal"
+msgstr "STOP-kod vid %L måste vara standard heltal KIND=%d"
 
 #: fortran/match.c:2270
 #, gcc-internal-format
@@ -35732,19 +35732,19 @@ msgid "Deleted feature: PAUSE statement at %C"
 msgstr "Borttagen funktion: PAUSE-sats vid %C"
 
 #: fortran/match.c:2293
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Fortran 2008: ERROR STOP statement at %C"
-msgstr "Fortran 2003: IMPORT-sats vid %C"
+msgstr "Fortran 2008: ERROR STOP-sats vid %C"
 
 #: fortran/match.c:2319
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Image control statement SYNC at %C in PURE procedure"
-msgstr "PRINT-sats vid %C är inte tillåten inuti PURE-procedur"
+msgstr "Bildstyrsats SYNC vid %C i PURE-procedur"
 
 #: fortran/match.c:2323
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Fortran 2008: SYNC statement at %C"
-msgstr "Fortran 2003: CLASS-sats vid %C"
+msgstr "Fortran 2008: SYNC-sats vid %C"
 
 #: fortran/match.c:2335
 #, gcc-internal-format
@@ -35792,9 +35792,9 @@ msgid "Invalid type-spec at %C"
 msgstr "Ogiltig typspecifikation vid %C"
 
 #: fortran/match.c:2869
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Error in type-spec at %L"
-msgstr "Ogiltig typspecifikation vid %C"
+msgstr "Fel i typspecifikation vid %L"
 
 #: fortran/match.c:2879
 #, gcc-internal-format
@@ -35817,9 +35817,9 @@ msgid "Kind type parameter for entity at %L differs from the kind type parameter
 msgstr "Sorttypparameter för enheten vid %L skiljer sig från sorttypparametern i typspecifikationen"
 
 #: fortran/match.c:2970
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Allocate-object at %L is not a nonprocedure pointer or an allocatable variable"
-msgstr "Allokeringsobjekt vid %C är inte en pekare på annat än procedur eller en allokerbar variabel"
+msgstr "Allokeringsobjekt vid %L är inte en pekare på annat än procedur eller en allokerbar variabel"
 
 #: fortran/match.c:2977
 #, gcc-internal-format
@@ -35852,29 +35852,29 @@ msgid "SOURCE tag at %L requires only a single entity in the allocation-list"
 msgstr "SOURCE-taggen vid %L tillåter endast en enda enhet i allokeringslistan"
 
 #: fortran/match.c:3077
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Fortran 2008: MOLD tag at %L"
-msgstr "Fortran 2003: IOMSG-tagg vid %L"
+msgstr "Fortran 2008: MOLD-tagg vid %L"
 
 #: fortran/match.c:3084
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Redundant MOLD tag found at %L "
-msgstr "Överflödig ERRMSG-tagg funnen vid %L "
+msgstr "Överflödig MOLD-tagg funnen vid %L "
 
 #: fortran/match.c:3091
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "MOLD tag at %L conflicts with the typespec at %L"
-msgstr "SOURCE-taggen vid %L står i konflikt med typespecifikationen vid %L"
+msgstr "MOLD-taggen vid %L står i konflikt med typespecifikationen vid %L"
 
 #: fortran/match.c:3117
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "MOLD tag at %L conflicts with SOURCE tag at %L"
-msgstr "SOURCE-taggen vid %L står i konflikt med typespecifikationen vid %L"
+msgstr "MOLD-taggen vid %L står i konflikt med SOURCE-taggen vid %L"
 
 #: fortran/match.c:3125
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Allocate-object at %L with a deferred type parameter requires either a type-spec or SOURCE tag"
-msgstr "Allokering %s av ABSTRACT bastyp vid %L behöver en typspecifikation eller SOURCE="
+msgstr "Allokeringsobjekt vid %L med en fördröjd typparameter behöver antingen en typspecifikation eller en SOURCE-tagg"
 
 #: fortran/match.c:3261
 #, gcc-internal-format
@@ -36231,9 +36231,9 @@ msgid "Use of intrinsic module '%s' at %C conflicts with non-intrinsic module na
 msgstr "Användning av inbyggd modul \"%s\" vid %C står i konflikt med namn på ej inbyggd modul använd tidigare"
 
 #: fortran/module.c:5473
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "The symbol '%s', referrenced at %C, is not in the selected standard"
-msgstr "Symbolen \"%s\" refererad från %L finns inte i modulen \"%s\""
+msgstr "Symbolen \"%s\", refererad från %C, finns inte i den valda standarden"
 
 #: fortran/module.c:5480 fortran/module.c:5540
 #, gcc-internal-format
@@ -36311,19 +36311,19 @@ msgid "COLLAPSE clause argument not constant positive integer at %C"
 msgstr "COLLAPSE-klausulargument är inte ett konstant positivt heltal vid %C"
 
 #: fortran/openmp.c:469
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Unexpected junk after TASKWAIT clause at %C"
-msgstr "Oväntat skräp efter ELSE-sats vid %C"
+msgstr "Oväntat skräp efter TASKWAIT-klausul vid %C"
 
 #: fortran/openmp.c:487
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Unexpected junk after $OMP CRITICAL statement at %C"
-msgstr "Oväntat skräp efter ELSE-sats vid %C"
+msgstr "Oväntat skräp efter $OMP CRITICAL-sats vid %C"
 
 #: fortran/openmp.c:515
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Unexpected junk after $OMP FLUSH statement at %C"
-msgstr "Oväntat skräp efter ELSE-sats vid %C"
+msgstr "Oväntat skräp efter $OMP FLUSH-sats vid %C"
 
 #: fortran/openmp.c:547
 #, gcc-internal-format
@@ -36336,34 +36336,34 @@ msgid "Syntax error in !$OMP THREADPRIVATE list at %C"
 msgstr "Syntaxfel i !$OMP THREADPRIVATE-lista vid %C"
 
 #: fortran/openmp.c:663
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Unexpected junk after $OMP WORKSHARE statement at %C"
-msgstr "Oväntat skräp efter ELSE-sats vid %C"
+msgstr "Oväntat skräp efter $OMP ORDERED-sats vid %C"
 
 #: fortran/openmp.c:677
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Unexpected junk after $OMP MASTER statement at %C"
-msgstr "Oväntat skräp efter ELSE-sats vid %C"
+msgstr "Oväntat skräp efter $OMP MASTER-sats vid %C"
 
 #: fortran/openmp.c:691
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Unexpected junk after $OMP ORDERED statement at %C"
-msgstr "Oväntat skräp efter ELSE-sats vid %C"
+msgstr "Oväntat skräp efter $OMP ORDERED-sats vid %C"
 
 #: fortran/openmp.c:705
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Unexpected junk after $OMP ATOMIC statement at %C"
-msgstr "Oväntat skräp efter ELSE-IF-sats vid %C"
+msgstr "Oväntat skräp efter $OMP ATOMIC-sats vid %C"
 
 #: fortran/openmp.c:719
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Unexpected junk after $OMP BARRIER statement at %C"
-msgstr "Oväntat skräp efter ELSE-sats vid %C"
+msgstr "Oväntat skräp efter $OMP BARRIER-sats vid %C"
 
 #: fortran/openmp.c:736
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Unexpected junk after NOWAIT clause at %C"
-msgstr "Oväntat skräp efter ELSE-sats vid %C"
+msgstr "Oväntat skräp efter NOWAIT-klausul vid %C"
 
 #: fortran/openmp.c:783 fortran/resolve.c:8543 fortran/resolve.c:8983
 #, gcc-internal-format
@@ -36622,9 +36622,9 @@ msgid "Argument to -ffpe-trap is not valid: %s"
 msgstr "Argumentet till -ffpe-trap är inte giltigt: %s"
 
 #: fortran/options.c:507
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Argument to -fcoarray is not valid: %s"
-msgstr "Argumentet till -fcheck är inte giltigt: %s"
+msgstr "Argumentet till -fcoarray är inte giltigt: %s"
 
 #: fortran/options.c:545
 #, gcc-internal-format
@@ -36712,9 +36712,9 @@ msgid "Ignoring statement label in empty statement at %L"
 msgstr "Ignorerar satsetikett i tom sats vid %L"
 
 #: fortran/parse.c:715 fortran/parse.c:855
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Fortran 2008: Semicolon at %C without preceding statement"
-msgstr "Semikolon vid %C måste föregås av en sats"
+msgstr "Fortran 2008: Semikolon vid %C utan föregående sats"
 
 #: fortran/parse.c:791 fortran/parse.c:831
 #, gcc-internal-format
@@ -36947,9 +36947,9 @@ msgid "End of nonblock DO statement at %C is interwoven with another DO loop"
 msgstr "Slut på DO-sats utan block vid %C är sammanvävt med en annan DO-slinga"
 
 #: fortran/parse.c:3123
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Statement label in END CRITICAL at %C does not match CRITIAL label"
-msgstr "Satsetikett i ENDDO vid %C stämmer inte med DO-etikett"
+msgstr "Satsetikett i END CRITICAL vid %C stämmer inte med CRITICAL-etikett"
 
 #: fortran/parse.c:3187
 #, gcc-internal-format
@@ -36957,9 +36957,9 @@ msgid "Fortran 2008: BLOCK construct at %C"
 msgstr "Fortran 2008: BLOCK-konstruktion vid %C"
 
 #: fortran/parse.c:3217
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Fortran 2003: ASSOCIATE construct at %C"
-msgstr "Fortran 2008: BLOCK-konstruktion vid %C"
+msgstr "Fortran 2003: ASSOCIATE-konstruktion vid %C"
 
 #: fortran/parse.c:3314
 #, gcc-internal-format
@@ -37220,14 +37220,14 @@ msgid "Expected argument list at %C"
 msgstr "Argumentlista förväntades vid %C"
 
 #: fortran/primary.c:1900
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Procedure pointer component '%s' requires an argument list at %C"
-msgstr "Funktion \"%s\" kräver en argumentlista vid %C"
+msgstr "Procedurpekarkomponent \"%s\" kräver en argumentlista vid %C"
 
 #: fortran/primary.c:1988
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Coindexed procedure-pointer component at %C"
-msgstr "Syntaxfel i procedurpekarkomponent vid %C"
+msgstr "Co-indexerad procedurpekarkomponent vid %C"
 
 #: fortran/primary.c:2237
 #, gcc-internal-format
@@ -37265,9 +37265,9 @@ msgid "Component '%s' is initialized twice in the structure constructor at %C!"
 msgstr "Komponent \"%s\" initieras två gånger i postkonstrueraren vid %C!"
 
 #: fortran/primary.c:2387
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Coindexed expression to pointer component '%s' in structure constructor at %C!"
-msgstr "För många komponenter i postkonstruerare vid %C!"
+msgstr "Co-indexerat uttryck till pekar komponent \"%s\" i postkonstruerare vid %C!"
 
 #: fortran/primary.c:2437
 #, gcc-internal-format
@@ -37385,9 +37385,9 @@ msgid "Argument '%s' of pure subroutine '%s' at %L must have its INTENT specifie
 msgstr "Argumentet \"%s\" till pure-subrutin \"%s\" vid %L måste ha sitt INTENT angivet"
 
 #: fortran/resolve.c:353
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Coarray dummy argument '%s' at %L to elemental procedure"
-msgstr "Nyckelordsargument \"%s\" vid %L finns inte i proceduren"
+msgstr "Co-vektorattrappargument \"%s\" vid %L till elementär i proceduren"
 
 #: fortran/resolve.c:360
 #, gcc-internal-format
@@ -37395,9 +37395,9 @@ msgid "Argument '%s' of elemental procedure at %L must be scalar"
 msgstr "\"%s\"-argumentet till elementär procedur vid %L måste vara skalärt"
 
 #: fortran/resolve.c:367
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Argument '%s' of elemental procedure at %L cannot have the ALLOCATABLE attribute"
-msgstr "Argumentet \"%s\" av elementär procedur vid %L får inte ha attributet POINTER"
+msgstr "Argumentet \"%s\" av elementär procedur vid %L får inte ha attributet ALLOCATABLE"
 
 #: fortran/resolve.c:375
 #, gcc-internal-format
@@ -37410,9 +37410,9 @@ msgid "Dummy procedure '%s' not allowed in elemental procedure '%s' at %L"
 msgstr "Attrapprocedur \"%s\" är inte tillåten i elementär procedur \"%s\" vid %L"
 
 #: fortran/resolve.c:391
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Argument '%s' of elemental procedure '%s' at %L must have its INTENT specified"
-msgstr "Argumentet \"%s\" till pure-subrutin \"%s\" vid %L måste ha sitt INTENT angivet"
+msgstr "Argumentet \"%s\" till den elementära proceduren \"%s\" vid %L måste ha sitt INTENT angivet"
 
 #: fortran/resolve.c:403
 #, gcc-internal-format
@@ -37550,14 +37550,14 @@ msgid "The element in the derived type constructor at %L, for pointer component 
 msgstr "Elementet i den härledda typkonstrueraren vid %L, för pekarkomponent \"%s\", borde vara en POINTER eller en TARGET"
 
 #: fortran/resolve.c:1105
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Pointer initialization target at %L must not be ALLOCATABLE "
-msgstr "Skickat objekt-attrappargument till \"%s\" vid %L får inte vara ALLOCATABLE"
+msgstr "Pekarinitieringsmål vid %L får inte vara ALLOCATABLE "
 
 #: fortran/resolve.c:1111
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Pointer initialization target at %L must have the SAVE attribute"
-msgstr "Komponent vid %C måste ha attributet POINTER"
+msgstr "Pekarinitieringsmål vid %L måste ha attributet SAVE"
 
 #: fortran/resolve.c:1122
 #, gcc-internal-format
@@ -37620,9 +37620,9 @@ msgid "Intrinsic '%s' at %L is not allowed as an actual argument"
 msgstr "Inbyggd \"%s\" vid %L får inte vara ett aktuellt argument"
 
 #: fortran/resolve.c:1598
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Fortran 2008: Internal procedure '%s' is used as actual argument at %L"
-msgstr "Den interna proceduren \"%s\" är inte tillåten som aktuellt argument vid %L"
+msgstr "Fortran 2008: Den interna proceduren \"%s\" används som aktuellt argument vid %L"
 
 #: fortran/resolve.c:1606
 #, gcc-internal-format
@@ -37670,39 +37670,39 @@ msgid "Actual argument at %L for INTENT(%s) dummy '%s' of ELEMENTAL subroutine '
 msgstr "Aktuellt argument vid %L för INTENT(%s)-attrapp \"%s\" av ELEMENTAL-subrutin \"%s\" är en skalär, men ett annat aktuellt argument är en vektor"
 
 #: fortran/resolve.c:2069
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Character length mismatch in return type of function '%s' at %L (%ld/%ld)"
-msgstr "Ordning stämmer inte i argument \"%s\" vid %L (%d och %d)"
+msgstr "Teckenlängd stämmer inte i returtypen för funktion \"%s\" vid %L (%ld/%ld)"
 
 #: fortran/resolve.c:2077
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Return type mismatch of function '%s' at %L (%s/%s)"
-msgstr "Returvärdet för funktionen \"%s\" vid %L är inte satt"
+msgstr "Returtypen stämmer inte för funktionen \"%s\" vid %L (%s/%s)"
 
 #: fortran/resolve.c:2096
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Dummy argument '%s' of procedure '%s' at %L has an attribute that requires an explicit interface for this procedure"
-msgstr "Attrappargument \"%s\" till \"%s\" vid %L skulle ha namnet \"%s\" för att stämma med motsvarande argument i den åsidosatta proceduren"
+msgstr "Attrappargument \"%s\" till proceduren \"%s\" vid %L har ett attribut som kräver ett explicit gränssnitt för denna procedur"
 
 #: fortran/resolve.c:2106
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Procedure '%s' at %L with assumed-shape dummy argument '%s' must have an explicit interface"
-msgstr "Proceduren \"%s\" i %s vid %L har inget explicit gränssnitt"
+msgstr "Proceduren \"%s\" vid %L med attrappargument \"%s\" med förmodad form måsta ha ett explicit gränssnitt"
 
 #: fortran/resolve.c:2114
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Procedure '%s' at %L with coarray dummy argument '%s' must have an explicit interface"
-msgstr "Proceduren \"%s\" i %s vid %L har inget explicit gränssnitt"
+msgstr "Proceduren \"%s\" vid %L med ett co-vektorattrappargument \"%s\" måste ha ett explicit gränssnitt"
 
 #: fortran/resolve.c:2122
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Procedure '%s' at %L with parametrized derived type argument '%s' must have an explicit interface"
-msgstr "Ej konstant teckenlängdsfunktion \"%s\" vid %L måste ha ett explicit gränssnitt"
+msgstr "Proceduren \"%s\" vid %L med parametriserat härlett typargument \"%s\" måste ha ett explicit gränssnitt"
 
 #: fortran/resolve.c:2131
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Procedure '%s' at %L with polymorphic dummy argument '%s' must have an explicit interface"
-msgstr "Proceduren \"%s\" i %s vid %L har inget explicit gränssnitt"
+msgstr "Proceduren \"%s\" vid %L med polymorft attrappargument \"%s\" måste ha ett explicit gränssnitt"
 
 #: fortran/resolve.c:2143
 #, gcc-internal-format
@@ -37720,14 +37720,14 @@ msgid "Nonconstant character-length function '%s' at %L must have an explicit in
 msgstr "Ej konstant teckenlängdsfunktion \"%s\" vid %L måste ha ett explicit gränssnitt"
 
 #: fortran/resolve.c:2178
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ELEMENTAL procedure '%s' at %L must have an explicit interface"
-msgstr "Proceduren \"%s\" i %s vid %L har inget explicit gränssnitt"
+msgstr "ELEMENTAL-proceduren \"%s\" vid %L måste ha ett explicit gränssnitt"
 
 #: fortran/resolve.c:2185
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Procedure '%s' at %L with BIND(C) attribute must have an explicit interface"
-msgstr "Proceduren \"%s\" vid %L måste ha attributet BIND(C) för att vara C-interoperativ"
+msgstr "Proceduren \"%s\" vid %L med attributet BIND(C) måste ha ett explicit gränssnitt"
 
 #: fortran/resolve.c:2285
 #, gcc-internal-format
@@ -37802,9 +37802,9 @@ msgid "Parameter '%s' to '%s' at %L must be a scalar"
 msgstr "Parameter \"%s\" till \"%s\" vid %L måste vara en skalär"
 
 #: fortran/resolve.c:2822
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Parameter '%s' to '%s' at %L must not be polymorphic"
-msgstr "Parameter \"%s\" till \"%s\" vid %L måste vara en skalär"
+msgstr "Parametern \"%s\" till \"%s\" vid %L får inte vara polymorf"
 
 #. TODO: Update this error message to allow for procedure
 #. pointers once they are implemented.
@@ -37925,9 +37925,9 @@ msgid "Array reference at %L is out of bounds (%ld < %ld) in dimension %d"
 msgstr "Vektorreferens vid %L är utanför gränsen (%ld < %ld) i dimension %d"
 
 #: fortran/resolve.c:4103
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Array reference at %L is out of bounds (%ld < %ld) in codimension %d"
-msgstr "Vektorreferens vid %L är utanför gränsen (%ld < %ld) i dimension %d"
+msgstr "Vektorreferens vid %L är utanför gränsen (%ld < %ld) i co-dimension %d"
 
 #: fortran/resolve.c:4113
 #, gcc-internal-format
@@ -37935,9 +37935,9 @@ msgid "Array reference at %L is out of bounds (%ld > %ld) in dimension %d"
 msgstr "Vektorreferens vid %L är utanför gränsen (%ld > %ld) i dimension %d"
 
 #: fortran/resolve.c:4118
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Array reference at %L is out of bounds (%ld > %ld) in codimension %d"
-msgstr "Vektorreferens vid %L är utanför gränsen (%ld > %ld) i dimension %d"
+msgstr "Vektorreferens vid %L är utanför gränsen (%ld > %ld) i co-dimension %d"
 
 #: fortran/resolve.c:4138
 #, gcc-internal-format
@@ -37975,14 +37975,14 @@ msgid "Rank mismatch in array reference at %L (%d/%d)"
 msgstr "Ordning stämmer inte i vektorreferens vid %L (%d/%d)"
 
 #: fortran/resolve.c:4245
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Coindex rank mismatch in array reference at %L (%d/%d)"
-msgstr "Ordning stämmer inte i vektorreferens vid %L (%d/%d)"
+msgstr "Co-indexordning stämmer inte i vektorreferens vid %L (%d/%d)"
 
 #: fortran/resolve.c:4260
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Coindex of codimension %d must be a scalar at %L"
-msgstr "index i dimension %d är utanför gränsen vid %L"
+msgstr "Co-index i co-dimension %d måste vara en skalär vid %L"
 
 #: fortran/resolve.c:4288
 #, gcc-internal-format
@@ -38206,9 +38206,9 @@ msgid "The allocate-object at %L and the source-expr at %L shall have the same k
 msgstr "Allokeringsobjektet vid %L och källuttrycket vid %L skall ha samma sorts typparameter"
 
 #: fortran/resolve.c:6692
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Allocating %s of ABSTRACT base type at %L requires a type-spec or source-expr"
-msgstr "Allokering %s av ABSTRACT bastyp vid %L behöver en typspecifikation eller SOURCE="
+msgstr "Allokering %s av ABSTRACT bastyp vid %L behöver en typspecifikation eller source-uttryck"
 
 #: fortran/resolve.c:6764
 #, gcc-internal-format
@@ -38216,9 +38216,9 @@ msgid "Array specification required in ALLOCATE statement at %L"
 msgstr "Vektorspecifikation krävs i ALLOCATE-sats vid %L"
 
 #: fortran/resolve.c:6776
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Coarray specification required in ALLOCATE statement at %L"
-msgstr "Vektorspecifikation krävs i ALLOCATE-sats vid %L"
+msgstr "Co-vektorspecifikation krävs i ALLOCATE-sats vid %L"
 
 #: fortran/resolve.c:6802
 #, gcc-internal-format
@@ -38231,14 +38231,14 @@ msgid "'%s' must not appear in the array specification at %L in the same ALLOCAT
 msgstr "\"%s\" får inte förekomma i vektorspecifikationen vid %L i samma ALLOCATE-sats där den själv allokeras"
 
 #: fortran/resolve.c:6836
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Expected '*' in coindex specification in ALLOCATE statement at %L"
-msgstr "Felaktig vektorspecifikation i ALLOCATE-sats vid %L"
+msgstr "\"*\" förväntades i co-indexspecifikation i ALLOCATE-sats vid %L"
 
 #: fortran/resolve.c:6847
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Bad coarray specification in ALLOCATE statement at %L"
-msgstr "Felaktig vektorspecifikation i ALLOCATE-sats vid %L"
+msgstr "Felaktig co-vektorspecifikation i ALLOCATE-sats vid %L"
 
 #: fortran/resolve.c:6854
 #, gcc-internal-format
@@ -38246,9 +38246,9 @@ msgid "Sorry, allocatable scalar coarrays are not yet supported at %L"
 msgstr ""
 
 #: fortran/resolve.c:6862
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Support for entity at %L with deferred type parameter not yet implemented"
-msgstr "Sorttypparameter för enheten vid %L skiljer sig från sorttypparametern i typspecifikationen"
+msgstr "Stöd för enheten vid %L med fördröjd typparameter är inte implementerat ännu"
 
 #: fortran/resolve.c:6890
 #, gcc-internal-format
@@ -38320,9 +38320,9 @@ msgid "Argument of SELECT statement at %L must be a scalar expression"
 msgstr "Argument till SELECT-sats vid %L måste vara ett skalärt uttryck"
 
 #: fortran/resolve.c:7312 fortran/resolve.c:7320
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Expression in CASE statement at %L is not in the range of %s"
-msgstr "uttryck i CASE-sats vid %L måste vara av typ %s"
+msgstr "Uttryck i CASE-sats vid %L ligger inte i intervallet %s"
 
 #: fortran/resolve.c:7382 fortran/resolve.c:7688
 #, gcc-internal-format
@@ -38335,9 +38335,9 @@ msgid "Logical range in CASE statement at %L is not allowed"
 msgstr "Logiskt intervall CASE-sats vid %L är inte tillåtet"
 
 #: fortran/resolve.c:7420
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Constant logical value in CASE statement is repeated at %L"
-msgstr "konstant logiskt värde i CASE-sats upprepas vid %L"
+msgstr "Konstant logiskt värde i CASE-sats upprepas vid %L"
 
 #: fortran/resolve.c:7434
 #, gcc-internal-format
@@ -38350,14 +38350,14 @@ msgid "Logical SELECT CASE block at %L has more that two cases"
 msgstr "Logiskt SELECT CASE-block vid %L har mer än två fall"
 
 #: fortran/resolve.c:7601
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Associate-name '%s' at %L is used as array"
-msgstr "Globalt namn \"%s\" vid %L används redan som en %s vid %L"
+msgstr "Associationsnamn \"%s\" vid %L används som en vektor"
 
 #: fortran/resolve.c:7643
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Selector shall be polymorphic in SELECT TYPE statement at %L"
-msgstr "Selektorer skall vara polymorfiska i SELECT TYPE-sats vid %C"
+msgstr "Selektorer skall vara polymorfiska i SELECT TYPE-sats vid %L"
 
 #: fortran/resolve.c:7666
 #, gcc-internal-format
@@ -38401,24 +38401,24 @@ msgid "Data transfer element at %L cannot be a full reference to an assumed-size
 msgstr "Dataöverföringselement vid %L får inte vara en full referens till en vektor med förmodad storlek"
 
 #: fortran/resolve.c:8038
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Imageset argument at %L must be a scalar or rank-1 INTEGER expression"
-msgstr "Argument till SELECT-sats vid %L måste vara ett skalärt uttryck"
+msgstr "Bildmängdsargument vid %L måste vara ett skalärt eller ordning-1-uttryck"
 
 #: fortran/resolve.c:8042 fortran/resolve.c:8052
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Imageset argument at %L must between 1 and num_images()"
-msgstr "Argument till ACOS vid %L måste vara mellan -1 och 1"
+msgstr "Bildmängdsargument vid %L måste vara mellan 1 och num_images()"
 
 #: fortran/resolve.c:8061
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "STAT= argument at %L must be a scalar INTEGER variable"
-msgstr "Statvariabel vid %L måste vara en INTEGER-variabel"
+msgstr "STAT=-argumentet vid %L måste vara en skalär INTEGER-variabel"
 
 #: fortran/resolve.c:8068
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ERRMSG= argument at %L must be a scalar CHARACTER variable"
-msgstr "Errmsg-variabeln vid %L måste vara en skalär CHARACTER-variabel"
+msgstr "ERRMSG=-variabeln vid %L måste vara en skalär CHARACTER-variabel"
 
 #: fortran/resolve.c:8095
 #, gcc-internal-format
@@ -38491,9 +38491,9 @@ msgid "CHARACTER expression will be truncated in assignment (%d/%d) at %L"
 msgstr "CHARACTER-uttryck kommer att huggas av i tilldelning (%d/%d) vid %L"
 
 #: fortran/resolve.c:8735
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Coindexed expression at %L is assigned to a derived type variable with a POINTER component in a PURE procedure"
-msgstr "Den orena variabeln vid %L är tilldelad till en härledd typvariabel med en POINTER-komponent i en PURE-procedur (12.6)"
+msgstr "Co-indexerat uttryck vid %L är tilldelat till en härledd typvariabel med en POINTER-komponent i en PURE-procedur"
 
 #: fortran/resolve.c:8740
 #, gcc-internal-format
@@ -38501,9 +38501,9 @@ msgid "The impure variable at %L is assigned to a derived type variable with a P
 msgstr "Den orena variabeln vid %L är tilldelad till en härledd typvariabel med en POINTER-komponent i en PURE-procedur (12.6)"
 
 #: fortran/resolve.c:8750
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Assignment to coindexed variable at %L in a PURE procedure"
-msgstr "Tilldelning till en FORALL-indexvariabel vid %L"
+msgstr "Tilldelning till en co-indexerad variabel vid %L i en PURE-procedur"
 
 #: fortran/resolve.c:8761
 #, gcc-internal-format
@@ -38511,9 +38511,9 @@ msgid "Variable must not be polymorphic in assignment at %L"
 msgstr "Variabeln får inte vara polymorfisk i tilldelningen vid %L"
 
 #: fortran/resolve.c:8769
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Coindexed variable must not be have an allocatable ultimate component in assignment at %L"
-msgstr "Variabeln får inte vara polymorfisk i tilldelningen vid %L"
+msgstr "Co-indexerad variabel får inte ha en allokerbar yttersta komponent i tilldelningen vid %L"
 
 #: fortran/resolve.c:8891
 #, gcc-internal-format
@@ -38546,9 +38546,9 @@ msgid "Exit condition of DO WHILE loop at %L must be a scalar LOGICAL expression
 msgstr "Avslutsvillkor i DO WHILE-slinga vid %L måste vara ett skalärt LOGICAL-uttryck"
 
 #: fortran/resolve.c:9113
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "FORALL mask clause at %L requires a scalar LOGICAL expression"
-msgstr "FORALL-maskklausul vid %L kräver ett LOGICAL-uttryck"
+msgstr "FORALL-maskklausul vid %L kräver ett skalärt LOGICAL-uttryck"
 
 #: fortran/resolve.c:9192 fortran/resolve.c:9248
 #, gcc-internal-format
@@ -38997,9 +38997,9 @@ msgid "Non-extensible derived-type '%s' at %L must not be ABSTRACT"
 msgstr "Ej utvidgningsbar härledd typ \"%s\" vid %L får inte vara ABSTRACT"
 
 #: fortran/resolve.c:11244
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Coarray component '%s' at %L must be allocatable with deferred shape"
-msgstr "Vektorpekare \"%s\" vid %L måste ha en fördröjd form"
+msgstr "Co-vektorkomponent \"%s\" vid %L måste vara allokerbar med fördröjd form"
 
 #: fortran/resolve.c:11253
 #, gcc-internal-format
@@ -39012,9 +39012,9 @@ msgid "Component '%s' at %L with coarray component shall be a nonpointer, nonall
 msgstr ""
 
 #: fortran/resolve.c:11272
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Component '%s' at %L has the CONTIGUOUS attribute but is not an array pointer"
-msgstr "\"%s\" vid %L kan inte ha attributet VALUE eftersom det inte är ett attrappargument"
+msgstr "Component \"%s\" vid %L har attributet CONTIGUOUS men är inte en vektorpekare"
 
 #: fortran/resolve.c:11280
 #, gcc-internal-format
@@ -39147,14 +39147,14 @@ msgid "Incompatible derived type in PARAMETER at %L"
 msgstr "Inkompatibel härledd typ i PARAMETER vid %L"
 
 #: fortran/resolve.c:11809
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "PROTECTED attribute conflicts with EXTERNAL attribute at %L"
-msgstr "PROCEDURE-attribut i konflikt med INTENT-attribut i \"%s\" vid %L"
+msgstr "Attributet PROTECTED står i konflikt med attributet EXTERNAL vid %L"
 
 #: fortran/resolve.c:11812
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "PROCEDURE attribute conflicts with PROTECTED attribute at %L"
-msgstr "PROCEDURE-attribut i konflikt med INTENT-attribut i \"%s\" vid %L"
+msgstr "Attributet PROCEDURE står i konflikt med attributet PROTECTED vid %L"
 
 #: fortran/resolve.c:11824
 #, gcc-internal-format
@@ -39212,9 +39212,9 @@ msgid "The INTENT(OUT) dummy argument '%s' at %L is ASSUMED SIZE and so cannot h
 msgstr "INTENT(OUT)-attrappargumentet \"%s\" vid %L har ASSUMED SIZE och kan därför inte ha en standardinitierare"
 
 #: fortran/resolve.c:12090
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Function result '%s' at %L shall not be a coarray or have a coarray component"
-msgstr "Funktionsresultat \"%s\" vid %L kan inte ha en initierare"
+msgstr "Funktionsresultat \"%s\" vid %L skall inte vara en co-vektor eller ha en co-vektorkomponent"
 
 #: fortran/resolve.c:12096
 #, gcc-internal-format
@@ -39232,14 +39232,14 @@ msgid "Variable '%s' at %L is a coarray or has a coarray component and is not AL
 msgstr ""
 
 #: fortran/resolve.c:12120
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Coarray variable '%s' at %L shall not have codimensions with deferred shape"
-msgstr "Vektor \"%s\" vid %L kan inte ha en fördröjd form"
+msgstr "Co-vektorvariabeln \"%s\" vid %L skall inte ha co-dimensioner med fördröjd form"
 
 #: fortran/resolve.c:12124
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Allocatable coarray variable '%s' at %L must have deferred shape"
-msgstr "Allokerbar vektor \"%s\" vid %L måste ha en fördröjd form"
+msgstr "Allokerbar co-vektorvariabel \"%s\" vid %L måste ha en fördröjd form"
 
 #: fortran/resolve.c:12132
 #, gcc-internal-format
@@ -39247,9 +39247,9 @@ msgid "Variable '%s' at %L is INTENT(OUT) and can thus not be an allocatable coa
 msgstr ""
 
 #: fortran/resolve.c:12138
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Coarray dummy variable '%s' at %L not allowed in BIND(C) procedure '%s'"
-msgstr "Attrapprocedur vid %L är inte tillåten i ELEMENTAL-procedur"
+msgstr "Co-attrappvariabeln \"%s\" vid %L är inte tillåten i BIND(C)-proceduren \"%s\""
 
 #: fortran/resolve.c:12208
 #, gcc-internal-format
@@ -39267,9 +39267,9 @@ msgid "DATA array '%s' at %L must be specified in a previous declaration"
 msgstr "DATA-vektor \"%s\" vid %L måste anges i en tidigare deklaration"
 
 #: fortran/resolve.c:12322
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "DATA element '%s' at %L cannot have a coindex"
-msgstr "Attrapp-\"%s\" vid %L kan inte ha en initierare"
+msgstr "DATA-elementet \"%s\" vid %L kan inte ha ett co-index"
 
 #: fortran/resolve.c:12331
 #, gcc-internal-format
@@ -41418,14 +41418,14 @@ msgstr ""
 #. "misplaced '@synthesize' Objective-C++ construct" and skips
 #. the declaration.
 #: objc/objc-act.c:9922
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<@synthesize%> not in @implementation context"
-msgstr "%<@end%> saknas i implementationskontext"
+msgstr "%<@synthesize%> som inte är i @implementation-kontext"
 
 #: objc/objc-act.c:9928
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<@synthesize%> can not be used in categories"
-msgstr "%s kan inte användas i en asm här"
+msgstr "%<@synthesize%> kan inte användas i kategorier"
 
 #: objc/objc-act.c:9937
 #, gcc-internal-format
@@ -41442,9 +41442,9 @@ msgstr ""
 #. "misplaced '@dynamic' Objective-C++ construct" and skips the
 #. declaration.
 #: objc/objc-act.c:10031
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<@dynamic%> not in @implementation context"
-msgstr "%<@end%> saknas i implementationskontext"
+msgstr "%<@dynamic%> som inte är i @implementation-kontext"
 
 #: objc/objc-act.c:10053
 #, gcc-internal-format
@@ -41458,9 +41458,9 @@ msgstr "dubblerad deklaration av protokoll %qE"
 
 #. TODO: Detect this error earlier.
 #: objc/objc-act.c:10502
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "instance variable has unknown size"
-msgstr "instansvariabeln %qs har okänd storlek"
+msgstr "instansvariabel har okänd storlek"
 
 #: objc/objc-act.c:10866
 #, gcc-internal-format
