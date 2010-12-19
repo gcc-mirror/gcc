@@ -410,6 +410,7 @@ typedef Class (*objc_get_unknown_class_handler)(const char *class_name);
    This function is not safe to call in a multi-threaded environment
    because other threads may be trying to use the get unknown class
    handler while you change it!  */
+objc_EXPORT 
 objc_get_unknown_class_handler
 objc_setGetUnknownClassHandler (objc_get_unknown_class_handler new_handler);
 
@@ -971,21 +972,21 @@ objc_EXPORT void objc_free(void *mem);
 
 /* Return the size of a variable which has the specified 'type'
    encoding.  */
-int objc_sizeof_type (const char *type);
+objc_EXPORT int objc_sizeof_type (const char *type);
 
 /* Return the align of a variable which has the specified 'type'
    encoding.  */
-int objc_alignof_type (const char *type);
+objc_EXPORT int objc_alignof_type (const char *type);
 
 /* Return the aligned size of a variable which has the specified
    'type' encoding.  The aligned size is the size rounded up to the
    nearest alignment.  */
-int objc_aligned_size (const char *type);
+objc_EXPORT int objc_aligned_size (const char *type);
 
 /* Return the promoted size of a variable which has the specified
    'type' encoding.  This is the size rounded up to the nearest
    integral of the wordsize, taken to be the size of a void *.  */
-int objc_promoted_size (const char *type);
+objc_EXPORT int objc_promoted_size (const char *type);
 
 
 /* The following functions are used when parsing the type encoding of
@@ -998,30 +999,30 @@ int objc_promoted_size (const char *type);
 /* Skip some type qualifiers (_C_CONST, _C_IN, etc).  These may
   eventually precede typespecs occurring in method prototype
   encodings.  */
-const char *objc_skip_type_qualifiers (const char *type);
+objc_EXPORT const char *objc_skip_type_qualifiers (const char *type);
 
 /* Skip one typespec element (_C_CLASS, _C_SEL, etc).  If the typespec
   is prepended by type qualifiers, these are skipped as well.  */
-const char *objc_skip_typespec (const char *type);
+objc_EXPORT const char *objc_skip_typespec (const char *type);
 
 /* Skip an offset.  */
-const char *objc_skip_offset (const char *type);
+objc_EXPORT const char *objc_skip_offset (const char *type);
 
 /* Skip an argument specification (ie, skipping a typespec, which may
    include qualifiers, and an offset too).  */
-const char *objc_skip_argspec (const char *type);
+objc_EXPORT const char *objc_skip_argspec (const char *type);
 
 /* Read type qualifiers (_C_CONST, _C_IN, etc) from string 'type'
    (stopping at the first non-type qualifier found) and return an
    unsigned int which is the logical OR of all the corresponding flags
    (_F_CONST, _F_IN etc).  */
-unsigned objc_get_type_qualifiers (const char *type);
+objc_EXPORT unsigned objc_get_type_qualifiers (const char *type);
 
 
 /* Note that the following functions work for very simple structures,
    but get easily confused by more complicated ones (for example,
-   containing vectors).  A better solution is required.
-*/
+   containing vectors).  A better solution is required.  These
+   functions are likely to change in the next GCC release.  */
 
 /* The following three functions can be used to determine how a
    structure is laid out by the compiler. For example:
@@ -1054,16 +1055,16 @@ struct objc_struct_layout
   unsigned int record_align;
 };
 
-void objc_layout_structure (const char *type,
+objc_EXPORT void objc_layout_structure (const char *type,
                             struct objc_struct_layout *layout);
-BOOL  objc_layout_structure_next_member (struct objc_struct_layout *layout);
-void objc_layout_finish_structure (struct objc_struct_layout *layout,
-                                   unsigned int *size,
-                                   unsigned int *align);
-void objc_layout_structure_get_info (struct objc_struct_layout *layout,
-                                     unsigned int *offset,
-                                     unsigned int *align,
-                                     const char **type);
+objc_EXPORT BOOL  objc_layout_structure_next_member (struct objc_struct_layout *layout);
+objc_EXPORT void objc_layout_finish_structure (struct objc_struct_layout *layout,
+					       unsigned int *size,
+					       unsigned int *align);
+objc_EXPORT void objc_layout_structure_get_info (struct objc_struct_layout *layout,
+						 unsigned int *offset,
+						 unsigned int *align,
+						 const char **type);
 
 #ifdef __cplusplus
 }
