@@ -31,7 +31,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc-private/hash.h"
 #include "objc-private/objc-list.h" 
 #include "objc-private/module-abi-8.h" 
-#include "objc-private/runtime.h"
+#include "objc-private/runtime.h"   /* For __objc_resolve_class_links().  */
 #include "objc-private/selector.h"  /* For __sel_register_typed_name().  */
 #include "objc-private/objc-sync.h" /* For __objc_sync_init() */
 #include "objc-private/protocols.h" /* For __objc_protocols_init(),
@@ -719,11 +719,15 @@ __objc_exec_class (struct objc_module *module)
 
   objc_send_load ();
 
-  objc_mutex_unlock (__objc_runtime_mutex);
+  /* Check if there are no unresolved classes (ie, classes whose
+     superclass has not been loaded yet) and that the 'Object' class,
+     used as the class of classes, exist.  If so, it is worth
+     "resolving the class links" at this point, which will setup all
+     the class/superclass pointers.  */
+  if (!unresolved_classes && objc_getClass ("Object"))
+    __objc_resolve_class_links ();
 
-  /* TODO: Do we need to add a call to __objc_resolve_class_links()
-     here ?  gnustep-base does it manually after it loads a module.
-     Shouldn't we do it automatically ?  */
+  objc_mutex_unlock (__objc_runtime_mutex);
 }
 
 static void
