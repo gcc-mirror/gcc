@@ -32,6 +32,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc-private/objc-list.h" 
 #include "objc-private/module-abi-8.h" 
 #include "objc-private/runtime.h"
+#include "objc-private/selector.h"  /* For __sel_register_typed_name().  */
 #include "objc-private/objc-sync.h" /* For __objc_sync_init() */
 #include "objc-private/protocols.h" /* For __objc_protocols_init(),
 				       __objc_protocols_add_protocol()
@@ -91,11 +92,6 @@ void (*_objc_load_callback) (Class class, struct objc_category *category); /* !T
 
 /* Are all categories/classes resolved?  */
 BOOL __objc_dangling_categories = NO;           /* !T:UNUSED */
-
-/* TODO: This needs to go into objc-private/selector.h.  */
-extern SEL
-__sel_register_typed_name (const char *name, const char *types, 
-			   struct objc_selector *orig, BOOL is_const);
 
 /* Sends +load to all classes and categories in certain
    situations.  */

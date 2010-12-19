@@ -1,3 +1,10 @@
+2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* init.c: Include objc-private/selector.h.  Do not declare
+	__sel_register_typed_name.
+	* objc-private/selector.h (__sel_register_typed_name): Declare.
+	* selector.c: Include objc-private/selector.h.
+	
 2010-12-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* class.c: Tidied up comments and indentation.  No code changes.

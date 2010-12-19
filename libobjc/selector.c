@@ -30,6 +30,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc-private/module-abi-8.h"
 #include "objc-private/runtime.h"
 #include "objc-private/sarray.h"
+#include "objc-private/selector.h"
 
 /* Initial selector hash table size. Value doesn't matter much.  */
 #define SELECTOR_HASH_SIZE 128
