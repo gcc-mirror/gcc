@@ -128,7 +128,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcc 3.3\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-10-22 14:48+0000\n"
+"POT-Creation-Date: 2010-12-18 16:00+0000\n"
 "PO-Revision-Date: 2003-05-25 18:00+0200\n"
 "Last-Translator: Ole Laursen <olau@hardworking.dk>\n"
 "Language-Team: Danish <dansk@klid.dk>\n"
@@ -525,7 +525,7 @@ msgstr "\"%s\" genpostuleret"
 msgid "unterminated #%s"
 msgstr "uafsluttet #%s"
 
-#: directives-only.c:222 lex.c:2068 traditional.c:163
+#: directives-only.c:222 lex.c:2074 traditional.c:163
 msgid "unterminated comment"
 msgstr "uafsluttet kommentar"
 
@@ -904,19 +904,19 @@ msgstr "nultegn bevaret i strengkonstant"
 msgid "missing terminating %c character"
 msgstr "manglende afsluttende '%c'-tegn"
 
-#: lex.c:2079
+#: lex.c:2085
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "kommentarer i C++-stil er ikke tilladt i ISO C90"
 
-#: lex.c:2081
+#: lex.c:2087
 msgid "(this will be reported only once per input file)"
 msgstr "(dette rapporteres kun en enkelt gang per inddatafil)"
 
-#: lex.c:2086
+#: lex.c:2092
 msgid "multi-line comment"
 msgstr "flerlinjers kommentar"
 
-#: lex.c:2406
+#: lex.c:2412
 #, c-format
 msgid "unspellable token %s"
 msgstr "symbol %s kan ikke staves"
