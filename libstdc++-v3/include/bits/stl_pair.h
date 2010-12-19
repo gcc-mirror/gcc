@@ -49,9 +49,9 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-/** @file stl_pair.h
+/** @file bits/stl_pair.h
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{utility}
  */
 
 #ifndef _STL_PAIR_H
@@ -72,7 +72,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /// piecewise_construct
   constexpr piecewise_construct_t piecewise_construct = piecewise_construct_t();
 
-  // forward declarations
+  // Forward declarations.
   template<typename...>
     class tuple;
 
@@ -80,15 +80,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     struct _Index_tuple;
 #endif
 
-  /// pair holds two objects of arbitrary type.
+  /// Struct holding two objects of arbitrary type.
   template<class _T1, class _T2>
     struct pair
     {
-      typedef _T1 first_type;    ///<  @c first_type is the first bound type
-      typedef _T2 second_type;   ///<  @c second_type is the second bound type
+      typedef _T1 first_type;    /// @c first_type is the first bound type
+      typedef _T2 second_type;   /// @c second_type is the second bound type
 
-      _T1 first;                 ///< @c first is a copy of the first object
-      _T2 second;                ///< @c second is a copy of the second object
+      _T1 first;                 /// @c first is a copy of the first object
+      _T2 second;                /// @c second is a copy of the second object
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 265.  std::pair::pair() effects overly restrictive

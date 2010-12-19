@@ -23,9 +23,8 @@
 // <http://www.gnu.org/licenses/>.
 
 /** @file ext/vstring_fwd.h
- *  This file is a GNU extension to the Standard C++ Library.
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{ext/vstring.h}
  */
 
 #ifndef _VSTRING_FWD_H

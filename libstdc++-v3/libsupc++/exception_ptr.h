@@ -24,8 +24,8 @@
 // <http://www.gnu.org/licenses/>.
 
 /** @file exception_ptr.h
- *  This is an internal header file, included by other headers and the
- *  implementation. You should not attempt to use it directly.
+ *  This is an internal header file, included by other library headers.
+ *  Do not attempt to use it directly. @headername{exception}
  */
 
 #ifndef _EXCEPTION_PTR_H

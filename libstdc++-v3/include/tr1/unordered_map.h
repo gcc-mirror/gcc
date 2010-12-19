@@ -24,7 +24,7 @@
 
 /** @file tr1/unordered_map.h
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{tr1/unordered_map}
  */
 
 namespace std
@@ -40,7 +40,7 @@ namespace tr1
 	   bool __cache_hash_code = false>
     class __unordered_map
     : public _Hashtable<_Key, std::pair<const _Key, _Tp>, _Alloc,
-			std::_Select1st<std::pair<const _Key, _Tp> >, _Pred, 
+			std::_Select1st<std::pair<const _Key, _Tp> >, _Pred,
 			_Hash, __detail::_Mod_range_hashing,
 			__detail::_Default_ranged_hash,
 			__detail::_Prime_rehash_policy,
@@ -52,7 +52,7 @@ namespace tr1
 			 __detail::_Default_ranged_hash,
 			 __detail::_Prime_rehash_policy,
 			 __cache_hash_code, false, true>
-        _Base;
+	_Base;
 
     public:
       typedef typename _Base::size_type       size_type;
@@ -71,17 +71,17 @@ namespace tr1
       { }
 
       template<typename _InputIterator>
-        __unordered_map(_InputIterator __f, _InputIterator __l, 
+	__unordered_map(_InputIterator __f, _InputIterator __l,
 			size_type __n = 10,
-			const hasher& __hf = hasher(), 
-			const key_equal& __eql = key_equal(), 
+			const hasher& __hf = hasher(),
+			const key_equal& __eql = key_equal(),
 			const allocator_type& __a = allocator_type())
 	: _Base(__f, __l, __n, __hf, __detail::_Mod_range_hashing(),
 		__detail::_Default_ranged_hash(),
 		__eql, std::_Select1st<std::pair<const _Key, _Tp> >(), __a)
 	{ }
     };
-  
+
   template<class _Key, class _Tp,
 	   class _Hash = hash<_Key>,
 	   class _Pred = std::equal_to<_Key>,
@@ -103,14 +103,14 @@ namespace tr1
 			 __detail::_Default_ranged_hash,
 			 __detail::_Prime_rehash_policy,
 			 __cache_hash_code, false, false>
-        _Base;
+	_Base;
 
     public:
       typedef typename _Base::size_type       size_type;
       typedef typename _Base::hasher          hasher;
       typedef typename _Base::key_equal       key_equal;
       typedef typename _Base::allocator_type  allocator_type;
-      
+
       explicit
       __unordered_multimap(size_type __n = 10,
 			   const hasher& __hf = hasher(),
@@ -123,15 +123,15 @@ namespace tr1
 
 
       template<typename _InputIterator>
-        __unordered_multimap(_InputIterator __f, _InputIterator __l, 
+	__unordered_multimap(_InputIterator __f, _InputIterator __l,
 			     typename _Base::size_type __n = 0,
-			     const hasher& __hf = hasher(), 
-			     const key_equal& __eql = key_equal(), 
+			     const hasher& __hf = hasher(),
+			     const key_equal& __eql = key_equal(),
 			     const allocator_type& __a = allocator_type())
 	: _Base(__f, __l, __n, __hf, __detail::_Mod_range_hashing(),
 		__detail::_Default_ranged_hash(),
 		__eql, std::_Select1st<std::pair<const _Key, _Tp> >(), __a)
-        { }
+	{ }
     };
 
   template<class _Key, class _Tp, class _Hash, class _Pred, class _Alloc,
@@ -196,15 +196,15 @@ namespace tr1
       { }
 
       template<typename _InputIterator>
-        unordered_map(_InputIterator __f, _InputIterator __l, 
+	unordered_map(_InputIterator __f, _InputIterator __l,
 		      size_type __n = 10,
-		      const hasher& __hf = hasher(), 
-		      const key_equal& __eql = key_equal(), 
+		      const hasher& __hf = hasher(),
+		      const key_equal& __eql = key_equal(),
 		      const allocator_type& __a = allocator_type())
 	: _Base(__f, __l, __n, __hf, __eql, __a)
-        { }
+	{ }
     };
-  
+
   /**
    *  @brief A standard container composed of equivalent keys
    *  (possibly containing multiple of each key value) that associates
@@ -238,7 +238,7 @@ namespace tr1
       typedef typename _Base::hasher          hasher;
       typedef typename _Base::key_equal       key_equal;
       typedef typename _Base::allocator_type  allocator_type;
-      
+
       explicit
       unordered_multimap(size_type __n = 10,
 			 const hasher& __hf = hasher(),
@@ -249,13 +249,13 @@ namespace tr1
 
 
       template<typename _InputIterator>
-        unordered_multimap(_InputIterator __f, _InputIterator __l, 
+	unordered_multimap(_InputIterator __f, _InputIterator __l,
 			   typename _Base::size_type __n = 0,
-			   const hasher& __hf = hasher(), 
-			   const key_equal& __eql = key_equal(), 
+			   const hasher& __hf = hasher(),
+			   const key_equal& __eql = key_equal(),
 			   const allocator_type& __a = allocator_type())
 	: _Base(__f, __l, __n, __hf, __eql, __a)
-        { }
+	{ }
 
     };
 

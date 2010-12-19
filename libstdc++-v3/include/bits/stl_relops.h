@@ -48,9 +48,9 @@
  *
  */
 
-/** @file stl_relops.h
+/** @file bits/stl_relops.h
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{utility}
  *
  *  Inclusion of this file has been removed from
  *  all of the other STL headers for safety reasons, except std_utility.h.
@@ -58,7 +58,7 @@
  *  with http://gcc.gnu.org/ml/libstdc++/2001-01/msg00223.html, or
  *  http://gcc.gnu.org/onlinedocs/libstdc++/faq.html#faq.ambiguous_overloads
  *
- *  Short summary:  the rel_ops operators should be avoided for the present.
+ *  Short summary: the rel_ops operators should be avoided for the present.
  */
 
 #ifndef _STL_RELOPS_H

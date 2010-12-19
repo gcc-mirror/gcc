@@ -22,6 +22,10 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+/** @file ext/string_conversions.h
+ *  This file is a GNU extension to the Standard C++ Library.
+ */
+
 #ifndef _STRING_CONVERSIONS_H
 #define _STRING_CONVERSIONS_H 1
 

@@ -24,7 +24,7 @@
 
 /** @file bits/random.tcc
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{random}
  */
 
 #ifndef _RANDOM_TCC

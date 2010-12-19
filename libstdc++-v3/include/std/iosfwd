@@ -24,7 +24,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file iosfwd
+/** @file include/iosfwd
  *  This is a Standard C++ Library header.
  */
 
@@ -43,7 +43,7 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
-  /** 
+  /**
    *  @defgroup io I/O
    *
    *  Nearly all of the I/O classes are parameterized on the type of
@@ -71,7 +71,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *
    *  @{
   */
-  class ios_base; 
+  class ios_base;
 
   template<typename _CharT, typename _Traits = char_traits<_CharT> >
     class basic_ios;
@@ -122,37 +122,85 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _CharT, typename _Traits = char_traits<_CharT> >
     class ostreambuf_iterator;
 
-  // _GLIBCXX_RESOLVE_LIB_DEFECTS
-  // Not included.   (??? Apparently no LWG number?)
 
-  typedef basic_ios<char> 		ios;		///< @isiosfwd
-  typedef basic_streambuf<char> 	streambuf;	///< @isiosfwd
-  typedef basic_istream<char> 		istream;	///< @isiosfwd
-  typedef basic_ostream<char> 		ostream;	///< @isiosfwd
-  typedef basic_iostream<char> 		iostream;	///< @isiosfwd
-  typedef basic_stringbuf<char> 	stringbuf;	///< @isiosfwd
-  typedef basic_istringstream<char> 	istringstream;	///< @isiosfwd
-  typedef basic_ostringstream<char> 	ostringstream;	///< @isiosfwd
-  typedef basic_stringstream<char> 	stringstream;	///< @isiosfwd
-  typedef basic_filebuf<char> 		filebuf;	///< @isiosfwd
-  typedef basic_ifstream<char> 		ifstream;	///< @isiosfwd
-  typedef basic_ofstream<char> 		ofstream;	///< @isiosfwd
-  typedef basic_fstream<char> 		fstream;	///< @isiosfwd
+  /// Base class for @c char streams.
+  typedef basic_ios<char> 		ios; 
+
+  /// Base class for @c char buffers.
+  typedef basic_streambuf<char> 	streambuf;
+
+  /// Base class for @c char input streams.
+  typedef basic_istream<char> 		istream;
+
+  /// Base class for @c char output streams.
+  typedef basic_ostream<char> 		ostream;
+
+  /// Base class for @c char mixed input and output streams.
+  typedef basic_iostream<char> 		iostream;
+
+  /// Class for @c char memory buffers.
+  typedef basic_stringbuf<char> 	stringbuf;
+
+  /// Class for @c char input memory streams.
+  typedef basic_istringstream<char> 	istringstream;
+
+  /// Class for @c char output memory streams.
+  typedef basic_ostringstream<char> 	ostringstream;
+
+  /// Class for @c char mixed input and output memory streams.
+  typedef basic_stringstream<char> 	stringstream;
+
+  /// Class for @c char file buffers.
+  typedef basic_filebuf<char> 		filebuf;
+
+  /// Class for @c char input file streams.
+  typedef basic_ifstream<char> 		ifstream;
+
+  /// Class for @c char output file streams.
+  typedef basic_ofstream<char> 		ofstream;
+
+  /// Class for @c char mixed input and output file streams.
+  typedef basic_fstream<char> 		fstream;
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-  typedef basic_ios<wchar_t> 		wios;		///< @isiosfwd
-  typedef basic_streambuf<wchar_t> 	wstreambuf;	///< @isiosfwd
-  typedef basic_istream<wchar_t> 	wistream;	///< @isiosfwd
-  typedef basic_ostream<wchar_t> 	wostream;	///< @isiosfwd
-  typedef basic_iostream<wchar_t> 	wiostream;	///< @isiosfwd
-  typedef basic_stringbuf<wchar_t> 	wstringbuf;	///< @isiosfwd
-  typedef basic_istringstream<wchar_t> 	wistringstream;	///< @isiosfwd
-  typedef basic_ostringstream<wchar_t> 	wostringstream;	///< @isiosfwd
-  typedef basic_stringstream<wchar_t> 	wstringstream;	///< @isiosfwd
-  typedef basic_filebuf<wchar_t> 	wfilebuf;	///< @isiosfwd
-  typedef basic_ifstream<wchar_t> 	wifstream;	///< @isiosfwd
-  typedef basic_ofstream<wchar_t> 	wofstream;	///< @isiosfwd
-  typedef basic_fstream<wchar_t> 	wfstream;	///< @isiosfwd
+  /// Base class for @c wchar_t streams.
+  typedef basic_ios<wchar_t> 		wios;
+
+  /// Base class for @c wchar_t buffers.
+  typedef basic_streambuf<wchar_t> 	wstreambuf;
+
+  /// Base class for @c wchar_t input streams.
+  typedef basic_istream<wchar_t> 	wistream;
+
+  /// Base class for @c wchar_t output streams.
+  typedef basic_ostream<wchar_t> 	wostream;
+
+  /// Base class for @c wchar_t mixed input and output streams.
+  typedef basic_iostream<wchar_t> 	wiostream;
+
+  /// Class for @c wchar_t memory buffers.
+  typedef basic_stringbuf<wchar_t> 	wstringbuf;
+
+  /// Class for @c wchar_t input memory streams.
+  typedef basic_istringstream<wchar_t> 	wistringstream;
+
+  /// Class for @c wchar_t output memory streams.
+  typedef basic_ostringstream<wchar_t> 	wostringstream;
+
+  /// Class for @c wchar_t mixed input and output memory streams.
+  typedef basic_stringstream<wchar_t> 	wstringstream;
+
+  /// Class for @c wchar_t file buffers.
+  typedef basic_filebuf<wchar_t> 	wfilebuf;
+
+  /// Class for @c wchar_t input file streams.
+  typedef basic_ifstream<wchar_t> 	wifstream;
+
+  /// Class for @c wchar_t output file streams.
+  typedef basic_ofstream<wchar_t> 	wofstream;
+
+  /// Class for @c wchar_t mixed input and output file streams.
+  typedef basic_fstream<wchar_t> 	wfstream;
 #endif
   /** @}  */
 

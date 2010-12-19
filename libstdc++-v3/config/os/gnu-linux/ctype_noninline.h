@@ -24,15 +24,15 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file ctype_noninline.h
+/** @file bits/ctype_noninline.h
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{locale}
  */
 
 //
 // ISO C++ 14882: 22.1  Locales
 //
-  
+
 // Information as gleaned from /usr/include/ctype.h
 
 #if _GLIBCXX_C_LOCALE_GNU
@@ -68,31 +68,31 @@
 #endif
 
 #if _GLIBCXX_C_LOCALE_GNU
-  ctype<char>::ctype(__c_locale __cloc, const mask* __table, bool __del, 
-		     size_t __refs) 
-  : facet(__refs), _M_c_locale_ctype(_S_clone_c_locale(__cloc)), 
-  _M_del(__table != 0 && __del), 
-  _M_toupper(_M_c_locale_ctype->__ctype_toupper),  
-  _M_tolower(_M_c_locale_ctype->__ctype_tolower), 
-  _M_table(__table ? __table : _M_c_locale_ctype->__ctype_b), 
-  _M_widen_ok(0), _M_narrow_ok(0) 
+  ctype<char>::ctype(__c_locale __cloc, const mask* __table, bool __del,
+		     size_t __refs)
+  : facet(__refs), _M_c_locale_ctype(_S_clone_c_locale(__cloc)),
+  _M_del(__table != 0 && __del),
+  _M_toupper(_M_c_locale_ctype->__ctype_toupper),
+  _M_tolower(_M_c_locale_ctype->__ctype_tolower),
+  _M_table(__table ? __table : _M_c_locale_ctype->__ctype_b),
+  _M_widen_ok(0), _M_narrow_ok(0)
   {
     __builtin_memset(_M_widen, 0, sizeof(_M_widen));
     __builtin_memset(_M_narrow, 0, sizeof(_M_narrow));
   }
 #else
-  ctype<char>::ctype(__c_locale, const mask* __table, bool __del, 
-		     size_t __refs) 
-  : facet(__refs), _M_c_locale_ctype(_S_get_c_locale()), 
+  ctype<char>::ctype(__c_locale, const mask* __table, bool __del,
+		     size_t __refs)
+  : facet(__refs), _M_c_locale_ctype(_S_get_c_locale()),
   _M_del(__table != 0 && __del), _M_widen_ok(0), _M_narrow_ok(0)
   {
     char* __old = setlocale(LC_CTYPE, NULL);
     char* __sav = NULL;
     if (__builtin_strcmp(__old, "C"))
-      {    
+      {
 	const size_t __len = __builtin_strlen(__old) + 1;
 	__sav = new char[__len];
-	__builtin_memcpy(__sav, __old, __len);    
+	__builtin_memcpy(__sav, __old, __len);
 	setlocale(LC_CTYPE, "C");
       }
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
@@ -115,20 +115,20 @@
 #endif
 
 #if _GLIBCXX_C_LOCALE_GNU
-  ctype<char>::ctype(const mask* __table, bool __del, size_t __refs) 
-  : facet(__refs), _M_c_locale_ctype(_S_get_c_locale()), 
+  ctype<char>::ctype(const mask* __table, bool __del, size_t __refs)
+  : facet(__refs), _M_c_locale_ctype(_S_get_c_locale()),
   _M_del(__table != 0 && __del),
-  _M_toupper(_M_c_locale_ctype->__ctype_toupper),  
-  _M_tolower(_M_c_locale_ctype->__ctype_tolower), 
-  _M_table(__table ? __table : _M_c_locale_ctype->__ctype_b), 
-  _M_widen_ok(0), _M_narrow_ok(0) 
+  _M_toupper(_M_c_locale_ctype->__ctype_toupper),
+  _M_tolower(_M_c_locale_ctype->__ctype_tolower),
+  _M_table(__table ? __table : _M_c_locale_ctype->__ctype_b),
+  _M_widen_ok(0), _M_narrow_ok(0)
   {
     __builtin_memset(_M_widen, 0, sizeof(_M_widen));
     __builtin_memset(_M_narrow, 0, sizeof(_M_narrow));
   }
 #else
   ctype<char>::ctype(const mask* __table, bool __del, size_t __refs)
-  : facet(__refs), _M_c_locale_ctype(_S_get_c_locale()), 
+  : facet(__refs), _M_c_locale_ctype(_S_get_c_locale()),
   _M_del(__table != 0 && __del), _M_widen_ok(0), _M_narrow_ok(0)
   {
     char* __old = setlocale(LC_CTYPE, NULL);
@@ -178,7 +178,7 @@
   ctype<char>::do_tolower(char __c) const
   { return _M_tolower[static_cast<unsigned char>(__c)]; }
 
-  const char* 
+  const char*
   ctype<char>::do_tolower(char* __low, const char* __high) const
   {
     while (__low < __high)

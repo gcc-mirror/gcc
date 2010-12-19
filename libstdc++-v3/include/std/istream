@@ -28,7 +28,7 @@
 // ISO C++ 14882: 27.6.1  Input streams
 //
 
-/** @file istream
+/** @file include/istream
  *  This is a Standard C++ Library header.
  */
 

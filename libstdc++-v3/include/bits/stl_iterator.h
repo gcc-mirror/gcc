@@ -49,9 +49,9 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-/** @file stl_iterator.h
+/** @file bits/stl_iterator.h
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{iterator}
  *
  *  This file implements reverse_iterator, back_insert_iterator,
  *  front_insert_iterator, insert_iterator, __normal_iterator, and their

@@ -23,7 +23,9 @@
 // <http://www.gnu.org/licenses/>.
 
 /**
- * @file bits/regex_grep_matcher.tcc
+ *  @file bits/regex_grep_matcher.tcc
+ *  This is an internal header file, included by other library headers.
+ *  Do not attempt to use it directly. @headername{regex}
  */
 
 #include <regex>

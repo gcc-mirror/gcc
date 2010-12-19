@@ -22,8 +22,13 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-#ifndef _CAST_H
-#define _CAST_H 1
+/** @file ext/cast.h
+ *  This is an internal header file, included by other library headers.
+ *  Do not attempt to use it directly. @headername{ext/pointer.h}
+ */
+
+#ifndef _GLIBCXX_CAST_H
+#define _GLIBCXX_CAST_H 1
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
@@ -110,4 +115,4 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
 _GLIBCXX_END_NAMESPACE
 
-#endif // _CAST_H
+#endif // __GLIBCXX_CAST_H
