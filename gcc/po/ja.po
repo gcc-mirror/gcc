@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.6-b20101113\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-11-13 12:12+0000\n"
-"PO-Revision-Date: 2010-12-17 22:33+0900\n"
+"PO-Revision-Date: 2010-12-19 22:19+0900\n"
 "Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -30,7 +30,7 @@ msgstr "({無名})"
 #: c-parser.c:879 cp/parser.c:20733
 #, gcc-internal-format
 msgid "expected end of line"
-msgstr "予期された行末"
+msgstr "行末 (EOL) が予期されます"
 
 #: c-parser.c:1678 c-parser.c:1692 c-parser.c:3875 c-parser.c:4313
 #: c-parser.c:4574 c-parser.c:4732 c-parser.c:4748 c-parser.c:4912
@@ -38,9 +38,9 @@ msgstr "予期された行末"
 #: c-parser.c:7138 c-parser.c:7846 c-parser.c:7916 c-parser.c:7959
 #: c-parser.c:8933 c-parser.c:9078 c-parser.c:9116 c-parser.c:2340
 #: c-parser.c:7131 cp/parser.c:20679
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<;%>"
-msgstr "';' が必要です"
+msgstr "%<;%> が予期されます"
 
 #: c-parser.c:1722 c-parser.c:2279 c-parser.c:2551 c-parser.c:3183
 #: c-parser.c:3235 c-parser.c:3240 c-parser.c:4357 c-parser.c:4490
@@ -50,15 +50,15 @@ msgstr "';' が必要です"
 #: c-parser.c:8251 c-parser.c:8272 c-parser.c:8322 c-parser.c:8432
 #: c-parser.c:8505 c-parser.c:8573 c-parser.c:9041 c-parser.c:8395
 #: cp/parser.c:20682
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<(%>"
-msgstr "';' が必要です"
+msgstr "%<(%> が予期されます"
 
 #: c-parser.c:1727 c-parser.c:6062 c-parser.c:6103 c-parser.c:6185
 #: c-parser.c:6192 c-parser.c:6229 cp/parser.c:20344 cp/parser.c:20697
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<,%>"
-msgstr "';' が必要です"
+msgstr "%<,%> が予期されます"
 
 #: c-parser.c:1748 c-parser.c:2294 c-parser.c:2592 c-parser.c:2800
 #: c-parser.c:2958 c-parser.c:3007 c-parser.c:3066 c-parser.c:3190
@@ -72,78 +72,76 @@ msgstr "';' が必要です"
 #: c-parser.c:8254 c-parser.c:8275 c-parser.c:8353 c-parser.c:8438
 #: c-parser.c:8554 c-parser.c:8636 c-parser.c:8969 c-parser.c:9086
 #: c-parser.c:9127 cp/parser.c:20727
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<)%>"
-msgstr "';' が必要です"
+msgstr "%<)%> が予期されます"
 
 #: c-parser.c:2883 c-parser.c:3663 c-parser.c:3697 c-parser.c:4966
 #: c-parser.c:6164 c-parser.c:6328 c-parser.c:6435 cp/parser.c:20691
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<]%>"
-msgstr "';' が必要です"
+msgstr "%<]%> が予期されます"
 
 #: c-parser.c:3043
 msgid "expected %<;%>, %<,%> or %<)%>"
-msgstr ""
+msgstr "%<;%>、%<,%> または %<)%> が予期されます"
 
 #: c-parser.c:3526 cp/parser.c:20685 cp/parser.c:22283
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<}%>"
-msgstr "';' が必要です"
+msgstr "%<}%> が予期されます"
 
 #: c-parser.c:3816 c-parser.c:7416 c-parser.c:9370 c-parser.c:2161
 #: c-parser.c:2356 c-parser.c:7027 cp/parser.c:13461 cp/parser.c:20688
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<{%>"
-msgstr "';' が必要です"
+msgstr "%<{%> が予期されます"
 
 #: c-parser.c:4035 c-parser.c:4044 c-parser.c:4870 c-parser.c:5211
 #: c-parser.c:7236 c-parser.c:7557 c-parser.c:7614 c-parser.c:8543
 #: cp/parser.c:20721 cp/parser.c:21539
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<:%>"
-msgstr "';' が必要です"
+msgstr "%<:%> が予期されます"
 
 #: c-parser.c:4568 cp/parser.c:20621
 #, gcc-internal-format
 msgid "expected %<while%>"
-msgstr ""
+msgstr "%<while%> が予期されます"
 
 #: c-parser.c:5952
-#, fuzzy
 msgid "expected %<.%>"
-msgstr "';' が必要です"
+msgstr "%<.%> が予期されます"
 
 #: c-parser.c:6716 c-parser.c:6748 c-parser.c:6971 cp/parser.c:22069
 #: cp/parser.c:22142
 #, gcc-internal-format
 msgid "expected %<@end%>"
-msgstr ""
+msgstr "%<@end%> が予期されます"
 
 #: c-parser.c:7377 cp/parser.c:20706
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<>%>"
-msgstr "';' が必要です"
+msgstr "%<>%> が予期されます"
 
 #: c-parser.c:8640 cp/parser.c:20730
 #, gcc-internal-format
 msgid "expected %<,%> or %<)%>"
-msgstr ""
+msgstr "%<,%> または %<)%> が予期されます"
 
 #: c-parser.c:9067 c-parser.c:3720 cp/parser.c:20709
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<=%>"
-msgstr "';' が必要です"
+msgstr "%<=%> が予期されます"
 
 #: c-parser.c:9427 c-parser.c:9417 cp/parser.c:24528
 #, gcc-internal-format
 msgid "expected %<#pragma omp section%> or %<}%>"
-msgstr ""
+msgstr "%<#pragma omp section%> または %<}%> が予期されます"
 
 #: c-typeck.c:6567
-#, fuzzy
 msgid "(anonymous)"
-msgstr "((無名))"
+msgstr "(無名)"
 
 #: cfgrtl.c:2037
 msgid "flow control insn inside a basic block"
@@ -154,24 +152,22 @@ msgid "wrong insn in the fallthru edge"
 msgstr ""
 
 #: cfgrtl.c:2219
-#, fuzzy
 msgid "insn outside basic block"
-msgstr "基本ブロック %d 内:"
+msgstr ""
 
 #: cfgrtl.c:2226
-#, fuzzy
 msgid "return not followed by barrier"
-msgstr "'#' にマクロ仮引数名が続いていません"
+msgstr ""
 
 #: collect2.c:502
-#, fuzzy, c-format
+#, c-format
 msgid "internal gcc abort in %s, at %s:%d"
-msgstr "%s で内部コンパイラエラー (%s:%d)"
+msgstr ""
 
 #: collect2.c:957
 #, c-format
 msgid "COLLECT_LTO_WRAPPER must be set"
-msgstr ""
+msgstr "COLLECT_LTO_WRAPPER が設定されなければいけません"
 
 #: collect2.c:1274
 #, c-format
@@ -191,48 +187,45 @@ msgstr "fclose %s"
 #: collect2.c:1692
 #, c-format
 msgid "collect2 version %s"
-msgstr "collect2 version %s"
+msgstr "collect2 バージョン %s"
 
 #: collect2.c:1802
-#, fuzzy, c-format
+#, c-format
 msgid "%d constructor found\n"
 msgid_plural "%d constructors found\n"
 msgstr[0] "%d 個のコンストラクタが見つかりました\n"
-msgstr[1] "%d 個のコンストラクタが見つかりました\n"
 
 #: collect2.c:1806
-#, fuzzy, c-format
+#, c-format
 msgid "%d destructor found\n"
 msgid_plural "%d destructors found\n"
 msgstr[0] "%d 個のデストラクタが見つかりました\n"
-msgstr[1] "%d 個のデストラクタが見つかりました\n"
 
 #: collect2.c:1810
-#, fuzzy, c-format
+#, c-format
 msgid "%d frame table found\n"
 msgid_plural "%d frame tables found\n"
-msgstr[0] "%d 個のフレームテーブルが見つかりました\n"
-msgstr[1] "%d 個のフレームテーブルが見つかりました\n"
+msgstr[0] "%d 個のフレーム表が見つかりました\n"
 
 #: collect2.c:1964 lto-wrapper.c:213
-#, fuzzy, c-format
+#, c-format
 msgid "can't get program status"
-msgstr "%s から読込めません"
+msgstr "プログラムの状態を取得できません"
 
 #: collect2.c:2033
-#, fuzzy, c-format
+#, c-format
 msgid "could not open response file %s"
-msgstr "ソースファイル %s を開けませんでした.\n"
+msgstr "応答ファイル %s を開けませんでした"
 
 #: collect2.c:2038
-#, fuzzy, c-format
+#, c-format
 msgid "could not write to response file %s"
-msgstr "spec ファイル %s を見つけることができませんでした\n"
+msgstr "応答ファイル %s を書き込めませんでした"
 
 #: collect2.c:2043
-#, fuzzy, c-format
+#, c-format
 msgid "could not close response file %s"
-msgstr "ソースファイル %s を開けませんでした.\n"
+msgstr "応答ファイル %s を閉じられませんでした"
 
 #: collect2.c:2061
 #, c-format
@@ -240,14 +233,14 @@ msgid "[cannot find %s]"
 msgstr "[%s が見つかりません]"
 
 #: collect2.c:2076
-#, fuzzy, c-format
+#, c-format
 msgid "cannot find '%s'"
-msgstr "`%s' が見つかりません"
+msgstr "'%s' が見つかりません"
 
 #: collect2.c:2080 collect2.c:2621 collect2.c:2817 lto-wrapper.c:182
 #, c-format
 msgid "pex_init failed"
-msgstr ""
+msgstr "pex_init に失敗しました"
 
 #: collect2.c:2118
 #, c-format
@@ -261,17 +254,17 @@ msgid ""
 "write_c_file - output name is %s, prefix is %s\n"
 msgstr ""
 "\n"
-"write_c_file - 出力名は %s、プレフィクスは %s\n"
+"write_c_file - 出力名は %s、接頭辞は %s\n"
 
 #: collect2.c:2595
-#, fuzzy, c-format
+#, c-format
 msgid "cannot find 'nm'"
-msgstr "`nm' が見つかりません"
+msgstr "'nm' が見つかりません"
 
 #: collect2.c:2643
-#, fuzzy, c-format
+#, c-format
 msgid "can't open nm output"
-msgstr "出力ファイル `%s' を open できません"
+msgstr "nm の出力を開けません"
 
 #: collect2.c:2726
 #, c-format
@@ -284,9 +277,9 @@ msgid "fini function found in object %s"
 msgstr "fini 関数をオブジェクト %s で見つけました"
 
 #: collect2.c:2838
-#, fuzzy, c-format
+#, c-format
 msgid "can't open ldd output"
-msgstr "出力ファイル `%s' を open できません"
+msgstr "ldd の出力を開けません"
 
 #: collect2.c:2841
 #, c-format
@@ -318,29 +311,29 @@ msgid "%s: cannot open as COFF file"
 msgstr "%s: COFF ファイルとして開けません"
 
 #: collect2.c:3217
-#, fuzzy, c-format
+#, c-format
 msgid "library lib%s not found"
 msgstr "ライブラリ lib%s が見つかりません"
 
 #: diagnostic.c:136
-#, fuzzy, c-format
+#, c-format
 msgid "%s: all warnings being treated as errors\n"
-msgstr "%s: 警告はエラーとして取り扱われます\n"
+msgstr "%s: すべての警告はエラーとして取り扱われます\n"
 
 #: diagnostic.c:141
-#, fuzzy, c-format
+#, c-format
 msgid "%s: some warnings being treated as errors\n"
-msgstr "%s: 警告はエラーとして取り扱われます\n"
+msgstr "%s: いくつかの警告はエラーとして取り扱われます\n"
 
 #: diagnostic.c:219
-#, fuzzy, c-format
+#, c-format
 msgid "compilation terminated due to -Wfatal-errors.\n"
-msgstr "コンパイルが中断されました。\n"
+msgstr "-Wfatal-errors によりコンパイルを停止しました。\n"
 
 #: diagnostic.c:229
-#, fuzzy, c-format
+#, c-format
 msgid "compilation terminated due to -fmax-errors=%u.\n"
-msgstr "コンパイルが中断されました。\n"
+msgstr "-fmax-errors=%u によりコンパイルを停止しました。\n"
 
 #: diagnostic.c:240
 #, c-format
@@ -350,13 +343,13 @@ msgid ""
 "See %s for instructions.\n"
 msgstr ""
 "完全なバグ報告を送って下さい。\n"
-"適切ならばプリプロセス後のソースをつけてください。\n"
+"適切ならば前処理後のソースをつけてください。\n"
 "%s を見れば方法が書いてあります。\n"
 
 #: diagnostic.c:249
 #, c-format
 msgid "compilation terminated.\n"
-msgstr "コンパイルが中断されました。\n"
+msgstr "コンパイルを停止しました。\n"
 
 #: diagnostic.c:508
 #, c-format
@@ -366,20 +359,19 @@ msgstr "%s:%d: 前のエラーにより混乱していますので、脱出し�
 #: diagnostic.c:874
 #, c-format
 msgid "Internal compiler error: Error reporting routines re-entered.\n"
-msgstr "内部コンパイルエラー: エラー報告ルーチンに再入しました。\n"
+msgstr "コンパイラ内部エラー: エラー報告ルーチンに再入しました。\n"
 
 #: final.c:1156
 msgid "negative insn length"
-msgstr ""
+msgstr "負の命令長です"
 
 #: final.c:2633
 msgid "could not split insn"
-msgstr ""
+msgstr "命令を分割できませんでした"
 
 #: final.c:3069
-#, fuzzy
 msgid "invalid 'asm': "
-msgstr "無効な `asm': %s"
+msgstr "無効な 'asm' です: "
 
 #: final.c:3252
 #, c-format
@@ -392,24 +384,24 @@ msgid "unterminated assembly dialect alternative"
 msgstr ""
 
 #: final.c:3328
-#, fuzzy, c-format
+#, c-format
 msgid "operand number missing after %%-letter"
-msgstr "演算数が %-letter の後にありません"
+msgstr "%% 文字の後に被演算子の数字がありません"
 
 #: final.c:3331 final.c:3372
 #, c-format
 msgid "operand number out of range"
-msgstr "演算数が範囲外です"
+msgstr "被演算子の数字が範囲外です"
 
 #: final.c:3389
 #, c-format
 msgid "invalid %%-code"
-msgstr "無効な %%-code"
+msgstr "無効な %%-code です"
 
 #: final.c:3419
-#, fuzzy, c-format
+#, c-format
 msgid "'%%l' operand isn't a label"
-msgstr "`%l' 演算はラベルではありません"
+msgstr "'%%l' 被演算子が label ではありません"
 
 #. We can't handle floating point constants;
 #. PRINT_OPERAND must handle them.
@@ -425,12 +417,12 @@ msgstr "浮動小数定数を使い損ねました"
 #: final.c:3619 config/i386/i386.c:12999 config/pdp11/pdp11.c:1809
 #, c-format
 msgid "invalid expression as operand"
-msgstr "オペランドとして無効な式"
+msgstr "被演算子として無効な式です"
 
 #: gcc.c:1309
-#, fuzzy, c-format
+#, c-format
 msgid "Using built-in specs.\n"
-msgstr "組み込み spec を使用.\n"
+msgstr "組み込み spec を使用しています。\n"
 
 #: gcc.c:1494
 #, c-format
@@ -438,23 +430,23 @@ msgid ""
 "Setting spec %s to '%s'\n"
 "\n"
 msgstr ""
-"spec %s を '%s' に設定中\n"
+"spec %s を '%s' に設定しています\n"
 "\n"
 
 #: gcc.c:1613
 #, c-format
 msgid "Reading specs from %s\n"
-msgstr "%s から spec を読み込み中\n"
+msgstr "%s から spec を読み込んでいます\n"
 
 #: gcc.c:1738
-#, fuzzy, c-format
+#, c-format
 msgid "could not find specs file %s\n"
-msgstr "spec ファイル %s を見つけることができませんでした\n"
+msgstr "specs ファイル %s が見つかりませんでした\n"
 
 #: gcc.c:1807
 #, c-format
 msgid "rename spec %s to %s\n"
-msgstr "spec %s を %s に名前を変更\n"
+msgstr "spec %s を %s に名前を変更します\n"
 
 #: gcc.c:1809
 #, c-format
@@ -487,7 +479,7 @@ msgstr "# %s %.2f %.2f\n"
 #: gcc.c:2911
 #, c-format
 msgid "Usage: %s [options] file...\n"
-msgstr "使い方: %s [オプション] ファイル...\n"
+msgstr "使用法: %s [options] file...\n"
 
 #: gcc.c:2912
 msgid "Options:\n"
@@ -501,7 +493,7 @@ msgstr ""
 
 #: gcc.c:2915
 msgid "  --help                   Display this information\n"
-msgstr "  --help                   このヘルプ情報を表示\n"
+msgstr "  --help                   このヘルプ情報を表示する\n"
 
 #: gcc.c:2916
 msgid "  --target-help            Display target specific command line options\n"
@@ -509,29 +501,27 @@ msgstr "  --target-help            ターゲット固有のコマンドライン
 
 #: gcc.c:2917
 msgid "  --help={target|optimizers|warnings|params|[^]{joined|separate|undocumented}}[,...]\n"
-msgstr ""
+msgstr "  --help={target|optimizers|warnings|params|[^]{joined|separate|undocumented}}[,...]\n"
 
 #: gcc.c:2918
-#, fuzzy
 msgid "                           Display specific types of command line options\n"
-msgstr "  --target-help            ターゲット固有のコマンドラインオプションを表示\n"
+msgstr "                           特定の種類のコマンドラインオプションを表示する\n"
 
 #: gcc.c:2920
 msgid "  (Use '-v --help' to display command line options of sub-processes)\n"
 msgstr "(`-v --help' を使うと、子プロセスのコマンドラインオプションを表示)\n"
 
 #: gcc.c:2921
-#, fuzzy
 msgid "  --version                Display compiler version information\n"
-msgstr "  -version                コンパイラのバージョンを表示する\n"
+msgstr "  --version                コンパイラのバージョン情報を表示する\n"
 
 #: gcc.c:2922
 msgid "  -dumpspecs               Display all of the built in spec strings\n"
-msgstr "  -dumpspecs               組み込まれた spec 文字列を全て表示\n"
+msgstr "  -dumpspecs               組み込み spec 文字列をすべて表示する\n"
 
 #: gcc.c:2923
 msgid "  -dumpversion             Display the version of the compiler\n"
-msgstr "  -dumpversion             コンパイラのバージョンを表示\n"
+msgstr "  -dumpversion             コンパイラのバージョンを表示する\n"
 
 #: gcc.c:2924
 msgid "  -dumpmachine             Display the compiler's target processor\n"
@@ -566,9 +556,8 @@ msgstr ""
 "                               ディレクトリとの対応を表示\n"
 
 #: gcc.c:2933
-#, fuzzy
 msgid "  -print-multi-os-directory Display the relative path to OS libraries\n"
-msgstr "  -print-multi-directory   libgcc のバージョンディレクトリルートを表示\n"
+msgstr ""
 
 #: gcc.c:2934
 #, fuzzy
@@ -592,14 +581,12 @@ msgid "  -Wl,<options>            Pass comma-separated <options> on to the linke
 msgstr "  -Wl,<options>            カンマ区切りの <options> をリンカに渡す\n"
 
 #: gcc.c:2939
-#, fuzzy
 msgid "  -Xassembler <arg>        Pass <arg> on to the assembler\n"
-msgstr "  -Xlinker <arg>           <arg> をリンカに渡す\n"
+msgstr "  -Xassembler <arg>        <arg> をアセンブラに渡す\n"
 
 #: gcc.c:2940
-#, fuzzy
 msgid "  -Xpreprocessor <arg>     Pass <arg> on to the preprocessor\n"
-msgstr "  -Xlinker <arg>           <arg> をリンカに渡す\n"
+msgstr "  -Xpreprocessor <arg>     <arg> をプリプロセッサに渡す\n"
 
 #: gcc.c:2941
 msgid "  -Xlinker <arg>           Pass <arg> on to the linker\n"
@@ -610,9 +597,8 @@ msgid "  -save-temps              Do not delete intermediate files\n"
 msgstr "  -save-temps              中間ファイルを削除しない\n"
 
 #: gcc.c:2943
-#, fuzzy
 msgid "  -save-temps=<arg>        Do not delete intermediate files\n"
-msgstr "  -save-temps              中間ファイルを削除しない\n"
+msgstr "  -save-temps=<arg>        中間ファイルを削除しない\n"
 
 #: gcc.c:2944
 msgid ""
@@ -629,19 +615,20 @@ msgid "  -time                    Time the execution of each subprocess\n"
 msgstr "  -time                    子プロセスごとの実行時間を計測する\n"
 
 #: gcc.c:2949
-#, fuzzy
 msgid "  -specs=<file>            Override built-in specs with the contents of <file>\n"
-msgstr "  -specs=<file>            組み込み specs を <file> の内容で置き換える\n"
+msgstr "  -specs=<file>            組み込み specs を <file> の内容で上書きする\n"
 
 #: gcc.c:2950
 msgid "  -std=<standard>          Assume that the input sources are for <standard>\n"
-msgstr "  -std=<standard>          入力ソースを <standard> と見なす\n"
+msgstr "  -std=<standard>          入力ソースを <standard> に準拠すると見なす\n"
 
 #: gcc.c:2951
 msgid ""
 "  --sysroot=<directory>    Use <directory> as the root directory for headers\n"
 "                           and libraries\n"
 msgstr ""
+"  --sysroot=<directory>    ヘッダとライブラリのルートディレクトリとして\n"
+"                           <directory> を使用する\n"
 
 #: gcc.c:2954
 msgid "  -B <directory>           Add <directory> to the compiler's search paths\n"
@@ -649,7 +636,7 @@ msgstr "  -B <directory>           <directory> をコンパイラの探索パス
 
 #: gcc.c:2955
 msgid "  -v                       Display the programs invoked by the compiler\n"
-msgstr "  -v                       コンパイラによって起動されるプログラムを表示\n"
+msgstr "  -v                       コンパイラによって起動されるプログラムを表示する\n"
 
 #: gcc.c:2956
 msgid "  -###                     Like -v but options quoted and commands not executed\n"
@@ -657,34 +644,27 @@ msgstr ""
 
 #: gcc.c:2957
 msgid "  -E                       Preprocess only; do not compile, assemble or link\n"
-msgstr ""
-"  -E                       プリプロセスのみ -- コンパイル、アセンブル、リンク\n"
-"                               を行なわない\n"
+msgstr "  -E                       前処理のみ行う。コンパイル、アセンブル、リンクは行わない\n"
 
 #: gcc.c:2958
 msgid "  -S                       Compile only; do not assemble or link\n"
-msgstr "  -S                       コンパイルのみ -- アセンブル、リンクを行なわない\n"
+msgstr "  -S                       コンパイルのみ行う。アセンブル、リンクは行わない\n"
 
 #: gcc.c:2959
 msgid "  -c                       Compile and assemble, but do not link\n"
-msgstr "  -c                       コンパイル、アセンブルするが、リンクを行なわない\n"
+msgstr "  -c                       コンパイル、アセンブルを行う。リンクは行わない\n"
 
 #: gcc.c:2960
 msgid "  -o <file>                Place the output into <file>\n"
-msgstr "  -o <file>                <file> に出力を行なう\n"
+msgstr "  -o <file>                <file> に出力する\n"
 
 #: gcc.c:2961
-#, fuzzy
 msgid ""
 "  -x <language>            Specify the language of the following input files\n"
 "                           Permissible languages include: c c++ assembler none\n"
 "                           'none' means revert to the default behavior of\n"
 "                           guessing the language based on the file's extension\n"
 msgstr ""
-"  -x <language>            以下の入力ファイルの言語を指定する\n"
-"                           指定できる言語: c c++ assembler none\n"
-"                           'none' を指定するとファイル拡張子によって言語を\n"
-"                           推定する、デフォルトの振る舞いに戻る\n"
 
 #: gcc.c:2968
 #, c-format
@@ -726,12 +706,12 @@ msgid ""
 "For bug reporting instructions, please see:\n"
 msgstr ""
 "\n"
-"バグレポートの手順は、以下を参照\n"
+"バグレポートの手順は、以下を参照してください\n"
 
 #: gcc.c:6557
-#, fuzzy, c-format
+#, c-format
 msgid "%s %s%s\n"
-msgstr "%s: %s"
+msgstr "%s %s%s\n"
 
 #: gcc.c:6560 gcov.c:444 fortran/gfortranspec.c:273 java/jcf-dump.c:1164
 msgid "(C)"
@@ -744,16 +724,19 @@ msgid ""
 "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
 "\n"
 msgstr ""
+"This is free software; see the source for copying conditions.  There is NO\n"
+"warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
+"\n"
 
 #: gcc.c:6578
-#, fuzzy, c-format
+#, c-format
 msgid "Target: %s\n"
-msgstr "ライブラリ: %s\n"
+msgstr "ターゲット: %s\n"
 
 #: gcc.c:6579
 #, c-format
 msgid "Configured with: %s\n"
-msgstr "コンフィグオプション: %s\n"
+msgstr "configure 設定: %s\n"
 
 #: gcc.c:6593
 #, c-format
@@ -761,14 +744,14 @@ msgid "Thread model: %s\n"
 msgstr "スレッドモデル: %s\n"
 
 #: gcc.c:6604
-#, fuzzy, c-format
+#, c-format
 msgid "gcc version %s %s\n"
-msgstr "gcc バージョン %s\n"
+msgstr "gcc バージョン %s %s\n"
 
 #: gcc.c:6607
-#, fuzzy, c-format
+#, c-format
 msgid "gcc driver version %s %sexecuting gcc version %s\n"
-msgstr "gcc ドライババージョン %s 実行 gcc バージョン %s\n"
+msgstr "gcc ドライババージョン %s %s 実行 gcc バージョン %s\n"
 
 #: gcc.c:6846
 #, c-format
@@ -778,6 +761,10 @@ msgid ""
 "==============\n"
 "\n"
 msgstr ""
+"\n"
+"リンカオプション\n"
+"==============\n"
+"\n"
 
 #: gcc.c:6847
 #, c-format
@@ -785,6 +772,8 @@ msgid ""
 "Use \"-Wl,OPTION\" to pass \"OPTION\" to the linker.\n"
 "\n"
 msgstr ""
+"\"OPTION\" をリンカに渡すには \"-Wl,OPTION\" を使用してください\n"
+"\n"
 
 #: gcc.c:8038
 #, c-format
@@ -793,6 +782,9 @@ msgid ""
 "=================\n"
 "\n"
 msgstr ""
+"アセンブラオプション\n"
+"=================\n"
+"\n"
 
 #: gcc.c:8039
 #, c-format
@@ -800,6 +792,8 @@ msgid ""
 "Use \"-Wa,OPTION\" to pass \"OPTION\" to the assembler.\n"
 "\n"
 msgstr ""
+"\"OPTION\" をアセンブラに渡すには \"-Wa,OPTION\" を使用してください\n"
+"\n"
 
 #: gcov.c:416
 #, c-format
@@ -807,25 +801,25 @@ msgid ""
 "Usage: gcov [OPTION]... SOURCEFILE...\n"
 "\n"
 msgstr ""
+"使用法: gcov [OPTION]... SOURCEFILE...\n"
+"\n"
 
 #: gcov.c:417
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Print code coverage information.\n"
 "\n"
-msgstr "呼び出しグラフ情報を送出する"
+msgstr ""
 
 #: gcov.c:418
-#, fuzzy, c-format
+#, c-format
 msgid "  -h, --help                      Print this help, then exit\n"
-msgstr "  --help                   このヘルプ情報を表示\n"
+msgstr "  -h, --help                      このヘルプを表示して終了する\n"
 
 #: gcov.c:419
-#, fuzzy, c-format
+#, c-format
 msgid "  -v, --version                   Print version number, then exit\n"
-msgstr ""
-"  -V <version>             インストールされていれば <version> バージョン番号の\n"
-"                               gcc として実行する\n"
+msgstr "  -v, --version                   バージョン番号を表示して終了する\n"
 
 #: gcov.c:420
 #, c-format
@@ -845,9 +839,9 @@ msgid ""
 msgstr ""
 
 #: gcov.c:424
-#, fuzzy, c-format
+#, c-format
 msgid "  -n, --no-output                 Do not create an output file\n"
-msgstr "  -save-temps              中間ファイルを削除しない\n"
+msgstr "  -n, --no-output                 出力ファイルを作成しない\n"
 
 #: gcov.c:425
 #, c-format
@@ -877,24 +871,25 @@ msgid "  -u, --unconditional-branches    Show unconditional branch counts too\n"
 msgstr ""
 
 #: gcov.c:431
-#, fuzzy, c-format
+#, c-format
 msgid "  -d, --display-progress          Display progress information\n"
-msgstr "  --help                  この情報を表示する\n"
+msgstr "  -d, --display-progress          進捗情報を表示する\n"
 
 #: gcov.c:432
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "\n"
 "For bug reporting instructions, please see:\n"
 "%s.\n"
 msgstr ""
 "\n"
-"バグレポートの手順は、以下を参照\n"
+"バグ報告の方法については、以下を参照してください:\n"
+"%s。\n"
 
 #: gcov.c:442
 #, c-format
 msgid "gcov %s%s\n"
-msgstr ""
+msgstr "gcov %s%s\n"
 
 #: gcov.c:446
 #, c-format
@@ -904,11 +899,15 @@ msgid ""
 "FITNESS FOR A PARTICULAR PURPOSE.\n"
 "\n"
 msgstr ""
+"This is free software; see the source for copying conditions.\n"
+"There is NO warranty; not even for MERCHANTABILITY or \n"
+"FITNESS FOR A PARTICULAR PURPOSE.\n"
+"\n"
 
 #: gcov.c:546
-#, fuzzy, c-format
+#, c-format
 msgid "%s:no functions found\n"
-msgstr "cmd_strings が見つかりません"
+msgstr "%s:関数が見つかりません\n"
 
 #: gcov.c:578 gcov.c:606
 #, fuzzy, c-format
@@ -916,39 +915,39 @@ msgid "\n"
 msgstr ":\n"
 
 #: gcov.c:593
-#, fuzzy, c-format
+#, c-format
 msgid "%s:creating '%s'\n"
-msgstr "%s を作成中.\n"
+msgstr "%s: '%s' を作成しています\n"
 
 #: gcov.c:597
-#, fuzzy, c-format
+#, c-format
 msgid "%s:error writing output file '%s'\n"
-msgstr "%s: ファイル `%s' に書き込み中にエラー: %s\n"
+msgstr "%s: 出力ファイル '%s' を書き込み中にエラーが発生しました\n"
 
 #: gcov.c:602
-#, fuzzy, c-format
+#, c-format
 msgid "%s:could not open output file '%s'\n"
-msgstr "出力ファイル %s を開けませんでした.\n"
+msgstr "%s: 出力ファイル '%s' を開けませんでした\n"
 
 #: gcov.c:751
 #, c-format
 msgid "%s:source file is newer than graph file '%s'\n"
-msgstr ""
+msgstr "%s: ソースファイルがグラフファイル '%s' より新しいです\n"
 
 #: gcov.c:756
 #, c-format
 msgid "(the message is only displayed one per source file)\n"
-msgstr ""
+msgstr "(このメッセージはソースファイルごとに一回のみ表示されます)\n"
 
 #: gcov.c:780
-#, fuzzy, c-format
+#, c-format
 msgid "%s:cannot open graph file\n"
-msgstr "%s: COFF ファイルとして開けません"
+msgstr "%s: グラフファイルを開けません\n"
 
 #: gcov.c:786
-#, fuzzy, c-format
+#, c-format
 msgid "%s:not a gcov graph file\n"
-msgstr "%s: COFF ファイルではありません"
+msgstr "%s: gcov グラフファイルではありません\n"
 
 #: gcov.c:799
 #, c-format
@@ -963,7 +962,7 @@ msgstr ""
 #: gcov.c:969
 #, c-format
 msgid "%s:corrupted\n"
-msgstr ""
+msgstr "%s: 破損しています\n"
 
 #: gcov.c:1045
 #, c-format
@@ -971,9 +970,9 @@ msgid "%s:cannot open data file, assuming not executed\n"
 msgstr ""
 
 #: gcov.c:1052
-#, fuzzy, c-format
+#, c-format
 msgid "%s:not a gcov data file\n"
-msgstr "%s: COFF ファイルではありません"
+msgstr "%s: gcov データファイルではありません\n"
 
 #: gcov.c:1065
 #, c-format
@@ -986,24 +985,24 @@ msgid "%s:stamp mismatch with graph file\n"
 msgstr ""
 
 #: gcov.c:1101
-#, fuzzy, c-format
+#, c-format
 msgid "%s:unknown function '%u'\n"
-msgstr "関数 `%s' 内:"
+msgstr "%s: 不明な関数 '%u' です\n"
 
 #: gcov.c:1115
-#, fuzzy, c-format
+#, c-format
 msgid "%s:profile mismatch for '%s'\n"
-msgstr "%s: `%s' に対する矛盾一覧は以下の通りです:\n"
+msgstr "%s: '%s' に対するプロファイルが一致しません\n"
 
 #: gcov.c:1134
-#, fuzzy, c-format
+#, c-format
 msgid "%s:overflowed\n"
-msgstr "%s: オーバーフロー範囲エラー"
+msgstr "%s: オーバーフローしました\n"
 
 #: gcov.c:1158
 #, c-format
 msgid "%s:'%s' lacks entry and/or exit blocks\n"
-msgstr ""
+msgstr "%s: '%s' には導入および/または終了ブロックがありません\n"
 
 #: gcov.c:1163
 #, c-format
@@ -1021,9 +1020,9 @@ msgid "%s:graph is unsolvable for '%s'\n"
 msgstr ""
 
 #: gcov.c:1459
-#, fuzzy, c-format
+#, c-format
 msgid "%s '%s'\n"
-msgstr "%s: %s"
+msgstr "%s '%s'\n"
 
 #: gcov.c:1462
 #, c-format
@@ -1031,14 +1030,14 @@ msgid "Lines executed:%s of %d\n"
 msgstr ""
 
 #: gcov.c:1466
-#, fuzzy, c-format
+#, c-format
 msgid "No executable lines\n"
-msgstr "ファイル %s に実行可能なソース行がありません\n"
+msgstr "実行可能な行がありません\n"
 
 #: gcov.c:1472
-#, fuzzy, c-format
+#, c-format
 msgid "Branches executed:%s of %d\n"
-msgstr "ブランチ %d は一度も実行されず\n"
+msgstr ""
 
 #: gcov.c:1476
 #, c-format
@@ -1056,14 +1055,14 @@ msgid "Calls executed:%s of %d\n"
 msgstr ""
 
 #: gcov.c:1488
-#, fuzzy, c-format
+#, c-format
 msgid "No calls\n"
-msgstr "ファイル %s に呼び出しがありません\n"
+msgstr "呼び出しがありません\n"
 
 #: gcov.c:1648
-#, fuzzy, c-format
+#, c-format
 msgid "%s:no lines for '%s'\n"
-msgstr "%s: `%s' に対する矛盾一覧は以下の通りです:\n"
+msgstr "%s: '%s' に対する行がありません\n"
 
 #: gcov.c:1843
 #, fuzzy, c-format
@@ -1096,17 +1095,17 @@ msgid "unconditional %2d never executed\n"
 msgstr "呼び出し %d は一度も実行せず\n"
 
 #: gcov.c:1901
-#, fuzzy, c-format
+#, c-format
 msgid "%s:cannot open source file\n"
-msgstr "%s: COFF ファイルとして開けません"
+msgstr "%s: ソースファイルを開けません\n"
 
 #: gcse.c:4066
 msgid "PRE disabled"
-msgstr ""
+msgstr "PRE が無効です"
 
 #: gcse.c:4616
 msgid "GCSE disabled"
-msgstr ""
+msgstr "GCSE が無効です"
 
 #: gcse.c:5137
 #, fuzzy
@@ -1141,10 +1140,9 @@ msgstr "#include <...> の探索はここから始まります:\n"
 #: incpath.c:354
 #, c-format
 msgid "End of search list.\n"
-msgstr "探索リストの終わり\n"
+msgstr "探索リストの終わりです。\n"
 
 #: input.c:39 c-family/c-opts.c:1308 cp/error.c:1047 fortran/cpp.c:568
-#, fuzzy
 msgid "<built-in>"
 msgstr "<組み込み>"
 
@@ -1159,9 +1157,8 @@ msgid "'"
 msgstr "'"
 
 #: ipa-pure-const.c:155
-#, fuzzy
 msgid "function might be candidate for attribute %<%s%>"
-msgstr "関数は恐らく `noreturn' 属性の候補と思われます"
+msgstr "関数は属性 %<%s%> の候補のようです"
 
 #: ipa-pure-const.c:156
 #, fuzzy
@@ -1199,87 +1196,87 @@ msgstr "%s:%u から include されたファイル中"
 
 #: loop-iv.c:2967 tree-ssa-loop-niter.c:1913
 msgid "assuming that the loop is not infinite"
-msgstr ""
+msgstr "ループが無限でないと仮定しています"
 
 #: loop-iv.c:2968 tree-ssa-loop-niter.c:1914
 msgid "cannot optimize possibly infinite loops"
-msgstr ""
+msgstr "無限ループの可能性があるものを最適化できません"
 
 #: loop-iv.c:2976 tree-ssa-loop-niter.c:1918
 msgid "assuming that the loop counter does not overflow"
-msgstr ""
+msgstr "ループカウンタが溢れないと仮定しています"
 
 #: loop-iv.c:2977 tree-ssa-loop-niter.c:1919
 msgid "cannot optimize loop, the loop counter may overflow"
-msgstr ""
+msgstr "ループを最適化できません。ループカウンタが溢れるかもしれません"
 
 #: lto-wrapper.c:222
 #, fuzzy, c-format
 msgid "%s terminated with signal %d [%s], core dumped"
-msgstr "%s シグナル %d [%s]%s で終了させられました"
+msgstr "%s はシグナル %d [%s] で終了しました。コアダンプしました"
 
 #: lto-wrapper.c:225
-#, fuzzy, c-format
+#, c-format
 msgid "%s terminated with signal %d [%s]"
-msgstr "%s シグナル %d [%s]%s で終了させられました"
+msgstr "%s はシグナル %d [%s] で終了しました"
 
 #: lto-wrapper.c:230 collect2.c:1990
 #, gcc-internal-format
 msgid "%s returned %d exit status"
-msgstr "%s は exit 状態 %d を返しました"
+msgstr "%s は終了ステータス %d を返しました"
 
 #: lto-wrapper.c:246
 #, c-format
 msgid "deleting LTRANS file %s"
-msgstr ""
+msgstr "LTRANS ファイル %s を削除しています"
 
 #: lto-wrapper.c:268
-#, fuzzy, c-format
+#, c-format
 msgid "failed to open %s"
-msgstr "%s を open できません"
+msgstr "%s を開くのに失敗しました"
 
 #: lto-wrapper.c:273
-#, fuzzy, c-format
+#, c-format
 msgid "could not write to temporary file %s"
-msgstr "一時ファイルを作成できません"
+msgstr "一時ファイル %s を書き込むことができませんでした"
 
 #: lto-wrapper.c:312
-#, fuzzy, c-format
+#, c-format
 msgid "environment variable COLLECT_GCC must be set"
-msgstr "環境変数 DJGPP が定義されていません"
+msgstr "環境変数 COLLECT_GCC が設定されていなければいけません"
 
 #: lto-wrapper.c:317
 #, c-format
 msgid "environment variable COLLECT_GCC_OPTIONS must be set"
-msgstr ""
+msgstr "環境変数 COLLECT_GCC_OPTIONS が設定されていなければいけません"
 
 #: lto-wrapper.c:326
 #, c-format
 msgid "malformed COLLECT_GCC_OPTIONS"
-msgstr ""
+msgstr "誤った形式の COLLECT_GCC_OPTIONS です"
 
 #: lto-wrapper.c:471 lto-wrapper.c:629
-#, fuzzy, c-format
+#, c-format
 msgid "invalid LTO mode"
-msgstr "無効なコードです"
+msgstr "無効な LTO モードです"
 
 #: lto-wrapper.c:492
-#, fuzzy, c-format
+#, c-format
 msgid "fopen: %s"
-msgstr "fopen %s"
+msgstr "fopen: %s"
 
 #. What to print when a switch has no documentation.
 #: opts.c:325
 msgid "This switch lacks documentation"
-msgstr ""
+msgstr "このスイッチには文書がありません"
 
 #: opts.c:1460
 msgid "[enabled]"
-msgstr ""
+msgstr "[有効]"
 
 #: opts.c:1460
 msgid "[disabled]"
-msgstr ""
+msgstr "[無効]"
 
 #: opts.c:1475
 #, c-format
@@ -1298,37 +1295,35 @@ msgstr ""
 
 #: opts.c:1545
 msgid "The following options are target specific"
-msgstr ""
+msgstr "このオプションはターゲット固有のものです"
 
 #: opts.c:1548
 msgid "The following options control compiler warning messages"
-msgstr ""
+msgstr "次のオプションはコンパイラの警告メッセージを制御します"
 
 #: opts.c:1551
-#, fuzzy
 msgid "The following options control optimizations"
-msgstr "末尾呼び出し最適化を行う"
+msgstr "次のオプションは最適化を制御します"
 
 #: opts.c:1554 opts.c:1593
 msgid "The following options are language-independent"
-msgstr ""
+msgstr "次のオプションは言語に依存しないものです"
 
 #: opts.c:1557
 msgid "The --param option recognizes the following as parameters"
-msgstr ""
+msgstr "--param オプションは以降をパラメータとして認識します"
 
 #: opts.c:1563
 msgid "The following options are specific to just the language "
-msgstr ""
+msgstr "次のオプションはこの言語固有のものです"
 
 #: opts.c:1565
 msgid "The following options are supported by the language "
-msgstr ""
+msgstr "次のオプションはこの言語でサポートされているものです"
 
 #: opts.c:1576
-#, fuzzy
 msgid "The following options are not documented"
-msgstr "  これらは存在しますが、文書化されていません\n"
+msgstr "次のオプションは文書化されていません"
 
 #: opts.c:1578
 msgid "The following options take separate arguments"
@@ -1340,35 +1335,34 @@ msgstr ""
 
 #: opts.c:1591
 msgid "The following options are language-related"
-msgstr ""
+msgstr "次のオプションは言語に関係したものです"
 
 #: opts.c:1759
 #, c-format
 msgid "warning: --help argument %.*s is ambiguous, please be more specific\n"
-msgstr ""
+msgstr "警告: --help の引数 %.*s は曖昧です。より特定してください\n"
 
 #: opts.c:1767
 #, c-format
 msgid "warning: unrecognized argument to --help= option: %.*s\n"
-msgstr ""
+msgstr "警告: --help= オプションに対する認識できない引数です: %.*s\n"
 
 #: opts.c:2488
-#, fuzzy
 msgid "enabled by default"
-msgstr "'char' をデフォルトで符合付きとする"
+msgstr "デフォルトで有効"
 
 #: plugin.c:790
 msgid "Event"
-msgstr ""
+msgstr "イベント"
 
 #: plugin.c:790
 msgid "Plugins"
-msgstr ""
+msgstr "プラグイン"
 
 #: plugin.c:822
 #, c-format
 msgid "*** WARNING *** there are active plugins, do not report this as a bug unless you can reproduce it without enabling any plugins.\n"
-msgstr ""
+msgstr "*** 警告 *** 有効になっているプラグインがあります。すべてのプラグインを無効にして再現できない限りこのバグを報告しないでください\n"
 
 #: reload.c:3806
 #, fuzzy
@@ -1396,34 +1390,32 @@ msgid "failure trying to reload:"
 msgstr ""
 
 #: rtl-error.c:117
-#, fuzzy
 msgid "unrecognizable insn:"
-msgstr "認識不能な命令:"
+msgstr "認識できない命令:"
 
 #: rtl-error.c:119
-#, fuzzy
 msgid "insn does not satisfy its constraints:"
-msgstr "命令がその制約を満たしません"
+msgstr "命令が制約を満たしません:"
 
 #: tlink.c:387
 #, c-format
 msgid "collect: reading %s\n"
-msgstr "collect: %s を読み込みます\n"
+msgstr "collect: %s を読み込んでいます\n"
 
 #: tlink.c:481
 #, c-format
 msgid "removing .rpo file"
-msgstr ""
+msgstr ".rpo ファイルを削除しています"
 
 #: tlink.c:483
 #, c-format
 msgid "renaming .rpo file"
-msgstr ""
+msgstr ".rpo ファイルの名前を変更しています"
 
 #: tlink.c:537
 #, c-format
 msgid "collect: recompiling %s\n"
-msgstr "collect: %s を再コンパイルします\n"
+msgstr "collect: %s を再コンパイルしています\n"
 
 #: tlink.c:744
 #, c-format
@@ -1433,32 +1425,31 @@ msgstr "collect: %s を引っ張ります(%s 内)\n"
 #: tlink.c:794
 #, c-format
 msgid "collect: relinking\n"
-msgstr "collect: 再リンクします\n"
+msgstr "collect: 再リンクしています\n"
 
 #: toplev.c:476
-#, fuzzy, c-format
+#, c-format
 msgid "unrecoverable error"
-msgstr "内部エラー"
+msgstr "回復できないエラー"
 
 #: toplev.c:1033
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s%s%s %sversion %s (%s)\n"
 "%s\tcompiled by GNU C version %s, "
 msgstr ""
-"%s%s%s version %s (%s)\n"
-"%s\tcompiled by GNU C version %s.\n"
-"%s%s%s version %s (%s) compiled by CC.\n"
+"%s%s%s %sversion %s (%s)\n"
+"%s\tcompiled by GNU C version %s, "
 
 #: toplev.c:1035
 #, c-format
 msgid "%s%s%s %sversion %s (%s) compiled by CC, "
-msgstr ""
+msgstr "%s%s%s %sversion %s (%s) compiled by CC, "
 
 #: toplev.c:1039
 #, c-format
 msgid "GMP version %s, MPFR version %s, MPC version %s\n"
-msgstr ""
+msgstr "GMP version %s, MPFR version %s, MPC version %s\n"
 
 #: toplev.c:1041
 #, c-format
@@ -1485,7 +1476,7 @@ msgstr ""
 
 #: toplev.c:1370
 msgid "out of memory"
-msgstr ""
+msgstr "メモリが足りません"
 
 #: toplev.c:1385
 msgid "created and used with different settings of -fpic"
@@ -1510,9 +1501,8 @@ msgstr "関数を inline にできません"
 
 #. Inlining failed owing to unavailable function body.
 #: cif-code.def:42
-#, fuzzy
 msgid "function body not available"
-msgstr "関数を inline にできません"
+msgstr "関数本体が利用できません"
 
 #: cif-code.def:45
 #, fuzzy
@@ -1521,15 +1511,13 @@ msgstr "インライン関数をインライン化できない場合に警告す
 
 #. Function is not inlinable.
 #: cif-code.def:49
-#, fuzzy
 msgid "function not inlinable"
-msgstr "関数を inline にできません"
+msgstr "inline にできない関数です"
 
 #. Function is not an inlining candidate.
 #: cif-code.def:52
-#, fuzzy
 msgid "function not inline candidate"
-msgstr "関数を inline にできません"
+msgstr "inline の候補でない関数です"
 
 #: cif-code.def:56
 msgid "--param large-function-growth limit reached"
@@ -2151,61 +2139,53 @@ msgstr ""
 
 #: c-family/c-format.c:368
 msgid "format"
-msgstr ""
+msgstr "書式"
 
 #: c-family/c-format.c:369
 msgid "field width specifier"
-msgstr ""
+msgstr "フィールド幅指定"
 
 #: c-family/c-format.c:370
 msgid "field precision specifier"
-msgstr ""
+msgstr "フィールド精度指定"
 
 #: c-family/c-format.c:484 c-family/c-format.c:508 config/i386/msformat-c.c:50
-#, fuzzy
 msgid "' ' flag"
-msgstr "` ' フラグ"
+msgstr "' ' フラグ"
 
 #: c-family/c-format.c:484 c-family/c-format.c:508 config/i386/msformat-c.c:50
-#, fuzzy
 msgid "the ' ' printf flag"
-msgstr "printf の ` ' フラグ"
+msgstr "printf の ' ' フラグ"
 
 #: c-family/c-format.c:485 c-family/c-format.c:509 c-family/c-format.c:543
 #: c-family/c-format.c:606 config/i386/msformat-c.c:51
-#, fuzzy
 msgid "'+' flag"
-msgstr "`+' フラグ"
+msgstr "'+' フラグ"
 
 #: c-family/c-format.c:485 c-family/c-format.c:509 c-family/c-format.c:543
 #: config/i386/msformat-c.c:51
-#, fuzzy
 msgid "the '+' printf flag"
-msgstr "printf の `+' フラグ"
+msgstr "printf の '+' フラグ"
 
 #: c-family/c-format.c:486 c-family/c-format.c:510 c-family/c-format.c:544
 #: c-family/c-format.c:582 config/i386/msformat-c.c:52
 #: config/i386/msformat-c.c:87
-#, fuzzy
 msgid "'#' flag"
-msgstr "`#' フラグ"
+msgstr "'#' フラグ"
 
 #: c-family/c-format.c:486 c-family/c-format.c:510 c-family/c-format.c:544
 #: config/i386/msformat-c.c:52
-#, fuzzy
 msgid "the '#' printf flag"
-msgstr "printf の `#' フラグ"
+msgstr "printf の '#' フラグ"
 
 #: c-family/c-format.c:487 c-family/c-format.c:511 c-family/c-format.c:580
 #: config/i386/msformat-c.c:53
-#, fuzzy
 msgid "'0' flag"
-msgstr "`0' フラグ"
+msgstr "'0' フラグ"
 
 #: c-family/c-format.c:487 c-family/c-format.c:511 config/i386/msformat-c.c:53
-#, fuzzy
 msgid "the '0' printf flag"
-msgstr "printf の `0' フラグ"
+msgstr "printf の '0' フラグ"
 
 #: c-family/c-format.c:488 c-family/c-format.c:512 c-family/c-format.c:579
 #: c-family/c-format.c:609 config/i386/msformat-c.c:54
@@ -2214,30 +2194,25 @@ msgid "'-' flag"
 msgstr "`-' フラグ"
 
 #: c-family/c-format.c:488 c-family/c-format.c:512 config/i386/msformat-c.c:54
-#, fuzzy
 msgid "the '-' printf flag"
-msgstr "printf の `-' フラグ"
+msgstr "printf の '-' フラグ"
 
 #: c-family/c-format.c:489 c-family/c-format.c:562 config/i386/msformat-c.c:55
 #: config/i386/msformat-c.c:75
-#, fuzzy
 msgid "''' flag"
-msgstr "`'' フラグ"
+msgstr "''' フラグ"
 
 #: c-family/c-format.c:489 config/i386/msformat-c.c:55
-#, fuzzy
 msgid "the ''' printf flag"
-msgstr "printf の `'' フラグ"
+msgstr "printf の ''' フラグ"
 
 #: c-family/c-format.c:490 c-family/c-format.c:563
-#, fuzzy
 msgid "'I' flag"
-msgstr "`'' フラグ"
+msgstr "'I' フラグ"
 
 #: c-family/c-format.c:490
-#, fuzzy
 msgid "the 'I' printf flag"
-msgstr "printf の `'' フラグ"
+msgstr "printf の 'I' フラグ"
 
 #: c-family/c-format.c:491 c-family/c-format.c:513 c-family/c-format.c:560
 #: c-family/c-format.c:583 c-family/c-format.c:610 config/sol2-c.c:45
@@ -2248,7 +2223,7 @@ msgstr "フィールド幅"
 #: c-family/c-format.c:491 c-family/c-format.c:513 config/sol2-c.c:45
 #: config/i386/msformat-c.c:56
 msgid "field width in printf format"
-msgstr "printf フォーマットでのフィールド幅"
+msgstr "printf 書式でのフィールド幅"
 
 #: c-family/c-format.c:492 c-family/c-format.c:514 c-family/c-format.c:546
 #: config/i386/msformat-c.c:57
@@ -2258,7 +2233,7 @@ msgstr "精度"
 #: c-family/c-format.c:492 c-family/c-format.c:514 c-family/c-format.c:546
 #: config/i386/msformat-c.c:57
 msgid "precision in printf format"
-msgstr "printf フォーマットでの精度"
+msgstr "printf 書式での精度"
 
 #: c-family/c-format.c:493 c-family/c-format.c:515 c-family/c-format.c:547
 #: c-family/c-format.c:561 c-family/c-format.c:613 config/sol2-c.c:46
@@ -2269,128 +2244,107 @@ msgstr "長さ修飾子"
 #: c-family/c-format.c:493 c-family/c-format.c:515 c-family/c-format.c:547
 #: config/sol2-c.c:46 config/i386/msformat-c.c:58
 msgid "length modifier in printf format"
-msgstr "printf フォーマットの長さ修飾子"
+msgstr "printf 書式の長さ修飾子"
 
 #: c-family/c-format.c:545
-#, fuzzy
 msgid "'q' flag"
-msgstr "`'' フラグ"
+msgstr "'q' フラグ"
 
 #: c-family/c-format.c:545
-#, fuzzy
 msgid "the 'q' diagnostic flag"
-msgstr "printf の `'' フラグ"
+msgstr "printf の 'q' フラグ"
 
 #: c-family/c-format.c:557 config/i386/msformat-c.c:71
 msgid "assignment suppression"
 msgstr "代入の抑制"
 
 #: c-family/c-format.c:557 config/i386/msformat-c.c:71
-#, fuzzy
 msgid "the assignment suppression scanf feature"
-msgstr "代入の抑制"
+msgstr "scanf 機能の代入の抑制"
 
 #: c-family/c-format.c:558 config/i386/msformat-c.c:72
-#, fuzzy
 msgid "'a' flag"
-msgstr "`'' フラグ"
+msgstr "'a' フラグ"
 
 #: c-family/c-format.c:558 config/i386/msformat-c.c:72
-#, fuzzy
 msgid "the 'a' scanf flag"
-msgstr "scanf の `a' フラグ"
+msgstr "scanf の 'a' フラグ"
 
 #: c-family/c-format.c:559
-#, fuzzy
 msgid "'m' flag"
-msgstr "`'' フラグ"
+msgstr "'m' フラグ"
 
 #: c-family/c-format.c:559
-#, fuzzy
 msgid "the 'm' scanf flag"
-msgstr "scanf の `'' フラグ"
+msgstr "scanf の 'm' フラグ"
 
 #: c-family/c-format.c:560 config/i386/msformat-c.c:73
 msgid "field width in scanf format"
-msgstr "scanf フォーマットのフィールド幅"
+msgstr "scanf 書式のフィールド幅"
 
 #: c-family/c-format.c:561 config/i386/msformat-c.c:74
 msgid "length modifier in scanf format"
-msgstr "scanf フォーマットの長さ修飾子"
+msgstr "scanf 書式の長さ修飾子"
 
 #: c-family/c-format.c:562 config/i386/msformat-c.c:75
-#, fuzzy
 msgid "the ''' scanf flag"
-msgstr "scanf の `'' フラグ"
+msgstr "scanf の ''' フラグ"
 
 #: c-family/c-format.c:563
-#, fuzzy
 msgid "the 'I' scanf flag"
-msgstr "scanf の `'' フラグ"
+msgstr "scanf の 'I' フラグ"
 
 #: c-family/c-format.c:578
-#, fuzzy
 msgid "'_' flag"
-msgstr "`'' フラグ"
+msgstr "'_' フラグ"
 
 #: c-family/c-format.c:578
-#, fuzzy
 msgid "the '_' strftime flag"
-msgstr "strftime の `_' フラグ"
+msgstr "strftime の '_' フラグ"
 
 #: c-family/c-format.c:579
-#, fuzzy
 msgid "the '-' strftime flag"
-msgstr "strftime の `-' フラグ"
+msgstr "strftime の '-' フラグ"
 
 #: c-family/c-format.c:580
-#, fuzzy
 msgid "the '0' strftime flag"
-msgstr "strftime の `^' フラグ"
+msgstr "strftime の '0' フラグ"
 
 #: c-family/c-format.c:581 c-family/c-format.c:605
-#, fuzzy
 msgid "'^' flag"
-msgstr "`'' フラグ"
+msgstr "'^' フラグ"
 
 #: c-family/c-format.c:581
-#, fuzzy
 msgid "the '^' strftime flag"
-msgstr "strftime の `^' フラグ"
+msgstr "strftime の '^' フラグ"
 
 #: c-family/c-format.c:582 config/i386/msformat-c.c:87
-#, fuzzy
 msgid "the '#' strftime flag"
-msgstr "strftime の `#' フラグ"
+msgstr "strftime の '#' フラグ"
 
 #: c-family/c-format.c:583
 msgid "field width in strftime format"
-msgstr "strftime フォーマットのフィールド幅"
+msgstr "strftime 書式のフィールド幅"
 
 #: c-family/c-format.c:584
-#, fuzzy
 msgid "'E' modifier"
-msgstr "`E' 修飾子"
+msgstr "'E' 修飾子"
 
 #: c-family/c-format.c:584
-#, fuzzy
 msgid "the 'E' strftime modifier"
-msgstr "strftime の `E' 修飾子"
+msgstr "strftime の 'E' 修飾子"
 
 #: c-family/c-format.c:585
-#, fuzzy
 msgid "'O' modifier"
-msgstr "`O' 修飾子"
+msgstr "'O' 修飾子"
 
 #: c-family/c-format.c:585
-#, fuzzy
 msgid "the 'O' strftime modifier"
-msgstr "strftime の `O' 修飾子"
+msgstr "strftime の 'O' 修飾子"
 
 #: c-family/c-format.c:586
-#, fuzzy
 msgid "the 'O' modifier"
-msgstr "the `O' 修飾子"
+msgstr "'O' 修飾子"
 
 #: c-family/c-format.c:604
 msgid "fill character"
@@ -2398,46 +2352,39 @@ msgstr "詰め文字"
 
 #: c-family/c-format.c:604
 msgid "fill character in strfmon format"
-msgstr "strfmon フォーマットの詰め文字"
+msgstr "strfmon 書式の詰め文字"
 
 #: c-family/c-format.c:605
-#, fuzzy
 msgid "the '^' strfmon flag"
-msgstr "strfmon の `^' フラグ"
+msgstr "strfmon の '^' フラグ"
 
 #: c-family/c-format.c:606
-#, fuzzy
 msgid "the '+' strfmon flag"
-msgstr "strfmon の `+' フラグ"
+msgstr "strfmon の '+' フラグ"
 
 #: c-family/c-format.c:607
-#, fuzzy
 msgid "'(' flag"
-msgstr "`'' フラグ"
+msgstr "'(' フラグ"
 
 #: c-family/c-format.c:607
-#, fuzzy
 msgid "the '(' strfmon flag"
-msgstr "strfmon の `(' フラグ"
+msgstr "strfmon の '(' フラグ"
 
 #: c-family/c-format.c:608
-#, fuzzy
 msgid "'!' flag"
-msgstr "`'' フラグ"
+msgstr "'!' フラグ"
 
 #: c-family/c-format.c:608
-#, fuzzy
 msgid "the '!' strfmon flag"
-msgstr "strfmon の `!' フラグ"
+msgstr "strfmon の '!' フラグ"
 
 #: c-family/c-format.c:609
-#, fuzzy
 msgid "the '-' strfmon flag"
-msgstr "strfmon の `-' フラグ"
+msgstr "strfmon の '-' フラグ"
 
 #: c-family/c-format.c:610
 msgid "field width in strfmon format"
-msgstr "strfmon フォーマットのフィールド幅"
+msgstr "strfmon 書式のフィールド幅"
 
 #: c-family/c-format.c:611
 msgid "left precision"
@@ -2445,7 +2392,7 @@ msgstr "左精度"
 
 #: c-family/c-format.c:611
 msgid "left precision in strfmon format"
-msgstr "strfmon フォーマットの左精度"
+msgstr "strfmon 書式の左精度"
 
 #: c-family/c-format.c:612
 msgid "right precision"
@@ -2453,57 +2400,52 @@ msgstr "右精度"
 
 #: c-family/c-format.c:612
 msgid "right precision in strfmon format"
-msgstr "strfmon フォーマットの右精度"
+msgstr "strfmon 書式の右精度"
 
 #: c-family/c-format.c:613
 msgid "length modifier in strfmon format"
-msgstr "strfmon フォーマットの長さ修飾子"
+msgstr "strfmon 書式の長さ修飾子"
 
 #. Handle deferred options from command-line.
 #: c-family/c-opts.c:1326 fortran/cpp.c:573
-#, fuzzy
 msgid "<command-line>"
 msgstr "<コマンドライン>"
 
 #: c-family/c-pretty-print.c:344
-#, fuzzy
 msgid "<type-error>"
-msgstr "構文解析エラー"
+msgstr "<型エラー>"
 
 #: c-family/c-pretty-print.c:383
 msgid "<unnamed-unsigned:"
-msgstr ""
+msgstr "<名前無し符号無し:"
 
 #: c-family/c-pretty-print.c:384
 msgid "<unnamed-signed:"
-msgstr ""
+msgstr "<名前無し符号付き:"
 
 #: c-family/c-pretty-print.c:387
 msgid "<unnamed-float:"
-msgstr ""
+msgstr "<名前無し浮動小数:"
 
 #: c-family/c-pretty-print.c:390
 msgid "<unnamed-fixed:"
-msgstr ""
+msgstr "<名前無し固定小数:"
 
 #: c-family/c-pretty-print.c:405
 msgid "<typedef-error>"
-msgstr ""
+msgstr "<typedef エラー>"
 
 #: c-family/c-pretty-print.c:418
-#, fuzzy
 msgid "<tag-error>"
-msgstr "文法エラー"
+msgstr "<tag エラー>"
 
 #: c-family/c-pretty-print.c:1165
-#, fuzzy
 msgid "<erroneous-expression>"
-msgstr "定数式がオーバーフローしました"
+msgstr "<エラーがある式>"
 
 #: c-family/c-pretty-print.c:1169 cp/cxx-pretty-print.c:154
-#, fuzzy
 msgid "<return-value>"
-msgstr "return"
+msgstr "<戻り値>"
 
 #: config/alpha/alpha.c:5146
 #, c-format
@@ -2511,9 +2453,9 @@ msgid "invalid %%H value"
 msgstr "無効な %%H 値"
 
 #: config/alpha/alpha.c:5167 config/bfin/bfin.c:1683
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%J value"
-msgstr "無効な %%Q 値"
+msgstr "無効な %%J 値"
 
 #: config/alpha/alpha.c:5197 config/ia64/ia64.c:5147
 #, c-format
@@ -2590,46 +2532,46 @@ msgid "invalid %%xn code"
 msgstr "無効な %%xn コード"
 
 #: config/arc/arc.c:1737 config/m32r/m32r.c:2152
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%R code"
-msgstr "%R コードに対する無効なオペランド"
+msgstr "%%R コードに対する無効な被演算子"
 
 #: config/arc/arc.c:1769 config/m32r/m32r.c:2175
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%H/%%L code"
-msgstr "%H/%L コードに対する無効なオペランド"
+msgstr "%%H/%%L コードに対する無効な被演算子"
 
 #: config/arc/arc.c:1791 config/m32r/m32r.c:2246
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%U code"
-msgstr "%U コードに対する無効なオペランド"
+msgstr "%%U コードに対する無効な被演算子"
 
 #: config/arc/arc.c:1802
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%V code"
-msgstr "%V コードに対する無効なオペランド"
+msgstr "%%V コードに対する無効な被演算子"
 
 #. Unknown flag.
 #. Undocumented flag.
 #: config/arc/arc.c:1809 config/m32r/m32r.c:2273 config/sparc/sparc.c:7539
 #, c-format
 msgid "invalid operand output code"
-msgstr "無効なオペランド出力コード"
+msgstr "無効な被演算子出力コード"
 
 #: config/arm/arm.c:15779 config/arm/arm.c:15797
-#, fuzzy, c-format
+#, c-format
 msgid "predicated Thumb instruction"
-msgstr "文字命令を生成する"
+msgstr "述語付き Thumb 命令"
 
 #: config/arm/arm.c:15785
-#, fuzzy, c-format
+#, c-format
 msgid "predicated instruction in conditional sequence"
-msgstr "ret 命令は実装されていません"
+msgstr "条件シーケンスにある述語付き命令"
 
 #: config/arm/arm.c:15955
-#, fuzzy, c-format
+#, c-format
 msgid "invalid shift operand"
-msgstr "無効な %P オペランドです"
+msgstr "無効なシフト被演算子"
 
 #: config/arm/arm.c:16012 config/arm/arm.c:16034 config/arm/arm.c:16044
 #: config/arm/arm.c:16054 config/arm/arm.c:16064 config/arm/arm.c:16103
@@ -2641,83 +2583,75 @@ msgstr "無効な %P オペランドです"
 #: config/bfin/bfin.c:1696 config/bfin/bfin.c:1703 config/bfin/bfin.c:1710
 #: config/bfin/bfin.c:1717 config/bfin/bfin.c:1726 config/bfin/bfin.c:1733
 #: config/bfin/bfin.c:1740 config/bfin/bfin.c:1747
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand for code '%c'"
-msgstr "%R コードに対する無効なオペランド"
+msgstr "コード '%c' に対する無効な被演算子です"
 
 #: config/arm/arm.c:16116
-#, fuzzy, c-format
+#, c-format
 msgid "instruction never executed"
-msgstr "ブランチ %d は一度も実行されず\n"
+msgstr "命令は決して実行されません"
 
 #: config/arm/arm.c:16454
-#, fuzzy, c-format
+#, c-format
 msgid "missing operand"
-msgstr "項を欠いています"
+msgstr "被演算子がありません"
 
 #: config/arm/arm.c:18884
-#, fuzzy
 msgid "function parameters cannot have __fp16 type"
-msgstr "複雑なパラメタをもつ関数は inline にできません"
+msgstr "関数パラメータは __fp16 型を持てません"
 
 #: config/arm/arm.c:18894
-#, fuzzy
 msgid "functions cannot return __fp16 type"
-msgstr "関数が文字列型を返しません"
+msgstr "関数が __fp16 型を返しません"
 
 #: config/avr/avr.c:1097
 #, c-format
 msgid "address operand requires constraint for X, Y, or Z register"
-msgstr ""
+msgstr "アドレス被演算子は X、Y または Z レジスタに対する制約を要求します"
 
 #: config/avr/avr.c:1223
-#, fuzzy
 msgid "bad address, not a constant):"
-msgstr "不正な文字列定数です"
+msgstr "誤ったアドレスです。定数ではありません):"
 
 #: config/avr/avr.c:1236
 msgid "bad address, not (reg+disp):"
-msgstr ""
+msgstr "誤ったアドレスです。(reg+disp) ではありません:"
 
 #: config/avr/avr.c:1243
 msgid "bad address, not post_inc or pre_dec:"
-msgstr ""
+msgstr "誤ったアドレスです。post_inc または pre_dec ではありません:"
 
 #: config/avr/avr.c:1254
-#, fuzzy
 msgid "internal compiler error.  Bad address:"
-msgstr "内部コンパイラエラー."
+msgstr "コンパイラ内部エラー。誤ったアドレス:"
 
 #: config/avr/avr.c:1279
-#, fuzzy
 msgid "internal compiler error.  Unknown mode:"
-msgstr "内部コンパイラエラー."
+msgstr "コンパイラ内部エラー。不明なモード:"
 
 #: config/avr/avr.c:1860 config/avr/avr.c:2548
-#, fuzzy
 msgid "invalid insn:"
-msgstr "無効な #line"
+msgstr "無効な命令:"
 
 #: config/avr/avr.c:1899 config/avr/avr.c:1985 config/avr/avr.c:2034
 #: config/avr/avr.c:2062 config/avr/avr.c:2157 config/avr/avr.c:2326
 #: config/avr/avr.c:2587 config/avr/avr.c:2699
 msgid "incorrect insn:"
-msgstr ""
+msgstr "正しくない命令:"
 
 #: config/avr/avr.c:2081 config/avr/avr.c:2242 config/avr/avr.c:2397
 #: config/avr/avr.c:2765
-#, fuzzy
 msgid "unknown move insn:"
-msgstr "不明なマシンモード `%s'"
+msgstr "不明な move 命令:"
 
 #: config/avr/avr.c:2995
 msgid "bad shift insn:"
-msgstr ""
+msgstr "誤ったシフト命令:"
 
 #: config/avr/avr.c:3111 config/avr/avr.c:3531 config/avr/avr.c:3889
-#, fuzzy
 msgid "internal compiler error.  Incorrect shift:"
-msgstr "内部コンパイラエラー."
+msgstr "コンパイラ内部エラー。正しくないシフト:"
 
 #: config/bfin/bfin.c:1645
 #, c-format
@@ -2725,9 +2659,9 @@ msgid "invalid %%j value"
 msgstr "無効な %%j 値"
 
 #: config/bfin/bfin.c:1838
-#, fuzzy, c-format
+#, c-format
 msgid "invalid const_double operand"
-msgstr "無効な %P オペランドです"
+msgstr "無効な const_double 被演算子"
 
 #: config/cris/cris.c:571 config/moxie/moxie.c:112 final.c:3074 final.c:3076
 #: fold-const.c:263 gcc.c:4555 gcc.c:4569 loop-iv.c:2969 loop-iv.c:2978
@@ -2747,103 +2681,87 @@ msgid "unexpected base-type in cris_print_base"
 msgstr ""
 
 #: config/cris/cris.c:704
-#, fuzzy
 msgid "invalid operand for 'b' modifier"
-msgstr "%R コードに対する無効なオペランド"
+msgstr "'b' 修飾子に対する無効な被演算子"
 
 #: config/cris/cris.c:721
-#, fuzzy
 msgid "invalid operand for 'o' modifier"
-msgstr "%R コードに対する無効なオペランド"
+msgstr "'o' 修飾子に対する無効な被演算子"
 
 #: config/cris/cris.c:740
-#, fuzzy
 msgid "invalid operand for 'O' modifier"
-msgstr "%R コードに対する無効なオペランド"
+msgstr "'O' 修飾子に対する無効な被演算子"
 
 #: config/cris/cris.c:773
-#, fuzzy
 msgid "invalid operand for 'p' modifier"
-msgstr "%p コードに対する無効なオペランド"
+msgstr "'p' 修飾子に対する無効な被演算子"
 
 #: config/cris/cris.c:812
-#, fuzzy
 msgid "invalid operand for 'z' modifier"
-msgstr "%R コードに対する無効なオペランド"
+msgstr "'z' 修飾子に対する無効な被演算子"
 
 #: config/cris/cris.c:876 config/cris/cris.c:910
-#, fuzzy
 msgid "invalid operand for 'H' modifier"
-msgstr "%R コードに対する無効なオペランド"
+msgstr "'H' 修飾子に対する無効な被演算子"
 
 #: config/cris/cris.c:886
-#, fuzzy
 msgid "bad register"
-msgstr "浮動小数点レジスタを利用する"
+msgstr "誤ったレジスタ"
 
 #: config/cris/cris.c:930
-#, fuzzy
 msgid "invalid operand for 'e' modifier"
-msgstr "%R コードに対する無効なオペランド"
+msgstr "'e' 修飾子に対する無効な被演算子"
 
 #: config/cris/cris.c:947
-#, fuzzy
 msgid "invalid operand for 'm' modifier"
-msgstr "%R コードに対する無効なオペランド"
+msgstr "'m' 修飾子に対する無効な被演算子"
 
 #: config/cris/cris.c:972
-#, fuzzy
 msgid "invalid operand for 'A' modifier"
-msgstr "%R コードに対する無効なオペランド"
+msgstr "'A' 修飾子に対する無効な被演算子"
 
 #: config/cris/cris.c:995
-#, fuzzy
 msgid "invalid operand for 'D' modifier"
-msgstr "%R コードに対する無効なオペランド"
+msgstr "'D' 修飾子に対する無効な被演算子"
 
 #: config/cris/cris.c:1009
-#, fuzzy
 msgid "invalid operand for 'T' modifier"
-msgstr "%R コードに対する無効なオペランド"
+msgstr "'T' 修飾子に対する無効な被演算子"
 
 #: config/cris/cris.c:1029 config/moxie/moxie.c:182
-#, fuzzy
 msgid "invalid operand modifier letter"
-msgstr "無効なオペランド出力コード"
+msgstr "無効な被演算子修飾文字"
 
 #: config/cris/cris.c:1086
 msgid "unexpected multiplicative operand"
-msgstr ""
+msgstr "予期しない倍数被演算子"
 
 #: config/cris/cris.c:1106 config/moxie/moxie.c:207
-#, fuzzy
 msgid "unexpected operand"
-msgstr "予期されるメモリレイテンシを調整する"
+msgstr "予期しない演算子"
 
 #: config/cris/cris.c:1145 config/cris/cris.c:1155
-#, fuzzy
 msgid "unrecognized address"
-msgstr "認識不能のエスケープ \\r%c"
+msgstr "認識できないアドレス"
 
 #: config/cris/cris.c:2279
-#, fuzzy
 msgid "unrecognized supposed constant"
-msgstr "認識不能のエスケープ \\r%c"
+msgstr "認識できない定数のようなもの"
 
 #: config/cris/cris.c:2708 config/cris/cris.c:2772
 msgid "unexpected side-effects in address"
-msgstr ""
+msgstr "アドレス内の予期しない副作用"
 
 #. Can't possibly get a GOT-needing-fixup for a function-call,
 #. right?
 #: config/cris/cris.c:3607
 msgid "unidentifiable call op"
-msgstr ""
+msgstr "定義できない call 操作"
 
 #: config/cris/cris.c:3659
 #, c-format
 msgid "PIC register isn't set up"
-msgstr ""
+msgstr "PIC レジスタが設定されていません"
 
 #: config/fr30/fr30.c:514
 #, c-format
@@ -2851,34 +2769,34 @@ msgid "fr30_print_operand_address: unhandled address"
 msgstr "fr30_print_operand_address: 処理されないアドレスです"
 
 #: config/fr30/fr30.c:538
-#, fuzzy, c-format
+#, c-format
 msgid "fr30_print_operand: unrecognized %%p code"
-msgstr "fr30_print_operand: 認識できない %p コードです"
+msgstr "fr30_print_operand: 認識できない %%p コードです"
 
 #: config/fr30/fr30.c:558
-#, fuzzy, c-format
+#, c-format
 msgid "fr30_print_operand: unrecognized %%b code"
-msgstr "fr30_print_operand: 認識できない %b コードです"
+msgstr "fr30_print_operand: 認識できない %%b コードです"
 
 #: config/fr30/fr30.c:579
-#, fuzzy, c-format
+#, c-format
 msgid "fr30_print_operand: unrecognized %%B code"
-msgstr "fr30_print_operand: 認識できない %B コードです"
+msgstr "fr30_print_operand: 認識できない %%B コードです"
 
 #: config/fr30/fr30.c:587
-#, fuzzy, c-format
+#, c-format
 msgid "fr30_print_operand: invalid operand to %%A code"
-msgstr "fr30_print_operand: %A コードに対する無効な演算子です"
+msgstr "fr30_print_operand: %%A コードに対する無効な被演算子です"
 
 #: config/fr30/fr30.c:604
-#, fuzzy, c-format
+#, c-format
 msgid "fr30_print_operand: invalid %%x code"
-msgstr "fr30_print_operand: 無効な %x コードです"
+msgstr "fr30_print_operand: 無効な %%x コードです"
 
 #: config/fr30/fr30.c:611
-#, fuzzy, c-format
+#, c-format
 msgid "fr30_print_operand: invalid %%F code"
-msgstr "fr30_print_operand: 無効な %F コードです"
+msgstr "fr30_print_operand: 無効な %%F コードです"
 
 #: config/fr30/fr30.c:628
 #, c-format
@@ -2892,85 +2810,82 @@ msgid "fr30_print_operand: unhandled MEM"
 msgstr "fr30_print_operand: 処理されない MEM です"
 
 #: config/frv/frv.c:2602
-#, fuzzy
 msgid "bad insn to frv_print_operand_address:"
-msgstr "fr30_print_operand_address: 処理されないアドレスです"
+msgstr "frv_print_operand_address への誤った命令です:"
 
 #: config/frv/frv.c:2613
 msgid "bad register to frv_print_operand_memory_reference_reg:"
-msgstr ""
+msgstr "frv_print_operand_memory_reference_reg への誤ったレジスタです:"
 
 #: config/frv/frv.c:2652 config/frv/frv.c:2662 config/frv/frv.c:2671
 #: config/frv/frv.c:2692 config/frv/frv.c:2697
 msgid "bad insn to frv_print_operand_memory_reference:"
-msgstr ""
+msgstr "frv_print_operand_memory_reference への誤った命令です:"
 
 #: config/frv/frv.c:2783
 #, c-format
 msgid "bad condition code"
-msgstr ""
+msgstr "誤った条件コードです"
 
 #: config/frv/frv.c:2859
-#, fuzzy
 msgid "bad insn in frv_print_operand, bad const_double"
-msgstr "オペランドは const_double です"
+msgstr "frv_print_operand 内の誤った命令, 誤った const_double"
 
 #: config/frv/frv.c:2920
 msgid "bad insn to frv_print_operand, 'e' modifier:"
-msgstr ""
+msgstr "frv_print_operand への誤った命令、'e' 修飾子:"
 
 #: config/frv/frv.c:2928
 msgid "bad insn to frv_print_operand, 'F' modifier:"
-msgstr ""
+msgstr "frv_print_operand への誤った命令、'F' 修飾子:"
 
 #: config/frv/frv.c:2944
 msgid "bad insn to frv_print_operand, 'f' modifier:"
-msgstr ""
+msgstr "frv_print_operand への誤った命令、'f' 修飾子:"
 
 #: config/frv/frv.c:2958
 msgid "bad insn to frv_print_operand, 'g' modifier:"
-msgstr ""
+msgstr "frv_print_operand への誤った命令、'g' 修飾子:"
 
 #: config/frv/frv.c:3006
 msgid "bad insn to frv_print_operand, 'L' modifier:"
-msgstr ""
+msgstr "frv_print_operand への誤った命令、'L' 修飾子:"
 
 #: config/frv/frv.c:3019
 msgid "bad insn to frv_print_operand, 'M/N' modifier:"
-msgstr ""
+msgstr "frv_print_operand への誤った命令、'M/N' 修飾子:"
 
 #: config/frv/frv.c:3040
 msgid "bad insn to frv_print_operand, 'O' modifier:"
-msgstr ""
+msgstr "frv_print_operand への誤った命令、'O' 修飾子:"
 
 #: config/frv/frv.c:3058
 msgid "bad insn to frv_print_operand, P modifier:"
-msgstr ""
+msgstr "frv_print_operand への誤った命令、'P' 修飾子:"
 
 #: config/frv/frv.c:3078
 msgid "bad insn in frv_print_operand, z case"
-msgstr ""
+msgstr "frv_print_operand 内の誤った命令、 z の場合"
 
 #: config/frv/frv.c:3109
 msgid "bad insn in frv_print_operand, 0 case"
-msgstr ""
+msgstr "frv_print_operand 内の誤った命令、 0 の場合"
 
 #: config/frv/frv.c:3114
-#, fuzzy
 msgid "frv_print_operand: unknown code"
-msgstr "fr30_print_operand: 不明なコードです"
+msgstr "frv_print_operand: 不明なコードです"
 
 #: config/frv/frv.c:4515
 msgid "bad output_move_single operand"
-msgstr ""
+msgstr "誤った output_move_single 被演算子"
 
 #: config/frv/frv.c:4642
 msgid "bad output_move_double operand"
-msgstr ""
+msgstr "誤った output_move_double 被演算子"
 
 #: config/frv/frv.c:4784
 msgid "bad output_condmove_single operand"
-msgstr ""
+msgstr "誤った output_condmove_single 被演算子"
 
 #. This macro is a C statement to print on `stderr' a string describing the
 #. particular machine description choice.  Every machine description should
@@ -2984,27 +2899,27 @@ msgstr ""
 #: config/frv/frv.h:302
 #, c-format
 msgid " (frv)"
-msgstr ""
+msgstr " (frv)"
 
 #: config/i386/i386.c:12993
 #, c-format
 msgid "invalid UNSPEC as operand"
-msgstr "オペランドとして無効な UNSPEC"
+msgstr "被演算子として無効な UNSPEC"
 
 #: config/i386/i386.c:13590
 #, c-format
 msgid "'%%&' used without any local dynamic TLS references"
-msgstr ""
+msgstr "局所動的 TLS 参照無しで '%%&' が使用されました"
 
 #: config/i386/i386.c:13681 config/i386/i386.c:13756
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand size for operand code '%c'"
-msgstr "%p コードに対する無効なオペランド"
+msgstr "演算子コード '%c' に対する無効な被演算子サイズです"
 
 #: config/i386/i386.c:13751
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand type used with operand code '%c'"
-msgstr "無効なオペランド出力コード"
+msgstr "被演算子コード '%c' に無効な被演算子型が使用されました"
 
 #: config/i386/i386.c:13831 config/i386/i386.c:13871
 #, c-format
@@ -3037,24 +2952,23 @@ msgid "operand is not a condition code, invalid operand code 'Y'"
 msgstr ""
 
 #: config/i386/i386.c:14064
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand code '%c'"
-msgstr "%R コードに対する無効なオペランド"
+msgstr "無効な被演算子コード '%c' です"
 
 #: config/i386/i386.c:14114
-#, fuzzy, c-format
+#, c-format
 msgid "invalid constraints for operand"
-msgstr "オペランドとして無効な式"
+msgstr "演算子に対する無効な制約です"
 
 #: config/i386/i386.c:22022
-#, fuzzy
 msgid "unknown insn mode"
-msgstr "不明なマシンモード `%s'"
+msgstr "不明な命令モード"
 
 #. If the environment variable DJDIR is not defined, then DJGPP is not        installed correctly and GCC will quickly become confused with the        default prefix settings. Report the problem now so the user doesn't        receive deceptive "file not found" error messages later.
 #. DJDIR is automatically defined by the DJGPP environment config            file pointed to by the environment variable DJGPP. Examine DJGPP            to try and figure out what's wrong.
 #: config/i386/xm-djgpp.h:61
-#, fuzzy, c-format
+#, c-format
 msgid "environment variable DJGPP not defined"
 msgstr "環境変数 DJGPP が定義されていません"
 
