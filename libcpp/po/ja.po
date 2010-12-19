@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 4.6-b20101113\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-10-22 14:48+0000\n"
+"POT-Creation-Date: 2010-12-18 16:00+0000\n"
 "PO-Revision-Date: 2010-12-19 15:28+0900\n"
 "Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
@@ -399,7 +399,7 @@ msgstr "\"%s\" が再アサートされました"
 msgid "unterminated #%s"
 msgstr "終端のない #%s"
 
-#: directives-only.c:222 lex.c:2068 traditional.c:163
+#: directives-only.c:222 lex.c:2074 traditional.c:163
 msgid "unterminated comment"
 msgstr "終端されていないコメント"
 
@@ -768,19 +768,19 @@ msgstr "リテラル中で null 文字が確保されました"
 msgid "missing terminating %c character"
 msgstr "%c 文字での終端を欠いています"
 
-#: lex.c:2079
+#: lex.c:2085
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "C++ スタイルのコメントは ISO C90 では許可されていません"
 
-#: lex.c:2081
+#: lex.c:2087
 msgid "(this will be reported only once per input file)"
 msgstr "(これは入力ファイルにつき一回だけ報告されます)"
 
-#: lex.c:2086
+#: lex.c:2092
 msgid "multi-line comment"
 msgstr "複数行のコメント"
 
-#: lex.c:2406
+#: lex.c:2412
 #, c-format
 msgid "unspellable token %s"
 msgstr "綴ることができないトークン %s です"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 4.5.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-10-22 14:48+0000\n"
+"POT-Creation-Date: 2010-12-18 16:00+0000\n"
 "PO-Revision-Date: 2010-04-19 14:55+0800\n"
 "Last-Translator: Meng Jie <zuxy.meng@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
@@ -398,7 +398,7 @@ msgstr "重断言“%s”"
 msgid "unterminated #%s"
 msgstr "未终止的 #%s"
 
-#: directives-only.c:222 lex.c:2068 traditional.c:163
+#: directives-only.c:222 lex.c:2074 traditional.c:163
 msgid "unterminated comment"
 msgstr "未结束的注释"
 
@@ -768,19 +768,19 @@ msgstr "空字符将保留在字面字符串中"
 msgid "missing terminating %c character"
 msgstr "缺少结尾的 %c 字符"
 
-#: lex.c:2079
+#: lex.c:2085
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "C++ 风格的注释在 ISO C90 中不被允许"
 
-#: lex.c:2081
+#: lex.c:2087
 msgid "(this will be reported only once per input file)"
 msgstr "(此警告为每个输入文件只报告一次)"
 
-#: lex.c:2086
+#: lex.c:2092
 msgid "multi-line comment"
 msgstr "多行注释"
 
-#: lex.c:2406
+#: lex.c:2412
 #, c-format
 msgid "unspellable token %s"
 msgstr "无法拼出的标识符 %s"

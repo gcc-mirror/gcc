@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 4.2.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-10-22 14:48+0000\n"
+"POT-Creation-Date: 2010-12-18 16:00+0000\n"
 "PO-Revision-Date: 2007-08-17 11:23+0300\n"
 "Last-Translator: Maxim V. Dziumanenko <dziumanenko@gmail.com>\n"
 "Language-Team: Ukrainian <translation-team-uk@lists.sourceforge.net>\n"
@@ -398,7 +398,7 @@ msgstr "\"%s\" повторне ствердження"
 msgid "unterminated #%s"
 msgstr "незавершене #%s"
 
-#: directives-only.c:222 lex.c:2068 traditional.c:163
+#: directives-only.c:222 lex.c:2074 traditional.c:163
 msgid "unterminated comment"
 msgstr "незавершений коментар"
 
@@ -776,19 +776,19 @@ msgstr "null-символи збережені буквально"
 msgid "missing terminating %c character"
 msgstr "відсутній завершальний символ %c"
 
-#: lex.c:2079
+#: lex.c:2085
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "Коментарі у стилі C++ неприпустимі згідно ISO C90"
 
-#: lex.c:2081
+#: lex.c:2087
 msgid "(this will be reported only once per input file)"
 msgstr "(повідомлення про це з'явиться лише один для вхідного файлу)"
 
-#: lex.c:2086
+#: lex.c:2092
 msgid "multi-line comment"
 msgstr "багаторядковий коментар"
 
-#: lex.c:2406
+#: lex.c:2412
 #, c-format
 msgid "unspellable token %s"
 msgstr "неможливо розібрати лексему %s"

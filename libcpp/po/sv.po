@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 4.6-b20101113\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-10-22 14:48+0000\n"
+"POT-Creation-Date: 2010-12-18 16:00+0000\n"
 "PO-Revision-Date: 2010-11-14 22:54+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
@@ -399,7 +399,7 @@ msgstr "\"%s\" omförsäkrat"
 msgid "unterminated #%s"
 msgstr "oavslutad #%s"
 
-#: directives-only.c:222 lex.c:2068 traditional.c:163
+#: directives-only.c:222 lex.c:2074 traditional.c:163
 msgid "unterminated comment"
 msgstr "ej avslutad kommentar"
 
@@ -768,19 +768,19 @@ msgstr "nolltecken bevarade i konstant"
 msgid "missing terminating %c character"
 msgstr "avslutande %c-tecken saknas"
 
-#: lex.c:2079
+#: lex.c:2085
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "C++ kommentarer tillåts inte i ISO C90"
 
-#: lex.c:2081
+#: lex.c:2087
 msgid "(this will be reported only once per input file)"
 msgstr "(detta rapporteras bara en gång per infil)"
 
-#: lex.c:2086
+#: lex.c:2092
 msgid "multi-line comment"
 msgstr "flerradskommentar"
 
-#: lex.c:2406
+#: lex.c:2412
 #, c-format
 msgid "unspellable token %s"
 msgstr "ostavbar symbol %s"

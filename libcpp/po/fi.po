@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.5.0\n"
+"Project-Id-Version: cpplib 4.6-b20101218\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-10-22 14:48+0000\n"
-"PO-Revision-Date: 2010-05-14 22:51+0200\n"
+"POT-Creation-Date: 2010-12-18 16:00+0000\n"
+"PO-Revision-Date: 2010-12-19 21:07+0200\n"
 "Last-Translator: Jorma Karvonen <karvonen.jorma@gmail.com>\n"
 "Language-Team: Finnish <translation-team-fi@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -401,7 +401,7 @@ msgstr "”%s” uudelleen assert-toimintoon"
 msgid "unterminated #%s"
 msgstr "päättämätön #%s"
 
-#: directives-only.c:222 lex.c:2068 traditional.c:163
+#: directives-only.c:222 lex.c:2074 traditional.c:163
 msgid "unterminated comment"
 msgstr "päättämätön kommentti"
 
@@ -482,12 +482,11 @@ msgstr "virheellinen loppuliite ”%.*s” kokonaislukuvakiossa"
 
 #: expr.c:433
 msgid "use of C++0x long long integer constant"
-msgstr "käytä C++0x long long-kokonaislukuvakiota"
+msgstr "käytä ”C++0x long long”-kokonaislukuvakiota"
 
 #: expr.c:434
-#, fuzzy
 msgid "use of C99 long long integer constant"
-msgstr "käytä C++0x long long-kokonaislukuvakiota"
+msgstr "käytä ”C99 long long”-kokonaislukuvakiota"
 
 #: expr.c:448
 msgid "imaginary constants are a GCC extension"
@@ -774,19 +773,19 @@ msgstr "null-merkit säilytetään literaaleissa"
 msgid "missing terminating %c character"
 msgstr "puuttuva päättymismerkki %c"
 
-#: lex.c:2079
+#: lex.c:2085
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "C++-tyyliset kommentit eivät ole sallittuja ISO C90-standardissa"
 
-#: lex.c:2081
+#: lex.c:2087
 msgid "(this will be reported only once per input file)"
 msgstr "(tästä ilmoitetaan vain kerran per syötetiedosto)"
 
-#: lex.c:2086
+#: lex.c:2092
 msgid "multi-line comment"
 msgstr "monirivinen kommentti"
 
-#: lex.c:2406
+#: lex.c:2412
 #, c-format
 msgid "unspellable token %s"
 msgstr "tavaamaton merkkijono %s"

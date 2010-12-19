@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 4.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-10-22 14:48+0000\n"
+"POT-Creation-Date: 2010-12-18 16:00+0000\n"
 "PO-Revision-Date: 2007-05-23 01:17+0300\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@buguner.name.tr>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -399,7 +399,7 @@ msgstr "\"%s\" tekrar olumlanmış"
 msgid "unterminated #%s"
 msgstr "sonlandırılmamış #%s"
 
-#: directives-only.c:222 lex.c:2068 traditional.c:163
+#: directives-only.c:222 lex.c:2074 traditional.c:163
 msgid "unterminated comment"
 msgstr "sonlandırılmamış açıklama"
 
@@ -777,19 +777,19 @@ msgstr "null karakter(ler) sabit içinde saklanmış"
 msgid "missing terminating %c character"
 msgstr "sonlandıran %c karakteri eksik"
 
-#: lex.c:2079
+#: lex.c:2085
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "C++ tarzı açıklamalara ISO C90'da izin verilmez"
 
-#: lex.c:2081
+#: lex.c:2087
 msgid "(this will be reported only once per input file)"
 msgstr "(her girdi dosyasında sadece bir kere raporlanacaktır)"
 
-#: lex.c:2086
+#: lex.c:2092
 msgid "multi-line comment"
 msgstr "çok satırlı açıklama"
 
-#: lex.c:2406
+#: lex.c:2412
 #, c-format
 msgid "unspellable token %s"
 msgstr "dizgecik %s okunabilir değil"

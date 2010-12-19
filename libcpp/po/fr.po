@@ -119,7 +119,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU cpplib 4.3.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-10-22 14:48+0000\n"
+"POT-Creation-Date: 2010-12-18 16:00+0000\n"
 "PO-Revision-Date: 2008-03-27 22:46+0000\n"
 "Last-Translator: François-Xavier Coudert <fxcoudert@gmail.com>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -520,7 +520,7 @@ msgstr "« %s » re-asserti"
 msgid "unterminated #%s"
 msgstr "#%s non terminé"
 
-#: directives-only.c:222 lex.c:2068 traditional.c:163
+#: directives-only.c:222 lex.c:2074 traditional.c:163
 msgid "unterminated comment"
 msgstr "commentaire non terminé"
 
@@ -899,19 +899,19 @@ msgstr "caractère(s) nul préservé(s) dans la chaîne"
 msgid "missing terminating %c character"
 msgstr "caractère %c de terminaison manquant"
 
-#: lex.c:2079
+#: lex.c:2085
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "Les commentaires à la C++ ne sont pas permis en C89 ISO"
 
-#: lex.c:2081
+#: lex.c:2087
 msgid "(this will be reported only once per input file)"
 msgstr "(ceci sera rapporté une seule fois seulement par fichier d'entrée)"
 
-#: lex.c:2086
+#: lex.c:2092
 msgid "multi-line comment"
 msgstr "commentaire multi-lignes"
 
-#: lex.c:2406
+#: lex.c:2412
 #, c-format
 msgid "unspellable token %s"
 msgstr "l'élément lexical %s ne peut être épelé"

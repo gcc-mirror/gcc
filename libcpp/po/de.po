@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 4.6-b20101113\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-10-22 14:48+0000\n"
+"POT-Creation-Date: 2010-12-18 16:00+0000\n"
 "PO-Revision-Date: 2010-12-12 11:11+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
@@ -397,7 +397,7 @@ msgstr "»%s« wieder behauptet"
 msgid "unterminated #%s"
 msgstr "unbeendetes #%s"
 
-#: directives-only.c:222 lex.c:2068 traditional.c:163
+#: directives-only.c:222 lex.c:2074 traditional.c:163
 msgid "unterminated comment"
 msgstr "nicht beendeter Kommentar"
 
@@ -766,19 +766,19 @@ msgstr "Null-Zeichen im Literal erhalten"
 msgid "missing terminating %c character"
 msgstr "fehlendes abschließendes Zeichen %c"
 
-#: lex.c:2079
+#: lex.c:2085
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "C++-Stil-Kommentare sind in ISO-C90 nicht erlaubt"
 
-#: lex.c:2081
+#: lex.c:2087
 msgid "(this will be reported only once per input file)"
 msgstr "(dies wird nur einmal pro Eingabedatei gemeldet)"
 
-#: lex.c:2086
+#: lex.c:2092
 msgid "multi-line comment"
 msgstr "mehrzeiliger Kommentar"
 
-#: lex.c:2406
+#: lex.c:2412
 #, c-format
 msgid "unspellable token %s"
 msgstr "nicht buchstabierbares Token %s"

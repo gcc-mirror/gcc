@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 4.5.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-10-22 14:48+0000\n"
+"POT-Creation-Date: 2010-12-18 16:00+0000\n"
 "PO-Revision-Date: 2010-04-16 21:28+0930\n"
 "Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
 "Language-Team: Vietnamese <vi-VN@googlegroups.com>\n"
@@ -397,7 +397,7 @@ msgstr "« %s » được khẳng định lại"
 msgid "unterminated #%s"
 msgstr "#%s chưa chấm dứt"
 
-#: directives-only.c:222 lex.c:2068 traditional.c:163
+#: directives-only.c:222 lex.c:2074 traditional.c:163
 msgid "unterminated comment"
 msgstr "gặp chú thích chưa được chấm dứt"
 
@@ -767,19 +767,19 @@ msgstr "(các) ký tự rỗng được giữ lại trong điều nghĩa chữ"
 msgid "missing terminating %c character"
 msgstr "thiếu ký tự « %c » chấm dứt"
 
-#: lex.c:2079
+#: lex.c:2085
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "không cho phép chú thích kiểu C++ nằm trong ISO C90"
 
-#: lex.c:2081
+#: lex.c:2087
 msgid "(this will be reported only once per input file)"
 msgstr "(điều này sẽ được thông báo chỉ một lần cho mỗi tập tin nhập)"
 
-#: lex.c:2086
+#: lex.c:2092
 msgid "multi-line comment"
 msgstr "gặp chú thích đa dòng"
 
-#: lex.c:2406
+#: lex.c:2412
 #, c-format
 msgid "unspellable token %s"
 msgstr "gặp hiệu bài không thể chính tả %s"
