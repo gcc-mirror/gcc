@@ -1,5 +1,12 @@
 2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-private/runtime.h (__objc_class_links_resolved): Removed.
+	(__objc_print_dtable_stats): Removed.
+	(__sel_register_typed_name): Removed.
+	* sendmsg.c (__objc_print_dtable_stats): Use 'void' as argument.
+	
+2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* init.c (__objc_exec_class): Call __objc_resolve_class_links (),
 	if appropriate, after loading the module.
 

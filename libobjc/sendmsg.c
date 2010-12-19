@@ -980,7 +980,7 @@ __objc_forward (id object, SEL sel, arglist_t args)
 }
 
 void
-__objc_print_dtable_stats ()
+__objc_print_dtable_stats (void)
 {
   int total = 0;
 

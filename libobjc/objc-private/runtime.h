@@ -66,7 +66,6 @@ extern void __objc_update_dispatch_table_for_class (Class);/* (objc-msg.c) */
 
 extern int  __objc_init_thread_system(void);    /* thread.c */
 extern int  __objc_fini_thread_system(void);    /* thread.c */
-extern void __objc_print_dtable_stats(void);    /* sendmsg.c */
 extern void __objc_init_class (Class class);  /* init.c */
 extern void class_add_method_list(Class, struct objc_method_list *);
 
@@ -76,9 +75,6 @@ extern struct objc_method * search_for_method_in_list(struct objc_method_list * 
 
 extern void
 __objc_update_classes_with_methods (struct objc_method *method_a, struct objc_method *method_b); /* class.c */
-
-/* True when class links has been resolved */     
-extern BOOL __objc_class_links_resolved;
 
 /* Number of selectors stored in each of the selector  tables */
 extern unsigned int __objc_selector_max_index;
@@ -96,8 +92,6 @@ extern int __objc_runtime_threads_alive;
 #endif 
 
 BOOL __objc_responds_to (id object, SEL sel); /* for internal use only! */
-SEL  __sel_register_typed_name (const char*, const char*, 
-				struct objc_selector*, BOOL is_const);
 extern void __objc_generate_gc_type_description (Class);
 
 #ifdef __cplusplus
