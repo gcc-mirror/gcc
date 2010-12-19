@@ -1,5 +1,10 @@
 2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc/message.h: Updated comments.
+	* objc/runtime.h: Updated comments.
+	
+2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* class.c (objc_lookupClass): Renamed to objc_lookUpClass.
 	* protocols.c: Updated all calls to objc_lookupClass to call
 	objc_lookUpClass instead.

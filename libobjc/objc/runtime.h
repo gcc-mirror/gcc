@@ -45,8 +45,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # error You can not include both objc/objc-api.h and objc/runtime.h.  Include objc/objc-api.h for the traditional GNU Objective-C Runtime API and objc/runtime.h for the modern one.
 #endif
 
-/* TODO: This file is incomplete.  */
-
 #include "objc.h"
 #include "objc-decls.h"
 
@@ -875,8 +873,6 @@ objc_EXPORT Property *protocol_copyPropertyList (Protocol *protocol, unsigned in
 objc_EXPORT Protocol **protocol_copyProtocolList (Protocol *protocol, unsigned int *numberOfReturnedProtocols);
 
 
-/* TODO: Add all the other functions in the API.  */
-
 /** Implementation: the following hook is in init.c.  */
 
 /* This is a hook which is called by __objc_exec_class every time a
@@ -937,6 +933,28 @@ struct __objcFastEnumerationState
 */
 
 
+/* Compatibility Note: The Apple/NeXT runtime has the functions
+   objc_copyImageNames (), class_getImageName () and
+   objc_copyClassNamesForImage () but they are undocumented.  The GNU
+   runtime does not have them at the moment.  */
+
+/* Compatibility Note: The Apple/NeXT runtime has the functions
+   objc_setAssociatedObject (), objc_getAssociatedObject (),
+   objc_removeAssociatedObjects () and the objc_AssociationPolicy type
+   and related enum.  The GNU runtime does not have them yet.
+   TODO: Implement them.  */
+
+/* Compatibility Note: The Apple/NeXT runtime has the function
+   objc_setForwardHandler ().  The GNU runtime does not have it
+   because messaging (and, in particular, forwarding) works in a
+   different (incompatible) way with the GNU runtime.  If you need to
+   customize message forwarding at the Objective-C runtime level (that
+   is, if you are implementing your own "Foundation" library such as
+   GNUstep Base on top of the Objective-C runtime), in objc/message.h
+   there are hooks (that work in the framework of the GNU runtime) to
+   do so.  */
+
+
 /** Implementation: the following functions are in memory.c.  */
 
 /* Traditional GNU Objective-C Runtime functions that are used for
@@ -963,6 +981,12 @@ objc_EXPORT void objc_free(void *mem);
 
 
 /** Implementation: the following functions are in gc.c.  */
+
+/* The GNU Objective-C Runtime has a different implementation of
+   garbage collection.
+
+   Compatibility Note: these functions are not available with the
+   Apple/NeXT runtime.  */
 
 /* Mark the instance variable as inaccessible to the garbage
    collector.  */
