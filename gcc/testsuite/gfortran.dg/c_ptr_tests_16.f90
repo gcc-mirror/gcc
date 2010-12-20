@@ -10,7 +10,11 @@ program test
   integer(c_intptr_t) :: a
   integer(transfer(transfer(4_c_intptr_t, c_null_ptr),1_c_intptr_t)) :: b
   a = transfer (transfer("ABCE", m), 1_c_intptr_t)
-  if (1162035777 /= a) call i_do_not_exist()
+  print '(z8)', a
+  if (     int(z'45434241') /= a  &
+     .and. int(z'41424345') /= a  &
+     .and. int(z'4142434500000000',kind=8) /= a) &
+    call i_do_not_exist()
 end program test
 
 ! Examples contributed by Steve Kargl and James Van Buskirk

@@ -1,3 +1,8 @@
+2010-12-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46974
+	* gfortran.dg/c_ptr_tests_16.f90: Fix endian issue.
+
 2010-12-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR testsuite/45342
