@@ -150,7 +150,7 @@ package Checks is
    --  where the target object may be needed to determine the subtype to
    --  check against (such as the cases of unconstrained formal parameters
    --  and unconstrained aliased objects). For the case of unconstrained
-   --  formals, the check is peformed only if the corresponding actual is
+   --  formals, the check is performed only if the corresponding actual is
    --  constrained, i.e., whether Lhs'Constrained is True.
 
    procedure Apply_Predicate_Check (N : Node_Id; Typ : Entity_Id);

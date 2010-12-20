@@ -1934,7 +1934,7 @@ package body Sem_Ch7 is
 
    procedure New_Private_Type (N : Node_Id; Id : Entity_Id; Def : Node_Id) is
    begin
-      --  For other than Ada 2012, enter tha name in the current scope
+      --  For other than Ada 2012, enter the name in the current scope
 
       if Ada_Version < Ada_2012 then
          Enter_Name (Id);

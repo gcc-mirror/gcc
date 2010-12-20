@@ -278,7 +278,7 @@ package body Ch12 is
    begin
       --  Figure out if a generic actual part operation is present. Clearly
       --  there is no generic actual part if the current token is semicolon
-      --  or if we have apsect specifications present.
+      --  or if we have aspect specifications present.
 
       if Token = Tok_Semicolon or else Aspect_Specifications_Present then
          return No_List;

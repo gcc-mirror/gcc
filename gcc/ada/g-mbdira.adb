@@ -60,7 +60,7 @@ package body GNAT.MBBS_Discrete_Random is
    --  One might assume that we could get a more accurate result by testing
    --  the lower and upper bounds of the type Rst against the bounds of 32-bit
    --  Integer. However, there is no easy way to do that. Why? Because in the
-   --  relatively rare case where this expresion has to be evaluated at run
+   --  relatively rare case where this expression has to be evaluated at run
    --  time rather than compile time (when the bounds are dynamic), we need a
    --  type to use for the computation. But the possible range of upper bound
    --  values for Rst (remembering the possibility of 64-bit modular types) is

@@ -3673,7 +3673,7 @@ package body Ch3 is
 
                else
                   --  In Ada 2012 mode, the expression must be a simple
-                  --  expression. The resaon for this restriction (i.e. going
+                  --  expression. The reason for this restriction (i.e. going
                   --  back to the Ada 83 rule) is to avoid ambiguities when set
                   --  membership operations are allowed, consider the
                   --  following:
@@ -3681,7 +3681,7 @@ package body Ch3 is
                   --     when A in 1 .. 10 | 12 =>
 
                   --  This is ambiguous without parentheses, so we require one
-                  --  of the following two parenthesized forms to disambuguate:
+                  --  of the following two parenthesized forms to disambiguate:
 
                   --  one of the following:
 

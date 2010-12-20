@@ -583,7 +583,7 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
       --  logical end being manipulated). The only time we need to actually
       --  initialize the nodes in the free store is if the node that becomes
       --  inactive is not at the end of the list. The free store would then
-      --  be discontigous and so its nodes would need to be linked in the
+      --  be discontiguous and so its nodes would need to be linked in the
       --  traditional way.
       --
       --  ???
@@ -1936,7 +1936,7 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
             return False;
          end if;
 
-         if Position.Node = L.First then  -- eliminates ealier disjunct
+         if Position.Node = L.First then  -- eliminates earlier disjunct
             return True;
          end if;
 

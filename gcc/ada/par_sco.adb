@@ -104,7 +104,7 @@ package body Par_SCO is
    procedure Process_Decisions (N : Node_Id; T : Character);
    --  If N is Empty, has no effect. Otherwise scans the tree for the node N,
    --  to output any decisions it contains. T is one of IEPWX (for context of
-   --  expresion: if/exit when/pragma/while/expression). If T is other than X,
+   --  expression: if/exit when/pragma/while/expression). If T is other than X,
    --  the node N is the conditional expression involved, and a decision is
    --  always present (at the very least a simple decision is present at the
    --  top level).

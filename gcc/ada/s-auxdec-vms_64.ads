@@ -579,7 +579,7 @@ private
       Mechanism       => (Reference, Value, Value, Reference, Reference));
    pragma Inline_Always (Or_Atomic);
 
-   --  Inline the VAX Queue Funtions
+   --  Inline the VAX Queue Functions
 
    pragma Inline_Always (Insqhi);
    pragma Inline_Always (Remqhi);

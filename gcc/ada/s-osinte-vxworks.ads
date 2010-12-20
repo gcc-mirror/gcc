@@ -471,7 +471,7 @@ package System.OS_Interface is
       Handler   : Interrupt_Handler;
       Parameter : System.Address := System.Null_Address) return int;
    pragma Inline (Interrupt_Connect);
-   --  Use this to set up an user handler. The routine installs a a user
+   --  Use this to set up an user handler. The routine installs a user
    --  handler which is invoked after the OS has saved enough context for a
    --  high-level language routine to be safely invoked.
 

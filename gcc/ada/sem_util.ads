@@ -776,13 +776,13 @@ package Sem_Util is
    --  initialized (in particular in the record case, that at least one
    --  component has an initialization expression). Note that initialization
    --  resulting from the use of pragma Normalized_Scalars does not count.
-   --  Include_Implicit controls whether implicit initialiation of access
+   --  Include_Implicit controls whether implicit initialization of access
    --  values to null, and of discriminant values, is counted as making the
    --  type be partially initialized. For the default setting of True, these
    --  implicit cases do count, and discriminated types or types containing
    --  access values not explicitly initialized will return True. Otherwise
    --  if Include_Implicit is False, these cases do not count as making the
-   --  type be partially initialied.
+   --  type be partially initialized.
 
    function Is_Potentially_Persistent_Type (T : Entity_Id) return Boolean;
    --  Determines if type T is a potentially persistent type. A potentially

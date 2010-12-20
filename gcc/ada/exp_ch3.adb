@@ -4961,7 +4961,7 @@ package body Exp_Ch3 is
 
                   Analyze (N, Suppress => All_Checks);
 
-                  --  Replace internal identifier of rewriten node by the
+                  --  Replace internal identifier of rewritten node by the
                   --  identifier found in the sources. We also have to exchange
                   --  entities containing their defining identifiers to ensure
                   --  the correct replacement of the object declaration by this
@@ -6098,7 +6098,7 @@ package body Exp_Ch3 is
             --  wrapper functions for each nonoverridden inherited function
             --  with a controlling result of the type. The wrapper for such
             --  a function returns an extension aggregate that invokes the
-            --  the parent function.
+            --  parent function.
 
             if Ada_Version >= Ada_2005
               and then not Is_Abstract_Type (Def_Id)

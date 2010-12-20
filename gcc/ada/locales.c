@@ -35,7 +35,7 @@ typedef char char4 [4];
 
 /*
   c_get_language_code needs to fill in the Alpha-3 encoding of the
-  language code (3 lowercase letters). That shoud be "und" if the
+  language code (3 lowercase letters). That should be "und" if the
   language is unknown. [see Ada.Locales]
 */
 void c_get_language_code (char4 p) {
@@ -46,7 +46,7 @@ void c_get_language_code (char4 p) {
 
 /*
   c_get_country_code needs to fill in the Alpha-2 encoding of the
-  country code (2 uppercase letters). That shoud be "ZZ" if the
+  country code (2 uppercase letters). That should be "ZZ" if the
   country is unknown. [see Ada.Locales]
 */
 void c_get_country_code (char4 p) {

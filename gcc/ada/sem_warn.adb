@@ -2055,7 +2055,7 @@ package body Sem_Warn is
          --  or a pragma, and a warning is worthwhile as well.
 
          function Check_System_Aux return Boolean;
-         --  Before giving a warning on a with_clause for System, check wheter
+         --  Before giving a warning on a with_clause for System, check whether
          --  a system extension is present.
 
          function Find_Package_Renaming
@@ -4466,7 +4466,7 @@ package body Sem_Warn is
                      --  variable in question, or if the entity in question
                      --  is an OUT or IN OUT parameter, which which case
                      --  the caller can reference it after the exception
-                     --  hanlder completes
+                     --  handler completes.
 
                   else
                      if Is_Formal (Ent) then

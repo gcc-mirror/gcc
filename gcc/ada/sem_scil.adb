@@ -148,7 +148,7 @@ package body Sem_SCIL is
             --  Note: When the SCIL node is generated the private and full-view
             --    of the tagged types may have been swapped and hence the node
             --    referenced by attribute SCIL_Entity may be the private view.
-            --    Therefore, in order to uniformily locate the full-view we use
+            --    Therefore, in order to uniformly locate the full-view we use
             --    attribute Underlying_Type.
 
             pragma Assert

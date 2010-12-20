@@ -980,7 +980,7 @@ package body Exp_Disp is
               Parent (Entity (Prefix (Controlling_Tag))));
 
          --  For a direct reference of the tag of the type the SCIL node
-         --  references the the internal object declaration containing the tag
+         --  references the internal object declaration containing the tag
          --  of the type.
 
          elsif Nkind (Controlling_Tag) = N_Attribute_Reference
@@ -7519,7 +7519,7 @@ package body Exp_Disp is
          --  excluded from this check because interfaces must be visible in
          --  the public and private part (RM 7.3 (7.3/2))
 
-         --  We disable this check in CodePeer mode, to accomodate legacy
+         --  We disable this check in CodePeer mode, to accommodate legacy
          --  Ada code.
 
          if not CodePeer_Mode

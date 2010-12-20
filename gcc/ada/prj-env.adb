@@ -41,7 +41,7 @@ package body Prj.Env is
    --  Initial size of Buffer
 
    Uninitialized_Prefix : constant String := '#' & Path_Separator;
-   --  Prefix to indicate that the project path has not been initilized yet.
+   --  Prefix to indicate that the project path has not been initialized yet.
    --  Must be two characters long
 
    No_Project_Default_Dir : constant String := "-";
@@ -478,7 +478,7 @@ package body Prj.Env is
       procedure Put (S : String);
       procedure Put_Line (S : String);
       --  Output procedures, analogous to normal Text_IO procs of same name.
-      --  The text is put in Buffer, then it will be writen into a temporary
+      --  The text is put in Buffer, then it will be written into a temporary
       --  file with procedure Write_Temp_File below.
 
       procedure Write_Temp_File;

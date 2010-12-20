@@ -186,7 +186,7 @@ package SCOs is
    --    operand of a logical operator.
 
    --    Decisions are either simple or complex. A simple decision is a top
-   --    level boolean expresssion that has only one condition and that occurs
+   --    level boolean expression that has only one condition and that occurs
    --    in the context of a control structure in the source program, including
    --    WHILE, IF, EXIT WHEN, or in an Assert, Check, Pre_Condition or
    --    Post_Condition pragma. For pragmas, decision SCOs are generated only

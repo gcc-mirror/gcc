@@ -64,7 +64,7 @@ package Prj.Conf is
    --  set).
    --
    --  If the processing fails, Main_Project is set to No_Project. If the error
-   --  happend while parsing the project itself (ie creating the tree),
+   --  happened while parsing the project itself (i.e. creating the tree),
    --  User_Project_Node is also set to Empty_Node.
    --
    --  Autoconf_Specified indicates whether the user has specified --autoconf.
@@ -151,7 +151,7 @@ package Prj.Conf is
    --  by the user (either through gprbuild's --config or --autoconf switches).
    --  In the latter case, Autoconf_Specified should be set to true to indicate
    --  that the configuration file can be regenerated to match target and
-   --  languages. This name can either be an absolute path, or the a base name
+   --  languages. This name can either be an absolute path, or the base name
    --  that will be searched in the default config file directories (which
    --  depends on the installation path for the tools).
    --

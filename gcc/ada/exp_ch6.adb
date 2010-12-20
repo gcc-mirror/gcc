@@ -2403,7 +2403,7 @@ package body Exp_Ch6 is
             --  Ada 2005 (AI-231): Check null-excluding access types. Note that
             --  the intent of 6.4.1(13) is that null-exclusion checks should
             --  not be done for 'out' parameters, even though it refers only
-            --  to constraint checks, and a null_exlusion is not a constraint.
+            --  to constraint checks, and a null_exclusion is not a constraint.
             --  Note that AI05-0196-1 corrects this mistake in the RM.
 
             if Is_Access_Type (Etype (Formal))
@@ -3231,7 +3231,7 @@ package body Exp_Ch6 is
       --  Functions returning controlled objects need special attention:
       --  if the return type is limited, the context is an initialization
       --  and different processing applies. If the call is to a protected
-      --  function, the expansion above will call Expand_Call recusively.
+      --  function, the expansion above will call Expand_Call recursively.
       --  To prevent a double attachment, check that the current call is
       --  not a rewriting of a protected function call.
 

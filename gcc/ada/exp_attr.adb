@@ -1275,7 +1275,7 @@ package body Exp_Attr is
       --  and T is B for the cases of Body_Version, or Version applied to a
       --  subprogram acting as its own spec, and S for Version applied to a
       --  subprogram spec or package. This sequence of code references the
-      --  the unsigned constant created in the main program by the binder.
+      --  unsigned constant created in the main program by the binder.
 
       --  A special exception occurs for Standard, where the string returned
       --  is a copy of the library string in gnatvsn.ads.

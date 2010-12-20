@@ -956,7 +956,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
      required if this is a static expression because it might be used
      in a context where a dereference is inappropriate, such as a case
      statement alternative or a record discriminant.  There is no possible
-     volatile-ness short-circuit here since Volatile constants must bei
+     volatile-ness short-circuit here since Volatile constants must be
      imported per C.6.  */
   if (Ekind (gnat_temp) == E_Constant
       && Is_Scalar_Type (gnat_temp_type)
@@ -6885,7 +6885,7 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
     case MULT_EXPR:
       /* The check here is designed to be efficient if the rhs is constant,
 	 but it will work for any rhs by using integer division.
-	 Four different check expressions determine wether X * C overflows,
+	 Four different check expressions determine whether X * C overflows,
 	 depending on C.
 	   C ==  0  =>  false
 	   C  >  0  =>  X > type_max / C || X < type_min / C

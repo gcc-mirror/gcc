@@ -1630,7 +1630,7 @@ package body Sem_Attr is
          end if;
 
          --  Check special case of Exception_Id and Exception_Occurrence which
-         --  are not allowed for restriction No_Exception_Regstriation.
+         --  are not allowed for restriction No_Exception_Registration.
 
          if Is_RTE (P_Type, RE_Exception_Id)
               or else

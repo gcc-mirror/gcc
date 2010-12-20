@@ -51,7 +51,7 @@ package body System.Stack_Usage.Tasking is
    --  System.Stack_Usage.Result_Array
 
    procedure Compute_Current_Task;
-   --  Compute the stack usage for a given task and saves it in the a precise
+   --  Compute the stack usage for a given task and saves it in the precise
    --  slot in System.Stack_Usage.Result_Array;
 
    procedure Report_Impl (All_Tasks : Boolean; Do_Print : Boolean);

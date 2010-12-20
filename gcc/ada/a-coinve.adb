@@ -142,7 +142,7 @@ package body Ada.Containers.Indefinite_Vectors is
       --  There are two constraints we need to satisfy. The first constraint is
       --  that a container cannot have more than Count_Type'Last elements, so
       --  we must check the sum of the combined lengths. Note that we cannot
-      --  simply add the lengths, because of the possibilty of overflow.
+      --  simply add the lengths, because of the possibility of overflow.
 
       if LN > Count_Type'Last - RN then
          raise Constraint_Error with "new length is out of range";
@@ -1343,7 +1343,7 @@ package body Ada.Containers.Indefinite_Vectors is
       --  that a container cannot have more than Count_Type'Last elements, so
       --  we must check the sum of the current length and the insertion
       --  count. Note that we cannot simply add these values, because of the
-      --  possibilty of overflow.
+      --  possibility of overflow.
 
       if Old_Length > Count_Type'Last - Count then
          raise Constraint_Error with "Count is out of range";
@@ -1684,7 +1684,7 @@ package body Ada.Containers.Indefinite_Vectors is
             Free (Src);
 
             --  The new array has a range in the middle containing null access
-            --  values. We now fill in that partion of the array with the new
+            --  values. We now fill in that partition of the array with the new
             --  items.
 
             for Idx in Before .. Index - 1 loop
@@ -2076,7 +2076,7 @@ package body Ada.Containers.Indefinite_Vectors is
       --  that a container cannot have more than Count_Type'Last elements, so
       --  we must check the sum of the current length and the insertion
       --  count. Note that we cannot simply add these values, because of the
-      --  possibilty of overflow.
+      --  possibility of overflow.
 
       if Old_Length > Count_Type'Last - Count then
          raise Constraint_Error with "Count is out of range";
@@ -2833,7 +2833,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
                Container.Elements := new Elements_Type'(Container.Last, Src);
 
-               --  We have succesfully allocated a new internal array (with a
+               --  We have successfully allocated a new internal array (with a
                --  smaller length than the old one, and containing a copy of
                --  just the active elements in the container), so we can
                --  deallocate the old array.
@@ -2964,7 +2964,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
                Container.Elements := new Elements_Type'(Container.Last, Src);
 
-               --  We have succesfully allocated a new internal array (with a
+               --  We have successfully allocated a new internal array (with a
                --  smaller length than the old one, and containing a copy of
                --  just the active elements in the container), so it is now
                --  safe to deallocate the old array.
@@ -3023,7 +3023,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
          Container.Elements.EA (Index_Subtype) := X.EA (Index_Subtype);
 
-         --  We have moved the elements from the old interal array, so now we
+         --  We have moved the elements from the old internal array, so now we
          --  can deallocate it.
 
          Free (X);

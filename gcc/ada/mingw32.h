@@ -83,7 +83,7 @@
 
 extern UINT CurrentCodePage;
 
-/*  Macros to convert to/from the code page speficied in CurrentCodePage.  */
+/*  Macros to convert to/from the code page specified in CurrentCodePage.  */
 #define S2WSC(wstr,str,len) \
    MultiByteToWideChar (CurrentCodePage,0,str,-1,wstr,len)
 #define WS2SC(str,wstr,len) \

@@ -416,7 +416,7 @@ package Exp_Dbug is
    --  ??? We want to migrate all platforms to use the same convention. As a
    --  first step, we force this constant to always be True. This constant will
    --  eventually be deleted after we have verified that the migration does not
-   --  cause any unforseen adverse impact. We chose "__" because it is
+   --  cause any unforeseen adverse impact. We chose "__" because it is
    --  supported on all platforms, which is not the case of "$".
 
    procedure Get_External_Name

@@ -90,7 +90,7 @@ package Sem_Disp is
    --  in the list of primitives of Tagged_Type. This latter search is needed
    --  when the interface primitive is covered by a private subprogram. If the
    --  primitive has not been covered yet then return the entity that will be
-   --  overriden when the primitive is covered (that is, return the entity
+   --  overridden when the primitive is covered (that is, return the entity
    --  whose alias attribute references the interface primitive). If none of
    --  these entities is found then return Empty.
 

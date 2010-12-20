@@ -62,7 +62,7 @@ package body Prj.Dect is
       Project         : Project_Node_Id;
       Attribute       : Project_Node_Id;
       Flags           : Processing_Flags);
-   --  Chech whether the attribute is valid in this project.
+   --  Check whether the attribute is valid in this project.
    --  In particular, depending on the type of project (qualifier), some
    --  attributes might be disabled.
 

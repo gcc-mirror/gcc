@@ -1515,7 +1515,7 @@ package body Binde is
       --  A before the spec of B if it could. Since it could not, there it
       --  must be the case that A depends on B. It is therefore a good idea
       --  to put the body of B last so that if there is an elaboration order
-      --  problem, we will find it (that's what pssimistic order is about)
+      --  problem, we will find it (that's what pessimistic order is about)
 
       elsif Is_Waiting_Body (U1) and then Is_Waiting_Body (U2) then
          declare

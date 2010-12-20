@@ -504,7 +504,7 @@ package Einfo is
 --       which can never have a null value. This is set True for constant
 --       access values initialized to a non-null value. This is also True for
 --       all access parameters in Ada 83 and Ada 95 modes, and for access
---       parameters that explicily exclude null in Ada 2005.
+--       parameters that explicitly exclude null in Ada 2005.
 --
 --       This is used to avoid unnecessary resetting of the Is_Known_Non_Null
 --       flag for such entities. In Ada 2005 mode, this is also used when
@@ -632,7 +632,7 @@ package Einfo is
 --       where Comes_From_Source is always False.
 
 --    Corresponding_Protected_Entry (Node18)
---       Present in subrogram bodies. Set for subprogram bodies that implement
+--       Present in subprogram bodies. Set for subprogram bodies that implement
 --       a protected type entry to point to the entity for the entry.
 
 --    Corresponding_Record_Type (Node18)
@@ -642,7 +642,8 @@ package Einfo is
 
 --    Corresponding_Remote_Type (Node22)
 --       Present in record types that describe the fat pointer structure for
---       Remote_Access_To_Subrogram types. References the original access type.
+--       Remote_Access_To_Subprogram types. References the original access
+--       type.
 
 --    CR_Discriminant (Node23)
 --       Present in discriminants of concurrent types. Denotes the homologous
@@ -1055,7 +1056,7 @@ package Einfo is
 --       Etype of the N_Null node is Empty.
 
 --    Exception_Code (Uint22)
---       Present in exception entitites. Set to zero unless either an
+--       Present in exception entities. Set to zero unless either an
 --       Import_Exception or Export_Exception pragma applies to the
 --       pragma and specifies a Code value. See description of these
 --       pragmas for details. Note that this field is relevant only if
@@ -1175,7 +1176,7 @@ package Einfo is
 
 --    First_Exit_Statement (Node8)
 --       Present in E_Loop entity. The exit statements for a loop are chained
---       (in reverse order of appearence) using this field to point to the
+--       (in reverse order of appearance) using this field to point to the
 --       first entry in the chain (last exit statement in the loop). The
 --       entries are chained through the Next_Exit_Statement field of the
 --       N_Exit_Statement node with Empty marking the end of the list.
@@ -1335,7 +1336,7 @@ package Einfo is
 --    Has_Anon_Block_Suffix (Flag201)
 --       Present in all entities. Set if the entity is nested within one or
 --       more anonymous blocks and the Chars field contains a name with an
---       anonymous block suffix (see Exp_Dbug for furthert details).
+--       anonymous block suffix (see Exp_Dbug for further details).
 
 --    Has_Atomic_Components (Flag86) [implementation base type only]
 --       Present in all types and objects. Set only for an array type or
@@ -1548,7 +1549,7 @@ package Einfo is
 --       Present in functions and generic functions. Set if there is one or
 --       more missing return statements in the function. This is used to
 --       control wrapping of the body in Exp_Ch6 to ensure that the program
---       error exeption is correctly raised in this case at runtime.
+--       error exception is correctly raised in this case at runtime.
 
 --    Has_Up_Level_Access (Flag215)
 --      Present in E_Variable and E_Constant entities. Set if the entity
@@ -3663,7 +3664,7 @@ package Einfo is
 --    Subprograms_For_Type (Node29)
 --       Present in all type entities, and in subprogram entities. This is used
 --       to hold a list of subprogram entities for subprograms associated with
---       the type, linked through the Suprogram_List field of the subprogram
+--       the type, linked through the Subprogram_List field of the subprogram
 --       entity. Basically this is a way of multiplexing the single field to
 --       hold more than one entity (since we ran out of space in some type
 --       entities). This is currently used for Invariant_Procedure and also
@@ -5676,9 +5677,9 @@ package Einfo is
       Calign_Component_Size_4, -- natural for size <= 4, 4 for size >= 4
       Calign_Storage_Unit);    -- all components byte aligned
 
-   ----------------------------------
-   -- Floating Point Repesentation --
-   ----------------------------------
+   -----------------------------------
+   -- Floating Point Representation --
+   -----------------------------------
 
    type Float_Rep_Kind is (
       IEEE_Binary,  -- IEEE 754p conform binary format
@@ -7032,7 +7033,7 @@ package Einfo is
      (E   : Entity_Id;
       Nam : Name_Id) return Node_Id;
    --  Searches the Rep_Item chain for a given entity E, for an instance of a
-   --  rep item (pragma, attribute definition clause, or aspect specitication)
+   --  rep item (pragma, attribute definition clause, or aspect specification)
    --  whose name matches the given name. If one is found, it is returned,
    --  otherwise Empty is returned. Unlike the other Get routines for the
    --  Rep_Item chain, this only returns items whose entity matches E (it

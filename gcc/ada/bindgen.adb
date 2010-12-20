@@ -2120,7 +2120,7 @@ package body Bindgen is
       --  Write user linker options, i.e. the set of linker options that come
       --  from all files other than GNAT internal files, Lgnat is left set to
       --  point to the first entry from a GNAT internal file, or past the end
-      --  of the entriers if there are no internal files.
+      --  of the entries if there are no internal files.
 
       Lgnat := Linker_Options.Last + 1;
 

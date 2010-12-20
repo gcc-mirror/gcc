@@ -40,8 +40,8 @@ package Sem_Ch13 is
      (N : Node_Id;
       E : Entity_Id;
       L : List_Id);
-   --  This procedure is called to analyze aspect spefications for node N. E is
-   --  the corresponding entity declared by the declaration node N, and L is
+   --  This procedure is called to analyze aspect specifications for node N. E
+   --  is the corresponding entity declared by the declaration node N, and L is
    --  the list of aspect specifications for this node. If L is No_List, the
    --  call is ignored. Note that we can't use a simpler interface of just
    --  passing the node N, since the analysis of the node may cause it to be
@@ -210,7 +210,7 @@ package Sem_Ch13 is
    --  This is called after the back end has been called (and thus after the
    --  layout of components has been back annotated). It goes through the
    --  table of saved pragma Independent[_Component] entries, checking that
-   --  independence can be achieved, and if necessary issuing error mssags.
+   --  independence can be achieved, and if necessary issuing error messages.
 
    -------------------------------------
    -- Table for Validate_Independence --

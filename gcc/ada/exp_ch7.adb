@@ -2703,7 +2703,7 @@ package body Exp_Ch7 is
    ---------------------------
 
    --  The Deep procedures call the appropriate Controlling proc on the
-   --  the controller component. In the init case, it also attach the
+   --  controller component. In the init case, it also attach the
    --  controller to the current finalization list.
 
    function Make_Deep_Record_Body

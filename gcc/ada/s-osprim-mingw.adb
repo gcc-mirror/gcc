@@ -193,9 +193,9 @@ package body System.OS_Primitives is
 
          GetSystemTimeAsFileTime (Ctrl_Time'Access);
 
-         --  Scan for clock tick, will take upto 16ms/1ms depending on PC.
+         --  Scan for clock tick, will take up to 16ms/1ms depending on PC.
          --  This cannot be an infinite loop or the system hardware is badly
-         --  dammaged.
+         --  damaged.
 
          loop
             GetSystemTimeAsFileTime (Loc_Time'Access);
