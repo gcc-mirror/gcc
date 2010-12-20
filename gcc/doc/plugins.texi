@@ -16,16 +16,16 @@ process.
 
 Plugins are loaded with 
 
-@option{-fplugin=/path/to/NAME.so} @option{-fplugin-arg-NAME-<key1>[=<value1>]}
+@option{-fplugin=/path/to/@var{name}.so} @option{-fplugin-arg-@var{name}-@var{key1}[=@var{value1}]}
 
 The plugin arguments are parsed by GCC and passed to respective
 plugins as key-value pairs. Multiple plugins can be invoked by
 specifying multiple @option{-fplugin} arguments.
 
 A plugin can be simply given by its short name (no dots or
-slashes). When simply passing @option{-fplugin=NAME}, the plugin is
-loaded from the @file{plugin} directory, so @option{-fplugin=NAME} is
-the same as @option{-fplugin=`gcc -print-file-name=plugin`/NAME.so},
+slashes). When simply passing @option{-fplugin=@var{name}}, the plugin is
+loaded from the @file{plugin} directory, so @option{-fplugin=@var{name}} is
+the same as @option{-fplugin=`gcc -print-file-name=plugin`/@var{name}.so},
 using backquote shell syntax to query the @file{plugin} directory.
 
 @section Plugin API
@@ -45,8 +45,8 @@ If this symbol does not exist, the compiler will emit a fatal error
 and exit with the error message:
 
 @smallexample
-fatal error: plugin <name> is not licensed under a GPL-compatible license
-<name>: undefined symbol: plugin_is_GPL_compatible
+fatal error: plugin @var{name} is not licensed under a GPL-compatible license
+@var{name}: undefined symbol: plugin_is_GPL_compatible
 compilation terminated
 @end smallexample
 

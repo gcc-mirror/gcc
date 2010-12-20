@@ -9856,10 +9856,10 @@ proper position among the other output files.
 @cindex compiler version, specifying
 @cindex target machine, specifying
 
-The usual way to run GCC is to run the executable called @file{gcc}, or
-@file{<machine>-gcc} when cross-compiling, or
-@file{<machine>-gcc-<version>} to run a version other than the one that
-was installed last.
+The usual way to run GCC is to run the executable called @command{gcc}, or
+@command{@var{machine}-gcc} when cross-compiling, or
+@command{@var{machine}-gcc-@var{version}} to run a version other than the
+one that was installed last.
 
 @node Submodel Options
 @section Hardware Models and Configurations
@@ -18479,7 +18479,7 @@ precompiled header.  The following are known to be safe:
 
 @gccoptlist{-fmessage-length=  -fpreprocessed  -fsched-interblock @gol
 -fsched-spec  -fsched-spec-load  -fsched-spec-load-dangerous @gol
--fsched-verbose=<number>  -fschedule-insns  -fvisibility= @gol
+-fsched-verbose=@var{number}  -fschedule-insns  -fvisibility= @gol
 -pedantic-errors}
 
 @end itemize

@@ -12989,7 +12989,7 @@ to be a small power of two and specifies the new alignment in bytes.
 @item @code{#pragma pack(@var{n})} simply sets the new alignment.
 @item @code{#pragma pack()} sets the alignment to the one that was in
 effect when compilation started (see also command-line option
-@option{-fpack-struct[=<n>]} @pxref{Code Gen Options}).
+@option{-fpack-struct[=@var{n}]} @pxref{Code Gen Options}).
 @item @code{#pragma pack(push[,@var{n}])} pushes the current alignment
 setting on an internal stack and then optionally sets the new alignment.
 @item @code{#pragma pack(pop)} restores the alignment setting to the one
