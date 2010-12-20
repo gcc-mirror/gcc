@@ -266,6 +266,10 @@ do {									\
 #define	RESTORE_FP_PREFIX "_restfpr_"
 #define RESTORE_FP_SUFFIX ""
 
+/* Type used for size_t, as a string used in a declaration.  */
+#undef  SIZE_TYPE
+#define SIZE_TYPE "unsigned int"
+
 /* Type used for ptrdiff_t, as a string used in a declaration.  */
 #define PTRDIFF_TYPE "int"
 
@@ -550,9 +554,8 @@ extern int fixuplabelno;
 /* Override svr4.h definition.  */
 #undef	ASM_SPEC
 #define	ASM_SPEC "%(asm_cpu) \
-%{,assembler|,assembler-with-cpp: %{mregnames} %{mno-regnames}}" \
-SVR4_ASM_SPEC \
-"%{mrelocatable} %{mrelocatable-lib} %{fpic|fpie|fPIC|fPIE:-K PIC} \
+%{,assembler|,assembler-with-cpp: %{mregnames} %{mno-regnames}} \
+%{mrelocatable} %{mrelocatable-lib} %{fpic|fpie|fPIC|fPIE:-K PIC} \
 %{memb|msdata=eabi: -memb} \
 %{mlittle|mlittle-endian:-mlittle; \
   mbig|mbig-endian      :-mbig;    \
@@ -1077,3 +1080,5 @@ ncrtn.o%s"
 
 /* This target uses the sysv4.opt file.  */
 #define TARGET_USES_SYSV4_OPT 1
+
+#undef DBX_REGISTER_NUMBER

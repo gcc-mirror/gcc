@@ -1,3 +1,20 @@
+2010-12-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/freebsd.h (SVR4_ASM_SPEC): Don't define.
+	(DBX_REGISTER_NUMBER): Define.
+	* config/rs6000/lynx.h (DBX_REGISTER_NUMBER): Define.
+	* config/rs6000/netbsd.h (DBX_REGISTER_NUMBER): Define.
+	* config/rs6000/sysv4.h (SIZE_TYPE): Define.
+	(ASM_SPEC): Define without using SVR4_ASM_SPEC.
+	(DBX_REGISTER_NUMBER): Undefine.
+	* config.gcc (powerpc-*-eabispe*, powerpc-*-eabisimaltivec*,
+	powerpc-*-eabisim*, powerpc-*-elf*, powerpc-*-eabialtivec*,
+	powerpc-xilinx-eabi*, powerpc-*-eabi*, powerpc-*-rtems*,
+	powerpc-*-linux* | powerpc64-*-linux*, powerpc64-*-gnu*,
+	powerpc-*-gnu-gnualtivec*, powerpc-*-gnu*,
+	powerpc-wrs-vxworks|powerpc-wrs-vxworksae, powerpcle-*-elf*,
+	powerpcle-*-eabisim*, powerpcle-*-eabi*): Don't use svr4.h.
+
 2010-12-20  Iain Sandoe  <iains@gcc.gnu.org>
 	    Jan Hubicka  <jh@suse.cz>
 
