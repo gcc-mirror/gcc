@@ -1,3 +1,25 @@
+2010-12-20  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR c++/46904
+	PR middle-end/46916
+	PR target/46950
+	* config/darwin.c (generating_for_darwin_version): New var.
+	(darwin_text_section): Remove.
+	(darwin_rodata_section): Do not check function section here.
+	(darwin_emit_unwind_label): Do not emit for Darwin >= 9.
+	Emit distinct labels for successive calls for the same decl.
+	(darwin_override_options): Set generating_for_darwin_version.
+	Add FIXME and disable -freorder-blocks-and-partition.
+	Suppress automatic asynchronous unwind tables for m32.
+	Switch off -freorder-blocks-and-partition when unwind tables
+	will be generated.  Update to use generating_for_darwin_version.
+	(darwin_function_section): Check for cases that need to be placed
+	in coalesced sections.
+	* config/darwin-sections.def: Define hot, cold, startup and exit sections
+	for both coalesced and regular code.
+	* config/darwin.h (USE_SELECT_SECTION_FOR_FUNCTIONS): Delete.
+	* config/darwin10.h (TARGET_ASM_EMIT_UNWIND_LABEL): Delete.
+	
 2010-12-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/cppopts.texi: Use @var when appropriate.

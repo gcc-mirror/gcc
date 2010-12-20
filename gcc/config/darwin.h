@@ -669,7 +669,7 @@ extern GTY(()) section * darwin_sections[NUM_DARWIN_SECTIONS];
 
 #undef	TARGET_ASM_SELECT_SECTION
 #define TARGET_ASM_SELECT_SECTION machopic_select_section
-#define USE_SELECT_SECTION_FOR_FUNCTIONS
+
 #undef	TARGET_ASM_FUNCTION_SECTION
 #define TARGET_ASM_FUNCTION_SECTION darwin_function_section
 

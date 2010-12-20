@@ -34,6 +34,24 @@ DEF_SECTION (text_unlikely_coal_section, SECTION_CODE|SECTION_NO_ANCHOR,
 	     ".section __TEXT,__text_unlikely_coal,"
 	     "coalesced,pure_instructions", 0)
 
+DEF_SECTION (text_hot_section, SECTION_CODE,
+	     ".section __TEXT,__text_hot,regular,pure_instructions", 0)
+DEF_SECTION (text_cold_section, SECTION_CODE,
+	     ".section __TEXT,__text_cold,regular,pure_instructions", 0)
+DEF_SECTION (text_startup_section, SECTION_CODE,
+	     ".section __TEXT,__text_startup,regular,pure_instructions", 0)
+DEF_SECTION (text_exit_section, SECTION_CODE,
+	     ".section __TEXT,__text_exit,regular,pure_instructions", 0)
+
+DEF_SECTION (text_hot_coal_section, SECTION_CODE,
+	     ".section __TEXT,__text_hot_coal,coalesced,pure_instructions", 0)
+DEF_SECTION (text_cold_coal_section, SECTION_CODE,
+	     ".section __TEXT,__text_cold_coal,coalesced,pure_instructions", 0)
+DEF_SECTION (text_startup_coal_section, SECTION_CODE,
+	     ".section __TEXT,__text_stt_coal,coalesced,pure_instructions", 0)
+DEF_SECTION (text_exit_coal_section, SECTION_CODE,
+	     ".section __TEXT,__text_exit_coal,coalesced,pure_instructions", 0)
+
 /* const */
 DEF_SECTION (const_section, 0, ".const", 0)
 DEF_SECTION (const_coal_section, SECTION_NO_ANCHOR,
