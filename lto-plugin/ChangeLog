@@ -1,3 +1,8 @@
+2010-12-20  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* Makefile.am (AM_LIBTOOLFLAGS): Define, adding disable-static tag.
+	* Makefile.in: Regenerate.
+
 2010-12-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Revert last change.
