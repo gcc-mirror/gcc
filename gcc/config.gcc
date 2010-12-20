@@ -562,7 +562,7 @@ case ${target} in
     *linux*)
       extra_options="$extra_options linux.opt";;
     *)
-      tm_defines="$tm_defines OPTION_GLIBC=1";;
+      tm_defines="$tm_defines SINGLE_LIBC";;
   esac
   case $target in
     *-*-*android*)
@@ -657,6 +657,7 @@ case ${target} in
   ;;
 *-*-uclinux*)
   use_gcc_stdint=wrap
+  tm_defines="$tm_defines DEFAULT_LIBC=LIBC_UCLIBC SINGLE_LIBC"
   ;;
 *-*-solaris2*)
   extra_options="${extra_options} sol2.opt"
@@ -909,8 +910,6 @@ bfin*-elf*)
 bfin*-uclinux*)
 	tm_file="${tm_file} dbxelf.h elfos.h bfin/elf.h linux.h glibc-stdint.h bfin/uclinux.h"
 	tmake_file=bfin/t-bfin-uclinux
-	tm_defines="${tm_defines} DEFAULT_LIBC=LIBC_UCLIBC"
-	extra_options="${extra_options} linux.opt"
 	use_collect2=no
 	;;
 bfin*-linux-uclibc*)
@@ -992,8 +991,6 @@ moxie-*-uclinux*)
 	tm_file="dbxelf.h elfos.h ${tm_file} linux.h glibc-stdint.h moxie/uclinux.h"
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	tmake_file="${tmake_file} moxie/t-moxie moxie/t-moxie-softfp soft-fp/t-softfp"
-	tm_defines="${tm_defines} DEFAULT_LIBC=LIBC_UCLIBC"
-	extra_options="${extra_options} linux.opt"
 	;;
 moxie-*-rtems*)
 	tmake_file="${tmake_file} moxie/t-moxie moxie/t-moxie-softfp soft-fp/t-softfp t-rtems"
@@ -1729,8 +1726,7 @@ m68k-*-uclinux*)		# Motorola m68k/ColdFire running uClinux
 	default_m68k_cpu=68020
 	default_cf_cpu=5206
 	tm_file="${tm_file} dbxelf.h elfos.h linux.h glibc-stdint.h flat.h m68k/linux.h m68k/uclinux.h ./sysroot-suffix.h"
- 	tm_defines="${tm_defines} MOTOROLA=1 DEFAULT_LIBC=LIBC_UCLIBC"
-	extra_options="${extra_options} linux.opt"
+ 	tm_defines="${tm_defines} MOTOROLA=1"
 	tmake_file="m68k/t-floatlib m68k/t-uclinux m68k/t-mlibs"
 	;;
 m68k-*-linux*)		# Motorola m68k's running GNU/Linux

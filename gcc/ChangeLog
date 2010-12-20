@@ -1,3 +1,20 @@
+2010-12-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/alpha/linux.h (OPTION_GLIBC): Define differently if
+	SINGLE_LIBC.
+	* config/linux.h (OPTION_GLIBC, OPTION_UCLIBC, OPTION_BIONIC):
+	Define differently if SINGLE_LIBC.
+	* config/rs6000/linux.h (OPTION_GLIBC): Define differently if
+	SINGLE_LIBC.
+	* config/rs6000/linux64.h (OPTION_GLIBC): Define differently if
+	SINGLE_LIBC.
+	* config.gcc (*-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu |
+	*-*-knetbsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu): Define
+	SINGLE_LIBC instead of OPTION_GLIBC.
+	(*-*-uclinux*): Define DEFAULT_LIBC and SINGLE_LIBC.
+	(bfin*-uclinux*, moxie-*-uclinux*, m68k-*-uclinux*): Don't define
+	DEFAULT_LIBC or use linux.opt.
+
 2010-12-20  Richard Henderson  <rth@redhat.com>
 
 	* config/mn10300/mn10300.c (mn10300_legitimize_pic_address): Generate
