@@ -755,6 +755,10 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       opts->x_flag_reorder_blocks = 1;
     }
 
+  if (opts->x_flag_reorder_blocks_and_partition
+      && !opts_set->x_flag_reorder_functions)
+    opts->x_flag_reorder_functions = 1;
+
   /* Pipelining of outer loops is only possible when general pipelining
      capabilities are requested.  */
   if (!opts->x_flag_sel_sched_pipelining)
