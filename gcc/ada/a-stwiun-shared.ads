@@ -438,9 +438,9 @@ private
 
    function Allocate (Max_Length : Natural) return Shared_Wide_String_Access;
    --  Allocates new Shared_Wide_String with at least specified maximum length.
-   --  Actual maximum length of the allocated Shared_Wide_String can be slightly
-   --  greater. Returns reference to Empty_Shared_Wide_String when requested
-   --  length is zero.
+   --  Actual maximum length of the allocated Shared_Wide_String can be
+   --  slightly greater. Returns reference to Empty_Shared_Wide_String when
+   --  requested length is zero.
 
    Empty_Shared_Wide_String : aliased Shared_Wide_String (0);
 

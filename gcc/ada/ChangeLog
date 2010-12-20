@@ -1,5 +1,8 @@
 2010-12-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	PR bootstrap/47027
+	* a-stwiun-shared.ads: Rewrap overlong comment line.
+
 	* projects.texi: Fix typos.
 	* gnat_rm.texi: Likewise.
 	* gnat_ugn.texi: Likewise.
