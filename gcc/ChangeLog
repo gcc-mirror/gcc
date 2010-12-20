@@ -1,4 +1,11 @@
 2010-12-20  Iain Sandoe  <iains@gcc.gnu.org>
+	    Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/46916
+	* opts.c (finish_options): Enable -freorder-functions
+	when -freorder-blocks-and-partition is active.
+	
+2010-12-20  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR c++/46904
 	PR middle-end/46916
