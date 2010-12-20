@@ -165,7 +165,7 @@ package Prj.Util is
    --  Open a text file to read (File is invalid if text file cannot be opened)
 
    procedure Create (File : out Text_File; Name : String);
-   --  Create a text file to write (File is invaid if text file cannot be
+   --  Create a text file to write (File is invalid if text file cannot be
    --  created).
 
    function End_Of_File (File : Text_File) return Boolean;
@@ -223,7 +223,7 @@ package Prj.Util is
    procedure Initialize
      (Iter        : out Source_Info_Iterator;
       For_Project : Name_Id);
-   --  Initiaize Iter for the project
+   --  Initialize Iter for the project
 
    function Source_Info_Of (Iter : Source_Info_Iterator) return Source_Info;
    --  Get the source info for the source corresponding to the current value of

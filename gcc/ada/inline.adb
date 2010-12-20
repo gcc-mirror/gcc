@@ -388,7 +388,7 @@ package body Inline is
 
          function Process (N : Node_Id) return Traverse_Result;
          --  Look for calls to subprograms with no previous spec, declared
-         --  in the same enclosiong package body.
+         --  in the same enclosing package body.
 
          -------------
          -- Process --

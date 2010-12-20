@@ -81,12 +81,12 @@ package body Sem_Ch13 is
    procedure Build_Predicate_Function (Typ : Entity_Id; N : Node_Id);
    --  If Typ has predicates (indicated by Has_Predicates being set for Typ,
    --  then either there are pragma Invariant entries on the rep chain for the
-   --  type (note that Predicate aspects are converted to pragam Predicate), or
+   --  type (note that Predicate aspects are converted to pragma Predicate), or
    --  there are inherited aspects from a parent type, or ancestor subtypes.
    --  This procedure builds the spec and body for the Predicate function that
    --  tests these predicates. N is the freeze node for the type. The spec of
    --  the function is inserted before the freeze node, and the body of the
-   --  funtion is inserted after the freeze node.
+   --  function is inserted after the freeze node.
 
    procedure Build_Static_Predicate
      (Typ  : Entity_Id;
@@ -96,7 +96,7 @@ package body Sem_Ch13 is
    --  whose predicate expression is Expr, tests if Expr is a static predicate,
    --  and if so, builds the predicate range list. Nam is the name of the one
    --  argument to the predicate function. Occurrences of the type name in the
-   --  predicate expression have been replaced by identifer references to this
+   --  predicate expression have been replaced by identifier references to this
    --  name, which is unique, so any identifier with Chars matching Nam must be
    --  a reference to the type. If the predicate is non-static, this procedure
    --  returns doing nothing. If the predicate is static, then the predicate
@@ -211,7 +211,7 @@ package body Sem_Ch13 is
       --  The entity of the object being overlaid
 
       Off : Boolean;
-      --  Whether the address is offseted within Y
+      --  Whether the address is offset within Y
    end record;
 
    package Address_Clause_Checks is new Table.Table (
@@ -723,13 +723,13 @@ package body Sem_Ch13 is
       end if;
 
       --  Return if already analyzed (avoids duplicate calls in some cases
-      --  where type declarations get rewritten and proessed twice).
+      --  where type declarations get rewritten and processed twice).
 
       if Analyzed (N) then
          return;
       end if;
 
-      --  Loop through apsects
+      --  Loop through aspects
 
       Aspect := First (L);
       while Present (Aspect) loop
@@ -1077,8 +1077,8 @@ package body Sem_Ch13 is
                end;
 
                --  Invariant aspects generate a corresponding pragma with a
-               --  first argument that is the entity, and the second argument
-               --  is the expression and anthird argument with an appropriate
+               --  first argument that is the entity, a second argument that is
+               --  the expression and a third argument that is an appropriate
                --  message. This is inserted right after the declaration, to
                --  get the required pragma placement. The pragma processing
                --  takes care of the required delay.
@@ -3950,7 +3950,7 @@ package body Sem_Ch13 is
          procedure Replace_Type_References is
            new Replace_Type_References_Generic (Replace_Type_Reference);
          --  Traverse an expression changing every occurrence of an identifier
-         --  whose name mathches the name of the subtype with a reference to
+         --  whose name matches the name of the subtype with a reference to
          --  the formal parameter of the predicate function.
 
          ----------------------------
@@ -4186,7 +4186,7 @@ package body Sem_Ch13 is
       function Is_False (R : RList) return Boolean;
       pragma Inline (Is_False);
       --  Returns True if the given range list is empty, and thus represents
-      --  a False list of ranges that can never be satsified.
+      --  a False list of ranges that can never be satisfied.
 
       function Is_True (R : RList) return Boolean;
       --  Returns True if R trivially represents the True predicate by having

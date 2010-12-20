@@ -3577,7 +3577,7 @@ package body Sem_Aggr is
                      --  for the rest, if other components are present.
                      --  The type of the aggregate is the known subtype of
                      --  the component. The capture of discriminants must
-                     --  be recursive because subcomponents may be contrained
+                     --  be recursive because subcomponents may be constrained
                      --  (transitively) by discriminants of enclosing types.
                      --  For a private type with discriminants, a call to the
                      --  initialization procedure will be generated, and no

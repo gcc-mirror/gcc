@@ -400,7 +400,7 @@ package body Sem_Ch4 is
                   exit;
                end if;
 
-               --  The other case is appearence in a subprogram body. This may
+               --  The other case is appearance in a subprogram body. This may
                --  be a violation if this is a library level subprogram, and it
                --  turns out to be used as the main program, but only the
                --  binder knows that, so just record the occurrence.
@@ -1195,8 +1195,8 @@ package body Sem_Ch4 is
             Get_First_Interp (FirstX, I, It);
             while Present (It.Nam) loop
 
-               --  For each intepretation of the first expression, we only
-               --  add the intepretation if every other expression in the
+               --  For each interpretation of the first expression, we only
+               --  add the interpretation if every other expression in the
                --  case expression alternatives has a compatible type.
 
                Alt := Next (First (Alternatives (N)));
@@ -1497,7 +1497,7 @@ package body Sem_Ch4 is
             Get_First_Interp (Then_Expr, I, It);
             while Present (It.Nam) loop
 
-               --  For each possible intepretation of the Then Expression,
+               --  For each possible interpretation of the Then Expression,
                --  add it only if the else expression has a compatible type.
 
                --  Is this right if Else_Expr is empty?
@@ -4084,7 +4084,7 @@ package body Sem_Ch4 is
 
          --  Finally, the formal and the actual may be private extensions,
          --  but the generic is declared in a child unit of the parent, and
-         --  an addtional step is needed to retrieve the proper scope.
+         --  an additional step is needed to retrieve the proper scope.
 
          elsif In_Instance
            and then Present (Parent_Subtype (Etype (Base_Type (Prefix_Type))))
@@ -5303,7 +5303,7 @@ package body Sem_Ch4 is
             null;
 
          else
-            --  Save candidate type for subsquent error message, if any
+            --  Save candidate type for subsequent error message, if any
 
             if not Is_Limited_Type (T1) then
                Candidate_Type := T1;

@@ -37,7 +37,7 @@
 /*
  * For VMS, gsocket.h can't include sockets-related DEC C header files
  * when building the runtime (because these files are in a DEC C text library
- * (DECC$RTLDEF.TLB) not accessable to GCC). So, we generate a separate header
+ * (DECC$RTLDEF.TLB) not accessible to GCC). So, we generate a separate header
  * file along with s-oscons.ads and include it here.
  */
 # include "s-oscons.h"

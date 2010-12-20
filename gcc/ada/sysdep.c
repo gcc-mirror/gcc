@@ -850,11 +850,11 @@ __gnat_localtime_tzoff (const time_t *timer, long *off)
 
 #else
 
-/* VMS does not need __gnat_locatime_tzoff */
+/* VMS does not need __gnat_localtime_tzoff */
 
 #if defined (VMS)
 
-/* Other targets except Lynx, VMS and Windows provide a standard locatime_r */
+/* Other targets except Lynx, VMS and Windows provide a standard localtime_r */
 
 #else
 

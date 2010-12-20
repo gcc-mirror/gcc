@@ -197,7 +197,7 @@ package Prj.Env is
       Project_File_Name  : String;
       Directory          : String;
       Path               : out Namet.Path_Name_Type);
-   --  Search for a the project with the given name either in Directory (which
+   --  Search for a project with the given name either in Directory (which
    --  often will be the directory contain the project we are currently parsing
    --  and which we found a reference to another project), or in the project
    --  path. Extra_Project_Path contains additional directories to search.

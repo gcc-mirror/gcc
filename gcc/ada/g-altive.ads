@@ -143,7 +143,7 @@
 --    additional facilities.
 
 --  The identification of the low level interface is directly inspired by the
---  the base API organization, basically consisting of a rich set of functions
+--  base API organization, basically consisting of a rich set of functions
 --  around a core of low level primitives mapping to AltiVec instructions.
 
 --  See for instance "vec_add" in [PIM-4.4 Generic and Specific AltiVec

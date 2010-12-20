@@ -75,7 +75,7 @@ package Switch is
    function Is_Internal_GCC_Switch (Switch_Chars : String) return Boolean;
    --  Returns True iff Switch_Chars represents an internal GCC switch to be
    --  followed by a single argument, such as -dumpbase, --param or -auxbase.
-   --  Eventhough passed by the "gcc" driver, these need not be stored in ALI
+   --  Even though passed by the "gcc" driver, these need not be stored in ALI
    --  files and may safely be ignored by non GCC back-ends.
 
    function Switch_Last (Switch_Chars : String) return Natural;
@@ -98,7 +98,7 @@ private
    --  Returns True if an integer is at the current scan location or an equal
    --  sign. This is used as a guard for calling Scan_Nat. Switch_Chars is the
    --  string containing the switch, and Ptr points just past the switch
-   --  character. Max is the maximum alllowed value of Ptr.
+   --  character. Max is the maximum allowed value of Ptr.
 
    procedure Scan_Nat
      (Switch_Chars : String;
@@ -109,7 +109,7 @@ private
    --  Scan natural integer parameter for switch. On entry, Ptr points just
    --  past the switch character, on exit it points past the last digit of the
    --  integer value. Max is the maximum allowed value of Ptr, so the scan is
-   --  restricted to Switch_Chars (Ptr .. Max). It is posssible for Ptr to be
+   --  restricted to Switch_Chars (Ptr .. Max). It is possible for Ptr to be
    --  one greater than Max on return if the entire string is digits. Scan_Nat
    --  will skip an optional equal sign if it is present. Nat_Present must be
    --  True, or an error will be signalled.

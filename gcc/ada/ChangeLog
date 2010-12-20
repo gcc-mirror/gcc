@@ -1,3 +1,43 @@
+2010-12-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* projects.texi: Fix typos.
+	* gnat_rm.texi: Likewise.
+	* gnat_ugn.texi: Likewise.
+	* sem_util.adb: Fix typo in variable, typos in comments.
+	* a-btgbso.adb: Fix typos in comments.
+	* a-cbdlli.adb, a-cbhase.ads, a-cdlili.adb, a-cobove.adb,
+	a-coinve.adb, a-convec.adb, a-direct.ads, a-strunb-shared.adb,
+	a-strunb-shared.ads, a-stuten.ads, a-stwiun-shared.adb,
+	a-stwiun-shared.ads, a-stzunb-shared.adb, a-stzunb-shared.ads,
+	a-suenco.adb, a-suenst.adb, a-suewst.adb, a-suezst.adb, ali.ads,
+	aspects.ads, atree.ads, binde.adb, bindgen.adb, checks.adb,
+	checks.ads, einfo.ads, err_vars.ads, errout.adb, errout.ads,
+	exp_aggr.adb, exp_attr.adb, exp_cg.adb, exp_ch3.adb,
+	exp_ch4.adb, exp_ch5.adb, exp_ch6.adb, exp_ch7.adb,
+	exp_dbug.ads, exp_disp.adb, exp_fixd.ads, freeze.adb,
+	g-altive.ads, g-comlin.ads, g-excact.ads, g-mbdira.adb,
+	g-sechas.ads, g-sehash.ads, g-sha1.ads, g-sha224.ads,
+	g-sha256.ads, g-sha384.ads, g-sha512.ads, g-shsh32.ads,
+	g-shsh64.ads, g-socket.adb, g-socket.ads, g-sothco.ads,
+	gcc-interface/decl.c, gcc-interface/trans.c,
+	gcc-interface/utils2.c, gnat1drv.adb, init.c, inline.adb,
+	link.c, locales.c, make.adb, mingw32.h, namet.ads, osint.adb,
+	par-ch12.adb, par-ch13.adb, par-ch3.adb, par-ch4.adb,
+	par-prag.adb, par.adb, par_sco.adb, prepcomp.adb,
+	prj-conf.ads, prj-dect.adb, prj-env.adb, prj-env.ads,
+	prj-nmsc.adb, prj-tree.ads, prj-util.ads, prj.adb, prj.ads,
+	s-auxdec-vms-alpha.adb, s-auxdec-vms_64.ads, s-oscons-tmplt.c,
+	s-osinte-vxworks.ads, s-osprim-mingw.adb, s-regexp.adb,
+	s-stusta.adb, s-taprop-mingw.adb, s-taprop-solaris.adb,
+	scn.adb, scos.ads, sem.adb, sem_aggr.adb, sem_attr.adb,
+	sem_aux.adb, sem_aux.ads, sem_ch12.adb, sem_ch12.ads,
+	sem_ch13.adb, sem_ch13.ads, sem_ch3.adb, sem_ch4.adb,
+	sem_ch6.adb, sem_ch7.adb, sem_ch8.adb, sem_disp.adb,
+	sem_disp.ads, sem_eval.adb, sem_intr.adb, sem_prag.adb,
+	sem_res.adb, sem_scil.adb, sem_util.ads, sem_warn.adb,
+	sem_warn.ads, sinfo.ads, socket.c, styleg.adb, switch.ads,
+	sysdep.c, tb-alvxw.c, xoscons.adb: Likewise.
+
 2010-12-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_General_Access_Type>:

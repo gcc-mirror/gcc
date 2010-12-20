@@ -35,7 +35,7 @@ package Err_Vars is
    --  All of these variables are set when needed, so they do not need to be
    --  initialized. However, there is code that saves and restores existing
    --  values, which may malfunction in -gnatVa mode if the variable has never
-   --  been iniitalized, so we initialize some variables to avoid exceptions
+   --  been initialized, so we initialize some variables to avoid exceptions
    --  from invalid values in such cases.
 
    ------------------

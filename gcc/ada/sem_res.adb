@@ -4885,7 +4885,7 @@ package body Sem_Res is
                --  expander does, so we match its logic here).
 
                --  The second case is mod where either operand can be negative.
-               --  In this case, the back end has to generate additonal tests.
+               --  In this case, the back end has to generate additional tests.
 
                if (Nkind (N) = N_Op_Rem and then (LNeg and RNeg))
                     or else
@@ -5985,7 +5985,7 @@ package body Sem_Res is
          then
             null;
 
-         --  Any other use is an eror
+         --  Any other use is an error
 
          else
             Error_Msg_N

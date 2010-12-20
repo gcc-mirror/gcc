@@ -202,7 +202,7 @@ package body Make is
       --  extracted.
 
       function Processed return Natural;
-      --  Return the number of source in the queue that have aready been
+      --  Return the number of source in the queue that have already been
       --  processed.
 
       procedure Set_Obj_Dir_Busy (Obj_Dir : Path_Name_Type);
@@ -6189,8 +6189,8 @@ package body Make is
                   end;
                end if;
 
-               --  Add switch -M to gnatlink if buider switch --create-map-file
-               --  has been specified.
+               --  Add switch -M to gnatlink if builder switch
+               --  --create-map-file has been specified.
 
                if Map_File /= null then
                   Linker_Switches.Increment_Last;
@@ -7003,7 +7003,7 @@ package body Make is
             --  If Put_In_Q is False, we add the source as if it were specified
             --  on the command line, and we set Put_In_Q to True, so that the
             --  following sources will only be put in the queue. The source is
-            --  aready in the Q, but we need at least one fake main to call
+            --  already in the Q, but we need at least one fake main to call
             --  Compile_Sources.
 
             if Verbose_Mode then

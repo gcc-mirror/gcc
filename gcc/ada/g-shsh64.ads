@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This pacakge provides support for the 64-bit FIPS PUB 180-3 functions
+--  This package provides support for the 64-bit FIPS PUB 180-3 functions
 --  SHA-384 and SHA-512.
 
 --  This is an internal unit and should not be used directly in applications.

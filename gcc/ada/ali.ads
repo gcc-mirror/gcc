@@ -843,7 +843,7 @@ package ALI is
       --  Column number of definition
 
       Visibility : Visibility_Kind;
-      --  Visiblity of entity
+      --  Visibility of entity
 
       Entity : Name_Id;
       --  Name of entity

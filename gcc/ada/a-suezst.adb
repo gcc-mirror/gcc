@@ -68,7 +68,7 @@ package body Ada.Strings.UTF_Encoding.Wide_Wide_Strings is
       procedure Get_Continuation;
       --  Reads a continuation byte of the form 10xxxxxx, shifts R left
       --  by 6 bits, and or's in the xxxxxx to the low order 6 bits. On
-      --  return Ptr is incremented. Raises exceptioon if continuation
+      --  return Ptr is incremented. Raises exception if continuation
       --  byte does not exist or is invalid.
 
       ----------------------

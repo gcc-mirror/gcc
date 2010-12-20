@@ -68,7 +68,7 @@ package body Ada.Strings.UTF_Encoding.Wide_Strings is
       procedure Get_Continuation;
       --  Reads a continuation byte of the form 10xxxxxx, shifts R left
       --  by 6 bits, and or's in the xxxxxx to the low order 6 bits. On
-      --  return Ptr is incremented. Raises exceptioon if continuation
+      --  return Ptr is incremented. Raises exception if continuation
       --  byte does not exist or is invalid.
 
       ----------------------
@@ -353,7 +353,7 @@ package body Ada.Strings.UTF_Encoding.Wide_Strings is
             Len := Len + 1;
             Result (Len) := Wide_Character'Val (C);
 
-         --  Codes in tne range 16#D800#..16#DFFF# should never appear in the
+         --  Codes in the range 16#D800#..16#DFFF# should never appear in the
          --  input, since no valid Unicode characters are in this range (which
          --  would conflict with the UTF-16 surrogate encodings). Similarly
          --  codes in the range 16#FFFE#..16#FFFF conflict with BOM codes.

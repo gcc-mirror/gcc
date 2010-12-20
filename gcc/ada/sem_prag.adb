@@ -1644,7 +1644,7 @@ package body Sem_Prag is
                end;
             end if;
 
-            --  Note: we do not analye the pragma at this point. Instead we
+            --  Note: we do not analyze the pragma at this point. Instead we
             --  delay this analysis until the end of the declarative part in
             --  which the pragma appears. This implements the required delay
             --  in this analysis, allowing forward references. The analysis
@@ -13917,8 +13917,8 @@ package body Sem_Prag is
    --  whether a given pragma is significant.
 
    --  -1  indicates that references in any argument position are significant
-   --  0   indicates that appearence in any argument is not significant
-   --  +n  indicates that appearence as argument n is significant, but all
+   --  0   indicates that appearance in any argument is not significant
+   --  +n  indicates that appearance as argument n is significant, but all
    --      other arguments are not significant
    --  99  special processing required (e.g. for pragma Check)
 

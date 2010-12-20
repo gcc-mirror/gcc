@@ -205,7 +205,7 @@ package Ada.Directories is
    --        copy:           Only copy if the destination file does not already
    --                        exist. If it already exists, Copy_File will fail.
    --
-   --        overwrite:      Copy the file in all cases. Overwite an already
+   --        overwrite:      Copy the file in all cases. Overwrite an already
    --                        existing destination file. This is the default if
    --                        no mode= is found in Form.
    --

@@ -2319,7 +2319,7 @@ package body GNAT.Sockets is
       end loop;
 
       --  For an empty array, we have First > Max, and hence Index >= Max (no
-      --  error, the loop above is never executed). After a succesful send,
+      --  error, the loop above is never executed). After a successful send,
       --  Index = Max. The only remaining case, Index < Max, is therefore
       --  always an actual send failure.
 

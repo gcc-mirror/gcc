@@ -31,7 +31,7 @@
 
 --  This package defines the aspects that are recognized by GNAT in aspect
 --  specifications. It also contains the subprograms for storing/retrieving
---  aspect speciciations from the tree. The semantic processing for aspect
+--  aspect specifications from the tree. The semantic processing for aspect
 --  specifications is found in Sem_Ch13.Analyze_Aspect_Specifications.
 
 with Namet; use Namet;
@@ -190,7 +190,7 @@ package Aspects is
    --  True (i.e. the declaration nodes defined in the RM as permitting the
    --  presence of Aspect_Specifications). However, it is possible for the
    --  flag Has_Aspects to be set on other nodes as a result of Rewrite and
-   --  Replace calls, and this function may be used to retrive the aspect
+   --  Replace calls, and this function may be used to retrieve the aspect
    --  specifications for the original rewritten node in such cases.
 
    procedure Set_Aspect_Specifications (N : Node_Id; L : List_Id);
@@ -213,6 +213,6 @@ package Aspects is
    --  Writes contents of Aspect_Specifications hash table to the tree file
 
    procedure Tree_Read;
-   --  Reads contents of Aspect_Specificatins hash table from the tree file
+   --  Reads contents of Aspect_Specifications hash table from the tree file
 
 end Aspects;

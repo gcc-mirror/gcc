@@ -7868,7 +7868,7 @@ package body Sem_Ch6 is
 
             --  (Ada 2012: AI05-0125-1): If S is a dispatching operation then
             --  it may have overridden some hidden inherited primitive. Update
-            --  Overriden_Subp to avoid spurious errors when checking the
+            --  Overridden_Subp to avoid spurious errors when checking the
             --  overriding indicator.
 
             if Ada_Version >= Ada_2012
@@ -8766,7 +8766,7 @@ package body Sem_Ch6 is
             end;
          end if;
 
-         --  Now we can copy the tree, doing any required substituations
+         --  Now we can copy the tree, doing any required substitutions
 
          CP := New_Copy_Tree (Prag, Map => Map, New_Scope => Current_Scope);
 

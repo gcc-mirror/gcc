@@ -47,7 +47,7 @@ package body Prepcomp is
 
    --  The following variable should be a constant, but this is not possible
    --  because its type GNAT.Dynamic_Tables.Instance has a component P of
-   --  unitialized private type GNAT.Dynamic_Tables.Table_Private and there
+   --  uninitialized private type GNAT.Dynamic_Tables.Table_Private and there
    --  are no exported values for this private type. Warnings are Off because
    --  it is never assigned a value.
 

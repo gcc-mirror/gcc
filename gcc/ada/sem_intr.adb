@@ -167,7 +167,7 @@ package body Sem_Intr is
 
       --  For unchecked deallocation, error to deallocate from empty pool.
       --  Note: this test used to be in Exp_Intr as a warning, but AI 157
-      --  issues a binding intepretation that this should be an error, and
+      --  issues a binding interpretation that this should be an error, and
       --  consequently it needs to be done in the semantic analysis so that
       --  the error is issued even in semantics only mode.
 

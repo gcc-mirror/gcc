@@ -1767,7 +1767,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
             return False;
          end if;
 
-         if Position.Node = L.First then  -- eliminates ealier disjunct
+         if Position.Node = L.First then  -- eliminates earlier disjunct
             return True;
          end if;
 

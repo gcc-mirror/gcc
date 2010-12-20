@@ -187,7 +187,7 @@
 --     Display_Help (Config);
 --  that will display a properly formatted help message for your application,
 --  listing all possible switches. That way you have a single place in which
---  to maintain the list of switches and their meaning, rather than maintaing
+--  to maintain the list of switches and their meaning, rather than maintaining
 --  both the string to pass to Getopt and a subprogram to display the help.
 --  Both will properly stay synchronized.
 

@@ -393,7 +393,7 @@ setting @code{Source_Dirs}. The project manager automatically finds
 project.
 
 Note that it is considered an error for a project file to have no sources
-attached to it unless explicitly declared as mentionend above.
+attached to it unless explicitly declared as mentioned above.
 
 If the order of the source directories is known statically, that is if
 @code{"/**"} is not used in the string list @code{Source_Dirs}, then there may
@@ -534,7 +534,7 @@ or more executables on the command line to build a subset of them.
 We now have a project file that fully describes our environment, and can be
 used to build the application with a simple @command{gnatmake} command as seen
 in the previous section. In fact, the empty project we showed immediately at
-the beginning (with no attribute at all) could already fullfill that need if it
+the beginning (with no attribute at all) could already fulfill that need if it
 was put in the @file{common} directory.
 
 Of course, we always want more control. This section will show you how to
@@ -736,7 +736,7 @@ Notice the three steps described earlier:
 The default output of GPRbuild's execution is kept reasonably simple and easy
 to understand. In particular, some of the less frequently used commands are not
 shown, and some parameters are abbreviated. So it is not possible to rerun the
-effect ofthe gprbuild command by cut-and-pasting its output. GPRbuild's option
+effect of the gprbuild command by cut-and-pasting its output. GPRbuild's option
 @code{-v} provides a much more verbose output which includes, among other
 information, more complete compilation, post-compilation and link commands.
 
@@ -1152,7 +1152,7 @@ when they do, they need to specify precisely which project owns which sources
 using attribute @code{Source_Files} or equivalent. By contrast, 2 projects
 can each own a source with the same base file name as long as they live in
 different directories. The latter is not true for Ada Sources because of the
-correlation betwen source files and Ada units.
+correlation between source files and Ada units.
 
 @c ---------------------------------------------
 @node Cyclic Project Dependencies
@@ -1201,7 +1201,7 @@ end D;
 @c ---------------------------------------------
 
 @noindent
-When building an application, it is common to have similar needs in severa of
+When building an application, it is common to have similar needs in several of
 the projects corresponding to the subsystems under construction. For instance,
 they will all have the same compilation switches.
 
@@ -1495,10 +1495,10 @@ installation of the library (i.e., copying associated source, object and
 
 @noindent
 Let's enhance our example and transform the @code{logging} subsystem into a
-library.In orer to do so, a few changes need to be made to @file{logging.gpr}.
+library.  In order to do so, a few changes need to be made to @file{logging.gpr}.
 A number of specific attributes needs to be defined: at least @code{Library_Name}
 and @code{Library_Dir}; in addition, a number of other attributes can be used
-to specify specific aspects of the library. For readablility, it is also
+to specify specific aspects of the library. For readability, it is also
 recommended (although not mandatory), to use the qualifier @code{library} in
 front of the @code{project} keyword.
 
@@ -1547,13 +1547,13 @@ Other library-related attributes can be used to change the defaults:
   which kind of library should be build (the default is to build a
   static library, that is an archive of object files that can potentially
   be linked into a static executable). When the library is set to be dynamic,
-  a separate image is created that will be loaded independnently, usually
+  a separate image is created that will be loaded independently, usually
   at the start of the main program execution. Support for dynamic libraries is
   very platform specific, for instance on Windows it takes the form of a DLL
   while on GNU/Linux, it is a dynamic elf image whose suffix is usually
   @file{.so}. Library project files, on the other hand, can be written in
-  a platform independant way so that the same project file can be used to build
-  a library on different Oses.
+  a platform independent way so that the same project file can be used to build
+  a library on different operating systems.
 
   If you need to build both a static and a dynamic library, it is recommended
   use two different object directories, since in some cases some extra code
@@ -1647,7 +1647,7 @@ executables.
 
 It is also possible to build @b{multi-language libraries}. When using
 @command{gprbuild} as a builder, multi-language library projects allow naturally
-the creation of multi-language libraries . @command{gnatmake}, does n ot try to
+the creation of multi-language libraries . @command{gnatmake}, does not try to
 compile non Ada sources. However, when the project is multi-language, it will
 automatically link all object files found in the object directory, whether or
 not they were compiled from an Ada source file. This specific behavior does not
@@ -1728,10 +1728,10 @@ elaborate the Ada units that are included in the library. A stand-alone
 library is a convenient way to add an Ada subsystem to a more global system
 whose main is not in Ada since it makes the elaboration of the Ada part mostly
 transparent. However, stand-alone libraries are also useful when the main is in
-Ada: they provide a means for minimizing relinking & redeployement of complex
+Ada: they provide a means for minimizing relinking & redeployment of complex
 systems when localized changes are made.
 
-The most proeminent characteristic of a stand-alone library is that it offers a
+The most prominent characteristic of a stand-alone library is that it offers a
 distinction between interface units and implementation units. Only the former
 are visible to units outside the library. A stand-alone library project is thus
 characterised by a third attribute, @b{Library_Interface}, in addition to the
@@ -2140,7 +2140,7 @@ The identifier @code{Empty} is the name of the project.
 This project name must be present after the reserved
 word @code{end} at the end of the project file, followed by a semi-colon.
 
-@b{Identifiers} (ie the user-defined names such as project or variable names)
+@b{Identifiers} (i.e.@: the user-defined names such as project or variable names)
 have the same syntax as Ada identifiers: they must start with a letter,
 and be followed by zero or more letters, digits or underscore characters;
 it is also illegal to have two underscores next to each other. Identifiers
@@ -2445,7 +2445,7 @@ package_extension ::==
 
 @noindent
 An expression is any value that can be assigned to an attribute or a
-variable. It is either a litteral value, or a construct requiring runtime
+variable. It is either a literal value, or a construct requiring runtime
 computation by the project manager. In a project file, the computed value of
 an expression is either a string or a list of strings.
 
@@ -2574,8 +2574,8 @@ the result is an empty list. This is also the case, if the separator is an
 empty string or if the external value is only one separator.
 
 Any separator at the beginning or at the end of the external value is
-discarded. Then, if there is no separator in the external vaue, the result is
-a string list with only one string. Otherwise, any string between the biginning
+discarded. Then, if there is no separator in the external value, the result is
+a string list with only one string. Otherwise, any string between the beginning
 and the first separator, between two consecutive separators and between the
 last separator and the end are components of the string list.
 
@@ -2920,7 +2920,7 @@ system (file). The text is between brackets ([]) if the index is optional.
 @item Object_File_Suffix @tab string @tab Compiler @tab insensitive (language)
 @item Object_File_Switches @tab list @tab Compiler @tab insensitive (language)
 @item Multi_Unit_Switches @tab list @tab Compiler @tab insensitive (language)
-@item Multi_Unit_Object_Separator @tab string @tab Compiler @tab insensitve (language)
+@item Multi_Unit_Object_Separator @tab string @tab Compiler @tab insensitive (language)
 @item Mapping_File_Switches @tab list @tab Compiler @tab insensitive (language)
 @item Mapping_Spec_Suffix @tab string @tab Compiler @tab insensitive (language)
 @item Mapping_body_Suffix @tab string @tab Compiler @tab insensitive (language)
@@ -3817,7 +3817,7 @@ gnat metric -Pproj -U main_unit
 will compute the metrics for the closure of units rooted at
 @code{main_unit}. This last possibility relies implicitly
 on @command{gnatbind}'s option @option{-R}. But if the argument files for the
-tool invoked by the the @command{gnat} driver are explicitly  specified
+tool invoked by the @command{gnat} driver are explicitly  specified
 either directly or through the tool @option{-files} option, then the tool
 is called only for these explicitly specified files.
 

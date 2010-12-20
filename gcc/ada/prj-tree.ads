@@ -816,7 +816,7 @@ package Prj.Tree is
       To      : Int);
    pragma Inline (Set_Source_Index_Of);
    --  Only valid for N_Literal_String and N_Attribute_Declaration nodes. For
-   --  N_Literal_String, set the source index of the litteral string. For
+   --  N_Literal_String, set the source index of the literal string. For
    --  N_Attribute_Declaration, set the source index of the index of the
    --  associative array element.
 
@@ -1469,7 +1469,7 @@ package Prj.Tree is
 
       External_References : Name_To_Name_HTable.Instance;
       --  External references are stored in this hash table (and manipulated
-      --  through subprogrames in prj-ext.ads). External references are
+      --  through subprograms in prj-ext.ads). External references are
       --  project-tree specific so that one can load the same tree twice but
       --  have two views of it, for instance.
 

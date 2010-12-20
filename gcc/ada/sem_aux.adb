@@ -665,7 +665,7 @@ package body Sem_Aux is
                   --  only occur in the case of a _parent component anyway).
                   --  They don't have any components, plus it would cause this
                   --  function to return true for nonlimited types derived from
-                  --  limited intefaces.
+                  --  limited interfaces.
 
                   if not Is_Interface (Etype (C))
                     and then Is_Immutably_Limited_Type (Etype (C))

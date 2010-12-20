@@ -321,7 +321,7 @@ procedure Gnat1drv is
          Targparm.Frontend_Layout_On_Target := True;
       end if;
 
-      --  Set and check exception mechnism
+      --  Set and check exception mechanism
 
       if Targparm.ZCX_By_Default_On_Target then
          if Targparm.GCC_ZCX_Support_On_Target then

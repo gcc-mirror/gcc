@@ -49,7 +49,7 @@ package Ada.Strings.UTF_Encoding is
    --  values encoded in one of three ways (UTF-8, UTF-16BE, or UTF-16LE).
    --  Typically used in connection with a Scheme parameter indicating which
    --  of the encodings applies. This is not strictly a String value in the
-   --  sense defined in the Ada RM, but in practice type String accomodates
+   --  sense defined in the Ada RM, but in practice type String accommodates
    --  all possible 256 codes, and can be used to hold any sequence of 8-bit
    --  codes. We use String directly rather than create a new type so that
    --  all existing facilities for manipulating type String (e.g. the child
