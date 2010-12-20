@@ -240,6 +240,7 @@ static rtx arm_trampoline_adjust_address (rtx);
 static rtx arm_pic_static_addr (rtx orig, rtx reg);
 static bool cortex_a9_sched_adjust_cost (rtx, rtx, rtx, int *);
 static bool xscale_sched_adjust_cost (rtx, rtx, rtx, int *);
+static bool fa726te_sched_adjust_cost (rtx, rtx, rtx, int *);
 static enum machine_mode arm_preferred_simd_mode (enum machine_mode);
 static bool arm_class_likely_spilled_p (reg_class_t);
 static bool arm_vector_alignment_reachable (const_tree type, bool is_packed);
@@ -884,6 +885,14 @@ const struct tune_params arm_cortex_a9_tune =
   cortex_a9_sched_adjust_cost,
   1,
   ARM_PREFETCH_BENEFICIAL(4,32,32)
+};
+
+const struct tune_params arm_fa726te_tune =
+{
+  arm_9e_rtx_costs,
+  fa726te_sched_adjust_cost,
+  1,
+  ARM_PREFETCH_NOT_BENEFICIAL
 };
 
 
@@ -7991,6 +8000,36 @@ cortex_a9_sched_adjust_cost (rtx insn, rtx link, rtx dep, int * cost)
 
     default:
       gcc_unreachable ();
+    }
+
+  return true;
+}
+
+/* Adjust cost hook for FA726TE.  */
+static bool
+fa726te_sched_adjust_cost (rtx insn, rtx link, rtx dep, int * cost)
+{
+  /* For FA726TE, true dependency on CPSR (i.e. set cond followed by predicated)
+     have penalty of 3.  */
+  if (REG_NOTE_KIND (link) == REG_DEP_TRUE
+      && recog_memoized (insn) >= 0
+      && recog_memoized (dep) >= 0
+      && get_attr_conds (dep) == CONDS_SET)
+    {
+      /* Use of carry (e.g. 64-bit arithmetic) in ALU: 3-cycle latency.  */
+      if (get_attr_conds (insn) == CONDS_USE
+          && get_attr_type (insn) != TYPE_BRANCH)
+        {
+          *cost = 3;
+          return false;
+        }
+
+      if (GET_CODE (PATTERN (insn)) == COND_EXEC
+          || get_attr_conds (insn) == CONDS_USE)
+        {
+          *cost = 0;
+          return false;
+        }
     }
 
   return true;
@@ -22840,6 +22879,7 @@ arm_issue_rate (void)
     case cortexa5:
     case cortexa8:
     case cortexa9:
+    case fa726te:
       return 2;
 
     default:

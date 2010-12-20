@@ -498,7 +498,7 @@
 
 (define_attr "generic_sched" "yes,no"
   (const (if_then_else
-          (ior (eq_attr "tune" "arm926ejs,arm1020e,arm1026ejs,arm1136js,arm1136jfs,cortexa5,cortexa8,cortexa9,cortexm4")
+          (ior (eq_attr "tune" "fa526,fa626,fa606te,fa626te,fmp626,fa726te,arm926ejs,arm1020e,arm1026ejs,arm1136js,arm1136jfs,cortexa5,cortexa8,cortexa9,cortexm4")
 	       (eq_attr "tune_cortexr4" "yes"))
           (const_string "no")
           (const_string "yes"))))
@@ -516,6 +516,11 @@
 (include "arm1020e.md")
 (include "arm1026ejs.md")
 (include "arm1136jfs.md")
+(include "fa526.md")
+(include "fa606te.md")
+(include "fa626te.md")
+(include "fmp626.md")
+(include "fa726te.md")
 (include "cortex-a5.md")
 (include "cortex-a8.md")
 (include "cortex-a9.md")
