@@ -1,3 +1,27 @@
+2010-12-20  Sanjin Liu	<scliu@faraday-tech.com>
+	Mingfeng Wu  <mingfeng@faraday-tech.com>
+
+	* config/arm/arm-cores.def: Add Faraday CPU support -
+	fa526/fa626/fa606te/fa626te/fmp626/fa726te.
+	* config/arm/arm-tune.md: Regenerate.
+	* config/arm/arm.c (arm_fa726te_tune): New tune_params for fa726te
+	(fa726te_sched_adjust_cost): New cost function for fa726te.
+	(arm_issue_rate): Add fa726te.
+	* config/arm/arm.md (generic_sched): Add Faraday cores to generic_sched
+	and include machine description files.
+	* config/arm/bpabi.h (TARGET_FIX_V4BX_SPEC): Add fa526 and fa626.
+	* config/arm/t-arm (MD_INCLUDES): Include machine description files for
+	Faraday cores.
+	* config/arm/t-arm-elf: Add multilib option for Faraday cores.
+	* config/arm/t-linux-eabi: Add multilib option for Faraday cores except
+	fa526 and fa626.
+	* doc/invoke.texi: Document -mcpu for Faraday cores.
+	* config/arm/fa526.md: New file.
+	* config/arm/fa606te.md: New file.
+	* config/arm/fa626te.md: New file.
+	* config/arm/fmp626.md: New file.
+	* config/arm/fa726te.md: New file.
+
 2010-12-20  Yvan Roux  <yvan.roux@st.com>
 
 	* config/arm/lib1funcs.asm (ARM_DIV_BODY case __OPTIMIZE_SIZE__): Fix

@@ -24,6 +24,11 @@ MD_INCLUDES= 	$(srcdir)/config/arm/arm-tune.md \
 		$(srcdir)/config/arm/arm1020e.md \
 		$(srcdir)/config/arm/arm1026ejs.md \
 		$(srcdir)/config/arm/arm1136jfs.md \
+		$(srcdir)/config/arm/fa526.md \
+		$(srcdir)/config/arm/fa606te.md \
+		$(srcdir)/config/arm/fa626te.md \
+		$(srcdir)/config/arm/fmp626.md \
+		$(srcdir)/config/arm/fa726te.md \
 		$(srcdir)/config/arm/arm926ejs.md \
 		$(srcdir)/config/arm/cirrus.md \
 		$(srcdir)/config/arm/fpa.md \
