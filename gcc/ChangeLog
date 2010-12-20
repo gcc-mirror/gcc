@@ -1,4 +1,9 @@
-2010-12-19  Andi Kleen	<ak@linux.intel.com>
+2010-12-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/install.texi (Configuration, Building, Testing, Specific):
+	Remove leading whitespace from examples.
+
+2010-12-19  Andi Kleen  <ak@linux.intel.com>
 
 	PR lto/46905
 	* collect2.c (main): Handle -fno-lto.

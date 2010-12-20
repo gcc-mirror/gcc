@@ -623,9 +623,9 @@ affected by this requirement, see
 To configure GCC:
 
 @smallexample
-   % mkdir @var{objdir}
-   % cd @var{objdir}
-   % @var{srcdir}/configure [@var{options}] [@var{target}]
+% mkdir @var{objdir}
+% cd @var{objdir}
+% @var{srcdir}/configure [@var{options}] [@var{target}]
 @end smallexample
 
 @heading Distributor options
@@ -2120,7 +2120,7 @@ the bootstrap and the final installation.  (Libraries will still contain
 debugging information.)
 
 @smallexample
-     make BOOT_CFLAGS='-O' bootstrap
+make BOOT_CFLAGS='-O' bootstrap
 @end smallexample
 
 You can place non-default optimization flags into @code{BOOT_CFLAGS}; they
@@ -2421,8 +2421,8 @@ environment variables appropriately, as in the following example (which
 assumes that DejaGnu has been installed under @file{/usr/local}):
 
 @smallexample
-     TCL_LIBRARY = /usr/local/share/tcl8.0
-     DEJAGNULIBS = /usr/local/share/dejagnu
+TCL_LIBRARY = /usr/local/share/tcl8.0
+DEJAGNULIBS = /usr/local/share/dejagnu
 @end smallexample
 
 (On systems such as Cygwin, these paths are required to be actual
@@ -2432,7 +2432,7 @@ portability in the DejaGnu code.)
 
 Finally, you can run the testsuite (which may take a long time):
 @smallexample
-     cd @var{objdir}; make -k check
+cd @var{objdir}; make -k check
 @end smallexample
 
 This will test various components of GCC, such as compiler
@@ -2456,14 +2456,14 @@ A more selective way to just run all @command{gcc} execute tests in the
 testsuite is to use
 
 @smallexample
-    make check-gcc RUNTESTFLAGS="execute.exp @var{other-options}"
+make check-gcc RUNTESTFLAGS="execute.exp @var{other-options}"
 @end smallexample
 
 Likewise, in order to run only the @command{g++} ``old-deja'' tests in
 the testsuite with filenames matching @samp{9805*}, you would use
 
 @smallexample
-    make check-g++ RUNTESTFLAGS="old-deja.exp=9805* @var{other-options}"
+make check-g++ RUNTESTFLAGS="old-deja.exp=9805* @var{other-options}"
 @end smallexample
 
 The @file{*.exp} files are located in the testsuite directories of the GCC
@@ -2481,7 +2481,7 @@ You can pass multiple options to the testsuite using the
 work outside the makefiles.  For example,
 
 @smallexample
-    make check-g++ RUNTESTFLAGS="--target_board=unix/-O3/-fmerge-constants"
+make check-g++ RUNTESTFLAGS="--target_board=unix/-O3/-fmerge-constants"
 @end smallexample
 
 will run the standard @command{g++} testsuites (``unix'' is the target name
@@ -2493,7 +2493,7 @@ You can run the testsuites multiple times using combinations of options
 with a syntax similar to the brace expansion of popular shells:
 
 @smallexample
-    @dots{}"--target_board=arm-sim\@{-mhard-float,-msoft-float\@}\@{-O1,-O2,-O3,\@}"
+@dots{}"--target_board=arm-sim\@{-mhard-float,-msoft-float\@}\@{-O1,-O2,-O3,\@}"
 @end smallexample
 
 (Note the empty option caused by the trailing comma in the final group.)
@@ -2501,21 +2501,21 @@ The following will run each testsuite eight times using the @samp{arm-sim}
 target, as if you had specified all possible combinations yourself:
 
 @smallexample
-    --target_board=arm-sim/-mhard-float/-O1
-    --target_board=arm-sim/-mhard-float/-O2
-    --target_board=arm-sim/-mhard-float/-O3
-    --target_board=arm-sim/-mhard-float
-    --target_board=arm-sim/-msoft-float/-O1
-    --target_board=arm-sim/-msoft-float/-O2
-    --target_board=arm-sim/-msoft-float/-O3
-    --target_board=arm-sim/-msoft-float
+--target_board=arm-sim/-mhard-float/-O1
+--target_board=arm-sim/-mhard-float/-O2
+--target_board=arm-sim/-mhard-float/-O3
+--target_board=arm-sim/-mhard-float
+--target_board=arm-sim/-msoft-float/-O1
+--target_board=arm-sim/-msoft-float/-O2
+--target_board=arm-sim/-msoft-float/-O3
+--target_board=arm-sim/-msoft-float
 @end smallexample
 
 They can be combined as many times as you wish, in arbitrary ways.  This
 list:
 
 @smallexample
-    @dots{}"--target_board=unix/-Wextra\@{-O3,-fno-strength\@}\@{-fomit-frame,\@}"
+@dots{}"--target_board=unix/-Wextra\@{-O3,-fno-strength\@}\@{-fomit-frame,\@}"
 @end smallexample
 
 will generate four combinations, all involving @samp{-Wextra}.
@@ -2528,13 +2528,13 @@ do the parallel runs.  Instead of using @samp{--target_board}, use a
 special makefile target:
 
 @smallexample
-    make -j@var{N} check-@var{testsuite}//@var{test-target}/@var{option1}/@var{option2}/@dots{}
+make -j@var{N} check-@var{testsuite}//@var{test-target}/@var{option1}/@var{option2}/@dots{}
 @end smallexample
 
 For example,
 
 @smallexample
-    make -j3 check-gcc//sh-hms-sim/@{-m1,-m2,-m3,-m3e,-m4@}/@{,-nofpu@}
+make -j3 check-gcc//sh-hms-sim/@{-m1,-m2,-m3,-m3e,-m4@}/@{,-nofpu@}
 @end smallexample
 
 will run three concurrent ``make-gcc'' testsuites, eventually testing all
@@ -2593,8 +2593,8 @@ If you want to report the results to the GCC project, use the
 @file{contrib/test_summary} shell script.  Start it in the @var{objdir} with
 
 @smallexample
-    @var{srcdir}/contrib/test_summary -p your_commentary.txt \
-        -m gcc-testresults@@gcc.gnu.org |sh
+@var{srcdir}/contrib/test_summary -p your_commentary.txt \
+    -m gcc-testresults@@gcc.gnu.org |sh
 @end smallexample
 
 This script uses the @command{Mail} program to send the results, so
@@ -3170,7 +3170,7 @@ We @emph{strongly} recommend using binutils 2.13 or newer.
 
 The following error:
 @smallexample
-  Error: register required
+Error: register required
 @end smallexample
 
 indicates that you should upgrade to a newer version of the binutils.
@@ -3630,8 +3630,8 @@ requires a larger data segment, which can be enabled through the
 @var{LDR_CNTRL} environment variable, e.g.,
 
 @smallexample
-   % LDR_CNTRL=MAXDATA=0x50000000
-   % export LDR_CNTRL
+% LDR_CNTRL=MAXDATA=0x50000000
+% export LDR_CNTRL
 @end smallexample
 
 One can start with a pre-compiled version of GCC to build from
@@ -3642,8 +3642,8 @@ To speed up the configuration phases of bootstrapping and installing GCC,
 one may use GNU Bash instead of AIX @command{/bin/sh}, e.g.,
 
 @smallexample
-   % CONFIG_SHELL=/opt/freeware/bin/bash
-   % export CONFIG_SHELL
+% CONFIG_SHELL=/opt/freeware/bin/bash
+% export CONFIG_SHELL
 @end smallexample
 
 and then proceed as described in @uref{build.html,,the build
@@ -3691,19 +3691,19 @@ multilib @file{libstdc++.a} installed:
 Extract the shared objects from the currently installed
 @file{libstdc++.a} archive:
 @smallexample
-   % ar -x libstdc++.a libstdc++.so.4 libstdc++.so.5
+% ar -x libstdc++.a libstdc++.so.4 libstdc++.so.5
 @end smallexample
 
 Enable the @samp{F_LOADONLY} flag so that the shared object will be
 available for runtime dynamic loading, but not linking:
 @smallexample
-   % strip -e libstdc++.so.4 libstdc++.so.5
+% strip -e libstdc++.so.4 libstdc++.so.5
 @end smallexample
 
 Archive the runtime-only shared object in the GCC 3.4
 @file{libstdc++.a} archive:
 @smallexample
-   % ar -q libstdc++.a libstdc++.so.4 libstdc++.so.5
+% ar -q libstdc++.a libstdc++.so.4 libstdc++.so.5
 @end smallexample
 
 Linking executables and shared libraries may produce warnings of
@@ -4153,8 +4153,8 @@ The Solaris 2 @command{/bin/sh} will often fail to configure
 recommend using the following initial sequence of commands
 
 @smallexample
-   % CONFIG_SHELL=/bin/ksh
-   % export CONFIG_SHELL
+% CONFIG_SHELL=/bin/ksh
+% export CONFIG_SHELL
 @end smallexample
 
 @noindent
@@ -4325,7 +4325,7 @@ configure line.  This target triplet can be obtained by invoking @command{./conf
 not that of GMP or MPFR or MPC).  For example on a Solaris 9 system:
 
 @smallexample
-   % ./configure --build=sparc-sun-solaris2.9 --prefix=xxx
+% ./configure --build=sparc-sun-solaris2.9 --prefix=xxx
 @end smallexample
 
 @html
@@ -4365,14 +4365,14 @@ the @command{build} parameter on the configure line.  For example
 on a Solaris 9 system:
 
 @smallexample
-   % ./configure --build=sparc64-sun-solaris2.9 --prefix=xxx
+% ./configure --build=sparc64-sun-solaris2.9 --prefix=xxx
 @end smallexample
 
 The following compiler flags must be specified in the configure
 step in order to bootstrap this target with the Sun compiler:
 
 @smallexample
-   % CC="cc -xarch=v9 -xildoff" @var{srcdir}/configure [@var{options}] [@var{target}]
+% CC="cc -xarch=v9 -xildoff" @var{srcdir}/configure [@var{options}] [@var{target}]
 @end smallexample
 
 @noindent
