@@ -1,5 +1,13 @@
 2010-12-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* doc/cppopts.texi: Use @var when appropriate.
+	* doc/extend.texi (Structure-Packing Pragmas): Likewise.
+	* doc/gimple.texi (Logical Operators)
+	(Adding a new GIMPLE statement code): Likewise.
+	* doc/invoke.texi (Target Options, Precompiled Headers):
+	Likewise.
+	* doc/plugins.texi (Plugins): Likewise.
+
 	* doc/install.texi (Configuration, Building, Testing, Specific):
 	Remove leading whitespace from examples.
 

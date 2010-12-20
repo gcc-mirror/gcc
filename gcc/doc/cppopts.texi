@@ -330,10 +330,10 @@ header is used.
 @opindex fpch-preprocess
 This option allows use of a precompiled header (@pxref{Precompiled
 Headers}) together with @option{-E}.  It inserts a special @code{#pragma},
-@code{#pragma GCC pch_preprocess "<filename>"} in the output to mark
-the place where the precompiled header was found, and its filename.  When
-@option{-fpreprocessed} is in use, GCC recognizes this @code{#pragma} and
-loads the PCH@.
+@code{#pragma GCC pch_preprocess "@var{filename}"} in the output to mark
+the place where the precompiled header was found, and its @var{filename}.
+When @option{-fpreprocessed} is in use, GCC recognizes this @code{#pragma}
+and loads the PCH@.
 
 This option is off by default, because the resulting preprocessed output
 is only really suitable as input to GCC@.  It is switched on by

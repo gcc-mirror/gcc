@@ -635,7 +635,7 @@ access the operands.
 When adding a new operand to a gimple statement, the operand will
 be validated according to what each tuple accepts in its operand
 vector.  These predicates are called by the
-@code{gimple_<name>_set_...()}.  Each tuple will use one of the
+@code{gimple_@var{name}_set_...()}.  Each tuple will use one of the
 following predicates (Note, this list is not exhaustive):
 
 @deftypefn {GIMPLE function} is_gimple_operand (tree t)
@@ -2497,7 +2497,7 @@ in @code{gimple.c}.
 
 You will probably want to create a function to build the new
 gimple statement in @code{gimple.c}.  The function should be called
-@code{gimple_build_<@code{NEW_TUPLE_NAME}>}, and should return the new tuple
+@code{gimple_build_@var{new-tuple-name}}, and should return the new tuple
 of type gimple.
 
 If your new statement requires accessors for any members or
