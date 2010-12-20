@@ -1,3 +1,8 @@
+2010-12-20  Yvan Roux  <yvan.roux@st.com>
+
+	* config/arm/lib1funcs.asm (ARM_DIV_BODY case __OPTIMIZE_SIZE__): Fix
+	condition on IT instruction for early termination.
+
 2010-12-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/freebsd.h (SVR4_ASM_SPEC): Don't define.
