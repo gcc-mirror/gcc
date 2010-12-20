@@ -80,9 +80,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define LIB_SPEC LINUX_TARGET_LIB_SPEC
 
 /* C libraries supported on Linux.  */
+#ifdef SINGLE_LIBC
+#define OPTION_GLIBC  (DEFAULT_LIBC == LIBC_GLIBC)
+#define OPTION_UCLIBC (DEFAULT_LIBC == LIBC_UCLIBC)
+#define OPTION_BIONIC (DEFAULT_LIBC == LIBC_BIONIC)
+#else
 #define OPTION_GLIBC  (linux_libc == LIBC_GLIBC)
 #define OPTION_UCLIBC (linux_libc == LIBC_UCLIBC)
 #define OPTION_BIONIC (linux_libc == LIBC_BIONIC)
+#endif
 
 #define LINUX_TARGET_OS_CPP_BUILTINS()				\
     do {							\

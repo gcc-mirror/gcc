@@ -308,7 +308,11 @@ extern int dot_symbols;
    process.  */
 #define OS_MISSING_POWERPC64 !TARGET_64BIT
 
+#ifdef SINGLE_LIBC
+#define OPTION_GLIBC  (DEFAULT_LIBC == LIBC_GLIBC)
+#else
 #define OPTION_GLIBC  (linux_libc == LIBC_GLIBC)
+#endif
 
 /* glibc has float and long double forms of math functions.  */
 #undef  TARGET_C99_FUNCTIONS

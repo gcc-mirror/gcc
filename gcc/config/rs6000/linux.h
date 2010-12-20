@@ -27,7 +27,11 @@
 /* We use glibc _mcount for profiling.  */
 #define NO_PROFILE_COUNTERS 1
 
+#ifdef SINGLE_LIBC
+#define OPTION_GLIBC  (DEFAULT_LIBC == LIBC_GLIBC)
+#else
 #define OPTION_GLIBC  (linux_libc == LIBC_GLIBC)
+#endif
 
 /* glibc has float and long double forms of math functions.  */
 #undef  TARGET_C99_FUNCTIONS
