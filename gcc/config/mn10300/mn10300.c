@@ -1867,26 +1867,39 @@ mn10300_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 rtx
 mn10300_legitimize_pic_address (rtx orig, rtx reg)
 {
+  rtx x;
+
   if (GET_CODE (orig) == LABEL_REF
       || (GET_CODE (orig) == SYMBOL_REF
 	  && (CONSTANT_POOL_ADDRESS_P (orig)
 	      || ! MN10300_GLOBAL_P (orig))))
     {
-      if (reg == 0)
+      if (reg == NULL)
 	reg = gen_reg_rtx (Pmode);
 
-      emit_insn (gen_symGOTOFF2reg (reg, orig));
-      return reg;
+      x = gen_rtx_UNSPEC (SImode, gen_rtvec (1, orig), UNSPEC_GOTOFF);
+      x = gen_rtx_CONST (SImode, x);
+      emit_move_insn (reg, x);
+
+      x = emit_insn (gen_addsi3 (reg, reg, pic_offset_table_rtx));
     }
   else if (GET_CODE (orig) == SYMBOL_REF)
     {
-      if (reg == 0)
+      if (reg == NULL)
 	reg = gen_reg_rtx (Pmode);
 
-      emit_insn (gen_symGOT2reg (reg, orig));
-      return reg;
+      x = gen_rtx_UNSPEC (SImode, gen_rtvec (1, orig), UNSPEC_GOT);
+      x = gen_rtx_CONST (SImode, x);
+      x = gen_rtx_PLUS (SImode, pic_offset_table_rtx, x);
+      x = gen_const_mem (SImode, x);
+
+      x = emit_move_insn (reg, x);
     }
-  return orig;
+  else
+    return orig;
+
+  set_unique_reg_note (x, REG_EQUAL, orig);
+  return reg;
 }
 
 /* Return zero if X references a SYMBOL_REF or LABEL_REF whose symbol

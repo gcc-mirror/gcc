@@ -1,3 +1,12 @@
+2010-12-20  Richard Henderson  <rth@redhat.com>
+
+	* config/mn10300/mn10300.c (mn10300_legitimize_pic_address): Generate
+	UNSPEC patterns by hand, with the proper mode; use gen_const_mem.
+	* config/mn10300/mn10300.md (call, call_value): Generate UNSPEC_PLT
+	by hand, with the proper mode.
+	(symGOT2reg, symGOT2reg_i, symGOTOFF2reg): Remove.
+	(symGOTOFF2reg_i, sym2PIC, sym2PLT): Remove.
+
 2010-12-20  Sanjin Liu	<scliu@faraday-tech.com>
 	Mingfeng Wu  <mingfeng@faraday-tech.com>
 
