@@ -9,6 +9,7 @@ libexecsubdir := $(libexecdir)/gcc/$(target_noncanonical)/$(gcc_version)
 
 AM_CPPFLAGS = -I$(top_srcdir)/../include $(DEFS)
 AM_CFLAGS = -Wall -Werror
+AM_LIBTOOLFLAGS = --tag=disable-static
 
 libexecsub_LTLIBRARIES = liblto_plugin.la
 
