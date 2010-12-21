@@ -119,8 +119,12 @@ go.man: doc/gccgo.1
 go.srcman: doc/gccgo.1
 	-cp -p $^ $(srcdir)/doc
 
-check-go:
 lang_checks += check-go
+lang_checks_parallelized += check-go
+check_go_parallelize = go-test.exp=*/test/\[0-57-9a-bd-hj-zA-Z\]* \
+		       go-test.exp=*/test/c* \
+		       go-test.exp=*/test/i* \
+		       go-test.exp=*/test/6*
 
 # Install hooks.
 
