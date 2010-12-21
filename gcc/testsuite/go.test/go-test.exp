@@ -38,6 +38,7 @@ load_lib go-torture.exp
 proc errchk { test } {
     global dg-do-what-default
     global DEFAULT_GOCFLAGS
+    global runtests
 
     set saved-dg-do-what-default ${dg-do-what-default}
     set dg-do-what-default compile
@@ -72,7 +73,12 @@ proc errchk { test } {
     }
     close $fdin
     close $fdout
+
+    set hold_runtests $runtests
+    set runtests "go-test.exp"
     go-dg-runtest $filename "-fno-show-column $DEFAULT_GOCFLAGS"
+    set runtests $hold_runtests
+
     file delete $filename
     set dg-do-what-default ${saved-dg-do-what-default}
 }
@@ -80,6 +86,7 @@ proc errchk { test } {
 # This is an execution test which should fail.
 proc go-execute-xfail { test } {
     global DEFAULT_GOCFLAGS
+    global runtests
 
     set filename [file tail $test]
     set fdin [open $test r]
@@ -90,7 +97,12 @@ proc go-execute-xfail { test } {
     }
     close $fdin
     close $fdout
+
+    set hold_runtests $runtests
+    set runtests "go-test.exp"
     go-dg-runtest $filename "-w $DEFAULT_GOCFLAGS"
+    set runtests $hold_runtests
+
     file delete $filename
 }
 
