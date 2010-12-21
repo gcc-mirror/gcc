@@ -1,3 +1,10 @@
+2010-12-21  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/47001
+	* tree-vect-slp.c (vect_supported_load_permutation_p): Check that
+	the loads in reduction are different and there are no gaps between
+	them.
+
 2010-12-21  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/45310

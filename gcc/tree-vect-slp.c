@@ -1002,7 +1002,36 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
 
       if (!bad_permutation)
         {
-          /* This permutaion is valid for reduction.  Since the order of the
+          /* Check that the loads in the first sequence are different and there
+             are no gaps between them.  */
+          load_index = sbitmap_alloc (group_size);
+          sbitmap_zero (load_index);
+          for (k = 0; k < group_size; k++)
+            {
+              first_group_load_index = VEC_index (int, load_permutation, k);
+              if (TEST_BIT (load_index, first_group_load_index))
+                {
+                  bad_permutation = true;
+                  break;
+                }
+
+              SET_BIT (load_index, first_group_load_index);
+            }
+
+          if (!bad_permutation)
+            for (k = 0; k < group_size; k++)
+              if (!TEST_BIT (load_index, k))
+                {
+                  bad_permutation = true;
+                  break;
+                }
+
+          sbitmap_free (load_index);
+        }
+
+      if (!bad_permutation)
+        {
+          /* This permutation is valid for reduction.  Since the order of the
              statements in the nodes is not important unless they are memory
              accesses, we can rearrange the statements in all the nodes 
              according to the order of the loads.  */
