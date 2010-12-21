@@ -9154,7 +9154,11 @@ Array_index_expression::do_get_tree(Translate_context* context)
   source_location loc = this->location();
 
   Array_type* array_type = this->array_->type()->array_type();
-  gcc_assert(array_type != NULL);
+  if (array_type == NULL)
+    {
+      gcc_assert(this->array_->type()->is_error_type());
+      return error_mark_node;
+    }
 
   tree type_tree = array_type->get_tree(gogo);
   if (type_tree == error_mark_node)
