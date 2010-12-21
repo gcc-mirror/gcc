@@ -1,3 +1,8 @@
+2010-12-21  Jan Hubicka   <jh@suse.cz>
+
+	PR middle-end/47000
+	* tree-inline.c (estimate_operator_cost): Handle VIEW_CONVERT_EXPR.
+
 2010-12-21  Jie Zhang  <jie@codesourcery.com>
 
 	* config/arm/arm-ldmstm.ml: Fix a typo in comment.
