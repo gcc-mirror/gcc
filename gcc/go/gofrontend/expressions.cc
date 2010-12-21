@@ -8630,6 +8630,7 @@ Call_expression::do_get_tree(Translate_context* context)
 	   pe != this->args_->end();
 	   ++pe, ++pp, ++i)
 	{
+	  gcc_assert(pp != params->end());
 	  tree arg_val = (*pe)->get_tree(context);
 	  args[i] = Expression::convert_for_assignment(context,
 						       pp->type(),

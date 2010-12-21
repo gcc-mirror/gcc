@@ -2093,14 +2093,6 @@ Build_recover_thunks::function(Named_object* orig_no)
   Expression* fn = Expression::make_func_reference(new_no, closure, location);
 
   Expression_list* args = new Expression_list();
-  if (orig_fntype->is_method())
-    {
-      Named_object* rec_no = gogo->lookup(receiver_name, NULL);
-      gcc_assert(rec_no != NULL
-		 && rec_no->is_variable()
-		 && rec_no->var_value()->is_parameter());
-      args->push_back(Expression::make_var_reference(rec_no, location));
-    }
   if (new_params != NULL)
     {
       // Note that we skip the last parameter, which is the boolean
@@ -2153,10 +2145,11 @@ Build_recover_thunks::function(Named_object* orig_no)
 		 && !orig_rec_no->var_value()->is_receiver());
       orig_rec_no->var_value()->set_is_receiver();
 
-      Named_object* new_rec_no = new_bindings->lookup_local(receiver_name);
+      const std::string& new_receiver_name(orig_fntype->receiver()->name());
+      Named_object* new_rec_no = new_bindings->lookup_local(new_receiver_name);
       gcc_assert(new_rec_no != NULL
 		 && new_rec_no->is_variable()
-		 && !new_rec_no->var_value()->is_receiver());
+		 && new_rec_no->var_value()->is_receiver());
       new_rec_no->var_value()->set_is_not_receiver();
     }
 
