@@ -1415,7 +1415,8 @@ reload_combine_note_store (rtx dst, const_rtx set, void *data ATTRIBUTE_UNUSED)
     {
       dst = XEXP (dst, 0);
       if (GET_CODE (dst) == PRE_INC || GET_CODE (dst) == POST_INC
-	  || GET_CODE (dst) == PRE_DEC || GET_CODE (dst) == POST_DEC)
+	  || GET_CODE (dst) == PRE_DEC || GET_CODE (dst) == POST_DEC
+	  || GET_CODE (dst) == PRE_MODIFY || GET_CODE (dst) == POST_MODIFY)
 	{
 	  regno = REGNO (XEXP (dst, 0));
 	  mode = GET_MODE (XEXP (dst, 0));
