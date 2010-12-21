@@ -10242,9 +10242,13 @@ tree
 Allocation_expression::do_get_tree(Translate_context* context)
 {
   tree type_tree = this->type_->get_tree(context->gogo());
+  if (type_tree == error_mark_node)
+    return error_mark_node;
   tree size_tree = TYPE_SIZE_UNIT(type_tree);
   tree space = context->gogo()->allocate_memory(this->type_, size_tree,
 						this->location());
+  if (space == error_mark_node)
+    return error_mark_node;
   return fold_convert(build_pointer_type(type_tree), space);
 }
 
