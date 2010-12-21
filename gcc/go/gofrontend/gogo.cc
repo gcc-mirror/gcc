@@ -881,7 +881,7 @@ Gogo::add_type(const std::string& name, Type* type, source_location location)
 {
   Named_object* no = this->current_bindings()->add_type(name, NULL, type,
 							location);
-  if (!this->in_global_scope())
+  if (!this->in_global_scope() && no->is_type())
     no->type_value()->set_in_function(this->functions_.back().function);
 }
 
@@ -901,7 +901,7 @@ Gogo::declare_type(const std::string& name, source_location location)
 {
   Bindings* bindings = this->current_bindings();
   Named_object* no = bindings->add_type_declaration(name, NULL, location);
-  if (!this->in_global_scope())
+  if (!this->in_global_scope() && no->is_type_declaration())
     {
       Named_object* f = this->functions_.back().function;
       no->type_declaration_value()->set_in_function(f);
