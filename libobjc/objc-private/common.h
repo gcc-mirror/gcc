@@ -33,7 +33,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    being included by an external file.  */
 #define GNU_LIBOBJC_COMPILING_LIBOBJC_ITSELF 1
 
+/* When debugging libobjc, add
+
+   #define DEBUG 1
+
+   at the very beginning of a file in libobjc (before including this file) to turn
+   on DEBUG_PRINTF().  */
 #ifdef DEBUG
+#include <stdio.h>
 #define DEBUG_PRINTF(format, args...) printf (format, ## args)
 #else
 #define DEBUG_PRINTF(format, args...)
