@@ -1,3 +1,8 @@
+2010-12-21  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/arm/arm.c (require_pic_register): Set INSN_LOCATOR for all
+	instructions injected into the prologue to prologue_locator.
+
 2010-12-21  Jan Hubicka   <jh@suse.cz>
 
 	PR middle-end/47000
