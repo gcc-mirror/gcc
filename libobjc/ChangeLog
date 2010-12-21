@@ -1,5 +1,17 @@
 2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	PR libobjc/16110
+	* init.c (__objc_send_message_in_list): Renamed to
+	__objc_send_load_using_method_list.  Do not take an 'op' argument.
+	Register the 'load' selector if needed.
+	(__objc_send_load): Do not register the 'load' selector.  Updated
+	call to __objc_send_message_in_list.
+	(__objc_create_classes_tree): Add the class of any claimed
+	category that was loaded in the module to the list of classes for
+	which we try to execute +load.
+	
+2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-private/common.h: When DEBUG is defined, include <stdio.h>.
 	Updated comments.
 	* init.c (__objc_tree_insert_class): Use %p, not %x, when printing
