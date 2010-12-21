@@ -1,5 +1,10 @@
 2010-12-21  Steven Bosscher  <steven@gcc.gnu.org>
 
+	PR middle-end/45310
+	* g++.dg/pr45310.C: New test.
+
+2010-12-21  Steven Bosscher  <steven@gcc.gnu.org>
+
 	PR rtl-optimization/46755
 	* gfortran.dg/pr46755.f: New test.
 
