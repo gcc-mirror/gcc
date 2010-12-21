@@ -543,14 +543,16 @@ Type::are_assignable(const Type* lhs, const Type* rhs, std::string* reason)
 	  || lhs->interface_type() != NULL))
     return true;
 
-  // An untyped constant may be assigned to a numeric type if it is
-  // representable in that type.
-  if (rhs->is_abstract()
+  // An untyped numeric constant may be assigned to a numeric type if
+  // it is representable in that type.
+  if ((rhs->is_abstract()
+       && (rhs->integer_type() != NULL
+	   || rhs->float_type() != NULL
+	   || rhs->complex_type() != NULL))
       && (lhs->integer_type() != NULL
 	  || lhs->float_type() != NULL
 	  || lhs->complex_type() != NULL))
     return true;
-
 
   // Give some better error messages.
   if (reason != NULL && reason->empty())
