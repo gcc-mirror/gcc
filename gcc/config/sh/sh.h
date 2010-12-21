@@ -1213,19 +1213,6 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 #define CONST_OK_FOR_K08(VALUE) (((HOST_WIDE_INT)(VALUE))>= 0 \
 				 && ((HOST_WIDE_INT)(VALUE)) <= 255)
 
-/* Given an rtx X being reloaded into a reg required to be
-   in class CLASS, return the class of reg to actually use.
-   In general this is just CLASS; but on some machines
-   in some cases it is preferable to use a more restrictive class.  */
-
-#define PREFERRED_RELOAD_CLASS(X, CLASS) \
-  ((CLASS) == NO_REGS && TARGET_SHMEDIA \
-   && (GET_CODE (X) == CONST_DOUBLE \
-       || GET_CODE (X) == SYMBOL_REF \
-       || PIC_ADDR_P (X)) \
-   ? GENERAL_REGS \
-   : (CLASS)) \
-
 #if 0
 #define SECONDARY_INOUT_RELOAD_CLASS(CLASS,MODE,X,ELSE) \
   ((((REGCLASS_HAS_FP_REG (CLASS) 					\

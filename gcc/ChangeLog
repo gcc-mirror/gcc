@@ -1,3 +1,12 @@
+2010-12-21  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/sh/sh.h (PREFERRED_RELOAD_CLASS): Remove.
+	* config/sh/sh-protos.h (secondary_reload_info, sh_secondary_reload):
+	Remove forward declaration.
+	* config/sh/sh.c (sh_preferred_reload_class): New function.
+	(sh_secondary_reload): Make static.
+	(TARGET_PREFERRED_RELOAD_CLASS): Define.
+
 2010-12-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/alpha/linux.h (OPTION_GLIBC): Define differently if

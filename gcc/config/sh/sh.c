@@ -253,6 +253,10 @@ static bool sh_rtx_costs (rtx, int, int, int *, bool);
 static int sh_address_cost (rtx, bool);
 static int sh_pr_n_sets (void);
 static rtx sh_allocate_initial_value (rtx);
+static reg_class_t sh_preferred_reload_class (rtx, reg_class_t);
+static reg_class_t sh_secondary_reload (bool, rtx, reg_class_t,
+                                        enum machine_mode,
+                                        struct secondary_reload_info *);
 static bool sh_legitimate_address_p (enum machine_mode, rtx, bool);
 static rtx sh_legitimize_address (rtx, rtx, enum machine_mode);
 static rtx sh_delegitimize_address (rtx);
@@ -590,6 +594,9 @@ static const struct default_options sh_option_optimization_table[] =
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD sh_secondary_reload
+
+#undef  TARGET_PREFERRED_RELOAD_CLASS
+#define TARGET_PREFERRED_RELOAD_CLASS sh_preferred_reload_class
 
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE sh_conditional_register_usage
@@ -12426,7 +12433,24 @@ shmedia_prepare_call_address (rtx fnaddr, int is_sibcall)
   return fnaddr;
 }
 
-reg_class_t
+/* Implement TARGET_PREFERRED_RELOAD_CLASS.  */
+
+static reg_class_t
+sh_preferred_reload_class (rtx x, reg_class_t rclass)
+{
+  if (rclass == NO_REGS
+      && TARGET_SHMEDIA
+      && (CONST_DOUBLE_P (x)
+	  || GET_CODE (x) == SYMBOL_REF
+	  || PIC_ADDR_P (x)))
+    return GENERAL_REGS;
+
+  return rclass;
+}
+
+/* Implement TARGET_SECONDARY_RELOAD.  */
+
+static reg_class_t
 sh_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 		     enum machine_mode mode, secondary_reload_info *sri)
 {
