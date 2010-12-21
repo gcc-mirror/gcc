@@ -1,3 +1,8 @@
+2010-12-21  Ian Lance Taylor  <iant@google.com>
+
+	* go.test/go-test.exp: Clear runtests around invocation of
+	go-dg-runtest from errchk and go-execute-xfail.
+
 2010-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/46880
@@ -14,8 +19,8 @@
 	* objc.dg/special/special.exp: Added new test.
 	* objc.dg/special/load-category-1.m: New.
 	* objc.dg/special/load-category-1a.m: New.
-	* objc.dg/special/load-category-1.h: New.	
-	
+	* objc.dg/special/load-category-1.h: New.
+
 2010-12-21  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/45310
