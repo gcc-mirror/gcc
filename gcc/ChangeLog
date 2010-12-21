@@ -1,3 +1,9 @@
+2010-12-21  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR rtl-optimization/46755
+	* ira.c (ira): If some dead edges were removed, find and delete
+	any blocks that might have become unreachable.
+
 2010-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/47008

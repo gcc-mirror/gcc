@@ -1,3 +1,8 @@
+2010-12-21  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR rtl-optimization/46755
+	* gfortran.dg/pr46755.f: New test.
+
 2010-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/47008
