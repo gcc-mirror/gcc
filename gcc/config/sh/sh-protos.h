@@ -165,10 +165,6 @@ extern int shmedia_cleanup_truncate (rtx *, void *);
 extern int sh_contains_memref_p (rtx);
 extern int sh_loads_bankedreg_p (rtx);
 extern rtx shmedia_prepare_call_address (rtx fnaddr, int is_sibcall);
-struct secondary_reload_info;
-extern reg_class_t sh_secondary_reload (bool, rtx, reg_class_t,
-					enum machine_mode,
-					struct secondary_reload_info *);
 extern int sh2a_get_function_vector_number (rtx);
 extern int sh2a_is_function_vector_call (rtx);
 extern void sh_fix_range (const char *);
