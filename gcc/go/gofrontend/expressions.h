@@ -1346,7 +1346,9 @@ class Func_expression : public Expression
   do_copy()
   {
     return Expression::make_func_reference(this->function_,
-					   this->closure_->copy(),
+					   (this->closure_ == NULL
+					    ? NULL
+					    : this->closure_->copy()),
 					   this->location());
   }
 
