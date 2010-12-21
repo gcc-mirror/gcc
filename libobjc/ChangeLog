@@ -1,4 +1,8 @@
 2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* linking.m: Do not include objc/NXConstStr.h.
+
+2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 	
 	* objc-private/runtime.h (DEBUG_PRINTF): Moved from here ...
 	* objc-private/common.h (DEBUG_PRINTF): To here.

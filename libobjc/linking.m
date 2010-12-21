@@ -25,7 +25,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "objc-private/common.h"
 #include <objc/Object.h>
-#include <objc/NXConstStr.h>
 
 /* Generate references to Object class since it is needed by the
    runtime system to run correctly.  */
