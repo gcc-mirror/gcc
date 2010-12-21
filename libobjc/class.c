@@ -446,11 +446,12 @@ __objc_init_class_tables (void)
 }  
 
 /* This function adds a class to the class hash table, and assigns the
-   class a number, unless it's already known.  */
-void
+   class a number, unless it's already known.  Return 'YES' if the
+   class was added.  Return 'NO' if the class was already known.  */
+BOOL
 __objc_add_class_to_hash (Class class)
 {
-  Class h_class;
+  Class existing_class;
 
   objc_mutex_lock (__objc_runtime_mutex);
 
@@ -461,21 +462,28 @@ __objc_add_class_to_hash (Class class)
   assert (CLS_ISCLASS (class));
 
   /* Check to see if the class is already in the hash table.  */
-  h_class = class_table_get_safe (class->name);
-  if (! h_class)
-    {
-      /* The class isn't in the hash table.  Add the class and assign a class
-         number.  */
-      static unsigned int class_number = 1;
+  existing_class = class_table_get_safe (class->name);
 
+  if (existing_class)
+    {
+      objc_mutex_unlock (__objc_runtime_mutex);
+      return NO;      
+    }
+  else
+    {
+      /* The class isn't in the hash table.  Add the class and assign
+         a class number.  */
+      static unsigned int class_number = 1;
+      
       CLS_SETNUMBER (class, class_number);
       CLS_SETNUMBER (class->class_pointer, class_number);
 
       ++class_number;
       class_table_insert (class->name, class);
-    }
 
-  objc_mutex_unlock (__objc_runtime_mutex);
+      objc_mutex_unlock (__objc_runtime_mutex);
+      return YES;
+    }
 }
 
 Class
