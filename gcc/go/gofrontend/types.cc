@@ -8061,6 +8061,7 @@ Forward_declaration_type::do_get_tree(Gogo* gogo)
   tree id = no->get_id(gogo);
   tree decl = build_decl(no->location(), TYPE_DECL, id, type_tree);
   TYPE_NAME(type_tree) = decl;
+  layout_type(type_tree);
   return type_tree;
 }
 
