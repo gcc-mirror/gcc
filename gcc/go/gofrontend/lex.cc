@@ -742,12 +742,7 @@ int
 Lex::fetch_char(const char* p, unsigned int* value)
 {
   unsigned char c = *p;
-  if (c == 0)
-    {    
-      *value = 0xfffd;
-      return 0;
-    }
-  else if (c <= 0x7f)
+  if (c <= 0x7f)
     {
       *value = c;
       return 1;
@@ -812,13 +807,19 @@ Lex::advance_one_utf8_char(const char* p, unsigned int* value,
 			   bool* issued_error)
 {
   *issued_error = false;
+
+  if (*p == '\0')
+    {
+      error_at(this->location(), "invalid NUL byte");
+      *issued_error = true;
+      *value = 0;
+      return p + 1;
+    }
+
   int adv = Lex::fetch_char(p, value);
   if (adv == 0)
     {
-      if (*p == '\0')
-	error_at(this->location(), "invalid NUL byte");
-      else
-	error_at(this->location(), "invalid UTF-8 encoding");
+      error_at(this->location(), "invalid UTF-8 encoding");
       *issued_error = true;
       return p + 1;
     }
