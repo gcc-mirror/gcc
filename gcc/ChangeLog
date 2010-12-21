@@ -1,3 +1,7 @@
+2010-12-21  Jie Zhang  <jie@codesourcery.com>
+
+	* config/arm/arm-ldmstm.ml: Fix a typo in comment.
+
 2010-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/45852

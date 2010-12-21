@@ -26,7 +26,7 @@
    3.09.2, though other versions will probably work too.
 
    Run with:
-     ocaml arm-ldmstm.ml >/path/to/gcc/config/arm/ldmstm.ml
+     ocaml arm-ldmstm.ml >/path/to/gcc/config/arm/ldmstm.md
 *)
 
 type amode = IA | IB | DA | DB
