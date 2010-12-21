@@ -1,5 +1,5 @@
 # GCC Objective-C testsuite that uses the `dg.exp' driver.
-#   Copyright (C) 1997, 2001, 2007 Free Software Foundation, Inc.
+#   Copyright (C) 1997, 2001, 2007, 2010 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -53,6 +53,33 @@ if ![string match "" $lines] then {
 } else {
     dg-runtest "$srcdir/$subdir/unclaimed-category-1.m" "unclaimed-category-1a.o" "-fnext-runtime"
     file delete unclaimed-category-1a.o
+}
+}
+
+#
+# load-category-1 test
+#
+# This test is similar to the one above.  We compile load-category-1.m
+# and load-category-1a.m, link them together, and execute the result.
+set add_flags "additional_flags=-I${srcdir}/../../libobjc"
+lappend add_flags "additional_flags=-fgnu-runtime"
+set lines [objc_target_compile "$srcdir/$subdir/load-category-1a.m" "load-category-1a.o" object $add_flags ]
+if ![string match "" $lines] then {
+    fail "load-category-1a.o"
+} else {
+    dg-runtest "$srcdir/$subdir/load-category-1.m" "load-category-1a.o" "-I${srcdir}/../../libobjc -fgnu-runtime"
+    file delete load-category-1a.o
+}
+
+if [istarget "*-*-darwin*" ] {
+set add_flags ""
+lappend add_flags "additional_flags=-fnext-runtime"
+set lines [objc_target_compile "$srcdir/$subdir/load-category-1a.m" "load-category-1a.o" object $add_flags ]
+if ![string match "" $lines] then {
+    fail "load-category-1a.o"
+} else {
+    dg-runtest "$srcdir/$subdir/load-category-1.m" "load-category-1a.o" "-fnext-runtime"
+    file delete load-category-1a.o
 }
 }
 

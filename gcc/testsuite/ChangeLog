@@ -1,3 +1,11 @@
+2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR libobjc/16110
+	* objc.dg/special/special.exp: Added new test.
+	* objc.dg/special/load-category-1.m: New.
+	* objc.dg/special/load-category-1a.m: New.
+	* objc.dg/special/load-category-1.h: New.	
+	
 2010-12-21  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/45310

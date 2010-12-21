@@ -44,8 +44,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define OBJC_VERSION 8
 #define PROTOCOL_VERSION 2
 
-/* This list contains all modules currently loaded into the
-   runtime.  */
+/* This list contains modules currently loaded into the runtime and
+   for which the +load method has not been called yet.  */
 static struct objc_list *__objc_module_list = 0; 	/* !T:MUTEX */
 
 /* This list contains all proto_list's not yet assigned class
@@ -359,37 +359,49 @@ __objc_tree_print (objc_class_tree *tree, int level)
 #endif
 
 /* Walks on a linked list of methods in the reverse order and executes
-   all the methods corresponding to `op' selector. Walking in the
-   reverse order assures the +load of class is executed first and then
-   +load of categories because of the way in which categories are
-   added to the class methods.  */
+   all the methods corresponding to the `+load' selector.  Walking in
+   the reverse order assures the +load of class is executed first and
+   then +load of categories because of the way in which categories are
+   added to the class methods.  This function needs to be called with
+   the objc_runtime_mutex locked.  */
 static void
-__objc_send_message_in_list (struct objc_method_list *method_list, Class class, SEL op)
+__objc_send_load_using_method_list (struct objc_method_list *method_list, Class class)
 {
+  static SEL load_selector = 0;
   int i;
 
-  if (! method_list)
+  if (!method_list)
     return;
 
-  /* First execute the `op' message in the following method lists.  */
-  __objc_send_message_in_list (method_list->method_next, class, op);
+  /* This needs no lock protection because we are called with the
+     objc_runtime_mutex locked.  */
+  if (!load_selector)
+    load_selector = sel_registerName ("load");
+
+  /* method_list is a linked list of method lists; since we're
+     executing in reverse order, we need to do the next list before we
+     do this one.  */
+  __objc_send_load_using_method_list (method_list->method_next, class);
 
   /* Search the method list.  */
   for (i = 0; i < method_list->method_count; i++)
     {
       struct objc_method *mth = &method_list->method_list[i];
 
-      if (mth->method_name && sel_eq (mth->method_name, op)
+      /* We are searching for +load methods that we haven't executed
+	 yet.  */
+      if (mth->method_name && sel_eq (mth->method_name, load_selector)
 	  && ! objc_hash_is_key_in_hash (__objc_load_methods, mth->method_imp))
 	{
-	  /* Add this method into the +load hash table.  */
+	  /* Add this method into the +load hash table, so we won't
+	     execute it again next time.  */
 	  objc_hash_add (&__objc_load_methods,
 			 mth->method_imp,
 			 mth->method_imp);
 	  
 	  DEBUG_PRINTF ("sending +load in class: %s\n", class->name);
 	  
-	  /* The method was found and wasn't previously executed.  */
+	  /* Call +load.  */
 	  (*mth->method_imp) ((id)class, mth->method_name);
 
 	  break;
@@ -397,18 +409,16 @@ __objc_send_message_in_list (struct objc_method_list *method_list, Class class, 
     }
 }
 
+/* This function needs to be called with the objc_runtime_mutex
+   locked.  */
 static void
 __objc_send_load (objc_class_tree *tree,
 		  int level __attribute__ ((__unused__)))
 {
-  static SEL load_sel = 0;
   Class class = tree->class;
   struct objc_method_list *method_list = class->class_pointer->methods;
 
-  if (! load_sel)
-    load_sel = sel_registerName ("load");
-
-  __objc_send_message_in_list (method_list, class, load_sel);
+  __objc_send_load_using_method_list (method_list, class);
 }
 
 static void
@@ -580,8 +590,8 @@ __objc_exec_class (struct objc_module *module)
       previous_constructors = 1;
     }
 
-  /* Save the module pointer for later processing. (not currently
-     used).  */
+  /* Save the module pointer so that later we remember to call +load
+     on all classes and categories on it.  */
   objc_mutex_lock (__objc_runtime_mutex);
   __objc_module_list = list_cons (module, __objc_module_list);
 
@@ -717,14 +727,16 @@ __objc_exec_class (struct objc_module *module)
   objc_mutex_unlock (__objc_runtime_mutex);
 }
 
+/* This function needs to be called with the objc_runtime_mutex
+   locked.  */
 static void
 objc_send_load (void)
 {
-  if (! __objc_module_list)
+  if (!__objc_module_list)
     return;
  
   /* Try to find out if all the classes loaded so far also have their
-     superclasses known to the runtime. We suppose that the objects
+     superclasses known to the runtime.  We suppose that the objects
      that are allocated in the +load method are in general of a class
      declared in the same module.  */
   if (unresolved_classes)
@@ -742,7 +754,7 @@ objc_send_load (void)
 
       /* If we still have classes for whom we don't have yet their
          super classes known to the runtime we don't send the +load
-         messages.  */
+         messages yet.  */
       if (unresolved_classes)
 	return;
     }
@@ -790,6 +802,25 @@ __objc_create_classes_tree (struct objc_module *module)
       Class class = (Class) symtab->defs[i];
 
       objc_tree_insert_class (class);
+    }
+
+  /* Now iterate over "claimed" categories too (ie, categories that
+     extend a class that has already been loaded by the runtime), and
+     insert them in the classes tree hiearchy too.  Otherwise, if you
+     add a category, its +load method would not be called if the class
+     is already loaded in the runtime.  It the category is
+     "unclaimed", ie, we haven't loaded the main class yet, postpone
+     sending +load as we want to execute +load from the class before
+     we execute the one from the category.  */
+  for (i = 0; i < symtab->cat_def_cnt; ++i)
+    {
+      struct objc_category *category = symtab->defs[i + symtab->cls_def_cnt];
+      Class class = objc_getClass (category->class_name);
+      
+      /* If the class for the category exists then append its
+	 methods.  */
+      if (class)
+	objc_tree_insert_class (class);
     }
 }
 
