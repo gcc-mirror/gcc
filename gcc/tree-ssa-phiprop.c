@@ -352,7 +352,7 @@ propagate_with_phi (basic_block bb, gimple phi, struct phiprop_d *phivn,
 	     want to delete it here we also have to delete all intermediate
 	     copies.  */
 	  gsi = gsi_for_stmt (use_stmt);
-	  gsi_remove (&gsi, false);
+	  gsi_remove (&gsi, true);
 
 	  phi_inserted = true;
 	}
