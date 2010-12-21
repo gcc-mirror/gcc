@@ -48,10 +48,16 @@ struct objc_static_instances
 struct objc_symtab
 {
   unsigned long sel_ref_cnt;  /* Unused (always set to 0). */
-  SEL      refs;              /* The table of selectors referenced in
+  struct objc_selector *refs; /* The table of selectors referenced in
                                  this module.  This is terminated by a
                                  selector with NULL sel_id and NULL
-                                 sel_types.  */
+                                 sel_types.  Note that we use the type
+                                 'struct objc_selector *' and not
+                                 'SEL' (which is 'const struct
+                                 objc_selector *') because the sel_id
+                                 of these selectors is patched up by
+                                 the runtime when the module is
+                                 loaded.  */
   unsigned short cls_def_cnt; /* Number of classes compiled (defined)
                                  in the module. */
   unsigned short cat_def_cnt; /* Number of categories compiled

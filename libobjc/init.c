@@ -549,7 +549,7 @@ __objc_exec_class (struct objc_module *module)
   struct objc_list **cell;
 
   /* The table of selector references for this module.  */
-  SEL selectors = symtab->refs; 
+  struct objc_selector *selectors = symtab->refs;
 
   int i;
 
@@ -585,22 +585,9 @@ __objc_exec_class (struct objc_module *module)
   objc_mutex_lock (__objc_runtime_mutex);
   __objc_module_list = list_cons (module, __objc_module_list);
 
-  /* Replace referenced selectors from names to SEL's.  */
+  /* Replace referenced selectors from names to SELs.  */
   if (selectors)
-    {
-      for (i = 0; selectors[i].sel_id; ++i)
-	{
-	  const char *name, *type;
-	  name = (char *) selectors[i].sel_id;
-	  type = (char *) selectors[i].sel_types;
-	  /* Constructors are constant static data so we can safely
-	     store pointers to them in the runtime
-	     structures. is_const == YES.  */
-	  __sel_register_typed_name (name, type, 
-				     (struct objc_selector *) &(selectors[i]),
-				     YES);
-	}
-    }
+    __objc_register_selectors_from_module (selectors);
 
   /* Parse the classes in the load module and gather selector
      information.  */

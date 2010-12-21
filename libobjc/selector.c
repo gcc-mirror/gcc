@@ -43,6 +43,11 @@ static cache_ptr      __objc_selector_hash  = 0; /* name -> uid !T:MUTEX */
 /* Number of selectors stored in each of the above tables.  */
 unsigned int __objc_selector_max_index = 0;     /* !T:MUTEX */
 
+/* Forward-declare an internal function.  */
+static SEL
+__sel_register_typed_name (const char *name, const char *types,
+			   struct objc_selector *orig, BOOL is_const);
+
 void __objc_init_selector_tables (void)
 {
   __objc_selector_array = sarray_new (SELECTOR_HASH_SIZE, 0);
@@ -52,6 +57,29 @@ void __objc_init_selector_tables (void)
 		     (hash_func_type) objc_hash_string,
 		     (compare_func_type) objc_compare_strings);
 }  
+
+/* Register a bunch of selectors from the table of selectors in a
+   module.  'selectors' should not be NULL.  The list is terminated by
+   a selectors with a NULL sel_id.  The selectors are assumed to
+   contain the 'name' in the sel_id field; this is replaced with the
+   final selector id after they are registered.  */
+void
+__objc_register_selectors_from_module (struct objc_selector *selectors)
+{
+  int i;
+
+  for (i = 0; selectors[i].sel_id; ++i)
+    {
+      const char *name, *type;
+      name = (char *) selectors[i].sel_id;
+      type = (char *) selectors[i].sel_types;
+      /* Constructors are constant static data and we can safely store
+	 pointers to them in the runtime structures, so we set
+	 is_const == YES.  */
+      __sel_register_typed_name (name, type, (struct objc_selector *) &(selectors[i]),
+				 /* is_const */ YES);
+    }
+}
 
 /* This routine is given a class and records all of the methods in its
    class structure in the record table.  */
@@ -403,11 +431,16 @@ pool_alloc_selector(void)
 /* Store the passed selector name in the selector record and return
    its selector value (value returned by sel_get_uid).  Assume that
    the calling function has locked down __objc_runtime_mutex.  The
-   is_const parameter tells us if the name and types parameters are
+   'is_const' parameter tells us if the name and types parameters are
    really constant or not.  If YES then they are constant and we can
    just store the pointers.  If NO then we need to copy name and types
-   because the pointers may disappear later on.  */
-SEL
+   because the pointers may disappear later on.  If the 'orig'
+   parameter is not NULL, then we are registering a selector from a
+   module, and 'orig' is that selector.  In this case, we can put the
+   selector in the tables if needed, and orig->sel_id is updated with
+   the selector ID of the registered selector, and 'orig' is
+   returned.  */
+static SEL
 __sel_register_typed_name (const char *name, const char *types, 
 			   struct objc_selector *orig, BOOL is_const)
 {
