@@ -1,5 +1,15 @@
 2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	PR libobjc/18764
+	* class.c (__objc_add_class_to_hash): Return YES if the class was
+	added, and NO if it already existed.
+	* init.c (__objc_init_class): If __objc_add_class_to_hash returns
+	NO, then abort the program with an error message.
+	* objc-private/runtime.h (__objc_add_class_to_hash): Updated
+	declaration.
+
+2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>	
+
 	* init.c (_objc_load_callback): Initialize with 0.
 	(__objc_call_callback): Renamed to __objc_call_load_callback.
 	Check _objc_load_callback only once, and if it is not set, return

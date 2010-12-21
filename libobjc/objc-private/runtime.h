@@ -52,17 +52,17 @@ objc/runtime.h.  */
 extern "C" {
 #endif /* __cplusplus */
 
-extern void __objc_add_class_to_hash(Class);   /* (objc-class.c) */
-extern void __objc_init_class_tables(void);    /* (objc-class.c) */
-extern void __objc_init_dispatch_tables(void); /* (objc-dispatch.c) */
-extern void __objc_install_premature_dtable(Class); /* (objc-dispatch.c) */
-extern void __objc_resolve_class_links(void);  /* (objc-class.c) */
+extern BOOL __objc_add_class_to_hash (Class);   /* (objc-class.c) */
+extern void __objc_init_class_tables (void);    /* (objc-class.c) */
+extern void __objc_init_dispatch_tables (void); /* (objc-dispatch.c) */
+extern void __objc_install_premature_dtable (Class); /* (objc-dispatch.c) */
+extern void __objc_resolve_class_links (void);  /* (objc-class.c) */
 extern void __objc_update_dispatch_table_for_class (Class);/* (objc-msg.c) */
 
-extern int  __objc_init_thread_system(void);    /* thread.c */
-extern int  __objc_fini_thread_system(void);    /* thread.c */
+extern int  __objc_init_thread_system (void);    /* thread.c */
+extern int  __objc_fini_thread_system (void);    /* thread.c */
 extern void __objc_init_class (Class class);  /* init.c */
-extern void class_add_method_list(Class, struct objc_method_list *);
+extern void class_add_method_list (Class, struct objc_method_list *);
 
 /* Registering instance methods as class methods for root classes */
 extern void __objc_register_instance_methods_to_class(Class);

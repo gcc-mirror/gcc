@@ -879,22 +879,26 @@ void
 __objc_init_class (Class class)
 {
   /* Store the class in the class table and assign class numbers.  */
-  __objc_add_class_to_hash (class);
-  
-  /* Register all of the selectors in the class and meta class.  */
-  __objc_register_selectors_from_class (class);
-  __objc_register_selectors_from_class ((Class) class->class_pointer);
-
-  /* Install the fake dispatch tables.  */
-  __objc_install_premature_dtable (class);
-  __objc_install_premature_dtable (class->class_pointer);
-
-  /* Register the instance methods as class methods, this is only done
-     for root classes.  */
-  __objc_register_instance_methods_to_class (class);
-
-  if (class->protocols)
-    __objc_init_protocols (class->protocols);
+  if (__objc_add_class_to_hash (class))
+    {
+      /* Register all of the selectors in the class and meta class.  */
+      __objc_register_selectors_from_class (class);
+      __objc_register_selectors_from_class ((Class) class->class_pointer);
+      
+      /* Install the fake dispatch tables.  */
+      __objc_install_premature_dtable (class);
+      __objc_install_premature_dtable (class->class_pointer);
+      
+      /* Register the instance methods as class methods, this is only
+	 done for root classes.  */
+      __objc_register_instance_methods_to_class (class);
+      
+      if (class->protocols)
+	__objc_init_protocols (class->protocols);
+    }
+  else
+    _objc_abort ("Module contains duplicate class '%s'\n",
+		 class->name);
 }
 
 /* __objc_init_protocol must be called with __objc_runtime_mutex
