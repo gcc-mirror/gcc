@@ -1,5 +1,18 @@
 2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-private/module-abi-8.h (struct objc_symtab): Declare 'refs'
+	to be 'struct objc_selector *' and not 'SEL'.
+	* init.c (__objc_exec_class): Call
+	__objc_register_selectors_from_module instead of iterating over
+	each selector and calling __sel_register_typed_name for each.
+	* objc-private/selector.h: Declare
+	__objc_register_selectors_from_module instead of
+	__sel_register_typed_name.
+	* selector.c (__objc_register_selectors_from_module): New.
+	(__sel_register_typed_name): Made static.
+	
+2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* linking.m: Do not include objc/NXConstStr.h.
 
 2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>

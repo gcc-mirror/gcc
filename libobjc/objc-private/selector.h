@@ -43,6 +43,7 @@ void __objc_register_selectors_from_class(Class);
 void __objc_register_selectors_from_list (struct objc_method_list *);
 void __objc_register_selectors_from_description_list
 (struct objc_method_description_list *method_list);
+void __objc_register_selectors_from_module (struct objc_selector *selectors);
 
 /* Return whether a selector is mapped or not ("mapped" meaning that
    it has been inserted into the selector table).  This is private as
@@ -56,10 +57,6 @@ BOOL sel_is_mapped (SEL aSel);
    in the most efficient way.  */
 SEL
 sel_get_any_uid (const char *name);
-
-SEL
-__sel_register_typed_name (const char *name, const char *types, 
-			   struct objc_selector *orig, BOOL is_const);
 
 #ifdef __cplusplus
 }
