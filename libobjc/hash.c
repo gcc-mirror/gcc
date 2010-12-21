@@ -26,9 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <assert.h>               /* For assert.  */
 
 #include "objc/runtime.h"         /* For objc_calloc.  */
-#include "objc/thr.h"             /* Required by objc-private/runtime.h.  */
 #include "objc-private/hash.h"
-#include "objc-private/runtime.h" /* for DEBUG_PRINTF.  */
 
 /* These two macros determine when a hash table is full and
    by how much it should be expanded respectively.

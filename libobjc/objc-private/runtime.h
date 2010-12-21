@@ -77,12 +77,6 @@ extern objc_mutex_t __objc_runtime_mutex;
 /* Number of threads which are alive. */
 extern int __objc_runtime_threads_alive;
 
-#ifdef DEBUG
-#define DEBUG_PRINTF(format, args...) printf (format, ## args)
-#else
-#define DEBUG_PRINTF(format, args...)
-#endif 
-
 BOOL __objc_responds_to (id object, SEL sel); /* for internal use only! */
 extern void __objc_generate_gc_type_description (Class);
 
