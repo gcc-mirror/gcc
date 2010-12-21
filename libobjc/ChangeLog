@@ -1,5 +1,13 @@
 2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* init.c (_objc_load_callback): Initialize with 0.
+	(__objc_call_callback): Renamed to __objc_call_load_callback.
+	Check _objc_load_callback only once, and if it is not set, return
+	immediately.
+	(objc_send_load): Updated call to __objc_call_callback.
+	
+2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	PR libobjc/16110
 	* init.c (__objc_send_message_in_list): Renamed to
 	__objc_send_load_using_method_list.  Do not take an 'op' argument.

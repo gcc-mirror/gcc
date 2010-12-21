@@ -45,7 +45,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define PROTOCOL_VERSION 2
 
 /* This list contains modules currently loaded into the runtime and
-   for which the +load method has not been called yet.  */
+   for which the +load method (and the load callback, if any) has not
+   been called yet.  */
 static struct objc_list *__objc_module_list = 0; 	/* !T:MUTEX */
 
 /* This list contains all proto_list's not yet assigned class
@@ -84,7 +85,7 @@ static void __objc_init_protocol (struct objc_protocol *protocol);
 static void __objc_class_add_protocols (Class, struct objc_protocol_list *);
 
 /* Load callback hook.  */
-void (*_objc_load_callback) (Class class, struct objc_category *category); /* !T:SAFE */
+void (*_objc_load_callback) (Class class, struct objc_category *category) = 0; /* !T:SAFE */
 
 /* Are all categories/classes resolved?  */
 BOOL __objc_dangling_categories = NO;           /* !T:UNUSED */
@@ -101,7 +102,9 @@ static void objc_send_load (void);
    been already received the +load message.  */
 static void __objc_create_classes_tree (struct objc_module *module);
 
-static void __objc_call_callback (struct objc_module *module);
+/* Calls the _objc_load_callback for each class and category in the
+   module (if _objc_load_callback is not NULL).  */
+static void __objc_call_load_callback (struct objc_module *module);
 
 /* A special version that works only before the classes are completely
    installed in the runtime.  */
@@ -754,7 +757,7 @@ objc_send_load (void)
 
       /* If we still have classes for whom we don't have yet their
          super classes known to the runtime we don't send the +load
-         messages yet.  */
+         messages (and call the load callback) yet.  */
       if (unresolved_classes)
 	return;
     }
@@ -765,7 +768,7 @@ objc_send_load (void)
     return;
 
   /* Iterate over all modules in the __objc_module_list and call on
-     them the __objc_create_classes_tree function. This function
+     them the __objc_create_classes_tree function.  This function
      creates a tree of classes that resembles the class hierarchy.  */
   list_mapcar (__objc_module_list,
 	       (void (*) (void *)) __objc_create_classes_tree);
@@ -783,7 +786,11 @@ objc_send_load (void)
       list_remove_head (&__objc_class_tree_list);
     }
 
-  list_mapcar (__objc_module_list, (void (*) (void *)) __objc_call_callback);
+  /* For each module, call the _objc_load_callback if any is
+     defined.  */
+  list_mapcar (__objc_module_list, (void (*) (void *)) __objc_call_load_callback);
+
+  /* Empty the list of modules.  */
   list_free (__objc_module_list);
   __objc_module_list = NULL;
 }
@@ -825,33 +832,34 @@ __objc_create_classes_tree (struct objc_module *module)
 }
 
 static void
-__objc_call_callback (struct objc_module *module)
+__objc_call_load_callback (struct objc_module *module)
 {
-  /* The runtime mutex is locked at this point.  */
-  struct objc_symtab *symtab = module->symtab;
-  int i;
-
-  /* Iterate thru classes defined in this module and call the callback
-     for each one.  */
-  for (i = 0; i < symtab->cls_def_cnt; i++)
+  if (_objc_load_callback)
     {
-      Class class = (Class) symtab->defs[i];
-
-      /* Call the _objc_load_callback for this class.  */
-      if (_objc_load_callback)
-	_objc_load_callback (class, 0);
-    }
-
-  /* Call the _objc_load_callback for categories. Don't register the
-     instance methods as class methods for categories to root classes
-     since they were already added in the class.  */
-  for (i = 0; i < symtab->cat_def_cnt; i++)
-    {
-      struct objc_category *category = symtab->defs[i + symtab->cls_def_cnt];
-      Class class = objc_getClass (category->class_name);
-
-      if (_objc_load_callback)
-	_objc_load_callback (class, category);
+      /* The runtime mutex is locked at this point.  */
+      struct objc_symtab *symtab = module->symtab;
+      int i;
+      
+      /* Iterate thru classes defined in this module and call the callback
+	 for each one.  */
+      for (i = 0; i < symtab->cls_def_cnt; i++)
+	{
+	  Class class = (Class) symtab->defs[i];
+	  
+	  /* Call the _objc_load_callback for this class.  */
+	  _objc_load_callback (class, 0);
+	}
+      
+      /* Call the _objc_load_callback for categories.  Don't register
+	 the instance methods as class methods for categories to root
+	 classes since they were already added in the class.  */
+      for (i = 0; i < symtab->cat_def_cnt; i++)
+	{
+	  struct objc_category *category = symtab->defs[i + symtab->cls_def_cnt];
+	  Class class = objc_getClass (category->class_name);
+	  
+	  _objc_load_callback (class, category);
+	}
     }
 }
 
