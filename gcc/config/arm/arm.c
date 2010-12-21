@@ -5125,7 +5125,7 @@ require_pic_register (void)
 	}
       else
 	{
-	  rtx seq;
+	  rtx seq, insn;
 
 	  if (!cfun->machine->pic_reg)
 	    cfun->machine->pic_reg = gen_reg_rtx (Pmode);
@@ -5142,6 +5142,11 @@ require_pic_register (void)
 
 	      seq = get_insns ();
 	      end_sequence ();
+
+	      for (insn = seq; insn; insn = NEXT_INSN (insn))
+		if (INSN_P (insn))
+		  INSN_LOCATOR (insn) = prologue_locator;
+
 	      /* We can be called during expansion of PHI nodes, where
 	         we can't yet emit instructions directly in the final
 		 insn stream.  Queue the insns on the entry edge, they will
