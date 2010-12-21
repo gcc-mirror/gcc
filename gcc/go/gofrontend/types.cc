@@ -3698,6 +3698,8 @@ Struct_type::is_unexported_local_field(Gogo* gogo,
 void
 Struct_type::finalize_methods(Gogo* gogo)
 {
+  if (this->all_methods_ != NULL)
+    return;
   Type::finalize_methods(gogo, this, this->location_, &this->all_methods_);
 }
 
@@ -6615,6 +6617,9 @@ Named_type::is_unexported_local_method(Gogo* gogo,
 void
 Named_type::finalize_methods(Gogo* gogo)
 {
+  if (this->all_methods_ != NULL)
+    return;
+
   if (this->local_methods_ != NULL
       && (this->points_to() != NULL || this->interface_type() != NULL))
     {
