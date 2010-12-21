@@ -1,3 +1,9 @@
+2010-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/46880
+	* config/i386/sse.md (sse2_loadlpd, sse2_movsd): Fix shufpd source
+	operand.
+
 2010-12-21  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/47001
