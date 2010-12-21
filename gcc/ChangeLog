@@ -1,3 +1,52 @@
+2010-12-21  Steven Bosscher  <steven@gcc.gnu.org>
+
+	De-hookize profile infrastructure.
+	* value-prof.c (value_prof_hooks): Remove.
+	(struct value_prof_hooks): Remove.
+	(gimple_value_prof_hooks): Remove.
+	(gimple_register_value_prof_hooks): Remove.
+	(find_values_to_profile): Remove.
+	(value_profile_transformations): Remove.
+	(gimple_value_profile_transformations): No longer static.
+	(gimple_find_values_to_profile): Likewise.
+	* value-prof.h (gimple_register_value_prof_hooks): Remove prototype.
+	(find_values_to_profile): Likewise.
+	(value_profile_transformations): Likewise.
+	(tree_register_profile_hooks): Likewise.
+	(struct profile_hooks): Remove.
+	(tree_profile_hooks): Remove.
+	(gimple_find_values_to_profile): New protoype.
+	(gimple_value_profile_transformations): Likewise.
+	(gimple_init_edge_profiler): Likewise.
+	(gimple_gen_edge_profiler): Likewise.
+	(gimple_gen_interval_profiler): Likewise.
+	(gimple_gen_pow2_profiler): Likewise.
+	(gimple_gen_one_value_profiler): Likewise.
+	(gimple_gen_ic_profiler): Likewise.
+	(gimple_gen_ic_func_profiler): Likewise.
+	(gimple_gen_const_delta_profiler): Likewise.
+	(gimple_gen_average_profiler): Likewise.
+	(gimple_gen_ior_profiler): Likewise.
+	* profile.c (profile_hooks): Remove.
+	(instrument_edges): Call profiling functions directly instead
+	of through removed profile_hooks.
+	(instrument_values): Likewise.
+	(branch_prob): Call gimple_find_values_to_profile instead of
+	removed find_values_to_profile.
+	Call gimple_init_edge_profiler instead of removed hook.
+	(tree_register_profile_hooks): Remove.
+	* tree-profile.c (tree_init_ic_make_global_vars): Rename to
+	init_ic_make_global_vars.
+	(tree_init_edge_profiler): Rename to gimple_init_edge_profiler
+	and no longer static.
+	(tree_gen_edge_profiler, tree_gen_interval_profiler,
+	tree_gen_pow2_profiler, tree_gen_one_value_profiler,
+	tree_gen_ic_profiler, tree_gen_ic_func_profiler,
+	tree_gen_const_delta_profiler, tree_gen_average_profiler,
+	tree_gen_ior_profiler): Similarly renamed and no longer static.
+	(tree_profiling): Do not initialize tree profiling hooks.
+	(tree_profile_hooks): Remove.
+
 2010-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/46880

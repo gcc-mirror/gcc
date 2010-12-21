@@ -47,8 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "pointer-set.h"
 
-static struct value_prof_hooks *value_prof_hooks;
-
 /* In this file value profile based optimizations are placed.  Currently the
    following optimizations are implemented (for more detailed descriptions
    see comments at value_profile_transformations):
@@ -488,7 +486,7 @@ check_counter (gimple stmt, const char * name,
 
 /* GIMPLE based transformations. */
 
-static bool
+bool
 gimple_value_profile_transformations (void)
 {
   basic_block bb;
@@ -1545,14 +1543,6 @@ stringop_block_profile (gimple stmt, unsigned int *expected_align,
     }
 }
 
-struct value_prof_hooks {
-  /* Find list of values for which we want to measure histograms.  */
-  void (*find_values_to_profile) (histogram_values *);
-
-  /* Identify and exploit properties of values that are hard to analyze
-     statically.  See value-prof.c for more detail.  */
-  bool (*value_profile_transformations) (void);
-};
 
 /* Find values inside STMT for that we want to measure histograms for
    division/modulo optimization.  */
@@ -1686,7 +1676,7 @@ gimple_values_to_profile (gimple stmt, histogram_values *values)
     }
 }
 
-static void
+void
 gimple_find_values_to_profile (histogram_values *values)
 {
   basic_block bb;
@@ -1743,28 +1733,3 @@ gimple_find_values_to_profile (histogram_values *values)
     }
 }
 
-static struct value_prof_hooks gimple_value_prof_hooks = {
-  gimple_find_values_to_profile,
-  gimple_value_profile_transformations
-};
-
-void
-gimple_register_value_prof_hooks (void)
-{
-  gcc_assert (current_ir_type () == IR_GIMPLE);
-  value_prof_hooks = &gimple_value_prof_hooks;
-}
-
-/* IR-independent entry points.  */
-void
-find_values_to_profile (histogram_values *values)
-{
-  (value_prof_hooks->find_values_to_profile) (values);
-}
-
-bool
-value_profile_transformations (void)
-{
-  return (value_prof_hooks->value_profile_transformations) ();
-}
-
