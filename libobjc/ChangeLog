@@ -1,4 +1,10 @@
 2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+	
+	* objc-private/runtime.h (DEBUG_PRINTF): Moved from here ...
+	* objc-private/common.h (DEBUG_PRINTF): To here.
+	* hash.c: Do not include objc-private/runtime.h and objc/thr.h.
+	
+2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* hash.c: Tidied up comments and indentation.  No code changes.
 
