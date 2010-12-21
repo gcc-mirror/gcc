@@ -1,3 +1,9 @@
+2010-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/45852
+	* expr.c (store_expr): Ignore alt_rtl if equal to target,
+	but has side-effects.
+
 2010-12-21  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/sh/sh.h (PREFERRED_RELOAD_CLASS): Remove.
