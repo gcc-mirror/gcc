@@ -1,5 +1,5 @@
-# Mensajes en español para gcc-4.6-b20101113.
-# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+# Mensajes en español para gcc-4.6-b20101218.
+# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Cristian Othón Martínez Vera <cfuga@itam.mx>, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 #
@@ -7,10 +7,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.6-b20101113\n"
+"Project-Id-Version: gcc 4.6-b20101218\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-12-18 20:02+0000\n"
-"PO-Revision-Date: 2010-11-23 16:51-0600\n"
+"PO-Revision-Date: 2010-12-21 07:58-0600\n"
 "Last-Translator: Cristian Othón Martínez Vera <cfuga@itam.mx>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -1125,14 +1125,14 @@ msgid "const/copy propagation disabled"
 msgstr "propagación const/copy desactivada"
 
 #: gengtype-state.c:150
-#, fuzzy, c-format
+#, c-format
 msgid "%s:%d:%d: Invalid state file; %s"
-msgstr "%s:%d:%d:   instanciado desde %qs\n"
+msgstr "%s:%d:%d: Fichero de estado inválido; %s"
 
 #: gengtype-state.c:154
-#, fuzzy, c-format
+#, c-format
 msgid "%s:%d: Invalid state file; %s"
-msgstr "%s: nombre de fichero inválido: %s\n"
+msgstr "%s:%d: Fichero de estado inválido; %s"
 
 #. Fatal printf-like message while reading state.  This can't be a
 #. function, because there is no way to pass a va_arg to a variant of
@@ -1140,67 +1140,67 @@ msgstr "%s: nombre de fichero inválido: %s\n"
 #: gengtype-state.c:165
 #, c-format
 msgid "%s:%d:%d: Invalid state file; "
-msgstr ""
+msgstr "%s:%d:%d: Fichero de estado inválido; "
 
 #: gengtype-state.c:170
-#, fuzzy, c-format
+#, c-format
 msgid "%s:%d: Invalid state file; "
-msgstr "%s: nombre de fichero inválido: %s\n"
+msgstr "%s:%d: Fichero de estad inválido; "
 
 #: gengtype-state.c:695
 #, c-format
 msgid "Option tag unknown"
-msgstr ""
+msgstr "Etiqueta de opción desconocida"
 
 #: gengtype-state.c:750
-#, fuzzy, c-format
+#, c-format
 msgid "Unexpected type in write_state_scalar_type"
-msgstr "Tipo inesperado en truthvalue_conversion"
+msgstr "Tipo inesperado en write_state_scalar_type"
 
 #: gengtype-state.c:765
-#, fuzzy, c-format
+#, c-format
 msgid "Unexpected type in write_state_string_type"
-msgstr "tipo-base inesperado en cris_print_base"
+msgstr "Tipo inesperado en write_state_string_type"
 
 #: gengtype-state.c:969
-#, fuzzy, c-format
+#, c-format
 msgid "Unexpected type..."
-msgstr "se esperaba un nombre de tipo"
+msgstr "Tipo inesperado..."
 
 #: gengtype-state.c:1149
-#, fuzzy, c-format
+#, c-format
 msgid "failed to write state trailer [%s]"
-msgstr "no se puede escribir en el fichero temporal %s"
+msgstr "no se puede escribir el estado remanente [%s]"
 
 #: gengtype-state.c:1175
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to open file %s for writing state: %s"
-msgstr "No se puede abrir el fichero de módulo '%s' para escritura en %C: %s"
+msgstr "No se puede abrir el fichero %s para escribir el estado: %s"
 
 #: gengtype-state.c:1207
-#, fuzzy, c-format
+#, c-format
 msgid "output error when writing state file %s [%s]"
-msgstr "%s: error al escribir al fichero '%s': %s\n"
+msgstr "error de salida al escribir el fichero de estado %s [%s]"
 
 #: gengtype-state.c:1210
-#, fuzzy, c-format
+#, c-format
 msgid "failed to close state file %s [%s]"
-msgstr "%s: No se puede cerrar el fichero de salida %s\n"
+msgstr "no se puede cerrar el fichero de estado %s [%s]"
 
 #: gengtype-state.c:1213
-#, fuzzy, c-format
+#, c-format
 msgid "failed to rename %s to state file %s [%s]"
-msgstr "%s: se intentó renombrar la especificación %qs a la especificación %qs que ya estaba definida"
+msgstr "no se puede renombrar %s al fichero de estado %s [%s]"
 
 #: gengtype-state.c:2395
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to open state file %s for reading [%s]"
-msgstr "%s: no se puede abrir el fichero '%s' para lectura: %s\n"
+msgstr "No se puede abrir el fichero de estado %s para lectura [%s]"
 
 #: gengtype-state.c:2433
-#, fuzzy, c-format
+#, c-format
 msgid "failed to close read state file %s [%s]"
-msgstr "%s: No se puede cerrar el fichero de salida %s\n"
+msgstr "no se puede cerrar la lectura del fichero de salida %s [%s]"
 
 #: incpath.c:76
 #, c-format
@@ -1361,7 +1361,7 @@ msgstr "Esta opción carece de documentación"
 
 #: opts.c:1004
 msgid "[default]"
-msgstr ""
+msgstr "[por defecto]"
 
 #: opts.c:1015
 msgid "[enabled]"
@@ -2201,9 +2201,8 @@ msgid "Size of minimal paritition for WHOPR (in estimated instructions)"
 msgstr "Tamaño de la partición mínima para WHOPR (en instrucciones estimadas)"
 
 #: params.def:863
-#, fuzzy
 msgid "Maximum number of namespaces to search for alternatives when name lookup fails"
-msgstr "Número máximo de nops a insertar para una pista (Por defecto 2)"
+msgstr "Número máximo de espacios de nombres a buscar por alternativas cuando falla la búsqueda de nombre"
 
 #: c-family/c-format.c:368
 msgid "format"
@@ -3793,11 +3792,11 @@ msgid "candidates are:"
 msgstr "los candidatos son:"
 
 #: cp/pt.c:16515 cp/call.c:3072
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "candidate is:"
 msgid_plural "candidates are:"
 msgstr[0] "el candidato es:"
-msgstr[1] "el candidato es:"
+msgstr[1] "los candidatos son:"
 
 #: cp/rtti.c:536
 msgid "target is not pointer or reference to class"
@@ -4300,7 +4299,7 @@ msgstr "Longitudes de CHARACTER diferentes (%ld/%ld) en el constructor de matriz
 
 #: fortran/trans-array.c:4303
 msgid "Integer overflow when calculating the amount of memory to allocate"
-msgstr ""
+msgstr "Desborde entero al calcular la cantidad de memoria a reservar"
 
 #: fortran/trans-decl.c:4120
 #, c-format
@@ -4370,7 +4369,7 @@ msgstr "Falló la asignación de memoria"
 
 #: fortran/trans.c:639 fortran/trans.c:1039
 msgid "Allocation would exceed memory limit"
-msgstr ""
+msgstr "La asignación excedería el límite de memoria"
 
 #: fortran/trans.c:729
 #, c-format
@@ -4657,11 +4656,11 @@ msgstr "Objective C de GNU ya no admite compilación tradicional"
 
 #: objc/lang-specs.h:56
 msgid "objc-cpp-output is deprecated; please use objective-c-cpp-output instead"
-msgstr ""
+msgstr "objc-cpp-output es obsoleto; por favor use en su lugar objective-c-cpp-output"
 
 #: objcp/lang-specs.h:58
 msgid "objc++-cpp-output is deprecated; please use objective-c++-cpp-output instead"
-msgstr ""
+msgstr "objc++-cpp-output es obsoleto; pr favor use en su lugar objective-c++-cpp-output"
 
 #: config/i386/nwld.h:34
 msgid "static linking is not supported"
@@ -5099,7 +5098,7 @@ msgstr "Permite la revisión de rango durante la compilación"
 
 #: fortran/lang.opt:479
 msgid "Reallocate the LHS in assignments"
-msgstr ""
+msgstr "Reubica el lado derecho en las asignaciones"
 
 #: fortran/lang.opt:483
 msgid "Use a 4-byte record marker for unformatted files"
@@ -9608,18 +9607,16 @@ msgid "Do not predefine system-specific and GCC-specific macros"
 msgstr "No predefine las macros específicas del sistema y específicas de GCC"
 
 #: go/lang.opt:42
-#, fuzzy
 msgid "-fgo-dump-<type>\tDump Go frontend internal information"
-msgstr "-fdump-<tipo>\tVuelca varios internos del compilador a un fichero"
+msgstr "-fgo-dump-<tipo>\tInformación interna del frente Dump Go"
 
 #: go/lang.opt:46
 msgid "-fgo-prefix=<string>\tSet package-specific prefix for exported Go names"
-msgstr ""
+msgstr "-fgo-prefix=<cadena>\tDefine el prefijo específico del paquete para ombres Go exportados"
 
 #: go/lang.opt:50
-#, fuzzy
 msgid "Functions which return values must end with return statements"
-msgstr "la función declarada %<noreturn%> tiene una declaración %<return%>"
+msgstr "Las funciones con valores de devolución deben terminar con declaraciones return"
 
 #: lto/lang.opt:29
 msgid "Run the link-time optimizer in local transformation (LTRANS) mode."
@@ -10007,7 +10004,7 @@ msgstr "-fdump-final-insns=fichero\tVuelca al fichero las insns al final de la t
 
 #: common.opt:948
 msgid "-fdump-go-spec=filename\tWrite all declarations to file as Go code"
-msgstr ""
+msgstr "-fdump-go-spec=fichero\tEscribe todas las declaraciones al fichero como código Go"
 
 #: common.opt:952
 msgid "Suppress output of addresses in debugging dumps"
@@ -10062,9 +10059,9 @@ msgid "-fexcess-precision=[fast|standard]\tSpecify handling of excess floating-p
 msgstr "-fexcess-precision=[fast|standard]\tEspecifica el manejo del exceso de precisión de coma flotante"
 
 #: common.opt:1007
-#, fuzzy, c-format
+#, c-format
 msgid "unknown excess precision style %qs"
-msgstr "estilo de exceso de precisión \"%s\" desconocido"
+msgstr "estilo de exceso de precisión %qs desconocido"
 
 #: common.opt:1020
 msgid "Assume no NaNs or infinities are generated"
@@ -10087,9 +10084,9 @@ msgid "-ffp-contract=[off|on|fast] Perform floating-point expression contraction
 msgstr "-ffp-contract=[off|on|fast] Realiza contracción de expresión de coma flotante."
 
 #: common.opt:1043
-#, fuzzy, c-format
+#, c-format
 msgid "unknown floating point contraction style %qs"
-msgstr "estilo de contracción de coma flotante \"%s\" desconocido"
+msgstr "estilo de contracción de coma flotante %qs desconocido"
 
 #: common.opt:1060
 msgid "Allow function addresses to be held in registers"
@@ -10252,18 +10249,18 @@ msgid "-fira-algorithm=[CB|priority] Set the used IRA algorithm"
 msgstr "-fira-algorithm=[CB|priority] Establece el algoritmo IRA a usar"
 
 #: common.opt:1240
-#, fuzzy, c-format
+#, c-format
 msgid "unknown IRA algorithm %qs"
-msgstr "algoritmo ira \"%s\" desconocido"
+msgstr "algoritmo IRA %qs desconocido"
 
 #: common.opt:1250
 msgid "-fira-region=[one|all|mixed] Set regions for IRA"
 msgstr "-fira-region=[one|all|mixed] Establece las regiones para IRA"
 
 #: common.opt:1253
-#, fuzzy, c-format
+#, c-format
 msgid "unknown IRA region %qs"
-msgstr "región ira \"%s\" desconocido"
+msgstr "región IRA %qs desconocida"
 
 #: common.opt:1266
 msgid "Use IRA based register pressure calculation"
@@ -10742,9 +10739,9 @@ msgid "-ftls-model=[global-dynamic|local-dynamic|initial-exec|local-exec]\tSet t
 msgstr "-ftls-model=[global-dynamic|local-dynamic|initial-exec|local-exec]\tEstablece el modelo de generación de código por defecto para almacenamiento thread-local"
 
 #: common.opt:1796
-#, fuzzy, c-format
+#, c-format
 msgid "unknown TLS model %qs"
-msgstr "tls-model \"%s\" desconocido"
+msgstr "modelo TLS %qs desconocido"
 
 #: common.opt:1812
 msgid "Reorder top level functions, variables, and asms"
@@ -10959,9 +10956,9 @@ msgid "-fvisibility=[default|internal|hidden|protected]\tSet the default symbol 
 msgstr "-fvisibility=[default|internal|hidden|protected]\tEstablece la visibilidad de símbolos por defecto"
 
 #: common.opt:2066
-#, fuzzy, c-format
+#, c-format
 msgid "unrecognized visibility value %qs"
-msgstr "no se reconoce el valor de visibilidad \"%s\""
+msgstr "no se reconoce el valor de visibilidad %qs"
 
 #: common.opt:2082
 msgid "Use expression value profiles in optimizations"
@@ -11081,394 +11078,340 @@ msgid "Create a position independent executable"
 msgstr "Genera un ejecutable independiente de posición"
 
 #: go/gofrontend/expressions.cc:876
-#, fuzzy
 msgid "invalid use of type"
-msgstr "uso inválido de %qD"
+msgstr "uso inválido del tipo"
 
 #: go/gofrontend/expressions.cc:1974 go/gofrontend/expressions.cc:2628
-#, fuzzy
 msgid "floating point constant truncated to integer"
-msgstr "se truncó la constante de coma flotante a cero"
+msgstr "se truncó la constante de coma flotante a entero"
 
 #: go/gofrontend/expressions.cc:2533 go/gofrontend/expressions.cc:2606
-#, fuzzy
 msgid "constant refers to itself"
-msgstr "el puntero inlined_to se refiere a sí mismo"
+msgstr "la constante se refiere a sí misma"
 
 #: go/gofrontend/expressions.cc:3962
-#, fuzzy
 msgid "expected numeric type"
-msgstr "se esperaba %<decltype%>"
+msgstr "se esperaba un tipo numérico"
 
 #: go/gofrontend/expressions.cc:3969
-#, fuzzy
 msgid "expected integer or boolean type"
-msgstr "se esperaba una expresión entera"
+msgstr "se esperaba un tipo entero o booleano"
 
 #: go/gofrontend/expressions.cc:3974
-#, fuzzy
 msgid "invalid operand for unary %<&%>"
-msgstr "operando inválido para %%R"
+msgstr "operando inválido para el unario %<&%>"
 
 #: go/gofrontend/expressions.cc:3982
-#, fuzzy
 msgid "expected pointer"
-msgstr "Se esperaba un entero"
+msgstr "se esperaba un puntero"
 
 #: go/gofrontend/expressions.cc:5608 go/gofrontend/expressions.cc:5624
-#, fuzzy
 msgid "incompatible types in binary expression"
-msgstr "modos incompatibles en la concatenación de expresiones"
+msgstr "tipos incompatibles en la expresión binaria"
 
 #: go/gofrontend/expressions.cc:5637
-#, fuzzy
 msgid "shift of non-integer operand"
-msgstr "el tamaño de la matriz %qE es de un tipo no entero"
+msgstr "desplazamiento de un operando que no es entero"
 
 #: go/gofrontend/expressions.cc:5642
-#, fuzzy
 msgid "shift count not unsigned integer"
-msgstr "la cantidad de switch no es un entero"
+msgstr "la cuenta de desplazamiento no es un entero sin signo"
 
 #: go/gofrontend/expressions.cc:5651
-#, fuzzy
 msgid "negative shift count"
-msgstr "longitud de insn negativa"
+msgstr "cuenta de desplazamiento negativa"
 
 #: go/gofrontend/expressions.cc:6299
-#, fuzzy
 msgid "object is not a method"
-msgstr "falta un objeto en la llamada al método `%D'"
+msgstr "el objeto no es un método"
 
 #: go/gofrontend/expressions.cc:6308
-#, fuzzy
 msgid "method type does not match object type"
-msgstr "el argumento de tipo %qT no coincide con %qT"
+msgstr "el tipo de método no coincide con el tipo de objeto"
 
 #: go/gofrontend/expressions.cc:6552 go/gofrontend/expressions.cc:6571
 #: go/gofrontend/expressions.cc:7192 go/gofrontend/expressions.cc:7331
 #: go/gofrontend/expressions.cc:7374 go/gofrontend/expressions.cc:7409
 #: go/gofrontend/expressions.cc:8468 go/gofrontend/expressions.cc:8489
-#, fuzzy
 msgid "not enough arguments"
-msgstr "sin argumentos"
+msgstr "faltan argumentos"
 
 #: go/gofrontend/expressions.cc:6554 go/gofrontend/expressions.cc:7197
 #: go/gofrontend/expressions.cc:7314 go/gofrontend/expressions.cc:7336
 #: go/gofrontend/expressions.cc:7411 go/gofrontend/expressions.cc:8157
 #: go/gofrontend/expressions.cc:8471 go/gofrontend/expressions.cc:8482
-#, fuzzy
 msgid "too many arguments"
-msgstr "demasiados argumentos para %qE"
+msgstr "demasiados argumentos"
 
 #: go/gofrontend/expressions.cc:7239
-#, fuzzy
 msgid "argument must be array or slice or channel"
-msgstr "el argumento debe ser una constante"
+msgstr "el argumento debe ser matriz o rebanada o canal"
 
 #: go/gofrontend/expressions.cc:7249
-#, fuzzy
 msgid "argument must be string or array or slice or map or channel"
-msgstr "el argumento de UPPER debe ser cadena, matriz, modo o entero"
+msgstr "el argumento debe ser cadena o matriz o rebanada o mapa o canal"
 
 #: go/gofrontend/expressions.cc:7290
-#, fuzzy
 msgid "unsupported argument type to builtin function"
-msgstr "argumento inválido para la función interna"
+msgstr "no se admite el tipo de argumento para la función interna"
 
 #: go/gofrontend/expressions.cc:7302
-#, fuzzy
 msgid "argument must be channel"
-msgstr "el argumento debe ser una constante"
+msgstr "el argumento debe ser canal"
 
 #: go/gofrontend/expressions.cc:7322
-#, fuzzy
 msgid "argument must be a field reference"
-msgstr "el argumento %d debe ser referenciable"
+msgstr "el argumento debe ser una referencia de campo"
 
 #: go/gofrontend/expressions.cc:7349
-#, fuzzy
 msgid "left argument must be a slice"
-msgstr "el último argumento debe ser un inmediato"
+msgstr "el argumento izquierdo debe ser una rebanada"
 
 #: go/gofrontend/expressions.cc:7360
-#, fuzzy
 msgid "right argument must be a slice or a string"
-msgstr "el argumento debe ser una constante"
+msgstr "el argumento derecho debe ser una rebanada o una cadena"
 
 #: go/gofrontend/expressions.cc:7365
 msgid "element types must be the same"
-msgstr ""
+msgstr "los tipos de elemento deben ser el mismo"
 
 #: go/gofrontend/expressions.cc:7384
-#, fuzzy
 msgid "arguments 1 and 2 have different types"
-msgstr "Permite que los argumentos del operador '?' tengan tipos diferentes"
+msgstr "los argumentos 1 y 2 tienen tipos diferentes"
 
 #: go/gofrontend/expressions.cc:7401
-#, fuzzy
 msgid "argument must have complex type"
-msgstr "el parámetro %u tiene tipo incompleto"
+msgstr "el argumento debe tener tipo complejo"
 
 #: go/gofrontend/expressions.cc:7419
-#, fuzzy
 msgid "cmplx arguments must have identical types"
-msgstr "el último argumento debe ser un inmediato"
+msgstr "los argumentos cmplx deben tener tipos idénticos"
 
 #: go/gofrontend/expressions.cc:7421
-#, fuzzy
 msgid "cmplx arguments must have floating-point type"
-msgstr "No usa coma flotante de hardware"
+msgstr "los argumentos cmplx deben tener tipo de coma flotante"
 
 #: go/gofrontend/expressions.cc:8425
-#, fuzzy
 msgid "expected function"
-msgstr "se esperaba una declaración"
+msgstr "se esperaba función"
 
 #: go/gofrontend/expressions.cc:8436
 msgid "method call without object"
-msgstr ""
+msgstr "llamada a método sin objeto"
 
 #: go/gofrontend/expressions.cc:8449
-#, fuzzy
 msgid "incompatible type for receiver"
-msgstr "tipos incompatibles en la devolución"
+msgstr "tipo incompatible para el receptor"
 
 #: go/gofrontend/expressions.cc:8827
-#, fuzzy
 msgid "number of results does not match number of values"
-msgstr "el número de selectores CASE no coincide con el número de las listas de etiquetas CASE"
+msgstr "el número de resultados no coincide con el número de valores"
 
 #: go/gofrontend/expressions.cc:9071 go/gofrontend/expressions.cc:9443
-#, fuzzy
 msgid "index must be integer"
-msgstr "El puntero Cray en %C debe ser un entero"
+msgstr "el índice debe ser entero"
 
 #: go/gofrontend/expressions.cc:9075 go/gofrontend/expressions.cc:9447
-#, fuzzy
 msgid "slice end must be integer"
-msgstr "el número de copia de PROCESS debe ser entero"
+msgstr "el final de la rebanada debe ser entero"
 
 #: go/gofrontend/expressions.cc:9126
 msgid "array is not addressable"
 msgstr "la matriz no es direccionable"
 
 #: go/gofrontend/expressions.cc:9654
-#, fuzzy
 msgid "incompatible type for map index"
-msgstr "tipos incompatibles en la devolución"
+msgstr "tipo incompatibles para el índice de mapa"
 
 #: go/gofrontend/expressions.cc:9933
 msgid "expected interface or pointer to interface"
-msgstr ""
+msgstr "se esperaba interfaz o puntero a interfaz"
 
 #: go/gofrontend/expressions.cc:10231
-#, fuzzy
 msgid "invalid new of function type"
-msgstr "conversión inválida al tipo de función %qT"
+msgstr "new inválido de tipo de función"
 
 #: go/gofrontend/expressions.cc:10332
-#, fuzzy
 msgid "invalid type for make function"
-msgstr "estado const pure inválido para la función"
+msgstr "tipo inválido para la función make"
 
 #: go/gofrontend/expressions.cc:10487
-#, fuzzy
 msgid "too many expressions for struct"
-msgstr "demasiados argumentos para el formato"
+msgstr "demasiadas expresiones para struct"
 
 #: go/gofrontend/expressions.cc:10500
-#, fuzzy
 msgid "too few expressions for struct"
-msgstr "faltan argumentos para el formato"
+msgstr "faltan expresiones para struct"
 
 #: go/gofrontend/expressions.cc:10764
 msgid "too many elements in composite literal"
-msgstr ""
+msgstr "demasiados elementos en la literal compuesta"
 
 #: go/gofrontend/expressions.cc:11828 go/gofrontend/expressions.cc:11836
-#, fuzzy
 msgid "invalid unsafe.Pointer conversion"
-msgstr "tipos inválidos en la conversión de coma fija"
+msgstr "conversión unsafe.Pointer inválida"
 
 #: go/gofrontend/expressions.cc:11841 go/gofrontend/statements.cc:1312
-#, fuzzy
 msgid "type assertion only valid for interface types"
-msgstr "Tipo de interfaz inválido"
+msgstr "la aserción de tipo sólo es válida para los tipos de interfaz"
 
 #: go/gofrontend/expressions.cc:11853
 msgid "impossible type assertion: type does not implement interface"
-msgstr ""
+msgstr "aserción de tipo imposible: el tipo no implementa interfaz"
 
 #: go/gofrontend/expressions.cc:12009 go/gofrontend/statements.cc:1163
-#, fuzzy
 msgid "expected channel"
-msgstr "se esperaba un nombre de clase"
+msgstr "se esperaba canal"
 
 #: go/gofrontend/expressions.cc:12014 go/gofrontend/statements.cc:1168
 msgid "invalid receive on send-only channel"
-msgstr ""
+msgstr "recepción inválida en canal de sólo envío"
 
 #: go/gofrontend/expressions.cc:12101
-#, fuzzy
 msgid "incompatible types in send"
-msgstr "tipos incompatibles en la devolución"
+msgstr "tipos incompatibles en send"
 
 #: go/gofrontend/expressions.cc:12106
-#, fuzzy
 msgid "invalid send on receive-only channel"
-msgstr "operando inválido en la referencia indirecta"
+msgstr "envío inválido en canal de sólo recepción"
 
 #: go/gofrontend/statements.cc:488
-#, fuzzy
 msgid "invalid left hand side of assignment"
-msgstr "La parte izquierda de la asignación es inválida"
+msgstr "lado izquierdo de la asignación inválido"
 
 #: go/gofrontend/statements.cc:897
 msgid "expected map index on right hand side"
-msgstr ""
+msgstr "se esperaba un índice de mapa en el lado derecho"
 
 #: go/gofrontend/statements.cc:1041
-#, fuzzy
 msgid "expected map index on left hand side"
-msgstr "se esperaba fin de línea"
+msgstr "se esperaba un índice de mapa en el lado izquierdo"
 
 #: go/gofrontend/statements.cc:1765
 msgid "no object for method call"
-msgstr ""
+msgstr "no hay objeto para la llamada a método"
 
 #: go/gofrontend/statements.cc:2518
-#, fuzzy
 msgid "return with value in function with no return type"
-msgstr "declaración de devolución con un valor, en una función declarada con un tipo de devolución void"
+msgstr "devolución con valor en una función sin tipo de devolución"
 
 #: go/gofrontend/statements.cc:2531
-#, fuzzy
 msgid "too many values in return statement"
-msgstr "operando inválido en la declaración return"
+msgstr "demasiados valores en la declaración de devolución"
 
 #: go/gofrontend/statements.cc:2560
-#, fuzzy
 msgid "not enough values in return statement"
-msgstr "operando inválido en la declaración return"
+msgstr "faltan valores en la declaración de devolución"
 
 #: go/gofrontend/statements.cc:2932
-#, fuzzy
 msgid "expected boolean expression"
-msgstr "se esperaba una expresión"
+msgstr "se esperaba una expresión booleana"
 
 #: go/gofrontend/statements.cc:4517
 msgid "too many variables for range clause with channel"
-msgstr ""
+msgstr "demasiadas variables para la cláusula de rango con canal"
 
 #: go/gofrontend/statements.cc:4524
 msgid "range clause must have array, slice, setring, map, or channel type"
-msgstr ""
+msgstr "la cláusula de rango debe tener tipo matriz, rebanada, setring, mapa o canal"
 
 #: go/gofrontend/types.cc:559
-#, fuzzy
 msgid "need explicit conversion"
-msgstr "Avisa sobre la mayoría de las conversiones implícitas"
+msgstr "necesita conversión implícita"
 
 #: go/gofrontend/types.cc:561
 msgid "multiple value function call in single value context"
-msgstr ""
+msgstr "llamada a función de valor múltiple en un contexto de un solo valor"
 
 #: go/gofrontend/types.cc:569
-#, fuzzy, c-format
+#, c-format
 msgid "cannot use type %s as type %s"
-msgstr "no se puede convertir el tipo %qT al tipo %qT"
+msgstr "no se puede usar el tipo %s como tipo %s"
 
 #: go/gofrontend/types.cc:2432
-#, fuzzy
 msgid "different receiver types"
-msgstr "tipo diferente"
+msgstr "tipos de receptor diferentes"
 
 #: go/gofrontend/types.cc:2452 go/gofrontend/types.cc:2465
 #: go/gofrontend/types.cc:2480
-#, fuzzy
 msgid "different number of parameters"
-msgstr "número máximo de parámetros en un SCoP"
+msgstr "número diferente de parámetros"
 
 #: go/gofrontend/types.cc:2473
-#, fuzzy
 msgid "different parameter types"
-msgstr "tipo diferente"
+msgstr "tipos de parámetro diferentes"
 
 #: go/gofrontend/types.cc:2488
-#, fuzzy
 msgid "different varargs"
-msgstr "tipo diferente"
+msgstr "varargs diferentes"
 
 #: go/gofrontend/types.cc:2497 go/gofrontend/types.cc:2510
 #: go/gofrontend/types.cc:2525
 msgid "different number of results"
-msgstr ""
+msgstr "número diferente de resultados"
 
 #: go/gofrontend/types.cc:2518
-#, fuzzy
 msgid "different result types"
-msgstr "tipo diferente"
+msgstr "tipos de resultado diferentes"
 
 #: go/gofrontend/types.cc:3500
 #, c-format
 msgid "implicit assignment of %s%s%s hidden field %s%s%s"
-msgstr ""
+msgstr "asignación implícita de %s%s%s campo oculto %s%s%s"
 
 #: go/gofrontend/types.cc:4313
 msgid "bad length when making slice"
-msgstr ""
+msgstr "longitud errónea al crear la rebanada"
 
 #: go/gofrontend/types.cc:4319
 msgid "bad capacity when making slice"
-msgstr ""
+msgstr "capacidad errónea al crear la rebanada"
 
 #: go/gofrontend/types.cc:4981
 msgid "bad size when making map"
-msgstr ""
+msgstr "tamaño erróneo al crear el mapa"
 
 #: go/gofrontend/types.cc:5266
 msgid "bad buffer size when making channel"
-msgstr ""
+msgstr "tamaño de almacenamiento temporal erróneo al crear el canal"
 
 #: go/gofrontend/types.cc:5714
 #, c-format
 msgid "need explicit conversion; missing method %s%s%s"
-msgstr ""
+msgstr "se necesita conversión explícita; falta el método %s%s%s"
 
 #: go/gofrontend/types.cc:5731 go/gofrontend/types.cc:5866
-#, fuzzy, c-format
+#, c-format
 msgid "incompatible type for method %s%s%s"
-msgstr "tipo incompatible para el argumento %d de %qE"
+msgstr "tipo incompatible para el método %s%s%s"
 
 #: go/gofrontend/types.cc:5735 go/gofrontend/types.cc:5870
-#, fuzzy, c-format
+#, c-format
 msgid "incompatible type for method %s%s%s (%s)"
-msgstr "tipo incompatible para el argumento %d de %qE"
+msgstr "tipo incompatible para el método %s%s%s (%s)"
 
 #: go/gofrontend/types.cc:5807 go/gofrontend/types.cc:5820
 msgid "pointer to interface type has no methods"
-msgstr ""
+msgstr "el puntero a tipo de interfaz no tiene métodos"
 
 #: go/gofrontend/types.cc:5809 go/gofrontend/types.cc:5822
-#, fuzzy
 msgid "type has no methods"
-msgstr "error al decodificar los métodos"
+msgstr "el tipo no tiene métodos"
 
 #: go/gofrontend/types.cc:5843
-#, fuzzy, c-format
+#, c-format
 msgid "ambiguous method %s%s%s"
-msgstr "abreviación ambigua %s"
+msgstr "método ambiguo %s%s%s"
 
 #: go/gofrontend/types.cc:5846
-#, fuzzy, c-format
+#, c-format
 msgid "missing method %s%s%s"
-msgstr "faltan argumentos para %qs"
+msgstr "falta el método %s%s%s"
 
 #: go/gofrontend/types.cc:5886
 #, c-format
 msgid "method %s%s%s requires a pointer"
-msgstr ""
+msgstr "el método %s%s%s requiere un puntero"
 
 #: attribs.c:306 objc/objc-act.c:7712
 #, gcc-internal-format
@@ -13228,9 +13171,9 @@ msgid "expected declaration specifiers"
 msgstr "se esperaban especificadores de declaración"
 
 #: c-parser.c:1484 c-parser.c:2578
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<;%>, identifier or %<(%>"
-msgstr "se esperaba un identificador o %<(%>"
+msgstr "se esperaba %<;>, identificador o %<(%>"
 
 #: c-parser.c:1502 cp/parser.c:22213 cp/parser.c:22286
 #, gcc-internal-format
@@ -13559,9 +13502,9 @@ msgid "ISO C90 forbids compound literals"
 msgstr "ISO C90 prohíbe las literales compuestas"
 
 #: c-parser.c:6837
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected identifier or %<)%>"
-msgstr "se esperaba un identificador o %<(%>"
+msgstr "se esperaba un identificador o %<)%>"
 
 #: c-parser.c:7163
 #, gcc-internal-format
@@ -16412,14 +16355,14 @@ msgid "gimplification failed"
 msgstr "falló la gimplificación"
 
 #: godump.c:843
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "could not close Go dump file: %m"
-msgstr "no se puede abrir el fichero de volcado %qs: %m"
+msgstr "no se puede cerrar el fichero de volcado Go: %m"
 
 #: godump.c:855
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "could not open Go dump file %qs: %m"
-msgstr "no se puede abrir el fichero de volcado %qs: %m"
+msgstr "no se puede abrir el fichero de volcado Go %qs: %m"
 
 #: graph.c:411 toplev.c:1513 java/jcf-parse.c:1751 java/jcf-parse.c:1890
 #: objc/objc-act.c:591
@@ -16502,19 +16445,19 @@ msgid "bytecode stream: found empty cgraph node"
 msgstr "flujo de bytecode: se encontró un nodo cgraph vacío"
 
 #: lto-cgraph.c:1439
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Corrupted profile info in %s: sum_max is smaller than runs"
-msgstr "información de análisis de perfil corrupta: sum_all es menor que sum_max"
+msgstr "información de análisis de perfil corrupta en %s: sum_max es menor que runs"
 
 #: lto-cgraph.c:1470
 #, gcc-internal-format
 msgid "At most %i profile runs is supported. Perhaps corrupted profile?"
-msgstr ""
+msgstr "Por lo menos se admiten %i corridas de perfil. ¿Tal vez se corrompió el perfil?"
 
 #: lto-cgraph.c:1517
 #, gcc-internal-format
 msgid "Profile information in %s corrupted"
-msgstr ""
+msgstr "La información de análisis de perfil en %s está corrupta"
 
 #: lto-cgraph.c:1552
 #, gcc-internal-format
@@ -16570,27 +16513,27 @@ msgstr "flujo de bytecode: se encontró una cadean que no está terminada en null"
 #: lto-streamer-in.c:986
 #, gcc-internal-format
 msgid "use of type %<%E%> with two mismatching declarations at field %<%E%>"
-msgstr ""
+msgstr "uso del tipo %<%E%> con dos declaraciones que no coinciden en el campo %<%E%>"
 
 #: lto-streamer-in.c:992
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "original type declared here"
-msgstr "se definió originalmente aquí"
+msgstr "el tipo original se definió aquí"
 
 #: lto-streamer-in.c:994
 #, gcc-internal-format
 msgid "field in mismatching type declared here"
-msgstr ""
+msgstr "el campo en el tipo que no coincide se declaro aquí"
 
 #: lto-streamer-in.c:1000
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type of field declared here"
-msgstr "se declaró previamente aquí"
+msgstr "el tipo del campo se declaró aquí"
 
 #: lto-streamer-in.c:1007
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type of mismatching field declared here"
-msgstr "los tipos de datos no coinciden en la referencia indirecta"
+msgstr "el tipo del campo que no coincide se declaró aquí"
 
 #: lto-streamer-in.c:1028
 #, gcc-internal-format
@@ -16744,14 +16687,14 @@ msgid "argument to %qs should be a non-negative integer"
 msgstr "el argumento para %qs debe ser un entero no negativo"
 
 #: opts-common.c:995
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unrecognized argument in option %qs"
-msgstr "no se reconoce la opción de línea de órdenes %qs"
+msgstr "no se reconoce el argumento en la opción %qs"
 
 #: opts-common.c:1011
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "valid arguments to %qs are: %s"
-msgstr "Tipo de argumento %qs a %qs inválido"
+msgstr "los argumento válidos para %qs son: %s"
 
 #: opts-global.c:102
 #, gcc-internal-format
@@ -16770,9 +16713,9 @@ msgid "unrecognized command line option \"%s\""
 msgstr "no se reconoce la opción de línea de órdenes \"%s\""
 
 #: opts-global.c:375
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unrecognized command line option %<-fdump-%s%>"
-msgstr "no se reconoce la opción de línea de órdenes %qs"
+msgstr "no se reconoce la opción de línea de órdenes %<-fdump-%s%>"
 
 #: opts-global.c:387 opts-global.c:395
 #, gcc-internal-format
@@ -16780,9 +16723,9 @@ msgid "plugin support is disabled; configure with --enable-plugin"
 msgstr "el soporte de plugins está desactivado; configure con --enable-plugin"
 
 #: opts-global.c:419
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unrecognized register name %qs"
-msgstr "no se reconoce el nombre de registro \"%s\""
+msgstr "no se reconoce el nombre de registro %qs"
 
 #: opts.c:86
 #, gcc-internal-format
@@ -16850,14 +16793,14 @@ msgid "unrecognized include_flags 0x%x passed to print_specific_help"
 msgstr "no se reconocen las include_flags 0x%x pasadas a print_specific_help"
 
 #: opts.c:1357
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "--help argument %q.*s is ambiguous, please be more specific"
-msgstr "aviso: el argumento %.*s de --help es ambiguo, por favor sea más específico\n"
+msgstr "el argumento %q.*s de --help es ambiguo, por favor sea más específico"
 
 #: opts.c:1366
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unrecognized argument to --help= option: %q.*s"
-msgstr "aviso: no se reconoce el argumento para la opción --help=: %.*s\n"
+msgstr "no se reconoce el argumento para la opción --help=: %q.*s"
 
 #: opts.c:1503
 #, gcc-internal-format
@@ -17321,9 +17264,9 @@ msgid "unknown register name %qs in %<asm%>"
 msgstr "nombre de registro %qs desconocido en %<asm%>"
 
 #: stmt.c:713
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "PIC register clobbered by %qs in %<asm%>"
-msgstr "registro PIC %qs sobreescrito en %<asm%>"
+msgstr "registro PIC sobreescrito por %qs en %<asm%>"
 
 #: stmt.c:761
 #, gcc-internal-format
@@ -19662,24 +19605,24 @@ msgid "the omitted middle operand in ?: will always be %<true%>, suggest explici
 msgstr "el operando medio omitido en ?: siempre será %<true%>, se sugiere un operando medio explícito"
 
 #: c-family/c-common.c:8578
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "assignment of member %qD in read-only object"
-msgstr "asignación de miembro-dato %qD en estructura de sólo-lectura"
+msgstr "asignación de miembro %qD en objeto de sólo-lectura"
 
 #: c-family/c-common.c:8580
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "increment of member %qD in read-only object"
-msgstr "incremento de miembro-dato %qD en estructura de sólo lectura"
+msgstr "incremento de miembro %qD en objeto de sólo lectura"
 
 #: c-family/c-common.c:8582
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "decrement of member %qD in read-only object"
-msgstr "decremento de miembro-dato %qD en estructura de sólo lectura"
+msgstr "decremento de miembro %qD en objeto de sólo lectura"
 
 #: c-family/c-common.c:8584
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "member %qD in read-only object used as %<asm%> output"
-msgstr "se usó la ubicación de sólo lectura %qE como salida %<asm%>"
+msgstr "se usó el miembro %qD en un objeto de sólo lectura como salida %<asm%>"
 
 #: c-family/c-common.c:8588
 #, gcc-internal-format
@@ -19737,9 +19680,9 @@ msgid "decrement of read-only parameter %qD"
 msgstr "decremento del parámetro de sólo lectura %qD"
 
 #: c-family/c-common.c:8604
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "read-only parameter %qD use as %<asm%> output"
-msgstr "se usó el miembro de sólo lectura %qD como salida %<asm%>"
+msgstr "se usó el parámetro de sólo lectura %qD como salida %<asm%>"
 
 #: c-family/c-common.c:8609
 #, gcc-internal-format
@@ -19757,9 +19700,9 @@ msgid "decrement of read-only named return value %qD"
 msgstr "decremento del valor de devolución nombrado de sólo lectura %qD"
 
 #: c-family/c-common.c:8615
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "read-only named return value %qD used as %<asm%>output"
-msgstr "se usó la variable de sólo lectura %qD como salida %<asm%>"
+msgstr "se usó el valor de devolución nombrado de sólo lectura %qD como salida %<asm%>"
 
 #: c-family/c-common.c:8620
 #, gcc-internal-format
@@ -19777,9 +19720,9 @@ msgid "decrement of function %qD"
 msgstr "decremento de la función %qD"
 
 #: c-family/c-common.c:8623
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "function %qD used as %<asm%> output"
-msgstr "se usó la ubicación de sólo lectura %qE como salida %<asm%>"
+msgstr "se usó la función %qD como salida %<asm%>"
 
 #: c-family/c-common.c:8629
 #, gcc-internal-format
@@ -19812,9 +19755,9 @@ msgid "lvalue required in asm statement"
 msgstr "se requiere un l-valor en la declaración asm"
 
 #: c-family/c-common.c:8671
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid type argument (have %qT)"
-msgstr "argumento de tipo inválido de %<->%> (se tiene %qT)"
+msgstr "argumento de tipo inválido (se tiene %qT)"
 
 #: c-family/c-common.c:8675
 #, gcc-internal-format
@@ -19832,9 +19775,9 @@ msgid "invalid type argument of %<->%> (have %qT)"
 msgstr "argumento de tipo inválido de %<->%> (se tiene %qT)"
 
 #: c-family/c-common.c:8690
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid type argument of implicit conversion (have %qT)"
-msgstr "argumento de tipo inválido en la conversión implícita"
+msgstr "argumento de tipo inválido en la conversión implícita (se tiene %qT)"
 
 #: c-family/c-common.c:8821
 #, gcc-internal-format
@@ -20394,9 +20337,9 @@ msgid "floating constant truncated to zero"
 msgstr "se truncó la constante de coma flotante a cero"
 
 #: c-family/c-lex.c:938
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "repeated %<@%> before Objective-C string"
-msgstr "construct Objective-C++ %<@%D%> mal ubicado"
+msgstr "%<@%> repetida antes de la cadena Objective-C"
 
 #: c-family/c-lex.c:957 cp/parser.c:3375
 #, gcc-internal-format
@@ -22241,9 +22184,9 @@ msgid "%qE attribute only available for 32-bit"
 msgstr "el atributo %qE solamente está disponible para 64-bit"
 
 #: config/i386/i386.c:29117
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument to %qE attribute is neither zero, nor one"
-msgstr "el argumento del atributo %qE no es una cadena constante"
+msgstr "el argumento del atributo %qE no es cero ni uno"
 
 #: config/i386/i386.c:29147
 #, gcc-internal-format
@@ -23320,32 +23263,32 @@ msgstr "tipo de ABI de biblioteca de vectorización desconocida (%s) para la opci
 #: config/rs6000/rs6000.c:2893
 #, gcc-internal-format
 msgid "target attribute or pragma changes long double size"
-msgstr ""
+msgstr "el atributo o pragma target cambia el tamaño de double long"
 
 #: config/rs6000/rs6000.c:2914 config/rs6000/rs6000.c:2929
 #, gcc-internal-format
 msgid "target attribute or pragma changes AltiVec ABI"
-msgstr ""
+msgstr "el atributo o pragma target cambia la ABI Altivec"
 
 #: config/rs6000/rs6000.c:2946
 #, gcc-internal-format
 msgid "target attribute or pragma changes darwin64 ABI"
-msgstr ""
+msgstr "el atributo o pragma target cambia la ABI darwin64"
 
 #: config/rs6000/rs6000.c:2987
 #, gcc-internal-format
 msgid "target attribute or pragma changes SPE ABI"
-msgstr ""
+msgstr "el atributo o pragma target cabia la ABI SPE"
 
 #: config/rs6000/rs6000.c:3309
 #, gcc-internal-format
 msgid "target attribute or pragma changes single precision floating point"
-msgstr ""
+msgstr "el atributo o pragma target cambia la coma flotante de precisión sencilla"
 
 #: config/rs6000/rs6000.c:3312
 #, gcc-internal-format
 msgid "target attribute or pragma changes double precision floating point"
-msgstr ""
+msgstr "el atributo o pragma target cambia la coma flotante de precisión doble"
 
 #: config/rs6000/rs6000.c:3356
 #, gcc-internal-format
@@ -23403,14 +23346,14 @@ msgid "unknown ABI specified: '%s'"
 msgstr "se especificó una ABI desconocida: '%s'"
 
 #: config/rs6000/rs6000.c:4493
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value (%s) for -mcpu"
-msgstr "valor erróneo (%s) para el interruptor -mcpu"
+msgstr "valor erróneo (%s) para -mcpu"
 
 #: config/rs6000/rs6000.c:4500
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value (%s) for -mtune"
-msgstr "valor erróneo %qs para la opción -mtune"
+msgstr "valor erróneo (%s) para -mtune"
 
 #: config/rs6000/rs6000.c:4511
 #, gcc-internal-format
@@ -23624,19 +23567,19 @@ msgid "emitting conditional microcode insn %s\t[%s] #%d"
 msgstr "se emite el insn de microcódigo condicional %s\t[%s] #%d"
 
 #: config/rs6000/rs6000.c:27470
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid cpu \"%s\" for %s\"%s\"%s"
-msgstr "uso inválido de '%%%c'"
+msgstr "cpu \"%s\" inválido para %s\"%s\"%s"
 
 #: config/rs6000/rs6000.c:27473
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s\"%s\"%s is not allowed"
-msgstr "\"%s\" no está definido"
+msgstr "%s\"%s\"%s no está definido"
 
 #: config/rs6000/rs6000.c:27475
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s\"%s\"%s is invalid"
-msgstr "la especificación '%s' es inválida"
+msgstr "%s\"%s\"%s es inválido"
 
 #: config/rs6000/aix43.h:32 config/rs6000/aix51.h:32 config/rs6000/aix52.h:32
 #: config/rs6000/aix53.h:32 config/rs6000/aix61.h:32
@@ -23864,77 +23807,77 @@ msgstr "-mstack-guard implica el uso de -mstack-size"
 #: config/s390/s390.c:5134
 #, gcc-internal-format
 msgid "symbolic memory references are only supported on z10 or later"
-msgstr ""
+msgstr "las referencias a memoria simbólica sólo se admiten en z10 o posterior"
 
 #: config/s390/s390.c:5203
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid comparison operator for 'E' output modifier"
-msgstr "operando inválido para el modificador 'b'"
+msgstr "operador de comparación inválido para el modificador de salida 'E'"
 
 #: config/s390/s390.c:5223
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid reference for 'J' output modifier"
-msgstr "operando inválido para el modificador 'b'"
+msgstr "referencia inválida para el modificador de salida 'J'"
 
 #: config/s390/s390.c:5237
 #, gcc-internal-format
 msgid "memory reference expected for 'O' output modifier"
-msgstr ""
+msgstr "se esperaba una referencia de memoria para el modificador de salida 'O'"
 
 #: config/s390/s390.c:5247
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid address for 'O' output modifier"
-msgstr "operando inválido para el modificador 'O'"
+msgstr "dirección inválida para el modificador de salida 'O'"
 
 #: config/s390/s390.c:5265
 #, gcc-internal-format
 msgid "memory reference expected for 'R' output modifier"
-msgstr ""
+msgstr "se esperaba una referencia de memoria para el modificador de salida 'R'"
 
 #: config/s390/s390.c:5275
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid address for 'R' output modifier"
-msgstr "operando inválido para el modificador 'b'"
+msgstr "dirección inválida para el modificador de salida 'R'"
 
 #: config/s390/s390.c:5293
 #, gcc-internal-format
 msgid "memory reference expected for 'S' output modifier"
-msgstr ""
+msgstr "se esperaba una referencia de memoria para el modificador de salida 'S'"
 
 #: config/s390/s390.c:5302
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid address for 'S' output modifier"
-msgstr "operando inválido para el modificador 'b'"
+msgstr "dirección inválida para el modificador de saida 'S'"
 
 #: config/s390/s390.c:5322
 #, gcc-internal-format
 msgid "register or memory expression expected for 'N' output modifier"
-msgstr ""
+msgstr "se esperaba un registro o expresión de memoria para el modificador de salida 'N'"
 
 #: config/s390/s390.c:5331
 #, gcc-internal-format
 msgid "register or memory expression expected for 'M' output modifier"
-msgstr ""
+msgstr "se esperaba un registro o expresión de memoria para el modificador de salida 'M'"
 
 #: config/s390/s390.c:5394
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid constant - try using an output modifier"
-msgstr "operando inválido en el código de salida"
+msgstr "constante inválida - pruebe usar un modificador de salida"
 
 #: config/s390/s390.c:5396
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid constant for output modifier '%c'"
-msgstr "operando inválido para el modificador 'o'"
+msgstr "constante inválida para el modificador de salida '%c'"
 
 #: config/s390/s390.c:5402
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid expression - try using an output modifier"
-msgstr "expresión inválida para el l-valor min"
+msgstr "expresión inválida - pruebe usar un modificador de salida"
 
 #: config/s390/s390.c:5404
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid expression for output modifier '%c'"
-msgstr "operando inválido para el modificador 'o'"
+msgstr "expresión inválida para el modificador de salida '%c'"
 
 #: config/s390/s390.c:7324
 #, gcc-internal-format
@@ -24346,54 +24289,54 @@ msgstr "tipo de elemento inválido para el atributo %qs"
 #: cp/call.c:2948
 #, gcc-internal-format
 msgid "  no known conversion for implicit %<this%> parameter from %qT to %qT"
-msgstr ""
+msgstr "  no hay una conversión conocida para el parámetro %<this%> implícito de %qT a %qT"
 
 #: cp/call.c:2952
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "  no known conversion for argument %d from %qT to %qT"
-msgstr "  para la conversión de %qT a %qT"
+msgstr "  no hay una conversión conocida para el argumento %d de %qT a %qT"
 
 #: cp/call.c:2974
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s%D(%T, %T, %T) <built-in>"
-msgstr "%s %D(%T, %T, %T) <interno>"
+msgstr "%s%D(%T, %T, %T) <interno>"
 
 #: cp/call.c:2979
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s%D(%T, %T) <built-in>"
-msgstr "%s %D(%T, %T) <interno>"
+msgstr "%s%D(%T, %T) <interno>"
 
 #: cp/call.c:2983
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s%D(%T) <built-in>"
-msgstr "%s %D(%T) <interno>"
+msgstr "%s%D(%T) <interno>"
 
 #: cp/call.c:2987
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s%T <conversion>"
-msgstr "%s %T <conversión>"
+msgstr "%s%T <conversión>"
 
 #: cp/call.c:2989
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s%#D <near match>"
-msgstr "%s %+#D <coincidencia cercana>"
+msgstr "%s%#D <coincidencia cercana>"
 
 #: cp/call.c:2991
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s%#D <deleted>"
-msgstr "%s %+#D <borrado>"
+msgstr "%s%#D <borrado>"
 
 #: cp/call.c:2993
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s%#D"
-msgstr "%s %+#D"
+msgstr "%s%#D"
 
 #: cp/call.c:3003
 #, gcc-internal-format
 msgid "  candidate expects %d argument, %d provided"
 msgid_plural "  candidate expects %d arguments, %d provided"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "  el candidato espera %d argumento, se proporcionaron %d"
+msgstr[1] "  el candidato espera %d argumentos, se proporcionaron %d"
 
 #: cp/call.c:3337
 #, gcc-internal-format
@@ -27056,9 +26999,9 @@ msgid "invalid use of %<::%>"
 msgstr "uso inválido de %<::%>"
 
 #: cp/decl.c:9553
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declaration of function %qD in invalid context"
-msgstr "la declaración de la función C %q#D genera un conflicto con"
+msgstr "declaración de la función %qD en un contexto inválido"
 
 #: cp/decl.c:9562
 #, gcc-internal-format
@@ -27126,9 +27069,9 @@ msgid "making %qD static"
 msgstr "se hace %qD static"
 
 #: cp/decl.c:9769
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "constexpr static data member %qD must have an initializer"
-msgstr "los inicializadores de los datos miembro no son estáticos"
+msgstr "el miembro dato static constexpr %qD debe tener un inicializador"
 
 #: cp/decl.c:9778
 #, gcc-internal-format
@@ -28750,19 +28693,19 @@ msgstr "el espacio de nombres actual %qD no contiene al espacio de nombres %qD u
 #: cp/name-lookup.c:3964
 #, gcc-internal-format
 msgid "maximum limit of %d namespaces searched for %qE"
-msgstr ""
+msgstr "límite máximo de %d espacios de nombres buscados para %qE"
 
 #: cp/name-lookup.c:3974
 #, gcc-internal-format
 msgid "suggested alternative:"
 msgid_plural "suggested alternatives:"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "alternativa sugerida:"
+msgstr[1] "alternativas sugeridas:"
 
 #: cp/name-lookup.c:3978
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "  %qE"
-msgstr "  %q+#D"
+msgstr "  %qE"
 
 #: cp/name-lookup.c:5161
 #, gcc-internal-format
@@ -29105,7 +29048,7 @@ msgstr "se esperaba un id sin calificar"
 #: cp/parser.c:4568
 #, gcc-internal-format
 msgid "found %<:%> in nested-name-specifier, expected %<::%>"
-msgstr ""
+msgstr "se encontró %<:%> en un especificador de nombre anidado, se esperaba %<::%>"
 
 #: cp/parser.c:4785
 #, gcc-internal-format
@@ -29686,19 +29629,19 @@ msgid "expected class-name"
 msgstr "se esperaba un nombre de clase"
 
 #: cp/parser.c:16989
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<;%> after class definition"
-msgstr "se esperaba %<;%> o %<{%> después de la definición del atributo de método"
+msgstr "se esperaba %<;%> después de la definición de clase"
 
 #: cp/parser.c:16991
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<;%> after struct definition"
-msgstr "se esperaba %<;%> o %<{%> después de la definición del atributo de método"
+msgstr "se esperaba %<;%> después de la definición de struct"
 
 #: cp/parser.c:16993
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %<;%> after union definition"
-msgstr "se esperaba %<;%> o %<{%> después de la definición del atributo de método"
+msgstr "se esperaba %<;%> después de la definición de union"
 
 #: cp/parser.c:17277
 #, gcc-internal-format
@@ -32283,7 +32226,7 @@ msgid "parameter might be a candidate for a format attribute"
 msgstr "el parámetro puede ser un candidato para un atributo de formato"
 
 #: cp/typeck.c:7324
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "target of conversion might be a candidate for a format attribute"
 msgstr "el objetivo de conversión puede ser un candidato para un atributo de formato"
 
@@ -32387,9 +32330,9 @@ msgid "assignment of constant field %qD"
 msgstr "asignación del campo constante %qD"
 
 #: cp/typeck2.c:109
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "constant field %qD used as %<asm%> output"
-msgstr "se usó la variable de sólo lectura %qD como salida %<asm%>"
+msgstr "se usó el campo constante %qD como salida %<asm%>"
 
 #: cp/typeck2.c:111
 #, gcc-internal-format
@@ -32407,9 +32350,9 @@ msgid "assignment of read-only reference %qD"
 msgstr "asignación de la referencia de sólo lectura %qD"
 
 #: cp/typeck2.c:122
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "read-only reference %qD used as %<asm%> output"
-msgstr "se usó el miembro de sólo lectura %qD como salida %<asm%>"
+msgstr "se usó la referencia de sólo lectura %qD como salida %<asm%>"
 
 #: cp/typeck2.c:124
 #, gcc-internal-format
@@ -33117,7 +33060,7 @@ msgid "'%s' argument of '%s' intrinsic at %L must be default real"
 msgstr "El argumento '%s' del intrínseco '%s' en %L debe ser real por defecto"
 
 #: fortran/check.c:1500
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "GNU extension: non-default INTEGER kind argument to %s intrinsic at %L"
 msgstr "Extensión de GNU: argumento de género que no es por defecto INTEGER para el intrínseco %s en %L"
 
@@ -33287,7 +33230,7 @@ msgid "'%s' argument of '%s' intrinsic at %L must be be an interoperable data en
 msgstr "El argumento '%s' del intrínseco '%s' en %L debe ser una entidad de datos interoperables"
 
 #: fortran/check.c:3346
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "GNU extension: non double precision REAL argument to %s intrinsic at %L"
 msgstr "Extensión de GNU: argumento de precisión REAL que no es doble para el intrínseco %s en %L"
 
@@ -36793,9 +36736,9 @@ msgid "Extension: Unary operator following arithmetic operator (use parentheses)
 msgstr "Extensión: Operador unario después de un operador aritmético (usar paréntesis) en %C"
 
 #: fortran/misc.c:39
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Allocation would exceed memory limit -- malloc() failed"
-msgstr "Memoria agotada-- falló malloc()"
+msgstr "El alojamiento excedería el límite de la memoria -- falló malloc()"
 
 #: fortran/module.c:522
 #, gcc-internal-format
@@ -38774,9 +38717,9 @@ msgid "Passed-object at %L must be scalar"
 msgstr "El objeto pasado en %L debe ser escalar"
 
 #: fortran/resolve.c:5397
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Base object for procedure-pointer component call at %L is of ABSTRACT type '%s'"
-msgstr "El objeto base para la llamada a procedimiento enlazada a tipo en %L es de tipo ABSTRACT '%s'"
+msgstr "El objeto base para la llamada a componente procedimiento-puntero en %L es de tipo ABSTRACT '%s'"
 
 #: fortran/resolve.c:5429
 #, gcc-internal-format
@@ -40958,9 +40901,9 @@ msgid "Unknown argument list function at %L"
 msgstr "Lista de argumentos de función desconocida en %L"
 
 #: fortran/trans-expr.c:6003
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Assignment to deferred-length character variable at %L not implemented"
-msgstr "Se asume o difiere el carácter de longitud variable '%s' en la expresión constante en %L"
+msgstr "No se admite la asignación a una variable de carácter de longitud diferida en %L"
 
 #: fortran/trans-intrinsic.c:851
 #, gcc-internal-format
@@ -41448,7 +41391,7 @@ msgstr "no se puede abrir el fichero de resolución de símbolos: %m"
 #: lto/lto.c:2186
 #, gcc-internal-format
 msgid "errors during merging of translation units"
-msgstr ""
+msgstr "errores durante la mezcla de unidades de traducción"
 
 #: objc/objc-act.c:619
 #, gcc-internal-format
@@ -41471,9 +41414,9 @@ msgid "category attributes are not available in this version of the compiler, (i
 msgstr "los atributos de categoría no están disponibles en esta versión del compilador (se descartan)"
 
 #: objc/objc-act.c:760
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "class extensions are not available in Objective-C 1.0"
-msgstr "los atributos de clase no están disponibles en Objective-C 1.0"
+msgstr "las extensiones de clase no están disponibles en Objective-C 1.0"
 
 #: objc/objc-act.c:772
 #, gcc-internal-format
@@ -41541,14 +41484,14 @@ msgid "property declaration not in @interface or @protocol context"
 msgstr "la declaración de propiedad no está en el contexto @interface o @protocol"
 
 #: objc/objc-act.c:1035
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid property declaration"
-msgstr "tipo inválido en la declaración"
+msgstr "declaración inválida de propiedad"
 
 #: objc/objc-act.c:1043
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "property can not be an array"
-msgstr "la propiedad no puede tener un valor inicial"
+msgstr "la propiedad no puede ser una matriz"
 
 #. A @property is not an actual variable, but it is a way to
 #. describe a pair of accessor methods, so its type (which is
@@ -41558,9 +41501,9 @@ msgstr "la propiedad no puede tener un valor inicial"
 #. underlying instance variable could be a bitfield, but that is
 #. a different matter.
 #: objc/objc-act.c:1061
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "property can not be a bit-field"
-msgstr "la propiedad no puede tener un valor inicial"
+msgstr "la propiedad no puede ser un campo de bits"
 
 #: objc/objc-act.c:1093
 #, gcc-internal-format
@@ -41646,9 +41589,9 @@ msgid "could not find interface for class %qE"
 msgstr "no se puede encontrar la interfaz para la clase %qE"
 
 #: objc/objc-act.c:1809 objc/objc-act.c:9541 objc/objc-act.c:9667
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "class %qE is deprecated"
-msgstr "%qE es obsoleto"
+msgstr "la clase %qE es obsoleta"
 
 #: objc/objc-act.c:1838
 #, gcc-internal-format
@@ -41739,7 +41682,7 @@ msgstr "redeclaración de la clase Objective-C %qs"
 #: objc/objc-act.c:2873
 #, gcc-internal-format
 msgid "only Objective-C object types can be qualified with a protocol"
-msgstr ""
+msgstr "sólo los tips de objeto Objective-C se pueden calificar con un protocolo"
 
 #: objc/objc-act.c:2935
 #, gcc-internal-format
@@ -41834,14 +41777,14 @@ msgid "@catch parameter is not a known Objective-C class type"
 msgstr "el parámetro de @catch no es un tipo de clase conocido para Objective-C"
 
 #: objc/objc-act.c:5435
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "@catch parameter can not be protocol-qualified"
-msgstr "los parámetros de la plantilla no pueden ser friends"
+msgstr "el parámetro @catch no puede ser calificado por protocolo"
 
 #: objc/objc-act.c:5478
 #, gcc-internal-format
 msgid "exception of type %<%T%> will be caught"
-msgstr "la excepción del tipo %<%T%> será atrapada"
+msgstr "se atrapará  la excepción del tipo %<%T%>"
 
 #: objc/objc-act.c:5480
 #, gcc-internal-format
@@ -41859,9 +41802,9 @@ msgid "%<@throw%> (rethrow) used outside of a @catch block"
 msgstr "se usó %<@throw%> (rethrow) fuera de un bloque @catch"
 
 #: objc/objc-act.c:5597
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<@throw%> argument is not an object"
-msgstr "el argumento %qd no es una constante"
+msgstr "el argumento %<@throw%> no es un objeto"
 
 #: objc/objc-act.c:5971
 #, gcc-internal-format
@@ -42141,14 +42084,14 @@ msgid "property %qs is using instance variable %qs of incompatible type"
 msgstr "la propiedad %qs está usando la variable de instancia %qs de tipo incompatible"
 
 #: objc/objc-act.c:10381
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "'assign' property %qs is using bit-field instance variable %qs"
-msgstr "la propiedad %qs está usando la misma variable de instancia que la propiedad %qs"
+msgstr "la propiedad 'assign' %qs está usando la variable de instancia de campo de bits %qs"
 
 #: objc/objc-act.c:10394
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "'atomic' property %qs is using bit-field instance variable %qs"
-msgstr "la propiedad %qs está usando la misma variable de instancia que la propiedad %qs"
+msgstr "la propiedad 'atomic' %qs está usando la variable de instancia de campo de bits %qs"
 
 #: objc/objc-act.c:10412
 #, gcc-internal-format
@@ -42202,9 +42145,9 @@ msgstr "%<@dynamic%> requiere que @interface de la clase esté disponible"
 #. we are using TREE_CHAIN (which is supposed to be the
 #. TYPE_STUB_DECL for a TYPE) for something different.
 #: objc/objc-act.c:10801
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "protocol %qE is deprecated"
-msgstr "%qE es obsoleto"
+msgstr "el protocolo %qE es obsoleto"
 
 #: objc/objc-act.c:10916
 #, gcc-internal-format
