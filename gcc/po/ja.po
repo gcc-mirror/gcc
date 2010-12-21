@@ -7,10 +7,10 @@
 # Yasuaki Taniguchi <yasuakit@gmail.com>, 2010
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.6-b20101113\n"
+"Project-Id-Version: gcc 4.6-b20101218\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-12-18 20:02+0000\n"
-"PO-Revision-Date: 2010-12-19 22:19+0900\n"
+"PO-Revision-Date: 2010-12-21 21:23+0900\n"
 "Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -560,9 +560,8 @@ msgid "  -print-multi-os-directory Display the relative path to OS libraries\n"
 msgstr ""
 
 #: gcc.c:2912
-#, fuzzy
 msgid "  -print-sysroot           Display the target libraries directory\n"
-msgstr "  -dumpmachine             コンパイラのターゲットプロセッサを表示\n"
+msgstr "  -print-sysroot           ターゲットライブラリのディレクトリを表示する\n"
 
 #: gcc.c:2913
 msgid "  -print-sysroot-headers-suffix Display the sysroot suffix used to find headers\n"
@@ -910,9 +909,9 @@ msgid "%s:no functions found\n"
 msgstr "%s:関数が見つかりません\n"
 
 #: gcov.c:578 gcov.c:606
-#, fuzzy, c-format
+#, c-format
 msgid "\n"
-msgstr ":\n"
+msgstr "\n"
 
 #: gcov.c:593
 #, c-format
@@ -1128,12 +1127,12 @@ msgstr ""
 #: gengtype-state.c:165
 #, c-format
 msgid "%s:%d:%d: Invalid state file; "
-msgstr ""
+msgstr "%s:%d:%d: 無効な状態ファイルです。 "
 
 #: gengtype-state.c:170
 #, c-format
 msgid "%s:%d: Invalid state file; "
-msgstr ""
+msgstr "%s:%d: 無効な状態ファイルです "
 
 #: gengtype-state.c:695
 #, c-format
@@ -1151,9 +1150,9 @@ msgid "Unexpected type in write_state_string_type"
 msgstr "終端されていないフォーマット文字列"
 
 #: gengtype-state.c:969
-#, fuzzy, c-format
+#, c-format
 msgid "Unexpected type..."
-msgstr "';' が必要です"
+msgstr ""
 
 #: gengtype-state.c:1149
 #, fuzzy, c-format
@@ -1161,14 +1160,14 @@ msgid "failed to write state trailer [%s]"
 msgstr "\"%s\" の作成に失敗しました"
 
 #: gengtype-state.c:1175
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to open file %s for writing state: %s"
-msgstr "%s: 読み込み用にファイル `%s' を開くことができません: %s\n"
+msgstr "状態を書き込むためのファイル %s を開くのに失敗しました: %s"
 
 #: gengtype-state.c:1207
-#, fuzzy, c-format
+#, c-format
 msgid "output error when writing state file %s [%s]"
-msgstr "\"%s\" ファイルの書き込み中にエラーが発生しました"
+msgstr ""
 
 #: gengtype-state.c:1210
 #, fuzzy, c-format
@@ -1567,9 +1566,8 @@ msgid "assuming signed overflow does not occur when simplifying ==, != or ! to i
 msgstr ""
 
 #: cif-code.def:39
-#, fuzzy
 msgid "function not considered for inlining"
-msgstr "関数を inline にできません"
+msgstr "inline に出来ると見なされていない関数です"
 
 #. Inlining failed owing to unavailable function body.
 #: cif-code.def:42
@@ -1577,9 +1575,8 @@ msgid "function body not available"
 msgstr "関数本体が利用できません"
 
 #: cif-code.def:45
-#, fuzzy
 msgid "redefined extern inline functions are not considered for inlining"
-msgstr "インライン関数をインライン化できない場合に警告する"
+msgstr "extern inline で再定義された関数は inline に出来ると見なされません"
 
 #. Function is not inlinable.
 #: cif-code.def:49
@@ -1593,23 +1590,23 @@ msgstr "inline の候補でない関数です"
 
 #: cif-code.def:56
 msgid "--param large-function-growth limit reached"
-msgstr ""
+msgstr "--param large-function-growth の制限に達しました"
 
 #: cif-code.def:58
 msgid "--param large-stack-frame-growth limit reached"
-msgstr ""
+msgstr "--param large-stack-frame-growth の制限に達しました"
 
 #: cif-code.def:60
 msgid "--param max-inline-insns-single limit reached"
-msgstr ""
+msgstr "--param max-inline-insns-single の制限に達しました"
 
 #: cif-code.def:62
 msgid "--param max-inline-insns-auto limit reached"
-msgstr ""
+msgstr "--param max-inline-insns-auto の制限に達しました"
 
 #: cif-code.def:64
 msgid "--param inline-unit-growth limit reached"
-msgstr ""
+msgstr "--param inline-unit-growth の制限に達しました"
 
 #. Recursive inlining.
 #: cif-code.def:67
@@ -1631,16 +1628,12 @@ msgstr ""
 
 #. Inlining failed because of mismatched options or arguments.
 #: cif-code.def:81
-#, fuzzy
 msgid "target specific option mismatch"
-msgstr ""
-"\n"
-"ターゲット仕様オプション:\n"
+msgstr "ターゲット指定のオプションが合っていません"
 
 #: cif-code.def:82
-#, fuzzy
 msgid "mismatched arguments"
-msgstr "無効な型引数です"
+msgstr "合っていない引数です"
 
 #: cif-code.def:86
 msgid "originally indirect function call not considered for inlining"
@@ -1652,28 +1645,24 @@ msgstr ""
 
 #: cif-code.def:92
 msgid "function body can be overwriten at linktime"
-msgstr ""
+msgstr "関数本体がリンク時に溢れるかもしれません"
 
 #. The remainder are real diagnostic types.
 #: diagnostic.def:33
-#, fuzzy
 msgid "fatal error: "
-msgstr "内部エラー: "
+msgstr "致命的エラー: "
 
 #: diagnostic.def:34
-#, fuzzy
 msgid "internal compiler error: "
-msgstr "内部コンパイラエラー."
+msgstr "コンパイラ内部エラー: "
 
 #: diagnostic.def:35
-#, fuzzy
 msgid "error: "
-msgstr "内部エラー: "
+msgstr "エラー: "
 
 #: diagnostic.def:36
-#, fuzzy
 msgid "sorry, unimplemented: "
-msgstr "残念ながら見実装です: "
+msgstr "残念ですが未実装です: "
 
 #: diagnostic.def:37
 msgid "warning: "
@@ -1685,23 +1674,21 @@ msgstr ""
 
 #: diagnostic.def:39
 msgid "note: "
-msgstr ""
+msgstr "備考: "
 
 #: diagnostic.def:40
 msgid "debug: "
-msgstr ""
+msgstr "デバッグ: "
 
 #. These two would be re-classified as DK_WARNING or DK_ERROR, so the
 #. prefix does not matter.
 #: diagnostic.def:43
-#, fuzzy
 msgid "pedwarn: "
-msgstr "警告: "
+msgstr ""
 
 #: diagnostic.def:44
-#, fuzzy
 msgid "permerror: "
-msgstr "内部エラー: "
+msgstr ""
 
 #: params.def:48
 msgid "The threshold ratio between current and hottest structure counts"
@@ -2118,7 +2105,7 @@ msgstr ""
 
 #: params.def:709
 msgid "The size of L1 cache"
-msgstr ""
+msgstr "L1 キャッシュサイズ"
 
 #: params.def:716
 msgid "The size of L1 cache line"
@@ -2126,7 +2113,7 @@ msgstr ""
 
 #: params.def:723
 msgid "The size of L2 cache"
-msgstr ""
+msgstr "L2 キャッシュサイズ"
 
 #: params.def:734
 msgid "Whether to use canonical types"
@@ -2265,9 +2252,8 @@ msgstr "printf の '0' フラグ"
 
 #: c-family/c-format.c:488 c-family/c-format.c:512 c-family/c-format.c:579
 #: c-family/c-format.c:609 config/i386/msformat-c.c:53
-#, fuzzy
 msgid "'-' flag"
-msgstr "`-' フラグ"
+msgstr "'-' フラグ"
 
 #: c-family/c-format.c:488 c-family/c-format.c:512 config/i386/msformat-c.c:53
 msgid "the '-' printf flag"
@@ -3059,9 +3045,9 @@ msgid "environment variable DJGPP points to corrupt file '%s'"
 msgstr "環境変数 DJGPP が、壊れたファイル '%s' を示しています。"
 
 #: config/ia64/ia64.c:5096
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%G mode"
-msgstr "無効な %%j コードです"
+msgstr "無効な %%G モードです"
 
 #: config/ia64/ia64.c:5266
 #, c-format
@@ -3157,9 +3143,8 @@ msgstr ""
 
 #: config/m32r/m32r.c:2374 config/m32r/m32r.c:2388
 #: config/rs6000/rs6000.c:25201
-#, fuzzy
 msgid "bad address"
-msgstr "不正なヘッダバージョン"
+msgstr "誤ったアドレスです"
 
 #: config/m32r/m32r.c:2393
 #, fuzzy
@@ -3178,24 +3163,20 @@ msgid "invalid register in the move instruction"
 msgstr "`%s' に対するレジスタ名として無効です"
 
 #: config/m68hc11/m68hc11.c:3514
-#, fuzzy
 msgid "invalid operand in the instruction"
-msgstr "%s コードに対する無効なオペランド"
+msgstr "命令に対して無効な被演算子です"
 
 #: config/m68hc11/m68hc11.c:3811
-#, fuzzy
 msgid "invalid register in the instruction"
-msgstr "`%s' に対するレジスタ名として無効です"
+msgstr "命令に対して無効なレジスタです"
 
 #: config/m68hc11/m68hc11.c:3844
-#, fuzzy
 msgid "operand 1 must be a hard register"
-msgstr "`%d' オペランドがレジスタではありません"
+msgstr "被演算子 1 はハードレジスタでなければいけません"
 
 #: config/m68hc11/m68hc11.c:3858
-#, fuzzy
 msgid "invalid rotate insn"
-msgstr "仮引数 `%s' は無効です"
+msgstr "無効な回転 (rotate) 命令です"
 
 #: config/m68hc11/m68hc11.c:4286
 msgid "registers IX, IY and Z used in the same INSN"
@@ -3211,9 +3192,9 @@ msgid "invalid Z register replacement for insn"
 msgstr "`%s' に対するレジスタ名として無効です"
 
 #: config/mep/mep.c:3321
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%L code"
-msgstr "無効な %%j コードです"
+msgstr "無効な %%L コードです"
 
 #: config/microblaze/microblaze.c:1747
 #, c-format
@@ -3336,14 +3317,12 @@ msgid "Try running '%s' in the shell to raise its limit.\n"
 msgstr ""
 
 #: config/rs6000/rs6000.c:2787
-#, fuzzy
 msgid "-mvsx requires hardware floating point"
-msgstr "ハードウェア浮動小数点を利用する"
+msgstr "-mvsx はハードウェア浮動小数を要求します"
 
 #: config/rs6000/rs6000.c:2792
-#, fuzzy
 msgid "-mvsx and -mpaired are incompatible"
-msgstr "-msystem-v と -mthreads は互換性がありません"
+msgstr "-mvsx と -mpaired は互換性がありません"
 
 #: config/rs6000/rs6000.c:2797
 #, fuzzy
