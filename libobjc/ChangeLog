@@ -1,3 +1,7 @@
+2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* hash.c: Tidied up comments and indentation.  No code changes.
+
 2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR libobjc/47012
