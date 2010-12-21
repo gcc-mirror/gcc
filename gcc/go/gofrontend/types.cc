@@ -8013,7 +8013,8 @@ Forward_declaration_type::add_method(const std::string& name,
 				     Function* function)
 {
   Named_object* no = this->named_object();
-  gcc_assert(no->is_type_declaration());
+  if (no->is_unknown())
+    no->declare_as_type();
   return no->type_declaration_value()->add_method(name, function);
 }
 
@@ -8026,7 +8027,8 @@ Forward_declaration_type::add_method_declaration(const std::string& name,
 						 source_location location)
 {
   Named_object* no = this->named_object();
-  gcc_assert(no->is_type_declaration());
+  if (no->is_unknown())
+    no->declare_as_type();
   Type_declaration* td = no->type_declaration_value();
   return td->add_method_declaration(name, type, location);
 }

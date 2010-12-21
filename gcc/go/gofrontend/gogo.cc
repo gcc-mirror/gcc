@@ -3710,6 +3710,18 @@ Named_object::set_function_value(Function* function)
   this->u_.func_value = function;
 }
 
+// Declare an unknown object as a type declaration.
+
+void
+Named_object::declare_as_type()
+{
+  gcc_assert(this->classification_ == NAMED_OBJECT_UNKNOWN);
+  Unknown_name* unk = this->u_.unknown_value;
+  this->classification_ = NAMED_OBJECT_TYPE_DECLARATION;
+  this->u_.type_declaration = new Type_declaration(unk->location());
+  delete unk;
+}
+
 // Return the location of a named object.
 
 source_location
