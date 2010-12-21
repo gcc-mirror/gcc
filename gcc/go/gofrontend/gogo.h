@@ -1815,6 +1815,10 @@ class Named_object
   void
   set_function_value(Function*);
 
+  // Declare an unknown name as a type declaration.
+  void
+  declare_as_type();
+
   // Export this object.
   void
   export_named_object(Export*) const;
