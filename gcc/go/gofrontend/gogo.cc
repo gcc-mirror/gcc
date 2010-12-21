@@ -2644,6 +2644,14 @@ Function::traverse(Traverse* traverse)
 {
   unsigned int traverse_mask = traverse->traverse_mask();
 
+  if ((traverse_mask
+       & (Traverse::traverse_types | Traverse::traverse_expressions))
+      != 0)
+    {
+      if (Type::traverse(this->type_, traverse) == TRAVERSE_EXIT)
+	return TRAVERSE_EXIT;
+    }
+
   // FIXME: We should check traverse_functions here if nested
   // functions are stored in block bindings.
   if (this->block_ != NULL
