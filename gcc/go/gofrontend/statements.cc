@@ -350,7 +350,18 @@ void
 Temporary_statement::do_check_types(Gogo*)
 {
   if (this->type_ != NULL && this->init_ != NULL)
-    gcc_assert(Type::are_assignable(this->type_, this->init_->type(), NULL));
+    {
+      std::string reason;
+      if (!Type::are_assignable(this->type_, this->init_->type(), &reason))
+	{
+	  if (reason.empty())
+	    error_at(this->location(), "incompatible types in assignment");
+	  else
+	    error_at(this->location(), "incompatible types in assignment (%s)",
+		     reason.c_str());
+	  this->set_is_error();
+	}
+    }
 }
 
 // Return a tree.
