@@ -1,5 +1,12 @@
 2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-private/common.h: When DEBUG is defined, include <stdio.h>.
+	Updated comments.
+	* init.c (__objc_tree_insert_class): Use %p, not %x, when printing
+	a pointer using DEBUG_PRINTF.
+	
+2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	PR libobjc/45953
 	* selector.c (__sel_register_typed_name): When registering a new
 	selector with the same name as an existing one, reuse the existing

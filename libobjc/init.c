@@ -209,7 +209,7 @@ create_tree_of_subclasses_inherited_from (Class bottom_class, Class upper)
 static objc_class_tree *
 __objc_tree_insert_class (objc_class_tree *tree, Class class)
 {
-  DEBUG_PRINTF ("__objc_tree_insert_class: tree = %x, class = %s\n",
+  DEBUG_PRINTF ("__objc_tree_insert_class: tree = %p, class = %s\n",
 		tree, class->name);
 
   if (tree == NULL)
