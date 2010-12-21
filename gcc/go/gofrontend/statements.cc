@@ -2567,6 +2567,8 @@ Return_statement::do_get_tree(Translate_context* context)
 {
   Function* function = context->function()->func_value();
   tree fndecl = function->get_decl();
+  if (fndecl == error_mark_node || DECL_RESULT(fndecl) == error_mark_node)
+    return error_mark_node;
 
   const Typed_identifier_list* results = this->results_;
 
@@ -2580,6 +2582,8 @@ Return_statement::do_get_tree(Translate_context* context)
       tree set;
       if (retval == NULL_TREE)
 	set = NULL_TREE;
+      else if (retval == error_mark_node)
+	return error_mark_node;
       else
 	set = fold_build2_loc(this->location(), MODIFY_EXPR, void_type_node,
 			      DECL_RESULT(fndecl), retval);
@@ -2591,13 +2595,13 @@ Return_statement::do_get_tree(Translate_context* context)
     {
       gcc_assert(!VOID_TYPE_P(TREE_TYPE(TREE_TYPE(fndecl))));
       tree val = (*this->vals_->begin())->get_tree(context);
-      if (val == error_mark_node)
-	return error_mark_node;
       gcc_assert(results != NULL && results->size() == 1);
       val = Expression::convert_for_assignment(context,
 					       results->begin()->type(),
 					       (*this->vals_->begin())->type(),
 					       val, this->location());
+      if (val == error_mark_node)
+	return error_mark_node;
       tree set = build2(MODIFY_EXPR, void_type_node,
 			DECL_RESULT(fndecl), val);
       SET_EXPR_LOCATION(set, this->location());
@@ -2618,11 +2622,11 @@ Return_statement::do_get_tree(Translate_context* context)
 	{
 	  gcc_assert(pv != this->vals_->end());
 	  tree val = (*pv)->get_tree(context);
-	  if (val == error_mark_node)
-	    return error_mark_node;
 	  val = Expression::convert_for_assignment(context, pr->type(),
 						   (*pv)->type(), val,
 						   this->location());
+	  if (val == error_mark_node)
+	    return error_mark_node;
 	  tree set = build2(MODIFY_EXPR, void_type_node,
 			    build3(COMPONENT_REF, TREE_TYPE(field),
 				   retvar, field, NULL_TREE),
