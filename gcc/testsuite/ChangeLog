@@ -1,3 +1,8 @@
+2010-12-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/46734
+	* g++.dg/tree-ssa/pr46734.C: New test.
+
 2010-12-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/46756
