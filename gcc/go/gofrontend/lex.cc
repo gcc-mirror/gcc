@@ -931,6 +931,25 @@ Lex::is_hex_digit(char c)
 	  || (c >= 'a' && c <= 'f'));
 }
 
+// Return whether an exponent could start at P.
+
+bool
+Lex::could_be_exponent(const char* p, const char* pend)
+{
+  if (*p != 'e' && *p != 'E')
+    return false;
+  ++p;
+  if (p >= pend)
+    return false;
+  if (*p == '+' || *p == '-')
+    {
+      ++p;
+      if (p >= pend)
+	return false;
+    }
+  return *p >= '0' && *p <= '9';
+}
+
 // Pick up a number.
 
 Token
@@ -980,7 +999,7 @@ Lex::gather_number()
 	    }
 	}
 
-      if (*p != '.' && *p != 'e' && *p != 'E' && *p != 'i')
+      if (*p != '.' && *p != 'i' && !Lex::could_be_exponent(p, pend))
 	{
 	  std::string s(pnum, p - pnum);
 	  mpz_t val;
@@ -1004,7 +1023,7 @@ Lex::gather_number()
       ++p;
     }
 
-  if (*p != '.' && *p != 'E' && *p != 'e' && *p != 'i')
+  if (*p != '.' && *p != 'i' && !Lex::could_be_exponent(p, pend))
     {
       std::string s(pnum, p - pnum);
       mpz_t val;
@@ -1039,7 +1058,7 @@ Lex::gather_number()
 	  ++p;
 	}
 
-      if (dot && (*p == 'E' || *p == 'e'))
+      if (dot && Lex::could_be_exponent(p, pend))
 	{
 	  ++p;
 	  if (*p == '+' || *p == '-')

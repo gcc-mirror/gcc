@@ -379,6 +379,9 @@ class Lex
   Token
   gather_identifier();
 
+  static bool
+  could_be_exponent(const char*, const char*);
+
   Token
   gather_number();
 
