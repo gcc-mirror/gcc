@@ -1,3 +1,9 @@
+2010-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/47008
+	* postreload.c (reload_combine_note_store): Also handle
+	PRE_MODIFY and POST_MODIFY.
+
 2010-12-21  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/arm/arm.c (require_pic_register): Set INSN_LOCATOR for all
