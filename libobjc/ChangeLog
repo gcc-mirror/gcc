@@ -1,5 +1,13 @@
 2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	PR libobjc/45953
+	* selector.c (__sel_register_typed_name): When registering a new
+	selector with the same name as an existing one, reuse the existing
+	name string.  Also updated types, casts and comments in the whole
+	function.
+
+2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-private/module-abi-8.h (struct objc_symtab): Declare 'refs'
 	to be 'struct objc_selector *' and not 'SEL'.
 	* init.c (__objc_exec_class): Call

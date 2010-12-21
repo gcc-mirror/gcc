@@ -451,17 +451,19 @@ __sel_register_typed_name (const char *name, const char *types,
   i = (sidx) objc_hash_value_for_key (__objc_selector_hash, name);
   if (soffset_decode (i) != 0)
     {
-      for (l = (struct objc_list *) sarray_get_safe (__objc_selector_array, i);
+      /* There are already selectors with that name.  Examine them to
+	 see if the one we're registering already exists.  */
+      for (l = (struct objc_list *)sarray_get_safe (__objc_selector_array, i);
 	   l; l = l->tail)
 	{
-	  SEL s = (SEL) l->head;
+	  SEL s = (SEL)l->head;
 	  if (types == 0 || s->sel_types == 0)
 	    {
 	      if (s->sel_types == types)
 		{
 		  if (orig)
 		    {
-		      orig->sel_id = (void *) i;
+		      orig->sel_id = (void *)i;
 		      return orig;
 		    }
 		  else
@@ -472,79 +474,93 @@ __sel_register_typed_name (const char *name, const char *types,
 	    {
 	      if (orig)
 		{
-		  orig->sel_id = (void *) i;
+		  orig->sel_id = (void *)i;
 		  return orig;
 		}
 	      else
 		return s;
 	    }
 	}
+      /* A selector with this specific name/type combination does not
+	 exist yet.  We need to register it.  */
       if (orig)
 	j = orig;
       else
 	j = pool_alloc_selector ();
       
-      j->sel_id = (void *) i;
-      /* Can we use the pointer or must copy types?  Don't copy if
+      j->sel_id = (void *)i;
+      /* Can we use the pointer or must we copy types ?  Don't copy if
 	 NULL.  */
       if ((is_const) || (types == 0))
-	j->sel_types = (const char *) types;
+	j->sel_types = types;
       else
 	{
-	  j->sel_types = (char *) objc_malloc (strlen (types) + 1);
-	  strcpy ((char *) j->sel_types, types);
+	  j->sel_types = (char *)objc_malloc (strlen (types) + 1);
+	  strcpy ((char *)j->sel_types, types);
 	}
-      l = (struct objc_list *) sarray_get_safe (__objc_selector_array, i);
+      l = (struct objc_list *)sarray_get_safe (__objc_selector_array, i);
     }
   else
     {
+      /* There are no other selectors with this name registered in the
+	 runtime tables.  */
+      const char *new_name;
+
+      /* Determine i.  */
       __objc_selector_max_index += 1;
       i = soffset_encode (__objc_selector_max_index);
+
+      /* Prepare the selector.  */
       if (orig)
 	j = orig;
       else
 	j = pool_alloc_selector ();
       
-      j->sel_id = (void *) i;
-      /* Can we use the pointer or must copy types?  Don't copy if
+      j->sel_id = (void *)i;
+      /* Can we use the pointer or must we copy types ?  Don't copy if
 	 NULL.  */
-      if ((is_const) || (types == 0))
-	j->sel_types = (const char *) types;
+      if (is_const || (types == 0))
+	j->sel_types = types;
       else
 	{
-	  j->sel_types = (char *) objc_malloc (strlen (types) + 1);
-	  strcpy ((char *) j->sel_types, types);
+	  j->sel_types = (char *)objc_malloc (strlen (types) + 1);
+	  strcpy ((char *)j->sel_types, types);
 	}
+
+      /* Since this is the first selector with this name, we need to
+	 register the correspondence between 'i' (the sel_id) and
+	 'name' (the actual string) in __objc_selector_names and
+	 __objc_selector_hash.  */
+      
+      /* Can we use the pointer or must we copy name ?  Don't copy if
+	 NULL.  (FIXME: Can the name really be NULL here ?)  */
+      if (is_const || (name == 0))
+	new_name = name;
+      else
+	{
+	  new_name = (char *)objc_malloc (strlen (name) + 1);
+	  strcpy ((char *)new_name, name);
+	}
+      
+      /* This maps the sel_id to the name.  */
+      sarray_at_put_safe (__objc_selector_names, i, (void *)new_name);
+
+      /* This maps the name to the sel_id.  */
+      objc_hash_add (&__objc_selector_hash, (void *)new_name, (void *)i);
+
       l = 0;
     }
 
   DEBUG_PRINTF ("Record selector %s[%s] as: %ld\n", name, types, 
-		(long) soffset_decode (i));
-  
-  {
-    int is_new = (l == 0);
-    const char *new_name;
+		(long)soffset_decode (i));
 
-    /* Can we use the pointer or must copy name?  Don't copy if
-       NULL.  */
-    if ((is_const) || (name == 0))
-      new_name = name;
-    else
-      {
-	new_name = (char *) objc_malloc (strlen (name) + 1);
-	strcpy ((char *) new_name, name);
-      }
-    
-    l = list_cons ((void *) j, l);
-    sarray_at_put_safe (__objc_selector_names, i, (void *) new_name);
-    sarray_at_put_safe (__objc_selector_array, i, (void *) l);
-    if (is_new)
-      objc_hash_add (&__objc_selector_hash, (void *) new_name, (void *) i);
-  }
-  
+  /* Now add the selector to the list of selectors with that id.  */
+  l = list_cons ((void *)j, l);
+  sarray_at_put_safe (__objc_selector_array, i, (void *)l);
+
   sarray_realloc (__objc_uninstalled_dtable, __objc_selector_max_index + 1);
   
-  return (SEL) j;
+  return (SEL)j;
 }
 
 SEL
