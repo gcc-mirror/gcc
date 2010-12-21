@@ -659,7 +659,13 @@ Gogo::start_function(const std::string& name, Function_type* type,
 
   Named_object* ret;
   if (Gogo::is_sink_name(*pname))
-    ret = Named_object::make_sink();
+    {
+      static int sink_count;
+      char buf[30];
+      snprintf(buf, sizeof buf, ".$sink%d", sink_count);
+      ++sink_count;
+      ret = Named_object::make_function(buf, NULL, function);
+    }
   else if (!type->is_method())
     {
       ret = this->package_->bindings()->add_function(*pname, NULL, function);
