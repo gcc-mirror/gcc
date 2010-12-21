@@ -1,5 +1,11 @@
 2010-12-21  Steven Bosscher  <steven@gcc.gnu.org>
 
+	PR middle-end/45310
+	* tree-ssa-phiprop.c (propagate_with_phi): Remove statement
+	completely from the function, including EH traces.
+
+2010-12-21  Steven Bosscher  <steven@gcc.gnu.org>
+
 	PR rtl-optimization/46755
 	* ira.c (ira): If some dead edges were removed, find and delete
 	any blocks that might have become unreachable.
