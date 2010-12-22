@@ -5126,7 +5126,7 @@ next_sjlj_build_enter_and_setjmp (void)
   t = build_fold_addr_expr_loc (input_location, t);
 #ifdef OBJCPLUS
   /* Convert _setjmp argument to type that is expected.  */
-  if (TYPE_ARG_TYPES (TREE_TYPE (objc_setjmp_decl)))
+  if (prototype_p (TREE_TYPE (objc_setjmp_decl)))
     t = convert (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (objc_setjmp_decl))), t);
   else
     t = convert (ptr_type_node, t);

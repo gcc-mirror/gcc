@@ -12119,7 +12119,7 @@ sh_init_cumulative_args (CUMULATIVE_ARGS *  pcum,
     {
       pcum->force_mem = ((TARGET_HITACHI || pcum->renesas_abi)
 			 && aggregate_value_p (TREE_TYPE (fntype), fndecl));
-      pcum->prototype_p = TYPE_ARG_TYPES (fntype) ? TRUE : FALSE;
+      pcum->prototype_p = prototype_p (fntype);
       pcum->arg_count [(int) SH_ARG_INT]
 	= TARGET_SH5 && aggregate_value_p (TREE_TYPE (fntype), fndecl);
 

@@ -1,3 +1,24 @@
+2010-12-22  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-aux-info.c (gen_formal_list_for_type): Use prototype_p.
+	* c-decl.c (diagnose_arglist_conflict): Likewise.
+	(diagnose_mismatched_decls, merge_decls): Likewise.
+	(c_builtin_function, c_builtin_function_ext_scope): Likewise.
+	(start_decl, start_function): Likewise.
+	* c-tree.h (C_DECL_ISNT_PROTOTYPED): Likewise.
+	* config/ia64/ia64.h (INIT_CUMULATIVE_ARGS): Likewise.
+	* config/mep/mep.c (mep_validate_interrupt): Likewise.
+	* config/pa/pa.h (INIT_CUMULATIVE_ARGS): Likewise.
+	* config/rs6000/rs6000.c (init_cumulative_args): Likewise.
+	* config/sh/sh.c (sh_init_cumulative_args): Likewise.
+	* config/sparc/sparc.c (init_cumulative_args): Likewise.
+	* dwarf2out.c (add_prototyped_attribute): Likewise.
+	(gen_subprogram_die): Likewise.
+	* ipa-type-escape.c (check_function_parameter_and_return_types):
+	Likewise.
+	(check_call): Likewise.
+	* tree-ssa.c (useless_type_conversion_p): Likewise.
+
 2010-12-22  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu.md ("mov<mode>"): Use nonimmediate_operand

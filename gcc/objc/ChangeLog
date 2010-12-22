@@ -1,3 +1,7 @@
+2010-12-22  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* objc-act.c (next_sjlj_build_enter_and_setjmp): Use prototype_p.
+
 2010-12-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_init): Call using_eh_for_cleanups.

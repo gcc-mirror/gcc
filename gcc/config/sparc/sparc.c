@@ -5017,7 +5017,7 @@ init_cumulative_args (struct sparc_args *cum, tree fntype,
 		      tree fndecl ATTRIBUTE_UNUSED)
 {
   cum->words = 0;
-  cum->prototype_p = fntype && TYPE_ARG_TYPES (fntype);
+  cum->prototype_p = fntype && prototype_p (fntype);
   cum->libcall_p = fntype == 0;
 }
 

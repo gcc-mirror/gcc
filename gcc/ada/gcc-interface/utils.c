@@ -5065,7 +5065,7 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
      will have the correct types when we actually check them later.  */
   if (!args)
     {
-      if (!TYPE_ARG_TYPES (type))
+      if (!prototype_p (type))
 	{
 	  error ("nonnull attribute without arguments on a non-prototype");
 	  *no_add_attrs = true;
@@ -5130,7 +5130,7 @@ handle_sentinel_attribute (tree *node, tree name, tree args,
 {
   tree params = TYPE_ARG_TYPES (*node);
 
-  if (!params)
+  if (!prototype_p (*node))
     {
       warning (OPT_Wattributes,
 	       "%qs attribute requires prototypes with named arguments",

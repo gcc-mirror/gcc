@@ -1,3 +1,8 @@
+2010-12-22  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-common.c (handle_nonnull_attribute, handle_sentinel_attribute):
+	Use prototype_p.
+
 2010-12-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-objc.h (objc_maybe_warn_exceptions): New.

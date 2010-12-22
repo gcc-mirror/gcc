@@ -313,7 +313,7 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
      will have the correct types when we actually check them later.  */
   if (!args)
     {
-      gcc_assert (TYPE_ARG_TYPES (type));
+      gcc_assert (prototype_p (type));
       return NULL_TREE;
     }
 

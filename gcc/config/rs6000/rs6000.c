@@ -7874,7 +7874,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
   cum->words = 0;
   cum->fregno = FP_ARG_MIN_REG;
   cum->vregno = ALTIVEC_ARG_MIN_REG;
-  cum->prototype = (fntype && TYPE_ARG_TYPES (fntype));
+  cum->prototype = (fntype && prototype_p (fntype));
   cum->call_cookie = ((DEFAULT_ABI == ABI_V4 && libcall)
 		      ? CALL_LIBCALL : CALL_NORMAL);
   cum->sysv_gregno = GP_ARG_MIN_REG;

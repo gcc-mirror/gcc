@@ -1,3 +1,8 @@
+2010-12-22  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc-interface/utils.c (handle_nonnull_attribute): Use prototype_p.
+	(handle_sentinel_attribute): Likewise.
+
 2010-12-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR bootstrap/47027

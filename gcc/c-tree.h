@@ -98,7 +98,7 @@ along with GCC; see the file COPYING3.  If not see
    (but this is presently difficult because some of them need FILE*).  */
 #define C_DECL_ISNT_PROTOTYPE(EXP)			\
        (EXP == 0					\
-	|| (TYPE_ARG_TYPES (TREE_TYPE (EXP)) == 0	\
+	|| (!prototype_p (TREE_TYPE (EXP))	\
 	    && !DECL_BUILT_IN (EXP)))
 
 /* For FUNCTION_TYPE, a hidden list of types of arguments.  The same as

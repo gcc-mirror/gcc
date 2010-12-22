@@ -1047,7 +1047,7 @@ do {									\
   (CUM).words = 0;							\
   (CUM).int_regs = 0;							\
   (CUM).fp_regs = 0;							\
-  (CUM).prototype = ((FNTYPE) && TYPE_ARG_TYPES (FNTYPE)) || (LIBNAME);	\
+  (CUM).prototype = ((FNTYPE) && prototype_p (FNTYPE)) || (LIBNAME);	\
   (CUM).atypes[0] = (CUM).atypes[1] = (CUM).atypes[2] = I64;	        \
   (CUM).atypes[3] = (CUM).atypes[4] = (CUM).atypes[5] = I64;            \
   (CUM).atypes[6] = (CUM).atypes[7] = I64;                              \

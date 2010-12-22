@@ -1241,7 +1241,7 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
 	       || TREE_CODE (TREE_TYPE (outer_type)) == METHOD_TYPE)
 	      && (TREE_CODE (TREE_TYPE (outer_type))
 		  == TREE_CODE (TREE_TYPE (inner_type)))
-	      && !TYPE_ARG_TYPES (TREE_TYPE (outer_type))
+	      && !prototype_p (TREE_TYPE (outer_type))
 	      && useless_type_conversion_p (TREE_TYPE (TREE_TYPE (outer_type)),
 					    TREE_TYPE (TREE_TYPE (inner_type)))))
 	return true;
@@ -1407,7 +1407,7 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
 	return false;
 
       /* A conversion to an unprototyped argument list is ok.  */
-      if (!TYPE_ARG_TYPES (outer_type))
+      if (!prototype_p (outer_type))
 	return true;
 
       /* If the unqualified argument types are compatible the conversion
