@@ -1,3 +1,11 @@
+2010-12-22  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/45352
+	PR rtl-optimization/46521
+	PR rtl-optimization/46522
+	* gcc.dg/pr46521.c: New.
+	* gcc.dg/pr46522.c: New. 
+
 2010-12-21  Ian Lance Taylor  <iant@google.com>
 
 	* go.test/go-test.exp: Clear runtests around invocation of

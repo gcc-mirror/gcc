@@ -1,3 +1,13 @@
+2010-12-22  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/45352
+	PR rtl-optimization/46521
+	PR rtl-optimization/46522
+	* sel-sched.c (reset_sched_cycles_in_current_ebb): Recheck the DFA state
+	on the last iteration of the advancing loop.
+	(sel_sched_region_1): Propagate the rescheduling bit to the next block
+	also for empty blocks. 
+
 2010-12-22  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/46724
