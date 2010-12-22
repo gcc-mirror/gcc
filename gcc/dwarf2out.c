@@ -15446,12 +15446,12 @@ loc_list_from_tree (tree loc, int want_address)
       /* FALLTHRU */
 
     case PARM_DECL:
+    case RESULT_DECL:
       if (DECL_HAS_VALUE_EXPR_P (loc))
 	return loc_list_from_tree (DECL_VALUE_EXPR (loc),
 				   want_address);
       /* FALLTHRU */
 
-    case RESULT_DECL:
     case FUNCTION_DECL:
       {
 	rtx rtl;
