@@ -39,10 +39,6 @@ extern const char* __objc_sparse3_id;
 
 #include <stddef.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
 extern int nbuckets;		/* for stats */
 extern int nindices;
 extern int narrays;
@@ -231,9 +227,5 @@ static inline void* sarray_get_safe(struct sarray* array, sidx indx)
   else
     return (array->empty_bucket->elems[0]);
 }
-
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
 
 #endif /* __sarray_INCLUDE_GNU */

@@ -25,10 +25,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef __objc_private_selector_INCLUDE_GNU
 #define __objc_private_selector_INCLUDE_GNU
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
 /* Private runtime functions that may go away or be rewritten or
    replaced.  */
 
@@ -57,9 +53,5 @@ BOOL sel_is_mapped (SEL aSel);
    in the most efficient way.  */
 SEL
 sel_get_any_uid (const char *name);
-
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
 
 #endif /* not __objc_private_selector_INCLUDE_GNU */

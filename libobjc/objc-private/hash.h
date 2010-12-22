@@ -30,10 +30,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <stddef.h>
 #include <string.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
 /*
  * This data structure is used to hold items
  *  stored in a hash table.  Each node holds 
@@ -201,11 +197,5 @@ objc_compare_strings (const void *k1, const void *k2)
   else
     return ! strcmp ((const char *) k1, (const char *) k2);
 }
-
-
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
-
 
 #endif /* not __hash_INCLUDE_GNU */
