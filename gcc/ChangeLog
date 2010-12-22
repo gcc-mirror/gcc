@@ -1,3 +1,25 @@
+2010-12-22  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/45934
+	PR tree-optimization/46302
+	PR tree-optimization/46987
+	* gimple-fold.c (get_base_binfo_for_type): Removed.
+	(gimple_get_relevant_ref_binfo): Likewise.
+	(gimple_fold_obj_type_ref_call): Dumb down to 4.5 functionality,
+	removed parameter inplace, updated the caller.
+	* gimple.h (gimple_get_relevant_ref_binfo): Remove declaration.
+	* ipa-cp.c (ipcp_propagate_types): Do not derive types from constants.
+	(ipcp_discover_new_direct_edges): Do not do devirtualization based on
+	constants.
+	* ipa-prop.c (compute_known_type_jump_func): Use
+	get_ref_base_and_extent and get_binfo_at_offset instead of
+	gimple_get_relevant_ref_binfo.
+	(compute_known_type_jump_func): Likewise.
+	(update_jump_functions_after_inlining): Do not derive types from
+	constants.
+	(try_make_edge_direct_virtual_call): Likewise.
+	* tree.c (get_binfo_at_offset): Get type from non-artificial fields.
+
 2010-12-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/svr4.h: Remove.

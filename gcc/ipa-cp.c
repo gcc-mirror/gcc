@@ -781,25 +781,15 @@ ipcp_propagate_types (struct ipa_node_params *caller_info,
 		      struct ipa_node_params *callee_info,
 		      struct ipa_jump_func *jf, int i)
 {
-  tree cst, binfo;
-
   switch (jf->type)
     {
     case IPA_JF_UNKNOWN:
     case IPA_JF_CONST_MEMBER_PTR:
+    case IPA_JF_CONST:
       break;
 
     case IPA_JF_KNOWN_TYPE:
       return ipcp_add_param_type (callee_info, i, jf->value.base_binfo);
-
-    case IPA_JF_CONST:
-      cst = jf->value.constant;
-      if (TREE_CODE (cst) != ADDR_EXPR)
-	break;
-      binfo = gimple_get_relevant_ref_binfo (TREE_OPERAND (cst, 0), NULL_TREE);
-      if (!binfo)
-	break;
-      return ipcp_add_param_type (callee_info, i, binfo);
 
     case IPA_JF_PASS_THROUGH:
     case IPA_JF_ANCESTOR:
@@ -1292,35 +1282,13 @@ ipcp_discover_new_direct_edges (struct cgraph_node *node, int index, tree cst)
   for (ie = node->indirect_calls; ie; ie = next_ie)
     {
       struct cgraph_indirect_call_info *ici = ie->indirect_info;
-      tree target, delta = NULL_TREE;
 
       next_ie = ie->next_callee;
-      if (ici->param_index != index)
+      if (ici->param_index != index
+	  || ici->polymorphic)
 	continue;
 
-      if (ici->polymorphic)
-	{
-	  tree binfo;
-	  HOST_WIDE_INT token;
-
-	  if (TREE_CODE (cst) != ADDR_EXPR)
-	    continue;
-
-	  binfo = gimple_get_relevant_ref_binfo (TREE_OPERAND (cst, 0),
-						 NULL_TREE);
-	  if (!binfo)
-	    continue;
-	  gcc_assert (ie->indirect_info->anc_offset == 0);
-	  token = ie->indirect_info->otr_token;
-	  target = gimple_get_virt_mehtod_for_binfo (token, binfo, &delta,
-						     true);
-	  if (!target)
-	    continue;
-	}
-      else
-	target = cst;
-
-      ipa_make_edge_direct_to_target (ie, target, delta);
+      ipa_make_edge_direct_to_target (ie, cst, NULL_TREE);
     }
 }
 
