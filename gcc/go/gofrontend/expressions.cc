@@ -7387,8 +7387,11 @@ Builtin_call_expression::do_check_types(Gogo*)
 	    this->report_error(_("not enough arguments"));
 	    break;
 	  }
-	/* Lowering varargs should have left us with 2 arguments.  */
-	gcc_assert(args->size() == 2);
+	if (args->size() > 2)
+	  {
+	    this->report_error(_("too many arguments"));
+	    break;
+	  }
 	std::string reason;
 	if (!Type::are_assignable(args->front()->type(), args->back()->type(),
 				  &reason))
