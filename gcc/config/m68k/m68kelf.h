@@ -1,7 +1,7 @@
 /* m68kelf support, derived from m68kv4.h */
 
 /* Target definitions for GNU compiler for mc680x0 running System V.4
-   Copyright (C) 1991, 1993, 2000, 2002, 2003, 2004, 2007
+   Copyright (C) 1991, 1993, 2000, 2002, 2003, 2004, 2007, 2010
    Free Software Foundation, Inc.
 
    Written by Ron Guilmette (rfg@netcom.com) and Fred Fish (fnf@cygnus.com).
@@ -126,8 +126,8 @@ do {								\
    
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 
-/* Override the definition in svr4.h. In m68k svr4, using swbeg is the 
-   standard way to do switch table.  */
+/* In m68k svr4, using swbeg is the standard way to do switch
+   table.  */
 #undef ASM_OUTPUT_BEFORE_CASE_LABEL
 #define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE,PREFIX,NUM,TABLE)		\
   fprintf ((FILE), "%s&%d\n", SWBEG_ASM_OP, XVECLEN (PATTERN (TABLE), 1));

@@ -55,14 +55,6 @@
 # define SUBTARGET_DRIVER_SELF_SPECS
 #endif
 
-/* A C string constant that tells the GCC driver program options to pass to
-   the assembler.  It can also specify how to translate options you give to GNU
-   CC into options for GCC to pass to the assembler.  See the file `sun3.h'
-   for an example of this.
-
-   Do not define this macro if it does not need to do anything.
-
-   Defined in svr4.h.  */
 #undef  ASM_SPEC
 #define ASM_SPEC "\
 %{G*} %{Ym,*} %{Yd,*} \
@@ -79,24 +71,9 @@
     %{mno-fdpic:-mnopic} %{mfdpic} \
     %{fpic|fpie: -mpic} %{fPIC|fPIE: -mPIC} %{mlibrary-pic}}"
 
-/* Another C string constant used much like `LINK_SPEC'.  The difference
-   between the two is that `STARTFILE_SPEC' is used at the very beginning of
-   the command given to the linker.
-
-   If this macro is not defined, a default is provided that loads the standard
-   C startup file from the usual place.  See `gcc.c'.
-
-   Defined in svr4.h.  */
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC "crt0%O%s frvbegin%O%s"
 
-/* Another C string constant used much like `LINK_SPEC'.  The difference
-   between the two is that `ENDFILE_SPEC' is used at the very end of the
-   command given to the linker.
-
-   Do not define this macro if it does not need to do anything.
-
-   Defined in svr4.h.  */
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "frvend%O%s"
 
@@ -142,15 +119,6 @@
 /* For ABI compliance, we need to put bss data into the normal data section.  */
 #define CC1_SPEC "%{G*}"
 
-/* A C string constant that tells the GCC driver program options to pass to
-   the linker.  It can also specify how to translate options you give to GCC
-   into options for GCC to pass to the linker.
-
-   Do not define this macro if it does not need to do anything.
-
-   Defined in svr4.h.  */
-/* Override the svr4.h version with one that dispenses without the svr4
-   shared library options, notably -G.  */
 #undef	LINK_SPEC
 #define LINK_SPEC "\
 %{h*} %{v:-V} \
@@ -161,15 +129,6 @@
 %{G*} \
 %{YP,*} \
 %{Qy:} %{!Qn:-Qy}"
-
-/* Another C string constant used much like `LINK_SPEC'.  The difference
-   between the two is that `LIB_SPEC' is used at the end of the command given
-   to the linker.
-
-   If this macro is not defined, a default is provided that loads the standard
-   C library from the usual place.  See `gcc.c'.
-
-   Defined in svr4.h.  */
 
 #undef  LIB_SPEC
 #define LIB_SPEC "--start-group -lc -lsim --end-group"
@@ -428,67 +387,6 @@
    slower in that case, define this macro as 0.  */
 #define STRICT_ALIGNMENT 1
 
-/* Define this if you wish to imitate the way many other C compilers handle
-   alignment of bitfields and the structures that contain them.
-
-   The behavior is that the type written for a bit-field (`int', `short', or
-   other integer type) imposes an alignment for the entire structure, as if the
-   structure really did contain an ordinary field of that type.  In addition,
-   the bit-field is placed within the structure so that it would fit within such
-   a field, not crossing a boundary for it.
-
-   Thus, on most machines, a bit-field whose type is written as `int' would not
-   cross a four-byte boundary, and would force four-byte alignment for the
-   whole structure.  (The alignment used may not be four bytes; it is
-   controlled by the other alignment parameters.)
-
-   If the macro is defined, its definition should be a C expression; a nonzero
-   value for the expression enables this behavior.
-
-   Note that if this macro is not defined, or its value is zero, some bitfields
-   may cross more than one alignment boundary.  The compiler can support such
-   references if there are `insv', `extv', and `extzv' insns that can directly
-   reference memory.
-
-   The other known way of making bitfields work is to define
-   `STRUCTURE_SIZE_BOUNDARY' as large as `BIGGEST_ALIGNMENT'.  Then every
-   structure can be accessed with fullwords.
-
-   Unless the machine has bit-field instructions or you define
-   `STRUCTURE_SIZE_BOUNDARY' that way, you must define
-   `PCC_BITFIELD_TYPE_MATTERS' to have a nonzero value.
-
-   If your aim is to make GCC use the same conventions for laying out
-   bitfields as are used by another compiler, here is how to investigate what
-   the other compiler does.  Compile and run this program:
-
-        struct foo1
-        {
-          char x;
-          char :0;
-          char y;
-        };
-
-        struct foo2
-        {
-          char x;
-          int :0;
-          char y;
-        };
-
-        main ()
-        {
-          printf ("Size of foo1 is %d\n",
-                  sizeof (struct foo1));
-          printf ("Size of foo2 is %d\n",
-                  sizeof (struct foo2));
-          exit (0);
-        }
-
-   If this prints 2 and 5, then the compiler's behavior is what you would get
-   from `PCC_BITFIELD_TYPE_MATTERS'.
-
-   Defined in svr4.h.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
 
@@ -1855,15 +1753,6 @@ __asm__("\n"								\
 /* Short Data Support */
 #define SDATA_SECTION_ASM_OP	"\t.section .sdata,\"aw\""
 
-/* On svr4, we *do* have support for the .init and .fini sections, and we
-   can put stuff in there to be executed before and after `main'.  We let
-   crtstuff.c and other files know this by defining the following symbols.
-   The definitions say how to change sections to the .init and .fini
-   sections.  This is the same for all known svr4 assemblers.
-
-   The standard System V.4 macros will work, but they look ugly in the
-   assembly output, so redefine them.  */
-
 #undef	INIT_SECTION_ASM_OP
 #undef	FINI_SECTION_ASM_OP
 #define INIT_SECTION_ASM_OP	"\t.section .init,\"ax\""
@@ -1942,13 +1831,6 @@ do {									\
    variables are output.  */
 #undef ASM_OUTPUT_LOCAL
 
-/* Like `ASM_OUTPUT_LOCAL' except takes the required alignment as a separate,
-   explicit argument.  If you define this macro, it is used in place of
-   `ASM_OUTPUT_LOCAL', and gives you more flexibility in handling the required
-   alignment of the variable.  The alignment is specified as the number of
-   bits.
-
-   Defined in svr4.h.  */
 #undef ASM_OUTPUT_ALIGNED_LOCAL
 
 /* This is for final.c, because it is used by ASM_DECLARE_OBJECT_NAME.  */
@@ -1989,21 +1871,6 @@ do {									\
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP "\t.globl "
 
-/* A C statement to store into the string STRING a label whose name is made
-   from the string PREFIX and the number NUM.
-
-   This string, when output subsequently by `assemble_name', should produce the
-   output that `(*targetm.asm_out.internal_label)' would produce with the same PREFIX
-   and NUM.
-
-   If the string begins with `*', then `assemble_name' will output the rest of
-   the string unchanged.  It is often convenient for
-   `ASM_GENERATE_INTERNAL_LABEL' to use `*' in this way.  If the string doesn't
-   start with `*', then `ASM_OUTPUT_LABELREF' gets to output the string, and
-   may change it.  (Of course, `ASM_OUTPUT_LABELREF' is also part of your
-   machine description, so you should know what it does on your machine.)
-
-   Defined in svr4.h.  */
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)			\
 do {									\
@@ -2013,13 +1880,6 @@ do {									\
 
 /* Macros Controlling Initialization Routines.  */
 
-/* If defined, a C string constant for the assembler operation to identify the
-   following data as initialization code.  If not defined, GCC will assume
-   such a section does not exist.  When you are using special sections for
-   initialization and termination functions, this macro also controls how
-   `crtstuff.c' and `libgcc2.c' arrange to run the initialization functions.
-
-   Defined in svr4.h.  */
 #undef INIT_SECTION_ASM_OP
 
 /* If defined, `main' will call `__main' despite the presence of
@@ -2113,12 +1973,6 @@ do {									\
 #define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS)\
   frv_final_prescan_insn (INSN, OPVEC, NOPERANDS)
 
-/* If defined, C string expressions to be used for the `%R', `%L', `%U', and
-   `%I' options of `asm_fprintf' (see `final.c').  These are useful when a
-   single `md' file must support multiple assembler formats.  In that case, the
-   various `tm.h' files can define these macros differently.
-
-   USER_LABEL_PREFIX is defined in svr4.h.  */
 #undef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX ""
 #define REGISTER_PREFIX ""
@@ -2175,11 +2029,6 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
 
 /* Assembler Commands for Alignment.  */
 
-/* A C statement to output to the stdio stream STREAM an assembler instruction
-   to advance the location counter by NBYTES bytes.  Those bytes should be zero
-   when loaded.  NBYTES will be a C expression of type `int'.
-
-   Defined in svr4.h.  */
 #undef  ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(STREAM, NBYTES) \
   fprintf (STREAM, "\t.zero\t%u\n", (int)(NBYTES))
@@ -2215,17 +2064,6 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
    This declaration is required.  */
 #define DBX_REGISTER_NUMBER(REGNO) (REGNO)
 
-/* A C expression that returns the type of debugging output GCC produces
-   when the user specifies `-g' or `-ggdb'.  Define this if you have arranged
-   for GCC to support more than one format of debugging output.  Currently,
-   the allowable values are `DBX_DEBUG', `SDB_DEBUG', `DWARF_DEBUG',
-   `DWARF2_DEBUG', and `XCOFF_DEBUG'.
-
-   The value of this macro only affects the default debugging output; the user
-   can always get a specific type of output by using `-gstabs', `-gcoff',
-   `-gdwarf-1', `-gdwarf-2', or `-gxcoff'.
-
-   Defined in svr4.h.  */
 #undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 

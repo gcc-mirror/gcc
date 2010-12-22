@@ -1,4 +1,4 @@
-/* Override definitions in elfos.h/svr4.h to be correct for IA64.
+/* Override definitions in elfos.h to be correct for IA64.
 
 Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005,
 2007, 2010 Free Software Foundation, Inc.
@@ -104,12 +104,8 @@ do {						\
 #undef FINI_SECTION_ASM_OP
 #define FINI_SECTION_ASM_OP	"\t.section\t.fini,\"ax\",\"progbits\""
 
-/* svr4.h undefines this, so we need to define it here.  */
 #define DBX_REGISTER_NUMBER(REGNO) \
   ia64_dbx_register_number(REGNO)
-
-/* Things that svr4.h defines to the wrong type, because it assumes 32-bit
-   ints and 32-bit longs.  */
 
 #undef SIZE_TYPE
 #define SIZE_TYPE "long unsigned int"

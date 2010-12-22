@@ -109,7 +109,6 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
 #undef VXWORKS_GOTT_INDEX
 #define VXWORKS_GOTT_INDEX "__GOTT_INDEX__"
 
-/* As for svr4.h (which not all VxWorks targets include). */
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE "int"
 

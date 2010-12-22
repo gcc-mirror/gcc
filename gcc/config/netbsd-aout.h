@@ -69,8 +69,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef LINK_SPEC
 #define LINK_SPEC NETBSD_LINK_SPEC_AOUT
 
-/* Some imports from svr4.h in support of shared libraries.  */
-
 /* Define the strings used for the .type, .size, and .set directives.
    These strings generally do not vary from one system running NetBSD
    to another, but if a given system needs to use different pseudo-op

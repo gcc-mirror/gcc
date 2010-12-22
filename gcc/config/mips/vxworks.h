@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 %(subtarget_asm_spec)"
 
 #undef LINK_SPEC
-/* LINK_SPEC is clobbered in svr4.h. ugh!  */
 #define LINK_SPEC "\
 %(endian_spec) \
 %{!G:-G 0} %{G*} %{mips1} %{mips2} %{mips3} %{mips4} %{mips32} %{mips64} \
