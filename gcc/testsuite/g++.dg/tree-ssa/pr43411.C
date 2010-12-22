@@ -25,5 +25,5 @@ void testInlinePsub() {
     sink1 = v(p);
 }
 
-// { dg-final { scan-tree-dump-not "OBJ_TYPE_REF" "optimized" } }
+// { dg-final { scan-tree-dump-not "OBJ_TYPE_REF" "optimized" { xfail *-*-* } } }
 // { dg-final { cleanup-tree-dump "optimized" } }

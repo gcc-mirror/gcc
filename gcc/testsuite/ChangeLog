@@ -1,3 +1,16 @@
+2010-12-22  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/45934
+	PR tree-optimization/46302
+	PR tree-optimization/46987
+	* g++.dg/ipa/ipcp-ivi-1.C: Removed.
+	* g++.dg/ipa/ivinline-6.C: Likewise.
+	* g++.dg/otr-fold-1.C: Likewise.
+	* g++.dg/otr-fold-2.C: Likewise.
+	* g++.dg/tree-ssa/pr43411.C: Xfail dump scan.
+	* g++.dg/tree-ssa/pr45605.C: Likewise.
+	* g++.dg/tree-ssa/pr46987.C: New test.
+
 2010-12-22  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* gfortran.dg/pr46755.f: Fix test case.

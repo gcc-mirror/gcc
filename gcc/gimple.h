@@ -892,7 +892,6 @@ unsigned get_gimple_rhs_num_ops (enum tree_code);
 gimple gimple_alloc_stat (enum gimple_code, unsigned MEM_STAT_DECL);
 const char *gimple_decl_printable_name (tree, int);
 bool gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace);
-tree gimple_get_relevant_ref_binfo (tree ref, tree known_binfo);
 tree gimple_get_virt_mehtod_for_binfo (HOST_WIDE_INT, tree, tree *, bool);
 void gimple_adjust_this_by_delta (gimple_stmt_iterator *, tree);
 /* Returns true iff T is a valid GIMPLE statement.  */

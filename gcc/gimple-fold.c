@@ -1364,88 +1364,6 @@ gimple_fold_builtin (gimple stmt)
   return result;
 }
 
-/* Search for a base binfo of BINFO that corresponds to TYPE and return it if
-   it is found or NULL_TREE if it is not.  */
-
-static tree
-get_base_binfo_for_type (tree binfo, tree type)
-{
-  int i;
-  tree base_binfo;
-  tree res = NULL_TREE;
-
-  for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
-    if (TREE_TYPE (base_binfo) == type)
-      {
-	gcc_assert (!res);
-	res = base_binfo;
-      }
-
-  return res;
-}
-
-/* Return a binfo describing the part of object referenced by expression REF.
-   Return NULL_TREE if it cannot be determined.  REF can consist of a series of
-   COMPONENT_REFs of a declaration or of an INDIRECT_REF or it can also be just
-   a simple declaration, indirect reference or an SSA_NAME.  If the function
-   discovers an INDIRECT_REF or an SSA_NAME, it will assume that the
-   encapsulating type is described by KNOWN_BINFO, if it is not NULL_TREE.
-   Otherwise the first non-artificial field declaration or the base declaration
-   will be examined to get the encapsulating type. */
-
-tree
-gimple_get_relevant_ref_binfo (tree ref, tree known_binfo)
-{
-  while (true)
-    {
-      if (TREE_CODE (ref) == COMPONENT_REF)
-	{
-	  tree par_type;
-	  tree binfo;
-	  tree field = TREE_OPERAND (ref, 1);
-
-	  if (!DECL_ARTIFICIAL (field))
-	    {
-	      tree type = TREE_TYPE (field);
-	      if (TREE_CODE (type) == RECORD_TYPE)
-		return TYPE_BINFO (type);
-	      else
-		return NULL_TREE;
-	    }
-
-	  par_type = TREE_TYPE (TREE_OPERAND (ref, 0));
-	  binfo = TYPE_BINFO (par_type);
-	  if (!binfo
-	      || BINFO_N_BASE_BINFOS (binfo) == 0)
-	    return NULL_TREE;
-
-	  /* Offset 0 indicates the primary base, whose vtable contents are
-	     represented in the binfo for the derived class.  */
-	  if (int_bit_position (field) != 0)
-	    {
-	      tree d_binfo;
-
-	      /* Get descendant binfo. */
-	      d_binfo = gimple_get_relevant_ref_binfo (TREE_OPERAND (ref, 0),
-						       known_binfo);
-	      if (!d_binfo)
-		return NULL_TREE;
-	      return get_base_binfo_for_type (d_binfo, TREE_TYPE (field));
-	    }
-
-	  ref = TREE_OPERAND (ref, 0);
-	}
-      else if (DECL_P (ref) && TREE_CODE (TREE_TYPE (ref)) == RECORD_TYPE)
-	return TYPE_BINFO (TREE_TYPE (ref));
-      else if (known_binfo
-	       && (TREE_CODE (ref) == SSA_NAME
-		   || TREE_CODE (ref) == MEM_REF))
-	return known_binfo;
-      else
-	return NULL_TREE;
-    }
-}
-
 /* Return a declaration of a function which an OBJ_TYPE_REF references. TOKEN
    is integer form of OBJ_TYPE_REF_TOKEN of the reference expression.
    KNOWN_BINFO carries the binfo describing the true type of
@@ -1529,7 +1447,7 @@ gimple_adjust_this_by_delta (gimple_stmt_iterator *gsi, tree delta)
    INPLACE is false.  Return true iff the statement was changed.  */
 
 static bool
-gimple_fold_obj_type_ref_call (gimple_stmt_iterator *gsi, bool inplace)
+gimple_fold_obj_type_ref_call (gimple_stmt_iterator *gsi)
 {
   gimple stmt = gsi_stmt (*gsi);
   tree ref = gimple_call_fn (stmt);
@@ -1537,27 +1455,21 @@ gimple_fold_obj_type_ref_call (gimple_stmt_iterator *gsi, bool inplace)
   tree binfo, fndecl, delta;
   HOST_WIDE_INT token;
 
-  if (TREE_CODE (obj) == ADDR_EXPR)
-    obj = TREE_OPERAND (obj, 0);
-  else
+  if (TREE_CODE (obj) != ADDR_EXPR)
     return false;
-
-  binfo = gimple_get_relevant_ref_binfo (obj, NULL_TREE);
+  obj = TREE_OPERAND (obj, 0);
+  if (!DECL_P (obj)
+      || TREE_CODE (TREE_TYPE (obj)) != RECORD_TYPE)
+    return false;
+  binfo = TYPE_BINFO (TREE_TYPE (obj));
   if (!binfo)
     return false;
+
   token = tree_low_cst (OBJ_TYPE_REF_TOKEN (ref), 1);
-  fndecl = gimple_get_virt_mehtod_for_binfo (token, binfo, &delta,
-					     !DECL_P (obj));
+  fndecl = gimple_get_virt_mehtod_for_binfo (token, binfo, &delta, false);
   if (!fndecl)
     return false;
-
-  if (integer_nonzerop (delta))
-    {
-      if (inplace)
-        return false;
-      gimple_adjust_this_by_delta (gsi, delta);
-    }
-
+  gcc_assert (integer_zerop (delta));
   gimple_call_set_fndecl (stmt, fndecl);
   return true;
 }
@@ -1595,7 +1507,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
          here where we can just smash the call operand.  */
       callee = gimple_call_fn (stmt);
       if (TREE_CODE (callee) == OBJ_TYPE_REF)
-	return gimple_fold_obj_type_ref_call (gsi, inplace);
+	return gimple_fold_obj_type_ref_call (gsi);
     }
 
   return false;

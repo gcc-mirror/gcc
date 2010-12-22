@@ -362,7 +362,7 @@ compute_complex_assign_jump_func (struct ipa_node_params *info,
 				  gimple stmt, tree name)
 {
   HOST_WIDE_INT offset, size, max_size;
-  tree op1, op2, type;
+  tree op1, op2, base, type;
   int index;
 
   op1 = gimple_assign_rhs1 (stmt);
@@ -404,20 +404,21 @@ compute_complex_assign_jump_func (struct ipa_node_params *info,
   type = TREE_TYPE (op1);
   if (TREE_CODE (type) != RECORD_TYPE)
     return;
-  op1 = get_ref_base_and_extent (op1, &offset, &size, &max_size);
-  if (TREE_CODE (op1) != MEM_REF
+  base = get_ref_base_and_extent (op1, &offset, &size, &max_size);
+  if (TREE_CODE (base) != MEM_REF
       /* If this is a varying address, punt.  */
       || max_size == -1
       || max_size != size)
     return;
-  offset += mem_ref_offset (op1).low * BITS_PER_UNIT;
-  op1 = TREE_OPERAND (op1, 0);
-  if (TREE_CODE (op1) != SSA_NAME
-      || !SSA_NAME_IS_DEFAULT_DEF (op1)
+  offset += mem_ref_offset (base).low * BITS_PER_UNIT;
+  base = TREE_OPERAND (base, 0);
+  if (TREE_CODE (base) != SSA_NAME
+      || !SSA_NAME_IS_DEFAULT_DEF (base)
       || offset < 0)
     return;
 
-  index = ipa_get_param_decl_index (info, SSA_NAME_VAR (op1));
+  /* Dynamic types are changed only in constructors and destructors and  */
+  index = ipa_get_param_decl_index (info, SSA_NAME_VAR (base));
   if (index >= 0)
     {
       jfunc->type = IPA_JF_ANCESTOR;
@@ -534,13 +535,26 @@ compute_complex_ancestor_jump_func (struct ipa_node_params *info,
 static void
 compute_known_type_jump_func (tree op, struct ipa_jump_func *jfunc)
 {
-  tree binfo;
+  HOST_WIDE_INT offset, size, max_size;
+  tree base, binfo;
 
-  if (TREE_CODE (op) != ADDR_EXPR)
+  if (TREE_CODE (op) != ADDR_EXPR
+      || TREE_CODE (TREE_TYPE (TREE_TYPE (op))) != RECORD_TYPE)
     return;
 
   op = TREE_OPERAND (op, 0);
-  binfo = gimple_get_relevant_ref_binfo (op, NULL_TREE);
+  base = get_ref_base_and_extent (op, &offset, &size, &max_size);
+  if (!DECL_P (base)
+      || max_size == -1
+      || max_size != size
+      || TREE_CODE (TREE_TYPE (base)) != RECORD_TYPE
+      || is_global_var (base))
+    return;
+
+  binfo = TYPE_BINFO (TREE_TYPE (base));
+  if (!binfo)
+    return;
+  binfo = get_binfo_at_offset (binfo, offset, TREE_TYPE (op));
   if (binfo)
     {
       jfunc->type = IPA_JF_KNOWN_TYPE;
@@ -1420,17 +1434,6 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 	  src = ipa_get_ith_jump_func (top, dst->value.ancestor.formal_id);
 	  if (src->type == IPA_JF_KNOWN_TYPE)
 	    combine_known_type_and_ancestor_jfs (src, dst);
-	  else if (src->type == IPA_JF_CONST)
-	    {
-	      struct ipa_jump_func kt_func;
-
-	      kt_func.type = IPA_JF_UNKNOWN;
-	      compute_known_type_jump_func (src->value.constant, &kt_func);
-	      if (kt_func.type == IPA_JF_KNOWN_TYPE)
-		combine_known_type_and_ancestor_jfs (&kt_func, dst);
-	      else
-		dst->type = IPA_JF_UNKNOWN;
-	    }
 	  else if (src->type == IPA_JF_PASS_THROUGH
 		   && src->value.pass_through.operation == NOP_EXPR)
 	    dst->value.ancestor.formal_id = src->value.pass_through.formal_id;
@@ -1543,15 +1546,6 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 
   if (jfunc->type == IPA_JF_KNOWN_TYPE)
     binfo = jfunc->value.base_binfo;
-  else if (jfunc->type == IPA_JF_CONST)
-    {
-      tree cst = jfunc->value.constant;
-      if (TREE_CODE (cst) == ADDR_EXPR)
-	binfo = gimple_get_relevant_ref_binfo (TREE_OPERAND (cst, 0),
-					       NULL_TREE);
-      else
-  	return NULL;
-    }
   else
     return NULL;
 
