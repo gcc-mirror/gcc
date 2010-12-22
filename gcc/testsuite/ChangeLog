@@ -1,3 +1,8 @@
+2010-12-22  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/47019
+	* gfortran.dg/graphite/pr47019.f: New.
+
 2010-12-22  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/init/volatile2.C: New.
