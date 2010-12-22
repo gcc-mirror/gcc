@@ -12903,9 +12903,8 @@ output_mov_double_arm_from_fpa (rtx *operands)
   return "";
 }
 
-/* Output a move between double words.
-   It must be REG<-REG, REG<-CONST_DOUBLE, REG<-CONST_INT, REG<-MEM
-   or MEM<-REG and all MEMs must be offsettable addresses.  */
+/* Output a move between double words.  It must be REG<-MEM
+   or MEM<-REG.  */
 const char *
 output_move_double (rtx *operands)
 {
