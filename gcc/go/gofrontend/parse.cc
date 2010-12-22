@@ -1654,8 +1654,18 @@ Parse::init_vars_from_map(const Typed_identifier_list* vars, Type* type,
 
   if (!this->gogo_->in_global_scope())
     this->gogo_->add_statement(s);
-  else
+  else if (!val_no->is_sink())
     val_no->var_value()->add_preinit_statement(s);
+  else if (!no->is_sink())
+    no->var_value()->add_preinit_statement(s);
+  else
+    {
+      // Execute the map index expression just so that we can fail if
+      // the map is nil.
+      Named_object* dummy = this->create_dummy_global(Type::lookup_bool_type(),
+						      NULL, location);
+      dummy->var_value()->add_preinit_statement(s);
+    }
 
   return true;
 }
@@ -1705,8 +1715,16 @@ Parse::init_vars_from_receive(const Typed_identifier_list* vars, Type* type,
 
   if (!this->gogo_->in_global_scope())
     this->gogo_->add_statement(s);
-  else
+  else if (!val_no->is_sink())
     val_no->var_value()->add_preinit_statement(s);
+  else if (!no->is_sink())
+    no->var_value()->add_preinit_statement(s);
+  else
+    {
+      Named_object* dummy = this->create_dummy_global(Type::lookup_bool_type(),
+						      NULL, location);
+      dummy->var_value()->add_preinit_statement(s);
+    }
 
   return true;
 }
@@ -1757,8 +1775,15 @@ Parse::init_vars_from_type_guard(const Typed_identifier_list* vars,
 
   if (!this->gogo_->in_global_scope())
     this->gogo_->add_statement(s);
-  else
+  else if (!val_no->is_sink())
     val_no->var_value()->add_preinit_statement(s);
+  else if (!no->is_sink())
+    no->var_value()->add_preinit_statement(s);
+  else
+    {
+      Named_object* dummy = this->create_dummy_global(type, NULL, location);
+      dummy->var_value()->add_preinit_statement(s);
+    }
 
   return true;
 }
@@ -1780,17 +1805,7 @@ Parse::init_var(const Typed_identifier& tid, Type* type, Expression* init,
 	  if (!this->gogo_->in_global_scope())
 	    this->gogo_->add_statement(Statement::make_statement(init));
 	  else
-	    {
-	      // Create a dummy global variable to force the
-	      // initializer to be run in the right place.
-	      Variable* var = new Variable(type, init, true, false, false,
-					   location);
-	      static int count;
-	      char buf[30];
-	      snprintf(buf, sizeof buf, "_.%d", count);
-	      ++count;
-	      return this->gogo_->add_variable(buf, var);
-	    }
+	    return this->create_dummy_global(type, init, location);
 	}
       return this->gogo_->add_sink();
     }
@@ -1816,6 +1831,22 @@ Parse::init_var(const Typed_identifier& tid, Type* type, Expression* init,
   Variable* var = new Variable(type, init, this->gogo_->in_global_scope(),
 			       false, false, location);
   return this->gogo_->add_variable(tid.name(), var);
+}
+
+// Create a dummy global variable to force an initializer to be run in
+// the right place.  This is used when a sink variable is initialized
+// at global scope.
+
+Named_object*
+Parse::create_dummy_global(Type* type, Expression* init,
+			   source_location location)
+{
+  Variable* var = new Variable(type, init, true, false, false, location);
+  static int count;
+  char buf[30];
+  snprintf(buf, sizeof buf, "_.%d", count);
+  ++count;
+  return this->gogo_->add_variable(buf, var);
 }
 
 // SimpleVarDecl = identifier ":=" Expression .
