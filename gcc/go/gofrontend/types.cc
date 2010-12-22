@@ -7622,13 +7622,14 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
 
   bool receiver_can_be_pointer = (expr->type()->points_to() != NULL
 				  || expr->is_addressable());
+  std::vector<const Named_type*> seen;
   bool is_method = false;
   bool found_pointer_method = false;
   std::string ambig1;
   std::string ambig2;
-  if (Type::find_field_or_method(type, name, receiver_can_be_pointer, NULL,
-				 &is_method, &found_pointer_method,
-				 &ambig1, &ambig2))
+  if (Type::find_field_or_method(type, name, receiver_can_be_pointer,
+				 &seen, NULL, &is_method,
+				 &found_pointer_method, &ambig1, &ambig2))
     {
       Expression* ret;
       if (!is_method)
@@ -7704,13 +7705,16 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
 // ambiguity.  If a method is found, sets *IS_METHOD to true;
 // otherwise, if a field is found, set it to false.  If
 // RECEIVER_CAN_BE_POINTER is false, then the receiver is a value
-// whose address can not be taken.  When returning false, this sets
-// *FOUND_POINTER_METHOD if we found a method we couldn't use because
-// it requires a pointer.  LEVEL is used for recursive calls, and can
-// be NULL for a non-recursive call.  When this function returns false
-// because it finds that the name is ambiguous, it will store a path
-// to the ambiguous names in *AMBIG1 and *AMBIG2.  If the name is not
-// found at all, *AMBIG1 and *AMBIG2 will be unchanged.
+// whose address can not be taken.  SEEN is used to avoid infinite
+// recursion on invalid types.
+
+// When returning false, this sets *FOUND_POINTER_METHOD if we found a
+// method we couldn't use because it requires a pointer.  LEVEL is
+// used for recursive calls, and can be NULL for a non-recursive call.
+// When this function returns false because it finds that the name is
+// ambiguous, it will store a path to the ambiguous names in *AMBIG1
+// and *AMBIG2.  If the name is not found at all, *AMBIG1 and *AMBIG2
+// will be unchanged.
 
 // This function just returns whether or not there is a field or
 // method, and whether it is a field or method.  It doesn't build an
@@ -7723,6 +7727,7 @@ bool
 Type::find_field_or_method(const Type* type,
 			   const std::string& name,
 			   bool receiver_can_be_pointer,
+			   std::vector<const Named_type*>* seen,
 			   int* level,
 			   bool* is_method,
 			   bool* found_pointer_method,
@@ -7749,6 +7754,17 @@ Type::find_field_or_method(const Type* type,
 	  // else.
 	  *found_pointer_method = true;
 	}
+
+      for (std::vector<const Named_type*>::const_iterator p = seen->begin();
+	   p != seen->end();
+	   ++p)
+	{
+	  if (*p == nt)
+	    {
+	      // We've already seen this type when searching for methods.
+	      return false;
+	    }
+	}
     }
 
   // Interface types can have methods.
@@ -7768,6 +7784,9 @@ Type::find_field_or_method(const Type* type,
   if (fields == NULL)
     return false;
 
+  if (nt != NULL)
+    seen->push_back(nt);
+
   int found_level = 0;
   bool found_is_method = false;
   std::string found_ambig1;
@@ -7780,6 +7799,8 @@ Type::find_field_or_method(const Type* type,
       if (pf->field_name() == name)
 	{
 	  *is_method = false;
+	  if (nt != NULL)
+	    seen->pop_back();
 	  return true;
 	}
 
@@ -7800,6 +7821,7 @@ Type::find_field_or_method(const Type* type,
       bool subfound = Type::find_field_or_method(fnt,
 						 name,
 						 receiver_can_be_pointer,
+						 seen,
 						 &sublevel,
 						 &sub_is_method,
 						 found_pointer_method,
@@ -7855,6 +7877,9 @@ Type::find_field_or_method(const Type* type,
   // something ambiguous, FOUND_LEVEL is not 0 and FOUND_AMBIG1 and
   // FOUND_AMBIG2 are not empty.  If we found the field, FOUND_LEVEL
   // is not 0 and FOUND_AMBIG1 and FOUND_AMBIG2 are empty.
+
+  if (nt != NULL)
+    seen->pop_back();
 
   if (found_level == 0)
     return false;
