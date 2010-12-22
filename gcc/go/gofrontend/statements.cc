@@ -922,6 +922,8 @@ Tuple_map_assignment_statement::do_lower(Gogo*, Block* enclosing)
       return Statement::make_error_statement(loc);
     }
   Map_type* map_type = map_index->get_map_type();
+  if (map_type == NULL)
+    return Statement::make_error_statement(loc);
 
   Block* b = new Block(enclosing, loc);
 
@@ -1066,6 +1068,8 @@ Map_assignment_statement::do_lower(Gogo*, Block* enclosing)
       return Statement::make_error_statement(loc);
     }
   Map_type* map_type = map_index->get_map_type();
+  if (map_type == NULL)
+    return Statement::make_error_statement(loc);
 
   Block* b = new Block(enclosing, loc);
 
