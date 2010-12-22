@@ -1067,8 +1067,8 @@ class Type
   static bool
   find_field_or_method(const Type* type, const std::string& name,
 		       bool receiver_can_be_pointer,
-		       int* level, bool* is_method,
-		       bool* found_pointer_method,
+		       std::vector<const Named_type*>*, int* level,
+		       bool* is_method, bool* found_pointer_method,
 		       std::string* ambig1, std::string* ambig2);
 
   // Get a tree for a type without looking in the hash table for
