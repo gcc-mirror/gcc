@@ -8816,6 +8816,12 @@ Call_result_expression::do_type()
   if (fntype == NULL)
     return Type::make_error_type();
   const Typed_identifier_list* results = fntype->results();
+  if (results == NULL)
+    {
+      this->report_error(_("number of results does not match "
+			   "number of values"));
+      return Type::make_error_type();
+    }
   Typed_identifier_list::const_iterator pr = results->begin();
   for (unsigned int i = 0; i < this->index_; ++i)
     {
