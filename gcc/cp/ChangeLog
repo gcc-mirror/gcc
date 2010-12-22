@@ -1,3 +1,8 @@
+2010-12-22  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
+
+	* parser.c (cp_parser_unary_expression): Call pedwarn for alignof
+	with expression.
+
 2010-12-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* parser.c (cp_parser_objc_try_catch_finally_statement): Call

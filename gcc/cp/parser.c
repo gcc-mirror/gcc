@@ -5888,6 +5888,7 @@ cp_parser_pseudo_destructor_name (cp_parser* parser,
      unary-operator cast-expression
      sizeof unary-expression
      sizeof ( type-id )
+     alignof ( type-id )  [C++0x]
      new-expression
      delete-expression
 
@@ -5897,6 +5898,7 @@ cp_parser_pseudo_destructor_name (cp_parser* parser,
      __extension__ cast-expression
      __alignof__ unary-expression
      __alignof__ ( type-id )
+     alignof unary-expression  [C++0x]
      __real__ cast-expression
      __imag__ cast-expression
      && identifier
@@ -5938,7 +5940,19 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p,
 	    if (TYPE_P (operand))
 	      return cxx_sizeof_or_alignof_type (operand, op, true);
 	    else
-	      return cxx_sizeof_or_alignof_expr (operand, op, true);
+	      {
+		/* ISO C++ defines alignof only with types, not with
+		   expressions. So pedwarn if alignof is used with a non-
+		   type expression. However, __alignof__ is ok.  */
+		if (cxx_dialect >= cxx0x
+		    && !strcmp (IDENTIFIER_POINTER (token->u.value),
+				"alignof"))
+		  pedwarn (token->location, OPT_pedantic,
+			   "ISO C++ does not allow %<alignof%> "
+			   "with a non-type");
+
+		return cxx_sizeof_or_alignof_expr (operand, op, true);
+	      }
 	  }
 
 	case RID_NEW:
