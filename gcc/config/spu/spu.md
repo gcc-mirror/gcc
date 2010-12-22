@@ -269,8 +269,8 @@
 ;; mov
 
 (define_expand "mov<mode>"
-  [(set (match_operand:ALL 0 "spu_nonimm_operand" "=r,r,r,m")
-	(match_operand:ALL 1 "general_operand" "r,i,m,r"))]
+  [(set (match_operand:ALL 0 "nonimmediate_operand" "")
+	(match_operand:ALL 1 "general_operand" ""))]
   ""
   {
     if (spu_expand_mov(operands, <MODE>mode))
