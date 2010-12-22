@@ -6511,22 +6511,22 @@ Named_type::message_name() const
 Type*
 Named_type::named_base()
 {
-  if (this->seen_)
+  if (this->seen_ > 0)
     return this;
-  this->seen_ = true;
+  ++this->seen_;
   Type* ret = this->type_->base();
-  this->seen_ = false;
+  --this->seen_;
   return ret;
 }
 
 const Type*
 Named_type::named_base() const
 {
-  if (this->seen_)
+  if (this->seen_ > 0)
     return this;
-  this->seen_ = true;
+  ++this->seen_;
   const Type* ret = this->type_->base();
-  this->seen_ = false;
+  --this->seen_;
   return ret;
 }
 
@@ -6536,11 +6536,11 @@ Named_type::named_base() const
 bool
 Named_type::is_named_error_type() const
 {
-  if (this->seen_)
+  if (this->seen_ > 0)
     return false;
-  this->seen_ = true;
+  ++this->seen_;
   bool ret = this->type_->is_error_type();
-  this->seen_ = false;
+  --this->seen_;
   return ret;
 }
 
@@ -6690,11 +6690,11 @@ Named_type::interface_method_table(Gogo* gogo, const Interface_type* interface,
 bool
 Named_type::named_type_has_hidden_fields(std::string* reason) const
 {
-  if (this->seen_)
+  if (this->seen_ > 0)
     return false;
-  this->seen_ = true;
+  ++this->seen_;
   bool ret = this->type_->has_hidden_fields(this, reason);
-  this->seen_ = false;
+  --this->seen_;
   return ret;
 }
 
@@ -6896,18 +6896,24 @@ Named_type::do_get_tree(Gogo* gogo)
     case TYPE_FUNCTION:
       // GENERIC can't handle a pointer to a function type whose
       // return type is a pointer to the function type itself.  It
-      // does into infinite loops when walking the types.
-      if (this->seen_)
+      // goes into an infinite loop when walking the types.
+      if (this->seen_ > 0)
 	{
 	  Function_type* fntype = this->type_->function_type();
 	  if (fntype->results() != NULL
 	      && fntype->results()->size() == 1
 	      && fntype->results()->front().type()->forwarded() == this)
 	    return ptr_type_node;
+
+	  // We can legitimately see ourselves here twice when a named
+	  // type is defined using a struct which refers to the named
+	  // type.  If we see ourselves too often we are in a loop.
+	  if (this->seen_ > 3)
+	    return ptr_type_node;
 	}
-      this->seen_ = true;
+      ++this->seen_;
       t = Type::get_named_type_tree(gogo, this->type_);
-      this->seen_ = false;
+      --this->seen_;
       if (t == error_mark_node)
 	return error_mark_node;
       t = build_variant_type_copy(t);
@@ -6917,11 +6923,17 @@ Named_type::do_get_tree(Gogo* gogo)
       // Don't recur infinitely if a pointer type refers to itself.
       // Ideally we would build a circular data structure here, but
       // GENERIC can't handle them.
-      if (this->seen_)
-	return ptr_type_node;
-      this->seen_ = true;
+      if (this->seen_ > 0)
+	{
+	  if (this->type_->points_to()->forwarded() == this)
+	    return ptr_type_node;
+
+	  if (this->seen_ > 3)
+	    return ptr_type_node;
+	}
+      ++this->seen_;
       t = Type::get_named_type_tree(gogo, this->type_);
-      this->seen_ = false;
+      --this->seen_;
       if (t == error_mark_node)
 	return error_mark_node;
       t = build_variant_type_copy(t);
@@ -6980,11 +6992,10 @@ Named_type::do_get_tree(Gogo* gogo)
 	// definition of T2 may refer to T1, then we must simply
 	// return the type for T2 here.  It's not precisely correct,
 	// but it's as close as we can get with GENERIC.
-	bool was_seen = this->seen_;
-	this->seen_ = true;
+	++this->seen_;
 	t = Type::get_named_type_tree(gogo, this->type_);
-	this->seen_ = was_seen;
-	if (was_seen)
+	--this->seen_;
+	if (this->seen_ > 0)
 	  return t;
 	if (t == error_mark_node)
 	  return error_mark_node;
