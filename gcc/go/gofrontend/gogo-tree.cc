@@ -2895,6 +2895,9 @@ tree
 Gogo::send_on_channel(tree channel, tree val, bool blocking, bool for_select,
 		      source_location location)
 {
+  if (channel == error_mark_node || val == error_mark_node)
+    return error_mark_node;
+
   if (int_size_in_bytes(TREE_TYPE(val)) <= 8
       && !AGGREGATE_TYPE_P(TREE_TYPE(val))
       && !FLOAT_TYPE_P(TREE_TYPE(val)))
@@ -3029,6 +3032,9 @@ tree
 Gogo::receive_from_channel(tree type_tree, tree channel, bool for_select,
 			   source_location location)
 {
+  if (type_tree == error_mark_node || channel == error_mark_node)
+    return error_mark_node;
+
   if (int_size_in_bytes(type_tree) <= 8
       && !AGGREGATE_TYPE_P(type_tree)
       && !FLOAT_TYPE_P(type_tree))
