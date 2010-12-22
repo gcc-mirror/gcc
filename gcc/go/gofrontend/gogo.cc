@@ -2628,7 +2628,7 @@ void
 Function::swap_for_recover(Function *x)
 {
   gcc_assert(this->enclosing_ == x->enclosing_);
-  gcc_assert(this->named_results_ == x->named_results_);
+  std::swap(this->named_results_, x->named_results_);
   std::swap(this->closure_var_, x->closure_var_);
   std::swap(this->block_, x->block_);
   gcc_assert(this->location_ == x->location_);
