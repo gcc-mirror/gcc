@@ -2387,7 +2387,7 @@ class Named_type : public Type
       local_methods_(NULL), all_methods_(NULL),
       interface_method_tables_(NULL), pointer_interface_method_tables_(NULL),
       location_(location), named_tree_(NULL), is_visible_(true),
-      is_error_(false), seen_(false)
+      is_error_(false), seen_(0)
   { }
 
   // Return the associated Named_object.  This holds the actual name.
@@ -2626,7 +2626,7 @@ class Named_type : public Type
   // used to prevent infinite recursion when a type refers to itself.
   // This is mutable because it is always reset to false when the
   // function exits.
-  mutable bool seen_;
+  mutable int seen_;
 };
 
 // A forward declaration.  This handles a type which has been declared
