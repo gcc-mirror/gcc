@@ -1,3 +1,7 @@
+2010-12-22  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
+
+	* g++.dg/cpp0x/alignof2.C: New.
+
 2010-12-22  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/45934
