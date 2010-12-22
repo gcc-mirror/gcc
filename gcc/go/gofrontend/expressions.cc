@@ -3242,6 +3242,18 @@ Type_conversion_expression::do_check_types(Gogo*)
   Type* expr_type = this->expr_->type();
   std::string reason;
 
+  if (type->is_error_type()
+      || type->is_undefined()
+      || expr_type->is_error_type()
+      || expr_type->is_undefined())
+    {
+      // Make sure we emit an error for an undefined type.
+      type->base();
+      expr_type->base();
+      this->set_is_error();
+      return;
+    }
+
   if (this->may_convert_function_types_
       && type->function_type() != NULL
       && expr_type->function_type() != NULL)
