@@ -1,3 +1,7 @@
+2010-12-22  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gfortran.dg/pr46755.f: Fix test case.
+
 2010-12-22  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/45352
