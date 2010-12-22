@@ -1,5 +1,10 @@
 2010-12-22  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-private/objc-list.h: Reindented file.  No code changes.
+	* objc-private/sarray.h: Same change.
+
+2010-12-22  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-private/accessors.h: Removed 'extern "C"' guards.  This
 	file is never compiled with C++.
 	* objc-private/hash.h: Same change.
