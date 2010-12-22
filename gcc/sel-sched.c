@@ -7053,7 +7053,17 @@ reset_sched_cycles_in_current_ebb (void)
                   && haifa_cost > 0
                   && estimate_insn_cost (insn, curr_state) == 0)
                 break;
-	    }
+
+              /* When the data dependency stall is longer than the DFA stall,
+                 it could be that after the longer stall the insn will again
+                 become unavailable  to the DFA restrictions.  Looks strange
+                 but happens e.g. on x86-64.  So recheck DFA on the last
+                 iteration.  */
+              if (after_stall
+                  && real_insn
+                  && haifa_cost == 0)
+                haifa_cost = estimate_insn_cost (insn, curr_state);
+            }
 
 	  haifa_clock += i;
           if (sched_verbose >= 2)
@@ -7504,21 +7514,23 @@ sel_sched_region_1 (void)
             {
               basic_block bb = EBB_FIRST_BB (i);
 
-              if (sel_bb_empty_p (bb))
-                {
-                  bitmap_clear_bit (blocks_to_reschedule, bb->index);
-                  continue;
-                }
-
               if (bitmap_bit_p (blocks_to_reschedule, bb->index))
                 {
+                  if (! bb_ends_ebb_p (bb))
+                    bitmap_set_bit (blocks_to_reschedule, bb_next_bb (bb)->index);
+                  if (sel_bb_empty_p (bb))
+                    {
+                      bitmap_clear_bit (blocks_to_reschedule, bb->index);
+                      continue;
+                    }
                   clear_outdated_rtx_info (bb);
                   if (sel_insn_is_speculation_check (BB_END (bb))
                       && JUMP_P (BB_END (bb)))
                     bitmap_set_bit (blocks_to_reschedule,
                                     BRANCH_EDGE (bb)->dest->index);
                 }
-              else if (INSN_SCHED_TIMES (sel_bb_head (bb)) <= 0)
+              else if (! sel_bb_empty_p (bb)
+                       && INSN_SCHED_TIMES (sel_bb_head (bb)) <= 0)
                 bitmap_set_bit (blocks_to_reschedule, bb->index);
             }
 
