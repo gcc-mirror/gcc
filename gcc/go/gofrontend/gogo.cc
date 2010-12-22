@@ -2177,6 +2177,10 @@ Build_recover_thunks::function(Named_object* orig_no)
   Convert_recover convert_recover(can_recover_no);
   new_func->traverse(&convert_recover);
 
+  // Update the function pointers in any named results.
+  new_func->update_named_result_variables();
+  orig_func->update_named_result_variables();
+
   return TRAVERSE_CONTINUE;
 }
 
@@ -2503,6 +2507,21 @@ Function::create_named_result_variables(Gogo* gogo)
       Named_object* no = block->bindings()->add_result_variable(name, result);
       this->named_results_->push_back(no);
     }
+}
+
+// Update the named result variables when cloning a function which
+// calls recover.
+
+void
+Function::update_named_result_variables()
+{
+  if (this->named_results_ == NULL)
+    return;
+
+  for (Named_results::iterator p = this->named_results_->begin();
+       p != this->named_results_->end();
+       ++p)
+    (*p)->result_var_value()->set_function(this);
 }
 
 // Return the closure variable, creating it if necessary.
