@@ -9630,7 +9630,8 @@ Map_type*
 Map_index_expression::get_map_type() const
 {
   Map_type* mt = this->map_->type()->deref()->map_type();
-  gcc_assert(mt != NULL);
+  if (mt == NULL)
+    gcc_assert(saw_errors());
   return mt;
 }
 
@@ -9649,7 +9650,10 @@ Map_index_expression::do_traverse(Traverse* traverse)
 Type*
 Map_index_expression::do_type()
 {
-  Type* type = this->get_map_type()->val_type();
+  Map_type* mt = this->get_map_type();
+  if (mt == NULL)
+    return Type::make_error_type();
+  Type* type = mt->val_type();
   // If this map index is in a tuple assignment, we actually return a
   // pointer to the value type.  Tuple_map_assignment_statement is
   // responsible for handling this correctly.  We need to get the type
@@ -9665,7 +9669,9 @@ void
 Map_index_expression::do_determine_type(const Type_context*)
 {
   this->map_->determine_type_no_context();
-  Type_context subcontext(this->get_map_type()->key_type(), false);
+  Map_type* mt = this->get_map_type();
+  Type* key_type = mt == NULL ? NULL : mt->key_type();
+  Type_context subcontext(key_type, false);
   this->index_->determine_type(&subcontext);
 }
 
@@ -9675,8 +9681,10 @@ void
 Map_index_expression::do_check_types(Gogo*)
 {
   std::string reason;
-  if (!Type::are_assignable(this->get_map_type()->key_type(),
-			    this->index_->type(), &reason))
+  Map_type* mt = this->get_map_type();
+  if (mt == NULL)
+    return;
+  if (!Type::are_assignable(mt->key_type(), this->index_->type(), &reason))
     {
       if (reason.empty())
 	this->report_error(_("incompatible type for map index"));
@@ -9695,6 +9703,8 @@ tree
 Map_index_expression::do_get_tree(Translate_context* context)
 {
   Map_type* type = this->get_map_type();
+  if (type == NULL)
+    return error_mark_node;
 
   tree valptr = this->get_value_pointer(context, this->is_lvalue_);
   if (valptr == error_mark_node)
@@ -9732,6 +9742,8 @@ Map_index_expression::get_value_pointer(Translate_context* context,
 					bool insert)
 {
   Map_type* type = this->get_map_type();
+  if (type == NULL)
+    return error_mark_node;
 
   tree map_tree = this->map_->get_tree(context);
   tree index_tree = this->index_->get_tree(context);

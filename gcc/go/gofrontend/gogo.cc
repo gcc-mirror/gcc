@@ -3160,7 +3160,12 @@ Type*
 Variable::type_from_tuple(Expression* expr, bool report_error) const
 {
   if (expr->map_index_expression() != NULL)
-    return expr->map_index_expression()->get_map_type()->val_type();
+    {
+      Map_type* mt = expr->map_index_expression()->get_map_type();
+      if (mt == NULL)
+	return Type::make_error_type();
+      return mt->val_type();
+    }
   else if (expr->receive_expression() != NULL)
     {
       Expression* channel = expr->receive_expression()->channel();
