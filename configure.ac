@@ -916,6 +916,9 @@ case "${target}" in
   mt-*-*)
     noconfigdirs="$noconfigdirs sim"
     ;;
+  picochip-*-*)
+    noconfigdirs="$noconfigdirs target-libiberty"
+    ;;
   powerpc-*-aix*)
     # copied from rs6000-*-* entry
     noconfigdirs="$noconfigdirs gprof target-libgloss target-libssp target-newlib ${libgcj}"

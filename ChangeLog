@@ -1,3 +1,7 @@
+2010-12-22  Hariharan Sandanagobalane <hariharan@picochip.com>
+
+	* configure.ac: (picochip): Disable libiberty.
+
 2010-12-14  Kaushik Phatak  <kaushik.phatak@kpitcummins.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
