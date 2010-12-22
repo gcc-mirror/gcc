@@ -487,11 +487,7 @@ class Temporary_statement : public Statement
   // Return the tree for the temporary variable itself.  This should
   // not be called until after the statement itself has been expanded.
   tree
-  get_decl() const
-  {
-    gcc_assert(this->decl_ != NULL);
-    return this->decl_;
-  }
+  get_decl() const;
 
  protected:
   int

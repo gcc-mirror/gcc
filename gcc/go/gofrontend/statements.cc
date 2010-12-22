@@ -299,6 +299,19 @@ Temporary_statement::type() const
   return this->type_ != NULL ? this->type_ : this->init_->type();
 }
 
+// Return the tree for the temporary variable.
+
+tree
+Temporary_statement::get_decl() const
+{
+  if (this->decl_ == NULL)
+    {
+      gcc_assert(saw_errors());
+      return error_mark_node;
+    }
+  return this->decl_;
+}
+
 // Traversal.
 
 int
