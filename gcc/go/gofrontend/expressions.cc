@@ -7382,7 +7382,7 @@ Builtin_call_expression::do_check_types(Gogo*)
     case BUILTIN_APPEND:
       {
 	const Expression_list* args = this->args();
-	if (args == NULL || args->empty())
+	if (args == NULL || args->size() < 2)
 	  {
 	    this->report_error(_("not enough arguments"));
 	    break;
