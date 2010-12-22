@@ -3165,7 +3165,7 @@ Variable::type_from_tuple(Expression* expr, bool report_error) const
     {
       Expression* channel = expr->receive_expression()->channel();
       Type* channel_type = channel->type();
-      if (channel_type->is_error_type())
+      if (channel_type->channel_type() == NULL)
 	return Type::make_error_type();
       return channel_type->channel_type()->element_type();
     }
