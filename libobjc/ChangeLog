@@ -1,5 +1,17 @@
 2010-12-22  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* init.c (duplicate_classes): New.
+	(__objc_exec_class): Initialize duplicate_classes.
+	(__objc_create_classes_tree): Ignore classes in the
+	duplicate_classes table.
+	(__objc_call_load_callback): Same.
+	(__objc_init_class): If a duplicate class is found, add it to
+	duplicate_classes instead of aborting.  Return YES if the class is
+	not a duplicate, and NO if it is.
+	* objc-private/runtime.h (__objc_init_class): Updated prototype.
+
+2010-12-22  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-private/objc-list.h: Reindented file.  No code changes.
 	* objc-private/sarray.h: Same change.
 
