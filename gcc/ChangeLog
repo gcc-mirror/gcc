@@ -1,3 +1,8 @@
+2010-12-22  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/47019
+	* sese.h (scev_analyzable_p): Parameters of a SCoP are SCEV analyzable.
+
 2010-12-22  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* c-aux-info.c (gen_formal_list_for_type): Use prototype_p.
