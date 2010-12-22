@@ -4359,8 +4359,12 @@ Array_type::get_length_tree(Gogo* gogo)
 	  // expression.  FIXME: This won't work in general.
 	  Translate_context context(gogo, NULL, NULL, NULL_TREE);
 	  tree len = this->length_->get_tree(&context);
-	  len = convert_to_integer(integer_type_node, len);
-	  this->length_tree_ = save_expr(len);
+	  if (len != error_mark_node)
+	    {
+	      len = convert_to_integer(integer_type_node, len);
+	      len = save_expr(len);
+	    }
+	  this->length_tree_ = len;
 	}
     }
   return this->length_tree_;
