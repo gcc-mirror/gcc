@@ -9095,7 +9095,11 @@ Array_index_expression::do_check_types(Gogo*)
     this->report_error(_("slice end must be integer"));
 
   Array_type* array_type = this->array_->type()->array_type();
-  gcc_assert(array_type != NULL);
+  if (array_type == NULL)
+    {
+      gcc_assert(this->array_->type()->is_error_type());
+      return;
+    }
 
   unsigned int int_bits =
     Type::lookup_integer_type("int")->integer_type()->bits();
@@ -10936,7 +10940,14 @@ class Open_array_construction_expression : public Array_construction_expression
 tree
 Open_array_construction_expression::do_get_tree(Translate_context* context)
 {
-  Type* element_type = this->type()->array_type()->element_type();
+  Array_type* array_type = this->type()->array_type();
+  if (array_type == NULL)
+    {
+      gcc_assert(this->type()->is_error_type());
+      return error_mark_node;
+    }
+
+  Type* element_type = array_type->element_type();
   tree element_type_tree = element_type->get_tree(context->gogo());
   if (element_type_tree == error_mark_node)
     return error_mark_node;
