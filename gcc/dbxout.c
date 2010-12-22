@@ -2396,12 +2396,12 @@ dbxout_expand_expr (tree expr)
       /* FALLTHRU */
 
     case PARM_DECL:
+    case RESULT_DECL:
       if (DECL_HAS_VALUE_EXPR_P (expr))
 	return dbxout_expand_expr (DECL_VALUE_EXPR (expr));
       /* FALLTHRU */
 
     case CONST_DECL:
-    case RESULT_DECL:
       return DECL_RTL_IF_SET (expr);
 
     case INTEGER_CST:

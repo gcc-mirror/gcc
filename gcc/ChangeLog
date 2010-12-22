@@ -1,3 +1,18 @@
+2010-12-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/46724
+	* function.c (assign_parms_augmented_arg_list): Name and mark
+	DECL of result address as NAMELESS rather than IGNORED.
+	(assign_parms): Set DECL_VALUE_EXPR for indirect result.
+	* tree.h (tree_decl_common::decl_flag_2): Document RESULT_DECL.
+	(DECL_HAS_VALUE_EXPR_P): Accept RESULT_DECL.
+	* dwarf2out.c (loc_list_from_tree) <RESULT_DECL>: Use
+	DECL_VALUE_EXPR.
+	* dbxout.c (dbxout_expand_expr) <RESULT_DECL>: Likewise.
+	* var-tracking.c (vt_add_function_parameter): New, split out of...
+	(vt_add_function_parameters): ... this.  Handle incoming
+	pointer to hold result.
+
 2010-12-22  Jie Zhang  <jie@codesourcery.com>
 
 	* config/arm/arm.c (output_move_double): Update the comment
