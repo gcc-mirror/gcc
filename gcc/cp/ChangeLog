@@ -1,3 +1,8 @@
+2010-12-22  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* decl.c (decls_match, duplicate_decls): Use prototype_p.
+	* pt.c (push_template_decl_real): Likewise.
+
 2010-12-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/47003

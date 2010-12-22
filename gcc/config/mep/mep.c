@@ -4001,7 +4001,7 @@ mep_validate_interrupt (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
   if (TREE_TYPE (function_type) != void_type_node)
     error ("interrupt function must have return type of void");
 
-  if (TYPE_ARG_TYPES (function_type)
+  if (prototype_p (function_type)
       && (TREE_VALUE (TYPE_ARG_TYPES (function_type)) != void_type_node
 	  || TREE_CHAIN (TYPE_ARG_TYPES (function_type)) != NULL_TREE))
     error ("interrupt function must have no arguments");

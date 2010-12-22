@@ -17651,7 +17651,7 @@ static inline void
 add_prototyped_attribute (dw_die_ref die, tree func_type)
 {
   if (get_AT_unsigned (comp_unit_die (), DW_AT_language) == DW_LANG_C89
-      && TYPE_ARG_TYPES (func_type) != NULL)
+      && prototype_p (func_type))
     add_AT_flag (die, DW_AT_prototyped, 1);
 }
 
@@ -18900,7 +18900,6 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
   char label_id[MAX_ARTIFICIAL_LABEL_BYTES];
   tree origin = decl_ultimate_origin (decl);
   dw_die_ref subr_die;
-  tree fn_arg_types;
   tree outer_scope;
   dw_die_ref old_die = lookup_decl_die (decl);
   int declaration = (current_function_decl != decl
@@ -19238,8 +19237,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	 void_type_node 2) an unprototyped function declaration (not a
 	 definition).  This just means that we have no info about the
 	 parameters at all.  */
-      fn_arg_types = TYPE_ARG_TYPES (TREE_TYPE (decl));
-      if (fn_arg_types != NULL)
+      if (prototype_p (TREE_TYPE (decl)))
 	{
 	  /* This is the prototyped case, check for....  */
 	  if (stdarg_p (TREE_TYPE (decl)))

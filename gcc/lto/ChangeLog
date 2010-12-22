@@ -1,3 +1,8 @@
+2010-12-22  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto-lang.c (handle_nonnull_attribute, handle_sentinel_attribute):
+	Use prototype_p.
+
 2010-12-06  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/46796

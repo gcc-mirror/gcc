@@ -1025,7 +1025,7 @@ check_function_parameter_and_return_types (tree fn, bool escapes)
 {
   tree arg;
 
-  if (TYPE_ARG_TYPES (TREE_TYPE (fn)))
+  if (prototype_p (TREE_TYPE (fn)))
     {
       for (arg = TYPE_ARG_TYPES (TREE_TYPE (fn));
 	   arg && TREE_VALUE (arg) != void_type_node;
@@ -1333,7 +1333,7 @@ check_call (gimple call)
 
       /* Check that there are no implicit casts in the passing of
 	 parameters.  */
-      if (TYPE_ARG_TYPES (TREE_TYPE (callee_t)))
+      if (prototype_p (TREE_TYPE (callee_t)))
 	{
 	  for (arg_type = TYPE_ARG_TYPES (TREE_TYPE (callee_t)), i = 0;
 	       arg_type && TREE_VALUE (arg_type) != void_type_node
