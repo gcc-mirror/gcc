@@ -21,7 +21,7 @@
 
 /* Driver configuration.  */
 
-/* The svr4.h LIB_SPEC with -leval and --*group tacked on */
+/* A generic LIB_SPEC with -leval and --*group tacked on.  */
 #undef  LIB_SPEC
 #define LIB_SPEC "%{!shared:%{!symbolic:--start-group -lc -leval -lgcc --end-group}}"
 

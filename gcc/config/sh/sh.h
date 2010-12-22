@@ -405,8 +405,7 @@ do { \
 #define SUBTARGET_LINK_EMUL_SUFFIX ""
 #define SUBTARGET_LINK_SPEC ""
 
-/* svr4.h redefines LINK_SPEC inappropriately, so go via SH_LINK_SPEC,
-   so that we can undo the damage without code replication.  */
+/* Go via SH_LINK_SPEC to avoid code replication.  */
 #define LINK_SPEC SH_LINK_SPEC
 
 #define SH_LINK_SPEC "\
@@ -2211,8 +2210,6 @@ struct sh_args {
 /* DBX register number for a given compiler register number.  */
 /* GDB has FPUL at 23 and FP0 at 25, so we must add one to all FP registers
    to match gdb.  */
-/* svr4.h undefines this macro, yet we really want to use the same numbers
-   for coff as for elf, so we go via another macro: SH_DBX_REGISTER_NUMBER.  */
 /* expand_builtin_init_dwarf_reg_sizes uses this to test if a
    register exists, so we should return -1 for invalid register numbers.  */
 #define DBX_REGISTER_NUMBER(REGNO) SH_DBX_REGISTER_NUMBER (REGNO)

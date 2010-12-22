@@ -157,9 +157,7 @@ while (0)
 #define DBX_NO_XREFS
 
 
-/* Support of shared libraries, mostly imported from svr4.h through netbsd.  */
-/* Two differences from svr4.h:
-   - we use . - _func instead of a local label,
+/* - we use . - _func instead of a local label,
    - we put extra spaces in expressions such as 
      .type _func , @function
      This is more readable for a human being and confuses c++filt less.  */

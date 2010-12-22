@@ -1322,11 +1322,6 @@ do {									\
 
 #define ASM_APP_OFF (TARGET_GNU_AS ? "#NO_APP\n" : "//NO_APP\n")
 
-/* Output of Uninitialized Variables.  */
-
-/* This is all handled by svr4.h.  */
-
-
 /* Output and Generation of Labels.  */
 
 /* A C statement (sans semicolon) to output to the stdio stream STREAM the
@@ -1383,7 +1378,7 @@ do {									\
 
 /* Macros Controlling Initialization Routines.  */
 
-/* This is handled by svr4.h and sysv4.h.  */
+/* This is handled by sysv4.h.  */
 
 
 /* Output of Assembler Instructions.  */
@@ -1656,12 +1651,12 @@ do {									\
 
 /* Macros Affecting all Debug Formats.  */
 
-/* This is handled in svr4.h and sysv4.h.  */
+/* This is handled in sysv4.h.  */
 
 
 /* Specific Options for DBX Output.  */
 
-/* This is handled by dbxelf.h which is included by svr4.h.  */
+/* This is handled by dbxelf.h.  */
 
 
 /* Open ended Hooks for DBX Output.  */

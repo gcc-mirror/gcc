@@ -26,8 +26,8 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_SUBTARGET_DEFAULT \
 	(MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_VECT8_RETURNS)
 
-/* Provide our target specific DBX_REGISTER_NUMBER, as advertised by the
-   common svr4.h.  VxWorks relies on the SVR4 numbering.  */
+/* Provide our target specific DBX_REGISTER_NUMBER.  VxWorks relies on
+   the SVR4 numbering.  */
 
 #undef DBX_REGISTER_NUMBER
 #define DBX_REGISTER_NUMBER(n)  svr4_dbx_register_map[n]

@@ -18,8 +18,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* This gets defined in tm.h->linux.h->svr4.h, and keeps us from using
-   libraries compiled with the native cc, so undef it. */
+/* This keeps us from using libraries compiled with the native cc, so
+   undef it. */
 #undef NO_DOLLAR_IN_LABEL
 
 /* Override the default comment-starter of "/".  */

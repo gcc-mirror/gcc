@@ -2802,9 +2802,6 @@ while (0)
 #define ASM_COMMENT_START " #"
 #endif
 
-/* Default definitions for size_t and ptrdiff_t.  We must override the
-   definitions from ../svr4.h on mips-*-linux-gnu.  */
-
 #undef SIZE_TYPE
 #define SIZE_TYPE (POINTER_SIZE == 64 ? "long unsigned int" : "unsigned int")
 

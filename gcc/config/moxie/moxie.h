@@ -21,14 +21,6 @@
 #ifndef GCC_MOXIE_H
 #define GCC_MOXIE_H
 
-/* Another C string constant used much like `LINK_SPEC'.  The difference
-   between the two is that `STARTFILE_SPEC' is used at the very beginning of
-   the command given to the linker.
-
-   If this macro is not defined, a default is provided that loads the standard
-   C startup file from the usual place.  See `gcc.c'.
-
-   Defined in svr4.h.  */
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC "crt0%O%s crti.o%s crtbegin.o%s"
 

@@ -97,7 +97,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define STRICT_ALIGNMENT 1
 
-/* Defined in svr4.h.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
 /*}}}*/ 
@@ -850,12 +849,6 @@ enum reg_class
 
 #define PRINT_OPERAND_ADDRESS(STREAM, X) fr30_print_operand_address (STREAM, X)
 
-/* If defined, C string expressions to be used for the `%R', `%L', `%U', and
-   `%I' options of `asm_fprintf' (see `final.c').  These are useful when a
-   single `md' file must support multiple assembler formats.  In that case, the
-   various `tm.h' files can define these macros differently.
-
-   USER_LABEL_PREFIX is defined in svr4.h.  */
 #define REGISTER_PREFIX "%"
 #define LOCAL_LABEL_PREFIX "."
 #define USER_LABEL_PREFIX ""

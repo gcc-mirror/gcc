@@ -1,3 +1,18 @@
+2010-12-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/svr4.h: Remove.
+	* system.h (USING_SVR4_H, SVR4_ASM_SPEC): Poison.
+	* config.gcc, config/bfin/bfin.h, config/cris/cris.h,
+	config/fr30/fr30.h, config/frv/frv.h, config/i386/openbsdelf.h,
+	config/i386/vx-common.h, config/ia64/elf.h, config/ia64/ia64.h,
+	config/ia64/sysv4.h, config/iq2000/iq2000.h, config/m68k/linux.h,
+	config/m68k/m68kelf.h, config/mips/mips.h, config/mips/vxworks.h,
+	config/moxie/moxie.h, config/netbsd-aout.h, config/openbsd.h,
+	config/rs6000/sysv4.h, config/sh/elf.h, config/sh/sh.h,
+	config/sol2.h, config/sparc/sysv4.h, config/stormy16/stormy16.h,
+	config/v850/v850.h, config/vxworks.h: Remove or update comments
+	referring to svr4.h.
+
 2010-12-22  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/45352

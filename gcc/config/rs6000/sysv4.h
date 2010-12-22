@@ -273,13 +273,9 @@ do {									\
 /* Type used for ptrdiff_t, as a string used in a declaration.  */
 #define PTRDIFF_TYPE "int"
 
-/* Type used for wchar_t, as a string used in a declaration.  */
-/* Override svr4.h definition.  */
 #undef	WCHAR_TYPE
 #define WCHAR_TYPE "long int"
 
-/* Width of wchar_t in bits.  */
-/* Override svr4.h definition.  */
 #undef	WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
 
@@ -403,8 +399,6 @@ do {									\
 
 #define	LOCAL_LABEL_PREFIX "."
 #define	USER_LABEL_PREFIX ""
-
-/* svr4.h overrides (*targetm.asm_out.internal_label).  */
 
 #define	ASM_OUTPUT_INTERNAL_LABEL_PREFIX(FILE,PREFIX)	\
   asm_fprintf (FILE, "%L%s", PREFIX)
@@ -550,8 +544,6 @@ extern int fixuplabelno;
   while (0)
 #endif
 
-/* Pass various options to the assembler.  */
-/* Override svr4.h definition.  */
 #undef	ASM_SPEC
 #define	ASM_SPEC "%(asm_cpu) \
 %{,assembler|,assembler-with-cpp: %{mregnames} %{mno-regnames}} \
@@ -640,7 +632,6 @@ extern int fixuplabelno;
 
 #define LINK_START_DEFAULT_SPEC ""
 
-/* Override svr4.h definition.  */
 #undef	LINK_SPEC
 #define	LINK_SPEC "\
 %{h*} %{v:-V} %{!msdata=none:%{G*}} %{msdata=none:-G0} \
@@ -716,7 +707,6 @@ extern int fixuplabelno;
 
 #define	CPP_OS_DEFAULT_SPEC ""
 
-/* Override svr4.h definition.  */
 #undef	STARTFILE_SPEC
 #define	STARTFILE_SPEC "\
 %{mads         : %(startfile_ads)         ; \
@@ -732,7 +722,6 @@ extern int fixuplabelno;
 
 #define	STARTFILE_DEFAULT_SPEC "ecrti.o%s crtbegin.o%s"
 
-/* Override svr4.h definition.  */
 #undef	LIB_SPEC
 #define	LIB_SPEC "\
 %{mads         : %(lib_ads)         ; \
@@ -748,7 +737,6 @@ extern int fixuplabelno;
 
 #define LIB_DEFAULT_SPEC "-lc"
 
-/* Override svr4.h definition.  */
 #undef	ENDFILE_SPEC
 #define	ENDFILE_SPEC "\
 %{mads         : %(endfile_ads)         ; \

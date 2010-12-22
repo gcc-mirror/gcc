@@ -72,7 +72,7 @@
 #  tm_file		A list of target macro files, if different from
 #			"$cpu_type/$cpu_type.h". Usually it's constructed
 #			per target in a way like this:
-#			tm_file="${tm_file} dbxelf.h elfos.h svr4.h ${cpu_type.h}/elf.h"
+#			tm_file="${tm_file} dbxelf.h elfos.h ${cpu_type.h}/elf.h"
 #			Note that the preferred order is:
 #			- specific target header "${cpu_type}/${cpu_type.h}"
 #			- generic headers like dbxelf.h elfos.h, etc.

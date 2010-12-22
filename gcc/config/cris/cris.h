@@ -211,7 +211,6 @@ extern int cris_cpu_version;
    to avoid *only* picking up the linux multilib subdir from the "-B./"
    option during build, while still giving it preference.  We'd need some
    %s-variant that checked for existence of some specific file.  */
-/* Override previous definitions (svr4.h).  */
 #undef LINK_SPEC
 #define LINK_SPEC \
  "%{v:--verbose}\

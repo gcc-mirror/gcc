@@ -179,7 +179,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef LINK_ARCH_SPEC
 #define LINK_ARCH_SPEC LINK_ARCH32_SPEC
 
-/* This should be the same as in svr4.h, except with -R added.  */
 #undef  LINK_SPEC
 #define LINK_SPEC \
   "%{h*} %{v:-V} \
