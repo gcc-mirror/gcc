@@ -11181,13 +11181,19 @@ Map_construction_expression::do_get_tree(Translate_context* context)
 
   Type* key_type = mt->key_type();
   tree id = get_identifier("__key");
-  tree key_field = build_decl(loc, FIELD_DECL, id, key_type->get_tree(gogo));
+  tree key_type_tree = key_type->get_tree(gogo);
+  if (key_type_tree == error_mark_node)
+    return error_mark_node;
+  tree key_field = build_decl(loc, FIELD_DECL, id, key_type_tree);
   DECL_CONTEXT(key_field) = struct_type;
   TYPE_FIELDS(struct_type) = key_field;
 
   Type* val_type = mt->val_type();
   id = get_identifier("__val");
-  tree val_field = build_decl(loc, FIELD_DECL, id, val_type->get_tree(gogo));
+  tree val_type_tree = val_type->get_tree(gogo);
+  if (val_type_tree == error_mark_node)
+    return error_mark_node;
+  tree val_field = build_decl(loc, FIELD_DECL, id, val_type_tree);
   DECL_CONTEXT(val_field) = struct_type;
   DECL_CHAIN(key_field) = val_field;
 
@@ -11288,6 +11294,8 @@ Map_construction_expression::do_get_tree(Translate_context* context)
   tree descriptor = gogo->map_descriptor(mt);
 
   tree type_tree = this->type_->get_tree(gogo);
+  if (type_tree == error_mark_node)
+    return error_mark_node;
 
   static tree construct_map_fndecl;
   tree call = Gogo::call_builtin(&construct_map_fndecl,
