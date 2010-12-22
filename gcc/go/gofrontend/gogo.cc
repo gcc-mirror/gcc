@@ -415,6 +415,9 @@ Gogo::current_block()
 Named_object*
 Gogo::lookup(const std::string& name, Named_object** pfunction) const
 {
+  if (pfunction != NULL)
+    *pfunction = NULL;
+
   if (Gogo::is_sink_name(name))
     return Named_object::make_sink();
 
@@ -430,9 +433,6 @@ Gogo::lookup(const std::string& name, Named_object** pfunction) const
 	  return ret;
 	}
     }
-
-  if (pfunction != NULL)
-    *pfunction = NULL;
 
   if (this->package_ != NULL)
     {
