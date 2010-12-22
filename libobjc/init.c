@@ -56,6 +56,16 @@ static struct objc_list *unclaimed_proto_list = 0; 	/* !T:MUTEX */
 /* List of unresolved static instances.  */
 static struct objc_list *uninitialized_statics = 0; 	/* !T:MUTEX */
 
+/* List of duplicated classes found while loading modules.  If we find
+   a class twice, we ignore it the second time.  On some platforms,
+   where the order in which modules are loaded is well defined, this
+   allows you to replace a class in a shared library by linking in a
+   new implementation which is loaded in in the right order, and which
+   overrides the existing one.
+
+   Protected by __objc_runtime_mutex.  */
+static cache_ptr duplicate_classes = NULL;
+
 /* Global runtime "write" mutex.  Having a single mutex prevents
    deadlocks, but reduces concurrency.  To improve concurrency, some
    groups of functions in the runtime have their own separate mutex
@@ -87,7 +97,7 @@ static void __objc_class_add_protocols (Class, struct objc_protocol_list *);
 /* Load callback hook.  */
 void (*_objc_load_callback) (Class class, struct objc_category *category) = 0; /* !T:SAFE */
 
-/* Are all categories/classes resolved?  */
+/* Are all categories/classes resolved ?  */
 BOOL __objc_dangling_categories = NO;           /* !T:UNUSED */
 
 /* Sends +load to all classes and categories in certain
@@ -110,9 +120,11 @@ static void __objc_call_load_callback (struct objc_module *module);
    installed in the runtime.  */
 static BOOL class_is_subclass_of_class (Class class, Class superclass);
 
-typedef struct objc_class_tree {
+typedef struct objc_class_tree
+{
   Class class;
-  struct objc_list *subclasses; /* `head' is pointer to an objc_class_tree */
+  struct objc_list *subclasses; /* `head' is a pointer to an
+				   objc_class_tree.  */
 } objc_class_tree;
 
 /* This is a linked list of objc_class_tree trees. The head of these
@@ -583,6 +595,9 @@ __objc_exec_class (struct objc_module *module)
       __objc_init_selector_tables ();
       __objc_init_class_tables ();
       __objc_init_dispatch_tables ();
+      duplicate_classes = objc_hash_new (8,
+					 (hash_func_type)objc_hash_ptr,
+					 objc_compare_ptrs);
       __objc_class_tree_list = list_cons (NULL, __objc_class_tree_list);
       __objc_load_methods = objc_hash_new (128, 
 					   (hash_func_type)objc_hash_ptr,
@@ -619,13 +634,14 @@ __objc_exec_class (struct objc_module *module)
 	 isn't and this crashes the program.  */
       class->subclass_list = NULL;
 
-      __objc_init_class (class);
-
-      /* Check to see if the superclass is known in this point. If
-	 it's not add the class to the unresolved_classes list.  */
-      if (superclass && ! objc_getClass (superclass))
-	unresolved_classes = list_cons (class, unresolved_classes);
-   }
+      if (__objc_init_class (class))
+	{
+	  /* Check to see if the superclass is known in this point. If
+	     it's not add the class to the unresolved_classes list.  */
+	  if (superclass && ! objc_getClass (superclass))
+	    unresolved_classes = list_cons (class, unresolved_classes);
+	}
+    }
 
   /* Process category information from the module.  */
   for (i = 0; i < symtab->cat_def_cnt; ++i)
@@ -637,7 +653,6 @@ __objc_exec_class (struct objc_module *module)
 	 methods.  */
       if (class)
 	{
-
 	  DEBUG_PRINTF ("processing categories from (module,object): %s, %s\n",
 			module->name,
 			class->name);
@@ -808,7 +823,8 @@ __objc_create_classes_tree (struct objc_module *module)
     {
       Class class = (Class) symtab->defs[i];
 
-      objc_tree_insert_class (class);
+      if (!objc_hash_is_key_in_hash (duplicate_classes, class))
+	objc_tree_insert_class (class);
     }
 
   /* Now iterate over "claimed" categories too (ie, categories that
@@ -845,9 +861,12 @@ __objc_call_load_callback (struct objc_module *module)
       for (i = 0; i < symtab->cls_def_cnt; i++)
 	{
 	  Class class = (Class) symtab->defs[i];
-	  
-	  /* Call the _objc_load_callback for this class.  */
-	  _objc_load_callback (class, 0);
+	
+	  if (!objc_hash_is_key_in_hash (duplicate_classes, class))
+	    {
+	      /* Call the _objc_load_callback for this class.  */
+	      _objc_load_callback (class, 0);
+	    }
 	}
       
       /* Call the _objc_load_callback for categories.  Don't register
@@ -874,8 +893,11 @@ init_check_module_version (struct objc_module *module)
     }
 }
 
-/* __objc_init_class must be called with __objc_runtime_mutex already locked.  */
-void
+/* __objc_init_class must be called with __objc_runtime_mutex already
+   locked.  Return YES if the class could be setup; return NO if the
+   class could not be setup because a class with the same name already
+   exists.  */
+BOOL
 __objc_init_class (Class class)
 {
   /* Store the class in the class table and assign class numbers.  */
@@ -895,10 +917,16 @@ __objc_init_class (Class class)
       
       if (class->protocols)
 	__objc_init_protocols (class->protocols);
+
+      return YES;
     }
   else
-    _objc_abort ("Module contains duplicate class '%s'\n",
-		 class->name);
+    {
+      /* The module contains a duplicate class.  Remember it so that
+	 we will ignore it later.  */
+      objc_hash_add (&duplicate_classes, class, class);
+      return NO;
+    }
 }
 
 /* __objc_init_protocol must be called with __objc_runtime_mutex
