@@ -1,3 +1,8 @@
+2010-12-22  Jie Zhang  <jie@codesourcery.com>
+
+	* config/arm/arm.c (output_move_double): Update the comment
+	above the function to reflect the current implementation.
+
 2010-12-21  Steven Bosscher  <steven@gcc.gnu.org>
 
 	De-hookize profile infrastructure.
