@@ -197,6 +197,7 @@ class Parse
 				 source_location);
   Named_object* init_var(const Typed_identifier&, Type*, Expression*,
 			 bool is_coloneq, bool type_from_init, bool* is_new);
+  Named_object* create_dummy_global(Type*, Expression*, source_location);
   void simple_var_decl_or_assignment(const std::string&, source_location,
 				     Range_clause*, Type_switch*);
   void function_decl();
