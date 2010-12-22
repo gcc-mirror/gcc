@@ -2528,7 +2528,9 @@ Const_expression::do_type()
   if (this->type_ != NULL)
     return this->type_;
 
-  if (this->seen_)
+  Named_constant* nc = this->constant_->const_value();
+
+  if (this->seen_ || nc->lowering())
     {
       this->report_error(_("constant refers to itself"));
       this->type_ = Type::make_error_type();
@@ -2537,7 +2539,6 @@ Const_expression::do_type()
 
   this->seen_ = true;
 
-  Named_constant* nc = this->constant_->const_value();
   Type* ret = nc->type();
 
   if (ret != NULL)

@@ -1163,8 +1163,8 @@ Lower_parse_tree::constant(Named_object* no, bool)
 {
   Named_constant* nc = no->const_value();
 
-  // We can recursively a constant if the initializer expression
-  // manages to refer to itself.
+  // Don't get into trouble if the constant's initializer expression
+  // refers to the constant itself.
   if (nc->lowering())
     return TRAVERSE_CONTINUE;
   nc->set_lowering();
