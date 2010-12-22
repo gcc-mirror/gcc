@@ -1,3 +1,10 @@
+2010-12-22  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.md ("mov<mode>"): Use nonimmediate_operand
+	predicate for destination operand.
+	* config/spu/spu.c (spu_expand_mov): If move destination is an
+	invalid subreg, perform move in the subreg's inner mode instead.
+
 2010-12-22  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/45934

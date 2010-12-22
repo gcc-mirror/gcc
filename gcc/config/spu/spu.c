@@ -4608,7 +4608,13 @@ int
 spu_expand_mov (rtx * ops, enum machine_mode mode)
 {
   if (GET_CODE (ops[0]) == SUBREG && !valid_subreg (ops[0]))
-    abort ();
+    {
+      /* Perform the move in the destination SUBREG's inner mode.  */
+      ops[0] = SUBREG_REG (ops[0]);
+      mode = GET_MODE (ops[0]);
+      ops[1] = gen_lowpart_common (mode, ops[1]);
+      gcc_assert (ops[1]);
+    }
 
   if (GET_CODE (ops[1]) == SUBREG && !valid_subreg (ops[1]))
     {
