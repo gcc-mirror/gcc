@@ -787,6 +787,11 @@ class Function
   void
   create_named_result_variables(Gogo*);
 
+  // Update the named result variables when cloning a function which
+  // calls recover.
+  void
+  update_named_result_variables();
+
   // Add a new field to the closure variable.
   void
   add_closure_field(Named_object* var, source_location loc)
@@ -1317,6 +1322,12 @@ class Result_variable
   bool
   is_in_heap() const
   { return this->is_address_taken_; }
+
+  // Set the function.  This is used when cloning functions which call
+  // recover.
+  void
+  set_function(Function* function)
+  { this->function_ = function; }
 
  private:
   // Type of result variable.
