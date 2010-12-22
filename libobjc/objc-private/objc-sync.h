@@ -25,17 +25,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef __objc_private_objc_sync_INCLUDE_GNU
 #define __objc_private_objc_sync_INCLUDE_GNU
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
 /* This function needs to be called at startup before @synchronized()
    can be used.  */
 void
 __objc_sync_init (void);
-
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
 
 #endif /* not __objc_private_objc_sync_INCLUDE_GNU */

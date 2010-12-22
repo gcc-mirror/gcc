@@ -1,3 +1,15 @@
+2010-12-22  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-private/accessors.h: Removed 'extern "C"' guards.  This
+	file is never compiled with C++.
+	* objc-private/hash.h: Same change.
+	* objc-private/objc-list.h: Same change.
+	* objc-private/objc-sync.h: Same change.
+	* objc-private/protocols.h: Same change.
+	* objc-private/runtime.h: Same change.
+	* objc-private/sarray.h: Same change.
+	* objc-private/selector.h: Same change.
+
 2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR libobjc/18764
