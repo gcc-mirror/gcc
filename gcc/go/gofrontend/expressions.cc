@@ -894,6 +894,19 @@ Expression::make_type(Type* type, source_location location)
   return new Type_expression(type, location);
 }
 
+// Class Parser_expression.
+
+Type*
+Parser_expression::do_type()
+{
+  // We should never really ask for the type of a Parser_expression.
+  // However, it can happen, at least when we have an invalid const
+  // whose initializer refers to the const itself.  In that case we
+  // may ask for the type when lowering the const itself.
+  gcc_assert(saw_errors());
+  return Type::make_error_type();
+}
+
 // Class Var_expression.
 
 // Lower a variable expression.  Here we just make sure that the
