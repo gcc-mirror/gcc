@@ -1,3 +1,10 @@
+2010-12-23  Mikael Morin  <mikael.morin@gcc.gnu.org>
+
+	PR fortran/46978
+	Revert part of revision 164112
+	* trans-array.c (gfc_trans_create_temp_array):
+	Set loop n'th upper bound from (possibly transposed) array's dim bounds.
+
 2010-12-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46974
