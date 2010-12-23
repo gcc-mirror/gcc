@@ -851,8 +851,8 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
 	     of the descriptor fields.  */
 	  tmp = fold_build2_loc (input_location,
 		MINUS_EXPR, gfc_array_index_type,
-		gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[n]),
-		gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[n]));
+		gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[dim]),
+		gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[dim]));
 	  loop->to[n] = tmp;
 	  continue;
 	}
