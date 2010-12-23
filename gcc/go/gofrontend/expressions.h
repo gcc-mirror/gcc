@@ -873,8 +873,7 @@ class Parser_expression : public Expression
   do_lower(Gogo*, Named_object*, int) = 0;
 
   Type*
-  do_type()
-  { gcc_unreachable(); }
+  do_type();
 
   void
   do_determine_type(const Type_context*)
