@@ -140,6 +140,12 @@ int main(int argc, void **args)
 			   method_getTypeEncoding (method2)))
       abort ();
 
+    /* Test that if the method already exists in the class,
+       class_addMethod() returns NO.  */
+    if (class_addMethod (new_class, @selector (variable), method_getImplementation (method2),
+			 method_getTypeEncoding (method2)))
+      abort ();
+
     objc_registerClassPair (new_class);    
 
     /* Now, MySubClass2 is basically the same as MySubClass!  We'll
@@ -152,6 +158,15 @@ int main(int argc, void **args)
       if ([o variable] != o)
 	abort ();
     }
+
+    /* Now, try that if you take an existing class and try to add an
+       already existing method, class_addMethod returns NO.  This is
+       subtly different from before, when 'new_class' was still in
+       construction.  Now it's a real class and the libobjc internals
+       differ between the two cases.  */
+    if (class_addMethod (new_class, @selector (variable), method_getImplementation (method2),
+			 method_getTypeEncoding (method2)))
+      abort ();
   }
 
   printf ("Testing class_addProtocol ()...\n");

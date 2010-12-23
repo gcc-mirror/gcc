@@ -759,6 +759,45 @@ class_addMethod (Class class_, SEL selector, IMP implementation,
   if (method_name == NULL)
     return NO;
 
+  /* If the method already exists in the class, return NO.  It is fine
+     if the method already exists in the superclass; in that case, we
+     are overriding it.  */
+  if (CLS_IS_IN_CONSTRUCTION (class_))
+    {
+      /* The class only contains a list of methods; they have not been
+	 registered yet, ie, the method_name of each of them is still
+	 a string, not a selector.  Iterate manually over them to
+	 check if we have already added the method.  */
+      struct objc_method_list * method_list = class_->methods;
+      while (method_list)
+	{
+	  int i;
+	  
+	  /* Search the method list.  */
+	  for (i = 0; i < method_list->method_count; ++i)
+	    {
+	      struct objc_method * method = &method_list->method_list[i];
+	      
+	      if (method->method_name
+		  && strcmp ((char *)method->method_name, method_name) == 0)
+		return NO;
+	    }
+	  
+	  /* The method wasn't found.  Follow the link to the next list of
+	     methods.  */
+	  method_list = method_list->method_next;
+	}
+      /* The method wasn't found.  It's a new one.  Go ahead and add
+	 it.  */
+    }
+  else
+    {
+      /* Do the standard lookup.  This assumes the selectors are
+	 mapped.  */
+      if (search_for_method_in_list (class_->methods, selector))
+	return NO;
+    }
+
   method_list = (struct objc_method_list *)objc_calloc (1, sizeof (struct objc_method_list));
   method_list->method_count = 1;
 
