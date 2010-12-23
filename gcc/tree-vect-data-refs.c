@@ -2487,7 +2487,9 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
     {
       loop = LOOP_VINFO_LOOP (loop_vinfo);
       res = compute_data_dependences_for_loop
-	(loop, true, &LOOP_VINFO_DATAREFS (loop_vinfo),
+	(loop, true,
+	 &LOOP_VINFO_LOOP_NEST (loop_vinfo),
+	 &LOOP_VINFO_DATAREFS (loop_vinfo),
 	 &LOOP_VINFO_DDRS (loop_vinfo));
 
       if (!res)

@@ -216,6 +216,9 @@ typedef struct _loop_vec_info {
   /* The mask used to check the alignment of pointers or arrays.  */
   int ptr_mask;
 
+  /* The loop nest in which the data dependences are computed.  */
+  VEC (loop_p, heap) *loop_nest;
+
   /* All data references in the loop.  */
   VEC (data_reference_p, heap) *datarefs;
 
@@ -261,6 +264,7 @@ typedef struct _loop_vec_info {
 #define LOOP_VINFO_VECTORIZABLE_P(L)       (L)->vectorizable
 #define LOOP_VINFO_VECT_FACTOR(L)          (L)->vectorization_factor
 #define LOOP_VINFO_PTR_MASK(L)             (L)->ptr_mask
+#define LOOP_VINFO_LOOP_NEST(L)            (L)->loop_nest
 #define LOOP_VINFO_DATAREFS(L)             (L)->datarefs
 #define LOOP_VINFO_DDRS(L)                 (L)->ddrs
 #define LOOP_VINFO_INT_NITERS(L)           (TREE_INT_CST_LOW ((L)->num_iters))

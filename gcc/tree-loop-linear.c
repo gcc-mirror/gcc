@@ -329,7 +329,8 @@ linear_transform_loops (void)
       lambda_trans_matrix trans;
       struct obstack lambda_obstack;
       struct loop *loop;
-      VEC(loop_p,heap) *nest;
+      VEC (loop_p, heap) *nest;
+      VEC (loop_p, heap) *ln;
 
       depth = perfect_loop_nest_depth (loop_nest);
       if (depth == 0)
@@ -346,7 +347,8 @@ linear_transform_loops (void)
 
       datarefs = VEC_alloc (data_reference_p, heap, 10);
       dependence_relations = VEC_alloc (ddr_p, heap, 10 * 10);
-      if (!compute_data_dependences_for_loop (loop_nest, true, &datarefs,
+      ln = VEC_alloc (loop_p, heap, 3);
+      if (!compute_data_dependences_for_loop (loop_nest, true, &ln, &datarefs,
 					      &dependence_relations))
 	goto free_and_continue;
 
@@ -412,6 +414,7 @@ linear_transform_loops (void)
       free_dependence_relations (dependence_relations);
       free_data_refs (datarefs);
       VEC_free (loop_p, heap, nest);
+      VEC_free (loop_p, heap, ln);
     }
 
   FOR_EACH_VEC_ELT (gimple, remove_ivs, i, oldiv_stmt)

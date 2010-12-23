@@ -252,7 +252,8 @@ name_to_copy_elt_hash (const void *aa)
 static bool
 loop_parallel_p (struct loop *loop, struct obstack * parloop_obstack)
 {
-  VEC (ddr_p, heap) * dependence_relations;
+  VEC (loop_p, heap) *loop_nest;
+  VEC (ddr_p, heap) *dependence_relations;
   VEC (data_reference_p, heap) *datarefs;
   lambda_trans_matrix trans;
   bool ret = false;
@@ -270,7 +271,8 @@ loop_parallel_p (struct loop *loop, struct obstack * parloop_obstack)
      the iterations are independent.  */
   datarefs = VEC_alloc (data_reference_p, heap, 10);
   dependence_relations = VEC_alloc (ddr_p, heap, 10 * 10);
-  compute_data_dependences_for_loop (loop, true, &datarefs,
+  loop_nest = VEC_alloc (loop_p, heap, 3);
+  compute_data_dependences_for_loop (loop, true, &loop_nest, &datarefs,
 				     &dependence_relations);
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_data_dependence_relations (dump_file, dependence_relations);
@@ -288,6 +290,7 @@ loop_parallel_p (struct loop *loop, struct obstack * parloop_obstack)
     fprintf (dump_file,
 	     "  FAILED: data dependencies exist across iterations\n");
 
+  VEC_free (loop_p, heap, loop_nest);
   free_dependence_relations (dependence_relations);
   free_data_refs (datarefs);
 

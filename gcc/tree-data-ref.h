@@ -376,6 +376,7 @@ DEF_VEC_ALLOC_O (data_ref_loc, heap);
 bool get_references_in_stmt (gimple, VEC (data_ref_loc, heap) **);
 bool dr_analyze_innermost (struct data_reference *);
 extern bool compute_data_dependences_for_loop (struct loop *, bool,
+					       VEC (loop_p, heap) **,
 					       VEC (data_reference_p, heap) **,
 					       VEC (ddr_p, heap) **);
 extern bool compute_data_dependences_for_bb (basic_block, bool,
@@ -577,7 +578,10 @@ typedef struct rdg_edge
 #define RDGE_LEVEL(E)       ((struct rdg_edge *) ((E)->data))->level
 #define RDGE_RELATION(E)    ((struct rdg_edge *) ((E)->data))->relation
 
-struct graph *build_rdg (struct loop *);
+struct graph *build_rdg (struct loop *,
+			 VEC (loop_p, heap) **,
+			 VEC (ddr_p, heap) **,
+			 VEC (data_reference_p, heap) **);
 struct graph *build_empty_rdg (int);
 void free_rdg (struct graph *);
 

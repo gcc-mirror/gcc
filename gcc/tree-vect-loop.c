@@ -745,6 +745,7 @@ new_loop_vec_info (struct loop *loop)
   LOOP_VINFO_VECTORIZABLE_P (res) = 0;
   LOOP_PEELING_FOR_ALIGNMENT (res) = 0;
   LOOP_VINFO_VECT_FACTOR (res) = 0;
+  LOOP_VINFO_LOOP_NEST (res) = VEC_alloc (loop_p, heap, 3);
   LOOP_VINFO_DATAREFS (res) = VEC_alloc (data_reference_p, heap, 10);
   LOOP_VINFO_DDRS (res) = VEC_alloc (ddr_p, heap, 10 * 10);
   LOOP_VINFO_UNALIGNED_DR (res) = NULL;
@@ -793,7 +794,9 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
       free (LOOP_VINFO_BBS (loop_vinfo));
       free_data_refs (LOOP_VINFO_DATAREFS (loop_vinfo));
       free_dependence_relations (LOOP_VINFO_DDRS (loop_vinfo));
+      VEC_free (loop_p, heap, LOOP_VINFO_LOOP_NEST (loop_vinfo));
       VEC_free (gimple, heap, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo));
+      VEC_free (ddr_p, heap, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo));
 
       free (loop_vinfo);
       loop->aux = NULL;
@@ -839,6 +842,7 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
   free (LOOP_VINFO_BBS (loop_vinfo));
   free_data_refs (LOOP_VINFO_DATAREFS (loop_vinfo));
   free_dependence_relations (LOOP_VINFO_DDRS (loop_vinfo));
+  VEC_free (loop_p, heap, LOOP_VINFO_LOOP_NEST (loop_vinfo));
   VEC_free (gimple, heap, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo));
   VEC_free (ddr_p, heap, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo));
   slp_instances = LOOP_VINFO_SLP_INSTANCES (loop_vinfo);
