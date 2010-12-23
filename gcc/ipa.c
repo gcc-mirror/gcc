@@ -428,10 +428,8 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 			node->clone_of->clones = node->next_sibling_clone;
 		      if (node->next_sibling_clone)
 			node->next_sibling_clone->prev_sibling_clone = node->prev_sibling_clone;
-#ifdef ENABLE_CHECKING
 		      if (node->clone_of)
 			node->former_clone_of = node->clone_of->decl;
-#endif
 		      node->clone_of = NULL;
 		      node->next_sibling_clone = NULL;
 		      node->prev_sibling_clone = NULL;
