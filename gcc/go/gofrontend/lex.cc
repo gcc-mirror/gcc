@@ -434,8 +434,8 @@ Token::print(FILE* file) const
 
 Lex::Lex(const char* input_file_name, FILE* input_file)
   : input_file_name_(input_file_name), input_file_(input_file),
-    linebuf_(NULL), linebufsize_(120), linesize_(0), lineno_(0),
-    add_semi_at_eol_(false)
+    linebuf_(NULL), linebufsize_(120), linesize_(0), lineoff_(0),
+    lineno_(0), add_semi_at_eol_(false)
 {
   this->linebuf_ = new char[this->linebufsize_];
   linemap_add(line_table, LC_ENTER, 0, input_file_name, 1);
