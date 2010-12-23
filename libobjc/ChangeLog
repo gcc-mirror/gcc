@@ -1,3 +1,8 @@
+2010-12-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.in (libobjc$(libsuffix).la): Link with -Wc,-shared-libgcc.
+	(libobjc_gc$(libsuffix).la): Likewise.
+
 2010-12-23  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* sendmsg.c (class_addMethod): Return NO if the method already
