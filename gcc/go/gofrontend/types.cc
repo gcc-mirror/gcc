@@ -7686,8 +7686,10 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
 	  else
 	    {
 	      std::string unpacked = Gogo::unpack_hidden_name(name);
+	      seen.clear();
 	      is_unexported = Type::is_unexported_field_or_method(gogo, type,
-								  unpacked);
+								  unpacked,
+								  &seen);
 	    }
 	  if (is_unexported)
 	    error_at(location, "reference to unexported field or method %qs",
@@ -7905,13 +7907,28 @@ Type::find_field_or_method(const Type* type,
 
 bool
 Type::is_unexported_field_or_method(Gogo* gogo, const Type* type,
-				    const std::string& name)
+				    const std::string& name,
+				    std::vector<const Named_type*>* seen)
 {
   type = type->deref();
 
   const Named_type* nt = type->named_type();
-  if (nt != NULL && nt->is_unexported_local_method(gogo, name))
-    return true;
+  if (nt != NULL)
+    {
+      if (nt->is_unexported_local_method(gogo, name))
+	return true;
+
+      for (std::vector<const Named_type*>::const_iterator p = seen->begin();
+	   p != seen->end();
+	   ++p)
+	{
+	  if (*p == nt)
+	    {
+	      // We've already seen this type.
+	      return false;
+	    }
+	}
+    }
 
   const Interface_type* it = type->interface_type();
   if (it != NULL && it->is_unexported_method(gogo, name))
@@ -7928,6 +7945,9 @@ Type::is_unexported_field_or_method(Gogo* gogo, const Type* type,
   if (fields == NULL)
     return false;
 
+  if (nt != NULL)
+    seen->push_back(nt);
+
   for (Struct_field_list::const_iterator pf = fields->begin();
        pf != fields->end();
        ++pf)
@@ -7938,10 +7958,17 @@ Type::is_unexported_field_or_method(Gogo* gogo, const Type* type,
 	{
 	  Named_type* subtype = pf->type()->deref()->named_type();
 	  gcc_assert(subtype != NULL);
-	  if (Type::is_unexported_field_or_method(gogo, subtype, name))
-	    return true;
+	  if (Type::is_unexported_field_or_method(gogo, subtype, name, seen))
+	    {
+	      if (nt != NULL)
+		seen->pop_back();
+	      return true;
+	    }
 	}
     }
+
+  if (nt != NULL)
+    seen->pop_back();
 
   return false;
 }

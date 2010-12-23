@@ -791,7 +791,8 @@ class Type
 
   // Return true if NAME is an unexported field or method of TYPE.
   static bool
-  is_unexported_field_or_method(Gogo*, const Type*, const std::string&);
+  is_unexported_field_or_method(Gogo*, const Type*, const std::string&,
+				std::vector<const Named_type*>*);
 
   // This type was passed to the builtin function make.  ARGS are the
   // arguments passed to make after the type; this may be NULL if
