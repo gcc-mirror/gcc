@@ -1,4 +1,14 @@
 2010-12-23  Sebastian Pop  <sebastian.pop@amd.com>
+	    Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46758
+	* graphite-sese-to-poly.c (scan_tree_for_params_right_scev): Use
+	tree_int_to_gmp instead of int_cst_value.
+	(scan_tree_for_params_int): Same.
+	(scan_tree_for_params): Same.
+	(pdr_add_data_dimensions): Use ppl_set_inhomogeneous_tree.
+
+2010-12-23  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/47002
 	* tree-data-ref.c (compute_data_dependences_for_loop): Pass in a
