@@ -2441,6 +2441,7 @@ prepare_initializers (struct loop *loop, VEC (chain_p, heap) *chains)
 static bool
 tree_predictive_commoning_loop (struct loop *loop)
 {
+  VEC (loop_p, heap) *loop_nest;
   VEC (data_reference_p, heap) *datarefs;
   VEC (ddr_p, heap) *dependences;
   struct component *components;
@@ -2458,11 +2459,14 @@ tree_predictive_commoning_loop (struct loop *loop)
      dependence relations.  */
   datarefs = VEC_alloc (data_reference_p, heap, 10);
   dependences = VEC_alloc (ddr_p, heap, 10);
-  compute_data_dependences_for_loop (loop, true, &datarefs, &dependences);
+  loop_nest = VEC_alloc (loop_p, heap, 3);
+  compute_data_dependences_for_loop (loop, true, &loop_nest, &datarefs,
+				     &dependences);
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_data_dependence_relations (dump_file, dependences);
 
   components = split_data_refs_to_components (loop, datarefs, dependences);
+  VEC_free (loop_p, heap, loop_nest);
   free_dependence_relations (dependences);
   if (!components)
     {

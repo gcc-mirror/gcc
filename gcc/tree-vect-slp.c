@@ -1486,6 +1486,8 @@ destroy_bb_vec_info (bb_vec_info bb_vinfo)
         free_stmt_vec_info (stmt);
     }
 
+  free_data_refs (BB_VINFO_DATAREFS (bb_vinfo));
+  free_dependence_relations (BB_VINFO_DDRS (bb_vinfo));
   VEC_free (gimple, heap, BB_VINFO_STRIDED_STORES (bb_vinfo));
   VEC_free (slp_instance, heap, BB_VINFO_SLP_INSTANCES (bb_vinfo));
   free (bb_vinfo);

@@ -4247,11 +4247,11 @@ find_loop_nest (struct loop *loop, VEC (loop_p, heap) **loop_nest)
 bool
 compute_data_dependences_for_loop (struct loop *loop,
 				   bool compute_self_and_read_read_dependences,
+				   VEC (loop_p, heap) **loop_nest,
 				   VEC (data_reference_p, heap) **datarefs,
 				   VEC (ddr_p, heap) **dependence_relations)
 {
   bool res = true;
-  VEC (loop_p, heap) *vloops = VEC_alloc (loop_p, heap, 3);
 
   memset (&dependence_stats, 0, sizeof (dependence_stats));
 
@@ -4259,19 +4259,19 @@ compute_data_dependences_for_loop (struct loop *loop,
      is not computable, give up without spending time to compute other
      dependences.  */
   if (!loop
-      || !find_loop_nest (loop, &vloops)
+      || !find_loop_nest (loop, loop_nest)
       || find_data_references_in_loop (loop, datarefs) == chrec_dont_know)
     {
       struct data_dependence_relation *ddr;
 
       /* Insert a single relation into dependence_relations:
 	 chrec_dont_know.  */
-      ddr = initialize_data_dependence_relation (NULL, NULL, vloops);
+      ddr = initialize_data_dependence_relation (NULL, NULL, *loop_nest);
       VEC_safe_push (ddr_p, heap, *dependence_relations, ddr);
       res = false;
     }
   else
-    compute_all_dependences (*datarefs, dependence_relations, vloops,
+    compute_all_dependences (*datarefs, dependence_relations, *loop_nest,
 			     compute_self_and_read_read_dependences);
 
   if (dump_file && (dump_flags & TDF_STATS))
@@ -4375,9 +4375,10 @@ analyze_all_data_dependences (struct loop *loop)
     VEC_alloc (data_reference_p, heap, nb_data_refs);
   VEC (ddr_p, heap) *dependence_relations =
     VEC_alloc (ddr_p, heap, nb_data_refs * nb_data_refs);
+  VEC (loop_p, heap) *loop_nest = VEC_alloc (loop_p, heap, 3);
 
   /* Compute DDs on the whole function.  */
-  compute_data_dependences_for_loop (loop, false, &datarefs,
+  compute_data_dependences_for_loop (loop, false, &loop_nest, &datarefs,
 				     &dependence_relations);
 
   if (dump_file)
@@ -4411,6 +4412,7 @@ analyze_all_data_dependences (struct loop *loop)
 	}
     }
 
+  VEC_free (loop_p, heap, loop_nest);
   free_dependence_relations (dependence_relations);
   free_data_refs (datarefs);
 }
@@ -4454,22 +4456,11 @@ free_dependence_relations (VEC (ddr_p, heap) *dependence_relations)
 {
   unsigned int i;
   struct data_dependence_relation *ddr;
-  VEC (loop_p, heap) *loop_nest = NULL;
 
   FOR_EACH_VEC_ELT (ddr_p, dependence_relations, i, ddr)
-    {
-      if (ddr == NULL)
-	continue;
-      if (loop_nest == NULL)
-	loop_nest = DDR_LOOP_NEST (ddr);
-      else
-	gcc_assert (DDR_LOOP_NEST (ddr) == NULL
-		    || DDR_LOOP_NEST (ddr) == loop_nest);
+    if (ddr)
       free_dependence_relation (ddr);
-    }
 
-  if (loop_nest)
-    VEC_free (loop_p, heap, loop_nest);
   VEC_free (ddr_p, heap, dependence_relations);
 }
 
@@ -4905,37 +4896,24 @@ build_empty_rdg (int n_stmts)
    scalar dependence.  */
 
 struct graph *
-build_rdg (struct loop *loop)
+build_rdg (struct loop *loop,
+	   VEC (loop_p, heap) **loop_nest,
+	   VEC (ddr_p, heap) **dependence_relations,
+	   VEC (data_reference_p, heap) **datarefs)
 {
-  int nb_data_refs = 10;
   struct graph *rdg = NULL;
-  VEC (ddr_p, heap) *dependence_relations;
-  VEC (data_reference_p, heap) *datarefs;
-  VEC (gimple, heap) *stmts = VEC_alloc (gimple, heap, nb_data_refs);
+  VEC (gimple, heap) *stmts = VEC_alloc (gimple, heap, 10);
 
-  dependence_relations = VEC_alloc (ddr_p, heap, nb_data_refs * nb_data_refs) ;
-  datarefs = VEC_alloc (data_reference_p, heap, nb_data_refs);
-  compute_data_dependences_for_loop (loop,
-                                     false,
-                                     &datarefs,
-                                     &dependence_relations);
+  compute_data_dependences_for_loop (loop, false, loop_nest, datarefs,
+				     dependence_relations);
 
-  if (!known_dependences_p (dependence_relations))
+  if (known_dependences_p (*dependence_relations))
     {
-      free_dependence_relations (dependence_relations);
-      free_data_refs (datarefs);
-      VEC_free (gimple, heap, stmts);
-
-      return rdg;
+      stmts_from_loop (loop, &stmts);
+      rdg = build_empty_rdg (VEC_length (gimple, stmts));
+      create_rdg_vertices (rdg, stmts);
+      create_rdg_edges (rdg, *dependence_relations);
     }
-
-  stmts_from_loop (loop, &stmts);
-  rdg = build_empty_rdg (VEC_length (gimple, stmts));
-
-  rdg->indices = htab_create (nb_data_refs, hash_stmt_vertex_info,
-			      eq_stmt_vertex_info, hash_stmt_vertex_del);
-  create_rdg_vertices (rdg, stmts);
-  create_rdg_edges (rdg, dependence_relations);
 
   VEC_free (gimple, heap, stmts);
   return rdg;
@@ -4949,7 +4927,17 @@ free_rdg (struct graph *rdg)
   int i;
 
   for (i = 0; i < rdg->n_vertices; i++)
-    free (rdg->vertices[i].data);
+    {
+      struct vertex *v = &(rdg->vertices[i]);
+      struct graph_edge *e;
+
+      for (e = v->succ; e; e = e->succ_next)
+	if (e->data)
+	  free (e->data);
+
+      if (v->data)
+	free (v->data);
+    }
 
   htab_delete (rdg->indices);
   free_graph (rdg);

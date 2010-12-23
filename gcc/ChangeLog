@@ -1,3 +1,34 @@
+2010-12-23  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/47002
+	* tree-data-ref.c (compute_data_dependences_for_loop): Pass in a
+	pointer to the loop_nest.
+	(analyze_all_data_dependences): Initialize and free the loop_nest.
+	(free_dependence_relations): Do not free loop_nest.
+	(build_rdg): Pass in the loop_nest, datarefs, and dependence_relations.
+	(free_rdg): Also free the data on edges.
+	* tree-data-ref.h (build_rdg): Update declaration.
+	(compute_data_dependences_for_loop): Same.
+	* tree-if-conv.c (if_convertible_loop_p_1): Pass in the loop_nest.
+	(if_convertible_loop_p): Allocate and free loop_nest.
+	* tree-loop-distribution.c (rdg_flag_loop_exits): Free conds.
+	(free_rdg_components): VEC_free components.
+	(distribute_loop): Update call to build_rdg.  Allocate and free
+	loop_nest, datarefs, and dependence_relations.
+	* tree-loop-linear.c (linear_transform_loops): Allocate and free
+	loop_nest.
+	* tree-parloops.c (loop_parallel_p): Same.
+	* tree-predcom.c (tree_predictive_commoning_loop): Same.
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Pass to
+	compute_data_dependences_for_loop a pointer to LOOP_VINFO_LOOP_NEST.
+	* tree-vect-loop.c (new_loop_vec_info): Initialize LOOP_VINFO_LOOP_NEST.
+	(destroy_loop_vec_info): Free LOOP_VINFO_MAY_ALIAS_DDRS and
+	LOOP_VINFO_LOOP_NEST.
+	* tree-vect-slp.c (destroy_bb_vec_info): Call free_data_refs and
+	free_dependence_relations.
+	* tree-vectorizer.h (struct _loop_vec_info): Add a field loop_nest.
+	(LOOP_VINFO_LOOP_NEST): New.
+
 2010-12-23  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa.c (cgraph_remove_unreachable_nodes): Update former_clone_of even
