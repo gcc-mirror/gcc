@@ -7926,10 +7926,16 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 	if (arg1_tree == error_mark_node || arg2_tree == error_mark_node)
 	  return error_mark_node;
 
-	Array_type* at2 = arg2->type()->array_type();
+	arg2_tree = Expression::convert_for_assignment(context, at,
+						       arg2->type(),
+						       arg2_tree,
+						       location);
+	if (arg2_tree == error_mark_node)
+	  return error_mark_node;
+
 	arg2_tree = save_expr(arg2_tree);
-	tree arg2_val = at2->value_pointer_tree(gogo, arg2_tree);
-	tree arg2_len = at2->length_tree(gogo, arg2_tree);
+	tree arg2_val = at->value_pointer_tree(gogo, arg2_tree);
+	tree arg2_len = at->length_tree(gogo, arg2_tree);
 	if (arg2_val == error_mark_node || arg2_len == error_mark_node)
 	  return error_mark_node;
 	arg2_val = fold_convert_loc(location, ptr_type_node, arg2_val);
