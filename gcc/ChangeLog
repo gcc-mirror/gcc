@@ -1,5 +1,14 @@
 2010-12-23  Sebastian Pop  <sebastian.pop@amd.com>
 
+	Backport from mainline
+	Fix PR45758: reset scevs before Graphite.
+        2010-09-24  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/45552
+	* graphite.c (graphite_initialize): Call scev_reset.
+
+2010-12-23  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR tree-optimization/43023
 	* tree-data-ref.c (mem_write_stride_of_same_size_as_unit_type_p):
 	Removed.

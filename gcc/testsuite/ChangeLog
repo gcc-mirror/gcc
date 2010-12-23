@@ -1,5 +1,11 @@
 2010-12-23  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR tree-optimization/45552
+	* gcc.dg/graphite/pr45552.c
+
+
+2010-12-23  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR tree-optimization/43023
 	* gfortran.dg/ldist-1.f90: Adjust pattern.
 	* gfortran.dg/ldist-pr43023.f90: New.
