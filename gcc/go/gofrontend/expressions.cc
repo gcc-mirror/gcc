@@ -1248,14 +1248,20 @@ Unknown_expression::do_lower(Gogo*, Named_object*, int)
 {
   source_location location = this->location();
   Named_object* no = this->named_object_;
-  Named_object* real = no->unknown_value()->real_named_object();
-  if (real == NULL)
+  Named_object* real;
+  if (!no->is_unknown())
+    real = no;
+  else
     {
-      if (this->is_composite_literal_key_)
-	return this;
-      error_at(location, "reference to undefined name %qs",
-	       this->named_object_->message_name().c_str());
-      return Expression::make_error(location);
+      real = no->unknown_value()->real_named_object();
+      if (real == NULL)
+	{
+	  if (this->is_composite_literal_key_)
+	    return this;
+	  error_at(location, "reference to undefined name %qs",
+		   this->named_object_->message_name().c_str());
+	  return Expression::make_error(location);
+	}
     }
   switch (real->classification())
     {
