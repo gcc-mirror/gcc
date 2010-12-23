@@ -1,3 +1,18 @@
+2010-12-23  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* init.c (create_tree_of_subclasses_inherited_from): Updated
+	DEBUG_PRINTF messages.
+	(__objc_tree_insert_class): Same.
+	(__objc_send_load_using_method_list): Same.
+	(__objc_send_load): Same.
+	(__objc_exec_class): Same.  In particular, do not print the module
+	name since it is no longer used.
+	* sendmsg.c (__objc_send_initialize): Added DEBUG_PRINTFs for
+	tracking +initialize calls.
+	(__objc_update_dispatch_table_for_class): Added DEBUG_PRINTFs for
+	tracking updates of dispatch tables.
+	(__objc_install_dispatch_table_for_class): Same.
+	
 2010-12-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.in (libobjc$(libsuffix).la): Link with -Wc,-shared-libgcc.
