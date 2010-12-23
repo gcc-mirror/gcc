@@ -2356,6 +2356,8 @@ Gogo::map_descriptor(Map_type* maptype)
   Map_descriptors::iterator p = ins.first;
   if (!ins.second)
     {
+      if (p->second == error_mark_node)
+	return error_mark_node;
       gcc_assert(p->second != NULL_TREE && DECL_P(p->second));
       return build_fold_addr_expr(p->second);
     }
@@ -2385,7 +2387,10 @@ Gogo::map_descriptor(Map_type* maptype)
 					"__val",
 					valtype->get_tree(this));
   if (map_entry_type == error_mark_node)
-    return error_mark_node;
+    {
+      p->second = error_mark_node;
+      return error_mark_node;
+    }
 
   tree map_entry_key_field = DECL_CHAIN(TYPE_FIELDS(map_entry_type));
   gcc_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(map_entry_key_field)),
