@@ -1,3 +1,9 @@
+2010-12-23  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* obj-c.dg/gnu-api-2-class.m: Test that class_addMethod() returns
+	NO if the method is already implemented in the class.
+	* obj-c++.dg/gnu-api-2-class.mm: Same change.
+
 2010-12-22  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/47019

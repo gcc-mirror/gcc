@@ -1,3 +1,8 @@
+2010-12-23  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* sendmsg.c (class_addMethod): Return NO if the method already
+	exists in the class.
+
 2010-12-22  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* init.c (duplicate_classes): New.
