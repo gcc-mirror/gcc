@@ -1161,7 +1161,7 @@
 #endif
 
 
-/* Define if your linker supports --eh-frame-hdr option. */
+/* Define if your linker supports .eh_frame_hdr. */
 #undef HAVE_LD_EH_FRAME_HDR
 
 /* Define if your linker supports garbage collection of sections in presence
@@ -1685,6 +1685,9 @@
 #undef TARGET_DEFAULT_LONG_DOUBLE_128
 #endif
 
+
+/* Define if your target C library provides the `dl_iterate_phdr' function. */
+#undef TARGET_DL_ITERATE_PHDR
 
 /* Define if your target C library provides stack protector support */
 #ifndef USED_FOR_TARGET
