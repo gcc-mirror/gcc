@@ -1384,7 +1384,11 @@ Gogo::determine_types()
 
 	  // If this is a global variable which requires runtime
 	  // initialization, we need an initialization function.
-	  if (!variable->is_global() || variable->init() == NULL)
+	  if (!variable->is_global())
+	    ;
+	  else if (variable->has_pre_init())
+	    this->need_init_fn_ = true;
+	  else if (variable->init() == NULL)
 	    ;
 	  else if (variable->type()->interface_type() != NULL)
 	    this->need_init_fn_ = true;
