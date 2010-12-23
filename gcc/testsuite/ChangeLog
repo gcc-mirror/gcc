@@ -1,3 +1,9 @@
+2010-12-23  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/43023
+	* gfortran.dg/ldist-1.f90: Adjust pattern.
+	* gfortran.dg/ldist-pr43023.f90: New.
+
 2010-12-21  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/46734
