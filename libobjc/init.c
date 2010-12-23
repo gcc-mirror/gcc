@@ -24,6 +24,10 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+/* Uncommented the following line to enable debug logging.  Use this
+   only while debugging the runtime.  */
+/* #define DEBUG 1 */
+
 #include "objc-private/common.h"
 #include "objc-private/error.h"
 #include "objc/runtime.h"
@@ -196,7 +200,7 @@ create_tree_of_subclasses_inherited_from (Class bottom_class, Class upper)
     superclass = Nil;
 
   DEBUG_PRINTF ("create_tree_of_subclasses_inherited_from:");
-  DEBUG_PRINTF ("bottom_class = %s, upper = %s\n",
+  DEBUG_PRINTF (" bottom_class = %s, upper = %s\n",
 		(bottom_class ? bottom_class->name : NULL),
 		(upper ? upper->name : NULL));
 
@@ -232,7 +236,7 @@ __objc_tree_insert_class (objc_class_tree *tree, Class class)
   else if (class == tree->class)
     {
       /* `class' has been already inserted.  */
-      DEBUG_PRINTF ("1. class %s was previously inserted\n", class->name);
+      DEBUG_PRINTF (" 1. class %s was previously inserted\n", class->name);
       return tree;
     }
   else if (class_superclass_of_class (class) == tree->class)
@@ -249,7 +253,7 @@ __objc_tree_insert_class (objc_class_tree *tree, Class class)
 	     the tree.  */
 	  if (((objc_class_tree *) list->head)->class == class)
 	    {
-	      DEBUG_PRINTF ("2. class %s was previously inserted\n",
+	      DEBUG_PRINTF (" 2. class %s was previously inserted\n",
 			    class->name);
 	      return tree;
 	    }
@@ -261,7 +265,7 @@ __objc_tree_insert_class (objc_class_tree *tree, Class class)
       node = objc_calloc (1, sizeof (objc_class_tree));
       node->class = class;
       tree->subclasses = list_cons (node, tree->subclasses);
-      DEBUG_PRINTF ("3. class %s inserted\n", class->name);
+      DEBUG_PRINTF (" 3. class %s inserted\n", class->name);
       return tree;
     }
   else
@@ -287,7 +291,7 @@ __objc_tree_insert_class (objc_class_tree *tree, Class class)
 	         since nothing has been changed.  */
 	      subclasses->head
 		  = __objc_tree_insert_class (subclasses->head, class);
- 	      DEBUG_PRINTF ("4. class %s inserted\n", class->name);
+ 	      DEBUG_PRINTF (" 4. class %s inserted\n", class->name);
 	      return tree;
 	    }
 	}
@@ -299,7 +303,7 @@ __objc_tree_insert_class (objc_class_tree *tree, Class class)
 	objc_class_tree *new_tree
 	  = create_tree_of_subclasses_inherited_from (class, tree->class);
 	tree->subclasses = list_cons (new_tree, tree->subclasses);
- 	DEBUG_PRINTF ("5. class %s inserted\n", class->name);
+ 	DEBUG_PRINTF (" 5. class %s inserted\n", class->name);
 	return tree;
       }
     }
@@ -414,10 +418,10 @@ __objc_send_load_using_method_list (struct objc_method_list *method_list, Class 
 			 mth->method_imp,
 			 mth->method_imp);
 	  
-	  DEBUG_PRINTF ("sending +load in class: %s\n", class->name);
-	  
 	  /* Call +load.  */
+	  DEBUG_PRINTF (" begin of [%s +load]\n", class->name);
 	  (*mth->method_imp) ((id)class, mth->method_name);
+	  DEBUG_PRINTF (" end of [%s +load]\n", class->name);
 
 	  break;
 	}
@@ -433,6 +437,7 @@ __objc_send_load (objc_class_tree *tree,
   Class class = tree->class;
   struct objc_method_list *method_list = class->class_pointer->methods;
 
+  DEBUG_PRINTF ("+load: need to send load to class '%s'\n", class->name);
   __objc_send_load_using_method_list (method_list, class);
 }
 
@@ -578,7 +583,7 @@ __objc_exec_class (struct objc_module *module)
 
   int i;
 
-  DEBUG_PRINTF ("received module: %s\n", module->name);
+  DEBUG_PRINTF ("\n__objc_exec_class (%p) - start processing module...\n", module);
 
   /* Check gcc version.  */
   init_check_module_version (module);
@@ -615,11 +620,13 @@ __objc_exec_class (struct objc_module *module)
 
   /* Replace referenced selectors from names to SELs.  */
   if (selectors)
-    __objc_register_selectors_from_module (selectors);
+    {
+      DEBUG_PRINTF (" registering selectors\n");
+      __objc_register_selectors_from_module (selectors);
+    }
 
   /* Parse the classes in the load module and gather selector
      information.  */
-  DEBUG_PRINTF ("gathering selectors from module: %s\n", module->name);
   for (i = 0; i < symtab->cls_def_cnt; ++i)
     {
       Class class = (Class) symtab->defs[i];
@@ -628,7 +635,7 @@ __objc_exec_class (struct objc_module *module)
       /* Make sure we have what we think.  */
       assert (CLS_ISCLASS (class));
       assert (CLS_ISMETA (class->class_pointer));
-      DEBUG_PRINTF ("phase 1, processing class: %s\n", class->name);
+      DEBUG_PRINTF (" installing class '%s'\n", class->name);
 
       /* Initialize the subclass list to be NULL.  In some cases it
 	 isn't and this crashes the program.  */
@@ -653,10 +660,7 @@ __objc_exec_class (struct objc_module *module)
 	 methods.  */
       if (class)
 	{
-	  DEBUG_PRINTF ("processing categories from (module,object): %s, %s\n",
-			module->name,
-			class->name);
-
+	  DEBUG_PRINTF (" installing category '%s (%s)'\n", category->class_name, category->category_name);
 	  /* Do instance methods.  */
 	  if (category->instance_methods)
 	    class_add_method_list (class, category->instance_methods);
@@ -678,6 +682,7 @@ __objc_exec_class (struct objc_module *module)
 	}
       else
 	{
+	  DEBUG_PRINTF (" delaying installation of category '%s (%s)'\n", category->class_name, category->category_name);
 	  /* The object to which the category methods belong can't be
 	     found.  Save the information.  */
 	  unclaimed_categories = list_cons (category, unclaimed_categories);
@@ -698,9 +703,7 @@ __objc_exec_class (struct objc_module *module)
       
       if (class)
 	{
-	  DEBUG_PRINTF ("attaching stored categories to object: %s\n",
-			class->name);
-	  
+	  DEBUG_PRINTF (" installing (delayed) category '%s (%s)'\n", category->class_name, category->category_name);
 	  list_remove_head (cell);
 	  
 	  if (category->instance_methods)
@@ -740,9 +743,14 @@ __objc_exec_class (struct objc_module *module)
      "resolving the class links" at this point, which will setup all
      the class/superclass pointers.  */
   if (!unresolved_classes && objc_getClass ("Object"))
-    __objc_resolve_class_links ();
+    {
+      DEBUG_PRINTF (" resolving class links\n");
+      __objc_resolve_class_links ();
+    }
 
   objc_mutex_unlock (__objc_runtime_mutex);
+
+  DEBUG_PRINTF ("__objc_exec_class (%p) - finished processing module...\n\n", module);
 }
 
 /* This function needs to be called with the objc_runtime_mutex
@@ -865,6 +873,7 @@ __objc_call_load_callback (struct objc_module *module)
 	  if (!objc_hash_is_key_in_hash (duplicate_classes, class))
 	    {
 	      /* Call the _objc_load_callback for this class.  */
+	      DEBUG_PRINTF (" calling the load callback for class '%s'\n", class->name);
 	      _objc_load_callback (class, 0);
 	    }
 	}
@@ -877,6 +886,8 @@ __objc_call_load_callback (struct objc_module *module)
 	  struct objc_category *category = symtab->defs[i + symtab->cls_def_cnt];
 	  Class class = objc_getClass (category->class_name);
 	  
+	  DEBUG_PRINTF (" calling the load callback for category '%s (%s)'\n",
+			category->class_name, category->category_name);
 	  _objc_load_callback (class, category);
 	}
     }
@@ -924,6 +935,7 @@ __objc_init_class (Class class)
     {
       /* The module contains a duplicate class.  Remember it so that
 	 we will ignore it later.  */
+      DEBUG_PRINTF (" duplicate class '%s' - will be ignored\n", class->name);
       objc_hash_add (&duplicate_classes, class, class);
       return NO;
     }

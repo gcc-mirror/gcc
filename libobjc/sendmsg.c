@@ -23,6 +23,9 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+/* Uncommented the following line to enable debug logging.  Use this
+   only while debugging the runtime.  */
+/* #define DEBUG 1 */
 
 /* FIXME: This file has no business including tm.h.  */
 /* FIXME: This should be using libffi instead of __builtin_apply
@@ -543,6 +546,7 @@ __objc_send_initialize (Class class)
 
   if (! CLS_ISINITIALIZED (class))
     {
+      DEBUG_PRINTF ("+initialize: need to initialize class '%s'\n", class->name);
       CLS_SETINITIALIZED (class);
       CLS_SETINITIALIZED (class->class_pointer);
 
@@ -579,7 +583,17 @@ __objc_send_initialize (Class class)
 	    method_list = method_list->method_next;
 	  }
 	if (imp)
-	  (*imp) ((id) class, op);
+	  {
+	    DEBUG_PRINTF (" begin of [%s +initialize]\n", class->name);
+	    (*imp) ((id) class, op);
+	    DEBUG_PRINTF (" end of [%s +initialize]\n", class->name);
+	  }
+#ifdef DEBUG
+	else
+	  {
+	    DEBUG_PRINTF (" class '%s' has no +initialize method\n", class->name);	    
+	  }
+#endif
       }
     }
 }
@@ -621,6 +635,8 @@ __objc_install_dispatch_table_for_class (Class class)
      re-compute all class links.  */
   if (! CLS_ISRESOLV (class))
     __objc_resolve_class_links ();
+
+  DEBUG_PRINTF ("__objc_install_dispatch_table_for_class (%s)\n", class->name);
   
   super = class->super_class;
 
@@ -649,6 +665,8 @@ __objc_update_dispatch_table_for_class (Class class)
   /* Not yet installed -- skip it.  */
   if (class->dtable == __objc_uninstalled_dtable) 
     return;
+
+  DEBUG_PRINTF (" _objc_update_dispatch_table_for_class (%s)\n", class->name);
 
   objc_mutex_lock (__objc_runtime_mutex);
 
