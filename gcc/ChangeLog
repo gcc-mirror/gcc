@@ -1,3 +1,8 @@
+2010-12-23  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa.c (cgraph_remove_unreachable_nodes): Update former_clone_of even
+	when not checking.
+
 2010-12-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (gcc_cv_ld_eh_frame_hdr): Only check GNU ld for
