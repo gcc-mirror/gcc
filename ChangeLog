@@ -1,3 +1,7 @@
+2010-12-23  Hariharan Sandanagobalane <hariharan@picochip.com>
+
+	* configure: Regenerate.
+
 2010-12-22  Hariharan Sandanagobalane <hariharan@picochip.com>
 
 	* configure.ac: (picochip): Disable libiberty.
