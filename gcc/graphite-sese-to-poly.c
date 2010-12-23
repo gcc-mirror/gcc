@@ -612,7 +612,7 @@ scan_tree_for_params_right_scev (sese s, tree e, int var,
       gcc_assert (TREE_CODE (e) == INTEGER_CST);
 
       mpz_init (val);
-      mpz_set_si (val, int_cst_value (e));
+      tree_int_to_gmp (e, val);
       add_value_to_dim (l, expr, val);
       mpz_clear (val);
     }
@@ -626,16 +626,13 @@ scan_tree_for_params_int (tree cst, ppl_Linear_Expression_t expr, mpz_t k)
 {
   mpz_t val;
   ppl_Coefficient_t coef;
-  int v = int_cst_value (cst);
+  tree type = TREE_TYPE (cst);
 
   mpz_init (val);
-  mpz_set_si (val, 0);
 
   /* Necessary to not get "-1 = 2^n - 1". */
-  if (v < 0)
-    mpz_sub_ui (val, val, -v);
-  else
-    mpz_add_ui (val, val, v);
+  mpz_set_double_int (val, double_int_sext (tree_to_double_int (cst),
+					    TYPE_PRECISION (type)), false);
 
   mpz_mul (val, val, k);
   ppl_new_Coefficient (&coef);
@@ -713,7 +710,7 @@ scan_tree_for_params (sese s, tree e, ppl_Linear_Expression_t c,
 	      mpz_t val;
 	      gcc_assert (host_integerp (TREE_OPERAND (e, 1), 0));
 	      mpz_init (val);
-	      mpz_set_si (val, int_cst_value (TREE_OPERAND (e, 1)));
+	      tree_int_to_gmp (TREE_OPERAND (e, 1), val);
 	      mpz_mul (val, val, k);
 	      scan_tree_for_params (s, TREE_OPERAND (e, 0), c, val);
 	      mpz_clear (val);
@@ -728,7 +725,7 @@ scan_tree_for_params (sese s, tree e, ppl_Linear_Expression_t c,
 	      mpz_t val;
 	      gcc_assert (host_integerp (TREE_OPERAND (e, 0), 0));
 	      mpz_init (val);
-	      mpz_set_si (val, int_cst_value (TREE_OPERAND (e, 0)));
+	      tree_int_to_gmp (TREE_OPERAND (e, 0), val);
 	      mpz_mul (val, val, k);
 	      scan_tree_for_params (s, TREE_OPERAND (e, 1), c, val);
 	      mpz_clear (val);
@@ -1614,10 +1611,13 @@ pdr_add_data_dimensions (ppl_Polyhedron_t accesses, data_reference_p dr,
       /* subscript - low >= 0 */
       if (host_integerp (low, 0))
 	{
+	  tree minus_low;
+
 	  ppl_new_Linear_Expression_with_dimension (&expr, accessp_nb_dims);
 	  ppl_set_coef (expr, subscript, 1);
 
-	  ppl_set_inhomogeneous (expr, -int_cst_value (low));
+	  minus_low = fold_build1 (NEGATE_EXPR, TREE_TYPE (low), low);
+	  ppl_set_inhomogeneous_tree (expr, minus_low);
 
 	  ppl_new_Constraint (&cstr, expr, PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);
 	  ppl_Polyhedron_add_constraint (accesses, cstr);
@@ -1637,7 +1637,7 @@ pdr_add_data_dimensions (ppl_Polyhedron_t accesses, data_reference_p dr,
 	  ppl_new_Linear_Expression_with_dimension (&expr, accessp_nb_dims);
 	  ppl_set_coef (expr, subscript, -1);
 
-	  ppl_set_inhomogeneous (expr, int_cst_value (high));
+	  ppl_set_inhomogeneous_tree (expr, high);
 
 	  ppl_new_Constraint (&cstr, expr, PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);
 	  ppl_Polyhedron_add_constraint (accesses, cstr);

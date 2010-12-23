@@ -1,3 +1,8 @@
+2010-12-22  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/46758
+	* gcc.dg/graphite/run-id-pr46758.c: New.
+
 2010-12-23  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/46978
