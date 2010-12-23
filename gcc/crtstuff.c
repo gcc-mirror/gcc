@@ -1,7 +1,7 @@
 /* Specialized bits of code needed to support construction and
    destruction of file-scope objects in C++ code.
    Copyright (C) 1991, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
-   2002, 2003, 2004, 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+   2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
 
 This file is part of GCC.
@@ -84,6 +84,15 @@ call_ ## FUNC (void)					\
     && defined(HAVE_LD_EH_FRAME_HDR) \
     && !defined(inhibit_libc) && !defined(CRTSTUFFT_O) \
     && defined(__FreeBSD__) && __FreeBSD__ >= 7
+#include <link.h>
+# define USE_PT_GNU_EH_FRAME
+#endif
+
+#if defined(OBJECT_FORMAT_ELF) \
+    && !defined(OBJECT_FORMAT_FLAT) \
+    && defined(HAVE_LD_EH_FRAME_HDR) && defined(TARGET_DL_ITERATE_PHDR) \
+    && !defined(inhibit_libc) && !defined(CRTSTUFFT_O) \
+    && defined(__sun__) && defined(__svr4__)
 #include <link.h>
 # define USE_PT_GNU_EH_FRAME
 #endif

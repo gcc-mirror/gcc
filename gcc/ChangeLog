@@ -1,3 +1,30 @@
+2010-12-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_ld_eh_frame_hdr): Only check GNU ld for
+	--eh-frame-hdr.
+	Check for working Sun ld version.
+	(HAVE_LD_EH_FRAME_HDR): Adapt comment.
+	(glibc_header_dir): Set only once.
+	Rename to ...
+	(target_header_dir): ... this.
+	Adapt users.
+	(gcc_cv_target_dl_iterate_frame_hdr): Check on *-*-solaris2*.
+	(TARGET_DL_ITERATE_PHDR): Define if present.
+	* configure: Regenerate.
+	* config.in: Likewise.
+	* config/t-sol2 (LIB2ADDEH, LIB2ADDEHDEP): Define.
+	* crtstuff.c (USE_PT_GNU_EH_FRAME): Define for recent Solaris 11
+	with linker support and dl_iterate_phdr.
+	* unwind-dw2-fde-glibc.c (USE_PT_GNU_EH_FRAME): Likewise.
+	(_Unwind_IteratePhdrCallback) [PT_SUNW_UNWIND]: Also accept
+	PT_SUNW_UNWIND .eh_frame_hdr sections.
+	[CRT_GET_RFIB_DATA && __i386__ && __sun__ && __svr4__]: Add
+	load_base to data->dbase.
+	[CRT_GET_RFIB_DATA && __x86_64__ && __sun__ && __svr4__]: Handle
+	64-bit Solaris 10+/x86.
+	* config/sol2-gld.h [TARGET_DL_ITERATE_PHDR && HAVE_LD_EH_FRAME_HDR]
+	(LINK_EH_SPEC): Define.
+
 2010-12-23  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/extend.texi (Function Attributes, Volatiles): Fix typos.
