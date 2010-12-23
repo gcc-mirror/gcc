@@ -1,3 +1,11 @@
+2010-12-23  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* doc/objc.texi (Modern GNU Objective-C runtime API): Mention that
+	reference documentation for functions in the API is in the header
+	files.
+	(Messaging with the GNU Objective-C runtime, Dynamically
+	registering methods, Forwarding hook): New sections.
+
 2010-12-22  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/47019
