@@ -450,7 +450,7 @@ and not using @option{--disable-symvers}.
 Necessary when targetting Solaris 2 with Sun @command{ld}, building
 @samp{libstdc++}, and not using @option{--disable-symvers}.  A helper
 scripts needs @samp{Glob.pm}, which is missing from @command{perl} 5.005
-included in Solaris~8.  The bundled @command{perl} in Solaris~9 and up
+included in Solaris@tie{}8.  The bundled @command{perl} in Solaris@tie{}9 and up
 works.
 Used by various scripts to generate some files included in SVN (mainly
 Unicode-related and rarely changing) from source tables.
@@ -3539,10 +3539,10 @@ recommended to use the GNU assembler instead.  There is no bundled
 version, but the current version, from GNU binutils 2.20.1, is known to
 work.
 
-Solaris~2/x86 doesn't support the execution of SSE/SSE2 instructions
-before Solaris~9 4/04, even if the CPU supports them.  Programs will
+Solaris@tie{}2/x86 doesn't support the execution of SSE/SSE2 instructions
+before Solaris@tie{}9 4/04, even if the CPU supports them.  Programs will
 receive @code{SIGILL} if they try.  The fix is available both in
-Solaris~9 Update~6 and kernel patch 112234-12 or newer.  There is no
+Solaris@tie{}9 Update@tie{}6 and kernel patch 112234-12 or newer.  There is no
 corresponding patch for Solaris 8.  To avoid this problem,
 @option{-march} defaults to @samp{pentiumpro} on Solaris 8 and 9.  If
 you have the patch installed, you can configure GCC with an appropriate
@@ -4228,23 +4228,23 @@ There are patches for Solaris 8 (117350-12 or newer for SPARC,
 117351-12 or newer for Intel) and Solaris 9 (117171-11 or newer for
 SPARC, 117172-11 or newer for Intel) that address this problem.
 
-Solaris~8 provides an alternate implementation of the thread libraries,
+Solaris@tie{}8 provides an alternate implementation of the thread libraries,
 @samp{libpthread} and @samp{libthread}.  They are required for TLS
-support and have been made the default in Solaris~9, so they are always
-used on Solaris~8.
+support and have been made the default in Solaris@tie{}9, so they are always
+used on Solaris@tie{}8.
 
-Thread-local storage (TLS) is supported in Solaris~8 and 9, but requires
+Thread-local storage (TLS) is supported in Solaris@tie{}8 and 9, but requires
 some patches.  The @samp{libthread} patches provide the
 @code{__tls_get_addr} (SPARC, 64-bit x86) resp.@ @code{___tls_get_addr}
-(32-bit x86) functions.  On Solaris~8, you need 108993-26 or newer on
-SPARC, 108994-26 or newer on Intel.  On Solaris~9, the necessary support
-on SPARC is present since FCS, while 114432-05 or newer is reqired on
-Intel.  Additionally, on Solaris~8, patch 109147-14 or newer on SPARC or
+(32-bit x86) functions.  On Solaris@tie{}8, you need 108993-26 or newer on
+SPARC, 108994-26 or newer on Intel.  On Solaris@tie{}9, the necessary support
+on SPARC is present since FCS, while 114432-05 or newer is required on
+Intel.  Additionally, on Solaris@tie{}8, patch 109147-14 or newer on SPARC or
 109148-22 or newer on Intel are required for the Sun @command{ld} and
-runtime linker (@command{ld.so.1}) support.  Again, Solaris~9/SPARC
+runtime linker (@command{ld.so.1}) support.  Again, Solaris@tie{}9/SPARC
 works since FCS, while 113986-02 is required on Intel.  The linker
 patches must be installed even if GNU @command{ld} is used. Sun
-@command{as} in Solaris~8 and 9 doesn't support the necessary
+@command{as} in Solaris@tie{}8 and 9 doesn't support the necessary
 relocations, so GNU @command{as} must be used.  The @command{configure}
 script checks for those prerequisites and automatically enables TLS
 support if they are met.  Although those minimal patch versions should

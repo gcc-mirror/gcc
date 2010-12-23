@@ -1699,7 +1699,7 @@ have support for @option{-pthread}.
 @opindex fms-extensions
 Accept some non-standard constructs used in Microsoft header files.
 
-It allows for c++ that member-names in structures can be similiar
+In C++ code, this allows member names in structures to be similar
 to previous types declarations.
 
 @smallexample
@@ -4844,7 +4844,7 @@ allocation before or after interprocedural optimization.
 @opindex fstack-usage
 Makes the compiler output stack usage information for the program, on a
 per-function basis.  The filename for the dump is made by appending
-@file{.su} to the AUXNAME.  AUXNAME is generated from the name of
+@file{.su} to the @var{auxname}.  @var{auxname} is generated from the name of
 the output file, if explicitly specified and it is not an executable,
 otherwise it is the basename of the source file.  An entry is made up
 of three fields:
@@ -4952,15 +4952,15 @@ more closely, if you do not optimize.
 
 @item -fdbg-cnt-list
 @opindex fdbg-cnt-list
-Print the name and the counter upperbound for all debug counters.
+Print the name and the counter upper bound for all debug counters.
 
 @item -fdbg-cnt=@var{counter-value-list}
 @opindex fdbg-cnt
-Set the internal debug counter upperbound. @var{counter-value-list}
+Set the internal debug counter upper bound.  @var{counter-value-list}
 is a comma-separated list of @var{name}:@var{value} pairs
-which sets the upperbound of each debug counter @var{name} to @var{value}.
-All debug counters have the initial upperbound of @var{UINT_MAX},
-thus dbg_cnt() returns true always unless the upperbound is set by this option.
+which sets the upper bound of each debug counter @var{name} to @var{value}.
+All debug counters have the initial upper bound of @var{UINT_MAX},
+thus dbg_cnt() returns true always unless the upper bound is set by this option.
 e.g. With -fdbg-cnt=dce:10,tail_call:0
 dbg_cnt(dce) will return true only for first 10 invocations
 and dbg_cnt(tail_call) will return false always.
@@ -7500,7 +7500,7 @@ The only important thing to keep in mind is that to enable link-time
 optimizations the @option{-flto} flag needs to be passed to both the
 compile and the link commands.
 
-To make whole program optimization effective, it is necesary to make
+To make whole program optimization effective, it is necessary to make
 certain whole program assumptions.  The compiler needs to know
 what functions and variables can be accessed by libraries and runtime
 outside of the link time optimized unit.  When supported by the linker,
@@ -8332,7 +8332,7 @@ late inlining.
 @item comdat-sharing-probability
 @itemx comdat-sharing-probability
 Probability (in percent) that C++ inline function with comdat visibility
-will be shared acroess multiple compilation units.  The default value is 20.
+will be shared across multiple compilation units.  The default value is 20.
 
 @item min-vect-loop-bound
 The minimum number of iterations under which a loop will not get vectorized
@@ -8342,8 +8342,8 @@ to allow vectorization.  The default value is 0.
 
 @item gcse-cost-distance-ratio
 Scaling factor in calculation of maximum distance an expression
-can be moved by GCSE optimizations.  This is currently supported only in
-code hoisting pass.  The bigger the ratio, the more agressive code hoisting
+can be moved by GCSE optimizations.  This is currently supported only in the
+code hoisting pass.  The bigger the ratio, the more aggressive code hoisting
 will be with simple expressions, i.e., the expressions which have cost
 less than @option{gcse-unrestricted-cost}.  Specifying 0 will disable
 hoisting of simple expressions.  The default value is 10.
@@ -8352,7 +8352,7 @@ hoisting of simple expressions.  The default value is 10.
 Cost, roughly measured as the cost of a single typical machine
 instruction, at which GCSE optimizations will not constrain
 the distance an expression can travel.  This is currently
-supported only in code hoisting pass.  The lesser the cost,
+supported only in the code hoisting pass.  The lesser the cost,
 the more aggressive code hoisting will be.  Specifying 0 will
 allow all expressions to travel unrestricted distances.
 The default value is 3.
@@ -8812,12 +8812,12 @@ parameter in order to perform devirtualization.
 stores per a single formal parameter of a function.
 
 @item lto-partitions
-Specify desired nuber of partitions produced during WHOPR copmilation.
-Number of partitions should exceed number of CPUs used for compilatoin.
-Default value is 32.
+Specify desired number of partitions produced during WHOPR compilation.
+The number of partitions should exceed the number of CPUs used for compilation.
+The default value is 32.
 
 @item lto-minpartition
-Size of minimal paritition for WHOPR (in estimated instructions).
+Size of minimal partition for WHOPR (in estimated instructions).
 This prevents expenses of splitting very small programs into too many
 partitions.
 
@@ -12339,10 +12339,10 @@ the system libraries and startup modules.
 @item -mvect8-ret-in-mem
 @opindex mvect8-ret-in-mem
 Return 8-byte vectors in memory instead of MMX registers.  This is the
-default on Solaris~8 and 9 and VxWorks to match the ABI of the Sun
+default on Solaris@tie{}8 and 9 and VxWorks to match the ABI of the Sun
 Studio compilers until version 12.  Later compiler versions (starting
-with Studio 12 Update~1) follow the ABI used by other x86 targets, which
-is the default on Solaris~10 and later.  @emph{Only} use this option if
+with Studio 12 Update@tie{}1) follow the ABI used by other x86 targets, which
+is the default on Solaris@tie{}10 and later.  @emph{Only} use this option if
 you need to remain compatible with existing code produced by those
 previous compiler versions or older versions of GCC.
 
@@ -13938,7 +13938,7 @@ This option is deprecated.  Use @option{-fno-zero-initialized-in-bss} instead.
 Use features of and schedule code for given CPU.
 Supported values are in the format @samp{v@var{X}.@var{YY}.@var{Z}}, 
 where @var{X} is a major version, @var{YY} is the minor version, and 
-@var{Z} is compatiblity code.  Example values are @samp{v3.00.a}, 
+@var{Z} is compatibility code.  Example values are @samp{v3.00.a},
 @samp{v4.00.b}, @samp{v5.00.a}, @samp{v5.00.b}, @samp{v5.00.b}, @samp{v6.00.a}. 
 
 @item -mxl-soft-mul
@@ -13975,7 +13975,7 @@ Use multiply high instructions for high part of 32x32 multiply.
 
 @item -mxl-float-convert
 @opindex mxl-float-convert
-Use hardware floating point converstion instructions.
+Use hardware floating point conversion instructions.
 
 @item -mxl-float-sqrt
 @opindex mxl-float-sqrt
@@ -16066,9 +16066,9 @@ roots.
 @opindex mrecip=opt
 This option allows to control which reciprocal estimate instructions
 may be used.  @var{opt} is a comma separated list of options, that may
-be preceeded by a @code{!} to invert the option:
+be preceded by a @code{!} to invert the option:
 @code{all}: enable all estimate instructions,
-@code{default}: enable the default instructions, equvalent to @option{-mrecip},
+@code{default}: enable the default instructions, equivalent to @option{-mrecip},
 @code{none}: disable all estimate instructions, equivalent to @option{-mno-recip};
 @code{div}: enable the reciprocal approximation instructions for both single and double precision;
 @code{divf}: enable the single precision reciprocal approximation instructions;
@@ -16178,7 +16178,7 @@ selected.
 @opindex mbig-endian-data
 @opindex mlittle-endian-data
 Store data (but not code) in the big-endian format.  The default is
-@option{-mlittle-endian-data}, ie to store data in the little endian
+@option{-mlittle-endian-data}, i.e.@: to store data in the little endian
 format.
 
 @item -msmall-data-limit=@var{N}
@@ -18123,7 +18123,7 @@ code, provide near-perfect API export and prevent symbol clashes.
 It is @strong{strongly} recommended that you use this in any shared objects
 you distribute.
 
-Despite the nomenclature, @code{default} always means public ie;
+Despite the nomenclature, @code{default} always means public; i.e.,
 available to be linked against from outside the shared object.
 @code{protected} and @code{internal} are pretty useless in real-world
 usage so the only other commonly used option will be @code{hidden}.
@@ -18151,7 +18151,7 @@ the declarations you wish to set visibility for with (for example)
 @samp{#pragma GCC visibility pop}.
 Bear in mind that symbol visibility should be viewed @strong{as
 part of the API interface contract} and thus all new code should
-always specify visibility when it is not the default ie; declarations
+always specify visibility when it is not the default; i.e., declarations
 only for use within the local DSO should @strong{always} be marked explicitly
 as hidden as so to avoid PLT indirection overheads---making this
 abundantly clear also aids readability and self-documentation of the code.

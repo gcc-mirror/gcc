@@ -1,3 +1,17 @@
+2010-12-23  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/extend.texi (Function Attributes, Volatiles): Fix typos.
+	* doc/install.texi (Prerequisites, Specific): Likewise.
+	* doc/invoke.texi (C Dialect Options, Debugging Options)
+	(Optimize Options, MicroBlaze Options)
+	(RS/6000 and PowerPC Options, RX Options, Code Gen Options):
+	Likewise.
+	* doc/objc.texi (Method signatures)
+	(Fast enumeration protocol): Likewise.
+	* doc/tm.texi.in (Run-time Target, Register Arguments)
+	(Scheduling, Macros for Initialization, Misc): Likewise.
+	* doc/tm.texi: Renerate.
+
 2010-12-23  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* doc/objc.texi (Modern GNU Objective-C runtime API): Mention that
