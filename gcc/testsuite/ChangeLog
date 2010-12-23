@@ -1,3 +1,8 @@
+2010-12-23  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/46978
+	* gfortran.dg/transpose_intrinsic_func_call_1.f90: New test.
+
 2010-12-23  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* obj-c.dg/gnu-api-2-class.m: Test that class_addMethod() returns
