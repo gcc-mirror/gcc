@@ -557,7 +557,7 @@ functions are part of the public ``API'' and are the preferred way to
 interact with method signatures from user code.
 
 But if you need to debug a problem with method signatures and need to
-know how they are implemented (ie, the ``ABI''), read on.
+know how they are implemented (i.e., the ``ABI''), read on.
 
 Methods have their ``signature'' encoded and made available to the
 runtime.  The ``signature'' encodes all the information required to
@@ -1030,13 +1030,13 @@ enumeration, you need to have it implement the method
 @smallexample
 - (unsigned long) countByEnumeratingWithState: (NSFastEnumerationState *)state 
                                       objects: (id *)objects
-                                        count: (unsigneld long)len;
+                                        count: (unsigned long)len;
 @end smallexample
 
 where @code{NSFastEnumerationState} must be defined in your code as follows:
 
 @smallexample
-typdef struct
+typedef struct
 @{
   unsigned long state;
   id            *itemsPtr;
