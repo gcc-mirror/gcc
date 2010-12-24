@@ -191,14 +191,14 @@ objc_EXPORT SEL sel_getUid (const char *name);
    you know the types, it is better to call sel_registerTypedName().
    If a selector with this name and no types already exists, it is
    returned.  Note that this function should really be called
-   'objc_registerSelector'.  */
+   'objc_registerSelector'.  Return NULL if 'name' is NULL.  */
 objc_EXPORT SEL sel_registerName (const char *name);
 
 /* Register a selector with a given name and types.  If a selector
    with this name and types already exists, it is returned.  Note that
    this function should really be called 'objc_registerTypedSelector',
    and it's called 'sel_registerTypedName' only for consistency with
-   'sel_registerName'.
+   'sel_registerName'.  Return NULL if 'name' is NULL.
 
    Compatibility Note: the Apple/NeXT runtime has untyped selectors,
    so it does not have this function, which is specific to the GNU
@@ -227,7 +227,7 @@ objc_EXPORT SEL * sel_copyTypedSelectorList (const char *name,
 
 /* Return a selector with name 'name' and a non-zero type encoding, if
    any such selector is registered with the runtime.  If there is no
-   such selector, NULL is returned.
+   such selector, NULL is returned.  Return NULL if 'name' is NULL.
 
    This is useful if you have the name of the selector, and would
    really like to get a selector for it that includes the type

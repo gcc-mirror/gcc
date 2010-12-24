@@ -1,5 +1,12 @@
 2010-12-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc.dg/gnu-api-2-sel.m: Test calling sel_getUid,
+	sel_registerName and sel_registerTypedName with NULL arguments.
+	Updated the test to work with the Apple runtime as well.
+	* obj-c++.dg/gnu-api-2-sel.mm: Same change.
+	
+2010-12-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc.dg/gnu-api-2-class.m: Updated test to pass log_2 of the
 	alignment to class_addIvar, instead of the alignment itself.
 	* obj-c++.dg/gnu-api-2-class.mm: Same change.

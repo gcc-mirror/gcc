@@ -3,7 +3,6 @@
   This is test 'sel', covering all functions starting with 'sel'.  */
 
 /* { dg-do run } */
-/* { dg-skip-if "" { *-*-* } { "-fnext-runtime" } { "" } } */
 
 /* To get the modern GNU Objective-C Runtime API, you include
    objc/runtime.h.  */
@@ -16,11 +15,13 @@
 { Class isa; }
 + alloc;
 - init;
++ initialize;
 @end
 
 @implementation MyRootClass
 + alloc { return class_createInstance (self, 0); }
 - init  { return self; }
++ initialize { return self; }
 @end
 
 @protocol MyProtocol
@@ -49,6 +50,7 @@ int main ()
 {
   /* Functions are tested in alphabetical order.  */
 
+#ifdef __GNU_LIBOBJC__
   std::cout << "Testing sel_copyTypedSelectorList ()...\n";
   {
     unsigned int count;
@@ -72,6 +74,7 @@ int main ()
     if (list[2] != NULL)
       abort ();
   }
+#endif
 
   std::cout << "Testing sel_getName () ...\n";
   {
@@ -82,6 +85,7 @@ int main ()
       abort ();
   }
 
+#ifdef __GNU_LIBOBJC__
   std::cout << "Testing sel_getTypeEncoding () ...\n";
   {
     /* Get a selector from a real class, so it has interesting
@@ -96,7 +100,9 @@ int main ()
     if (sel_getTypeEncoding (NULL) != NULL)
       abort ();
   }
+#endif
 
+#ifdef __GNU_LIBOBJC__
   std::cout << "Testing sel_getTypedSelector () ...\n";
   {
     /* First try with a selector where we know that a typed one has
@@ -128,10 +134,14 @@ int main ()
     if (selector != NULL)
       abort ();
   }
+#endif
 
   std::cout << "Testing sel_getUid () ...\n";
   {
     if (std::strcmp (sel_getName (sel_getUid ("myMethod")), "myMethod") != 0)
+      abort ();
+
+    if (sel_getUid (NULL) != NULL)
       abort ();
   }
 
@@ -145,8 +155,12 @@ int main ()
   {
     if (std::strcmp (sel_getName (sel_registerName ("myMethod")), "myMethod") != 0)
       abort ();
+
+    if (sel_registerName (NULL) != NULL)
+      abort ();
   }
 
+#ifdef __GNU_LIBOBJC__
   std::cout << "Testing set_registerTypedName () ...\n";
   {
     const char *types = method_getTypeEncoding (class_getInstanceMethod 
@@ -159,7 +173,14 @@ int main ()
 
     if (std::strcmp (sel_getTypeEncoding (selector), types) != 0)
       abort ();
+
+    if (sel_registerTypedName (NULL, NULL) != NULL)
+      abort ();
+
+    if (sel_registerTypedName (NULL, types) != NULL)
+      abort ();
   }
+#endif
 
   return (0);
 }
