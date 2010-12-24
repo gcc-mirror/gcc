@@ -6853,6 +6853,19 @@ Named_type::do_verify()
   return true;
 }
 
+// Return whether this type is or contains a pointer.
+
+bool
+Named_type::do_has_pointer() const
+{
+  if (this->seen_ > 0)
+    return false;
+  ++this->seen_;
+  bool ret = this->type_->has_pointer();
+  --this->seen_;
+  return ret;
+}
+
 // Return a hash code.  This is used for method lookup.  We simply
 // hash on the name itself.
 
