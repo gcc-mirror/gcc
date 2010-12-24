@@ -6463,6 +6463,9 @@ class Builtin_call_expression : public Call_expression
   Gogo* gogo_;
   // The builtin function being called.
   Builtin_function_code code_;
+  // Used to stop endless loops when the length of an array uses len
+  // or cap of the array itself.
+  mutable bool seen_;
 };
 
 Builtin_call_expression::Builtin_call_expression(Gogo* gogo,
@@ -6471,7 +6474,7 @@ Builtin_call_expression::Builtin_call_expression(Gogo* gogo,
 						 bool is_varargs,
 						 source_location location)
   : Call_expression(fn, args, is_varargs, location),
-    gogo_(gogo), code_(BUILTIN_INVALID)
+    gogo_(gogo), code_(BUILTIN_INVALID), seen_(false)
 {
   Func_expression* fnexp = this->fn()->func_expression();
   gcc_assert(fnexp != NULL);
@@ -6781,6 +6784,9 @@ Builtin_call_expression::do_is_constant() const
     case BUILTIN_LEN:
     case BUILTIN_CAP:
       {
+	if (this->seen_)
+	  return false;
+
 	Expression* arg = this->one_arg();
 	if (arg == NULL)
 	  return false;
@@ -6793,10 +6799,15 @@ Builtin_call_expression::do_is_constant() const
 
 	if (arg_type->array_type() != NULL
 	    && arg_type->array_type()->length() != NULL)
-	  return arg_type->array_type()->length()->is_constant();
+	  return true;
 
 	if (this->code_ == BUILTIN_LEN && arg_type->is_string_type())
-	  return arg->is_constant();
+	  {
+	    this->seen_ = true;
+	    bool ret = arg->is_constant();
+	    this->seen_ = false;
+	    return ret;
+	  }
       }
       break;
 
@@ -6868,8 +6879,13 @@ Builtin_call_expression::do_integer_constant_value(bool iota_is_constant,
       if (arg_type->array_type() != NULL
 	  && arg_type->array_type()->length() != NULL)
 	{
+	  if (this->seen_)
+	    return false;
 	  Expression* e = arg_type->array_type()->length();
-	  if (e->integer_constant_value(iota_is_constant, val, ptype))
+	  this->seen_ = true;
+	  bool r = e->integer_constant_value(iota_is_constant, val, ptype);
+	  this->seen_ = false;
+	  if (r)
 	    {
 	      *ptype = Type::lookup_integer_type("int");
 	      return true;
@@ -7484,7 +7500,18 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 	gcc_assert(args != NULL && args->size() == 1);
 	Expression* arg = *args->begin();
 	Type* arg_type = arg->type();
+
+	if (this->seen_)
+	  {
+	    gcc_assert(saw_errors());
+	    return error_mark_node;
+	  }
+	this->seen_ = true;
+
 	tree arg_tree = arg->get_tree(context);
+
+	this->seen_ = false;
+
 	if (arg_tree == error_mark_node)
 	  return error_mark_node;
 
@@ -7503,7 +7530,16 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 	    if (arg_type->is_string_type())
 	      val_tree = String_type::length_tree(gogo, arg_tree);
 	    else if (arg_type->array_type() != NULL)
-	      val_tree = arg_type->array_type()->length_tree(gogo, arg_tree);
+	      {
+		if (this->seen_)
+		  {
+		    gcc_assert(saw_errors());
+		    return error_mark_node;
+		  }
+		this->seen_ = true;
+		val_tree = arg_type->array_type()->length_tree(gogo, arg_tree);
+		this->seen_ = false;
+	      }
 	    else if (arg_type->map_type() != NULL)
 	      {
 		static tree map_len_fndecl;
@@ -7532,7 +7568,17 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 	else
 	  {
 	    if (arg_type->array_type() != NULL)
-	      val_tree = arg_type->array_type()->capacity_tree(gogo, arg_tree);
+	      {
+		if (this->seen_)
+		  {
+		    gcc_assert(saw_errors());
+		    return error_mark_node;
+		  }
+		this->seen_ = true;
+		val_tree = arg_type->array_type()->capacity_tree(gogo,
+								 arg_tree);
+		this->seen_ = false;
+	      }
 	    else if (arg_type->channel_type() != NULL)
 	      {
 		static tree chan_cap_fndecl;
