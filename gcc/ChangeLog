@@ -1,3 +1,10 @@
+2010-12-24  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/47036
+	* sel-sched-ir.c (fallthru_bb_of_jump): Remove special support for
+	unconditional jumps.
+	* sel-sched.c (moveup_expr): Ditto.
+
 2010-12-23  Sebastian Pop  <sebastian.pop@amd.com>
 	    Richard Guenther  <rguenther@suse.de>
 

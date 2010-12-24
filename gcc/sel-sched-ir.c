@@ -4441,9 +4441,6 @@ fallthru_bb_of_jump (rtx jump)
   if (!JUMP_P (jump))
     return NULL;
 
-  if (any_uncondjump_p (jump))
-    return single_succ (BLOCK_FOR_INSN (jump));
-
   if (!any_condjump_p (jump))
     return NULL;
 
