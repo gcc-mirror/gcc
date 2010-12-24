@@ -175,12 +175,13 @@ object_getClass (id object)
    "<null selector>".  */
 objc_EXPORT const char *sel_getName (SEL selector);
 
-/* Return the type of a given selector.
+/* Return the type of a given selector.  Return NULL if selector is
+   NULL.
 
    Compatibility Note: the Apple/NeXT runtime has untyped selectors,
    so it does not have this function, which is specific to the GNU
    Runtime.  */
-objc_EXPORT const char *sel_getType (SEL selector);
+objc_EXPORT const char *sel_getTypeEncoding (SEL selector);
 
 /* This is the same as sel_registerName ().  Please use
    sel_registerName () instead.  */
@@ -188,11 +189,16 @@ objc_EXPORT SEL sel_getUid (const char *name);
 
 /* Register a selector with a given name (but unspecified types).  If
    you know the types, it is better to call sel_registerTypedName().
-   If a selector with this name already exists, it is returned.  */
+   If a selector with this name and no types already exists, it is
+   returned.  Note that this function should really be called
+   'objc_registerSelector'.  */
 objc_EXPORT SEL sel_registerName (const char *name);
 
 /* Register a selector with a given name and types.  If a selector
-   with this name and types already exists, it is returned.
+   with this name and types already exists, it is returned.  Note that
+   this function should really be called 'objc_registerTypedSelector',
+   and it's called 'sel_registerTypedName' only for consistency with
+   'sel_registerName'.
 
    Compatibility Note: the Apple/NeXT runtime has untyped selectors,
    so it does not have this function, which is specific to the GNU
@@ -202,6 +208,37 @@ objc_EXPORT SEL sel_registerTypedName (const char *name, const char *type);
 /* Return YES if first_selector is the same as second_selector, and NO
    if not.  */
 objc_EXPORT BOOL sel_isEqual (SEL first_selector, SEL second_selector);
+
+/* Return all the selectors with the supplied name.  In the GNU
+   runtime, selectors are typed and there may be multiple selectors
+   with the same name but a different type.  The return value of the
+   function is a pointer to an area, allocated with malloc(), that
+   contains all the selectors with the supplier name known to the
+   runtime.  The list is terminated by NULL.  Optionally, if you pass
+   a non-NULL 'numberOfReturnedSelectors' pointer, the unsigned int
+   that it points to will be filled with the number of selectors
+   returned.
+
+   Compatibility Note: the Apple/NeXT runtime has untyped selectors,
+   so it does not have this function, which is specific to the GNU
+   Runtime.  */
+objc_EXPORT SEL * sel_copyTypedSelectorList (const char *name,
+					     unsigned int *numberOfReturnedSelectors);
+
+/* Return a selector with name 'name' and a non-zero type encoding, if
+   any such selector is registered with the runtime.  If there is no
+   such selector, NULL is returned.
+
+   This is useful if you have the name of the selector, and would
+   really like to get a selector for it that includes the type
+   encoding.  Unfortunately, if the program contains multiple selector
+   with the same name but different types, sel_getTypedSelector
+   returns a random one of them, which may not be the right one.
+
+   Compatibility Note: the Apple/NeXT runtime has untyped selectors,
+   so it does not have this function, which is specific to the GNU
+   Runtime.  */
+objc_EXPORT SEL sel_getTypedSelector (const char *name);
 
 
 /** Implementation: the following functions are in objects.c.  */

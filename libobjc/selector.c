@@ -31,6 +31,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc-private/runtime.h"
 #include "objc-private/sarray.h"
 #include "objc-private/selector.h"
+#include <stdlib.h>                    /* For malloc.  */
 
 /* Initial selector hash table size. Value doesn't matter much.  */
 #define SELECTOR_HASH_SIZE 128
@@ -250,7 +251,11 @@ sel_types_match (const char *t1, const char *t2)
   return NO;
 }
 
-/* Return selector representing name.  */
+/* Return selector representing name.  In the Modern API, you'd
+   normally use sel_registerTypedName() for this, which does the same
+   but would register the selector with the runtime if not registered
+   yet (if you only want to check for selectors without registering,
+   use sel_copyTypedSelectorList()).  */
 SEL
 sel_get_typed_uid (const char *name, const char *types)
 {
@@ -290,7 +295,8 @@ sel_get_typed_uid (const char *name, const char *types)
 }
 
 /* Return selector representing name; prefer a selector with non-NULL
-   type.  */
+   type.  In the Modern API, sel_getTypedSelector() is similar but
+   returns NULL if a typed selector couldn't be found.  */
 SEL
 sel_get_any_typed_uid (const char *name)
 {
@@ -347,6 +353,91 @@ sel_get_any_uid (const char *name)
   return (SEL) l->head;
 }
 
+SEL
+sel_getTypedSelector (const char *name)
+{
+  sidx i;
+  objc_mutex_lock (__objc_runtime_mutex);
+
+  /* Look for a typed selector.  */
+  i = (sidx) objc_hash_value_for_key (__objc_selector_hash, name);
+  if (i != 0)
+    {
+      struct objc_list *l;
+
+      for (l = (struct objc_list *) sarray_get_safe (__objc_selector_array, i);
+	   l; l = l->tail)
+	{
+	  SEL s = (SEL) l->head;
+	  if (s->sel_types)
+	    {
+	      objc_mutex_unlock (__objc_runtime_mutex);
+	      return s;
+	    }
+	}
+    }
+
+  /* No typed selector found.  Return NULL.  */
+  objc_mutex_unlock (__objc_runtime_mutex);
+  return 0;
+}
+
+SEL *
+sel_copyTypedSelectorList (const char *name, unsigned int *numberOfReturnedSelectors)
+{
+  unsigned int count = 0;
+  SEL *returnValue = NULL;
+  sidx i;
+  
+  if (name == NULL)
+    {
+      if (numberOfReturnedSelectors)
+	*numberOfReturnedSelectors = 0;
+      return NULL;
+    }
+
+  objc_mutex_lock (__objc_runtime_mutex);
+
+  /* Count how many selectors we have.  */
+  i = (sidx) objc_hash_value_for_key (__objc_selector_hash, name);
+  if (i != 0)
+    {
+      struct objc_list *selector_list = NULL;
+      selector_list = (struct objc_list *) sarray_get_safe (__objc_selector_array, i);
+
+      /* Count how many selectors we have.  */
+      {
+	struct objc_list *l;
+	for (l = selector_list; l; l = l->tail)
+	  count++;
+      }
+
+      if (count != 0)
+	{
+	  /* Allocate enough memory to hold them.  */
+	  returnValue = (SEL *)(malloc (sizeof (SEL) * (count + 1)));
+	  
+	  /* Copy the selectors.  */
+	  {
+	    unsigned int j;
+	    for (j = 0; j < count; j++)
+	      {
+		returnValue[j] = (SEL)(selector_list->head);
+		selector_list = selector_list->tail;
+	      }
+	    returnValue[j] = NULL;
+	  }
+	}
+    }      
+
+  objc_mutex_unlock (__objc_runtime_mutex);
+  
+  if (numberOfReturnedSelectors)
+    *numberOfReturnedSelectors = count;
+  
+  return returnValue;
+}
+
 /* Get the name of a selector.  If the selector is unknown, the empty
    string "" is returned.  */ 
 const char *sel_getName (SEL selector)
@@ -382,7 +473,7 @@ sel_is_mapped (SEL selector)
   return ((idx > 0) && (idx <= __objc_selector_max_index));
 }
 
-const char *sel_getType (SEL selector)
+const char *sel_getTypeEncoding (SEL selector)
 {
   if (selector)
     return selector->sel_types;
@@ -393,7 +484,7 @@ const char *sel_getType (SEL selector)
 /* Traditional GNU Objective-C Runtime API.  */
 const char *sel_get_type (SEL selector)
 {
-  return sel_getType (selector);
+  return sel_getTypeEncoding (selector);
 }
 
 /* The uninstalled dispatch table.  */
