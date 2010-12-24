@@ -1,3 +1,7 @@
+2010-12-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt13_pkg.ad[sb]: Fix line ending.
+
 2010-12-22  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/46758
