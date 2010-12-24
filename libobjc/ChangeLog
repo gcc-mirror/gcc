@@ -1,3 +1,8 @@
+2010-12-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc/runtime.h (class_conformsToProtocol,
+	class_copyProtocolList): Updated documentation.
+
 2010-12-23  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* init.c (create_tree_of_subclasses_inherited_from): Updated

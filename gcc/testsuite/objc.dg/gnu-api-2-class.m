@@ -42,6 +42,12 @@
 - (id) variable { return variable_ivar; }
 @end
 
+@interface MyOtherSubClass : MySubClass
+@end
+
+@implementation MyOtherSubClass
+@end
+
 @interface DifferentClass : MyRootClass
 - (id) myClass;
 - (id) self;
@@ -187,6 +193,11 @@ int main(int argc, void **args)
       abort ();
 
     if (!class_conformsToProtocol (objc_getClass ("MySubClass"), @protocol (MyProtocol)))
+      abort ();
+
+    /* Test that class_conformsToProtocol checks the class, but not
+       superclasses.  */
+    if (class_conformsToProtocol (objc_getClass ("MyOtherSubClass"), @protocol (MyProtocol)))
       abort ();
   }
 
