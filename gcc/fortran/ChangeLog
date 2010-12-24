@@ -1,3 +1,10 @@
+2010-12-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/31821
+	* check.c (gfc_var_strlen):  New function, also including
+	substring references.
+	(gfc_check_same_strlen):  Use gfc_var_strlen.
+
 2010-12-23  Mikael Morin  <mikael.morin@gcc.gnu.org>
 
 	PR fortran/46978
