@@ -1,3 +1,8 @@
+2010-12-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/31821
+	* gfortran.dg/char_pointer_assign_6.f90:  New test.
+
 2010-12-22  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/46758
