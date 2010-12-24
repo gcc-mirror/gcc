@@ -5548,7 +5548,7 @@ Interface_type::finalize_methods()
       const Typed_identifier* p = &this->methods_->at(from);
       if (!p->name().empty())
 	{
-	  size_t i = 0;
+	  size_t i;
 	  for (i = 0; i < to; ++i)
 	    {
 	      if (this->methods_->at(i).name() == p->name())
@@ -5594,7 +5594,30 @@ Interface_type::finalize_methods()
 	   q != methods->end();
 	   ++q)
 	{
-	  if (q->name().empty() || this->find_method(q->name()) == NULL)
+	  if (q->name().empty())
+	    {
+	      if (q->type() == p->type())
+		error_at(p->location(), "interface inheritance loop");
+	      else
+		{
+		  size_t i;
+		  for (i = from + 1; i < this->methods_->size(); ++i)
+		    {
+		      const Typed_identifier* r = &this->methods_->at(i);
+		      if (r->name().empty() && r->type() == q->type())
+			{
+			  error_at(p->location(),
+				   "inherited interface listed twice");
+			  break;
+			}
+		    }
+		  if (i == this->methods_->size())
+		    this->methods_->push_back(Typed_identifier(q->name(),
+							       q->type(),
+							       p->location()));
+		}
+	    }
+	  else if (this->find_method(q->name()) == NULL)
 	    this->methods_->push_back(Typed_identifier(q->name(), q->type(),
 						       p->location()));
 	  else
