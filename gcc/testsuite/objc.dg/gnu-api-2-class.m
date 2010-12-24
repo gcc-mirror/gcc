@@ -62,6 +62,24 @@
 - (id) mySelf;
 @end
 
+/* Hack to calculate the log2 of a byte alignment.  */
+unsigned char
+log_2_of (unsigned int x)
+{
+  unsigned char result = 0;
+
+  /* We count how many times we need to divide by 2 before we reach 1.
+     This algorithm is good enough for the small numbers (such as 8,
+     16 or 64) that we have to deal with.  */
+  while (x > 1)
+    {
+      x = x / 2;
+      result++;
+    }
+
+  return result;
+}
+
 int main(int argc, void **args)
 {
   /* Functions are tested in alphabetical order.  */
@@ -74,15 +92,15 @@ int main(int argc, void **args)
       abort ();
     
     if (! class_addIvar (new_class, "variable2_ivar", sizeof (id),
-			 __alignof__ (id), @encode (id)))
+			 log_2_of (__alignof__ (id)), @encode (id)))
       abort ();
 
     if (! class_addIvar (new_class, "variable3_ivar", sizeof (unsigned char),
-			 __alignof__ (unsigned char), @encode (unsigned char)))
+			 log_2_of (__alignof__ (unsigned char)), @encode (unsigned char)))
       abort ();
 
     if (! class_addIvar (new_class, "variable4_ivar", sizeof (unsigned long),
-			 __alignof__ (unsigned long), @encode (unsigned long)))
+			 log_2_of (__alignof__ (unsigned long)), @encode (unsigned long)))
       abort ();
 
     objc_registerClassPair (new_class);    
@@ -135,7 +153,7 @@ int main(int argc, void **args)
       abort ();
     
     if (! class_addIvar (new_class, "variable_ivar", sizeof (id),
-			 __alignof__ (id), @encode (id)))
+			 log_2_of (__alignof__ (id)), @encode (id)))
       abort ();
 
     if (! class_addMethod (new_class, @selector (setVariable:), method_getImplementation (method1),

@@ -212,7 +212,7 @@ struct objc_ivar ** class_copyIvarList (Class class_, unsigned int *numberOfRetu
 
 BOOL
 class_addIvar (Class class_, const char * ivar_name, size_t size,
-	       unsigned char alignment, const char *type)
+	       unsigned char log_2_of_alignment, const char *type)
 {
   struct objc_ivar_list *ivars;
 
@@ -270,6 +270,7 @@ class_addIvar (Class class_, const char * ivar_name, size_t size,
      size. */
   {
     struct objc_ivar *ivar = &(ivars->ivar_list[ivars->ivar_count - 1]);
+    unsigned int alignment = 1 << log_2_of_alignment;
     int misalignment;
     
     ivar->ivar_name = objc_malloc (strlen (ivar_name) + 1);

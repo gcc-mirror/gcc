@@ -1,5 +1,11 @@
 2010-12-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc.dg/gnu-api-2-class.m: Updated test to pass log_2 of the
+	alignment to class_addIvar, instead of the alignment itself.
+	* obj-c++.dg/gnu-api-2-class.mm: Same change.
+
+2010-12-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc.dg/gnu-api-2-sel.m: Updated for renaming of sel_getType to
 	sel_getTypeEncoding.  Test that sel_getTypeEncoding returns NULL
 	when called with a NULL argument.  Added test for
