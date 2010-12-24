@@ -3253,26 +3253,35 @@ class Call_multiple_result_type : public Type
  protected:
   bool
   do_has_pointer() const
-  { gcc_unreachable(); }
+  {
+    gcc_assert(saw_errors());
+    return false;
+  }
 
   tree
   do_get_tree(Gogo*);
 
   tree
   do_get_init_tree(Gogo*, tree, bool)
-  { gcc_unreachable(); }
+  {
+    gcc_assert(saw_errors());
+    return error_mark_node;
+  }
 
   Expression*
   do_type_descriptor(Gogo*, Named_type*)
-  { gcc_unreachable(); }
+  {
+    gcc_assert(saw_errors());
+    return Expression::make_error(UNKNOWN_LOCATION);
+  }
 
   void
   do_reflection(Gogo*, std::string*) const
-  { gcc_unreachable(); }
+  { gcc_assert(saw_errors()); }
 
   void
   do_mangled_name(Gogo*, std::string*) const
-  { gcc_unreachable(); }
+  { gcc_assert(saw_errors()); }
 
  private:
   // The expression being called.
