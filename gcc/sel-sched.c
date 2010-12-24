@@ -2171,10 +2171,8 @@ moveup_expr (expr_t expr, insn_t through_insn, bool inside_insn_group,
               || ! in_current_region_p (fallthru_bb))
             return MOVEUP_EXPR_NULL;
 
-          /* And it should be mutually exclusive with through_insn, or
-             be an unconditional jump.  */
-          if (! any_uncondjump_p (insn)
-              && ! sched_insns_conditions_mutex_p (insn, through_insn)
+          /* And it should be mutually exclusive with through_insn.  */
+          if (! sched_insns_conditions_mutex_p (insn, through_insn)
 	      && ! DEBUG_INSN_P (through_insn))
             return MOVEUP_EXPR_NULL;
         }
