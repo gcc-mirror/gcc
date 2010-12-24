@@ -352,14 +352,16 @@ objc_EXPORT Ivar * class_copyIvarList (Class class_, unsigned int *numberOfRetur
    using objc_allocateClassPair() and has not been registered with the
    runtime using objc_registerClassPair() yet.  You can not add
    instance variables to classes already registered with the runtime.
-   'size' is the size of the instance variable, 'alignment' the
-   alignment, and 'type' the type encoding of the variable type.  You
-   can use sizeof(), __alignof__() and @encode() to determine the
-   right 'size', 'alignment' and 'type' for your instance variable.
-   For example, to add an instance variable name "my_variable" and of
-   type 'id', you can use:
+   'size' is the size of the instance variable, 'log_2_of_alignment'
+   the alignment as a power of 2 (so 0 means alignment to a 1 byte
+   boundary, 1 means alignment to a 2 byte boundary, 2 means alignment
+   to a 4 byte boundary, etc), and 'type' the type encoding of the
+   variable type.  You can use sizeof(), log2(__alignof__()) and
+   @encode() to determine the right 'size', 'alignment' and 'type' for
+   your instance variable.  For example, to add an instance variable
+   name "my_variable" and of type 'id', you can use:
 
-   class_addIvar (class, "my_variable", sizeof (id), __alignof__ (id), 
+   class_addIvar (class, "my_variable", sizeof (id), log2 ( __alignof__ (id)),
                   @encode (id));
 
    Return YES if the variable was added, and NO if not.  In
@@ -368,7 +370,7 @@ objc_EXPORT Ivar * class_copyIvarList (Class class_, unsigned int *numberOfRetur
    'type' is NULL, or 'size' is 0.
  */
 objc_EXPORT BOOL class_addIvar (Class class_, const char * ivar_name, size_t size,
-				unsigned char alignment, const char *type);
+				unsigned char log_2_of_alignment, const char *type);
 
 /* Return the name of the property.  Return NULL if 'property' is
    NULL.  */

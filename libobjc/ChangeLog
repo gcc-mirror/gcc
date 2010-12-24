@@ -1,5 +1,12 @@
 2010-12-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc/runtime.h (class_addIvar): Updated documentation.  The
+	alignment is actually the log_2 of the alignment in bytes.
+	* ivars.c (class_addIvar): Corresponding change to the
+	implementation.
+	
+2010-12-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc/runtime.h (sel_getType): Renamed to sel_getTypeEncoding to
 	be consistent with method_getTypeEncoding and
 	ivar_getTypeEncoding.
