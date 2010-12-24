@@ -1,5 +1,13 @@
 2010-12-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* selector.c (sel_getTypedSelector): Return NULL if given a NULL
+	argument.
+	(sel_registerTypedName): Same.
+	(sel_registerName): Same.
+	* objc/runtime.h: Updated documentation.
+	
+2010-12-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc/runtime.h (class_addIvar): Updated documentation.  The
 	alignment is actually the log_2 of the alignment in bytes.
 	* ivars.c (class_addIvar): Corresponding change to the

@@ -357,8 +357,12 @@ SEL
 sel_getTypedSelector (const char *name)
 {
   sidx i;
-  objc_mutex_lock (__objc_runtime_mutex);
 
+  if (name == NULL)
+    return NULL;
+  
+  objc_mutex_lock (__objc_runtime_mutex);
+  
   /* Look for a typed selector.  */
   i = (sidx) objc_hash_value_for_key (__objc_selector_hash, name);
   if (i != 0)
@@ -658,6 +662,9 @@ SEL
 sel_registerName (const char *name)
 {
   SEL ret;
+
+  if (name == NULL)
+    return NULL;
     
   objc_mutex_lock (__objc_runtime_mutex);
   /* Assume that name is not constant static memory and needs to be
@@ -679,6 +686,9 @@ SEL
 sel_registerTypedName (const char *name, const char *type)
 {
   SEL ret;
+
+  if (name == NULL)
+    return NULL;
 
   objc_mutex_lock (__objc_runtime_mutex);
   /* Assume that name and type are not constant static memory and need
