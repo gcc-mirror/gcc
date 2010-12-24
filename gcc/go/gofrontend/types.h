@@ -2552,8 +2552,7 @@ class Named_type : public Type
   do_verify();
 
   bool
-  do_has_pointer() const
-  { return this->type_->has_pointer(); }
+  do_has_pointer() const;
 
   unsigned int
   do_hash_for_method(Gogo*) const;
@@ -2677,7 +2676,7 @@ class Forward_declaration_type : public Type
 
   bool
   do_has_pointer() const
-  { return this->base()->has_pointer(); }
+  { return this->real_type()->has_pointer(); }
 
   unsigned int
   do_hash_for_method(Gogo* gogo) const
