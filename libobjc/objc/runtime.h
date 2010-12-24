@@ -768,7 +768,11 @@ objc_EXPORT Protocol **objc_copyProtocolList (unsigned int *numberOfReturnedProt
 objc_EXPORT BOOL class_addProtocol (Class class_, Protocol *protocol);
 
 /* Return YES if the class 'class_' conforms to Protocol 'protocol',
-   and NO if not.  */
+   and NO if not.  This function does not check superclasses; if you
+   want to check for superclasses (in the way that [NSObject
+   +conformsToProtocol:] does) you need to iterate over the class
+   hierarchy using class_getSuperclass(), and call
+   class_conformsToProtocol() for each of them.  */
 objc_EXPORT BOOL class_conformsToProtocol (Class class_, Protocol *protocol);
 
 /* Return all the protocols that the class conforms to.  The return
@@ -777,7 +781,9 @@ objc_EXPORT BOOL class_conformsToProtocol (Class class_, Protocol *protocol);
    class.  It does not include protocols adopted by superclasses.  The
    list is terminated by NULL.  Optionally, if you pass a non-NULL
    'numberOfReturnedProtocols' pointer, the unsigned int that it
-   points to will be filled with the number of protocols returned.  */
+   points to will be filled with the number of protocols returned.
+   This function does not return protocols that superclasses conform
+   to.  */
 objc_EXPORT Protocol **class_copyProtocolList (Class class_, unsigned int *numberOfReturnedProtocols);
 
 /* Return YES if protocol 'protocol' conforms to protocol

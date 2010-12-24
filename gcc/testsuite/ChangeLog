@@ -1,3 +1,9 @@
+2010-12-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* obj-c.dg/gnu-api-2-class.m: Test that class_conformsToProtocol()
+	does not check the superclasses.
+	* obj-c++.dg/gnu-api-2-class.mm: Same change.	
+
 2010-12-24  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/47036
