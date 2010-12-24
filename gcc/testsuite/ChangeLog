@@ -1,3 +1,11 @@
+2010-12-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/gnu-api-2-sel.m: Updated for renaming of sel_getType to
+	sel_getTypeEncoding.  Test that sel_getTypeEncoding returns NULL
+	when called with a NULL argument.  Added test for
+	sel_copyTypedSelectorList and sel_getTypedSelector.
+	* obj-c++.dg/gnu-api-2-sel.mm: Same changes.
+	
 2010-12-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt13_pkg.ad[sb]: Fix line ending.
