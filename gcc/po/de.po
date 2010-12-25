@@ -6,10 +6,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.6-b20101113\n"
+"Project-Id-Version: gcc 4.6-b20101218\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-12-18 20:02+0000\n"
-"PO-Revision-Date: 2010-12-12 11:15+0100\n"
+"PO-Revision-Date: 2010-12-25 11:15+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -1140,14 +1140,14 @@ msgid "const/copy propagation disabled"
 msgstr "Übertragung von const/copy ausgeschaltet"
 
 #: gengtype-state.c:150
-#, fuzzy, c-format
+#, c-format
 msgid "%s:%d:%d: Invalid state file; %s"
-msgstr "    eingefügt von %qs"
+msgstr "%s:%d:%d: Ungültige Zustandsdatei; %s"
 
 #: gengtype-state.c:154
-#, fuzzy, c-format
+#, c-format
 msgid "%s:%d: Invalid state file; %s"
-msgstr "%s: ungültiger Dateiname: %s\n"
+msgstr "%s:%d: Ungültige Zustandsdatei; %s"
 
 #. Fatal printf-like message while reading state.  This can't be a
 #. function, because there is no way to pass a va_arg to a variant of
@@ -1155,67 +1155,67 @@ msgstr "%s: ungültiger Dateiname: %s\n"
 #: gengtype-state.c:165
 #, c-format
 msgid "%s:%d:%d: Invalid state file; "
-msgstr ""
+msgstr "%s:%d:%d: Ungültige Zustandsdatei; "
 
 #: gengtype-state.c:170
-#, fuzzy, c-format
+#, c-format
 msgid "%s:%d: Invalid state file; "
-msgstr "%s: ungültiger Dateiname: %s\n"
+msgstr "%s:%d: Ungültige Zustandsdatei; "
 
 #: gengtype-state.c:695
 #, c-format
 msgid "Option tag unknown"
-msgstr ""
+msgstr "Optionsmarke unbekannt"
 
 #: gengtype-state.c:750
-#, fuzzy, c-format
+#, c-format
 msgid "Unexpected type in write_state_scalar_type"
-msgstr "Unerwarteter Typ in Wahrheitswert-Umwandlung"
+msgstr "Unerwarteter Typ in write_state_scalar_type"
 
 #: gengtype-state.c:765
-#, fuzzy, c-format
+#, c-format
 msgid "Unexpected type in write_state_string_type"
-msgstr "unerwarteter Basistyp in cris_print_base"
+msgstr "Unerwarteter Typ in write_state_string_type"
 
 #: gengtype-state.c:969
-#, fuzzy, c-format
+#, c-format
 msgid "Unexpected type..."
-msgstr "Name erwartet"
+msgstr "Unerwarteter Typ..."
 
 #: gengtype-state.c:1149
-#, fuzzy, c-format
+#, c-format
 msgid "failed to write state trailer [%s]"
-msgstr "in temporäre Datei %s konnte nicht geschrieben werden"
+msgstr "Zustandssuffix [%s] konnte nicht geschrieben werden"
 
 #: gengtype-state.c:1175
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to open file %s for writing state: %s"
-msgstr "Moduldatei »%s« kann bei %C nicht zum Schreiben geöffnet werden: %s"
+msgstr "Datei %s konnte nicht zum Schreiben des Zustands geöffnet werden: %s"
 
 #: gengtype-state.c:1207
-#, fuzzy, c-format
+#, c-format
 msgid "output error when writing state file %s [%s]"
-msgstr "%s: Fehler beim Schreiben der Datei »%s«: %s\n"
+msgstr "Ausgabefehler beim Schreiben der Zustandsdatei %s [%s]"
 
 #: gengtype-state.c:1210
-#, fuzzy, c-format
+#, c-format
 msgid "failed to close state file %s [%s]"
-msgstr "%s: Ausgabedatei %s konnte nicht geschlossen werden\n"
+msgstr "Zustandsdatei %s [%s] konnte nicht geschlossen werden"
 
 #: gengtype-state.c:1213
-#, fuzzy, c-format
+#, c-format
 msgid "failed to rename %s to state file %s [%s]"
-msgstr "%s: Versuch, Spezifikation »%s« in bereits definierte Spezifikation »%s« umzubenennen"
+msgstr "%s konnte nicht in Zustandsdatei %s [%s] umbenannt werden"
 
 #: gengtype-state.c:2395
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to open state file %s for reading [%s]"
-msgstr "%s: Datei »%s« kann nicht zum Lesen geöffnet werden: %s\n"
+msgstr "Zustandsdatei %s konnte nicht zum Lesen geöffnet werden [%s]"
 
 #: gengtype-state.c:2433
-#, fuzzy, c-format
+#, c-format
 msgid "failed to close read state file %s [%s]"
-msgstr "%s: Ausgabedatei %s konnte nicht geschlossen werden\n"
+msgstr "Gelesene Zustandsdatei %s [%s] konnte nicht geschlossen werden"
 
 #: incpath.c:76
 #, c-format
@@ -1751,13 +1751,12 @@ msgid "Inline recursively only when the probability of call being executed excee
 msgstr "Rekursives inline nur, wenn die Wahrscheinlichkeit des Aufrufs den Parameter überschreitet"
 
 #: params.def:117
-#, fuzzy
 msgid "The maximum number of nested indirect inlining performed by early inliner"
-msgstr "Die Höchstzahl der Anweisungen in einer einzelnen für »inline« geeigneten Funktion"
+msgstr "Die Höchstzahl von geschachteltem indirekten »inline« wurde bereits durch früheres »inline« durchgeführt"
 
 #: params.def:123
 msgid "Probability that COMDAT function will be shared with different compilatoin unit"
-msgstr ""
+msgstr "Wahrscheinlichkeit, dass COMDAT-Funktion mit anderer Kompilationseinheit geteilt wird"
 
 #: params.def:129
 msgid "Maximum probability of the entry BB of split region (in percent relative to entry BB of the function) to make partial inlining happen"
@@ -1796,14 +1795,12 @@ msgid "The size of translation unit to be considered large"
 msgstr "Die Größe einer als groß angesehenen Übersetzungseinheit"
 
 #: params.def:191
-#, fuzzy
 msgid "How much can given compilation unit grow because of the inlining (in percent)"
-msgstr "um wie viel eine Übersetzungseinheit durch »inline« wachsen kann (in Prozent)"
+msgstr "Wie viel die gegebene Kompilationseinheit durch das »inline« wachsen kann (in Prozent)"
 
 #: params.def:195
-#, fuzzy
 msgid "How much can given compilation unit grow because of the interprocedural constant propagation (in percent)"
-msgstr "um wie viel eine Übersetzungseinheit durch »inline« wachsen kann (in Prozent)"
+msgstr "Wie viel die gegebene Kompilationseinheit durch die interprozedurale Konstantenweitergabe wachsen kann (in Prozent)"
 
 #: params.def:199
 msgid "Maximal estimated growth of function body caused by early inlining of single call"
@@ -1874,9 +1871,8 @@ msgid "The maximum number of insns of a peeled loop that rolls only once"
 msgstr "Die Höchstzahl der Befehle einer geschälten Schleife, die nur einmal rollt"
 
 #: params.def:307
-#, fuzzy
 msgid "The maximum depth of a loop nest we completely peel"
-msgstr "Die Höchstzahl der Befehle einer vollständig geschälten Schleife"
+msgstr "Die maximale Tiefe einer Schleifenschachtelung, die vollständig geschält wird"
 
 #: params.def:313
 msgid "The maximum number of insns of an unswitched loop"
@@ -2072,21 +2068,19 @@ msgstr "Die Mindestwahrscheinlichkeit für spekulativen Erfolg (in Prozent), sod
 
 #: params.def:596
 msgid "The maximum size of the lookahead window of selective scheduling"
-msgstr ""
+msgstr "Maximale Größe des Vorgriffsfensters der wählbaren Planung"
 
 #: params.def:601
-#, fuzzy
 msgid "Maximum number of times that an insn could be scheduled"
-msgstr "Anzahl der eingereihten Befehle setzen, die unausgereift geplant werden können"
+msgstr "Höchstzahl, wie oft ein Befehl geplant werden könnte"
 
 #: params.def:606
-#, fuzzy
 msgid "Maximum number of instructions in the ready list that are considered eligible for renaming"
-msgstr "Die Höchstzahl der Anweisungen in einer einzelnen für »inline« geeigneten Funktion"
+msgstr "Die Höchstzahl der Anweisungen in der fertigen Liste, die zur Umbenennung in Frage kommen"
 
 #: params.def:611
 msgid "Minimal distance between possibly conflicting store and load"
-msgstr ""
+msgstr "Kleinster Abstand zwischen möglicherweise in Konflikt stehendem Speichern und Laden"
 
 #: params.def:616
 msgid "The maximum number of RTL nodes that can be recorded as combiner's last value"
@@ -2154,58 +2148,55 @@ msgstr "Maximalgröße eines SCC bevor SCCVN zur Bearbeitung einer Funktion anh�
 
 #: params.def:754
 msgid "Max loops number for regional RA"
-msgstr ""
+msgstr "Maximale Schleifenanzahl für regionales RA"
 
 #: params.def:759
 msgid "Max size of conflict table in MB"
-msgstr ""
+msgstr "Maximale Größe der Konflikttabelle in MB"
 
 #: params.def:764
-#, fuzzy
 msgid "The number of registers in each class kept unused by loop invariant motion"
-msgstr "Die Mindestkosten eines teuren Ausdrucks in der Schleifeninvariantenbewegung"
+msgstr "Die Anzahl der Register in jeder Klasse, die von Schleifeninvariantenbewegung freigehalten werden"
 
 #: params.def:772
 msgid "The maximum ratio between array size and switch branches for a switch conversion to take place"
-msgstr ""
+msgstr "Maximales Verhältnis zwischen Feldgröße und Switch-Zweigen, wobei Switch-Umwandlung erfolgt"
 
 #: params.def:780
 msgid "size of tiles for loop blocking"
-msgstr ""
+msgstr "Größe der Kacheln für Schleifenblockierung"
 
 #: params.def:787
-#, fuzzy
 msgid "maximum number of parameters in a SCoP"
-msgstr "maximaler Wert des Parameters %qs ist %u"
+msgstr "Höchstzahl der Parameter in einem SCoP"
 
 #: params.def:794
 msgid "maximum number of basic blocks per function to be analyzed by Graphite"
-msgstr ""
+msgstr "Höchstzahl der Basis-Blöcke pro Funktion, die von Graphite analysiert werden"
 
 #: params.def:801
 msgid "Max basic blocks number in loop for loop invariant motion"
-msgstr ""
+msgstr "Höchstzahl der Basis-Blöcke in Schleife für Schleifeninvariantenbewegung"
 
 #: params.def:807
-#, fuzzy
 msgid "Maximum number of instructions in basic block to be considered for SLP vectorization"
-msgstr "Höchstzahl der für Zwischen-Block-Scheduling zu betrachtenden Anweisungen in einer Region"
+msgstr "Höchstzahl der in Basis-Block zu betrachtenden Anweisungen für SLP-Vektorisierung"
 
 #: params.def:812
 msgid "Min. ratio of insns to prefetches to enable prefetching for a loop with an unknown trip count"
-msgstr ""
+msgstr "Kleinstes Verhältnis von Befehlen zu Prefetches um Prefetching für eine Schleife mit unbekannter Frequentierung zu aktivieren"
 
 #: params.def:818
 msgid "Min. ratio of insns to mem ops to enable prefetching in a loop"
-msgstr ""
+msgstr "Kleinstes Verhältnis von Befehlen zu Speicheroperationen, um Prefetching in einer Schleife zu aktivieren"
 
 #: params.def:825
 msgid "Max. size of var tracking hash tables"
-msgstr ""
+msgstr "Maximale Größe variablenverfolgender Hash-Tabellen"
 
 #: params.def:832
 msgid "The minimum UID to be used for a nondebug insn"
-msgstr ""
+msgstr "Kleinste UID für Nicht-Debug-Befehl"
 
 #: params.def:837
 msgid "Maximum allowed growth of size of new parameters ipa-sra replaces a pointer to an aggregate with"
