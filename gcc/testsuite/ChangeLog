@@ -1,3 +1,9 @@
+2010-12-25  Ira Rosen  <irar@il.ibm.com>
+
+	PR testsuite/47057
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-outer-fir.c: Change comment.
+	Expect two outer loops to get vectorized.
+
 2010-12-25  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR c++/15774
