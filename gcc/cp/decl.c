@@ -1009,7 +1009,11 @@ decls_match (tree newdecl, tree olddecl)
 	    }
 #endif
 	  else
-	    types_match = compparms (p1, p2);
+	    types_match =
+	      compparms (p1, p2)
+	      && (TYPE_ATTRIBUTES (TREE_TYPE (newdecl)) == NULL_TREE
+	          || targetm.comp_type_attributes (TREE_TYPE (newdecl),
+						   TREE_TYPE (olddecl)) != 0);
 	}
       else
 	types_match = 0;

@@ -1,3 +1,9 @@
+2010-12-25  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR c++/15774
+	* decl.c (decls_match): Check for FUNCTION_DECL
+	also for identity of compatible attributes.
+
 2010-12-22  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* decl.c (decls_match, duplicate_decls): Use prototype_p.

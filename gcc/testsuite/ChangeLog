@@ -1,3 +1,9 @@
+2010-12-25  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR c++/15774
+	* g++.dg/warn/pr15774-1.C: New test.
+	* g++.dg/warn/pr15774-2.C: New test.
+
 2010-12-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/gnu-api-2-sel.m: Test calling sel_getUid,
