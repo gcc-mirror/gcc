@@ -1,3 +1,7 @@
+2010-12-26  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/m68k/t-linux (M68K_MLIB_CPU): Only include 680x0 CPUs.
+
 2010-12-24  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/47036
