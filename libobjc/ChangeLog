@@ -1,3 +1,14 @@
+2010-12-26  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* init.c (create_tree_of_subclasses_inherited_from): Use
+	class_superclass_of_class instead of assuming a class is
+	unresolved when it could be resolved.  Tidied up assignment and
+	check.
+	(__objc_tree_insert_class): Enhanced DEBUG_PRINTF.
+	(objc_tree_insert_class): Tidied up loop; return immediately upon
+	inserting a class.
+	(__objc_exec_class): Do not set __objc_class_tree_list.
+	
 2010-12-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* selector.c (sel_getTypedSelector): Return NULL if given a NULL

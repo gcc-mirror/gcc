@@ -1,3 +1,14 @@
+2010-12-26  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/special/special.exp: Added load-category-2 and
+	load-category-3 tests.
+	* objc.dg/special/load-category-2.h: New.
+	* objc.dg/special/load-category-2.m: New.
+	* objc.dg/special/load-category-2a.m: New.
+	* objc.dg/special/load-category-3.h: New.
+	* objc.dg/special/load-category-3.m: New.
+	* objc.dg/special/load-category-3a.m: New.
+
 2010-12-25  Ira Rosen  <irar@il.ibm.com>
 
 	PR testsuite/47057
