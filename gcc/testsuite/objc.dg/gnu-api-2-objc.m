@@ -3,7 +3,6 @@
   This is test 'objc', covering all functions starting with 'objc'.  */
 
 /* { dg-do run } */
-/* { dg-skip-if "" { *-*-* } { "-fnext-runtime" } { "" } } */
 
 /* To get the modern GNU Objective-C Runtime API, you include
    objc/runtime.h.  */
@@ -16,11 +15,13 @@
 { Class isa; }
 + alloc;
 - init;
++ initialize;
 @end
 
 @implementation MyRootClass
 + alloc { return class_createInstance (self, 0); }
 - init  { return self; }
++ initialize { return self; }
 @end
 
 @protocol MyProtocol
@@ -103,7 +104,10 @@ int main(int argc, void **args)
   printf ("Testing objc_disposeClassPair ()...\n");
   {
     Method method = class_getInstanceMethod (objc_getClass ("MySubClass"), @selector (setVariable:));
-    Class new_class = objc_allocateClassPair (objc_getClass ("MyRootClass"), "MyNewSubClass", 0);
+    Class new_class = objc_allocateClassPair (objc_getClass ("MyRootClass"), "MyNewSubClass2", 0);
+
+    if (new_class == Nil)
+      abort ();
 
     /* Add a bit of everything to the class to exercise undoing all these changes.  */
 
