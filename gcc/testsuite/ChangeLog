@@ -1,5 +1,20 @@
 2010-12-26  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc.dg/gnu-api-2-class.m: Xfail the test on Apple Darwin m64.
+	* objc.dg/gnu-api-2-ivar.m: Same.
+	* objc.dg/gnu-api-2-method.m: Same.
+	* objc.dg/gnu-api-2-objc.m: Same.
+	* objc.dg/gnu-api-2-object.m: Same.
+	* objc.dg/gnu-api-2-protocol.m: Same.
+	* obj-c++.dg/gnu-api-2-class.mm: Same.
+	* obj-c++.dg/gnu-api-2-ivar.mm: Same.
+	* obj-c++.dg/gnu-api-2-method.mm: Same.
+	* obj-c++.dg/gnu-api-2-objc.mm: Same.
+	* obj-c++.dg/gnu-api-2-object.mm: Same.
+	* obj-c++.dg/gnu-api-2-protocol.mm: Same.
+	
+2010-12-26  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc.dg/pr44509.m: New.
 
 2010-12-26  Nicola Pero  <nicola.pero@meta-innovation.com>

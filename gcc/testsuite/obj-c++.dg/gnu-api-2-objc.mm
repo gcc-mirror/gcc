@@ -3,6 +3,7 @@
   This is test 'objc', covering all functions starting with 'objc'.  */
 
 /* { dg-do run } */
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
 /* To get the modern GNU Objective-C Runtime API, you include
    objc/runtime.h.  */
