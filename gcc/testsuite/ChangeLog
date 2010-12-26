@@ -1,5 +1,9 @@
 2010-12-26  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc.dg/pr44509.m: New.
+
+2010-12-26  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc.dg/gnu-api-2-class.m: Updated the test to work with the
 	Apple runtime as well.
 	* obj-c++.dg/gnu-api-2-class.mm: Same change.

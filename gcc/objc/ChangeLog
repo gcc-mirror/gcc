@@ -1,3 +1,7 @@
+2010-12-26  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* config-lang.in (gtfiles): Added c-family/c-cppbuiltin.c.
+
 2010-12-22  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* objc-act.c (next_sjlj_build_enter_and_setjmp): Use prototype_p.
