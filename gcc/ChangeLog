@@ -54,13 +54,10 @@
 2010-12-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (gcc_cv_ld_eh_frame_hdr): Only check GNU ld for
-	--eh-frame-hdr.
-	Check for working Sun ld version.
+	--eh-frame-hdr.  Check for working Sun ld version.
 	(HAVE_LD_EH_FRAME_HDR): Adapt comment.
-	(glibc_header_dir): Set only once.
-	Rename to ...
-	(target_header_dir): ... this.
-	Adapt users.
+	(glibc_header_dir): Set only once.  Rename to ...
+	(target_header_dir): ... this.  Adapt users.
 	(gcc_cv_target_dl_iterate_frame_hdr): Check on *-*-solaris2*.
 	(TARGET_DL_ITERATE_PHDR): Define if present.
 	* configure: Regenerate.
@@ -84,8 +81,7 @@
 	* doc/install.texi (Prerequisites, Specific): Likewise.
 	* doc/invoke.texi (C Dialect Options, Debugging Options)
 	(Optimize Options, MicroBlaze Options)
-	(RS/6000 and PowerPC Options, RX Options, Code Gen Options):
-	Likewise.
+	(RS/6000 and PowerPC Options, RX Options, Code Gen Options): Likewise.
 	* doc/objc.texi (Method signatures)
 	(Fast enumeration protocol): Likewise.
 	* doc/tm.texi.in (Run-time Target, Register Arguments)
@@ -175,10 +171,10 @@
 	PR rtl-optimization/45352
 	PR rtl-optimization/46521
 	PR rtl-optimization/46522
-	* sel-sched.c (reset_sched_cycles_in_current_ebb): Recheck the DFA state
-	on the last iteration of the advancing loop.
-	(sel_sched_region_1): Propagate the rescheduling bit to the next block
-	also for empty blocks. 
+	* sel-sched.c (reset_sched_cycles_in_current_ebb): Recheck the
+	DFA state on the last iteration of the advancing loop.
+	(sel_sched_region_1): Propagate the rescheduling bit to the next
+	block also for empty blocks.
 
 2010-12-22  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -336,7 +332,7 @@
 	(symGOTOFF2reg_i, sym2PIC, sym2PLT): Remove.
 
 2010-12-20  Sanjin Liu	<scliu@faraday-tech.com>
-	Mingfeng Wu  <mingfeng@faraday-tech.com>
+	    Mingfeng Wu  <mingfeng@faraday-tech.com>
 
 	* config/arm/arm-cores.def: Add Faraday CPU support -
 	fa526/fa626/fa606te/fa626te/fmp626/fa726te.
@@ -387,7 +383,7 @@
 	PR middle-end/46916
 	* opts.c (finish_options): Enable -freorder-functions
 	when -freorder-blocks-and-partition is active.
-	
+
 2010-12-20  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR c++/46904
@@ -405,19 +401,18 @@
 	will be generated.  Update to use generating_for_darwin_version.
 	(darwin_function_section): Check for cases that need to be placed
 	in coalesced sections.
-	* config/darwin-sections.def: Define hot, cold, startup and exit sections
-	for both coalesced and regular code.
+	* config/darwin-sections.def: Define hot, cold, startup and
+	exit sections for both coalesced and regular code.
 	* config/darwin.h (USE_SELECT_SECTION_FOR_FUNCTIONS): Delete.
 	* config/darwin10.h (TARGET_ASM_EMIT_UNWIND_LABEL): Delete.
-	
+
 2010-12-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/cppopts.texi: Use @var when appropriate.
 	* doc/extend.texi (Structure-Packing Pragmas): Likewise.
 	* doc/gimple.texi (Logical Operators)
 	(Adding a new GIMPLE statement code): Likewise.
-	* doc/invoke.texi (Target Options, Precompiled Headers):
-	Likewise.
+	* doc/invoke.texi (Target Options, Precompiled Headers): Likewise.
 	* doc/plugins.texi (Plugins): Likewise.
 
 	* doc/install.texi (Configuration, Building, Testing, Specific):
@@ -493,7 +488,7 @@
 	objc_maybe_warn_exceptions.
 	(c_parser_objc_synchronized_statement): Call
 	objc_maybe_warn_exceptions.
-	
+
 2010-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/46985
@@ -571,13 +566,12 @@
 	c_parser_direct_declarator_inner): Adjust calls.
 	(c_parser_parameter_declaration): Likewise.
 	(c_parser_type_name): Pass back an error_mark_node to the caller.
-	(c_parser_postfix_expression): Do error recovery when 
+	(c_parser_postfix_expression): Do error recovery when
 	c_parser_type_name returns NULL.
 
 2010-12-17  Joseph Myers  <joseph@codesourcery.com>
 
-	* config/i386/netware.h (ASM_SPEC, SIZE_TYPE, PTRDIFF_TYPE):
-	Define.
+	* config/i386/netware.h (ASM_SPEC, SIZE_TYPE, PTRDIFF_TYPE): Define.
 	* config/i386/nto.h (LIB_SPEC, ASM_SPEC): Define.
 	(DBX_REGISTER_NUMBER): Undefine.
 	* config/i386/sol2.h (SIZE_TYPE, PTRDIFF_TYPE): Define.
@@ -639,7 +633,7 @@
 
 2010-12-16  Jan Hubicka  <jh@suse.cz>
 
-	PR middle-end/44563 
+	PR middle-end/44563
 	* ipa-inline.c: Update doplevel comment.
 	(cgraph_estimate_size_after_inlining): Remove times attribute.
 	(cgraph_mark_inline_edge): Update.
@@ -686,7 +680,7 @@
 	get_ref_base_and_extent returns -1 as the max size.
 
 2010-12-16  Konrad Eisele  <konrad@gaisler.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	Support for LEON processor
 	* config.gcc (sparc-*-elf*): Deal with sparc-leon specifically.
@@ -793,123 +787,6 @@
 	Driver options.
 	* config/darwin.h (LINK_SPEC): Remove '*' after
 	headerpad_max_install_names.
-
-2010-12-16  Sebastian Pop  <sebastian.pop@amd.com>
-
-	PR tree-optimization/46924
-	* graphite-sese-to-poly.c (detect_commutative_reduction): Do not
-	detect reductions outside the current SESE region.
-	* sese.h (stmt_in_sese_p): New.
-	(defined_in_sese_p): Call stmt_in_sese_p.
-
-2010-12-16  Jakub Jelinek  <jakub@redhat.com>
-
-	PR tree-optimization/46966
-	* graphite-sese-to-poly.c (build_scop_drs): Call free_gimple_bb for
-	for bbs that are removed from SCOP_BBS vector.
-
-2010-12-16  Eric Botcazou  <ebotcazou@adacore.com>
-
-	* tree-ssa-sccvn.c (vn_reference_lookup_3): Always punt if the call to
-	get_ref_base_and_extent returns -1 as the max size.
-
-2010-12-16  Konrad Eisele  <konrad@gaisler.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
-
-	Support for LEON processor
-	* config.gcc (sparc-*-elf*): Deal with sparc-leon specifically.
-	(sparc-*-linux*): Likewise.
-	(sparc-*-rtems*): Remove Solaris left-overs.
-	(sparc*-*-*): Remove obsolete sparc86x setting.
-	(sparc-leon*): Default to --with-cpu=v8 and --with-tune=leon.
-	* doc/invoke.texi (SPARC Options): Document -mcpu/-mtune=leon.
-	* config/sparc/sparc.h (TARGET_CPU_leon): Define.
-	(TARGET_CPU_sparc86x): Delete.
-	(TARGET_CPU_cypress): Define as alias to TARGET_CPU_v7.
-	(TARGET_CPU_f930): Define as alias to TARGET_CPU_sparclite.
-	(TARGET_CPU_f934): Likewise.
-	(TARGET_CPU_tsc701): Define as alias to TARGET_CPU_sparclet.
-	(CPP_CPU_SPEC): Add entry for -mcpu=leon.
-	(enum processor_type): Add PROCESSOR_LEON.  Reorganize.
-	* config/sparc/sparc.c (leon_costs): New cost array.
-	(sparc_option_override): Add entry for TARGET_CPU_leon and -mcpu=leon.
-	Initialize cost array to leon_costs if -mtune=leon.
-	* config/sparc/sparc.md (cpu attribute): Add leon.  Reorganize.
-	Include leon.md scheduling description.
-	* config/sparc/leon.md: New file.
-	* config/sparc/t-elf: Do not assemble Solaris startup files.
-	* config/sparc/t-leon: New file.
-	* config/sparc/t-leon3: Likewise.
-
-2010-12-16  Jakub Jelinek  <jakub@redhat.com>
-
-	PR tree-optimization/43655
-	* tree-ssa-ter.c (is_replaceable_p): Don't use
-	gimple_references_memory_p for -O0, instead check for load
-	by looking at rhs.
-
-2010-12-16  Sebastian Pop  <sebastian.pop@amd.com>
-
-	PR tree-optimization/46404
-	* graphite-clast-to-gimple.c (gloog): Call scev_reset.
-
-2010-12-16  Anatoly Sokolov  <aesok@post.ru>
-
-	* config/sh/sh.h (OUTPUT_ADDR_CONST_EXTRA): Remove.
-	* config/sh/sh.c (sh_asm_output_addr_const_extra): New function.
-	(TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA): Define.
-
-2010-12-16  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
-
-	* config/spu/t-spu-elf (LIB2_SIDITI_CONV_FUNC): Define.
-	* config/spu/spu.h (MIN_UNITS_PER_WORD): Do not define.
-	(LIBGCC2_UNITS_PER_WORD): Define if not already defined.
-
-2010-12-16  Jakub Jelinek  <jakub@redhat.com>
-
-	PR debug/46893
-	* cfgexpand.c (expand_debug_expr): If GET_MODE (op0) is VOIDmode,
-	use TYPE_MODE (TREE_TYPE (tem)) instead of mode1.
-
-2010-12-16  Chung-Lin Tang  <cltang@codesourcery.com>
-
-	PR target/46883
-	* config/arm/arm.md
-	(zero_extendhisi2 for register input splitter): Change
-	"register_operand" to "s_register_operand".
-	(zero_extendqisi2 for register input splitter): Same.
-
-2010-12-16  Jan Hubicka  <jh@suse.cz>
-
-	PR middle-end/46939
-	* predic.c (predict_paths_leading_to_edge): New function.
-	(apply_return_prediction): Use it.
-	(predict_paths_for_bb): Do not special case abnormals.
-
-2010-12-16  Joseph Myers  <joseph@codesourcery.com>
-
-	* config.gcc (powerpc-*-lynxos*): Don't add lynx.opt to
-	extra_options twice.
-
-2010-12-15  Joseph Myers  <joseph@codesourcery.com>
-
-	* doc/tm.texi.in (US_SOFTWARE_GOFAST): Don't document.
-	* doc/tm.texi: Regenerate.
-	* system.h (US_SOFTWARE_GOFAST): Poison.
-	* config.gcc (enable_gofast): Don't handle.
-	* config/gofast.h: Remove.
-	* config/mips/t-gofast: Remove.
-	* config/fp-bit.c (US_SOFTWARE_GOFAST): Don't handle.
-	* config/fp-bit.h (US_SOFTWARE_GOFAST): Don't handle.
-	* config/mips/elforion.h: Don't mention GOFAST in comment.
-	* config/mips/mips.c: Don't include gofast.h.
-	(mips_init_libfuncs): Don't call gofast_maybe_init_libfuncs.
-	* config/mips/t-sr71k (dp-bit.c, fp-bit.c): Don't define
-	US_SOFTWARE_GOFAST.
-	* config/sparc/sparc.c: Don't include gofast.h.
-	(sparc_init_libfuncs): Don't call gofast_maybe_init_libfuncs.
-	* config/spu/t-spu-elf (dp-bit.c, fp-bit.c): Don't undefine
-	US_SOFTWARE_GOFAST.
 
 2010-12-14  Jan Hubicka  <jh@suse.cz>
 
@@ -1059,7 +936,7 @@
 	* config/h8300/h8300.md (define_split) : Add condition for
 	"ior with single_one" splitter to handle 16-bit const operands.
 	* config/h8300/h8300.md (define_split) : Add condition for
-	"xor with single_one" splitter to handle 16-bit const operands.	
+	"xor with single_one" splitter to handle 16-bit const operands.
 	* testsuite/gcc.dg/h8300-bit-insn-ice.c: New.
 
 2010-12-13  Jan Hubicka  <jh@suse.cz>
@@ -1151,8 +1028,7 @@
 
 2010-12-13  Joseph Myers  <joseph@codesourcery.com>
 
-	* config/m68k/linux.h (DBX_REGISTER_NUMBER): Undefine and
-	redefine.
+	* config/m68k/linux.h (DBX_REGISTER_NUMBER): Undefine and redefine.
 	(SIZE_TYPE, PTRDIFF_TYPE, WCHAR_TYPE, WCHAR_TYPE_SIZE): Define.
 	* config.gcc (m68k-*-uclinux*, m68k-*-linux*): Don't use svr4.h.
 
@@ -1245,8 +1121,7 @@
 
 	PR rtl-optimization/46865
 	* rtl.c (rtx_equal_p_cb, rtx_equal_p): For last operand of
-	ASM_OPERANDS and ASM_INPUT if integers are different,
-	call locator_eq.
+	ASM_OPERANDS and ASM_INPUT if integers are different, call locator_eq.
 	* jump.c (rtx_renumbered_equal_p): Likewise.
 
 	PR tree-optimization/46864
@@ -1365,8 +1240,7 @@
 2010-12-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/pa/pa32-linux.h (WCHAR_TYPE, WCHAR_TYPE_SIZE): Define.
-	* config.gcc (hppa*64*-*-linux*, hppa*-*-linux*): Don't use
-	svr4.h.
+	* config.gcc (hppa*64*-*-linux*, hppa*-*-linux*): Don't use svr4.h.
 
 2010-12-09  Joseph Myers  <joseph@codesourcery.com>
 
@@ -1396,8 +1270,7 @@
 2010-12-09  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/46844
-	* gimple-fold.c (canonicalize_constructor_val): Canonicalize
-	addresses.
+	* gimple-fold.c (canonicalize_constructor_val): Canonicalize addresses.
 
 2010-12-09  Joseph Myers  <joseph@codesourcery.com>
 
@@ -1415,8 +1288,7 @@
 2010-12-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/nto.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX): Define.
-	* config/ia64/hpux.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX):
-	Define.
+	* config/ia64/hpux.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX): Define.
 	* config/linux.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX): Don't
 	undefine.
 	* config/mips/linux.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX): Don't
@@ -1434,8 +1306,7 @@
 	Don't undefine.
 	* config/sparc/sp64-elf.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX):
 	Don't undefine.
-	* config/svr4.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX): Don't
-	define.
+	* config/svr4.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX): Don't define.
 	* config/xtensa/elf.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX): Don't
 	undefine.
 
@@ -1443,8 +1314,7 @@
 
 	* config/ia64/hpux.h (AS_NEEDS_DASH_FOR_PIPED_INPUT): Define for
 	non-GNU assembler.
-	* config/m68k/netbsd-elf.h (AS_NEEDS_DASH_FOR_PIPED_INPUT):
-	Remove.
+	* config/m68k/netbsd-elf.h (AS_NEEDS_DASH_FOR_PIPED_INPUT): Remove.
 	* config/m68k/openbsd.h (AS_NEEDS_DASH_FOR_PIPED_INPUT): Remove.
 	* config/mips/openbsd.h (AS_NEEDS_DASH_FOR_PIPED_INPUT): Remove.
 	* config/sol2.h (AS_NEEDS_DASH_FOR_PIPED_INPUT): Define for
@@ -1504,17 +1374,14 @@
 
 	* config/i386/openbsdelf.h (LINK_SPEC): Use %{r:} not %{r*:}.
 	* config/mips/openbsd.h (LINK_SPEC): Use %{r:} not %{r*:}.
-	* config/netbsd-aout.h (NETBSD_LINK_SPEC_AOUT): Use %{r:} not
-	%{r*:}.
-	* config/netbsd-elf.h (NETBSD_LINK_SPEC_ELF): Use %{r:} not
-	%{r*:}.
+	* config/netbsd-aout.h (NETBSD_LINK_SPEC_AOUT): Use %{r:} not %{r*:}.
+	* config/netbsd-elf.h (NETBSD_LINK_SPEC_ELF): Use %{r:} not %{r*:}.
 	* config/sparc/openbsd64.h (LINK_SPEC): Use %{r:} not %{r*:}.
 	* config/vax/netbsd-elf.h (LINK_SPEC): Use %{r:} not %{r*:}.
 
 2010-12-09  Joseph Myers  <joseph@codesourcery.com>
 
-	* config/alpha/freebsd.h (LINK_SPEC): Don't use
-	%{!dynamic-linker:}.
+	* config/alpha/freebsd.h (LINK_SPEC): Don't use %{!dynamic-linker:}.
 	* config/alpha/linux-elf.h (LINK_SPEC): Likewise.
 	* config/arm/freebsd.h (LINK_SPEC): Likewise.
 	* config/arm/linux-elf.h (LINUX_TARGET_LINK_SPEC): Likewise.
@@ -1541,8 +1408,7 @@
 	* config/rs6000/linux64.h (LINK_OS_LINUX_SPEC32,
 	LINK_OS_LINUX_SPEC64): Likewise.
 	* config/rs6000/sysv4.h (LINK_OS_FREEBSD_SPEC,
-	LINK_OS_LINUX_SPEC, LINK_OS_GNU_SPEC, LINK_OS_NETBSD_SPEC):
-	Likewise.
+	LINK_OS_LINUX_SPEC, LINK_OS_GNU_SPEC, LINK_OS_NETBSD_SPEC): Likewise.
 	* config/s390/linux.h (LINK_SPEC): Likewise.
 	* config/sh/linux.h (SUBTARGET_LINK_SPEC): Likewise.
 	* config/sparc/freebsd.h (LINK_SPEC): Likewise.
@@ -1630,11 +1496,11 @@
 
 2010-12-08  Iain Sandoe <iains@gcc.gnu.org>
 
-	gcc/config.gcc (with_cpu): Default i[34567]86-*-darwin* and
+	* gcc/config.gcc (with_cpu): Default i[34567]86-*-darwin* and
 	x86_64-*-darwin* to with_cpu:-core2.
-	gcc/config/i386/mmx.md (*mov<mode>_internal_rex64): Replace movq
+	* gcc/config/i386/mmx.md (*mov<mode>_internal_rex64): Replace movq
 	with movd for darwin assembler.
-	gcc/config/i386/sse.md (*vec_concatv2di_rex64_sse4_1): Ditto.
+	* gcc/config/i386/sse.md (*vec_concatv2di_rex64_sse4_1): Ditto.
 	(*vec_concatv2di_rex64_sse): Ditto.
 
 2010-12-08  Richard Guenther  <rguenther@suse.de>
@@ -1666,8 +1532,7 @@
 2010-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/46844
-	* regrename.c (check_new_reg_p): Add ATTRIBUTE_UNUSED to reg
-	parameter.
+	* regrename.c (check_new_reg_p): Add ATTRIBUTE_UNUSED to reg parameter.
 
 2010-12-08  Richard Earnshaw  <rearnsha@arm.com>
 
@@ -2038,8 +1903,7 @@
 
 2010-12-03  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
-	* basic-block.h (struct edge_prediction): Remove forward
-	declaration.
+	* basic-block.h (struct edge_prediction): Remove forward declaration.
 	* tree-flow.h (struct edge_prediction): Move from here...
 	* predict.c (struct edge_prediction): ...to here.
 	* cselib.h (struct elt_list): Move from here...
@@ -2053,8 +1917,7 @@
 	--enable-shared.  Mention go as an option for --enable-languages.
 	* doc/invoke.texi (Overall Options): Mention .go as a file name
 	suffix.  Mention go as a -x option.
-	* doc/frontends.texi (G++ and GCC): Mention Go as a supported
-	language.
+	* doc/frontends.texi (G++ and GCC): Mention Go as a supported language.
 	* doc/sourcebuild.texi (Top Level): Mention libgo.
 	* doc/standards.texi (Standards): Add section on Go language.
 	Move references for other languages into their own section.
@@ -2142,8 +2005,7 @@
 	(ASM_SPEC): Remove %{V} and %{v:%{!V:-V}}.
 	* config/sparc/linux64.h (LINK_SPEC): Cut long comment.
 	(ASM_SPEC): Remove %{V} and %{v:%{!V:-V}}.
-	* config/sparc/netbsd-elf.h (ASM_SPEC): Remove %{V} and
-	%{v:%{!V:-V}}.
+	* config/sparc/netbsd-elf.h (ASM_SPEC): Remove %{V} and %{v:%{!V:-V}}.
 
 2010-12-02  Joseph Myers  <joseph@codesourcery.com>
 
@@ -2176,8 +2038,7 @@
 	* config/pdp11/pdp11.c (output_jump): Map unsigned to signed
 	opcodes if CC_NO_OVERFLOW is set.
 	(notice_update_cc_on_set): Correct setting of CC0 as a side
-	effect; set CC_NO_OVERFLOW for cases where C flag is not
-	meaningful.
+	effect; set CC_NO_OVERFLOW for cases where C flag is not meaningful.
 
 2010-12-02  Ian Lance Taylor  <iant@google.com>
 
@@ -2287,8 +2148,7 @@
 2010-12-02  Jie Zhang  <jie@codesourcery.com>
 
 	PR middle-end/46674
-	* varasm.c (compute_visible_aliases): Handle user set
-	assembler name.
+	* varasm.c (compute_visible_aliases): Handle user set assembler name.
 
 2010-12-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
@@ -2443,8 +2303,7 @@
 	access main_input_filename, main_input_baselength and
 	main_input_basename.
 	* targhooks.c: Include intl.h and opts.h.
-	(option_affects_pch_p, default_get_pch_validity): Move from
-	toplev.c.
+	(option_affects_pch_p, default_get_pch_validity): Move from toplev.c.
 	* targhooks.h (option_affects_pch_p, default_get_pch_validity):
 	Move from toplev.h.
 	* toplev.c (main_input_filename, main_input_basename,
@@ -2458,8 +2317,7 @@
 	(output_quoted_string): Move to output.h.
 	(main_input_filename, main_input_basename, main_input_baselength):
 	Move to common.opt.
-	(default_get_pch_validity, default_pch_valid_p): Move to
-	targhooks.c.
+	(default_get_pch_validity, default_pch_valid_p): Move to targhooks.c.
 	* tree-dump.c (skip_leading_substring): Move from toplev.h.
 	* tree.c (warn_deprecated_use): Move from toplev.c.
 	* tree.h (warn_deprecated_use): Move from toplev.h.
@@ -2547,8 +2405,7 @@
 	Dependencies for above files changed to remove toplev.h.
 	(hwint.o): New.
 	(insn-attrtab.o, insn-emit.o, insn-extract.o, insn-output.o,
-	insn-peep.o, insn-preds.o, insn-recog.o): Don't depend on
-	toplev.h.
+	insn-peep.o, insn-preds.o, insn-recog.o): Don't depend on toplev.h.
 	* config/i386/t-cygming (winnt.o): Don't depend on toplev.h.
 	* config/i386/t-interix (winnt.o): Don't depend on toplev.h.
 
@@ -2622,8 +2479,7 @@
 2010-11-30  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/45949
-	* cgraphunit.c (ipa_passes): Stop after errors from
-	small IPA passes.
+	* cgraphunit.c (ipa_passes): Stop after errors from small IPA passes.
 
 2010-11-30  Mingjie Xing  <mingjie.xing@gmail.com>
 
@@ -2670,8 +2526,7 @@
 2010-11-29  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/46101
-	* dwarf2out.c (lookup_type_die_strip_naming_typedef): New
-	function.
+	* dwarf2out.c (lookup_type_die_strip_naming_typedef): New function.
 	(scope_die_for, gen_type_die_for_member): Replace uses of
 	lookup_type_die with use of lookup_type_die_strip_naming_typedef.
 

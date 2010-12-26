@@ -16,7 +16,7 @@
 	sel_registerName and sel_registerTypedName with NULL arguments.
 	Updated the test to work with the Apple runtime as well.
 	* obj-c++.dg/gnu-api-2-sel.mm: Same change.
-	
+
 2010-12-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/gnu-api-2-class.m: Updated test to pass log_2 of the
@@ -30,7 +30,7 @@
 	when called with a NULL argument.  Added test for
 	sel_copyTypedSelectorList and sel_getTypedSelector.
 	* obj-c++.dg/gnu-api-2-sel.mm: Same changes.
-	
+
 2010-12-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt13_pkg.ad[sb]: Fix line ending.
@@ -39,7 +39,7 @@
 
 	* obj-c.dg/gnu-api-2-class.m: Test that class_conformsToProtocol()
 	does not check the superclasses.
-	* obj-c++.dg/gnu-api-2-class.mm: Same change.	
+	* obj-c++.dg/gnu-api-2-class.mm: Same change.
 
 2010-12-24  Alexander Monakov  <amonakov@ispras.ru>
 
@@ -103,7 +103,7 @@
 	PR rtl-optimization/46521
 	PR rtl-optimization/46522
 	* gcc.dg/pr46521.c: New.
-	* gcc.dg/pr46522.c: New. 
+	* gcc.dg/pr46522.c: New.
 
 2010-12-21  Ian Lance Taylor  <iant@google.com>
 
@@ -168,11 +168,11 @@
 	* objc.dg/gnu-api-2-objc.m: Fixed test to test objc_lookUpClass,
 	not objc_lookupClass.
 	* obj-c++.dg/gnu-api-2-objc.mm: Same change.
-	
+
 2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/gnu-api-2-objc_msg_lookup.m: New.
-	* obj-c++.dg/gnu-api-2-objc_msg_lookup.mm: New.	
+	* obj-c++.dg/gnu-api-2-objc_msg_lookup.mm: New.
 
 2010-12-19  Chung-Lin Tang  <cltang@codesourcery.com>
 
@@ -197,7 +197,7 @@
 	* obj-c++.dg/fobjc-exceptions-1.mm: New.
 	* obj-c++.dg/fobjc-exceptions-2.mm: New.
 	* obj-c++.dg/fobjc-exceptions-3.mm: New.
-	
+
 2010-12-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46974
@@ -521,7 +521,7 @@
 2010-12-11  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/gnu-api-2-resolve-method.m: New.
-	* obj-c++.dg/gnu-api-2-resolve-method.mm: New.	
+	* obj-c++.dg/gnu-api-2-resolve-method.mm: New.
 
 2010-12-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
@@ -1048,7 +1048,7 @@
 	* g++.dg/lto/20101126-1_1.c: Likewise.
 
 2010-12-02  Richard Guenther  <rguenther@suse.de>
-            Ira Rosen  <irar@il.ibm.com>
+	    Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/46663
 	* gcc.dg/vect/pr46663.c: New test.
