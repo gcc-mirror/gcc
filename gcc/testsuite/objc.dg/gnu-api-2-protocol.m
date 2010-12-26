@@ -3,7 +3,6 @@
   This is test 'protocol', covering all functions starting with 'protocol'.  */
 
 /* { dg-do run } */
-/* { dg-skip-if "" { *-*-* } { "-fnext-runtime" } { "" } } */
 
 /* To get the modern GNU Objective-C Runtime API, you include
    objc/runtime.h.  */
@@ -16,11 +15,13 @@
 { Class isa; }
 + alloc;
 - init;
++ initialize;
 @end
 
 @implementation MyRootClass
 + alloc { return class_createInstance (self, 0); }
 - init  { return self; }
++ initialize { return self; }
 @end
 
 @protocol MyProtocol
@@ -88,7 +89,7 @@ int main(int argc, void **args)
   printf ("Testing protocol_copyPropertyList ()...\n");
   {
     unsigned int count;
-    Property *list;
+    objc_property_t *list;
 
     list = protocol_copyPropertyList (@protocol (MyProtocol), &count);
 
@@ -136,7 +137,7 @@ int main(int argc, void **args)
   /* TODO: Test new ABI (when available).  */
   printf ("Testing protocol_getProperty ()...\n");
   {
-    Property property;
+    objc_property_t property;
 
     property = protocol_getProperty (objc_getProtocol ("MyProtocol"), "someProperty",
 				     YES, YES);

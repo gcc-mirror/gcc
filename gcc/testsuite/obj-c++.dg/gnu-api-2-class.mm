@@ -3,7 +3,6 @@
   This is test 'class', covering all functions starting with 'class'.  */
 
 /* { dg-do run } */
-/* { dg-skip-if "" { *-*-* } { "-fnext-runtime" } { "" } } */
 
 /* To get the modern GNU Objective-C Runtime API, you include
    objc/runtime.h.  */
@@ -16,11 +15,13 @@
 { Class isa; }
 + alloc;
 - init;
++ initialize;
 @end
 
 @implementation MyRootClass
 + alloc { return class_createInstance (self, 0); }
 - init  { return self; }
++ initialize { return self; }
 @end
 
 @protocol MyProtocol
@@ -256,7 +257,7 @@ int main ()
   std::cout << "Testing class_copyPropertyList ()...\n";
   {
     unsigned int count;
-    Property * list = class_copyPropertyList (objc_getClass ("MySubClass"), &count);
+    objc_property_t * list = class_copyPropertyList (objc_getClass ("MySubClass"), &count);
 
     if (count != 0  ||  list != NULL)
       abort ();

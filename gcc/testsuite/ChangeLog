@@ -1,5 +1,29 @@
 2010-12-26  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc.dg/gnu-api-2-class.m: Updated the test to work with the
+	Apple runtime as well.
+	* obj-c++.dg/gnu-api-2-class.mm: Same change.
+	* objc.dg/gnu-api-2-ivar.m: Same change.
+	* obj-c++.dg/gnu-api-2-ivar.mm: Same change.
+	* objc.dg/gnu-api-2-method.m: Same change.
+	* obj-c++.dg/gnu-api-2-method.mm: Same change.
+	* objc.dg/gnu-api-2-objc.m: Same change.
+	* obj-c++.dg/gnu-api-2-objc.mm: Same change.
+	* objc.dg/gnu-api-2-object.m: Same change.
+	* obj-c++.dg/gnu-api-2-object.mm: Same change.
+	* objc.dg/gnu-api-2-property.m: Same change.
+	* obj-c++.dg/gnu-api-2-property.mm: Same change.
+	* objc.dg/gnu-api-2-protocol.m: Same change.
+	* obj-c++.dg/gnu-api-2-protocol.mm: Same change.
+
+	* objc.dg/gnu-api-2-objc.m: Also, fixed test for
+	objc_disposeClassPair not to create a new class pair with the same
+	name as an existing class, and to test that the class pair is
+	created correctly.
+	* obj-c++.dg/gnu-api-2-objc.mm: Same change.
+	
+2010-12-26  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc.dg/special/special.exp: Added load-category-2 and
 	load-category-3 tests.
 	* objc.dg/special/load-category-2.h: New.
