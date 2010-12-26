@@ -1,3 +1,8 @@
+2010-12-26  Martin Jambor  <mjambor@suse.cz>
+
+	* tree.c (get_binfo_at_offset): Use BINFO_TYPE instead of TREE_TYPE,
+	compare TYPE_MAIN_VARIANTs of types.
+
 2010-12-26  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config/m68k/t-linux (M68K_MLIB_CPU): Only include 680x0 CPUs.

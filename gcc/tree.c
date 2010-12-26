@@ -10939,7 +10939,7 @@ lhd_gcc_personality (void)
 tree
 get_binfo_at_offset (tree binfo, HOST_WIDE_INT offset, tree expected_type)
 {
-  tree type = TREE_TYPE (binfo);
+  tree type = BINFO_TYPE (binfo);
 
   while (true)
     {
@@ -10947,7 +10947,7 @@ get_binfo_at_offset (tree binfo, HOST_WIDE_INT offset, tree expected_type)
       tree fld;
       int i;
 
-      if (type == expected_type)
+      if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (expected_type))
 	  return binfo;
       if (offset < 0)
 	return NULL_TREE;
