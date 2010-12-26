@@ -109,9 +109,9 @@ BOOL __objc_dangling_categories = NO;           /* !T:UNUSED */
 static void objc_send_load (void);
 
 /* Inserts all the classes defined in module in a tree of classes that
-   resembles the class hierarchy. This tree is traversed in preorder
+   resembles the class hierarchy.  This tree is traversed in preorder
    and the classes in its nodes receive the +load message if these
-   methods were not executed before. The algorithm ensures that when
+   methods were not executed before.  The algorithm ensures that when
    the +load method of a class is executed all the superclasses have
    been already received the +load message.  */
 static void __objc_create_classes_tree (struct objc_module *module);
@@ -124,15 +124,22 @@ static void __objc_call_load_callback (struct objc_module *module);
    installed in the runtime.  */
 static BOOL class_is_subclass_of_class (Class class, Class superclass);
 
+/* This is a node in the class tree hierarchy used to send +load
+   messages.  */
 typedef struct objc_class_tree
 {
+  /* The class corresponding to the node.  */
   Class class;
-  struct objc_list *subclasses; /* `head' is a pointer to an
-				   objc_class_tree.  */
+
+  /* This is a linked list of all the direct subclasses of this class.
+     'head' points to a subclass node; 'tail' points to the next
+     objc_list node (whose 'head' points to another subclass node,
+     etc).  */
+  struct objc_list *subclasses;
 } objc_class_tree;
 
-/* This is a linked list of objc_class_tree trees. The head of these
-   trees are root classes (their super class is Nil). These different
+/* This is a linked list of objc_class_tree trees.  The head of these
+   trees are root classes (their super class is Nil).  These different
    trees represent different class hierarchies.  */
 static struct objc_list *__objc_class_tree_list = NULL;
 
@@ -145,7 +152,7 @@ static cache_ptr __objc_load_methods = NULL;
    is really needed so that superclasses will get the message before
    subclasses.
 
-   This tree will contain classes which are being loaded (or have just
+   This tree may contain classes which are being loaded (or have just
    being loaded), and whose super_class pointers have not yet been
    resolved.  This implies that their super_class pointers point to a
    string with the name of the superclass; when the first message is
@@ -184,28 +191,29 @@ static Class  class_superclass_of_class (Class class)
 
 
 /* Creates a tree of classes whose topmost class is directly inherited
-   from `upper' and the bottom class in this tree is
-   `bottom_class'. The classes in this tree are super classes of
-   `bottom_class'. `subclasses' member of each tree node point to the
-   next subclass tree node.  */
+   from `upper' and the bottom class in this tree is `bottom_class'.
+   If `upper' is Nil, creates a class hierarchy up to a root class.
+   The classes in this tree are super classes of `bottom_class'.  The
+   `subclasses' member of each tree node point to the list of
+   subclasses for the node.  */
 static objc_class_tree *
 create_tree_of_subclasses_inherited_from (Class bottom_class, Class upper)
 {
   Class superclass;
   objc_class_tree *tree, *prev;
 
-  if (bottom_class->super_class)
-    superclass = objc_getClass ((char *) bottom_class->super_class);
-  else
-    superclass = Nil;
-
   DEBUG_PRINTF ("create_tree_of_subclasses_inherited_from:");
   DEBUG_PRINTF (" bottom_class = %s, upper = %s\n",
 		(bottom_class ? bottom_class->name : NULL),
 		(upper ? upper->name : NULL));
 
-  tree = prev = objc_calloc (1, sizeof (objc_class_tree));
+  superclass = class_superclass_of_class (bottom_class);
+
+  prev = objc_calloc (1, sizeof (objc_class_tree));
   prev->class = bottom_class;
+
+  if (superclass == upper)
+    return prev;
 
   while (superclass != upper)
     {
@@ -220,16 +228,16 @@ create_tree_of_subclasses_inherited_from (Class bottom_class, Class upper)
 }
 
 /* Insert the `class' into the proper place in the `tree' class
-   hierarchy. This function returns a new tree if the class has been
+   hierarchy.  This function returns a new tree if the class has been
    successfully inserted into the tree or NULL if the class is not
-   part of the classes hierarchy described by `tree'. This function is
-   private to objc_tree_insert_class (), you should not call it
+   part of the classes hierarchy described by `tree'.  This function
+   is private to objc_tree_insert_class (), you should not call it
    directly.  */
 static objc_class_tree *
 __objc_tree_insert_class (objc_class_tree *tree, Class class)
 {
-  DEBUG_PRINTF ("__objc_tree_insert_class: tree = %p, class = %s\n",
-		tree, class->name);
+  DEBUG_PRINTF ("__objc_tree_insert_class: tree = %p (root: %s), class = %s\n",
+		tree, ((tree && tree->class) ? tree->class->name : "Nil"), class->name);
 
   if (tree == NULL)
     return create_tree_of_subclasses_inherited_from (class, NULL);
@@ -315,27 +323,26 @@ objc_tree_insert_class (Class class)
 {
   struct objc_list *list_node;
   objc_class_tree *tree;
-
+  
   list_node = __objc_class_tree_list;
   while (list_node)
     {
+      /* Try to insert the class in this class hierarchy.  */
       tree = __objc_tree_insert_class (list_node->head, class);
       if (tree)
 	{
 	  list_node->head = tree;
-	  break;
+	  return;
 	}
       else
 	list_node = list_node->tail;
     }
-
-  /* If the list was finished but the class hasn't been inserted,
-     insert it here.  */
-  if (! list_node)
-    {
-      __objc_class_tree_list = list_cons (NULL, __objc_class_tree_list);
-      __objc_class_tree_list->head = __objc_tree_insert_class (NULL, class);
-    }
+  
+  /* If the list was finished but the class hasn't been inserted, we
+     don't have an existing class hierarchy that can accomodate it.
+     Create a new one.  */
+  __objc_class_tree_list = list_cons (NULL, __objc_class_tree_list);
+  __objc_class_tree_list->head = __objc_tree_insert_class (NULL, class);
 }
 
 /* Traverse tree in preorder. Used to send +load.  */
@@ -603,7 +610,6 @@ __objc_exec_class (struct objc_module *module)
       duplicate_classes = objc_hash_new (8,
 					 (hash_func_type)objc_hash_ptr,
 					 objc_compare_ptrs);
-      __objc_class_tree_list = list_cons (NULL, __objc_class_tree_list);
       __objc_load_methods = objc_hash_new (128, 
 					   (hash_func_type)objc_hash_ptr,
 					   objc_compare_ptrs);
