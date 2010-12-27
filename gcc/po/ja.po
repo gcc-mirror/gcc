@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.6-b20101218\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-12-18 20:02+0000\n"
-"PO-Revision-Date: 2010-12-21 21:23+0900\n"
+"PO-Revision-Date: 2010-12-27 23:04+0900\n"
 "Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -18,6 +18,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
+# gcc では gcc/pretty-print.c 内にある pp_printf で書式文字列を解釈しています。
+# c-format フラグがあっても位置パラメータ (%1$s, %2$d) などは使わないことを推奨します
+#  - 2010/12/27 gcc-4.6-20101218 で確認 (谷口)
 #: c-decl.c:4636 c-typeck.c:5849 toplev.c:1013 c-family/c-pretty-print.c:423
 #: cp/error.c:610 cp/error.c:889
 msgid "<anonymous>"
@@ -557,7 +560,7 @@ msgstr ""
 
 #: gcc.c:2911
 msgid "  -print-multi-os-directory Display the relative path to OS libraries\n"
-msgstr ""
+msgstr "  -print-multi-os-directory OSライブラリ関連のパスを表示する\n"
 
 #: gcc.c:2912
 msgid "  -print-sysroot           Display the target libraries directory\n"
@@ -565,7 +568,7 @@ msgstr "  -print-sysroot           ターゲットライブラリのディレク
 
 #: gcc.c:2913
 msgid "  -print-sysroot-headers-suffix Display the sysroot suffix used to find headers\n"
-msgstr ""
+msgstr "  -print-sysroot-headers-suffix ヘッダを見つけるために使用する sysroot 接尾辞を表示する\n"
 
 #: gcc.c:2914
 msgid "  -Wa,<options>            Pass comma-separated <options> on to the assembler\n"
@@ -1044,9 +1047,9 @@ msgid "Taken at least once:%s of %d\n"
 msgstr ""
 
 #: gcov.c:1482
-#, fuzzy, c-format
+#, c-format
 msgid "No branches\n"
-msgstr "ファイル %s にはブランチがありません\n"
+msgstr ""
 
 #: gcov.c:1484
 #, c-format
@@ -1107,19 +1110,18 @@ msgid "GCSE disabled"
 msgstr "GCSE が無効です"
 
 #: gcse.c:5137
-#, fuzzy
 msgid "const/copy propagation disabled"
-msgstr "-g オプションを無効化しました。"
+msgstr ""
 
 #: gengtype-state.c:150
-#, fuzzy, c-format
+#, c-format
 msgid "%s:%d:%d: Invalid state file; %s"
-msgstr "%s:%d:   `%s' から実体化されました\n"
+msgstr "%s:%d:%d: 無効な状態ファイルです。%s"
 
 #: gengtype-state.c:154
 #, c-format
 msgid "%s:%d: Invalid state file; %s"
-msgstr ""
+msgstr "%s:%d: 無効な状態ファイルです。%s"
 
 #. Fatal printf-like message while reading state.  This can't be a
 #. function, because there is no way to pass a va_arg to a variant of
@@ -1132,62 +1134,62 @@ msgstr "%s:%d:%d: 無効な状態ファイルです。 "
 #: gengtype-state.c:170
 #, c-format
 msgid "%s:%d: Invalid state file; "
-msgstr "%s:%d: 無効な状態ファイルです "
+msgstr "%s:%d: 無効な状態ファイルです。 "
 
 #: gengtype-state.c:695
 #, c-format
 msgid "Option tag unknown"
-msgstr ""
+msgstr "オプションタグが不明です"
 
 #: gengtype-state.c:750
 #, c-format
 msgid "Unexpected type in write_state_scalar_type"
-msgstr ""
+msgstr "write_state_scalar_type 内で予期しない型です"
 
 #: gengtype-state.c:765
 #, fuzzy, c-format
 msgid "Unexpected type in write_state_string_type"
-msgstr "終端されていないフォーマット文字列"
+msgstr "write_state_string_type 内で予期しない型です"
 
 #: gengtype-state.c:969
 #, c-format
 msgid "Unexpected type..."
-msgstr ""
+msgstr "予期しない型..."
 
 #: gengtype-state.c:1149
-#, fuzzy, c-format
+#, c-format
 msgid "failed to write state trailer [%s]"
-msgstr "\"%s\" の作成に失敗しました"
+msgstr "状態追跡の書き込みに失敗しました [%s]"
 
 #: gengtype-state.c:1175
 #, c-format
 msgid "Failed to open file %s for writing state: %s"
-msgstr "状態を書き込むためのファイル %s を開くのに失敗しました: %s"
+msgstr "状態書き込み用ファイル %s を開くのに失敗しました: %s"
 
 #: gengtype-state.c:1207
 #, c-format
 msgid "output error when writing state file %s [%s]"
-msgstr ""
+msgstr "状態ファイル %s  の書き込み時に出力エラーが発生しました [%s]"
 
 #: gengtype-state.c:1210
-#, fuzzy, c-format
+#, c-format
 msgid "failed to close state file %s [%s]"
-msgstr "出力ファイル %s を開けませんでした.\n"
+msgstr "状態ファイル %s を閉じるのに失敗しました [%s]"
 
 #: gengtype-state.c:1213
-#, fuzzy, c-format
+#, c-format
 msgid "failed to rename %s to state file %s [%s]"
-msgstr "%s をモード %s で再度開くことに失敗しました"
+msgstr "%s から状態ファイル %s へ名前を変更するのに失敗しました [%s]"
 
 #: gengtype-state.c:2395
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to open state file %s for reading [%s]"
-msgstr "%s: 読み込み用にファイル `%s' を開くことができません: %s\n"
+msgstr "状態ファイル %s を読み込みように開くのに失敗しました [%s]"
 
 #: gengtype-state.c:2433
-#, fuzzy, c-format
+#, c-format
 msgid "failed to close read state file %s [%s]"
-msgstr "出力ファイル %s を開けませんでした.\n"
+msgstr "読み込んだ状態ファイル %s を閉じるのに失敗しました [%s]"
 
 #: incpath.c:76
 #, c-format
@@ -1197,7 +1199,7 @@ msgstr "重複したディレクトリ \"%s\" を無視します\n"
 #: incpath.c:79
 #, c-format
 msgid "  as it is a non-system directory that duplicates a system directory\n"
-msgstr ""
+msgstr "  非システムディレクトリがシステムディレクトリと重複しているからです\n"
 
 #: incpath.c:83
 #, c-format
@@ -1238,38 +1240,37 @@ msgid "function might be candidate for attribute %<%s%>"
 msgstr "関数は属性 %<%s%> の候補のようです"
 
 #: ipa-pure-const.c:155
-#, fuzzy
 msgid "function might be candidate for attribute %<%s%> if it is known to return normally"
-msgstr "関数は恐らく `noreturn' 属性の候補と思われます"
+msgstr "関数は正常に戻ると分かった場合、属性 %<%s%> の候補のようです"
 
 #: langhooks.c:374
 msgid "At top level:"
 msgstr "トップレベル:"
 
 #: langhooks.c:394 cp/error.c:2814
-#, fuzzy, c-format
+#, c-format
 msgid "In member function %qs"
-msgstr "関数 `%s' 内:"
+msgstr "メンバ関数 %qs 内"
 
 #: langhooks.c:398 cp/error.c:2817
-#, fuzzy, c-format
+#, c-format
 msgid "In function %qs"
-msgstr "関数 `%s' 内:"
+msgstr "関数 %qs 内"
 
 #: langhooks.c:449 cp/error.c:2767
-#, fuzzy, c-format
+#, c-format
 msgid "    inlined from %qs at %s:%d:%d"
-msgstr "%s:%d から include されたファイル内"
+msgstr ""
 
 #: langhooks.c:454 cp/error.c:2772
-#, fuzzy, c-format
+#, c-format
 msgid "    inlined from %qs at %s:%d"
-msgstr "%s:%d から include されたファイル内"
+msgstr ""
 
 #: langhooks.c:460 cp/error.c:2778
-#, fuzzy, c-format
+#, c-format
 msgid "    inlined from %qs"
-msgstr "%s:%u から include されたファイル中"
+msgstr ""
 
 #: loop-iv.c:2966 tree-ssa-loop-niter.c:1912
 msgid "assuming that the loop is not infinite"
@@ -1288,7 +1289,7 @@ msgid "cannot optimize loop, the loop counter may overflow"
 msgstr "ループを最適化できません。ループカウンタが溢れるかもしれません"
 
 #: lto-wrapper.c:212
-#, fuzzy, c-format
+#, c-format
 msgid "%s terminated with signal %d [%s], core dumped"
 msgstr "%s はシグナル %d [%s] で終了しました。コアダンプしました"
 
@@ -1349,7 +1350,7 @@ msgstr "このスイッチには文書がありません"
 
 #: opts.c:1004
 msgid "[default]"
-msgstr ""
+msgstr "[デフォルト]"
 
 #: opts.c:1015
 msgid "[enabled]"
@@ -1436,9 +1437,8 @@ msgid "*** WARNING *** there are active plugins, do not report this as a bug unl
 msgstr "*** 警告 *** 有効になっているプラグインがあります。すべてのプラグインを無効にして再現できない限りこのバグを報告しないでください\n"
 
 #: reload.c:3805
-#, fuzzy
 msgid "unable to generate reloads for:"
-msgstr "コードが生成される CPU を選択する"
+msgstr ""
 
 #: reload1.c:2105
 msgid "this is the insn:"
@@ -1446,19 +1446,17 @@ msgstr ""
 
 #. It's the compiler's fault.
 #: reload1.c:6009
-#, fuzzy
 msgid "could not find a spill register"
-msgstr "spec ファイル %s を見つけることができませんでした\n"
+msgstr ""
 
 #. It's the compiler's fault.
 #: reload1.c:7863
-#, fuzzy
 msgid "VOIDmode on an output"
-msgstr "出力中に I/O エラーが発生"
+msgstr ""
 
 #: reload1.c:8618
 msgid "failure trying to reload:"
-msgstr ""
+msgstr "再ロードの試みに失敗しました:"
 
 #: rtl-error.c:117
 msgid "unrecognizable insn:"
@@ -3035,14 +3033,14 @@ msgid "environment variable DJGPP not defined"
 msgstr "環境変数 DJGPP が定義されていません"
 
 #: config/i386/xm-djgpp.h:63
-#, fuzzy, c-format
+#, c-format
 msgid "environment variable DJGPP points to missing file '%s'"
-msgstr "環境変数 DJGPP が、見つからないファイル '%s' を示しています。"
+msgstr "環境変数 DJGPP が存在しないファイル '%s' を指しています"
 
 #: config/i386/xm-djgpp.h:66
-#, fuzzy, c-format
+#, c-format
 msgid "environment variable DJGPP points to corrupt file '%s'"
-msgstr "環境変数 DJGPP が、壊れたファイル '%s' を示しています。"
+msgstr "環境変数 DJGPP が壊れたファイル '%s' を示しています。"
 
 #: config/ia64/ia64.c:5096
 #, c-format
@@ -3055,24 +3053,21 @@ msgid "ia64_print_operand: unknown code"
 msgstr "ia64_print_operand: 不明なコードです"
 
 #: config/ia64/ia64.c:10946
-#, fuzzy
 msgid "invalid conversion from %<__fpreg%>"
-msgstr "無効なバージョン番号形式"
+msgstr "%<__fpreg%> からの無効な変換です"
 
 #: config/ia64/ia64.c:10949
-#, fuzzy
 msgid "invalid conversion to %<__fpreg%>"
-msgstr "%p コードに対する無効なオペランド"
+msgstr "%<__fpreg%> への無効な変換です"
 
 #: config/ia64/ia64.c:10962 config/ia64/ia64.c:10973
-#, fuzzy
 msgid "invalid operation on %<__fpreg%>"
-msgstr "%p コードに対する無効なオペランド"
+msgstr "%<__fpreg%> に関する無効な操作です"
 
 #: config/iq2000/iq2000.c:3184
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%P operand"
-msgstr "無効な %P オペランドです"
+msgstr "無効な %%P 被演算子です"
 
 #: config/iq2000/iq2000.c:3192 config/rs6000/rs6000.c:15767
 #, c-format
@@ -3082,7 +3077,7 @@ msgstr "無効な %%p 値です"
 #: config/iq2000/iq2000.c:3249
 #, c-format
 msgid "invalid use of %%d, %%x, or %%X"
-msgstr "無効な用法の of %%d, %%x, 又は %%X"
+msgstr "%%d、%%x、または %%X の無効な使用法です"
 
 #: config/lm32/lm32.c:525
 #, c-format
@@ -3090,52 +3085,48 @@ msgid "only 0.0 can be loaded as an immediate"
 msgstr ""
 
 #: config/lm32/lm32.c:595
-#, fuzzy
 msgid "bad operand"
-msgstr "無効な %P オペランドです"
+msgstr "間違った被演算子です"
 
 #: config/lm32/lm32.c:607
 msgid "can't use non gp relative absolute address"
-msgstr ""
+msgstr "非 gp 関連の絶対アドレスを使用できません"
 
 #: config/lm32/lm32.c:611
-#, fuzzy
 msgid "invalid addressing mode"
-msgstr "複雑なアドレシングモードを使用する"
+msgstr "無効なアドレスモードです"
 
 #: config/m32r/m32r.c:2119
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%s code"
-msgstr "%s コードに対する無効なオペランド"
+msgstr "%%s コードへの無効な被演算子です"
 
 #: config/m32r/m32r.c:2126
 #, fuzzy, c-format
 msgid "invalid operand to %%p code"
-msgstr "%p コードに対する無効なオペランド"
+msgstr "%%p コードへの無効な被演算子です"
 
 #: config/m32r/m32r.c:2181
 msgid "bad insn for 'A'"
-msgstr ""
+msgstr "'A' 用の誤った命令です"
 
 #: config/m32r/m32r.c:2228
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%T/%%B code"
-msgstr "%T/%B コードに対する無効なオペランド"
+msgstr "%%T/%%B コードへの無効な被演算子です"
 
 #: config/m32r/m32r.c:2251
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%N code"
-msgstr "%N コードに対する無効なオペランド"
+msgstr "%%N コードへの無効な被演算子です"
 
 #: config/m32r/m32r.c:2284
-#, fuzzy
 msgid "pre-increment address is not a register"
-msgstr "`%d' オペランドがレジスタではありません"
+msgstr ""
 
 #: config/m32r/m32r.c:2291
-#, fuzzy
 msgid "pre-decrement address is not a register"
-msgstr "thumb_load_double_from_address: ベースがレジスタではありません"
+msgstr ""
 
 #: config/m32r/m32r.c:2298
 msgid "post-increment address is not a register"
@@ -3147,20 +3138,18 @@ msgid "bad address"
 msgstr "誤ったアドレスです"
 
 #: config/m32r/m32r.c:2393
-#, fuzzy
 msgid "lo_sum not of register"
-msgstr "浮動小数点レジスタを利用しない"
+msgstr ""
 
 #. !!!! SCz wrong here.
 #: config/m68hc11/m68hc11.c:3256 config/m68hc11/m68hc11.c:3634
 msgid "move insn not handled"
-msgstr ""
+msgstr "move 命令は取り扱われません"
 
 #: config/m68hc11/m68hc11.c:3480 config/m68hc11/m68hc11.c:3564
 #: config/m68hc11/m68hc11.c:3837
-#, fuzzy
 msgid "invalid register in the move instruction"
-msgstr "`%s' に対するレジスタ名として無効です"
+msgstr "move 命令内で無効なレジスタです"
 
 #: config/m68hc11/m68hc11.c:3514
 msgid "invalid operand in the instruction"
@@ -3180,16 +3169,15 @@ msgstr "無効な回転 (rotate) 命令です"
 
 #: config/m68hc11/m68hc11.c:4286
 msgid "registers IX, IY and Z used in the same INSN"
-msgstr ""
+msgstr "同じ命令内で IX、IY および Z が使用されました"
 
 #: config/m68hc11/m68hc11.c:4619 config/m68hc11/m68hc11.c:4923
 msgid "cannot do z-register replacement"
-msgstr ""
+msgstr "z レジスタ置換を行えません"
 
 #: config/m68hc11/m68hc11.c:4986
-#, fuzzy
 msgid "invalid Z register replacement for insn"
-msgstr "`%s' に対するレジスタ名として無効です"
+msgstr "命令に対して無効な Z レジスタ置換です"
 
 #: config/mep/mep.c:3321
 #, c-format
@@ -3204,48 +3192,47 @@ msgstr ""
 #: config/microblaze/microblaze.c:1756
 #, c-format
 msgid "null pointer"
-msgstr ""
+msgstr "NULL ポインタ"
 
 #: config/microblaze/microblaze.c:1791
 #, c-format
 msgid "PRINT_OPERAND, invalid insn for %%C"
-msgstr ""
+msgstr "PRINT_OPERAND, %%C に対する無効な命令です"
 
 #: config/microblaze/microblaze.c:1820
 #, c-format
 msgid "PRINT_OPERAND, invalid insn for %%N"
-msgstr ""
+msgstr "PRINT_OPERAND, %%N に対する無効な命令です"
 
 #: config/microblaze/microblaze.c:1840 config/microblaze/microblaze.c:2001
 msgid "insn contains an invalid address !"
-msgstr ""
+msgstr "命令に無効なアドレスが含まれています!"
 
 #: config/microblaze/microblaze.c:1854 config/microblaze/microblaze.c:2041
 #: config/xtensa/xtensa.c:2394
-#, fuzzy
 msgid "invalid address"
-msgstr "無効なコードです"
+msgstr "無効なアドレスです"
 
 #: config/microblaze/microblaze.c:1953
 #, c-format
 msgid "letter %c was found & insn was not CONST_INT"
-msgstr ""
+msgstr "文字 %c が見つかりましたが命令は CONST_INT ではありません"
 
 #: config/mips/mips.c:7454 config/mips/mips.c:7475 config/mips/mips.c:7595
-#, fuzzy, c-format
+#, c-format
 msgid "'%%%c' is not a valid operand prefix"
-msgstr "'lul' は正常な整数接尾辞ではありません"
+msgstr "'%%%c' は有効な被演算子接頭辞ではありません"
 
 #: config/mips/mips.c:7532 config/mips/mips.c:7539 config/mips/mips.c:7546
 #: config/mips/mips.c:7553 config/mips/mips.c:7613 config/mips/mips.c:7627
 #: config/mips/mips.c:7640 config/mips/mips.c:7649
-#, fuzzy, c-format
+#, c-format
 msgid "invalid use of '%%%c'"
-msgstr "`restrict' の用法が不適切です"
+msgstr "'%%%c' の無効な使用法です"
 
 #: config/mips/mips.c:7871
 msgid "mips_debugger_offset called with non stack/frame/arg pointer"
-msgstr ""
+msgstr "stack/frame/arg ポインタ無しで mips_debugger_offset が呼ばれました"
 
 #: config/mmix/mmix.c:1589 config/mmix/mmix.c:1719
 msgid "MMIX Internal: Expected a CONST_INT, not this"
@@ -3253,7 +3240,7 @@ msgstr ""
 
 #: config/mmix/mmix.c:1668
 msgid "MMIX Internal: Bad value for 'm', not a CONST_INT"
-msgstr ""
+msgstr "MMIX 内部: 'm' に対する誤った値です。CONST_INT ではありません"
 
 #: config/mmix/mmix.c:1687
 msgid "MMIX Internal: Expected a register, not this"
@@ -3266,11 +3253,11 @@ msgstr ""
 #. We need the original here.
 #: config/mmix/mmix.c:1781
 msgid "MMIX Internal: Cannot decode this operand"
-msgstr ""
+msgstr "MMIX 内部: この被演算子をデコードできません"
 
 #: config/mmix/mmix.c:1838
 msgid "MMIX Internal: This is not a recognized address"
-msgstr ""
+msgstr "MMIX 内部: 認識できるアドレスではありません"
 
 #: config/mmix/mmix.c:2713
 msgid "MMIX Internal: Trying to output invalidly reversed condition:"
@@ -3285,9 +3272,8 @@ msgid "MMIX Internal: What is the CC of this?"
 msgstr ""
 
 #: config/mmix/mmix.c:2788
-#, fuzzy
 msgid "MMIX Internal: This is not a constant:"
-msgstr "フィールド初期設定子が定数ではありません"
+msgstr "MMIX 内部: 定数ではありません:"
 
 #: config/picochip/picochip.c:2687
 msgid "picochip_print_memory_address - Operand isn't memory based"
@@ -3302,19 +3288,18 @@ msgid "Bad address, not (reg+disp):"
 msgstr ""
 
 #: config/picochip/picochip.c:3038
-#, fuzzy
 msgid "Bad address, not register:"
-msgstr "引数をレジスタ渡しにする"
+msgstr "誤ったアドレスです。レジスタではありません:"
 
 #: config/rs6000/host-darwin.c:95
 #, c-format
 msgid "Out of stack space.\n"
-msgstr ""
+msgstr "スタック空間が足りなくなりました。\n"
 
 #: config/rs6000/host-darwin.c:116
 #, c-format
 msgid "Try running '%s' in the shell to raise its limit.\n"
-msgstr ""
+msgstr "'%s' をシェル内で実行して制限値を上げてください\n"
 
 #: config/rs6000/rs6000.c:2787
 msgid "-mvsx requires hardware floating point"
@@ -3325,31 +3310,29 @@ msgid "-mvsx and -mpaired are incompatible"
 msgstr "-mvsx と -mpaired は互換性がありません"
 
 #: config/rs6000/rs6000.c:2797
-#, fuzzy
 msgid "-mvsx used with little endian code"
-msgstr "リトルエンディアンのコードを生成"
+msgstr "-mvsx がリトルエンディアンコードで使用されました"
 
 #: config/rs6000/rs6000.c:2799
 msgid "-mvsx needs indexed addressing"
 msgstr ""
 
 #: config/rs6000/rs6000.c:2803
-#, fuzzy
 msgid "-mvsx and -mno-altivec are incompatible"
-msgstr "-f%s と -msdata=%s は共存できません"
+msgstr "-mvsx と -mno-altivec は互換性がありません"
 
 #: config/rs6000/rs6000.c:2805
 msgid "-mno-altivec disables vsx"
-msgstr ""
+msgstr "-mno-altivec は vsx を無効にします"
 
 #: config/rs6000/rs6000.c:7750
 msgid "bad move"
-msgstr ""
+msgstr "誤った move です"
 
 #: config/rs6000/rs6000.c:15577
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%c value"
-msgstr "無効な %%Q 値"
+msgstr "無効な %%c 値です"
 
 #: config/rs6000/rs6000.c:15605
 #, c-format
@@ -3379,7 +3362,7 @@ msgstr "無効な %%J コードです"
 #: config/rs6000/rs6000.c:15678
 #, c-format
 msgid "invalid %%k value"
-msgstr "無効な %%k 値"
+msgstr "無効な %%k 値です"
 
 #: config/rs6000/rs6000.c:15693 config/xtensa/xtensa.c:2293
 #, c-format
@@ -3389,7 +3372,7 @@ msgstr "無効な %%K 値です"
 #: config/rs6000/rs6000.c:15757
 #, c-format
 msgid "invalid %%O value"
-msgstr "無効な %%O 値"
+msgstr "無効な %%O 値です"
 
 #: config/rs6000/rs6000.c:15804
 #, c-format
@@ -3399,7 +3382,7 @@ msgstr "無効な %%q 値です"
 #: config/rs6000/rs6000.c:15848
 #, c-format
 msgid "invalid %%S value"
-msgstr "無効な %%S 値"
+msgstr "無効な %%S 値です"
 
 #: config/rs6000/rs6000.c:15888
 #, c-format
@@ -3417,40 +3400,39 @@ msgid "invalid %%v value"
 msgstr "無効な %%v 値です"
 
 #: config/rs6000/rs6000.c:16006 config/xtensa/xtensa.c:2314
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%x value"
-msgstr "無効な %%Q 値"
+msgstr "無効な %%x 値です"
 
 #: config/rs6000/rs6000.c:16152
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%y value, try using the 'Z' constraint"
-msgstr "無効な句読点 `%c' が制約内にあります"
+msgstr "無効な %%y 値です。'Z' 制約を使用してみてください"
 
 #: config/rs6000/rs6000.c:27228
-#, fuzzy
 msgid "AltiVec argument passed to unprototyped function"
-msgstr "関数への引数が少なすぎます"
+msgstr "プロトタイプが無い関数に AltiVec 引数が渡されました"
 
 #: config/s390/s390.c:5144
-#, fuzzy, c-format
+#, c-format
 msgid "cannot decompose address"
-msgstr "複雑なアドレシングモードを利用しない"
+msgstr ""
 
 #: config/score/score3.c:1284 config/score/score3.c:1304
 #: config/score/score7.c:1272
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand for code: '%c'"
-msgstr "%R コードに対する無効なオペランド"
+msgstr "コード '%c' に対する無効な被演算子です"
 
 #: config/sh/sh.c:1188
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%R"
-msgstr "%R コードに対する無効なオペランド"
+msgstr "%%R への無効な被演算子です"
 
 #: config/sh/sh.c:1215
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%S"
-msgstr "%R コードに対する無効なオペランド"
+msgstr "%%S への無効な被演算子です"
 
 #: config/sh/sh.c:9254
 msgid "created and used with different architectures / ABIs"
@@ -3465,54 +3447,54 @@ msgid "created and used with different endianness"
 msgstr ""
 
 #: config/sparc/sparc.c:7424 config/sparc/sparc.c:7430
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%Y operand"
-msgstr "無効な %%Y オペランド"
+msgstr "無効な %%Y 被演算子です"
 
 #: config/sparc/sparc.c:7500
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%A operand"
-msgstr "無効な %%A オペランド"
+msgstr "無効な %%A 被演算子です"
 
 #: config/sparc/sparc.c:7510
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%B operand"
-msgstr "無効な %%B オペランド"
+msgstr "無効な %%B 被演算子です"
 
 #: config/sparc/sparc.c:7549
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%c operand"
-msgstr "無効な %%c オペランド"
+msgstr "無効な %%c 被演算子です"
 
 #: config/sparc/sparc.c:7571
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%d operand"
-msgstr "無効な %%d オペランド"
+msgstr "無効な %%d 被演算子です"
 
 #: config/sparc/sparc.c:7588
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%f operand"
-msgstr "無効な %%f オペランド"
+msgstr "無効な %%f 被演算子です"
 
 #: config/sparc/sparc.c:7602
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%s operand"
-msgstr "無効な %P オペランドです"
+msgstr "無効な %%s 被演算子です"
 
 #: config/sparc/sparc.c:7656
 #, c-format
 msgid "long long constant not a valid immediate operand"
-msgstr "long long 定数は正常な即値オペランドではありません"
+msgstr "long long 定数は有効な即値被演算子ではありません"
 
 #: config/sparc/sparc.c:7659
 #, c-format
 msgid "floating point constant not a valid immediate operand"
-msgstr "浮動小数定数は正常な即値オペランドではありません"
+msgstr "浮動小数定数は有効な即値被演算子ではありません"
 
 #: config/stormy16/stormy16.c:1748 config/stormy16/stormy16.c:1819
-#, fuzzy, c-format
+#, c-format
 msgid "'B' operand is not constant"
-msgstr "出力オペランドが `asm' 内で定数です"
+msgstr "'B' 被演算子が定数ではありません"
 
 #: config/stormy16/stormy16.c:1775
 #, c-format
@@ -3520,22 +3502,22 @@ msgid "'B' operand has multiple bits set"
 msgstr ""
 
 #: config/stormy16/stormy16.c:1801
-#, fuzzy, c-format
+#, c-format
 msgid "'o' operand is not constant"
-msgstr "出力オペランドが `asm' 内で定数です"
+msgstr "'o' 被演算子が定数ではありません"
 
 #: config/stormy16/stormy16.c:1833
-#, fuzzy, c-format
+#, c-format
 msgid "xstormy16_print_operand: unknown code"
-msgstr "fr30_print_operand: 不明なコードです"
+msgstr "xstormy16_print_operand: 不明なコードです"
 
 #: config/v850/v850.c:338
 msgid "const_double_split got a bad insn:"
-msgstr ""
+msgstr "const_double_split が間違った命令を受け取りました:"
 
 #: config/v850/v850.c:920
 msgid "output_move_single:"
-msgstr ""
+msgstr "output_move_single:"
 
 #: config/vax/vax.c:418
 #, c-format
@@ -3548,61 +3530,57 @@ msgid "symbol with offset used in PIC mode"
 msgstr ""
 
 #: config/vax/vax.c:513
-#, fuzzy, c-format
+#, c-format
 msgid "symbol used as immediate operand"
-msgstr "long long 定数は正常な即値オペランドではありません"
+msgstr "即値被演算子として使用されるシンボルです"
 
 #: config/vax/vax.c:1536
-#, fuzzy
 msgid "illegal operand detected"
-msgstr "%R コードに対する無効なオペランド"
+msgstr "不正な被演算子が検出されました"
 
 #: config/xtensa/xtensa.c:740 config/xtensa/xtensa.c:772
 #: config/xtensa/xtensa.c:781
 msgid "bad test"
-msgstr ""
+msgstr "誤った test です"
 
 #: config/xtensa/xtensa.c:2251
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%D value"
-msgstr "無効な %D 値です"
+msgstr "無効な %%D 値です"
 
 #: config/xtensa/xtensa.c:2288
-#, fuzzy
 msgid "invalid mask"
-msgstr "無効な #pragma %s です"
+msgstr "無効なマスクです"
 
 #: config/xtensa/xtensa.c:2321
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%d value"
-msgstr "無効な %%Q 値"
+msgstr "無効な %%d 値です"
 
 #: config/xtensa/xtensa.c:2342 config/xtensa/xtensa.c:2352
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%t/%%b value"
-msgstr "無効な %%b 値"
+msgstr "無効な %%t/%%b 値です"
 
 #: config/xtensa/xtensa.c:2419
-#, fuzzy
 msgid "no register in address"
-msgstr "不明なレジスタ名です: %s"
+msgstr ""
 
 #: config/xtensa/xtensa.c:2427
-#, fuzzy
 msgid "address offset not a constant"
-msgstr "要求されたアラインメントが定数ではありません"
+msgstr "アドレスオフセットが定数ではありません"
 
 #: cp/call.c:7841
 msgid "candidate 1:"
-msgstr ""
+msgstr "候補 1:"
 
 #: cp/call.c:7842
 msgid "candidate 2:"
-msgstr ""
+msgstr "候補 2:"
 
 #: cp/cxx-pretty-print.c:172 objc/objc-act.c:8958
 msgid "<unnamed>"
-msgstr ""
+msgstr "<名前なし>"
 
 #: cp/cxx-pretty-print.c:2118
 msgid "template-parameter-"
@@ -3610,32 +3588,28 @@ msgstr ""
 
 #: cp/decl2.c:725
 msgid "candidates are: %+#D"
-msgstr ""
+msgstr "候補: %+#D"
 
 #: cp/decl2.c:727 cp/pt.c:1726
 #, gcc-internal-format
 msgid "candidate is: %+#D"
-msgstr ""
+msgstr "候補: %+#D"
 
 #: cp/error.c:298
-#, fuzzy
 msgid "<missing>"
-msgstr "<標準入力>"
+msgstr ""
 
 #: cp/error.c:358
-#, fuzzy
 msgid "<brace-enclosed initializer list>"
-msgstr "スカラー初期化子がブレースで囲まれています"
+msgstr ""
 
 #: cp/error.c:360
-#, fuzzy
 msgid "<unresolved overloaded function type>"
-msgstr "sizeof が関数型に適用されました"
+msgstr "<未解決オーバーロードされた関数型>"
 
 #: cp/error.c:512
-#, fuzzy
 msgid "<type error>"
-msgstr "構文解析エラー"
+msgstr "<型エラー>"
 
 #: cp/error.c:612
 #, c-format
@@ -3645,21 +3619,21 @@ msgstr "<無名 %s>"
 #. A lambda's "type" is essentially its signature.
 #: cp/error.c:617
 msgid "<lambda"
-msgstr ""
+msgstr "<ラムダ"
 
 #: cp/error.c:744
 msgid "<typeprefixerror>"
 msgstr ""
 
 #: cp/error.c:856
-#, fuzzy, c-format
+#, c-format
 msgid "(static initializers for %s)"
-msgstr "(静的%s: %s 用)"
+msgstr "(%s 用の静的イニシャライザ)"
 
 #: cp/error.c:858
-#, fuzzy, c-format
+#, c-format
 msgid "(static destructors for %s)"
-msgstr "(静的%s: %s 用)"
+msgstr "(%s 用の静的デストラクタ)"
 
 #: cp/error.c:945
 msgid "vtable for "
@@ -3667,20 +3641,19 @@ msgstr ""
 
 #: cp/error.c:957
 msgid "<return value> "
-msgstr ""
+msgstr "<戻り値> "
 
 #: cp/error.c:970
 msgid "{anonymous}"
-msgstr ""
+msgstr "{無名}"
 
 #: cp/error.c:1085
 msgid "<enumerator>"
 msgstr ""
 
 #: cp/error.c:1125
-#, fuzzy
 msgid "<declaration error>"
-msgstr "`%s' が再宣言されました"
+msgstr "<宣言エラー>"
 
 #: cp/error.c:1369
 msgid "with"
@@ -3688,73 +3661,70 @@ msgstr ""
 
 #: cp/error.c:1541 cp/error.c:1561
 msgid "<template parameter error>"
-msgstr ""
+msgstr "<テンプレートパラメータエラー>"
 
 #: cp/error.c:1687
 msgid "<statement>"
-msgstr ""
+msgstr "<文>"
 
 #. While waiting for caret diagnostics, avoid printing
 #. __cxa_allocate_exception, __cxa_throw, and the like.
 #: cp/error.c:1717
-#, fuzzy
 msgid "<throw-expression>"
-msgstr "  throw された式の中"
+msgstr "<throw 式>"
 
 #: cp/error.c:2222
 msgid "<unparsed>"
-msgstr ""
+msgstr "<未構文解析>"
 
 #: cp/error.c:2371
-#, fuzzy
 msgid "<expression error>"
-msgstr "構文解析エラー"
+msgstr "<式エラー>"
 
 #: cp/error.c:2385
 msgid "<unknown operator>"
-msgstr ""
+msgstr "<不明な演算子>"
 
 #: cp/error.c:2594
 msgid "<unknown>"
-msgstr ""
+msgstr "<不明>"
 
 #: cp/error.c:2614
 msgid "{unknown}"
-msgstr ""
+msgstr "{不明}"
 
 #: cp/error.c:2698
 msgid "At global scope:"
-msgstr ""
+msgstr "大域スコープ:"
 
 #: cp/error.c:2804
-#, fuzzy, c-format
+#, c-format
 msgid "In static member function %qs"
-msgstr "デストラクタを静的メンバ関数とすることはできません"
+msgstr "静的メンバ関数 %qs 内"
 
 #: cp/error.c:2806
-#, fuzzy, c-format
+#, c-format
 msgid "In copy constructor %qs"
-msgstr "コンストラクタの関数本体を欠いています"
+msgstr "コピーコンストラクタ %qs 内"
 
 #: cp/error.c:2808
-#, fuzzy, c-format
+#, c-format
 msgid "In constructor %qs"
-msgstr "%d 個のコンストラクタが見つかりました\n"
+msgstr "コンストラクタ %qs 内"
 
 #: cp/error.c:2810
 #, c-format
 msgid "In destructor %qs"
-msgstr ""
+msgstr "デストラクタ %qs 内"
 
 #: cp/error.c:2812
-#, fuzzy
 msgid "In lambda function"
-msgstr "関数 `%s' 内:"
+msgstr "ラムダ関数内"
 
 #: cp/error.c:2842
-#, fuzzy, c-format
+#, c-format
 msgid "%s: In instantiation of %qs:\n"
-msgstr "%s: `%s' の初期化:\n"
+msgstr "%s: %qs のインスタンス内:\n"
 
 #: cp/error.c:2874
 #, c-format
@@ -3813,52 +3783,45 @@ msgstr ""
 
 #: cp/pt.c:1730
 msgid "candidates are:"
-msgstr ""
+msgstr "候補:"
 
 #: cp/pt.c:16515 cp/call.c:3072
 #, gcc-internal-format
 msgid "candidate is:"
 msgid_plural "candidates are:"
-msgstr[0] ""
+msgstr[0] "候補:"
 
 #: cp/rtti.c:536
-#, fuzzy
 msgid "target is not pointer or reference to class"
-msgstr "ポインタを参照として宣言できません"
+msgstr "ターゲットはクラスへのポインタまたは参照ではありません"
 
 #: cp/rtti.c:541
-#, fuzzy
 msgid "target is not pointer or reference to complete type"
-msgstr "不完全型へのポインタに対する演算"
+msgstr "ターゲットは完全型へのポインタまたは参照ではありません"
 
 #: cp/rtti.c:547
-#, fuzzy
 msgid "target is not pointer or reference"
-msgstr "ポインタを参照として宣言できません"
+msgstr "ターゲットはポインタまたは参照ではありません"
 
 #: cp/rtti.c:560
-#, fuzzy
 msgid "source is not a pointer"
-msgstr "`->' のベースオペランドがポインタではありません"
+msgstr "ソースはポインタではありません"
 
 #: cp/rtti.c:565
-#, fuzzy
 msgid "source is not a pointer to class"
-msgstr "ポインタは別名にならないとみなす"
+msgstr "ソースはクラスへのポインタではありません"
 
 #: cp/rtti.c:570
-#, fuzzy
 msgid "source is a pointer to incomplete type"
-msgstr "不完全型のポインタへの間接参照"
+msgstr "ソースは不完全型へのポインタです"
 
 #: cp/rtti.c:585
 msgid "source is not of class type"
 msgstr ""
 
 #: cp/rtti.c:590
-#, fuzzy
 msgid "source is of incomplete class type"
-msgstr "戻り値の型が不完全型です"
+msgstr ""
 
 #: cp/rtti.c:603
 msgid "conversion casts away constness"
@@ -3931,9 +3894,8 @@ msgid "Arithmetic NaN at %L"
 msgstr ""
 
 #: fortran/arith.c:108
-#, fuzzy
 msgid "Division by zero at %L"
-msgstr "#if でゼロ除算が発生しました"
+msgstr ""
 
 #: fortran/arith.c:111
 msgid "Array operands are incommensurate at %L"
