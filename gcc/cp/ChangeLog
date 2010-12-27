@@ -1,3 +1,9 @@
+2010-12-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/46626
+	* semantics.c (build_data_member_initialization): For CLEANUP_STMT
+	recurse into CLEANUP_BODY.
+
 2010-12-25  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR c++/15774

@@ -1,3 +1,8 @@
+2010-12-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/46626
+	* g++.dg/cpp0x/constexpr-base4.C: New test.
+
 2010-12-26  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/gnu-api-2-class.m: Xfail the test on Apple Darwin m64.
