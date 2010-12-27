@@ -1,3 +1,12 @@
+2010-12-27  Yao Qi  <yao@codesourcery.com>
+
+	Backport from mainline:
+	2010-10-14  Yao Qi  <yao@codesourcery.com>
+
+	PR target/45447
+	* config/arm/arm.c (arm_build_builtin_va_list): Assign
+	va_list_name to TYPE_STUB_DECL (va_list_type).
+
 2010-12-22 John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	Backport from mainline:
