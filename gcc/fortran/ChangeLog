@@ -1,3 +1,7 @@
+2010-12-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump-parse-tree.c (show_typespec):  Also show character kind.
+
 2010-12-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/31821
