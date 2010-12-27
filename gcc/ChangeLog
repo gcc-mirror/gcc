@@ -1,3 +1,8 @@
+2010-12-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/freebsd.opt (assert=, defsym=, profile, pthread,
+	rpath-link=, rpath=, soname=): New Driver options.
+
 2010-12-26  Martin Jambor  <mjambor@suse.cz>
 
 	* tree.c (get_binfo_at_offset): Use BINFO_TYPE instead of TREE_TYPE,
