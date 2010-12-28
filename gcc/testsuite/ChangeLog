@@ -1,3 +1,8 @@
+2010-12-28  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45827
+	* gfortran.dg/class_32.f90: New.
+
 2010-12-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/rdrand-1.c: Updated.

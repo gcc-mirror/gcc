@@ -1,3 +1,9 @@
+2010-12-28  Janus Weil  <janus@gcc.gnu.org>
+	    Daniel Franke  <dfranke@gcc.gnu.org>
+
+	PR fortran/45827
+	* module.c (mio_component_ref): Handle components of CLASS variables.
+
 2010-12-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* dump-parse-tree.c (show_typespec):  Also show character kind.
