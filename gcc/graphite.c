@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "diagnostic.h"
 #include "tree-flow.h"
 #include "tree-dump.h"
 #include "cfgloop.h"
