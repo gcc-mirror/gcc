@@ -2669,9 +2669,9 @@ tree-data-ref.o : tree-data-ref.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TREE_PASS_H) langhooks.h
 sese.o : sese.c sese.h $(CONFIG_H) $(SYSTEM_H) coretypes.h tree-pretty-print.h \
    $(TREE_FLOW_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) tree-pass.h value-prof.h
-graphite.o : graphite.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TREE_FLOW_H) \
-   $(TREE_DUMP_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) sese.h $(DBGCNT_H) \
-   graphite-ppl.h graphite-poly.h graphite-scop-detection.h \
+graphite.o : graphite.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(DIAGNOSTIC_H) \
+   $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) sese.h \
+   $(DBGCNT_H) graphite-ppl.h graphite-poly.h graphite-scop-detection.h \
    graphite-clast-to-gimple.h graphite-sese-to-poly.h
 graphite-blocking.o : graphite-blocking.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) \
