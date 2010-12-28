@@ -1,3 +1,9 @@
+2010-12-28  Richard Guenther  <rguenther@suse.de>
+
+	PR debug/46931
+	* tree-vect-loop-manip.c (slpeel_tree_peel_loop_to_edge): Update
+	SSA before removing dead stmts.
+
 2010-12-28  H.J. Lu  <hongjiu.lu@intel.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 

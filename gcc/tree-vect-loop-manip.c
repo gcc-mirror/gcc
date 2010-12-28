@@ -1442,6 +1442,9 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
   if (update_first_loop_count)
     slpeel_make_loop_iterate_ntimes (first_loop, first_niters);
 
+  BITMAP_FREE (definitions);
+  delete_update_ssa ();
+
   /* Remove all pattern statements from the loop copy.  They will confuse
      the expander if DCE is disabled.
      ???  The pattern recognizer should be split into an analysis and
@@ -1450,9 +1453,6 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
   remove_dead_stmts_from_loop (new_loop);
 
   adjust_vec_debug_stmts ();
-
-  BITMAP_FREE (definitions);
-  delete_update_ssa ();
 
   return new_loop;
 }
