@@ -98,9 +98,9 @@
 (define_asm_attributes
   [(set_attr "type" "unknown")
 ; length for asm is the max length per statement.  That would be
-; 5 words, for a floating point instruction with a literal constant
-; argument.
-   (set_attr "length" "10")])
+; 3 words, for a two-operand instruction with extra word addressing
+; modes for both operands.
+   (set_attr "length" "6")])
 
 ;; define function units
 
@@ -114,8 +114,8 @@
 ;; compare
 (define_insn "*cmpdf"
   [(set (cc0)
-	(compare (match_operand:DF 0 "general_operand" "fR,fR,Q,Q,F")
-		 (match_operand:DF 1 "register_or_const0_operand" "G,a,G,a,a")))]
+	(compare (match_operand:DF 0 "general_operand" "fR,fR,Q,QF")
+		 (match_operand:DF 1 "register_or_const0_operand" "G,a,G,a")))]
   "TARGET_FPU"
   "*
 {
@@ -125,7 +125,7 @@
   else
     return \"{cmpd|cmpf} %0, %1\;cfcc\";
 }"
-  [(set_attr "length" "4,4,6,6,12")]) 
+  [(set_attr "length" "4,4,6,6")]) 
 
 (define_insn "*cmp<mode>"
   [(set (cc0)
@@ -291,7 +291,7 @@
 
 (define_insn "movdf"
   [(set (match_operand:DF 0 "float_nonimm_operand" "=a,fR,a,Q,g")
-        (match_operand:DF 1 "float_operand" "fFR,a,Q,a,g"))]
+        (match_operand:DF 1 "float_operand" "fR,a,FQ,a,g"))]
   "TARGET_FPU"
   "* if (which_alternative ==0 || which_alternative == 2)
        return \"ldd %1, %0\";
@@ -299,12 +299,12 @@
        return \"std %1, %0\";
      else 
        return output_move_multiple (operands); "
-;; just a guess..
-  [(set_attr "length" "2,2,10,10,32")])
+;; last one is worst-case
+  [(set_attr "length" "2,2,4,4,24")])
 
 (define_insn "movsf"
   [(set (match_operand:SF 0 "float_nonimm_operand" "=a,fR,a,Q,g")
-        (match_operand:SF 1 "float_operand" "fFR,a,Q,a,g"))]
+        (match_operand:SF 1 "float_operand" "fR,a,FQ,a,g"))]
   "TARGET_FPU"
   "* if (which_alternative ==0 || which_alternative == 2)
        return \"{ldcfd|movof} %1, %0\";
@@ -312,8 +312,8 @@
        return \"{stcdf|movfo} %1, %0\";
      else 
        return output_move_multiple (operands); "
-;; just a guess..
-  [(set_attr "length" "2,2,10,10,16")])
+;; last one is worst-case
+  [(set_attr "length" "2,2,4,4,12")])
 
 ;; maybe fiddle a bit with move_ratio, then 
 ;; let constraints only accept a register ...
@@ -607,12 +607,12 @@
 ;;- add instructions
 
 (define_insn "adddf3"
-  [(set (match_operand:DF 0 "register_operand" "=a,a,a")
-	(plus:DF (match_operand:DF 1 "register_operand" "%0,0,0")
-		 (match_operand:DF 2 "general_operand" "fR,Q,F")))]
+  [(set (match_operand:DF 0 "register_operand" "=a,a")
+	(plus:DF (match_operand:DF 1 "register_operand" "%0,0")
+		 (match_operand:DF 2 "general_operand" "fR,QF")))]
   "TARGET_FPU"
   "{addd|addf} %2, %0"
-  [(set_attr "length" "2,4,10")])
+  [(set_attr "length" "2,4")])
 
 (define_insn "adddi3"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=&r,r,o,o")
@@ -1261,12 +1261,12 @@
 ;;- multiply 
 
 (define_insn "muldf3"
-  [(set (match_operand:DF 0 "register_operand" "=a,a,a")
-	(mult:DF (match_operand:DF 1 "register_operand" "%0,0,0")
-		 (match_operand:DF 2 "float_operand" "fR,Q,F")))]
+  [(set (match_operand:DF 0 "register_operand" "=a,a")
+	(mult:DF (match_operand:DF 1 "register_operand" "%0,0")
+		 (match_operand:DF 2 "float_operand" "fR,QF")))]
   "TARGET_FPU"
   "{muld|mulf} %2, %0"
-  [(set_attr "length" "2,4,10")])
+  [(set_attr "length" "2,4")])
 
 ;; 16 bit result multiply:
 ;; currently we multiply only into odd registers, so we don't use two 
@@ -1313,12 +1313,12 @@
 
 ;;- divide
 (define_insn "divdf3"
-  [(set (match_operand:DF 0 "register_operand" "=a,a,a")
-	(div:DF (match_operand:DF 1 "register_operand" "0,0,0")
-		(match_operand:DF 2 "general_operand" "fR,Q,F")))]
+  [(set (match_operand:DF 0 "register_operand" "=a,a")
+	(div:DF (match_operand:DF 1 "register_operand" "0,0")
+		(match_operand:DF 2 "general_operand" "fR,QF")))]
   "TARGET_FPU"
   "{divd|divf} %2, %0"
-  [(set_attr "length" "2,4,10")])
+  [(set_attr "length" "2,4")])
 
 	 
 (define_expand "divhi3"
