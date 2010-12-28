@@ -2311,6 +2311,9 @@ mio_component_ref (gfc_component **cp, gfc_symbol *sym)
     {
       mio_internal_string (name);
 
+      if (sym && sym->attr.is_class)
+	sym = sym->components->ts.u.derived;
+
       /* It can happen that a component reference can be read before the
 	 associated derived type symbol has been loaded. Return now and
 	 wait for a later iteration of load_needed.  */
