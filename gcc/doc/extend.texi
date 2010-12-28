@@ -9381,9 +9381,9 @@ used.  All of them generate the machine instruction that is part of the
 name.
 
 @smallexample
-unsigned short __builtin_ia32_rdrand16 (void)
-unsigned int __builtin_ia32_rdrand32 (void)
-unsigned long long __builtin_ia32_rdrand64 (void)
+unsigned int __builtin_ia32_rdrand16_step (unsigned short *)
+unsigned int __builtin_ia32_rdrand32_step (unsigned int *)
+unsigned int __builtin_ia32_rdrand64_step (unsigned long long *)
 @end smallexample
 
 The following built-in functions are available when @option{-msse4a} is used.

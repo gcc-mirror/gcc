@@ -24142,9 +24142,9 @@ enum ix86_builtins
   IX86_BUILTIN_WRGSBASE64,
 
   /* RDRND instructions.  */
-  IX86_BUILTIN_RDRAND16,
-  IX86_BUILTIN_RDRAND32,
-  IX86_BUILTIN_RDRAND64,
+  IX86_BUILTIN_RDRAND16_STEP,
+  IX86_BUILTIN_RDRAND32_STEP,
+  IX86_BUILTIN_RDRAND64_STEP,
 
   /* F16C instructions.  */
   IX86_BUILTIN_CVTPH2PS,
@@ -24435,11 +24435,6 @@ static const struct builtin_description bdesc_special_args[] =
   { OPTION_MASK_ISA_FSGSBASE | OPTION_MASK_ISA_64BIT, CODE_FOR_wrfsbasedi, "__builtin_ia32_wrfsbase64", IX86_BUILTIN_WRFSBASE64, UNKNOWN, (int) VOID_FTYPE_UINT64 },
   { OPTION_MASK_ISA_FSGSBASE | OPTION_MASK_ISA_64BIT, CODE_FOR_wrgsbasesi, "__builtin_ia32_wrgsbase32", IX86_BUILTIN_WRGSBASE32, UNKNOWN, (int) VOID_FTYPE_UNSIGNED },
   { OPTION_MASK_ISA_FSGSBASE | OPTION_MASK_ISA_64BIT, CODE_FOR_wrgsbasedi, "__builtin_ia32_wrgsbase64", IX86_BUILTIN_WRGSBASE64, UNKNOWN, (int) VOID_FTYPE_UINT64 },
-
-  /* RDRND */
-  { OPTION_MASK_ISA_RDRND, CODE_FOR_rdrandhi, "__builtin_ia32_rdrand16", IX86_BUILTIN_RDRAND16, UNKNOWN, (int) UINT16_FTYPE_VOID },
-  { OPTION_MASK_ISA_RDRND, CODE_FOR_rdrandsi, "__builtin_ia32_rdrand32", IX86_BUILTIN_RDRAND32, UNKNOWN, (int) UNSIGNED_FTYPE_VOID },
-  { OPTION_MASK_ISA_RDRND | OPTION_MASK_ISA_64BIT, CODE_FOR_rdranddi, "__builtin_ia32_rdrand64", IX86_BUILTIN_RDRAND64, UNKNOWN, (int) UINT64_FTYPE_VOID },
 };
 
 /* Builtins with variable number of arguments.  */
@@ -25447,6 +25442,15 @@ ix86_init_mmx_sse_builtins (void)
   /* PCLMUL */
   def_builtin_const (OPTION_MASK_ISA_PCLMUL, "__builtin_ia32_pclmulqdq128",
 		     V2DI_FTYPE_V2DI_V2DI_INT, IX86_BUILTIN_PCLMULQDQ128);
+
+  /* RDRND */
+  def_builtin (OPTION_MASK_ISA_RDRND, "__builtin_ia32_rdrand16_step",
+	       INT_FTYPE_PUSHORT, IX86_BUILTIN_RDRAND16_STEP);
+  def_builtin (OPTION_MASK_ISA_RDRND, "__builtin_ia32_rdrand32_step",
+	       INT_FTYPE_PUNSIGNED, IX86_BUILTIN_RDRAND32_STEP);
+  def_builtin (OPTION_MASK_ISA_RDRND | OPTION_MASK_ISA_64BIT,
+	       "__builtin_ia32_rdrand64_step", INT_FTYPE_PULONGLONG,
+	       IX86_BUILTIN_RDRAND64_STEP);
 
   /* MMX access to the vec_init patterns.  */
   def_builtin_const (OPTION_MASK_ISA_MMX, "__builtin_ia32_vec_init_v2si",
@@ -26703,7 +26707,6 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       break;
     case UINT64_FTYPE_VOID:
     case UNSIGNED_FTYPE_VOID:
-    case UINT16_FTYPE_VOID:
       nargs = 0;
       klass = load;
       memory = 0;
@@ -27214,6 +27217,51 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
             emit_insn (pat);
           return target;
         }
+
+    case IX86_BUILTIN_RDRAND16_STEP:
+      icode = CODE_FOR_rdrandhi_1;
+      mode0 = HImode;
+      goto rdrand_step;
+
+    case IX86_BUILTIN_RDRAND32_STEP:
+      icode = CODE_FOR_rdrandsi_1;
+      mode0 = SImode;
+      goto rdrand_step;
+
+    case IX86_BUILTIN_RDRAND64_STEP:
+      icode = CODE_FOR_rdranddi_1;
+      mode0 = DImode;
+
+rdrand_step:
+      op0 = gen_reg_rtx (mode0);
+      emit_insn (GEN_FCN (icode) (op0));
+
+      op1 = gen_reg_rtx (SImode);
+      emit_move_insn (op1, CONST1_RTX (SImode));
+
+      /* Emit SImode conditional move.  */
+      if (mode0 == HImode)
+	{
+	  op2 = gen_reg_rtx (SImode);
+	  emit_insn (gen_zero_extendhisi2 (op2, op0));
+	}
+      else if (mode0 == SImode)
+	op2 = op0;
+      else
+	op2 = gen_rtx_SUBREG (SImode, op0, 0);
+
+      pat = gen_rtx_GEU (VOIDmode, gen_rtx_REG (CCCmode, FLAGS_REG),
+			 const0_rtx);
+      emit_insn (gen_rtx_SET (VOIDmode, op1,
+			      gen_rtx_IF_THEN_ELSE (SImode, pat, op2, op1)));
+      emit_move_insn (target, op1);
+
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      op1 = expand_normal (arg0);
+      if (!address_operand (op1, VOIDmode))
+	op1 = copy_addr_to_reg (op1);
+      emit_move_insn (gen_rtx_MEM (mode0, op1), op0);
+      return target;
 
     default:
       break;

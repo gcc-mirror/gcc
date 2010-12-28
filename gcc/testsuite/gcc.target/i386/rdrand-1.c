@@ -1,12 +1,12 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mrdrnd " } */
-/* { dg-final { scan-assembler "rdrand\[ \t]+(%|)ax" } } */
-/* { dg-final { scan-assembler "jnc\[ \t]+" } } */
+/* { dg-options "-O2 -mrdrnd -dp" } */
+/* { dg-final { scan-assembler-times "rdrandhi_1" 1 } } */
+/* { dg-final { scan-assembler-times "\\*movsicc_noc" 1 } } */
 
 #include <immintrin.h>
 
-unsigned short
-read_rdrand16 (void)
+int
+foo (unsigned short *x)
 {
-  return _rdrand_u16 ();
+  return _rdrand16_step (x);
 }
