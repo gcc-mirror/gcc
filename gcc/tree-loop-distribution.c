@@ -45,20 +45,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "tree.h"
-#include "basic-block.h"
 #include "tree-flow.h"
-#include "tree-dump.h"
-#include "timevar.h"
 #include "cfgloop.h"
 #include "tree-chrec.h"
 #include "tree-data-ref.h"
 #include "tree-scalar-evolution.h"
 #include "tree-pass.h"
-#include "lambda.h"
-#include "langhooks.h"
-#include "tree-vectorizer.h"
 
 /* If bit I is not set, it means that this node represents an
    operation that has already been performed, and that should not be
