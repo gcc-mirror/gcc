@@ -1,3 +1,9 @@
+2010-12-28  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/47073
+	* objc-act.c (encode_method_prototype): Fixed both location and
+	format string of error "type %qT does not have a known size".
+
 2010-12-26  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* config-lang.in (gtfiles): Added c-family/c-cppbuiltin.c.

@@ -1,3 +1,8 @@
+2010-12-28  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/47073
+	* objc.dg/incomplete-type-1.m: New test.
+
 2010-12-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/46626
