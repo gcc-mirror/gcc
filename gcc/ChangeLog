@@ -1,3 +1,54 @@
+2010-12-28  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* Makefile.in (TREE_VECTORIZER_H): Removed duplicate definition.
+	(tree-browser.o): Update dependences.
+	(omega.o): Same.
+	(tree-chrec.o): Same.
+	(tree-scalar-evolution.o): Same.
+	(tree-data-ref.o): Same.
+	(sese.o): Same.
+	(graphite.o): Same.
+	(graphite-blocking.o): Same.
+	(graphite-clast-to-gimple.o): Same.
+	(graphite-cloog-util.o): Same.
+	(graphite-dependences.o): Same.
+	(graphite-flattening.o): Same.
+	(graphite-interchange.o): Same.
+	(graphite-poly.o): Same.
+	(graphite-ppl.o): Same.
+	(graphite-scop-detection.o): Same.
+	(graphite-sese-to-poly.o): Same.
+	(tree-loop-linear.o): Same.
+	(tree-loop-distribution.o): Same.
+	(tree-parloops.o): Same.
+	(lambda-mat.o): Same.
+	(lambda-trans.o): Same.
+	(lambda-code.o): Same.
+	* tree-browser.o: Do not include unnecessary .h files.
+	* omega.o: Same.
+	* tree-chrec.o: Same.
+	* tree-scalar-evolution.o: Same.
+	* tree-data-ref.o: Same.
+	* sese.o: Same.
+	* graphite.o: Same.
+	* graphite-blocking.o: Same.
+	* graphite-clast-to-gimple.o: Same.
+	* graphite-cloog-util.o: Same.
+	* graphite-dependences.o: Same.
+	* graphite-flattening.o: Same.
+	* graphite-interchange.o: Same.
+	* graphite-poly.o: Same.
+	* graphite-ppl.o: Same.
+	* graphite-scop-detection.o: Same.
+	* graphite-sese-to-poly.o: Same.
+	* tree-loop-linear.o: Same.
+	* tree-loop-distribution.o: Same.
+	* tree-parloops.o: Same.
+	* lambda-mat.o: Same.
+	* lambda-trans.o: Same.
+	* lambda-code.o: Same.
+	* graphite.h: Removed.
+
 2010-12-28  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11.md: Correct length attribute for float
