@@ -1,3 +1,7 @@
+2010-12-28  Jie Zhang  <jie@codesourcery.com>
+
+	* builtins.c (SLOW_UNALIGNED_ACCESS): Remove.
+
 2010-12-27  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/freebsd.opt (assert=, defsym=, profile, pthread,
