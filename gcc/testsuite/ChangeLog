@@ -1,5 +1,10 @@
 2010-12-28  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc.dg/class-extension-4.m: New.
+	* obj-c++.dg/class-extension-4.mm: New.
+
+2010-12-28  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	PR objc/47073
 	* objc.dg/incomplete-type-1.m: New test.
 

@@ -763,6 +763,23 @@ objc_start_category_interface (tree klass, tree categ,
     {
       if (flag_objc1_only)
 	error_at (input_location, "class extensions are not available in Objective-C 1.0");
+      else
+	{
+	  /* Iterate over all the classes and categories implemented
+	     up to now in this compilation unit.  */
+	  struct imp_entry *t;
+
+	  for (t = imp_list; t; t = t->next)
+	    {
+	      /* If we find a class @implementation with the same name
+		 as the one we are extending, produce an error.  */
+	    if (TREE_CODE (t->imp_context) == CLASS_IMPLEMENTATION_TYPE
+		&& IDENTIFIER_POINTER (CLASS_NAME (t->imp_context)) == IDENTIFIER_POINTER (klass))
+	      error_at (input_location, 
+			"class extension for class %qE declared after its %<@implementation%>",
+			klass);
+	    }
+	}
     }
   objc_interface_context
     = start_class (CATEGORY_INTERFACE_TYPE, klass, categ, protos, NULL_TREE);
