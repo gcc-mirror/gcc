@@ -1,5 +1,10 @@
 2010-12-28  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-act.c (objc_start_category_interface): Produce an error if
+	a class extension is found after the class @implementation.
+
+2010-12-28  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	PR objc/47073
 	* objc-act.c (encode_method_prototype): Fixed both location and
 	format string of error "type %qT does not have a known size".
