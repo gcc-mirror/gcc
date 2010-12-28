@@ -1,12 +1,12 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mrdrnd " } */
-/* { dg-final { scan-assembler "rdrand\[ \t]+(%|)eax" } } */
-/* { dg-final { scan-assembler "jnc\[ \t]+" } } */
+/* { dg-options "-O2 -mrdrnd -dp" } */
+/* { dg-final { scan-assembler-times "rdrandsi_1" 1 } } */
+/* { dg-final { scan-assembler-times "\\*movsicc_noc" 1 } } */
 
 #include <immintrin.h>
 
-unsigned int
-read_rdrand32 (void)
+int
+foo (unsigned int *x)
 {
-  return _rdrand_u32 ();
+  return _rdrand32_step (x);
 }

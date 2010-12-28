@@ -1,3 +1,43 @@
+2010-12-28  H.J. Lu  <hongjiu.lu@intel.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-builtin-types.def (PUSHORT): New.
+	(INT_FTYPE_PUSHORT): Likewise.
+	(INT_FTYPE_PUNSIGNED): Likewise.
+	(INT_FTYPE_PULONGLONG): Likewise.
+	Remove "DEF_FUNCTION_TYPE (UINT16)".
+
+	* config/i386/i386.c (ix86_builtins): Remove
+	IX86_BUILTIN_RDRAND16, IX86_BUILTIN_RDRAND32 and
+	IX86_BUILTIN_RDRAND64.  Add IX86_BUILTIN_RDRAND16_STEP,
+	IX86_BUILTIN_RDRAND32_STEP and IX86_BUILTIN_RDRAND64_STEP.
+	(bdesc_special_args): Remove IX86_BUILTIN_RDRAND16,
+	IX86_BUILTIN_RDRAND32 and IX86_BUILTIN_RDRAND64.
+	(ix86_init_mmx_sse_builtins): Handle IX86_BUILTIN_RDRAND16_STEP,
+	IX86_BUILTIN_RDRAND32_STEP and IX86_BUILTIN_RDRAND64_STEP.
+	(ix86_expand_builtin): Likewise.
+	(ix86_expand_special_args_builtin): Remove UINT16_FTYPE_VOID.
+
+	* config/i386/i386.md (UNSPEC_RDRAND): New.
+	(UNSPECV_RDRAND): Removed.
+	(rdrand<mode>): Likewise.
+	(rdrand<mode>_1): Also set FLAGS_REG.  Replace UNSPECV_RDRAND
+	with UNSPEC_RDRAND.
+
+	* config/i386/immintrin.h (_rdrand_u16): Removed.
+	(_rdrand_u32): Likewise.
+	(_rdrand_u64): Likewise.
+	(_rdrand16_step): New.
+	(_rdrand32_step): Likewise.
+	(_rdrand64_step): Likewise.
+
+	* doc/extend.texi (__builtin_ia32_rdrand16): Removed.
+	(__builtin_ia32_rdrand32): Likewise.
+	(__builtin_ia32_rdrand64): Likewise.
+	(__builtin_ia32_rdrand16_step): New.
+	(__builtin_ia32_rdrand32_step): Likewise.
+	(__builtin_ia32_rdrand64_step): Likewise.
+
 2010-12-28  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* Makefile.in (graphite.o): Add dependence on DIAGNOSTIC_H.

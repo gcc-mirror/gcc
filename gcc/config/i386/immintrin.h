@@ -57,18 +57,18 @@
 #endif
 
 #ifdef __RDRND__
-extern __inline unsigned short
+extern __inline int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_rdrand_u16 (void)
+_rdrand16_step (unsigned short *__P)
 {
-  return __builtin_ia32_rdrand16 ();
+  return __builtin_ia32_rdrand16_step (__P);
 }
 
-extern __inline unsigned int
+extern __inline int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_rdrand_u32 (void)
+_rdrand32_step (unsigned int *__P)
 {
-  return __builtin_ia32_rdrand32 ();
+  return __builtin_ia32_rdrand32_step (__P);
 }
 #endif /* __RDRND__ */
 
@@ -132,11 +132,11 @@ _writegsbase_u64 (unsigned long long __B)
 #endif /* __FSGSBASE__ */
 
 #ifdef __RDRND__
-extern __inline unsigned long long
+extern __inline int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_rdrand_u64 (void)
+_rdrand64_step (unsigned long long *__P)
 {
-  return __builtin_ia32_rdrand64 ();
+  return __builtin_ia32_rdrand64_step (__P);
 }
 #endif /* __RDRND__ */
 #endif /* __x86_64__  */

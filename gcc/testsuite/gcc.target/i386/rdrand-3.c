@@ -1,13 +1,13 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-options "-O2 -mrdrnd " } */
-/* { dg-final { scan-assembler "rdrand\[ \t]+(%|)rax" } } */
-/* { dg-final { scan-assembler "jnc\[ \t]+" } } */
+/* { dg-options "-O2 -mrdrnd -dp" } */
+/* { dg-final { scan-assembler-times "rdranddi_1" 1 } } */
+/* { dg-final { scan-assembler-times "\\*movsicc_noc" 1 } } */
 
 #include <immintrin.h>
 
-unsigned long long
-read_rdrand64 (void)
+int
+foo (unsigned long long *x)
 {
-  return _rdrand_u64 ();
+  return _rdrand64_step (x);
 }
