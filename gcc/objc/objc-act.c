@@ -5965,8 +5965,9 @@ encode_method_prototype (tree method_decl)
       /* If a type size is not known, bail out.  */
       if (sz < 0)
 	{
-	  error ("type %q+D does not have a known size",
-		 type);
+	  error_at (DECL_SOURCE_LOCATION (method_decl),
+		    "type %qT does not have a known size",
+		    type);
 	  /* Pretend that the encoding succeeded; the compilation will
 	     fail nevertheless.  */
 	  goto finish_encoding;
