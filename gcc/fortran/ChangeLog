@@ -1,3 +1,8 @@
+2010-12-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump_parse_tree.c (show_components):  Show
+	ALLOCATABLE.
+
 2010-12-29  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/46838

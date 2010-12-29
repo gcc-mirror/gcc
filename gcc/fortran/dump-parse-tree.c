@@ -694,6 +694,8 @@ show_components (gfc_symbol *sym)
     {
       fprintf (dumpfile, "(%s ", c->name);
       show_typespec (&c->ts);
+      if (c->attr.allocatable)
+	fputs (" ALLOCATABLE", dumpfile);
       if (c->attr.pointer)
 	fputs (" POINTER", dumpfile);
       if (c->attr.proc_pointer)
