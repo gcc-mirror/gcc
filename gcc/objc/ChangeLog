@@ -1,5 +1,13 @@
 2010-12-29  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	PR objc/47118
+	* objc-act.c (objc_build_synchronized): Check the argument of
+	@synchronized and emit an appropriate error if it is not a valid
+	Objective-C object.  Deal gracefully with that case.  Updated
+	comments and variable names.
+
+2010-12-29  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	PR objc/47075
 	* objc-act.h (PROPERTY_REF_DEPRECATED_GETTER): New.
 	* objc-tree.def (PROPERTY_REF): Increased the number of operands
