@@ -1,3 +1,8 @@
+2010-12-30  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/enhanced-proto-2.m: Updated.
+	* obj-c++.dg/enhanced-proto-2.mm: Updated.
+
 2010-12-29  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/47118

@@ -1,3 +1,10 @@
+2010-12-30  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_set_method_opt): Tidy up error messages.  In
+	particular, explicitly mention whether the error is due to the
+	@optional or @required keyword instead of mentioning
+	"@optional/@required".
+
 2010-12-29  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/47118
