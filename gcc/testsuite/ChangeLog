@@ -1,3 +1,9 @@
+2010-12-29  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/47118
+	* objc.dg/sync-3.m: New.
+	* obj-c++.dg/sync-3.mm: New.
+
 2010-12-29  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/46838

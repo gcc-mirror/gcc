@@ -5630,28 +5630,59 @@ objc_build_throw_stmt (location_t loc, tree throw_expr)
 }
 
 tree
-objc_build_synchronized (location_t start_locus, tree mutex, tree body)
+objc_build_synchronized (location_t start_locus, tree object_expr, tree body)
 {
-  tree args, call;
+  /* object_expr should never be NULL; but in case it is, convert it to
+     error_mark_node.  */
+  if (object_expr == NULL)
+    object_expr = error_mark_node;
 
-  /* First lock the mutex.  */
-  mutex = save_expr (mutex);
-  args = tree_cons (NULL, mutex, NULL);
-  call = build_function_call (input_location,
-			      objc_sync_enter_decl, args);
-  SET_EXPR_LOCATION (call, start_locus);
-  add_stmt (call);
+  /* Validate object_expr.  If not valid, set it to error_mark_node.  */
+  if (object_expr != error_mark_node)
+    {
+      if (!objc_type_valid_for_messaging (TREE_TYPE (object_expr), true))
+	{
+	  error_at (start_locus, "%<@synchronized%> argument is not an object");
+	  object_expr = error_mark_node;
+	}
+    }
+  
+  if (object_expr == error_mark_node)
+    {
+      /* If we found an error, we simply ignore the '@synchronized'.
+	 Compile the body so we can keep going with minimal
+	 casualties.  */
+      return add_stmt (body);
+    }
+  else
+    {
+      tree call;
+      tree args;
 
-  /* Build the mutex unlock.  */
-  args = tree_cons (NULL, mutex, NULL);
-  call = build_function_call (input_location,
-			      objc_sync_exit_decl, args);
-  SET_EXPR_LOCATION (call, input_location);
+      /* objc_sync_enter (object_expr); */      
+      object_expr = save_expr (object_expr);
+      args = tree_cons (NULL, object_expr, NULL);
+      call = build_function_call (input_location,
+				  objc_sync_enter_decl, args);
+      SET_EXPR_LOCATION (call, start_locus);
+      add_stmt (call);
 
-  /* Put the that and the body in a TRY_FINALLY.  */
-  objc_begin_try_stmt (start_locus, body);
-  objc_build_finally_clause (input_location, call);
-  return objc_finish_try_stmt ();
+      /* Build "objc_sync_exit (object_expr);" but do not add it yet;
+	 it goes inside the @finalize() clause.  */
+      args = tree_cons (NULL, object_expr, NULL);
+      call = build_function_call (input_location,
+				  objc_sync_exit_decl, args);
+      SET_EXPR_LOCATION (call, input_location);
+
+      /* @try { body; } */
+      objc_begin_try_stmt (start_locus, body);
+      
+      /* @finally { objc_sync_exit (object_expr); } */
+      objc_build_finally_clause (input_location, call);
+      
+      /* End of try statement.  */
+      return objc_finish_try_stmt ();
+    }
 }
 
 
