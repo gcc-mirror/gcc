@@ -1,3 +1,25 @@
+2010-12-29  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/47075
+	* objc-act.h (PROPERTY_REF_DEPRECATED_GETTER): New.
+	* objc-tree.def (PROPERTY_REF): Increased the number of operands
+	from 3 to 4.
+	* objc-act.c (objc_finish_message_expr): Added optional argument
+	allowing to return the deprecated method prototype for deprecated
+	methods, instead of immediately emitting the deprecation warning.
+	(objc_maybe_build_component_ref): Do not warn for a deprecated
+	property.  When building the getter call, get the deprecated
+	method prototype from objc_finish_message_expr() and put it into
+	the PROPERTY_REF.
+	(objc_build_class_component_ref): Same change.
+	(finish_class): Mark the getter and setter as deprecated if they
+	are generated from a deprecated property.
+	(objc_gimplify_property_ref): If the getter is deprecated, emit a
+	deprecation warning.
+	(objc_build_setter_call, objc_build_message_expr,
+	objc_finish_foreach_loop): Updated call to
+	objc_finish_message_expr.
+	
 2010-12-28  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/47076

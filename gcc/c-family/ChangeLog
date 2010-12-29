@@ -1,3 +1,9 @@
+2010-12-29  Nicola Pero  <nicola@nicola.brainstorm.co.uk>
+
+	PR objc/47075
+	* c-objc.h (objc_finish_message_expr): Added argument to
+	prototype.
+
 2010-12-22  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* c-common.c (handle_nonnull_attribute, handle_sentinel_attribute):

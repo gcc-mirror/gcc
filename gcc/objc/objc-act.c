@@ -1468,7 +1468,7 @@ maybe_make_artificial_property_decl (tree interface, tree implementation,
       DECL_SOURCE_LOCATION (property_decl) = input_location;
       TREE_DEPRECATED (property_decl) = 0;
       DECL_ARTIFICIAL (property_decl) = 1;
-	      
+
       /* Add property-specific information.  Note that one of
 	 PROPERTY_GETTER_NAME or PROPERTY_SETTER_NAME may refer to a
 	 non-existing method; this will generate an error when the
@@ -1743,6 +1743,7 @@ objc_maybe_build_component_ref (tree object, tree property_ident)
     {
       tree expression;
       tree getter_call;
+      tree deprecated_method_prototype = NULL_TREE;
 
       /* We have an additional nasty problem here; if this
 	 PROPERTY_REF needs to become a 'getter', then the conversion
@@ -1770,14 +1771,16 @@ objc_maybe_build_component_ref (tree object, tree property_ident)
       if (PROPERTY_HAS_NO_GETTER (x))
 	getter_call = NULL_TREE;
       else
-	getter_call = objc_finish_message_expr (object,
-						PROPERTY_GETTER_NAME (x),
-						NULL_TREE);
+	getter_call = objc_finish_message_expr
+	  (object, PROPERTY_GETTER_NAME (x), NULL_TREE,
+	   /* Disable the immediate deprecation warning if the getter
+	      is deprecated, but record the fact that the getter is
+	      deprecated by setting PROPERTY_REF_DEPRECATED_GETTER to
+	      the method prototype.  */
+	   &deprecated_method_prototype);
 
-      if (TREE_DEPRECATED (x))
-	warn_deprecated_use (x, NULL_TREE);
-
-      expression = build3 (PROPERTY_REF, TREE_TYPE(x), object, x, getter_call);
+      expression = build4 (PROPERTY_REF, TREE_TYPE(x), object, x, getter_call,
+			   deprecated_method_prototype);
       SET_EXPR_LOCATION (expression, input_location);
       TREE_SIDE_EFFECTS (expression) = 1;
       
@@ -1839,17 +1842,17 @@ objc_build_class_component_ref (tree class_name, tree property_ident)
     {
       tree expression;
       tree getter_call;
+      tree deprecated_method_prototype = NULL_TREE;
 
       if (PROPERTY_HAS_NO_GETTER (x))
 	getter_call = NULL_TREE;
       else
-	getter_call = objc_finish_message_expr (object,
-						PROPERTY_GETTER_NAME (x),
-						NULL_TREE);
-      if (TREE_DEPRECATED (x))
-	warn_deprecated_use (x, NULL_TREE);
+	getter_call = objc_finish_message_expr
+	  (object, PROPERTY_GETTER_NAME (x), NULL_TREE,
+	   &deprecated_method_prototype);
 
-      expression = build3 (PROPERTY_REF, TREE_TYPE(x), object, x, getter_call);
+      expression = build4 (PROPERTY_REF, TREE_TYPE(x), object, x, getter_call,
+			   deprecated_method_prototype);
       SET_EXPR_LOCATION (expression, input_location);
       TREE_SIDE_EFFECTS (expression) = 1;
 
@@ -1906,7 +1909,7 @@ objc_build_setter_call (tree lhs, tree rhs)
       /* TODO: Decay arguments in C.  */
       setter = objc_finish_message_expr (object_expr, 
 					 PROPERTY_SETTER_NAME (property_decl),
-					 setter_argument);
+					 setter_argument, NULL);
       return setter;
     }
 
@@ -8029,7 +8032,7 @@ objc_build_message_expr (tree mess)
 			 method_params);
 #endif
 
-  return objc_finish_message_expr (receiver, sel_name, method_params);
+  return objc_finish_message_expr (receiver, sel_name, method_params, NULL);
 }
 
 /* Look up method SEL_NAME that would be suitable for receiver
@@ -8058,10 +8061,20 @@ lookup_method_in_hash_lists (tree sel_name, int is_class)
 /* The 'objc_finish_message_expr' routine is called from within
    'objc_build_message_expr' for non-template functions.  In the case of
    C++ template functions, it is called from 'build_expr_from_tree'
-   (in decl2.c) after RECEIVER and METHOD_PARAMS have been expanded.  */
+   (in decl2.c) after RECEIVER and METHOD_PARAMS have been expanded.
 
+   If the DEPRECATED_METHOD_PROTOTYPE argument is NULL, then we warn
+   if the method being used is deprecated.  If it is not NULL, instead
+   of deprecating, we set *DEPRECATED_METHOD_PROTOTYPE to the method
+   prototype that was used and is deprecated.  This is useful for
+   getter calls that are always generated when compiling dot-syntax
+   expressions, even if they may not be used.  In that case, we don't
+   want the warning immediately; we produce it (if needed) at gimplify
+   stage when we are sure that the deprecated getter is being
+   used.  */
 tree
-objc_finish_message_expr (tree receiver, tree sel_name, tree method_params)
+objc_finish_message_expr (tree receiver, tree sel_name, tree method_params,
+			  tree *deprecated_method_prototype)
 {
   tree method_prototype = NULL_TREE, rprotos = NULL_TREE, rtype;
   tree selector, retval, class_tree;
@@ -8278,7 +8291,12 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params)
 	 is often used precisely to turn off warnings associated with
 	 the object being of a particular class.  */
       if (TREE_DEPRECATED (method_prototype)  &&  rtype != NULL_TREE)
-	warn_deprecated_use (method_prototype, NULL_TREE);
+	{
+	  if (deprecated_method_prototype)
+	    *deprecated_method_prototype = method_prototype;
+	  else
+	    warn_deprecated_use (method_prototype, NULL_TREE);
+	}
     }
 
 
@@ -10743,6 +10761,7 @@ finish_class (tree klass)
 		  objc_add_method (objc_interface_context, getter_decl, false, true);
 		else
 		  objc_add_method (objc_interface_context, getter_decl, false, false);
+		TREE_DEPRECATED (getter_decl) = TREE_DEPRECATED (x);
 		METHOD_PROPERTY_CONTEXT (getter_decl) = x;
 	      }
 
@@ -10786,6 +10805,7 @@ finish_class (tree klass)
 		      objc_add_method (objc_interface_context, setter_decl, false, true);
 		    else
 		      objc_add_method (objc_interface_context, setter_decl, false, false);
+		    TREE_DEPRECATED (setter_decl) = TREE_DEPRECATED (x);
 		    METHOD_PROPERTY_CONTEXT (setter_decl) = x;
 		  }	       
 	      }
@@ -13118,6 +13138,14 @@ objc_gimplify_property_ref (tree *expr_p)
       return;
     }
 
+  if (PROPERTY_REF_DEPRECATED_GETTER (*expr_p))
+    {
+      /* PROPERTY_REF_DEPRECATED_GETTER contains the method prototype
+	 that is deprecated.  */
+      warn_deprecated_use (PROPERTY_REF_DEPRECATED_GETTER (*expr_p),
+			   NULL_TREE);
+    }
+
   call_exp = getter;
 #ifdef OBJCPLUS
   /* In C++, a getter which returns an aggregate value results in a
@@ -13511,7 +13539,7 @@ objc_finish_foreach_loop (location_t location, tree object_expression, tree coll
 				 tree_cons   /* __objc_foreach_items  */
 				 (NULL_TREE, objc_foreach_items_decl,
 				  tree_cons  /* 16 */
-				  (NULL_TREE, build_int_cst (NULL_TREE, 16), NULL_TREE))));
+				  (NULL_TREE, build_int_cst (NULL_TREE, 16), NULL_TREE))), NULL);
 #else
   /* In C, we need to decay the __objc_foreach_items array that we are passing.  */
   {
@@ -13524,7 +13552,7 @@ objc_finish_foreach_loop (location_t location, tree object_expression, tree coll
 				   tree_cons   /* __objc_foreach_items  */
 				   (NULL_TREE, default_function_array_conversion (location, array).value,
 				    tree_cons  /* 16 */
-				    (NULL_TREE, build_int_cst (NULL_TREE, 16), NULL_TREE))));
+				    (NULL_TREE, build_int_cst (NULL_TREE, 16), NULL_TREE))), NULL);
   }
 #endif
   t = build2 (MODIFY_EXPR, void_type_node, objc_foreach_batchsize_decl,
@@ -13685,7 +13713,7 @@ objc_finish_foreach_loop (location_t location, tree object_expression, tree coll
 				 tree_cons   /* __objc_foreach_items  */
 				 (NULL_TREE, objc_foreach_items_decl,
 				  tree_cons  /* 16 */
-				  (NULL_TREE, build_int_cst (NULL_TREE, 16), NULL_TREE))));
+				  (NULL_TREE, build_int_cst (NULL_TREE, 16), NULL_TREE))), NULL);
 #else
   /* In C, we need to decay the __objc_foreach_items array that we are passing.  */
   {
@@ -13698,7 +13726,7 @@ objc_finish_foreach_loop (location_t location, tree object_expression, tree coll
 				   tree_cons   /* __objc_foreach_items  */
 				   (NULL_TREE, default_function_array_conversion (location, array).value,
 				    tree_cons  /* 16 */
-				    (NULL_TREE, build_int_cst (NULL_TREE, 16), NULL_TREE))));
+				    (NULL_TREE, build_int_cst (NULL_TREE, 16), NULL_TREE))), NULL);
   }
 #endif
   t = build2 (MODIFY_EXPR, void_type_node, objc_foreach_batchsize_decl, 
