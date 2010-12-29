@@ -3648,7 +3648,8 @@ gfc_default_initializer (gfc_typespec *ts)
   /* See if we have a default initializer in this, but not in nested
      types (otherwise we could use gfc_has_default_initializer()).  */
   for (comp = ts->u.derived->components; comp; comp = comp->next)
-    if (comp->initializer || comp->attr.allocatable)
+    if (comp->initializer || comp->attr.allocatable
+	|| (comp->ts.type == BT_CLASS && CLASS_DATA (comp)->attr.allocatable))
       break;
 
   if (!comp)
@@ -3665,7 +3666,8 @@ gfc_default_initializer (gfc_typespec *ts)
       if (comp->initializer)
 	ctor->expr = gfc_copy_expr (comp->initializer);
 
-      if (comp->attr.allocatable)
+      if (comp->attr.allocatable
+	  || (comp->ts.type == BT_CLASS && CLASS_DATA (comp)->attr.allocatable))
 	{
 	  ctor->expr = gfc_get_expr ();
 	  ctor->expr->expr_type = EXPR_NULL;
