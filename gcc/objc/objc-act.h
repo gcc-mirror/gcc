@@ -144,6 +144,11 @@ typedef enum objc_property_assign_semantics {
    use it.  */
 #define PROPERTY_REF_GETTER_CALL(NODE) TREE_OPERAND (PROPERTY_REF_CHECK (NODE), 2)
 
+/* PROPERTY_REF_DEPRECATED_GETTER is normally set to NULL_TREE.  If
+   the property getter is deprecated, it is set to the method
+   prototype for it, which is used to generate the deprecation warning
+   when the getter is used.  */
+#define PROPERTY_REF_DEPRECATED_GETTER(NODE) TREE_OPERAND (PROPERTY_REF_CHECK (NODE), 3)
 
 /* CLASS_INTERFACE_TYPE, CLASS_IMPLEMENTATION_TYPE,
    CATEGORY_INTERFACE_TYPE, CATEGORY_IMPLEMENTATION_TYPE,

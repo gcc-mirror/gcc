@@ -1,3 +1,13 @@
+2010-12-29  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/47075
+	* objc.dg/property/at-property-deprecated-1.m: Updated.
+	* objc.dg/property/at-property-deprecated-2.m: New.
+	* objc.dg/property/dotsyntax-deprecated-1.m: New.
+	* obj-c++.dg/property/at-property-deprecated-1.mm: Updated.
+	* obj-c++.dg/property/at-property-deprecated-2.mm: New.
+	* obj-c++.dg/property/dotsyntax-deprecated-1.mm: New.
+
 2010-12-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/47068

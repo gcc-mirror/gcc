@@ -54,7 +54,7 @@ extern void objc_declare_alias (tree, tree);
 extern void objc_declare_class (tree);
 extern void objc_declare_protocols (tree, tree);
 extern tree objc_build_message_expr (tree);
-extern tree objc_finish_message_expr (tree, tree, tree);
+extern tree objc_finish_message_expr (tree, tree, tree, tree*);
 extern tree objc_build_selector_expr (location_t, tree);
 extern tree objc_build_protocol_expr (tree);
 extern tree objc_build_encode_expr (tree);
