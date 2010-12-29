@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.6-b20101218\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-12-18 20:02+0000\n"
-"PO-Revision-Date: 2010-12-27 23:04+0900\n"
+"PO-Revision-Date: 2010-12-29 12:02+0900\n"
 "Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -1147,7 +1147,7 @@ msgid "Unexpected type in write_state_scalar_type"
 msgstr "write_state_scalar_type 内で予期しない型です"
 
 #: gengtype-state.c:765
-#, fuzzy, c-format
+#, c-format
 msgid "Unexpected type in write_state_string_type"
 msgstr "write_state_string_type 内で予期しない型です"
 
@@ -1698,11 +1698,11 @@ msgstr ""
 
 #: params.def:72
 msgid "The maximum number of instructions in a single function eligible for inlining"
-msgstr ""
+msgstr "インライン化するのが適格であるとされる単一の関数内の最大命令数"
 
 #: params.def:84
 msgid "The maximum number of instructions when automatically inlining"
-msgstr ""
+msgstr "自動インライン化が行われる最大命令数"
 
 #: params.def:89
 msgid "The maximum number of instructions inline function can grow to via recursive inlining"
@@ -3102,7 +3102,7 @@ msgid "invalid operand to %%s code"
 msgstr "%%s コードへの無効な被演算子です"
 
 #: config/m32r/m32r.c:2126
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%p code"
 msgstr "%%p コードへの無効な被演算子です"
 
@@ -3307,7 +3307,7 @@ msgstr "-mvsx はハードウェア浮動小数を要求します"
 
 #: config/rs6000/rs6000.c:2792
 msgid "-mvsx and -mpaired are incompatible"
-msgstr "-mvsx と -mpaired は互換性がありません"
+msgstr "-mvsx と -mpaired は併用できません"
 
 #: config/rs6000/rs6000.c:2797
 msgid "-mvsx used with little endian code"
@@ -3319,7 +3319,7 @@ msgstr ""
 
 #: config/rs6000/rs6000.c:2803
 msgid "-mvsx and -mno-altivec are incompatible"
-msgstr "-mvsx と -mno-altivec は互換性がありません"
+msgstr "-mvsx と -mno-altivec は併用できません"
 
 #: config/rs6000/rs6000.c:2805
 msgid "-mno-altivec disables vsx"
@@ -3926,18 +3926,16 @@ msgstr ""
 
 #: fortran/error.c:738 fortran/error.c:792 fortran/error.c:827
 #: fortran/error.c:902
-#, fuzzy
 msgid "Warning:"
 msgstr "警告: "
 
 #: fortran/error.c:794 fortran/error.c:882 fortran/error.c:932
 msgid "Error:"
-msgstr ""
+msgstr "エラー:"
 
 #: fortran/error.c:956
-#, fuzzy
 msgid "Fatal Error:"
-msgstr "内部エラー: "
+msgstr "致命的エラー:"
 
 #: fortran/expr.c:607
 #, c-format
@@ -3968,6 +3966,11 @@ msgid ""
 "For more information about these matters, see the file named COPYING\n"
 "\n"
 msgstr ""
+"GNU Fortran comes with NO WARRANTY, to the extent permitted by law.\n"
+"You may redistribute copies of GNU Fortran\n"
+"under the terms of the GNU General Public License.\n"
+"For more information about these matters, see the file named COPYING\n"
+"\n"
 
 #: fortran/gfortranspec.c:459
 #, c-format
@@ -3980,21 +3983,19 @@ msgstr ""
 
 #: fortran/io.c:549
 msgid "Positive width required"
-msgstr ""
+msgstr "正の幅が必要です"
 
 #: fortran/io.c:550
-#, fuzzy
 msgid "Nonnegative width required"
-msgstr "ビットフィールド `%s' の幅が負の数です"
+msgstr "非負の幅が必要です"
 
 #: fortran/io.c:551
 msgid "Unexpected element '%c' in format string at %L"
 msgstr ""
 
 #: fortran/io.c:553
-#, fuzzy
 msgid "Unexpected end of format string"
-msgstr "終端されていないフォーマット文字列"
+msgstr "予期しない書式文字列終了です"
 
 #: fortran/io.c:554
 #, fuzzy
@@ -4062,9 +4063,8 @@ msgid "Syntax error in expression at %C"
 msgstr "式の整数がオーバーフローしました"
 
 #: fortran/module.c:985
-#, fuzzy
 msgid "Unexpected EOF"
-msgstr "';' が必要です"
+msgstr "予期しないファイル終端 (EOF) です"
 
 #: fortran/module.c:1017
 #, fuzzy
@@ -4286,19 +4286,19 @@ msgstr ""
 
 #: fortran/resolve.c:6412 fortran/resolve.c:6414
 msgid "DEALLOCATE object"
-msgstr ""
+msgstr "DEALLOCATE オブジェクト"
 
 #: fortran/resolve.c:6715 fortran/resolve.c:6717
 msgid "ALLOCATE object"
-msgstr ""
+msgstr "ALLOCATE オブジェクト"
 
 #: fortran/resolve.c:6896
 msgid "STAT variable"
-msgstr ""
+msgstr "STAT 変数"
 
 #: fortran/resolve.c:6939
 msgid "ERRMSG variable"
-msgstr ""
+msgstr "ERRMSG 変数"
 
 #: fortran/resolve.c:7954
 msgid "item in READ"
@@ -4360,9 +4360,8 @@ msgid "Invalid image number %d in SYNC IMAGES"
 msgstr ""
 
 #: fortran/trans-stmt.c:1079 fortran/trans-stmt.c:1360
-#, fuzzy
 msgid "Loop variable has been modified"
-msgstr "出力のパイプが閉じられました"
+msgstr ""
 
 #: fortran/trans-stmt.c:1219
 msgid "DO step value is zero"
@@ -4370,16 +4369,15 @@ msgstr ""
 
 #: fortran/trans.c:48
 msgid "Array reference out of bounds"
-msgstr ""
+msgstr "配列参照が範囲外です"
 
 #: fortran/trans.c:49
-#, fuzzy
 msgid "Incorrect function return value"
-msgstr "`noreturn' 関数が非 void 値を返しています"
+msgstr "正しくない関数戻り値です"
 
 #: fortran/trans.c:556
 msgid "Memory allocation failed"
-msgstr ""
+msgstr "メモリ配置に失敗しました"
 
 #: fortran/trans.c:639 fortran/trans.c:1039
 msgid "Allocation would exceed memory limit"
@@ -4400,14 +4398,14 @@ msgid "Attempt to DEALLOCATE unallocated '%s'"
 msgstr ""
 
 #: java/jcf-dump.c:1062
-#, fuzzy, c-format
+#, c-format
 msgid "Not a valid Java .class file.\n"
-msgstr "正常な Java .class ファイルではありません"
+msgstr "有効な Java .class ファイルではありません。\n"
 
 #: java/jcf-dump.c:1068
-#, fuzzy, c-format
+#, c-format
 msgid "error while parsing constant pool\n"
-msgstr "constant プールの構文解析中にエラーが発生しました"
+msgstr "constant プールを構文解析中にエラーが発生しました\n"
 
 #: java/jcf-dump.c:1074 java/jcf-parse.c:1433
 #, gcc-internal-format
@@ -4415,24 +4413,24 @@ msgid "error in constant pool entry #%d\n"
 msgstr "constant プール項目 #%d 内でエラーが発生しました\n"
 
 #: java/jcf-dump.c:1084
-#, fuzzy, c-format
+#, c-format
 msgid "error while parsing fields\n"
-msgstr "フィールドの構文解析中にエラーが発生しました"
+msgstr "フィールドを構文解析中にエラーが発生しました\n"
 
 #: java/jcf-dump.c:1090
-#, fuzzy, c-format
+#, c-format
 msgid "error while parsing methods\n"
-msgstr "メソッドの構文解析中にエラーが発生しました"
+msgstr "メソッドを構文解析中にエラーが発生しました\n"
 
 #: java/jcf-dump.c:1096
-#, fuzzy, c-format
+#, c-format
 msgid "error while parsing final attributes\n"
-msgstr "final 属性の構文解析中にエラーが発生しました"
+msgstr "final 属性を構文解析中にエラーが発生しました\n"
 
 #: java/jcf-dump.c:1133
 #, c-format
 msgid "Try 'jcf-dump --help' for more information.\n"
-msgstr ""
+msgstr "詳しくは 'jcf-dump --help' を参照してください。\n"
 
 #: java/jcf-dump.c:1140
 #, c-format
@@ -4440,6 +4438,8 @@ msgid ""
 "Usage: jcf-dump [OPTION]... CLASS...\n"
 "\n"
 msgstr ""
+"使用法: jcf-dump [OPTION]... CLASS...\n"
+"\n"
 
 #: java/jcf-dump.c:1141
 #, c-format
@@ -4447,31 +4447,33 @@ msgid ""
 "Display contents of a class file in readable form.\n"
 "\n"
 msgstr ""
+"可読形式でクラスファイルの内容を表示します。\n"
+"\n"
 
 #: java/jcf-dump.c:1142
-#, fuzzy, c-format
+#, c-format
 msgid "  -c                      Disassemble method bodies\n"
-msgstr "  -W                      特別な警告を有効にする\n"
+msgstr "  -c                      メソッド本体を逆アセンブルする\n"
 
 #: java/jcf-dump.c:1143
-#, fuzzy, c-format
+#, c-format
 msgid "  --javap                 Generate output in 'javap' format\n"
-msgstr "  --help                  この情報を表示する\n"
+msgstr "  --javap                 'javap' 形式で出力を生成する\n"
 
 #: java/jcf-dump.c:1145
 #, c-format
 msgid "  --classpath PATH        Set path to find .class files\n"
-msgstr ""
+msgstr "  --classpath PATH        .class ファイルを探すパスを設定する\n"
 
 #: java/jcf-dump.c:1146
-#, fuzzy, c-format
+#, c-format
 msgid "  -IDIR                   Append directory to class path\n"
-msgstr "  -B <directory>           <directory> をコンパイラの探索パスに追加する\n"
+msgstr "  -IDIR                   クラスパスにディレクトリを追加する\n"
 
 #: java/jcf-dump.c:1147
 #, c-format
 msgid "  --bootclasspath PATH    Override built-in class path\n"
-msgstr ""
+msgstr "  --bootclasspath PATH    組み込みクラスパスを上書きする\n"
 
 #: java/jcf-dump.c:1148
 #, c-format
@@ -4479,91 +4481,89 @@ msgid "  --extdirs PATH          Set extensions directory path\n"
 msgstr ""
 
 #: java/jcf-dump.c:1149
-#, fuzzy, c-format
+#, c-format
 msgid "  -o FILE                 Set output file name\n"
-msgstr "  -o <file>               出力を <file> に書き込む\n"
+msgstr "  -o FILE                 出力ファイル名を FILE に設定する\n"
 
 #: java/jcf-dump.c:1151
-#, fuzzy, c-format
+#, c-format
 msgid "  --help                  Print this help, then exit\n"
-msgstr "  --help                   このヘルプ情報を表示\n"
+msgstr "  --help                  このヘルプを表示して終了する\n"
 
 #: java/jcf-dump.c:1152
-#, fuzzy, c-format
+#, c-format
 msgid "  --version               Print version number, then exit\n"
-msgstr ""
-"  -V <version>             インストールされていれば <version> バージョン番号の\n"
-"                               gcc として実行する\n"
+msgstr "  --version               バージョン番号を表示して終了する\n"
 
 #: java/jcf-dump.c:1153
 #, c-format
 msgid "  -v, --verbose           Print extra information while running\n"
-msgstr ""
+msgstr "  -v, --verbose           実行時に追加の情報を表示する\n"
 
 #: java/jcf-dump.c:1155
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "For bug reporting instructions, please see:\n"
 "%s.\n"
 msgstr ""
-"\n"
-"バグレポートの手順は、以下を参照\n"
+"バグレポートの手順については\n"
+"  %s\n"
+"を参照してください。\n"
 
 #: java/jcf-dump.c:1183 java/jcf-dump.c:1251
 #, c-format
 msgid "jcf-dump: no classes specified\n"
-msgstr ""
+msgstr "jcf-dump: クラスが指定されていません\n"
 
 #: java/jcf-dump.c:1271
-#, fuzzy, c-format
+#, c-format
 msgid "Cannot open '%s' for output.\n"
-msgstr "%s を書き込み用に開けませんでした"
+msgstr "'%s' を出力用に開けませんでした。\n"
 
 #: java/jcf-dump.c:1316
 #, c-format
 msgid "bad format of .zip/.jar archive\n"
-msgstr ""
+msgstr ".zip/.jar 書庫の形式が間違っています。\n"
 
 #: java/jcf-dump.c:1434
 #, c-format
 msgid "Bad byte codes.\n"
-msgstr ""
+msgstr "間違ったバイトコードです。\n"
 
 #: java/jvgenmain.c:47
 #, c-format
 msgid "Usage: %s [OPTIONS]... CLASSNAMEmain [OUTFILE]\n"
-msgstr ""
+msgstr "使用法: %s [OPTIONS]... CLASSNAMEmain [OUTFILE]\n"
 
 #: java/jvgenmain.c:111
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Cannot open output file: %s\n"
-msgstr "出力ファイル `%s' を open できません"
+msgstr "%s: 出力ファイルを開けません: %s\n"
 
 #: java/jvgenmain.c:157
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Failed to close output file %s\n"
-msgstr "出力ファイル %s を開けませんでした.\n"
+msgstr "%s: 出力ファイル %s を閉じるのに失敗しました\n"
 
 #: java/lang-specs.h:33
 msgid "-fjni and -femit-class-files are incompatible"
-msgstr "-fjni と -femit-class-files は共存できません"
+msgstr "-fjni と -femit-class-files は併用できません"
 
 #: java/lang-specs.h:34
 msgid "-fjni and -femit-class-file are incompatible"
-msgstr "-fjini と -femit-class-file は共存できません"
+msgstr "-fjni と -femit-class-file は併用できません"
 
 #: java/lang-specs.h:35 java/lang-specs.h:36
 msgid "-femit-class-file should used along with -fsyntax-only"
-msgstr ""
+msgstr "-femit-class-file は -fsyntax-only に合わせて使用してください"
 
 #: config/i386/linux-unwind.h:186
 msgid "ax ; {int $0x80 | syscall"
 msgstr ""
 
 #: config/s390/tpf.h:120
-#, fuzzy
 msgid "static is not supported on TPF-OS"
-msgstr "-traditional は C++ では受け付けられません"
+msgstr "static は TPF-OS ではサポートされていません"
 
 #: config/mcore/mcore.h:54
 msgid "the m210 does not have little endian support"
@@ -4571,124 +4571,113 @@ msgstr "m210 はリトルエンディアンサポートを行なえません"
 
 #: config/darwin.h:241
 msgid "-current_version only allowed with -dynamiclib"
-msgstr ""
+msgstr "-current_version は -dynamiclib と併せてのみ使用できます"
 
 #: config/darwin.h:243
 msgid "-install_name only allowed with -dynamiclib"
-msgstr ""
+msgstr "-install_name は -dynamiclib と併せてのみ使用できます"
 
 #: config/darwin.h:248
-#, fuzzy
 msgid "-bundle not allowed with -dynamiclib"
-msgstr "-m64 指定モードでは -mlong-double-64 は許可されません"
+msgstr "-bundle は -dynamiclib と併せて使用できません"
 
 #: config/darwin.h:249
-#, fuzzy
 msgid "-bundle_loader not allowed with -dynamiclib"
-msgstr "-m64 指定モードでは -mlong-double-64 は許可されません"
+msgstr "-bundle_loader は -dynamiclib と併せて使用できません"
 
 #: config/darwin.h:250
-#, fuzzy
 msgid "-client_name not allowed with -dynamiclib"
-msgstr "-m64 指定モードでは -mlong-double-64 は許可されません"
+msgstr "-client_name は -dynamiclib と併せて使用できません"
 
 #: config/darwin.h:255
 msgid "-force_flat_namespace not allowed with -dynamiclib"
-msgstr ""
+msgstr "-force_flat_namespace は -dynamiclib と併せて使用できません"
 
 #: config/darwin.h:257
 msgid "-keep_private_externs not allowed with -dynamiclib"
-msgstr ""
+msgstr "-keep_private_externs は -dynamiclib と併せて使用できません"
 
 #: config/darwin.h:258
-#, fuzzy
 msgid "-private_bundle not allowed with -dynamiclib"
-msgstr "-m64 指定モードでは -mlong-double-64 は許可されません"
+msgstr "-private_bundle は -dynamiclib と併せて使用できません"
 
 #: fortran/lang-specs.h:55 fortran/lang-specs.h:69
-#, fuzzy
 msgid "gfortran does not support -E without -cpp"
-msgstr "GNU C は -E を伴わない -C を実装していません"
+msgstr "gfortran は -cpp 無しでの -E 使用をサポートしていません"
 
 #: config/sparc/freebsd.h:35 config/rs6000/sysv4.h:830
 #: config/i386/freebsd.h:98 config/ia64/freebsd.h:26 config/alpha/freebsd.h:34
 #: config/arm/freebsd.h:31
 msgid "consider using '-pg' instead of '-p' with gprof(1)"
-msgstr ""
+msgstr "gprof(1) を使うときは '-p' の代わりに '-pg' を使用してください"
 
 #: config/arc/arc.h:62 config/mips/mips.h:1172
 msgid "may not use both -EB and -EL"
-msgstr "-EB と -EL の両方を使うことはできません"
+msgstr "-EB と -EL の両方を使用することは出来ません"
 
 #: config/vax/netbsd-elf.h:51
-#, fuzzy
 msgid "the -shared option is not currently supported for VAX ELF"
-msgstr "組み込み関数 `%s' は現在サポートされていません"
+msgstr "-shared オプションは VAX ELF 用には現在はサポートされていません"
 
 #: config/vax/vax.h:50 config/vax/vax.h:51
-#, fuzzy
 msgid "profiling not supported with -mg"
-msgstr "-mg でのプロファイルは提供されません\n"
+msgstr "-mg でのプロファイルはサポートされていません"
 
 #: config/i386/mingw-w64.h:75 config/i386/mingw32.h:101
 #: config/i386/cygwin.h:116
 msgid "shared and mdll are not compatible"
-msgstr "shared と mdll とは共存できません"
+msgstr "shared と mdll は併用できません"
 
 #: ada/gcc-interface/lang-specs.h:33 gcc.c:746 java/jvspec.c:80
 msgid "-pg and -fomit-frame-pointer are incompatible"
-msgstr "-pg と -fomit-frame-pointer は共存できません"
+msgstr "-pg と -fomit-frame-pointer は併用できません"
 
 #: ada/gcc-interface/lang-specs.h:34
 msgid "-c or -S required for Ada"
-msgstr ""
+msgstr "Ada では -c または -S が必要です"
 
 #: config/vxworks.h:71
-#, fuzzy
 msgid "-Xbind-now and -Xbind-lazy are incompatible"
-msgstr "-membedded-pic と -mabicalls は共存できません"
+msgstr "-Xbind-now と -Xbind-lazy は併用できません"
 
 #: config/sparc/linux64.h:157 config/sparc/linux64.h:168
 #: config/sparc/netbsd-elf.h:122 config/sparc/netbsd-elf.h:141
 #: config/sparc/sol2-bi.h:240 config/sparc/sol2-bi.h:250
-#, fuzzy
 msgid "may not use both -m32 and -m64"
-msgstr "-mfp64 と -m4650 の両方を使うことはできません"
+msgstr "-m32 と -m64 の両方を使用することはできません"
 
 #: config/sparc/sol2-bi.h:212 config/sparc/sol2-bi.h:217
 #: config/sparc/sol2-gld-bi.h:50 config/sparc/sol2-gld-bi.h:55
-#, fuzzy
 msgid "does not support multilib"
-msgstr "%s は %s を受け付けません"
+msgstr "multilib はサポートしません"
 
 #: config/bfin/elf.h:54
-#, fuzzy
 msgid "no processor type specified for linking"
-msgstr "spec ファイルにリンクに関する spec がありません"
+msgstr "リンク用のプロセッサ型が指定されていません"
 
 #: config/arm/arm.h:178
 msgid "-msoft-float and -mhard_float may not be used together"
-msgstr "-msoft-float と -mhard_float は同時に使えません"
+msgstr "-msoft-float と -mhard_float は併用できません"
 
 #: config/arm/arm.h:180
 msgid "-mbig-endian and -mlittle-endian may not be used together"
-msgstr "-mbig-endian と -mlittle-endian は同時に使えません"
+msgstr "-mbig-endian と -mlittle-endian は併用できません"
 
 #: objc/lang-specs.h:31 objc/lang-specs.h:42
 msgid "GNU Objective C no longer supports traditional compilation"
-msgstr ""
+msgstr "GNU Objective C は古い (traditional) コンパイルを既にサポートしていません"
 
 #: objc/lang-specs.h:56
 msgid "objc-cpp-output is deprecated; please use objective-c-cpp-output instead"
-msgstr ""
+msgstr "objc-cpp-output は廃止されました。代わりに objective-c-cpp-output を使用してください"
 
 #: objcp/lang-specs.h:58
 msgid "objc++-cpp-output is deprecated; please use objective-c++-cpp-output instead"
-msgstr ""
+msgstr "objc++-cpp-output は廃止されました。代わりに objective-c++-cpp-output を使用してください"
 
 #: config/i386/nwld.h:34
 msgid "static linking is not supported"
-msgstr ""
+msgstr "静的リンクはサポートされていません"
 
 #: config/pa/pa-hpux10.h:87 config/pa/pa-hpux10.h:90 config/pa/pa-hpux10.h:98
 #: config/pa/pa-hpux10.h:101 config/pa/pa-hpux11.h:108
@@ -4709,54 +4698,48 @@ msgid " conflicting code gen style switches are used"
 msgstr ""
 
 #: config/mips/r3900.h:34
-#, fuzzy
 msgid "-mhard-float not supported"
-msgstr "-mhard-float は実装されていません."
+msgstr "-mhard-float はサポートされていません"
 
 #: config/mips/r3900.h:36
-#, fuzzy
 msgid "-msingle-float and -msoft-float cannot both be specified"
-msgstr "-msingle-float と -msoft-float を一度に指定することはできません。"
+msgstr "-msingle-float と -msoft-float は併用できません"
 
 #: config/cris/cris.h:196
 msgid "do not specify both -march=... and -mcpu=..."
-msgstr ""
+msgstr "-march=... と -mcpu=... の両方を指定しないでください"
 
 #: gcc.c:908
-#, fuzzy
 msgid "GNU C no longer supports -traditional without -E"
-msgstr "GNU C は -E を伴わない -C を実装していません"
+msgstr "GNU C は -E 無しでの -traditional を既にサポートしていません"
 
 #: gcc.c:917
-#, fuzzy
 msgid "-E or -x required when input is from standard input"
-msgstr "入力が標準入力の場合は -E が必要です"
+msgstr "入力が標準入力からの場合は -E または -x が必要です"
 
 #: config/i386/i386.h:557
 msgid "'-msse5' was removed"
-msgstr ""
+msgstr "'-msse5' は削除されました"
 
 #: config/sh/sh.h:424
-#, fuzzy
 msgid "SH2a does not support little-endian"
-msgstr "ターゲット CPU は interworking をサポートしません"
+msgstr "SH2a はリトルエンディアンをサポートしていません"
 
 #: config/rx/rx.h:66
-#, fuzzy
 msgid "-mas100-syntax is incompatible with -gdwarf"
-msgstr "-mapcs-stack-check は -mno-apcs-frame と共存できません"
+msgstr "-mas100-syntax と -gdwarf は併用できません"
 
 #: config/rx/rx.h:67
 msgid "rx200 cpu does not have FPU hardware"
-msgstr ""
+msgstr "rx200 CPU にはハードウェア FPU がありません"
 
 #: config/lynx.h:70
 msgid "cannot use mthreads and mlegacy-threads together"
-msgstr ""
+msgstr "mthreads と mlegacy-threads は併用できません"
 
 #: config/lynx.h:95
 msgid "cannot use mshared and static together"
-msgstr ""
+msgstr "mshared と static は併用できません"
 
 #: java/lang.opt:122
 msgid "Warn if deprecated empty statements are found"
@@ -4772,46 +4755,43 @@ msgstr "指定された修飾子が不要なものであれば警告する"
 
 #: java/lang.opt:150
 msgid "--CLASSPATH\tDeprecated; use --classpath instead"
-msgstr ""
+msgstr "--CLASSPATH\t廃止されました。代わりに --classpath を使用してください"
 
 #: java/lang.opt:157
 msgid "Permit the use of the assert keyword"
-msgstr ""
+msgstr "assert 予約語の使用を許可する"
 
 #: java/lang.opt:179
-#, fuzzy
 msgid "--bootclasspath=<path>\tReplace system path"
-msgstr "クラスパスを設定してシステムパスを隠す"
+msgstr "--bootclasspath=<path>\tシステムパスを置換する"
 
 #: java/lang.opt:183
-#, fuzzy
 msgid "Generate checks for references to NULL"
-msgstr "DLL 用のコードを生成する"
+msgstr "NULL への参照を確認する"
 
 #: java/lang.opt:187
 msgid "--classpath=<path>\tSet class path"
-msgstr ""
+msgstr "--classpath=<path>\tクラスパスを設定する"
 
 #: java/lang.opt:194
 msgid "Output a class file"
-msgstr ""
+msgstr "クラスファイルを出力する"
 
 #: java/lang.opt:198
 msgid "Alias for -femit-class-file"
-msgstr ""
+msgstr "-femit-class-file の別名"
 
 #: java/lang.opt:202
 msgid "--encoding=<encoding>\tChoose input encoding (defaults from your locale)"
-msgstr ""
+msgstr "--encoding=<encoding>\t入力エンコーディングを選択する (デフォルトはロケール)"
 
 #: java/lang.opt:206
 msgid "--extdirs=<path>\tSet the extension directory path"
 msgstr ""
 
 #: java/lang.opt:216
-#, fuzzy
 msgid "Input file is a file with a list of filenames to compile"
-msgstr "入力ファイルをコンパイルするファイル名のリストとする"
+msgstr "入力ファイルをコンパイルするファイル名の一覧にする"
 
 #: java/lang.opt:223
 msgid "Always check for non gcj generated classes archives"
@@ -4823,20 +4803,19 @@ msgstr ""
 
 #: java/lang.opt:231
 msgid "Generate instances of Class at runtime"
-msgstr ""
+msgstr "実行時にクラスのインスタンスを生成する"
 
 #: java/lang.opt:235
 msgid "Use offset tables for virtual method calls"
-msgstr ""
+msgstr "仮想メソッド呼び出し用のオフセット表を使用する"
 
 #: java/lang.opt:242
 msgid "Assume native functions are implemented using JNI"
 msgstr "native 関数が JNI を利用して実装しているものとみなす"
 
 #: java/lang.opt:246
-#, fuzzy
 msgid "Enable optimization of static class initialization code"
-msgstr "(クラス外での初期化を必要とします)"
+msgstr "静的クラス初期化コードの最適化を有効にする"
 
 #: java/lang.opt:253
 msgid "Reduce the amount of reflection meta-data generated"
@@ -4847,18 +4826,16 @@ msgid "Enable assignability checks for stores into object arrays"
 msgstr ""
 
 #: java/lang.opt:261
-#, fuzzy
 msgid "Generate code for the Boehm GC"
-msgstr "Boehm GC 用のコードを生成する"
+msgstr "Boehm GC 用コードを生成する"
 
 #: java/lang.opt:265
 msgid "Call a library routine to do integer divisions"
-msgstr ""
+msgstr "整数の割り算を実行時にライブラリルーチンを呼び出す"
 
 #: java/lang.opt:269
-#, fuzzy
 msgid "Generate code for built-in atomic operations"
-msgstr "ビッグエンディアン用のコードを生成する"
+msgstr ""
 
 #: java/lang.opt:273
 msgid "Generated should be loaded by bootstrap loader"
@@ -4866,80 +4843,71 @@ msgstr ""
 
 #: java/lang.opt:277
 msgid "Set the source language version"
-msgstr ""
+msgstr "ソース言語バージョンを設定する"
 
 #: java/lang.opt:281
-#, fuzzy
 msgid "Set the target VM version"
-msgstr "不正なヘッダバージョン"
+msgstr "ターゲット VM バージョンを設定する"
 
 #: ada/gcc-interface/lang.opt:117
 msgid "-gnat<options>\tSpecify options to GNAT"
-msgstr ""
+msgstr "-gnat<options>\tGNAT へのオプションを指定する"
 
 #: fortran/lang.opt:147
 msgid "-J<directory>\tPut MODULE files in 'directory'"
 msgstr ""
 
 #: fortran/lang.opt:199
-#, fuzzy
 msgid "Warn about possible aliasing of dummy arguments"
-msgstr "括弧を欠いている可能性がある場合に警告する"
+msgstr ""
 
 #: fortran/lang.opt:203
 msgid "Warn about alignment of COMMON blocks"
 msgstr ""
 
 #: fortran/lang.opt:207
-#, fuzzy
 msgid "Warn about missing ampersand in continued character constants"
-msgstr "終端されていない文字列定数又は文字定数"
+msgstr ""
 
 #: fortran/lang.opt:211
-#, fuzzy
 msgid "Warn about creation of array temporaries"
-msgstr "関数ポインタの計算に関して警告する"
+msgstr "一時配列の生成に関して警告する"
 
 #: fortran/lang.opt:215
-#, fuzzy
 msgid "Warn about truncated character expressions"
-msgstr "複数文字リテラルの使用に関して警告する"
+msgstr ""
 
 #: fortran/lang.opt:223
 msgid "Warn about most implicit conversions"
 msgstr ""
 
 #: fortran/lang.opt:227
-#, fuzzy
 msgid "Warn about calls with implicit interface"
-msgstr "修飾子を取り去るキャストについて警告する"
+msgstr ""
 
 #: fortran/lang.opt:231
 msgid "Warn about called procedures not explicitly declared"
 msgstr ""
 
 #: fortran/lang.opt:235
-#, fuzzy
 msgid "Warn about truncated source lines"
-msgstr "複数文字リテラルの使用に関して警告する"
+msgstr "切り詰められたソース行に関して警告する"
 
 #: fortran/lang.opt:239
 msgid "Warn on intrinsics not part of the selected standard"
 msgstr ""
 
 #: fortran/lang.opt:247
-#, fuzzy
 msgid "Warn about \"suspicious\" constructs"
-msgstr "疑わしい main の宣言に関して警告する"
+msgstr ""
 
 #: fortran/lang.opt:251
 msgid "Permit nonconforming uses of the tab character"
 msgstr ""
 
 #: fortran/lang.opt:255
-#, fuzzy
 msgid "Warn about underflow of numerical constant expressions"
-msgstr "定数式がオーバーフローしました"
+msgstr ""
 
 #: fortran/lang.opt:259
 msgid "Warn if a user-procedure has the same name as an intrinsic"
@@ -4950,14 +4918,12 @@ msgid "Warn about unused dummy arguments."
 msgstr ""
 
 #: fortran/lang.opt:267
-#, fuzzy
 msgid "Enable preprocessing"
-msgstr "スタック探索を有効にする"
+msgstr "前処理を有効にする"
 
 #: fortran/lang.opt:275
-#, fuzzy
 msgid "Disable preprocessing"
-msgstr "デバッグを無効にする"
+msgstr "前処理を無効にする"
 
 #: fortran/lang.opt:283
 msgid "Enable alignment of COMMON blocks"
@@ -4968,9 +4934,8 @@ msgid "All intrinsics procedures are available regardless of selected standard"
 msgstr ""
 
 #: fortran/lang.opt:295
-#, fuzzy
 msgid "Do not treat local variables and COMMON blocks as if they were named in SAVE statements"
-msgstr "ローカル変数と COMMON ブロックを SAVE 文で名前付けられたように取り扱う"
+msgstr ""
 
 #: fortran/lang.opt:299
 msgid "Specify that backslash in string introduces an escape character"
@@ -5007,9 +4972,8 @@ msgid "Swap endianness for unformatted files"
 msgstr ""
 
 #: fortran/lang.opt:331
-#, fuzzy
 msgid "Use the Cray Pointer extension"
-msgstr "Cygwin インターフェイスを使用する"
+msgstr ""
 
 #: fortran/lang.opt:335
 msgid "Ignore 'D' in column one in fixed form"
@@ -5056,14 +5020,12 @@ msgid "Specify that an external BLAS library should be used for matmul calls on 
 msgstr ""
 
 #: fortran/lang.opt:379
-#, fuzzy
 msgid "Use f2c calling convention"
-msgstr "普通の呼び出し規約を使う"
+msgstr ""
 
 #: fortran/lang.opt:383
-#, fuzzy
 msgid "Assume that the source file is fixed form"
-msgstr "ポインタは別名にならないとみなす"
+msgstr ""
 
 #: fortran/lang.opt:387
 msgid "Specify where to find the compiled intrinsic modules"
@@ -5106,9 +5068,8 @@ msgid "-finit-integer=<n>\tInitialize local integer variables to n"
 msgstr ""
 
 #: fortran/lang.opt:427
-#, fuzzy
 msgid "Initialize local variables to zero (from g77)"
-msgstr "ローカル変数や配列をゼロに初期化する"
+msgstr ""
 
 #: fortran/lang.opt:431
 msgid "-finit-logical=<true|false>\tInitialize local logical variables"
@@ -5143,9 +5104,8 @@ msgid "Try to lay out derived types as compactly as possible"
 msgstr ""
 
 #: fortran/lang.opt:471
-#, fuzzy
 msgid "Protect parentheses in expressions"
-msgstr "#if 式の中では文字列定数が使えません"
+msgstr ""
 
 #: fortran/lang.opt:475
 msgid "Enable range checking during compilation"
@@ -5188,14 +5148,12 @@ msgid "Apply negative sign to zero values"
 msgstr ""
 
 #: fortran/lang.opt:519
-#, fuzzy
 msgid "Append underscores to externally visible names"
-msgstr "外部変数に二つ目のアンダースコアを付け足さない"
+msgstr ""
 
 #: fortran/lang.opt:523
-#, fuzzy
 msgid "Compile all program units at once and check all interfaces"
-msgstr "プログラムが英大文字で書かれた様にコンパイルする"
+msgstr ""
 
 #: fortran/lang.opt:563
 msgid "Statically link the GNU Fortran helper library (libgfortran)"
@@ -5275,48 +5233,45 @@ msgstr "カウント ISA 拡張用のコードを発行する"
 
 #: config/alpha/alpha.opt:78
 msgid "Emit code using explicit relocation directives"
-msgstr ""
+msgstr "明示的再配置指示を使用したコードを発行する"
 
 #: config/alpha/alpha.opt:82
 msgid "Emit 16-bit relocations to the small data areas"
-msgstr ""
+msgstr "small データ領域への 16 ビット再配置を発行する"
 
 #: config/alpha/alpha.opt:86
 msgid "Emit 32-bit relocations to the small data areas"
-msgstr ""
+msgstr "small データ領域への 32 ビット再配置を発行する"
 
 #: config/alpha/alpha.opt:90
-#, fuzzy
 msgid "Emit direct branches to local functions"
-msgstr "末端の関数ではフレームポインタを省略する"
+msgstr "局所関数への直接分岐を発行する"
 
 #: config/alpha/alpha.opt:94
 msgid "Emit indirect branches to local functions"
-msgstr ""
+msgstr "局所関数への間接分岐を発行する"
 
 #: config/alpha/alpha.opt:98
 msgid "Emit rdval instead of rduniq for thread pointer"
-msgstr ""
+msgstr "スレッドポインタ用に rduniq の代わりに rdval を発行する"
 
 #: config/alpha/alpha.opt:102 config/s390/s390.opt:55
 #: config/sparc/long-double-switch.opt:23
-#, fuzzy
 msgid "Use 128-bit long double"
-msgstr "128 ビットの long double を使用する"
+msgstr "128 ビット long double を使用する"
 
 #: config/alpha/alpha.opt:106 config/s390/s390.opt:59
 #: config/sparc/long-double-switch.opt:27
-#, fuzzy
 msgid "Use 64-bit long double"
 msgstr "64 ビット long double を使用する"
 
 #: config/alpha/alpha.opt:110
 msgid "Use features of and schedule given CPU"
-msgstr "CPU に与えられた特徴やスケジュールを利用する"
+msgstr "与えられた CPU の特徴やスケジュールを利用する"
 
 #: config/alpha/alpha.opt:114
 msgid "Schedule given CPU"
-msgstr "CPU に与えられたスケジュールを利用する"
+msgstr "与えられた CPU のスケジュールを使用する"
 
 #: config/alpha/alpha.opt:118
 msgid "Control the generated fp rounding mode"
@@ -5337,31 +5292,27 @@ msgstr "予期されるメモリレイテンシを調整する"
 #: config/alpha/alpha.opt:134 config/ia64/ia64.opt:111
 #: config/rs6000/sysv4.opt:32
 msgid "Specify bit size of immediate TLS offsets"
-msgstr ""
+msgstr "即値 TLS オフセットのビットサイズを指定する"
 
 #: config/frv/frv.opt:23
-#, fuzzy
 msgid "Use 4 media accumulators"
-msgstr "乗算命令を使用する"
+msgstr ""
 
 #: config/frv/frv.opt:27
-#, fuzzy
 msgid "Use 8 media accumulators"
-msgstr "乗算命令を使用する"
+msgstr ""
 
 #: config/frv/frv.opt:31
-#, fuzzy
 msgid "Enable label alignment optimizations"
-msgstr "SSA 最適化を有効にする"
+msgstr ""
 
 #: config/frv/frv.opt:35
-#, fuzzy
 msgid "Dynamically allocate cc registers"
-msgstr "BK レジスタを確保しない"
+msgstr "cc レジスタを動的に割り当てる"
 
 #: config/frv/frv.opt:42
 msgid "Set the cost of branches"
-msgstr ""
+msgstr "分岐コストを設定する"
 
 #: config/frv/frv.opt:46
 msgid "Enable conditional execution other than moves/scc"
