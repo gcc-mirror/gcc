@@ -524,9 +524,12 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
       int result = codefn (c, &walk_subtrees, data);
       if (result)
 	return result;
+
       if (walk_subtrees)
 	{
 	  gfc_code *b;
+	  gfc_actual_arglist *a;
+
 	  switch ((*c)->op)
 	    {
 	    case EXEC_DO:
@@ -535,6 +538,19 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	      WALK_SUBEXPR ((*c)->ext.iterator->end);
 	      WALK_SUBEXPR ((*c)->ext.iterator->step);
 	      break;
+
+	    case EXEC_CALL:
+	    case EXEC_ASSIGN_CALL:
+	      for (a = (*c)->ext.actual; a; a = a->next)
+		WALK_SUBEXPR (a->expr);
+	      break;
+
+	    case EXEC_CALL_PPC:
+	      WALK_SUBEXPR ((*c)->expr1);
+	      for (a = (*c)->ext.actual; a; a = a->next)
+		WALK_SUBEXPR (a->expr);
+	      break;
+
 	    case EXEC_SELECT:
 	      WALK_SUBEXPR ((*c)->expr1);
 	      for (b = (*c)->block; b; b = b->block)
@@ -548,6 +564,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 		  WALK_SUBCODE (b->next);
 		}
 	      continue;
+
 	    case EXEC_ALLOCATE:
 	    case EXEC_DEALLOCATE:
 	      {
@@ -556,6 +573,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 		  WALK_SUBEXPR (a->expr);
 		break;
 	      }
+
 	    case EXEC_FORALL:
 	      {
 		gfc_forall_iterator *fa;
@@ -568,6 +586,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 		  }
 		break;
 	      }
+
 	    case EXEC_OPEN:
 	      WALK_SUBEXPR ((*c)->ext.open->unit);
 	      WALK_SUBEXPR ((*c)->ext.open->file);
@@ -591,12 +610,14 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	      WALK_SUBEXPR ((*c)->ext.open->id);
 	      WALK_SUBEXPR ((*c)->ext.open->newunit);
 	      break;
+
 	    case EXEC_CLOSE:
 	      WALK_SUBEXPR ((*c)->ext.close->unit);
 	      WALK_SUBEXPR ((*c)->ext.close->status);
 	      WALK_SUBEXPR ((*c)->ext.close->iostat);
 	      WALK_SUBEXPR ((*c)->ext.close->iomsg);
 	      break;
+
 	    case EXEC_BACKSPACE:
 	    case EXEC_ENDFILE:
 	    case EXEC_REWIND:
@@ -605,6 +626,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	      WALK_SUBEXPR ((*c)->ext.filepos->iostat);
 	      WALK_SUBEXPR ((*c)->ext.filepos->iomsg);
 	      break;
+
 	    case EXEC_INQUIRE:
 	      WALK_SUBEXPR ((*c)->ext.inquire->unit);
 	      WALK_SUBEXPR ((*c)->ext.inquire->file);
@@ -643,12 +665,14 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	      WALK_SUBEXPR ((*c)->ext.inquire->size);
 	      WALK_SUBEXPR ((*c)->ext.inquire->round);
 	      break;
+
 	    case EXEC_WAIT:
 	      WALK_SUBEXPR ((*c)->ext.wait->unit);
 	      WALK_SUBEXPR ((*c)->ext.wait->iostat);
 	      WALK_SUBEXPR ((*c)->ext.wait->iomsg);
 	      WALK_SUBEXPR ((*c)->ext.wait->id);
 	      break;
+
 	    case EXEC_READ:
 	    case EXEC_WRITE:
 	      WALK_SUBEXPR ((*c)->ext.dt->io_unit);
@@ -669,6 +693,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	      WALK_SUBEXPR ((*c)->ext.dt->sign);
 	      WALK_SUBEXPR ((*c)->ext.dt->extra_comma);
 	      break;
+
 	    case EXEC_OMP_DO:
 	    case EXEC_OMP_PARALLEL:
 	    case EXEC_OMP_PARALLEL_DO:
@@ -689,6 +714,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	    default:
 	      break;
 	    }
+
 	  WALK_SUBEXPR ((*c)->expr1);
 	  WALK_SUBEXPR ((*c)->expr2);
 	  WALK_SUBEXPR ((*c)->expr3);

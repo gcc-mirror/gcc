@@ -1,3 +1,9 @@
+2010-12-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.c (gfc_code_walker): Handle expressions
+	in EXEC_CALL, EXEC_ASSIGN_CALL and EXEC_CALL_PPC.
+	Separate cases in switch statements by blank lines.
+
 2010-12-28  Janus Weil  <janus@gcc.gnu.org>
 	    Daniel Franke  <dfranke@gcc.gnu.org>
 
