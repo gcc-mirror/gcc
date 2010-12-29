@@ -1,3 +1,9 @@
+2010-12-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/47074
+	* gimple-fold.c (gimplify_and_update_call_from_tree): Call
+	pop_gimplify_context if returning early.
+
 2010-12-28  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* Makefile.in (graphite.o): Depends on DIAGNOSTIC_CORE_H.
