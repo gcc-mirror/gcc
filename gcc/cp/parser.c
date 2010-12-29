@@ -5944,9 +5944,7 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p,
 		/* ISO C++ defines alignof only with types, not with
 		   expressions. So pedwarn if alignof is used with a non-
 		   type expression. However, __alignof__ is ok.  */
-		if (cxx_dialect >= cxx0x
-		    && !strcmp (IDENTIFIER_POINTER (token->u.value),
-				"alignof"))
+		if (!strcmp (IDENTIFIER_POINTER (token->u.value), "alignof"))
 		  pedwarn (token->location, OPT_pedantic,
 			   "ISO C++ does not allow %<alignof%> "
 			   "with a non-type");
