@@ -1,3 +1,12 @@
+2010-12-28  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* Makefile.in (graphite.o): Depends on DIAGNOSTIC_CORE_H.
+	(graphite-clast-to-gimple.o): Same.
+	(graphite-poly.o): Same.
+	* graphite-clast-to-gimple.c: Include diagnostic-core.h.
+	* graphite-poly.c: Same.
+	* graphite.c: Same.
+
 2010-12-28  Richard Guenther  <rguenther@suse.de>
 
 	PR debug/46931

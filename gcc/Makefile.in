@@ -2669,7 +2669,7 @@ tree-data-ref.o : tree-data-ref.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TREE_PASS_H) langhooks.h
 sese.o : sese.c sese.h $(CONFIG_H) $(SYSTEM_H) coretypes.h tree-pretty-print.h \
    $(TREE_FLOW_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) tree-pass.h value-prof.h
-graphite.o : graphite.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(DIAGNOSTIC_H) \
+graphite.o : graphite.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(DIAGNOSTIC_CORE_H) \
    $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) sese.h \
    $(DBGCNT_H) graphite-ppl.h graphite-poly.h graphite-scop-detection.h \
    graphite-clast-to-gimple.h graphite-sese-to-poly.h
@@ -2677,7 +2677,7 @@ graphite-blocking.o : graphite-blocking.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) \
    sese.h graphite-ppl.h graphite-poly.h
 graphite-clast-to-gimple.o : graphite-clast-to-gimple.c $(CONFIG_H) \
-   $(SYSTEM_H) coretypes.h $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_DUMP_H) \
+   $(SYSTEM_H) coretypes.h $(DIAGNOSTIC_CORE_H) $(TREE_FLOW_H) $(TREE_DUMP_H) \
    $(CFGLOOP_H) $(TREE_DATA_REF_H) sese.h graphite-cloog-util.h \
    graphite-ppl.h graphite-poly.h graphite-clast-to-gimple.h \
    graphite-dependences.h graphite-cloog-compat.h
@@ -2693,7 +2693,7 @@ graphite-interchange.o : graphite-interchange.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) \
    sese.h graphite-ppl.h graphite-poly.h
 graphite-poly.o : graphite-poly.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_DUMP_H) gimple-pretty-print.h \
+   $(DIAGNOSTIC_CORE_H) $(TREE_FLOW_H) $(TREE_DUMP_H) gimple-pretty-print.h \
    $(CFGLOOP_H) $(TREE_DATA_REF_H) sese.h graphite-ppl.h graphite-poly.h \
    graphite-dependences.h graphite-cloog-util.h
 graphite-ppl.o : graphite-ppl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
