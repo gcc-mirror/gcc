@@ -942,6 +942,7 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
 	 which gets optimized away by C++ gimplification.  */
       if (gimple_seq_empty_p (stmts))
 	{
+	  pop_gimplify_context (NULL);
 	  if (gimple_in_ssa_p (cfun))
 	    {
 	      unlink_stmt_vdef (stmt);
