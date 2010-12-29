@@ -1,4 +1,3 @@
-
 /* Check Class <protocol> types */
 /* Author: David Ayers <d.ayers@inode.at> */
 /* { dg-do compile } */
@@ -176,7 +175,7 @@ testCategoryInherited(void)
 
 @protocol FwProto;
 
-@interface MyClass1 (Forward) <FwProto>
+@interface MyClass1 (Forward) <FwProto> /* { dg-warning "definition of protocol .FwProto. not found" } */
 @end
 
 Class <FwProto> clsP7 = 0;
@@ -188,9 +187,9 @@ testForwardeDeclared1(void)
   [cls doItInstance7];      /* { dg-warning "no .\\+doItInstance7. method found" } */
 
   [clsP7 doItClass7];       /* { dg-warning "not found in protocol" } */
-  /* { dg-warning "no .\\+doItClass7. method found" "" { target *-*-* } 190 } */
+  /* { dg-warning "no .\\+doItClass7. method found" "" { target *-*-* } 189 } */
   [clsP7 doItInstance7];    /* { dg-warning "not found in protocol" } */
-  /* { dg-warning "no .\\+doItInstance7. method found" "" { target *-*-* } 192 } */
+  /* { dg-warning "no .\\+doItInstance7. method found" "" { target *-*-* } 191 } */
 
   [MyClass1 doItClass7];    /* { dg-warning "may not respond" } */
   [MyClass1 doItInstance7]; /* { dg-warning "may not respond" } */

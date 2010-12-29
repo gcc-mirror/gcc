@@ -1,3 +1,13 @@
+2010-12-28  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/47076
+	* objc.dg/protocol-forward-1.m: New.
+	* obj-c++.dg/protocol-forward-1.mm: New.
+	* objc.dg/attributes/proto-attribute-2.m: Updated.
+	* objc.dg/class-protocol-1.m: Updated.
+	* obj-c++.dg/attributes/proto-attribute-2.mm: Updated.
+	* obj-c++.dg/class-protocol-1.mm: Updated.
+	
 2010-12-28  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45827

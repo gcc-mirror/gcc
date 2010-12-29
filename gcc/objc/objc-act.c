@@ -232,8 +232,8 @@ static void build_selector_table_decl (void);
 
 /* Protocols.  */
 
-static tree lookup_protocol (tree, bool);
-static tree lookup_and_install_protocols (tree);
+static tree lookup_protocol (tree, bool, bool);
+static tree lookup_and_install_protocols (tree, bool);
 
 /* Type encoding.  */
 
@@ -2923,7 +2923,8 @@ objc_get_protocol_qualified_type (tree interface, tree protocols)
 
       /* Look up protocols and install in lang specific list.  */
       DUP_TYPE_OBJC_INFO (type, TYPE_MAIN_VARIANT (type));
-      TYPE_OBJC_PROTOCOL_LIST (type) = lookup_and_install_protocols (protocols);
+      TYPE_OBJC_PROTOCOL_LIST (type) = lookup_and_install_protocols
+	(protocols, /* definition_required */ false);
 
       /* For RECORD_TYPEs, point to the @interface; for 'id' and 'Class',
 	 return the pointer to the new pointee variant.  */
@@ -2951,7 +2952,8 @@ check_protocol_recursively (tree proto, tree list)
       tree pp = TREE_VALUE (p);
 
       if (TREE_CODE (pp) == IDENTIFIER_NODE)
-	pp = lookup_protocol (pp, /* warn if deprecated */ false);
+	pp = lookup_protocol (pp, /* warn if deprecated */ false,
+			      /* definition_required */ false);
 
       if (pp == proto)
 	fatal_error ("protocol %qE has circular dependency",
@@ -2963,10 +2965,13 @@ check_protocol_recursively (tree proto, tree list)
 
 /* Look up PROTOCOLS, and return a list of those that are found.  If
    none are found, return NULL.  Note that this function will emit a
-   warning if a protocol is found and is deprecated.  */
-
+   warning if a protocol is found and is deprecated.  If
+   'definition_required', then warn if the protocol is found but is
+   not defined (ie, if we only saw a forward-declaration of the
+   protocol (as in "@protocol NSObject;") not a real definition with
+   the list of methods).  */
 static tree
-lookup_and_install_protocols (tree protocols)
+lookup_and_install_protocols (tree protocols, bool definition_required)
 {
   tree proto;
   tree return_value = NULL_TREE;
@@ -2977,7 +2982,8 @@ lookup_and_install_protocols (tree protocols)
   for (proto = protocols; proto; proto = TREE_CHAIN (proto))
     {
       tree ident = TREE_VALUE (proto);
-      tree p = lookup_protocol (ident, /* warn_if_deprecated */ true);
+      tree p = lookup_protocol (ident, /* warn_if_deprecated */ true,
+				definition_required);
 
       if (p)
 	return_value = chainon (return_value,
@@ -8417,7 +8423,8 @@ tree
 objc_build_protocol_expr (tree protoname)
 {
   tree expr;
-  tree p = lookup_protocol (protoname, /* warn if deprecated */ true);
+  tree p = lookup_protocol (protoname, /* warn if deprecated */ true,
+			    /* definition_required */ false);
 
   if (!p)
     {
@@ -9644,7 +9651,7 @@ start_class (enum tree_code code, tree class_name, tree super_name,
        
       if (protocol_list)
 	CLASS_PROTOCOL_LIST (klass)
-	  = lookup_and_install_protocols (protocol_list);
+	  = lookup_and_install_protocols (protocol_list, /* definition_required */ true);
 
       /* Determine if 'deprecated', the only attribute we recognize
 	 for classes, was used.  Ignore all other attributes for now,
@@ -9695,7 +9702,9 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 		       list.  */
 		    CLASS_PROTOCOL_LIST (klass)
 		      = chainon (CLASS_PROTOCOL_LIST (klass),
-				 lookup_and_install_protocols (protocol_list));
+				 lookup_and_install_protocols
+				 (protocol_list,
+				  /* definition_required */ true));
 		  }
 	      }
 	    else
@@ -9704,7 +9713,8 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 		
 		if (protocol_list)
 		  CLASS_PROTOCOL_LIST (klass)
-		    = lookup_and_install_protocols (protocol_list);
+		    = lookup_and_install_protocols
+		    (protocol_list, /* definition_required */ true);
 	      }
 	  }
       }
@@ -10798,10 +10808,12 @@ add_protocol (tree protocol)
 }
 
 /* Looks up a protocol.  If 'warn_if_deprecated' is true, a warning is
-   emitted if the protocol is deprecated.  */
+   emitted if the protocol is deprecated.  If 'definition_required' is
+   true, a warning is emitted if a full @protocol definition has not
+   been seen.  */
 
 static tree
-lookup_protocol (tree ident, bool warn_if_deprecated)
+lookup_protocol (tree ident, bool warn_if_deprecated, bool definition_required)
 {
   tree chain;
 
@@ -10816,6 +10828,10 @@ lookup_protocol (tree ident, bool warn_if_deprecated)
 	    warning (OPT_Wdeprecated_declarations, "protocol %qE is deprecated", 
 		     PROTOCOL_NAME (chain));
 	  }
+
+	if (definition_required && !PROTOCOL_DEFINED (chain))
+	  warning (0, "definition of protocol %qE not found",
+		   PROTOCOL_NAME (chain));
 
 	return chain;
       }
@@ -10856,7 +10872,8 @@ objc_declare_protocols (tree names, tree attributes)
     {
       tree name = TREE_VALUE (list);
 
-      if (lookup_protocol (name, /* warn if deprecated */ false) == NULL_TREE)
+      if (lookup_protocol (name, /* warn if deprecated */ false,
+			   /* definition_required */ false) == NULL_TREE)
 	{
 	  tree protocol = make_node (PROTOCOL_INTERFACE_TYPE);
 
@@ -10904,7 +10921,8 @@ start_protocol (enum tree_code code, tree name, tree list, tree attributes)
 	}
     }
 
-  protocol = lookup_protocol (name, /* warn_if_deprecated */ false);
+  protocol = lookup_protocol (name, /* warn_if_deprecated */ false,
+			      /* definition_required */ false);
 
   if (!protocol)
     {
@@ -10912,7 +10930,7 @@ start_protocol (enum tree_code code, tree name, tree list, tree attributes)
       TYPE_LANG_SLOT_1 (protocol) = make_tree_vec (PROTOCOL_LANG_SLOT_ELTS);
 
       PROTOCOL_NAME (protocol) = name;
-      PROTOCOL_LIST (protocol) = lookup_and_install_protocols (list);
+      PROTOCOL_LIST (protocol) = lookup_and_install_protocols (list, /* definition_required */ false);
       add_protocol (protocol);
       PROTOCOL_DEFINED (protocol) = 1;
       PROTOCOL_FORWARD_DECL (protocol) = NULL_TREE;
@@ -10922,7 +10940,7 @@ start_protocol (enum tree_code code, tree name, tree list, tree attributes)
   else if (! PROTOCOL_DEFINED (protocol))
     {
       PROTOCOL_DEFINED (protocol) = 1;
-      PROTOCOL_LIST (protocol) = lookup_and_install_protocols (list);
+      PROTOCOL_LIST (protocol) = lookup_and_install_protocols (list, /* definition_required */ false);
 
       check_protocol_recursively (protocol, list);
     }
