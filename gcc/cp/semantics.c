@@ -2797,7 +2797,8 @@ finish_id_expression (tree id_expression,
 	 the current class so that we can check later to see if
 	 the meaning would have been different after the class
 	 was entirely defined.  */
-      if (!scope && decl != error_mark_node)
+      if (!scope && decl != error_mark_node
+	  && TREE_CODE (id_expression) == IDENTIFIER_NODE)
 	maybe_note_name_used_in_class (id_expression, decl);
 
       /* Disallow uses of local variables from containing functions, except

@@ -1,3 +1,8 @@
+2010-12-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/47068
+	* g++.dg/cpp0x/decltype24.C: New.
+
 2010-12-28  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/47076
