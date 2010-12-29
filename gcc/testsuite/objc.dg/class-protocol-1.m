@@ -175,7 +175,7 @@ testCategoryInherited(void)
 
 @protocol FwProto;
 
-@interface MyClass1 (Forward) <FwProto>
+@interface MyClass1 (Forward) <FwProto> /* { dg-warning "definition of protocol .FwProto. not found" } */
 @end
 
 Class <FwProto> clsP7 = 0;

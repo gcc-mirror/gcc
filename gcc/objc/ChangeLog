@@ -1,5 +1,23 @@
 2010-12-28  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	PR objc/47076
+	* objc-act.c (lookup_protocol): Added 'definition_required'
+	argument.  If 'definition_required', and the protocol is not
+	defined, emit a warning.
+	(objc_declare_protocols): Updated call to lookup_protocol.
+	(start_protocol): Same change.
+	(check_protocol_recursively): Same change.
+	(objc_build_protocol_expr): Same change.
+	(lookup_and_install_protocols): Added definition_required argument.
+	Pass it to lookup_protocol.
+	(objc_get_protocol_qualified_type): Updated call to
+	lookup_and_install_protocols.
+	(start_class): Updated calls to lookup_and_install_protocols; pass
+	true to 'definition_required' to get the warnings.
+	(start_protocol): Updated calls to lookup_and_install_protocols.
+
+2010-12-28  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-act.c (objc_start_category_interface): Produce an error if
 	a class extension is found after the class @implementation.
 
