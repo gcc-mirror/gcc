@@ -6805,11 +6805,9 @@ detect_field_duplicates (tree fieldlist)
 
   /* First, see if there are more than "a few" fields.
      This is trivially true if there are zero or one fields.  */
-  if (!fieldlist)
+  if (!fieldlist || !DECL_CHAIN (fieldlist))
     return;
-  x = DECL_CHAIN (fieldlist);
-  if (!x)
-    return;
+  x = fieldlist;
   do {
     timeout--;
     if (DECL_NAME (x) == NULL_TREE

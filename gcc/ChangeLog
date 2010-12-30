@@ -1,3 +1,9 @@
+2010-12-30  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/46889
+	* c-decl.c (detect_field_duplicates): Ensure hash is used for
+	finding duplicates when first field is anonymous.
+
 2010-12-30  Nathan Froyd  <froydnj@codesourcery.com>
 
         PR target/44606
