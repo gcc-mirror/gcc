@@ -1,3 +1,8 @@
+2010-12-30  Joern Rennecke  <amylaar@spamcop.net>
+
+	PR target/47129
+	* config/ia64/ia64.c: Include "dwarf2out.h" .
+
 2010-12-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/47074
