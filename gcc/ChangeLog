@@ -1,3 +1,14 @@
+2010-12-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/46519
+	* config/i386/i386.c (block_info_def): Remove referenced, count
+	and rescanned.
+	(move_or_delete_vzeroupper_2): Updated.
+	(move_or_delete_vzeroupper_1): Rewritten to avoid recursive call.
+	(rescan_move_or_delete_vzeroupper): Removed.
+	(move_or_delete_vzeroupper): Repeat processing all basic blocks
+	until no basic block state is changed to used at exit.
+
 2010-12-30  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11.md (movmemhi, movmemhi1): Correct
