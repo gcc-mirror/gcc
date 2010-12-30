@@ -1,3 +1,8 @@
+2010-12-30  Nathan Froyd  <froydnj@codesourcery.com>
+
+        PR target/44606
+        * gcc.dg/pr44606.c: New test.
+
 2010-12-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/46519
