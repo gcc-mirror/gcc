@@ -67,6 +67,10 @@
 	* vmsdbgout.c (vmsdbgout_init): Rename main_input_filename to filename.
 	(vmsdbgout_finish): Likewise.
 
+	PR target/47097
+	* config/i386/lynx.h (DBX_REGISTER_NUMBER): Add cast to avoid
+	mixing signed and unsigned types in conditional expression.
+
 2010-12-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/47074
