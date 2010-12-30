@@ -51,6 +51,10 @@
 	* config/alpha/vms.h (MALLOC_ALIGNMENT): Don't undef / define.
 	(MALLOC_ABI_ALIGNMENT): Undef / define.
 
+	PR target/47101
+	* vmsdbgout.c (vmsdbgout_init): Rename main_input_filename to filename.
+	(vmsdbgout_finish): Likewise.
+
 2010-12-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/47074
