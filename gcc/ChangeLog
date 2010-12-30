@@ -1,3 +1,11 @@
+2010-12-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/openbsd.opt: New.
+	* config.gcc (alpha*-*-openbsd*,
+	i[34567]86-*-openbsd2.*|i[34567]86-*openbsd3.[0123],
+	i[34567]86-*-openbsd*, m68k*-*-openbsd*, mips*-*-openbsd*,
+	sparc64-*-openbsd*, vax-*-openbsd*): Use openbsd.opt.
+
 2010-12-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config/pa/pa.md: Add ",*" condition to 64-bit add/subtract boolean
