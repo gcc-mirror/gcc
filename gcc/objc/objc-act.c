@@ -8898,22 +8898,69 @@ add_method_to_hash_list (hash *hash_list, tree method)
 static tree
 objc_add_method (tree klass, tree method, int is_class, bool is_optional)
 {
-  tree mth;
+  tree existing_method = NULL_TREE;
 
-  /* @optional methods are added to protocol's OPTIONAL list.  Note
-     that this disables checking that the methods are implemented by
-     classes implementing the protocol, since these checks only use
-     the CLASS_CLS_METHODS and CLASS_NST_METHODS.  */
-  if (is_optional)
+  /* The first thing we do is look up the method in the list of
+     methods already defined in the interface (or implementation).  */
+  if (is_class)
+    existing_method = lookup_method (CLASS_CLS_METHODS (klass), method);
+  else
+    existing_method = lookup_method (CLASS_NST_METHODS (klass), method);
+
+  /* In the case of protocols, we have a second list of methods to
+     consider, the list of optional ones.  */
+  if (TREE_CODE (klass) == PROTOCOL_INTERFACE_TYPE)
     {
-      gcc_assert (TREE_CODE (klass) == PROTOCOL_INTERFACE_TYPE);
-      if (!(mth = lookup_method (is_class
-				? PROTOCOL_OPTIONAL_CLS_METHODS (klass)
-				: PROTOCOL_OPTIONAL_NST_METHODS (klass), 
-								method)))
+      /* @required methods are added to the protocol's normal list.
+	 @optional methods are added to the protocol's OPTIONAL lists.
+	 Note that adding the methods to the optional lists disables
+	 checking that the methods are implemented by classes
+	 implementing the protocol, since these checks only use the
+	 CLASS_CLS_METHODS and CLASS_NST_METHODS.  */
+
+      /* First of all, if the method to add is @optional, and we found
+	 it already existing as @required, emit an error.  */
+      if (is_optional && existing_method)
+	{
+	  error ("method %<%c%E%> declared %<@optional%> and %<@required%> at the same time",
+		 (is_class ? '+' : '-'),
+		 METHOD_SEL_NAME (existing_method));
+	  inform (DECL_SOURCE_LOCATION (existing_method),
+		  "previous declaration of %<%c%E%> as %<@required%>",
+		  (is_class ? '+' : '-'),
+		  METHOD_SEL_NAME (existing_method));
+	}
+
+      /* Now check the list of @optional methods if we didn't find the
+	 method in the @required list.  */
+      if (!existing_method)
+	{
+	  if (is_class)
+	    existing_method = lookup_method (PROTOCOL_OPTIONAL_CLS_METHODS (klass), method);
+	  else
+	    existing_method = lookup_method (PROTOCOL_OPTIONAL_NST_METHODS (klass), method);
+	  
+	  if (!is_optional && existing_method)
+	    {
+	      error ("method %<%c%E%> declared %<@optional%> and %<@required%> at the same time",
+		     (is_class ? '+' : '-'),
+		     METHOD_SEL_NAME (existing_method));
+	      inform (DECL_SOURCE_LOCATION (existing_method),
+		      "previous declaration of %<%c%E%> as %<@optional%>",
+		      (is_class ? '+' : '-'),
+		      METHOD_SEL_NAME (existing_method));
+	    }
+	}
+    }
+
+  /* If the method didn't exist already, add it.  */
+  if (!existing_method)
+    {
+      if (is_optional)
 	{
 	  if (is_class)
 	    {
+	      /* Put the method on the list in reverse order.  */
 	      TREE_CHAIN (method) = PROTOCOL_OPTIONAL_CLS_METHODS (klass);
 	      PROTOCOL_OPTIONAL_CLS_METHODS (klass) = method;
 	    }
@@ -8923,36 +8970,50 @@ objc_add_method (tree klass, tree method, int is_class, bool is_optional)
 	      PROTOCOL_OPTIONAL_NST_METHODS (klass) = method;
 	    }
 	}
-    }
-  else if (!(mth = lookup_method (is_class
-			     ? CLASS_CLS_METHODS (klass)
-			     : CLASS_NST_METHODS (klass), method)))
-    {
-      /* put method on list in reverse order */
-      if (is_class)
-	{
-	  DECL_CHAIN (method) = CLASS_CLS_METHODS (klass);
-	  CLASS_CLS_METHODS (klass) = method;
-	}
       else
 	{
-	  DECL_CHAIN (method) = CLASS_NST_METHODS (klass);
-	  CLASS_NST_METHODS (klass) = method;
+	  if (is_class)
+	    {
+	      DECL_CHAIN (method) = CLASS_CLS_METHODS (klass);
+	      CLASS_CLS_METHODS (klass) = method;
+	    }
+	  else
+	    {
+	      DECL_CHAIN (method) = CLASS_NST_METHODS (klass);
+	      CLASS_NST_METHODS (klass) = method;
+	    }
 	}
     }
   else
     {
-      /* When processing an @interface for a class or category, give hard
-	 errors on methods with identical selectors but differing argument
-	 and/or return types. We do not do this for @implementations, because
-	 C/C++ will do it for us (i.e., there will be duplicate function
-	 definition errors).  */
+      /* The method was already defined.  Check that the types match
+	 for an @interface for a class or category, or for a
+	 @protocol.  Give hard errors on methods with identical
+	 selectors but differing argument and/or return types.  We do
+	 not do this for @implementations, because C/C++ will do it
+	 for us (i.e., there will be duplicate function definition
+	 errors).  */
       if ((TREE_CODE (klass) == CLASS_INTERFACE_TYPE
-	   || TREE_CODE (klass) == CATEGORY_INTERFACE_TYPE)
-	  && !comp_proto_with_proto (method, mth, 1))
-	error ("duplicate declaration of method %<%c%E%>",
-		is_class ? '+' : '-',
-		METHOD_SEL_NAME (mth));
+	   || TREE_CODE (klass) == CATEGORY_INTERFACE_TYPE
+	   /* Starting with GCC 4.6, we emit the same error for
+	      protocols too.  The situation is identical to
+	      @interfaces as there is no possible meaningful reason
+	      for defining the same method with different signatures
+	      in the very same @protocol.  If that was allowed,
+	      whenever the protocol is used (both at compile and run
+	      time) there wouldn't be any meaningful way to decide
+	      which of the two method signatures should be used.  */
+	   || TREE_CODE (klass) == PROTOCOL_INTERFACE_TYPE)
+	  && !comp_proto_with_proto (method, existing_method, 1))
+	{
+	  error ("duplicate declaration of method %<%c%E%> with conflicting types",
+		 (is_class ? '+' : '-'),
+		 METHOD_SEL_NAME (existing_method));
+	  inform (DECL_SOURCE_LOCATION (existing_method),
+		  "previous declaration of %<%c%E%>",
+		  (is_class ? '+' : '-'),
+		  METHOD_SEL_NAME (existing_method));
+	}
     }
 
   if (is_class)
