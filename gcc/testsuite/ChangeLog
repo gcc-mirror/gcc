@@ -1,4 +1,11 @@
 2010-12-30  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/method-conflict-3.m: New.
+	* objc.dg/method-conflict-4.m: New.	
+	* obj-c++.dg/method-conflict-3.m: New.	
+	* obj-c++.dg/method-conflict-4.mm: New.
+
+2010-12-30  Nicola Pero  <nicola.pero@meta-innovation.com>
 	
 	* objc.dg/class-extension-3.m: Updated.
 	* objc.dg/method-1.m: Updated.

@@ -11925,9 +11925,8 @@ start_method_def (tree method)
   really_start_method (objc_method_context, parm_info);
 }
 
-/* Return 1 if TYPE1 is equivalent to TYPE2
-   for purposes of method overloading.  */
-
+/* Return 1 if TYPE1 is equivalent to TYPE2 for purposes of method
+   overloading.  */
 static int
 objc_types_are_equivalent (tree type1, tree type2)
 {
@@ -11941,6 +11940,7 @@ objc_types_are_equivalent (tree type1, tree type2)
   if (TYPE_MAIN_VARIANT (type1) != TYPE_MAIN_VARIANT (type2))
     return 0;
 
+  /* Compare the protocol lists.  */
   type1 = (TYPE_HAS_OBJC_INFO (type1)
 	   ? TYPE_OBJC_PROTOCOL_LIST (type1)
 	   : NULL_TREE);
@@ -11948,14 +11948,34 @@ objc_types_are_equivalent (tree type1, tree type2)
 	   ? TYPE_OBJC_PROTOCOL_LIST (type2)
 	   : NULL_TREE);
 
-  if (list_length (type1) == list_length (type2))
+  /* If there are no protocols (most common case), the types are
+     identical.  */
+  if (type1 == NULL_TREE && type2 == NULL_TREE)
+    return 1;
+  
+  /* If one has protocols, and the other one hasn't, they are not
+     identical.  */
+  if ((type1 == NULL_TREE && type2 != NULL_TREE)
+      || (type1 != NULL_TREE && type2 == NULL_TREE))
+    return 0;
+  else
     {
-      for (; type2; type2 = TREE_CHAIN (type2))
-	if (!lookup_protocol_in_reflist (type1, TREE_VALUE (type2)))
+      /* Else, both have protocols, and we need to do the full
+	 comparison.  It is possible that either type1 or type2
+	 contain some duplicate protocols in the list, so we can't
+	 even just compare list_length as a first check.  */
+      tree t;
+
+      for (t = type2; t; t = TREE_CHAIN (t))
+	if (!lookup_protocol_in_reflist (type1, TREE_VALUE (t)))
 	  return 0;
+      
+      for (t = type1; t; t = TREE_CHAIN (t))
+	if (!lookup_protocol_in_reflist (type2, TREE_VALUE (t)))
+	  return 0;
+      
       return 1;
     }
-  return 0;
 }
 
 /* Return 1 if TYPE1 has the same size and alignment as TYPE2.  */
