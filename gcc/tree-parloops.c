@@ -201,7 +201,7 @@ reduction_phi (htab_t reduction_list, gimple phi)
 {
   struct reduction_info tmpred, *red;
 
-  if (htab_elements (reduction_list) == 0)
+  if (htab_elements (reduction_list) == 0 || phi == NULL)
     return NULL;
 
   tmpred.reduc_phi = phi;
