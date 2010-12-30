@@ -1,4 +1,15 @@
-2010-12-30  Nicola Pero  <nicola@nicola.brainstorm.co.uk>
+2010-12-30  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_add_method): When emitting an error because a
+	method with the same name but conflicting types is found in the
+	same class or category interface, print a note with the location
+	of the original method.  Also, improved the error message to
+	clearly state that the conflict is due to conflicting types, and
+	produce it for protocols as well.  Emit an error if two identical
+	methods are declared in a protocol, but one is @required and the
+	other one is @optional.  When
+
+2010-12-30  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (start_class): Warn when a class attribute is
 	ignored.

@@ -1,3 +1,14 @@
+2010-12-30  Nicola Pero  <nicola.pero@meta-innovation.com>
+	
+	* objc.dg/class-extension-3.m: Updated.
+	* objc.dg/method-1.m: Updated.
+	* objc.dg/method-conflict-1.m: New.
+	* objc.dg/method-conflict-2.m: New.	
+	* obj-c++.dg/class-extension-3.mm: Updated.
+	* obj-c++.dg/method-8.mm: Updated.
+	* obj-c++.dg/method-conflict-1.mm: New.
+	* obj-c++.dg/method-conflict-2.mm: New.	
+	
 2010-12-30  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/46889
