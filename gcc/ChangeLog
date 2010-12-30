@@ -1,3 +1,11 @@
+2010-12-29  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11-protos.h (pdp11_asm_output_var): Declare.
+	* config/pdp11/pdp11.c (pdp11_asm_output_var): New function.
+	* config/pdp11/pdp11.h (ASM_OUTPUT_ALIGNED_COMMON,
+	ASM_OUTPUT_ALIGNED_LOCAL): New macros.
+	(ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL): Delete.
+
 2010-12-30  Joern Rennecke  <amylaar@spamcop.net>
 
 	PR target/47129
