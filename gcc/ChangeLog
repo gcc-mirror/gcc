@@ -1,3 +1,9 @@
+2010-12-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/47038
+	* config/sparc/sparc.c (sparc_file_end): Call resolve_unique_section
+	on the GOT helper if USE_HIDDEN_LINKONCE.
+
 2010-12-30  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/46889
