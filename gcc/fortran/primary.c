@@ -1774,7 +1774,8 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	  && !gfc_is_proc_ptr_comp (primary, NULL)
 	  && !(gfc_matching_procptr_assignment
 	       && sym->attr.flavor == FL_PROCEDURE))
-      || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->attr.dimension))
+      || (sym->ts.type == BT_CLASS && sym->attr.class_ok
+	  && CLASS_DATA (sym)->attr.dimension))
     {
       /* In EQUIVALENCE, we don't know yet whether we are seeing
 	 an array, character variable or array of character

@@ -2956,7 +2956,7 @@ gfc_match_allocate (void)
       b1 = !(tail->expr->ref
 	   && (tail->expr->ref->type == REF_COMPONENT
 		|| tail->expr->ref->type == REF_ARRAY));
-      if (sym && sym->ts.type == BT_CLASS)
+      if (sym && sym->ts.type == BT_CLASS && sym->attr.class_ok)
 	b2 = !(CLASS_DATA (sym)->attr.allocatable
 	       || CLASS_DATA (sym)->attr.class_pointer);
       else

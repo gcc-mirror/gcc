@@ -1,3 +1,9 @@
+2010-12-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47085
+	* match.c (gfc_match_allocate): Check for 'class_ok'.
+	* primary.c (gfc_match_varspec): Ditto.
+
 2010-12-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* dump_parse_tree.c (show_components):  Show
