@@ -2,7 +2,7 @@
 // { dg-do compile }
 
 template <void (*fn) ()>
-void call ()			// { dg-message "candidate" }
+void call ()			// { dg-message "note" }
 {
   fn ();
 }
@@ -27,7 +27,9 @@ int main ()
   };
   call<&B1::fn1> ();
   call<&B2::fn2> ();	// { dg-error "not external linkage|no matching" }
+  // { dg-message "candidate" "candidate note" { target *-*-* } 29 }
   call<&fn3> ();
   call<&B1::fn4> ();
   call<&fn5> ();	// { dg-error "not external linkage|no matching" }
+  // { dg-message "candidate" "candidate note" { target *-*-* } 33 }
 }

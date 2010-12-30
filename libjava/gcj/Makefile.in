@@ -51,6 +51,7 @@ am__aclocal_m4_deps = $(top_srcdir)/libltdl/acinclude.m4 \
 	$(top_srcdir)/../config/lib-ld.m4 \
 	$(top_srcdir)/../config/lib-link.m4 \
 	$(top_srcdir)/../config/lib-prefix.m4 \
+	$(top_srcdir)/../config/lthostflags.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/../config/override.m4 \
@@ -307,6 +308,7 @@ libexecdir = @libexecdir@
 libstdcxx_incdir = @libstdcxx_incdir@
 localedir = @localedir@
 localstatedir = @localstatedir@
+lt_host_flags = @lt_host_flags@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 mkinstalldirs = @mkinstalldirs@

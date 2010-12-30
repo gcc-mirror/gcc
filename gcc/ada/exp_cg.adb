@@ -354,7 +354,8 @@ package body Exp_CG is
            or else Entity_Is_In_Main_Unit (Current_Scope)
          then
             --  Register a copy of the dispatching call node. Needed since the
-            --  node containing a dispatching call is rewriten by the expander.
+            --  node containing a dispatching call is rewritten by the
+            --  expander.
 
             declare
                Copy : constant Node_Id := New_Copy (N);

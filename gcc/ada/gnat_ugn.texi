@@ -5600,7 +5600,7 @@ component type.
 Note that @option{-gnatwa} does not affect the setting of this warning option.
 
 @item -gnatw.S
-@emph{Suppress warnings on overriddebn size clauses.}
+@emph{Suppress warnings on overridden size clauses.}
 @cindex @option{-gnatw.S} (@command{gcc})
 This switch suppresses warnings on component clauses in record
 representation clauses that override size clauses, and similar
@@ -8218,7 +8218,7 @@ Use 32-bit allocations for @code{__gnat_malloc} (and thus for access types).
 For further details see @ref{Dynamic Allocation Control}.
 
 @item ^-H64^/64_MALLOC^
-@cindex @option{^-H32^/32_MALLOC^} (@command{gnatbind})
+@cindex @option{^-H64^/64_MALLOC^} (@command{gnatbind})
 Use 64-bit allocations for @code{__gnat_malloc} (and thus for access types).
 @cindex @code{__gnat_malloc}
 For further details see @ref{Dynamic Allocation Control}.
@@ -9492,7 +9492,7 @@ This also assumes that no directory matches the naming scheme for files (for
 instance that you do not have a directory called "sources.ads" when using the
 default GNAT naming scheme).
 
-When you do not have to use this switch (ie by default), gnatmake is able to
+When you do not have to use this switch (i.e.@: by default), gnatmake is able to
 save a lot of system calls (several per source file and object file), which
 can result in a significant speed up to load and manipulate a project file,
 especially when using source files from a remote system.
@@ -10240,7 +10240,7 @@ the slowest compilation time.
 @item ^-O3^/OPTIMIZE=INLINING^
 Full optimization as in @option{-O2};
 also uses more aggressive automatic inlining of subprograms within a unit
-(@pxref{Inlining of Subprograms}) and attemps to vectorize loops.
+(@pxref{Inlining of Subprograms}) and attempts to vectorize loops.
 
 @item ^-Os^/OPTIMIZE=SPACE^
 Optimize space usage (code and data) of resulting program.
@@ -10948,7 +10948,7 @@ being processed.
 
 @item ^-wq^/WARNINGS=QUIET^
 @cindex @option{^-wq^/WARNINGS=QUIET^} (@command{gnatelim})
-Quet warning mode - some warnings are suppressed. In particular warnings that
+Quiet warning mode - some warnings are suppressed. In particular warnings that
 indicate that the analysed set of sources is incomplete to make up a
 partition and that some subprogram bodies are missing are not generated.
 @end table
@@ -15471,7 +15471,7 @@ all other options.
 
 @item ^--subdirs^/SUBDIRS^=subdir
 Actual object directory of each project file is the subdirectory subdir of the
-object directory specified or defauted in the project file.
+object directory specified or defaulted in the project file.
 
 @item ^--unchecked-shared-lib-imports^/UNCHECKED_SHARED_LIB_IMPORTS^
 By default, shared library projects are not allowed to import static library
@@ -17416,7 +17416,7 @@ Same as @option{^-gnatyM^/MAX_LINE_LENGTH=^@var{n}}
 
 @item ^--no-exception^/NO_EXCEPTION^
 @cindex @option{^--no-exception^/NO_EXCEPTION^} (@command{gnatstub})
-Avoind raising PROGRAM_ERROR in the generated bodies of program unit stubs.
+void raising PROGRAM_ERROR in the generated bodies of program unit stubs.
 This is not always possible for function stubs.
 
 @item ^--no-local-header^/NO_LOCAL_HEADER^
@@ -17506,7 +17506,7 @@ easier to interface with other languages than previous versions of Ada.
 The binding generator is part of the @command{gcc} compiler and can be
 invoked via the @option{-fdump-ada-spec} switch, which will generate Ada
 spec files for the header files specified on the command line, and all
-header files needed by these files transitivitely. For example:
+header files needed by these files transitively. For example:
 
 @smallexample
 $ g++ -c -fdump-ada-spec -C /usr/include/time.h
@@ -18633,7 +18633,7 @@ Set a catchpoint that stops execution whenever (any task in the) program
 raises the exception @var{name}.
 
 @item catch exception unhandled
-Set a catchpoint that stops executino whenever (any task in the) program
+Set a catchpoint that stops executing whenever (any task in the) program
 raises an exception for which there is no handler.
 
 @item info exceptions
@@ -26839,7 +26839,7 @@ look for a library name in this specific order:
 @end enumerate
 
 The first three are the GNU style import libraries. The third is the
-Microsoft style import libraries. The last two are the DLL themself.
+Microsoft style import libraries. The last two are the actual DLL names.
 
 Note that if the Ada package spec for @file{API.dll} contains the
 following pragma

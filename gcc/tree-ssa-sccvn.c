@@ -644,10 +644,11 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 		  {
 		    double_int off
 		      = double_int_add (tree_to_double_int (this_offset),
-					double_int_sdiv
+					double_int_rshift
 					  (tree_to_double_int (bit_offset),
-					   uhwi_to_double_int (BITS_PER_UNIT),
-					   TRUNC_DIV_EXPR));
+					   BITS_PER_UNIT == 8
+					   ? 3 : exact_log2 (BITS_PER_UNIT),
+					   HOST_BITS_PER_DOUBLE_INT, true));
 		    if (double_int_fits_in_shwi_p (off))
 		      temp.off = off.low;
 		  }
@@ -1338,6 +1339,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
       size2 = TREE_INT_CST_LOW (gimple_call_arg (def_stmt, 2)) * 8;
       if ((unsigned HOST_WIDE_INT)size2 / 8
 	  == TREE_INT_CST_LOW (gimple_call_arg (def_stmt, 2))
+	  && maxsize2 != -1
 	  && operand_equal_p (base, base2, 0)
 	  && offset2 <= offset
 	  && offset2 + size2 >= offset + maxsize)
@@ -1361,7 +1363,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
       HOST_WIDE_INT offset2, size2, maxsize2;
       base2 = get_ref_base_and_extent (gimple_assign_lhs (def_stmt),
 				       &offset2, &size2, &maxsize2);
-      if (operand_equal_p (base, base2, 0)
+      if (maxsize2 != -1
+	  && operand_equal_p (base, base2, 0)
 	  && offset2 <= offset
 	  && offset2 + size2 >= offset + maxsize)
 	{
@@ -1382,7 +1385,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	       || handled_component_p (gimple_assign_rhs1 (def_stmt))))
     {
       tree base2;
-      HOST_WIDE_INT offset2, size2;
+      HOST_WIDE_INT offset2, size2, maxsize2;
       int i, j;
       VEC (vn_reference_op_s, heap) *rhs = NULL;
       vn_reference_op_t vro;
@@ -1395,8 +1398,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
       base2 = ao_ref_base (&lhs_ref);
       offset2 = lhs_ref.offset;
       size2 = lhs_ref.size;
-      if ((base != base2
-	   && !operand_equal_p (base, base2, 0))
+      maxsize2 = lhs_ref.max_size;
+      if (maxsize2 == -1
+	  || (base != base2 && !operand_equal_p (base, base2, 0))
 	  || offset2 > offset
 	  || offset2 + size2 < offset + maxsize)
 	return (void *)-1;

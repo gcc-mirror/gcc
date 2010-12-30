@@ -42,13 +42,14 @@ DIST_COMMON = ChangeLog $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
 	$(srcdir)/config.h.in $(srcdir)/../mkinstalldirs
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../libtool.m4 \
+	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
+	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
+	$(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
-	$(top_srcdir)/../config/override.m4 \
-	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltoptions.m4 \
-	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
-	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/../config/lthostflags.m4 \
+	$(top_srcdir)/../config/override.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -201,6 +202,7 @@ libdir = @libdir@
 libexecdir = @libexecdir@
 localedir = @localedir@
 localstatedir = @localstatedir@
+lt_host_flags = @lt_host_flags@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -228,12 +230,14 @@ gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 libexecsubdir := $(libexecdir)/gcc/$(target_noncanonical)/$(gcc_version)
 AM_CPPFLAGS = -I$(top_srcdir)/../include $(DEFS)
 AM_CFLAGS = -Wall -Werror
+AM_LIBTOOLFLAGS = --tag=disable-static
 libexecsub_LTLIBRARIES = liblto_plugin.la
 liblto_plugin_la_SOURCES = lto-plugin.c
 liblto_plugin_la_LIBADD = \
 	$(if $(wildcard ../libiberty/pic/libiberty.a),../libiberty/pic/libiberty.a,)
 
-liblto_plugin_la_LDFLAGS = -no-undefined -bindir $(libexecsubdir) \
+# Note that we intentionally override the bindir supplied by ACX_LT_HOST_FLAGS
+liblto_plugin_la_LDFLAGS = $(lt_host_flags) -bindir $(libexecsubdir) \
 	$(if $(wildcard ../libiberty/pic/libiberty.a),,-Wc,../libiberty/libiberty.a)
 
 all: config.h

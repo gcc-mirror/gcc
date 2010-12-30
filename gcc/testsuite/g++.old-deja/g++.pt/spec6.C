@@ -3,7 +3,7 @@
 struct S1
 {
   template <class T>
-  void f(T t1, T t2);		// { dg-message "candidate" }
+  void f(T t1, T t2);		// { dg-message "note" }
 };
 
 
@@ -14,7 +14,7 @@ template <class U>
 struct S2
 {
   template <class T>
-  void f(T t1, T t2);		// { dg-message "candidate" }
+  void f(T t1, T t2);		// { dg-message "note" }
 };
 
 template <>
@@ -25,7 +25,9 @@ void h()
 {
   S1 s1;
   s1.f(3, 'c'); // { dg-error "" } no matching function
+  // { dg-message "candidate" "candidate note" { target *-*-* } 27 }
 
   S2<char> s2;
   s2.f(3, 'c'); // { dg-error "" } no matching function
+  // { dg-message "candidate" "candidate note" { target *-*-* } 31 }
 }

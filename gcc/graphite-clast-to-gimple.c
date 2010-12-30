@@ -21,25 +21,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "ggc.h"
-#include "tree.h"
-#include "rtl.h"
-#include "basic-block.h"
-#include "diagnostic.h"
+#include "diagnostic-core.h"
 #include "tree-flow.h"
 #include "tree-dump.h"
-#include "timevar.h"
 #include "cfgloop.h"
 #include "tree-chrec.h"
 #include "tree-data-ref.h"
 #include "tree-scalar-evolution.h"
-#include "tree-pass.h"
-#include "domwalk.h"
-#include "value-prof.h"
-#include "pointer-set.h"
-#include "gimple.h"
-#include "langhooks.h"
 #include "sese.h"
 
 #ifdef HAVE_cloog
@@ -47,9 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ppl_c.h"
 #include "graphite-cloog-util.h"
 #include "graphite-ppl.h"
-#include "graphite.h"
 #include "graphite-poly.h"
-#include "graphite-scop-detection.h"
 #include "graphite-clast-to-gimple.h"
 #include "graphite-dependences.h"
 #include "graphite-cloog-compat.h"
@@ -975,20 +961,24 @@ graphite_create_new_loop_guard (sese region, edge entry_edge,
 				     newivs_index, params_index);
   tree ub = clast_to_gcc_expression (type, stmt->UB, region, newivs,
 				     newivs_index, params_index);
-  tree one = POINTER_TYPE_P (type) ? size_one_node
-    : fold_convert (type, integer_one_node);
-  /* Adding +1 and using LT_EXPR helps with loop latches that have a
-     loop iteration count of "PARAMETER - 1".  For PARAMETER == 0 this becomes
-     2^{32|64}, and the condition lb <= ub is true, even if we do not want this.
-     However lb < ub + 1 is false, as expected.  */
-  tree ub_one = fold_build2 (POINTER_TYPE_P (type) ? POINTER_PLUS_EXPR
-			     : PLUS_EXPR, type, ub, one);
-
-  /* When ub + 1 wraps around, use lb <= ub.  */
-  if (integer_zerop (ub_one))
+  /* When ub is simply a constant or a parameter, use lb <= ub.  */
+  if (TREE_CODE (ub) == INTEGER_CST || TREE_CODE (ub) == SSA_NAME)
     cond_expr = fold_build2 (LE_EXPR, boolean_type_node, lb, ub);
   else
-    cond_expr = fold_build2 (LT_EXPR, boolean_type_node, lb, ub_one);
+    {
+      tree one = (POINTER_TYPE_P (type)
+		  ? size_one_node
+		  : fold_convert (type, integer_one_node));
+      /* Adding +1 and using LT_EXPR helps with loop latches that have a
+	 loop iteration count of "PARAMETER - 1".  For PARAMETER == 0 this becomes
+	 2^k-1 due to integer overflow, and the condition lb <= ub is true,
+	 even if we do not want this.  However lb < ub + 1 is false, as
+	 expected.  */
+      tree ub_one = fold_build2 (POINTER_TYPE_P (type) ? POINTER_PLUS_EXPR
+				 : PLUS_EXPR, type, ub, one);
+
+      cond_expr = fold_build2 (LT_EXPR, boolean_type_node, lb, ub_one);
+    }
 
   exit_edge = create_empty_if_region_on_edge (entry_edge, cond_expr);
 
@@ -1555,7 +1545,7 @@ gloog (scop_p scop, htab_t bb_pbb_mapping)
 		   &newivs, newivs_index,
 		   bb_pbb_mapping, 1, params_index);
   graphite_verify ();
-  scev_reset_htab ();
+  scev_reset ();
   recompute_all_dominators ();
   graphite_verify ();
 

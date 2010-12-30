@@ -63,7 +63,7 @@
 /*  be used by default for linking libgnat (shared or static)               */
 
 /*  shared_libgcc_default gives the system dependent link method that       */
-/*  be used by default for linking libgcc (shared or statis)                */
+/*  be used by default for linking libgcc (shared or static)                */
 
 /*  using_gnu_linker is set to 1 when the GNU linker is used under this     */
 /*  target.                                                                 */

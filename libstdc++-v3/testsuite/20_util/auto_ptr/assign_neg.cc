@@ -37,6 +37,7 @@ test01()
 {
   std::auto_ptr<Base> ptr2;
   ptr2 = new Base; // { dg-error "no match" }
+  // { dg-error "candidate" "candidate note" { target *-*-* } 39 }
   return 0;
 }
 
@@ -46,6 +47,6 @@ main()
   test01();
   return 0;
 }
-// { dg-error "candidates" "" { target *-*-* } 134 } 
+// { dg-error "::auto_ptr|no known conversion" "" { target *-*-* } 134 } 
 // { dg-error "note" "" { target *-*-* } 152 }
-// { dg-error "::auto_ptr" "" { target *-*-* } 262 } 
+// { dg-error "::auto_ptr|no known conversion" "" { target *-*-* } 262 } 

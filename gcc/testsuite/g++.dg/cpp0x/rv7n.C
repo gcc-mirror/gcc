@@ -30,7 +30,7 @@ const volatile A cv_source();
 
 // 7 at a time
 
-one   sink_7_1234567(               A&);  // { dg-message "candidates" }
+one   sink_7_1234567(               A&);  // { dg-message "one sink_7_1234567|no known conversion" }
 two   sink_7_1234567(const          A&);  // { dg-message "note" }
 three sink_7_1234567(volatile       A&);  // { dg-message "note" }
 four  sink_7_1234567(const volatile A&);  // { dg-message "note" }
@@ -45,6 +45,7 @@ int test7_1234567()
           volatile A va;
     const volatile A cva = a; // { dg-error "lvalue" }
     sink_7_1234567(cv_source());  // { dg-error "no match" }
+    // { dg-message "candidate" "candidate note" { target *-*-* } 47 }
     return 0;
 }
 
@@ -66,7 +67,7 @@ int test7_1235678()
     return 0;
 }
 
-two   sink_7_2345678(const          A&);  // { dg-message "candidates" }
+two   sink_7_2345678(const          A&);  // { dg-message "note" }
 three sink_7_2345678(volatile       A&);  // { dg-message "note" }
 four  sink_7_2345678(const volatile A&);  // { dg-message "note" }
 five  sink_7_2345678(               A&&);  // { dg-message "note" }
@@ -81,11 +82,12 @@ int test7_2345678()
           volatile A va;
     const volatile A cva = a; // { dg-error "lvalue" }
     sink_7_2345678(a);  // { dg-error "ambiguous" }
+    // { dg-message "candidate" "candidate note" { target *-*-* } 84 }
     return 0;
 }
 
 one   sink_7_1234678(               A&);
-two   sink_7_1234678(const          A&);  // { dg-message "candidates" }
+two   sink_7_1234678(const          A&);  // { dg-message "note" }
 three sink_7_1234678(volatile       A&);
 four  sink_7_1234678(const volatile A&);
 six   sink_7_1234678(const          A&&);  // { dg-message "note" }
@@ -99,6 +101,7 @@ int test7_1234678()
           volatile A va;
     const volatile A cva = a; // { dg-error "lvalue" }
     sink_7_1234678(source());  // { dg-error "ambiguous" }
+    // { dg-message "candidate" "candidate note" { target *-*-* } 103 }
     return 0;
 }
 

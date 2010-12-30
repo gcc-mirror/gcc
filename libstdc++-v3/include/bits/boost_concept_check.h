@@ -30,9 +30,9 @@
 // to its suitability for any purpose.
 //
 
-/** @file boost_concept_check.h
+/** @file bits/boost_concept_check.h
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{iterator}
  */
 
 // GCC Note:  based on version 1.12.0 of the Boost library.

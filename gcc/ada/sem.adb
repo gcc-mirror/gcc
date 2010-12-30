@@ -1803,7 +1803,7 @@ package body Sem is
 
             Do_Withed_Units (CU, Include_Limited => False);
 
-            --  Process the unit if it is a spec or the the main unit, if it
+            --  Process the unit if it is a spec or the main unit, if it
             --  has no previous spec or we have done all other units.
 
             if not Nkind_In (Item, N_Package_Body, N_Subprogram_Body)

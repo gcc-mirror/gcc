@@ -55,7 +55,6 @@
 %{mbarrel-shift-enabled} \
 %{msign-extend-enabled} \
 %{muser-extend-enabled} \
-%{v} \
 "
 
 /* Let link script define all link options. 

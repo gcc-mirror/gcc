@@ -416,7 +416,7 @@ private
       Last    : Natural                        := 0;
       Data    : Wide_String (1 .. Max_Length);
       --  Last is the index of last significant element of the Data. All
-      --  elements with larger indecies are just an extra room.
+      --  elements with larger indices are just an extra room.
    end record;
 
    type Shared_Wide_String_Access is access all Shared_Wide_String;
@@ -438,9 +438,9 @@ private
 
    function Allocate (Max_Length : Natural) return Shared_Wide_String_Access;
    --  Allocates new Shared_Wide_String with at least specified maximum length.
-   --  Actual maximum length of the allocated Shared_Wide_String can be sligtly
-   --  greater. Returns reference to Empty_Shared_Wide_String when requested
-   --  length is zero.
+   --  Actual maximum length of the allocated Shared_Wide_String can be
+   --  slightly greater. Returns reference to Empty_Shared_Wide_String when
+   --  requested length is zero.
 
    Empty_Shared_Wide_String : aliased Shared_Wide_String (0);
 
@@ -452,20 +452,20 @@ private
       Reference : Shared_Wide_String_Access := Empty_Shared_Wide_String'Access;
    end record;
 
-   --  The Unbounded_Wide_String uses several techniques to increasy speed of
+   --  The Unbounded_Wide_String uses several techniques to increase speed of
    --  the application:
    --   - implicit sharing or copy-on-write. Unbounded_Wide_String contains
    --     only the reference to the data which is shared between several
    --     instances. The shared data is reallocated only when its value is
-   --     changed and the object mutation can't be used or it is unefficient to
+   --     changed and the object mutation can't be used or it is inefficient to
    --     use it;
    --   - object mutation. Shared data object can be reused without memory
    --     reallocation when all of the following requirements are meat:
    --      - shared data object don't used anywhere longer;
    --      - its size is sufficient to store new value;
-   --      - the gap after reuse is less then some threashold.
+   --      - the gap after reuse is less then some threshold.
    --   - memory preallocation. Most of used memory allocation algorithms
-   --     alligns allocated segment on the some boundary, thus some amount of
+   --     aligns allocated segment on the some boundary, thus some amount of
    --     additional memory can be preallocated without any impact. Such
    --     preallocated memory can used later by Append/Insert operations
    --     without reallocation.
@@ -473,7 +473,7 @@ private
    --  Reference counting uses GCC builtin atomic operations, which allows to
    --  safely share internal data between Ada tasks. Nevertheless, this not
    --  make objects of Unbounded_Wide_String thread-safe, so each instance
-   --  can't be accessed by several tasks simulatenously.
+   --  can't be accessed by several tasks simultaneously.
 
    pragma Stream_Convert (Unbounded_Wide_String, To_Unbounded, To_Wide_String);
    --  Provide stream routines without dragging in Ada.Streams

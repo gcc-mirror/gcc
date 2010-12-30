@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #include "c-family/c-common.h"
+#include "c-family/c-objc.h"
 #include "c-family/c-pragma.h"
 #include "c-family/c-format.h"
 #include "flags.h"
@@ -231,8 +232,8 @@ static void build_selector_table_decl (void);
 
 /* Protocols.  */
 
-static tree lookup_protocol (tree, bool);
-static tree lookup_and_install_protocols (tree);
+static tree lookup_protocol (tree, bool, bool);
+static tree lookup_and_install_protocols (tree, bool);
 
 /* Type encoding.  */
 
@@ -401,9 +402,19 @@ static bool objc_method_optional_flag = false;
 
 static int objc_collecting_ivars = 0;
 
+/* Flag that is set to 'true' while we are processing a class
+   extension.  Since a class extension just "reopens" the main
+   @interface, this can be used to determine if we are in the main
+   @interface, or in a class extension.  */
+static bool objc_in_class_extension = false;
+
 #define BUFSIZE		1024
 
 static char *errbuf;	/* Buffer for error diagnostics */
+
+/* An array of all the local variables in the current function that
+   need to be marked as volatile.  */
+VEC(tree,gc) *local_variables_to_volatilize = NULL;
 
 
 static int flag_typed_selectors;
@@ -615,6 +626,11 @@ objc_init (void)
   if (print_struct_values && !flag_compare_debug)
     generate_struct_by_value_array ();
 
+#ifndef OBJCPLUS
+  if (flag_objc_exceptions && !flag_objc_sjlj_exceptions)
+    using_eh_for_cleanups ();
+#endif
+
   return true;
 }
 
@@ -743,6 +759,28 @@ objc_start_category_interface (tree klass, tree categ,
 		    "category attributes are not available in this version"
 		    " of the compiler, (ignored)");
     }
+  if (categ == NULL_TREE)
+    {
+      if (flag_objc1_only)
+	error_at (input_location, "class extensions are not available in Objective-C 1.0");
+      else
+	{
+	  /* Iterate over all the classes and categories implemented
+	     up to now in this compilation unit.  */
+	  struct imp_entry *t;
+
+	  for (t = imp_list; t; t = t->next)
+	    {
+	      /* If we find a class @implementation with the same name
+		 as the one we are extending, produce an error.  */
+	    if (TREE_CODE (t->imp_context) == CLASS_IMPLEMENTATION_TYPE
+		&& IDENTIFIER_POINTER (CLASS_NAME (t->imp_context)) == IDENTIFIER_POINTER (klass))
+	      error_at (input_location, 
+			"class extension for class %qE declared after its %<@implementation%>",
+			klass);
+	    }
+	}
+    }
   objc_interface_context
     = start_class (CATEGORY_INTERFACE_TYPE, klass, categ, protos, NULL_TREE);
   objc_ivar_chain
@@ -773,6 +811,7 @@ objc_finish_interface (void)
   finish_class (objc_interface_context);
   objc_interface_context = NULL_TREE;
   objc_method_optional_flag = false;
+  objc_in_class_extension = false;
 }
 
 void
@@ -947,6 +986,7 @@ objc_add_property_declaration (location_t location, tree decl,
      is readwrite).  */
   bool property_readonly = false;
   objc_property_assign_semantics property_assign_semantics = OBJC_PROPERTY_ASSIGN;
+  bool property_extension_in_class_extension = false;
 
   if (flag_objc1_only)
     error_at (input_location, "%<@property%> is not available in Objective-C 1.0");
@@ -1120,60 +1160,80 @@ objc_add_property_declaration (location_t location, tree decl,
 
   /* Check for duplicate property declarations.  We first check the
      immediate context for a property with the same name.  Any such
-     declarations are an error.  */
+     declarations are an error, unless this is a class extension and
+     we are extending a property from readonly to readwrite.  */
   for (x = CLASS_PROPERTY_DECL (objc_interface_context); x; x = TREE_CHAIN (x))
     {
       if (PROPERTY_NAME (x) == DECL_NAME (decl))
 	{
-	  location_t original_location = DECL_SOURCE_LOCATION (x);
-	  
-	  error_at (location, "redeclaration of property %qD", decl);
-
-	  if (original_location != UNKNOWN_LOCATION)
-	    inform (original_location, "originally specified here");
-	  return;
-      }
+	  if (objc_in_class_extension
+	      && property_readonly == 0
+	      && PROPERTY_READONLY (x) == 1)
+	    {
+	      /* This is a class extension, and we are extending an
+		 existing readonly property to a readwrite one.
+		 That's fine.  :-) */
+	      property_extension_in_class_extension = true;
+	      break;
+	    }
+	  else
+	    {
+	      location_t original_location = DECL_SOURCE_LOCATION (x);
+	      
+	      error_at (location, "redeclaration of property %qD", decl);
+	      
+	      if (original_location != UNKNOWN_LOCATION)
+		inform (original_location, "originally specified here");
+	      return;
+	    }
+	}
     }
 
-  /* We now need to check for existing property declarations (in the
-     superclass, other categories or protocols) and check that the new
-     declaration is not in conflict with existing ones.  */
-
-  /* Search for a previous, existing declaration of a property with
-     the same name in superclasses, protocols etc.  If one is found,
-     it will be in the 'x' variable.  */
-  x = NULL_TREE;
-
-  /* Note that, for simplicity, the following may search again the
-     local context.  That's Ok as nothing will be found (else we'd
-     have thrown an error above); it's only a little inefficient, but
-     the code is simpler.  */
-  switch (TREE_CODE (objc_interface_context))
+  /* If x is not NULL_TREE, we must be in a class extension and we're
+     extending a readonly property.  In that case, no point in
+     searching for another declaration.  */
+  if (x == NULL_TREE)
     {
-    case CLASS_INTERFACE_TYPE:
-      /* Look up the property in the current @interface (which will
-	 find nothing), then its protocols and categories and
-	 superclasses.  */
-      x = lookup_property (objc_interface_context, DECL_NAME (decl));
-      break;
-    case CATEGORY_INTERFACE_TYPE:
-      /* Look up the property in the main @interface, then protocols
-	 and categories (one of them is ours, and will find nothing)
-	 and superclasses.  */
-      x = lookup_property (lookup_interface (CLASS_NAME (objc_interface_context)),
-			   DECL_NAME (decl));
-      break;
-    case PROTOCOL_INTERFACE_TYPE:
-      /* Looks up the property in any protocols attached to the
-	 current protocol.  */
-      if (PROTOCOL_LIST (objc_interface_context))
+      /* We now need to check for existing property declarations (in
+	 the superclass, other categories or protocols) and check that
+	 the new declaration is not in conflict with existing
+	 ones.  */
+
+      /* Search for a previous, existing declaration of a property
+	 with the same name in superclasses, protocols etc.  If one is
+	 found, it will be in the 'x' variable.  */
+
+      /* Note that, for simplicity, the following may search again the
+	 local context.  That's Ok as nothing will be found (else we'd
+	 have thrown an error above); it's only a little inefficient,
+	 but the code is simpler.  */
+      switch (TREE_CODE (objc_interface_context))
 	{
-	  x = lookup_property_in_protocol_list (PROTOCOL_LIST (objc_interface_context),
-						DECL_NAME (decl));
+	case CLASS_INTERFACE_TYPE:
+	  /* Look up the property in the current @interface (which
+	     will find nothing), then its protocols and categories and
+	     superclasses.  */
+	  x = lookup_property (objc_interface_context, DECL_NAME (decl));
+	  break;
+	case CATEGORY_INTERFACE_TYPE:
+	  /* Look up the property in the main @interface, then
+	     protocols and categories (one of them is ours, and will
+	     find nothing) and superclasses.  */
+	  x = lookup_property (lookup_interface (CLASS_NAME (objc_interface_context)),
+			       DECL_NAME (decl));
+	  break;
+	case PROTOCOL_INTERFACE_TYPE:
+	  /* Looks up the property in any protocols attached to the
+	     current protocol.  */
+	  if (PROTOCOL_LIST (objc_interface_context))
+	    {
+	      x = lookup_property_in_protocol_list (PROTOCOL_LIST (objc_interface_context),
+						    DECL_NAME (decl));
+	    }
+	  break;
+	default:
+	  gcc_unreachable ();
 	}
-      break;
-    default:
-      gcc_unreachable ();
     }
 
   if (x != NULL_TREE)
@@ -1271,6 +1331,17 @@ objc_add_property_declaration (location_t location, tree decl,
 		      "type of property %qD conflicts with previous declaration", decl);
 	  if (original_location != UNKNOWN_LOCATION)
 	    inform (original_location, "originally specified here");
+	  return;
+	}
+
+      /* If we are in a class extension and we're extending a readonly
+	 property in the main @interface, we'll just update the
+	 existing property with the readwrite flag and potentially the
+	 new setter name.  */
+      if (property_extension_in_class_extension)
+	{
+	  PROPERTY_READONLY (x) = 0;
+	  PROPERTY_SETTER_NAME (x) = parsed_property_setter_ident;
 	  return;
 	}
     }
@@ -2257,61 +2328,6 @@ objc_build_struct (tree klass, tree fields, tree super_name)
   return s;
 }
 
-/* Build a type differing from TYPE only in that TYPE_VOLATILE is set.
-   Unlike tree.c:build_qualified_type(), preserve TYPE_LANG_SPECIFIC in the
-   process.  */
-static tree
-objc_build_volatilized_type (tree type)
-{
-  tree t;
-
-  /* Check if we have not constructed the desired variant already.  */
-  for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
-    {
-      /* The type qualifiers must (obviously) match up.  */
-      if (!TYPE_VOLATILE (t)
-	  || (TYPE_READONLY (t) != TYPE_READONLY (type))
-	  || (TYPE_RESTRICT (t) != TYPE_RESTRICT (type)))
-	continue;
-
-      /* For pointer types, the pointees (and hence their TYPE_LANG_SPECIFIC
-	 info, if any) must match up.  */
-      if (POINTER_TYPE_P (t)
-	  && (TREE_TYPE (t) != TREE_TYPE (type)))
-	continue;
-
-      /* Only match up the types which were previously volatilized in similar fashion and not
-	 because they were declared as such. */
-      if (!lookup_attribute ("objc_volatilized", TYPE_ATTRIBUTES (t)))
-	continue;
-
-      /* Everything matches up!  */
-      return t;
-    }
-
-  /* Ok, we could not re-use any of the pre-existing variants.  Create
-     a new one.  */
-  t = build_variant_type_copy (type);
-  TYPE_VOLATILE (t) = 1;
-
-  TYPE_ATTRIBUTES (t) = merge_attributes (TYPE_ATTRIBUTES (type),
-                      			  tree_cons (get_identifier ("objc_volatilized"),
-                                 	  NULL_TREE,
-                                 	  NULL_TREE));
-  if (TREE_CODE (t) == ARRAY_TYPE)
-    TREE_TYPE (t) = objc_build_volatilized_type (TREE_TYPE (t));
-
-  /* Set up the canonical type information. */
-  if (TYPE_STRUCTURAL_EQUALITY_P (type))
-    SET_TYPE_STRUCTURAL_EQUALITY (t);
-  else if (TYPE_CANONICAL (type) != type)
-    TYPE_CANONICAL (t) = objc_build_volatilized_type (TYPE_CANONICAL (type));
-  else
-    TYPE_CANONICAL (t) = t;
-
-  return t;
-}
-
 /* Mark DECL as being 'volatile' for purposes of Darwin
    _setjmp()/_longjmp() exception handling.  Called from
    objc_mark_locals_volatile().  */
@@ -2324,17 +2340,44 @@ objc_volatilize_decl (tree decl)
       && (TREE_CODE (decl) == VAR_DECL
 	  || TREE_CODE (decl) == PARM_DECL))
     {
-      tree t = TREE_TYPE (decl);
+      if (local_variables_to_volatilize == NULL)
+	local_variables_to_volatilize = VEC_alloc (tree, gc, 8);
 
-      t = objc_build_volatilized_type (t);
+      VEC_safe_push (tree, gc, local_variables_to_volatilize, decl);
+    }
+}
 
-      TREE_TYPE (decl) = t;
-      TREE_THIS_VOLATILE (decl) = 1;
-      TREE_SIDE_EFFECTS (decl) = 1;
-      DECL_REGISTER (decl) = 0;
+/* Called when parsing of a function completes; if any local variables
+   in the function were marked as variables to volatilize, change them
+   to volatile.  We do this at the end of the function when the
+   warnings about discarding 'volatile' have already been produced.
+   We are making the variables as volatile just to force the compiler
+   to preserve them between setjmp/longjmp, but we don't want warnings
+   for them as they aren't really volatile.  */
+void
+objc_finish_function (void)
+{
+  /* If there are any local variables to volatilize, volatilize them.  */
+  if (local_variables_to_volatilize)
+    {
+      int i;
+      tree decl;
+      FOR_EACH_VEC_ELT (tree, local_variables_to_volatilize, i, decl)
+	{
+	  tree t = TREE_TYPE (decl);
+
+	  t = build_qualified_type (t, TYPE_QUALS (t) | TYPE_QUAL_VOLATILE);
+	  TREE_TYPE (decl) = t;
+	  TREE_THIS_VOLATILE (decl) = 1;
+	  TREE_SIDE_EFFECTS (decl) = 1;
+	  DECL_REGISTER (decl) = 0;
 #ifndef OBJCPLUS
-      C_DECL_REGISTER (decl) = 0;
+	  C_DECL_REGISTER (decl) = 0;
 #endif
+	}
+
+      /* Now we delete the vector.  This sets it to NULL as well.  */
+      VEC_free (tree, gc, local_variables_to_volatilize);
     }
 }
 
@@ -2691,24 +2734,6 @@ objc_have_common_type (tree ltyp, tree rtyp, int argno, tree callee)
   return false;
 }
 
-/* Check if LTYP and RTYP have the same type qualifiers.  If either type
-   lives in the volatilized hash table, ignore the 'volatile' bit when
-   making the comparison.  */
-
-bool
-objc_type_quals_match (tree ltyp, tree rtyp)
-{
-  int lquals = TYPE_QUALS (ltyp), rquals = TYPE_QUALS (rtyp);
-
-  if (lookup_attribute ("objc_volatilized", TYPE_ATTRIBUTES (ltyp)))
-    lquals &= ~TYPE_QUAL_VOLATILE;
-
-  if (lookup_attribute ("objc_volatilized", TYPE_ATTRIBUTES (rtyp)))
-    rquals &= ~TYPE_QUAL_VOLATILE;
-
-  return (lquals == rquals);
-}
-
 #ifndef OBJCPLUS
 /* Determine if CHILD is derived from PARENT.  The routine assumes that
    both parameters are RECORD_TYPEs, and is non-reflexive.  */
@@ -2828,16 +2853,6 @@ objc_check_global_decl (tree decl)
     error ("redeclaration of Objective-C class %qs", IDENTIFIER_POINTER (id));
 }
 
-/* Return a non-volatalized version of TYPE. */
-
-tree
-objc_non_volatilized_type (tree type)
-{
-  if (lookup_attribute ("objc_volatilized", TYPE_ATTRIBUTES (type)))
-    type = build_qualified_type (type, (TYPE_QUALS (type) & ~TYPE_QUAL_VOLATILE));
-  return type;
-}
-
 /* Construct a PROTOCOLS-qualified variant of INTERFACE, where
    INTERFACE may either name an Objective-C class, or refer to the
    special 'id' or 'Class' types.  If INTERFACE is not a valid ObjC
@@ -2908,7 +2923,8 @@ objc_get_protocol_qualified_type (tree interface, tree protocols)
 
       /* Look up protocols and install in lang specific list.  */
       DUP_TYPE_OBJC_INFO (type, TYPE_MAIN_VARIANT (type));
-      TYPE_OBJC_PROTOCOL_LIST (type) = lookup_and_install_protocols (protocols);
+      TYPE_OBJC_PROTOCOL_LIST (type) = lookup_and_install_protocols
+	(protocols, /* definition_required */ false);
 
       /* For RECORD_TYPEs, point to the @interface; for 'id' and 'Class',
 	 return the pointer to the new pointee variant.  */
@@ -2936,7 +2952,8 @@ check_protocol_recursively (tree proto, tree list)
       tree pp = TREE_VALUE (p);
 
       if (TREE_CODE (pp) == IDENTIFIER_NODE)
-	pp = lookup_protocol (pp, /* warn if deprecated */ false);
+	pp = lookup_protocol (pp, /* warn if deprecated */ false,
+			      /* definition_required */ false);
 
       if (pp == proto)
 	fatal_error ("protocol %qE has circular dependency",
@@ -2948,10 +2965,13 @@ check_protocol_recursively (tree proto, tree list)
 
 /* Look up PROTOCOLS, and return a list of those that are found.  If
    none are found, return NULL.  Note that this function will emit a
-   warning if a protocol is found and is deprecated.  */
-
+   warning if a protocol is found and is deprecated.  If
+   'definition_required', then warn if the protocol is found but is
+   not defined (ie, if we only saw a forward-declaration of the
+   protocol (as in "@protocol NSObject;") not a real definition with
+   the list of methods).  */
 static tree
-lookup_and_install_protocols (tree protocols)
+lookup_and_install_protocols (tree protocols, bool definition_required)
 {
   tree proto;
   tree return_value = NULL_TREE;
@@ -2962,7 +2982,8 @@ lookup_and_install_protocols (tree protocols)
   for (proto = protocols; proto; proto = TREE_CHAIN (proto))
     {
       tree ident = TREE_VALUE (proto);
-      tree p = lookup_protocol (ident, /* warn_if_deprecated */ true);
+      tree p = lookup_protocol (ident, /* warn_if_deprecated */ true,
+				definition_required);
 
       if (p)
 	return_value = chainon (return_value,
@@ -5035,10 +5056,35 @@ tree
 objc_eh_personality (void)
 {
   if (!flag_objc_sjlj_exceptions && !objc_eh_personality_decl)
-    objc_eh_personality_decl = build_personality_function ("gnu_objc");
+    objc_eh_personality_decl = build_personality_function 
+				(flag_next_runtime
+						? "objc"
+						: "gnu_objc");
   return objc_eh_personality_decl;
 }
 #endif
+
+void
+objc_maybe_warn_exceptions (location_t loc)
+{
+  /* -fobjc-exceptions is required to enable Objective-C exceptions.
+     For example, on Darwin, ObjC exceptions require a sufficiently
+     recent version of the runtime, so the user must ask for them
+     explicitly.  On other platforms, at the moment -fobjc-exceptions
+     triggers -fexceptions which again is required for exceptions to
+     work.  */
+  if (!flag_objc_exceptions)
+    {
+      /* Warn only once per compilation unit.  */
+      static bool warned = false;
+
+      if (!warned)
+	{
+	  error_at (loc, "%<-fobjc-exceptions%> is required to enable Objective-C exception syntax");
+	  warned = true;
+	}
+    }
+}
 
 /* Build __builtin_eh_pointer, or the moral equivalent.  In the case
    of Darwin, we'll arrange for it to be initialized (and associated
@@ -5103,7 +5149,7 @@ next_sjlj_build_enter_and_setjmp (void)
   t = build_fold_addr_expr_loc (input_location, t);
 #ifdef OBJCPLUS
   /* Convert _setjmp argument to type that is expected.  */
-  if (TYPE_ARG_TYPES (TREE_TYPE (objc_setjmp_decl)))
+  if (prototype_p (TREE_TYPE (objc_setjmp_decl)))
     t = convert (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (objc_setjmp_decl))), t);
   else
     t = convert (ptr_type_node, t);
@@ -5341,18 +5387,9 @@ objc_begin_try_stmt (location_t try_locus, tree body)
   c->end_try_locus = input_location;
   cur_try_context = c;
 
-  /* -fobjc-exceptions is required to enable Objective-C exceptions.
-     For example, on Darwin, ObjC exceptions require a sufficiently
-     recent version of the runtime, so the user must ask for them
-     explicitly.  On other platforms, at the moment -fobjc-exceptions
-     triggers -fexceptions which again is required for exceptions to
-     work.
-  */
-  if (!flag_objc_exceptions)
-    {
-      error_at (try_locus, "%<-fobjc-exceptions%> is required to enable Objective-C exception syntax");
-    }
-
+  /* Collect the list of local variables.  We'll mark them as volatile
+     at the end of compilation of this function to prevent them being
+     clobbered by setjmp/longjmp.  */
   if (flag_objc_sjlj_exceptions)
     objc_mark_locals_volatile (NULL);
 }
@@ -5556,10 +5593,7 @@ objc_build_throw_stmt (location_t loc, tree throw_expr)
 {
   tree args;
 
-  if (!flag_objc_exceptions)
-    {
-      error_at (loc, "%<-fobjc-exceptions%> is required to enable Objective-C exception syntax");
-    }
+  objc_maybe_warn_exceptions (loc);
 
   if (throw_expr == NULL)
     {
@@ -5569,12 +5603,20 @@ objc_build_throw_stmt (location_t loc, tree throw_expr)
           || cur_try_context->current_catch == NULL)
 	{
 	  error_at (loc, "%<@throw%> (rethrow) used outside of a @catch block");
-	  return NULL_TREE;
+	  return error_mark_node;
 	}
 
       /* Otherwise the object is still sitting in the EXC_PTR_EXPR
 	 value that we get from the runtime.  */
       throw_expr = objc_build_exc_ptr ();
+    }
+  else if (throw_expr != error_mark_node)
+    {
+      if (!objc_type_valid_for_messaging (TREE_TYPE (throw_expr), true))
+	{
+	  error_at (loc, "%<@throw%> argument is not an object");
+	  return error_mark_node;
+	}
     }
 
   /* A throw is just a call to the runtime throw function with the
@@ -5946,8 +5988,9 @@ encode_method_prototype (tree method_decl)
       /* If a type size is not known, bail out.  */
       if (sz < 0)
 	{
-	  error ("type %q+D does not have a known size",
-		 type);
+	  error_at (DECL_SOURCE_LOCATION (method_decl),
+		    "type %qT does not have a known size",
+		    type);
 	  /* Pretend that the encoding succeeded; the compilation will
 	     fail nevertheless.  */
 	  goto finish_encoding;
@@ -8380,7 +8423,8 @@ tree
 objc_build_protocol_expr (tree protoname)
 {
   tree expr;
-  tree p = lookup_protocol (protoname, /* warn if deprecated */ true);
+  tree p = lookup_protocol (protoname, /* warn if deprecated */ true,
+			    /* definition_required */ false);
 
   if (!p)
     {
@@ -9457,21 +9501,24 @@ check_protocols (tree proto_list, const char *type, tree name)
     }
 }
 
-/* Make sure that the class CLASS_NAME is defined
-   CODE says which kind of thing CLASS_NAME ought to be.
-   It can be CLASS_INTERFACE_TYPE, CLASS_IMPLEMENTATION_TYPE,
-   CATEGORY_INTERFACE_TYPE, or CATEGORY_IMPLEMENTATION_TYPE.  */
-
+/* Make sure that the class CLASS_NAME is defined CODE says which kind
+   of thing CLASS_NAME ought to be.  It can be CLASS_INTERFACE_TYPE,
+   CLASS_IMPLEMENTATION_TYPE, CATEGORY_INTERFACE_TYPE, or
+   CATEGORY_IMPLEMENTATION_TYPE.  For a CATEGORY_INTERFACE_TYPE,
+   SUPER_NAME is the name of the category.  For a class extension,
+   CODE is CATEGORY_INTERFACE_TYPE and SUPER_NAME is NULL_TREE.  */
 static tree
 start_class (enum tree_code code, tree class_name, tree super_name,
 	     tree protocol_list, tree attributes)
 {
-  tree klass, decl;
+  tree klass = NULL_TREE;
+  tree decl;
 
 #ifdef OBJCPLUS
-  if (current_namespace != global_namespace) {
-    error ("Objective-C declarations may only appear in global scope");
-  }
+  if (current_namespace != global_namespace)
+    {
+      error ("Objective-C declarations may only appear in global scope");
+    }
 #endif /* OBJCPLUS */
 
   if (objc_implementation_context)
@@ -9482,8 +9529,14 @@ start_class (enum tree_code code, tree class_name, tree super_name,
       objc_implementation_context = NULL_TREE;
     }
 
-  klass = make_node (code);
-  TYPE_LANG_SLOT_1 (klass) = make_tree_vec (CLASS_LANG_SLOT_ELTS);
+  /* If this is a class extension, we'll be "reopening" the existing
+     CLASS_INTERFACE_TYPE, so in that case there is no need to create
+     a new node.  */
+  if (code != CATEGORY_INTERFACE_TYPE || super_name != NULL_TREE)
+    {
+      klass = make_node (code);
+      TYPE_LANG_SLOT_1 (klass) = make_tree_vec (CLASS_LANG_SLOT_ELTS);
+    }
 
   /* Check for existence of the super class, if one was specified.  Note
      that we must have seen an @interface, not just a @class.  If we
@@ -9513,9 +9566,12 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 	}
     }
 
-  CLASS_NAME (klass) = class_name;
-  CLASS_SUPER_NAME (klass) = super_name;
-  CLASS_CLS_METHODS (klass) = NULL_TREE;
+  if (code != CATEGORY_INTERFACE_TYPE || super_name != NULL_TREE)
+    {
+      CLASS_NAME (klass) = class_name;
+      CLASS_SUPER_NAME (klass) = super_name;
+      CLASS_CLS_METHODS (klass) = NULL_TREE;
+    }
 
   if (! objc_is_class_name (class_name)
       && (decl = lookup_name (class_name)))
@@ -9595,7 +9651,7 @@ start_class (enum tree_code code, tree class_name, tree super_name,
        
       if (protocol_list)
 	CLASS_PROTOCOL_LIST (klass)
-	  = lookup_and_install_protocols (protocol_list);
+	  = lookup_and_install_protocols (protocol_list, /* definition_required */ true);
 
       /* Determine if 'deprecated', the only attribute we recognize
 	 for classes, was used.  Ignore all other attributes for now,
@@ -9632,15 +9688,38 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 	    if (TREE_DEPRECATED (class_category_is_assoc_with))
 	      warning (OPT_Wdeprecated_declarations, "class %qE is deprecated", 
 		       class_name);
-	    add_category (class_category_is_assoc_with, klass);
-	  }
 
-	if (protocol_list)
-	  CLASS_PROTOCOL_LIST (klass)
-	    = lookup_and_install_protocols (protocol_list);
+	    if (super_name == NULL_TREE)
+	      {
+		/* This is a class extension.  Get the original
+		   interface, and continue working on it.  */
+		objc_in_class_extension = true;
+		klass = class_category_is_assoc_with;
+
+		if (protocol_list)
+		  {
+		    /* Append protocols to the original protocol
+		       list.  */
+		    CLASS_PROTOCOL_LIST (klass)
+		      = chainon (CLASS_PROTOCOL_LIST (klass),
+				 lookup_and_install_protocols
+				 (protocol_list,
+				  /* definition_required */ true));
+		  }
+	      }
+	    else
+	      {
+		add_category (class_category_is_assoc_with, klass);
+		
+		if (protocol_list)
+		  CLASS_PROTOCOL_LIST (klass)
+		    = lookup_and_install_protocols
+		    (protocol_list, /* definition_required */ true);
+	      }
+	  }
       }
       break;
-
+	
     case CATEGORY_IMPLEMENTATION_TYPE:
       /* Reset for multiple classes per file.  */
       method_slot = 0;
@@ -9713,6 +9792,8 @@ continue_class (tree klass)
       }
     case CLASS_INTERFACE_TYPE:
       {
+	if (objc_in_class_extension)
+	  return NULL_TREE;
 #ifdef OBJCPLUS
 	push_lang_context (lang_name_c);
 #endif /* OBJCPLUS */
@@ -10727,10 +10808,12 @@ add_protocol (tree protocol)
 }
 
 /* Looks up a protocol.  If 'warn_if_deprecated' is true, a warning is
-   emitted if the protocol is deprecated.  */
+   emitted if the protocol is deprecated.  If 'definition_required' is
+   true, a warning is emitted if a full @protocol definition has not
+   been seen.  */
 
 static tree
-lookup_protocol (tree ident, bool warn_if_deprecated)
+lookup_protocol (tree ident, bool warn_if_deprecated, bool definition_required)
 {
   tree chain;
 
@@ -10745,6 +10828,10 @@ lookup_protocol (tree ident, bool warn_if_deprecated)
 	    warning (OPT_Wdeprecated_declarations, "protocol %qE is deprecated", 
 		     PROTOCOL_NAME (chain));
 	  }
+
+	if (definition_required && !PROTOCOL_DEFINED (chain))
+	  warning (0, "definition of protocol %qE not found",
+		   PROTOCOL_NAME (chain));
 
 	return chain;
       }
@@ -10785,7 +10872,8 @@ objc_declare_protocols (tree names, tree attributes)
     {
       tree name = TREE_VALUE (list);
 
-      if (lookup_protocol (name, /* warn if deprecated */ false) == NULL_TREE)
+      if (lookup_protocol (name, /* warn if deprecated */ false,
+			   /* definition_required */ false) == NULL_TREE)
 	{
 	  tree protocol = make_node (PROTOCOL_INTERFACE_TYPE);
 
@@ -10833,7 +10921,8 @@ start_protocol (enum tree_code code, tree name, tree list, tree attributes)
 	}
     }
 
-  protocol = lookup_protocol (name, /* warn_if_deprecated */ false);
+  protocol = lookup_protocol (name, /* warn_if_deprecated */ false,
+			      /* definition_required */ false);
 
   if (!protocol)
     {
@@ -10841,7 +10930,7 @@ start_protocol (enum tree_code code, tree name, tree list, tree attributes)
       TYPE_LANG_SLOT_1 (protocol) = make_tree_vec (PROTOCOL_LANG_SLOT_ELTS);
 
       PROTOCOL_NAME (protocol) = name;
-      PROTOCOL_LIST (protocol) = lookup_and_install_protocols (list);
+      PROTOCOL_LIST (protocol) = lookup_and_install_protocols (list, /* definition_required */ false);
       add_protocol (protocol);
       PROTOCOL_DEFINED (protocol) = 1;
       PROTOCOL_FORWARD_DECL (protocol) = NULL_TREE;
@@ -10851,7 +10940,7 @@ start_protocol (enum tree_code code, tree name, tree list, tree attributes)
   else if (! PROTOCOL_DEFINED (protocol))
     {
       PROTOCOL_DEFINED (protocol) = 1;
-      PROTOCOL_LIST (protocol) = lookup_and_install_protocols (list);
+      PROTOCOL_LIST (protocol) = lookup_and_install_protocols (list, /* definition_required */ false);
 
       check_protocol_recursively (protocol, list);
     }
@@ -13295,13 +13384,13 @@ objc_finish_foreach_loop (location_t location, tree object_expression, tree coll
 
   if (!objc_type_valid_for_messaging (TREE_TYPE (object_expression), true))
     {
-      error ("iterating variable in fast enumeration is not an object");
+      error_at (location, "iterating variable in fast enumeration is not an object");
       return;
     }
 
   if (!objc_type_valid_for_messaging (TREE_TYPE (collection_expression), true))
     {
-      error ("collection in fast enumeration is not an object");
+      error_at (location, "collection in fast enumeration is not an object");
       return;
     }
 
@@ -13338,6 +13427,18 @@ objc_finish_foreach_loop (location_t location, tree object_expression, tree coll
 
   /* type object; */
   /* Done by c-parser.c.  */
+
+  /* Disable warnings that 'object' is unused.  For example the code
+
+     for (id object in collection)
+       i++;
+
+     which can be used to count how many objects there are in the
+     collection is fine and should generate no warnings even if
+     'object' is technically unused.  */
+  TREE_USED (object_expression) = 1;
+  if (DECL_P (object_expression))
+    DECL_READ_P (object_expression) = 1;
 
   /*  id __objc_foreach_collection */
   objc_foreach_collection_decl = objc_create_temporary_var (objc_object_type, "__objc_foreach_collection");

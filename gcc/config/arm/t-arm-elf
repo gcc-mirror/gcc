@@ -36,6 +36,10 @@ MULTILIB_DIRNAMES    = arm thumb
 MULTILIB_EXCEPTIONS  = 
 MULTILIB_MATCHES     =
 
+#MULTILIB_OPTIONS     += mcpu=fa526/mcpu=fa626/mcpu=fa606te/mcpu=fa626te/mcpu=fmp626/mcpu=fa726te
+#MULTILIB_DIRNAMES    += fa526 fa626 fa606te fa626te fmp626 fa726te
+#MULTILIB_EXCEPTIONS  += *mthumb*/*mcpu=fa526 *mthumb*/*mcpu=fa626
+
 #MULTILIB_OPTIONS      += march=armv7
 #MULTILIB_DIRNAMES     += thumb2
 #MULTILIB_EXCEPTIONS   += march=armv7* marm/*march=armv7*
@@ -52,6 +56,8 @@ MULTILIB_MATCHES     =
 MULTILIB_OPTIONS       += mfloat-abi=hard
 MULTILIB_DIRNAMES      += fpu
 MULTILIB_EXCEPTIONS    += *mthumb/*mfloat-abi=hard*
+#MULTILIB_EXCEPTIONS    += *mcpu=fa526/*mfloat-abi=hard*
+#MULTILIB_EXCEPTIONS    += *mcpu=fa626/*mfloat-abi=hard*
 
 # MULTILIB_OPTIONS    += mcpu=ep9312
 # MULTILIB_DIRNAMES   += ep9312

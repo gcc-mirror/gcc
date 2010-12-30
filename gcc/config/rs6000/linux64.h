@@ -192,7 +192,7 @@ extern int dot_symbols;
 #endif
 #endif
 
-#define ASM_SPEC32 "-a32 %{n} %{T} %{Ym,*} %{Yd,*} \
+#define ASM_SPEC32 "-a32 %{Ym,*} %{Yd,*} \
 %{mrelocatable} %{mrelocatable-lib} %{fpic:-K PIC} %{fPIC:-K PIC} \
 %{memb} %{!memb: %{msdata=eabi: -memb}} \
 %{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
@@ -207,7 +207,7 @@ extern int dot_symbols;
 
 #define ASM_SPEC_COMMON "%(asm_cpu) \
 %{,assembler|,assembler-with-cpp: %{mregnames} %{mno-regnames}} \
-%{v:-V} %{Qy:} %{!Qn:-Qy} %{Wa,*:%*} \
+%{Qy:} %{!Qn:-Qy} \
 %{mlittle} %{mlittle-endian} %{mbig} %{mbig-endian}"
 
 #undef	SUBSUBTARGET_EXTRA_SPECS
@@ -304,15 +304,15 @@ extern int dot_symbols;
 #define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
   (!(FIRST) ? upward : FUNCTION_ARG_PADDING (MODE, TYPE))
 
-/* Override svr4.h  */
-#undef MD_EXEC_PREFIX
-#undef MD_STARTFILE_PREFIX
-
 /* Linux doesn't support saving and restoring 64-bit regs in a 32-bit
    process.  */
 #define OS_MISSING_POWERPC64 !TARGET_64BIT
 
+#ifdef SINGLE_LIBC
+#define OPTION_GLIBC  (DEFAULT_LIBC == LIBC_GLIBC)
+#else
 #define OPTION_GLIBC  (linux_libc == LIBC_GLIBC)
+#endif
 
 /* glibc has float and long double forms of math functions.  */
 #undef  TARGET_C99_FUNCTIONS
@@ -392,11 +392,11 @@ extern int dot_symbols;
 
 #define LINK_OS_LINUX_SPEC32 "-m elf32ppclinux %{!shared: %{!static: \
   %{rdynamic:-export-dynamic} \
-  %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER32 "}}}"
+  -dynamic-linker " LINUX_DYNAMIC_LINKER32 "}}"
 
 #define LINK_OS_LINUX_SPEC64 "-m elf64ppc %{!shared: %{!static: \
   %{rdynamic:-export-dynamic} \
-  %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER64 "}}}"
+  -dynamic-linker " LINUX_DYNAMIC_LINKER64 "}}"
 
 #undef  TOC_SECTION_ASM_OP
 #define TOC_SECTION_ASM_OP \

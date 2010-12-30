@@ -1221,7 +1221,10 @@ canonicalize_loop_ivs (struct loop *loop, tree *nit, bool bump_in_latch)
 	gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
     }
 
-  gsi = gsi_last_nondebug_bb (bump_in_latch ? loop->latch : loop->header);
+  if (bump_in_latch)
+    gsi = gsi_last_bb (loop->latch);
+  else
+    gsi = gsi_last_nondebug_bb (loop->header);
   create_iv (build_int_cst_type (type, 0), build_int_cst (type, 1), NULL_TREE,
 	     loop, &gsi, bump_in_latch, &var_before, NULL);
 

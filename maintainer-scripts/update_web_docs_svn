@@ -15,6 +15,7 @@ MANUALS="cpp
   cppinternals
   fastjar
   gcc
+  gccgo
   gccint
   gcj
   gfortran
@@ -27,6 +28,7 @@ MANUALS="cpp
   gnat-style
   gnat_rm
   libgomp
+  libquadmath
   libiberty
   porting"
 

@@ -1,3 +1,314 @@
+2010-12-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR libstdc++/46869
+	* testsuite/20_util/enable_shared_from_this/cons/constexpr.cc:
+	Compile with -g0.
+	* testsuite/20_util/shared_ptr/cons/constexpr.cc: Likewise.
+	* testsuite/20_util/unique_ptr/cons/constexpr.cc: Likewise.
+	* testsuite/20_util/weak_ptr/cons/constexpr.cc: Likewise.
+
+2010-12-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/basic_string.h (operator+(basic_string<>&&,
+	basic_string<>&&)): Optimize better.
+	* include/ext/vstring.h (operator+(__versa_string<>&&,
+	__versa_string<>&)): Likewise.
+
+2010-12-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/21_strings/basic_string/operators/char/4.cc: New.
+	* testsuite/21_strings/basic_string/operators/wchar_t/4.cc: Likewise.
+	* testsuite/ext/vstring/operators/2.cc: Likewise.
+
+2010-11-18  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/*/*: Use headername alias to associate private includes
+	to public includes.
+	* include/*/*: Same.
+
+	* scripts/run_doxygen: Update for doxygen 1.7.2.
+	* doc/doxygen/user.cfg.in: Same.
+	* doc/doxygen/TODO: Remove.
+
+	* testsuite/*/std_c++0x_neg.cc: Adjust line number.
+
+2010-12-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/basic_string.h (operator+(basic_string<>&&,
+	const basic_string<>&), operator+(const basic_string<>&,
+	basic_string<>&&), operator+(basic_string<>&&, basic_string<>&&),
+	operator+(const _CharT*, basic_string<>&&), operator+(_CharT,
+	basic_string<>&&), operator+(basic_string<>&&, const _CharT*),
+	operator+(basic_string<>&&, _CharT)): Add.
+	* testsuite/21_strings/basic_string/operators/char/3.cc: New.
+	* testsuite/21_strings/basic_string/operators/wchar_t/3.cc: Likewise.
+
+2010-12-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* aclocal.m4: Regenerate.
+	* Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+	* libsupc++/Makefile.in: Likewise.
+	* include/Makefile.in: Likewise.
+	* po/Makefile.in: Likewise.
+	* doc/Makefile.in: Likewise.
+	* src/Makefile.in: Likewise.
+	* python/Makefile.in: Likewise.
+
+2010-11-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/util/testsuite_iterators.h: Guard move.h includes.
+	* testsuite/util/testsuite_allocator.h: Same.
+
+	* testsuite/20_util/temporary_buffer.cc: Use typedef, qualify.
+
+	* testsuite/ext/pb_ds/regression/hash_data_map_rand.cc: Define
+	PB_DS_REGRESSION in the source file.
+	* testsuite/ext/pb_ds/regression/trie_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/list_update_no_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/tree_no_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/list_update_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/hash_no_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/priority_queue_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/tree_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/trie_no_data_map_rand.cc: Same.
+
+	* testsuite/21_strings/c_strings/wchar_t/3_neg.cc: Move to this.
+	Use _neg suffix.
+	* testsuite/21_strings/c_strings/wchar_t/3.cc: ...from this.
+	* testsuite/21_strings/c_strings/char/3_neg.cc: Same.
+	* testsuite/21_strings/c_strings/char/3.cc: Same.
+	* testsuite/ext/slist/23781_neg.cc: Same.
+	* testsuite/ext/slist/23781.cc: Same.
+	* testsuite/ext/profile/mutex_extensions.cc: Same.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Same.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/43820.cc: Same.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/43820_neg.cc: Same.
+	* testsuite/tr1/6_containers/tuple/comparison_operators/35480_neg.cc:
+	Same.
+	* testsuite/tr1/6_containers/tuple/comparison_operators/35480.cc: Same.
+	* testsuite/23_containers/multimap/23781_neg.cc: Same.
+	* testsuite/23_containers/multimap/23781.cc: Same.
+	* testsuite/23_containers/set/23781_neg.cc: Same.
+	* testsuite/23_containers/set/23781.cc: Same.
+	* testsuite/23_containers/multiset/23781_neg.cc: Same.
+	* testsuite/23_containers/multiset/23781.cc: Same.
+	* testsuite/23_containers/list/23781_neg.cc: Same.
+	* testsuite/23_containers/list/23781.cc: Same.
+	* testsuite/23_containers/map/23781_neg.cc: Same.
+	* testsuite/23_containers/map/23781.cc: Same.
+	* testsuite/20_util/duration/cons/dr974_neg.cc: Same.
+	* testsuite/20_util/duration/cons/dr974.cc: Same.
+	* testsuite/20_util/tuple/comparison_operators/35480_neg.cc: Same.
+	* testsuite/20_util/tuple/comparison_operators/35480.cc: Same.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Same.
+	* testsuite/20_util/shared_ptr/cons/43820.cc: Same.
+	* testsuite/20_util/unique_ptr/cons/pointer_array_convertible_neg.cc:
+	Same.
+	* testsuite/20_util/unique_ptr/cons/pointer_array_convertible.cc: Same.
+
+2010-12-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/ext/vstring.h (operator+(__versa_string<>&&,
+	const __versa_string<>&), operator+(const __versa_string<>&,
+	__versa_string<>&&), operator+(__versa_string<>&&,
+	__versa_string<>&&), operator+(const _CharT*,
+	__versa_string<>&&), operator+(_CharT, __versa_string<>&&),
+	operator+(__versa_string<>&&, const _CharT*),
+	operator+(__versa_string<>&&, _CharT)): Add.
+	* testsuite/ext/vstring/operators/1.cc: New.
+
+2010-12-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/46951
+	* testsuite/30_threads/future/members/45133.cc: Fix dg-options.
+	* testsuite/30_threads/shared_future/members/45133.cc: Likewise.
+
+2010-12-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/45133
+	* include/std/future (__basic_future::wait): Throw if not valid.
+	(__basic_future::wait_for): Likewise.
+	(__basic_future::wait_until): Likewise.
+	(__basic_future::_M_get_result): Likewise.
+	* testsuite/30_threads/future/members/45133.cc: New.
+	* testsuite/30_threads/shared_future/members/45133.cc: New.
+
+2010-12-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/46910
+	* include/bits/shared_ptr_base.h (_Sp_counted_deleter): Do not
+	derive from _Sp_counted_ptr.
+	* testsuite/20_util/shared_ptr/cons/46910.cc: New.
+	* testsuite/20_util/shared_ptr/cons/43820.cc: Adjust.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust.
+
+2010-12-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/abi/post/solaris2.8/baseline_symbols.txt: Regenerate.
+	* config/abi/post/solaris2.8/sparcv9/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/amd64/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/sparcv9/baseline_symbols.txt: Likewise.
+
+2010-12-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/util/testsuite_abi.cc (check_version): Don't push back
+	GLIBCXX_3.4.16, unused.
+
+2010-12-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/lib/libstdc++.exp (v3-build_support): Delete
+	libtestc++.a before creation.
+
+2010-12-10  Jack Howarth  <howarth@bromo.med.uc.edu>
+	    Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR 43751/target
+	* testsuite/lib/prune.exp: Prune dsymutil warnings.
+
+2010-12-08  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR testsuite/46860
+	* testsuite/20_util/auto_ptr/assign_neg.cc: Adjust.
+	* testsuite/20_util/unique_ptr/assign/assign_neg.cc: Adjust.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust.
+
+2010-12-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/bitset (_Base_bitset<>::_Base_bitset(),
+	_Base_bitset(unsigned long)): Simplify.
+
+2010-12-07  François Dumont  <francois.cppdevs@free.fr>
+
+	* include/bits/stl_iterator.h: Add move_iterator operators overloads
+	to make it robust to template abuses.
+	* testsuite/util/testsuite_greedy_ops.h: New.
+	* testsuite/23_containers/vector/types/1.cc: Use latter.
+	* testsuite/23_containers/deque/types/1.cc: Likewise.
+	* testsuite/24_iterators/move_iterator/greedy_ops.cc: New.
+	* testsuite/24_iterators/normal_iterator/greedy_ops.cc: New.
+	* testsuite/24_iterators/reverse_iterator/greedy_ops.cc: New.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust dg-error
+	line numbers.
+
+2010-12-06  Paul Pluzhnikov  <ppluzhnikov@google.com>
+
+	PR libstdc++/46830
+	* include/ext/sso_string_base.h (__sso_string_base<>::_M_swap):
+	Early return when this == &__rcs.
+
+2010-12-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/shared_ptr.h (shared_ptr<>::shared_ptr(_Tp1*, _Deleter,
+	const _Alloc&), shared_ptr(nullptr_t, _Deleter, const _Alloc&)): Take
+	the allocator by value, per N3225.
+	(shared_ptr<>::shared_ptr(_Sp_make_shared_tag, _Alloc, _Args&&...),
+	allocate_shared(_Alloc, _Args&&...): Viceversa, take the allocator
+	by const lvalue ref.
+	* include/bits/shared_ptr_base.h (__shared_count<>::
+	__shared_count(_Sp_make_shared_tag, _Tp*, _Alloc, _Args&&...),
+	__shared_ptr<>::__shared_ptr(_Sp_make_shared_tag, _Alloc, _Args&&...),
+	__allocate_shared(_Alloc, _Args&&...)): Likewise.
+	(__shared_ptr<>::__shared_ptr(_Tp1*, _Deleter, const _Alloc&),
+	__shared_ptr(nullptr_t, _Deleter, const _Alloc&), reset(_Tp1*,
+	_Deleter, const _Alloc&)): Take the allocator by value.
+	* testsuite/20_util/shared_ptr/cons/43820.cc: Adjust dg-error line
+	numbers.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Likewise.
+
+2010-12-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* acinclude.m4 (symvers_renaming): Also set if enable_symvers = no.
+	* configure: Regenerate.
+
+2010-12-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/46821
+	* include/std/tuple (_Head_base<,, true>::_M_swap_impl):
+	Swap the empty bases.
+	(_Head_base<,, false>::_M_swap_impl): Minor tweak.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust dg-error
+	line number.
+
+2010-12-06  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR target/40125
+	PR lto/46695
+	* configure.ac: Invoke ACX_LT_HOST_FLAGS.
+	* configure.host (OPT_LDFLAGS): Use lt_host_flags for cygming.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* doc/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* python/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2010-12-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/mutex (try_lock, __try_lock_impl): Fix.
+	(lock): Implement using __try_lock_impl.
+	* testsuite/30_threads/try_lock/2.cc: Fix logic.
+	* testsuite/30_threads/try_lock/4.cc: New.
+	* testsuite/30_threads/lock/1.cc: New.
+	* testsuite/30_threads/lock/2.cc: New.
+	* testsuite/30_threads/lock/3.cc: New.
+	* testsuite/30_threads/lock/4.cc: New.
+
+2010-12-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* src/future.cc (future_category): Export compatibility symbol.
+	* config/abi/pre/gnu.ver: Move _ZSt15future_categoryv to 3.4.15
+	version.
+
+2010-12-02  François Dumont  <francois.cppdevs@free.fr>
+
+	* testsuite/23_containers/vector/requirements/explicit_instantiation/
+	2.cc: Hide explicit instantiation with non default constructible type
+	in C++0x mode.
+	* testsuite/23_containers/deque/requirements/explicit_instantiation/
+	2.cc: Likewise.
+	* testsuite/23_containers/list/requirements/explicit_instantiation/
+	2.cc: Likewise.
+
+2010-12-02  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR libstdc++/43738
+	* config/io/basic_file_stdio.cc (showmanyc): Check _GLIBCXX_NO_IOCTL
+	before use of ioctl.
+	* config/os/mingw32/os_defines.h (_GLIBCXX_NO_IOCTL): New.
+
+2010-12-01  François Dumont  <francois.cppdevs@free.fr>
+
+	* testsuite/23_containers/deque/cons/2.cc: Fix to explicitly invoke
+	the copy constructor with or without C++0x mode.
+	* testsuite/23_containers/vector/cons/4.cc: Likewise.
+
+2010-12-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* scripts/extract_symvers.pl: New file.
+	* scripts/extract_symvers: Rename to ...
+	* scripts/extract_symvers.in: ... this.
+	Use extract_symvers.pl on SunOS.
+	* configure.ac: Add scripts/extract_symvers to AC_CONFIG_FILES.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* testsuite/Makefile.am (extract_symvers): Call extract_symvers
+	from $(glibcxx_builddir).
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/libstdc++-abi/abi.exp: Call extract_symvers from
+	$objdir.
+
+	* config/abi/post/solaris2.8/baseline_symbols.txt: Regenerate.
+	* config/abi/post/solaris2.8/sparcv9/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/amd64/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/sparcv9/baseline_symbols.txt: Likewise.
+
 2010-11-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/46718

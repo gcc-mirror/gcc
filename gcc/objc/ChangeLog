@@ -1,3 +1,116 @@
+2010-12-28  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/47076
+	* objc-act.c (lookup_protocol): Added 'definition_required'
+	argument.  If 'definition_required', and the protocol is not
+	defined, emit a warning.
+	(objc_declare_protocols): Updated call to lookup_protocol.
+	(start_protocol): Same change.
+	(check_protocol_recursively): Same change.
+	(objc_build_protocol_expr): Same change.
+	(lookup_and_install_protocols): Added definition_required argument.
+	Pass it to lookup_protocol.
+	(objc_get_protocol_qualified_type): Updated call to
+	lookup_and_install_protocols.
+	(start_class): Updated calls to lookup_and_install_protocols; pass
+	true to 'definition_required' to get the warnings.
+	(start_protocol): Updated calls to lookup_and_install_protocols.
+
+2010-12-28  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_start_category_interface): Produce an error if
+	a class extension is found after the class @implementation.
+
+2010-12-28  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/47073
+	* objc-act.c (encode_method_prototype): Fixed both location and
+	format string of error "type %qT does not have a known size".
+
+2010-12-26  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* config-lang.in (gtfiles): Added c-family/c-cppbuiltin.c.
+
+2010-12-22  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* objc-act.c (next_sjlj_build_enter_and_setjmp): Use prototype_p.
+
+2010-12-18  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_init): Call using_eh_for_cleanups.
+	(objc_init_exceptions): Renamed to objc_maybe_warn_exceptions.  Do
+	not call using_eh_for_cleanups.
+	(objc_begin_try_stmt): Do not call objc_init_exceptions.
+	(objc_build_throw_stmt): Updated call to
+	objc_maybe_warn_exceptions.
+
+2010-12-18  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc/objc-act.c (objc_eh_personality): Select personality name on
+	runtime.
+	(objc_init_exceptions): New.
+	(objc_begin_try_stmt): Use objc_init_exceptions.
+	(objc_build_throw_stmt): Likewise.
+
+2010-12-10  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_in_class_extension): New.
+	(objc_start_category_interface): If -fobjc-std=objc1
+	was specified, produce an error if a class extension is used.
+	(objc_finish_interface): Reset objc_in_class_extension to false.
+	(objc_add_property_declaration): Allow a class extension to extend
+	readonly properties in the main @interface to be readwrite.
+	(start_class): Added code to deal with class extensions.  In that
+	case, return the existing interface after adding any additional
+	protocols to it and setting objc_in_class_extension to true.
+	(continue_class): If in a class extension, do not generate the
+	instance variable template.
+
+2010-12-08  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_build_throw_stmt): Check that the argument of
+	@throw is an object and emit an error if not.
+
+2010-12-08  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_finish_foreach_loop): Use error_at() instead of
+	error() when printing an error about the iterating variable or
+	collection not being an object.
+
+2010-12-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_finish_foreach_loop): Mark the
+	object_expression as used.
+
+2010-12-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c: Include c-family/c-objc.h.
+	* objc-lang.c: Same change.
+	* Make-lang.in (objc/objc-act.o): Depend on
+	c-family/c-objc.h.
+	(objc/objc-lang.o): Same change.
+	* config-lang.in (gtfiles): Added c-family/c-objc.h.
+	
+2010-12-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* lang-specs.h: Don't handle -ftraditional.
+
+2010-12-02  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_build_throw_stmt): Return error_mark_node and
+	not NULL_TREE when a @throw is used outside of a @catch block.
+
+2010-11-30  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_build_volatilized_type): Removed.
+	(objc_non_volatilized_type): Removed.
+	(objc_type_quals_match): Removed.
+	(local_variables_to_volatilize): New.
+	(objc_volatilize_decl): Add the decl to volatilize to
+	local_variables_to_volatilize, but don't volatilize it yet.
+	(objc_finish_function): New.
+	* objc-act.h (local_variables_to_volatilize): New.
+
 2010-11-29  Nicola Pero  <nicola.pero@meta-innovation.com>
 	    Mike Stump  <mikestump@comcast.net>
 

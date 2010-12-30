@@ -102,7 +102,7 @@ package body Checks is
    --  how we ensure that this condition is met.
 
    --  First, we need to know for certain that the previous expression has
-   --  been executed. This is done principly by the mechanism of calling
+   --  been executed. This is done principally by the mechanism of calling
    --  Conditional_Statements_Begin at the start of any statement sequence
    --  and Conditional_Statements_End at the end. The End call causes all
    --  checks remembered since the Begin call to be discarded. This does
@@ -159,7 +159,7 @@ package body Checks is
       Target_Type : Entity_Id;
       --  Used only if Do_Range_Check is set. Records the target type for
       --  the check. We need this, because a check is a duplicate only if
-      --  it has a the same target type (or more accurately one with a
+      --  it has the same target type (or more accurately one with a
       --  range that is smaller or equal to the stored target type of a
       --  saved check).
    end record;
@@ -650,10 +650,11 @@ package body Checks is
          return;
       end if;
 
-      --  Here we do not know if the value is acceptable. Stricly we don't have
-      --  to do anything, since if the alignment is bad, we have an erroneous
-      --  program. However we are allowed to check for erroneous conditions and
-      --  we decide to do this by default if the check is not suppressed.
+      --  Here we do not know if the value is acceptable. Strictly we don't
+      --  have to do anything, since if the alignment is bad, we have an
+      --  erroneous program. However we are allowed to check for erroneous
+      --  conditions and we decide to do this by default if the check is not
+      --  suppressed.
 
       --  However, don't do the check if elaboration code is unwanted
 
@@ -1003,7 +1004,7 @@ package body Checks is
          return;
       end if;
 
-      --  Apply required constaint checks
+      --  Apply required constraint checks
 
       if Is_Scalar_Type (Typ) then
          Apply_Scalar_Range_Check (N, Typ);
@@ -2148,7 +2149,7 @@ package body Checks is
 
                --  If checks are off, then analyze the length check after
                --  temporarily attaching it to the tree in case the relevant
-               --  condition can be evaluted at compile time. We still want a
+               --  condition can be evaluated at compile time. We still want a
                --  compile time warning in this case.
 
                else
@@ -2770,7 +2771,7 @@ package body Checks is
               ("use `OR ELSE` instead of OR?", P);
          end if;
 
-         --  If not short-circuited, we need the ckeck
+         --  If not short-circuited, we need the check
 
          return True;
 
@@ -4029,7 +4030,7 @@ package body Checks is
       then
          return;
 
-      --  No check on a univeral real constant. The context will eventually
+      --  No check on a universal real constant. The context will eventually
       --  convert it to a machine number for some target type, or report an
       --  illegality.
 
@@ -4038,7 +4039,7 @@ package body Checks is
       then
          return;
 
-      --  If the expression denotes a component of a packed boolean arrray,
+      --  If the expression denotes a component of a packed boolean array,
       --  no possible check applies. We ignore the old ACATS chestnuts that
       --  involve Boolean range True..True.
 
@@ -5226,7 +5227,7 @@ package body Checks is
               Reason => CE_Invalid_Data),
             Suppress => Validity_Check);
 
-         --  If the expression is a a reference to an element of a bit-packed
+         --  If the expression is a reference to an element of a bit-packed
          --  array, then it is rewritten as a renaming declaration. If the
          --  expression is an actual in a call, it has not been expanded,
          --  waiting for the proper point at which to do it. The same happens
@@ -5343,7 +5344,7 @@ package body Checks is
                   return False;
                end if;
 
-               --  If we are in a case eexpression, and not part of the
+               --  If we are in a case expression, and not part of the
                --  expression, then we return False, since a particular
                --  branch may not always be elaborated
 
@@ -6073,7 +6074,7 @@ package body Checks is
             --  The checking code to be generated will freeze the
             --  corresponding array type. However, we must freeze the
             --  type now, so that the freeze node does not appear within
-            --  the generated condional expression, but ahead of it.
+            --  the generated conditional expression, but ahead of it.
 
             Freeze_Before (Ck_Node, T_Typ);
 

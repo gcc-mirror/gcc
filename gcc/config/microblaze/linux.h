@@ -30,6 +30,6 @@
   %{!shared: \
     %{!static: \
       %{rdynamic:-export-dynamic} \
-      %{!dynamic-linker:-dynamic-linker %(dynamic_linker)}} \
+      -dynamic-linker %(dynamic_linker)} \
     %{static:-static}}"
 

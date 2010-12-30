@@ -163,7 +163,7 @@ gen_formal_list_for_type (tree fntype, formals_style style)
 
   if (!*formal_list)
     {
-      if (TYPE_ARG_TYPES (fntype))
+      if (prototype_p (fntype))
 	/* assert (TREE_VALUE (TYPE_ARG_TYPES (fntype)) == void_type_node);  */
 	formal_list = "void";
       else

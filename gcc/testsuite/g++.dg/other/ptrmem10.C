@@ -3,7 +3,7 @@
 
 template <class C, void (C::*M) ()>
 static
-void foo(void *obj)		// { dg-message "candidate" }
+void foo(void *obj)		// { dg-message "note" }
 {
   C *p = static_cast<C*>(obj);
   (p->*M)();
@@ -14,6 +14,7 @@ static void
 bar(C *c, void (C::*m) ())
 {
   foo<C,m>((void *)c);// { dg-error "(not a valid template arg|pointer-to-member|no matching fun)" }
+  // { dg-message "candidate" "candidate note" { target *-*-* } 16 }
 }
 
 struct S

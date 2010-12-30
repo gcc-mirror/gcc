@@ -1,3 +1,15 @@
+2010-12-13  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR target/46040
+	* config/arm/bpabi.h: Rename to...
+	* config/arm/bpabi-lib.h: ...this.
+
+2010-12-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Use i386/t-crtstuff on i?86-*-solaris2* if
+	appropriate.
+	* configure: Regenerate.
+
 2010-11-24  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/libbid/bid_conf.h (BID_BIG_ENDIAN): Define in terms of

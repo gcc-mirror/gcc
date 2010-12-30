@@ -73,11 +73,11 @@ along with GCC; see the file COPYING3.  If not see
    %{!shared: \
      -dc -dp \
      %{!nostdlib: \
-       %{!r*: \
+       %{!r: \
 	 %{!e*:-e %(netbsd_entry_point)}}} \
      %{!static: \
        %{rdynamic:-export-dynamic} \
-       %{!dynamic-linker:-dynamic-linker /usr/libexec/ld.elf_so}} \
+       -dynamic-linker /usr/libexec/ld.elf_so} \
      %{static:-static}}"
 
 /* Use --as-needed -lgcc_s for eh support.  */

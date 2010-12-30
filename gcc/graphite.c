@@ -35,34 +35,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "ggc.h"
-#include "tree.h"
-#include "rtl.h"
-#include "basic-block.h"
-#include "diagnostic.h"
+#include "diagnostic-core.h"
 #include "tree-flow.h"
 #include "tree-dump.h"
-#include "timevar.h"
 #include "cfgloop.h"
 #include "tree-chrec.h"
 #include "tree-data-ref.h"
 #include "tree-scalar-evolution.h"
-#include "tree-pass.h"
-#include "value-prof.h"
-#include "pointer-set.h"
-#include "gimple.h"
 #include "sese.h"
-#include "predict.h"
 #include "dbgcnt.h"
 
 #ifdef HAVE_cloog
 
-#include "cloog/cloog.h"
 #include "ppl_c.h"
-#include "graphite-cloog-compat.h"
 #include "graphite-ppl.h"
-#include "graphite.h"
 #include "graphite-poly.h"
 #include "graphite-scop-detection.h"
 #include "graphite-clast-to-gimple.h"
@@ -262,7 +248,6 @@ graphite_transform_loops (void)
   bool need_cfg_cleanup_p = false;
   VEC (scop_p, heap) *scops = NULL;
   htab_t bb_pbb_mapping;
-  sbitmap reductions;
 
   if (!graphite_initialize ())
     return;
@@ -276,33 +261,17 @@ graphite_transform_loops (void)
     }
 
   bb_pbb_mapping = htab_create (10, bb_pbb_map_hash, eq_bb_pbb_map, free);
-  reductions = sbitmap_alloc (last_basic_block * 2);
-  sbitmap_zero (reductions);
-
-  FOR_EACH_VEC_ELT (scop_p, scops, i, scop)
-    if (dbg_cnt (graphite_scop))
-      rewrite_commutative_reductions_out_of_ssa (SCOP_REGION (scop),
-						 reductions);
 
   FOR_EACH_VEC_ELT (scop_p, scops, i, scop)
     if (dbg_cnt (graphite_scop))
       {
-	rewrite_reductions_out_of_ssa (scop);
-	rewrite_cross_bb_scalar_deps_out_of_ssa (scop);
-	build_scop_bbs (scop, reductions);
+	build_poly_scop (scop);
+
+	if (POLY_SCOP_P (scop)
+	    && apply_poly_transforms (scop)
+	    && gloog (scop, bb_pbb_mapping))
+	  need_cfg_cleanup_p = true;
       }
-
-  sbitmap_free (reductions);
-
-  FOR_EACH_VEC_ELT (scop_p, scops, i, scop)
-    if (dbg_cnt (graphite_scop))
-      build_poly_scop (scop);
-
-  FOR_EACH_VEC_ELT (scop_p, scops, i, scop)
-    if (POLY_SCOP_P (scop)
-	&& apply_poly_transforms (scop)
-	&& gloog (scop, bb_pbb_mapping))
-      need_cfg_cleanup_p = true;
 
   htab_delete (bb_pbb_mapping);
   free_scops (scops);

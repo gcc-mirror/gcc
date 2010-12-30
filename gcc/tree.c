@@ -7117,6 +7117,7 @@ static tree
 build_range_type_1 (tree type, tree lowval, tree highval, bool shared)
 {
   tree itype = make_node (INTEGER_TYPE);
+  hashval_t hashcode = 0;
 
   TREE_TYPE (itype) = type;
 
@@ -7130,6 +7131,9 @@ build_range_type_1 (tree type, tree lowval, tree highval, bool shared)
   TYPE_ALIGN (itype) = TYPE_ALIGN (type);
   TYPE_USER_ALIGN (itype) = TYPE_USER_ALIGN (type);
 
+  if (!shared)
+    return itype;
+
   if ((TYPE_MIN_VALUE (itype)
        && TREE_CODE (TYPE_MIN_VALUE (itype)) != INTEGER_CST)
       || (TYPE_MAX_VALUE (itype)
@@ -7141,13 +7145,10 @@ build_range_type_1 (tree type, tree lowval, tree highval, bool shared)
       return itype;
     }
 
-  if (shared)
-    {
-      hashval_t hash = iterative_hash_expr (TYPE_MIN_VALUE (itype), 0);
-      hash = iterative_hash_expr (TYPE_MAX_VALUE (itype), hash);
-      hash = iterative_hash_hashval_t (TYPE_HASH (type), hash);
-      itype = type_hash_canon (hash, itype);
-    }
+  hashcode = iterative_hash_expr (TYPE_MIN_VALUE (itype), hashcode);
+  hashcode = iterative_hash_expr (TYPE_MAX_VALUE (itype), hashcode);
+  hashcode = iterative_hash_hashval_t (TYPE_HASH (type), hashcode);
+  itype = type_hash_canon (hashcode, itype);
 
   return itype;
 }
@@ -8538,8 +8539,12 @@ get_file_function_name (const char *type)
     p = q = ASTRDUP (first_global_object_name);
   /* If the target is handling the constructors/destructors, they
      will be local to this file and the name is only necessary for
-     debugging purposes.  */
-  else if ((type[0] == 'I' || type[0] == 'D') && targetm.have_ctors_dtors)
+     debugging purposes. 
+     We also assign sub_I and sub_D sufixes to constructors called from
+     the global static constructors.  These are always local.  */
+  else if (((type[0] == 'I' || type[0] == 'D') && targetm.have_ctors_dtors)
+	   || (strncmp (type, "sub_", 4) == 0
+	       && (type[4] == 'I' || type[4] == 'D')))
     {
       const char *file = main_input_filename;
       if (! file)
@@ -9344,12 +9349,6 @@ build_common_builtin_nodes (void)
   local_define_builtin ("__builtin_stack_restore", ftype,
 			BUILT_IN_STACK_RESTORE,
 			"__builtin_stack_restore", ECF_NOTHROW | ECF_LEAF);
-
-  ftype = build_function_type_list (void_type_node, NULL_TREE);
-  local_define_builtin ("__builtin_profile_func_enter", ftype,
-			BUILT_IN_PROFILE_FUNC_ENTER, "profile_func_enter", 0);
-  local_define_builtin ("__builtin_profile_func_exit", ftype,
-			BUILT_IN_PROFILE_FUNC_EXIT, "profile_func_exit", 0);
 
   /* If there's a possibility that we might use the ARM EABI, build the
     alternate __cxa_end_cleanup node used to resume from C++ and Java.  */
@@ -10978,7 +10977,7 @@ lhd_gcc_personality (void)
 tree
 get_binfo_at_offset (tree binfo, HOST_WIDE_INT offset, tree expected_type)
 {
-  tree type = TREE_TYPE (binfo);
+  tree type = BINFO_TYPE (binfo);
 
   while (true)
     {
@@ -10986,10 +10985,9 @@ get_binfo_at_offset (tree binfo, HOST_WIDE_INT offset, tree expected_type)
       tree fld;
       int i;
 
-      if (type == expected_type)
+      if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (expected_type))
 	  return binfo;
-      if (TREE_CODE (type) != RECORD_TYPE
-	  || offset < 0)
+      if (offset < 0)
 	return NULL_TREE;
 
       for (fld = TYPE_FIELDS (type); fld; fld = DECL_CHAIN (fld))
@@ -11002,12 +11000,18 @@ get_binfo_at_offset (tree binfo, HOST_WIDE_INT offset, tree expected_type)
 	  if (pos <= offset && (pos + size) > offset)
 	    break;
 	}
-      if (!fld || !DECL_ARTIFICIAL (fld))
+      if (!fld || TREE_CODE (TREE_TYPE (fld)) != RECORD_TYPE)
 	return NULL_TREE;
 
+      if (!DECL_ARTIFICIAL (fld))
+	{
+	  binfo = TYPE_BINFO (TREE_TYPE (fld));
+	  if (!binfo)
+	    return NULL_TREE;
+	}
       /* Offset 0 indicates the primary base, whose vtable contents are
 	 represented in the binfo for the derived class.  */
-      if (offset != 0)
+      else if (offset != 0)
 	{
 	  tree base_binfo, found_binfo = NULL_TREE;
 	  for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
@@ -11041,6 +11045,111 @@ bool
 typedef_variant_p (tree type)
 {
   return is_typedef_decl (TYPE_NAME (type));
+}
+
+/* Warn about a use of an identifier which was marked deprecated.  */
+void
+warn_deprecated_use (tree node, tree attr)
+{
+  const char *msg;
+
+  if (node == 0 || !warn_deprecated_decl)
+    return;
+
+  if (!attr)
+    {
+      if (DECL_P (node))
+	attr = DECL_ATTRIBUTES (node);
+      else if (TYPE_P (node))
+	{
+	  tree decl = TYPE_STUB_DECL (node);
+	  if (decl)
+	    attr = lookup_attribute ("deprecated",
+				     TYPE_ATTRIBUTES (TREE_TYPE (decl)));
+	}
+    }
+
+  if (attr)
+    attr = lookup_attribute ("deprecated", attr);
+
+  if (attr)
+    msg = TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr)));
+  else
+    msg = NULL;
+
+  if (DECL_P (node))
+    {
+      expanded_location xloc = expand_location (DECL_SOURCE_LOCATION (node));
+      if (msg)
+	warning (OPT_Wdeprecated_declarations,
+		 "%qD is deprecated (declared at %s:%d): %s",
+		 node, xloc.file, xloc.line, msg);
+      else
+	warning (OPT_Wdeprecated_declarations,
+		 "%qD is deprecated (declared at %s:%d)",
+		 node, xloc.file, xloc.line);
+    }
+  else if (TYPE_P (node))
+    {
+      tree what = NULL_TREE;
+      tree decl = TYPE_STUB_DECL (node);
+
+      if (TYPE_NAME (node))
+	{
+	  if (TREE_CODE (TYPE_NAME (node)) == IDENTIFIER_NODE)
+	    what = TYPE_NAME (node);
+	  else if (TREE_CODE (TYPE_NAME (node)) == TYPE_DECL
+		   && DECL_NAME (TYPE_NAME (node)))
+	    what = DECL_NAME (TYPE_NAME (node));
+	}
+
+      if (decl)
+	{
+	  expanded_location xloc
+	    = expand_location (DECL_SOURCE_LOCATION (decl));
+	  if (what)
+	    {
+	      if (msg)
+		warning (OPT_Wdeprecated_declarations,
+			 "%qE is deprecated (declared at %s:%d): %s",
+			 what, xloc.file, xloc.line, msg);
+	      else
+		warning (OPT_Wdeprecated_declarations,
+			 "%qE is deprecated (declared at %s:%d)", what,
+			 xloc.file, xloc.line);
+	    }
+	  else
+	    {
+	      if (msg)
+		warning (OPT_Wdeprecated_declarations,
+			 "type is deprecated (declared at %s:%d): %s",
+			 xloc.file, xloc.line, msg);
+	      else
+		warning (OPT_Wdeprecated_declarations,
+			 "type is deprecated (declared at %s:%d)",
+			 xloc.file, xloc.line);
+	    }
+	}
+      else
+	{
+	  if (what)
+	    {
+	      if (msg)
+		warning (OPT_Wdeprecated_declarations, "%qE is deprecated: %s",
+			 what, msg);
+	      else
+		warning (OPT_Wdeprecated_declarations, "%qE is deprecated", what);
+	    }
+	  else
+	    {
+	      if (msg)
+		warning (OPT_Wdeprecated_declarations, "type is deprecated: %s",
+			 msg);
+	      else
+		warning (OPT_Wdeprecated_declarations, "type is deprecated");
+	    }
+	}
+    }
 }
 
 #include "gt-tree.h"

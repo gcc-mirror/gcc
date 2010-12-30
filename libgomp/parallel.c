@@ -1,4 +1,4 @@
-/* Copyright (C) 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -123,6 +123,7 @@ GOMP_parallel_end (void)
 #else
 	  gomp_mutex_lock (&gomp_remaining_threads_lock);
 	  gomp_remaining_threads_count -= team->nthreads - 1;
+	  gomp_mutex_unlock (&gomp_remaining_threads_lock);
 #endif
 	}
     }

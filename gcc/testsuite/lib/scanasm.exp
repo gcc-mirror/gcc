@@ -339,8 +339,13 @@ proc dg-function-on-line { args } {
 	}
     }
 
-    set pattern [format {%s:[^\t]*(\t.(fnstart|frame|mask|file)[^\t]*)*\t[^:]+:%d\n} \
-                 $symbol $line]
+    if { [istarget "hppa*-*-*"] } {
+	set pattern [format {\t;[^:]+:%d\n(\t[^\t]+\n)+%s:\n\t.PROC} \
+                     $line $symbol]
+    } else {
+	set pattern [format {%s:[^\t]*(\t.(fnstart|frame|mask|file)[^\t]*)*\t[^:]+:%d\n} \
+                     $symbol $line]
+    }
 
     # The lack of spaces around $pattern is important, since they'd
     # become part of the regex scan-assembler tries to match.

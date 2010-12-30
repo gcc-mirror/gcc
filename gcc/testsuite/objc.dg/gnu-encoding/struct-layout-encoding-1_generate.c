@@ -221,9 +221,9 @@ switchfiles (int fields)
       fputs ("failed to create test files\n", stderr);
       exit (1);
     }
-  /* FIXME: these tests should not be xfailed on PowerPC darwin or aix
-     but they are because libobjc uses GCC's headers for trying to find
-     the struct layout but it gets it wrong.  */
+  /* FIXME: these tests should not be xfailed on aix but they are because
+     libobjc uses GCC's headers for trying to find the struct layout but it
+     gets it wrong.  */
   if (filecnt == 2
       || filecnt == 3
       || filecnt == 4
@@ -236,7 +236,7 @@ switchfiles (int fields)
       || filecnt == 22)
      {
       fprintf (outfile, "\
-/* { dg-do run { xfail { { \"powerpc*-*-darwin*\" && { ! lp64 } } || { \"powerpc*-*-aix*\" } } } } */\n\
+/* { dg-do run { xfail { \"powerpc*-*-aix*\" } } } */\n\
 /* { dg-options \"-w -I%s -fgnu-runtime\" } */\n", srcdir);
      }
   /* FIXME: these should not be xfailed but they are because

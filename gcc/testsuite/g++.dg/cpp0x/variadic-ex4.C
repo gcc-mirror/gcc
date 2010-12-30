@@ -1,5 +1,5 @@
 // { dg-options "-std=gnu++0x" }
-template<class X, class Y, class Z> X f(Y,Z); // { dg-message "candidate" }
+template<class X, class Y, class Z> X f(Y,Z); // { dg-message "note" }
 template<class... Args> void f2();
 void g() 
 { 
@@ -8,5 +8,6 @@ void g()
   f<int>("aa",3.0); // Y is deduced to be char*, and 
                     // Z is deduced to be double 
   f("aa",3.0); // { dg-error "no matching" }
+  // { dg-message "candidate" "candidate note" { target *-*-* } 10 }
   f2<char, short, int, long>(); // okay
 } 

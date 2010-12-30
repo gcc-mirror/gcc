@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 4.5-b20100204\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-10-22 14:48+0000\n"
+"POT-Creation-Date: 2010-12-18 16:00+0000\n"
 "PO-Revision-Date: 2010-02-06 14:43+0100\n"
 "Last-Translator: Tim Van Holder <tim.van.holder@telenet.be>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
@@ -411,7 +411,7 @@ msgstr "\"%s\" opnieuw geasserteerd"
 msgid "unterminated #%s"
 msgstr "niet-beëindigde #%s"
 
-#: directives-only.c:222 lex.c:2068 traditional.c:163
+#: directives-only.c:222 lex.c:2074 traditional.c:163
 msgid "unterminated comment"
 msgstr "niet-beëindigde commentaar"
 
@@ -787,20 +787,20 @@ msgstr "nulkarakter(s) in een constante worden behouden"
 msgid "missing terminating %c character"
 msgstr "sluitend %c teken ontbreekt"
 
-#: lex.c:2079
+#: lex.c:2085
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "commentaar in C++ stijl is niet toegestaan in ISO C90"
 
-#: lex.c:2081
+#: lex.c:2087
 msgid "(this will be reported only once per input file)"
 msgstr "(dit wordt maar een keer gemeld per invoerbestand)"
 
-#: lex.c:2086
+#: lex.c:2092
 msgid "multi-line comment"
 msgstr "commentaar gespreid over meerdere lijnen"
 
 # lijkt een vreemde boodschap...
-#: lex.c:2406
+#: lex.c:2412
 #, c-format
 msgid "unspellable token %s"
 msgstr "kan token %s niet spellen"

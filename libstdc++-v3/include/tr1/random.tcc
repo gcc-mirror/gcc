@@ -25,7 +25,7 @@
 
 /** @file tr1/random.tcc
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{tr1/random}
  */
 
 #ifndef _GLIBCXX_TR1_RANDOM_TCC

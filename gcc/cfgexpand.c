@@ -2703,7 +2703,7 @@ expand_debug_expr (tree exp)
 	    enum machine_mode opmode = GET_MODE (op0);
 
 	    if (opmode == VOIDmode)
-	      opmode = mode1;
+	      opmode = TYPE_MODE (TREE_TYPE (tem));
 
 	    /* This condition may hold if we're expanding the address
 	       right past the end of an array that turned out not to
@@ -2724,7 +2724,8 @@ expand_debug_expr (tree exp)
 				     ? SIGN_EXTRACT
 				     : ZERO_EXTRACT, mode,
 				     GET_MODE (op0) != VOIDmode
-				     ? GET_MODE (op0) : mode1,
+				     ? GET_MODE (op0)
+				     : TYPE_MODE (TREE_TYPE (tem)),
 				     op0, GEN_INT (bitsize), GEN_INT (bitpos));
       }
 
@@ -3927,6 +3928,8 @@ gimple_expand_cfg (void)
       else
        set_curr_insn_source_location (cfun->function_start_locus);
     }
+  else
+    set_curr_insn_source_location (UNKNOWN_LOCATION);
   set_curr_insn_block (DECL_INITIAL (current_function_decl));
   prologue_locator = curr_insn_locator ();
 
@@ -3948,6 +3951,10 @@ gimple_expand_cfg (void)
   crtl->stack_alignment_estimated = 0;
   crtl->preferred_stack_boundary = STACK_BOUNDARY;
   cfun->cfg->max_jumptable_ents = 0;
+
+  /* Resovle the function section.  Some targets, like ARM EABI rely on knowledge
+     of the function section at exapnsion time to predict distance of calls.  */
+  resolve_unique_section (current_function_decl, 0, flag_function_sections);
 
   /* Expand the variables recorded during gimple lowering.  */
   timevar_push (TV_VAR_EXPAND);

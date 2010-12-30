@@ -146,9 +146,12 @@ lvalue_kind (const_tree ref)
 	return clk_ordinary;
       break;
 
-      /* A currently unresolved scope ref.  */
+      /* A scope ref in a template, left as SCOPE_REF to support later
+	 access checking.  */
     case SCOPE_REF:
-      gcc_unreachable ();
+      gcc_assert (!type_dependent_expression_p (CONST_CAST_TREE(ref)));
+      return lvalue_kind (TREE_OPERAND (ref, 1));
+
     case MAX_EXPR:
     case MIN_EXPR:
       /* Disallow <? and >? as lvalues if either argument side-effects.  */
@@ -3055,9 +3058,7 @@ stabilize_expr (tree exp, tree* initp)
 
   if (!TREE_SIDE_EFFECTS (exp))
     init_expr = NULL_TREE;
-  /* There are no expressions with REFERENCE_TYPE, but there can be call
-     arguments with such a type; just treat it as a pointer.  */
-  else if (TREE_CODE (TREE_TYPE (exp)) == REFERENCE_TYPE
+  else if (!TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (exp))
 	   || !lvalue_or_rvalue_with_address_p (exp))
     {
       init_expr = get_target_expr (exp);

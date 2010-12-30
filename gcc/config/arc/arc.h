@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef ASM_SPEC
 #undef LINK_SPEC
+#undef LIB_SPEC
 #undef STARTFILE_SPEC
 #undef ENDFILE_SPEC
 #undef SIZE_TYPE
@@ -62,9 +63,11 @@ along with GCC; see the file COPYING3.  If not see
 %{EB:-mbig-endian} %{EL:-mlittle-endian} \
 "
 
-#define ASM_SPEC "%{v} %{EB} %{EL}"
+#define ASM_SPEC "%{EB} %{EL}"
 
 #define LINK_SPEC "%{v} %{EB} %{EL}"
+
+#define LIB_SPEC "-lc"
 
 #define STARTFILE_SPEC "%{!shared:crt0.o%s} crtinit.o%s"
 

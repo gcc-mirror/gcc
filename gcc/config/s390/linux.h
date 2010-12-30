@@ -1,5 +1,5 @@
 /* Definitions for Linux for S/390.
-   Copyright (C) 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2007
+   Copyright (C) 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2010
    Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com).
@@ -83,9 +83,8 @@ along with GCC; see the file COPYING3.  If not see
       %{static:-static} \
       %{!static: \
 	%{rdynamic:-export-dynamic} \
-	%{!dynamic-linker: \
-          %{m31:-dynamic-linker " LINUX_DYNAMIC_LINKER32 "} \
-          %{m64:-dynamic-linker " LINUX_DYNAMIC_LINKER64 "}}}}"
+	%{m31:-dynamic-linker " LINUX_DYNAMIC_LINKER32 "} \
+	%{m64:-dynamic-linker " LINUX_DYNAMIC_LINKER64 "}}}"
 
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 

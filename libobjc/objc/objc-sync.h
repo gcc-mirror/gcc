@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define __objc_sync_INCLUDE_GNU
 
 #include "objc.h"
+#include "objc-decls.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,17 +42,15 @@ extern "C" {
    values.
  
    Note that you should not rely on the behaviour when 'object' is nil
-   because it could change.
- */
-int objc_sync_enter (id object);
+   because it could change.  */
+objc_EXPORT int objc_sync_enter (id object);
 
 /* 'objc_sync_exit' is automatically called when exiting from a
    @synchronized() block.  It unlocks the recursive lock associated
    with 'object'.  If 'object' is nil, it does nothing.  It returns
    OBJC_SYNC_SUCCESS on success; see the enumeration below for error
-   values.
- */
-int objc_sync_exit (id object);
+   values.  */
+objc_EXPORT int objc_sync_exit (id object);
 
 /* All the possible return values for objc_sync_enter() and
    objc_sync_exit().

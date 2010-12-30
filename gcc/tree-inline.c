@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "toplev.h" /* floor_log2 */
 #include "diagnostic-core.h"
 #include "tree.h"
 #include "tree-inline.h"
@@ -3282,6 +3281,7 @@ estimate_operator_cost (enum tree_code code, eni_weights *weights,
     CASE_CONVERT:
     case COMPLEX_EXPR:
     case PAREN_EXPR:
+    case VIEW_CONVERT_EXPR:
       return 0;
 
     /* Assign cost of 1 to usual operations.
@@ -3497,16 +3497,37 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
 	/* Do not special case builtins where we see the body.
 	   This just confuse inliner.  */
 	if (!decl || cgraph_node (decl)->analyzed)
-	  cost = weights->call_cost;
+	  ;
 	/* For buitins that are likely expanded to nothing or
 	   inlined do not account operand costs.  */
 	else if (is_simple_builtin (decl))
 	  return 0;
 	else if (is_inexpensive_builtin (decl))
 	  return weights->target_builtin_call_cost;
-	else
-	  cost = weights->call_cost;
+	else if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
+	  {
+	    /* We canonicalize x * x to pow (x, 2.0) with -ffast-math, so
+	       specialize the cheap expansion we do here.
+	       ???  This asks for a more general solution.  */
+	    switch (DECL_FUNCTION_CODE (decl))
+	      {
+		case BUILT_IN_POW:
+		case BUILT_IN_POWF:
+		case BUILT_IN_POWL:
+		  if (TREE_CODE (gimple_call_arg (stmt, 1)) == REAL_CST
+		      && REAL_VALUES_EQUAL
+			   (TREE_REAL_CST (gimple_call_arg (stmt, 1)), dconst2))
+		    return estimate_operator_cost (MULT_EXPR, weights,
+						   gimple_call_arg (stmt, 0),
+						   gimple_call_arg (stmt, 0));
+		  break;
 
+		default:
+		  break;
+	      }
+	  }
+
+	cost = weights->call_cost;
 	if (decl)
 	  funtype = TREE_TYPE (decl);
 

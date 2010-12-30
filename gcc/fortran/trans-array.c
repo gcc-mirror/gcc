@@ -851,8 +851,8 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
 	     of the descriptor fields.  */
 	  tmp = fold_build2_loc (input_location,
 		MINUS_EXPR, gfc_array_index_type,
-		gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[n]),
-		gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[n]));
+		gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[dim]),
+		gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[dim]));
 	  loop->to[n] = tmp;
 	  continue;
 	}
@@ -3467,8 +3467,8 @@ gfc_could_be_alias (gfc_ss * lss, gfc_ss * rss)
   if (gfc_symbols_could_alias (lsym, rsym))
     return 1;
 
-  if (rsym->ts.type != BT_DERIVED
-      && lsym->ts.type != BT_DERIVED)
+  if (rsym->ts.type != BT_DERIVED && rsym->ts.type != BT_CLASS
+      && lsym->ts.type != BT_DERIVED && lsym->ts.type != BT_CLASS)
     return 0;
 
   /* For derived types we must check all the component types.  We can ignore
@@ -3950,9 +3950,26 @@ gfc_conv_descriptor_size (tree desc, int rank)
 }
 
 
-/* Fills in an array descriptor, and returns the size of the array.  The size
-   will be a simple_val, ie a variable or a constant.  Also calculates the
-   offset of the base.  Returns the size of the array.
+/* Helper function for marking a boolean expression tree as unlikely.  */
+
+static tree
+gfc_unlikely (tree cond)
+{
+  tree tmp;
+
+  cond = fold_convert (long_integer_type_node, cond);
+  tmp = build_zero_cst (long_integer_type_node);
+  cond = build_call_expr_loc (input_location,
+			      built_in_decls[BUILT_IN_EXPECT], 2, cond, tmp);
+  cond = fold_convert (boolean_type_node, cond);
+  return cond;
+}
+
+/* Fills in an array descriptor, and returns the size of the array.
+   The size will be a simple_val, ie a variable or a constant.  Also
+   calculates the offset of the base.  The pointer argument overflow,
+   which should be of integer type, will increase in value if overflow
+   occurs during the size calculation.  Returns the size of the array.
    {
     stride = 1;
     offset = 0;
@@ -3964,8 +3981,13 @@ gfc_conv_descriptor_size (tree desc, int rank)
 	a.ubound[n] = specified_upper_bound;
 	a.stride[n] = stride;
 	size = siz >= 0 ? ubound + size : 0; //size = ubound + 1 - lbound
+	overflow += size == 0 ? 0: (MAX/size < stride ? 1: 0);
 	stride = stride * size;
       }
+    element_size = sizeof (array element);
+    stride = (size_t) stride;
+    overflow += element_size == 0 ? 0: (MAX/element_size < stride ? 1: 0);
+    stride = stride * element_size;
     return (stride);
    }  */
 /*GCC ARRAYS*/
@@ -3973,16 +3995,18 @@ gfc_conv_descriptor_size (tree desc, int rank)
 static tree
 gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
 		     gfc_expr ** lower, gfc_expr ** upper,
-		     stmtblock_t * pblock)
+		     stmtblock_t * pblock, tree * overflow)
 {
   tree type;
   tree tmp;
   tree size;
   tree offset;
   tree stride;
+  tree element_size;
   tree or_expr;
   tree thencase;
   tree elsecase;
+  tree cond;
   tree var;
   stmtblock_t thenblock;
   stmtblock_t elseblock;
@@ -4056,7 +4080,31 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
 
       /* Calculate size and check whether extent is negative.  */
       size = gfc_conv_array_extent_dim (conv_lbound, conv_ubound, &or_expr);
+      size = gfc_evaluate_now (size, pblock);
 
+      /* Check whether multiplying the stride by the number of
+	 elements in this dimension would overflow. We must also check
+	 whether the current dimension has zero size in order to avoid
+	 division by zero. 
+      */
+      tmp = fold_build2_loc (input_location, TRUNC_DIV_EXPR, 
+			     gfc_array_index_type, 
+			     fold_convert (gfc_array_index_type, 
+					   TYPE_MAX_VALUE (gfc_array_index_type)),
+					   size);
+      cond = gfc_unlikely (fold_build2_loc (input_location, LT_EXPR,
+					    boolean_type_node, tmp, stride));
+      tmp = fold_build3_loc (input_location, COND_EXPR, integer_type_node, cond,
+			     integer_one_node, integer_zero_node);
+      cond = gfc_unlikely (fold_build2_loc (input_location, EQ_EXPR,
+					    boolean_type_node, size,
+					    gfc_index_zero_node));
+      tmp = fold_build3_loc (input_location, COND_EXPR, integer_type_node, cond,
+			     integer_zero_node, tmp);
+      tmp = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
+			     *overflow, tmp);
+      *overflow = gfc_evaluate_now (tmp, pblock);
+      
       /* Multiply the stride by the number of elements in this dimension.  */
       stride = fold_build2_loc (input_location, MULT_EXPR,
 				gfc_array_index_type, stride, size);
@@ -4104,8 +4152,31 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
   /* The stride is the number of elements in the array, so multiply by the
      size of an element to get the total size.  */
   tmp = TYPE_SIZE_UNIT (gfc_get_element_type (type));
-  size = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
-			  stride, fold_convert (gfc_array_index_type, tmp));
+  /* Convert to size_t.  */
+  element_size = fold_convert (size_type_node, tmp);
+  stride = fold_convert (size_type_node, stride);
+
+  /* First check for overflow. Since an array of type character can
+     have zero element_size, we must check for that before
+     dividing.  */
+  tmp = fold_build2_loc (input_location, TRUNC_DIV_EXPR, 
+			 size_type_node,
+			 TYPE_MAX_VALUE (size_type_node), element_size);
+  cond = gfc_unlikely (fold_build2_loc (input_location, LT_EXPR,
+					boolean_type_node, tmp, stride));
+  tmp = fold_build3_loc (input_location, COND_EXPR, integer_type_node, cond,
+			 integer_one_node, integer_zero_node);
+  cond = gfc_unlikely (fold_build2_loc (input_location, EQ_EXPR,
+					boolean_type_node, element_size,
+					build_int_cst (size_type_node, 0)));
+  tmp = fold_build3_loc (input_location, COND_EXPR, integer_type_node, cond,
+			 integer_zero_node, tmp);
+  tmp = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
+			 *overflow, tmp);
+  *overflow = gfc_evaluate_now (tmp, pblock);
+
+  size = fold_build2_loc (input_location, MULT_EXPR, size_type_node,
+			  stride, element_size);
 
   if (poffset != NULL)
     {
@@ -4116,11 +4187,11 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
   if (integer_zerop (or_expr))
     return size;
   if (integer_onep (or_expr))
-    return gfc_index_zero_node;
+    return build_int_cst (size_type_node, 0);
 
   var = gfc_create_var (TREE_TYPE (size), "size");
   gfc_start_block (&thenblock);
-  gfc_add_modify (&thenblock, var, gfc_index_zero_node);
+  gfc_add_modify (&thenblock, var, build_int_cst (size_type_node, 0));
   thencase = gfc_finish_block (&thenblock);
 
   gfc_start_block (&elseblock);
@@ -4146,6 +4217,12 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree pstat)
   tree pointer;
   tree offset;
   tree size;
+  tree msg;
+  tree error;
+  tree overflow; /* Boolean storing whether size calculation overflows.  */
+  tree var_overflow;
+  tree cond;
+  stmtblock_t elseblock;
   gfc_expr **lower;
   gfc_expr **upper;
   gfc_ref *ref, *prev_ref = NULL;
@@ -4213,26 +4290,65 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree pstat)
       break;
     }
 
+  overflow = integer_zero_node;
   size = gfc_array_init_size (se->expr, ref->u.ar.as->rank,
 			      ref->u.ar.as->corank, &offset, lower, upper,
-			      &se->pre);
+			      &se->pre, &overflow);
 
+  var_overflow = gfc_create_var (integer_type_node, "overflow");
+  gfc_add_modify (&se->pre, var_overflow, overflow);
+
+  /* Generate the block of code handling overflow.  */
+  msg = gfc_build_addr_expr (pchar_type_node, gfc_build_localized_cstring_const
+  			("Integer overflow when calculating the amount of "
+  			 "memory to allocate"));
+  error = build_call_expr_loc (input_location,
+  			   gfor_fndecl_runtime_error, 1, msg);
+
+  if (pstat != NULL_TREE && !integer_zerop (pstat))
+    {
+      /* Set the status variable if it's present.  */
+      stmtblock_t set_status_block;
+      tree status_type = pstat ? TREE_TYPE (TREE_TYPE (pstat)) : NULL_TREE;
+
+      gfc_start_block (&set_status_block);
+      gfc_add_modify (&set_status_block,
+  		      fold_build1_loc (input_location, INDIRECT_REF,
+  				       status_type, pstat),
+  			   build_int_cst (status_type, LIBERROR_ALLOCATION));
+
+      tmp = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
+  			     pstat, build_int_cst (TREE_TYPE (pstat), 0));
+      error = fold_build3_loc (input_location, COND_EXPR, void_type_node, tmp,
+  			       error, gfc_finish_block (&set_status_block));
+    }
+
+  gfc_start_block (&elseblock);
+  
   /* Allocate memory to store the data.  */
   pointer = gfc_conv_descriptor_data_get (se->expr);
   STRIP_NOPS (pointer);
 
   /* The allocate_array variants take the old pointer as first argument.  */
   if (allocatable_array)
-    tmp = gfc_allocate_array_with_status (&se->pre, pointer, size, pstat, expr);
+    tmp = gfc_allocate_array_with_status (&elseblock, pointer, size, pstat, expr);
   else
-    tmp = gfc_allocate_with_status (&se->pre, size, pstat);
+    tmp = gfc_allocate_with_status (&elseblock, size, pstat);
   tmp = fold_build2_loc (input_location, MODIFY_EXPR, void_type_node, pointer,
 			 tmp);
+
+  gfc_add_expr_to_block (&elseblock, tmp);
+
+  cond = gfc_unlikely (fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+					var_overflow, integer_zero_node));
+  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node, cond, 
+			 error, gfc_finish_block (&elseblock));
+
   gfc_add_expr_to_block (&se->pre, tmp);
 
   gfc_conv_descriptor_offset_set (&se->pre, se->expr, offset);
 
-  if (expr->ts.type == BT_DERIVED
+  if ((expr->ts.type == BT_DERIVED || expr->ts.type == BT_CLASS)
 	&& expr->ts.u.derived->attr.alloc_comp)
     {
       tmp = gfc_nullify_alloc_comp (expr->ts.u.derived, se->expr,
@@ -5174,6 +5290,16 @@ get_array_charlen (gfc_expr *expr, gfc_se *se)
     }
 }
 
+/* Helper function to check dimensions.  */
+static bool
+dim_ok (gfc_ss_info *info)
+{
+  int n;
+  for (n = 0; n < info->dimen; n++)
+    if (info->dim[n] != n)
+      return false;
+  return true;
+}
 
 /* Convert an array for passing as an actual argument.  Expressions and
    vector subscripts are evaluated and stored in a temporary, which is then
@@ -5259,15 +5385,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       else
 	full = gfc_full_array_ref_p (info->ref, NULL);
 
-      if (full)
-	for (n = 0; n < info->dimen; n++)
-	  if (info->dim[n] != n)
-	    {
-	      full = 0;
-	      break;
-	    }
-
-      if (full)
+      if (full && dim_ok (info))
 	{
 	  if (se->direct_byref && !se->byref_noassign)
 	    {
@@ -5469,7 +5587,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 
       desc = loop.temp_ss->data.info.descriptor;
     }
-  else if (expr->expr_type == EXPR_FUNCTION)
+  else if (expr->expr_type == EXPR_FUNCTION && dim_ok (info))
     {
       desc = info->descriptor;
       se->string_length = ss->string_length;
@@ -5779,7 +5897,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, bool g77,
       if (sym->ts.type == BT_CHARACTER)
 	se->string_length = sym->ts.u.cl->backend_decl;
 
-      if (sym->ts.type == BT_DERIVED)
+      if (sym->ts.type == BT_DERIVED || sym->ts.type == BT_CLASS)
 	{
 	  gfc_conv_expr_descriptor (se, expr, ss);
 	  se->expr = gfc_conv_array_data (se->expr);
@@ -5885,7 +6003,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, bool g77,
 
   /* Deallocate the allocatable components of structures that are
      not variable.  */
-  if (expr->ts.type == BT_DERIVED
+  if ((expr->ts.type == BT_DERIVED || expr->ts.type == BT_CLASS)
 	&& expr->ts.u.derived->attr.alloc_comp
 	&& expr->expr_type != EXPR_VARIABLE)
     {
@@ -6302,7 +6420,8 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
      act on a chain of components.  */
   for (c = der_type->components; c; c = c->next)
     {
-      bool cmp_has_alloc_comps = (c->ts.type == BT_DERIVED)
+      bool cmp_has_alloc_comps = (c->ts.type == BT_DERIVED
+				  || c->ts.type == BT_CLASS)
 				    && c->ts.u.derived->attr.alloc_comp;
       cdecl = c->backend_decl;
       ctype = TREE_TYPE (cdecl);
@@ -6565,7 +6684,8 @@ gfc_is_reallocatable_lhs (gfc_expr *expr)
     return true;
 
   /* All that can be left are allocatable components.  */
-  if (expr->symtree->n.sym->ts.type != BT_DERIVED
+  if ((expr->symtree->n.sym->ts.type != BT_DERIVED
+       && expr->symtree->n.sym->ts.type != BT_CLASS)
 	|| !expr->symtree->n.sym->ts.u.derived->attr.alloc_comp)
     return false;
 
@@ -6948,7 +7068,8 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
   int rank;
   bool sym_has_alloc_comp;
 
-  sym_has_alloc_comp = (sym->ts.type == BT_DERIVED)
+  sym_has_alloc_comp = (sym->ts.type == BT_DERIVED
+			|| sym->ts.type == BT_CLASS)
 			  && sym->ts.u.derived->attr.alloc_comp;
 
   /* Make sure the frontend gets these right.  */

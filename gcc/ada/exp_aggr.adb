@@ -1101,7 +1101,7 @@ package body Exp_Aggr is
 
             if Is_Delayed_Aggregate (Expr_Q) then
 
-               --  This is either a subaggregate of a multidimentional array,
+               --  This is either a subaggregate of a multidimensional array,
                --  or a component of an array type whose component type is
                --  also an array. In the latter case, the expression may have
                --  component associations that provide different bounds from
@@ -3731,7 +3731,7 @@ package body Exp_Aggr is
 
       function Is_Flat (N : Node_Id; Dims : Int) return Boolean;
       --  Return True iff the array N is flat (which is not trivial in the case
-      --  of multidimensionsl aggregates).
+      --  of multidimensional aggregates).
 
       -----------------------------
       -- Check_Static_Components --

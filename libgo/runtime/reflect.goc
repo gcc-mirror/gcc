@@ -1,0 +1,35 @@
+// Copyright 2010 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package reflect
+#include "go-type.h"
+#include "interface.h"
+#define nil NULL
+typedef unsigned char byte;
+
+typedef struct __go_interface Iface;
+typedef struct __go_empty_interface Eface;
+
+func setiface(typ *byte, x *byte, ret *byte) {
+	struct __go_interface_type *t;
+	const struct __go_type_descriptor* xt;
+
+	/* FIXME: We should check __type_descriptor to verify that
+	   this is really a type descriptor.  */
+	t = (struct __go_interface_type *)typ;
+	if(t->__methods.__count == 0) {
+		// already an empty interface
+		*(Eface*)ret = *(Eface*)x;
+		return;
+	}
+	xt = ((Eface*)x)->__type_descriptor;
+	if(xt == nil) {
+		// can assign nil to any interface
+		((Iface*)ret)->__methods = nil;
+		((Iface*)ret)->__object = nil;
+		return;
+	}
+	((Iface*)ret)->__methods = __go_convert_interface(&t->__common, xt);
+	((Iface*)ret)->__object = ((Eface*)x)->__object;
+}

@@ -8,7 +8,7 @@
 // overload resolution.
 
 
-template <typename T> void Foo (T const **); // { dg-message "candidate" }
+template <typename T> void Foo (T const **); // { dg-message "note" }
 template <typename T> void Bar (T const * const *);
 void Foo (int);       // { dg-message "note" }
 void Foo (float);     // { dg-message "note" } candidate
@@ -16,5 +16,6 @@ void Foo (float);     // { dg-message "note" } candidate
 void baz (int **p1)
 {
   Foo (p1);   // { dg-error "match" } no such function
+  // { dg-message "candidate" "candidate note" { target *-*-* } 18 }
   Bar (p1);   // OK
 }

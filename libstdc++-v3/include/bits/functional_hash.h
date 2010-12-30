@@ -24,7 +24,7 @@
 
 /** @file bits/functional_hash.h
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{functional}
  */
 
 #ifndef _FUNCTIONAL_HASH_H

@@ -1047,7 +1047,7 @@ do {									\
   (CUM).words = 0;							\
   (CUM).int_regs = 0;							\
   (CUM).fp_regs = 0;							\
-  (CUM).prototype = ((FNTYPE) && TYPE_ARG_TYPES (FNTYPE)) || (LIBNAME);	\
+  (CUM).prototype = ((FNTYPE) && prototype_p (FNTYPE)) || (LIBNAME);	\
   (CUM).atypes[0] = (CUM).atypes[1] = (CUM).atypes[2] = I64;	        \
   (CUM).atypes[3] = (CUM).atypes[4] = (CUM).atypes[5] = I64;            \
   (CUM).atypes[6] = (CUM).atypes[7] = I64;                              \
@@ -1322,11 +1322,6 @@ do {									\
 
 #define ASM_APP_OFF (TARGET_GNU_AS ? "#NO_APP\n" : "//NO_APP\n")
 
-/* Output of Uninitialized Variables.  */
-
-/* This is all handled by svr4.h.  */
-
-
 /* Output and Generation of Labels.  */
 
 /* A C statement (sans semicolon) to output to the stdio stream STREAM the
@@ -1383,7 +1378,7 @@ do {									\
 
 /* Macros Controlling Initialization Routines.  */
 
-/* This is handled by svr4.h and sysv4.h.  */
+/* This is handled by sysv4.h.  */
 
 
 /* Output of Assembler Instructions.  */
@@ -1656,12 +1651,12 @@ do {									\
 
 /* Macros Affecting all Debug Formats.  */
 
-/* This is handled in svr4.h and sysv4.h.  */
+/* This is handled in sysv4.h.  */
 
 
 /* Specific Options for DBX Output.  */
 
-/* This is handled by dbxelf.h which is included by svr4.h.  */
+/* This is handled by dbxelf.h.  */
 
 
 /* Open ended Hooks for DBX Output.  */

@@ -244,7 +244,7 @@ package Namet is
    --  initialization is performed automatically during package elaboration.
    --  Note that this change fixes problems which existed prior to the change
    --  of Initialize being called more than once. See also Reinitialize which
-   --  allows reinitialiation of the tables.
+   --  allows reinitialization of the tables.
 
    procedure Lock;
    --  Lock name tables before calling back end. We reserve some extra space

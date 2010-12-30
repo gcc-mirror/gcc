@@ -114,15 +114,22 @@ bb_in_sese_p (basic_block bb, sese region)
   return bb_in_region (bb, entry, exit);
 }
 
+/* Returns true when STMT is defined in REGION.  */
+
+static inline bool
+stmt_in_sese_p (gimple stmt, sese region)
+{
+  basic_block bb = gimple_bb (stmt);
+  return bb && bb_in_sese_p (bb, region);
+}
+
 /* Returns true when NAME is defined in REGION.  */
 
 static inline bool
 defined_in_sese_p (tree name, sese region)
 {
   gimple stmt = SSA_NAME_DEF_STMT (name);
-  basic_block bb = gimple_bb (stmt);
-
-  return bb && bb_in_sese_p (bb, region);
+  return stmt_in_sese_p (stmt, region);
 }
 
 /* Returns true when LOOP is in REGION.  */
@@ -312,6 +319,7 @@ recompute_all_dominators (void)
 typedef struct gimple_bb
 {
   basic_block bb;
+  struct poly_bb *pbb;
 
   /* Lists containing the restrictions of the conditional statements
      dominating this bb.  This bb can only be executed, if all conditions
@@ -338,10 +346,11 @@ typedef struct gimple_bb
   VEC (data_reference_p, heap) *data_refs;
 } *gimple_bb_p;
 
-#define GBB_BB(GBB) GBB->bb
-#define GBB_DATA_REFS(GBB) GBB->data_refs
-#define GBB_CONDITIONS(GBB) GBB->conditions
-#define GBB_CONDITION_CASES(GBB) GBB->condition_cases
+#define GBB_BB(GBB) (GBB)->bb
+#define GBB_PBB(GBB) (GBB)->pbb
+#define GBB_DATA_REFS(GBB) (GBB)->data_refs
+#define GBB_CONDITIONS(GBB) (GBB)->conditions
+#define GBB_CONDITION_CASES(GBB) (GBB)->condition_cases
 
 /* Return the innermost loop that contains the basic block GBB.  */
 
@@ -404,7 +413,8 @@ scev_analyzable_p (tree def, sese region)
   scev = scalar_evolution_in_region (region, loop, def);
 
   return !chrec_contains_undetermined (scev)
-    && TREE_CODE (scev) != SSA_NAME
+    && (TREE_CODE (scev) != SSA_NAME
+	|| !defined_in_sese_p (scev, region))
     && (tree_does_not_contain_chrecs (scev)
 	|| evolution_function_is_affine_p (scev));
 }

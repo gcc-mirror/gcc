@@ -26,13 +26,34 @@
 assert
 Driver Separate
 
+assert=
+Driver JoinedOrMissing
+
 defsym
 Driver Separate
+
+defsym=
+Driver JoinedOrMissing
+
+profile
+Driver
+
+pthread
+Driver
 
 rpath-link
 Driver Separate
 
+rpath-link=
+Driver JoinedOrMissing
+
+rpath=
+Driver JoinedOrMissing
+
 soname
 Driver Separate
+
+soname=
+Driver JoinedOrMissing
 
 ; This comment is to ensure we retain the blank line above.

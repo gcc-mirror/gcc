@@ -29,11 +29,10 @@ along with GCC; see the file COPYING3.  If not see
 %(subtarget_asm_debugging_spec) \
 %{mabi=*} %{!mabi*: %(asm_abi_default_spec)} \
 %{mgp32} %{mgp64} %{march=*} %{mxgot:-xgot} \
-%{mtune=*} %{v} \
+%{mtune=*} \
 %(subtarget_asm_spec)"
 
 #undef LINK_SPEC
-/* LINK_SPEC is clobbered in svr4.h. ugh!  */
 #define LINK_SPEC "\
 %(endian_spec) \
 %{!G:-G 0} %{G*} %{mips1} %{mips2} %{mips3} %{mips4} %{mips32} %{mips64} \
@@ -80,3 +79,5 @@ VXWORKS_LINK_SPEC
 
 #undef SUBTARGET_OVERRIDE_OPTIONS
 #define SUBTARGET_OVERRIDE_OPTIONS VXWORKS_OVERRIDE_OPTIONS
+
+#undef DBX_REGISTER_NUMBER

@@ -27,8 +27,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc-private/module-abi-8.h"
 #include "objc/Protocol.h"
 
-
 @implementation Protocol
+- (BOOL) isEqual: (id)obj
+{
+  return protocol_isEqual (self, obj);
+}
+@end
+
+@implementation Protocol (Deprecated)
 
 - (const char *)name
 {
@@ -97,9 +103,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 - (unsigned) hash
 {
   /* Compute a hash of the protocol_name; use the same hash algorithm
-   * that we use for class names; protocol names and class names are
-   * somewhat similar types of string spaces.
-   */
+     that we use for class names; protocol names and class names are
+     somewhat similar types of string spaces.  */
   int hash = 0, index;
   
   for (index = 0; protocol_name[index] != '\0'; index++)
@@ -112,9 +117,4 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   return hash;
 }
 
-- (BOOL) isEqual: (id)obj
-{
-  return protocol_isEqual (self, obj);
-}
 @end
-

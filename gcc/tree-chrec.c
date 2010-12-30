@@ -27,19 +27,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "ggc.h"
-#include "tree.h"
 #include "tree-pretty-print.h"
 #include "cfgloop.h"
 #include "tree-flow.h"
 #include "tree-chrec.h"
 #include "tree-pass.h"
 #include "params.h"
-#include "flags.h"
 #include "tree-scalar-evolution.h"
-
-
 
 /* Extended folder for chrecs.  */
 

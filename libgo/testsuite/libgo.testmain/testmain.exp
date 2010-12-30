@@ -1,0 +1,58 @@
+# Copyright (C) 2010 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+load_lib libgo.exp
+
+lappend options "additional_flags=-I. -w -g"
+lappend ld_options "ldflags=-lgotesting"
+
+if [istarget "*-*-rtems*"] {
+    global options
+
+    verbose -log "Executing on host: tar cf FilesystemImage -h -C \
+                         $tool_root_dir/$tool/${GOTEST_TMPDIR} ." 
+    if [catch "exec tar cf FilesystemImage -h -C \
+			 $tool_root_dir/$tool/${GOTEST_TMPDIR} ." error] {
+	perror "Error during tar of local filesystem: $error"
+	exit 1
+    }
+
+    verbose -log "Executing on host: ${RTEMS_BIN2C} FilesystemImage FilesystemImage"
+    if [catch "exec ${RTEMS_BIN2C} FilesystemImage FilesystemImage" error] {
+	perror "Error when creating FilesystemImage source file: $error"
+	exit 1
+    }
+    set comp_output [target_compile "${RTEMS_LIBGO_INIT}" \
+			 "./rtems_libgo_init.o" "object" $options]
+    if ![ string match "" $comp_output ] {
+	verbose -log $comp_output
+	exit 1
+    }
+}
+
+set object_files [glob -nocomplain "*.o"]
+regsub $gluefile $object_files "" object_files
+
+lappend options $ld_options
+
+set comp_output [go_target_compile "$object_files _testmain.go" \
+			 "./a.exe" "executable" $options]
+if ![ string match "" $comp_output ] {
+    verbose -log $comp_output
+    exit 1
+}
+
+libgo_load "./a.exe" "" ""

@@ -47,6 +47,8 @@ static GTY((if_marked ("ggc_marked_p"), param_is (union tree_node)))
   htab_t gimple_canonical_types;
 static GTY((if_marked ("tree_int_map_marked_p"), param_is (struct tree_int_map)))
   htab_t type_hash_cache;
+static GTY((if_marked ("tree_int_map_marked_p"), param_is (struct tree_int_map)))
+  htab_t canonical_type_hash_cache;
 
 /* Global type comparison cache.  This is by TYPE_UID for space efficiency
    and thus cannot use and does not need GC.  */
@@ -3131,7 +3133,7 @@ gimple_call_copy_skip_args (gimple stmt, bitmap args_to_skip)
 }
 
 
-static hashval_t gimple_type_hash (const void *);
+static hashval_t gimple_type_hash_1 (const void *, enum gtc_mode);
 
 /* Structure used to maintain a cache of some type pairs compared by
    gimple_types_compatible_p when comparing aggregate types.  There are
@@ -3474,7 +3476,7 @@ gtc_visit (tree t1, tree t2, enum gtc_mode mode,
   /* If the hash values of t1 and t2 are different the types can't
      possibly be the same.  This helps keeping the type-pair hashtable
      small, only tracking comparisons for hash collisions.  */
-  if (gimple_type_hash (t1) != gimple_type_hash (t2))
+  if (gimple_type_hash_1 (t1, mode) != gimple_type_hash_1 (t2, mode))
     return false;
 
   /* Allocate a new cache entry for this comparison.  */
@@ -3757,8 +3759,9 @@ gimple_types_compatible_p_1 (tree t1, tree t2, enum gtc_mode mode,
 	tree f1, f2;
 
 	/* The struct tags shall compare equal.  */
-	if (!compare_type_names_p (TYPE_MAIN_VARIANT (t1),
-				   TYPE_MAIN_VARIANT (t2), false))
+	if (mode == GTC_MERGE
+	    && !compare_type_names_p (TYPE_MAIN_VARIANT (t1),
+				      TYPE_MAIN_VARIANT (t2), false))
 	  goto different_types;
 
 	/* For aggregate types, all the fields must be the same.  */
@@ -3767,7 +3770,8 @@ gimple_types_compatible_p_1 (tree t1, tree t2, enum gtc_mode mode,
 	     f1 = TREE_CHAIN (f1), f2 = TREE_CHAIN (f2))
 	  {
 	    /* The fields must have the same name, offset and type.  */
-	    if (DECL_NAME (f1) != DECL_NAME (f2)
+	    if ((mode == GTC_MERGE
+		 && DECL_NAME (f1) != DECL_NAME (f2))
 		|| DECL_NONADDRESSABLE_P (f1) != DECL_NONADDRESSABLE_P (f2)
 		|| !gimple_compare_field_offset (f1, f2)
 		|| !gtc_visit (TREE_TYPE (f1), TREE_TYPE (f2), mode,
@@ -3910,7 +3914,7 @@ gimple_types_compatible_p (tree t1, tree t2, enum gtc_mode mode)
   /* If the hash values of t1 and t2 are different the types can't
      possibly be the same.  This helps keeping the type-pair hashtable
      small, only tracking comparisons for hash collisions.  */
-  if (gimple_type_hash (t1) != gimple_type_hash (t2))
+  if (gimple_type_hash_1 (t1, mode) != gimple_type_hash_1 (t2, mode))
     return false;
 
   /* If we've visited this type pair before (in the case of aggregates
@@ -3939,7 +3943,8 @@ gimple_types_compatible_p (tree t1, tree t2, enum gtc_mode mode)
 
 static hashval_t
 iterative_hash_gimple_type (tree, hashval_t, VEC(tree, heap) **,
-			    struct pointer_map_t *, struct obstack *);
+			    struct pointer_map_t *, struct obstack *,
+			    enum gtc_mode);
 
 /* DFS visit the edge from the callers type with state *STATE to T.
    Update the callers type hash V with the hash for T if it is not part
@@ -3950,7 +3955,7 @@ static hashval_t
 visit (tree t, struct sccs *state, hashval_t v,
        VEC (tree, heap) **sccstack,
        struct pointer_map_t *sccstate,
-       struct obstack *sccstate_obstack)
+       struct obstack *sccstate_obstack, enum gtc_mode mode)
 {
   struct sccs *cstate = NULL;
   struct tree_int_map m;
@@ -3959,7 +3964,9 @@ visit (tree t, struct sccs *state, hashval_t v,
   /* If there is a hash value recorded for this type then it can't
      possibly be part of our parent SCC.  Simply mix in its hash.  */
   m.base.from = t;
-  if ((slot = htab_find_slot (type_hash_cache, &m, NO_INSERT))
+  if ((slot = htab_find_slot (mode == GTC_MERGE
+			      ? type_hash_cache : canonical_type_hash_cache,
+			      &m, NO_INSERT))
       && *slot)
     return iterative_hash_hashval_t (((struct tree_int_map *) *slot)->to, v);
 
@@ -3970,7 +3977,8 @@ visit (tree t, struct sccs *state, hashval_t v,
       hashval_t tem;
       /* Not yet visited.  DFS recurse.  */
       tem = iterative_hash_gimple_type (t, v,
-					sccstack, sccstate, sccstate_obstack);
+					sccstack, sccstate, sccstate_obstack,
+					mode);
       if (!cstate)
 	cstate = (struct sccs *)* pointer_map_contains (sccstate, t);
       state->low = MIN (state->low, cstate->low);
@@ -4021,7 +4029,8 @@ static hashval_t
 iterative_hash_gimple_type (tree type, hashval_t val,
 			    VEC(tree, heap) **sccstack,
 			    struct pointer_map_t *sccstate,
-			    struct obstack *sccstate_obstack)
+			    struct obstack *sccstate_obstack,
+			    enum gtc_mode mode)
 {
   hashval_t v;
   void **slot;
@@ -4067,11 +4076,11 @@ iterative_hash_gimple_type (tree type, hashval_t val,
 	{
 	  v = iterative_hash_hashval_t (TREE_CODE (TREE_TYPE (type)), v);
 	  v = iterative_hash_name
-	      (TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (type))), v);
+		(TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (type))), v);
 	}
       else
 	v = visit (TREE_TYPE (type), state, v,
-		   sccstack, sccstate, sccstate_obstack);
+		   sccstack, sccstate, sccstate_obstack, mode);
     }
 
   /* For integer types hash the types min/max values and the string flag.  */
@@ -4092,7 +4101,7 @@ iterative_hash_gimple_type (tree type, hashval_t val,
     {
       v = iterative_hash_hashval_t (TYPE_STRING_FLAG (type), v);
       v = visit (TYPE_DOMAIN (type), state, v,
-		 sccstack, sccstate, sccstate_obstack);
+		 sccstack, sccstate, sccstate_obstack, mode);
     }
 
   /* Recurse for aggregates with a single element type.  */
@@ -4100,7 +4109,7 @@ iterative_hash_gimple_type (tree type, hashval_t val,
       || TREE_CODE (type) == COMPLEX_TYPE
       || TREE_CODE (type) == VECTOR_TYPE)
     v = visit (TREE_TYPE (type), state, v,
-	       sccstack, sccstate, sccstate_obstack);
+	       sccstack, sccstate, sccstate_obstack, mode);
 
   /* Incorporate function return and argument types.  */
   if (TREE_CODE (type) == FUNCTION_TYPE || TREE_CODE (type) == METHOD_TYPE)
@@ -4111,18 +4120,18 @@ iterative_hash_gimple_type (tree type, hashval_t val,
       /* For method types also incorporate their parent class.  */
       if (TREE_CODE (type) == METHOD_TYPE)
 	v = visit (TYPE_METHOD_BASETYPE (type), state, v,
-		   sccstack, sccstate, sccstate_obstack);
+		   sccstack, sccstate, sccstate_obstack, mode);
 
       /* For result types allow mismatch in completeness.  */
       if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (type)))
 	{
 	  v = iterative_hash_hashval_t (TREE_CODE (TREE_TYPE (type)), v);
 	  v = iterative_hash_name
-	      (TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (type))), v);
+		(TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (type))), v);
 	}
       else
 	v = visit (TREE_TYPE (type), state, v,
-		   sccstack, sccstate, sccstate_obstack);
+		   sccstack, sccstate, sccstate_obstack, mode);
 
       for (p = TYPE_ARG_TYPES (type), na = 0; p; p = TREE_CHAIN (p))
 	{
@@ -4131,11 +4140,11 @@ iterative_hash_gimple_type (tree type, hashval_t val,
 	    {
 	      v = iterative_hash_hashval_t (TREE_CODE (TREE_VALUE (p)), v);
 	      v = iterative_hash_name
-		  (TYPE_NAME (TYPE_MAIN_VARIANT (TREE_VALUE (p))), v);
+		    (TYPE_NAME (TYPE_MAIN_VARIANT (TREE_VALUE (p))), v);
 	    }
 	  else
 	    v = visit (TREE_VALUE (p), state, v,
-		       sccstack, sccstate, sccstate_obstack);
+		       sccstack, sccstate, sccstate_obstack, mode);
 	  na++;
 	}
 
@@ -4149,13 +4158,15 @@ iterative_hash_gimple_type (tree type, hashval_t val,
       unsigned nf;
       tree f;
 
-      v = iterative_hash_name (TYPE_NAME (TYPE_MAIN_VARIANT (type)), v);
+      if (mode == GTC_MERGE)
+	v = iterative_hash_name (TYPE_NAME (TYPE_MAIN_VARIANT (type)), v);
 
       for (f = TYPE_FIELDS (type), nf = 0; f; f = TREE_CHAIN (f))
 	{
-	  v = iterative_hash_name (DECL_NAME (f), v);
+	  if (mode == GTC_MERGE)
+	    v = iterative_hash_name (DECL_NAME (f), v);
 	  v = visit (TREE_TYPE (f), state, v,
-		     sccstack, sccstate, sccstate_obstack);
+		     sccstack, sccstate, sccstate_obstack, mode);
 	  nf++;
 	}
 
@@ -4180,7 +4191,9 @@ iterative_hash_gimple_type (tree type, hashval_t val,
 	  cstate->on_sccstack = false;
 	  m->base.from = x;
 	  m->to = cstate->u.hash;
-	  slot = htab_find_slot (type_hash_cache, m, INSERT);
+	  slot = htab_find_slot (mode == GTC_MERGE
+				 ? type_hash_cache : canonical_type_hash_cache,
+				 m, INSERT);
 	  gcc_assert (!*slot);
 	  *slot = (void *) m;
 	}
@@ -4200,7 +4213,7 @@ iterative_hash_gimple_type (tree type, hashval_t val,
    types according to gimple_types_compatible_p.  */
 
 static hashval_t
-gimple_type_hash (const void *p)
+gimple_type_hash_1 (const void *p, enum gtc_mode mode)
 {
   const_tree t = (const_tree) p;
   VEC(tree, heap) *sccstack = NULL;
@@ -4210,12 +4223,19 @@ gimple_type_hash (const void *p)
   void **slot;
   struct tree_int_map m;
 
-  if (type_hash_cache == NULL)
+  if (mode == GTC_MERGE
+      && type_hash_cache == NULL)
     type_hash_cache = htab_create_ggc (512, tree_int_map_hash,
 				       tree_int_map_eq, NULL);
+  else if (mode == GTC_DIAG
+	   && canonical_type_hash_cache == NULL)
+    canonical_type_hash_cache = htab_create_ggc (512, tree_int_map_hash,
+						 tree_int_map_eq, NULL);
 
   m.base.from = CONST_CAST_TREE (t);
-  if ((slot = htab_find_slot (type_hash_cache, &m, NO_INSERT))
+  if ((slot = htab_find_slot (mode == GTC_MERGE
+			      ? type_hash_cache : canonical_type_hash_cache,
+			      &m, NO_INSERT))
       && *slot)
     return iterative_hash_hashval_t (((struct tree_int_map *) *slot)->to, 0);
 
@@ -4224,12 +4244,25 @@ gimple_type_hash (const void *p)
   sccstate = pointer_map_create ();
   gcc_obstack_init (&sccstate_obstack);
   val = iterative_hash_gimple_type (CONST_CAST_TREE (t), 0,
-				    &sccstack, sccstate, &sccstate_obstack);
+				    &sccstack, sccstate, &sccstate_obstack,
+				    mode);
   VEC_free (tree, heap, sccstack);
   pointer_map_destroy (sccstate);
   obstack_free (&sccstate_obstack, NULL);
 
   return val;
+}
+
+static hashval_t
+gimple_type_hash (const void *p)
+{
+  return gimple_type_hash_1 (p, GTC_MERGE);
+}
+
+static hashval_t
+gimple_canonical_type_hash (const void *p)
+{
+  return gimple_type_hash_1 (p, GTC_DIAG);
 }
 
 
@@ -4399,7 +4432,7 @@ gimple_register_canonical_type (tree t)
     gimple_register_canonical_type (TYPE_MAIN_VARIANT (t));
 
   if (gimple_canonical_types == NULL)
-    gimple_canonical_types = htab_create_ggc (16381, gimple_type_hash,
+    gimple_canonical_types = htab_create_ggc (16381, gimple_canonical_type_hash,
 					      gimple_canonical_type_eq, 0);
 
   slot = htab_find_slot (gimple_canonical_types, t, INSERT);
@@ -4439,16 +4472,6 @@ print_gimple_types_stats (void)
 	     htab_collisions (gimple_types));
   else
     fprintf (stderr, "GIMPLE type table is empty\n");
-  if (gimple_canonical_types)
-    fprintf (stderr, "GIMPLE canonical type table: size %ld, %ld elements, "
-	     "%ld searches, %ld collisions (ratio: %f)\n",
-	     (long) htab_size (gimple_canonical_types),
-	     (long) htab_elements (gimple_canonical_types),
-	     (long) gimple_canonical_types->searches,
-	     (long) gimple_canonical_types->collisions,
-	     htab_collisions (gimple_canonical_types));
-  else
-    fprintf (stderr, "GIMPLE canonical type table is empty\n");
   if (type_hash_cache)
     fprintf (stderr, "GIMPLE type hash table: size %ld, %ld elements, "
 	     "%ld searches, %ld collisions (ratio: %f)\n",
@@ -4459,6 +4482,26 @@ print_gimple_types_stats (void)
 	     htab_collisions (type_hash_cache));
   else
     fprintf (stderr, "GIMPLE type hash table is empty\n");
+  if (gimple_canonical_types)
+    fprintf (stderr, "GIMPLE canonical type table: size %ld, %ld elements, "
+	     "%ld searches, %ld collisions (ratio: %f)\n",
+	     (long) htab_size (gimple_canonical_types),
+	     (long) htab_elements (gimple_canonical_types),
+	     (long) gimple_canonical_types->searches,
+	     (long) gimple_canonical_types->collisions,
+	     htab_collisions (gimple_canonical_types));
+  else
+    fprintf (stderr, "GIMPLE canonical type table is empty\n");
+  if (canonical_type_hash_cache)
+    fprintf (stderr, "GIMPLE canonical type hash table: size %ld, %ld elements, "
+	     "%ld searches, %ld collisions (ratio: %f)\n",
+	     (long) htab_size (canonical_type_hash_cache),
+	     (long) htab_elements (canonical_type_hash_cache),
+	     (long) canonical_type_hash_cache->searches,
+	     (long) canonical_type_hash_cache->collisions,
+	     htab_collisions (canonical_type_hash_cache));
+  else
+    fprintf (stderr, "GIMPLE canonical type hash table is empty\n");
   if (gtc_visited)
     fprintf (stderr, "GIMPLE type comparison table: size %ld, %ld "
 	     "elements, %ld searches, %ld collisions (ratio: %f)\n",
@@ -4494,6 +4537,11 @@ free_gimple_type_tables (void)
     {
       htab_delete (type_hash_cache);
       type_hash_cache = NULL;
+    }
+  if (canonical_type_hash_cache)
+    {
+      htab_delete (canonical_type_hash_cache);
+      canonical_type_hash_cache = NULL;
     }
   if (gtc_visited)
     {

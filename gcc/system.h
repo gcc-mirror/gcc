@@ -190,6 +190,10 @@ extern int fprintf_unlocked (FILE *, const char *, ...);
 extern int errno;
 #endif
 
+#ifdef __cplusplus
+# include <cstring>
+#endif
+
 /* Some of glibc's string inlines cause warnings.  Plus we'd rather
    rely on (and therefore test) GCC's string builtins.  */
 #define __NO_STRING_INLINES
@@ -818,7 +822,8 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 	SWITCH_CURTAILS_COMPILATION SWITCH_TAKES_ARG WORD_SWITCH_TAKES_ARG \
 	TARGET_OPTION_TRANSLATE_TABLE HANDLE_PRAGMA_PACK_PUSH_POP	   \
 	HANDLE_SYSV_PRAGMA HANDLE_PRAGMA_WEAK CONDITIONAL_REGISTER_USAGE   \
-	FUNCTION_ARG_BOUNDARY MUST_USE_SJLJ_EXCEPTIONS
+	FUNCTION_ARG_BOUNDARY MUST_USE_SJLJ_EXCEPTIONS US_SOFTWARE_GOFAST  \
+	USING_SVR4_H SVR4_ASM_SPEC
 
 /* Hooks that are no longer used.  */
  #pragma GCC poison LANG_HOOKS_FUNCTION_MARK LANG_HOOKS_FUNCTION_FREE	\

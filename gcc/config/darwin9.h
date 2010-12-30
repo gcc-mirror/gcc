@@ -27,8 +27,13 @@ along with GCC; see the file COPYING3.  If not see
 #undef DSYMUTIL_SPEC
 #define DSYMUTIL_SPEC \
    "%{!fdump=*:%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
-    %{.c|.cc|.C|.cpp|.cp|.c++|.cxx|.CPP|.m|.mm|.s: \
-    %{g*:%{!gstabs*:%{!g0: " DSYMUTIL " %{o*:%*}%{!o:a.out}}}}}}}}}}}}"
+    %{v} \
+    %{g*:%{!gstabs*:%{!g0: -idsym}}}\
+    %{.c|.cc|.C|.cpp|.cp|.c++|.cxx|.CPP|.m|.mm|.s|.f|.f90|.f95|.f03|.f77|.for|.F|.F90|.F95|.F03: \
+    %{g*:%{!gstabs*:%{!g0: -dsym}}}}}}}}}}}"
+
+/* Tell collect2 to run dsymutil for us as necessary.  */
+#define COLLECT_RUN_DSYMUTIL 1
 
 /* libSystem contains unwind information for signal frames.  */
 #define DARWIN_LIBSYSTEM_HAS_UNWIND

@@ -72,9 +72,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "profile.h"
 
-/* Hooks for profiling.  */
-static struct profile_hooks* profile_hooks;
-
 struct bb_info {
   unsigned int count_valid : 1;
 
@@ -141,7 +138,7 @@ instrument_edges (struct edge_list *el)
 		fprintf (dump_file, "Edge %d to %d instrumented%s\n",
 			 e->src->index, e->dest->index,
 			 EDGE_CRITICAL_P (e) ? " (and split)" : "");
-	      (profile_hooks->gen_edge_profiler) (num_instr_edges++, e);
+	      gimple_gen_edge_profiler (num_instr_edges++, e);
 	    }
 	}
     }
@@ -202,31 +199,31 @@ instrument_values (histogram_values values)
       switch (hist->type)
 	{
 	case HIST_TYPE_INTERVAL:
-	  (profile_hooks->gen_interval_profiler) (hist, t, 0);
+	  gimple_gen_interval_profiler (hist, t, 0);
 	  break;
 
 	case HIST_TYPE_POW2:
-	  (profile_hooks->gen_pow2_profiler) (hist, t, 0);
+	  gimple_gen_pow2_profiler (hist, t, 0);
 	  break;
 
 	case HIST_TYPE_SINGLE_VALUE:
-	  (profile_hooks->gen_one_value_profiler) (hist, t, 0);
+	  gimple_gen_one_value_profiler (hist, t, 0);
 	  break;
 
 	case HIST_TYPE_CONST_DELTA:
-	  (profile_hooks->gen_const_delta_profiler) (hist, t, 0);
+	  gimple_gen_const_delta_profiler (hist, t, 0);
 	  break;
 
  	case HIST_TYPE_INDIR_CALL:
- 	  (profile_hooks->gen_ic_profiler) (hist, t, 0);
+ 	  gimple_gen_ic_profiler (hist, t, 0);
   	  break;
 
 	case HIST_TYPE_AVERAGE:
-	  (profile_hooks->gen_average_profiler) (hist, t, 0);
+	  gimple_gen_average_profiler (hist, t, 0);
 	  break;
 
 	case HIST_TYPE_IOR:
-	  (profile_hooks->gen_ior_profiler) (hist, t, 0);
+	  gimple_gen_ior_profiler (hist, t, 0);
 	  break;
 
 	default:
@@ -936,11 +933,12 @@ branch_prob (void)
 	  /* It may happen that there are compiler generated statements
 	     without a locus at all.  Go through the basic block from the
 	     last to the first statement looking for a locus.  */
-	  for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
+	  for (gsi = gsi_last_nondebug_bb (bb);
+	       !gsi_end_p (gsi);
+	       gsi_prev_nondebug (&gsi))
 	    {
 	      last = gsi_stmt (gsi);
-	      if (!is_gimple_debug (last)
-		  && gimple_has_location (last))
+	      if (gimple_has_location (last))
 		break;
 	    }
 
@@ -1169,7 +1167,7 @@ branch_prob (void)
 #undef BB_TO_GCOV_INDEX
 
   if (flag_profile_values)
-    find_values_to_profile (&values);
+    gimple_find_values_to_profile (&values);
 
   if (flag_branch_probabilities)
     {
@@ -1186,7 +1184,7 @@ branch_prob (void)
     {
       unsigned n_instrumented;
 
-      profile_hooks->init_edge_profiler ();
+      gimple_init_edge_profiler ();
 
       n_instrumented = instrument_edges (el);
 
@@ -1371,11 +1369,3 @@ end_branch_prob (void)
     }
 }
 
-/* Set up hooks to enable tree-based profiling.  */
-
-void
-tree_register_profile_hooks (void)
-{
-  gcc_assert (current_ir_type () == IR_GIMPLE);
-  profile_hooks = &tree_profile_hooks;
-}

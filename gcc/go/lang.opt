@@ -1,0 +1,56 @@
+; lang.opt -- Options for the gcc Go front end.
+
+; Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+; 
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+; 
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+; See the GCC internals manual for a description of this file's format.
+
+; Please try to keep this file in ASCII collating order.
+
+Language
+Go
+
+I
+Go Joined Separate
+; Documented in c.opt
+
+L
+Go Joined Separate
+; Not documented
+
+Wall
+Go
+; Documented in c.opt
+
+fgo-dump-
+Go Joined RejectNegative
+-fgo-dump-<type>	Dump Go frontend internal information
+
+fgo-prefix=
+Go Joined RejectNegative
+-fgo-prefix=<string>	Set package-specific prefix for exported Go names
+
+frequire-return-statement
+Go Var(go_require_return_statement) Init(1) Warning
+Functions which return values must end with return statements
+
+o
+Go Joined Separate
+; Documented in common.opt
+
+; This comment is to ensure we retain the blank line above.

@@ -192,8 +192,7 @@ extern int cris_cpu_version;
 #undef ASM_SPEC
 #define ASM_SPEC \
  MAYBE_AS_NO_MUL_BUG_ABORT \
- "%{v:-v}\
- %(asm_subtarget)\
+ "%(asm_subtarget)\
  %{march=*:%{cpu=*:%edo not specify both -march=... and -mcpu=...}}\
  %{march=v32:--march=v32} %{mcpu=v32:--march=v32}"
 
@@ -212,7 +211,6 @@ extern int cris_cpu_version;
    to avoid *only* picking up the linux multilib subdir from the "-B./"
    option during build, while still giving it preference.  We'd need some
    %s-variant that checked for existence of some specific file.  */
-/* Override previous definitions (svr4.h).  */
 #undef LINK_SPEC
 #define LINK_SPEC \
  "%{v:--verbose}\

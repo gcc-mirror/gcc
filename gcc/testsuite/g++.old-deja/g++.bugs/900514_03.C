@@ -29,7 +29,7 @@ struct t_0_st_0 {
   operator t_0_st_1 ();// { dg-message "note" } 
 };
 
-t_0_st_0 t_0_st_0_obj0;
+t_0_st_0 t_0_st_0_obj0;		// { dg-message "candidate" }
 
 void t_0_assignment ()
 {
@@ -54,7 +54,7 @@ struct t_1_st_1 {
 
   t_1_st_1 (t_1_st_0&);					// { dg-message "note" } 
   t_1_st_1 ();
-  void operator= (t_1_st_1&);				// { dg-message "note" } 
+  void operator= (t_1_st_1&);				// { dg-message "operator=|no known conversion" } 
 };
 
 struct t_1_st_0 {
@@ -63,7 +63,7 @@ struct t_1_st_0 {
   operator t_1_st_1 ();					// { dg-message "note" } 
 };
 
-t_1_st_0 t_1_st_0_obj0;
+t_1_st_0 t_1_st_0_obj0;		// { dg-message "candidate" }
 
 void t_1_assignment ()
 {
@@ -72,7 +72,9 @@ void t_1_assignment ()
   t_1_st_1 t_1_st_1_obj2;
 
   t_1_st_1_obj0 = t_1_st_0_obj0;			// { dg-error "no match" } 
+  // { dg-message "candidate" "candidate note" { target *-*-* } 74 }
   t_1_st_1_obj1 = t_1_st_1 (t_1_st_0_obj0);		// { dg-error "no match" } 
+  // { dg-message "candidate" "candidate note" { target *-*-* } 76 }
 }
 
 void t_1_local_init ()
@@ -93,10 +95,10 @@ struct t_2_st_1 {		// { dg-error "initializing" }
 struct t_2_st_0 {
   int member;
 
-  operator t_2_st_1 ();		// { dg-message "candidate" }
+  operator t_2_st_1 ();		// { dg-message "note" }
 };
 
-t_2_st_0 t_2_st_0_obj0;
+t_2_st_0 t_2_st_0_obj0;		// { dg-message "candidate" }
 
 void t_2_assignment ()
 {

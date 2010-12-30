@@ -302,6 +302,7 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
       gcc_assert (!(flags & (ECF_LOOPING_CONST_OR_PURE
 			     | ECF_MAY_BE_ALLOCA
 			     | ECF_SIBCALL
+			     | ECF_LEAF
 			     | ECF_NOVOPS)));
     }
   lto_output_bitpack (&bp);
@@ -462,6 +463,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 
   lto_output_fn_decl_index (ob->decl_state, ob->main_stream, node->decl);
   lto_output_sleb128_stream (ob->main_stream, node->count);
+  lto_output_sleb128_stream (ob->main_stream, node->count_materialization_scale);
 
   if (tag == LTO_cgraph_analyzed_node)
     {
@@ -661,12 +663,12 @@ output_profile_summary (struct lto_simple_output_block *ob)
 {
   if (profile_info)
     {
-      /* We do not output num, it is not terribly useful.  */
+      /* We do not output num, sum_all and run_max, they are not used by
+	 GCC profile feedback and they are difficult to merge from multiple
+	 units.  */
       gcc_assert (profile_info->runs);
       lto_output_uleb128_stream (ob->main_stream, profile_info->runs);
-      lto_output_sleb128_stream (ob->main_stream, profile_info->sum_all);
-      lto_output_sleb128_stream (ob->main_stream, profile_info->run_max);
-      lto_output_sleb128_stream (ob->main_stream, profile_info->sum_max);
+      lto_output_uleb128_stream (ob->main_stream, profile_info->sum_max);
     }
   else
     lto_output_uleb128_stream (ob->main_stream, 0);
@@ -1045,6 +1047,7 @@ input_node (struct lto_file_decl_data *file_data,
     node = cgraph_node (fn_decl);
 
   node->count = lto_input_sleb128 (ib);
+  node->count_materialization_scale = lto_input_sleb128 (ib);
 
   if (tag == LTO_cgraph_analyzed_node)
     {
@@ -1424,30 +1427,104 @@ static struct gcov_ctr_summary lto_gcov_summary;
 
 /* Input profile_info from IB.  */
 static void
-input_profile_summary (struct lto_input_block *ib)
+input_profile_summary (struct lto_input_block *ib,
+		       struct lto_file_decl_data *file_data)
 {
   unsigned int runs = lto_input_uleb128 (ib);
   if (runs)
     {
-      if (!profile_info)
-        {
-	  profile_info = &lto_gcov_summary;
-	  lto_gcov_summary.runs = runs;
-	  lto_gcov_summary.sum_all = lto_input_sleb128 (ib);
-	  lto_gcov_summary.run_max = lto_input_sleb128 (ib);
-	  lto_gcov_summary.sum_max = lto_input_sleb128 (ib);
-	}
-      /* We can support this by scaling all counts to nearest common multiple
-         of all different runs, but it is perhaps not worth the effort.  */
-      else if (profile_info->runs != runs
-	       || profile_info->sum_all != lto_input_sleb128 (ib)
-	       || profile_info->run_max != lto_input_sleb128 (ib)
-	       || profile_info->sum_max != lto_input_sleb128 (ib))
-	sorry ("combining units with different profiles is not supported");
-      /* We allow some units to have profile and other to not have one.  This will
-         just make unprofiled units to be size optimized that is sane.  */
+      file_data->profile_info.runs = runs;
+      file_data->profile_info.sum_max = lto_input_uleb128 (ib);
+      if (runs > file_data->profile_info.sum_max)
+	fatal_error ("Corrupted profile info in %s: sum_max is smaller than runs",
+		     file_data->file_name);
     }
 
+}
+
+/* Rescale profile summaries to the same number of runs in the whole unit.  */
+
+static void
+merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
+{
+  struct lto_file_decl_data *file_data;
+  unsigned int j;
+  gcov_unsigned_t max_runs = 0;
+  struct cgraph_node *node;
+  struct cgraph_edge *edge;
+
+  /* Find unit with maximal number of runs.  If we ever get serious about
+     roundoff errors, we might also consider computing smallest common
+     multiply.  */
+  for (j = 0; (file_data = file_data_vec[j]) != NULL; j++)
+    if (max_runs < file_data->profile_info.runs)
+      max_runs = file_data->profile_info.runs;
+
+  if (!max_runs)
+    return;
+
+  /* Simple overflow check.  We probably don't need to support that many train
+     runs. Such a large value probably imply data corruption anyway.  */
+  if (max_runs > INT_MAX / REG_BR_PROB_BASE)
+    {
+      sorry ("At most %i profile runs is supported. Perhaps corrupted profile?",
+	     INT_MAX / REG_BR_PROB_BASE);
+      return;
+    }
+
+  profile_info = &lto_gcov_summary;
+  lto_gcov_summary.runs = max_runs;
+  lto_gcov_summary.sum_max = 0;
+
+  /* Rescale all units to the maximal number of runs.
+     sum_max can not be easily merged, as we have no idea what files come from
+     the same run.  We do not use the info anyway, so leave it 0.  */
+  for (j = 0; (file_data = file_data_vec[j]) != NULL; j++)
+    if (file_data->profile_info.runs)
+      {
+	int scale = ((REG_BR_PROB_BASE * max_runs
+		      + file_data->profile_info.runs / 2)
+		     / file_data->profile_info.runs);
+	lto_gcov_summary.sum_max = MAX (lto_gcov_summary.sum_max,
+					(file_data->profile_info.sum_max
+					 * scale
+					 + REG_BR_PROB_BASE / 2)
+					/ REG_BR_PROB_BASE);
+      }
+
+  /* Watch roundoff errors.  */
+  if (lto_gcov_summary.sum_max < max_runs)
+    lto_gcov_summary.sum_max = max_runs;
+
+  /* If merging already happent at WPA time, we are done.  */
+  if (flag_ltrans)
+    return;
+
+  /* Now compute count_materialization_scale of each node.
+     During LTRANS we already have values of count_materialization_scale
+     computed, so just update them.  */
+  for (node = cgraph_nodes; node; node = node->next)
+    if (node->local.lto_file_data->profile_info.runs)
+      {
+	int scale;
+
+	scale =
+	   ((node->count_materialization_scale * max_runs
+	     + node->local.lto_file_data->profile_info.runs / 2)
+	    / node->local.lto_file_data->profile_info.runs);
+	node->count_materialization_scale = scale;
+	if (scale < 0)
+	  fatal_error ("Profile information in %s corrupted",
+		       file_data->file_name);
+
+	if (scale == REG_BR_PROB_BASE)
+	  continue;
+	for (edge = node->callees; edge; edge = edge->next_callee)
+	  edge->count = ((edge->count * scale + REG_BR_PROB_BASE / 2)
+			 / REG_BR_PROB_BASE);
+	node->count = ((node->count * scale + REG_BR_PROB_BASE / 2)
+		       / REG_BR_PROB_BASE);
+      }
 }
 
 /* Input and merge the cgraph from each of the .o files passed to
@@ -1473,7 +1550,7 @@ input_cgraph (void)
 					  &data, &len);
       if (!ib) 
 	fatal_error ("cannot find LTO cgraph in %s", file_data->file_name);
-      input_profile_summary (ib);
+      input_profile_summary (ib, file_data);
       file_data->cgraph_node_encoder = lto_cgraph_encoder_new ();
       nodes = input_cgraph_1 (file_data, ib);
       lto_destroy_simple_input_block (file_data, LTO_section_cgraph,
@@ -1499,6 +1576,8 @@ input_cgraph (void)
       VEC_free (cgraph_node_ptr, heap, nodes);
       VEC_free (varpool_node_ptr, heap, varpool);
     }
+  merge_profile_summaries (file_data_vec);
+    
 
   /* Clear out the aux field that was used to store enough state to
      tell which nodes should be overwritten.  */

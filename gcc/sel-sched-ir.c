@@ -154,6 +154,7 @@ static void move_bb_info (basic_block, basic_block);
 static void remove_empty_bb (basic_block, bool);
 static void sel_merge_blocks (basic_block, basic_block);
 static void sel_remove_loop_preheader (void);
+static bool bb_has_removable_jump_to_p (basic_block, basic_block);
 
 static bool insn_is_the_only_one_in_bb_p (insn_t);
 static void create_initial_data_sets (basic_block);
@@ -3570,6 +3571,7 @@ static bool
 maybe_tidy_empty_bb (basic_block bb)
 {
   basic_block succ_bb, pred_bb;
+  VEC (basic_block, heap) *dom_bbs;
   edge e;
   edge_iterator ei;
   bool rescan_p;
@@ -3605,6 +3607,7 @@ maybe_tidy_empty_bb (basic_block bb)
   succ_bb = single_succ (bb);
   rescan_p = true;
   pred_bb = NULL;
+  dom_bbs = NULL;
 
   /* Redirect all non-fallthru edges to the next bb.  */
   while (rescan_p)
@@ -3618,7 +3621,14 @@ maybe_tidy_empty_bb (basic_block bb)
           if (!(e->flags & EDGE_FALLTHRU))
             {
 	      /* We can not invalidate computed topological order by moving
-	         the edge destination block (E->SUCC) along a fallthru edge.  */
+	         the edge destination block (E->SUCC) along a fallthru edge.
+
+		 We will update dominators here only when we'll get
+		 an unreachable block when redirecting, otherwise
+		 sel_redirect_edge_and_branch will take care of it.  */
+	      if (e->dest != bb
+		  && single_pred_p (e->dest))
+		VEC_safe_push (basic_block, heap, dom_bbs, e->dest);
               sel_redirect_edge_and_branch (e, succ_bb);
               rescan_p = true;
               break;
@@ -3655,6 +3665,13 @@ maybe_tidy_empty_bb (basic_block bb)
       remove_empty_bb (bb, true);
     }
 
+  if (!VEC_empty (basic_block, dom_bbs))
+    {
+      VEC_safe_push (basic_block, heap, dom_bbs, succ_bb);
+      iterate_fix_dominators (CDI_DOMINATORS, dom_bbs, false);
+      VEC_free (basic_block, heap, dom_bbs);
+    }
+
   return true;
 }
 
@@ -3673,7 +3690,7 @@ tidy_control_flow (basic_block xbb, bool full_tidying)
     return changed;
 
   /* Check if there is a unnecessary jump after insn left.  */
-  if (jump_leads_only_to_bb_p (BB_END (xbb), xbb->next_bb)
+  if (bb_has_removable_jump_to_p (xbb, xbb->next_bb)
       && INSN_SCHED_TIMES (BB_END (xbb)) == 0
       && !IN_CURRENT_FENCE_P (BB_END (xbb)))
     {
@@ -3714,7 +3731,7 @@ tidy_control_flow (basic_block xbb, bool full_tidying)
       /* And unconditional jump in previous basic block leads to
          next basic block of XBB and this jump can be safely removed.  */
       && in_current_region_p (xbb->prev_bb)
-      && jump_leads_only_to_bb_p (BB_END (xbb->prev_bb), xbb->next_bb)
+      && bb_has_removable_jump_to_p (xbb->prev_bb, xbb->next_bb)
       && INSN_SCHED_TIMES (BB_END (xbb->prev_bb)) == 0
       /* Also this jump is not at the scheduling boundary.  */
       && !IN_CURRENT_FENCE_P (BB_END (xbb->prev_bb)))
@@ -3739,6 +3756,7 @@ tidy_control_flow (basic_block xbb, bool full_tidying)
 
 #ifdef ENABLE_CHECKING
   verify_backedges ();
+  verify_dominators (CDI_DOMINATORS);
 #endif
 
   return changed;
@@ -3748,10 +3766,10 @@ tidy_control_flow (basic_block xbb, bool full_tidying)
 void
 purge_empty_blocks (void)
 {
-  /* Do not attempt to delete preheader.  */
-  int i = sel_is_loop_preheader_p (BASIC_BLOCK (BB_TO_BLOCK (0))) ? 1 : 0;
+  int i;
 
-  while (i < current_nr_blocks)
+  /* Do not attempt to delete the first basic block in the region.  */
+  for (i = 1; i < current_nr_blocks; )
     {
       basic_block b = BASIC_BLOCK (BB_TO_BLOCK (i));
 
@@ -4423,9 +4441,6 @@ fallthru_bb_of_jump (rtx jump)
   if (!JUMP_P (jump))
     return NULL;
 
-  if (any_uncondjump_p (jump))
-    return single_succ (BLOCK_FOR_INSN (jump));
-
   if (!any_condjump_p (jump))
     return NULL;
 
@@ -5074,7 +5089,12 @@ sel_remove_bb (basic_block bb, bool remove_from_cfg_p)
   bitmap_clear_bit (blocks_to_reschedule, idx);
 
   if (remove_from_cfg_p)
-    delete_and_free_basic_block (bb);
+    {
+      basic_block succ = single_succ (bb);
+      delete_and_free_basic_block (bb);
+      set_immediate_dominator (CDI_DOMINATORS, succ,
+                               recompute_dominator (CDI_DOMINATORS, succ));
+    }
 
   rgn_setup_region (CONTAINING_RGN (idx));
 }
@@ -5409,12 +5429,15 @@ sel_merge_blocks (basic_block a, basic_block b)
 void
 sel_redirect_edge_and_branch_force (edge e, basic_block to)
 {
-  basic_block jump_bb, src;
+  basic_block jump_bb, src, orig_dest = e->dest;
   int prev_max_uid;
   rtx jump;
 
-  gcc_assert (!sel_bb_empty_p (e->src));
-
+  /* This function is now used only for bookkeeping code creation, where
+     we'll never get the single pred of orig_dest block and thus will not
+     hit unreachable blocks when updating dominator info.  */
+  gcc_assert (!sel_bb_empty_p (e->src)
+              && !single_pred_p (orig_dest));
   src = e->src;
   prev_max_uid = get_max_uid ();
   jump_bb = redirect_edge_and_branch_force (e, to);
@@ -5431,6 +5454,10 @@ sel_redirect_edge_and_branch_force (edge e, basic_block to)
   jump = find_new_jump (src, jump_bb, prev_max_uid);
   if (jump)
     sel_init_new_insn (jump, INSN_INIT_TODO_LUID | INSN_INIT_TODO_SIMPLEJUMP);
+  set_immediate_dominator (CDI_DOMINATORS, to,
+			   recompute_dominator (CDI_DOMINATORS, to));
+  set_immediate_dominator (CDI_DOMINATORS, orig_dest,
+			   recompute_dominator (CDI_DOMINATORS, orig_dest));
 }
 
 /* A wrapper for redirect_edge_and_branch.  Return TRUE if blocks connected by
@@ -5439,11 +5466,12 @@ bool
 sel_redirect_edge_and_branch (edge e, basic_block to)
 {
   bool latch_edge_p;
-  basic_block src;
+  basic_block src, orig_dest = e->dest;
   int prev_max_uid;
   rtx jump;
   edge redirected;
   bool recompute_toporder_p = false;
+  bool maybe_unreachable = single_pred_p (orig_dest);
 
   latch_edge_p = (pipelining_p
                   && current_loop_nest
@@ -5474,6 +5502,15 @@ sel_redirect_edge_and_branch (edge e, basic_block to)
   if (jump)
     sel_init_new_insn (jump, INSN_INIT_TODO_LUID | INSN_INIT_TODO_SIMPLEJUMP);
 
+  /* Only update dominator info when we don't have unreachable blocks.
+     Otherwise we'll update in maybe_tidy_empty_bb.  */
+  if (!maybe_unreachable)
+    {
+      set_immediate_dominator (CDI_DOMINATORS, to,
+                               recompute_dominator (CDI_DOMINATORS, to));
+      set_immediate_dominator (CDI_DOMINATORS, orig_dest,
+                               recompute_dominator (CDI_DOMINATORS, orig_dest));
+    }
   return recompute_toporder_p;
 }
 
@@ -6102,22 +6139,20 @@ sel_is_loop_preheader_p (basic_block bb)
   return false;
 }
 
-/* Checks whether JUMP leads to basic block DEST_BB and no other blocks.  */
-bool
-jump_leads_only_to_bb_p (insn_t jump, basic_block dest_bb)
+/* Check whether JUMP_BB ends with a jump insn that leads only to DEST_BB and
+   can be removed, making the corresponding edge fallthrough (assuming that
+   all basic blocks between JUMP_BB and DEST_BB are empty).  */
+static bool
+bb_has_removable_jump_to_p (basic_block jump_bb, basic_block dest_bb)
 {
-  basic_block jump_bb = BLOCK_FOR_INSN (jump);
-
-  /* It is not jump, jump with side-effects or jump can lead to several
-     basic blocks.  */
-  if (!onlyjump_p (jump)
-      || !any_uncondjump_p (jump))
+  if (!onlyjump_p (BB_END (jump_bb))
+      || tablejump_p (BB_END (jump_bb), NULL, NULL))
     return false;
 
   /* Several outgoing edges, abnormal edge or destination of jump is
      not DEST_BB.  */
   if (EDGE_COUNT (jump_bb->succs) != 1
-      || EDGE_SUCC (jump_bb, 0)->flags & EDGE_ABNORMAL
+      || EDGE_SUCC (jump_bb, 0)->flags & (EDGE_ABNORMAL | EDGE_CROSSING)
       || EDGE_SUCC (jump_bb, 0)->dest != dest_bb)
     return false;
 
@@ -6197,12 +6232,16 @@ sel_remove_loop_preheader (void)
                  basic block if it becomes empty.  */
 	      if (next_bb->prev_bb == prev_bb
                   && prev_bb != ENTRY_BLOCK_PTR
-                  && jump_leads_only_to_bb_p (BB_END (prev_bb), next_bb))
+                  && bb_has_removable_jump_to_p (prev_bb, next_bb))
                 {
                   redirect_edge_and_branch (EDGE_SUCC (prev_bb, 0), next_bb);
                   if (BB_END (prev_bb) == bb_note (prev_bb))
                     free_data_sets (prev_bb);
                 }
+
+              set_immediate_dominator (CDI_DOMINATORS, next_bb,
+                                       recompute_dominator (CDI_DOMINATORS,
+                                                            next_bb));
             }
         }
       VEC_free (basic_block, heap, preheader_blocks);

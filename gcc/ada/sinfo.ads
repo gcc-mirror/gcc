@@ -1150,7 +1150,7 @@ package Sinfo is
 
    --  Has_Pragma_Suppress_All (Flag14-Sem)
    --    This flag is set in an N_Compilation_Unit node if the Suppress_All
-   --    pragma appears anywhere in the unit. This accomodates the rather
+   --    pragma appears anywhere in the unit. This accommodates the rather
    --    strange placement rules of other compilers (DEC permits it at the
    --    end of a unit, and Rational allows it as a program unit pragma). We
    --    allow it anywhere at all, and consider it equivalent to a pragma
@@ -1455,7 +1455,7 @@ package Sinfo is
 
    --  Next_Exit_Statement (Node3-Sem)
    --    Present in N_Exit_Statement nodes. The exit statements for a loop are
-   --    chained (in reverse order of appearence) from the First_Exit_Statement
+   --    chained (in reverse order of appearance) from the First_Exit_Statement
    --    field of the E_Loop entity for the loop. Next_Exit_Statement points to
    --    the next entry on this chain (Empty = end of list).
 
@@ -1466,7 +1466,7 @@ package Sinfo is
    --    A postorder traversal of the tree whose nodes are units and whose
    --    links are with_clauses defines the order in which Inspector must
    --    examine a compiled unit and its full context. This ordering ensures
-   --    that any subprogram call is examined after the subprogram declartion
+   --    that any subprogram call is examined after the subprogram declaration
    --    has been seen.
 
    --  Next_Named_Actual (Node4-Sem)
@@ -1734,9 +1734,9 @@ package Sinfo is
    --    secondary stack.
 
    --  Suppress_Assignment_Checks (Flag18-Sem)
-   --    Used in genererated N_Assignment_Statement nodes to suppress predicate
+   --    Used in generated N_Assignment_Statement nodes to suppress predicate
    --    and range checks in cases where the generated code knows that the
-   --    value being assigned is in range and satisifies any predicate. Also
+   --    value being assigned is in range and satisfies any predicate. Also
    --    can be set in N_Object_Declaration nodes, to similarly suppress any
    --    checks on the initializing value.
 
@@ -4063,7 +4063,7 @@ package Sinfo is
       --  Suppress_Assignment_Checks (Flag18-Sem)
 
       --  Note: if a range check is required, then the Do_Range_Check flag
-      --  is set in the Expression (right hand side), with the check b6ing
+      --  is set in the Expression (right hand side), with the check being
       --  done against the type of the Name (left hand side).
 
       --  Note: the back end places some restrictions on the form of the
@@ -4188,7 +4188,7 @@ package Sinfo is
       --  explicit loop identifier. Otherwise the parser leaves this field
       --  set to Empty, and then the semantic processing for a loop statement
       --  creates an identifier, setting the Has_Created_Identifier flag to
-      --  True. So after semantic anlaysis, the Identifier is always set,
+      --  True. So after semantic analysis, the Identifier is always set,
       --  referencing an identifier whose entity has an Ekind of E_Loop.
 
       --------------------------
@@ -6806,7 +6806,7 @@ package Sinfo is
       --      CASE_EXPRESSION_ALTERNATIVE
       --      {CASE_EXPRESSION_ALTERNATIVE}
 
-      --  Note that the Alternatives cannot include pragmas (this constrasts
+      --  Note that the Alternatives cannot include pragmas (this contrasts
       --  with the situation of case statements where pragmas are allowed).
 
       --  N_Case_Expression
@@ -6830,7 +6830,7 @@ package Sinfo is
 
       --  Note: The Actions field temporarily holds any actions associated with
       --  evaluation of the Expression. During expansion of the case expression
-      --  these actions are wrapped into the an N_Expressions_With_Actions node
+      --  these actions are wrapped into an N_Expressions_With_Actions node
       --  replacing the original expression.
 
       ----------------------------
@@ -6859,7 +6859,7 @@ package Sinfo is
 
       --  And we add the additional constructs
 
-      --  PRIMARY ::= ( CONDITIONAL_EXPRESION )
+      --  PRIMARY ::= ( CONDITIONAL_EXPRESSION )
       --  PRAGMA_ARGUMENT_ASSOCIATION ::= CONDITIONAL_EXPRESSION
 
       --  Note: if we have (IF x1 THEN x2 ELSIF x3 THEN x4 ELSE x5) then it

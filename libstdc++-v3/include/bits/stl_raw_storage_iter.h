@@ -49,9 +49,9 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-/** @file stl_raw_storage_iter.h
+/** @file bits/stl_raw_storage_iter.h
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{memory}
  */
 
 #ifndef _STL_RAW_STORAGE_ITERATOR_H

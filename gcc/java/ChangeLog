@@ -1,3 +1,22 @@
+2010-12-15  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* decl.c (java_init_decl_processing): Initialise integer_three_node.
+	* lang.c (put_decl_node): Handle nested function decls.
+
+2010-12-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* jcf-parse.c: Don't include assert.h.
+	(java_parse_file): Use gcc_assert.
+
+2010-12-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* lang.opt (static-libgcj): New option.
+
+2010-12-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* jcf-parse.c: Don't include toplev.h.
+	* Make-lang.in (java/jcf-parse.o): Don't depend on toplev.h.
+
 2010-11-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* boehm.c: Don't include toplev.h.

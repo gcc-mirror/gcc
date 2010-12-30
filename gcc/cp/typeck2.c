@@ -70,7 +70,7 @@ binfo_or_else (tree base, tree type)
    value may not be changed thereafter.  */
 
 void
-readonly_error (tree arg, readonly_error_kind errstring)
+cxx_readonly_error (tree arg, enum lvalue_use errstring)
 {
  
 /* This macro is used to emit diagnostics to ensure that all format
@@ -81,16 +81,16 @@ readonly_error (tree arg, readonly_error_kind errstring)
   do {                                                                  \
     switch (errstring)                                                  \
       {                                                                 \
-      case REK_ASSIGNMENT:                                              \
+      case lv_assign:							\
         error(AS, ARG);                                                 \
         break;                                                          \
-      case REK_ASSIGNMENT_ASM:                                          \
+      case lv_asm:							\
         error(ASM, ARG);                                                \
         break;                                                          \
-      case REK_INCREMENT:                                               \
+      case lv_increment:						\
         error (IN, ARG);                                                \
         break;                                                          \
-      case REK_DECREMENT:                                               \
+      case lv_decrement:                                               \
         error (DE, ARG);                                                \
         break;                                                          \
       default:                                                          \
@@ -98,108 +98,36 @@ readonly_error (tree arg, readonly_error_kind errstring)
       }                                                                 \
   } while (0)
 
-  if (TREE_CODE (arg) == COMPONENT_REF)
-    {
-      if (TYPE_READONLY (TREE_TYPE (TREE_OPERAND (arg, 0))))
-        ERROR_FOR_ASSIGNMENT (G_("assignment of "
-                                 "data-member %qD in read-only structure"),
-                              G_("assignment (via 'asm' output) of "
-                                 "data-member %qD in read-only structure"),
-                              G_("increment of "
-                                 "data-member %qD in read-only structure"),
-                              G_("decrement of "
-                                 "data-member %qD in read-only structure"),
-                              TREE_OPERAND (arg, 1));
-      else
-        ERROR_FOR_ASSIGNMENT (G_("assignment of "
-                                 "read-only data-member %qD"),
-                              G_("assignment (via 'asm' output) of "
-                                 "read-only data-member %qD"),
-                              G_("increment of "
-                                 "read-only data-member %qD"),
-                              G_("decrement of "
-                                 "read-only data-member %qD"),
-                              TREE_OPERAND (arg, 1));
-    }
-  else if (TREE_CODE (arg) == VAR_DECL)
-    {
-      if (DECL_LANG_SPECIFIC (arg)
-	  && DECL_IN_AGGR_P (arg)
-	  && !TREE_STATIC (arg))
-        ERROR_FOR_ASSIGNMENT (G_("assignment of "
-                              "constant field %qD"),
-                              G_("assignment (via 'asm' output) of "
-                              "constant field %qD"),
-                              G_("increment of "
-                              "constant field %qD"),
-                              G_("decrement of "
-                              "constant field %qD"),
-                              arg);
-      else
-        ERROR_FOR_ASSIGNMENT (G_("assignment of "
-                              "read-only variable %qD"),
-                              G_("assignment (via 'asm' output) of "
-                              "read-only variable %qD"),
-                              G_("increment of "
-                              "read-only variable %qD"),
-                              G_("decrement of "
-                              "read-only variable %qD"),
-                              arg);
+  /* Handle C++-specific things first.  */
 
-    }
-  else if (TREE_CODE (arg) == PARM_DECL)
+  if (TREE_CODE (arg) == VAR_DECL
+      && DECL_LANG_SPECIFIC (arg)
+      && DECL_IN_AGGR_P (arg)
+      && !TREE_STATIC (arg))
     ERROR_FOR_ASSIGNMENT (G_("assignment of "
-                             "read-only parameter %qD"),
-                          G_("assignment (via 'asm' output) of "
-                             "read-only parameter %qD"),
-                          G_("increment of "
-                             "read-only parameter %qD"),
-                          G_("decrement of "
-                             "read-only parameter %qD"),
-                          arg);  
+			     "constant field %qD"),
+			  G_("constant field %qD "
+			     "used as %<asm%> output"),
+			  G_("increment of "
+			     "constant field %qD"),
+			  G_("decrement of "
+			     "constant field %qD"),
+			  arg);
   else if (TREE_CODE (arg) == INDIRECT_REF
 	   && TREE_CODE (TREE_TYPE (TREE_OPERAND (arg, 0))) == REFERENCE_TYPE
 	   && (TREE_CODE (TREE_OPERAND (arg, 0)) == VAR_DECL
 	       || TREE_CODE (TREE_OPERAND (arg, 0)) == PARM_DECL))
     ERROR_FOR_ASSIGNMENT (G_("assignment of "
                              "read-only reference %qD"),
-                          G_("assignment (via 'asm' output) of "
-                             "read-only reference %qD"), 
+                          G_("read-only reference %qD "
+			     "used as %<asm%> output"), 
                           G_("increment of "
                              "read-only reference %qD"),
                           G_("decrement of "
                              "read-only reference %qD"),
                           TREE_OPERAND (arg, 0));
-  else if (TREE_CODE (arg) == RESULT_DECL)
-    ERROR_FOR_ASSIGNMENT (G_("assignment of "
-                             "read-only named return value %qD"),
-                          G_("assignment (via 'asm' output) of "
-                             "read-only named return value %qD"),
-                          G_("increment of "
-                             "read-only named return value %qD"),
-                          G_("decrement of "
-                             "read-only named return value %qD"),
-                          arg);
-  else if (TREE_CODE (arg) == FUNCTION_DECL)
-    ERROR_FOR_ASSIGNMENT (G_("assignment of "
-                             "function %qD"),
-                          G_("assignment (via 'asm' output) of "
-                             "function %qD"),
-                          G_("increment of "
-                             "function %qD"),
-                          G_("decrement of "
-                             "function %qD"),
-                          arg);
   else
-    ERROR_FOR_ASSIGNMENT (G_("assignment of "
-                             "read-only location %qE"),
-                          G_("assignment (via 'asm' output) of "
-                             "read-only location %qE"),
-                          G_("increment of "
-                             "read-only location %qE"),
-                          G_("decrement of "
-                             "read-only location %qE"),
-                          arg);
+    readonly_error (arg, errstring);
 }
 
 

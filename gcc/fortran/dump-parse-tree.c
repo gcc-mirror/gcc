@@ -105,6 +105,7 @@ show_typespec (gfc_typespec *ts)
 
     case BT_CHARACTER:
       show_expr (ts->u.cl->length);
+      fprintf(dumpfile, " %d", ts->kind);
       break;
 
     default:
@@ -537,7 +538,7 @@ show_expr (gfc_expr *p)
 	  fputs ("NOT ", dumpfile);
 	  break;
 	case INTRINSIC_PARENTHESES:
-	  fputs ("parens", dumpfile);
+	  fputs ("parens ", dumpfile);
 	  break;
 
 	default:
@@ -889,7 +890,8 @@ show_symbol (gfc_symbol *sym)
 	}
     }
 
-  if (sym->formal_ns && (sym->formal_ns->proc_name != sym))
+  if (sym->formal_ns && (sym->formal_ns->proc_name != sym)
+      && sym->attr.proc != PROC_ST_FUNCTION)
     {
       show_indent ();
       fputs ("Formal namespace", dumpfile);

@@ -7095,24 +7095,6 @@ vt_expand_loc_dummy (rtx loc, htab_t vars, bool *pcur_loc_changed)
   return ret;
 }
 
-#ifdef ENABLE_RTL_CHECKING
-/* Used to verify that cur_loc_changed updating is safe.  */
-static struct pointer_map_t *emitted_notes;
-
-/* Strip REG_POINTER from REGs and MEM_POINTER from MEMs in order to
-   avoid differences in commutative operand simplification.  */
-static rtx
-strip_pointer_flags (rtx x, const_rtx old_rtx ATTRIBUTE_UNUSED,
-		     void *data ATTRIBUTE_UNUSED)
-{
-  if (REG_P (x) && REG_POINTER (x))
-    return gen_rtx_REG (GET_MODE (x), REGNO (x));
-  if (MEM_P (x) && MEM_POINTER (x))
-    return gen_rtx_MEM (GET_MODE (x), XEXP (x, 0));
-  return NULL_RTX;
-}
-#endif
-
 /* Emit the NOTE_INSN_VAR_LOCATION for variable *VARP.  DATA contains
    additional parameters: WHERE specifies whether the note shall be emitted
    before or after instruction INSN.  */
@@ -7157,10 +7139,8 @@ emit_note_insn_var_location (void **varp, void *data)
       if (var->n_var_parts == 0)
 	var->cur_loc_changed = true;
     }
-#ifndef ENABLE_RTL_CHECKING
   if (!var->cur_loc_changed)
     goto clear;
-#endif
   for (i = 0; i < var->n_var_parts; i++)
     {
       enum machine_mode mode, wider_mode;
@@ -7301,36 +7281,6 @@ emit_note_insn_var_location (void **varp, void *data)
       note_vl = gen_rtx_VAR_LOCATION (VOIDmode, decl,
 				      parallel, (int) initialized);
     }
-
-#ifdef ENABLE_RTL_CHECKING
-  if (note_vl)
-    {
-      void **note_slot = pointer_map_insert (emitted_notes, decl);
-      rtx pnote = (rtx) *note_slot;
-      if (!var->cur_loc_changed && (pnote || PAT_VAR_LOCATION_LOC (note_vl)))
-	{
-	  rtx old_vl, new_vl;
-	  gcc_assert (pnote);
-	  old_vl = PAT_VAR_LOCATION_LOC (pnote);
-	  new_vl = PAT_VAR_LOCATION_LOC (note_vl);
-	  if (!rtx_equal_p (old_vl, new_vl))
-	    {
-	      /* There might be differences caused by REG_POINTER
-		 differences.  REG_POINTER affects
-		 swap_commutative_operands_p.  */
-	      old_vl = simplify_replace_fn_rtx (old_vl, NULL_RTX,
-						strip_pointer_flags, NULL);
-	      new_vl = simplify_replace_fn_rtx (new_vl, NULL_RTX,
-						strip_pointer_flags, NULL);
-	      gcc_assert (rtx_equal_p (old_vl, new_vl));
-	      PAT_VAR_LOCATION_LOC (note_vl) = new_vl;
-	    }
-	}
-      *note_slot = (void *) note_vl;
-    }
-  if (!var->cur_loc_changed)
-    goto clear;
-#endif
 
   if (where != EMIT_NOTE_BEFORE_INSN)
     {
@@ -7960,9 +7910,6 @@ vt_emit_notes (void)
   basic_block bb;
   dataflow_set cur;
 
-#ifdef ENABLE_RTL_CHECKING
-  emitted_notes = pointer_map_create ();
-#endif
   gcc_assert (!htab_elements (changed_variables));
 
   /* Free memory occupied by the out hash tables, as they aren't used
@@ -8022,9 +7969,6 @@ vt_emit_notes (void)
       VEC_free (rtx, heap, changed_values_stack);
     }
 
-#ifdef ENABLE_RTL_CHECKING
-  pointer_map_destroy (emitted_notes);
-#endif
   emit_notes = false;
 }
 
@@ -8055,6 +7999,113 @@ vt_get_decl_and_offset (rtx rtl, tree *declp, HOST_WIDE_INT *offsetp)
   return false;
 }
 
+/* Insert function parameter PARM in IN and OUT sets of ENTRY_BLOCK.  */
+
+static void
+vt_add_function_parameter (tree parm)
+{
+  rtx decl_rtl = DECL_RTL_IF_SET (parm);
+  rtx incoming = DECL_INCOMING_RTL (parm);
+  tree decl;
+  enum machine_mode mode;
+  HOST_WIDE_INT offset;
+  dataflow_set *out;
+  decl_or_value dv;
+
+  if (TREE_CODE (parm) != PARM_DECL)
+    return;
+
+  if (!decl_rtl || !incoming)
+    return;
+
+  if (GET_MODE (decl_rtl) == BLKmode || GET_MODE (incoming) == BLKmode)
+    return;
+
+  if (!vt_get_decl_and_offset (incoming, &decl, &offset))
+    {
+      if (REG_P (incoming) || MEM_P (incoming))
+	{
+	  /* This means argument is passed by invisible reference.  */
+	  offset = 0;
+	  decl = parm;
+	  incoming = gen_rtx_MEM (GET_MODE (decl_rtl), incoming);
+	}
+      else
+	{
+	  if (!vt_get_decl_and_offset (decl_rtl, &decl, &offset))
+	    return;
+	  offset += byte_lowpart_offset (GET_MODE (incoming),
+					 GET_MODE (decl_rtl));
+	}
+    }
+
+  if (!decl)
+    return;
+
+  if (parm != decl)
+    {
+      /* Assume that DECL_RTL was a pseudo that got spilled to
+	 memory.  The spill slot sharing code will force the
+	 memory to reference spill_slot_decl (%sfp), so we don't
+	 match above.  That's ok, the pseudo must have referenced
+	 the entire parameter, so just reset OFFSET.  */
+      gcc_assert (decl == get_spill_slot_decl (false));
+      offset = 0;
+    }
+
+  if (!track_loc_p (incoming, parm, offset, false, &mode, &offset))
+    return;
+
+  out = &VTI (ENTRY_BLOCK_PTR)->out;
+
+  dv = dv_from_decl (parm);
+
+  if (target_for_debug_bind (parm)
+      /* We can't deal with these right now, because this kind of
+	 variable is single-part.  ??? We could handle parallels
+	 that describe multiple locations for the same single
+	 value, but ATM we don't.  */
+      && GET_CODE (incoming) != PARALLEL)
+    {
+      cselib_val *val;
+
+      /* ??? We shouldn't ever hit this, but it may happen because
+	 arguments passed by invisible reference aren't dealt with
+	 above: incoming-rtl will have Pmode rather than the
+	 expected mode for the type.  */
+      if (offset)
+	return;
+
+      val = cselib_lookup (var_lowpart (mode, incoming), mode, true);
+
+      /* ??? Float-typed values in memory are not handled by
+	 cselib.  */
+      if (val)
+	{
+	  preserve_value (val);
+	  set_variable_part (out, val->val_rtx, dv, offset,
+			     VAR_INIT_STATUS_INITIALIZED, NULL, INSERT);
+	  dv = dv_from_value (val->val_rtx);
+	}
+    }
+
+  if (REG_P (incoming))
+    {
+      incoming = var_lowpart (mode, incoming);
+      gcc_assert (REGNO (incoming) < FIRST_PSEUDO_REGISTER);
+      attrs_list_insert (&out->regs[REGNO (incoming)], dv, offset,
+			 incoming);
+      set_variable_part (out, incoming, dv, offset,
+			 VAR_INIT_STATUS_INITIALIZED, NULL, INSERT);
+    }
+  else if (MEM_P (incoming))
+    {
+      incoming = var_lowpart (mode, incoming);
+      set_variable_part (out, incoming, dv, offset,
+			 VAR_INIT_STATUS_INITIALIZED, NULL, INSERT);
+    }
+}
+
 /* Insert function parameters to IN and OUT sets of ENTRY_BLOCK.  */
 
 static void
@@ -8064,110 +8115,20 @@ vt_add_function_parameters (void)
 
   for (parm = DECL_ARGUMENTS (current_function_decl);
        parm; parm = DECL_CHAIN (parm))
+    vt_add_function_parameter (parm);
+
+  if (DECL_HAS_VALUE_EXPR_P (DECL_RESULT (current_function_decl)))
     {
-      rtx decl_rtl = DECL_RTL_IF_SET (parm);
-      rtx incoming = DECL_INCOMING_RTL (parm);
-      tree decl;
-      enum machine_mode mode;
-      HOST_WIDE_INT offset;
-      dataflow_set *out;
-      decl_or_value dv;
+      tree vexpr = DECL_VALUE_EXPR (DECL_RESULT (current_function_decl));
 
-      if (TREE_CODE (parm) != PARM_DECL)
-	continue;
+      if (TREE_CODE (vexpr) == INDIRECT_REF)
+	vexpr = TREE_OPERAND (vexpr, 0);
 
-      if (!DECL_NAME (parm))
-	continue;
-
-      if (!decl_rtl || !incoming)
-	continue;
-
-      if (GET_MODE (decl_rtl) == BLKmode || GET_MODE (incoming) == BLKmode)
-	continue;
-
-      if (!vt_get_decl_and_offset (incoming, &decl, &offset))
-	{
-	  if (REG_P (incoming) || MEM_P (incoming))
-	    {
-	      /* This means argument is passed by invisible reference.  */
-	      offset = 0;
-	      decl = parm;
-	      incoming = gen_rtx_MEM (GET_MODE (decl_rtl), incoming);
-	    }
-	  else
-	    {
-	      if (!vt_get_decl_and_offset (decl_rtl, &decl, &offset))
-		continue;
-	      offset += byte_lowpart_offset (GET_MODE (incoming),
-					     GET_MODE (decl_rtl));
-	    }
-	}
-
-      if (!decl)
-	continue;
-
-      if (parm != decl)
-	{
-	  /* Assume that DECL_RTL was a pseudo that got spilled to
-	     memory.  The spill slot sharing code will force the
-	     memory to reference spill_slot_decl (%sfp), so we don't
-	     match above.  That's ok, the pseudo must have referenced
-	     the entire parameter, so just reset OFFSET.  */
-	  gcc_assert (decl == get_spill_slot_decl (false));
-	  offset = 0;
-	}
-
-      if (!track_loc_p (incoming, parm, offset, false, &mode, &offset))
-	continue;
-
-      out = &VTI (ENTRY_BLOCK_PTR)->out;
-
-      dv = dv_from_decl (parm);
-
-      if (target_for_debug_bind (parm)
-	  /* We can't deal with these right now, because this kind of
-	     variable is single-part.  ??? We could handle parallels
-	     that describe multiple locations for the same single
-	     value, but ATM we don't.  */
-	  && GET_CODE (incoming) != PARALLEL)
-	{
-	  cselib_val *val;
-
-	  /* ??? We shouldn't ever hit this, but it may happen because
-	     arguments passed by invisible reference aren't dealt with
-	     above: incoming-rtl will have Pmode rather than the
-	     expected mode for the type.  */
-	  if (offset)
-	    continue;
-
-	  val = cselib_lookup (var_lowpart (mode, incoming), mode, true);
-
-	  /* ??? Float-typed values in memory are not handled by
-	     cselib.  */
-	  if (val)
-	    {
-	      preserve_value (val);
-	      set_variable_part (out, val->val_rtx, dv, offset,
-				 VAR_INIT_STATUS_INITIALIZED, NULL, INSERT);
-	      dv = dv_from_value (val->val_rtx);
-	    }
-	}
-
-      if (REG_P (incoming))
-	{
-	  incoming = var_lowpart (mode, incoming);
-	  gcc_assert (REGNO (incoming) < FIRST_PSEUDO_REGISTER);
-	  attrs_list_insert (&out->regs[REGNO (incoming)], dv, offset,
-			     incoming);
-	  set_variable_part (out, incoming, dv, offset,
-			     VAR_INIT_STATUS_INITIALIZED, NULL, INSERT);
-	}
-      else if (MEM_P (incoming))
-	{
-	  incoming = var_lowpart (mode, incoming);
-	  set_variable_part (out, incoming, dv, offset,
-			     VAR_INIT_STATUS_INITIALIZED, NULL, INSERT);
-	}
+      if (TREE_CODE (vexpr) == PARM_DECL
+	  && DECL_ARTIFICIAL (vexpr)
+	  && !DECL_IGNORED_P (vexpr)
+	  && DECL_NAMELESS (vexpr))
+	vt_add_function_parameter (vexpr);
     }
 
   if (MAY_HAVE_DEBUG_INSNS)

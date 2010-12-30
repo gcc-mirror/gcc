@@ -29,3 +29,8 @@ along with GCC; see the file COPYING3.  If not see
 /* GNU ld needs --export-dynamic to implement -rdynamic.  */
 #undef RDYNAMIC_SPEC
 #define RDYNAMIC_SPEC "--export-dynamic"
+
+/* Solaris 11 build 135+ implements dl_iterate_phdr.  */
+#if defined(HAVE_LD_EH_FRAME_HDR) && defined(TARGET_DL_ITERATE_PHDR)
+#define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
+#endif /* HAVE_LD_EH_FRAME && TARGET_DL_ITERATE_PHDR */

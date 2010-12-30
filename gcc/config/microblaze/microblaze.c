@@ -33,7 +33,6 @@
 #include "insn-attr.h"
 #include "integrate.h"
 #include "recog.h"
-#include "toplev.h"
 #include "tree.h"
 #include "function.h"
 #include "expr.h"

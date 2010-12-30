@@ -155,6 +155,7 @@ libdecnumber		Ben Elliston		bje@gnu.org
 libgcc			Ian Lance Taylor	ian@airs.com
 libgcj			Tom Tromey		tromey@redhat.com
 libgcj			Bryce McKinlay		mckinlay@redhat.com
+libgo			Ian Lance Taylor	ian@airs.com
 libgomp			Richard Henderson	rth@redhat.com
 libgomp			Jakub Jelinek		jakub@redhat.com
 libiberty		DJ Delorie		dj@redhat.com
@@ -438,6 +439,7 @@ Andrea Ornstein					andrea.ornstein@st.com
 Seongbae Park					seongbae.park@gmail.com
 Devang Patel					dpatel@apple.com
 Fernando Pereira				pronesto@gmail.com
+Kaushik Phatak					kaushik.phatak@kpitcummins.com
 Nicolas Pitre					nico@cam.org
 Antoniu Pop					antoniu.pop@gmail.com
 Vladimir Prus					vladimir@codesourcery.com

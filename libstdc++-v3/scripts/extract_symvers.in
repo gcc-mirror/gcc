@@ -1,0 +1,67 @@
+#!/bin/sh
+
+# Copyright (C) 2002, 2003, 2009, 2010 Free Software Foundation, Inc.
+#
+# This file is part of the GNU ISO C++ Library.  This library is free
+# software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this library; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+
+if test ${#} -lt 2 || test $1 = '--help'; then
+  echo "Usage:  extract_symvers  shared_lib output_file" 1>&2
+  exit 1
+fi
+
+lib=$1
+output=$2
+
+# This avoids weird sorting problems later.
+LC_ALL=C
+export LC_ALL
+LANG=C
+export LANG
+
+tmp=extract.$$
+
+case `uname -s` in
+SunOS)
+  # Ensure that output on Solaris 2 matches readelf below without requiring
+  # GNU binutils to be installed.  This requires a combination of pvs and
+  # elfdump, which is easier handled in a perl script.
+  perl @glibcxx_srcdir@/scripts/extract_symvers.pl ${lib} > $tmp 2>&1
+  ;;
+*)
+  # GNU binutils, somewhere after version 2.11.2, requires -W/--wide to
+  # avoid default line truncation.  -W is not supported and truncation did
+  # not occur by default before that point.
+  readelf="readelf --symbols"
+  if readelf --help | grep -- --wide > /dev/null; then
+    readelf="$readelf --wide"
+  fi
+  ${readelf} ${lib} |\
+  sed -e 's/ \[<other>: [A-Fa-f0-9]*\] //' -e '/\.dynsym/,/^$/p;d' |\
+  egrep -v ' (LOCAL|UND) ' |\
+  awk '{ if ($4 == "FUNC" || $4 == "NOTYPE")
+           printf "%s:%s\n", $4, $8;
+         else if ($4 == "OBJECT" || $4 == "TLS")
+           printf "%s:%s:%s\n", $4, $3, $8;
+       }' | sort | uniq > $tmp 2>&1
+#        else printf "Huh?  What is %s?\n", $8;
+  ;;
+esac
+
+# I think we'll be doing some more with this file, but for now, dump.
+mv $tmp $output
+
+exit 0

@@ -3219,18 +3219,28 @@ gfc_new_charlen (gfc_namespace *ns, gfc_charlen *old_cl)
   gfc_charlen *cl;
   cl = gfc_get_charlen ();
 
-  /* Put into namespace.  */
-  cl->next = ns->cl_list;
-  ns->cl_list = cl;
-
   /* Copy old_cl.  */
   if (old_cl)
     {
+      /* Put into namespace, but don't allow reject_statement
+	 to free it if old_cl is given.  */
+      gfc_charlen **prev = &ns->cl_list;
+      cl->next = ns->old_cl_list;
+      while (*prev != ns->old_cl_list)
+	prev = &(*prev)->next;
+      *prev = cl;
+      ns->old_cl_list = cl;
       cl->length = gfc_copy_expr (old_cl->length);
       cl->length_from_typespec = old_cl->length_from_typespec;
       cl->backend_decl = old_cl->backend_decl;
       cl->passed_length = old_cl->passed_length;
       cl->resolved = old_cl->resolved;
+    }
+  else
+    {
+      /* Put into namespace.  */
+      cl->next = ns->cl_list;
+      ns->cl_list = cl;
     }
 
   return cl;

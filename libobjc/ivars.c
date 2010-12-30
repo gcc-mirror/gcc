@@ -47,9 +47,7 @@ class_getInstanceVariable (Class class_, const char *name)
 		  struct objc_ivar *ivar = &(ivars->ivar_list[i]);
 		  
 		  if (!strcmp (ivar->ivar_name, name))
-		    {
-		      return ivar;
-		    }
+		    return ivar;
 		}
 	    }
 	  class_ = class_getSuperclass (class_);
@@ -83,10 +81,8 @@ object_getIndexedIvars (id object)
   if (object == nil)
     return NULL;
   else
-    {
-      return (void *)(((char *)object) 
-		      + object->class_pointer->instance_size);
-    }
+    return (void *)(((char *)object) 
+		    + object->class_pointer->instance_size);
 }
 
 struct objc_ivar *
@@ -203,9 +199,7 @@ struct objc_ivar ** class_copyIvarList (Class class_, unsigned int *numberOfRetu
       
       /* Copy the ivars.  */
       for (i = 0; i < count; i++)
-	{
-	  returnValue[i] = &(ivar_list->ivar_list[i]);
-	}
+	returnValue[i] = &(ivar_list->ivar_list[i]);
       
       returnValue[i] = NULL;
     }
@@ -218,7 +212,7 @@ struct objc_ivar ** class_copyIvarList (Class class_, unsigned int *numberOfRetu
 
 BOOL
 class_addIvar (Class class_, const char * ivar_name, size_t size,
-	       unsigned char alignment, const char *type)
+	       unsigned char log_2_of_alignment, const char *type)
 {
   struct objc_ivar_list *ivars;
 
@@ -243,9 +237,7 @@ class_addIvar (Class class_, const char * ivar_name, size_t size,
 	  struct objc_ivar *ivar = &(ivars->ivar_list[i]);
 	  
 	  if (strcmp (ivar->ivar_name, ivar_name) == 0)
-	    {
-	      return NO;
-	    }
+	    return NO;
 	}
     }
 
@@ -278,6 +270,7 @@ class_addIvar (Class class_, const char * ivar_name, size_t size,
      size. */
   {
     struct objc_ivar *ivar = &(ivars->ivar_list[ivars->ivar_count - 1]);
+    unsigned int alignment = 1 << log_2_of_alignment;
     int misalignment;
     
     ivar->ivar_name = objc_malloc (strlen (ivar_name) + 1);
@@ -296,7 +289,7 @@ class_addIvar (Class class_, const char * ivar_name, size_t size,
     else
       ivar->ivar_offset = class_->instance_size - misalignment + alignment;
     
-    class_->instance_size = ivar->ivar_offset + objc_sizeof_type (ivar->ivar_type);
+    class_->instance_size = ivar->ivar_offset + size;
   }
   
   return YES;

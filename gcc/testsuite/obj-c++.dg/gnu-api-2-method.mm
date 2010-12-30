@@ -3,7 +3,7 @@
   This is test 'method', covering all functions starting with 'method'.  */
 
 /* { dg-do run } */
-/* { dg-skip-if "" { *-*-* } { "-fnext-runtime" } { "" } } */
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
 /* To get the modern GNU Objective-C Runtime API, you include
    objc/runtime.h.  */
@@ -16,11 +16,13 @@
 { Class isa; }
 + alloc;
 - init;
++ initialize;
 @end
 
 @implementation MyRootClass
 + alloc { return class_createInstance (self, 0); }
 - init  { return self; }
++ initialize { return self; }
 @end
 
 @protocol MyProtocol

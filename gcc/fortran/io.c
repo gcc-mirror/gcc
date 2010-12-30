@@ -136,7 +136,7 @@ mode;
 /* Return the next character in the format string.  */
 
 static char
-next_char (int in_string)
+next_char (gfc_instring in_string)
 {
   static gfc_char_t c;
 
@@ -197,7 +197,7 @@ next_char_not_space (bool *error)
   char c;
   do
     {
-      error_element = c = next_char (0);
+      error_element = c = next_char (NONSTRING);
       if (c == '\t')
 	{
 	  if (gfc_option.allow_std & GFC_STD_GNU)
@@ -374,7 +374,7 @@ format_lex (void)
 
       for (;;)
 	{
-	  c = next_char (1);
+	  c = next_char (INSTRING_WARN);
 	  if (c == '\0')
 	    {
 	      token = FMT_END;
@@ -383,7 +383,7 @@ format_lex (void)
 
 	  if (c == delim)
 	    {
-	      c = next_char (1);
+	      c = next_char (INSTRING_NOWARN);
 
 	      if (c == '\0')
 		{
@@ -981,7 +981,7 @@ data_desc:
 	{
 	  while (repeat >0)
 	   {
-	     next_char (1);
+	     next_char (INSTRING_WARN);
 	     repeat -- ;
 	   }
 	}

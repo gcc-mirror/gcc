@@ -1035,7 +1035,7 @@ package body Sem_Disp is
                            end if;
 
                            --  Indicate that this is an overriding operation,
-                           --  and replace the overriden entry in the list of
+                           --  and replace the overridden entry in the list of
                            --  primitive operations, which is used for xref
                            --  generation subsequently.
 
@@ -2077,7 +2077,7 @@ package body Sem_Disp is
 
       --  The location of entities that come from source in the list of
       --  primitives of the tagged type must follow their order of occurrence
-      --  in the sources to fulfill the C++ ABI. If the overriden entity is a
+      --  in the sources to fulfill the C++ ABI. If the overridden entity is a
       --  primitive of an interface that is not an ancestor of this tagged
       --  type (that is, it is an entity added to the list of primitives by
       --  Derive_Interface_Progenitors), then we must append the new entity
@@ -2091,7 +2091,7 @@ package body Sem_Disp is
          Remove_Elmt (Primitive_Operations (Tagged_Type), Elmt);
          Append_Elmt (New_Op, Primitive_Operations (Tagged_Type));
 
-      --  The new primitive replaces the overriden entity. Required to ensure
+      --  The new primitive replaces the overridden entity. Required to ensure
       --  that overriding primitive is assigned the same dispatch table slot.
 
       else

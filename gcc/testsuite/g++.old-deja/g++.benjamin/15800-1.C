@@ -5,7 +5,7 @@
 struct panama {
   panama();
   panama(panama &);
-  panama& operator=(panama&); // { dg-message "candidate is" }
+  panama& operator=(panama&); // { dg-message "operator=|no known conversion" }
 };
 
 extern panama dig();
@@ -13,5 +13,6 @@ extern panama dig();
 void foo() {
    panama obj;
    obj = dig(); // { dg-error "no match" }
+   // { dg-message "candidate" "candidate note" { target *-*-* } 15 }
 }
 

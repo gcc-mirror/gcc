@@ -32,7 +32,7 @@ sincosq (__float128 x, __float128 *sinx, __float128 *cosx)
   /* |x| ~< pi/4 */
   ix &= 0x7fffffffffffffffLL;
   if (ix <= 0x3ffe921fb54442d1LL)
-    __kernel_sincosq (x, 0.0Q, sinx, cosx, 0);
+    __quadmath_kernel_sincosq (x, 0.0Q, sinx, cosx, 0);
   else if (ix >= 0x7fff000000000000LL)
     {
       /* sin(Inf or NaN) is NaN */
@@ -44,23 +44,23 @@ sincosq (__float128 x, __float128 *sinx, __float128 *cosx)
       __float128 y[2];
       int n;
 
-      n = rem_pio2q (x, y);
+      n = __quadmath_rem_pio2q (x, y);
       switch (n & 3)
 	{
 	case 0:
-	  __kernel_sincosq (y[0], y[1], sinx, cosx, 1);
+	  __quadmath_kernel_sincosq (y[0], y[1], sinx, cosx, 1);
 	  break;
 	case 1:
-	  __kernel_sincosq (y[0], y[1], cosx, sinx, 1);
+	  __quadmath_kernel_sincosq (y[0], y[1], cosx, sinx, 1);
 	  *cosx = -*cosx;
 	  break;
 	case 2:
-	  __kernel_sincosq (y[0], y[1], sinx, cosx, 1);
+	  __quadmath_kernel_sincosq (y[0], y[1], sinx, cosx, 1);
 	  *sinx = -*sinx;
 	  *cosx = -*cosx;
 	  break;
 	default:
-	  __kernel_sincosq (y[0], y[1], cosx, sinx, 1);
+	  __quadmath_kernel_sincosq (y[0], y[1], cosx, sinx, 1);
 	  *sinx = -*sinx;
 	  break;
 	}

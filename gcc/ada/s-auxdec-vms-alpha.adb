@@ -75,7 +75,7 @@ package body System.Aux_DEC is
       Old_Bit : Boolean;
 
    begin
-      --  All these ASM sequences should be commented. I suggest definining
+      --  All these ASM sequences should be commented. I suggest defining
       --  a constant called E which is LF & HT and then you have more space
       --  for line by line comments ???
 

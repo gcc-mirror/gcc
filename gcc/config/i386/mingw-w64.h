@@ -2,7 +2,7 @@
    hosting on Windows 32/64 via mingw-w64 runtime, using GNU tools and
    the Windows API Library.
    Copyright (C) 2009,
-   2009 Free Software Foundation, Inc.
+   2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -36,8 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Enable multilib.  */
 
 #undef ASM_SPEC
-#define ASM_SPEC "%{v:-v} %{n} %{T} %{Ym,*} %{Yd,*} \
- %{Wa,*:%*} %{m32:--32} %{m64:--64}"
+#define ASM_SPEC "%{m32:--32} %{m64:--64}"
 
 #undef SPEC_32
 #undef SPEC_64

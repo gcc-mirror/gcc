@@ -38,6 +38,7 @@
 #include "timevar.h"
 #include "tree-pass.h"
 #include "df.h"
+#include "target.h"
 
 #if HOST_BITS_PER_WIDE_INT <= MAX_RECOG_OPERANDS
 #error "Use a different bitmap implementation for untracked_operands."
@@ -51,6 +52,11 @@ struct du_head
   struct du_head *next_chain;
   /* The first and last elements of this chain.  */
   struct du_chain *first, *last;
+  /* The number of elements of this chain, excluding those corresponding
+     to references of the register in debug insns.  The du_head linked
+     list can be sorted by this, and register-rename can prefer
+     register classes according to this order.  */
+  int length;
   /* Describes the register being tracked.  */
   unsigned regno, nregs;
 
@@ -154,6 +160,197 @@ merge_overlapping_regs (HARD_REG_SET *pset, struct du_head *head)
     }
 }
 
+/* Return the Nth element in LIST.  If LIST contains less than N
+   elements, return the last one.  */
+static struct du_head *
+get_element (struct du_head *list, int n)
+{
+  while (n-- && list->next_chain != NULL)
+    list = list->next_chain;
+
+  return list;
+}
+
+/* Comparison function of merge sort.  Return true if A is less than
+   B, otherwise return false.  */
+static inline int
+merge_sort_comparison(const struct du_head *a,
+		    const struct du_head *b)
+{
+  return a->length < b->length;
+}
+
+/* Merge the first 2 sub-lists of LENGTH nodes contained in the
+   linked list pointed to by START_NODE.  Update START_NODE to point
+   to the merged nodes, and return a pointer to the last merged
+   node.  Return NULL if START_NODE doesn't contain enough
+   elements, or this pass of merge is done.  */
+
+static struct du_head *
+merge(struct du_head **start_node, int length)
+{
+  int i, left_count, right_count;
+  struct du_head *left, *right;
+  /* Current node of sort result.  */
+  struct du_head *current_sorted_node;
+  /* Tail node of sort, used to connect with next piece of list.  */
+  struct du_head *current_tail_node;
+
+  if (*start_node == NULL)
+    return NULL;
+
+  left = right = *start_node;
+  right_count = left_count = 0;
+
+  /* Step RIGHT along the list by LENGTH places.  */
+  for (i = 0; i < length; i++)
+    {
+      right = right->next_chain;
+      if (right == NULL)
+	{
+	  return NULL;
+	}
+    }
+
+  /* Initialize current_sorted_node.  */
+  if (merge_sort_comparison (left, right))
+    {
+      ++right_count;
+      current_sorted_node = right;
+      *start_node = right;
+      right = right->next_chain;
+    }
+  else
+    {
+      ++left_count;
+      current_sorted_node = left;
+      left = left->next_chain;
+    }
+
+  while (1)
+    {
+      /* Choose LEFT or RIGHT to take the next element from.  If
+	 either is empty, choose from the other one.  */
+      if (left_count == length || left == NULL)
+	{
+	  current_sorted_node->next_chain = right;
+	  current_tail_node = get_element (current_sorted_node,
+					   length - right_count);
+
+	  break;
+	}
+      else if (right_count == length || right == NULL)
+	{
+	  /* Save the head node of next piece of linked list.  */
+	  struct du_head *tmp = current_sorted_node->next_chain;
+
+	  current_sorted_node->next_chain = left;
+	  current_tail_node
+	    = get_element (current_sorted_node,
+			   length - left_count);
+	  /* Connect sorted list to next piece of list.  */
+	  current_tail_node->next_chain = tmp;
+	  break;
+	}
+      else
+	{
+	  /* Normal merge operations.  If both LEFT and RIGHT are
+	     non-empty, compare the first element of each and choose
+	     the lower one.  */
+	  if (merge_sort_comparison (left, right))
+	    {
+	      right_count++;
+	      current_sorted_node->next_chain = right;
+	      right = right->next_chain;
+	    }
+	  else
+	    {
+	      left_count++;
+	      current_sorted_node->next_chain = left;
+	      left = left->next_chain;
+	    }
+	  current_sorted_node = current_sorted_node->next_chain;
+	}
+    }
+  /* Return NULL if this pass of merge is done.  */
+  return (current_tail_node->next_chain ? current_tail_node : NULL);
+}
+
+/* Sort the linked list pointed to by HEAD.  The algorithm is a
+   non-recursive merge sort to linked list.  */
+
+static void
+sort_du_head (struct du_head **head)
+{
+  int current_length = 1;
+  struct du_head *last_tail;
+
+  /* In each pass, lists of size current_length is merged to
+     lists of size 2xcurrent_length (Initially current_length
+     is 1).  */
+  while (1)
+    {
+      last_tail = merge(head, current_length);
+      if (last_tail != NULL)
+	{
+	  do
+	    last_tail = merge (&last_tail->next_chain, current_length);
+	  while (last_tail != NULL);
+
+	  current_length *= 2;
+	}
+      else
+	break;
+    }
+}
+
+/* Check if NEW_REG can be the candidate register to rename for
+   REG in THIS_HEAD chain.  THIS_UNAVAILABLE is a set of unavailable hard
+   registers.  */
+
+static bool
+check_new_reg_p (int reg ATTRIBUTE_UNUSED, int new_reg,
+		 struct du_head *this_head, HARD_REG_SET this_unavailable)
+{
+  enum machine_mode mode = GET_MODE (*this_head->first->loc);
+  int nregs = hard_regno_nregs[new_reg][mode];
+  int i;
+  struct du_chain *tmp;
+
+  for (i = nregs - 1; i >= 0; --i)
+    if (TEST_HARD_REG_BIT (this_unavailable, new_reg + i)
+	|| fixed_regs[new_reg + i]
+	|| global_regs[new_reg + i]
+	/* Can't use regs which aren't saved by the prologue.  */
+	|| (! df_regs_ever_live_p (new_reg + i)
+	    && ! call_used_regs[new_reg + i])
+#ifdef LEAF_REGISTERS
+	/* We can't use a non-leaf register if we're in a
+	   leaf function.  */
+	|| (current_function_is_leaf
+	    && !LEAF_REGISTERS[new_reg + i])
+#endif
+#ifdef HARD_REGNO_RENAME_OK
+	|| ! HARD_REGNO_RENAME_OK (reg + i, new_reg + i)
+#endif
+	)
+      return false;
+
+  /* See whether it accepts all modes that occur in
+     definition and uses.  */
+  for (tmp = this_head->first; tmp; tmp = tmp->next_use)
+    if ((! HARD_REGNO_MODE_OK (new_reg, GET_MODE (*tmp->loc))
+	 && ! DEBUG_INSN_P (tmp->insn))
+	|| (this_head->need_caller_save_reg
+	    && ! (HARD_REGNO_CALL_PART_CLOBBERED
+		  (reg, GET_MODE (*tmp->loc)))
+	    && (HARD_REGNO_CALL_PART_CLOBBERED
+		(new_reg, GET_MODE (*tmp->loc)))))
+      return false;
+
+  return true;
+}
+
 /* Perform register renaming on the current function.  */
 
 static unsigned int
@@ -195,6 +392,8 @@ regrename_optimize (void)
       if (dump_file)
 	dump_def_use_chain (all_chains);
 
+      sort_du_head (&all_chains);
+
       CLEAR_HARD_REG_SET (unavailable);
       /* Don't clobber traceback for noreturn functions.  */
       if (frame_pointer_needed)
@@ -213,7 +412,9 @@ regrename_optimize (void)
 	  struct du_chain *tmp;
 	  HARD_REG_SET this_unavailable;
 	  int reg = this_head->regno;
-	  int i;
+	  int pass;
+	  enum reg_class superunion_class = NO_REGS;
+	  enum reg_class preferred_class;
 
 	  all_chains = this_head->next_chain;
 
@@ -243,16 +444,23 @@ regrename_optimize (void)
 
 	  COPY_HARD_REG_SET (this_unavailable, unavailable);
 
-	  /* Count number of uses, and narrow the set of registers we can
-	     use for renaming.  */
+	  /* Iterate elements in chain in order to:
+	     1. Count number of uses, and narrow the set of registers we can
+	     use for renaming.
+	     2. Compute the superunion of register classes in this chain.  */
 	  n_uses = 0;
+	  superunion_class = NO_REGS;
 	  for (tmp = this_head->first; tmp; tmp = tmp->next_use)
 	    {
 	      if (DEBUG_INSN_P (tmp->insn))
 		continue;
 	      n_uses++;
+
 	      IOR_COMPL_HARD_REG_SET (this_unavailable,
 				      reg_class_contents[tmp->cl]);
+
+	      superunion_class
+		= reg_class_superunion[(int) superunion_class][(int) tmp->cl];
 	    }
 
 	  if (n_uses < 2)
@@ -262,56 +470,53 @@ regrename_optimize (void)
 	    IOR_HARD_REG_SET (this_unavailable, call_used_reg_set);
 
 	  merge_overlapping_regs (&this_unavailable, this_head);
+	  /* Compute preferred rename class of super union of all the classes
+	     on the chain.  */
+	  preferred_class
+	    = (enum reg_class) targetm.preferred_rename_class(superunion_class);
 
-	  /* Now potential_regs is a reasonable approximation, let's
-	     have a closer look at each register still in there.  */
-	  for (new_reg = 0; new_reg < FIRST_PSEUDO_REGISTER; new_reg++)
+	  /* The register iteration order here is "preferred-register-first".
+	     Firstly(pass == 0), we iterate registers belong to PREFERRED_CLASS,
+	     if we find a new register, we stop immeidately.
+	     Otherwise, we iterate over registers that don't belong to
+	     PREFERRED_CLASS.
+	     If PREFERRED_CLASS is NO_REGS, we iterate over all registers in
+	     ascending order without any preference.  */
+	  for (pass = (preferred_class == NO_REGS ? 1 : 0); pass < 2; pass++)
 	    {
-	      enum machine_mode mode = GET_MODE (*this_head->first->loc);
-	      int nregs = hard_regno_nregs[new_reg][mode];
-
-	      for (i = nregs - 1; i >= 0; --i)
-	        if (TEST_HARD_REG_BIT (this_unavailable, new_reg + i)
-		    || fixed_regs[new_reg + i]
-		    || global_regs[new_reg + i]
-		    /* Can't use regs which aren't saved by the prologue.  */
-		    || (! df_regs_ever_live_p (new_reg + i)
-			&& ! call_used_regs[new_reg + i])
-#ifdef LEAF_REGISTERS
-		    /* We can't use a non-leaf register if we're in a
-		       leaf function.  */
-		    || (current_function_is_leaf
-			&& !LEAF_REGISTERS[new_reg + i])
-#endif
-#ifdef HARD_REGNO_RENAME_OK
-		    || ! HARD_REGNO_RENAME_OK (reg + i, new_reg + i)
-#endif
-		    )
-		  break;
-	      if (i >= 0)
-		continue;
-
-	      /* See whether it accepts all modes that occur in
-		 definition and uses.  */
-	      for (tmp = this_head->first; tmp; tmp = tmp->next_use)
-		if ((! HARD_REGNO_MODE_OK (new_reg, GET_MODE (*tmp->loc))
-		     && ! DEBUG_INSN_P (tmp->insn))
-		    || (this_head->need_caller_save_reg
-			&& ! (HARD_REGNO_CALL_PART_CLOBBERED
-			      (reg, GET_MODE (*tmp->loc)))
-			&& (HARD_REGNO_CALL_PART_CLOBBERED
-			    (new_reg, GET_MODE (*tmp->loc)))))
-		  break;
-	      if (! tmp)
+	      bool found = false;
+	      /* Now potential_regs is a reasonable approximation, let's
+		 have a closer look at each register still in there.  */
+	      for (new_reg = 0; new_reg < FIRST_PSEUDO_REGISTER; new_reg++)
 		{
-		  if (tick[best_new_reg] > tick[new_reg])
+		  /* Iterate registers first in prefered class.  */
+		  if (pass == 0
+		      && !TEST_HARD_REG_BIT (reg_class_contents[preferred_class],
+					     new_reg))
+		    continue;
+
+		  if (check_new_reg_p (reg, new_reg, this_head,
+				       this_unavailable))
 		    {
-		      best_new_reg = new_reg;
-		      best_nregs = nregs;
+		      if (tick[best_new_reg] > tick[new_reg])
+			{
+			  enum machine_mode mode
+			    = GET_MODE (*this_head->first->loc);
+			  best_new_reg = new_reg;
+			  best_nregs = hard_regno_nregs[new_reg][mode];
+			  /* If we find a new reg in our preferred class,
+			     stop immediately.  */
+			  if (best_new_reg != reg && pass == 0)
+			    {
+			      found = true;
+			      break;
+			    }
+			}
 		    }
 		}
+	      if (found)
+		break;
 	    }
-
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "Register %s in insn %d",
@@ -527,6 +732,7 @@ create_new_chain (unsigned this_regno, unsigned this_nregs, rtx *loc,
   head->need_caller_save_reg = 0;
   head->cannot_rename = 0;
   head->terminated = 0;
+  head->length = 0;
 
   VEC_safe_push (du_head_p, heap, id_to_chain, head);
   head->id = current_id++;
@@ -572,6 +778,8 @@ create_new_chain (unsigned this_regno, unsigned this_nregs, rtx *loc,
   this_du->loc = loc;
   this_du->insn = insn;
   this_du->cl = cl;
+
+  head->length = 1;
 }
 
 static void
@@ -661,6 +869,8 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
 		head->last->next_use = this_du;
 	      head->last = this_du;
 
+	      if (!DEBUG_INSN_P (insn))
+		head->length++;
 	    }
 	  /* Avoid adding the same location in a DEBUG_INSN multiple times,
 	     which could happen with non-exact overlap.  */

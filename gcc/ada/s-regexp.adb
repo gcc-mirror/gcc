@@ -196,18 +196,18 @@ package body System.Regexp is
 
          Past_Elmt : Boolean := False;
          --  Set to True everywhere an elmt has been parsed, if Glob=False,
-         --  meaning there can be now an occurence of '*', '+' and '?'.
+         --  meaning there can be now an occurrence of '*', '+' and '?'.
 
          Past_Term : Boolean := False;
          --  Set to True everywhere a term has been parsed, if Glob=False,
-         --  meaning there can be now an occurence of '|'.
+         --  meaning there can be now an occurrence of '|'.
 
          Parenthesis_Level : Integer := 0;
          Curly_Level       : Integer := 0;
 
          Last_Open : Integer := S'First - 1;
-         --  The last occurence of an opening parenthesis, if Glob=False,
-         --  or the last occurence of an opening curly brace, if Glob=True.
+         --  The last occurrence of an opening parenthesis, if Glob=False,
+         --  or the last occurrence of an opening curly brace, if Glob=True.
 
          procedure Raise_Exception_If_No_More_Chars (K : Integer := 0);
          --  If no more characters are raised, call Raise_Exception

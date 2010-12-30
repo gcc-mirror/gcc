@@ -35,11 +35,9 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "javaop.h"
 #include "java-tree.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "parse.h"
 #include "ggc.h"
 #include "debug.h"
-#include "assert.h"
 #include "cgraph.h"
 #include "vecprim.h"
 #include "bitmap.h"
@@ -1856,7 +1854,7 @@ java_parse_file (void)
       const char *resource_filename;
       
       /* Only one resource file may be compiled at a time.  */
-      assert (VEC_length (tree, all_translation_units) == 1);
+      gcc_assert (VEC_length (tree, all_translation_units) == 1);
 
       resource_filename
 	= IDENTIFIER_POINTER

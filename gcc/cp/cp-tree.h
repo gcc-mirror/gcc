@@ -406,19 +406,6 @@ typedef enum composite_pointer_operation
   CPO_CONDITIONAL_EXPR
 } composite_pointer_operation;
 
-/* The various readonly error string used by readonly_error.  */
-typedef enum readonly_error_kind
-{
-  /* assignment */
-  REK_ASSIGNMENT,
-  /* assignment (via 'asm' output) */
-  REK_ASSIGNMENT_ASM,
-  /* increment */
-  REK_INCREMENT,
-  /* decrement */
-  REK_DECREMENT
-} readonly_error_kind;
-
 /* Possible cases of expression list used by build_x_compound_expr_from_list. */
 typedef enum expr_list_kind {
   ELK_INIT,		/* initializer */
@@ -2840,7 +2827,7 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 /* Abstract iterators for AGGR_INIT_EXPRs.  */
 
 /* Structure containing iterator state.  */
-typedef struct GTY (()) aggr_init_expr_arg_iterator_d {
+typedef struct aggr_init_expr_arg_iterator_d {
   tree t;	/* the aggr_init_expr */
   int n;	/* argument count */
   int i;	/* next argument index */
@@ -4227,9 +4214,12 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
    another mechanism.  Exiting early also avoids problems with trying
    to perform argument conversions when the class isn't complete yet.  */
 #define LOOKUP_SPECULATIVE (LOOKUP_LIST_ONLY << 1)
+/* Used by calls from defaulted functions to limit the overload set to avoid
+   cycles trying to declare them (core issue 1092).  */
+#define LOOKUP_DEFAULTED (LOOKUP_SPECULATIVE << 1)
 /* Used in calls to store_init_value to suppress its usual call to
    digest_init.  */
-#define LOOKUP_ALREADY_DIGESTED (LOOKUP_SPECULATIVE << 1)
+#define LOOKUP_ALREADY_DIGESTED (LOOKUP_DEFAULTED << 1)
 
 #define LOOKUP_NAMESPACES_ONLY(F)  \
   (((F) & LOOKUP_PREFER_NAMESPACES) && !((F) & LOOKUP_PREFER_TYPES))
@@ -4907,6 +4897,9 @@ extern void print_instantiation_context		(void);
 extern void maybe_warn_variadic_templates       (void);
 extern void maybe_warn_cpp0x			(cpp0x_warn_str str);
 extern bool pedwarn_cxx98                       (location_t, int, const char *, ...) ATTRIBUTE_GCC_DIAG(3,4);
+extern location_t location_of                   (tree);
+extern void qualified_name_lookup_error		(tree, tree, tree,
+						 location_t);
 
 /* in except.c */
 extern void init_exception_processing		(void);
@@ -5295,8 +5288,6 @@ extern void finish_template_decl		(tree);
 extern tree finish_template_type		(tree, tree, int);
 extern tree finish_base_specifier		(tree, tree, bool);
 extern void finish_member_declaration		(tree);
-extern void qualified_name_lookup_error		(tree, tree, tree,
-						 location_t);
 extern tree finish_id_expression		(tree, tree, tree,
 						 cp_id_kind *,
 						 bool, bool, bool *,
@@ -5585,7 +5576,7 @@ extern void cxx_incomplete_type_error		(const_tree, const_tree);
   (cxx_incomplete_type_diagnostic ((V), (T), DK_ERROR))
 extern tree error_not_base_type			(tree, tree);
 extern tree binfo_or_else			(tree, tree);
-extern void readonly_error			(tree, readonly_error_kind);
+extern void cxx_readonly_error			(tree, enum lvalue_use);
 extern void complete_type_check_abstract	(tree);
 extern int abstract_virtuals_error		(tree, tree);
 
@@ -5638,6 +5629,9 @@ extern tree cxx_omp_clause_assign_op		(tree, tree, tree);
 extern tree cxx_omp_clause_dtor			(tree, tree);
 extern void cxx_omp_finish_clause		(tree);
 extern bool cxx_omp_privatize_by_reference	(const_tree);
+
+/* in name-lookup.c */
+extern void suggest_alternatives_for (location_t, tree);
 
 /* -- end of C++ */
 

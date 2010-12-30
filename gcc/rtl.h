@@ -2455,8 +2455,7 @@ extern void init_reg_sets (void);
 extern void regclass (rtx, int);
 extern void reg_scan (rtx, unsigned int);
 extern void fix_register (const char *, int, int);
-extern bool invalid_mode_change_p (unsigned int, enum reg_class,
-				   enum machine_mode);
+extern bool invalid_mode_change_p (unsigned int, enum reg_class);
 
 /* In reorg.c */
 extern void dbr_schedule (rtx);

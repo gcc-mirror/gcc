@@ -30,7 +30,8 @@ AM_INIT_AUTOMAKE([1.9.0 foreign subdir-objects no-dist -Wall -Werror])
 
 AC_MSG_CHECKING([for --enable-version-specific-runtime-libs])
 AC_ARG_ENABLE(version-specific-runtime-libs,
-[  --enable-version-specific-runtime-libs    Specify that runtime libraries should be installed in a compiler-specific directory ],
+AS_HELP_STRING([--enable-version-specific-runtime-libs],
+ [specify that runtime libraries should be installed in a compiler-specific directory]),
 [case "$enableval" in
  yes) version_specific_libs=yes ;;
  no)  version_specific_libs=no ;;
@@ -41,8 +42,17 @@ AC_MSG_RESULT($version_specific_libs)
 
 GCC_NO_EXECUTABLES
 
+# See if makeinfo has been installed and is modern enough
+# that we can use it.
+ACX_CHECK_PROG_VER([MAKEINFO], [makeinfo], [--version],
+                   [GNU texinfo.* \([0-9][0-9.]*\)],
+                   [4.[4-9]*|4.[1-9][0-9]*|[5-9]*|[1-9][0-9]*])
+AM_CONDITIONAL(BUILD_INFO, test $gcc_cv_prog_makeinfo_modern = "yes")
+
+
 # Configure libtool
 AM_PROG_LIBTOOL
+ACX_LT_HOST_FLAGS
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
 
@@ -99,8 +109,19 @@ esac
 AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
 
-AC_CHECK_LIB([m],[sqrtl],[AC_DEFINE([HAVE_SQRTL],[1],[libm includes sqrtl])])
-AC_CHECK_LIB([m],[cbrtl],[AC_DEFINE([HAVE_CBRTL],[1],[libm includes cbrtl])])
+# If available, sqrtl and cbrtl speed up the calculation -
+# but they are not required
+if test x$gcc_no_link != xyes; then
+  AC_CHECK_LIB([m],[sqrtl],[AC_DEFINE([HAVE_SQRTL],[1],[libm includes sqrtl])])
+  AC_CHECK_LIB([m],[cbrtl],[AC_DEFINE([HAVE_CBRTL],[1],[libm includes cbrtl])])
+else
+  if test "x$ac_cv_lib_m_sqrtl" = x""yes; then
+    AC_DEFINE([HAVE_SQRTL],[1],[libm includes sqrtl])  
+  fi
+  if test "x$ac_cv_lib_m_cbrtl" = x""yes; then
+    AC_DEFINE([HAVE_CBRTL],[1],[libm includes cbrtl])  
+  fi
+fi
 
 # Check for symbol versioning (copied from libssp).
 AC_MSG_CHECKING([whether symbol versioning is supported])
@@ -139,8 +160,8 @@ AM_CONDITIONAL(LIBQUAD_USE_SYMVER, [test "x$quadmath_use_symver" != xno])
 AM_CONDITIONAL(LIBQUAD_USE_SYMVER_GNU, [test "x$quadmath_use_symver" = xgnu])
 AM_CONDITIONAL(LIBQUAD_USE_SYMVER_SUN, [test "x$quadmath_use_symver" = xsun])
 
-AC_MSG_CHECKING([whether __float128 is supported])
-  AC_TRY_LINK([
+AC_CACHE_CHECK([whether __float128 is supported], [libquad_cv_have_float128],
+  [GCC_TRY_COMPILE_OR_LINK([
     typedef _Complex float __attribute__((mode(TC))) __complex128;
 
     __float128 foo (__float128 x)
@@ -163,20 +184,11 @@ AC_MSG_CHECKING([whether __float128 is supported])
     foo (1.2Q);
     bar (1.2Q);
   ],[
-    libquad_have_float128=yes
+    libquad_cv_have_float128=yes
   ],[
-    libquad_have_float128=no
-])
-AC_MSG_RESULT([$libquad_have_float128])
-
-dnl
-dnl Enable the following for a stand-alone library:
-dnl
-dnl if test $libquad_have_float128 = no; then
-dnl   AC_MSG_ERROR([__float128 support is required to build this library.])
-dnl fi
-
-AM_CONDITIONAL(BUILD_LIBQUADMATH, [test "x$libquad_have_float128" = xyes])
+    libquad_cv_have_float128=no
+])])
+AM_CONDITIONAL(BUILD_LIBQUADMATH, [test "x$libquad_cv_have_float128" = xyes])
 
 AC_CACHE_SAVE
 
@@ -185,6 +197,26 @@ if test ${multilib} = yes; then
 else
   multilib_arg=
 fi
+
+
+# We would like our source tree to be readonly. However when releases or
+# pre-releases are generated, the flex/bison generated files as well as the
+# various formats of manuals need to be included along with the rest of the
+# sources.  Therefore we have --enable-generated-files-in-srcdir to do 
+# just that.
+AC_MSG_CHECKING(generated-files-in-srcdir)
+AC_ARG_ENABLE(generated-files-in-srcdir,
+AS_HELP_STRING([--enable-generated-files-in-srcdir],
+ [put copies of generated files in source dir intended for creating source tarballs for users without texinfo bison or flex]),
+[case "$enableval" in
+ yes) enable_generated_files_in_srcdir=yes ;;
+ no)  enable_generated_files_in_srcdir=no ;;
+ *)   AC_MSG_ERROR([Unknown argument to enable/disable version-specific libs]);;
+ esac],
+[enable_generated_files_in_srcdir=no])
+AC_MSG_RESULT($enable_generated_files_in_srcdir)
+AM_CONDITIONAL(GENINSRC, test "$enable_generated_files_in_srcdir" = yes)
+
 
 AC_CONFIG_FILES(Makefile)
 AC_OUTPUT

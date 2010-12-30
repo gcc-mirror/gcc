@@ -1,0 +1,347 @@
+\input texinfo @c -*-texinfo-*-
+@setfilename gccgo.info
+@settitle The GNU Go Compiler
+
+@c Merge the standard indexes into a single one.
+@syncodeindex fn cp
+@syncodeindex vr cp
+@syncodeindex ky cp
+@syncodeindex pg cp
+@syncodeindex tp cp
+
+@include gcc-common.texi
+
+@c Copyright years for this manual.
+@set copyrights-go 2010
+
+@copying
+@c man begin COPYRIGHT
+Copyright @copyright{} @value{copyrights-go} Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, the Front-Cover Texts being (a) (see below), and
+with the Back-Cover Texts being (b) (see below).
+A copy of the license is included in the
+@c man end
+section entitled ``GNU Free Documentation License''.
+@ignore
+@c man begin COPYRIGHT
+man page gfdl(7).
+@c man end
+@end ignore
+
+@c man begin COPYRIGHT
+
+(a) The FSF's Front-Cover Text is:
+
+     A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+     You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development.
+@c man end
+@end copying
+
+@ifinfo
+@format
+@dircategory Software development
+@direntry
+* Gccgo: (gccgo).           A GCC-based compiler for the Go language
+@end direntry
+@end format
+
+@insertcopying
+@end ifinfo
+
+@titlepage
+@title The GNU Go Compiler
+@versionsubtitle
+@author Ian Lance Taylor
+
+@page
+@vskip 0pt plus 1filll
+Published by the Free Software Foundation @*
+51 Franklin Street, Fifth Floor@*
+Boston, MA 02110-1301, USA@*
+@sp 1
+@insertcopying
+@end titlepage
+@contents
+@page
+
+@node Top
+@top Introduction
+
+This manual describes how to use @command{gccgo}, the GNU compiler for
+the Go programming language.  This manual is specifically about
+@command{gccgo}.  For more information about the Go programming
+language in general, including language specifications and standard
+package documentation, see @uref{http://golang.org/}.
+
+@menu
+* Copying::                     The GNU General Public License.
+* GNU Free Documentation License::
+                                How you can share and copy this manual.
+* Invoking gccgo::              How to run gccgo.
+* Import and Export::           Importing and exporting package data.
+* C Interoperability::          Calling C from Go and vice-vera.
+* Index::                       Index.
+@end menu
+
+
+@include gpl_v3.texi
+
+@include fdl.texi
+
+
+@node Invoking gccgo
+@chapter Invoking gccgo
+
+@c man title gccgo A GCC-based compiler for the Go language
+
+@ignore
+@c man begin SYNOPSIS gccgo
+gccgo [@option{-c}|@option{-S}]
+      [@option{-g}] [@option{-pg}] [@option{-O}@var{level}]
+      [@option{-I}@var{dir}@dots{}] [@option{-L}@var{dir}@dots{}]
+      [@option{-o} @var{outfile}] @var{infile}@dots{}
+
+Only the most useful options are listed here; see below for the
+remainder.
+@c man end
+@c man begin SEEALSO
+gpl(7), gfdl(7), fsf-funding(7), gcc(1)
+and the Info entries for @file{gccgo} and @file{gcc}.
+@c man end
+@end ignore
+
+@c man begin DESCRIPTION gccgo
+
+The @command{gccgo} command is a frontend to @command{gcc} and
+supports many of the same options.  @xref{Option Summary, , Option
+Summary, gcc, Using the GNU Compiler Collection (GCC)}.  This manual
+only documents the options specific to @command{gccgo}.
+
+The @command{gccgo} command may be used to compile Go source code into
+an object file, link a collection of object files together, or do both
+in sequence.
+
+Go source code is compiled as packages.  A package consists of one or
+more Go source files.  All the files in a single package must be
+compiled together, by passing all the files as arguments to
+@command{gccgo}.  A single invocation of @command{gccgo} may only
+compile a single package.
+
+One Go package may @code{import} a different Go package.  The imported
+package must have already been compiled; @command{gccgo} will read
+the import data directly from the compiled package.  When this package
+is later linked, the compiled form of the package must be included in
+the link command.
+
+@c man end
+
+@c man begin OPTIONS gccgo
+
+@table @gcctabopt
+@item -I@var{dir}
+@cindex @option{-I}
+Specify a directory to use when searching for an import package at
+compile time.
+
+@item -L@var{dir}
+@cindex @option{-L}
+When linking, specify a library search directory, as with
+@command{gcc}.
+
+@item -fgo-prefix=@var{string}
+@cindex @option{-fgo-prefix}
+Go permits a single program to include more than one package with the
+same name.  This option is required to make this work with
+@command{gccgo}.  The argument to this option may be any string.  Each
+package with the same name must use a distinct @option{-fgo-prefix}
+option.  The argument is typically the full path under which the
+package will be installed, as that must obviously be unique.
+
+@item -frequire-return-statement
+@itemx -fno-require-return-statement
+@cindex @option{-frequire-return-statement}
+@cindex @option{-fno-require-return-statement}
+By default @command{gccgo} will warn about functions which have one or
+more return parameters but lack an explicit @code{return} statement.
+This warning may be disabled using
+@option{-fno-require-return-statement}.
+@end table
+
+@c man end
+
+@node Import and Export
+@chapter Import and Export
+
+When @command{gccgo} compiles a package which exports anything, the
+export information will be stored directly in the object file.  When a
+package is imported, @command{gccgo} must be able to find the file.
+
+@cindex @file{.gox}
+When Go code imports the package @file{gopackage}, @command{gccgo}
+will look for the import data using the following filenames, using the
+first one that it finds.
+
+@table @file
+@item @var{gopackage}.gox
+@item lib@var{gopackage}.so
+@item lib@var{gopackage}.a
+@item @var{gopackage}.o
+@end table
+
+The compiler will search for these files in the directories named by
+any @option{-I} options, in order in which the directories appear on
+the command line.  The compiler will then search several standard
+system directories.  Finally the compiler will search the current
+directory (to search the current directory earlier, use @samp{-I.}).
+
+The compiler will extract the export information directly from the
+compiled object file.  The file @file{@var{gopackage}.gox} will
+typically contain nothing but export data.  This can be generated from
+@file{@var{gopackage}.o} via
+
+@smallexample
+objcopy -j .go_export @var{gopackage}.o @var{gopackage}.gox
+@end smallexample
+
+For example, it may be desirable to extract the export information
+from several different packages into their independent
+@file{@var{gopackage}.gox} files, and then to combine the different
+package object files together into a single shared library or archive.
+
+At link time you must explicitly tell @command{gccgo} which files to
+link together into the executable, as is usual with @command{gcc}.
+This is different from the behaviour of other Go compilers.
+
+@node C Interoperability
+@chapter C Interoperability
+
+When using @command{gccgo} there is limited interoperability with C,
+or with C++ code compiled using @code{extern "C"}.
+
+@menu
+* C Type Interoperability::     How C and Go types match up.
+* Function Names::              How Go functions are named.
+@end menu
+
+@node C Type Interoperability
+@section C Type Interoperability
+
+Basic types map directly: an @code{int} in Go is an @code{int} in C,
+etc.  Go @code{byte} is equivalent to C @code{unsigned char}.
+Pointers in Go are pointers in C.  A Go @code{struct} is the same as C
+@code{struct} with the same field names and types.
+
+@cindex @code{string} in C
+The Go @code{string} type is currently defined as a two-element
+structure:
+
+@smallexample
+struct __go_string @{
+  const unsigned char *__data;
+  int __length;
+@};
+@end smallexample
+
+You can't pass arrays between C and Go.  However, a pointer to an
+array in Go is equivalent to a C pointer to the equivalent of the
+element type.  For example, Go @code{*[10]int} is equivalent to C
+@code{int*}, assuming that the C pointer does point to 10 elements.
+
+@cindex @code{slice} in C
+A slice in Go is a structure.  The current definition is:
+
+@smallexample
+struct __go_slice @{
+  void *__values;
+  int __count;
+  int __capacity;
+@};
+@end smallexample
+
+The type of a Go function with no receiver is equivalent to a C
+function whose parameter types are equivalent.  When a Go function
+returns more than one value, the C function returns a struct.  For
+example, these functions have equivalent types:
+
+@smallexample
+func GoFunction(int) (int, float)
+struct @{ int i; float f; @} CFunction(int)
+@end smallexample
+
+A pointer to a Go function is equivalent to a pointer to a C function
+when the functions have equivalent types.
+
+Go @code{interface}, @code{channel}, and @code{map} types have no
+corresponding C type (@code{interface} is a two-element struct and
+@code{channel} and @code{map} are pointers to structs in C, but the
+structs are deliberately undocumented).  C @code{enum} types
+correspond to some integer type, but precisely which one is difficult
+to predict in general; use a cast.  C @code{union} types have no
+corresponding Go type.  C @code{struct} types containing bitfields
+have no corresponding Go type.  C++ @code{class} types have no
+corresponding Go type.
+
+Memory allocation is completely different between C and Go, as Go uses
+garbage collection.  The exact guidelines in this area are
+undetermined, but it is likely that it will be permitted to pass a
+pointer to allocated memory from C to Go.  The responsibility of
+eventually freeing the pointer will remain with C side, and of course
+if the C side frees the pointer while the Go side still has a copy the
+program will fail.  When passing a pointer from Go to C, the Go
+function must retain a visible copy of it in some Go variable.
+Otherwise the Go garbage collector may delete the pointer while the C
+function is still using it.
+
+@node Function Names
+@section Function Names
+
+@cindex @code{__asm__}
+Go code can call C functions directly using a Go extension implemented
+in @command{gccgo}: a function declaration may be followed by
+@code{__asm__ ("@var{name}")}. For example, here is how the C function
+@code{open} can be declared in Go:
+
+@smallexample
+func c_open(name *byte, mode int, perm int) int __asm__ ("open");
+@end smallexample
+
+The C function naturally expects a nul terminated string, which in Go
+is equivalent to a pointer to an array (not a slice!) of @code{byte}
+with a terminating zero byte.  So a sample call from Go would look
+like (after importing the @code{os} package):
+
+@smallexample
+var name = [4]byte@{'f', 'o', 'o', 0@};
+i := c_open(&amp;name[0], os.O_RDONLY, 0);
+@end smallexample
+
+Note that this serves as an example only.  To open a file in Go please
+use Go's @code{os.Open} function instead.
+
+The name of Go functions accessed from C is subject to change.  At
+present the name of a Go function that does not have a receiver is
+@code{prefix.package.Functionname}.  The prefix is set by the
+@option{-fgo-prefix} option used when the package is compiled; if the
+option is not used, the default is simply @code{go}.  To call the
+function from C you must set the name using the @command{gcc}
+extension similar to the @command{gccgo} extension.
+
+@smallexample
+extern int go_function(int) __asm__ ("myprefix.mypackage.Function");
+@end smallexample
+
+@node Index
+@unnumbered Index
+
+@printindex cp
+
+@bye

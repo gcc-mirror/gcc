@@ -96,6 +96,7 @@ if test "x${with_newlib}" != "xyes"; then
   AC_LIBTOOL_DLOPEN
 fi
 AM_PROG_LIBTOOL
+ACX_LT_HOST_FLAGS
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
 
@@ -375,6 +376,7 @@ dnl which can all be called multiple times as needed, plus one (different)
 dnl AC_OUTPUT macro.  This one lists the files to be created:
 AC_CONFIG_FILES(Makefile)
 AC_CONFIG_FILES([scripts/testsuite_flags],[chmod +x scripts/testsuite_flags])
+AC_CONFIG_FILES([scripts/extract_symvers],[chmod +x scripts/extract_symvers])
 
 # Multilibs need MULTISUBDIR defined correctly in certain makefiles so
 # that multilib installs will end up installed in the correct place.

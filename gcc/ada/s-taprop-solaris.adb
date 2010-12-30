@@ -880,7 +880,7 @@ package body System.Task_Primitives.Operations is
          System.Multiprocessors.Not_A_Specific_CPU
       then
          --  The CPU numbering in pragma CPU starts at 1 while the subprogram
-         --  to set the affinity starts at 0, therefore we must substract 1.
+         --  to set the affinity starts at 0, therefore we must subtract 1.
 
          Result :=
            processor_bind

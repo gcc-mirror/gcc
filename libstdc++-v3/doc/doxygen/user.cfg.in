@@ -1,14 +1,14 @@
-# Doxyfile 1.7.1
+# Doxyfile 1.7.2
 
 # This file describes the settings to be used by the documentation system
-# doxygen (www.doxygen.org) for a project
+# doxygen (www.doxygen.org) for a project.
 #
-# All text after a hash (#) is considered a comment and will be ignored
+# All text after a hash (#) is considered a comment and will be ignored.
 # The format is:
 #       TAG = value [value, ...]
 # For lists items can also be appended using:
 #       TAG += value [value, ...]
-# Values that contain spaces should be placed between quotes (" ")
+# Values that contain spaces should be placed between quotes (" ").
 
 #---------------------------------------------------------------------------
 # Project related configuration options
@@ -126,7 +126,7 @@ STRIP_FROM_PATH        =
 STRIP_FROM_INC_PATH    =
 
 # If the SHORT_NAMES tag is set to YES, doxygen will generate much shorter
-# (but less readable) file names. This can be useful is your file systems
+# (but less readable) file names. This can be useful if your file system
 # doesn't support long names like on DOS, Mac, or CD-ROM.
 
 SHORT_NAMES            = @shortname@
@@ -179,8 +179,10 @@ TAB_SIZE               = 4
 # will result in a user-defined paragraph with heading "Side Effects:".
 # You can put \n's in the value part of an alias to insert newlines.
 
-ALIASES                = "doctodo=@todo\nDoc me!  See doc/doxygen/TODO and http://gcc.gnu.org/ml/libstdc++/2002-02/msg00003.html for more.  " \
-			 "isiosfwd=One of the @link io I/O @endlink typedefs"
+ALIASES = doctodo="@todo\nNeeds documentation! See http://gcc.gnu.org/onlinedocs/libstdc++/manual/documentation_style.html"
+
+ALIASES += headername{1}="Instead, include <\1>."
+ALIASES += headername{2}="Instead, include <\1> or <\2>."
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C
 # sources only. Doxygen will then generate output that is more tailored for C.
@@ -224,7 +226,7 @@ EXTENSION_MAPPING      =
 # to include (a tag file for) the STL sources as input, then you should
 # set this tag to YES in order to let doxygen match functions declarations and
 # definitions whose arguments contain STL classes (e.g. func(std::string); v.s.
-# func(std::string) {}). This also make the inheritance and collaboration
+# func(std::string) {}). This also makes the inheritance and collaboration
 # diagrams that involve STL classes more complete and accurate.
 
 BUILTIN_STL_SUPPORT    = NO
@@ -242,7 +244,7 @@ SIP_SUPPORT            = NO
 
 # For Microsoft's IDL there are propget and propput attributes to indicate getter
 # and setter methods for a property. Setting this option to YES (the default)
-# will make doxygen to replace the get and set methods by a property in the
+# will make doxygen replace the get and set methods by a property in the
 # documentation. This will only work if the methods are indeed getting or
 # setting a simple type. If this is not the case, or you want to show the
 # methods anyway, you should set this option to NO.
@@ -283,7 +285,7 @@ TYPEDEF_HIDES_STRUCT   = NO
 # causing a significant performance penality.
 # If the system has enough physical memory increasing the cache will improve the
 # performance by keeping more symbols in memory. Note that the value works on
-# a logarithmic scale so increasing the size by one will rougly double the
+# a logarithmic scale so increasing the size by one will roughly double the
 # memory usage. The cache size is given by this formula:
 # 2^(16+SYMBOL_CACHE_SIZE). The valid range is 0..9, the default is 0,
 # corresponding to a cache size of 2^16 = 65536 symbols
@@ -328,7 +330,7 @@ EXTRACT_LOCAL_METHODS  = YES
 # extracted and appear in the documentation as a namespace called
 # 'anonymous_namespace{file}', where file will be replaced with the base
 # name of the file that contains the anonymous namespace. By default
-# anonymous namespace are hidden.
+# anonymous namespaces are hidden.
 
 EXTRACT_ANON_NSPACES   = NO
 
@@ -469,10 +471,10 @@ GENERATE_DEPRECATEDLIST= YES
 ENABLED_SECTIONS       = @enabled_sections@
 
 # The MAX_INITIALIZER_LINES tag determines the maximum number of lines
-# the initial value of a variable or define consists of for it to appear in
+# the initial value of a variable or macro consists of for it to appear in
 # the documentation. If the initializer consists of more lines than specified
 # here it will be hidden. Use a value of 0 to hide initializers completely.
-# The appearance of the initializer of individual variables and defines in the
+# The appearance of the initializer of individual variables and macros in the
 # documentation can be controlled using \showinitializer or \hideinitializer
 # command in the documentation regardless of this setting.
 
@@ -550,7 +552,7 @@ WARN_IF_UNDOCUMENTED   = NO
 
 WARN_IF_DOC_ERROR      = YES
 
-# This WARN_NO_PARAMDOC option can be abled to get warnings for
+# The WARN_NO_PARAMDOC option can be enabled to get warnings for
 # functions that are documented, but have no documentation for their parameters
 # or return value. If set to NO (the default) doxygen will only warn about
 # wrong or incomplete parameter documentation, but not about the absence of
@@ -583,146 +585,146 @@ WARN_LOGFILE           =
 # with spaces.
 
 INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
-			 @srcdir@/libsupc++/cxxabi.h \
-			 @srcdir@/libsupc++/cxxabi-forced.h \
-			 @srcdir@/libsupc++/exception \
-			 @srcdir@/libsupc++/exception_defines.h \
-			 @srcdir@/libsupc++/exception_ptr.h \
-			 @srcdir@/libsupc++/initializer_list \
-			 @srcdir@/libsupc++/nested_exception.h \
-			 @srcdir@/libsupc++/new \
-			 @srcdir@/libsupc++/typeinfo \
-			 include/algorithm \
-			 include/array \
-			 include/atomic \
-			 include/bitset \
-			 include/chrono \
-			 include/complex \
-			 include/condition_variable \
-			 include/deque \
-			 include/forward_list \
-			 include/fstream \
-			 include/functional \
-			 include/future \
-			 include/iomanip \
-			 include/ios \
-			 include/iosfwd \
-			 include/iostream \
-			 include/istream \
-			 include/iterator \
-			 include/limits \
-			 include/list \
-			 include/locale \
-			 include/map \
-			 include/memory \
-			 include/mutex \
-			 include/numeric \
-			 include/ostream \
-			 include/queue \
-			 include/random \
-			 include/ratio \
-			 include/regex \
-			 include/set \
-			 include/sstream \
-			 include/stack \
-			 include/stdexcept \
-			 include/streambuf \
-			 include/string \
-			 include/system_error \
-			 include/thread \
-			 include/tuple \
-			 include/typeindex \
-			 include/type_traits \
-			 include/unordered_map \
-			 include/unordered_set \
-			 include/utility \
-			 include/valarray \
-			 include/vector \
-			 include/cassert \
-			 include/ccomplex \
-			 include/cctype \
-			 include/cerrno \
-			 include/cfenv \
-			 include/cfloat \
-			 include/cinttypes \
-			 include/ciso646 \
-			 include/climits \
-			 include/clocale \
-			 include/cmath \
-			 include/csetjmp \
-			 include/csignal \
-			 include/cstdarg \
-			 include/cstdbool \
-			 include/cstddef \
-			 include/cstdint \
-			 include/cstdio \
-			 include/cstdlib \
-			 include/cstring \
-			 include/ctgmath \
-			 include/ctime \
-			 include/cwchar \
-			 include/cwctype \
-			 include/backward/hash_map \
-			 include/backward/hash_set \
-			 include/backward/strstream \
-			 include/debug/bitset \
-			 include/debug/deque \
-			 include/debug/forward_list \
-			 include/debug/list \
-			 include/debug/map \
-			 include/debug/set \
-			 include/debug/string \
-			 include/debug/unordered_map \
-			 include/debug/unordered_set \
-			 include/debug/vector \
-			 include/profile/bitset \
-			 include/profile/deque \
-			 include/profile/forward_list \
-			 include/profile/list \
-			 include/profile/map \
-			 include/profile/set \
-			 include/profile/unordered_map \
-			 include/profile/unordered_set \
-			 include/profile/vector \
-			 include/ext/algorithm \
-			 include/ext/functional \
-			 include/ext/iterator \
-			 include/ext/memory \
-			 include/ext/numeric \
-			 include/ext/rb_tree \
-			 include/ext/rope \
-			 include/ext/slist \
-			 include/parallel/algorithm \
-			 include/parallel/numeric \
-			 include/tr1/ccomplex \
-			 include/tr1/cctype \
-			 include/tr1/cfenv \
-			 include/tr1/cfloat \
-			 include/tr1/cinttypes \
-			 include/tr1/climits \
-			 include/tr1/cmath \
-			 include/tr1/complex \
-			 include/tr1/cstdarg \
-			 include/tr1/cstdbool \
-			 include/tr1/cstdint \
-			 include/tr1/cstdio \
-			 include/tr1/cstdlib \
-			 include/tr1/ctgmath \
-			 include/tr1/ctime \
-			 include/tr1/cwchar \
-			 include/tr1/cwctype \
-			 include/decimal/decimal \
-			 include/ \
-			 include/@host_alias@/bits \
-			 include/backward \
-			 include/bits \
-			 include/debug \
-			 include/parallel \
-			 include/profile \
-			 include/profile/impl \
-			 include/ext \
-			 include/ext/pb_ds \
-			 include/ext/pb_ds/detail
+                         @srcdir@/libsupc++/cxxabi.h \
+                         @srcdir@/libsupc++/cxxabi-forced.h \
+                         @srcdir@/libsupc++/exception \
+                         @srcdir@/libsupc++/exception_defines.h \
+                         @srcdir@/libsupc++/exception_ptr.h \
+                         @srcdir@/libsupc++/initializer_list \
+                         @srcdir@/libsupc++/nested_exception.h \
+                         @srcdir@/libsupc++/new \
+                         @srcdir@/libsupc++/typeinfo \
+                         include/algorithm \
+                         include/array \
+                         include/atomic \
+                         include/bitset \
+                         include/chrono \
+                         include/complex \
+                         include/condition_variable \
+                         include/deque \
+                         include/forward_list \
+                         include/fstream \
+                         include/functional \
+                         include/future \
+                         include/iomanip \
+                         include/ios \
+                         include/iosfwd \
+                         include/iostream \
+                         include/istream \
+                         include/iterator \
+                         include/limits \
+                         include/list \
+                         include/locale \
+                         include/map \
+                         include/memory \
+                         include/mutex \
+                         include/numeric \
+                         include/ostream \
+                         include/queue \
+                         include/random \
+                         include/ratio \
+                         include/regex \
+                         include/set \
+                         include/sstream \
+                         include/stack \
+                         include/stdexcept \
+                         include/streambuf \
+                         include/string \
+                         include/system_error \
+                         include/thread \
+                         include/tuple \
+                         include/typeindex \
+                         include/type_traits \
+                         include/unordered_map \
+                         include/unordered_set \
+                         include/utility \
+                         include/valarray \
+                         include/vector \
+                         include/cassert \
+                         include/ccomplex \
+                         include/cctype \
+                         include/cerrno \
+                         include/cfenv \
+                         include/cfloat \
+                         include/cinttypes \
+                         include/ciso646 \
+                         include/climits \
+                         include/clocale \
+                         include/cmath \
+                         include/csetjmp \
+                         include/csignal \
+                         include/cstdarg \
+                         include/cstdbool \
+                         include/cstddef \
+                         include/cstdint \
+                         include/cstdio \
+                         include/cstdlib \
+                         include/cstring \
+                         include/ctgmath \
+                         include/ctime \
+                         include/cwchar \
+                         include/cwctype \
+                         include/backward/hash_map \
+                         include/backward/hash_set \
+                         include/backward/strstream \
+                         include/debug/bitset \
+                         include/debug/deque \
+                         include/debug/forward_list \
+                         include/debug/list \
+                         include/debug/map \
+                         include/debug/set \
+                         include/debug/string \
+                         include/debug/unordered_map \
+                         include/debug/unordered_set \
+                         include/debug/vector \
+                         include/profile/bitset \
+                         include/profile/deque \
+                         include/profile/forward_list \
+                         include/profile/list \
+                         include/profile/map \
+                         include/profile/set \
+                         include/profile/unordered_map \
+                         include/profile/unordered_set \
+                         include/profile/vector \
+                         include/ext/algorithm \
+                         include/ext/functional \
+                         include/ext/iterator \
+                         include/ext/memory \
+                         include/ext/numeric \
+                         include/ext/rb_tree \
+                         include/ext/rope \
+                         include/ext/slist \
+                         include/parallel/algorithm \
+                         include/parallel/numeric \
+                         include/tr1/ccomplex \
+                         include/tr1/cctype \
+                         include/tr1/cfenv \
+                         include/tr1/cfloat \
+                         include/tr1/cinttypes \
+                         include/tr1/climits \
+                         include/tr1/cmath \
+                         include/tr1/complex \
+                         include/tr1/cstdarg \
+                         include/tr1/cstdbool \
+                         include/tr1/cstdint \
+                         include/tr1/cstdio \
+                         include/tr1/cstdlib \
+                         include/tr1/ctgmath \
+                         include/tr1/ctime \
+                         include/tr1/cwchar \
+                         include/tr1/cwctype \
+                         include/decimal/decimal \
+                         include/ \
+                         include/@host_alias@/bits \
+                         include/backward \
+                         include/bits \
+                         include/debug \
+                         include/parallel \
+                         include/profile \
+                         include/profile/impl \
+                         include/ext \
+                         include/ext/pb_ds \
+                         include/ext/pb_ds/detail
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is
@@ -736,12 +738,13 @@ INPUT_ENCODING         = UTF-8
 # FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp
 # and *.h) to filter out the source-files in the directories. If left
 # blank the following patterns are tested:
-# *.c *.cc *.cxx *.cpp *.c++ *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx
-# *.hpp *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm *.py *.f90
+# *.c *.cc *.cxx *.cpp *.c++ *.d *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh
+# *.hxx *.hpp *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm *.dox *.py
+# *.f90 *.f *.vhd *.vhdl
 
 FILE_PATTERNS          = *.h \
-			 *.hpp \
-			 *.tcc
+                         *.hpp \
+                         *.tcc
 
 # The RECURSIVE tag can be used to turn specify whether or not subdirectories
 # should be searched for input files as well. Possible values are YES and NO.
@@ -767,9 +770,9 @@ EXCLUDE_SYMLINKS       = NO
 # against the file with absolute path, so to exclude all test directories
 # for example use the pattern */test/*
 
-EXCLUDE_PATTERNS       = stamp-* \
-			 *.gch \
-			 */.svn/*
+EXCLUDE_PATTERNS       = stamp-* doxygroups.cc \
+                         *.gch \
+                         */.svn/*
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names
 # (namespaces, classes, functions, etc.) that should be excluded from the
@@ -1026,10 +1029,9 @@ DOCSET_FEEDNAME        = "Doxygen generated docs"
 
 DOCSET_BUNDLE_ID       = org.gnu.libstdc++
 
-# When GENERATE_PUBLISHER_ID tag specifies a string that should
-# uniquely identify the documentation publisher. This should be a
-# reverse domain-name style string,
-# e.g. com.mycompany.MyDocSet.documentation.
+# When GENERATE_PUBLISHER_ID tag specifies a string that should uniquely identify
+# the documentation publisher. This should be a reverse domain-name style
+# string, e.g. com.mycompany.MyDocSet.documentation.
 
 DOCSET_PUBLISHER_ID    = org.fsf
 
@@ -1157,8 +1159,9 @@ ECLIPSE_DOC_ID         = org.doxygen.Project
 
 DISABLE_INDEX          = YES
 
-# This tag can be used to set the number of enum values (range [1..20])
+# This tag can be used to set the number of enum values (range [0,1..20])
 # that doxygen will group on one line in the generated HTML documentation.
+# Note that a value of 0 will completely suppress the enum values from appearing in the overview section.
 
 ENUM_VALUES_PER_LINE   = 4
 
@@ -1204,6 +1207,25 @@ FORMULA_FONTSIZE       = 10
 
 FORMULA_TRANSPARENT    = YES
 
+# Enable the USE_MATHJAX option to render LaTeX formulas using MathJax
+# (see http://www.mathjax.org) which uses client side Javascript for the
+# rendering instead of using prerendered bitmaps. Use this if you do not
+# have LaTeX installed or if you want to formulas look prettier in the HTML
+# output. When enabled you also need to install MathJax separately and
+# configure the path to it using the MATHJAX_RELPATH option.
+
+USE_MATHJAX            = NO
+
+# When MathJax is enabled you need to specify the location relative to the
+# HTML output directory using the MATHJAX_RELPATH option. The destination
+# directory should contain the MathJax.js script. For instance, if the mathjax
+# directory is located at the same level as the HTML output directory, then
+# MATHJAX_RELPATH should be ../mathjax. The default value points to the mathjax.org site, so you can quickly see the result without installing
+# MathJax, but it is strongly recommended to install a local copy of MathJax
+# before deployment.
+
+MATHJAX_RELPATH        = http://www.mathjax.org/mathjax
+
 # When the SEARCHENGINE tag is enabled doxygen will generate a search box
 # for the HTML output. The underlying search engine uses javascript
 # and DHTML and should work on any modern browser. Note that when using
@@ -1219,7 +1241,7 @@ SEARCHENGINE           = NO
 # using Javascript. Doxygen will generate the search PHP script and index
 # file to put on the web server. The advantage of the server
 # based approach is that it scales better to large projects and allows
-# full text search. The disadvances is that it is more difficult to setup
+# full text search. The disadvantages are that it is more difficult to setup
 # and does not have live searching capabilities.
 
 SERVER_BASED_SEARCH    = NO
@@ -1260,7 +1282,7 @@ MAKEINDEX_CMD_NAME     = makeindex
 COMPACT_LATEX          = NO
 
 # The PAPER_TYPE tag can be used to set the paper type that is used
-# by the printer. Possible values are: a4, a4wide, letter, legal and
+# by the printer. Possible values are: a4, letter, legal and
 # executive. If left blank a4wide will be used.
 
 PAPER_TYPE             = letter
@@ -1512,44 +1534,44 @@ INCLUDE_FILE_PATTERNS  =
 # instead of the = operator.
 
 PREDEFINED             = __cplusplus \
-			 __GTHREADS \
-			 _GLIBCXX_HAS_GTHREADS \
-			 __GXX_EXPERIMENTAL_CXX0X__ \
-			 _GLIBCXX_INCLUDE_AS_CXX0X \
-			 "_GLIBCXX_PURE= " \
-			 "_GLIBCXX_CONST= " \
-			 "_GLIBCXX_NORETURN= " \
-			 "_GLIBCXX_NOTHROW= " \
-			 "_GLIBCXX_STD_D= " \
-			 "_GLIBCXX_STD_P= " \
-			 "_GLIBCXX_STD_PR= " \
-			 _GLIBCXX_STD=std \
-			 "_GLIBCXX_TR1= " \
-			 "_GLIBCXX_BEGIN_NAMESPACE_TR1= " \
-			 "_GLIBCXX_END_NAMESPACE_TR1= " \
-			 "_GLIBCXX_BEGIN_NAMESPACE(name)=namespace name {  " \
-			 "_GLIBCXX_BEGIN_NESTED_NAMESPACE(name, unused)=namespace name {  " \
-			 _GLIBCXX_END_NAMESPACE=} \
-			 _GLIBCXX_END_NESTED_NAMESPACE=} \
-			 "_GLIBCXX_TEMPLATE_ARGS=...  " \
-			 _GLIBCXX_DEPRECATED \
-			 _GLIBCXX_CONSTEXPR=constexpr \
-			 _GLIBCXX_USE_CONSTEXPR=constexpr \
-			 _GLIBCXX_USE_WCHAR_T \
-			 _GLIBCXX_USE_LONG_LONG \
-			 _GLIBCXX_USE_C99_STDINT_TR1 \
-			 _GLIBCXX_ATOMIC_BUILTINS_1 \
-			 _GLIBCXX_ATOMIC_BUILTINS_2 \
-			 _GLIBCXX_ATOMIC_BUILTINS_4 \
-			 _GLIBCXX_ATOMIC_BUILTINS_8 \
-			 _GLIBCXX_USE_SCHED_YIELD \
-			 _GLIBCXX_USE_NANOSLEEP \
-			 __GXX_RTTI \
-			 __glibcxx_function_requires=// \
-			 __glibcxx_class_requires=// \
-			 __glibcxx_class_requires2=// \
-			 __glibcxx_class_requires3=// \
-			 __glibcxx_class_requires4=//
+                         __GTHREADS \
+                         _GLIBCXX_HAS_GTHREADS \
+                         __GXX_EXPERIMENTAL_CXX0X__ \
+                         _GLIBCXX_INCLUDE_AS_CXX0X \
+                         "_GLIBCXX_PURE= " \
+                         "_GLIBCXX_CONST= " \
+                         "_GLIBCXX_NORETURN= " \
+                         "_GLIBCXX_NOTHROW= " \
+                         "_GLIBCXX_STD_D= " \
+                         "_GLIBCXX_STD_P= " \
+                         "_GLIBCXX_STD_PR= " \
+                         _GLIBCXX_STD=std \
+                         "_GLIBCXX_TR1= " \
+                         "_GLIBCXX_BEGIN_NAMESPACE_TR1= " \
+                         "_GLIBCXX_END_NAMESPACE_TR1= " \
+                         "_GLIBCXX_BEGIN_NAMESPACE(name)=namespace name {  " \
+                         "_GLIBCXX_BEGIN_NESTED_NAMESPACE(name, unused)=namespace name {  " \
+                         _GLIBCXX_END_NAMESPACE=} \
+                         _GLIBCXX_END_NESTED_NAMESPACE=} \
+                         "_GLIBCXX_TEMPLATE_ARGS=...  " \
+                         _GLIBCXX_DEPRECATED \
+                         _GLIBCXX_CONSTEXPR=constexpr \
+                         _GLIBCXX_USE_CONSTEXPR=constexpr \
+                         _GLIBCXX_USE_WCHAR_T \
+                         _GLIBCXX_USE_LONG_LONG \
+                         _GLIBCXX_USE_C99_STDINT_TR1 \
+                         _GLIBCXX_ATOMIC_BUILTINS_1 \
+                         _GLIBCXX_ATOMIC_BUILTINS_2 \
+                         _GLIBCXX_ATOMIC_BUILTINS_4 \
+                         _GLIBCXX_ATOMIC_BUILTINS_8 \
+                         _GLIBCXX_USE_SCHED_YIELD \
+                         _GLIBCXX_USE_NANOSLEEP \
+                         __GXX_RTTI \
+                         __glibcxx_function_requires=// \
+                         __glibcxx_class_requires=// \
+                         __glibcxx_class_requires2=// \
+                         __glibcxx_class_requires3=// \
+                         __glibcxx_class_requires4=//
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then
 # this tag can be used to specify a list of macro names that should be expanded.
@@ -1618,9 +1640,8 @@ PERL_PATH              = /usr/bin/perl
 # If the CLASS_DIAGRAMS tag is set to YES (the default) Doxygen will
 # generate a inheritance diagram (in HTML, RTF and LaTeX) for classes with base
 # or super classes. Setting the tag to NO turns the diagrams off. Note that
-# this option is superseded by the HAVE_DOT option below. This is only a
-# fallback. It is recommended to install and use dot, since it yields more
-# powerful graphs.
+# this option also works with HAVE_DOT disabled, but it is recommended to
+# install and use dot, since it yields more powerful graphs.
 
 CLASS_DIAGRAMS         = YES
 
@@ -1654,15 +1675,14 @@ HAVE_DOT               = YES
 
 DOT_NUM_THREADS        = 0
 
-# By default doxygen will write a font called FreeSans.ttf to the
-# output directory and reference it in all dot files that doxygen
-# generates. This font does not include all possible unicode
-# characters however, so when you need these (or just want a
-# differently looking font) you can specify the font name using
-# DOT_FONTNAME. You need need to make sure dot is able to find the
-# font, which can be done by putting it in a standard location or by
-# setting the DOTFONTPATH environment variable or by setting
-# DOT_FONTPATH to the directory containing the font.
+# By default doxygen will write a font called FreeSans.ttf to the output
+# directory and reference it in all dot files that doxygen generates. This
+# font does not include all possible unicode characters however, so when you need
+# these (or just want a differently looking font) you can specify the font name
+# using DOT_FONTNAME. You need need to make sure dot is able to find the font,
+# which can be done by putting it in a standard location or by setting the
+# DOTFONTPATH environment variable or by setting DOT_FONTPATH to the directory
+# containing the font.
 
 DOT_FONTNAME           = FreeSans
 
@@ -1739,7 +1759,7 @@ CALL_GRAPH             = NO
 CALLER_GRAPH           = NO
 
 # If the GRAPHICAL_HIERARCHY and HAVE_DOT tags are set to YES then doxygen
-# will graphical hierarchy of all classes instead of a textual one.
+# will generate a graphical hierarchy of all classes instead of a textual one.
 
 GRAPHICAL_HIERARCHY    = YES
 
@@ -1751,7 +1771,7 @@ GRAPHICAL_HIERARCHY    = YES
 DIRECTORY_GRAPH        = YES
 
 # The DOT_IMAGE_FORMAT tag can be used to set the image format of the images
-# generated by dot. Possible values are png, jpg, or gif
+# generated by dot. Possible values are png, jpg, or gif.
 # If left blank png will be used.
 
 DOT_IMAGE_FORMAT       = png
@@ -1766,6 +1786,12 @@ DOT_PATH               =
 # \dotfile command).
 
 DOTFILE_DIRS           =
+
+# The MSCFILE_DIRS tag can be used to specify one or more directories that
+# contain msc files that are included in the documentation (see the
+# \mscfile command).
+
+MSCFILE_DIRS           =
 
 # The DOT_GRAPH_MAX_NODES tag can be used to set the maximum number of
 # nodes that will be shown in the graph. If the number of nodes in a graph

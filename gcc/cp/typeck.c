@@ -34,12 +34,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-tree.h"
 #include "flags.h"
 #include "output.h"
-#include "toplev.h"
 #include "diagnostic.h"
 #include "intl.h"
 #include "target.h"
 #include "convert.h"
 #include "c-family/c-common.h"
+#include "c-family/c-objc.h"
 #include "params.h"
 
 static tree pfn_from_ptrmemfunc (tree);
@@ -443,6 +443,35 @@ type_after_usual_arithmetic_conversions (tree t1, tree t2)
   return cp_common_type (t1, t2);
 }
 
+static void
+composite_pointer_error (diagnostic_t kind, tree t1, tree t2,
+			 composite_pointer_operation operation)
+{
+  switch (operation)
+    {
+    case CPO_COMPARISON:
+      emit_diagnostic (kind, input_location, 0,
+		       "comparison between "
+		       "distinct pointer types %qT and %qT lacks a cast",
+		       t1, t2);
+      break;
+    case CPO_CONVERSION:
+      emit_diagnostic (kind, input_location, 0,
+		       "conversion between "
+		       "distinct pointer types %qT and %qT lacks a cast",
+		       t1, t2);
+      break;
+    case CPO_CONDITIONAL_EXPR:
+      emit_diagnostic (kind, input_location, 0,
+		       "conditional expression between "
+		       "distinct pointer types %qT and %qT lacks a cast",
+		       t1, t2);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Subroutine of composite_pointer_type to implement the recursive
    case.  See that function for documentation of the parameters.  */
 
@@ -486,28 +515,8 @@ composite_pointer_type_r (tree t1, tree t2,
   else
     {
       if (complain & tf_error)
-        {
-          switch (operation)
-            {
-            case CPO_COMPARISON:
-              permerror (input_location, "comparison between "
-                         "distinct pointer types %qT and %qT lacks a cast",
-                         t1, t2);
-              break;
-            case CPO_CONVERSION:
-              permerror (input_location, "conversion between "
-                         "distinct pointer types %qT and %qT lacks a cast",
-                         t1, t2);
-              break;
-            case CPO_CONDITIONAL_EXPR:
-              permerror (input_location, "conditional expression between "
-                         "distinct pointer types %qT and %qT lacks a cast",
-                         t1, t2);
-              break;
-            default:
-              gcc_unreachable ();
-            }
-        }
+	composite_pointer_error (DK_PERMERROR, t1, t2, operation);
+
       result_type = void_type_node;
     }
   result_type = cp_build_qualified_type (result_type,
@@ -520,28 +529,7 @@ composite_pointer_type_r (tree t1, tree t2,
       if (!same_type_p (TYPE_PTRMEM_CLASS_TYPE (t1),
 			TYPE_PTRMEM_CLASS_TYPE (t2))
 	  && (complain & tf_error))
-        {
-          switch (operation)
-            {
-            case CPO_COMPARISON:
-              permerror (input_location, "comparison between "
-                         "distinct pointer types %qT and %qT lacks a cast", 
-                         t1, t2);
-              break;
-            case CPO_CONVERSION:
-              permerror (input_location, "conversion between "
-                         "distinct pointer types %qT and %qT lacks a cast",
-                         t1, t2);
-              break;
-            case CPO_CONDITIONAL_EXPR:
-              permerror (input_location, "conditional expression between "
-                         "distinct pointer types %qT and %qT lacks a cast",
-                         t1, t2);
-              break;
-            default:
-              gcc_unreachable ();
-            }
-        }
+	composite_pointer_error (DK_PERMERROR, t1, t2, operation);
       result_type = build_ptrmem_type (TYPE_PTRMEM_CLASS_TYPE (t1),
 				       result_type);
     }
@@ -662,23 +650,7 @@ composite_pointer_type (tree t1, tree t2, tree arg1, tree arg2,
       else
         {
           if (complain & tf_error)
-            switch (operation)
-              {
-              case CPO_COMPARISON:
-                error ("comparison between distinct "
-                       "pointer types %qT and %qT lacks a cast", t1, t2);
-                break;
-              case CPO_CONVERSION:
-                error ("conversion between distinct "
-                       "pointer types %qT and %qT lacks a cast", t1, t2);
-                break;
-              case CPO_CONDITIONAL_EXPR:
-                error ("conditional expression between distinct "
-                       "pointer types %qT and %qT lacks a cast", t1, t2);
-                break;
-              default:
-                gcc_unreachable ();
-              }
+	    composite_pointer_error (DK_ERROR, t1, t2, operation);
           return error_mark_node;
         }
     }
@@ -2804,23 +2776,8 @@ cp_build_indirect_ref (tree ptr, ref_operator errorstring,
            gcc_unreachable ();
       }
   else if (pointer != error_mark_node)
-    switch (errorstring)
-      {
-         case RO_NULL:
-           error ("invalid type argument");
-           break;
-         case RO_ARRAY_INDEXING:
-           error ("invalid type argument of array indexing");
-           break;
-         case RO_UNARY_STAR:
-           error ("invalid type argument of unary %<*%>");
-           break;
-         case RO_IMPLICIT_CONVERSION:
-           error ("invalid type argument of implicit conversion");
-           break;
-         default:
-           gcc_unreachable ();
-      }
+    invalid_indirection_error (input_location, type, errorstring);
+
   return error_mark_node;
 }
 
@@ -5158,9 +5115,9 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
 	  || TREE_READONLY (arg)) 
         {
           if (complain & tf_error)
-            readonly_error (arg, ((code == PREINCREMENT_EXPR
-                                   || code == POSTINCREMENT_EXPR)
-                                  ? REK_INCREMENT : REK_DECREMENT));
+            cxx_readonly_error (arg, ((code == PREINCREMENT_EXPR
+				      || code == POSTINCREMENT_EXPR)
+				     ? lv_increment : lv_decrement));
           else
             return error_mark_node;
         }
@@ -6703,7 +6660,7 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 	      && C_TYPE_FIELDS_READONLY (lhstype))))
     {
       if (complain & tf_error)
-	readonly_error (lhs, REK_ASSIGNMENT);
+	cxx_readonly_error (lhs, lv_assign);
       else
 	return error_mark_node;
     }
@@ -7364,7 +7321,7 @@ convert_for_assignment (tree type, tree rhs,
 	      break;
 	    case ICR_CONVERTING:
 	      warning (OPT_Wmissing_format_attribute,
-		       "target of conversion might be might be a candidate "
+		       "target of conversion might be a candidate "
 		       "for a format attribute");
 	      break;
 	    case ICR_INIT:
@@ -7869,16 +7826,10 @@ comp_ptr_ttypes_real (tree to, tree from, int constp)
 	 so the usual checks are not appropriate.  */
       if (TREE_CODE (to) != FUNCTION_TYPE && TREE_CODE (to) != METHOD_TYPE)
 	{
-	  /* In Objective-C++, some types may have been 'volatilized' by
-	     the compiler for EH; when comparing them here, the volatile
-	     qualification must be ignored.  */
-	  tree nv_to = objc_non_volatilized_type (to);
-	  tree nv_from = objc_non_volatilized_type (from);
-
-	  if (!at_least_as_qualified_p (nv_to, nv_from))
+	  if (!at_least_as_qualified_p (to, from))
 	    return 0;
 
-	  if (!at_least_as_qualified_p (nv_from, nv_to))
+	  if (!at_least_as_qualified_p (from, to))
 	    {
 	      if (constp == 0)
 		return 0;
@@ -7886,7 +7837,7 @@ comp_ptr_ttypes_real (tree to, tree from, int constp)
 	    }
 
 	  if (constp > 0)
-	    constp &= TYPE_READONLY (nv_to);
+	    constp &= TYPE_READONLY (to);
 	}
 
       if (TREE_CODE (to) == VECTOR_TYPE)

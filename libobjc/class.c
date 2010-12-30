@@ -26,11 +26,9 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-/*
-  The code in this file critically affects class method invocation
+/* The code in this file critically affects class method invocation
   speed.  This long preamble comment explains why, and the issues
-  involved.  
-
+  involved.
 
   One of the traditional weaknesses of the GNU Objective-C runtime is
   that class method invocations are slow.  The reason is that when you
@@ -44,7 +42,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   
   objc_get_class returns the class pointer corresponding to the string
   `NSArray'; and because of the lookup, the operation is more
-  complicated and slow than a simple instance method invocation.  
+  complicated and slow than a simple instance method invocation.
   
   Most high performance Objective-C code (using the GNU Objc runtime)
   I had the opportunity to read (or write) work around this problem by
@@ -61,7 +59,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   In this case, you always perform a class lookup (the first one), but
   then all the [arrayClass new] methods run exactly as fast as an
   instance method invocation.  It helps if you have many class method
-  invocations to the same class.  
+  invocations to the same class.
   
   The long-term solution to this problem would be to modify the
   compiler to output tables of class pointers corresponding to all the
@@ -70,14 +68,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   to perform precisely as fast as instance method invocations, because
   no class lookup would be involved.  I think the Apple Objective-C
   runtime uses this technique.  Doing this involves synchronized
-  modifications in the runtime and in the compiler.  
+  modifications in the runtime and in the compiler.
   
   As a first medicine to the problem, I [NP] have redesigned and
   rewritten the way the runtime is performing class lookup.  This
   doesn't give as much speed as the other (definitive) approach, but
   at least a class method invocation now takes approximately 4.5 times
   an instance method invocation on my machine (it would take approx 12
-  times before the rewriting), which is a lot better.  
+  times before the rewriting), which is a lot better.
 
   One of the main reason the new class lookup is so faster is because
   I implemented it in a way that can safely run multithreaded without
@@ -97,11 +95,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <string.h>                     /* For memset */
 
 /* We use a table which maps a class name to the corresponding class
- * pointer.  The first part of this file defines this table, and
- * functions to do basic operations on the table.  The second part of
- * the file implements some higher level Objective-C functionality for
- * classes by using the functions provided in the first part to manage
- * the table. */
+   pointer.  The first part of this file defines this table, and
+   functions to do basic operations on the table.  The second part of
+   the file implements some higher level Objective-C functionality for
+   classes by using the functions provided in the first part to manage
+   the table. */
 
 /**
  ** Class Table Internals
@@ -145,7 +143,7 @@ static class_node_ptr class_table_array[CLASS_TABLE_SIZE];
 static objc_mutex_t __class_table_lock = NULL;
 
 /* CLASS_TABLE_HASH is how we compute the hash of a class name.  It is
-   a macro - *not* a function - arguments *are* modified directly.  
+   a macro - *not* a function - arguments *are* modified directly.
 
    INDEX should be a variable holding an int;
    HASH should be a variable holding an int;
@@ -176,7 +174,8 @@ class_table_setup (void)
 }
 
 
-/* Insert a class in the table (used when a new class is registered).  */
+/* Insert a class in the table (used when a new class is
+   registered).  */
 static void 
 class_table_insert (const char *class_name, Class class_pointer)
 {
@@ -221,18 +220,15 @@ class_table_replace (Class old_class_pointer, Class new_class_pointer)
         {
           hash++;
           if (hash < CLASS_TABLE_SIZE)
-            {
-              node = class_table_array[hash];
-            }
+	    node = class_table_array[hash];
         }
       else
         {
           Class class1 = node->pointer;
 
           if (class1 == old_class_pointer)
-            {
-              node->pointer = new_class_pointer;
-            }
+	    node->pointer = new_class_pointer;
+
           node = node->next;
         }
     }
@@ -267,9 +263,7 @@ class_table_get_safe (const char *class_name)
               for (i = 0; i < length; i++)
                 {
                   if ((node->name)[i] != class_name[i]) 
-                    {
-                      break;
-                    }
+		    break;
                 }
               
               if (i == length)
@@ -309,9 +303,7 @@ class_table_next (struct class_table_enumerator **e)
       next = class_table_array[enumerator->hash];
     }
   else
-    {
-      next = enumerator->node->next;
-    }
+    next = enumerator->node->next;
   
   if (next != NULL)
     {
@@ -385,18 +377,16 @@ class_table_print_histogram (void)
         {
           printf ("%4d:", i + 1);
           for (j = 0; j < counter; j++)
-            {
-              printf ("X");
-            }
+	    printf ("X");
+
           printf ("\n");
           counter = 0;
         }
     }
   printf ("%4d:", i + 1);
   for (j = 0; j < counter; j++)
-    {
-      printf ("X");
-    }
+    printf ("X");
+
   printf ("\n");
 }
 #endif /* DEBUGGING FUNCTIONS */
@@ -409,7 +399,7 @@ class_table_print_histogram (void)
    should be via the class_table_* functions.  */
 
 /* This is a hook which is called by objc_get_class and
-   objc_lookup_class if the runtime is not able to find the class.  
+   objc_lookup_class if the runtime is not able to find the class.
    This may e.g. try to load in the class using dynamic loading.
 
    This hook was a public, global variable in the Traditional GNU
@@ -456,11 +446,12 @@ __objc_init_class_tables (void)
 }  
 
 /* This function adds a class to the class hash table, and assigns the
-   class a number, unless it's already known.  */
-void
+   class a number, unless it's already known.  Return 'YES' if the
+   class was added.  Return 'NO' if the class was already known.  */
+BOOL
 __objc_add_class_to_hash (Class class)
 {
-  Class h_class;
+  Class existing_class;
 
   objc_mutex_lock (__objc_runtime_mutex);
 
@@ -471,21 +462,28 @@ __objc_add_class_to_hash (Class class)
   assert (CLS_ISCLASS (class));
 
   /* Check to see if the class is already in the hash table.  */
-  h_class = class_table_get_safe (class->name);
-  if (! h_class)
-    {
-      /* The class isn't in the hash table.  Add the class and assign a class
-         number.  */
-      static unsigned int class_number = 1;
+  existing_class = class_table_get_safe (class->name);
 
+  if (existing_class)
+    {
+      objc_mutex_unlock (__objc_runtime_mutex);
+      return NO;      
+    }
+  else
+    {
+      /* The class isn't in the hash table.  Add the class and assign
+         a class number.  */
+      static unsigned int class_number = 1;
+      
       CLS_SETNUMBER (class, class_number);
       CLS_SETNUMBER (class->class_pointer, class_number);
 
       ++class_number;
       class_table_insert (class->name, class);
-    }
 
-  objc_mutex_unlock (__objc_runtime_mutex);
+      objc_mutex_unlock (__objc_runtime_mutex);
+      return YES;
+    }
 }
 
 Class
@@ -511,7 +509,7 @@ objc_getClass (const char *name)
 }
 
 Class
-objc_lookupClass (const char *name)
+objc_lookUpClass (const char *name)
 {
   if (name == NULL)
     return Nil;
@@ -558,9 +556,7 @@ objc_getClassList (Class *returnValue, int maxNumberOfClassesToReturn)
 	      if (count < maxNumberOfClassesToReturn)
 		returnValue[count] = node->pointer;
 	      else
-		{
-		  return count;
-		}
+		return count;
 	    }
 	  count++;
 	  node = node->next;
@@ -869,20 +865,16 @@ __objc_update_classes_with_methods (struct objc_method *method_a, struct objc_me
 		  /* If the method is one of the ones we are looking
 		     for, update the implementation.  */
 		  if (method == method_a)
-		    {
-		      sarray_at_put_safe (class->dtable,
-					  (sidx) method_a->method_name->sel_id,
-					  method_a->method_imp);
-		    }
+		    sarray_at_put_safe (class->dtable,
+					(sidx) method_a->method_name->sel_id,
+					method_a->method_imp);
 
 		  if (method == method_b)
 		    {
 		      if (method_b != NULL)
-			{
-			  sarray_at_put_safe (class->dtable,
-					      (sidx) method_b->method_name->sel_id,
-					      method_b->method_imp);
-			}
+			sarray_at_put_safe (class->dtable,
+					    (sidx) method_b->method_name->sel_id,
+					    method_b->method_imp);
 		    }
 		}
 	  

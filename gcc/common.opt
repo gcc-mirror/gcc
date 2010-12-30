@@ -129,6 +129,10 @@ unsigned int initial_max_fld_align = TARGET_DEFAULT_PACK_STRUCT
 Variable
 enum vect_verbosity_levels user_vect_verbosity_level = MAX_VERBOSITY_LEVEL
 
+; Type of stack check.
+Variable
+enum stack_check_type flag_stack_check = NO_STACK_CHECK
+
 ; -dA causes debug commentary information to be produced in
 ; the generated assembly code (to make it more readable).  This option
 ; is generally only of use to those who actually need to read the
@@ -156,6 +160,22 @@ int flag_print_asm_name
 
 Variable
 enum graph_dump_types graph_dump_format = no_graph
+
+; Name of top-level original source file (what was input to cpp).
+; This comes from the #-command at the beginning of the actual input.
+; If there isn't any there, then this is the cc1 input file name.
+Variable
+const char *main_input_filename
+
+; Pointer to base name in main_input_filename, with directories and a
+; single final extension removed, and the length of this base
+; name.
+
+Variable
+const char *main_input_basename
+
+Variable
+int main_input_baselength
 
 ; Which options have been printed by --help.
 Variable
@@ -395,6 +415,9 @@ Driver
 L
 Driver Joined Separate
 
+N
+Driver
+
 O
 Common JoinedOrMissing Optimization
 -O<number>	Set optimization level to <number>
@@ -406,6 +429,15 @@ Optimize for space rather than speed
 Ofast
 Common Optimization
 Optimize for speed disregarding exact standards compliance
+
+Q
+Driver
+
+Qn
+Driver Negative(Qy)
+
+Qy
+Driver Negative(Qn)
 
 R
 Driver Joined Separate
@@ -634,6 +666,9 @@ Driver Separate
 Xpreprocessor
 Driver Separate
 
+Z
+Driver
+
 aux-info
 Common Separate Var(aux_info_file_name)
 -aux-info <file>	Emit declaration information into <file>
@@ -815,7 +850,7 @@ Common Driver JoinedOrMissing RejectNegative Var(flag_compare_debug_opt)
 -fcompare-debug[=<opts>]	Compile with and without e.g. -gtoggle, and compare the final-insns dump
 
 fcompare-debug-second
-Common Driver RejectNegative
+Common Driver RejectNegative Var(flag_compare_debug)
 Run only the second compilation of -fcompare-debug
 
 fconserve-stack
@@ -2124,6 +2159,9 @@ Common Joined Var(plugindir_string) Init(0)
 l
 Driver Joined Separate
 
+n
+Driver
+
 no-canonical-prefixes
 Driver
 
@@ -2189,11 +2227,20 @@ quiet
 Common Var(quiet_flag) RejectDriver
 Do not display functions compiled or elapsed time
 
+r
+Driver
+
+s
+Driver
+
 save-temps
 Driver
 
 save-temps=
 Driver Joined
+
+t
+Driver
 
 time
 Driver Var(report_times)
@@ -2251,6 +2298,10 @@ Driver
 
 static-libstdc++
 Driver
+
+static-libgo
+Driver
+; Documented for Go, but always accepted by driver.
 
 symbolic
 Driver

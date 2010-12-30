@@ -211,7 +211,7 @@ package body Sem_Eval is
    --
    --  If Stat is set True on return, then Is_Static_Expression is also set
    --  true in node N. There are some cases where this is over-enthusiastic,
-   --  e.g. in the two operand case below, for string comaprison, the result
+   --  e.g. in the two operand case below, for string comparison, the result
    --  is not static even though the two operands are static. In such cases,
    --  the caller must reset the Is_Static_Expression flag in N.
 
@@ -4854,7 +4854,7 @@ package body Sem_Eval is
       elsif Is_Array_Type (T1) then
 
          --  If either subtype is unconstrained then both must be, and if both
-         --  are unconstrained then no further checking is neede.
+         --  are unconstrained then no further checking is needed.
 
          if not Is_Constrained (T1) or else not Is_Constrained (T2) then
             return not (Is_Constrained (T1) or else Is_Constrained (T2));

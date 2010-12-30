@@ -1,3 +1,23 @@
+/* GCC Quad-Precision Math Library
+   Copyright (C) 2010 Free Software Foundation, Inc.
+   Written by Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+This file is part of the libiberty library.
+Libiberty is free software; you can redistribute it and/or
+modify it under the terms of the GNU Library General Public
+License as published by the Free Software Foundation; either
+version 2 of the License, or (at your option) any later version.
+
+Libiberty is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Library General Public License for more details.
+
+You should have received a copy of the GNU Library General Public
+License along with libiberty; see the file COPYING.LIB.  If
+not, write to the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor,
+Boston, MA 02110-1301, USA.  */
+
 #ifndef QUADMATH_IMP_H
 #define QUADMATH_IMP_H
 
@@ -7,10 +27,11 @@
 
 
 // Prototypes for internal functions
-extern int32_t rem_pio2q (__float128, __float128 *);
-extern void __kernel_sincosq (__float128, __float128, __float128 *, __float128 *, int);
-extern __float128 __kernel_sinq (__float128, __float128, int);
-extern __float128 __kernel_cosq (__float128, __float128);
+extern int32_t __quadmath_rem_pio2q (__float128, __float128 *);
+extern void __quadmath_kernel_sincosq (__float128, __float128, __float128 *,
+				       __float128 *, int);
+extern __float128 __quadmath_kernel_sinq (__float128, __float128, int);
+extern __float128 __quadmath_kernel_cosq (__float128, __float128);
 
 
 

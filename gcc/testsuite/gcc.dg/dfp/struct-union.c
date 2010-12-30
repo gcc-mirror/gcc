@@ -33,22 +33,22 @@ union u h (union u u)
 
 void f()
 {
-  cs.d32 = 1.23dd; /* { dg-error "assignment of read-only variable" } */
-  cs.d64 = 1.23df; /* { dg-error "assignment of read-only variable" } */
+  cs.d32 = 1.23dd; /* { dg-error "assignment of member 'd32' in read-only object" } */
+  cs.d64 = 1.23df; /* { dg-error "assignment of member 'd64' in read-only object" } */
   s.d64 = 1.23df;  /* { dg-error "assignment of read-only member" } */
 
   s.d32 = 1.23dd;
   u.d32 = 1.23dd;
 
   u.d64 = 1.23df;    /* { dg-error "assignment of read-only member" } */
-  u.cs.d32 = 1.23dd; /* { dg-error "assignment of read-only member" } */
-  u.cs.d64 = 1.23df; /* { dg-error "assignment of read-only member" } */
+  u.cs.d32 = 1.23dd; /* { dg-error "assignment of member 'd32' in read-only object" } */
+  u.cs.d64 = 1.23df; /* { dg-error "assignment of member 'd64' in read-only object" } */
   
-  cu.d32 = 1.23dd;   /* { dg-error "assignment of read-only variable" } */
+  cu.d32 = 1.23dd;   /* { dg-error "assignment of member 'd32' in read-only object" } */
 
-  cu.d64 = 1.23df;    /* { dg-error "assignment of read-only variable" } */
-  cu.cs.d32 = 1.23dd; /* { dg-error "assignment of read-only variable" } */
-  cu.cs.d64 = 1.23df; /* { dg-error "assignment of read-only variable" } */
+  cu.d64 = 1.23df;    /* { dg-error "assignment of member 'd64' in read-only object" } */
+  cu.cs.d32 = 1.23dd; /* { dg-error "assignment of member 'd32' in read-only object" } */
+  cu.cs.d64 = 1.23df; /* { dg-error "assignment of member 'd64' in read-only object" } */
 
   /* f().x is a valid postfix expression but is not an lvalue if 
      function f() returning a structure or union.  */

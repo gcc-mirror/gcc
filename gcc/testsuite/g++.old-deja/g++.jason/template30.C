@@ -1,6 +1,6 @@
 // { dg-do assemble  }
 template <class T, class U>    
-int func(U, T);			// { dg-message "candidates" }
+int func(U, T);			// { dg-message "note" }
 
 template <class T, class U>    
 int func(T, U)			// { dg-message "note" }
@@ -11,4 +11,5 @@ int func(T, U)			// { dg-message "note" }
 int main ()
 {
   func (0, 1);			// { dg-error "ambiguous" }
+  // { dg-message "candidate" "candidate note" { target *-*-* } 13 }
 }

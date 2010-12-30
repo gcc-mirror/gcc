@@ -498,7 +498,7 @@
 
 (define_attr "generic_sched" "yes,no"
   (const (if_then_else
-          (ior (eq_attr "tune" "arm926ejs,arm1020e,arm1026ejs,arm1136js,arm1136jfs,cortexa5,cortexa8,cortexa9,cortexm4")
+          (ior (eq_attr "tune" "fa526,fa626,fa606te,fa626te,fmp626,fa726te,arm926ejs,arm1020e,arm1026ejs,arm1136js,arm1136jfs,cortexa5,cortexa8,cortexa9,cortexm4")
 	       (eq_attr "tune_cortexr4" "yes"))
           (const_string "no")
           (const_string "yes"))))
@@ -516,6 +516,11 @@
 (include "arm1020e.md")
 (include "arm1026ejs.md")
 (include "arm1136jfs.md")
+(include "fa526.md")
+(include "fa606te.md")
+(include "fa626te.md")
+(include "fmp626.md")
+(include "fa726te.md")
 (include "cortex-a5.md")
 (include "cortex-a8.md")
 (include "cortex-a9.md")
@@ -1793,11 +1798,11 @@
 
 (define_insn "maddhisi4"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(plus:SI (match_operand:SI 3 "s_register_operand" "r")
-		 (mult:SI (sign_extend:SI
-			   (match_operand:HI 1 "s_register_operand" "%r"))
+	(plus:SI (mult:SI (sign_extend:SI
+			   (match_operand:HI 1 "s_register_operand" "r"))
 			  (sign_extend:SI
-			   (match_operand:HI 2 "s_register_operand" "r")))))]
+			   (match_operand:HI 2 "s_register_operand" "r")))
+		 (match_operand:SI 3 "s_register_operand" "r")))]
   "TARGET_DSP_MULTIPLY"
   "smlabb%?\\t%0, %1, %2, %3"
   [(set_attr "insn" "smlaxy")
@@ -1807,11 +1812,11 @@
 (define_insn "*maddhidi4"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
 	(plus:DI
-	  (match_operand:DI 3 "s_register_operand" "0")
 	  (mult:DI (sign_extend:DI
-	 	    (match_operand:HI 1 "s_register_operand" "%r"))
+	 	    (match_operand:HI 1 "s_register_operand" "r"))
 		   (sign_extend:DI
-		    (match_operand:HI 2 "s_register_operand" "r")))))]
+		    (match_operand:HI 2 "s_register_operand" "r")))
+	  (match_operand:DI 3 "s_register_operand" "0")))]
   "TARGET_DSP_MULTIPLY"
   "smlalbb%?\\t%Q0, %R0, %1, %2"
   [(set_attr "insn" "smlalxy")
@@ -4137,8 +4142,8 @@
 })
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(zero_extend:SI (match_operand:HI 1 "register_operand" "")))]
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(zero_extend:SI (match_operand:HI 1 "s_register_operand" "")))]
   "!TARGET_THUMB2 && !arm_arch6"
   [(set (match_dup 0) (ashift:SI (match_dup 2) (const_int 16)))
    (set (match_dup 0) (lshiftrt:SI (match_dup 0) (const_int 16)))]
@@ -4244,8 +4249,8 @@
 })
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(zero_extend:SI (match_operand:QI 1 "register_operand" "")))]
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(zero_extend:SI (match_operand:QI 1 "s_register_operand" "")))]
   "!arm_arch6"
   [(set (match_dup 0) (ashift:SI (match_dup 2) (const_int 24)))
    (set (match_dup 0) (lshiftrt:SI (match_dup 0) (const_int 24)))]

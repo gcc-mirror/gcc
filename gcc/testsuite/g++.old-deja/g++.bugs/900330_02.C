@@ -19,12 +19,13 @@ struct B {
 };
 
 struct D : public B {
-  int f(struct B);		// { dg-message "candidate is" } referred to below
+  int f(struct B);		// { dg-message "D::f|no known conversion" } referred to below
 };
 
 void h(D* pd)
 {
   pd->f(1);		// { dg-error "no matching" } D::f(struct B) hides B::f(int)
+  // { dg-message "candidate" "candidate note" { target *-*-* } 27 }
 }
 
 int main () { return 0; }

@@ -10,4 +10,5 @@ struct Node			// { dg-message "note" }
 void bug(int i)
 {
   Node* q = new Node(i);	// { dg-error "no matching" } 
+  // { dg-message "candidate" "candidate note" { target *-*-* } 12 }
 }

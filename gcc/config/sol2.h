@@ -115,10 +115,18 @@ along with GCC; see the file COPYING3.  If not see
    It's safe to pass -s always, even if -g is not used.  */
 #undef ASM_SPEC
 #define ASM_SPEC "\
-%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Wa,*:%*} -s \
+%{v:-V} %{Qy:} %{!Qn:-Qy} %{Ym,*} -s \
 %{fpic|fpie|fPIC|fPIE:-K PIC} \
 %(asm_cpu) \
 "
+
+#ifndef CROSS_DIRECTORY_STRUCTURE
+#undef MD_EXEC_PREFIX
+#define MD_EXEC_PREFIX "/usr/ccs/bin/"
+
+#undef MD_STARTFILE_PREFIX
+#define MD_STARTFILE_PREFIX "/usr/ccs/lib/"
+#endif
 
 /* We don't use the standard LIB_SPEC only because we don't yet support c++.  */
 #undef LIB_SPEC
@@ -171,11 +179,9 @@ along with GCC; see the file COPYING3.  If not see
 #undef LINK_ARCH_SPEC
 #define LINK_ARCH_SPEC LINK_ARCH32_SPEC
 
-/* This should be the same as in svr4.h, except with -R added.  */
 #undef  LINK_SPEC
 #define LINK_SPEC \
   "%{h*} %{v:-V} \
-   %{b} \
    %{!shared:%{!static:%{rdynamic: " RDYNAMIC_SPEC "}}} \
    %{static:-dn -Bstatic} \
    %{shared:-G -dy %{!mimpure-text:-z text}} \
@@ -292,6 +298,9 @@ __enable_execute_stack (void *addr)					\
 #ifndef USE_GAS
 #undef TARGET_ASM_ASSEMBLE_VISIBILITY
 #define TARGET_ASM_ASSEMBLE_VISIBILITY solaris_assemble_visibility
+
+#define AS_NEEDS_DASH_FOR_PIPED_INPUT
+
 #endif
 
 extern GTY(()) tree solaris_pending_aligns;
@@ -300,3 +309,5 @@ extern GTY(()) tree solaris_pending_finis;
 
 /* Allow macro expansion in #pragma pack.  */
 #define HANDLE_PRAGMA_PACK_WITH_EXPANSION
+
+#define TARGET_POSIX_IO

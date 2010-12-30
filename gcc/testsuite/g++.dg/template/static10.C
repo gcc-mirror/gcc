@@ -4,7 +4,7 @@ namespace __gnu_debug_def { }
 namespace std
 {
   using namespace __gnu_debug_def;
-  template<typename _Tp> class allocator {};
+  template<typename _Tp> class allocator {}; // { dg-message "std::allocator" }
 }
 namespace __gnu_debug_def
 {
@@ -20,4 +20,5 @@ namespace std
 {
   template<> void
   vector<int, allocator<int> >::swap(vector<int, allocator<int> >&) { } // { dg-error "" }
+  // { dg-message "suggested alternative" "suggested alternative" { target *-*-* } 22 }
 }

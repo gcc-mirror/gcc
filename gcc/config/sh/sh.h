@@ -405,8 +405,7 @@ do { \
 #define SUBTARGET_LINK_EMUL_SUFFIX ""
 #define SUBTARGET_LINK_SPEC ""
 
-/* svr4.h redefines LINK_SPEC inappropriately, so go via SH_LINK_SPEC,
-   so that we can undo the damage without code replication.  */
+/* Go via SH_LINK_SPEC to avoid code replication.  */
 #define LINK_SPEC SH_LINK_SPEC
 
 #define SH_LINK_SPEC "\
@@ -1212,19 +1211,6 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 
 #define CONST_OK_FOR_K08(VALUE) (((HOST_WIDE_INT)(VALUE))>= 0 \
 				 && ((HOST_WIDE_INT)(VALUE)) <= 255)
-
-/* Given an rtx X being reloaded into a reg required to be
-   in class CLASS, return the class of reg to actually use.
-   In general this is just CLASS; but on some machines
-   in some cases it is preferable to use a more restrictive class.  */
-
-#define PREFERRED_RELOAD_CLASS(X, CLASS) \
-  ((CLASS) == NO_REGS && TARGET_SHMEDIA \
-   && (GET_CODE (X) == CONST_DOUBLE \
-       || GET_CODE (X) == SYMBOL_REF \
-       || PIC_ADDR_P (X)) \
-   ? GENERAL_REGS \
-   : (CLASS)) \
 
 #if 0
 #define SECONDARY_INOUT_RELOAD_CLASS(CLASS,MODE,X,ELSE) \
@@ -2224,8 +2210,6 @@ struct sh_args {
 /* DBX register number for a given compiler register number.  */
 /* GDB has FPUL at 23 and FP0 at 25, so we must add one to all FP registers
    to match gdb.  */
-/* svr4.h undefines this macro, yet we really want to use the same numbers
-   for coff as for elf, so we go via another macro: SH_DBX_REGISTER_NUMBER.  */
 /* expand_builtin_init_dwarf_reg_sizes uses this to test if a
    register exists, so we should return -1 for invalid register numbers.  */
 #define DBX_REGISTER_NUMBER(REGNO) SH_DBX_REGISTER_NUMBER (REGNO)
@@ -2352,114 +2336,6 @@ struct sh_args {
 
 #define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS) \
   final_prescan_insn ((INSN), (OPVEC), (NOPERANDS))
-
-/* Recognize machine-specific patterns that may appear within
-   constants.  Used for PIC-specific UNSPECs.  */
-#define OUTPUT_ADDR_CONST_EXTRA(STREAM, X, FAIL) \
-  do									\
-    if (GET_CODE (X) == UNSPEC)						\
-      {									\
-	switch (XINT ((X), 1))						\
-	  {								\
-	  case UNSPEC_DATALABEL:					\
-	    fputs ("datalabel ", (STREAM));				\
-	    output_addr_const ((STREAM), XVECEXP ((X), 0, 0));		\
-	    break;							\
-	  case UNSPEC_PIC:						\
-	    /* GLOBAL_OFFSET_TABLE or local symbols, no suffix.  */	\
-	    output_addr_const ((STREAM), XVECEXP ((X), 0, 0));		\
-	    break;							\
-	  case UNSPEC_GOT:						\
-	    output_addr_const ((STREAM), XVECEXP ((X), 0, 0));		\
-	    fputs ("@GOT", (STREAM));					\
-	    break;							\
-	  case UNSPEC_GOTOFF:						\
-	    output_addr_const ((STREAM), XVECEXP ((X), 0, 0));		\
-	    fputs ("@GOTOFF", (STREAM));				\
-	    break;							\
-	  case UNSPEC_PLT:						\
-	    output_addr_const ((STREAM), XVECEXP ((X), 0, 0));		\
-	    fputs ("@PLT", (STREAM));					\
-	    break;							\
-	  case UNSPEC_GOTPLT:						\
-	    output_addr_const ((STREAM), XVECEXP ((X), 0, 0));		\
-	    fputs ("@GOTPLT", (STREAM));				\
-	    break;							\
-	  case UNSPEC_DTPOFF:						\
-	    output_addr_const ((STREAM), XVECEXP ((X), 0, 0));		\
-	    fputs ("@DTPOFF", (STREAM));				\
-	    break;							\
-	  case UNSPEC_GOTTPOFF:						\
-	    output_addr_const ((STREAM), XVECEXP ((X), 0, 0));		\
-	    fputs ("@GOTTPOFF", (STREAM));				\
-	    break;							\
-	  case UNSPEC_TPOFF:						\
-	    output_addr_const ((STREAM), XVECEXP ((X), 0, 0));		\
-	    fputs ("@TPOFF", (STREAM));					\
-	    break;							\
-	  case UNSPEC_CALLER:						\
-	    {								\
-	      char name[32];						\
-	      /* LPCS stands for Label for PIC Call Site.  */		\
-	      ASM_GENERATE_INTERNAL_LABEL				\
-		(name, "LPCS", INTVAL (XVECEXP ((X), 0, 0)));		\
-	      assemble_name ((STREAM), name);				\
-	    }								\
-	    break;							\
-	  case UNSPEC_EXTRACT_S16:					\
-	  case UNSPEC_EXTRACT_U16:					\
-	    {								\
-	      rtx val, shift;						\
-									\
-	      val = XVECEXP (X, 0, 0);					\
-	      shift = XVECEXP (X, 0, 1);				\
-	      fputc ('(', STREAM);					\
-	      if (shift != const0_rtx)					\
-		fputc ('(', STREAM);					\
-	      if (GET_CODE (val) == CONST				\
-		  || GET_RTX_CLASS (GET_CODE (val)) != RTX_OBJ)		\
-		{							\
-		  fputc ('(', STREAM);					\
-		  output_addr_const (STREAM, val);			\
-		  fputc (')', STREAM);					\
-		}							\
-	      else							\
-		output_addr_const (STREAM, val);			\
-	      if (shift != const0_rtx)					\
-		{							\
-		  fputs (" >> ", STREAM);				\
-		  output_addr_const (STREAM, shift);			\
-		  fputc (')', STREAM);					\
-		}							\
-	      fputs (" & 65535)", STREAM);				\
-	    }								\
-	    break;							\
-	  case UNSPEC_SYMOFF:						\
-	    output_addr_const (STREAM, XVECEXP (X, 0, 0));		\
-	    fputc ('-', STREAM);					\
-	    if (GET_CODE (XVECEXP (X, 0, 1)) == CONST)			\
-	      {								\
-		fputc ('(', STREAM);					\
-		output_addr_const (STREAM, XVECEXP (X, 0, 1));		\
-		fputc (')', STREAM);					\
-	      }								\
-	    else							\
-	      output_addr_const (STREAM, XVECEXP (X, 0, 1));		\
-	    break;							\
-	  case UNSPEC_PCREL_SYMOFF:					\
-	    output_addr_const (STREAM, XVECEXP (X, 0, 0));		\
-	    fputs ("-(", STREAM);					\
-	    output_addr_const (STREAM, XVECEXP (X, 0, 1));		\
-	    fputs ("-.)", STREAM);					\
-	    break;							\
-	  default:							\
-	    goto FAIL;							\
-	  }								\
-	break;								\
-      }									\
-    else								\
-      goto FAIL;							\
-  while (0)
 
 
 extern struct rtx_def *sh_compare_op0;

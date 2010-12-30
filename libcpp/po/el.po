@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcc 3.2\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-10-22 14:48+0000\n"
+"POT-Creation-Date: 2010-12-18 16:00+0000\n"
 "PO-Revision-Date: 2002-08-18 15:46+0100\n"
 "Last-Translator: Simos Xenitellis <simos@hellug.gr>\n"
 "Language-Team: Greek <nls@tux.hellug.gr>\n"
@@ -411,7 +411,7 @@ msgstr ""
 msgid "unterminated #%s"
 msgstr "μη τερματιζόμενo αλφαριθμητικό"
 
-#: directives-only.c:222 lex.c:2068 traditional.c:163
+#: directives-only.c:222 lex.c:2074 traditional.c:163
 #, fuzzy
 msgid "unterminated comment"
 msgstr "Μη τερματισμένη εντολή `s'"
@@ -806,19 +806,19 @@ msgstr ""
 msgid "missing terminating %c character"
 msgstr "έχει παραληφθεί τερματικός χαρακτήρας %c"
 
-#: lex.c:2079
+#: lex.c:2085
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr ""
 
-#: lex.c:2081
+#: lex.c:2087
 msgid "(this will be reported only once per input file)"
 msgstr ""
 
-#: lex.c:2086
+#: lex.c:2092
 msgid "multi-line comment"
 msgstr ""
 
-#: lex.c:2406
+#: lex.c:2412
 #, fuzzy, c-format
 msgid "unspellable token %s"
 msgstr "%s: αδύνατο το άνοιγμα του %s: %m\n"

@@ -118,7 +118,8 @@ ix86_target_macros_internal (int isa_flag,
       def_or_undef (parse_in, "__nocona");
       def_or_undef (parse_in, "__nocona__");
       break;
-    case PROCESSOR_CORE2:
+    case PROCESSOR_CORE2_32:
+    case PROCESSOR_CORE2_64:
       def_or_undef (parse_in, "__core2");
       def_or_undef (parse_in, "__core2__");
       break;
@@ -199,7 +200,8 @@ ix86_target_macros_internal (int isa_flag,
     case PROCESSOR_NOCONA:
       def_or_undef (parse_in, "__tune_nocona__");
       break;
-    case PROCESSOR_CORE2:
+    case PROCESSOR_CORE2_32:
+    case PROCESSOR_CORE2_64:
       def_or_undef (parse_in, "__tune_core2__");
       break;
     case PROCESSOR_COREI7_32:

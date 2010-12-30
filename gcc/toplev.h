@@ -22,11 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TOPLEV_H
 #define GCC_TOPLEV_H
 
-/* If non-NULL, return one past-the-end of the matching SUBPART of
-   the WHOLE string.  */
-#define skip_leading_substring(whole,  part) \
-   (strncmp (whole, part, strlen (part)) ? NULL : whole + strlen (part))
-
 /* Decoded options, and number of such options.  */
 extern struct cl_decoded_option *save_decoded_options;
 extern unsigned int save_decoded_options_count;
@@ -46,12 +41,6 @@ extern void init_eh (void);
 
 extern void announce_function (tree);
 
-extern void warn_deprecated_use (tree, tree);
-
-#ifdef BUFSIZ
-extern void output_quoted_string	(FILE *, const char *);
-#endif
-
 extern void wrapup_global_declaration_1 (tree);
 extern bool wrapup_global_declaration_2 (tree);
 extern bool wrapup_global_declarations (tree *, int);
@@ -67,11 +56,6 @@ extern void target_reinit (void);
 /* A unique local time stamp, might be zero if none is available.  */
 extern unsigned local_tick;
 
-/* Top-level source file.  */
-extern const char *main_input_filename;
-extern const char *main_input_basename;
-extern int main_input_baselength;
-
 /* True if the user has tagged the function with the 'section'
    attribute.  */
 
@@ -80,10 +64,7 @@ extern bool user_defined_section_attribute;
 /* See toplev.c.  */
 extern int flag_rerun_cse_after_global_opts;
 
-/* Things to do with target switches.  */
 extern void print_version (FILE *, const char *);
-extern void * default_get_pch_validity (size_t *);
-extern const char * default_pch_valid_p (const void *, size_t);
 
 /* The hashtable, so that the C front ends can pass it to cpplib.  */
 extern struct ht *ident_hash;

@@ -258,7 +258,7 @@ package Ada.Containers.Bounded_Hashed_Sets is
    procedure Symmetric_Difference (Target : in out Set; Source : Set);
    --  The operation iterates over the Source set, searching for the element
    --  in Target (calling Hash and Equivalent_Elements). If an equivalent
-   --  elementis found, it is removed from Target; otherwise it is inserted
+   --  element is found, it is removed from Target; otherwise it is inserted
    --  into Target.
 
    function Symmetric_Difference (Left, Right : Set) return Set;

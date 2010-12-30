@@ -67,7 +67,7 @@ site.exp: Makefile
 	@mv site.tmp site.exp
 
 
-extract_symvers = $(glibcxx_srcdir)/scripts/extract_symvers
+extract_symvers = $(glibcxx_builddir)/scripts/extract_symvers
 
 baseline_subdir := $(shell $(CXX) --print-multi-dir)
 

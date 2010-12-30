@@ -362,7 +362,7 @@ compute_complex_assign_jump_func (struct ipa_node_params *info,
 				  gimple stmt, tree name)
 {
   HOST_WIDE_INT offset, size, max_size;
-  tree op1, op2, type;
+  tree op1, op2, base, type;
   int index;
 
   op1 = gimple_assign_rhs1 (stmt);
@@ -404,20 +404,21 @@ compute_complex_assign_jump_func (struct ipa_node_params *info,
   type = TREE_TYPE (op1);
   if (TREE_CODE (type) != RECORD_TYPE)
     return;
-  op1 = get_ref_base_and_extent (op1, &offset, &size, &max_size);
-  if (TREE_CODE (op1) != MEM_REF
+  base = get_ref_base_and_extent (op1, &offset, &size, &max_size);
+  if (TREE_CODE (base) != MEM_REF
       /* If this is a varying address, punt.  */
       || max_size == -1
       || max_size != size)
     return;
-  offset += mem_ref_offset (op1).low * BITS_PER_UNIT;
-  op1 = TREE_OPERAND (op1, 0);
-  if (TREE_CODE (op1) != SSA_NAME
-      || !SSA_NAME_IS_DEFAULT_DEF (op1)
+  offset += mem_ref_offset (base).low * BITS_PER_UNIT;
+  base = TREE_OPERAND (base, 0);
+  if (TREE_CODE (base) != SSA_NAME
+      || !SSA_NAME_IS_DEFAULT_DEF (base)
       || offset < 0)
     return;
 
-  index = ipa_get_param_decl_index (info, SSA_NAME_VAR (op1));
+  /* Dynamic types are changed only in constructors and destructors and  */
+  index = ipa_get_param_decl_index (info, SSA_NAME_VAR (base));
   if (index >= 0)
     {
       jfunc->type = IPA_JF_ANCESTOR;
@@ -460,11 +461,15 @@ compute_complex_ancestor_jump_func (struct ipa_node_params *info,
   tree tmp, parm, expr;
   int index, i;
 
-  if (gimple_phi_num_args (phi) != 2
-      || !integer_zerop (PHI_ARG_DEF (phi, 1)))
+  if (gimple_phi_num_args (phi) != 2)
     return;
 
-  tmp = PHI_ARG_DEF (phi, 0);
+  if (integer_zerop (PHI_ARG_DEF (phi, 1)))
+    tmp = PHI_ARG_DEF (phi, 0);
+  else if (integer_zerop (PHI_ARG_DEF (phi, 0)))
+    tmp = PHI_ARG_DEF (phi, 1);
+  else
+    return;
   if (TREE_CODE (tmp) != SSA_NAME
       || SSA_NAME_IS_DEFAULT_DEF (tmp)
       || !POINTER_TYPE_P (TREE_TYPE (tmp))
@@ -530,13 +535,26 @@ compute_complex_ancestor_jump_func (struct ipa_node_params *info,
 static void
 compute_known_type_jump_func (tree op, struct ipa_jump_func *jfunc)
 {
-  tree binfo;
+  HOST_WIDE_INT offset, size, max_size;
+  tree base, binfo;
 
-  if (TREE_CODE (op) != ADDR_EXPR)
+  if (TREE_CODE (op) != ADDR_EXPR
+      || TREE_CODE (TREE_TYPE (TREE_TYPE (op))) != RECORD_TYPE)
     return;
 
   op = TREE_OPERAND (op, 0);
-  binfo = gimple_get_relevant_ref_binfo (op, NULL_TREE);
+  base = get_ref_base_and_extent (op, &offset, &size, &max_size);
+  if (!DECL_P (base)
+      || max_size == -1
+      || max_size != size
+      || TREE_CODE (TREE_TYPE (base)) != RECORD_TYPE
+      || is_global_var (base))
+    return;
+
+  binfo = TYPE_BINFO (TREE_TYPE (base));
+  if (!binfo)
+    return;
+  binfo = get_binfo_at_offset (binfo, offset, TREE_TYPE (op));
   if (binfo)
     {
       jfunc->type = IPA_JF_KNOWN_TYPE;
@@ -1416,17 +1434,6 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 	  src = ipa_get_ith_jump_func (top, dst->value.ancestor.formal_id);
 	  if (src->type == IPA_JF_KNOWN_TYPE)
 	    combine_known_type_and_ancestor_jfs (src, dst);
-	  else if (src->type == IPA_JF_CONST)
-	    {
-	      struct ipa_jump_func kt_func;
-
-	      kt_func.type = IPA_JF_UNKNOWN;
-	      compute_known_type_jump_func (src->value.constant, &kt_func);
-	      if (kt_func.type == IPA_JF_KNOWN_TYPE)
-		combine_known_type_and_ancestor_jfs (&kt_func, dst);
-	      else
-		dst->type = IPA_JF_UNKNOWN;
-	    }
 	  else if (src->type == IPA_JF_PASS_THROUGH
 		   && src->value.pass_through.operation == NOP_EXPR)
 	    dst->value.ancestor.formal_id = src->value.pass_through.formal_id;
@@ -1458,35 +1465,43 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 }
 
 /* If TARGET is an addr_expr of a function declaration, make it the destination
-   of an indirect edge IE and return the edge.  Otherwise, return NULL.  */
+   of an indirect edge IE and return the edge.  Otherwise, return NULL.  Delta,
+   if non-NULL, is an integer constant that must be added to this pointer
+   (first parameter).  */
 
 struct cgraph_edge *
-ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
+ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target, tree delta)
 {
   struct cgraph_node *callee;
 
-  if (TREE_CODE (target) != ADDR_EXPR)
-    return NULL;
-  target = TREE_OPERAND (target, 0);
+  if (TREE_CODE (target) == ADDR_EXPR)
+    target = TREE_OPERAND (target, 0);
   if (TREE_CODE (target) != FUNCTION_DECL)
     return NULL;
   callee = cgraph_node (target);
   if (!callee)
     return NULL;
   ipa_check_create_node_params ();
-  cgraph_make_edge_direct (ie, callee);
+
+  cgraph_make_edge_direct (ie, callee, delta);
   if (dump_file)
     {
       fprintf (dump_file, "ipa-prop: Discovered %s call to a known target "
-	       "(%s/%i -> %s/%i) for stmt ",
+	       "(%s/%i -> %s/%i), for stmt ",
 	       ie->indirect_info->polymorphic ? "a virtual" : "an indirect",
 	       cgraph_node_name (ie->caller), ie->caller->uid,
 	       cgraph_node_name (ie->callee), ie->callee->uid);
-
       if (ie->call_stmt)
 	print_gimple_stmt (dump_file, ie->call_stmt, 2, TDF_SLIM);
       else
 	fprintf (dump_file, "with uid %i\n", ie->lto_stmt_uid);
+
+      if (delta)
+	{
+	  fprintf (dump_file, "          Thunk delta is ");
+	  print_generic_expr (dump_file, delta, 0);
+	  fprintf (dump_file, "\n");
+	}
     }
 
   if (ipa_get_cs_argument_count (IPA_EDGE_REF (ie))
@@ -1514,7 +1529,7 @@ try_make_edge_direct_simple_call (struct cgraph_edge *ie,
   else
     return NULL;
 
-  return ipa_make_edge_direct_to_target (ie, target);
+  return ipa_make_edge_direct_to_target (ie, target, NULL_TREE);
 }
 
 /* Try to find a destination for indirect edge IE that corresponds to a
@@ -1526,20 +1541,11 @@ static struct cgraph_edge *
 try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 				   struct ipa_jump_func *jfunc)
 {
-  tree binfo, type, target;
+  tree binfo, type, target, delta;
   HOST_WIDE_INT token;
 
   if (jfunc->type == IPA_JF_KNOWN_TYPE)
     binfo = jfunc->value.base_binfo;
-  else if (jfunc->type == IPA_JF_CONST)
-    {
-      tree cst = jfunc->value.constant;
-      if (TREE_CODE (cst) == ADDR_EXPR)
-	binfo = gimple_get_relevant_ref_binfo (TREE_OPERAND (cst, 0),
-					       NULL_TREE);
-      else
-  	return NULL;
-    }
   else
     return NULL;
 
@@ -1550,12 +1556,12 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
   type = ie->indirect_info->otr_type;
   binfo = get_binfo_at_offset (binfo, ie->indirect_info->anc_offset, type);
   if (binfo)
-    target = gimple_fold_obj_type_ref_known_binfo (token, binfo);
+    target = gimple_get_virt_mehtod_for_binfo (token, binfo, &delta, true);
   else
     return NULL;
 
   if (target)
-    return ipa_make_edge_direct_to_target (ie, target);
+    return ipa_make_edge_direct_to_target (ie, target, delta);
   else
     return NULL;
 }
@@ -2210,13 +2216,10 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 	  base = gimple_call_arg (stmt, adj->base_index);
 	  loc = EXPR_LOCATION (base);
 
-	  if (TREE_CODE (base) == ADDR_EXPR
-	      && DECL_P (TREE_OPERAND (base, 0)))
-	    off = build_int_cst (TREE_TYPE (base),
+	  if (TREE_CODE (base) != ADDR_EXPR
+	      && POINTER_TYPE_P (TREE_TYPE (base)))
+	    off = build_int_cst (adj->alias_ptr_type,
 				 adj->offset / BITS_PER_UNIT);
-	  else if (TREE_CODE (base) != ADDR_EXPR
-		   && POINTER_TYPE_P (TREE_TYPE (base)))
-	    off = build_int_cst (TREE_TYPE (base), adj->offset / BITS_PER_UNIT);
 	  else
 	    {
 	      HOST_WIDE_INT base_offset;
@@ -2230,12 +2233,12 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 	      if (!base)
 		{
 		  base = build_fold_addr_expr (prev_base);
-		  off = build_int_cst (reference_alias_ptr_type (prev_base),
+		  off = build_int_cst (adj->alias_ptr_type,
 				       adj->offset / BITS_PER_UNIT);
 		}
 	      else if (TREE_CODE (base) == MEM_REF)
 		{
-		  off = build_int_cst (TREE_TYPE (TREE_OPERAND (base, 1)),
+		  off = build_int_cst (adj->alias_ptr_type,
 				       base_offset
 				       + adj->offset / BITS_PER_UNIT);
 		  off = int_const_binop (PLUS_EXPR, TREE_OPERAND (base, 1),
@@ -2244,7 +2247,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 		}
 	      else
 		{
-		  off = build_int_cst (reference_alias_ptr_type (prev_base),
+		  off = build_int_cst (adj->alias_ptr_type,
 				       base_offset
 				       + adj->offset / BITS_PER_UNIT);
 		  base = build_fold_addr_expr (base);
@@ -2546,6 +2549,7 @@ ipa_write_indirect_edge_info (struct output_block *ob,
     {
       lto_output_sleb128_stream (ob->main_stream, ii->otr_token);
       lto_output_tree (ob, ii->otr_type, true);
+      lto_output_tree (ob, ii->thunk_delta, true);
     }
 }
 
@@ -2568,6 +2572,7 @@ ipa_read_indirect_edge_info (struct lto_input_block *ib,
     {
       ii->otr_token = (HOST_WIDE_INT) lto_input_sleb128 (ib);
       ii->otr_type = lto_input_tree (ib, data_in);
+      ii->thunk_delta = lto_input_tree (ib, data_in);
     }
 }
 

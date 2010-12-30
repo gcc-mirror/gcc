@@ -2171,10 +2171,8 @@ moveup_expr (expr_t expr, insn_t through_insn, bool inside_insn_group,
               || ! in_current_region_p (fallthru_bb))
             return MOVEUP_EXPR_NULL;
 
-          /* And it should be mutually exclusive with through_insn, or
-             be an unconditional jump.  */
-          if (! any_uncondjump_p (insn)
-              && ! sched_insns_conditions_mutex_p (insn, through_insn)
+          /* And it should be mutually exclusive with through_insn.  */
+          if (! sched_insns_conditions_mutex_p (insn, through_insn)
 	      && ! DEBUG_INSN_P (through_insn))
             return MOVEUP_EXPR_NULL;
         }
@@ -7053,7 +7051,17 @@ reset_sched_cycles_in_current_ebb (void)
                   && haifa_cost > 0
                   && estimate_insn_cost (insn, curr_state) == 0)
                 break;
-	    }
+
+              /* When the data dependency stall is longer than the DFA stall,
+                 it could be that after the longer stall the insn will again
+                 become unavailable  to the DFA restrictions.  Looks strange
+                 but happens e.g. on x86-64.  So recheck DFA on the last
+                 iteration.  */
+              if (after_stall
+                  && real_insn
+                  && haifa_cost == 0)
+                haifa_cost = estimate_insn_cost (insn, curr_state);
+            }
 
 	  haifa_clock += i;
           if (sched_verbose >= 2)
@@ -7504,21 +7512,23 @@ sel_sched_region_1 (void)
             {
               basic_block bb = EBB_FIRST_BB (i);
 
-              if (sel_bb_empty_p (bb))
-                {
-                  bitmap_clear_bit (blocks_to_reschedule, bb->index);
-                  continue;
-                }
-
               if (bitmap_bit_p (blocks_to_reschedule, bb->index))
                 {
+                  if (! bb_ends_ebb_p (bb))
+                    bitmap_set_bit (blocks_to_reschedule, bb_next_bb (bb)->index);
+                  if (sel_bb_empty_p (bb))
+                    {
+                      bitmap_clear_bit (blocks_to_reschedule, bb->index);
+                      continue;
+                    }
                   clear_outdated_rtx_info (bb);
                   if (sel_insn_is_speculation_check (BB_END (bb))
                       && JUMP_P (BB_END (bb)))
                     bitmap_set_bit (blocks_to_reschedule,
                                     BRANCH_EDGE (bb)->dest->index);
                 }
-              else if (INSN_SCHED_TIMES (sel_bb_head (bb)) <= 0)
+              else if (! sel_bb_empty_p (bb)
+                       && INSN_SCHED_TIMES (sel_bb_head (bb)) <= 0)
                 bitmap_set_bit (blocks_to_reschedule, bb->index);
             }
 

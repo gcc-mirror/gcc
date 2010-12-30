@@ -1,6 +1,6 @@
 /* Definitions for ARM running Linux-based GNU systems using ELF
    Copyright (C) 1993, 1994, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008
+   2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Philip Blundell <philb@gnu.org>
 
@@ -70,7 +70,7 @@
    %{shared:-shared} \
    %{symbolic:-Bsymbolic} \
    %{rdynamic:-export-dynamic} \
-   %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER "} \
+   -dynamic-linker " LINUX_DYNAMIC_LINKER " \
    -X \
    %{mbig-endian:-EB} %{mlittle-endian:-EL}" \
    SUBTARGET_EXTRA_LINK_SPEC

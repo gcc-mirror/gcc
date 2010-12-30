@@ -29,11 +29,14 @@ along with GCC; see the file COPYING3.  If not see
 #undef ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
 
-#undef MD_EXEC_PREFIX
-#undef MD_STARTFILE_PREFIX
-
 #undef TARGET_VERSION
 #define TARGET_VERSION fputs (" (Xtensa/ELF)", stderr);
+
+#undef SIZE_TYPE
+#define SIZE_TYPE "unsigned int"
+
+#undef PTRDIFF_TYPE
+#define PTRDIFF_TYPE "int"
 
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "short unsigned int"
@@ -43,8 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef ASM_SPEC
 #define ASM_SPEC \
- "%{v} \
-  %{mtext-section-literals:--text-section-literals} \
+ "%{mtext-section-literals:--text-section-literals} \
   %{mno-text-section-literals:--no-text-section-literals} \
   %{mtarget-align:--target-align} \
   %{mno-target-align:--no-target-align} \
@@ -78,6 +80,8 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Do not force "-fpic" for this target.  */
 #define XTENSA_ALWAYS_PIC 0
+
+#undef DBX_REGISTER_NUMBER
 
 /* Search for headers in $tooldir/arch/include and for libraries and
    startfiles in $tooldir/arch/lib.  */

@@ -53,7 +53,7 @@ package Sem_Ch12 is
    --  the child unit that must be declared within. Similarly, if this is the
    --  name of a generic child unit within an instantiation of its own parent,
    --  retrieve the parent generic. If the parent is installed as a result of
-   --  this call, then Parent_Installed is set True, otherwise Parent_Intalled
+   --  this call, then Parent_Installed is set True, otherwise Parent_Installed
    --  is unchanged by the call.
 
    function Copy_Generic_Node

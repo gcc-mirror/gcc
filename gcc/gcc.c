@@ -641,14 +641,14 @@ proper position among the other output files.  */
     } \
     %{flto*:%<fcompare-debug*} \
     %{flto*} %l " LINK_PIE_SPEC \
-   "%X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} %{r}\
-    %{s} %{t} %{u*} %{z} %{Z} %{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
+   "%X %{o*} %{e*} %{N} %{n} %{r}\
+    %{s} %{t} %{u*} %{z} %{Z} %{!nostdlib:%{!nostartfiles:%S}}\
     %{static:} %{L*} %(mfwrap) %(link_libgcc) %o\
     %{fopenmp|ftree-parallelize-loops=*:%:include(libgomp.spec)%(link_gomp)}\
     %(mflib) " STACK_SPLIT_SPEC "\
     %{fprofile-arcs|fprofile-generate*|coverage:-lgcov}\
     %{!nostdlib:%{!nodefaultlibs:%(link_ssp) %(link_gcc_c_sequence)}}\
-    %{!A:%{!nostdlib:%{!nostartfiles:%E}}} %{T*} }}}}}}"
+    %{!nostdlib:%{!nostartfiles:%E}} %{T*} }}}}}}"
 #endif
 
 #ifndef LINK_LIBGCC_SPEC
@@ -709,7 +709,7 @@ static const char *sysroot_hdrs_suffix_spec = SYSROOT_HEADERS_SUFFIX_SPEC;
    call cc1 (or cc1obj in objc/lang-specs.h) from the main specs so
    that we default the front end language better.  */
 static const char *trad_capable_cpp =
-"cc1 -E %{traditional|ftraditional|traditional-cpp:-traditional-cpp}";
+"cc1 -E %{traditional|traditional-cpp:-traditional-cpp}";
 
 /* We don't wrap .d files in %W{} since a missing .d file, and
    therefore no dependency entry, confuses make into thinking a .o
@@ -750,7 +750,7 @@ static const char *cc1_options =
  %{!fcompare-debug-second:%{c|S:%{o*:-auxbase-strip %*}%{!o*:-auxbase %b}}}%{!c:%{!S:-auxbase %b}} \
  %{g*} %{O*} %{W*&pedantic*} %{w} %{std*&ansi&trigraphs}\
  %{v:-version} %{pg:-p} %{p} %{f*} %{undef}\
- %{Qn:-fno-ident} %{-help:--help}\
+ %{Qn:-fno-ident} %{Qy:} %{-help:--help}\
  %{-target-help:--target-help}\
  %{-version:--version}\
  %{-help=*:--help=%*}\
@@ -899,6 +899,7 @@ static const struct compiler default_compilers[] =
   {".java", "#Java", 0, 0, 0}, {".class", "#Java", 0, 0, 0},
   {".upc", "#UPC", 0, 0, 0},
   {".zip", "#Java", 0, 0, 0}, {".jar", "#Java", 0, 0, 0},
+  {".go", "#Go", 0, 1, 0},
   /* Next come the entries for C.  */
   {".c", "@c", 0, 0, 1},
   {"@c",
@@ -906,7 +907,7 @@ static const struct compiler default_compilers[] =
       external preprocessor if -save-temps is given.  */
      "%{E|M|MM:%(trad_capable_cpp) %(cpp_options) %(cpp_debug_options)}\
       %{!E:%{!M:%{!MM:\
-          %{traditional|ftraditional:\
+          %{traditional:\
 %eGNU C no longer supports -traditional without -E}\
       %{save-temps*|traditional-cpp|no-integrated-cpp:%(trad_capable_cpp) \
 	  %(cpp_options) -o %{save-temps*:%b.i} %{!save-temps*:%g.i} \n\

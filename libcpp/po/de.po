@@ -1,15 +1,15 @@
 # German translation of gcc messages.
 # Copyright © 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
-# Karl Eichwalder <ke@suse.de>, 2002, 2003.
-# Roland Stigge <stigge@antcom.de>, 2003, 2004, 2005, 2006, 2007, 2008.
 # This file is distributed under the same license as the gcc package.
+# Karl Eichwalder <ke@suse.de>, 2002, 2003.
+# Roland Stigge <stigge@antcom.de>, 2003, 2004, 2005, 2006, 2007, 2008, 2010.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.3.0\n"
+"Project-Id-Version: cpplib 4.6-b20101113\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-10-22 14:48+0000\n"
-"PO-Revision-Date: 2008-03-15 11:11+0100\n"
+"POT-Creation-Date: 2010-12-18 16:00+0000\n"
+"PO-Revision-Date: 2010-12-12 11:11+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -120,9 +120,9 @@ msgid "non-ISO-standard escape sequence, '\\%c'"
 msgstr "nicht-ISO-standardkonforme Fluchtsequenz '\\%c'"
 
 #: charset.c:1321
-#, fuzzy, c-format
+#, c-format
 msgid "unknown escape sequence: '\\%c'"
-msgstr "unbekannte Fluchtsequenz '\\%c'"
+msgstr "unbekannte Fluchtsequenz: '\\%c'"
 
 #: charset.c:1329
 #, c-format
@@ -161,9 +161,9 @@ msgid "#%s is a GCC extension"
 msgstr "#%s ist eine Erweiterung des GCC"
 
 #: directives.c:360
-#, fuzzy, c-format
+#, c-format
 msgid "#%s is a deprecated GCC extension"
-msgstr "#%s ist eine Erweiterung des GCC"
+msgstr "#%s ist eine veraltete Erweiterung des GCC"
 
 #: directives.c:373
 msgid "suggest not using #elif in traditional C"
@@ -309,14 +309,12 @@ msgid "#pragma once in main file"
 msgstr "#pragma once in Hauptdatei"
 
 #: directives.c:1453
-#, fuzzy
 msgid "invalid #pragma push_macro directive"
-msgstr "ungültige #pragma GCC Poison Direktive"
+msgstr "ungültige #pragma push_macro Direktive"
 
 #: directives.c:1508
-#, fuzzy
 msgid "invalid #pragma pop_macro directive"
-msgstr "ungültige #pragma GCC Poison Direktive"
+msgstr "ungültige #pragma pop_macro Direktive"
 
 #: directives.c:1563
 msgid "invalid #pragma GCC poison directive"
@@ -399,7 +397,7 @@ msgstr "»%s« wieder behauptet"
 msgid "unterminated #%s"
 msgstr "unbeendetes #%s"
 
-#: directives-only.c:222 lex.c:2068 traditional.c:163
+#: directives-only.c:222 lex.c:2074 traditional.c:163
 msgid "unterminated comment"
 msgstr "nicht beendeter Kommentar"
 
@@ -435,9 +433,8 @@ msgid "invalid prefix \"0b\" for floating constant"
 msgstr "ungültiger Prefix »0b« für Gleitkommakonstante"
 
 #: expr.c:339
-#, fuzzy
 msgid "no digits in hexadecimal floating constant"
-msgstr "Verwendung von hexadezimaler C99-Gleitkommakonstante"
+msgstr "keine Ziffern in hexadezimaler Gleitkommakonstante"
 
 #: expr.c:343
 msgid "use of C99 hexadecimal floating constant"
@@ -462,9 +459,8 @@ msgid "traditional C rejects the \"%.*s\" suffix"
 msgstr "traditionelles C lehnt den Suffix »%.*s« ab"
 
 #: expr.c:383
-#, fuzzy
 msgid "suffix for double constant is a GCC extension"
-msgstr "Festkommakonstanten sind eine GCC-Erweiterung"
+msgstr "Suffix an Gleitkommakonstante ist eine GCC-Erweiterung"
 
 #: expr.c:389
 #, c-format
@@ -481,9 +477,8 @@ msgid "invalid suffix \"%.*s\" on integer constant"
 msgstr "ungültiger Suffix »%.*s« an Ganzzahlkonstante"
 
 #: expr.c:433
-#, fuzzy
 msgid "use of C++0x long long integer constant"
-msgstr "C99 long long Ganzzahlkonstante verwendet"
+msgstr "C++0x long long Ganzzahlkonstante verwendet"
 
 #: expr.c:434
 msgid "use of C99 long long integer constant"
@@ -536,14 +531,12 @@ msgid "\"%s\" is not defined"
 msgstr "»%s« ist nicht definiert"
 
 #: expr.c:816
-#, fuzzy
 msgid "assertions are a GCC extension"
-msgstr "binäre Konstanten sind eine GCC-Erweiterung"
+msgstr "Assertions sind eine GCC-Erweiterung"
 
 #: expr.c:819
-#, fuzzy
 msgid "assertions are a deprecated extension"
-msgstr "binäre Konstanten sind eine GCC-Erweiterung"
+msgstr "Assertions sind eine veraltete Erweiterung"
 
 #: expr.c:952 expr.c:981
 #, c-format
@@ -560,9 +553,9 @@ msgid "missing expression between '(' and ')'"
 msgstr "fehlender Ausdruck zwischen '(' und ')'"
 
 #: expr.c:992
-#, fuzzy, c-format
+#, c-format
 msgid "%s with no expression"
-msgstr "#if ohne Ausdruck"
+msgstr "%s ohne Ausdruck"
 
 #: expr.c:995
 #, c-format
@@ -579,9 +572,9 @@ msgid " ':' without preceding '?'"
 msgstr " ':' ohne vorangehendes '?'"
 
 #: expr.c:1054
-#, fuzzy, c-format
+#, c-format
 msgid "unbalanced stack in %s"
-msgstr "unausgeglichener Keller in #if"
+msgstr "unausgeglichener Keller in %s"
 
 #: expr.c:1074
 #, c-format
@@ -749,21 +742,20 @@ msgstr "__VA_ARGS__ kann nur in Erweiterung eines variadischen C99-Makros auftre
 #: lex.c:1101 lex.c:1178
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
-msgstr ""
+msgstr "Bezeichner »%s« ist ein besonderer Operatorname in C++"
 
 #: lex.c:1323
 msgid "raw string delimiter longer than 16 characters"
-msgstr ""
+msgstr "Roh-Zeichenketten-Trennsymbol länger als 16 Zeichen"
 
 #: lex.c:1326
-#, fuzzy, c-format
+#, c-format
 msgid "invalid character '%c' in raw string delimiter"
-msgstr "ungültiges Zeichen '%c' in #if"
+msgstr "ungültiges Zeichen '%c' in Roh-Zeichenketten-Trennsymbol"
 
 #: lex.c:1447 lex.c:1469
-#, fuzzy
 msgid "unterminated raw string"
-msgstr "unbeendete Formatzeichenkette"
+msgstr "unbeendete Roh-Zeichenkette"
 
 #: lex.c:1484 lex.c:1583
 msgid "null character(s) preserved in literal"
@@ -774,19 +766,19 @@ msgstr "Null-Zeichen im Literal erhalten"
 msgid "missing terminating %c character"
 msgstr "fehlendes abschließendes Zeichen %c"
 
-#: lex.c:2079
+#: lex.c:2085
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "C++-Stil-Kommentare sind in ISO-C90 nicht erlaubt"
 
-#: lex.c:2081
+#: lex.c:2087
 msgid "(this will be reported only once per input file)"
 msgstr "(dies wird nur einmal pro Eingabedatei gemeldet)"
 
-#: lex.c:2086
+#: lex.c:2092
 msgid "multi-line comment"
 msgstr "mehrzeiliger Kommentar"
 
-#: lex.c:2406
+#: lex.c:2412
 #, c-format
 msgid "unspellable token %s"
 msgstr "nicht buchstabierbares Token %s"
@@ -849,7 +841,7 @@ msgstr "funktionsähnliches Makro »%s« muss mit Argumenten in traditionellem C
 #: macro.c:1040
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90 and ISO C++98"
-msgstr ""
+msgstr "Beim Ausführen des Argument %2$d des Makros %1$s: Leere Makroargumente sind nach ISO-C90 und ISO-C++98 unbestimmt"
 
 #: macro.c:1507
 #, c-format
@@ -921,9 +913,9 @@ msgid "while writing precompiled header"
 msgstr "beim Schreiben des vorkompilierten Headers"
 
 #: pch.c:608
-#, fuzzy, c-format
+#, c-format
 msgid "%s: not used because `%.*s' is poisoned"
-msgstr "%s: nicht verwendet, da »%s« definiert ist"
+msgstr "%s: nicht verwendet, da »%.*s« vergiftet ist"
 
 #: pch.c:630
 #, c-format

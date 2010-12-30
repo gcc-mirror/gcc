@@ -155,7 +155,8 @@ lto_symtab_register_decl (tree decl,
     gcc_assert (!DECL_ABSTRACT (decl));
 
   new_entry = ggc_alloc_cleared_lto_symtab_entry_def ();
-  new_entry->id = DECL_ASSEMBLER_NAME (decl);
+  new_entry->id = (*targetm.asm_out.mangle_assembler_name)
+		  (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
   new_entry->decl = decl;
   new_entry->resolution = resolution;
   new_entry->file_data = file_data;
@@ -190,7 +191,8 @@ lto_symtab_get_resolution (tree decl)
 
   gcc_assert (DECL_ASSEMBLER_NAME_SET_P (decl));
 
-  e = lto_symtab_get (DECL_ASSEMBLER_NAME (decl));
+  e = lto_symtab_get ((*targetm.asm_out.mangle_assembler_name)
+		      (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl))));
   while (e && e->decl != decl)
     e = e->next;
   if (!e)
@@ -218,7 +220,8 @@ lto_cgraph_replace_node (struct cgraph_node *node,
 	       cgraph_node_name (node), node->uid,
 	       cgraph_node_name (prevailing_node),
 	       prevailing_node->uid,
-	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->decl)));
+	       IDENTIFIER_POINTER ((*targetm.asm_out.mangle_assembler_name)
+		 (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->decl)))));
     }
 
   if (prevailing_node->same_body_alias)
@@ -590,16 +593,16 @@ found:
 }
 
 /* Merge all decls in the symbol table chain to the prevailing decl and
-   issue diagnostics about type mismatches.  */
+   issue diagnostics about type mismatches.  If DIAGNOSED_P is true
+   do not issue further diagnostics.*/
 
 static void
-lto_symtab_merge_decls_2 (void **slot)
+lto_symtab_merge_decls_2 (void **slot, bool diagnosed_p)
 {
   lto_symtab_entry_t prevailing, e;
   VEC(tree, heap) *mismatches = NULL;
   unsigned i;
   tree decl;
-  bool diagnosed_p = false;
 
   /* Nothing to do for a single entry.  */
   prevailing = (lto_symtab_entry_t) *slot;
@@ -609,7 +612,8 @@ lto_symtab_merge_decls_2 (void **slot)
   /* Try to merge each entry with the prevailing one.  */
   for (e = prevailing->next; e; e = e->next)
     {
-      if (!lto_symtab_merge (prevailing, e))
+      if (!lto_symtab_merge (prevailing, e)
+	  && !diagnosed_p)
 	VEC_safe_push (tree, heap, mismatches, e->decl);
     }
   if (VEC_empty (tree, mismatches))
@@ -748,12 +752,7 @@ lto_symtab_merge_decls_1 (void **slot, void *data ATTRIBUTE_UNUSED)
 
   /* Merge the chain to the single prevailing decl and diagnose
      mismatches.  */
-  lto_symtab_merge_decls_2 (slot);
-
-  /* Drop all but the prevailing decl from the symtab.  */
-  if (TREE_CODE (prevailing->decl) != FUNCTION_DECL
-      && TREE_CODE (prevailing->decl) != VAR_DECL)
-    prevailing->next = NULL;
+  lto_symtab_merge_decls_2 (slot, diagnosed_p);
 
   /* Store resolution decision into the callgraph.  
      In LTRANS don't overwrite information we stored into callgraph at
@@ -796,9 +795,26 @@ lto_symtab_merge_cgraph_nodes_1 (void **slot, void *data ATTRIBUTE_UNUSED)
   for (e = prevailing->next; e; e = e->next)
     {
       if (e->node != NULL)
-	lto_cgraph_replace_node (e->node, prevailing->node);
+	{
+	  /* In case we prevail funcion by an alias, we can run into case
+	     that the alias has no cgraph node attached, since it was
+	     previously unused.  Create the node.  */
+	  if (!prevailing->node)
+	    {
+	      prevailing->node = cgraph_node (prevailing->decl);
+	      prevailing->node->alias = true;
+	    }
+	  lto_cgraph_replace_node (e->node, prevailing->node);
+	}
       if (e->vnode != NULL)
-	lto_varpool_replace_node (e->vnode, prevailing->vnode);
+	{
+	  if (!prevailing->vnode)
+	    {
+	      prevailing->vnode = varpool_node (prevailing->decl);
+	      prevailing->vnode->alias = true;
+	    }
+	  lto_varpool_replace_node (e->vnode, prevailing->vnode);
+	}
     }
 
   /* Drop all but the prevailing decl from the symtab.  */
@@ -836,7 +852,8 @@ lto_symtab_prevailing_decl (tree decl)
   gcc_assert (DECL_ASSEMBLER_NAME_SET_P (decl));
 
   /* Walk through the list of candidates and return the one we merged to.  */
-  ret = lto_symtab_get (DECL_ASSEMBLER_NAME (decl));
+  ret = lto_symtab_get ((*targetm.asm_out.mangle_assembler_name)
+			(IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl))));
   if (!ret)
     return NULL_TREE;
 

@@ -24,9 +24,9 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file basic_string.h
+/** @file bits/basic_string.h
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{string}
  */
 
 //
@@ -2362,6 +2362,56 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __str.append(__size_type(1), __rhs);
       return __str;
     }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    inline basic_string<_CharT, _Traits, _Alloc>
+    operator+(basic_string<_CharT, _Traits, _Alloc>&& __lhs,
+	      const basic_string<_CharT, _Traits, _Alloc>& __rhs)
+    { return std::move(__lhs.append(__rhs)); }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    inline basic_string<_CharT, _Traits, _Alloc>
+    operator+(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
+	      basic_string<_CharT, _Traits, _Alloc>&& __rhs)
+    { return std::move(__rhs.insert(0, __lhs)); }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    inline basic_string<_CharT, _Traits, _Alloc>
+    operator+(basic_string<_CharT, _Traits, _Alloc>&& __lhs,
+	      basic_string<_CharT, _Traits, _Alloc>&& __rhs)
+    {
+      const auto __size = __lhs.size() + __rhs.size();
+      const bool __cond = (__size > __lhs.capacity()
+			   && __size <= __rhs.capacity());
+      return __cond ? std::move(__rhs.insert(0, __lhs))
+	            : std::move(__lhs.append(__rhs));
+    }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    inline basic_string<_CharT, _Traits, _Alloc>
+    operator+(const _CharT* __lhs,
+	      basic_string<_CharT, _Traits, _Alloc>&& __rhs)
+    { return std::move(__rhs.insert(0, __lhs)); }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    inline basic_string<_CharT, _Traits, _Alloc>
+    operator+(_CharT __lhs,
+	      basic_string<_CharT, _Traits, _Alloc>&& __rhs)
+    { return std::move(__rhs.insert(0, 1, __lhs)); }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    inline basic_string<_CharT, _Traits, _Alloc>
+    operator+(basic_string<_CharT, _Traits, _Alloc>&& __lhs,
+	      const _CharT* __rhs)
+    { return std::move(__lhs.append(__rhs)); }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    inline basic_string<_CharT, _Traits, _Alloc>
+    operator+(basic_string<_CharT, _Traits, _Alloc>&& __lhs,
+	      _CharT __rhs)
+    { return std::move(__lhs.append(1, __rhs)); }
+#endif
 
   // operator ==
   /**

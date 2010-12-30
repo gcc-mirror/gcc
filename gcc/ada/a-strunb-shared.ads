@@ -51,7 +51,7 @@
    --   - Implicit sharing or copy-on-write. An Unbounded_String contains only
    --     the reference to the data which is shared between several instances.
    --     The shared data is reallocated only when its value is changed and
-   --     the object mutation can't be used or it is unefficient to use it.
+   --     the object mutation can't be used or it is inefficient to use it.
 
    --   - Object mutation. Shared data object can be reused without memory
    --     reallocation when all of the following requirements are met:
@@ -68,7 +68,7 @@
    --  Reference counting uses GCC builtin atomic operations, which allows to
    --  safely share internal data between Ada tasks. Nevertheless, this doesn't
    --  make objects of Unbounded_String thread-safe: each instance can't be
-   --  accessed by several tasks simulatenously.
+   --  accessed by several tasks simultaneously.
 
 with Ada.Strings.Maps;
 private with Ada.Finalization;
@@ -459,7 +459,7 @@ private
 
    function Allocate (Max_Length : Natural) return Shared_String_Access;
    --  Allocates new Shared_String with at least specified maximum length.
-   --  Actual maximum length of the allocated Shared_String can be sligtly
+   --  Actual maximum length of the allocated Shared_String can be slightly
    --  greater. Returns reference to Empty_Shared_String when requested length
    --  is zero.
 

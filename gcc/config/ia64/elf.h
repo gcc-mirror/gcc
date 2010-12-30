@@ -1,6 +1,6 @@
 /* Definitions for embedded ia64-elf target.
 
-Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+Copyright (C) 2000, 2001, 2002, 2003, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -59,8 +59,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define LINK_SPEC "%{!mgnu-ld:-dn -N so}"
 #endif
 
-/* svr4.h links with crti.o/crtn.o, but elfos.h does not.  We override elfos.h
-   so that we can use the standard ELF Unix method.  */
+/* elfos.h does not link with crti.o/crtn.o.  We override elfos.h so
+   that we can use the standard ELF Unix method.  */
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "crtend.o%s crtn.o%s"
 

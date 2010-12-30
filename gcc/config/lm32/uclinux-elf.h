@@ -1,6 +1,6 @@
 /* Definitions for LM32 running Linux-based GNU systems using ELF
    Copyright (C) 1993, 1994, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2009 Free Software Foundation, Inc.
+   2009, 2010 Free Software Foundation, Inc.
    Contributed by Philip Blundell <philb@gnu.org>
 
    This file is part of GCC.
@@ -68,12 +68,11 @@
 
 #undef  LINK_SPEC
 #define LINK_SPEC "%{h*} %{version:-v} \
-   %{b} %{Wl,*:%*} \
    %{static:-Bstatic} \
    %{shared:-shared} \
    %{symbolic:-Bsymbolic} \
    %{rdynamic:-export-dynamic} \
-   %{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.2}"
+   -dynamic-linker /lib/ld-linux.so.2"
 
 #define TARGET_OS_CPP_BUILTINS() LINUX_TARGET_OS_CPP_BUILTINS()
 

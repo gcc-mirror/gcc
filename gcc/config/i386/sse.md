@@ -4990,7 +4990,7 @@
    movsd\t{%2, %0|%0, %2}
    movlpd\t{%2, %0|%0, %2}
    movsd\t{%2, %0|%0, %2}
-   shufpd\t{$2, %2, %0|%0, %2, 2}
+   shufpd\t{$2, %1, %0|%0, %1, 2}
    movhpd\t{%H1, %0|%0, %H1}
    #
    #
@@ -5067,7 +5067,7 @@
    movsd\t{%2, %0|%0, %2}
    movlpd\t{%2, %0|%0, %2}
    movlpd\t{%2, %0|%0, %2}
-   shufpd\t{$2, %2, %0|%0, %2, 2}
+   shufpd\t{$2, %1, %0|%0, %1, 2}
    movhps\t{%H1, %0|%0, %H1}
    movhps\t{%1, %H0|%H0, %1}"
   [(set_attr "type" "ssemov,ssemov,ssemov,sselog,ssemov,ssemov")
@@ -7719,7 +7719,7 @@
   "@
    pinsrq\t{$0x1, %2, %0|%0, %2, 0x1}
    movq\t{%1, %0|%0, %1}
-   movq\t{%1, %0|%0, %1}
+   movd\t{%1, %0|%0, %1}
    movq2dq\t{%1, %0|%0, %1}
    punpcklqdq\t{%2, %0|%0, %2}
    movlhps\t{%2, %0|%0, %2}
@@ -7738,7 +7738,7 @@
   "TARGET_64BIT && TARGET_SSE"
   "@
    movq\t{%1, %0|%0, %1}
-   movq\t{%1, %0|%0, %1}
+   movd\t{%1, %0|%0, %1}
    movq2dq\t{%1, %0|%0, %1}
    punpcklqdq\t{%2, %0|%0, %2}
    movlhps\t{%2, %0|%0, %2}

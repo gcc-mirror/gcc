@@ -24,7 +24,7 @@
 
 /** @file bits/unordered_set.h
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{unordered_set}
  */
 
 #ifndef _UNORDERED_SET_H

@@ -1,0 +1,37 @@
+# Copyright (C) 2010 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# We want fine grained libraries, so use the new code to build the
+# floating point emulation libraries.
+FPBIT = fp-bit.c
+DPBIT = dp-bit.c
+
+dp-bit.c: $(srcdir)/config/fp-bit.c
+	cat $(srcdir)/config/fp-bit.c > dp-bit.c
+
+fp-bit.c: $(srcdir)/config/fp-bit.c
+	echo '#define FLOAT' > fp-bit.c
+	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
+
+# Multilibs for LEON3
+MULTILIB_OPTIONS = msoft-float
+MULTILIB_DIRNAMES = soft
+MULTILIB_MATCHES = msoft-float=mno-fpu
+
+LIBGCC = stmp-multilib
+INSTALL_LIBGCC = install-multilib

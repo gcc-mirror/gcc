@@ -1,5 +1,5 @@
 /* IA32 VxWorks AE target definitions for GNU compiler.
-   Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2010 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
 
 This file is part of GCC.
@@ -24,3 +24,12 @@ along with GCC; see the file COPYING3.  If not see
   do						\
     builtin_define ("CPU=SIMNT");		\
   while (0)
+
+#undef  ASM_SPEC
+#define ASM_SPEC ""
+
+#undef  SIZE_TYPE
+#define SIZE_TYPE "unsigned int"
+
+#undef  PTRDIFF_TYPE
+#define PTRDIFF_TYPE "int"

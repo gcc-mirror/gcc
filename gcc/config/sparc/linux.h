@@ -1,6 +1,6 @@
 /* Definitions for SPARC running Linux-based GNU systems with ELF.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2002, 2003, 2004, 2005, 2006,
-   2007, 2008, 2009 Free Software Foundation, Inc.
+   2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Eddie C. Dost (ecd@skynet.be)
 
 This file is part of GCC.
@@ -70,18 +70,10 @@ along with GCC; see the file COPYING3.  If not see
 /* Provide a LINK_SPEC appropriate for GNU/Linux.  Here we provide support
    for the special GCC options -static and -shared, which allow us to
    link things in one of these three modes by applying the appropriate
-   combinations of options at link-time. We like to support here for
-   as many of the other GNU linker options as possible. But I don't
-   have the time to search for those flags. I am sure how to add
-   support for -soname shared_object_name. H.J.
-
-   I took out %{v:%{!V:-V}}. It is too much :-(. They can use
-   -Wl,-V.
+   combinations of options at link-time.
 
    When the -shared link option is used a final link is not being
    done.  */
-
-/* If ELF is the default format, we should not use /lib/elf.  */
 
 #define GLIBC_DYNAMIC_LINKER "/lib/ld-linux.so.2"
 
@@ -92,20 +84,15 @@ along with GCC; see the file COPYING3.  If not see
     %{!ibcs: \
       %{!static: \
         %{rdynamic:-export-dynamic} \
-        %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER "}} \
+        -dynamic-linker " LINUX_DYNAMIC_LINKER "} \
         %{static:-static}}}"
 
 /* The sun bundled assembler doesn't accept -Yd, (and neither does gas).
    It's safe to pass -s always, even if -g is not used.  */
 #undef ASM_SPEC
 #define ASM_SPEC "\
-%{V} \
-%{v:%{!V:-V}} \
 %{!Qn:-Qy} \
-%{n} \
-%{T} \
 %{Ym,*} \
-%{Wa,*:%*} \
 -s \
 %{fpic|fPIC|fpie|fPIE:-K PIC} \
 %{!.c:%{findirect-dispatch:-K PIC}} \

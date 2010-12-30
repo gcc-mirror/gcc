@@ -132,7 +132,7 @@ package Sem_Aux is
    --  the entity chain of the derived type which are a copy of the
    --  discriminants of the root type. Furthermore their Is_Completely_Hidden
    --  flag is set since although they are actually stored in the object, they
-   --  are not in the set of discriminants that is visble in the type.
+   --  are not in the set of discriminants that is visible in the type.
    --
    --  For derived untagged types, the set of stored discriminants are the real
    --  discriminants from Gigi's standpoint, i.e. those that will be stored in
@@ -177,7 +177,7 @@ package Sem_Aux is
    --  These are the types that are defined as return-by-reference types in Ada
    --  95 (see RM95-6.5(11-16)). In Ada 2005, these are the types that require
    --  build-in-place for function calls. Note that build-in-place is allowed
-   --  for other types, too. This is also used for idenfitying pure procedures
+   --  for other types, too. This is also used for identifying pure procedures
    --  whose calls should not be eliminated (RM 10.2.1(18/2)).
 
    function Is_Limited_Type (Ent : Entity_Id) return Boolean;

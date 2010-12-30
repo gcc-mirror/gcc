@@ -73,7 +73,7 @@ package body Sem_Util is
    --  safely used by New_Copy_Tree, since there is no case of a recursive
    --  call from the processing inside New_Copy_Tree.
 
-   NCT_Hash_Threshhold : constant := 20;
+   NCT_Hash_Threshold : constant := 20;
    --  If there are more than this number of pairs of entries in the
    --  map, then Hash_Tables_Used will be set, and the hash tables will
    --  be initialized and used for the searches.
@@ -82,7 +82,7 @@ package body Sem_Util is
    --  Set to True if hash tables are in use
 
    NCT_Table_Entries : Nat;
-   --  Count entries in table to see if threshhold is reached
+   --  Count entries in table to see if threshold is reached
 
    NCT_Hash_Table_Setup : Boolean := False;
    --  Set to True if hash table contains data. We set this True if we
@@ -8248,7 +8248,7 @@ package body Sem_Util is
    --  Itype references within the copied tree.
 
    --  The following hash tables are used if the Map supplied has more
-   --  than hash threshhold entries to speed up access to the map. If
+   --  than hash threshold entries to speed up access to the map. If
    --  there are fewer entries, then the map is searched sequentially
    --  (because setting up a hash table for only a few entries takes
    --  more time than it saves.
@@ -8984,7 +8984,7 @@ package body Sem_Util is
          else
             NCT_Table_Entries := NCT_Table_Entries + 1;
 
-            if NCT_Table_Entries > NCT_Hash_Threshhold then
+            if NCT_Table_Entries > NCT_Hash_Threshold then
                Build_NCT_Hash_Tables;
             end if;
          end if;
@@ -9118,7 +9118,7 @@ package body Sem_Util is
                Next_Elmt (Elmt);
             end loop;
 
-            if NCT_Table_Entries > NCT_Hash_Threshhold then
+            if NCT_Table_Entries > NCT_Hash_Threshold then
                Build_NCT_Hash_Tables;
             else
                NCT_Hash_Tables_Used := False;
@@ -9977,7 +9977,7 @@ package body Sem_Util is
       then
          return Original_Corresponding_Operation (Alias (S));
 
-      --  If S overrides an inherted subprogram S2 the original corresponding
+      --  If S overrides an inherited subprogram S2 the original corresponding
       --  operation of S is the original corresponding operation of S2
 
       elsif Present (Overridden_Operation (S)) then

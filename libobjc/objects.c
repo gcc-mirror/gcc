@@ -72,9 +72,6 @@ class_create_instance (Class class)
   return class_createInstance (class, 0);
 }
 
-/* Temporary, while we are including objc-api.h instead of runtime.h.  */
-#undef object_copy
-
 id
 object_copy (id object, size_t extraBytes)
 {
@@ -126,11 +123,8 @@ object_setClass (id object, Class class_)
     }
 }
 
-/*
-  Hook functions for memory allocation and disposal.  Deprecated
-  and currently unused.
-*/
-
+/* Hook functions for memory allocation and disposal.  Deprecated and
+   currently unused.  */
 id (*_objc_object_alloc) (Class)   = 0;
 id (*_objc_object_dispose) (id)    = 0;
 id (*_objc_object_copy) (id)       = 0;

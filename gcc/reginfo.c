@@ -1235,39 +1235,13 @@ reg_classes_intersect_p (reg_class_t c1, reg_class_t c2)
 
 #ifdef CANNOT_CHANGE_MODE_CLASS
 
-struct subregs_of_mode_node
-{
-  unsigned int block;
-  unsigned char modes[MAX_MACHINE_MODE];
-};
-
-static htab_t subregs_of_mode;
-
-static hashval_t
-som_hash (const void *x)
-{
-  const struct subregs_of_mode_node *const a =
-    (const struct subregs_of_mode_node *) x;
-  return a->block;
-}
-
-static int
-som_eq (const void *x, const void *y)
-{
-  const struct subregs_of_mode_node *const a =
-    (const struct subregs_of_mode_node *) x;
-  const struct subregs_of_mode_node *const b =
-    (const struct subregs_of_mode_node *) y;
-  return a->block == b->block;
-}
+static bitmap invalid_mode_changes;
 
 static void
-record_subregs_of_mode (rtx subreg)
+record_subregs_of_mode (rtx subreg, bitmap subregs_of_mode)
 {
-  struct subregs_of_mode_node dummy, *node;
   enum machine_mode mode;
   unsigned int regno;
-  void **slot;
 
   if (!REG_P (SUBREG_REG (subreg)))
     return;
@@ -1278,41 +1252,41 @@ record_subregs_of_mode (rtx subreg)
   if (regno < FIRST_PSEUDO_REGISTER)
     return;
 
-  dummy.block = regno & -8;
-  slot = htab_find_slot_with_hash (subregs_of_mode, &dummy,
-				   dummy.block, INSERT);
-  node = (struct subregs_of_mode_node *) *slot;
-  if (node == NULL)
+  if (bitmap_set_bit (subregs_of_mode,
+		      regno * NUM_MACHINE_MODES + (unsigned int) mode))
     {
-      node = XCNEW (struct subregs_of_mode_node);
-      node->block = regno & -8;
-      *slot = node;
+      unsigned int rclass;
+      for (rclass = 0; rclass < N_REG_CLASSES; rclass++)
+	if (!bitmap_bit_p (invalid_mode_changes,
+			   regno * N_REG_CLASSES + rclass)
+	    && CANNOT_CHANGE_MODE_CLASS (PSEUDO_REGNO_MODE (regno),
+					 mode, (enum reg_class) rclass))
+	  bitmap_set_bit (invalid_mode_changes,
+			  regno * N_REG_CLASSES + rclass);
     }
-
-  node->modes[mode] |= 1 << (regno & 7);
 }
 
 /* Call record_subregs_of_mode for all the subregs in X.  */
 static void
-find_subregs_of_mode (rtx x)
+find_subregs_of_mode (rtx x, bitmap subregs_of_mode)
 {
   enum rtx_code code = GET_CODE (x);
   const char * const fmt = GET_RTX_FORMAT (code);
   int i;
 
   if (code == SUBREG)
-    record_subregs_of_mode (x);
+    record_subregs_of_mode (x, subregs_of_mode);
 
   /* Time for some deep diving.  */
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
-	find_subregs_of_mode (XEXP (x, i));
+	find_subregs_of_mode (XEXP (x, i), subregs_of_mode);
       else if (fmt[i] == 'E')
 	{
 	  int j;
 	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	    find_subregs_of_mode (XVECEXP (x, i, j));
+	    find_subregs_of_mode (XVECEXP (x, i, j), subregs_of_mode);
 	}
     }
 }
@@ -1322,50 +1296,37 @@ init_subregs_of_mode (void)
 {
   basic_block bb;
   rtx insn;
+  bitmap_obstack srom_obstack;
+  bitmap subregs_of_mode;
 
-  if (subregs_of_mode)
-    htab_empty (subregs_of_mode);
-  else
-    subregs_of_mode = htab_create (100, som_hash, som_eq, free);
+  gcc_assert (invalid_mode_changes == NULL);
+  invalid_mode_changes = BITMAP_ALLOC (NULL);
+  bitmap_obstack_initialize (&srom_obstack);
+  subregs_of_mode = BITMAP_ALLOC (&srom_obstack);
 
   FOR_EACH_BB (bb)
     FOR_BB_INSNS (bb, insn)
-    if (INSN_P (insn))
-      find_subregs_of_mode (PATTERN (insn));
+      if (NONDEBUG_INSN_P (insn))
+        find_subregs_of_mode (PATTERN (insn), subregs_of_mode);
+
+  BITMAP_FREE (subregs_of_mode);
+  bitmap_obstack_release (&srom_obstack);
 }
 
 /* Return 1 if REGNO has had an invalid mode change in CLASS from FROM
    mode.  */
 bool
 invalid_mode_change_p (unsigned int regno,
-		       enum reg_class rclass ATTRIBUTE_UNUSED,
-		       enum machine_mode from)
+		       enum reg_class rclass)
 {
-  struct subregs_of_mode_node dummy, *node;
-  unsigned int to;
-  unsigned char mask;
-
-  gcc_assert (subregs_of_mode);
-  dummy.block = regno & -8;
-  node = (struct subregs_of_mode_node *)
-    htab_find_with_hash (subregs_of_mode, &dummy, dummy.block);
-  if (node == NULL)
-    return false;
-
-  mask = 1 << (regno & 7);
-  for (to = VOIDmode; to < NUM_MACHINE_MODES; to++)
-    if (node->modes[to] & mask)
-      if (CANNOT_CHANGE_MODE_CLASS (from, (enum machine_mode) to, rclass))
-	return true;
-
-  return false;
+  return bitmap_bit_p (invalid_mode_changes,
+		       regno * N_REG_CLASSES + (unsigned) rclass);
 }
 
 void
 finish_subregs_of_mode (void)
 {
-  htab_delete (subregs_of_mode);
-  subregs_of_mode = 0;
+  BITMAP_FREE (invalid_mode_changes);
 }
 #else
 void

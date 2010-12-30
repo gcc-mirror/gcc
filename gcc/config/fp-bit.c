@@ -1,7 +1,7 @@
 /* This is a software floating point library which can be used
    for targets without hardware floating point. 
    Copyright (C) 1994, 1995, 1996, 1997, 1998, 2000, 2001, 2002, 2003,
-   2004, 2005, 2008, 2009 Free Software Foundation, Inc.
+   2004, 2005, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -48,8 +48,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
      8-bit processors.
    CMPtype: Specify the type that floating point compares should return.
      This defaults to SItype, aka int.
-   US_SOFTWARE_GOFAST: This makes all entry points use the same names as the
-     US Software goFast library.
    _DEBUG_BITFLOAT: This makes debugging the code a little easier, by adding
      two integers to the FLO_union_type.
    NO_DENORMALS: Disable handling of denormals.
@@ -1179,8 +1177,6 @@ compare (FLO_type arg_a, FLO_type arg_b)
 }
 #endif /* L_compare_sf || L_compare_df */
 
-#ifndef US_SOFTWARE_GOFAST
-
 /* These should be optimized for their specific tasks someday.  */
 
 #if defined(L_eq_sf) || defined(L_eq_df) || defined(L_eq_tf)
@@ -1308,8 +1304,6 @@ _le_f2 (FLO_type arg_a, FLO_type arg_b)
 }
 #endif /* L_le_sf || L_le_df */
 
-#endif /* ! US_SOFTWARE_GOFAST */
-
 #if defined(L_unord_sf) || defined(L_unord_df) || defined(L_unord_tf)
 CMPtype
 _unord_f2 (FLO_type arg_a, FLO_type arg_b)
@@ -1434,14 +1428,7 @@ float_to_si (FLO_type arg_a)
 }
 #endif /* L_sf_to_si || L_df_to_si */
 
-#if defined(L_sf_to_usi) || defined(L_df_to_usi) || defined(L_tf_to_usi)
-#if defined US_SOFTWARE_GOFAST || defined(L_tf_to_usi)
-/* While libgcc2.c defines its own __fixunssfsi and __fixunsdfsi routines,
-   we also define them for GOFAST because the ones in libgcc2.c have the
-   wrong names and I'd rather define these here and keep GOFAST CYG-LOC's
-   out of libgcc2.c.  We can't define these here if not GOFAST because then
-   there'd be duplicate copies.  */
-
+#if defined(L_tf_to_usi)
 USItype
 float_to_usi (FLO_type arg_a)
 {
@@ -1471,8 +1458,7 @@ float_to_usi (FLO_type arg_a)
   else
     return a.fraction.ll >> ((FRACBITS + NGARDS) - a.normal_exp);
 }
-#endif /* US_SOFTWARE_GOFAST */
-#endif /* L_sf_to_usi || L_df_to_usi */
+#endif /* L_tf_to_usi */
 
 #if defined(L_negate_sf) || defined(L_negate_df) || defined(L_negate_tf)
 FLO_type

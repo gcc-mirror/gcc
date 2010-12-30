@@ -948,7 +948,7 @@ CND(AF_INET, "IPv4 address family")
 #endif
 
 /**
- ** Tru64 UNIX V4.0F defines AF_INET6 without IPv6 support, specificially
+ ** Tru64 UNIX V4.0F defines AF_INET6 without IPv6 support, specifically
  ** without struct sockaddr_in6.  We use _SS_MAXSIZE (used for the definition
  ** of struct sockaddr_storage on Tru64 UNIX V5.1) to detect this.
  **/

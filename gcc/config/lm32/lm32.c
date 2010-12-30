@@ -41,7 +41,6 @@
 #include "tm_p.h"
 #include "function.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "optabs.h"
 #include "libfuncs.h"
 #include "ggc.h"

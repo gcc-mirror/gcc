@@ -26,13 +26,24 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define __objc_private_common_INCLUDE_GNU
 
 /* This file contains definitions that should be included by all .c
-   and .m files in libobjc.
-*/
+   and .m files in libobjc.  */
 
 /* This variable allows the public headers to determine when they are
    being included by a file inside libobjc itself, or when they are
-   being included by an external file.
-*/
+   being included by an external file.  */
 #define GNU_LIBOBJC_COMPILING_LIBOBJC_ITSELF 1
+
+/* When debugging libobjc, add
+
+   #define DEBUG 1
+
+   at the very beginning of a file in libobjc (before including this file) to turn
+   on DEBUG_PRINTF().  */
+#ifdef DEBUG
+#include <stdio.h>
+#define DEBUG_PRINTF(format, args...) printf (format, ## args)
+#else
+#define DEBUG_PRINTF(format, args...)
+#endif 
 
 #endif /* __objc_private_common_INCLUDE_GNU */

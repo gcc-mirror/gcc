@@ -2819,7 +2819,7 @@ package body Sem_Ch12 is
             --  Check restriction imposed by AI05-073: a generic function
             --  cannot return an abstract type or an access to such.
 
-            --  This is a binding interpreration should it apply to earlier
+            --  This is a binding interpretation should it apply to earlier
             --  versions of Ada as well as Ada 2012???
 
             if Is_Abstract_Type (Designated_Type (Result_Type))

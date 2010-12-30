@@ -49,9 +49,9 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-/** @file stl_iterator_base_funcs.h
+/** @file bits/stl_iterator_base_funcs.h
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{iterator}
  *
  *  This file contains all of the general iterator-related utility
  *  functions, such as distance() and advance().

@@ -1,7 +1,7 @@
 /* { dg-do run } */
 
 /* Not all platforms support TImode integers.  */
-#if (defined(__LP64__) && !defined(__hppa__)) || defined(_WIN64)
+#if (defined(__LP64__) && !defined(__hppa__)) || defined(_WIN64) || defined(__SPU__)
 typedef int TItype __attribute__ ((mode (TI)));
 #else
 typedef long TItype;

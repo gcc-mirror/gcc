@@ -1158,7 +1158,7 @@ GC_PTR GC_get_thread_stack_base()
 
 # else
 #   ifdef DEBUG_THREADS
-	GC_printf1("Can not determine stack base for attached thread");
+	GC_printf0("Can not determine stack base for attached thread");
 #   endif
   return 0;
 # endif

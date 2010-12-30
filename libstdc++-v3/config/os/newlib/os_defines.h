@@ -22,9 +22,9 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file os_defines.h
+/** @file bits/os_defines.h
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{iosfwd}
  */
 
 #ifndef _GLIBCXX_OS_DEFINES

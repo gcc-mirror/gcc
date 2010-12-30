@@ -54,7 +54,7 @@ with Ada.Exceptions; use Ada.Exceptions;
 package GNAT.Exception_Actions is
 
    type Exception_Action is access
-     procedure (Occurence : Exception_Occurrence);
+     procedure (Occurrence : Exception_Occurrence);
    --  General callback type whenever an exception is raised. The callback
    --  procedure must not propagate an exception (execution of the program
    --  is erroneous if such an exception is propagated).

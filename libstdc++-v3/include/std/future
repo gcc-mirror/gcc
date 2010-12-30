@@ -22,7 +22,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file future
+/** @file include/future
  *  This is a Standard C++ Library header.
  */
 
@@ -508,23 +508,34 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       valid() const { return static_cast<bool>(_M_state); }
 
       void 
-      wait() const { _M_state->wait(); }
+      wait() const
+      {
+        _State::_S_check(_M_state);
+        _M_state->wait();
+      }
 
       template<typename _Rep, typename _Period>
         bool
         wait_for(const chrono::duration<_Rep, _Period>& __rel) const
-        { return _M_state->wait_for(__rel); }
+        {
+          _State::_S_check(_M_state);
+          return _M_state->wait_for(__rel);
+        }
 
       template<typename _Clock, typename _Duration>
         bool
         wait_until(const chrono::time_point<_Clock, _Duration>& __abs) const
-        { return _M_state->wait_until(__abs); }
+        {
+          _State::_S_check(_M_state);
+          return _M_state->wait_until(__abs);
+        }
 
     protected:
       /// Wait for the state to be ready and rethrow any stored exception
       __result_type
       _M_get_result()
       {
+        _State::_S_check(_M_state);
         _Result_base& __res = _M_state->wait();
         if (!(__res._M_error == 0))
           rethrow_exception(__res._M_error);

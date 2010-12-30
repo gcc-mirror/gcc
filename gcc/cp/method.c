@@ -583,6 +583,7 @@ do_build_copy_assign (tree fndecl)
   tree compound_stmt;
   bool move_p = move_fn_p (fndecl);
   bool trivial = trivial_fn_p (fndecl);
+  int flags = LOOKUP_NORMAL | LOOKUP_NONVIRTUAL | LOOKUP_DEFAULTED;
 
   compound_stmt = begin_compound_stmt (0);
   parm = convert_from_reference (parm);
@@ -622,7 +623,7 @@ do_build_copy_assign (tree fndecl)
 					ansi_assopname (NOP_EXPR),
 					&parmvec,
 					base_binfo,
-					LOOKUP_NORMAL | LOOKUP_NONVIRTUAL,
+					flags,
                                         tf_warning_or_error));
 	  release_tree_vector (parmvec);
 	}
@@ -1175,12 +1176,12 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 
   if (diag)
     {
-      flags = LOOKUP_NORMAL|LOOKUP_SPECULATIVE;
+      flags = LOOKUP_NORMAL|LOOKUP_SPECULATIVE|LOOKUP_DEFAULTED;
       complain = tf_warning_or_error;
     }
   else
     {
-      flags = LOOKUP_PROTECT|LOOKUP_SPECULATIVE;
+      flags = LOOKUP_PROTECT|LOOKUP_SPECULATIVE|LOOKUP_DEFAULTED;
       complain = tf_none;
     }
 
@@ -1318,8 +1319,7 @@ maybe_explain_implicit_delete (tree decl)
   /* If decl is a clone, get the primary variant.  */
   decl = DECL_ORIGIN (decl);
   gcc_assert (DECL_DELETED_FN (decl));
-  if (DECL_DEFAULTED_FN (decl)
-      && DECL_INITIAL (decl) == NULL_TREE)
+  if (DECL_DEFAULTED_FN (decl))
     {
       /* Not marked GTY; it doesn't need to be GC'd or written to PCH.  */
       static htab_t explained_htab;

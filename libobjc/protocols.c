@@ -69,9 +69,7 @@ __objc_protocols_add_protocol (const char *name, Protocol *object)
      Objective-C programs while trying to catch a problem that has
      never been seen in practice, so we don't do it.  */
   if (! objc_hash_is_key_in_hash (__protocols_hashtable, name))
-    {
-      objc_hash_add (&__protocols_hashtable, name, object);
-    }
+    objc_hash_add (&__protocols_hashtable, name, object);
 
   objc_mutex_unlock (__protocols_hashtable_lock);
 }
@@ -147,7 +145,7 @@ class_addProtocol (Class class_, Protocol *protocol)
 
   /* Check that it is a Protocol object before casting it to (struct
      objc_protocol *).  */
-  if (protocol->class_pointer != objc_lookupClass ("Protocol"))
+  if (protocol->class_pointer != objc_lookUpClass ("Protocol"))
     return NO;
 
   objc_mutex_lock (__objc_runtime_mutex);
@@ -176,7 +174,7 @@ class_conformsToProtocol (Class class_, Protocol *protocol)
 
   /* Check that it is a Protocol object before casting it to (struct
      objc_protocol *).  */
-  if (protocol->class_pointer != objc_lookupClass ("Protocol"))
+  if (protocol->class_pointer != objc_lookUpClass ("Protocol"))
     return NO;
 
   /* Acquire the runtime lock because the list of protocols for a
@@ -280,7 +278,7 @@ protocol_conformsToProtocol (Protocol *protocol, Protocol *anotherProtocol)
   if (protocol->class_pointer != anotherProtocol->class_pointer)
     return NO;
   
-  if (protocol->class_pointer != objc_lookupClass ("Protocol"))
+  if (protocol->class_pointer != objc_lookUpClass ("Protocol"))
     return NO;
 
   if (strcmp (((struct objc_protocol *)protocol)->protocol_name,
@@ -319,7 +317,7 @@ protocol_isEqual (Protocol *protocol, Protocol *anotherProtocol)
   if (protocol->class_pointer != anotherProtocol->class_pointer)
     return NO;
   
-  if (protocol->class_pointer != objc_lookupClass ("Protocol"))
+  if (protocol->class_pointer != objc_lookUpClass ("Protocol"))
     return NO;
 
   /* Equality between formal protocols is only formal (nothing to do
@@ -348,7 +346,7 @@ protocol_getName (Protocol *protocol)
 {
   /* Check that it is a Protocol object before casting it to (struct
      objc_protocol *).  */
-  if (protocol->class_pointer != objc_lookupClass ("Protocol"))
+  if (protocol->class_pointer != objc_lookUpClass ("Protocol"))
     return NULL;
 
   return ((struct objc_protocol *)protocol)->protocol_name;
@@ -370,7 +368,7 @@ struct objc_method_description protocol_getMethodDescription (Protocol *protocol
 
   /* Check that it is a Protocol object before casting it to (struct
      objc_protocol *).  */
-  if (protocol->class_pointer != objc_lookupClass ("Protocol"))
+  if (protocol->class_pointer != objc_lookUpClass ("Protocol"))
     return no_result;
 
   if (instanceMethod)
@@ -415,7 +413,7 @@ struct objc_method_description *protocol_copyMethodDescriptionList (Protocol *pr
 
   /* Check that it is a Protocol object before casting it to (struct
      objc_protocol *).  */
-  if (protocol == NULL  ||  protocol->class_pointer != objc_lookupClass ("Protocol"))
+  if (protocol == NULL  ||  protocol->class_pointer != objc_lookUpClass ("Protocol"))
     {
       if (numberOfReturnedMethods)
 	*numberOfReturnedMethods = 0;
@@ -466,7 +464,7 @@ Property protocol_getProperty (Protocol *protocol, const char *propertyName,
 
   /* Check that it is a Protocol object before casting it to (struct
      objc_protocol *).  */
-  if (protocol->class_pointer != objc_lookupClass ("Protocol"))
+  if (protocol->class_pointer != objc_lookUpClass ("Protocol"))
     return NULL;
 
   /* TODO: New ABI.  */
@@ -481,7 +479,7 @@ Property *protocol_copyPropertyList (Protocol *protocol, unsigned int *numberOfR
 
   /* Check that it is a Protocol object before casting it to (struct
      objc_protocol *).  */
-  if (protocol == NULL  ||  protocol->class_pointer != objc_lookupClass ("Protocol"))
+  if (protocol == NULL  ||  protocol->class_pointer != objc_lookUpClass ("Protocol"))
     {
       if (numberOfReturnedProperties)
 	*numberOfReturnedProperties = 0;
@@ -508,7 +506,7 @@ Protocol **protocol_copyProtocolList (Protocol *protocol, unsigned int *numberOf
 
   /* Check that it is a Protocol object before casting it to (struct
      objc_protocol *).  */
-  if (protocol == NULL  ||  protocol->class_pointer != objc_lookupClass ("Protocol"))
+  if (protocol == NULL  ||  protocol->class_pointer != objc_lookUpClass ("Protocol"))
     {
       if (numberOfReturnedProtocols)
 	*numberOfReturnedProtocols = 0;

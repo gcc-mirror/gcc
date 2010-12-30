@@ -5027,13 +5027,6 @@ resolve_procedure:
     {
       gfc_ref *ref, *ref2 = NULL;
 
-      if (e->ts.type == BT_CLASS)
-	{
-	  gfc_error ("Polymorphic subobject of coindexed object at %L",
-		     &e->where);
-	  t = FAILURE;
-	}
-
       for (ref = e->ref; ref; ref = ref->next)
 	{
 	  if (ref->type == REF_COMPONENT)
@@ -5045,6 +5038,14 @@ resolve_procedure:
       for ( ; ref; ref = ref->next)
 	if (ref->type == REF_COMPONENT)
 	  break;
+
+      /* Expression itself is not coindexed object.  */
+      if (ref && e->ts.type == BT_CLASS)
+	{
+	  gfc_error ("Polymorphic subobject of coindexed object at %L",
+		     &e->where);
+	  t = FAILURE;
+	}
 
       /* Expression itself is coindexed object.  */
       if (ref == NULL)
@@ -7892,6 +7893,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	  /* Set up arguments.  */
 	  new_st->expr1->value.function.actual = gfc_get_actual_arglist ();
 	  new_st->expr1->value.function.actual->expr = gfc_get_variable_expr (code->expr1->symtree);
+	  new_st->expr1->value.function.actual->expr->where = code->loc;
 	  gfc_add_vptr_component (new_st->expr1->value.function.actual->expr);
 	  vtab = gfc_find_derived_vtab (body->ext.case_list->ts.u.derived);
 	  st = gfc_find_symtree (vtab->ns->sym_root, vtab->name);
@@ -11782,7 +11784,9 @@ resolve_symbol (gfc_symbol *sym)
       for (ns = gfc_current_ns->parent; ns; ns = ns->parent)
 	{
 	  symtree = gfc_find_symtree (ns->sym_root, sym->name);
-	  if (symtree && symtree->n.sym->generic)
+	  if (symtree && (symtree->n.sym->generic ||
+			  (symtree->n.sym->attr.flavor == FL_PROCEDURE
+			   && sym->ns->construct_entities)))
 	    {
 	      this_symtree = gfc_find_symtree (gfc_current_ns->sym_root,
 					       sym->name);

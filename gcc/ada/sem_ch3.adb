@@ -8683,7 +8683,7 @@ package body Sem_Ch3 is
                Make_Pragma_Argument_Association (Loc,
                  Expression => Make_Identifier (Loc, Iface_Kind))));
 
-         --  The pragma doesn't need to be analyzed because it is internaly
+         --  The pragma doesn't need to be analyzed because it is internally
          --  build. It is safe to directly register it as a rep item since we
          --  are only interested in the characters of the implementation kind.
 
@@ -10435,7 +10435,7 @@ package body Sem_Ch3 is
                   "be allowed in Ada 2005?", S);
             else
                Error_Msg_N
-                 ("access subype of general access type not allowed", S);
+                 ("access subtype of general access type not allowed", S);
             end if;
 
             Error_Msg_N ("\discriminants have defaults", S);
@@ -11768,10 +11768,10 @@ package body Sem_Ch3 is
             Access_Types_To_Process (Freeze_Node (Priv)));
       end if;
 
-      --  Swap the two entities. Now Privat is the full type entity and Full is
-      --  the private one. They will be swapped back at the end of the private
-      --  part. This swapping ensures that the entity that is visible in the
-      --  private part is the full declaration.
+      --  Swap the two entities. Now Private is the full type entity and Full
+      --  is the private one. They will be swapped back at the end of the
+      --  private part. This swapping ensures that the entity that is visible
+      --  in the private part is the full declaration.
 
       Exchange_Entities (Priv, Full);
       Append_Entity (Full, Scope (Full));
@@ -16869,7 +16869,7 @@ package body Sem_Ch3 is
 
             if Ekind (Typ) = E_Record_Type_With_Private then
 
-               --  Handle the following erronous case:
+               --  Handle the following erroneous case:
                --      type Private_Type is tagged private;
                --   private
                --      type Private_Type is new Type_Implementing_Iface;
@@ -17407,8 +17407,8 @@ package body Sem_Ch3 is
          --  but it means we don't have to struggle to meet the requirements in
          --  the RM for having Preelaborable Initialization. Otherwise we
          --  require that the type meets the RM rules. But we can't check that
-         --  yet, because of the rule about overriding Ininitialize, so we
-         --  simply set a flag that will be checked at freeze time.
+         --  yet, because of the rule about overriding Initialize, so we simply
+         --  set a flag that will be checked at freeze time.
 
          if not In_Predefined_Unit (Full_T) then
             Set_Must_Have_Preelab_Init (Full_T);

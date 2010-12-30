@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler
    for Alpha Linux-based GNU systems using ELF.
-   Copyright (C) 1996, 1997, 1998, 2001, 2002, 2003, 2006, 2007
+   Copyright (C) 1996, 1997, 1998, 2001, 2002, 2003, 2006, 2007, 2010
    Free Software Foundation, Inc.
    Contributed by Richard Henderson.
 
@@ -47,7 +47,7 @@ along with GCC; see the file COPYING3.  If not see
   %{!shared:							\
     %{!static:							\
       %{rdynamic:-export-dynamic}				\
-      %{!dynamic-linker:-dynamic-linker %(elf_dynamic_linker)}}	\
+      -dynamic-linker %(elf_dynamic_linker)}	\
     %{static:-static}}"
 
 #undef LIB_SPEC

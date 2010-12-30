@@ -2340,7 +2340,7 @@ package body Exp_Ch4 is
       --  in packages System.Concat_n.
 
       Known_Non_Null_Operand_Seen : Boolean;
-      --  Set True during generation of the assignements of operands into
+      --  Set True during generation of the assignments of operands into
       --  result once an operand known to be non-null has been seen.
 
       function Make_Artyp_Literal (Val : Nat) return Node_Id;
@@ -2434,9 +2434,10 @@ package body Exp_Ch4 is
 
       --  We can't just use the index type, or even its base type for this
       --  purpose for two reasons. First it might be an enumeration type which
-      --  is not suitable fo computations of any kind, and second it may simply
-      --  not have enough range. For example if the index type is -128..+127
-      --  then lengths can be up to 256, which is out of range of the type.
+      --  is not suitable for computations of any kind, and second it may
+      --  simply not have enough range. For example if the index type is
+      --  -128..+127 then lengths can be up to 256, which is out of range of
+      --  the type.
 
       --  For enumeration types, we can simply use Standard_Integer, this is
       --  sufficient since the actual number of enumeration literals cannot
@@ -3486,7 +3487,7 @@ package body Exp_Ch4 is
 
       --  Same if the allocator is an access discriminant for a local object:
       --  instead of an allocator we create a local value and constrain the
-      --  the enclosing object with the corresponding access attribute.
+      --  enclosing object with the corresponding access attribute.
 
       if Is_Static_Coextension (N) then
          Rewrite_Coextension (N);
@@ -3517,7 +3518,7 @@ package body Exp_Ch4 is
          --    raise Storage_Error;
          --  end if;
 
-         --  where 3.5 gigabytes is a constant large enough to accomodate any
+         --  where 3.5 gigabytes is a constant large enough to accommodate any
          --  reasonable request for. But we can't do it this way because at
          --  least at the moment we don't compute this attribute right, and
          --  can silently give wrong results when the result gets large. Since
@@ -4140,7 +4141,7 @@ package body Exp_Ch4 is
       --         Cnn := else-expr'Unrestricted_Access;
       --      end if;
 
-      --  and replace the conditional expresion by a reference to Cnn.all.
+      --  and replace the conditional expression by a reference to Cnn.all.
 
       --  This special case can be skipped if the back end handles limited
       --  types properly and ensures that no incorrect copies are made.
@@ -4415,7 +4416,7 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_N_In
 
    begin
-      --  If set membersip case, expand with separate procedure
+      --  If set membership case, expand with separate procedure
 
       if Present (Alternatives (N)) then
          Remove_Side_Effects (Lop);
@@ -8373,7 +8374,7 @@ package body Exp_Ch4 is
       --  target is a real type or a 64-bit integer type, and the operand
       --  is an arithmetic operation using a 32-bit integer type. However,
       --  we do not bother with this case, because it could cause significant
-      --  ineffiencies on 32-bit machines. On a 64-bit machine it would be
+      --  inefficiencies on 32-bit machines. On a 64-bit machine it would be
       --  much cheaper, but we don't want different behavior on 32-bit and
       --  64-bit machines. Note that the exclusion of the 64-bit case also
       --  handles the configurable run-time cases where 64-bit arithmetic

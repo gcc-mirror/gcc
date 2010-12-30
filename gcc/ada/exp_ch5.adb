@@ -892,7 +892,7 @@ package body Exp_Ch5 is
                end if;
 
                --  Reset the Analyzed flag, because the bounds of the index
-               --  type itself may be universal, and must must be reaanalyzed
+               --  type itself may be universal, and must must be reanalyzed
                --  to acquire the proper type for the back end.
 
                Set_Analyzed (Cleft_Lo, False);
@@ -3200,7 +3200,7 @@ package body Exp_Ch5 is
 
    --  Note: the expander can handle generation of loops over predicated
    --  subtypes for both the dynamic and static cases. Depending on what
-   --  we decide is allowed in Ada 2012 mode and/or extentions allowed
+   --  we decide is allowed in Ada 2012 mode and/or extensions allowed
    --  mode, the semantic analyzer may disallow one or both forms.
 
    procedure Expand_Predicated_Loop (N : Node_Id) is

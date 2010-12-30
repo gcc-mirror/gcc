@@ -24,7 +24,7 @@
 
 /** @file bits/range_access.h
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{iterator}
  */
 
 #ifndef _GLIBCXX_RANGE_ACCESS_H

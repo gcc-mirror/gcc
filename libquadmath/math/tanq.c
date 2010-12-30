@@ -31,7 +31,7 @@
     License along with this library; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA */
 
-/* __kernel_tanq( x, y, k )
+/* __quadmath_kernel_tanq( x, y, k )
  * kernel tan function on [-pi/4, pi/4], pi/4 ~ 0.7854
  * Input x is assumed to be bounded by ~pi/4 in magnitude.
  * Input y is the tail of x.
@@ -84,7 +84,7 @@ static const __float128
 
 
 static __float128
-__kernel_tanq (__float128 x, __float128 y, int iy)
+__quadmath_kernel_tanq (__float128 x, __float128 y, int iy)
 {
   __float128 z, r, v, w, s;
   int32_t ix, sign = 1;
@@ -218,7 +218,7 @@ tanq (__float128 x)
 
     /* |x| ~< pi/4 */
 	ix &= 0x7fffffffffffffffLL;
-	if(ix <= 0x3ffe921fb54442d1LL) return __kernel_tanq(x,z,1);
+	if(ix <= 0x3ffe921fb54442d1LL) return __quadmath_kernel_tanq(x,z,1);
 
     /* tanl(Inf or NaN) is NaN */
 	else if (ix>=0x7fff000000000000LL) {
@@ -230,8 +230,8 @@ tanq (__float128 x)
 
     /* argument reduction needed */
 	else {
-	    n = rem_pio2q(x,y);
-	    return __kernel_tanq(y[0],y[1],1-((n&1)<<1)); /*   1 -- n even
-							-1 -- n odd */
+	    n = __quadmath_rem_pio2q(x,y);
+					/*   1 -- n even, -1 -- n odd */
+	    return __quadmath_kernel_tanq(y[0],y[1],1-((n&1)<<1));
 	}
 }

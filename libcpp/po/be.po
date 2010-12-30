@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcc 3.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-10-22 14:48+0000\n"
+"POT-Creation-Date: 2010-12-18 16:00+0000\n"
 "PO-Revision-Date: 2002-05-17 15:54+0200\n"
 "Last-Translator: Ales Nyakhaychyk <nyakhaychyk@i18n.linux.by>\n"
 "Language-Team: Belarusian <i18n@tut.by>\n"
@@ -398,7 +398,7 @@ msgstr ""
 msgid "unterminated #%s"
 msgstr ""
 
-#: directives-only.c:222 lex.c:2068 traditional.c:163
+#: directives-only.c:222 lex.c:2074 traditional.c:163
 msgid "unterminated comment"
 msgstr "незавершаныя каментарыі"
 
@@ -770,19 +770,19 @@ msgstr ""
 msgid "missing terminating %c character"
 msgstr "прапушчан завяршаючы сімвал %c"
 
-#: lex.c:2079
+#: lex.c:2085
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr ""
 
-#: lex.c:2081
+#: lex.c:2087
 msgid "(this will be reported only once per input file)"
 msgstr ""
 
-#: lex.c:2086
+#: lex.c:2092
 msgid "multi-line comment"
 msgstr ""
 
-#: lex.c:2406
+#: lex.c:2412
 #, fuzzy, c-format
 msgid "unspellable token %s"
 msgstr "немагу адчыніць файл \"%s\""

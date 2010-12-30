@@ -77,16 +77,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "ggc.h"
-#include "flags.h"
-#include "tree.h"
-#include "basic-block.h"
-#include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "tree-flow.h"
-#include "tree-dump.h"
-#include "timevar.h"
 #include "cfgloop.h"
 #include "tree-data-ref.h"
 #include "tree-scalar-evolution.h"
@@ -2653,7 +2645,8 @@ analyze_overlapping_iterations (tree chrec_a,
   /* If they are the same chrec, and are affine, they overlap
      on every iteration.  */
   else if (eq_evolutions_p (chrec_a, chrec_b)
-	   && evolution_function_is_affine_multivariate_p (chrec_a, lnn))
+	   && (evolution_function_is_affine_multivariate_p (chrec_a, lnn)
+	       || operand_equal_p (chrec_a, chrec_b, 0)))
     {
       dependence_stats.num_same_subscript_function++;
       *overlap_iterations_a = conflict_fn (1, affine_fn_cst (integer_zero_node));
@@ -2662,7 +2655,7 @@ analyze_overlapping_iterations (tree chrec_a,
     }
 
   /* If they aren't the same, and aren't affine, we can't do anything
-     yet. */
+     yet.  */
   else if ((chrec_contains_symbols (chrec_a)
 	    || chrec_contains_symbols (chrec_b))
 	   && (!evolution_function_is_affine_multivariate_p (chrec_a, lnn)
@@ -3482,6 +3475,7 @@ omega_setup_subscript (tree access_fun_a, tree access_fun_b,
   tree fun_a = chrec_convert (type, access_fun_a, NULL);
   tree fun_b = chrec_convert (type, access_fun_b, NULL);
   tree difference = chrec_fold_minus (type, fun_a, fun_b);
+  tree minus_one;
 
   /* When the fun_a - fun_b is not constant, the dependence is not
      captured by the classic distance vector representation.  */
@@ -3496,7 +3490,8 @@ omega_setup_subscript (tree access_fun_a, tree access_fun_b,
       return true;
     }
 
-  fun_b = chrec_fold_multiply (type, fun_b, integer_minus_one_node);
+  minus_one = build_int_cst (type, -1);
+  fun_b = chrec_fold_multiply (type, fun_b, minus_one);
 
   eq = omega_add_zero_eq (pb, omega_black);
   if (!init_omega_eq_with_af (pb, eq, DDR_NB_LOOPS (ddr), fun_a, ddr)
@@ -4244,11 +4239,11 @@ find_loop_nest (struct loop *loop, VEC (loop_p, heap) **loop_nest)
 bool
 compute_data_dependences_for_loop (struct loop *loop,
 				   bool compute_self_and_read_read_dependences,
+				   VEC (loop_p, heap) **loop_nest,
 				   VEC (data_reference_p, heap) **datarefs,
 				   VEC (ddr_p, heap) **dependence_relations)
 {
   bool res = true;
-  VEC (loop_p, heap) *vloops = VEC_alloc (loop_p, heap, 3);
 
   memset (&dependence_stats, 0, sizeof (dependence_stats));
 
@@ -4256,19 +4251,19 @@ compute_data_dependences_for_loop (struct loop *loop,
      is not computable, give up without spending time to compute other
      dependences.  */
   if (!loop
-      || !find_loop_nest (loop, &vloops)
+      || !find_loop_nest (loop, loop_nest)
       || find_data_references_in_loop (loop, datarefs) == chrec_dont_know)
     {
       struct data_dependence_relation *ddr;
 
       /* Insert a single relation into dependence_relations:
 	 chrec_dont_know.  */
-      ddr = initialize_data_dependence_relation (NULL, NULL, vloops);
+      ddr = initialize_data_dependence_relation (NULL, NULL, *loop_nest);
       VEC_safe_push (ddr_p, heap, *dependence_relations, ddr);
       res = false;
     }
   else
-    compute_all_dependences (*datarefs, dependence_relations, vloops,
+    compute_all_dependences (*datarefs, dependence_relations, *loop_nest,
 			     compute_self_and_read_read_dependences);
 
   if (dump_file && (dump_flags & TDF_STATS))
@@ -4372,9 +4367,10 @@ analyze_all_data_dependences (struct loop *loop)
     VEC_alloc (data_reference_p, heap, nb_data_refs);
   VEC (ddr_p, heap) *dependence_relations =
     VEC_alloc (ddr_p, heap, nb_data_refs * nb_data_refs);
+  VEC (loop_p, heap) *loop_nest = VEC_alloc (loop_p, heap, 3);
 
   /* Compute DDs on the whole function.  */
-  compute_data_dependences_for_loop (loop, false, &datarefs,
+  compute_data_dependences_for_loop (loop, false, &loop_nest, &datarefs,
 				     &dependence_relations);
 
   if (dump_file)
@@ -4408,6 +4404,7 @@ analyze_all_data_dependences (struct loop *loop)
 	}
     }
 
+  VEC_free (loop_p, heap, loop_nest);
   free_dependence_relations (dependence_relations);
   free_data_refs (datarefs);
 }
@@ -4451,22 +4448,11 @@ free_dependence_relations (VEC (ddr_p, heap) *dependence_relations)
 {
   unsigned int i;
   struct data_dependence_relation *ddr;
-  VEC (loop_p, heap) *loop_nest = NULL;
 
   FOR_EACH_VEC_ELT (ddr_p, dependence_relations, i, ddr)
-    {
-      if (ddr == NULL)
-	continue;
-      if (loop_nest == NULL)
-	loop_nest = DDR_LOOP_NEST (ddr);
-      else
-	gcc_assert (DDR_LOOP_NEST (ddr) == NULL
-		    || DDR_LOOP_NEST (ddr) == loop_nest);
+    if (ddr)
       free_dependence_relation (ddr);
-    }
 
-  if (loop_nest)
-    VEC_free (loop_p, heap, loop_nest);
   VEC_free (ddr_p, heap, dependence_relations);
 }
 
@@ -4507,7 +4493,7 @@ dump_rdg_vertex (FILE *file, struct graph *rdg, int i)
     for (e = v->succ; e; e = e->succ_next)
       fprintf (file, " %d", e->dest);
 
-  fprintf (file, ") \n");
+  fprintf (file, ")\n");
   print_gimple_stmt (file, RDGV_STMT (v), 0, TDF_VOPS|TDF_MEMSYMS);
   fprintf (file, ")\n");
 }
@@ -4902,37 +4888,24 @@ build_empty_rdg (int n_stmts)
    scalar dependence.  */
 
 struct graph *
-build_rdg (struct loop *loop)
+build_rdg (struct loop *loop,
+	   VEC (loop_p, heap) **loop_nest,
+	   VEC (ddr_p, heap) **dependence_relations,
+	   VEC (data_reference_p, heap) **datarefs)
 {
-  int nb_data_refs = 10;
   struct graph *rdg = NULL;
-  VEC (ddr_p, heap) *dependence_relations;
-  VEC (data_reference_p, heap) *datarefs;
-  VEC (gimple, heap) *stmts = VEC_alloc (gimple, heap, nb_data_refs);
+  VEC (gimple, heap) *stmts = VEC_alloc (gimple, heap, 10);
 
-  dependence_relations = VEC_alloc (ddr_p, heap, nb_data_refs * nb_data_refs) ;
-  datarefs = VEC_alloc (data_reference_p, heap, nb_data_refs);
-  compute_data_dependences_for_loop (loop,
-                                     false,
-                                     &datarefs,
-                                     &dependence_relations);
+  compute_data_dependences_for_loop (loop, false, loop_nest, datarefs,
+				     dependence_relations);
 
-  if (!known_dependences_p (dependence_relations))
+  if (known_dependences_p (*dependence_relations))
     {
-      free_dependence_relations (dependence_relations);
-      free_data_refs (datarefs);
-      VEC_free (gimple, heap, stmts);
-
-      return rdg;
+      stmts_from_loop (loop, &stmts);
+      rdg = build_empty_rdg (VEC_length (gimple, stmts));
+      create_rdg_vertices (rdg, stmts);
+      create_rdg_edges (rdg, *dependence_relations);
     }
-
-  stmts_from_loop (loop, &stmts);
-  rdg = build_empty_rdg (VEC_length (gimple, stmts));
-
-  rdg->indices = htab_create (nb_data_refs, hash_stmt_vertex_info,
-			      eq_stmt_vertex_info, hash_stmt_vertex_del);
-  create_rdg_vertices (rdg, stmts);
-  create_rdg_edges (rdg, dependence_relations);
 
   VEC_free (gimple, heap, stmts);
   return rdg;
@@ -4946,7 +4919,17 @@ free_rdg (struct graph *rdg)
   int i;
 
   for (i = 0; i < rdg->n_vertices; i++)
-    free (rdg->vertices[i].data);
+    {
+      struct vertex *v = &(rdg->vertices[i]);
+      struct graph_edge *e;
+
+      for (e = v->succ; e; e = e->succ_next)
+	if (e->data)
+	  free (e->data);
+
+      if (v->data)
+	free (v->data);
+    }
 
   htab_delete (rdg->indices);
   free_graph (rdg);
@@ -4974,6 +4957,38 @@ stores_from_loop (struct loop *loop, VEC (gimple, heap) **stmts)
   free (bbs);
 }
 
+/* Returns true when the statement at STMT is of the form "A[i] = 0"
+   that contains a data reference on its LHS with a stride of the same
+   size as its unit type.  */
+
+bool
+stmt_with_adjacent_zero_store_dr_p (gimple stmt)
+{
+  tree op0, op1;
+  bool res;
+  struct data_reference *dr;
+
+  if (!stmt
+      || !gimple_vdef (stmt)
+      || !is_gimple_assign (stmt)
+      || !gimple_assign_single_p (stmt)
+      || !(op1 = gimple_assign_rhs1 (stmt))
+      || !(integer_zerop (op1) || real_zerop (op1)))
+    return false;
+
+  dr = XCNEW (struct data_reference);
+  op0 = gimple_assign_lhs (stmt);
+
+  DR_STMT (dr) = stmt;
+  DR_REF (dr) = op0;
+
+  res = dr_analyze_innermost (dr)
+    && stride_of_unit_type_p (DR_STEP (dr), TREE_TYPE (op0));
+
+  free_data_ref (dr);
+  return res;
+}
+
 /* Initialize STMTS with all the statements of LOOP that contain a
    store to memory of the form "A[i] = 0".  */
 
@@ -4984,17 +4999,12 @@ stores_zero_from_loop (struct loop *loop, VEC (gimple, heap) **stmts)
   basic_block bb;
   gimple_stmt_iterator si;
   gimple stmt;
-  tree op;
   basic_block *bbs = get_loop_body_in_dom_order (loop);
 
   for (i = 0; i < loop->num_nodes; i++)
     for (bb = bbs[i], si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
       if ((stmt = gsi_stmt (si))
-	  && gimple_vdef (stmt)
-	  && is_gimple_assign (stmt)
-	  && gimple_assign_rhs_code (stmt) == INTEGER_CST
-	  && (op = gimple_assign_rhs1 (stmt))
-	  && (integer_zerop (op) || real_zerop (op)))
+	  && stmt_with_adjacent_zero_store_dr_p (stmt))
 	VEC_safe_push (gimple, heap, *stmts, gsi_stmt (si));
 
   free (bbs);

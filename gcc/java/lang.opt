@@ -283,6 +283,9 @@ Set the target VM version
 s-bc-abi
 Driver
 
+static-libgcj
+Driver
+
 version
 Java RejectDriver
 

@@ -1,3 +1,1183 @@
+2010-12-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/47068
+	* g++.dg/cpp0x/decltype24.C: New.
+
+2010-12-28  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/47076
+	* objc.dg/protocol-forward-1.m: New.
+	* obj-c++.dg/protocol-forward-1.mm: New.
+	* objc.dg/attributes/proto-attribute-2.m: Updated.
+	* objc.dg/class-protocol-1.m: Updated.
+	* obj-c++.dg/attributes/proto-attribute-2.mm: Updated.
+	* obj-c++.dg/class-protocol-1.mm: Updated.
+	
+2010-12-28  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45827
+	* gfortran.dg/class_32.f90: New.
+
+2010-12-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/rdrand-1.c: Updated.
+	* gcc.target/i386/rdrand-2.c: Likewise.
+	* gcc.target/i386/rdrand-3.c: Likewise.
+
+2010-12-28  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/class-extension-4.m: New.
+	* obj-c++.dg/class-extension-4.mm: New.
+
+2010-12-28  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/47073
+	* objc.dg/incomplete-type-1.m: New test.
+
+2010-12-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/46626
+	* g++.dg/cpp0x/constexpr-base4.C: New test.
+
+2010-12-26  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/gnu-api-2-class.m: Xfail the test on Apple Darwin m64.
+	* objc.dg/gnu-api-2-ivar.m: Same.
+	* objc.dg/gnu-api-2-method.m: Same.
+	* objc.dg/gnu-api-2-objc.m: Same.
+	* objc.dg/gnu-api-2-object.m: Same.
+	* objc.dg/gnu-api-2-protocol.m: Same.
+	* obj-c++.dg/gnu-api-2-class.mm: Same.
+	* obj-c++.dg/gnu-api-2-ivar.mm: Same.
+	* obj-c++.dg/gnu-api-2-method.mm: Same.
+	* obj-c++.dg/gnu-api-2-objc.mm: Same.
+	* obj-c++.dg/gnu-api-2-object.mm: Same.
+	* obj-c++.dg/gnu-api-2-protocol.mm: Same.
+	
+2010-12-26  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/pr44509.m: New.
+
+2010-12-26  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/gnu-api-2-class.m: Updated the test to work with the
+	Apple runtime as well.
+	* obj-c++.dg/gnu-api-2-class.mm: Same change.
+	* objc.dg/gnu-api-2-ivar.m: Same change.
+	* obj-c++.dg/gnu-api-2-ivar.mm: Same change.
+	* objc.dg/gnu-api-2-method.m: Same change.
+	* obj-c++.dg/gnu-api-2-method.mm: Same change.
+	* objc.dg/gnu-api-2-objc.m: Same change.
+	* obj-c++.dg/gnu-api-2-objc.mm: Same change.
+	* objc.dg/gnu-api-2-object.m: Same change.
+	* obj-c++.dg/gnu-api-2-object.mm: Same change.
+	* objc.dg/gnu-api-2-property.m: Same change.
+	* obj-c++.dg/gnu-api-2-property.mm: Same change.
+	* objc.dg/gnu-api-2-protocol.m: Same change.
+	* obj-c++.dg/gnu-api-2-protocol.mm: Same change.
+
+	* objc.dg/gnu-api-2-objc.m: Also, fixed test for
+	objc_disposeClassPair not to create a new class pair with the same
+	name as an existing class, and to test that the class pair is
+	created correctly.
+	* obj-c++.dg/gnu-api-2-objc.mm: Same change.
+	
+2010-12-26  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/special/special.exp: Added load-category-2 and
+	load-category-3 tests.
+	* objc.dg/special/load-category-2.h: New.
+	* objc.dg/special/load-category-2.m: New.
+	* objc.dg/special/load-category-2a.m: New.
+	* objc.dg/special/load-category-3.h: New.
+	* objc.dg/special/load-category-3.m: New.
+	* objc.dg/special/load-category-3a.m: New.
+
+2010-12-25  Ira Rosen  <irar@il.ibm.com>
+
+	PR testsuite/47057
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-outer-fir.c: Change comment.
+	Expect two outer loops to get vectorized.
+
+2010-12-25  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR c++/15774
+	* g++.dg/warn/pr15774-1.C: New test.
+	* g++.dg/warn/pr15774-2.C: New test.
+
+2010-12-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/gnu-api-2-sel.m: Test calling sel_getUid,
+	sel_registerName and sel_registerTypedName with NULL arguments.
+	Updated the test to work with the Apple runtime as well.
+	* obj-c++.dg/gnu-api-2-sel.mm: Same change.
+
+2010-12-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/gnu-api-2-class.m: Updated test to pass log_2 of the
+	alignment to class_addIvar, instead of the alignment itself.
+	* obj-c++.dg/gnu-api-2-class.mm: Same change.
+
+2010-12-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/gnu-api-2-sel.m: Updated for renaming of sel_getType to
+	sel_getTypeEncoding.  Test that sel_getTypeEncoding returns NULL
+	when called with a NULL argument.  Added test for
+	sel_copyTypedSelectorList and sel_getTypedSelector.
+	* obj-c++.dg/gnu-api-2-sel.mm: Same changes.
+
+2010-12-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt13_pkg.ad[sb]: Fix line ending.
+
+2010-12-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* obj-c.dg/gnu-api-2-class.m: Test that class_conformsToProtocol()
+	does not check the superclasses.
+	* obj-c++.dg/gnu-api-2-class.mm: Same change.
+
+2010-12-24  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/47036
+	* g++.dg/opt/pr47036.C: New.
+
+2010-12-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/31821
+	* gfortran.dg/char_pointer_assign_6.f90:  New test.
+
+2010-12-22  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/46758
+	* gcc.dg/graphite/run-id-pr46758.c: New.
+
+2010-12-23  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/46978
+	* gfortran.dg/transpose_intrinsic_func_call_1.f90: New test.
+
+2010-12-23  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* obj-c.dg/gnu-api-2-class.m: Test that class_addMethod() returns
+	NO if the method is already implemented in the class.
+	* obj-c++.dg/gnu-api-2-class.mm: Same change.
+
+2010-12-22  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/47019
+	* gfortran.dg/graphite/pr47019.f: New.
+
+2010-12-22  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/init/volatile2.C: New.
+
+2010-12-22  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
+
+	* g++.dg/cpp0x/alignof2.C: New.
+
+2010-12-22  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/45934
+	PR tree-optimization/46302
+	PR tree-optimization/46987
+	* g++.dg/ipa/ipcp-ivi-1.C: Removed.
+	* g++.dg/ipa/ivinline-6.C: Likewise.
+	* g++.dg/otr-fold-1.C: Likewise.
+	* g++.dg/otr-fold-2.C: Likewise.
+	* g++.dg/tree-ssa/pr43411.C: Xfail dump scan.
+	* g++.dg/tree-ssa/pr45605.C: Likewise.
+	* g++.dg/tree-ssa/pr46987.C: New test.
+
+2010-12-22  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gfortran.dg/pr46755.f: Fix test case.
+
+2010-12-22  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/45352
+	PR rtl-optimization/46521
+	PR rtl-optimization/46522
+	* gcc.dg/pr46521.c: New.
+	* gcc.dg/pr46522.c: New.
+
+2010-12-21  Ian Lance Taylor  <iant@google.com>
+
+	* go.test/go-test.exp: Clear runtests around invocation of
+	go-dg-runtest from errchk and go-execute-xfail.
+
+2010-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/46880
+	* gcc.target/i386/pr46880.c: New test.
+
+2010-12-21  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/47001
+	* gcc.dg/vect/pr47001.c: New.
+
+2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR libobjc/16110
+	* objc.dg/special/special.exp: Added new test.
+	* objc.dg/special/load-category-1.m: New.
+	* objc.dg/special/load-category-1a.m: New.
+	* objc.dg/special/load-category-1.h: New.
+
+2010-12-21  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/45310
+	* g++.dg/pr45310.C: New test.
+
+2010-12-21  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR rtl-optimization/46755
+	* gfortran.dg/pr46755.f: New test.
+
+2010-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/47008
+	* gfortran.dg/pr47008.f03: New test.
+
+2010-12-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR libobjc/45953
+	* objc.dg/libobjc-selector-1.m: New test.
+
+2010-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/45852
+	* gcc.target/i386/pr45852.c: New test.
+
+2010-12-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46974
+	* gfortran.dg/c_ptr_tests_16.f90: Fix endian issue.
+
+2010-12-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR testsuite/45342
+	* gcc.dg/tls/thr-cse-1.c: Fix match on hppa*-*-hpux*.
+
+2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/gnu-api-2-objc.m: Fixed test to test objc_lookUpClass,
+	not objc_lookupClass.
+	* obj-c++.dg/gnu-api-2-objc.mm: Same change.
+
+2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/gnu-api-2-objc_msg_lookup.m: New.
+	* obj-c++.dg/gnu-api-2-objc_msg_lookup.mm: New.
+
+2010-12-19  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gcc.target/arm/vfp-1.c (test_ldst): New test for VFP
+	load/store immediate indexes.
+
+2010-12-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/gnu-api-2-resolve-method.m: Include objc/message.h.
+	* obj-c++.dg/gnu-api-2-resolve-method.m: Include objc/message.h.
+
+2010-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46969
+	* gcc.dg/autopar/pr46969.c: New test.
+
+2010-12-18  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/fobjc-exceptions-1.m: Updated.
+	* objc.dg/fobjc-exceptions-2.m: New.
+	* objc.dg/fobjc-exceptions-3.m: New.
+	* obj-c++.dg/fobjc-exceptions-1.mm: New.
+	* obj-c++.dg/fobjc-exceptions-2.mm: New.
+	* obj-c++.dg/fobjc-exceptions-3.mm: New.
+
+2010-12-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46974
+	* gfortran.dg/c_ptr_tests_16.f90: New.
+
+2010-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46985
+	* gfortran.dg/pr46985.f90: New test.
+
+2010-12-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/46232
+	* gcc.dg/tree-ssa/pr14814.c: Add -fno-tree-sra.
+
+2010-12-18  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc.dg/fobjc-exceptions.m: Update dg-error syntax.
+
+2010-12-18  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR target/36834
+	* gcc.target/i386/aggregate-ret1.c: New.
+	* gcc.target/i386/aggregate-ret2.c: New.
+
+2010-12-18  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* gcc.target/powerpc/darwin-split-ld-stret.c: New test.
+
+2010-12-17  Ahmad Sharif  <asharif@google.com>
+
+	* gcc.target/i386/max-stack-align.c: New testcase.
+
+2010-12-17  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/exceptions-4.m: Adjust for change in error message.
+
+2010-12-17  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR c/20385
+	* objc.dg/tls/init-2.m: Adjust.
+	* gcc.dg/noncompile/920923-1.c: Adjust.
+	* gcc.dg/noncompile/pr44517.c: Adjust.
+	* gcc.dg/declspec-18.c: New test.
+
+2010-12-17  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* gcc.dg/titype-1.c: Enable TImode on __SPU__.
+	* gcc.dg/torture/fp-int-convert.h: Likewise.
+	* gcc.dg/tree-ssa/ivopts-1.c: Likewise.
+	* gcc.dg/uninit-C.c: Likewise.
+	* gcc.dg/uninit-C-O0.c: Likewise.
+	* gcc.dg/format/unnamed-1.c: Likewise.
+	* gcc.dg/format/ms_unnamed-1.c: Likewise.
+
+2010-12-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46670
+	* g++.dg/cpp0x/constexpr-null1.C: New.
+
+2010-12-17  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* gcc.c-torture/compile/20101217-1.c: New test.
+
+2010-12-17  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR middle-end/46761
+	* gcc.dg/graphite/pr46761.c: New.
+
+2010-12-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/46849
+	* gfortran.dg/block_9.f08: New.
+
+2010-12-17  Dodji Seketeli  <dodji@redhat.com>
+
+	* g++.dg/debug/dwarf2/self-ref-1.C: New test.
+	* g++.dg/debug/dwarf2/self-ref-2.C: Likewise.
+
+2010-12-16  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/46924
+	* gcc.dg/graphite/pr46924.c: New.
+
+2010-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46966
+	* gcc.dg/graphite/pr46966.c: New test.
+
+2010-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt13.adb: New test.
+	* gnat.dg/opt13_pkg.ad[sb]: New helper.
+
+2010-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/43655
+	* g++.dg/opt/pr43655.C: New test.
+
+2010-12-16  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/46404
+	* gcc.dg/graphite/pr46404-1.c: New.
+
+2010-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/46893
+	* gcc.dg/pr46893.c: New test.
+
+2010-12-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR lto/46976
+	* gcc.dg/lto/pr46940_1.c (main): Return 0.
+
+2010-12-16  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR target/46883
+	* gcc.target/arm/pr46883.c: New testcase.
+
+2010-12-16  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/46976
+	* gcc.dg/lto/pr46940_0.c: Fix commit.
+
+2010-12-15  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c++/39859
+	PR c++/44522
+	PR c++/44523
+	* g++.dg/parse/colon-autocorrect-1.C: New testcase.
+	* g++.dg/parse/colon-autocorrect-2.C: New testcase.
+
+2010-12-15  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c++/46852
+	* g++.dg/pr46852.C: New test.
+
+2010-12-16  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/46939
+	* gcc.target/i386/pr46939.c: New testcase.
+
+2010-12-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/46404
+	* gcc.dg/graphite/pr46404.c: New.
+
+2010-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/46945
+	* gfortran.dg/pr46945.f90: New test.
+
+	PR debug/46815
+	* g++.dg/guality/pr46815.C: New test.
+
+2010-12-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/42083
+	* g++.dg/cpp0x/lambda/lambda-ice2.C: New.
+
+2010-12-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gfortran.dg/debug/pr46756.f: Correct PR number.
+
+2010-12-15  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/46053
+	PR middle-end/46287
+	PR middle-end/46242
+	* g++.dg/ipa/pr46053.C: New test.
+	* g++.dg/ipa/pr46287-1.C: Likewise.
+	* g++.dg/ipa/pr46287-2.C: Likewise.
+	* g++.dg/ipa/pr46287-3.C: Likewise.
+	* g++.dg/torture/covariant-1.C: Likewise.
+	* g++.dg/torture/pr46287.C: Likewise.
+
+2010-12-15  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/46649
+	* g++.dg/opt/pr46649.C: New.
+
+2010-12-15  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR testsuite/46938
+	* gcc.dg/pr43157.c: Add dg-require-linker-plugin  directive.
+
+2010-12-14  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/46845
+	* gcc.dg/graphite/id-pr46845.c: New.
+
+2010-12-14  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/46928
+	* gcc.dg/tree-ssa/ldist-17.c: New.
+
+2010-12-14  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/45948
+	* gcc.dg/tree-ssa/ldist-pr45948.c: New.
+
+2010-12-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46930
+	* g++.dg/cpp0x/constexpr-decl.C: New.
+	* g++.dg/cpp0x/constexpr-ex1.C: Fix.
+	* g++.dg/cpp0x/constexpr-static5.C: Fix.
+
+2010-12-14  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/46940
+	PR lto/44463
+	* gcc.dg/lto/pr46940_0.c: New testcase.
+	* gcc.dg/lto/pr46940_1.c: New testcase.
+
+2010-12-14  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c++/45330
+	* g++.dg/lookup/suggestions1.C: New test.
+
+2010-12-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46937
+	* gfortran.dg/pointer_intent_4.f90: New.
+
+2010-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/46885
+	* gcc.dg/autopar/pr46885.c: New test.
+
+	PR tree-optimization/46909
+	* gcc.c-torture/execute/pr46909-1.c: New test.
+	* gcc.c-torture/execute/pr46909-2.c: New test.
+	* gcc.dg/pr46909.c: New test.
+
+2010-12-14  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/46875
+	* gcc.dg/pr46875.c: New.
+
+2010-12-14  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/other/first-global.C: Update regexp to match new
+	names of ctors.
+
+2010-12-14  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR rtl-optimization/44374
+	Reapply patch with fixes.
+	* gcc.target/arm/headmerge-1.c: New test.
+	* gcc.target/arm/headmerge-2.c: New test.
+	* gcc.target/i386/headmerge-1.c: New test.
+	* gcc.target/i386/headmerge-2.c: New test.
+
+2010-12-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46873
+	PR c++/46877
+	* g++.dg/cpp0x/constexpr-ctor4.C: New.
+	* g++.dg/cpp0x/constexpr-ctor5.C: New.
+
+2010-12-13  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/46201
+	* gfortran.dg/proc_ptr_comp_27.f90: New.
+
+2010-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/46867
+	* gcc.dg/pr46867.c: New test.
+
+2010-12-13  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/46841
+	* gfortran.dg/proc_ptr_comp_26.f90: New.
+
+2010-12-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/pack9.adb: XFAIL everywhere.
+
+2010-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/46884
+	* gfortran.dg/pr46884.f: New test.
+
+2010-12-13  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc.dg/gnu-encoding/struct-layout-encoding-1_generate.c:
+	Adjust XFAILs.
+
+2010-12-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/46756
+	* gfortran.dg/debug/pr46756.f: New.
+
+2010-12-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/46782
+	* gcc.dg/debug/pr46782.c: New.
+
+2010-12-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/46809
+	* gfortran.dg/pointer_check_8.f90: New.
+
+2010-12-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/46705
+	* gfortran.dg/continuation_12.f90: New test.
+
+2010-12-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46370
+	* gfortran.dg/coarray_14.f90: New.
+
+2010-12-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/46842
+	* gfortran.dg/array_function_6.f90: New test.
+
+2010-12-11  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/gnu-api-2-resolve-method.m: New.
+	* obj-c++.dg/gnu-api-2-resolve-method.mm: New.
+
+2010-12-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* gcc.dg/funcorder.c: Remove XFAIL for hppa*64*-*-*.
+
+2010-12-10  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/fobjc-std-1.m: Updated to test that class extensions
+	produce an error with -fobjc-std=objc1.
+	* obj-c++.dg/fobjc-std-1.mm: Same change.
+
+2010-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/46001
+	* g++.dg/diagnostic/bitfld1.C: New test.
+
+2010-12-10  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/43023
+	* gfortran.dg/ldist-1.f90: Adjust pattern.
+	* gfortran.dg/ldist-pr43023.f90: New.
+
+2010-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/46804
+	* gfortran.dg/pr46804.f90: New test.
+
+2010-12-10  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR middle-end/46674
+	PR lto/43157
+	* gcc.dg/pr43157.c: New file.
+
+2010-12-10  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc.dg/dfp/struct-union.c: Adjust.
+	* gcc.dg/lvalue-2.c: Adjust.
+	* gcc.dg/pr21419.c: Adjust.
+	* gcc.dg/qual-component-1.c: Adjust.
+	* g++.dg/other/const1.C: Adjust.
+
+2010-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/46865
+	* gcc.target/i386/pr46865-1.c: New test.
+	* gcc.target/i386/pr46865-2.c: New test.
+
+	PR tree-optimization/46864
+	* g++.dg/opt/pr46864.C: New test.
+
+2010-12-10  Jack Howarth  <howarth@bromo.med.uc.edu>
+	    Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR 43751/target
+	* lib/prune.exp: Prune dsymutil warnings.
+
+2010-12-10  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/class-extension-1.m: New.
+	* objc.dg/class-extension-2.m: New.
+	* objc.dg/class-extension-3.m: New.
+	* objc.dg/property/at-property-26.m: New.
+	* objc.dg/property/at-property-27.m: New.
+	* objc.dg/property/at-property-28.m: New.
+	* obj-c++.dg/class-extension-1.mm: New.
+	* obj-c++.dg/class-extension-2.mm: New.
+	* obj-c++.dg/class-extension-3.mm: New.
+	* obj-c++.dg/property/at-property-26.mm: New.
+	* obj-c++.dg/property/at-property-27.mm: New.
+	* obj-c++.dg/property/at-property-28.mm: New.
+
+2010-12-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/46057
+	* gcc.dg/torture/stackalign/nested-1.c: Skip on hppa*-*-hpux*.
+	* gcc.dg/torture/stackalign/vararg-1.c: Likewise.
+	* gcc.dg/torture/stackalign/nested-2.c: Likewise.
+	* gcc.dg/torture/stackalign/vararg-2.c: Likewise.
+	* gcc.dg/torture/stackalign/nested-3.c: Likewise.
+	* gcc.dg/torture/stackalign/nested-4.c: Likewise.
+	* gcc.dg/torture/stackalign/global-1.c: Likewise.
+	* gcc.dg/torture/stackalign/ret-struct-1.c: Likewise.
+	* gcc.dg/torture/stackalign/inline-1.c: Likewise.
+	* gcc.dg/torture/stackalign/inline-2.c: Likewise.
+	* gcc.dg/torture/stackalign/struct-1.c: Likewise.
+	* gcc.dg/torture/stackalign/pr16660-1.c: Likewise.
+	* gcc.dg/torture/stackalign/alloca-1.c: Likewise.
+	* g++.dg/torture/stackalign/throw-1.C: Likewise.
+	* g++.dg/torture/stackalign/throw-2.C: Likewise.
+	* g++.dg/torture/stackalign/throw-4.C: Likewise.
+	* g++.dg/torture/stackalign/eh-inline-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-inline-2.C: Likewise.
+	* g++.dg/torture/stackalign/eh-vararg-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-vararg-2.C: Likewise.
+	* g++.dg/torture/stackalign/eh-alloca-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-global-1.C: Likewise.
+
+	PR tree-optimization/46021
+	gcc.dg/tree-ssa/20040204-1.c: Remove XFAIL for hppa*-*.*.
+
+2010-12-09  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/46844
+	* gcc.c-torture/compile/pr46866.c: New testcase.
+
+2010-12-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR testsuite/45068
+	* g++.dg/debug/dwarf2/nested-2.C: Also match comments starting with ';'.
+
+2010-12-09  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/46734
+	* g++.dg/tree-ssa/pr46734.C: New test.
+
+2010-12-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR c++/44641
+	* lib/scanasm.exp (dg-function-on-line): Add match pattern for
+	hppa*-*-*.
+
+2010-12-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46348
+	* g++.dg/cpp0x/constexpr-array2.C: New.
+
+2010-12-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/sse2-init-v2di-2.c: Add "-dp" and update
+	expected scan.
+
+2010-12-08  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/exceptions-7.m: New.
+	* obj-c++.dg/exceptions-7.mm: New.
+	* obj-c++.dg/exceptions-3.mm: Adjust for new C++ messages.
+	* obj-c++.dg/exceptions-5.mm: Same change.
+
+2010-12-08  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/foreach-6.m: Updated location of error messages.
+	* objc.dg/foreach-7.m: Same change.
+
+2010-12-08  Richard Guenther  <rguenther@suse.de>
+	    Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/45230
+	PR tree-optimization/45231
+	PR tree-optimization/45370
+	* gcc.dg/graphite/id-pr45230-1.c: New.
+	* gcc.dg/graphite/id-pr45231.c: New.
+	* gfortran.dg/graphite/id-pr45370.f90: New.
+
+2010-12-08  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c++/45329
+	* testsuite/g++.dg/conversion/ambig1.C: Adjust.
+	* testsuite/g++.dg/conversion/op1.C: Adjust.
+	* testsuite/g++.dg/conversion/simd1.C: Adjust.
+	* testsuite/g++.dg/cpp0x/defaulted14.C: Adjust.
+	* testsuite/g++.dg/cpp0x/defaulted18.C: Adjust.
+	* testsuite/g++.dg/cpp0x/defaulted20.C: Adjust.
+	* testsuite/g++.dg/cpp0x/explicit3.C: Adjust.
+	* testsuite/g++.dg/cpp0x/explicit4.C: Adjust.
+	* testsuite/g++.dg/cpp0x/implicit4.C: Adjust.
+	* testsuite/g++.dg/cpp0x/nullptr15.C: Adjust.
+	* testsuite/g++.dg/cpp0x/nullptr19.C: Adjust.
+	* testsuite/g++.dg/cpp0x/pr31431-2.C: Adjust.
+	* testsuite/g++.dg/cpp0x/pr31431.C: Adjust.
+	* testsuite/g++.dg/cpp0x/pr31434.C: Adjust.
+	* testsuite/g++.dg/cpp0x/pr31437.C: Adjust.
+	* testsuite/g++.dg/cpp0x/rv2n.C: Adjust.
+	* testsuite/g++.dg/cpp0x/rv3n.C: Adjust.
+	* testsuite/g++.dg/cpp0x/rv4n.C: Adjust.
+	* testsuite/g++.dg/cpp0x/rv5n.C: Adjust.
+	* testsuite/g++.dg/cpp0x/rv6n.C: Adjust.
+	* testsuite/g++.dg/cpp0x/rv7n.C: Adjust.
+	* testsuite/g++.dg/cpp0x/temp_default2.C: Adjust.
+	* testsuite/g++.dg/cpp0x/trailing4.C: Adjust.
+	* testsuite/g++.dg/cpp0x/variadic-ex3.C: Adjust.
+	* testsuite/g++.dg/cpp0x/variadic-ex4.C: Adjust.
+	* testsuite/g++.dg/cpp0x/variadic35.C: Adjust.
+	* testsuite/g++.dg/cpp0x/vt-35147.C: Adjust.
+	* testsuite/g++.dg/cpp0x/vt-37737-2.C: Adjust.
+	* testsuite/g++.dg/expr/cond9.C: Adjust.
+	* testsuite/g++.dg/expr/pmf-1.C: Adjust.
+	* testsuite/g++.dg/ext/label5.C: Adjust.
+	* testsuite/g++.dg/ext/visibility/anon8.C: Adjust.
+	* testsuite/g++.dg/ext/vla2.C: Adjust.
+	* testsuite/g++.dg/gomp/pr26690-1.C: Adjust.
+	* testsuite/g++.dg/gomp/pr26690-2.C: Adjust.
+	* testsuite/g++.dg/init/synth2.C: Adjust.
+	* testsuite/g++.dg/lookup/conv-1.C: Adjust.
+	* testsuite/g++.dg/lookup/new1.C: Adjust.
+	* testsuite/g++.dg/lookup/using9.C: Adjust.
+	* testsuite/g++.dg/other/error13.C: Adjust.
+	* testsuite/g++.dg/other/error20.C: Adjust.
+	* testsuite/g++.dg/other/error31.C: Adjust.
+	* testsuite/g++.dg/other/pr28114.C: Adjust.
+	* testsuite/g++.dg/other/ptrmem10.C: Adjust.
+	* testsuite/g++.dg/other/ptrmem11.C: Adjust.
+	* testsuite/g++.dg/overload/ambig1.C: Adjust.
+	* testsuite/g++.dg/overload/arg3.C: Adjust.
+	* testsuite/g++.dg/overload/builtin1.C: Adjust.
+	* testsuite/g++.dg/overload/copy1.C: Adjust.
+	* testsuite/g++.dg/overload/new1.C: Adjust.
+	* testsuite/g++.dg/overload/template4.C: Adjust.
+	* testsuite/g++.dg/overload/unknown1.C: Adjust.
+	* testsuite/g++.dg/overload/using2.C: Adjust.
+	* testsuite/g++.dg/parse/crash5.C: Adjust.
+	* testsuite/g++.dg/parse/error19.C: Adjust.
+	* testsuite/g++.dg/parse/error28.C: Adjust.
+	* testsuite/g++.dg/parse/template7.C: Adjust.
+	* testsuite/g++.dg/parse/typename7.C: Adjust.
+	* testsuite/g++.dg/rtti/typeid6.C: Adjust.
+	* testsuite/g++.dg/tc1/dr152.C: Adjust.
+	* testsuite/g++.dg/template/conv11.C: Adjust.
+	* testsuite/g++.dg/template/copy1.C: Adjust.
+	* testsuite/g++.dg/template/crash37.C: Adjust.
+	* testsuite/g++.dg/template/deduce3.C: Adjust.
+	* testsuite/g++.dg/template/dependent-expr5.C: Adjust.
+	* testsuite/g++.dg/template/error38.C: Adjust.
+	* testsuite/g++.dg/template/error40.C: Adjust.
+	* testsuite/g++.dg/template/friend.C: Adjust.
+	* testsuite/g++.dg/template/incomplete2.C: Adjust.
+	* testsuite/g++.dg/template/instantiate5.C: Adjust.
+	* testsuite/g++.dg/template/local4.C: Adjust.
+	* testsuite/g++.dg/template/local6.C: Adjust.
+	* testsuite/g++.dg/template/new3.C: Adjust.
+	* testsuite/g++.dg/template/operator9.C: Adjust.
+	* testsuite/g++.dg/template/overload6.C: Adjust.
+	* testsuite/g++.dg/template/ptrmem2.C: Adjust.
+	* testsuite/g++.dg/template/ptrmem20.C: Adjust.
+	* testsuite/g++.dg/template/ptrmem4.C: Adjust.
+	* testsuite/g++.dg/template/ptrmem8.C: Adjust.
+	* testsuite/g++.dg/template/qualttp5.C: Adjust.
+	* testsuite/g++.dg/template/sfinae2.C: Adjust.
+	* testsuite/g++.dg/template/spec22.C: Adjust.
+	* testsuite/g++.dg/template/spec23.C: Adjust.
+	* testsuite/g++.dg/template/ttp25.C: Adjust.
+	* testsuite/g++.dg/template/typedef4.C: Adjust.
+	* testsuite/g++.dg/template/unify10.C: Adjust.
+	* testsuite/g++.dg/template/unify11.C: Adjust.
+	* testsuite/g++.dg/template/unify6.C: Adjust.
+	* testsuite/g++.dg/template/unify7.C: Adjust.
+	* testsuite/g++.dg/template/unify9.C: Adjust.
+	* testsuite/g++.dg/template/varmod1.C: Adjust.
+	* testsuite/g++.old-deja/g++.benjamin/15799.C: Adjust.
+	* testsuite/g++.old-deja/g++.benjamin/15800-1.C: Adjust.
+	* testsuite/g++.old-deja/g++.brendan/ambiguity1.C: Adjust.
+	* testsuite/g++.old-deja/g++.brendan/crash29.C: Adjust.
+	* testsuite/g++.old-deja/g++.brendan/crash48.C: Adjust.
+	* testsuite/g++.old-deja/g++.brendan/crash56.C: Adjust.
+	* testsuite/g++.old-deja/g++.brendan/cvt3.C: Adjust.
+	* testsuite/g++.old-deja/g++.brendan/overload1.C: Adjust.
+	* testsuite/g++.old-deja/g++.brendan/overload4.C: Adjust.
+	* testsuite/g++.old-deja/g++.brendan/overload9.C: Adjust.
+	* testsuite/g++.old-deja/g++.bugs/900127_01.C: Adjust.
+	* testsuite/g++.old-deja/g++.bugs/900205_04.C: Adjust.
+	* testsuite/g++.old-deja/g++.bugs/900330_02.C: Adjust.
+	* testsuite/g++.old-deja/g++.bugs/900404_03.C: Adjust.
+	* testsuite/g++.old-deja/g++.bugs/900514_03.C: Adjust.
+	* testsuite/g++.old-deja/g++.eh/ctor1.C: Adjust.
+	* testsuite/g++.old-deja/g++.jason/conversion11.C: Adjust.
+	* testsuite/g++.old-deja/g++.jason/crash3.C: Adjust.
+	* testsuite/g++.old-deja/g++.jason/overload16.C: Adjust.
+	* testsuite/g++.old-deja/g++.jason/overload28.C: Adjust.
+	* testsuite/g++.old-deja/g++.jason/scoping10.C: Adjust.
+	* testsuite/g++.old-deja/g++.jason/template30.C: Adjust.
+	* testsuite/g++.old-deja/g++.jason/temporary2.C: Adjust.
+	* testsuite/g++.old-deja/g++.law/arg1.C: Adjust.
+	* testsuite/g++.old-deja/g++.law/arg11.C: Adjust.
+	* testsuite/g++.old-deja/g++.law/arm9.C: Adjust.
+	* testsuite/g++.old-deja/g++.law/ctors11.C: Adjust.
+	* testsuite/g++.old-deja/g++.law/ctors17.C: Adjust.
+	* testsuite/g++.old-deja/g++.law/ctors5.C: Adjust.
+	* testsuite/g++.old-deja/g++.law/ctors9.C: Adjust.
+	* testsuite/g++.old-deja/g++.law/enum4.C: Adjust.
+	* testsuite/g++.old-deja/g++.law/missed-error2.C: Adjust.
+	* testsuite/g++.old-deja/g++.law/operators32.C: Adjust.
+	* testsuite/g++.old-deja/g++.law/operators9.C: Adjust.
+	* testsuite/g++.old-deja/g++.mike/net2.C: Adjust.
+	* testsuite/g++.old-deja/g++.mike/net22.C: Adjust.
+	* testsuite/g++.old-deja/g++.mike/p11110.C: Adjust.
+	* testsuite/g++.old-deja/g++.mike/p1989.C: Adjust.
+	* testsuite/g++.old-deja/g++.mike/p2431.C: Adjust.
+	* testsuite/g++.old-deja/g++.mike/p438.C: Adjust.
+	* testsuite/g++.old-deja/g++.mike/p807a.C: Adjust.
+	* testsuite/g++.old-deja/g++.mike/p9068.C: Adjust.
+	* testsuite/g++.old-deja/g++.niklas/t120.C: Adjust.
+	* testsuite/g++.old-deja/g++.niklas/t121.C: Adjust.
+	* testsuite/g++.old-deja/g++.niklas/t128.C: Adjust.
+	* testsuite/g++.old-deja/g++.ns/overload2.C: Adjust.
+	* testsuite/g++.old-deja/g++.ns/using12.C: Adjust.
+	* testsuite/g++.old-deja/g++.other/crash24.C: Adjust.
+	* testsuite/g++.old-deja/g++.other/expr1.C: Adjust.
+	* testsuite/g++.old-deja/g++.other/overload11.C: Adjust.
+	* testsuite/g++.old-deja/g++.other/pmf3.C: Adjust.
+	* testsuite/g++.old-deja/g++.other/volatile1.C: Adjust.
+	* testsuite/g++.old-deja/g++.pt/auto_ptr.C: Adjust.
+	* testsuite/g++.old-deja/g++.pt/crash28.C: Adjust.
+	* testsuite/g++.old-deja/g++.pt/crash60.C: Adjust.
+	* testsuite/g++.old-deja/g++.pt/explicit38.C: Adjust.
+	* testsuite/g++.old-deja/g++.pt/explicit39.C: Adjust.
+	* testsuite/g++.old-deja/g++.pt/explicit41.C: Adjust.
+	* testsuite/g++.old-deja/g++.pt/explicit67.C: Adjust.
+	* testsuite/g++.old-deja/g++.pt/explicit77.C: Adjust.
+	* testsuite/g++.old-deja/g++.pt/expr2.C: Adjust.
+	* testsuite/g++.old-deja/g++.pt/ptrmem10.C: Adjust.
+	* testsuite/g++.old-deja/g++.pt/ptrmem6.C: Adjust.
+	* testsuite/g++.old-deja/g++.pt/spec35.C: Adjust.
+	* testsuite/g++.old-deja/g++.pt/spec5.C: Adjust.
+	* testsuite/g++.old-deja/g++.pt/spec6.C: Adjust.
+	* testsuite/g++.old-deja/g++.pt/t05.C: Adjust.
+	* testsuite/g++.old-deja/g++.pt/t24.C: Adjust.
+	* testsuite/g++.old-deja/g++.pt/unify4.C: Adjust.
+	* testsuite/g++.old-deja/g++.pt/unify6.C: Adjust.
+	* testsuite/g++.old-deja/g++.pt/unify8.C: Adjust.
+	* testsuite/g++.old-deja/g++.robertl/eb109.C: Adjust.
+	* testsuite/g++.old-deja/g++.robertl/eb119.C: Adjust.
+	* testsuite/g++.old-deja/g++.robertl/eb131.C: Adjust.
+	* testsuite/g++.old-deja/g++.robertl/eb22.C: Adjust.
+	* testsuite/g++.old-deja/g++.robertl/eb69.C: Adjust.
+	* testsuite/g++.old-deja/g++.robertl/eb98.C: Adjust.
+
+2010-12-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/45822
+	* g++.dg/init/synth4.C: New.
+
+	PR c++/46736
+	* g++.dg/cpp0x/defaulted21.C: New.
+
+2010-12-08  Wei Guozhi  <carrot@google.com>
+
+	PR target/46631
+	* gcc.target/arm/pr46631: New testcase.
+
+2010-12-08  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR middle-end/42694
+	* gcc.target/powerpc/ppc-pow.c: New file to make sure pow (x,
+	0.75) is not optimized if the machine has no sqrt instruction.
+
+2010-12-07  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR target/43603
+	* gcc.target/ia64/pr43603.c: New.
+	* gcc/testsuite/g++.dg/opt/pr46640.C: New.
+
+2010-12-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/44352
+	* gfortran.dg/string_4.f90: New.
+
+2010-12-07  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/44676
+	* gcc.dg/graphite/id-pr44676.c: New.
+
+2010-12-07  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/42327
+	* gcc.dg/tree-ssa/pr42327.c: New.
+
+2010-12-07  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c++/45330
+	* g++.dg/pr45330.C: New test.
+	* g++.dg/ext/builtin3.C: Adjust.
+	* g++.dg/lookup/error1.C: Adjust.
+	* g++.dg/lookup/koenig5.C: Adjust.
+	* g++.dg/overload/koenig1.C: Adjust.
+	* g++.dg/parse/decl-specifier-1.C: Adjust.
+	* g++.dg/template/static10.C: Adjust.
+	* g++.old-deja/g++.mike/ns5.C: Adjust.
+	* g++.old-deja/g++.mike/ns7.C: Adjust.
+	* g++.old-deja/g++.ns/koenig5.C: Adjust.
+	* g++.old-deja/g++.ns/koenig9.C: Adjust.
+	* g++.old-deja/g++.other/lineno5.C: Adjust.
+
+2010-12-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46832
+	* gcc.c-torture/compile/pr46832.c: New testcase.
+
+2010-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/46799
+	* gcc.dg/autopar/pr46799.c: New test.
+
+2010-12-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/internal_dummy_2.f08: Fix dg-options.
+	* gfortran.dg/internal_dummy_3.f08: Fix dg-options.
+
+2010-12-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/41562
+	* g++.dg/graphite/pr41562.C: New.
+
+	PR middle-end/46185
+	* gcc.dg/graphite/pr46185.c: New.
+
+2010-12-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/foreach-8.m: New.
+
+2010-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/45997
+	* g++.dg/debug/dwarf2/pr45997-1.C: New test.
+	* g++.dg/debug/dwarf2/pr45997-2.C: New test.
+
+	PR target/43897
+	* gcc.target/ia64/pr43897.c: New test.
+
+	PR debug/46771
+	* gcc.dg/pr46771.c: New test.
+
+	PR rtl-optimization/46777
+	* gcc.dg/pr46777.c: New test.
+
+2010-12-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* ada/acats/run_acats (which): Assign output to temporary
+	variable, only use if successful.
+	Use last field of type output.
+
+2010-12-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46806
+	* g++.dg/torture/20100825.C: New testcase.
+
+2010-12-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46785
+	* gcc.dg/vect/fast-math-vect-reduc-9.c: New testcase.
+
+2010-12-06  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* gcc.dg/pr46674.c (LABEL3): New macro definition.
+	(LABEL2): Likewise.
+	(LABEL): Likewise.
+	(jelly): Account for user label prefix in asm name.
+
+2010-12-05  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/46794
+	* gfortran.dg/power2.f90: Initialize variables.
+
+2010-12-04  Jan Hubicka  <jh@suse.cz>
+
+	* snprintf-chk.c (ptr): Declare volatile.
+	* strcpy-chk.c (s2, s3, l1): Declare volatile.
+	* snprintf-chk.c (ptr): Declare volatile.
+	* vsprintf-chk.c (ptr): Declare volatile.
+	* vsnprintf-chk.c (ptr): Declare volatile.
+
+2010-12-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46584
+	* gfortran.dg/quad_1.f90: Remove some complex
+	math checks as they fail on some non-libquadmath
+	systems.
+
+2010-12-04  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/46794
+	* gfortran.dg/power2.f90: New test.
+
+2010-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/46123
+	* g++.dg/debug/pr46123.C: New test.
+	* g++.dg/debug/dwarf2/pr46123.C: New test.
+
+2010-12-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46058
+	* g++.dg/template/scope4.C: New.
+
+2010-12-03  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc.target/arm/neon-offset-1.c: New test.
+
+2010-12-03  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/45354
+	* gcc.dg/tree-prof/pr45354.c: New.
+
+2010-12-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/45159
+	* gfortran.dg/dependency_38.f90:  New test.
+
+2010-12-02  Ian Lance Taylor  <iant@google.com>
+
+	* lib/go.exp: New file.
+	* lib/go-dg.exp: New file.
+	* lib/go-torture.exp: New file.
+	* lib/target-supports.exp (check_compile): Match // Go.
+
+2010-12-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/pr46685.c: New test.
+
+2010-12-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/45199
+	* gcc.dg/tree-ssa/ldist-15.c: New.
+	* gcc.dg/tree-ssa/ldist-16.c: New.
+	* gfortran.dg/ldist-pr45199.f: New.
+
+2010-12-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46723
+	* gcc.dg/torture/pr46723.c: New testcase.
+
+2010-12-02  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/44871
+	* g++.dg/lto/20101126-1_0.C: New testcase.
+	* g++.dg/lto/20101126-1_1.c: Likewise.
+
+2010-12-02  Richard Guenther  <rguenther@suse.de>
+	    Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/46663
+	* gcc.dg/vect/pr46663.c: New test.
+
+2010-12-02  Jie Zhang  <jie@codesourcery.com>
+
+	PR middle-end/46674
+	* gcc.dg/pr46674.c: New test.
+
+2010-12-02  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/exceptions-6.m: New.
+	* obj-c++.dg/exceptions-6.mm: New.
+
+2010-12-01  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.c-torture/execute/bcp-1.c: Make ready for -fuse-linker-plugin
+
+2010-12-01  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/45297
+	* gcc.dg/graphite/pr45297.c: New.
+
+2010-12-01  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46730
+	* g++.dg/tree-prof/indir-call-prof-2.C: New testcase.
+
+2010-11-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/ppc-fma-7.c: New file, test that (a*b)+c and
+	(a*b)-c generates two fma instructions, instead of separate
+	multiply, add, and subtract.
+
 2010-11-30  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/realloc_on_assign_2.f03 (invima): Assign

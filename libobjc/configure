@@ -631,6 +631,7 @@ RANLIB
 AR
 AS
 extra_ldflags_libobjc
+lt_host_flags
 OBJEXT
 EXEEXT
 ac_ct_CC
@@ -2272,7 +2273,7 @@ target_subdir=${target_noncanonical}
 # We need the following definitions because AC_PROG_LIBTOOL relies on them
 PACKAGE=libobjc
 # Version is pulled out to make it a bit easier to change using sed.
-VERSION=2:0:0
+VERSION=3:0:0
 
 
 # This works around the fact that libtool configuration may change LD
@@ -3318,14 +3319,36 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 # extra LD Flags which are required for targets
+
+
+
+case $host in
+  *-cygwin* | *-mingw*)
+    # 'host' will be top-level target in the case of a target lib,
+    # we must compare to with_cross_host to decide if this is a native
+    # or cross-compiler and select where to install dlls appropriately.
+    if test -n "$with_cross_host" &&
+	test x"$with_cross_host" != x"no"; then
+      lt_host_flags='-no-undefined -bindir "$(toolexeclibdir)"';
+    else
+      lt_host_flags='-no-undefined -bindir "$(bindir)"';
+    fi
+    ;;
+  *)
+    lt_host_flags=
+    ;;
+esac
+
+
+
 case "${host}" in
   *-darwin*)
     # Darwin needs -single_module when linking libobjc
-    extra_ldflags_libobjc=-Wl,-single_module
+    extra_ldflags_libobjc='$(lt_host_flags) -Wl,-single_module'
     ;;
   *-cygwin*|*-mingw*)
     # Tell libtool to build DLLs on Windows
-    extra_ldflags_libobjc='-no-undefined -bindir $(bindir)'
+    extra_ldflags_libobjc='$(lt_host_flags)'
     ;;
 esac
 
@@ -10568,7 +10591,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10571 "configure"
+#line 10594 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10674,7 +10697,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10677 "configure"
+#line 10700 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11457,7 +11480,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then :
   enableval=$enable_sjlj_exceptions; :
 else
   cat > conftest.$ac_ext << EOF
-#line 11460 "configure"
+#line 11483 "configure"
 @interface Frob
 @end
 @implementation Frob

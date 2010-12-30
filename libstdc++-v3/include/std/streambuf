@@ -23,7 +23,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file streambuf
+/** @file include/streambuf
  *  This is a Standard C++ Library header.
  */
 

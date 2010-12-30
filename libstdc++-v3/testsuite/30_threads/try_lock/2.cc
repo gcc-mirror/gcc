@@ -27,6 +27,8 @@
 #include <system_error>
 #include <testsuite_hooks.h>
 
+typedef std::unique_lock<std::mutex> lock_type;
+
 void test01()
 {
   bool test __attribute__((unused)) = true;
@@ -34,12 +36,12 @@ void test01()
   try
     {
       std::mutex m1, m2, m3;
-      m1.lock();
+      lock_type l1(m1);
       int result = std::try_lock(m1, m2, m3);
       VERIFY( result == 0 );
-      m1.lock();
-      m2.lock();
-      m3.lock();
+      VERIFY( l1.owns_lock() );
+      lock_type l2(m2);
+      lock_type l3(m3);
     }
   catch (const std::system_error& e)
     {
@@ -58,12 +60,12 @@ void test02()
   try
     {
       std::mutex m1, m2, m3;
-      m2.lock();
+      lock_type l2(m2);
       int result = std::try_lock(m1, m2, m3);
       VERIFY( result == 1 );
-      m1.lock();
-      m2.lock();
-      m3.lock();
+      VERIFY( l2.owns_lock() );
+      lock_type l1(m1);
+      lock_type l3(m3);
     }
   catch (const std::system_error& e)
     {
@@ -82,12 +84,12 @@ void test03()
   try
     {
       std::mutex m1, m2, m3;
-      m3.lock();
+      lock_type l3(m3);
       int result = std::try_lock(m1, m2, m3);
       VERIFY( result == 2 );
-      m1.lock();
-      m2.lock();
-      m3.lock();
+      VERIFY( l3.owns_lock() );
+      lock_type l1(m1);
+      lock_type l2(m2);
     }
   catch (const std::system_error& e)
     {

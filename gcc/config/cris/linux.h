@@ -1,5 +1,5 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
-   Copyright (C) 2001, 2002, 2003, 2005, 2006, 2007, 2008
+   Copyright (C) 2001, 2002, 2003, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Axis Communications.  Written by Hans-Peter Nilsson.
 
@@ -116,7 +116,7 @@ along with GCC; see the file COPYING3.  If not see
   %{symbolic:-Bdynamic} %{shlib:-Bdynamic} %{static:-Bstatic}\
   %{!shared:%{!static:\
               %{rdynamic:-export-dynamic}\
-              %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER "}}}\
+              -dynamic-linker " LINUX_DYNAMIC_LINKER "}}\
   %{!r:%{O2|O3: --gc-sections}}"
 
 
@@ -132,7 +132,14 @@ along with GCC; see the file COPYING3.  If not see
 	builtin_define ("__NO_UNDERSCORES__");	\
     }						\
   while (0)
+
+/* Node: Type Layout */
      
+#undef SIZE_TYPE
+#define SIZE_TYPE "unsigned int"
+
+#undef PTRDIFF_TYPE
+#define PTRDIFF_TYPE "int"
 
 /* Node: Sections */
 

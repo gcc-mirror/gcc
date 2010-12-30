@@ -8,7 +8,7 @@ template <typename T> void Foo1 (T const *a) {a (1);} // #2
 
 template <typename T> T const *Foo2 (T *);
 
-template <typename T> void Foo3 (T *, T const * = 0); // { dg-message "candidate" }
+template <typename T> void Foo3 (T *, T const * = 0); // { dg-message "note" }
 
 void Bar ()
 {
@@ -19,4 +19,5 @@ void Bar ()
   Foo3 (&Baz);
 
   Foo3 (&Baz, &Baz); // { dg-error "no matching function" "" }
+  // { dg-message "candidate" "candidate note" { target *-*-* } 21 }
 }

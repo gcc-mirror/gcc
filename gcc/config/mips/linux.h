@@ -1,6 +1,6 @@
 /* Definitions for MIPS running Linux-based GNU systems with ELF format.
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-   2007, 2008 Free Software Foundation, Inc.
+   2007, 2008, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -33,9 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #else
 #define TARGET_VERSION fprintf (stderr, " (MIPS GNU/Linux with ELF)");
 #endif
-
-#undef MD_EXEC_PREFIX
-#undef MD_STARTFILE_PREFIX
 
 /* If we don't set MASK_ABICALLS, we can't default to PIC.  */
 #undef TARGET_DEFAULT
@@ -75,7 +72,7 @@ along with GCC; see the file COPYING3.  If not see
     %{!ibcs: \
       %{!static: \
         %{rdynamic:-export-dynamic} \
-        %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER "}} \
+        -dynamic-linker " LINUX_DYNAMIC_LINKER "} \
         %{static:-static}}}"
 
 #undef SUBTARGET_ASM_SPEC

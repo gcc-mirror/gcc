@@ -31,6 +31,22 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 @implementation Object
 
+- (Class)class
+{
+  return object_get_class (self);
+}
+
+- (BOOL)isEqual: (id)anObject
+{
+  return self == anObject;
+}
+
+@end
+
+/* The following methods were deprecated in GCC 4.6.0 and will be
+   removed in the next GCC release.  */
+@implementation Object (Deprecated)
+
 + initialize
 {
   return self;
@@ -76,11 +92,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   return [self copy];
 }
 
-- (Class)class
-{
-  return object_get_class(self);
-}
-
 - (Class)superClass
 {
   return object_get_super_class(self);
@@ -104,11 +115,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 - (unsigned int)hash
 {
   return (size_t)self;
-}
-
-- (BOOL)isEqual:anObject
-{
-  return self==anObject;
 }
 
 - (int)compare:(id)anotherObject;
@@ -344,13 +350,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   class_set_version(self, aVersion);
   return self;
 }
-@end
-
-/* The following methods were deprecated in GCC 4.6.0 and will be
-   removed in the next GCC release.
-*/
-
-@implementation Object (Deprecated)
 
 + (int)streamVersion: (TypedStream*)aStream
 {

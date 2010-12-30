@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "target.h"
 #include "c-family/c-common.h"
+#include "c-family/c-objc.h"
 #include "tree-mudflap.h"
 #include "cgraph.h"
 #include "tree-inline.h"
@@ -2690,7 +2691,7 @@ start_objects (int method_type, int initp)
 {
   tree body;
   tree fndecl;
-  char type[10];
+  char type[14];
 
   /* Make ctor or dtor function.  METHOD_TYPE may be 'I' or 'D'.  */
 
@@ -2704,10 +2705,10 @@ start_objects (int method_type, int initp)
       joiner = '_';
 #endif
 
-      sprintf (type, "%c%c%.5u", method_type, joiner, initp);
+      sprintf (type, "sub_%c%c%.5u", method_type, joiner, initp);
     }
   else
-    sprintf (type, "%c", method_type);
+    sprintf (type, "sub_%c", method_type);
 
   fndecl = build_lang_decl (FUNCTION_DECL,
 			    get_file_function_name (type),

@@ -32,13 +32,12 @@ along with GCC; see the file COPYING3.  If not see
 
 #define LINK_SPEC "%{G*} %{relax:-relax}				\
   %{p:%nconsider using '-pg' instead of '-p' with gprof(1)}		\
-  %{Wl,*:%*}								\
   %{assert*} %{R*} %{rpath*} %{defsym*}					\
   %{shared:-Bshareable %{h*} %{soname*}}				\
   %{!shared:								\
     %{!static:								\
       %{rdynamic:-export-dynamic}					\
-      %{!dynamic-linker:-dynamic-linker %(fbsd_dynamic_linker) }}	\
+      -dynamic-linker %(fbsd_dynamic_linker) }	\
     %{static:-Bstatic}}							\
   %{symbolic:-Bsymbolic}"
 

@@ -1707,7 +1707,8 @@ execute_optimize_widening_mul (void)
 		default:;
 		}
 	    }
-	  else if (is_gimple_call (stmt))
+	  else if (is_gimple_call (stmt)
+		   && gimple_call_lhs (stmt))
 	    {
 	      tree fndecl = gimple_call_fndecl (stmt);
 	      if (fndecl
@@ -1726,6 +1727,7 @@ execute_optimize_widening_mul (void)
 						    gimple_call_arg (stmt, 0),
 						    gimple_call_arg (stmt, 0)))
 			  {
+			    unlink_stmt_vdef (stmt);
 			    gsi_remove (&gsi, true);
 			    release_defs (stmt);
 			    if (gimple_purge_dead_eh_edges (bb))

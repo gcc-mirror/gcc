@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 /*{{{  Run-time target specifications.  */ 
 
 #undef  ASM_SPEC
-#define ASM_SPEC "%{v}"
+#define ASM_SPEC ""
 
 /* Define this to be a string constant containing `-D' options to define the
    predefined macros that identify this machine and system.  These macros will
@@ -50,6 +50,13 @@ along with GCC; see the file COPYING3.  If not see
    to specify the location of a linker script in a gcc command line yet... */
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC  "%{!mno-lsim:-lsim} crtend.o%s crtn.o%s"
+
+#undef  LIB_SPEC
+#define LIB_SPEC "-lc"
+
+#undef  LINK_SPEC
+#define LINK_SPEC "%{h*} %{v:-V} \
+		   %{static:-Bstatic} %{shared:-shared} %{symbolic:-Bsymbolic}"
 
 /*}}}*/ 
 /*{{{  Storage Layout.  */ 
@@ -90,7 +97,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define STRICT_ALIGNMENT 1
 
-/* Defined in svr4.h.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
 /*}}}*/ 
@@ -105,6 +111,18 @@ along with GCC; see the file COPYING3.  If not see
 #define LONG_DOUBLE_TYPE_SIZE 	64
 
 #define DEFAULT_SIGNED_CHAR 1
+
+#undef  SIZE_TYPE
+#define SIZE_TYPE "unsigned int"
+
+#undef  PTRDIFF_TYPE
+#define PTRDIFF_TYPE "int"
+
+#undef  WCHAR_TYPE
+#define WCHAR_TYPE "long int"
+
+#undef  WCHAR_TYPE_SIZE
+#define WCHAR_TYPE_SIZE BITS_PER_WORD
 
 /*}}}*/ 
 /*{{{  REGISTER BASICS.  */ 
@@ -831,12 +849,6 @@ enum reg_class
 
 #define PRINT_OPERAND_ADDRESS(STREAM, X) fr30_print_operand_address (STREAM, X)
 
-/* If defined, C string expressions to be used for the `%R', `%L', `%U', and
-   `%I' options of `asm_fprintf' (see `final.c').  These are useful when a
-   single `md' file must support multiple assembler formats.  In that case, the
-   various `tm.h' files can define these macros differently.
-
-   USER_LABEL_PREFIX is defined in svr4.h.  */
 #define REGISTER_PREFIX "%"
 #define LOCAL_LABEL_PREFIX "."
 #define USER_LABEL_PREFIX ""

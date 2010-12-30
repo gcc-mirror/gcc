@@ -61,7 +61,7 @@ package GNAT.Sockets is
 
    --  Sockets are designed to provide a consistent communication facility
    --  between applications. This package provides an Ada binding to the
-   --  the de-facto standard BSD sockets API. The documentation below covers
+   --  de-facto standard BSD sockets API. The documentation below covers
    --  only the specific binding provided by this package. It assumes that
    --  the reader is already familiar with general network programming and
    --  sockets usage. A useful reference on this matter is W. Richard Stevens'

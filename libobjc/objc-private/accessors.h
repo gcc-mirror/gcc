@@ -25,16 +25,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef __objc_private_accessors_INCLUDE_GNU
 #define __objc_private_accessors_INCLUDE_GNU
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
 /* This function needs to be called at startup by init.c.  */
 void
 __objc_accessors_init (void);
-
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
 
 #endif /* not __objc_private_accessors_INCLUDE_GNU */

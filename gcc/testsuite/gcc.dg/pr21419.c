@@ -9,7 +9,7 @@ void f(void)
 
 void g(const int set)
 {
-  __asm__ __volatile__ ("" : "=r" (set)); /* { dg-error "read-only location" } */
+  __asm__ __volatile__ ("" : "=r" (set)); /* { dg-error "read-only parameter" } */
 }
 
 

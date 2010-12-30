@@ -49,9 +49,9 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-/** @file stl_multiset.h
+/** @file bits/stl_multiset.h
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{set}
  */
 
 #ifndef _STL_MULTISET_H

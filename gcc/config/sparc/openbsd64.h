@@ -1,5 +1,5 @@
 /* Configuration file for sparc64 OpenBSD target.
-   Copyright (C) 1999, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2005, 2007, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -47,15 +47,12 @@ along with GCC; see the file COPYING3.  If not see
 #undef CPP_SUBTARGET_SPEC
 #define CPP_SUBTARGET_SPEC ""
 
-#undef MD_EXEC_PREFIX
-#undef MD_STARTFILE_PREFIX
-
 /* Inherited from sp64-elf.  */
 #undef NO_IMPLICIT_EXTERN_C
 
 #undef ASM_SPEC
 #define ASM_SPEC "\
-%{v:-V} -s %{fpic|fPIC|fpie|fPIE:-K PIC} \
+-s %{fpic|fPIC|fpie|fPIE:-K PIC} \
 %{mlittle-endian:-EL} \
 %(asm_cpu) %(asm_arch) \
 "
@@ -72,12 +69,12 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef LINK_SPEC
 #define LINK_SPEC \
-  "%{!shared:%{!nostdlib:%{!r*:%{!e*:-e __start}}}} \
+  "%{!shared:%{!nostdlib:%{!r:%{!e*:-e __start}}}} \
    %{shared:-shared} %{R*} \
    %{static:-Bstatic} \
    %{!static:-Bdynamic} \
    %{assert*} \
-   %{!dynamic-linker:-dynamic-linker /usr/libexec/ld.so}"
+   -dynamic-linker /usr/libexec/ld.so"
 
 /* As an elf system, we need crtbegin/crtend stuff.  */
 #undef STARTFILE_SPEC

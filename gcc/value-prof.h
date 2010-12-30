@@ -40,6 +40,7 @@ enum hist_type
 #define HIST_TYPE_FOR_COUNTER(COUNTER) \
   ((enum hist_type) ((COUNTER) - GCOV_FIRST_VALUE_COUNTER))
 
+
 /* The value to measure.  */
 struct histogram_value_t
 {
@@ -70,44 +71,8 @@ DEF_VEC_ALLOC_P(histogram_value,heap);
 
 typedef VEC(histogram_value,heap) *histogram_values;
 
-/* Hooks registration.  */
-extern void gimple_register_value_prof_hooks (void);
-
-/* IR-independent entry points.  */
-extern void find_values_to_profile (histogram_values *);
-extern bool value_profile_transformations (void);
-
-/* External declarations for edge-based profiling.  */
-struct profile_hooks {
-
-  /* Insert code to initialize edge profiler.  */
-  void (*init_edge_profiler) (void);
-
-  /* Insert code to increment an edge count.  */
-  void (*gen_edge_profiler) (int, edge);
-
-  /* Insert code to increment the interval histogram counter.  */
-  void (*gen_interval_profiler) (histogram_value, unsigned, unsigned);
-
-  /* Insert code to increment the power of two histogram counter.  */
-  void (*gen_pow2_profiler) (histogram_value, unsigned, unsigned);
-
-  /* Insert code to find the most common value.  */
-  void (*gen_one_value_profiler) (histogram_value, unsigned, unsigned);
-
-  /* Insert code to find the most common value of a difference between two
-     evaluations of an expression.  */
-  void (*gen_const_delta_profiler) (histogram_value, unsigned, unsigned);
-
-  /* Insert code to find the most common indirect call */
-  void (*gen_ic_profiler) (histogram_value, unsigned, unsigned);
-
-  /* Insert code to find the average value of an expression.  */
-  void (*gen_average_profiler) (histogram_value, unsigned, unsigned);
-
-  /* Insert code to ior value of an expression.  */
-  void (*gen_ior_profiler) (histogram_value, unsigned, unsigned);
-};
+extern void gimple_find_values_to_profile (histogram_values *);
+extern bool gimple_value_profile_transformations (void);
 
 histogram_value gimple_histogram_value (struct function *, gimple);
 histogram_value gimple_histogram_value_of_type (struct function *, gimple,
@@ -123,14 +88,23 @@ void verify_histograms (void);
 void free_histograms (void);
 void stringop_block_profile (gimple, unsigned int *, HOST_WIDE_INT *);
 
+/* In tree-profile.c.  */
+extern void gimple_init_edge_profiler (void);
+extern void gimple_gen_edge_profiler (int, edge);
+extern void gimple_gen_interval_profiler (histogram_value, unsigned, unsigned);
+extern void gimple_gen_pow2_profiler (histogram_value, unsigned, unsigned);
+extern void gimple_gen_one_value_profiler (histogram_value, unsigned, unsigned);
+extern void gimple_gen_ic_profiler (histogram_value, unsigned, unsigned);
+extern void gimple_gen_ic_func_profiler (void);
+extern void gimple_gen_const_delta_profiler (histogram_value,
+					     unsigned, unsigned);
+extern void gimple_gen_average_profiler (histogram_value, unsigned, unsigned);
+extern void gimple_gen_ior_profiler (histogram_value, unsigned, unsigned);
+
 /* In profile.c.  */
 extern void init_branch_prob (void);
 extern void branch_prob (void);
 extern void end_branch_prob (void);
-extern void tree_register_profile_hooks (void);
-
-/* In tree-profile.c.  */
-extern struct profile_hooks tree_profile_hooks;
 
 #endif	/* GCC_VALUE_PROF_H */
 

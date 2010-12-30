@@ -238,22 +238,13 @@ extern unsigned int bfin_workarounds;
   %{mfast-fp:-lbffastfp} %G %L %{mfast-fp:-lbffastfp} %G \
 "
 
-/* A C string constant that tells the GCC driver program options to pass to
-   the assembler.  It can also specify how to translate options you give to GNU
-   CC into options for GCC to pass to the assembler.  See the file `sun3.h'
-   for an example of this.
-
-   Do not define this macro if it does not need to do anything.
-
-   Defined in svr4.h.  */
 #undef  ASM_SPEC
 #define ASM_SPEC "\
-%{v} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
+%{Ym,*} %{Yd,*} \
     %{mno-fdpic:-mnopic} %{mfdpic}"
 
 #define LINK_SPEC "\
 %{h*} %{v:-V} \
-%{b} \
 %{mfdpic:-melf32bfinfd -z text} \
 %{static:-dn -Bstatic} \
 %{shared:-G -Bdynamic} \

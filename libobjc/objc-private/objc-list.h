@@ -1,5 +1,5 @@
 /* Generic single linked list to keep various information 
-   Copyright (C) 1993, 1994, 1996, 2009 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1996, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup.
 
 This file is part of GCC.
@@ -23,77 +23,72 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-
 #ifndef __GNU_OBJC_LIST_H
 #define __GNU_OBJC_LIST_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
-struct objc_list {
+struct objc_list
+{
   void *head;
   struct objc_list *tail;
 };
 
-/* Return a cons cell produced from (head . tail) */
-
+/* Return a cons cell produced from (head . tail).  */
 static inline struct objc_list* 
-list_cons(void* head, struct objc_list* tail)
+list_cons (void* head, struct objc_list* tail)
 {
   struct objc_list* cell;
 
-  cell = (struct objc_list*)objc_malloc(sizeof(struct objc_list));
+  cell = (struct objc_list*)objc_malloc (sizeof (struct objc_list));
   cell->head = head;
   cell->tail = tail;
   return cell;
 }
 
-/* Remove the element at the head by replacing it by its successor */
-
+/* Remove the element at the head by replacing it by its
+   successor.  */
 static inline void
-list_remove_head(struct objc_list** list)
+list_remove_head (struct objc_list** list)
 {
   if ((*list)->tail)
     {
-      struct objc_list* tail = (*list)->tail; /* fetch next */
-      *(*list) = *tail;		/* copy next to list head */
-      objc_free(tail);			/* free next */
+      /* Fetch next.  */
+      struct objc_list* tail = (*list)->tail;
+
+      /* Copy next to list head.  */
+      *(*list) = *tail;
+
+      /* Free next.  */
+      objc_free (tail);
     }
-  else				/* only one element in list */
+  else
     {
-      objc_free(*list);
+      /* Inly one element in list.  */
+      objc_free (*list);
       (*list) = 0;
     }
 }
 
 
-/* Map FUNCTION over all elements in LIST */
-
+/* Map FUNCTION over all elements in LIST.  */
 static inline void
-list_mapcar(struct objc_list* list, void(*function)(void*))
+list_mapcar (struct objc_list* list, void(*function)(void*))
 {
-  while(list)
+  while (list)
     {
-      (*function)(list->head);
+      (*function) (list->head);
       list = list->tail;
     }
 }
 
-/* Free list (backwards recursive) */
-
+/* Free list (backwards recursive).  */
 static inline void
-list_free(struct objc_list* list)
+list_free (struct objc_list* list)
 {
   if(list)
     {
-      list_free(list->tail);
-      objc_free(list);
+      list_free (list->tail);
+      objc_free (list);
     }
 }
-
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
 
 #endif /* not __GNU_OBJC_LIST_H */

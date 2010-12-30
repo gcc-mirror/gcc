@@ -14,7 +14,7 @@
 #undef max
 #endif
 
-inline int max(int a, int b) {return a > b ? a : b;}; // { dg-message "candidate" } 
+inline int max(int a, int b) {return a > b ? a : b;}; // { dg-message "note" } 
  // { dg-error "extra ';'" "extra ;" { target *-*-* } 17 }
 inline double max(double a, double b) {return a > b ? a : b;}; // { dg-message "note" } candidate
  // { dg-error "extra ';'" "extra ;" { target *-*-* } 19 }
@@ -32,5 +32,6 @@ static void foo(int i, int j, double x, double y) {
    std::cout << "Max(int): " << max(i,j) << " Max(double): " <<
 max(x,y) << '\n';
    std::cout << "Max(int, double): " << max(i, y) << '\n';// { dg-error "" } 
+   // { dg-message "candidate" "candidate note" { target *-*-* } 34 }
 }
 

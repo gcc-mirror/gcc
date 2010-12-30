@@ -25,7 +25,6 @@
 extern GTY(()) rtx v850_compare_op0;
 extern GTY(()) rtx v850_compare_op1;
 
-/* These are defined in svr4.h but we want to override them.  */
 #undef LIB_SPEC
 #define LIB_SPEC "%{!shared:%{!symbolic:--start-group -lc -lgcc --end-group}}"
 
@@ -198,6 +197,18 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
 
    On the NEC V850, loads do sign extension, so make this default.  */
 #define DEFAULT_SIGNED_CHAR 1
+
+#undef  SIZE_TYPE
+#define SIZE_TYPE "unsigned int"
+
+#undef  PTRDIFF_TYPE
+#define PTRDIFF_TYPE "int"
+
+#undef  WCHAR_TYPE
+#define WCHAR_TYPE "long int"
+
+#undef  WCHAR_TYPE_SIZE
+#define WCHAR_TYPE_SIZE BITS_PER_WORD
 
 /* Standard register usage.  */
 
@@ -919,7 +930,6 @@ typedef enum
    it.  */
 #define JUMP_TABLES_IN_TEXT_SECTION (!TARGET_JUMP_TABLES_IN_DATA_SECTION)
 
-/* svr4.h defines this assuming that 4 byte alignment is required.  */
 #undef ASM_OUTPUT_BEFORE_CASE_LABEL
 #define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE,PREFIX,NUM,TABLE) \
   ASM_OUTPUT_ALIGN ((FILE), (TARGET_BIG_SWITCH ? 2 : 1));

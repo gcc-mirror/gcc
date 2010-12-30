@@ -18,4 +18,5 @@ public:
 int main()
 {
   B(10);// { dg-error "match" } B doesn't have a constructor taking int
+  // { dg-message "candidate" "candidate note" { target *-*-* } 20 }
 }

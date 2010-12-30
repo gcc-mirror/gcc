@@ -2585,7 +2585,13 @@ update_equiv_regs (void)
 		  rtx equiv_insn;
 
 		  if (! reg_equiv[regno].replace
-		      || reg_equiv[regno].loop_depth < loop_depth)
+		      || reg_equiv[regno].loop_depth < loop_depth
+		      /* There is no sense to move insns if we did
+			 register pressure-sensitive scheduling was
+			 done because it will not improve allocation
+			 but worsen insn schedule with a big
+			 probability.  */
+		      || (flag_sched_pressure && flag_schedule_insns))
 		    continue;
 
 		  /* reg_equiv[REGNO].replace gets set only when
@@ -3152,7 +3158,8 @@ ira (FILE *f)
 	{
 	  timevar_push (TV_JUMP);
 	  rebuild_jump_labels (get_insns ());
-	  purge_all_dead_edges ();
+	  if (purge_all_dead_edges ())
+	    delete_unreachable_blocks ();
 	  timevar_pop (TV_JUMP);
 	}
     }
@@ -3272,8 +3279,6 @@ ira (FILE *f)
   build_insn_chain ();
 
   reload_completed = !reload (get_insns (), ira_conflicts_p);
-
-  finish_subregs_of_mode ();
 
   timevar_pop (TV_RELOAD);
 

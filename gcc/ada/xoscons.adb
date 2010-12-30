@@ -64,7 +64,7 @@ procedure XOSCons is
    --  is not available in older base compilers.
 
    --  We need to deal with integer values that can be signed or unsigned, so
-   --  we need to accomodate the maximum range of both cases.
+   --  we need to accommodate the maximum range of both cases.
 
    type Int_Value_Type is record
       Positive  : Boolean;

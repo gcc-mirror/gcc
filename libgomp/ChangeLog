@@ -1,3 +1,46 @@
+2010-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/46874
+	* libgomp.fortran/allocatable6.f90: New test.
+
+2010-12-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* acinclude.m4 (symvers_renaming): Also set if enable_symvers = no.
+	* configure: Regenerate.
+
+2010-12-06  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR target/40125
+	PR lto/46695
+	* configure.ac: Invoke ACX_LT_HOST_FLAGS.
+	* Makefile.am (libgomp_la_LDFLAGS): Use lt_host_flags.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2010-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/46753
+	* libgomp.fortran/pr46753.f90: New test.
+
+	PR libgomp/43706
+	* env.c (initialize_env): Default to spin count 300000
+	instead of 20000000 if neither OMP_WAIT_POLICY nor GOMP_SPINCOUNT
+	is specified.
+
+	PR libgomp/45240
+	* parallel.c (GOMP_parallel_end): Unlock gomp_remaining_threads_lock
+	at the end if sync builtins aren't supported.
+
+2010-12-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.tgt (mips-sgi-irix6*): Add -lpthread to XLDFLAGS.
+
+2010-12-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/libgomp.fortran/vla8.f90: Use dg-timeout-factor 2.0.
+
 2010-11-24  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* testsuite/libgomp.fortran/fortran.exp: Add paths for libquadmath.

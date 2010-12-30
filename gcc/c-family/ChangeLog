@@ -1,3 +1,39 @@
+2010-12-22  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-common.c (handle_nonnull_attribute, handle_sentinel_attribute):
+	Use prototype_p.
+
+2010-12-18  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-objc.h (objc_maybe_warn_exceptions): New.
+	* stub-objc.c (objc_maybe_warn_exceptions): New.	
+
+2010-12-10  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-common.h (readonly_error): Declare.
+	* c-common.c (readonly_error): Define.
+
+2010-12-09  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-common.h (invalid_indirection_error): Declare.
+	* c-common.c (invalid_indirection_error): Define.
+
+2010-12-03  Richard Guenther  <rguenther@suse.de>
+
+	PR c/46745
+	* c-pretty-print.c (pp_c_postfix_expression): Handle MEM_REF.
+	(pp_c_unary_expression): Likewise.
+	(pp_c_expression): Likewise.
+
+2010-11-30  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-common.h (objc_finish_function): New.
+	(objc_non_volatilized_type): Removed.
+	(objc_type_quals_match): Removed.
+	* stub-objc.c (objc_finish_function): New.
+	(objc_non_volatilized_type): Removed.
+	(objc_type_quals_match): Removed.
+	
 2010-11-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.h (parse_optimize_options): Declare.

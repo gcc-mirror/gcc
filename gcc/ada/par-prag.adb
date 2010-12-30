@@ -994,7 +994,7 @@ begin
       --  if it were a configuration pragma.
 
       --  Since the reason we provide this pragma is for compatibility with
-      --  these other compilers, we want to accomodate these strange placement
+      --  these other compilers, we want to accommodate these strange placement
       --  rules, and the easiest thing is simply to allow it anywhere in a
       --  unit. If this pragma appears anywhere within a unit, then the effect
       --  is as though a pragma Suppress (All_Checks) had appeared as the first

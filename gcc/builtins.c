@@ -51,9 +51,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "builtins.h"
 
-#ifndef SLOW_UNALIGNED_ACCESS
-#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) STRICT_ALIGNMENT
-#endif
 
 #ifndef PAD_VARARGS_DOWN
 #define PAD_VARARGS_DOWN BYTES_BIG_ENDIAN
@@ -3068,7 +3065,8 @@ expand_builtin_pow_root (location_t loc, tree arg0, tree arg1, tree type,
 	  if (REAL_VALUES_EQUAL (c, dconsthalf))
 	    op = build_call_nofold_loc (loc, sqrtfn, 1, arg0);
 
-	  else
+	  /* Don't do this optimization if we don't have a sqrt insn.  */
+	  else if (optab_handler (sqrt_optab, mode) != CODE_FOR_nothing)
 	    {
 	      REAL_VALUE_TYPE dconst1_4 = dconst1;
 	      REAL_VALUE_TYPE dconst3_4;
@@ -3114,7 +3112,8 @@ expand_builtin_pow_root (location_t loc, tree arg0, tree arg1, tree type,
 	    op = build_call_nofold_loc (loc, cbrtfn, 1, arg0);
 
 	      /* Now try 1/6.  */
-	  else if (optimize_insn_for_speed_p ())
+	  else if (optimize_insn_for_speed_p ()
+		   && optab_handler (sqrt_optab, mode) != CODE_FOR_nothing)
 	    {
 	      REAL_VALUE_TYPE dconst1_6 = dconst1_3;
 	      SET_REAL_EXP (&dconst1_6, REAL_EXP (&dconst1_6) - 1);
@@ -5202,30 +5201,6 @@ build_string_literal (int len, const char *str)
   return t;
 }
 
-/* Expand a call to either the entry or exit function profiler.  */
-
-static rtx
-expand_builtin_profile_func (bool exitp)
-{
-  rtx this_rtx, which;
-
-  this_rtx = DECL_RTL (current_function_decl);
-  gcc_assert (MEM_P (this_rtx));
-  this_rtx = XEXP (this_rtx, 0);
-
-  if (exitp)
-    which = profile_function_exit_libfunc;
-  else
-    which = profile_function_entry_libfunc;
-
-  emit_library_call (which, LCT_NORMAL, VOIDmode, 2, this_rtx, Pmode,
-		     expand_builtin_return_addr (BUILT_IN_RETURN_ADDRESS,
-						 0),
-		     Pmode);
-
-  return const0_rtx;
-}
-
 /* Expand a call to __builtin___clear_cache.  */
 
 static rtx
@@ -6363,11 +6338,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_PREFETCH:
       expand_builtin_prefetch (exp);
       return const0_rtx;
-
-    case BUILT_IN_PROFILE_FUNC_ENTER:
-      return expand_builtin_profile_func (false);
-    case BUILT_IN_PROFILE_FUNC_EXIT:
-      return expand_builtin_profile_func (true);
 
     case BUILT_IN_INIT_TRAMPOLINE:
       return expand_builtin_init_trampoline (exp);

@@ -1,3 +1,67 @@
+2010-12-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46520
+	* configure.ac: Do not call AC_CHECK_LIB for gcc_no_link.
+	* configure: Regenerate
+
+2010-12-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46625
+	* gdtoa/gdtoaimp.h: Mangle internal functions by
+	prefixing them with __quadmath. Don't use gdtoa's strcp(y).
+	* gdtoa/g_Qfmt.c (g_Qfmt): Use strcpy instead of strcp.
+	* gdtoa/misc.c (strcpy): Renamed from strcp and only use
+	if NO_STRING_H is set.
+	* quadmath-imp.h (__quadmath_rem_pio2q, __quadmath_kernel_sincosq
+	__quadmath_kernel_sinq, __quadmath_kernel_cosq): Added
+	__quadmath prefix to internal functions.
+	* math/cosq.c (cosq): Ditto.
+	* math/sinq.c (cosq): Ditto.
+	* math/tanq.c (tanq,__quadmath_kernel_tanq): Ditto.
+	* math/rem_pio2q.c (rem_pio2, __quadmath_kernel_rem_pio2): Ditto.
+	* math/sinq_kernel.c (__quadmath_kernel_sinq): Ditto.
+	* math/cosq_kernel.c (__quadmath_kernel_cosq): Ditto.
+
+2010-12-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46772
+	* gdtoa/gdtoa.h: Include stdlib.h instead of declare strtod.
+	* gdtoa/gdtoaimp.h: Don't declare strtod.
+
+2010-12-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46520
+	* configure.ac: Use GCC_TRY_COMPILE_OR_LINK instead of
+	AC_TRY_LINK and cache libquad_have_float128.
+	* configure: Regenerate.
+
+2010-12-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46543
+	* configure.ac: Add texinfo checks.
+	* Makefile.am: Handle .texi documentation.
+	* libquadmath.texi: New.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+
+2010-12-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/46817
+	* quadmath-imp.h: Add LGPL header.
+	* quadmath.h: Add LGPL header.
+	* quadmath_io.c: Add LGPL header.
+	* quadmath_weak.h: Add LGPL header.
+
+2010-12-06  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR target/40125
+	PR lto/46695
+	* configure.ac: Invoke ACX_LT_HOST_FLAGS.
+	* Makefile.am (libquadmath_la_LDFLAGS): Use lt_host_flags.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
 2010-11-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46594

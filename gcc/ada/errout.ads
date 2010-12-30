@@ -202,7 +202,7 @@ package Errout is
    --      are that an RM reference may follow in the form (RM .....) and a
    --      right parenthesis may immediately follow the #. In the case of
    --      continued messages, # can only appear at the end of a group of
-   --      continuation messsages, except that \\ messages which always start
+   --      continuation messages, except that \\ messages which always start
    --      a new line end the sequence from the point of view of this rule.
    --      The idea is that for any use of -gnatj, it will still be the case
    --      that a location reference appears only at the end of a line.

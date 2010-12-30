@@ -3,7 +3,7 @@
   This is test 'class', covering all functions starting with 'class'.  */
 
 /* { dg-do run } */
-/* { dg-skip-if "" { *-*-* } { "-fnext-runtime" } { "" } } */
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
 /* To get the modern GNU Objective-C Runtime API, you include
    objc/runtime.h.  */
@@ -16,11 +16,13 @@
 { Class isa; }
 + alloc;
 - init;
++ initialize;
 @end
 
 @implementation MyRootClass
 + alloc { return class_createInstance (self, 0); }
 - init  { return self; }
++ initialize { return self; }
 @end
 
 @protocol MyProtocol
@@ -42,6 +44,12 @@
 - (id) variable { return variable_ivar; }
 @end
 
+@interface MyOtherSubClass : MySubClass
+@end
+
+@implementation MyOtherSubClass
+@end
+
 @interface DifferentClass : MyRootClass
 - (id) myClass;
 - (id) self;
@@ -56,6 +64,24 @@
 - (id) mySelf;
 @end
 
+/* Hack to calculate the log2 of a byte alignment.  */
+unsigned char
+log_2_of (unsigned int x)
+{
+  unsigned char result = 0;
+
+  /* We count how many times we need to divide by 2 before we reach 1.
+     This algorithm is good enough for the small numbers (such as 8,
+     16 or 64) that we have to deal with.  */
+  while (x > 1)
+    {
+      x = x / 2;
+      result++;
+    }
+
+  return result;
+}
+
 int main(int argc, void **args)
 {
   /* Functions are tested in alphabetical order.  */
@@ -68,15 +94,15 @@ int main(int argc, void **args)
       abort ();
     
     if (! class_addIvar (new_class, "variable2_ivar", sizeof (id),
-			 __alignof__ (id), @encode (id)))
+			 log_2_of (__alignof__ (id)), @encode (id)))
       abort ();
 
     if (! class_addIvar (new_class, "variable3_ivar", sizeof (unsigned char),
-			 __alignof__ (unsigned char), @encode (unsigned char)))
+			 log_2_of (__alignof__ (unsigned char)), @encode (unsigned char)))
       abort ();
 
     if (! class_addIvar (new_class, "variable4_ivar", sizeof (unsigned long),
-			 __alignof__ (unsigned long), @encode (unsigned long)))
+			 log_2_of (__alignof__ (unsigned long)), @encode (unsigned long)))
       abort ();
 
     objc_registerClassPair (new_class);    
@@ -129,7 +155,7 @@ int main(int argc, void **args)
       abort ();
     
     if (! class_addIvar (new_class, "variable_ivar", sizeof (id),
-			 __alignof__ (id), @encode (id)))
+			 log_2_of (__alignof__ (id)), @encode (id)))
       abort ();
 
     if (! class_addMethod (new_class, @selector (setVariable:), method_getImplementation (method1),
@@ -138,6 +164,12 @@ int main(int argc, void **args)
 
     if (! class_addMethod (new_class, @selector (variable), method_getImplementation (method2),
 			   method_getTypeEncoding (method2)))
+      abort ();
+
+    /* Test that if the method already exists in the class,
+       class_addMethod() returns NO.  */
+    if (class_addMethod (new_class, @selector (variable), method_getImplementation (method2),
+			 method_getTypeEncoding (method2)))
       abort ();
 
     objc_registerClassPair (new_class);    
@@ -152,6 +184,15 @@ int main(int argc, void **args)
       if ([o variable] != o)
 	abort ();
     }
+
+    /* Now, try that if you take an existing class and try to add an
+       already existing method, class_addMethod returns NO.  This is
+       subtly different from before, when 'new_class' was still in
+       construction.  Now it's a real class and the libobjc internals
+       differ between the two cases.  */
+    if (class_addMethod (new_class, @selector (variable), method_getImplementation (method2),
+			 method_getTypeEncoding (method2)))
+      abort ();
   }
 
   printf ("Testing class_addProtocol ()...\n");
@@ -172,6 +213,11 @@ int main(int argc, void **args)
       abort ();
 
     if (!class_conformsToProtocol (objc_getClass ("MySubClass"), @protocol (MyProtocol)))
+      abort ();
+
+    /* Test that class_conformsToProtocol checks the class, but not
+       superclasses.  */
+    if (class_conformsToProtocol (objc_getClass ("MyOtherSubClass"), @protocol (MyProtocol)))
       abort ();
   }
 
@@ -212,7 +258,7 @@ int main(int argc, void **args)
   printf ("Testing class_copyPropertyList ()...\n");
   {
     unsigned int count;
-    Property * list = class_copyPropertyList (objc_getClass ("MySubClass"), &count);
+    objc_property_t * list = class_copyPropertyList (objc_getClass ("MySubClass"), &count);
 
     if (count != 0  ||  list != NULL)
       abort ();

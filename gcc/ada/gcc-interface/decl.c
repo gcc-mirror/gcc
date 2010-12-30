@@ -97,7 +97,7 @@ static struct incomplete *defer_limited_with;
 static int defer_finalize_level = 0;
 static VEC (tree,heap) *defer_finalize_list;
 
-typedef struct GTY(()) subst_pair_d {
+typedef struct subst_pair_d {
   tree discriminant;
   tree replacement;
 } subst_pair;
@@ -105,7 +105,7 @@ typedef struct GTY(()) subst_pair_d {
 DEF_VEC_O(subst_pair);
 DEF_VEC_ALLOC_O(subst_pair,heap);
 
-typedef struct GTY(()) variant_desc_d {
+typedef struct variant_desc_d {
   /* The type of the variant.  */
   tree type;
 
@@ -180,7 +180,7 @@ static void rest_of_type_decl_compilation_no_defer (tree);
 static void finish_fat_pointer_type (tree, tree);
 
 /* The relevant constituents of a subprogram binding to a GCC builtin.  Used
-   to pass around calls performing profile compatibilty checks.  */
+   to pass around calls performing profile compatibility checks.  */
 
 typedef struct {
   Entity_Id gnat_entity;  /* The Ada subprogram entity.  */
@@ -3566,6 +3566,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		TYPE_DUMMY_P (gnu_array_type) = 1;
 
 		gnu_type = make_node (RECORD_TYPE);
+		/* Build a stub DECL to trigger the special processing for fat
+		   pointer types in gnat_pushdecl.  */
+		TYPE_NAME (gnu_type)
+		  = create_type_stub_decl
+		    (create_concat_name (gnat_desig_equiv, "XUP"), gnu_type);
 		SET_TYPE_UNCONSTRAINED_ARRAY (gnu_type, gnu_desig_type);
 		TYPE_POINTER_TO (gnu_desig_type) = gnu_type;
 
@@ -3957,7 +3962,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  {
 	    gnu_builtin_decl = builtin_decl_for (gnu_ext_name);
 
-	    /* Unability to find the builtin decl most often indicates a
+	    /* Inability to find the builtin decl most often indicates a
 	       genuine mistake, but imports of unregistered intrinsics are
 	       sometimes issued on purpose to allow hooking in alternate
 	       bodies.  We post a warning conditioned on Wshadow in this case,
@@ -8292,7 +8297,7 @@ intrin_return_compatible_p (intrin_binding_t * inb)
    compatible.  Issue relevant warnings when they are not.
 
    This is intended as a light check to diagnose the most obvious cases, not
-   as a full fledged type compatiblity predicate.  It is the programmer's
+   as a full fledged type compatibility predicate.  It is the programmer's
    responsibility to ensure correctness of the Ada declarations in Imports,
    especially when binding straight to a compiler internal.  */
 

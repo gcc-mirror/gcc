@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
   %{!shared:								\
     %{!static:								\
       %{rdynamic:-export-dynamic}					\
-      %{!dynamic-linker:-dynamic-linker %(fbsd_dynamic_linker) }}	\
+      -dynamic-linker %(fbsd_dynamic_linker) }	\
     %{static:-Bstatic}}"
 
 

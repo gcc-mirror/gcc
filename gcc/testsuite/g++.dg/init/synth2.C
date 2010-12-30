@@ -6,6 +6,7 @@ struct G {
 };
 
 class A				// { dg-error "" }
+// { dg-message "candidate" "candidate note" { target *-*-* } 8 }
 {
   const G g;
 };

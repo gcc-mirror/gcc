@@ -44,6 +44,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "bitmap.h"
 
+/* A list of cselib_val structures.  */
+struct elt_list {
+    struct elt_list *next;
+    cselib_val *elt;
+};
+
 static bool cselib_record_memory;
 static bool cselib_preserve_constants;
 static int entry_and_rtx_equal_p (const void *, const void *);

@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define __objc_exception_INCLUDE_GNU
 
 #include "objc.h"
+#include "objc-decls.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,14 +56,12 @@ extern "C" {
    setting an 'objc_uncaught_exception_handler' function (using
    objc_set_uncaught_exception_handler(), see below); if one is set,
    it is executed before abort() is called.  An uncaught exception
-   handler is expected to never return.
- */
-void objc_exception_throw (id exception);
+   handler is expected to never return.  */
+objc_EXPORT void objc_exception_throw (id exception);
 
 /* Compatibility note: the Apple/NeXT runtime seems to also have
    objc_exception_rethrow(), objc_begin_catch() and objc_end_catch().
-   Currently the GNU runtime does not use them.
-*/
+   Currently the GNU runtime does not use them.  */
 
 /* The following functions allow customizing to a certain extent the
    exception handling.  They are not thread safe and should be called
@@ -70,8 +69,7 @@ void objc_exception_throw (id exception);
    are mostly reserved for "Foundation" libraries; in the case of
    GNUstep, GNUstep Base may be using these functions to improve the
    standard exception handling.  You probably shouldn't use these
-   functions unless you are writing your own Foundation library.
-*/
+   functions unless you are writing your own Foundation library.  */
 
 /* Compatibility note: objc_set_exception_preprocessor() (available on
    the Apple/NeXT runtime) is not available on the GNU runtime.  */
@@ -88,7 +86,7 @@ typedef int (*objc_exception_matcher)(Class catch_class, id exception);
    exception matcher function.  This function is not safe to call in a
    multi-threaded environment because other threads may be trying to
    invoke the exception matcher while you change it!  */
-objc_exception_matcher
+objc_EXPORT objc_exception_matcher
 objc_setExceptionMatcher (objc_exception_matcher new_matcher);
 
 
@@ -100,9 +98,8 @@ typedef void (*objc_uncaught_exception_handler)(id exception);
    previous exception handler function.  This function is not safe to
    call in a multi-threaded environment because other threads may be
    trying to invoke the uncaught exception handler while you change
-   it.
-*/
-objc_uncaught_exception_handler
+   it.  */
+objc_EXPORT objc_uncaught_exception_handler
 objc_setUncaughtExceptionHandler (objc_uncaught_exception_handler new_handler);
 
 #ifdef __cplusplus

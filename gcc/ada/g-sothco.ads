@@ -273,9 +273,9 @@ package GNAT.Sockets.Thin_Common is
    --    - thread unsafe.
    --
    --  In the first and third cases, the Buf and Buflen are ignored. In the
-   --  second case, the caller must provide a buffer large enough to accomodate
-   --  the returned data. In the third case, the caller must ensure that these
-   --  functions are called within a critical section.
+   --  second case, the caller must provide a buffer large enough to
+   --  accommodate the returned data. In the third case, the caller must ensure
+   --  that these functions are called within a critical section.
 
    function C_Gethostbyname
      (Name     : C.char_array;

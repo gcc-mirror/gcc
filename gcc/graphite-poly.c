@@ -21,34 +21,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "ggc.h"
-#include "tree.h"
-#include "rtl.h"
-#include "output.h"
-#include "basic-block.h"
-#include "diagnostic.h"
-#include "tree-pretty-print.h"
-#include "gimple-pretty-print.h"
+#include "diagnostic-core.h"
 #include "tree-flow.h"
 #include "tree-dump.h"
-#include "timevar.h"
+#include "gimple-pretty-print.h"
 #include "cfgloop.h"
 #include "tree-chrec.h"
 #include "tree-data-ref.h"
 #include "tree-scalar-evolution.h"
-#include "tree-pass.h"
-#include "domwalk.h"
-#include "value-prof.h"
-#include "pointer-set.h"
-#include "gimple.h"
-#include "params.h"
+#include "sese.h"
 
 #ifdef HAVE_cloog
 #include "ppl_c.h"
-#include "sese.h"
 #include "graphite-ppl.h"
-#include "graphite.h"
 #include "graphite-poly.h"
 #include "graphite-dependences.h"
 #include "graphite-cloog-util.h"
@@ -776,7 +761,7 @@ apply_poly_transforms (scop_p scop)
   else
     {
       if (flag_loop_strip_mine)
-	transform_done |= scop_do_strip_mine (scop);
+	transform_done |= scop_do_strip_mine (scop, 0);
 
       if (flag_loop_interchange)
 	transform_done |= scop_do_interchange (scop);
@@ -874,8 +859,8 @@ free_poly_dr (poly_dr_p pdr)
 
 /* Create a new polyhedral black box.  */
 
-void
-new_poly_bb (scop_p scop, void *black_box, bool reduction)
+poly_bb_p
+new_poly_bb (scop_p scop, void *black_box)
 {
   poly_bb_p pbb = XNEW (struct poly_bb);
 
@@ -886,9 +871,11 @@ new_poly_bb (scop_p scop, void *black_box, bool reduction)
   PBB_SAVED (pbb) = NULL;
   PBB_ORIGINAL (pbb) = NULL;
   PBB_DRS (pbb) = VEC_alloc (poly_dr_p, heap, 3);
-  PBB_IS_REDUCTION (pbb) = reduction;
+  PBB_IS_REDUCTION (pbb) = false;
   PBB_PDR_DUPLICATES_REMOVED (pbb) = false;
-  VEC_safe_push (poly_bb_p, heap, SCOP_BBS (scop), pbb);
+  GBB_PBB ((gimple_bb_p) black_box) = pbb;
+
+  return pbb;
 }
 
 /* Free polyhedral black box.  */

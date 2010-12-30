@@ -234,7 +234,7 @@ package body Freeze is
           (not In_Same_Source_Unit (Renamed_Subp, Ent)
             or else Sloc (Renamed_Subp) < Sloc (Ent))
 
-        --  We can make the renaming entity intrisic if the renamed function
+        --  We can make the renaming entity intrinsic if the renamed function
         --  has an interface name, or if it is one of the shift/rotate
         --  operations known to the compiler.
 
@@ -784,7 +784,7 @@ package body Freeze is
                return False;
 
             --  A subtype of a variant record must not have non-static
-            --  discriminanted components.
+            --  discriminated components.
 
             elsif T /= Base_Type (T)
               and then not Static_Discriminated_Components (T)
@@ -2373,7 +2373,7 @@ package body Freeze is
       --  Deal with delayed aspect specifications. At the point of occurrence
       --  of the aspect definition, we preanalyzed the argument, to capture
       --  the visibility at that point, but the actual analysis of the aspect
-      --  is required to be delayed to the freeze point, so we evalute the
+      --  is required to be delayed to the freeze point, so we evaluate the
       --  pragma or attribute definition clause in the tree at this point.
 
       if Has_Delayed_Aspects (E) then
@@ -2701,7 +2701,7 @@ package body Freeze is
                         end if;
                      end if;
 
-                     --  Give warning for suspicous return of a result of an
+                     --  Give warning for suspicious return of a result of an
                      --  unconstrained array type in a foreign convention
                      --  function.
 
@@ -2958,7 +2958,7 @@ package body Freeze is
       else
          --  We used to check here that a full type must have preelaborable
          --  initialization if it completes a private type specified with
-         --  pragma Preelaborable_Intialization, but that missed cases where
+         --  pragma Preelaborable_Initialization, but that missed cases where
          --  the types occur within a generic package, since the freezing
          --  that occurs within a containing scope generally skips traversal
          --  of a generic unit's declarations (those will be frozen within

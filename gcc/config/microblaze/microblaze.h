@@ -74,7 +74,7 @@ extern enum pipeline_type microblaze_pipe;
 
 /* Assembler specs.  */
 
-#define TARGET_ASM_SPEC "%{v}"
+#define TARGET_ASM_SPEC ""
 
 #define ASM_SPEC "\
 %{microblaze1} \
@@ -87,7 +87,7 @@ extern enum pipeline_type microblaze_pipe;
   %{Zxl-mode-xmdstub:-defsym _TEXT_START_ADDR=0x800} \
   %{mxl-mode-xmdstub:-defsym _TEXT_START_ADDR=0x800} \
   %{mxl-gp-opt:%{G*}} %{!mxl-gp-opt: -G 0} \
-  %{!Wl,-T*: %{!T*: -dT xilinx.ld%s}}"
+  %{!T*: -dT xilinx.ld%s}"
 
 /* Specs for the compiler proper  */
 

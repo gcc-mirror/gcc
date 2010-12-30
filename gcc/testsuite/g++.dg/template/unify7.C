@@ -3,7 +3,7 @@
 
 // PR c++/3518
 template <typename T> void Foo (const T &);
-template <typename T> void Baz (const T (*)()); // { dg-message "candidate" }
+template <typename T> void Baz (const T (*)()); // { dg-message "note" }
 
 int &f ();
 
@@ -11,4 +11,5 @@ int main()
 {
   Foo (f);
   Baz (f); // { dg-error "no matching function" "" }
+  // { dg-message "candidate" "candidate note" { target *-*-* } 13 }
 }

@@ -137,6 +137,10 @@ extern enum rx_cpu_types  rx_cpu_type;
 #define SIZE_TYPE			"long unsigned int"
 #undef  PTRDIFF_TYPE
 #define PTRDIFF_TYPE			"long int"
+#undef  WCHAR_TYPE
+#define WCHAR_TYPE			"long int"
+#undef  WCHAR_TYPE_SIZE
+#define WCHAR_TYPE_SIZE			BITS_PER_WORD
 #define POINTERS_EXTEND_UNSIGNED	1
 #define FUNCTION_MODE 			QImode
 #define CASE_VECTOR_MODE		Pmode

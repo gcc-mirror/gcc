@@ -1,0 +1,46 @@
+# Copyright (C) 2010 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+set gccdir [lookfor_file $tool_root_dir gcc/libgcc.a]
+if {$gccdir != ""} {
+    set gccdir [file dirname $gccdir]
+}
+set GO_UNDER_TEST "$gccdir/gccgo -B$gccdir/"
+set TESTING_IN_BUILD_TREE 1
+
+proc go_maybe_build_wrapper { args } {
+    libgo_maybe_build_wrapper $args
+}
+
+# DejaGnu does not have proper library search paths for load_lib.
+# We have to explicitly load everything that go.exp wants to load.
+
+proc load_gcc_lib { filename } {
+    global srcdir loaded_libs
+
+    load_file $srcdir/../../gcc/testsuite/lib/$filename
+    set loaded_libs($filename) ""
+}
+
+load_gcc_lib prune.exp
+load_gcc_lib target-libpath.exp
+load_gcc_lib wrapper.exp
+load_gcc_lib gcc-defs.exp
+load_gcc_lib go.exp
+
+proc libgo_init { args } {
+    go_init $args
+}

@@ -20,7 +20,7 @@
 
 #include <cfenv>
 
-// { dg-error "upcoming ISO" "" { target *-*-* } 31 } 
+// { dg-error "upcoming ISO" "" { target *-*-* } 32 } 
 
 
 

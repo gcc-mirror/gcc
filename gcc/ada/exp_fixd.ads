@@ -133,7 +133,7 @@ package Exp_Fixd is
    procedure Expand_Multiply_Integer_By_Fixed_Giving_Fixed (N : Node_Id);
    --  This routine expands the multiplication between standard integer and a
    --  fixed-point type. The result type is the same fixed-point type as the
-   --  the fixed operand type. N is an N_Op_Multiply node whose result type
+   --  fixed operand type. N is an N_Op_Multiply node whose result type
    --  and right operand types are the fixed-point type, and whose left operand
    --  type is always standard integer.
 

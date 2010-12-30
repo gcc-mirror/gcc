@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "target.h"
 #include "c-family/c-common.h"
+#include "c-family/c-objc.h"
 #include "c-family/c-pragma.h"
 #include "diagnostic.h"
 #include "intl.h"
@@ -982,7 +983,7 @@ decls_match (tree newdecl, tree olddecl)
 
       if (same_type_p (TREE_TYPE (f1), TREE_TYPE (f2)))
 	{
-	  if (p2 == NULL_TREE && DECL_EXTERN_C_P (olddecl)
+	  if (!prototype_p (f2) && DECL_EXTERN_C_P (olddecl)
 	      && (DECL_BUILT_IN (olddecl)
 #ifndef NO_IMPLICIT_EXTERN_C
 		  || (DECL_IN_SYSTEM_HEADER (newdecl) && !DECL_CLASS_SCOPE_P (newdecl))
@@ -995,7 +996,7 @@ decls_match (tree newdecl, tree olddecl)
 		TREE_TYPE (newdecl) = TREE_TYPE (olddecl);
 	    }
 #ifndef NO_IMPLICIT_EXTERN_C
-	  else if (p1 == NULL_TREE
+	  else if (!prototype_p (f1)
 		   && (DECL_EXTERN_C_P (olddecl)
 		       && DECL_IN_SYSTEM_HEADER (olddecl)
 		       && !DECL_CLASS_SCOPE_P (olddecl))
@@ -1008,7 +1009,11 @@ decls_match (tree newdecl, tree olddecl)
 	    }
 #endif
 	  else
-	    types_match = compparms (p1, p2);
+	    types_match =
+	      compparms (p1, p2)
+	      && (TYPE_ATTRIBUTES (TREE_TYPE (newdecl)) == NULL_TREE
+	          || targetm.comp_type_attributes (TREE_TYPE (newdecl),
+						   TREE_TYPE (olddecl)) != 0);
 	}
       else
 	types_match = 0;
@@ -1535,8 +1540,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	}
       else if (TREE_CODE (olddecl) == FUNCTION_DECL
 	       && DECL_INITIAL (olddecl) != NULL_TREE
-	       && TYPE_ARG_TYPES (TREE_TYPE (olddecl)) == NULL_TREE
-	       && TYPE_ARG_TYPES (TREE_TYPE (newdecl)) != NULL_TREE)
+	       && !prototype_p (TREE_TYPE (olddecl))
+	       && prototype_p (TREE_TYPE (newdecl)))
 	{
 	  /* Prototype decl follows defn w/o prototype.  */
 	  warning_at (input_location, 0, "prototype for %q+#D", newdecl);
@@ -3329,17 +3334,22 @@ record_builtin_java_type (const char* name, int size)
 {
   tree type, decl;
   if (size > 0)
-    type = build_nonstandard_integer_type (size, 0);
+    {
+      type = build_nonstandard_integer_type (size, 0);
+      type = build_distinct_type_copy (type);
+    }
   else if (size > -32)
     {
       tree stype;
       /* "__java_char" or ""__java_boolean".  */
       type = build_nonstandard_integer_type (-size, 1);
+      type = build_distinct_type_copy (type);
       /* Get the signed type cached and attached to the unsigned type,
 	 so it doesn't get garbage-collected at "random" times,
 	 causing potential codegen differences out of different UIDs
 	 and different alias set numbers.  */
       stype = build_nonstandard_integer_type (-size, 0);
+      stype = build_distinct_type_copy (stype);
       TREE_CHAIN (type) = stype;
       /*if (size == -1)	TREE_SET_CODE (type, BOOLEAN_TYPE);*/
     }
@@ -6093,7 +6103,9 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 		{
 		  /* An out-of-class default definition is defined at
 		     the point where it is explicitly defaulted.  */
-		  if (DECL_INITIAL (decl) == error_mark_node)
+		  if (DECL_DELETED_FN (decl))
+		    maybe_explain_implicit_delete (decl);
+		  else if (DECL_INITIAL (decl) == error_mark_node)
 		    synthesize_method (decl);
 		}
 	      else
@@ -9755,6 +9767,13 @@ grokdeclarator (const cp_declarator *declarator,
 
 		if (thread_p)
 		  DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
+
+		if (constexpr_p && !initialized)
+		  {
+		    error ("constexpr static data member %qD must have an "
+			   "initializer", decl);
+		    constexpr_p = false;
+		  }
 	      }
 	    else
 	      {
@@ -12811,6 +12830,9 @@ finish_function (int flags)
   if (fndecl == NULL_TREE)
     return error_mark_node;
 
+  if (c_dialect_objc ())
+    objc_finish_function ();
+
   gcc_assert (!defer_mark_used_calls);
   defer_mark_used_calls = true;
 
@@ -13092,8 +13114,7 @@ grokmethod (cp_decl_specifier_seq *declspecs,
 
   if (DECL_IN_AGGR_P (fndecl))
     {
-      if (DECL_CONTEXT (fndecl)
-	  && TREE_CODE (DECL_CONTEXT (fndecl)) != NAMESPACE_DECL)
+      if (DECL_CLASS_SCOPE_P (fndecl))
 	error ("%qD is already defined in class %qT", fndecl,
 	       DECL_CONTEXT (fndecl));
       return error_mark_node;

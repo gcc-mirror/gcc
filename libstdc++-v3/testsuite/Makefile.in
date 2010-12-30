@@ -45,6 +45,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/enable.m4 \
 	$(top_srcdir)/../config/lib-ld.m4 \
 	$(top_srcdir)/../config/lib-link.m4 \
 	$(top_srcdir)/../config/lib-prefix.m4 \
+	$(top_srcdir)/../config/lthostflags.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/../config/override.m4 \
@@ -219,6 +220,7 @@ libexecdir = @libexecdir@
 libtool_VERSION = @libtool_VERSION@
 localedir = @localedir@
 localstatedir = @localstatedir@
+lt_host_flags = @lt_host_flags@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 multi_basedir = @multi_basedir@
@@ -273,7 +275,7 @@ lists_of_files = \
    testsuite_files_interactive \
    testsuite_files_performance
 
-extract_symvers = $(glibcxx_srcdir)/scripts/extract_symvers
+extract_symvers = $(glibcxx_builddir)/scripts/extract_symvers
 baseline_subdir := $(shell $(CXX) --print-multi-dir)
 check_DEJAGNU_normal_targets = $(patsubst %,check-DEJAGNUnormal%,0 1 2 3)
 

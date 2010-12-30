@@ -1,5 +1,5 @@
-# Copyright (C) 1997, 1998, 1999, 2001, 2002, 2005,
-# 2007 Free Software Foundation, Inc.
+# Copyright (C) 1997, 1998, 1999, 2001, 2002, 2005, 2007, 2010
+# Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -32,17 +32,9 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '#define FLOAT' > fp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
 
-# MULTILIB_OPTIONS should have msparclite too, but we'd have to make
-# gas build...
 MULTILIB_OPTIONS = msoft-float mcpu=v8
 MULTILIB_DIRNAMES = soft v8
 MULTILIB_MATCHES = msoft-float=mno-fpu mcpu?v8=mv8
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
-
-# Assemble startup files.
-$(T)crti.o: $(srcdir)/config/sparc/sol2-ci.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) -c -o $(T)crti.o -x assembler-with-cpp $(srcdir)/config/sparc/sol2-ci.asm
-$(T)crtn.o: $(srcdir)/config/sparc/sol2-cn.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) -c -o $(T)crtn.o -x assembler-with-cpp $(srcdir)/config/sparc/sol2-cn.asm

@@ -21,10 +21,10 @@
 // a copy of the GCC Runtime Library Exception along with this program;
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
-  
-/** @file ctype_inline.h
+
+/** @file bits/ctype_inline.h
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{locale}
  */
 
 //
@@ -33,17 +33,17 @@
 
 // ctype bits to be inlined go here. Non-inlinable (ie virtual do_*)
 // functions go in ctype.cc
-  
+
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
   bool
   ctype<char>::
-  is(mask __m, char __c) const 
+  is(mask __m, char __c) const
   { return __OBJ_DATA(__lc_ctype)->mask[__c] & __m; }
 
   const char*
   ctype<char>::
-  is(const char* __low, const char* __high, mask* __vec) const 
+  is(const char* __low, const char* __high, mask* __vec) const
   {
     while (__low < __high)
       *__vec++ = __OBJ_DATA(__lc_ctype)->mask[*__low++];
@@ -52,7 +52,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   const char*
   ctype<char>::
-  scan_is(mask __m, const char* __low, const char* __high) const 
+  scan_is(mask __m, const char* __low, const char* __high) const
   {
     while (__low < __high && !this->is(__m, *__low))
       ++__low;
@@ -61,7 +61,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   const char*
   ctype<char>::
-  scan_not(mask __m, const char* __low, const char* __high) const 
+  scan_not(mask __m, const char* __low, const char* __high) const
   {
     while (__low < __high && this->is(__m, *__low) != 0)
       ++__low;

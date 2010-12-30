@@ -23,10 +23,6 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file ext/atomicity.h
- *  This file is a GNU extension to the Standard C++ Library.
- */
-
 #include <ext/atomicity.h>
 #include <ext/concurrence.h>
 

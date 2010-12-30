@@ -10,10 +10,11 @@
 
 namespace tmp {
   typedef int B;
-  B b;
+  B b;				// { dg-message "tmp::b" }
 }
 
 class A {
   public:
   int kaka(tmp::B = b);		// { dg-error "" } no b in scope
+  // { dg-message "suggested alternative" "suggested alternative" { target *-*-* } 18 }
 };

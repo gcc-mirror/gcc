@@ -54,10 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 /* FIXME: Removed -K PIC from generic Solaris 2 ASM_SPEC: the native assembler
    gives many warnings: R_386_32 relocation is used for symbol ".text".  */
 #undef ASM_SPEC
-#define ASM_SPEC "\
-%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Wa,*:%*} -s \
-%(asm_cpu) \
-"
+#define ASM_SPEC "%{v:-V} %{Qy:} %{!Qn:-Qy} %{Ym,*} -s %(asm_cpu)"
 
 #define ASM_CPU_SPEC ""
  
@@ -178,5 +175,11 @@ along with GCC; see the file COPYING3.  If not see
 #define LIBGCC2_HAS_TF_MODE 1
 #define LIBGCC2_TF_CEXT q
 #define TF_SIZE 113
+
+#undef  SIZE_TYPE
+#define SIZE_TYPE "unsigned int"
+
+#undef  PTRDIFF_TYPE
+#define PTRDIFF_TYPE "int"
 
 #define MD_UNWIND_SUPPORT "config/i386/sol2-unwind.h"

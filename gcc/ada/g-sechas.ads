@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides common suporting code for a family of secure
+--  This package provides common supporting code for a family of secure
 --  hash functions (including MD5 and the FIPS PUB 180-3 functions SHA-1,
 --  SHA-224, SHA-256, SHA-384 and SHA-512).
 

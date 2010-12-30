@@ -353,7 +353,7 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       Pbod : Boolean;                  -- True if proper body OK
       Rnam : Boolean;                  -- True if renaming declaration OK
       Stub : Boolean;                  -- True if body stub OK
-      Pexp : Boolean;                  -- True if parametried expression OK
+      Pexp : Boolean;                  -- True if parametrized expression OK
       Fil2 : Boolean;                  -- Filler to fill to 8 bits
    end record;
    pragma Pack (Pf_Rec);
@@ -632,7 +632,7 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       function P_Range_Or_Subtype_Mark
         (Allow_Simple_Expression : Boolean := False) return Node_Id;
       --  Scans out a range or subtype mark, and also permits a general simple
-      --  expression if Allow_Simple_Expresion is set to True.
+      --  expression if Allow_Simple_Expression is set to True.
 
       function Init_Expr_Opt (P : Boolean := False) return Node_Id;
       --  If an initialization expression is present (:= expression), then
@@ -858,9 +858,9 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  of generating appropriate messages if aspect specifications appear
       --  in versions of Ada prior to Ada 2012. The parameter strict can be
       --  set to True, to be rather strict about considering something to be
-      --  an aspect speficiation. If Strict is False, then the circuitry is
+      --  an aspect specification. If Strict is False, then the circuitry is
       --  rather more generous in considering something ill-formed to be an
-      --  attempt at an aspect speciciation. The default is more strict for
+      --  attempt at an aspect specification. The default is more strict for
       --  Ada versions before Ada 2012 (where aspect specifications are not
       --  permitted).
 

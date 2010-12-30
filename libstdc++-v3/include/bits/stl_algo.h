@@ -49,9 +49,9 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-/** @file stl_algo.h
+/** @file bits/stl_algo.h
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{algorithm}
  */
 
 #ifndef _STL_ALGO_H

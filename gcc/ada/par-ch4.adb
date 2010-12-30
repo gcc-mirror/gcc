@@ -1194,7 +1194,7 @@ package body Ch4 is
          Expr_Node := Error;
       end Box_Error;
 
-   --  Start of processsing for P_Aggregate_Or_Paren_Expr
+   --  Start of processing for P_Aggregate_Or_Paren_Expr
 
    begin
       Lparen_Sloc := Token_Ptr;

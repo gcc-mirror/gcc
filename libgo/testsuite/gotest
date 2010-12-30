@@ -1,0 +1,329 @@
+#!/bin/sh
+# Copyright 2009 The Go Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
+# Using all the *_test.go files in the current directory, write out a file
+# _testmain.go that runs all its tests. Compile everything and run the
+# tests.
+# If files are named on the command line, use them instead of *_test.go.
+
+# Makes egrep,grep work better in general if we put them
+# in ordinary C mode instead of what the current language is.
+unset LANG
+export LC_ALL=C
+export LC_CTYPE=C
+
+GC=${GC:-gccgo}
+GL=${GL:-${GC-gccgo}}
+GOLIBS=
+export GC GL GOLIBS
+
+# srcdir is where the source files are found.  basedir is where the
+# source file paths are relative to.
+# gofiles are the test files.  pkgfiles are the source files.
+srcdir=.
+basedir=.
+gofiles=""
+pkgfiles=""
+loop=true
+keep=false
+prefix=
+dejagnu=no
+while $loop; do
+	case "x$1" in
+        x--srcdir)
+		srcdir=$2
+		shift
+		shift
+		;;
+	x--srcdir=*)
+		srcdir=`echo $1 | sed -e 's/^--srcdir=//'`
+		shift
+		;;
+        x--basedir)
+		basedir=$2
+		shift
+		shift
+		;;
+	x--basedir=*)
+		basedir=`echo $1 | sed -e 's/^--basedir=//'`
+		shift
+		;;
+	x--prefix)
+		prefix=$2
+		shift
+		shift
+		;;
+	x--prefix=*)
+		prefix=`echo $1 | sed -e 's/^--prefix=//'`
+		shift
+		;;
+	x--keep)
+		keep=true
+                shift
+		;;
+	x--pkgfiles)
+		pkgfiles=$2
+		shift
+		shift
+		;;
+	x--pkgfiles=*)
+		pkgfiles=`echo $1 | sed -e 's/^--pkgfiles=//'`
+		shift
+		;;
+	x--dejagnu)
+		dejagnu=$2
+		shift
+		shift
+		;;
+	x--dejagnu=*)
+		dejagnu=`echo $1 | sed -e 's/^--dejagnu=//'`
+		shift
+		;;
+	x-*)
+		loop=false
+		;;
+	x)
+		loop=false
+		;;
+	*)
+		gofiles="$gofiles $1"
+		shift
+		;;
+	esac
+done
+
+DIR=gotest$$
+rm -rf $DIR
+mkdir $DIR
+
+cd $DIR
+
+if test $keep = false; then
+  trap "cd ..; rm -rf $DIR" 0 1 2 3 14 15
+else
+  trap "cd ..; echo Keeping $DIR" 0 1 2 3 14 15
+fi
+
+case "$srcdir" in
+	/*)
+		;;
+	*)
+		srcdir="../$srcdir"
+                ;;
+esac
+
+SRCDIR=$srcdir
+export SRCDIR
+
+case "$basedir" in
+	/*)
+		;;
+	*)
+		basedir="../$basedir"
+                ;;
+esac
+
+# Link all the files/directories in srcdir into our working directory,
+# so that the tests do not have to refer to srcdir to find test data.
+ln -s $srcdir/* .
+
+# Copy the .go files because io/utils_test.go expects a regular file.
+case "x$gofiles" in
+x)
+	case "x$pkgfiles" in
+	x)
+		for f in `cd $srcdir; ls *.go`; do
+		    rm -f $f;
+		    cp $srcdir/$f .
+		done
+		;;
+	*)
+		for f in $pkgfiles; do
+		    if test -f $basedir/$f; then
+			b=`basename $f`
+			rm -f $b
+			cp $basedir/$f $b
+		    elif test -f ../$f; then
+			b=`basename $f`
+			rm -f $b
+			cp ../$f $b
+		    else
+			echo "file $f not found" 1>&2
+			exit 1
+		    fi
+		done
+		for f in `cd $srcdir; ls *_test.go`; do
+		    rm -f $f
+		    cp $srcdir/$f .
+		done
+		;;
+	esac
+	;;
+*)
+	for f in $gofiles; do
+	    b=`basename $f`
+	    rm -f $b
+	    cp $basedir/$f $b
+	done
+	case "x$pkgfiles" in
+	x)
+		for f in `cd $srcdir; ls *.go | grep -v *_test.go`; do
+		    rm -f $f
+		    cp $srcdir/$f .
+		done
+		;;
+	*)
+		for f in $pkgfiles; do
+		    if test -f $basedir/$f; then
+			b=`basename $f`
+			rm -f $b
+			cp $basedir/$f $b
+		    elif test -f ../$f; then
+			b=`basename $f`
+			rm -f $b
+			cp ../$f $b
+		    else
+			echo "file $f not found" 1>&2
+			exit 1
+		    fi
+		done
+		;;
+	esac
+	;;
+esac
+
+# Some tests expect the _obj directory created by the gc Makefiles.
+mkdir _obj
+
+# Some tests expect the _test directory created by the gc Makefiles.
+mkdir _test
+
+case "x$gofiles" in
+x)
+	gofiles=$(echo -n $(ls *_test.go 2>/dev/null))
+esac
+
+case "x$gofiles" in
+x)
+	echo 'no test files found' 1>&2
+	exit 1
+esac
+
+# Run any commands given in sources, like
+#   // gotest: $GC foo.go
+# to build any test-only dependencies.
+holdGC="$GC"
+GC="$GC -g -c -I ."
+sed -n 's/^\/\/ gotest: //p' $gofiles | sh
+GC="$holdGC"
+
+case "x$pkgfiles" in
+x)
+	pkgbasefiles=$(echo -n $(ls *.go | grep -v _test.go 2>/dev/null))
+	;;
+*)
+	for f in $pkgfiles; do
+	    pkgbasefiles="$pkgbasefiles `basename $f`"
+	done
+	;;
+esac
+
+case "x$pkgfiles" in
+x)
+	echo 'no source files found' 1>&2
+	exit 1
+	;;
+esac
+
+# Split $gofiles into external gofiles (those in *_test packages)
+# and internal ones (those in the main package).
+xgofiles=$(echo $(grep '^package[ 	]' $gofiles /dev/null | grep ':.*_test' | sed 's/:.*//'))
+gofiles=$(echo $(grep '^package[ 	]' $gofiles /dev/null | grep -v ':.*_test' | sed 's/:.*//'))
+
+# External $O file
+xofile=""
+havex=false
+if [ "x$xgofiles" != "x" ]; then
+	xofile="_xtest_.o"
+	havex=true
+fi
+
+set -e
+
+package=`echo ${srcdir} | sed -e 's|^.*libgo/go/||'`
+
+prefixarg=
+if test -n "$prefix"; then
+	prefixarg="-fgo-prefix=$prefix"
+fi
+
+$GC -g $prefixarg -c -I . -o _gotest_.o $gofiles $pkgbasefiles
+if $havex; then
+	mkdir -p `dirname $package`
+	cp _gotest_.o `dirname $package`/lib`basename $package`.a
+	$GC -g -c -I . -o $xofile $xgofiles
+fi
+
+# They all compile; now generate the code to call them.
+{
+	# test functions are named TestFoo
+	# the grep -v eliminates methods and other special names
+	# that have multiple dots.
+	pattern='Test([^a-z].*)?'
+	tests=$(nm -s _gotest_.o $xofile | egrep ' T .*\.'$pattern'$' | grep -v '\..*\..*\.' | sed 's/.* //' | sed 's/.*\.\(.*\.\)/\1/')
+	if [ "x$tests" = x ]; then
+		echo 'gotest: warning: no tests matching '$pattern in _gotest_.o $xofile 1>&2
+		exit 2
+	fi
+
+	# package spec
+	echo 'package main'
+	echo
+	# imports
+	if echo "$tests" | egrep -v '_test\.' >/dev/null; then
+		echo 'import "./_gotest_"'
+	fi
+	if $havex; then
+		echo 'import "./_xtest_"'
+	fi
+	if [ $package != "testing" ]; then
+		echo 'import "testing"'
+		echo 'import __regexp__ "regexp"' # rename in case tested package is called regexp
+	fi
+	# test array
+	echo
+	echo 'var tests = []testing.InternalTest {'
+	for i in $tests
+	do
+		echo '	{ "'$i'", '$i' },'
+	done
+	echo '}'
+	# body
+	echo
+	echo 'func main() {'
+	echo '	testing.Main(__regexp__.MatchString, tests)'
+	echo '}'
+}>_testmain.go
+
+case "x$dejagnu" in
+xno)
+	${GC} -g -c _testmain.go
+	${GL} *.o ${GOLIBS}
+	./a.out "$@"
+	;;
+xyes)
+	# This is the only file which is optionally made.
+	# All others are overwritten on copying/building,
+	# but this may remain and cause conflicts if not
+	# deleted.
+	rm -rf ../testsuite/_xtest_.o
+	cp *.o _testmain.go ../testsuite
+	cd ../testsuite
+	$MAKE check RUNTESTFLAGS="$RUNTESTFLAGS GOTEST_TMPDIR=$DIR"
+	# Useful when using make check-target-libgo
+	cat libgo.log >> libgo-all.log
+	cat libgo.sum >> libgo-all.sum
+	;;
+esac

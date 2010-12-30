@@ -266,16 +266,16 @@ do {									\
 #define	RESTORE_FP_PREFIX "_restfpr_"
 #define RESTORE_FP_SUFFIX ""
 
+/* Type used for size_t, as a string used in a declaration.  */
+#undef  SIZE_TYPE
+#define SIZE_TYPE "unsigned int"
+
 /* Type used for ptrdiff_t, as a string used in a declaration.  */
 #define PTRDIFF_TYPE "int"
 
-/* Type used for wchar_t, as a string used in a declaration.  */
-/* Override svr4.h definition.  */
 #undef	WCHAR_TYPE
 #define WCHAR_TYPE "long int"
 
-/* Width of wchar_t in bits.  */
-/* Override svr4.h definition.  */
 #undef	WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
 
@@ -399,8 +399,6 @@ do {									\
 
 #define	LOCAL_LABEL_PREFIX "."
 #define	USER_LABEL_PREFIX ""
-
-/* svr4.h overrides (*targetm.asm_out.internal_label).  */
 
 #define	ASM_OUTPUT_INTERNAL_LABEL_PREFIX(FILE,PREFIX)	\
   asm_fprintf (FILE, "%L%s", PREFIX)
@@ -546,13 +544,10 @@ extern int fixuplabelno;
   while (0)
 #endif
 
-/* Pass various options to the assembler.  */
-/* Override svr4.h definition.  */
 #undef	ASM_SPEC
 #define	ASM_SPEC "%(asm_cpu) \
-%{,assembler|,assembler-with-cpp: %{mregnames} %{mno-regnames}}" \
-SVR4_ASM_SPEC \
-"%{mrelocatable} %{mrelocatable-lib} %{fpic|fpie|fPIC|fPIE:-K PIC} \
+%{,assembler|,assembler-with-cpp: %{mregnames} %{mno-regnames}} \
+%{mrelocatable} %{mrelocatable-lib} %{fpic|fpie|fPIC|fPIE:-K PIC} \
 %{memb|msdata=eabi: -memb} \
 %{mlittle|mlittle-endian:-mlittle; \
   mbig|mbig-endian      :-mbig;    \
@@ -637,14 +632,13 @@ SVR4_ASM_SPEC \
 
 #define LINK_START_DEFAULT_SPEC ""
 
-/* Override svr4.h definition.  */
 #undef	LINK_SPEC
 #define	LINK_SPEC "\
 %{h*} %{v:-V} %{!msdata=none:%{G*}} %{msdata=none:-G0} \
 %{YP,*} %{R*} \
 %{Qy:} %{!Qn:-Qy} \
 %(link_shlib) \
-%{!Wl,-T*: %{!T*: %(link_start) }} \
+%{!T*: %(link_start) } \
 %(link_target) \
 %(link_os)"
 
@@ -713,7 +707,6 @@ SVR4_ASM_SPEC \
 
 #define	CPP_OS_DEFAULT_SPEC ""
 
-/* Override svr4.h definition.  */
 #undef	STARTFILE_SPEC
 #define	STARTFILE_SPEC "\
 %{mads         : %(startfile_ads)         ; \
@@ -729,7 +722,6 @@ SVR4_ASM_SPEC \
 
 #define	STARTFILE_DEFAULT_SPEC "ecrti.o%s crtbegin.o%s"
 
-/* Override svr4.h definition.  */
 #undef	LIB_SPEC
 #define	LIB_SPEC "\
 %{mads         : %(lib_ads)         ; \
@@ -745,7 +737,6 @@ SVR4_ASM_SPEC \
 
 #define LIB_DEFAULT_SPEC "-lc"
 
-/* Override svr4.h definition.  */
 #undef	ENDFILE_SPEC
 #define	ENDFILE_SPEC "\
 %{mads         : %(endfile_ads)         ; \
@@ -834,7 +825,7 @@ SVR4_ASM_SPEC \
   %{!shared: \
     %{!static: \
       %{rdynamic: -export-dynamic} \
-      %{!dynamic-linker:-dynamic-linker %(fbsd_dynamic_linker) }} \
+      -dynamic-linker %(fbsd_dynamic_linker) } \
     %{static:-Bstatic}} \
   %{symbolic:-Bsymbolic}"
 
@@ -875,7 +866,7 @@ SVR4_ASM_SPEC \
 
 #define LINK_OS_LINUX_SPEC "-m elf32ppclinux %{!shared: %{!static: \
   %{rdynamic:-export-dynamic} \
-  %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER "}}}"
+  -dynamic-linker " LINUX_DYNAMIC_LINKER "}}"
 
 #if defined(HAVE_LD_EH_FRAME_HDR)
 # define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
@@ -906,7 +897,7 @@ SVR4_ASM_SPEC \
 
 #define LINK_OS_GNU_SPEC "-m elf32ppclinux %{!shared: %{!static: \
   %{rdynamic:-export-dynamic} \
-  %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}}}"
+  -dynamic-linker /lib/ld.so.1}}"
 
 #define CPP_OS_GNU_SPEC "-D__unix__ -D__gnu_hurd__ -D__GNU__	\
 %{!undef:					                \
@@ -931,7 +922,7 @@ ncrtn.o%s"
 #define LINK_OS_NETBSD_SPEC "\
 %{!shared: %{!static: \
   %{rdynamic:-export-dynamic} \
-  %{!dynamic-linker:-dynamic-linker /usr/libexec/ld.elf_so}}}"
+  -dynamic-linker /usr/libexec/ld.elf_so}}"
 
 #define CPP_OS_NETBSD_SPEC "\
 -D__powerpc__ -D__NetBSD__ -D__KPRINTF_ATTRIBUTE__"
@@ -1077,3 +1068,5 @@ ncrtn.o%s"
 
 /* This target uses the sysv4.opt file.  */
 #define TARGET_USES_SYSV4_OPT 1
+
+#undef DBX_REGISTER_NUMBER

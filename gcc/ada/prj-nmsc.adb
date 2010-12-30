@@ -5684,7 +5684,7 @@ package body Prj.Nmsc is
          end;
       end if;
 
-      --  Name_Buffer contains the name of the the unit in lower-cases. Check
+      --  Name_Buffer contains the name of the unit in lower-cases. Check
       --  that this is a valid unit name
 
       Check_Ada_Name (Name_Buffer (1 .. Name_Len), Unit);
@@ -7414,7 +7414,7 @@ package body Prj.Nmsc is
       --  error when appropriate
 
       procedure Get_Sources_From_Source_Info;
-      --  Get the source information from the tabes that were created when a
+      --  Get the source information from the tables that were created when a
       --  source info fie was read.
 
       ---------------------------

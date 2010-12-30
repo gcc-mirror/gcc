@@ -36,7 +36,6 @@
 #include "basic-block.h"
 #include "integrate.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "ggc.h"
 #include "hashtab.h"
 #include "tm_p.h"
@@ -47,7 +46,6 @@
 #include "cfglayout.h"
 #include "sched-int.h"
 #include "params.h"
-#include "assert.h"
 #include "machmode.h"
 #include "gimple.h"
 #include "tm-constrs.h"
@@ -4610,7 +4608,13 @@ int
 spu_expand_mov (rtx * ops, enum machine_mode mode)
 {
   if (GET_CODE (ops[0]) == SUBREG && !valid_subreg (ops[0]))
-    abort ();
+    {
+      /* Perform the move in the destination SUBREG's inner mode.  */
+      ops[0] = SUBREG_REG (ops[0]);
+      mode = GET_MODE (ops[0]);
+      ops[1] = gen_lowpart_common (mode, ops[1]);
+      gcc_assert (ops[1]);
+    }
 
   if (GET_CODE (ops[1]) == SUBREG && !valid_subreg (ops[1]))
     {
@@ -6947,8 +6951,8 @@ spu_sms_res_mii (struct ddg *g)
       rtx insn = g->nodes[i].insn;
       int p = get_pipe (insn) + 2;
 
-      assert (p >= 0);
-      assert (p < 4);
+      gcc_assert (p >= 0);
+      gcc_assert (p < 4);
 
       t[p]++;
       if (dump_file && INSN_P (insn))

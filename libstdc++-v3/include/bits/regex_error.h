@@ -27,7 +27,7 @@
  * @brief Error and exception objects for the std regex library.
  *
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{regex}
  */
 
 _GLIBCXX_BEGIN_NAMESPACE(std)

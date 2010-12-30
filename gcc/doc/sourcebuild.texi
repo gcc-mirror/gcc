@@ -81,6 +81,10 @@ The GCC runtime library.
 @item libgfortran
 The Fortran runtime library.
 
+@item libgo
+The Go runtime library.  The bulk of this library is mirrored from the
+@uref{http://code.google.com/@/p/@/go, master Go repository}.
+
 @item libgomp
 The GNU OpenMP runtime library.
 
@@ -373,7 +377,7 @@ and they are included in release distributions.
 
 Manuals are also provided on the GCC web site, in both HTML and
 PostScript forms.  This is done via the script
-@file{maintainer-scripts/update_web_docs}.  Each manual to be
+@file{maintainer-scripts/update_web_docs_svn}.  Each manual to be
 provided online must be listed in the definition of @code{MANUALS} in
 that file; a file @file{@var{name}.texi} must only appear once in the
 source tree, and the output manual must have the same name as the
@@ -546,7 +550,7 @@ A news item on @file{index.html}, and possibly an announcement on the
 @email{gcc-announce@@gcc.gnu.org} mailing list.
 @item
 The front end's manuals should be mentioned in
-@file{maintainer-scripts/update_web_docs} (@pxref{Texinfo Manuals})
+@file{maintainer-scripts/update_web_docs_svn} (@pxref{Texinfo Manuals})
 and the online manuals should be linked to from
 @file{onlinedocs/index.html}.
 @item
@@ -556,9 +560,6 @@ inclusion in GCC, should be made available on the GCC FTP site
 @item
 The release and snapshot script @file{maintainer-scripts/gcc_release}
 should be updated to generate appropriate tarballs for this front end.
-The associated @file{maintainer-scripts/snapshot-README} and
-@file{maintainer-scripts/snapshot-index.html} files should be updated
-to list the tarballs and diffs for this front end.
 @item
 If this front end includes its own version files that include the
 current date, @file{maintainer-scripts/update_version} should be

@@ -77,7 +77,7 @@ static const __float128 c[] = {
 extern const __float128 __sincosq_table[];
 
 __float128
-__kernel_cosq (__float128 x, __float128 y)
+__quadmath_kernel_cosq (__float128 x, __float128 y)
 {
   __float128 h, l, z, sin_l, cos_l_m1;
   int64_t ix;

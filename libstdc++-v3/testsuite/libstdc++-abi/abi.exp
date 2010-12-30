@@ -1,4 +1,4 @@
-# Copyright (C) 2005, 2009 Free Software Foundation, Inc.
+# Copyright (C) 2005, 2009, 2010 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ if ![file exists $baseline_file] {
 send_log "Checking $lib against $baseline_file\n"
 
 # Figure out what symbols are defined by the active build of the library.
-remote_exec "build" "$srcdir/../scripts/extract_symvers" \
+remote_exec "build" "$objdir/../scripts/extract_symvers" \
     [list $lib "current_symbols.txt"]
 
 # Build the abi_check program.

@@ -6,4 +6,5 @@ template<int> void foo(struct {}*); // { dg-message "" }
 void bar()
 {
   foo<0>(0);			// { dg-error "" }
+  // { dg-message "candidate" "candidate note" { target *-*-* } 8 }
 }

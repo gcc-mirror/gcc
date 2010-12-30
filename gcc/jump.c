@@ -193,7 +193,7 @@ mark_all_labels (rtx f)
   rtx prev_nonjump_insn = NULL;
 
   for (insn = f; insn; insn = NEXT_INSN (insn))
-    if (INSN_P (insn))
+    if (NONDEBUG_INSN_P (insn))
       {
 	mark_jump_label (PATTERN (insn), insn, 0);
 
@@ -1727,7 +1727,13 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
 
 	case 'i':
 	  if (XINT (x, i) != XINT (y, i))
-	    return 0;
+	    {
+	      if (((code == ASM_OPERANDS && i == 6)
+		   || (code == ASM_INPUT && i == 1))
+		  && locator_eq (XINT (x, i), XINT (y, i)))
+		break;
+	      return 0;
+	    }
 	  break;
 
 	case 't':

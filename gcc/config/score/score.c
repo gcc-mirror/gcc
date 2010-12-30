@@ -30,7 +30,6 @@
 #include "insn-attr.h"
 #include "recog.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "output.h"
 #include "tree.h"
 #include "function.h"

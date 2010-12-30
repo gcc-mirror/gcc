@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "expr.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "recog.h"
 #include "ggc.h"
 #include "dwarf2.h"
@@ -2748,7 +2747,7 @@ mmix_intval (rtx x)
 
 	  retval |=
 	    (unsigned HOST_WIDEST_INT) CONST_DOUBLE_HIGH (x)
-	      << (HOST_BITS_PER_LONG);
+	      << (HOST_BITS_PER_LONG)/2 << (HOST_BITS_PER_LONG)/2;
 	}
       else
 	retval = CONST_DOUBLE_HIGH (x);

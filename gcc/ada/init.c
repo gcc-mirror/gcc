@@ -1238,7 +1238,7 @@ static const struct cond_except cond_except_table [] = {
 
    That predicate function is called indirectly, via a function pointer,
    by __gnat_error_handler, and changing that pointer is allowed to the
-   the user code by way of the __gnat_set_resignal_predicate interface.
+   user code by way of the __gnat_set_resignal_predicate interface.
 
    The user level function may then implement what it likes, including
    for instance the maintenance of a dynamic data structure if the set

@@ -20,7 +20,7 @@
 
 #include <atomic>  // { dg-excess-errors "In file included from" }
 
-// { dg-error "upcoming ISO" "" { target *-*-* } 31 } 
+// { dg-error "upcoming ISO" "" { target *-*-* } 32 } 
 
 
 

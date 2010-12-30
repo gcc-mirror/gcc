@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "c-common.h"
+#include "c-objc.h"
 
 tree
 objc_is_class_name (tree ARG_UNUSED (arg))
@@ -67,12 +68,6 @@ objc_check_global_decl (tree ARG_UNUSED (decl))
 }
 
 tree
-objc_non_volatilized_type (tree type)
-{
-  return type;
-}
-
-tree
 objc_common_type (tree ARG_UNUSED (type1), tree ARG_UNUSED (type2))
 {
   return 0;
@@ -95,12 +90,6 @@ objc_have_common_type (tree ARG_UNUSED (ltyp), tree ARG_UNUSED (rtyp),
 void
 objc_volatilize_decl (tree ARG_UNUSED (decl))
 {
-}
-
-bool
-objc_type_quals_match (tree ARG_UNUSED (ltyp), tree ARG_UNUSED (rtyp))
-{
-  return false;
 }
 
 tree
@@ -459,5 +448,15 @@ objc_string_ref_type_p (tree ARG_UNUSED (strp))
 void
 objc_check_format_arg (tree ARG_UNUSED (format_arg), 
 		       tree ARG_UNUSED (args_list))
+{
+}
+
+void
+objc_finish_function (void)
+{
+}
+
+void
+objc_maybe_warn_exceptions (location_t ARG_UNUSED (loc))
 {
 }

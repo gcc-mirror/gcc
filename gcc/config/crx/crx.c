@@ -44,7 +44,6 @@
 #include "expr.h"
 #include "optabs.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "basic-block.h"
 #include "df.h"
 #include "target.h"

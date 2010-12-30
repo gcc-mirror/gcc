@@ -65,7 +65,7 @@ static GTY(()) tree ptr_void;
    static void*	__gcov_indirect_call_callee; // actual callee address
 */
 static void
-tree_init_ic_make_global_vars (void)
+init_ic_make_global_vars (void)
 {
   tree  gcov_type_ptr;
 
@@ -95,8 +95,8 @@ tree_init_ic_make_global_vars (void)
   varpool_mark_needed_node (varpool_node (ic_gcov_type_ptr_var));
 }
 
-static void
-tree_init_edge_profiler (void)
+void
+gimple_init_edge_profiler (void)
 {
   tree interval_profiler_fn_type;
   tree pow2_profiler_fn_type;
@@ -149,7 +149,7 @@ tree_init_edge_profiler (void)
 	= tree_cons (get_identifier ("leaf"), NULL,
 		     DECL_ATTRIBUTES (tree_one_value_profiler_fn));
 
-      tree_init_ic_make_global_vars ();
+      init_ic_make_global_vars ();
 
       /* void (*) (gcov_type *, gcov_type, void *, void *)  */
       ic_profiler_fn_type
@@ -199,8 +199,8 @@ tree_init_edge_profiler (void)
    execution count, and insert them on E.  We rely on
    gsi_insert_on_edge to preserve the order.  */
 
-static void
-tree_gen_edge_profiler (int edgeno, edge e)
+void
+gimple_gen_edge_profiler (int edgeno, edge e)
 {
   tree ref, one;
   gimple stmt1, stmt2, stmt3;
@@ -239,8 +239,8 @@ prepare_instrumented_value (gimple_stmt_iterator *gsi, histogram_value value)
    counter.  VALUE is the expression whose value is profiled.  TAG is the
    tag of the section for counters, BASE is offset of the counter position.  */
 
-static void
-tree_gen_interval_profiler (histogram_value value, unsigned tag, unsigned base)
+void
+gimple_gen_interval_profiler (histogram_value value, unsigned tag, unsigned base)
 {
   gimple stmt = value->hvalue.stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
@@ -265,8 +265,8 @@ tree_gen_interval_profiler (histogram_value value, unsigned tag, unsigned base)
    counter.  VALUE is the expression whose value is profiled.  TAG is the tag
    of the section for counters, BASE is offset of the counter position.  */
 
-static void
-tree_gen_pow2_profiler (histogram_value value, unsigned tag, unsigned base)
+void
+gimple_gen_pow2_profiler (histogram_value value, unsigned tag, unsigned base)
 {
   gimple stmt = value->hvalue.stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
@@ -285,8 +285,8 @@ tree_gen_pow2_profiler (histogram_value value, unsigned tag, unsigned base)
    VALUE is the expression whose value is profiled.  TAG is the tag of the
    section for counters, BASE is offset of the counter position.  */
 
-static void
-tree_gen_one_value_profiler (histogram_value value, unsigned tag, unsigned base)
+void
+gimple_gen_one_value_profiler (histogram_value value, unsigned tag, unsigned base)
 {
   gimple stmt = value->hvalue.stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
@@ -308,8 +308,8 @@ tree_gen_one_value_profiler (histogram_value value, unsigned tag, unsigned base)
    TAG is the tag of the section for counters, BASE is offset of the
    counter position.  */
 
-static void
-tree_gen_ic_profiler (histogram_value value, unsigned tag, unsigned base)
+void
+gimple_gen_ic_profiler (histogram_value value, unsigned tag, unsigned base)
 {
   tree tmp1;
   gimple stmt1, stmt2, stmt3;
@@ -343,8 +343,8 @@ tree_gen_ic_profiler (histogram_value value, unsigned tag, unsigned base)
    beginning of every possible called function.
   */
 
-static void
-tree_gen_ic_func_profiler (void)
+void
+gimple_gen_ic_func_profiler (void)
 {
   struct cgraph_node * c_node = cgraph_node (current_function_decl);
   gimple_stmt_iterator gsi;
@@ -354,7 +354,7 @@ tree_gen_ic_func_profiler (void)
   if (cgraph_only_called_directly_p (c_node))
     return;
 
-  tree_init_edge_profiler ();
+  gimple_init_edge_profiler ();
 
   gsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR));
 
@@ -387,8 +387,8 @@ tree_gen_ic_func_profiler (void)
    VALUE is the expression whose value is profiled.  TAG is the tag of the
    section for counters, BASE is offset of the counter position.  */
 
-static void
-tree_gen_const_delta_profiler (histogram_value value ATTRIBUTE_UNUSED,
+void
+gimple_gen_const_delta_profiler (histogram_value value ATTRIBUTE_UNUSED,
 			       unsigned tag ATTRIBUTE_UNUSED,
 			       unsigned base ATTRIBUTE_UNUSED)
 {
@@ -403,8 +403,8 @@ tree_gen_const_delta_profiler (histogram_value value ATTRIBUTE_UNUSED,
    counter.  VALUE is the expression whose value is profiled.  TAG is the
    tag of the section for counters, BASE is offset of the counter position.  */
 
-static void
-tree_gen_average_profiler (histogram_value value, unsigned tag, unsigned base)
+void
+gimple_gen_average_profiler (histogram_value value, unsigned tag, unsigned base)
 {
   gimple stmt = value->hvalue.stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
@@ -424,8 +424,8 @@ tree_gen_average_profiler (histogram_value value, unsigned tag, unsigned base)
    counter.  VALUE is the expression whose value is profiled.  TAG is the
    tag of the section for counters, BASE is offset of the counter position.  */
 
-static void
-tree_gen_ior_profiler (histogram_value value, unsigned tag, unsigned base)
+void
+gimple_gen_ior_profiler (histogram_value value, unsigned tag, unsigned base)
 {
   gimple stmt = value->hvalue.stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
@@ -454,9 +454,6 @@ tree_profiling (void)
   if (cgraph_state == CGRAPH_STATE_FINISHED)
     return 0;
 
-  tree_register_profile_hooks ();
-  gimple_register_value_prof_hooks ();
-
   for (node = cgraph_nodes; node; node = node->next)
     {
       if (!node->analyzed
@@ -479,12 +476,12 @@ tree_profiling (void)
 
       if (! flag_branch_probabilities
 	  && flag_profile_values)
-	tree_gen_ic_func_profiler ();
+	gimple_gen_ic_func_profiler ();
 
       if (flag_branch_probabilities
 	  && flag_profile_values
 	  && flag_value_profile_transformations)
-	value_profile_transformations ();
+	gimple_value_profile_transformations ();
 
       /* The above could hose dominator info.  Currently there is
 	 none coming in, this is a safety valve.  It should be
@@ -581,20 +578,6 @@ struct simple_ipa_opt_pass pass_ipa_tree_profile =
   0,                                   /* todo_flags_start */
   TODO_dump_func                       /* todo_flags_finish */
  }
-};
-
-
-struct profile_hooks tree_profile_hooks =
-{
-  tree_init_edge_profiler,       /* init_edge_profiler */
-  tree_gen_edge_profiler,	 /* gen_edge_profiler */
-  tree_gen_interval_profiler,    /* gen_interval_profiler */
-  tree_gen_pow2_profiler,        /* gen_pow2_profiler */
-  tree_gen_one_value_profiler,   /* gen_one_value_profiler */
-  tree_gen_const_delta_profiler, /* gen_const_delta_profiler */
-  tree_gen_ic_profiler,		 /* gen_ic_profiler */
-  tree_gen_average_profiler,     /* gen_average_profiler */
-  tree_gen_ior_profiler          /* gen_ior_profiler */
 };
 
 #include "gt-tree-profile.h"

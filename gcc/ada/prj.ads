@@ -899,7 +899,7 @@ package Prj is
    --  Return the object directory to use for the project. This depends on
    --  whether we have a library project or a standard project. This function
    --  might return No_Name when no directory applies.
-   --  If we have a a library project file and Including_Libraries is True then
+   --  If we have a library project file and Including_Libraries is True then
    --  the library dir is returned instead of the object dir.
    --  If Only_If_Ada is True, then No_Name will be returned when the project
    --  doesn't Ada sources.
@@ -1508,7 +1508,7 @@ package Prj is
    type Error_Handler is access procedure
      (Project    : Project_Id;
       Is_Warning : Boolean);
-   --  This warngs when an error was found when parsing a project. The error
+   --  This warns when an error was found when parsing a project. The error
    --  itself is handled through Prj.Err (and Prj.Err.Finalize should be called
    --  to actually print the error). This ensures that duplicate error messages
    --  are always correctly removed, that errors msgs are sorted, and that all

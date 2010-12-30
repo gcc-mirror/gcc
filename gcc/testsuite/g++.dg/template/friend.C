@@ -26,4 +26,5 @@ int main()
 {
   s<int>::t y;
   cout << y; // { dg-error "" }
+  // { dg-message "candidate" "candidate note" { target *-*-* } 28 }
 }

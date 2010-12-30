@@ -356,7 +356,7 @@ case "${host}" in
   	BACKTRACESPEC=
 	# Win32 DLLs are limited to 64k exported symbols each.
 	enable_libgcj_sublibs_default=yes
-	libgcj_sublib_ltflags='-no-undefined -bindir $(bindir) \
+	libgcj_sublib_ltflags='$(lt_host_flags) \
 	    -Wl,-u,__ZN3org4ietf4jgss10GSSManagerC1Ev,-L..,-lgcj-noncore-dummy'
 	libgcj_sublib_core_extra_deps=libgcj-noncore-dummy.dll.a
   ;;

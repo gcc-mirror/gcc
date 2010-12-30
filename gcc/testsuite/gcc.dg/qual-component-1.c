@@ -62,39 +62,39 @@ f (void)
   *v2->f[0] = 0; /* { dg-error "assignment of read-only" } */
   **v2->f = 0; /* { dg-error "assignment of read-only" } */
 
-  v3->a = 0; /* { dg-error "assignment of read-only" } */
+  v3->a = 0; /* { dg-error "assignment of member" } */
   v3->b[0] = 0; /* { dg-error "assignment of read-only" } */
   *v3->b = 0; /* { dg-error "assignment of read-only" } */
   v3->c[0][0] = 0; /* { dg-error "assignment of read-only" } */
   *v3->c[0] = 0; /* { dg-error "assignment of read-only" } */
   **v3->c = 0; /* { dg-error "assignment of read-only" } */
-  v3->d = 0; /* { dg-error "assignment of read-only" } */
+  v3->d = 0; /* { dg-error "assignment of member" } */
   v3->e[0] = 0; /* { dg-error "assignment of read-only" } */
   *v3->e = 0; /* { dg-error "assignment of read-only" } */
   v3->f[0][0] = 0; /* { dg-error "assignment of read-only" } */
   *v3->f[0] = 0; /* { dg-error "assignment of read-only" } */
   **v3->f = 0; /* { dg-error "assignment of read-only" } */
 
-  v4.a = 0; /* { dg-error "assignment of read-only" } */
+  v4.a = 0; /* { dg-error "assignment of member" } */
   v4.b[0] = 0; /* { dg-error "assignment of read-only" } */
   *v4.b = 0; /* { dg-error "assignment of read-only" } */
   v4.c[0][0] = 0; /* { dg-error "assignment of read-only" } */
   *v4.c[0] = 0; /* { dg-error "assignment of read-only" } */
   **v4.c = 0; /* { dg-error "assignment of read-only" } */
-  v4.d = 0; /* { dg-error "assignment of read-only" } */
+  v4.d = 0; /* { dg-error "assignment of member" } */
   v4.e[0] = 0; /* { dg-error "assignment of read-only" } */
   *v4.e = 0; /* { dg-error "assignment of read-only" } */
   v4.f[0][0] = 0; /* { dg-error "assignment of read-only" } */
   *v4.f[0] = 0; /* { dg-error "assignment of read-only" } */
   **v4.f = 0; /* { dg-error "assignment of read-only" } */
 
-  v5.x.a = 0; /* { dg-error "assignment of read-only" } */
+  v5.x.a = 0; /* { dg-error "assignment of member" } */
   v5.x.b[0] = 0; /* { dg-error "assignment of read-only" } */
   *v5.x.b = 0; /* { dg-error "assignment of read-only" } */
   v5.x.c[0][0] = 0; /* { dg-error "assignment of read-only" } */
   *v5.x.c[0] = 0; /* { dg-error "assignment of read-only" } */
   **v5.x.c = 0; /* { dg-error "assignment of read-only" } */
-  v5.x.d = 0; /* { dg-error "assignment of read-only" } */
+  v5.x.d = 0; /* { dg-error "assignment of member" } */
   v5.x.e[0] = 0; /* { dg-error "assignment of read-only" } */
   *v5.x.e = 0; /* { dg-error "assignment of read-only" } */
   v5.x.f[0][0] = 0; /* { dg-error "assignment of read-only" } */

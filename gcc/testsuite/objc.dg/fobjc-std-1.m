@@ -65,3 +65,12 @@ id test (void)
 {
   return MyRootClass.name; /* { dg-error "not available in Objective.C 1.0" } */
 }
+
+@interface MyRootClass3
+{
+  Class isa;
+}
+@end
+
+@interface MyRootClass3 ()
+@end /* { dg-error "not available in Objective.C 1.0" } */

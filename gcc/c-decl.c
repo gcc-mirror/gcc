@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "timevar.h"
 #include "c-family/c-common.h"
+#include "c-family/c-objc.h"
 #include "c-family/c-pragma.h"
 #include "c-lang.h"
 #include "langhooks.h"
@@ -1500,9 +1501,8 @@ diagnose_arglist_conflict (tree newdecl, tree olddecl,
 
   if (TREE_CODE (olddecl) != FUNCTION_DECL
       || !comptypes (TREE_TYPE (oldtype), TREE_TYPE (newtype))
-      || !((TYPE_ARG_TYPES (oldtype) == 0 && DECL_INITIAL (olddecl) == 0)
-	   ||
-	   (TYPE_ARG_TYPES (newtype) == 0 && DECL_INITIAL (newdecl) == 0)))
+      || !((!prototype_p (oldtype) && DECL_INITIAL (olddecl) == 0)
+	   || (!prototype_p (newtype) && DECL_INITIAL (newdecl) == 0)))
     return;
 
   t = TYPE_ARG_TYPES (oldtype);
@@ -1832,7 +1832,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	  && !C_DECL_DECLARED_BUILTIN (olddecl)
 	  && (!TREE_PUBLIC (newdecl)
 	      || (DECL_INITIAL (newdecl)
-		  && !TYPE_ARG_TYPES (TREE_TYPE (newdecl)))))
+		  && !prototype_p (TREE_TYPE (newdecl)))))
 	{
 	  warning (OPT_Wshadow, "declaration of %q+D shadows "
 		   "a built-in function", newdecl);
@@ -1869,7 +1869,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
       /* If we have a prototype after an old-style function definition,
 	 the argument types must be checked specially.  */
       else if (DECL_INITIAL (olddecl)
-	       && !TYPE_ARG_TYPES (oldtype) && TYPE_ARG_TYPES (newtype)
+	       && !prototype_p (oldtype) && prototype_p (newtype)
 	       && TYPE_ACTUAL_ARG_TYPES (oldtype)
 	       && !validate_proto_after_old_defn (newdecl, newtype, oldtype))
 	{
@@ -2138,9 +2138,9 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
   bool new_is_definition = (TREE_CODE (newdecl) == FUNCTION_DECL
 			    && DECL_INITIAL (newdecl) != 0);
   bool new_is_prototype = (TREE_CODE (newdecl) == FUNCTION_DECL
-			   && TYPE_ARG_TYPES (TREE_TYPE (newdecl)) != 0);
+			   && prototype_p (TREE_TYPE (newdecl)));
   bool old_is_prototype = (TREE_CODE (olddecl) == FUNCTION_DECL
-			   && TYPE_ARG_TYPES (TREE_TYPE (olddecl)) != 0);
+			   && prototype_p (TREE_TYPE (olddecl)));
   bool extern_changed = false;
 
   /* For real parm decl following a forward decl, rechain the old decl
@@ -3548,7 +3548,7 @@ c_builtin_function (tree decl)
   tree   id = DECL_NAME (decl);
 
   const char *name = IDENTIFIER_POINTER (id);
-  C_DECL_BUILTIN_PROTOTYPE (decl) = (TYPE_ARG_TYPES (type) != 0);
+  C_DECL_BUILTIN_PROTOTYPE (decl) = prototype_p (type);
 
   /* Should never be called on a symbol with a preexisting meaning.  */
   gcc_assert (!I_SYMBOL_BINDING (id));
@@ -3574,7 +3574,7 @@ c_builtin_function_ext_scope (tree decl)
   tree   id = DECL_NAME (decl);
 
   const char *name = IDENTIFIER_POINTER (id);
-  C_DECL_BUILTIN_PROTOTYPE (decl) = (TYPE_ARG_TYPES (type) != 0);
+  C_DECL_BUILTIN_PROTOTYPE (decl) = prototype_p (type);
 
   /* Should never be called on a symbol with a preexisting meaning.  */
   gcc_assert (!I_SYMBOL_BINDING (id));
@@ -4013,7 +4013,7 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
      prototypes file (if requested).  */
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
-    gen_aux_info_record (decl, 0, 0, TYPE_ARG_TYPES (TREE_TYPE (decl)) != 0);
+    gen_aux_info_record (decl, 0, 0, prototype_p (TREE_TYPE (decl)));
 
   /* ANSI specifies that a tentative definition which is not merged with
      a non-tentative definition behaves exactly like a definition with an
@@ -4901,6 +4901,8 @@ grokdeclarator (const struct c_declarator *declarator,
   tree expr_dummy;
   bool expr_const_operands_dummy;
 
+  if (TREE_CODE (type) == ERROR_MARK)
+    return error_mark_node;
   if (expr == NULL)
     expr = &expr_dummy;
   if (expr_const_operands == NULL)
@@ -6327,9 +6329,13 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
   else if (arg_types && TREE_CODE (TREE_VALUE (arg_types)) == IDENTIFIER_NODE)
     {
       if (!funcdef_flag)
-	pedwarn (input_location, 0, "parameter names (without types) in function declaration");
+	{
+	  pedwarn (input_location, 0, "parameter names (without types) in function declaration");
+	  arg_info->parms = NULL_TREE;
+	}
+      else
+	arg_info->parms = arg_info->types;
 
-      arg_info->parms = arg_info->types;
       arg_info->types = 0;
       return 0;
     }
@@ -7814,7 +7820,7 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   current_function_prototype_locus = UNKNOWN_LOCATION;
   current_function_prototype_built_in = false;
   current_function_prototype_arg_types = NULL_TREE;
-  if (TYPE_ARG_TYPES (TREE_TYPE (decl1)) == 0)
+  if (!prototype_p (TREE_TYPE (decl1)))
     {
       if (old_decl != 0 && TREE_CODE (TREE_TYPE (old_decl)) == FUNCTION_TYPE
 	  && comptypes (TREE_TYPE (TREE_TYPE (decl1)),
@@ -7863,7 +7869,7 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   /* Optionally warn of old-fashioned def with no previous prototype.  */
   if (warn_strict_prototypes
       && old_decl != error_mark_node
-      && TYPE_ARG_TYPES (TREE_TYPE (decl1)) == 0
+      && !prototype_p (TREE_TYPE (decl1))
       && C_DECL_ISNT_PROTOTYPE (old_decl))
     warning_at (loc, OPT_Wstrict_prototypes,
 		"function declaration isn%'t a prototype");
@@ -7881,7 +7887,7 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
 	   && old_decl != 0
 	   && old_decl != error_mark_node
 	   && TREE_USED (old_decl)
-	   && TYPE_ARG_TYPES (TREE_TYPE (old_decl)) == 0)
+	   && !prototype_p (TREE_TYPE (old_decl)))
     warning_at (loc, OPT_Wmissing_prototypes,
 		"%qD was used with no prototype before its definition", decl1);
   /* Optionally warn of any global def with no previous declaration.  */
@@ -8380,6 +8386,9 @@ void
 finish_function (void)
 {
   tree fndecl = current_function_decl;
+  
+  if (c_dialect_objc ())
+    objc_finish_function ();
 
   if (TREE_CODE (fndecl) == FUNCTION_DECL
       && targetm.calls.promote_prototypes (TREE_TYPE (fndecl)))
@@ -9540,9 +9549,9 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
       else
 	specs->type = TREE_TYPE (t);
     }
-  else if (TREE_CODE (type) != ERROR_MARK)
+  else
     {
-      if (spec.kind == ctsk_typeof)
+      if (TREE_CODE (type) != ERROR_MARK && spec.kind == ctsk_typeof)
 	{
 	  specs->typedef_p = true;
 	  if (spec.expr)
@@ -9556,11 +9565,6 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	    }
 	}
       specs->type = type;
-    }
-  else
-    {
-      /* Set a dummy type here to avoid warning about implicit 'int'.  */
-      specs->type = integer_type_node;
     }
 
   return specs;
@@ -9677,6 +9681,10 @@ finish_declspecs (struct c_declspecs *specs)
       gcc_assert (!specs->long_p && !specs->long_long_p && !specs->short_p
 		  && !specs->signed_p && !specs->unsigned_p
 		  && !specs->complex_p);
+
+      /* Set a dummy type.  */
+      if (TREE_CODE (specs->type) == ERROR_MARK)
+        specs->type = integer_type_node;
       return specs;
     }
 

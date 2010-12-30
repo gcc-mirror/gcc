@@ -5,7 +5,7 @@
     template<class T, unsigned int Length>
     inline
     unsigned int
-    extent(T (&x)[Length])	// { dg-message "candidate" }
+    extent(T (&x)[Length])	// { dg-message "note" }
     {
             return Length;
     }
@@ -15,4 +15,5 @@
     void f()
     {
       extent(b);  // { dg-error "" } no matching function
+      // { dg-message "candidate" "candidate note" { target *-*-* } 17 }
     }

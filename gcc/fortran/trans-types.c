@@ -415,12 +415,11 @@ gfc_init_kinds (void)
 
       /* Only let float, double, long double and __float128 go through.
 	 Runtime support for others is not provided, so they would be
-	 useless.  TODO: TFmode support should be enabled once libgfortran
-	 support is done.  */
+	 useless.  */
 	if (mode != TYPE_MODE (float_type_node)
 	    && (mode != TYPE_MODE (double_type_node))
 	    && (mode != TYPE_MODE (long_double_type_node))
-#ifdef LIBGCC2_HAS_TF_MODE
+#if defined(LIBGCC2_HAS_TF_MODE) && defined(ENABLE_LIBQUADMATH_SUPPORT)
 	    && (mode != TFmode)
 #endif
 	   )
@@ -2326,7 +2325,13 @@ create_fn_spec (gfc_symbol *sym, tree fntype)
     if (spec_len < sizeof (spec))
       {
 	if (!f->sym || f->sym->attr.pointer || f->sym->attr.target
-	    || f->sym->attr.external || f->sym->attr.cray_pointer)
+	    || f->sym->attr.external || f->sym->attr.cray_pointer
+	    || (f->sym->ts.type == BT_DERIVED
+		&& (f->sym->ts.u.derived->attr.proc_pointer_comp
+		    || f->sym->ts.u.derived->attr.pointer_comp))
+	    || (f->sym->ts.type == BT_CLASS
+		&& (CLASS_DATA (f->sym)->ts.u.derived->attr.proc_pointer_comp
+		    || CLASS_DATA (f->sym)->ts.u.derived->attr.pointer_comp)))
 	  spec[spec_len++] = '.';
 	else if (f->sym->attr.intent == INTENT_IN)
 	  spec[spec_len++] = 'r';

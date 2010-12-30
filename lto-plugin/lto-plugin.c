@@ -47,7 +47,15 @@ along with this program; see the file COPYING3.  If not see
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/types.h>
+#ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
+#endif
+#ifndef WIFEXITED
+#define WIFEXITED(S) (((S) & 0xff) == 0)
+#endif
+#ifndef WEXITSTATUS
+#define WEXITSTATUS(S) (((S) & 0xff00) >> 8)
+#endif
 #include <libiberty.h>
 #include <hashtab.h>
 #include "../gcc/lto/common.h"
@@ -144,10 +152,10 @@ static char debug;
 static char nop;
 static char *resolution_file = NULL;
 
-/* Set by default from configure.ac, but can be overridden at runtime
+/* Not used by default, but can be overridden at runtime
    by using -plugin-opt=-sym-style={none,win32,underscore|uscore}
    (in fact, only first letter of style arg is checked.)  */
-static enum symbol_style sym_style = SYM_STYLE;
+static enum symbol_style sym_style = ss_none;
 
 static void
 check_1 (int gate, enum ld_plugin_level level, const char *text)

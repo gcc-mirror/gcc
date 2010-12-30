@@ -22,12 +22,17 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+/** @file bits/ctype_base.h
+ *  This is an internal header file, included by other library headers.
+ *  Do not attempt to use it directly. @headername{locale}
+ */
+
 //
 // ISO C++ 14882: 22.1  Locales
 //
-  
+
 // Information as gleaned from /usr/include/ctype.h on irix 6.5
-  
+
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /// @brief  Base class for ctype.

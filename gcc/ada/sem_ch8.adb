@@ -3508,7 +3508,7 @@ package body Sem_Ch8 is
 
       function May_Be_Used_Primitive_Of (T : Entity_Id) return Boolean;
       --  An operator may be primitive in several types, if they are declared
-      --  in the same scope as the operator. To determine the use-visiblity of
+      --  in the same scope as the operator. To determine the use-visibility of
       --  the operator in such cases we must examine all types in the profile.
 
       ------------------------------

@@ -52,8 +52,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define CC1_SPEC "%(cc1_cpu) %{profile:-p}"
 
 #undef ASM_SPEC
-#define ASM_SPEC "%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} \
- %{Wa,*:%*} %{m32:--32} %{m64:--64}"
+#define ASM_SPEC "%{m32:--32} %{m64:--64}"
 
 #undef ASM_OUTPUT_ALIGNED_BSS
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \

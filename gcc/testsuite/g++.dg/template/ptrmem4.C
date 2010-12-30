@@ -6,7 +6,7 @@
 // Pointer to member function template argument deduction ICE.
 
 
-template <class CONT> void queryAliases(CONT& fill_me); // { dg-message "candidate is" }
+template <class CONT> void queryAliases(CONT& fill_me); // { dg-message "queryAliases|no known conversion" }
 
 struct SpyExample
 {
@@ -17,4 +17,5 @@ struct SpyExample
 void SpyExample::ready()
 {
   queryAliases(inputs); // { dg-error "matching" }
+  // { dg-message "candidate" "candidate note" { target *-*-* } 19 }
 }

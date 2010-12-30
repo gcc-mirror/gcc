@@ -229,11 +229,12 @@ read_cmdline_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	  gcc_assert (opts == &global_options);
 	  gcc_assert (opts_set == &global_options_set);
 
-	  if (main_input_filename == NULL)
+	  if (opts->x_main_input_filename == NULL)
 	    {
-	      main_input_filename = decoded_options[i].arg;
-	      main_input_baselength
-		= base_of_path (main_input_filename, &main_input_basename);
+	      opts->x_main_input_filename = decoded_options[i].arg;
+	      opts->x_main_input_baselength
+		= base_of_path (opts->x_main_input_filename,
+				&opts->x_main_input_basename);
 	    }
 	  add_input_filename (decoded_options[i].arg);
 	  continue;

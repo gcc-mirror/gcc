@@ -3564,10 +3564,12 @@ splice_param_accesses (tree parm, bool *ro_grp)
   while (i < access_count)
     {
       bool modification;
+      tree a1_alias_type;
       access = VEC_index (access_p, access_vec, i);
       modification = access->write;
       if (access_precludes_ipa_sra_p (access))
 	return NULL;
+      a1_alias_type = reference_alias_ptr_type (access->expr);
 
       /* Access is about to become group representative unless we find some
 	 nasty overlap which would preclude us from breaking this parameter
@@ -3588,7 +3590,11 @@ splice_param_accesses (tree parm, bool *ro_grp)
 	  else if (ac2->size != access->size)
 	    return NULL;
 
-	  if (access_precludes_ipa_sra_p (ac2))
+	  if (access_precludes_ipa_sra_p (ac2)
+	      || (ac2->type != access->type
+		  && (TREE_ADDRESSABLE (ac2->type)
+		      || TREE_ADDRESSABLE (access->type)))
+	      || (reference_alias_ptr_type (ac2->expr) != a1_alias_type))
 	    return NULL;
 
 	  modification |= ac2->write;
@@ -3823,6 +3829,7 @@ turn_representatives_into_adjustments (VEC (access_p, heap) *representatives,
 	      adj->base_index = index;
 	      adj->base = repr->base;
 	      adj->type = repr->type;
+	      adj->alias_ptr_type = reference_alias_ptr_type (repr->expr);
 	      adj->offset = repr->offset;
 	      adj->by_ref = (POINTER_TYPE_P (TREE_TYPE (repr->base))
 			     && (repr->grp_maybe_modified

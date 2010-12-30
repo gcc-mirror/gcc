@@ -473,8 +473,8 @@ package body Scn is
 
       if not Used_As_Identifier (Token) or else Force_Msg then
 
-         --  If "some" is made into a reseverd work in Ada2012, the following
-         --  check will make it into a regular identifer in earlier versions
+         --  If "some" is made into a reserved work in Ada2012, the following
+         --  check will make it into a regular identifier in earlier versions
          --  of the language.
 
          if Token = Tok_Some and then Ada_Version < Ada_2012 then

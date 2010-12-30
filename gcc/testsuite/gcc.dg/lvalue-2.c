@@ -26,23 +26,23 @@ void
 f1 (void)
 {
   c = 1; /* { dg-error "assignment of read-only variable 'c'" } */
-  d.x = 1; /* { dg-error "assignment of read-only variable 'd'" } */
+  d.x = 1; /* { dg-error "assignment of member 'x' in read-only object" } */
   e.x = 1; /* { dg-error "assignment of read-only member 'x'" } */
   *f = 1; /* { dg-error "assignment of read-only location" } */
   c++; /* { dg-error "increment of read-only variable 'c'" } */
-  d.x++; /* { dg-error "increment of read-only variable 'd'" } */
+  d.x++; /* { dg-error "increment of member 'x' in read-only object" } */
   e.x++; /* { dg-error "increment of read-only member 'x'" } */
   (*f)++; /* { dg-error "increment of read-only location" } */
   ++c; /* { dg-error "increment of read-only variable 'c'" } */
-  ++d.x; /* { dg-error "increment of read-only variable 'd'" } */
+  ++d.x; /* { dg-error "increment of member 'x' in read-only object" } */
   ++e.x; /* { dg-error "increment of read-only member 'x'" } */
   ++(*f); /* { dg-error "increment of read-only location" } */
   c--; /* { dg-error "decrement of read-only variable 'c'" } */
-  d.x--; /* { dg-error "decrement of read-only variable 'd'" } */
+  d.x--; /* { dg-error "decrement of member 'x' in read-only object" } */
   e.x--; /* { dg-error "decrement of read-only member 'x'" } */
   (*f)--; /* { dg-error "decrement of read-only location" } */
   --c; /* { dg-error "decrement of read-only variable 'c'" } */
-  --d.x; /* { dg-error "decrement of read-only variable 'd'" } */
+  --d.x; /* { dg-error "decrement of member 'x' in read-only object" } */
   --e.x; /* { dg-error "decrement of read-only member 'x'" } */
   --(*f); /* { dg-error "decrement of read-only location" } */
 }

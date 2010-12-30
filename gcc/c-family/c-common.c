@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-pragma.h"
 #include "ggc.h"
 #include "c-common.h"
+#include "c-objc.h"
 #include "tm_p.h"
 #include "obstack.h"
 #include "cpplib.h"
@@ -7416,7 +7417,7 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
      will have the correct types when we actually check them later.  */
   if (!args)
     {
-      if (!TYPE_ARG_TYPES (type))
+      if (!prototype_p (type))
 	{
 	  error ("nonnull attribute without arguments on a non-prototype");
 	  *no_add_attrs = true;
@@ -7699,7 +7700,7 @@ handle_sentinel_attribute (tree *node, tree name, tree args,
 {
   tree params = TYPE_ARG_TYPES (*node);
 
-  if (!params)
+  if (!prototype_p (*node))
     {
       warning (OPT_Wattributes,
 	       "%qE attribute requires prototypes with named arguments", name);
@@ -8626,6 +8627,78 @@ warn_for_omitted_condop (location_t location, tree cond)
 		"suggest explicit middle operand");
 } 
 
+/* Give an error for storing into ARG, which is 'const'.  USE indicates
+   how ARG was being used.  */
+
+void
+readonly_error (tree arg, enum lvalue_use use)
+{
+  gcc_assert (use == lv_assign || use == lv_increment || use == lv_decrement
+	      || use == lv_asm);
+  /* Using this macro rather than (for example) arrays of messages
+     ensures that all the format strings are checked at compile
+     time.  */
+#define READONLY_MSG(A, I, D, AS) (use == lv_assign ? (A)		\
+				   : (use == lv_increment ? (I)		\
+				   : (use == lv_decrement ? (D) : (AS))))
+  if (TREE_CODE (arg) == COMPONENT_REF)
+    {
+      if (TYPE_READONLY (TREE_TYPE (TREE_OPERAND (arg, 0))))
+        error (READONLY_MSG (G_("assignment of member "
+				"%qD in read-only object"),
+			     G_("increment of member "
+				"%qD in read-only object"),
+			     G_("decrement of member "
+				"%qD in read-only object"),
+			     G_("member %qD in read-only object "
+				"used as %<asm%> output")),
+	       TREE_OPERAND (arg, 1));
+      else
+	error (READONLY_MSG (G_("assignment of read-only member %qD"),
+			     G_("increment of read-only member %qD"),
+			     G_("decrement of read-only member %qD"),
+			     G_("read-only member %qD used as %<asm%> output")),
+	       TREE_OPERAND (arg, 1));
+    }
+  else if (TREE_CODE (arg) == VAR_DECL)
+    error (READONLY_MSG (G_("assignment of read-only variable %qD"),
+			 G_("increment of read-only variable %qD"),
+			 G_("decrement of read-only variable %qD"),
+			 G_("read-only variable %qD used as %<asm%> output")),
+	   arg);
+  else if (TREE_CODE (arg) == PARM_DECL)
+    error (READONLY_MSG (G_("assignment of read-only parameter %qD"),
+			 G_("increment of read-only parameter %qD"),
+			 G_("decrement of read-only parameter %qD"),
+			 G_("read-only parameter %qD use as %<asm%> output")),
+	   arg);  
+  else if (TREE_CODE (arg) == RESULT_DECL)
+    {
+      gcc_assert (c_dialect_cxx ());
+      error (READONLY_MSG (G_("assignment of "
+			      "read-only named return value %qD"),
+			   G_("increment of "
+			      "read-only named return value %qD"),
+			   G_("decrement of "
+			      "read-only named return value %qD"),
+			   G_("read-only named return value %qD "
+			      "used as %<asm%>output")),
+	     arg);
+    }
+  else if (TREE_CODE (arg) == FUNCTION_DECL)
+    error (READONLY_MSG (G_("assignment of function %qD"),
+			 G_("increment of function %qD"),
+			 G_("decrement of function %qD"),
+			 G_("function %qD used as %<asm%> output")),
+	   arg);
+  else
+    error (READONLY_MSG (G_("assignment of read-only location %qE"),
+			 G_("increment of read-only location %qE"),
+			 G_("decrement of read-only location %qE"),
+			 G_("read-only location %qE used as %<asm%> output")),
+	   arg);
+}
+
 /* Print an error message for an invalid lvalue.  USE says
    how the lvalue is being used and so selects the error message.  */
 
@@ -8648,6 +8721,43 @@ lvalue_error (enum lvalue_use use)
       break;
     case lv_asm:
       error ("lvalue required in asm statement");
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Print an error message for an invalid indirection of type TYPE.
+   ERRSTRING is the name of the operator for the indirection.  */
+
+void
+invalid_indirection_error (location_t loc, tree type, ref_operator errstring)
+{
+  switch (errstring)
+    {
+    case RO_NULL:
+      gcc_assert (c_dialect_cxx ());
+      error_at (loc, "invalid type argument (have %qT)", type);
+      break;
+    case RO_ARRAY_INDEXING:
+      error_at (loc,
+		"invalid type argument of array indexing (have %qT)",
+		type);
+      break;
+    case RO_UNARY_STAR:
+      error_at (loc,
+		"invalid type argument of unary %<*%> (have %qT)",
+		type);
+      break;
+    case RO_ARROW:
+      error_at (loc,
+		"invalid type argument of %<->%> (have %qT)",
+		type);
+      break;
+    case RO_IMPLICIT_CONVERSION:
+      error_at (loc,
+		"invalid type argument of implicit conversion (have %qT)",
+		type);
       break;
     default:
       gcc_unreachable ();

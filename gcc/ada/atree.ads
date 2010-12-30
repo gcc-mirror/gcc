@@ -844,7 +844,7 @@ package Atree is
    --  This is similar to Rewrite, except that the old value of Old_Node is
    --  not saved, and the New_Node is deleted after the replace, since it
    --  is assumed that it can no longer be legitimately needed. The flag
-   --  Is_Rewrite_Susbtitute will be False for the resulting node, unless
+   --  Is_Rewrite_Substitution will be False for the resulting node, unless
    --  it was already true on entry, and Original_Node will not return the
    --  original contents of the Old_Node, but rather the New_Node value (unless
    --  Old_Node had already been rewritten using Rewrite). Replace also

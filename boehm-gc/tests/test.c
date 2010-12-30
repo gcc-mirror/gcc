@@ -624,7 +624,12 @@ void reverse_test()
 	    /* OSF has limited stack space by default, and large frames. */
 #           define BIG 200
 #	  else
-#           define BIG 4500
+#	    if defined(__MACH__) && defined(__ppc64__)
+	      /* Small stack and largish frames.  */
+#             define BIG 2500	      
+#	    else
+#             define BIG 4500
+#	    endif
 #	  endif
 #	endif
 #     endif

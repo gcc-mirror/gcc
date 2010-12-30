@@ -257,20 +257,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "ggc.h"
-#include "tree.h"
-#include "basic-block.h"
-#include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "tree-flow.h"
-#include "tree-dump.h"
-#include "timevar.h"
 #include "cfgloop.h"
 #include "tree-chrec.h"
 #include "tree-scalar-evolution.h"
 #include "tree-pass.h"
-#include "flags.h"
 #include "params.h"
 
 static tree analyze_scalar_evolution_1 (struct loop *, tree, tree);
@@ -1715,12 +1707,22 @@ interpret_rhs_expr (struct loop *loop, gimple at_stmt,
 	  return chrec_convert (type, analyze_scalar_evolution (loop, rhs1),
 				at_stmt);
 	}
-
-      return chrec_dont_know;
     }
 
   switch (code)
     {
+    case ADDR_EXPR:
+      /* Handle &MEM[ptr + CST] which is equivalent to POINTER_PLUS_EXPR.  */
+      if (TREE_CODE (TREE_OPERAND (rhs1, 0)) != MEM_REF)
+	{
+	  res = chrec_dont_know;
+	  break;
+	}
+
+      rhs2 = TREE_OPERAND (TREE_OPERAND (rhs1, 0), 1);
+      rhs1 = TREE_OPERAND (TREE_OPERAND (rhs1, 0), 0);
+      /* Fall through.  */
+
     case POINTER_PLUS_EXPR:
       chrec1 = analyze_scalar_evolution (loop, rhs1);
       chrec2 = analyze_scalar_evolution (loop, rhs2);
@@ -2606,7 +2608,8 @@ instantiate_scev_r (basic_block instantiate_below,
   if (size_expr++ > PARAM_VALUE (PARAM_SCEV_MAX_EXPR_SIZE))
     return chrec_dont_know;
 
-  if (automatically_generated_chrec_p (chrec)
+  if (chrec == NULL_TREE
+      || automatically_generated_chrec_p (chrec)
       || is_gimple_min_invariant (chrec))
     return chrec;
 

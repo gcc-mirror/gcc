@@ -22,7 +22,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file atomic
+/** @file include/atomic
  *  This is a Standard C++ Library header.
  */
 

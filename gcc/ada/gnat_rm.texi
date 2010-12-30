@@ -2444,7 +2444,7 @@ implementation_kind ::= By_Entry | By_Protected_Procedure | By_Any
 @noindent
 This is an Ada 2012 representation pragma which applies to protected, task
 and synchronized interface primitives. The use of pragma Implemented provides
-a way to impose a static requirement on the overriding opreration by adhering
+a way to impose a static requirement on the overriding operation by adhering
 to one of the three implementation kids: entry, protected procedure or any of
 the above.
 
@@ -2469,7 +2469,7 @@ end Task_Typ;
 @noindent
 When applied to the procedure_or_entry_NAME of a requeue statement, pragma
 Implemented determines the runtime behavior of the requeue. Implementation kind
-By_Entry guarantees that the action of requeueing will procede from an entry to
+By_Entry guarantees that the action of requeueing will proceed from an entry to
 another entry. Implementation kind By_Protected_Procedure transforms the
 requeue into a dispatching call, thus eliminating the chance of blocking. Kind
 By_Any shares the behavior of By_Entry and By_Protected_Procedure depending on
@@ -2524,7 +2524,7 @@ for r'size use 16;
 @noindent
 Without a pragma Pack, each Boolean field requires 8 bits, so the
 minimum size is 72 bits, but with a pragma Pack, 16 bits would be
-sufficient. The use of pragma Implciit_Packing allows this record
+sufficient. The use of pragma Implicit_Packing allows this record
 declaration to compile without an explicit pragma Pack.
 @node Pragma Import_Exception
 @unnumberedsec Pragma Import_Exception
@@ -3603,7 +3603,7 @@ The effect of this pragma is to output a warning message on a reference to
 an entity thus marked that the subprogram is obsolescent if the appropriate
 warning option in the compiler is activated. If the Message parameter is
 present, then a second warning message is given containing this text. In
-addition, a reference to the eneity is considered to be a violation of pragma
+addition, a reference to the entity is considered to be a violation of pragma
 Restrictions (No_Obsolescent_Features).
 
 This pragma can also be used as a program unit pragma for a package,
@@ -9255,7 +9255,7 @@ Only do the copy if the destination file does not already exist. If it already
 exists, Copy_File fails.
 
 @item overwrite
-Copy the file in all cases. Overwite an already existing destination file.
+Copy the file in all cases. Overwrite an already existing destination file.
 
 @item append
 Append the original file to the destination file. If the destination file does
@@ -16287,7 +16287,7 @@ case for machines compliant with the IEEE floating-point standard, but on
 machines that are not fully compliant with this standard, such as Alpha, the
 @option{-mieee} compiler flag must be used for achieving IEEE confirming
 behavior (although at the cost of a significant performance penalty), so
-infinite and and NaN values are properly generated.
+infinite and NaN values are properly generated.
 
 
 @node Implementation of Ada 2012 Features
@@ -16484,7 +16484,7 @@ A complete description of the AIs may be found in
 @cindex AI-0003 (Ada 2012 feature)
 
 @noindent
-   In Ada 2012, a qualified expression is considered to be syntatically a name,
+   In Ada 2012, a qualified expression is considered to be syntactically a name,
    meaning that constructs such as @code{A'(F(X)).B} are now legal. This is
    useful in disambiguating some cases of overloading.
 
@@ -16704,7 +16704,7 @@ A complete description of the AIs may be found in
 
 @noindent
   This AI covers a number of issues regarding returning abstract types. In
-  particular generic fucntions cannot have abstract result types or access
+  particular generic functions cannot have abstract result types or access
   result types designated an abstract type. There are some other cases which
   are detailed in the AI. Note that this binding interpretation has not been
   retrofitted to operate before Ada 2012 mode, since it caused a significant
@@ -17044,11 +17044,11 @@ A complete description of the AIs may be found in
 
 
 @item
-@emph{AI-0050 Raising Constraingt_Errpr early for function call (0000-00-00)}
+@emph{AI-0050 Raising Constraint_Error early for function call (0000-00-00)}
 @cindex AI-0050 (Ada 2012 feature)
 
 @noindent
-  The implementation permissions for raising @code{Constraing_Error} early on a function call when it was clear an exception would be raised were over-permissive and allowed mishandling of discriminants in some cases. GNAT did
+  The implementation permissions for raising @code{Constraint_Error} early on a function call when it was clear an exception would be raised were over-permissive and allowed mishandling of discriminants in some cases. GNAT did
   not take advantage of these incorrect permissions in any case.
 
 @noindent
@@ -17108,7 +17108,7 @@ A complete description of the AIs may be found in
 
 @noindent
   This AI clarifies that ``needs finalization'' is part of dynamic semantics,
-  and therefore depends on the run-time charateristics of an object (i.e. its
+  and therefore depends on the run-time characteristics of an object (i.e. its
   tag) and not on its nominal type. As the AI indicates: ``we do not expect
   this to affect any implementation''.
 
@@ -17799,7 +17799,7 @@ A complete description of the AIs may be found in
   forbid tasks declared locally within subprograms, or functions returning task
   objects, and that is the implementation that GNAT has always provided.
   However the language in the RM was not sufficiently clear on this point.
-  Thus this is a docmentation change in the RM only.
+  Thus this is a documentation change in the RM only.
 
 @noindent
   RM References:  D.07 (3/3)

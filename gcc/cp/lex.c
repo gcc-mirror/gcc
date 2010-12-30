@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "flags.h"
 #include "c-family/c-pragma.h"
-#include "toplev.h"
+#include "c-family/c-objc.h"
 #include "output.h"
 #include "tm_p.h"
 #include "timevar.h"
@@ -453,7 +453,10 @@ unqualified_name_lookup_error (tree name)
   else
     {
       if (!objc_diagnose_private_ivar (name))
-        error ("%qD was not declared in this scope", name);
+	{
+	  error ("%qD was not declared in this scope", name);
+	  suggest_alternatives_for (location_of (name), name);
+	}
       /* Prevent repeated error messages by creating a VAR_DECL with
 	 this NAME in the innermost block scope.  */
       if (current_function_decl)

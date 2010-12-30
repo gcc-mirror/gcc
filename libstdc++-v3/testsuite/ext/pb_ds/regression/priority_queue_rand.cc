@@ -1,4 +1,8 @@
-// { dg-options "-DPB_DS_REGRESSION" }
+// { dg-require-time "" }
+// This can take long on simulators, timing out the test.
+// { dg-options "-DITERATIONS=5" { target simulator } }
+// { dg-timeout-factor 2.0 }
+
 // -*- C++ -*-
 
 // Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
@@ -35,14 +39,11 @@
  * Contains a random-operation test for priority queues.
  */
 
-// { dg-require-time "" }
+#define PB_DS_REGRESSION
 
 #include <regression/rand/priority_queue/rand_regression_test.hpp>
 #include <regression/common_type.hpp>
 
-// This can take long on simulators, timing out the test.
-// { dg-options "-DPB_DS_REGRESSION -DITERATIONS=5" { target simulator } }
-// { dg-timeout-factor 2.0 }
 #ifndef ITERATIONS
 #define ITERATIONS 5000
 #endif

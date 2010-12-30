@@ -52,6 +52,9 @@ C ObjC C++ ObjC++ Separate Alias(MF) MissingArgError(missing filename after %qs)
 dylib_file
 Driver Separate Alias(Zdylib_file)
 
+dylinker
+Driver
+
 dynamic
 Driver Alias(Zdynamic)
 
@@ -88,6 +91,9 @@ Driver
 gused
 Driver
 
+headerpad_max_install_names
+Driver
+
 image_base
 Driver Separate Alias(Zimage_base)
 
@@ -96,6 +102,9 @@ Driver Separate Alias(Zinit)
 
 install_name
 Driver Separate Alias(Zinstall_name)
+
+keep_private_externs
+Driver
 
 mconstant-cfstrings
 Target Report Var(darwin_constant_cfstrings) Init(1)
@@ -113,6 +122,36 @@ Driver RejectNegative Separate Alias(Zmultiplydefinedunused)
 no_dead_strip_inits_and_terms
 Driver Alias(Zno_dead_strip_inits_and_terms)
 
+nofixprebinding
+Driver
+
+nomultidefs
+Driver
+
+noprebind
+Driver
+
+noseglinkedit
+Driver
+
+object
+Driver
+
+prebind
+Driver
+
+prebind_all_twolevel_modules
+Driver
+
+preload
+Driver
+
+private_bundle
+Driver
+
+pthread
+Driver
+
 seg_addr_table
 Driver Separate Alias(Zseg_addr_table)
 
@@ -121,6 +160,9 @@ Driver Separate Alias(Zfn_seg_addr_table_filename)
 
 segaddr
 Driver Separate Args(2) Alias(Zsegaddr)
+
+seglinkedit
+Driver
 
 segs_read_only_addr
 Driver Separate Alias(Zsegs_read_only_addr)
@@ -131,6 +173,12 @@ Driver Separate Alias(Zsegs_read_write_addr)
 single_module
 Driver Alias(Zsingle_module)
 
+twolevel_namespace
+Driver
+
+twolevel_namespace_hints
+Driver
+
 umbrella
 Driver Separate Alias(Zumbrella)
 
@@ -139,6 +187,18 @@ Driver Separate Alias(Zunexported_symbols_list)
 
 weak_reference_mismatches
 Driver Separate Alias(Zweak_reference_mismatches)
+
+whatsloaded
+Driver
+
+whyload
+Driver
+
+y
+Driver Joined
+
+Mach
+Driver
 
 Wnonportable-cfstrings
 Target Report Var(darwin_warn_nonportable_cfstrings) Init(1) Warning
@@ -180,6 +240,9 @@ Generate code for the kernel or loadable kernel extensions
 iframework
 Target RejectNegative C ObjC C++ ObjC++ Joined Separate 
 -iframework <dir>	Add <dir> to the end of the system framework include path
+
+X
+Driver
 
 Zall_load
 Driver

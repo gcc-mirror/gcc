@@ -22,9 +22,9 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file locale_facets_nonio.tcc
+/** @file bits/locale_facets_nonio.tcc
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{locale}
  */
 
 #ifndef _LOCALE_FACETS_NONIO_TCC

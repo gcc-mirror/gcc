@@ -546,7 +546,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Set_Operations is
            "attempt to tamper with cursors (container is busy)";
       end if;
 
-      --  Note that there's no way to decide apriori whether the
+      --  Note that there's no way to decide a priori whether the
       --  target has enough capacity for the union with source.
       --  We cannot simply compare the sum of the existing lengths
       --  to the capacity of the target, because equivalent items

@@ -22,18 +22,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
 #include "tree.h"
-#include "tree-inline.h"
 #include "tree-pretty-print.h"
-#include "hashtab.h"
-
 
 #define TB_OUT_FILE stdout
 #define TB_IN_FILE stdin
 #define TB_NIY fprintf (TB_OUT_FILE, "Sorry this command is not yet implemented.\n")
 #define TB_WF fprintf (TB_OUT_FILE, "Warning, this command failed.\n")
-
 
 /* Structures for handling Tree Browser's commands.  */
 #define DEFTBCODE(COMMAND, STRING, HELP)   COMMAND,

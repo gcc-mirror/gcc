@@ -2692,24 +2692,24 @@ an inlined PLT.
 @item leaf
 @cindex @code{leaf} function attribute
 Calls to external functions with this attribute must return to the current
-compilation unit only by return or by exception handling. In particular, leaf
-functions are not allowed to call callback function passed to it from current
+compilation unit only by return or by exception handling.  In particular, leaf
+functions are not allowed to call callback function passed to it from the current
 compilation unit or directly call functions exported by the unit or longjmp
-into the unit.  Still leaf function might call functions from other complation
-units and thus they are not neccesarily leaf in the sense that they contains no
+into the unit.  Leaf function might still call functions from other compilation
+units and thus they are not necessarily leaf in the sense that they contain no
 function calls at all.
 
 The attribute is intended for library functions to improve dataflow analysis.
-Compiler takes the hint that any data not escaping current compilation unit can
-not be used or modified by the leaf function.  For example, function @code{sin}
-is leaf, function @code{qsort} is not.
+The compiler takes the hint that any data not escaping the current compilation unit can
+not be used or modified by the leaf function.  For example, the @code{sin} function
+is a leaf function, but @code{qsort} is not.
 
-Note that the leaf functions might invoke signals and signal handlers might be
-defined in the current compilation unit and use static variables. Only
+Note that leaf functions might invoke signals and signal handlers might be
+defined in the current compilation unit and use static variables.  The only
 compliant way to write such a signal handler is to declare such variables
 @code{volatile}.
 
-The attribute has no effect on functions defined within current compilation
+The attribute has no effect on functions defined within the current compilation
 unit.  This is to allow easy merging of multiple compilation units into one,
 for example, by using the link time optimization.  For this reason the
 attribute is not allowed on types to annotate indirect calls.
@@ -2822,6 +2822,19 @@ when targeting Windows.  On all other systems, the default is the AMD ABI.
 
 Note, the @code{ms_abi} attribute for Windows targets currently requires
 the @option{-maccumulate-outgoing-args} option.
+
+@item callee_pop_aggregate_return (@var{number})
+@cindex @code{callee_pop_aggregate_return} attribute
+
+On 32-bit i?86-*-* targets, you can control by those attribute for
+aggregate return in memory, if the caller is responsible to pop the hidden
+pointer together with the rest of the arguments - @var{number} equal to
+zero -, or if the callee is responsible to pop hidden pointer - @var{number}
+equal to one.
+
+For i?86-netware, the caller pops the stack for the hidden arguments pointing
+to aggregate return value.  This differs from the default i386 ABI which assumes
+that the callee pops the stack for hidden pointer.
 
 @item ms_hook_prologue
 @cindex @code{ms_hook_prologue} attribute
@@ -3576,16 +3589,16 @@ away so that a longer more expensive calling sequence is required.
 
 @item cpu=@var{CPU}
 @cindex @code{target("cpu=@var{CPU}")} attribute
-Specify the architecture to generate code for in compiling the
-function.  If you select @code{"target("cpu=power7)"} attribute when
+Specify the architecture to generate code for when compiling the
+function.  If you select the @code{"target("cpu=power7)"} attribute when
 generating 32-bit code, VSX and Altivec instructions are not generated
 unless you use the @option{-mabi=altivec} option on the command line.
 
 @item tune=@var{TUNE}
 @cindex @code{target("tune=@var{TUNE}")} attribute
-Specify the architecture to tune for in compiling the function.  If
+Specify the architecture to tune for when compiling the function.  If
 you do not specify the @code{target("tune=@var{TUNE}")} attribute and
-you do specifiy the @code{target("cpu=@var{CPU}")} attribute,
+you do specify the @code{target("cpu=@var{CPU}")} attribute,
 compilation will tune for the @var{CPU} architecture, and not the
 default tuning specified on the command line.
 @end table
@@ -4036,7 +4049,7 @@ If @code{D1} has the form @code{*
 declaration @code{T D} specifies the type
 ``@var{derived-declarator-type-list} @var{Type}'' for @var{ident}, then
 @code{T D1} specifies the type ``@var{derived-declarator-type-list}
-@var{type-qualifier-and-attribute-specifier-list} @var{Type}'' for
+@var{type-qualifier-and-attribute-specifier-list} pointer to @var{Type}'' for
 @var{ident}.
 
 For example,
@@ -5345,14 +5358,14 @@ the single copy in the library.
 
 C has the concept of volatile objects.  These are normally accessed by
 pointers and used for accessing hardware or inter-thread
-communication.  The standard encourage compilers to refrain from
+communication.  The standard encourages compilers to refrain from
 optimizations concerning accesses to volatile objects, but leaves it
 implementation defined as to what constitutes a volatile access.  The
 minimum requirement is that at a sequence point all previous accesses
 to volatile objects have stabilized and no subsequent accesses have
 occurred.  Thus an implementation is free to reorder and combine
 volatile accesses which occur between sequence points, but cannot do
-so for accesses across a sequence point.  The use of volatiles does
+so for accesses across a sequence point.  The use of volatile does
 not allow you to violate the restriction on updating objects multiple
 times between two sequence points.
 
@@ -5381,7 +5394,7 @@ asm volatile ("" : : : "memory");
 vobj = 1;
 @end smallexample
 
-A scalar volatile object is read, when it is accessed in a void context:
+A scalar volatile object is read when it is accessed in a void context:
 
 @smallexample
 volatile int *src = @var{somevalue};
@@ -9368,9 +9381,9 @@ used.  All of them generate the machine instruction that is part of the
 name.
 
 @smallexample
-unsigned short __builtin_ia32_rdrand16 (void)
-unsigned int __builtin_ia32_rdrand32 (void)
-unsigned long long __builtin_ia32_rdrand64 (void)
+unsigned int __builtin_ia32_rdrand16_step (unsigned short *)
+unsigned int __builtin_ia32_rdrand32_step (unsigned int *)
+unsigned int __builtin_ia32_rdrand64_step (unsigned long long *)
 @end smallexample
 
 The following built-in functions are available when @option{-msse4a} is used.
@@ -12976,7 +12989,7 @@ to be a small power of two and specifies the new alignment in bytes.
 @item @code{#pragma pack(@var{n})} simply sets the new alignment.
 @item @code{#pragma pack()} sets the alignment to the one that was in
 effect when compilation started (see also command-line option
-@option{-fpack-struct[=<n>]} @pxref{Code Gen Options}).
+@option{-fpack-struct[=@var{n}]} @pxref{Code Gen Options}).
 @item @code{#pragma pack(push[,@var{n}])} pushes the current alignment
 setting on an internal stack and then optionally sets the new alignment.
 @item @code{#pragma pack(pop)} restores the alignment setting to the one

@@ -35,7 +35,6 @@
 #include "recog.h"
 #include "reload.h"
 #include "diagnostic-core.h"
-#include "toplev.h"
 #include "obstack.h"
 #include "tree.h"
 #include "expr.h"

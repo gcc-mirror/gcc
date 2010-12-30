@@ -454,7 +454,8 @@ test_default_ctor_exception_safety()
   // test
   try
   {
-    X a(7);
+    T ref;
+    X a(7, ref);
     VERIFY( false );
   }
   catch (...)

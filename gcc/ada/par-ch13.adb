@@ -367,9 +367,9 @@ package body Ch13 is
 
    --  Parsed by P_Representation_Clause (13.1)
 
-   ------------------------------
-   -- 13.1  Aspect Specifation --
-   ------------------------------
+   --------------------------------
+   -- 13.1  Aspect Specification --
+   --------------------------------
 
    --  ASPECT_SPECIFICATION ::=
    --    with ASPECT_MARK [=> ASPECT_DEFINITION] {.
@@ -456,7 +456,7 @@ package body Ch13 is
                if not Class_Aspect_OK (A_Id) then
                   Error_Msg_Node_1 := Identifier (Aspect);
                   Error_Msg_SC ("aspect& does not permit attribute here");
-                  Scan; -- past apostophe
+                  Scan; -- past apostrophe
                   Scan; -- past presumed CLASS
                   OK := False;
 

@@ -2359,7 +2359,7 @@ gnat_protect_expr (tree exp)
   if (TREE_CONSTANT (exp) || code == SAVE_EXPR || code == NULL_EXPR)
     return exp;
 
-  /* If EXP has no side effects, we theoritically don't need to do anything.
+  /* If EXP has no side effects, we theoretically don't need to do anything.
      However, we may be recursively passed more and more complex expressions
      involving checks which will be reused multiple times and eventually be
      unshared for gimplification; in order to avoid a complexity explosion

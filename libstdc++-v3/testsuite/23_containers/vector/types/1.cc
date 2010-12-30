@@ -1,6 +1,6 @@
 // 2005-12-01  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2005, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,32 +20,20 @@
 // { dg-do compile }
 
 #include <vector>
-
-namespace N
-{
-  struct X { };
-
-  template<typename T>
-    X operator+(T, std::size_t)
-    { return X(); }
-
-  template<typename T>
-    X operator-(T, T)
-    { return X(); }
-}
+#include <testsuite_greedy_ops.h>
 
 int main()
 {
-  std::vector<N::X> v(5);
-  const std::vector<N::X> w(1);
+  std::vector<greedy_ops::X> v(5);
+  const std::vector<greedy_ops::X> w(1);
 
   v[0];
   w[0];
   v.size();
   v.capacity();
   v.resize(1);
-  v.insert(v.begin(), N::X());
-  v.insert(v.begin(), 1, N::X());
+  v.insert(v.begin(), greedy_ops::X());
+  v.insert(v.begin(), 1, greedy_ops::X());
   v.insert(v.begin(), w.begin(), w.end());
   v = w;
 

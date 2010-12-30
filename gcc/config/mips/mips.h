@@ -1141,7 +1141,7 @@ enum mips_code_readable_setting {
 %{mfp32} %{mfp64} \
 %{mshared} %{mno-shared} \
 %{msym32} %{mno-sym32} \
-%{mtune=*} %{v} \
+%{mtune=*} \
 %(subtarget_asm_spec)"
 
 /* Extra switches sometimes passed to the linker.  */
@@ -2802,9 +2802,6 @@ while (0)
 #define ASM_COMMENT_START " #"
 #endif
 
-/* Default definitions for size_t and ptrdiff_t.  We must override the
-   definitions from ../svr4.h on mips-*-linux-gnu.  */
-
 #undef SIZE_TYPE
 #define SIZE_TYPE (POINTER_SIZE == 64 ? "long unsigned int" : "unsigned int")
 
