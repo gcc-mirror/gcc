@@ -1,5 +1,12 @@
 2010-12-30  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-act.c (objc_types_are_equivalent): Fixed comparing protocol
+	lists.  Check them two-ways to fix comparisons when one protocol
+	implements the other one, or when one list contains duplicated
+	protocols.
+
+2010-12-30  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-act.c (objc_add_method): When emitting an error because a
 	method with the same name but conflicting types is found in the
 	same class or category interface, print a note with the location
