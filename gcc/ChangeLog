@@ -1,3 +1,9 @@
+2010-12-30  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11.md (movmemhi, movmemhi1): Correct
+	constraints. 
+	* config/pdp11/pdp11.c (output_block_move): Rewrite.
+
 2010-12-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/47060
