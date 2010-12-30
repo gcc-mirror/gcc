@@ -9722,6 +9722,8 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 	      
 	      if (is_attribute_p  ("deprecated", name))
 		TREE_DEPRECATED (klass) = 1;
+	      else
+		warning (OPT_Wattributes, "%qE attribute directive ignored", name);
 	    }
 	  TYPE_ATTRIBUTES (klass) = attributes;
 	}
@@ -10924,6 +10926,8 @@ objc_declare_protocols (tree names, tree attributes)
 	  
 	  if (is_attribute_p  ("deprecated", name))
 	    deprecated = true;
+	  else
+	    warning (OPT_Wattributes, "%qE attribute directive ignored", name);
 	}
     }
 
@@ -10977,6 +10981,8 @@ start_protocol (enum tree_code code, tree name, tree list, tree attributes)
 	  
 	  if (is_attribute_p  ("deprecated", name))
 	    deprecated = true;
+	  else
+	    warning (OPT_Wattributes, "%qE attribute directive ignored", name);
 	}
     }
 
