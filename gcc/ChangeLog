@@ -47,6 +47,10 @@
 	PR target/47129
 	* config/ia64/ia64.c: Include "dwarf2out.h" .
 
+	PR target/47063
+	* config/alpha/vms.h (MALLOC_ALIGNMENT): Don't undef / define.
+	(MALLOC_ABI_ALIGNMENT): Undef / define.
+
 2010-12-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/47074
