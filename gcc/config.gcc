@@ -717,6 +717,7 @@ alpha*-*-netbsd*)
 alpha*-*-openbsd*)
 	tm_defines="${tm_defines} OBSD_HAS_DECLARE_FUNCTION_NAME OBSD_HAS_DECLARE_FUNCTION_SIZE OBSD_HAS_DECLARE_OBJECT"
 	tm_file="alpha/alpha.h alpha/elf.h openbsd.h openbsd-stdint.h alpha/openbsd.h openbsd-libpthread.h"
+	extra_options="${extra_options} openbsd.opt"
 	# default x-alpha is only appropriate for dec-osf.
 	target_cpu_default="MASK_GAS"
 	tmake_file="${tmake_file} alpha/t-alpha alpha/t-ieee"
@@ -1207,6 +1208,7 @@ x86_64-*-netbsd*)
 	;;
 i[34567]86-*-openbsd2.*|i[34567]86-*openbsd3.[0123])
 	tm_file="i386/i386.h i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h openbsd-oldgas.h openbsd.h i386/openbsd.h"
+	extra_options="${extra_options} openbsd.opt"
 	# needed to unconfuse gdb
 	tmake_file="${tmake_file} t-libc-ok t-openbsd i386/t-openbsd"
 	# we need collect2 until our bug is fixed...
@@ -1215,6 +1217,7 @@ i[34567]86-*-openbsd2.*|i[34567]86-*openbsd3.[0123])
 i[34567]86-*-openbsd*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h"
 	tm_file="${tm_file} openbsd.h openbsd-stdint.h openbsd-libpthread.h i386/openbsdelf.h"
+	extra_options="${extra_options} openbsd.opt"
 	gas=yes
 	gnu_ld=yes
 	;;
@@ -1707,6 +1710,7 @@ m68k*-*-openbsd*)
 	# needed to unconfuse gdb
 	tm_defines="${tm_defines} OBSD_OLD_GAS"
 	tm_file="${tm_file} openbsd.h openbsd-stdint.h openbsd-libpthread.h m68k/openbsd.h"
+	extra_options="${extra_options} openbsd.opt"
 	tmake_file="t-libc-ok t-openbsd m68k/t-openbsd"
 	# we need collect2 until our bug is fixed...
 	use_collect2=yes
@@ -1853,6 +1857,7 @@ mips*-*-openbsd*)
 	tm_defines="${tm_defines} OBSD_HAS_DECLARE_FUNCTION_NAME OBSD_HAS_DECLARE_OBJECT OBSD_HAS_CORRECT_SPECS"
 	target_cpu_default="MASK_ABICALLS"
 	tm_file="mips/mips.h openbsd.h openbsd-stdint.h openbsd-libpthread.h mips/openbsd.h mips/sdb.h"
+	extra_options="${extra_options} openbsd.opt"
 	case ${target} in
 	mips*el-*-openbsd*)
 	    tm_defines="${tm_defines} TARGET_ENDIAN_DEFAULT=0";;
@@ -2597,6 +2602,7 @@ sparc64-*-netbsd*)
 sparc64-*-openbsd*)
 	tm_file="sparc/openbsd1-64.h ${tm_file} dbxelf.h elfos.h sparc/sysv4.h sparc/sp64-elf.h"
 	tm_file="${tm_file} openbsd.h openbsd-stdint.h openbsd-libpthread.h sparc/openbsd64.h"
+	extra_options="${extra_options} openbsd.opt"
 	extra_options="${extra_options} sparc/little-endian.opt"
 	gas=yes gnu_ld=yes
 	with_cpu=ultrasparc
@@ -2675,6 +2681,7 @@ vax-*-netbsd*)
 	;;
 vax-*-openbsd*)
 	tm_file="vax/vax.h vax/openbsd1.h openbsd.h openbsd-stdint.h openbsd-pthread.h vax/openbsd.h"
+	extra_options="${extra_options} openbsd.opt"
 	use_collect2=yes
 	;;
 xstormy16-*-elf)
