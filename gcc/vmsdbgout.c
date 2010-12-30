@@ -1454,18 +1454,18 @@ vmsdbgout_end_source_file (unsigned int lineno ATTRIBUTE_UNUSED)
 /* Set up for Debug output at the start of compilation.  */
 
 static void
-vmsdbgout_init (const char *main_input_filename)
+vmsdbgout_init (const char *filename)
 {
   const char *language_string = lang_hooks.name;
 
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
-    (*dwarf2_debug_hooks.init) (main_input_filename);
+    (*dwarf2_debug_hooks.init) (filename);
 
   if (debug_info_level == DINFO_LEVEL_NONE)
     return;
 
   /* Remember the name of the primary input file.  */
-  primary_filename = main_input_filename;
+  primary_filename = filename;
 
   /* Allocate the initial hunk of the file_info_table.  */
   file_info_table = XCNEWVEC (dst_file_info_entry, FILE_TABLE_INCREMENT);
@@ -1568,13 +1568,13 @@ vmsdbgout_abstract_function (tree decl)
    VMS Debug debugging info.  */
 
 static void
-vmsdbgout_finish (const char *main_input_filename ATTRIBUTE_UNUSED)
+vmsdbgout_finish (const char *filename ATTRIBUTE_UNUSED)
 {
   unsigned int i, ifunc;
   int totsize;
 
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
-    (*dwarf2_debug_hooks.finish) (main_input_filename);
+    (*dwarf2_debug_hooks.finish) (filename);
 
   if (debug_info_level == DINFO_LEVEL_NONE)
     return;
