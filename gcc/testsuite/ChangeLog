@@ -1,3 +1,9 @@
+2010-12-30  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR testsuite/47050
+	* gcc.target/i386/aggregate-ret1.c: Restrict to ilp32.
+	* gcc.target/i386/aggregate-ret2.c: Likewise.
+
 2010-12-30  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/attributes/class-attribute-3.m: New.

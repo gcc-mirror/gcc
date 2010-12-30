@@ -2,7 +2,8 @@
 /* Check that, with dont_keep_aggregate_return_pointer attribute,  callee
    pops the stack for the implicit pointer arg when returning a large
    structure in memory.  */
-/* { dg-do compile { target i?86-*-* } } */
+/* { dg-do compile } */
+/* { dg-require-effective-target ilp32 } */
 
 struct foo {
   int a;
