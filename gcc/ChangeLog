@@ -1,3 +1,8 @@
+2010-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/47060
+	* tree-parloops.c (reduction_phi): Return NULL if PHI is NULL.
+
 2010-12-29  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11-protos.h (pdp11_asm_output_var): Declare.
