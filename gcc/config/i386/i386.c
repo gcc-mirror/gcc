@@ -59,15 +59,18 @@ along with GCC; see the file COPYING3.  If not see
 
 enum upper_128bits_state
 {
-  unknown = 0,		/* Unknown.  */
-  unused,		/* Not used or not referenced.  */
-  used			/* Used or referenced.  */
+  unknown = 0,
+  unused,
+  used
 };
 
 typedef struct block_info_def
 {
-  /* State of the upper 128bits of any AVX registers at exit.  */
+  /* State of the upper 128bits of AVX registers at exit.  */
   enum upper_128bits_state state;
+  /* TRUE if state of the upper 128bits of AVX registers is unchanged
+     in this block.  */
+  bool unchanged;
   /* TRUE if block has been processed.  */
   bool processed;
 } *block_info;
@@ -110,8 +113,7 @@ check_avx256_stores (rtx dest, const_rtx set, void *data)
    in basic block BB.  Delete it if upper 128bit AVX registers are
    unused.  If it isn't deleted, move it to just before a jump insn.
    
-   UPPER_128BITS_LIVE is TRUE if the upper 128bits of any AVX registers
-   are live at entry.  */
+   STATE is state of the upper 128bits of AVX registers at entry.  */
 
 static void
 move_or_delete_vzeroupper_2 (basic_block bb,
@@ -121,10 +123,23 @@ move_or_delete_vzeroupper_2 (basic_block bb,
   rtx vzeroupper_insn = NULL_RTX;
   rtx pat;
   int avx256;
+  bool unchanged;
+
+  if (BLOCK_INFO (bb)->unchanged)
+    {
+      if (dump_file)
+	fprintf (dump_file, " [bb %i] unchanged: upper 128bits: %d\n",
+		 bb->index, state);
+
+      BLOCK_INFO (bb)->state = state;
+      return;
+    }
 
   if (dump_file)
     fprintf (dump_file, " [bb %i] entry: upper 128bits: %d\n",
 	     bb->index, state);
+
+  unchanged = true;
 
   /* BB_END changes when it is deleted.  */
   bb_end = BB_END (bb);
@@ -179,6 +194,7 @@ move_or_delete_vzeroupper_2 (basic_block bb,
 	      && XINT (XVECEXP (pat, 0, 0), 1) == UNSPECV_VZEROALL)
 	    {
 	      state = unused;
+	      unchanged = false;
 
 	      /* Delete pending vzeroupper insertion.  */
 	      if (vzeroupper_insn)
@@ -189,9 +205,9 @@ move_or_delete_vzeroupper_2 (basic_block bb,
 	    }
 	  else if (state != used)
 	    {
-	      /* No need to call note_stores if the upper 128bits of
-		 AVX registers are never referenced.  */
 	      note_stores (pat, check_avx256_stores, &state);
+	      if (state == used)
+		unchanged = false;
 	    }
 	  continue;
 	}
@@ -205,7 +221,10 @@ move_or_delete_vzeroupper_2 (basic_block bb,
 	     256bit AVX register.  We only need to check if callee
 	     returns 256bit AVX register.  */
 	  if (avx256 == callee_return_avx256)
-	    state = used;
+	    {
+	      state = used;
+	      unchanged = false;
+	    }
 
 	  /* Remove unnecessary vzeroupper since upper 128bits are
 	     cleared.  */
@@ -236,15 +255,20 @@ move_or_delete_vzeroupper_2 (basic_block bb,
 	      delete_insn (insn);
 	    }
 	  else
-	    vzeroupper_insn = insn;
+	    {
+	      vzeroupper_insn = insn;
+	      unchanged = false;
+	    }
 	}
     }
 
   BLOCK_INFO (bb)->state = state;
+  BLOCK_INFO (bb)->unchanged = unchanged;
 
   if (dump_file)
-    fprintf (dump_file, " [bb %i] exit: upper 128bits: %d\n",
-	     bb->index, state);
+    fprintf (dump_file, " [bb %i] exit: %s: upper 128bits: %d\n",
+	     bb->index, unchanged ? "unchanged" : "changed",
+	     state);
 }
 
 /* Helper function for move_or_delete_vzeroupper.  Process vzeroupper
