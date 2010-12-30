@@ -1,3 +1,10 @@
+2010-12-30  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Explicitly derive
+	default values from MEM mode if no memory attributes are present.
+	Do not use mode alignment, even on STRICT_ALIGNMENT targets, when
+	called with an expression (not a type).
+
 2010-12-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (upper_128bits_state): Remove comments.

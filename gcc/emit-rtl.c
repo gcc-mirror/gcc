@@ -1540,11 +1540,11 @@ void
 set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 				 HOST_WIDE_INT bitpos)
 {
-  alias_set_type alias = MEM_ALIAS_SET (ref);
-  tree expr = MEM_EXPR (ref);
-  rtx offset = MEM_OFFSET (ref);
-  rtx size = MEM_SIZE (ref);
-  unsigned int align = MEM_ALIGN (ref);
+  alias_set_type alias;
+  tree expr = NULL;
+  rtx offset = NULL_RTX;
+  rtx size = NULL_RTX;
+  unsigned int align = BITS_PER_UNIT;
   HOST_WIDE_INT apply_bitpos = 0;
   tree type;
 
@@ -1579,6 +1579,34 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
       && ! AGGREGATE_TYPE_P (type)
       && TREE_CODE (type) != COMPLEX_TYPE)
     MEM_SCALAR_P (ref) = 1;
+
+  /* Default values from pre-existing memory attributes if present.  */
+  if (MEM_ATTRS (ref))
+    {
+      /* ??? Can this ever happen?  Calling this routine on a MEM that
+	 already carries memory attributes should probably be invalid.  */
+      expr = MEM_EXPR (ref);
+      offset = MEM_OFFSET (ref);
+      size = MEM_SIZE (ref);
+      align = MEM_ALIGN (ref);
+    }
+
+  /* Otherwise, default values from the mode of the MEM reference.  */
+  else if (GET_MODE (ref) != BLKmode)
+    {
+      /* Respect mode size.  */
+      size = GEN_INT (GET_MODE_SIZE (GET_MODE (ref)));
+      /* ??? Is this really necessary?  We probably should always get
+	 the size from the type below.  */
+
+      /* Respect mode alignment for STRICT_ALIGNMENT targets if T is a type;
+         if T is an object, always compute the object alignment below.  */
+      if (STRICT_ALIGNMENT && TYPE_P (t))
+	align = GET_MODE_ALIGNMENT (GET_MODE (ref));
+      /* ??? If T is a type, respecting mode alignment may *also* be wrong
+	 e.g. if the type carries an alignment attribute.  Should we be
+	 able to simply always use TYPE_ALIGN?  */
+    }
 
   /* We can set the alignment from the type if we are making an object,
      this is an INDIRECT_REF, or if TYPE_ALIGN_OK.  */
