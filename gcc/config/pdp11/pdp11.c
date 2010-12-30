@@ -716,6 +716,19 @@ output_ascii (FILE *file, const char *p, int size)
 
 
 void
+pdp11_asm_output_var (FILE *file, const char *name, int size,
+		      int align, bool global)
+{
+  if (align > 8)
+    fprintf (file, "\n\t.even\n");
+  fprintf (file, ".globl ");
+  assemble_name (file, name);
+  fprintf (file, "\n");
+  assemble_name (file, name);
+  fprintf (file, ": .=.+ %#ho\n", (unsigned short)size);
+}
+
+void
 print_operand_address (FILE *file, register rtx addr)
 {
   register rtx breg;

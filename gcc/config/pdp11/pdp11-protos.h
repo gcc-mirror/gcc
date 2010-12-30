@@ -44,3 +44,4 @@ extern enum reg_class pdp11_regno_reg_class (int);
 #endif /* RTX_CODE */
 
 extern void output_ascii (FILE *, const char *, int);
+extern void pdp11_asm_output_var (FILE *, const char *, int, int, bool);
