@@ -51,7 +51,7 @@ along with GCC; see the file COPYING3.  If not see
    : (n) == 5 ? 7							\
    : (n) == 6 ? 5							\
    : (n) == 7 ? 4							\
-   : ((n) >= FIRST_STACK_REG && (n) <= LAST_STACK_REG) ? (n) + 8	\
+   : ((n) >= FIRST_STACK_REG && (n) <= LAST_STACK_REG) ? (int) (n) + 8	\
    : (-1))
   
 /* A C statement to output to the stdio stream FILE an assembler
