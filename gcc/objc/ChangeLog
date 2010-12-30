@@ -1,3 +1,11 @@
+2010-12-30  Nicola Pero  <nicola@nicola.brainstorm.co.uk>
+
+	* objc-act.c (start_class): Warn when a class attribute is
+	ignored.
+	(objc_declare_protocols): Warn when a protocol attribute in a
+	protocol forward-declaration is ignored.
+	(start_protocol): Warn when a protocol attribute is ignored.
+
 2010-12-30  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_set_method_opt): Tidy up error messages.  In
