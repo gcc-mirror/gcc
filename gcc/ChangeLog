@@ -1,5 +1,12 @@
 2010-12-30  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c (upper_128bits_state): Remove comments.
+	(block_info_def): Add unchanged.
+	(move_or_delete_vzeroupper_2): Short circuit if upper 128bits
+	are unchanged in the block.
+
+2010-12-30  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/46519
 	* config/i386/i386.c (block_info_def): Remove referenced, count
 	and rescanned.
