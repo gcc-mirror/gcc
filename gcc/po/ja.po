@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.6-b20101218\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-12-18 20:02+0000\n"
-"PO-Revision-Date: 2010-12-29 21:55+0900\n"
+"PO-Revision-Date: 2010-12-30 14:56+0900\n"
 "Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -2964,7 +2964,7 @@ msgstr " (frv)"
 #: config/i386/i386.c:13067
 #, c-format
 msgid "invalid UNSPEC as operand"
-msgstr "被演算子として無効な UNSPEC"
+msgstr "被演算子として無効な UNSPEC です"
 
 #: config/i386/i386.c:13664
 #, c-format
@@ -6471,9 +6471,8 @@ msgid "Use PowerPC V2.05 compare bytes instruction"
 msgstr "PowerPC V2.05 バイト比較命令を使用する"
 
 #: config/rs6000/rs6000.opt:176
-#, fuzzy
 msgid "Use extended PowerPC V2.05 move floating point to/from GPR instructions"
-msgstr "ハードウェア浮動小数点命令を使用する"
+msgstr "汎用レジスタ (GPR) へまたは汎用レジスタからの拡張 PowerPC V2.05 浮動小数点 move 命令を使用する"
 
 #: config/rs6000/rs6000.opt:180
 msgid "Use AltiVec instructions"
@@ -6589,11 +6588,11 @@ msgstr "全てを通常 TOC 内に配置する"
 
 #: config/rs6000/rs6000.opt:354
 msgid "Generate VRSAVE instructions when generating AltiVec code"
-msgstr ""
+msgstr "AltiVec コードを生成しているときに VRSAVE 命令を生成する"
 
 #: config/rs6000/rs6000.opt:358
 msgid "-mvrsave=yes/no\tDeprecated option.  Use -mvrsave/-mno-vrsave instead"
-msgstr ""
+msgstr "-mvrsave=yes/no\t廃止されたオプションです。代わりに -mvrsave/-mno-vrsave を使用してください"
 
 #: config/rs6000/rs6000.opt:362
 msgid "Specify how many bytes should be moved inline before calling out to memcpy/memmove"
@@ -6602,75 +6601,67 @@ msgstr ""
 #: config/rs6000/rs6000.opt:366
 #, fuzzy
 msgid "Generate isel instructions"
-msgstr "文字命令を生成する"
+msgstr "isel 命令を生成する"
 
 #: config/rs6000/rs6000.opt:370
 msgid "-misel=yes/no\tDeprecated option.  Use -misel/-mno-isel instead"
-msgstr ""
+msgstr "-misel=yes/no\t廃止されたオプションです。代わりに -misel/-mno-isel を使用してください"
 
 #: config/rs6000/rs6000.opt:374
-#, fuzzy
 msgid "Generate SPE SIMD instructions on E500"
-msgstr "文字命令を生成する"
+msgstr "E500 上で SPE SIMD 命令を生成する"
 
 #: config/rs6000/rs6000.opt:378
-#, fuzzy
 msgid "Generate PPC750CL paired-single instructions"
-msgstr "文字命令を生成する"
+msgstr ""
 
 #: config/rs6000/rs6000.opt:382
 msgid "-mspe=yes/no\tDeprecated option.  Use -mspe/-mno-spe instead"
-msgstr ""
+msgstr "-mspe=yes/no\t廃止されたオプションです。代わりに -mspe/-mno-spe を使用してください"
 
 #: config/rs6000/rs6000.opt:386
-#, fuzzy
 msgid "-mdebug=\tEnable debug output"
-msgstr "デバッグ出力を有効にする"
+msgstr "-mdebug=\tデバッグ出力を有効にする"
 
 #: config/rs6000/rs6000.opt:390
 msgid "-mabi=\tSpecify ABI to use"
-msgstr ""
+msgstr "-mabi=\t使用する ABI を指定する"
 
 #: config/rs6000/rs6000.opt:394
-#, fuzzy
 msgid "-mcpu=\tUse features of and schedule code for given CPU"
-msgstr "与えられた CPU 用の機能とスケジュールコードを利用する"
+msgstr "-mcpu=\t与えられた CPU 用の機能とスケジュールコードを使用する"
 
 #: config/rs6000/rs6000.opt:398
-#, fuzzy
 msgid "-mtune=\tSchedule code for given CPU"
-msgstr "所与の CPU 用のコードをスケジュールする"
+msgstr "-mtune=\t与えられた CPU 用のスケジュールコードを使用する"
 
 #: config/rs6000/rs6000.opt:402
 msgid "-mtraceback=\tSelect full, part, or no traceback table"
-msgstr ""
+msgstr "-mtraceback=\tトレースバック表を full、part、または no のいずれかにする"
 
 #: config/rs6000/rs6000.opt:406
-#, fuzzy
 msgid "Avoid all range limits on call instructions"
-msgstr "並列命令を無効にする"
+msgstr ""
 
 #: config/rs6000/rs6000.opt:410
-#, fuzzy
 msgid "Generate Cell microcode"
-msgstr "MC コードを生成する"
+msgstr "Cell マイクロコードを生成する"
 
 #: config/rs6000/rs6000.opt:414
-#, fuzzy
 msgid "Warn when a Cell microcoded instruction is emitted"
-msgstr "関数が使われないときに警告する"
+msgstr "Cell マイクロコード命令が発行されたときに警告する"
 
 #: config/rs6000/rs6000.opt:418
 msgid "Warn about deprecated 'vector long ...' AltiVec type usage"
-msgstr ""
+msgstr "廃止された 'vector long ...' AltiVec 型の使用について警告する"
 
 #: config/rs6000/rs6000.opt:422
 msgid "-mfloat-gprs=\tSelect GPR floating point method"
-msgstr ""
+msgstr "-mfloat-gprs=\t汎用レジスタ GPR の浮動小数点使用法を選択する"
 
 #: config/rs6000/rs6000.opt:426
 msgid "-mlong-double-<n>\tSpecify size of long double (64 or 128 bits)"
-msgstr ""
+msgstr "-mlong-double-<n>\tlong double のサイズを指定する (64 または 128 ビット)"
 
 #: config/rs6000/rs6000.opt:430
 msgid "Determine which dependences between insns are considered costly"
@@ -6681,35 +6672,32 @@ msgid "Specify which post scheduling nop insertion scheme to apply"
 msgstr ""
 
 #: config/rs6000/rs6000.opt:438
-#, fuzzy
 msgid "Specify alignment of structure fields default/natural"
-msgstr "構造体アラインメントの最小ビット数を指定する"
+msgstr ""
 
 #: config/rs6000/rs6000.opt:442
 msgid "Specify scheduling priority for dispatch slot restricted insns"
 msgstr ""
 
 #: config/rs6000/rs6000.opt:446
-#, fuzzy
 msgid "Single-precision floating point unit"
-msgstr "非浮動小数点引数での順序付けられない比較です"
+msgstr "単精度浮動小数点ユニット"
 
 #: config/rs6000/rs6000.opt:450
-#, fuzzy
 msgid "Double-precision floating point unit"
-msgstr "非浮動小数点引数での順序付けられない比較です"
+msgstr "倍精度浮動小数点ユニット"
 
 #: config/rs6000/rs6000.opt:454
 msgid "Floating point unit does not support divide & sqrt"
-msgstr ""
+msgstr "浮動小数点ユニットが divide および sqrt をサポートしません"
 
 #: config/rs6000/rs6000.opt:458
 msgid "-mfpu=\tSpecify FP (sp, dp, sp-lite, dp-lite) (implies -mxilinx-fpu)"
-msgstr ""
+msgstr "-mfpu=\t浮動小数点 (FP) を指定する (sp, dp, sp-lite, dp-lite) (暗黙的に -mxilinx-fpu も指定される)"
 
 #: config/rs6000/rs6000.opt:462
 msgid "Specify Xilinx FPU."
-msgstr ""
+msgstr "Xilinx FPU を指定する。"
 
 #: config/rs6000/aix64.opt:24
 msgid "Compile for 64-bit pointers"
@@ -6724,41 +6712,34 @@ msgid "Support message passing with the Parallel Environment"
 msgstr "並列環境でのメッセージパッシングをサポートする"
 
 #: config/rs6000/linux64.opt:24
-#, fuzzy
 msgid "Call mcount for profiling before a function prologue"
-msgstr "関数の開始部分に命令を移動しない"
+msgstr "関数プロローグの前にプロファイル用の mcount を呼び出す"
 
 #: config/rs6000/linux64.opt:28
 msgid "Select code model"
-msgstr ""
+msgstr "コードモデルを選択する"
 
 #: config/rs6000/sysv4.opt:24
-#, fuzzy
 msgid "Select ABI calling convention"
 msgstr "ABI 呼び出し規約を選択する"
 
 #: config/rs6000/sysv4.opt:28
-#, fuzzy
 msgid "Select method for sdata handling"
-msgstr "sdata 取り扱いのためのメソッドを選択する"
+msgstr "Select method for sdata 取り扱い用の方法を選択する"
 
 #: config/rs6000/sysv4.opt:36 config/rs6000/sysv4.opt:40
-#, fuzzy
 msgid "Align to the base type of the bit-field"
-msgstr "ビットフィールドのベースタイプにアラインする"
+msgstr ""
 
 #: config/rs6000/sysv4.opt:45 config/rs6000/sysv4.opt:49
-#, fuzzy
 msgid "Produce code relocatable at runtime"
 msgstr "実行時に再配置可能なコードを生成する"
 
 #: config/rs6000/sysv4.opt:53 config/rs6000/sysv4.opt:57
-#, fuzzy
 msgid "Produce little endian code"
 msgstr "リトルエンディアンコードを生成する"
 
 #: config/rs6000/sysv4.opt:61 config/rs6000/sysv4.opt:65
-#, fuzzy
 msgid "Produce big endian code"
 msgstr "ビッグエンディアンコードを生成する"
 
@@ -6770,82 +6751,71 @@ msgstr "説明はまだありません"
 
 #: config/rs6000/sysv4.opt:78
 msgid "Assume all variable arg functions are prototyped"
-msgstr ""
+msgstr "すべての可変引数関数がプロトタイプ宣言されていると見なす"
 
 #: config/rs6000/sysv4.opt:87
-#, fuzzy
 msgid "Use EABI"
-msgstr "EABI を利用する。"
+msgstr "EABI を使用する"
 
 #: config/rs6000/sysv4.opt:91
-#, fuzzy
 msgid "Allow bit-fields to cross word boundaries"
-msgstr "ワード境界より大きめにアラインする"
+msgstr "ビットフィールドがワード境界をまたがることを許す"
 
 #: config/rs6000/sysv4.opt:95
-#, fuzzy
 msgid "Use alternate register names"
 msgstr "代替レジスタ名を使用する"
 
 #: config/rs6000/sysv4.opt:101
-#, fuzzy
 msgid "Use default method for sdata handling"
-msgstr "sdata 取り扱いのためのメソッドを選択する"
+msgstr "デフォルトの sdata 取り扱い方法を使用する"
 
 #: config/rs6000/sysv4.opt:105
-#, fuzzy
 msgid "Link with libsim.a, libc.a and sim-crt0.o"
-msgstr "libsim.a, libc.a 及び sim-crt0.o とリンクする。"
+msgstr "libsim.a、libc.a および sim-crt0.o とリンクする"
 
 #: config/rs6000/sysv4.opt:109
-#, fuzzy
 msgid "Link with libads.a, libc.a and crt0.o"
-msgstr "libads.a, libc.a 及び crt0.o とリンクする。"
+msgstr "libads.a、libc.a および crt0.o とリンクする"
 
 #: config/rs6000/sysv4.opt:113
-#, fuzzy
 msgid "Link with libyk.a, libc.a and crt0.o"
-msgstr "libyk.a, libc.a 及び crt0.o とリンクする。"
+msgstr "libyk.a、libc.a および crt0.o とリンクする"
 
 #: config/rs6000/sysv4.opt:117
-#, fuzzy
 msgid "Link with libmvme.a, libc.a and crt0.o"
-msgstr "libmvme.a, libc.a 及び crt0.o とリンクする。"
+msgstr "libmvme.a、libc.a および crt0.o とリンクする"
 
 #: config/rs6000/sysv4.opt:121
 msgid "Set the PPC_EMB bit in the ELF flags header"
-msgstr "PPC_EMB ビットを ELF フラグヘッダ内にセットする"
+msgstr "PPC_EMB ビットを ELF フラグヘッダ内で設定する"
 
 #: config/rs6000/sysv4.opt:141
-#, fuzzy
 msgid "Generate code to use a non-exec PLT and GOT"
-msgstr "unix アセンブラが処理できるコードを生成する"
+msgstr "実行できない PLT と GOT を使用するようにコードを生成する"
 
 #: config/rs6000/sysv4.opt:145
-#, fuzzy
 msgid "Generate code for old exec BSS PLT"
-msgstr "c1 用のコードを生成する"
+msgstr "古い実行可能な BSS PLT 用コードを生成する"
 
 #: config/spu/spu.opt:20
 msgid "Emit warnings when run-time relocations are generated"
-msgstr ""
+msgstr "実行時再配置が生成されたときに警告を発行する"
 
 #: config/spu/spu.opt:24
 msgid "Emit errors when run-time relocations are generated"
-msgstr ""
+msgstr "実行時再配置が生成されたときにエラーを発行する"
 
 #: config/spu/spu.opt:28
 msgid "Specify cost of branches (Default 20)"
-msgstr ""
+msgstr "分岐のコストを指定する (デフォルト: 20)"
 
 #: config/spu/spu.opt:32
-#, fuzzy
 msgid "Make sure loads and stores are not moved past DMA instructions"
-msgstr "update 命令と一緒にロード/ストア命令を生成する"
+msgstr ""
 
 #: config/spu/spu.opt:36
 msgid "volatile must be specified on any memory that is effected by DMA"
-msgstr ""
+msgstr "DMA によって影響を受けるすべてのメモリで volatile 指定を必須とする"
 
 #: config/spu/spu.opt:40 config/spu/spu.opt:44
 msgid "Insert nops when it might improve performance by allowing dual issue (default)"
@@ -6853,59 +6823,55 @@ msgstr ""
 
 #: config/spu/spu.opt:48
 msgid "Use standard main function as entry for startup"
-msgstr ""
+msgstr "開始時のエントリとして標準の main 関数を使用する"
 
 #: config/spu/spu.opt:52
-#, fuzzy
 msgid "Generate branch hints for branches"
-msgstr "ブロック移動用の string 命令を生成する"
+msgstr "分岐用に分岐ヒントを生成する"
 
 #: config/spu/spu.opt:56
 msgid "Maximum number of nops to insert for a hint (Default 2)"
-msgstr ""
+msgstr "ヒント用に挿入される nops の最大数 (デフォルト: 2)"
 
 #: config/spu/spu.opt:60
 msgid "Approximate maximum number of instructions to allow between a hint and its branch [125]"
-msgstr ""
+msgstr "ヒントと分岐間に許可される命令数のおおよその最大値 [125]"
 
 #: config/spu/spu.opt:64
-#, fuzzy
 msgid "Generate code for 18 bit addressing"
-msgstr "ビッグエンディアン用のコードを生成する"
+msgstr "18 ビットアドレス用のコードを生成する"
 
 #: config/spu/spu.opt:68
-#, fuzzy
 msgid "Generate code for 32 bit addressing"
-msgstr "ビッグエンディアン用のコードを生成する"
+msgstr "32 ビットアドレス用のコードを生成する"
 
 #: config/spu/spu.opt:76
 msgid "Insert hbrp instructions after hinted branch targets to avoid the SPU hang issue"
-msgstr ""
+msgstr "SPU のハングアップ問題を回避するためにヒント付き分岐ターゲットの後に hbrp 命令を挿入する"
 
 #: config/spu/spu.opt:88
 msgid "Access variables in 32-bit PPU objects (default)"
-msgstr ""
+msgstr "32 ビット PPU オブジェクト内で変数にアクセスする (デフォルト)"
 
 #: config/spu/spu.opt:92
 msgid "Access variables in 64-bit PPU objects"
-msgstr ""
+msgstr "64 ビット PPU オブジェクト内で変数にアクセスする"
 
 #: config/spu/spu.opt:96
 msgid "Allow conversions between __ea and generic pointers (default)"
-msgstr ""
+msgstr "__ea と一般ポインタ間の変換を許可する (デフォルト)"
 
 #: config/spu/spu.opt:100
 msgid "Size (in KB) of software data cache"
-msgstr ""
+msgstr "ソフトウェアデータキャッシュのサイズ (KB 単位)"
 
 #: config/spu/spu.opt:104
 msgid "Atomically write back software data cache lines (default)"
 msgstr ""
 
 #: config/mcore/mcore.opt:23
-#, fuzzy
 msgid "Generate code for the M*Core M210"
-msgstr "M*Core M340 用のコードを生成する"
+msgstr "M*Core M210 用のコードを生成する"
 
 #: config/mcore/mcore.opt:27
 msgid "Generate code for the M*Core M340"
@@ -6913,302 +6879,259 @@ msgstr "M*Core M340 用のコードを生成する"
 
 #: config/mcore/mcore.opt:31
 msgid "Force functions to be aligned to a 4 byte boundary"
-msgstr "関数を強制的に 4 バイト境界にアラインする"
+msgstr "関数を強制的に 4 バイト境界に整列する"
 
 #: config/mcore/mcore.opt:35 config/score/score.opt:23
-#, fuzzy
 msgid "Generate big-endian code"
-msgstr "ビッグエンディアンのコードを生成"
+msgstr "ビッグエンディアンコードを生成する"
 
 #: config/mcore/mcore.opt:39
 msgid "Emit call graph information"
 msgstr "呼び出しグラフ情報を送出する"
 
 #: config/mcore/mcore.opt:43
-#, fuzzy
 msgid "Use the divide instruction"
-msgstr "分割命令を使用しない"
+msgstr "除算命令を使用する"
 
 #: config/mcore/mcore.opt:47
 msgid "Inline constants if it can be done in 2 insns or less"
 msgstr "2 命令以下で行なえる不変処理をインラインにする"
 
 #: config/mcore/mcore.opt:51 config/score/score.opt:27
-#, fuzzy
 msgid "Generate little-endian code"
-msgstr "リトルエンディアンのコードを生成"
+msgstr "リトルエンディアンコードを生成する"
 
 #: config/mcore/mcore.opt:56 config/fr30/fr30.opt:27
 msgid "Assume that run-time support has been provided, so omit -lsim from the linker command line"
 msgstr ""
 
 #: config/mcore/mcore.opt:60
-#, fuzzy
 msgid "Use arbitrary sized immediates in bit operations"
-msgstr "ビット演算での即値サイズを調停しない"
+msgstr "ビット操作で任意サイズの即値を使用する"
 
 #: config/mcore/mcore.opt:64
 msgid "Prefer word accesses over byte accesses"
 msgstr "バイトアクセスよりワードアクセスを選ぶ"
 
 #: config/mcore/mcore.opt:71
-#, fuzzy
 msgid "Set the maximum amount for a single stack increment operation"
-msgstr "単一スタックインクリメント操作の最大値"
+msgstr "単一のスタックインクリメント操作の最大値を設定する"
 
 #: config/mcore/mcore.opt:75
-#, fuzzy
 msgid "Always treat bitfields as int-sized"
-msgstr "ビットフィールドを常に int のサイズとして扱う"
+msgstr "ビットフィールドを常に int のサイズとして取り扱う"
 
 #: config/arc/arc.opt:32
 msgid "Prepend the name of the cpu to all public symbol names"
-msgstr ""
+msgstr "すべての公開シンボル名の前に CPU 名を付ける"
 
 #: config/arc/arc.opt:42
 msgid "-mcpu=CPU\tCompile code for ARC variant CPU"
-msgstr ""
+msgstr "-mcpu=CPU\tARC 類型 CPU 用にコードをコンパイルする"
 
 #: config/arc/arc.opt:46
 msgid "-mtext=SECTION\tPut functions in SECTION"
-msgstr ""
+msgstr "-mtext=SECTION\tSECTION 内に関数を配置する"
 
 #: config/arc/arc.opt:50
 msgid "-mdata=SECTION\tPut data in SECTION"
-msgstr ""
+msgstr "-mdata=SECTION\tSECTION 内にデータを配置する"
 
 #: config/arc/arc.opt:54
 msgid "-mrodata=SECTION\tPut read-only data in SECTION"
-msgstr ""
+msgstr "-mrodata=SECTION\tSECTION 内に読み取り専用データを配置する"
 
 #: config/sh/sh.opt:45
-#, fuzzy
 msgid "Generate SH1 code"
-msgstr "SA コードを生成する"
+msgstr "SH1 コードを生成する"
 
 #: config/sh/sh.opt:49
-#, fuzzy
 msgid "Generate SH2 code"
-msgstr "SA コードを生成する"
+msgstr "SH2 コードを生成する"
 
 #: config/sh/sh.opt:53
 msgid "Generate default double-precision SH2a-FPU code"
-msgstr ""
+msgstr "デフォルトで倍精度 SH2a-FPU コードを生成する"
 
 #: config/sh/sh.opt:57
-#, fuzzy
 msgid "Generate SH2a FPU-less code"
-msgstr "SA コードを生成する"
+msgstr "FPU が無い SH2a 用のコードを生成する"
 
 #: config/sh/sh.opt:61
 msgid "Generate default single-precision SH2a-FPU code"
-msgstr ""
+msgstr "デフォルトで単精度 SH2a-FPU コードを生成する"
 
 #: config/sh/sh.opt:65
 msgid "Generate only single-precision SH2a-FPU code"
-msgstr ""
+msgstr "単精度 SH2a-FPU コードのみを生成する"
 
 #: config/sh/sh.opt:69
-#, fuzzy
 msgid "Generate SH2e code"
-msgstr "SA コードを生成する"
+msgstr "SH2e コードを生成する"
 
 #: config/sh/sh.opt:73
-#, fuzzy
 msgid "Generate SH3 code"
-msgstr "SA コードを生成する"
+msgstr "SH3 用コードを生成する"
 
 #: config/sh/sh.opt:77
-#, fuzzy
 msgid "Generate SH3e code"
-msgstr "SA コードを生成する"
+msgstr "SH3e コードを生成する"
 
 #: config/sh/sh.opt:81
-#, fuzzy
 msgid "Generate SH4 code"
-msgstr "SA コードを生成する"
+msgstr "SH4 コードを生成する"
 
 #: config/sh/sh.opt:85
-#, fuzzy
 msgid "Generate SH4-100 code"
-msgstr "SA コードを生成する"
+msgstr "SH4-100 コードを生成する"
 
 #: config/sh/sh.opt:89
-#, fuzzy
 msgid "Generate SH4-200 code"
-msgstr "29050 コードを生成"
+msgstr "SH4-200 コードを生成する"
 
 #: config/sh/sh.opt:95
-#, fuzzy
 msgid "Generate SH4-300 code"
-msgstr "H8/300H コードを生成する"
+msgstr "SH4-300 コードを生成する"
 
 #: config/sh/sh.opt:99
-#, fuzzy
 msgid "Generate SH4 FPU-less code"
-msgstr "SA コードを生成する"
+msgstr "FPU 無しの SH4 コードを生成する"
 
 #: config/sh/sh.opt:103
-#, fuzzy
 msgid "Generate SH4-100 FPU-less code"
-msgstr "H8/300H コードを生成する"
+msgstr "FPU 無しの SH4-100 コードを生成する"
 
 #: config/sh/sh.opt:107
-#, fuzzy
 msgid "Generate SH4-200 FPU-less code"
-msgstr "29050 コードを生成"
+msgstr "FPU 無しの SH4-200 コードを生成する"
 
 #: config/sh/sh.opt:111
-#, fuzzy
 msgid "Generate SH4-300 FPU-less code"
-msgstr "H8/300H コードを生成する"
+msgstr "FPU 無しの SH4-300 コードを生成する"
 
 #: config/sh/sh.opt:115
-#, fuzzy
 msgid "Generate code for SH4 340 series (MMU/FPU-less)"
-msgstr "C30 CPU 用のコードを生成する"
+msgstr "SH4 340 シリーズ (MMU/FPU 無し) 用コードを生成する"
 
 #: config/sh/sh.opt:120
-#, fuzzy
 msgid "Generate code for SH4 400 series (MMU/FPU-less)"
-msgstr "C40 CPU 用のコードを生成する"
+msgstr "SH4 400 シリーズ (MMU/FPU 無し) 用のコードを生成する"
 
 #: config/sh/sh.opt:125
-#, fuzzy
 msgid "Generate code for SH4 500 series (FPU-less)."
-msgstr "C40 CPU 用のコードを生成する"
+msgstr "SH4 500 シリーズ (FPU 無し) 用のコードを生成する"
 
 #: config/sh/sh.opt:130
-#, fuzzy
 msgid "Generate default single-precision SH4 code"
-msgstr "リトルエンディアンのコードを生成"
+msgstr "デフォルトで単精度 SH4 コードを生成する"
 
 #: config/sh/sh.opt:134
 msgid "Generate default single-precision SH4-100 code"
-msgstr ""
+msgstr "デフォルトで単精度 SH4-100 コードを生成する"
 
 #: config/sh/sh.opt:138
 msgid "Generate default single-precision SH4-200 code"
-msgstr ""
+msgstr "デフォルトで単精度 SH4-200 コードを生成する"
 
 #: config/sh/sh.opt:142
 msgid "Generate default single-precision SH4-300 code"
-msgstr ""
+msgstr "デフォルトで単精度 SH4-300 コードを生成する"
 
 #: config/sh/sh.opt:146
-#, fuzzy
 msgid "Generate only single-precision SH4 code"
-msgstr "リトルエンディアンのコードを生成"
+msgstr "単精度 SH4 コードのみを生成する"
 
 #: config/sh/sh.opt:150
-#, fuzzy
 msgid "Generate only single-precision SH4-100 code"
-msgstr "リトルエンディアンのコードを生成"
+msgstr "単精度 SH4-100 コードのみを生成する"
 
 #: config/sh/sh.opt:154
-#, fuzzy
 msgid "Generate only single-precision SH4-200 code"
-msgstr "リトルエンディアンのコードを生成"
+msgstr "単精度 SH4-200 コードのみを生成する"
 
 #: config/sh/sh.opt:158
-#, fuzzy
 msgid "Generate only single-precision SH4-300 code"
-msgstr "リトルエンディアンのコードを生成"
+msgstr "単精度 SH4-300 コードのみを生成する"
 
 #: config/sh/sh.opt:162
-#, fuzzy
 msgid "Generate SH4a code"
-msgstr "SA コードを生成する"
+msgstr "SH4a コードを生成する"
 
 #: config/sh/sh.opt:166
-#, fuzzy
 msgid "Generate SH4a FPU-less code"
-msgstr "SA コードを生成する"
+msgstr "FPU 無し SH4a コードを生成する"
 
 #: config/sh/sh.opt:170
-#, fuzzy
 msgid "Generate default single-precision SH4a code"
-msgstr "リトルエンディアンのコードを生成"
+msgstr "デフォルトで単精度 SH4a コードを生成する"
 
 #: config/sh/sh.opt:174
-#, fuzzy
 msgid "Generate only single-precision SH4a code"
-msgstr "リトルエンディアンのコードを生成"
+msgstr "単精度 SH4a コードのみを生成する"
 
 #: config/sh/sh.opt:178
-#, fuzzy
 msgid "Generate SH4al-dsp code"
-msgstr "SA コードを生成する"
+msgstr "SH4al-dsp コードを生成する"
 
 #: config/sh/sh.opt:182
-#, fuzzy
 msgid "Generate 32-bit SHmedia code"
-msgstr "ビッグエンディアンのコードを生成"
+msgstr "32 ビット SHmedia コードを生成する"
 
 #: config/sh/sh.opt:186
-#, fuzzy
 msgid "Generate 32-bit FPU-less SHmedia code"
-msgstr "リトルエンディアンのコードを生成"
+msgstr "32 ビット FPU 無し SHmedia コードを生成する"
 
 #: config/sh/sh.opt:190
-#, fuzzy
 msgid "Generate 64-bit SHmedia code"
-msgstr "ビッグエンディアンのコードを生成"
+msgstr "64 ビット SHmedia コードを生成する"
 
 #: config/sh/sh.opt:194
-#, fuzzy
 msgid "Generate 64-bit FPU-less SHmedia code"
-msgstr "リトルエンディアンのコードを生成"
+msgstr "64 ビット FPU 無し SHmedia コードを生成する"
 
 #: config/sh/sh.opt:198
-#, fuzzy
 msgid "Generate SHcompact code"
-msgstr "SA コードを生成する"
+msgstr "SHcompact コードを生成する"
 
 #: config/sh/sh.opt:202
-#, fuzzy
 msgid "Generate FPU-less SHcompact code"
-msgstr "SA コードを生成する"
+msgstr "FPU 無し SHcompact コードを生成する"
 
 #: config/sh/sh.opt:210
 msgid "Throttle unrolling to avoid thrashing target registers unless the unroll benefit outweighs this"
 msgstr ""
 
 #: config/sh/sh.opt:214
-#, fuzzy
 msgid "Generate code in big endian mode"
-msgstr "ビッグエンディアン用のコードを生成する"
+msgstr "ビッグエンディアンモードでコードを生成する"
 
 #: config/sh/sh.opt:218
-#, fuzzy
 msgid "Generate 32-bit offsets in switch tables"
-msgstr "switch テーブルで 4 バイトエントリを使用する"
+msgstr "switch 表内で 32 ビットオフセットを生成する"
 
 #: config/sh/sh.opt:222
-#, fuzzy
 msgid "Generate bit instructions"
-msgstr "文字命令を生成する"
+msgstr "ビット命令を生成する"
 
 #: config/sh/sh.opt:226
 msgid "Cost to assume for a branch insn"
-msgstr ""
+msgstr "分岐命令用のコストを設定する"
 
 #: config/sh/sh.opt:230
 msgid "Enable cbranchdi4 pattern"
-msgstr ""
+msgstr "cbranchdi4 パターンを有効にする"
 
 #: config/sh/sh.opt:234
 msgid "Emit cmpeqdi_t pattern even when -mcbranchdi is in effect."
-msgstr ""
+msgstr "-mcbranchdi が有効だとしても cmpeqdi_t パターンを発行する"
 
 #: config/sh/sh.opt:238
 msgid "Enable SH5 cut2 workaround"
-msgstr ""
+msgstr "SH5 cut2 回避を有効にする"
 
 #: config/sh/sh.opt:242
-#, fuzzy
 msgid "Align doubles at 64-bit boundaries"
-msgstr "double を word 境界にアラインメントする"
+msgstr "double を 64 ビット境界に整列する"
 
 #: config/sh/sh.opt:246
 msgid "Division strategy, one of: call, call2, fp, inv, inv:minlat, inv20u, inv20l, inv:call, inv:call2, inv:fp, call-div1, call-fp, call-table"
@@ -7216,28 +7139,27 @@ msgstr ""
 
 #: config/sh/sh.opt:250
 msgid "Specify name for 32 bit signed division function"
-msgstr ""
+msgstr "32 ビット符号付き除算関数の名前を指定する"
 
 #: config/sh/sh.opt:254
 msgid "Enable the use of 64-bit floating point registers in fmov instructions.  See -mdalign if 64-bit alignment is required."
-msgstr ""
+msgstr "fmov 命令での 64 ビット浮動小数点レジスタの使用を有効にする。64 ビット境界への整列が必要な場合は -mdalign を参照。"
 
 #: config/sh/sh.opt:262
-#, fuzzy
 msgid "Enable the use of the fused floating point multiply-accumulate operation"
-msgstr "浮動小数点エミュレータのバージョンを指定する"
+msgstr ""
 
 #: config/sh/sh.opt:266
 msgid "Cost to assume for gettr insn"
-msgstr ""
+msgstr "gettr 命令用のコストを設定する"
 
 #: config/sh/sh.opt:270 config/sh/sh.opt:320
 msgid "Follow Renesas (formerly Hitachi) / SuperH calling conventions"
-msgstr ""
+msgstr "Renesas (以前の Hitachi) / SuperH 呼び出し規約に従う"
 
 #: config/sh/sh.opt:274
 msgid "Increase the IEEE compliance for floating-point code"
-msgstr ""
+msgstr "浮動小数点コードで IEEE 適合性を高める"
 
 #: config/sh/sh.opt:278
 msgid "Enable the use of the indexed addressing mode for SHmedia32/SHcompact"
@@ -7249,16 +7171,15 @@ msgstr ""
 
 #: config/sh/sh.opt:286
 msgid "Assume symbols might be invalid"
-msgstr ""
+msgstr "シンボルが有効であると見なす"
 
 #: config/sh/sh.opt:290
 msgid "Annotate assembler instructions with estimated addresses"
 msgstr ""
 
 #: config/sh/sh.opt:294
-#, fuzzy
 msgid "Generate code in little endian mode"
-msgstr "リトルエンディアン用のコードを生成する"
+msgstr "リトルエンディアンモードでコードを生成する"
 
 #: config/sh/sh.opt:298
 msgid "Mark MAC register as call-clobbered"
@@ -7266,31 +7187,31 @@ msgstr ""
 
 #: config/sh/sh.opt:304
 msgid "Make structs a multiple of 4 bytes (warning: ABI altered)"
-msgstr ""
+msgstr "構造体を 4 バイトの倍数にする (警告: ABI が変更される)"
 
 #: config/sh/sh.opt:308
 msgid "Emit function-calls using global offset table when generating PIC"
-msgstr ""
+msgstr "PIC 生成時に大域オフセット表を使用して関数呼び出しを発行する"
 
 #: config/sh/sh.opt:312
 msgid "Assume pt* instructions won't trap"
-msgstr ""
+msgstr "pt* 命令がトラップされないと見なす"
 
 #: config/sh/sh.opt:316
 msgid "Shorten address references during linking"
-msgstr ""
+msgstr "リンク中にアドレス参照を短くする"
 
 #: config/sh/sh.opt:324
 msgid "Deprecated.  Use -Os instead"
-msgstr ""
+msgstr "廃止されました。代わりに -Os を使用してください"
 
 #: config/sh/sh.opt:328
 msgid "Cost to assume for a multiply insn"
-msgstr ""
+msgstr "乗算命令のコストを設定する"
 
 #: config/sh/sh.opt:332
 msgid "Don't generate privileged-mode only code; implies -mno-inline-ic_invalidate if the inline code would not work in user mode."
-msgstr ""
+msgstr "特権モードのみのコードを生成しない。ユーザモードでインラインコードが動作しない場合は -mno-inline-ic_invalidate が暗黙的に指定される。"
 
 #: config/sh/sh.opt:338
 msgid "Pretend a branch-around-a-move is a conditional move."
@@ -7298,16 +7219,15 @@ msgstr ""
 
 #: config/sh/superh.opt:6
 msgid "Board name [and memory region]."
-msgstr ""
+msgstr "ボード名 [およびメモリ領域]。"
 
 #: config/sh/superh.opt:10
 msgid "Runtime name."
-msgstr ""
+msgstr "実行時名。"
 
 #: config/arm/arm.opt:23
-#, fuzzy
 msgid "Specify an ABI"
-msgstr "MIPS ISA を指定する"
+msgstr "ABI を指定する"
 
 #: config/arm/arm.opt:27
 msgid "Generate a call to abort if a noreturn function returns"
@@ -7315,15 +7235,15 @@ msgstr "noreturn 関数が return するとき abort の呼び出しを生成す
 
 #: config/arm/arm.opt:34
 msgid "Pass FP arguments in FP registers"
-msgstr "FP レジスタで FP 引数を渡す"
+msgstr "浮動小数点レジスタで浮動小数点引数を渡す"
 
 #: config/arm/arm.opt:38
 msgid "Generate APCS conformant stack frames"
-msgstr "APCS 適合したスタックフレームを生成する"
+msgstr "APCS に適合したスタックフレームを生成する"
 
 #: config/arm/arm.opt:42
 msgid "Generate re-entrant, PIC code"
-msgstr "再入可能な PIC コードを生成します"
+msgstr "再入可能な PIC コードを生成する"
 
 #: config/arm/arm.opt:56
 msgid "Assume target CPU is configured as big endian"
@@ -7339,7 +7259,7 @@ msgstr "Thumb: 関数ポインタが非 Thumb と認識するコードに突入�
 
 #: config/arm/arm.opt:68
 msgid "Cirrus: Place NOPs to avoid invalid instruction combinations"
-msgstr ""
+msgstr "Cirrus: 無効な命令の組み合わせを回避するために NOP を配置する"
 
 #: config/arm/arm.opt:72 config/bfin/bfin.opt:27
 msgid "Specify the name of the target CPU"
@@ -7347,21 +7267,19 @@ msgstr "ターゲット CPU の名前を指定する"
 
 #: config/arm/arm.opt:76
 msgid "Specify if floating point hardware should be used"
-msgstr ""
+msgstr "浮動小数点ハードウェアを使用するかどうかを指定する"
 
 #: config/arm/arm.opt:83
-#, fuzzy
 msgid "Specify the __fp16 floating-point format"
-msgstr "浮動小数点エミュレータのバージョンを指定する"
+msgstr "__fp16 浮動小数点形式を指定する"
 
 #: config/arm/arm.opt:94
-#, fuzzy
 msgid "Specify the name of the target floating point hardware/format"
-msgstr "浮動小数点エミュレータのバージョンを指定する"
+msgstr "ターゲット浮動小数点ハードウェア/形式の名前を指定する"
 
 #: config/arm/arm.opt:98
 msgid "Alias for -mfloat-abi=hard"
-msgstr ""
+msgstr "-mfloat-abi=hard の別名"
 
 #: config/arm/arm.opt:102
 msgid "Assume target CPU is configured as little endian"
@@ -7380,17 +7298,16 @@ msgid "Store function names in object code"
 msgstr "オブジェクトコードに関数名を格納する"
 
 #: config/arm/arm.opt:118
-#, fuzzy
 msgid "Permit scheduling of a function's prologue sequence"
-msgstr "関数開始部分用のスタブを使用する"
+msgstr "関数のプロローグシーケンスのスケジューリングを許す"
 
 #: config/arm/arm.opt:126
 msgid "Alias for -mfloat-abi=soft"
-msgstr ""
+msgstr "-mfloat-abi=soft の別名"
 
 #: config/arm/arm.opt:130
 msgid "Specify the minimum bit alignment of structures"
-msgstr "構造体アラインメントの最小ビット数を指定する"
+msgstr "構造体の整列の最小ビット数を指定する"
 
 #: config/arm/arm.opt:134
 msgid "Compile for the Thumb not the ARM"
@@ -7401,9 +7318,8 @@ msgid "Support calls between Thumb and ARM instruction sets"
 msgstr "Thumb と ARM 命令セット間の呼び出しをサポートする"
 
 #: config/arm/arm.opt:142
-#, fuzzy
 msgid "Specify how to access the thread pointer"
-msgstr "ターゲットアーキテクチャの名前を指定する"
+msgstr "スレッドポインタへのアクセス方法を指定する"
 
 #: config/arm/arm.opt:146
 msgid "Thumb: Generate (non-leaf) stack frames even if not needed"
@@ -7419,11 +7335,11 @@ msgstr "byte がビッグエンディアンで word がリトルエンディア�
 
 #: config/arm/arm.opt:162
 msgid "Use Neon quad-word (rather than double-word) registers for vectorization"
-msgstr ""
+msgstr "ベクトル化用に Neon 四倍ワード (二倍ワードではなく) レジスタを使用する"
 
 #: config/arm/arm.opt:166
 msgid "Only generate absolute relocations on word sized values."
-msgstr ""
+msgstr "絶対再配置をサードサイズの値でのみ生成する。"
 
 #: config/arm/arm.opt:170
 msgid "Avoid overlapping destination and address registers on LDRD instructions"
@@ -7446,30 +7362,28 @@ msgid "Generate code for an 11/45"
 msgstr "11/45 用のコードを生成する"
 
 #: config/pdp11/pdp11.opt:35
-#, fuzzy
 msgid "Return floating-point results in ac0 (fr0 in Unix assembler syntax)"
-msgstr "浮動小数点の結果を ac0 で返す"
+msgstr "浮動小数点の結果を ac0 で返す (Unix アセンブラ構文では fr0)"
 
 #: config/pdp11/pdp11.opt:39
 msgid "Do not use inline patterns for copying memory"
-msgstr ""
+msgstr "メモリコピー用にインラインパターンを使用しない"
 
 #: config/pdp11/pdp11.opt:43
 msgid "Use inline patterns for copying memory"
-msgstr ""
+msgstr "メモリコピー用にインラインパターンを使用する"
 
 #: config/pdp11/pdp11.opt:47
 msgid "Do not pretend that branches are expensive"
-msgstr ""
+msgstr "分岐が高コストであると見なさない"
 
 #: config/pdp11/pdp11.opt:51
 msgid "Pretend that branches are expensive"
-msgstr ""
+msgstr "分岐が高コストであると見なす"
 
 #: config/pdp11/pdp11.opt:55
-#, fuzzy
 msgid "Use the DEC assembler syntax"
-msgstr "DEC アセンブラ文法を使用する"
+msgstr "DEC アセンブラ構文を使用する"
 
 #: config/pdp11/pdp11.opt:59
 msgid "Use 32 bit float"
@@ -7493,29 +7407,27 @@ msgstr "ターゲットは split 命令とデータメモリを持つ"
 
 #: config/pdp11/pdp11.opt:87
 msgid "Use UNIX assembler syntax"
-msgstr "UNIX アセンブラ文法を使用する"
+msgstr "UNIX アセンブラ構文を使用する"
 
 #: config/avr/avr.opt:23
-#, fuzzy
 msgid "Use subroutines for function prologues and epilogues"
-msgstr "関数の前置き/結びのためのサブルーチンを利用する"
+msgstr "関数プロローグとエピローグ用にサブルーチンを使用する"
 
 #: config/avr/avr.opt:27
 msgid "-mmcu=MCU\tSelect the target MCU"
-msgstr ""
+msgstr "-mmcu=MCU\tターゲット MCU を設定する"
 
 #: config/avr/avr.opt:34
-#, fuzzy
 msgid "Use an 8-bit 'int' type"
-msgstr "64 ビット int 型を使用する"
+msgstr "8 ビット 'int' 型を使用する"
 
 #: config/avr/avr.opt:38
 msgid "Change the stack pointer without disabling interrupts"
-msgstr "割り込みの無効化なしでスタックポインタを変更する"
+msgstr "割り込みを無効化しないでスタックポインタを変更する"
 
 #: config/avr/avr.opt:48
 msgid "Use rjmp/rcall (limited range) on >8K devices"
-msgstr ""
+msgstr "8K より大きいデバイス上で rjmp/rcall (制限された範囲) を使用する"
 
 #: config/avr/avr.opt:52
 msgid "Change only the low 8 bits of the stack pointer"
@@ -7523,7 +7435,7 @@ msgstr "スタックポインタの下位 8 ビットだけを変更する"
 
 #: config/avr/avr.opt:56
 msgid "Relax branches"
-msgstr ""
+msgstr "分岐を緩和する"
 
 #: config/avr/avr.opt:60
 msgid "Make the linker relaxation machine assume that a program counter wrap-around occurs."
@@ -7535,75 +7447,65 @@ msgid "Support multiply accumulate instructions"
 msgstr "乗算-加算浮動小数点命令をを使用する"
 
 #: config/crx/crx.opt:27
-#, fuzzy
 msgid "Do not use push to store function arguments"
-msgstr "出力する引数をセーブするためには push 命令を使わない"
+msgstr "関数の引数を保存するために push を使用しない"
 
 #: config/crx/crx.opt:31
 msgid "Restrict doloop to the given nesting level"
-msgstr ""
+msgstr "doloop を与えられた入れ子階層に制限する"
 
 #: config/pa/pa-hpux.opt:23
-#, fuzzy
 msgid "Generate cpp defines for server IO"
-msgstr "所与の CPU 用のコードを生成する"
+msgstr "サーバ IO 用の cpp 定義を生成する"
 
 #: config/pa/pa-hpux.opt:27 config/pa/pa-hpux1010.opt:23
 #: config/pa/pa-hpux1111.opt:23
 msgid "Specify UNIX standard for predefines and linking"
-msgstr ""
+msgstr "前定義とリンク用に UNIX 標準を指定する"
 
 #: config/pa/pa-hpux.opt:31
-#, fuzzy
 msgid "Generate cpp defines for workstation IO"
-msgstr "11/40 用のコードを生成する"
+msgstr "ワークステーション IO 用に cpp 定義を生成する"
 
 #: config/pa/pa.opt:23 config/pa/pa.opt:76 config/pa/pa.opt:84
-#, fuzzy
 msgid "Generate PA1.0 code"
-msgstr "SA コードを生成する"
+msgstr "PA1.0 コードを生成する"
 
 #: config/pa/pa.opt:27 config/pa/pa.opt:88 config/pa/pa.opt:108
-#, fuzzy
 msgid "Generate PA1.1 code"
-msgstr "SA コードを生成する"
+msgstr "PA1.1 コードを生成する"
 
 #: config/pa/pa.opt:31 config/pa/pa.opt:92
 msgid "Generate PA2.0 code (requires binutils 2.10 or later)"
-msgstr ""
+msgstr "PA2.0 コードを生成する (binutils 2.10 以降が必要)"
 
 #: config/pa/pa.opt:35
-#, fuzzy
 msgid "Generate code for huge switch statements"
-msgstr "高位アドレスメモリ用のコードを生成する"
+msgstr "巨大な swich 文用コードを生成する"
 
 #: config/pa/pa.opt:39
-#, fuzzy
 msgid "Disable FP regs"
-msgstr "デバッグを無効にする"
+msgstr "浮動小数点レジスタを無効にする"
 
 #: config/pa/pa.opt:43
-#, fuzzy
 msgid "Disable indexed addressing"
-msgstr "デバッグを無効にする"
+msgstr ""
 
 #: config/pa/pa.opt:47
-#, fuzzy
 msgid "Generate fast indirect calls"
-msgstr "間接呼び出しを使用しない"
+msgstr ""
 
 #: config/pa/pa.opt:55
 msgid "Assume code will be assembled by GAS"
-msgstr ""
+msgstr "コードが GAS によってアセンブルされると見なす"
 
 #: config/pa/pa.opt:59
 msgid "Put jumps in call delay slots"
 msgstr ""
 
 #: config/pa/pa.opt:64
-#, fuzzy
 msgid "Enable linker optimizations"
-msgstr "SSA 最適化を有効にする"
+msgstr "リンカ最適化を有効にする"
 
 #: config/pa/pa.opt:68
 msgid "Always generate long calls"
@@ -7618,42 +7520,36 @@ msgid "Disable space regs"
 msgstr ""
 
 #: config/pa/pa.opt:96
-#, fuzzy
 msgid "Use portable calling conventions"
-msgstr "普通の呼び出し規約を使う"
+msgstr "移植性のある呼び出し規約を使用する"
 
 #: config/pa/pa.opt:100
-#, fuzzy
 msgid "Specify CPU for scheduling purposes.  Valid arguments are 700, 7100, 7100LC, 7200, 7300, and 8000"
 msgstr ""
-"不明な -mschedule= オプション (%s).\n"
-"正常なオプションは 700, 7100, 7100LC, 7200, 及び 8000 です\n"
 
 #: config/pa/pa.opt:112
-#, fuzzy
 msgid "Do not disable space regs"
-msgstr "浮動小数点レジスタを利用しない"
+msgstr ""
 
 #: config/pa/pa64-hpux.opt:23
 msgid "Assume code will be linked by GNU ld"
-msgstr ""
+msgstr "コードが GNU ld によってリンクされると見なす"
 
 #: config/pa/pa64-hpux.opt:27
 msgid "Assume code will be linked by HP ld"
-msgstr ""
+msgstr "コードが HP ld によってリンクされると見なす"
 
 #: config/xtensa/xtensa.opt:23
-#, fuzzy
 msgid "Use CONST16 instruction to load constants"
-msgstr "出力する引数をセーブするため push 命令を使う"
+msgstr "定数をロードするために CONST16 命令を使用する"
 
 #: config/xtensa/xtensa.opt:27
 msgid "Disable position-independent code (PIC) for use in OS kernel code"
-msgstr ""
+msgstr "OS カーネルコード内で使用するために位置非依存コード (PIC) を無効にする"
 
 #: config/xtensa/xtensa.opt:31
 msgid "Use indirect CALLXn instructions for large programs"
-msgstr ""
+msgstr "大きなプログラム用に間接 CALLXn 命令を使用する"
 
 #: config/xtensa/xtensa.opt:35
 msgid "Automatically align branch targets to reduce branch penalties"
@@ -7669,29 +7565,27 @@ msgstr ""
 
 #: config/stormy16/stormy16.opt:24
 msgid "Provide libraries for the simulator"
-msgstr ""
+msgstr "シミュレータ用ライブラリを提供する"
 
 #: config/mips/mips.opt:23
 msgid "-mabi=ABI\tGenerate code that conforms to the given ABI"
-msgstr ""
+msgstr "-mabi=ABI\t与えられた ABI に適合したコードを生成する"
 
 #: config/mips/mips.opt:27
 msgid "Generate code that can be used in SVR4-style dynamic objects"
-msgstr ""
+msgstr "SVR4 スタイルの動的オブジェクト内で使用できるコードを生成する"
 
 #: config/mips/mips.opt:31
-#, fuzzy
 msgid "Use PMC-style 'mad' instructions"
-msgstr "ビットフィールド命令を使用する"
+msgstr "PMC スタイルの 'mad' 命令を使用する"
 
 #: config/mips/mips.opt:35
-#, fuzzy
 msgid "-march=ISA\tGenerate code for the given ISA"
-msgstr "所与の CPU 用のコードを生成する"
+msgstr "-march=ISA\t与えられた ISA 用のコードを生成する"
 
 #: config/mips/mips.opt:39
 msgid "-mbranch-cost=COST\tSet the cost of branches to roughly COST instructions"
-msgstr ""
+msgstr "-mbranch-cost=COST\t分岐コストを大体 COST 命令分に設定する"
 
 #: config/mips/mips.opt:43
 msgid "Use Branch Likely instructions, overriding the architecture default"
@@ -7714,28 +7608,24 @@ msgid "Use branch-and-break sequences to check for integer divide by zero"
 msgstr ""
 
 #: config/mips/mips.opt:63
-#, fuzzy
 msgid "Use trap instructions to check for integer divide by zero"
-msgstr "整数のゼロ除算をトラップする"
+msgstr ""
 
 #: config/mips/mips.opt:67
-#, fuzzy
 msgid "Allow the use of MDMX instructions"
-msgstr "DB 命令の使用を有効にする"
+msgstr "MDMX 命令の使用を許可する"
 
 #: config/mips/mips.opt:71
 msgid "Allow hardware floating-point instructions to cover both 32-bit and 64-bit operations"
-msgstr ""
+msgstr "32 ビット操作と 64 ビット操作の両方でのハードウェア浮動小数点命令使用を許可する"
 
 #: config/mips/mips.opt:75
-#, fuzzy
 msgid "Use MIPS-DSP instructions"
-msgstr "MIPS16 命令を使用しない"
+msgstr "MIPS-DSP 命令を使用する"
 
 #: config/mips/mips.opt:79
-#, fuzzy
 msgid "Use MIPS-DSP REV 2 instructions"
-msgstr "POWER2 命令セットを使用する"
+msgstr "MIPS-DSP REV 2 命令を使用する"
 
 #: config/mips/mips.opt:89 config/mep/mep.opt:80
 msgid "Use big-endian byte order"
@@ -7747,61 +7637,55 @@ msgstr "リトルエンディアンのバイト順を使用する"
 
 #: config/mips/mips.opt:97 config/iq2000/iq2000.opt:31
 msgid "Use ROM instead of RAM"
-msgstr "RAM の代わりに ROM を利用する"
+msgstr "RAM の代わりに ROM を使用する"
 
 #: config/mips/mips.opt:101
 msgid "Use NewABI-style %reloc() assembly operators"
-msgstr ""
+msgstr "NewABI スタイルの %reloc() アセンブラ操作を使用する"
 
 #: config/mips/mips.opt:105
 msgid "Use -G for data that is not defined by the current object"
 msgstr ""
 
 #: config/mips/mips.opt:109
-#, fuzzy
 msgid "Work around certain R4000 errata"
-msgstr "初期の 4300 ハードウェアバグの対処を行う"
+msgstr "R4000 固有のエラッタ回避を行う"
 
 #: config/mips/mips.opt:113
-#, fuzzy
 msgid "Work around certain R4400 errata"
-msgstr "初期の 4300 ハードウェアバグの対処を行う"
+msgstr "R4400 固有のエラッタ回避を行う"
 
 #: config/mips/mips.opt:117
 msgid "Work around certain R10000 errata"
-msgstr ""
+msgstr "R10000 固有のエラッタ回避を行う"
 
 #: config/mips/mips.opt:121
 msgid "Work around errata for early SB-1 revision 2 cores"
-msgstr ""
+msgstr "初期の SB-1 リビジョン 2 コアのエラッタ回避を行う"
 
 #: config/mips/mips.opt:125
 msgid "Work around certain VR4120 errata"
-msgstr ""
+msgstr "VR4120 固有のエラッタ回避を行う"
 
 #: config/mips/mips.opt:129
 msgid "Work around VR4130 mflo/mfhi errata"
-msgstr ""
+msgstr "VR4130 mflo/mfhi エラッタ回避を行う"
 
 #: config/mips/mips.opt:133
-#, fuzzy
 msgid "Work around an early 4300 hardware bug"
-msgstr "初期の 4300 ハードウェアバグの対処を行う"
+msgstr "初期の 4300 ハードウェアバグの回避を行う"
 
 #: config/mips/mips.opt:137
-#, fuzzy
 msgid "FP exceptions are enabled"
-msgstr "有効オプション: "
+msgstr "浮動小数点例外を有効にする"
 
 #: config/mips/mips.opt:141
-#, fuzzy
 msgid "Use 32-bit floating-point registers"
-msgstr "32 ビット一般レジスタを使用する"
+msgstr "32 ビット浮動小数点レジスタを使用する"
 
 #: config/mips/mips.opt:145
-#, fuzzy
 msgid "Use 64-bit floating-point registers"
-msgstr "64 ビット一般レジスタを使用する"
+msgstr "64 ビット浮動小数点レジスタを使用する"
 
 #: config/mips/mips.opt:149
 msgid "-mflush-func=FUNC\tUse FUNC to flush the cache before calling stack trampolines"
@@ -7814,11 +7698,11 @@ msgstr "浮動小数の乗算/加算命令を生成する"
 
 #: config/mips/mips.opt:157
 msgid "Use 32-bit general registers"
-msgstr "32 ビット一般レジスタを使用する"
+msgstr "32 ビット汎用レジスタを使用する"
 
 #: config/mips/mips.opt:161
 msgid "Use 64-bit general registers"
-msgstr "64 ビット一般レジスタを使用する"
+msgstr "64 ビット汎用レジスタを使用する"
 
 #: config/mips/mips.opt:165
 msgid "Use GP-relative addressing to access small data"
@@ -7829,49 +7713,42 @@ msgid "When generating -mabicalls code, allow executables to use PLTs and copy r
 msgstr ""
 
 #: config/mips/mips.opt:173
-#, fuzzy
 msgid "Allow the use of hardware floating-point ABI and instructions"
-msgstr "ハードウェア浮動小数点命令を使用する"
+msgstr "ハードウェア浮動小数点の ABI と命令の使用を許可する"
 
 #: config/mips/mips.opt:177
 msgid "Generate code that can be safely linked with MIPS16 code."
-msgstr ""
+msgstr "MIPS16 コードと安全にリンクできるコードを生成する。"
 
 #: config/mips/mips.opt:181
-#, fuzzy
 msgid "-mipsN\tGenerate code for ISA level N"
-msgstr "Intel as 用のコードを生成する"
+msgstr "-mipsN\tISA レベル N 用のコードを生成する"
 
 #: config/mips/mips.opt:185
-#, fuzzy
 msgid "Generate MIPS16 code"
-msgstr "SA コードを生成する"
+msgstr "MIPS16 コードを生成する"
 
 #: config/mips/mips.opt:189
-#, fuzzy
 msgid "Use MIPS-3D instructions"
-msgstr "MIPS16 命令を使用しない"
+msgstr "MIPS-3D 命令を使用する"
 
 #: config/mips/mips.opt:193
-#, fuzzy
 msgid "Use ll, sc and sync instructions"
-msgstr "ビットフィールド命令を使用する"
+msgstr "ll、sc および sync 命令を使用する"
 
 #: config/mips/mips.opt:197
 msgid "Use -G for object-local data"
-msgstr ""
+msgstr "オブジェクト局所データ用に -G を使用する"
 
 #: config/mips/mips.opt:201
 msgid "Use indirect calls"
 msgstr "間接呼び出しを使用する"
 
 #: config/mips/mips.opt:205
-#, fuzzy
 msgid "Use a 32-bit long type"
 msgstr "32 ビット long 型を使用する"
 
 #: config/mips/mips.opt:209
-#, fuzzy
 msgid "Use a 64-bit long type"
 msgstr "64 ビット long 型を使用する"
 
@@ -7889,38 +7766,32 @@ msgid "Use the mips-tfile postpass"
 msgstr "asm 後過程で mips-tfile を利用する"
 
 #: config/mips/mips.opt:225
-#, fuzzy
 msgid "Allow the use of MT instructions"
-msgstr "RTPS 命令の利用を有効にする"
+msgstr "MT 命令の使用を許可する"
 
 #: config/mips/mips.opt:229
-#, fuzzy
 msgid "Prevent the use of all floating-point operations"
-msgstr "浮動小数点エミュレータのバージョンを指定する"
+msgstr "すべての浮動小数点操作の使用を防止する"
 
 #: config/mips/mips.opt:233
 msgid "Do not use a cache-flushing function before calling stack trampolines"
 msgstr ""
 
 #: config/mips/mips.opt:237
-#, fuzzy
 msgid "Do not use MDMX instructions"
-msgstr "MIPS16 命令を使用しない"
+msgstr "MDMX 命令を使用しない"
 
 #: config/mips/mips.opt:241
-#, fuzzy
 msgid "Generate normal-mode code"
-msgstr "SA コードを生成する"
+msgstr "ノーマルモードコードを生成する"
 
 #: config/mips/mips.opt:245
-#, fuzzy
 msgid "Do not use MIPS-3D instructions"
-msgstr "MIPS16 命令を使用しない"
+msgstr "MIPS-3D 命令を使用しない"
 
 #: config/mips/mips.opt:249
-#, fuzzy
 msgid "Use paired-single floating-point instructions"
-msgstr "ハードウェア浮動小数点命令を使用する"
+msgstr ""
 
 #: config/mips/mips.opt:253
 msgid "-mr10k-cache-barrier=SETTING\tSpecify when r10k cache barriers should be inserted"
@@ -7928,52 +7799,47 @@ msgstr ""
 
 #: config/mips/mips.opt:257
 msgid "Try to allow the linker to turn PIC calls into direct calls"
-msgstr ""
+msgstr "リンカが PIC 呼び出しを直接呼び出しに変更することを許可するように試みる"
 
 #: config/mips/mips.opt:261
 msgid "When generating -mabicalls code, make the code suitable for use in shared libraries"
-msgstr ""
+msgstr "-mabicalls コードを生成しているときに、共有ライブラリで使用するのに適したコードを作成する"
 
 #: config/mips/mips.opt:265
-#, fuzzy
 msgid "Restrict the use of hardware floating-point instructions to 32-bit operations"
-msgstr "ハードウェア浮動小数点命令を使用する"
+msgstr "ハードウェア浮動小数点命令の使用を 32 ビット操作に制限する"
 
 #: config/mips/mips.opt:269
-#, fuzzy
 msgid "Use SmartMIPS instructions"
-msgstr "MIPS16 命令を使用しない"
+msgstr "SmartMIPS 命令を使用する"
 
 #: config/mips/mips.opt:273
-#, fuzzy
 msgid "Prevent the use of all hardware floating-point instructions"
-msgstr "ハードウェア浮動小数点命令を使用する"
+msgstr "すべてのハードウェア浮動小数点命令の使用を防止する"
 
 #: config/mips/mips.opt:277
 msgid "Optimize lui/addiu address loads"
 msgstr "lui/addiu アドレスロードを最適化する"
 
 #: config/mips/mips.opt:281
-#, fuzzy
 msgid "Assume all symbols have 32-bit values"
-msgstr "全ての double をアラインされたものとみなす"
+msgstr "すべてのシンボルが 32 ビット値を持つと見なす"
 
 #: config/mips/mips.opt:285
 msgid "Use synci instruction to invalidate i-cache"
-msgstr ""
+msgstr "i-cache を無効にするために synci 命令を使用する"
 
 #: config/mips/mips.opt:289
 msgid "-mtune=PROCESSOR\tOptimize the output for PROCESSOR"
-msgstr ""
+msgstr "-mtune=PROCESSOR\tPROCESSOR 用に出力を最適化する"
 
 #: config/mips/mips.opt:293 config/iq2000/iq2000.opt:44
 msgid "Put uninitialized constants in ROM (needs -membedded-data)"
-msgstr "未初期化定数を ROM に置く(要 -membedded-data)"
+msgstr "未初期化定数を ROM に置く(-membedded-data が必要)"
 
 #: config/mips/mips.opt:297
-#, fuzzy
 msgid "Perform VR4130-specific alignment optimizations"
-msgstr "末尾呼び出し最適化を行う"
+msgstr "VR4130 固有の整列最適化を行う"
 
 #: config/mips/mips.opt:301
 msgid "Lift restrictions on GOT size"
@@ -7992,9 +7858,8 @@ msgid "Compile for a 68HC12"
 msgstr "68HC12 用にコンパイルする"
 
 #: config/m68hc11/m68hc11.opt:41 config/m68hc11/m68hc11.opt:45
-#, fuzzy
 msgid "Compile for a 68HCS12"
-msgstr "68HC12 用にコンパイルする"
+msgstr "68HCS12 用にコンパイルする"
 
 #: config/m68hc11/m68hc11.opt:49
 msgid "Auto pre/post decrement increment allowed"
@@ -8002,31 +7867,27 @@ msgstr "自動 pre/post デクリメント インクリメントを許容する"
 
 #: config/m68hc11/m68hc11.opt:53
 msgid "Min/max instructions allowed"
-msgstr ""
+msgstr "min/max 命令を許可する"
 
 #: config/m68hc11/m68hc11.opt:57
-#, fuzzy
 msgid "Use call and rtc for function calls and returns"
-msgstr "noreturn 関数が return するとき abort の呼び出しを生成する"
+msgstr "関数呼び出しと戻り用に call と rtc を使用する"
 
 #: config/m68hc11/m68hc11.opt:61
 msgid "Auto pre/post decrement increment not allowed"
 msgstr "自動 pre/post デクリメント インクリメントを許容しない"
 
 #: config/m68hc11/m68hc11.opt:65
-#, fuzzy
 msgid "Use jsr and rts for function calls and returns"
-msgstr "関数開始部分用のスタブを使用する"
+msgstr "関数呼び出しと戻り用に jsr と rts を使用する"
 
 #: config/m68hc11/m68hc11.opt:69
-#, fuzzy
 msgid "Min/max instructions not allowed"
-msgstr "ret 命令は実装されていません"
+msgstr "min/max 命令を許可しない"
 
 #: config/m68hc11/m68hc11.opt:73
-#, fuzzy
 msgid "Use direct addressing mode for soft registers"
-msgstr "'小さな' 集合体をレジスタではなくメモリに格納して返す"
+msgstr "ソフトレジスタ用に直接アドレスモードを使用する"
 
 #: config/m68hc11/m68hc11.opt:77
 msgid "Compile with 32-bit integer mode"
@@ -8037,9 +7898,8 @@ msgid "Specify the register allocation order"
 msgstr "レジスタ確保順を指定する"
 
 #: config/m68hc11/m68hc11.opt:86
-#, fuzzy
 msgid "Do not use direct addressing mode for soft registers"
-msgstr "複雑なアドレシングモードを利用しない"
+msgstr "ソフトレジスタ用に直接アドレスモードを使用しない"
 
 #: config/m68hc11/m68hc11.opt:90
 msgid "Compile with 16-bit integer mode"
@@ -8051,87 +7911,79 @@ msgstr "利用可能ソフトレジスタの数を示す"
 
 #: config/vax/vax.opt:23 config/vax/vax.opt:27
 msgid "Target DFLOAT double precision code"
-msgstr ""
+msgstr "DFLOAT 倍精度コードをターゲットとする"
 
 #: config/vax/vax.opt:31 config/vax/vax.opt:35
-#, fuzzy
 msgid "Generate GFLOAT double precision code"
-msgstr "リトルエンディアンのコードを生成"
+msgstr "GFLOAT 倍精度コードを生成する"
 
 #: config/vax/vax.opt:39
-#, fuzzy
 msgid "Generate code for GNU assembler (gas)"
-msgstr "GNU as 用のコードを生成する"
+msgstr "GNU アセンブラ (gas) 用のコードを生成する"
 
 #: config/vax/vax.opt:43
-#, fuzzy
 msgid "Generate code for UNIX assembler"
-msgstr "GNU as 用のコードを生成する"
+msgstr "UNIX アセンブラ用のコードを生成する"
 
 #: config/vax/vax.opt:47
 msgid "Use VAXC structure conventions"
-msgstr ""
+msgstr "VAXC 構造体規約を使用する"
 
 #: config/vax/vax.opt:51
 msgid "Use new adddi3/subdi3 patterns"
-msgstr ""
+msgstr "新しい adddi3/subdi3 パターンを使用する"
 
 #: config/cris/linux.opt:27
 msgid "Together with -fpic and -fPIC, do not use GOTPLT references"
 msgstr ""
 
 #: config/cris/cris.opt:45
-#, fuzzy
 msgid "Work around bug in multiplication instruction"
-msgstr "乗算-加算浮動小数点命令を使用しない"
+msgstr "乗算命令内のバグを回避する"
 
 #: config/cris/cris.opt:51
 msgid "Compile for ETRAX 4 (CRIS v3)"
-msgstr ""
+msgstr "ETRAX 4 (CRIS v3) 用にコンパイルする"
 
 #: config/cris/cris.opt:56
 msgid "Compile for ETRAX 100 (CRIS v8)"
-msgstr ""
+msgstr "ETRAX 100 (CRIS v8) 用にコンパイルする"
 
 #: config/cris/cris.opt:64
 msgid "Emit verbose debug information in assembly code"
-msgstr ""
+msgstr "アセンブラコード内に冗長でバッグ情報を発行する"
 
 #: config/cris/cris.opt:71
-#, fuzzy
 msgid "Do not use condition codes from normal instructions"
-msgstr "ビットフィールド命令を使用しない"
+msgstr ""
 
 #: config/cris/cris.opt:80
 msgid "Do not emit addressing modes with side-effect assignment"
 msgstr ""
 
 #: config/cris/cris.opt:89
-#, fuzzy
 msgid "Do not tune stack alignment"
-msgstr "スタックバイアスを使用しない"
+msgstr "スタック整列を調整しない"
 
 #: config/cris/cris.opt:98
-#, fuzzy
 msgid "Do not tune writable data alignment"
-msgstr "文字列を書き込み可能データセクションに格納する"
+msgstr "書き込み可能データ整列を調整しない"
 
 #: config/cris/cris.opt:107
 msgid "Do not tune code and read-only data alignment"
-msgstr ""
+msgstr "コードと読み取り専用データ整列を調整しない"
 
 #: config/cris/cris.opt:116
 msgid "Align code and data to 32 bits"
-msgstr ""
+msgstr "コードとデータを 32 ビットに整列する"
 
 #: config/cris/cris.opt:133
 msgid "Don't align items in code or data"
-msgstr ""
+msgstr "コードまたはデータ内の要素を整列しない"
 
 #: config/cris/cris.opt:142
-#, fuzzy
 msgid "Do not emit function prologue or epilogue"
-msgstr "関数の前置き/結びのためのサブルーチンを利用する"
+msgstr "関数プロローグまたはエピローグを発行しない"
 
 #: config/cris/cris.opt:149
 msgid "Use the most feature-enabling options allowed by other options"
@@ -8139,34 +7991,31 @@ msgstr ""
 
 #: config/cris/cris.opt:158
 msgid "Override -mbest-lib-options"
-msgstr ""
+msgstr "-mbest-lib-options を上書きする"
 
 #: config/cris/cris.opt:165
 msgid "-march=ARCH\tGenerate code for the specified chip or CPU version"
-msgstr ""
+msgstr "-march=ARCH\t指定したチップまたは CPU バージョン用のコードを生成する"
 
 #: config/cris/cris.opt:169
 msgid "-mtune=ARCH\tTune alignment for the specified chip or CPU version"
-msgstr ""
+msgstr "-mtune=ARCH\t指定したチップまたは CPU 用に整列を調整する"
 
 #: config/cris/cris.opt:173
 msgid "-mmax-stackframe=SIZE\tWarn when a stackframe is larger than the specified size"
-msgstr ""
+msgstr "-mmax-stackframe=SIZE\tスタックフレームが指定したサイズより大きい場合に警告する"
 
 #: config/h8300/h8300.opt:23
-#, fuzzy
 msgid "Generate H8S code"
-msgstr "H8/S コードを生成する"
+msgstr "H8S コードを生成する"
 
 #: config/h8300/h8300.opt:27
-#, fuzzy
 msgid "Generate H8SX code"
-msgstr "H8/S コードを生成する"
+msgstr "H8SX コードを生成する"
 
 #: config/h8300/h8300.opt:31
-#, fuzzy
 msgid "Generate H8S/2600 code"
-msgstr "H8/S2600 コードを生成する"
+msgstr "H8S/2600 コードを生成する"
 
 #: config/h8300/h8300.opt:35
 msgid "Make integers 32 bits wide"
@@ -8182,7 +8031,7 @@ msgstr "バイトサイズ単位のメモリアクセスが遅いことを考慮
 
 #: config/h8300/h8300.opt:50
 msgid "Enable linker relaxing"
-msgstr "リンカの -relax オプションを有効にする"
+msgstr "リンカの緩和を有効にする"
 
 #: config/h8300/h8300.opt:54
 msgid "Generate H8/300H code"
@@ -8190,29 +8039,27 @@ msgstr "H8/300H コードを生成する"
 
 #: config/h8300/h8300.opt:58
 msgid "Enable the normal mode"
-msgstr ""
+msgstr "通常モードを有効にする"
 
 #: config/h8300/h8300.opt:62
 msgid "Use H8/300 alignment rules"
-msgstr "H8/300 アラインメント規則を使用する"
+msgstr "H8/300 整列規則を使用する"
 
 #: config/v850/v850.opt:23
-#, fuzzy
 msgid "Use registers r2 and r5"
-msgstr "浮動小数点レジスタを利用する"
+msgstr "レジスタ r2 と r5 を使用する"
 
 #: config/v850/v850.opt:27
 msgid "Use 4 byte entries in switch tables"
-msgstr "switch テーブルで 4 バイトエントリを使用する"
+msgstr "switch 表で 4 バイトエントリを使用する"
 
 #: config/v850/v850.opt:31
 msgid "Enable backend debugging"
 msgstr "バックエンドデバッグを有効にする"
 
 #: config/v850/v850.opt:35
-#, fuzzy
 msgid "Do not use the callt instruction"
-msgstr "分割命令を使用しない"
+msgstr "callt 命令を使用しない"
 
 #: config/v850/v850.opt:39
 msgid "Reuse r30 on a per function basis"
@@ -8224,20 +8071,19 @@ msgstr "Green Hill の ABI をサポートする"
 
 #: config/v850/v850.opt:47
 msgid "Prohibit PC relative function calls"
-msgstr "PC 関連の関数呼び出しを禁じる"
+msgstr "PC 関連の関数呼び出しを禁止する"
 
 #: config/v850/v850.opt:51
 msgid "Use stubs for function prologues"
-msgstr "関数開始部分用のスタブを使用する"
+msgstr "関数プロローグ用のスタブを使用する"
 
 #: config/v850/v850.opt:55
 msgid "Set the max size of data eligible for the SDA area"
 msgstr "SDA 領域にとって望ましい最大データサイズを設定する"
 
 #: config/v850/v850.opt:59
-#, fuzzy
 msgid "Enable the use of the short load instructions"
-msgstr "DB 命令の使用を有効にする"
+msgstr "短い load 命令の使用を有効にする"
 
 #: config/v850/v850.opt:63
 msgid "Same as: -mep -mprolog-function"
@@ -8249,33 +8095,31 @@ msgstr "TDA 領域にとって望ましい最大データサイズを設定す�
 
 #: config/v850/v850.opt:71
 msgid "Enforce strict alignment"
-msgstr ""
+msgstr "厳密な整列を強制する"
 
 #: config/v850/v850.opt:75
 msgid "Enforce table jump"
-msgstr ""
+msgstr "表によるジャンプを強制する"
 
 #: config/v850/v850.opt:82
 msgid "Compile for the v850 processor"
 msgstr "v850 プロセッサ用にコンパイルする"
 
 #: config/v850/v850.opt:86
-#, fuzzy
 msgid "Compile for the v850e processor"
-msgstr "v850 プロセッサ用にコンパイルする"
+msgstr "v850e プロセッサ用にコンパイルする"
 
 #: config/v850/v850.opt:90
-#, fuzzy
 msgid "Compile for the v850e1 processor"
-msgstr "v850 プロセッサ用にコンパイルする"
+msgstr "v850e1 プロセッサ用にコンパイルする"
 
 #: config/v850/v850.opt:94
 msgid "Compile for the v850e2 processor"
-msgstr ""
+msgstr "v850e2 プロセッサ用にコンパイルする"
 
 #: config/v850/v850.opt:98
 msgid "Compile for the v850e2v3 processor"
-msgstr ""
+msgstr "v850e2v3 プロセッサ用にコンパイルする"
 
 #: config/v850/v850.opt:102
 msgid "Set the max size of data eligible for the ZDA area"
@@ -8286,14 +8130,12 @@ msgid "For intrinsics library: pass all parameters in registers"
 msgstr ""
 
 #: config/mmix/mmix.opt:28
-#, fuzzy
 msgid "Use register stack for parameters and return value"
-msgstr "引数をレジスタ渡しにする"
+msgstr "引数と戻り値用にレジスタスタックを使用する"
 
 #: config/mmix/mmix.opt:32
-#, fuzzy
 msgid "Use call-clobbered registers for parameters and return value"
-msgstr "呼び出しで破壊されるレジスタがグローバルレジスタ変数として使われました"
+msgstr "引数と戻り値用に呼び出しで破壊されるレジスタを使用する"
 
 #: config/mmix/mmix.opt:37
 #, fuzzy
@@ -8322,49 +8164,43 @@ msgstr ""
 
 #: config/mmix/mmix.opt:61
 msgid "Use P-mnemonics for branches statically predicted as taken"
-msgstr ""
+msgstr "統計的に使用されると予測される分岐に P-ニーモニックを使用する"
 
 #: config/mmix/mmix.opt:65
 msgid "Don't use P-mnemonics for branches"
-msgstr ""
+msgstr "分岐用にP-ニーモニックを使用しない"
 
 #: config/mmix/mmix.opt:79
-#, fuzzy
 msgid "Use addresses that allocate global registers"
-msgstr "カーネルグローバルレジスタを利用"
+msgstr ""
 
 #: config/mmix/mmix.opt:83
-#, fuzzy
 msgid "Do not use addresses that allocate global registers"
-msgstr "BK レジスタを確保しない"
+msgstr ""
 
 #: config/mmix/mmix.opt:87
-#, fuzzy
 msgid "Generate a single exit point for each function"
-msgstr "noreturn 関数が return するとき abort の呼び出しを生成する"
+msgstr ""
 
 #: config/mmix/mmix.opt:91
-#, fuzzy
 msgid "Do not generate a single exit point for each function"
-msgstr "multm 命令を生成しない"
+msgstr ""
 
 #: config/mmix/mmix.opt:95
-#, fuzzy
 msgid "Set start-address of the program"
-msgstr "一時オブジェクトのアドレスを取ろうとしています"
+msgstr "プログラムの開始アドレスを設定する"
 
 #: config/mmix/mmix.opt:99
 msgid "Set start-address of data"
-msgstr ""
+msgstr "データの開始アドレスを設定する"
 
 #: config/iq2000/iq2000.opt:23
-#, fuzzy
 msgid "Specify CPU for code generation purposes"
-msgstr "命令スケジューリングのために CPU を指定する"
+msgstr "コード生成用 CPU を指定する"
 
 #: config/iq2000/iq2000.opt:27
 msgid "Specify CPU for scheduling purposes"
-msgstr "命令スケジューリングのために CPU を指定する"
+msgstr "スケジュール用 CPU を指定する"
 
 #: config/iq2000/iq2000.opt:35 config/microblaze/microblaze.opt:65
 msgid "Use GP relative sdata/sbss sections"
@@ -8376,16 +8212,15 @@ msgstr "crt0.o をデフォルトとしない"
 
 #: config/bfin/bfin.opt:23 config/mep/mep.opt:141
 msgid "Use simulator runtime"
-msgstr ""
+msgstr "シミュレータランタイムを使用する"
 
 #: config/bfin/bfin.opt:31
-#, fuzzy
 msgid "Omit frame pointer for leaf functions"
 msgstr "末端の関数ではフレームポインタを省略する"
 
 #: config/bfin/bfin.opt:35
 msgid "Program is entirely located in low 64k of memory"
-msgstr ""
+msgstr "プログラム全体をメモリの下位 64k に配置する"
 
 #: config/bfin/bfin.opt:39
 msgid "Work around a hardware anomaly by adding a number of NOPs before a"
@@ -8397,7 +8232,7 @@ msgstr ""
 
 #: config/bfin/bfin.opt:48
 msgid "Enabled ID based shared library"
-msgstr ""
+msgstr "ID に基づく共有ライブラリを有効にする"
 
 #: config/bfin/bfin.opt:52
 msgid "Generate code that won't be linked against any other ID shared libraries,"
@@ -8417,24 +8252,23 @@ msgstr ""
 
 #: config/bfin/bfin.opt:85
 msgid "Enable multicore support"
-msgstr ""
+msgstr "複数コアサポートを有効にする"
 
 #: config/bfin/bfin.opt:89
 msgid "Build for Core A"
-msgstr ""
+msgstr "Core A 用にビルドする"
 
 #: config/bfin/bfin.opt:93
 msgid "Build for Core B"
-msgstr ""
+msgstr "Core B 用にビルドする"
 
 #: config/bfin/bfin.opt:97
 msgid "Build for SDRAM"
-msgstr ""
+msgstr "SDRAM 用にビルドする"
 
 #: config/bfin/bfin.opt:101
-#, fuzzy
 msgid "Assume ICPLBs are enabled at runtime."
-msgstr "実行時に再配置可能なコードを生成する"
+msgstr "実行時に ICPLB が有効であると見なす"
 
 #: config/picochip/picochip.opt:23
 msgid "Specify which type of AE to target. This option sets the mul-type and byte-access."
@@ -8449,9 +8283,8 @@ msgid "Specify whether the byte access instructions should be used. Enabled by d
 msgstr ""
 
 #: config/picochip/picochip.opt:35
-#, fuzzy
 msgid "Enable debug output to be generated."
-msgstr "デバッグ出力を有効にする"
+msgstr "デバッグ出力の生成を有効にする"
 
 #: config/picochip/picochip.opt:39
 msgid "Allow a symbol value to be used as an immediate value in an instruction."
@@ -8462,26 +8295,24 @@ msgid "Generate warnings when inefficient code is known to be generated."
 msgstr ""
 
 #: config/vxworks.opt:24
-#, fuzzy
 msgid "Assume the VxWorks RTP environment"
-msgstr "通常の C 実行環境を前提とする"
+msgstr "VxWorks RTP 環境と見なす"
 
 #: config/vxworks.opt:31
-#, fuzzy
 msgid "Assume the VxWorks vThreads environment"
-msgstr "通常の C 実行環境を前提とする"
+msgstr "VxWorks vThreads 環境と見なす"
 
 #: config/darwin.opt:50 c-family/c.opt:71 c-family/c.opt:74 c-family/c.opt:77
 #: c-family/c.opt:80 c-family/c.opt:179 c-family/c.opt:182 c-family/c.opt:220
 #: c-family/c.opt:224 c-family/c.opt:236 c-family/c.opt:1053
 #: c-family/c.opt:1061 common.opt:285 common.opt:288 common.opt:2175
-#, fuzzy, c-format
+#, c-format
 msgid "missing filename after %qs"
-msgstr "%s の後ろの数字を欠いています"
+msgstr "%qs の後にファイル名がありません"
 
 #: config/darwin.opt:111
 msgid "Generate compile-time CFString objects"
-msgstr ""
+msgstr "コンパイル時 CFString オブジェクトを生成する"
 
 #: config/darwin.opt:205
 msgid "Warn if constant CFString objects contain non-portable characters"
@@ -8489,34 +8320,31 @@ msgstr ""
 
 #: config/darwin.opt:210
 msgid "Generate AT&T-style stubs for Mach-O"
-msgstr ""
+msgstr "Mach-O 用に AT&T スタイルのスタブを生成する"
 
 #: config/darwin.opt:214
 msgid "Generate code suitable for executables (NOT shared libs)"
-msgstr ""
+msgstr "実行可能ファイル用 (共有ライブラリではなく) に適したコードを生成する"
 
 #: config/darwin.opt:218
-#, fuzzy
 msgid "Generate code suitable for fast turn around debugging"
-msgstr "unix アセンブラが処理できるコードを生成する"
+msgstr ""
 
 #: config/darwin.opt:226
 msgid "The earliest MacOS X version on which this program will run"
-msgstr ""
+msgstr "このプログラムを最初期の MacOS X バージョン上で実行されるものとする"
 
 #: config/darwin.opt:230
 msgid "Set sizeof(bool) to 1"
-msgstr ""
+msgstr "sizeof(bool) を 1 に設定する"
 
 #: config/darwin.opt:234
-#, fuzzy
 msgid "Generate code for darwin loadable kernel extensions"
-msgstr "リトルエンディアン用のコードを生成する"
+msgstr ""
 
 #: config/darwin.opt:238
-#, fuzzy
 msgid "Generate code for the kernel or loadable kernel extensions"
-msgstr "バイト/ワード ISA 拡張用のコードを発行する"
+msgstr ""
 
 #: config/darwin.opt:242
 msgid "-iframework <dir>\tAdd <dir> to the end of the system framework include path"
@@ -8524,186 +8352,167 @@ msgstr ""
 
 #: config/lynx.opt:23
 msgid "Support legacy multi-threading"
-msgstr ""
+msgstr "古いマルチスレッドをサポートする"
 
 #: config/lynx.opt:27
-#, fuzzy
 msgid "Use shared libraries"
-msgstr "ハードウェア浮動小数点を利用"
+msgstr "共有ライブラリを使用する"
 
 #: config/lynx.opt:31
 msgid "Support multi-threading"
-msgstr ""
+msgstr "マルチスレッドをサポートする"
 
 #: config/score/score.opt:31
-#, fuzzy
 msgid "Disable bcnz instruction"
-msgstr "DB 命令の使用を無効にする"
+msgstr "bcnz 命令を無効にする"
 
 #: config/score/score.opt:35
-#, fuzzy
 msgid "Enable unaligned load/store instruction"
-msgstr "DB 命令の使用を有効にする"
+msgstr "整列されていない load/store 命令を有効にする"
 
 #: config/score/score.opt:39
 msgid "Support SCORE 5 ISA"
-msgstr ""
+msgstr "SCORE 5 ISA をサポートする"
 
 #: config/score/score.opt:43
 msgid "Support SCORE 5U ISA"
-msgstr ""
+msgstr "SCORE 5U ISA をサポートする"
 
 #: config/score/score.opt:47
 msgid "Support SCORE 7 ISA"
-msgstr ""
+msgstr "SCORE 7 ISA をサポートする"
 
 #: config/score/score.opt:51
 msgid "Support SCORE 7D ISA"
-msgstr ""
+msgstr "SCORE 7D ISA をサポートする"
 
 #: config/score/score.opt:55
 msgid "Support SCORE 3 ISA"
-msgstr ""
+msgstr "SCORE 3 ISA をサポートする"
 
 #: config/score/score.opt:59
 msgid "Support SCORE 3d ISA"
-msgstr ""
+msgstr "SCORE 3d ISA をサポートする"
 
 #: config/linux.opt:24
 msgid "Use Bionic C library"
-msgstr ""
+msgstr "Bionic C ライブラリを使用する"
 
 #: config/linux.opt:28
 msgid "Use GNU C library"
-msgstr ""
+msgstr "GNU C ライブラリを使用する"
 
 #: config/linux.opt:32
 msgid "Use uClibc C library"
-msgstr ""
+msgstr "uClibc C ライブラリを使用する"
 
 #: config/mep/mep.opt:21
-#, fuzzy
 msgid "Enable absolute difference instructions"
-msgstr "DB 命令の使用を有効にする"
+msgstr ""
 
 #: config/mep/mep.opt:25
-#, fuzzy
 msgid "Enable all optional instructions"
-msgstr "並列命令を有効にする"
+msgstr "すべてのオプションの命令を有効にする"
 
 #: config/mep/mep.opt:29
-#, fuzzy
 msgid "Enable average instructions"
-msgstr "並列命令を有効にする"
+msgstr "平均命令を有効にする"
 
 #: config/mep/mep.opt:33
 msgid "Variables this size and smaller go in the based section. (default 0)"
 msgstr ""
 
 #: config/mep/mep.opt:37
-#, fuzzy
 msgid "Enable bit manipulation instructions"
-msgstr "並列命令を有効にする"
+msgstr "ビット操作命令を有効にする"
 
 #: config/mep/mep.opt:41
 msgid "Section to put all const variables in (tiny, near, far) (no default)"
 msgstr ""
 
 #: config/mep/mep.opt:45
-#, fuzzy
 msgid "Enable clip instructions"
-msgstr "並列命令を有効にする"
+msgstr "clip 命令を有効にする"
 
 #: config/mep/mep.opt:49
 msgid "Configuration name"
-msgstr ""
+msgstr "設定名"
 
 #: config/mep/mep.opt:53
 msgid "Enable MeP Coprocessor"
-msgstr ""
+msgstr "MeP コプロセッサを有効にする"
 
 #: config/mep/mep.opt:57
 msgid "Enable MeP Coprocessor with 32-bit registers"
-msgstr ""
+msgstr "32 ビットレジスタ付き MeP コプロセッサを有効にする"
 
 #: config/mep/mep.opt:61
 msgid "Enable MeP Coprocessor with 64-bit registers"
-msgstr ""
+msgstr "64 ビットレジスタ付き MeP コプロセッサを有効にする"
 
 #: config/mep/mep.opt:65
-#, fuzzy
 msgid "Enable IVC2 scheduling"
-msgstr "デバッグを有効にする"
+msgstr "IVC2 スケジュールを有効にする"
 
 #: config/mep/mep.opt:69
 msgid "Const variables default to the near section"
 msgstr ""
 
 #: config/mep/mep.opt:76
-#, fuzzy
 msgid "Enable 32-bit divide instructions"
-msgstr "分割命令を使用しない"
+msgstr "32 ビット除算命令を有効にする"
 
 #: config/mep/mep.opt:91
 msgid "__io vars are volatile by default"
-msgstr ""
+msgstr "__io 変数をデフォルトで volatile にする"
 
 #: config/mep/mep.opt:95
 msgid "All variables default to the far section"
 msgstr ""
 
 #: config/mep/mep.opt:99
-#, fuzzy
 msgid "Enable leading zero instructions"
-msgstr "DB 命令の使用を有効にする"
+msgstr ""
 
 #: config/mep/mep.opt:106
-#, fuzzy
 msgid "All variables default to the near section"
-msgstr "データ項目をそれら自身のセクションに配置する"
+msgstr ""
 
 #: config/mep/mep.opt:110
-#, fuzzy
 msgid "Enable min/max instructions"
-msgstr "並列命令を有効にする"
+msgstr "min/max 命令を有効にする"
 
 #: config/mep/mep.opt:114
-#, fuzzy
 msgid "Enable 32-bit multiply instructions"
-msgstr "並列命令を有効にする"
+msgstr "32 ビット乗算命令を有効にする"
 
 #: config/mep/mep.opt:118
-#, fuzzy
 msgid "Disable all optional instructions"
-msgstr "並列命令を無効にする"
+msgstr "すべてのオプションの命令を無効にする"
 
 #: config/mep/mep.opt:125
-#, fuzzy
 msgid "Allow gcc to use the repeat/erepeat instructions"
-msgstr "分割命令を使用しない"
+msgstr "gcc が repeat/erepeat 命令を使用することを許可する"
 
 #: config/mep/mep.opt:129
-#, fuzzy
 msgid "All variables default to the tiny section"
-msgstr "データ項目をそれら自身のセクションに配置する"
+msgstr ""
 
 #: config/mep/mep.opt:133
-#, fuzzy
 msgid "Enable saturation instructions"
-msgstr "並列命令を有効にする"
+msgstr "飽和命令を有効にする"
 
 #: config/mep/mep.opt:137
 msgid "Use sdram version of runtime"
-msgstr ""
+msgstr "sdram バージョンのランタイムを使用する"
 
 #: config/mep/mep.opt:145
 msgid "Use simulator runtime without vectors"
-msgstr ""
+msgstr "ベクトル無しのシミュレータランタイムを使用する"
 
 #: config/mep/mep.opt:149
-#, fuzzy
 msgid "All functions default to the far section"
-msgstr "各々の関数をそれ自身のセクションに配置する"
+msgstr ""
 
 #: config/mep/mep.opt:153
 msgid "Variables this size and smaller go in the tiny section. (default 4)"
@@ -8715,121 +8524,111 @@ msgstr ""
 
 #: config/vms/vms.opt:25
 msgid "Set name of main routine for the debugger"
-msgstr ""
+msgstr "デバッガ用のメインルーチン名を設定する"
 
 #: config/rx/rx.opt:26
 msgid "Store doubles in 64 bits."
-msgstr ""
+msgstr "double を 64 ビットで保存する。"
 
 #: config/rx/rx.opt:30
 msgid "Stores doubles in 32 bits.  This is the default."
-msgstr ""
+msgstr "double を 32 ビットで保存する (デフォルト)。"
 
 #: config/rx/rx.opt:34
-#, fuzzy
 msgid "Disable the use of RX FPU instructions.  "
-msgstr "RTPS 命令の利用を無効にする"
+msgstr "RX FPU 命令の使用を無効にする。"
 
 #: config/rx/rx.opt:41
-#, fuzzy
 msgid "Enable the use of RX FPU instructions.  This is the default."
-msgstr "RTPS 命令の利用を有効にする"
+msgstr "RX FPU 命令の使用を有効にする (デフォルト)。"
 
 #: config/rx/rx.opt:47
 msgid "Specify the target RX cpu type."
-msgstr ""
+msgstr "ターゲット RX CPU 型を設定する。"
 
 #: config/rx/rx.opt:53
 msgid "Data is stored in big-endian format."
-msgstr ""
+msgstr "ビッグエンディアン形式でデータを保存する。"
 
 #: config/rx/rx.opt:57
 msgid "Data is stored in little-endian format.  (Default)."
-msgstr ""
+msgstr "リトルエンディアン形式でデータを保存する (デフォルト)。"
 
 #: config/rx/rx.opt:63
-#, fuzzy
 msgid "Maximum size of global and static variables which can be placed into the small data area."
-msgstr "8 ビット領域内に配置できる変数だけが初期化されました"
+msgstr ""
 
 #: config/rx/rx.opt:69
 msgid "Use the simulator runtime."
-msgstr ""
+msgstr "シミュレータランタイムを使用する。"
 
 #: config/rx/rx.opt:75
 msgid "Generate assembler output that is compatible with the Renesas AS100 assembler.  This may restrict some of the compiler's capabilities.  The default is to generate GAS compatable syntax."
 msgstr ""
 
 #: config/rx/rx.opt:81
-#, fuzzy
 msgid "Enable linker relaxation."
-msgstr "リンカの緩和を有効にする"
+msgstr "リンカの緩和を有効にする。"
 
 #: config/rx/rx.opt:87
 msgid "Maximum size in bytes of constant values allowed as operands."
-msgstr ""
+msgstr "被演算子として許可される定数値のバイト単位での最大サイズ"
 
 #: config/rx/rx.opt:93
-#, fuzzy
 msgid "Specifies the number of registers to reserve for interrupt handlers."
-msgstr "PIC アドレシングに利用されるレジスタを指定する"
+msgstr "割り込みハンドラ用に予約されるレジスタサイズを指定する"
 
 #: config/rx/rx.opt:99
 msgid "Specifies whether interrupt functions should save and restore the accumulator register."
 msgstr ""
 
 #: config/lm32/lm32.opt:24
-#, fuzzy
 msgid "Enable multiply instructions"
-msgstr "並列命令を有効にする"
+msgstr "乗算命令を有効にする"
 
 #: config/lm32/lm32.opt:28
-#, fuzzy
 msgid "Enable divide and modulus instructions"
-msgstr "DB 命令の使用を有効にする"
+msgstr "除算と剰余命令を有効にする"
 
 #: config/lm32/lm32.opt:32
-#, fuzzy
 msgid "Enable barrel shift instructions"
-msgstr "並列命令を有効にする"
+msgstr ""
 
 #: config/lm32/lm32.opt:36
-#, fuzzy
 msgid "Enable sign extend instructions"
-msgstr "DB 命令の使用を有効にする"
+msgstr "符号付き拡張命令を有効にする"
 
 #: config/lm32/lm32.opt:40
-#, fuzzy
 msgid "Enable user-defined instructions"
-msgstr "DB 命令の使用を有効にする"
+msgstr "利用者定義命令を有効にする"
 
 #: config/microblaze/microblaze.opt:25
 msgid "Use software emulation for floating point (default)"
-msgstr ""
+msgstr "浮動小数点用にソフトウェアエミュレーションを使用する (デフォルト)"
 
 #: config/microblaze/microblaze.opt:29
 msgid "Use hardware floating point instructions"
-msgstr ""
+msgstr "ハードウェア浮動小数点命令を使用する"
 
 #: config/microblaze/microblaze.opt:33
 msgid "Use table lookup optimization for small signed integer divisions"
-msgstr ""
+msgstr "小さな符号付き除算で表探査による最適化を使用する"
 
 #: config/microblaze/microblaze.opt:37
 msgid "-mcpu=PROCESSOR\t\tUse features of and schedule code for given CPU"
-msgstr ""
+msgstr "-mcpu=PROCESSOR\t\t与えられた CPU 用の機能とスケジュールされたコードを使用する"
 
 #: config/microblaze/microblaze.opt:41
 msgid "Don't optimize block moves, use memcpy"
-msgstr ""
+msgstr "ブロック移動を最適化せず、memcpy を使用する"
 
 #: config/microblaze/microblaze.opt:45
 msgid "Use the soft multiply emulation (default)"
-msgstr ""
+msgstr "ソフトウェア乗算エミュレーションを使用する (デフォルト)"
 
 #: config/microblaze/microblaze.opt:49
 msgid "Use the software emulation for divides (default)"
-msgstr ""
+msgstr "ソフトウェア除算エミュレーションを使用する (デフォルト)"
 
 #: config/microblaze/microblaze.opt:53
 msgid "Use the hardware barrel shifter instead of emulation"
@@ -8837,11 +8636,11 @@ msgstr ""
 
 #: config/microblaze/microblaze.opt:57
 msgid "Use pattern compare instructions"
-msgstr ""
+msgstr "パターン比較命令を使用する"
 
 #: config/microblaze/microblaze.opt:61
 msgid "Check for stack overflow at runtime"
-msgstr ""
+msgstr "実行時にスタックオーバーフローを検査する"
 
 #: config/microblaze/microblaze.opt:69
 msgid "Clear the BSS to zero and place zero initialized in BSS"
@@ -8853,11 +8652,11 @@ msgstr ""
 
 #: config/microblaze/microblaze.opt:77
 msgid "Use hardware floating point converstion instructions"
-msgstr ""
+msgstr "ハードウェア浮動小数点変換命令を使用する"
 
 #: config/microblaze/microblaze.opt:81
 msgid "Use hardware floating point square root instruction"
-msgstr ""
+msgstr "ハードウェア浮動小数点二乗根命令を使用する"
 
 #: config/microblaze/microblaze.opt:85
 msgid "Description for mxl-mode-executable"
@@ -8877,107 +8676,98 @@ msgstr ""
 
 #: config/linux-android.opt:23
 msgid "Generate code for the Android platform."
-msgstr ""
+msgstr "Android プラットフォーム用コードを生成する。"
 
 #: config/g.opt:28
-#, fuzzy
 msgid "-G<number>\tPut global and static data smaller than <number> bytes into a special section (on some targets)"
 msgstr ""
-"  -G <number>             <number> バイトより小さな大域および静的データを\n"
-"                          特別なセクションに置く (ターゲット次第)\n"
 
 #: config/sol2.opt:23
 msgid "Pass -z text to linker"
-msgstr ""
+msgstr "-z text をリンカに渡す"
 
 #: config/fused-madd.opt:23
 msgid "%<-mfused-madd%> is deprecated; use %<-ffp-contract=%> instead"
-msgstr ""
+msgstr "%<-mfused-madd%> は廃止されました。代わりに %<-ffp-contract=%> を使用してください"
 
 #: c-family/c.opt:44 c-family/c.opt:47 c-family/c.opt:185
-#, fuzzy, c-format
+#, c-format
 msgid "assertion missing after %qs"
-msgstr "%s の後ろのアサーションを欠いています"
+msgstr "%qs の後にアサーションがありません"
 
 #: c-family/c.opt:56 c-family/c.opt:59 c-family/c.opt:167 c-family/c.opt:170
 #: c-family/c.opt:197 c-family/c.opt:256
-#, fuzzy, c-format
+#, c-format
 msgid "macro name missing after %qs"
-msgstr "%s の後ろのマクロ名を欠いています"
+msgstr "%qs の後にマクロ名がありません"
 
 #: c-family/c.opt:86 c-family/c.opt:89 c-family/c.opt:92 c-family/c.opt:95
 #: c-family/c.opt:204 c-family/c.opt:212 c-family/c.opt:1049
 #: c-family/c.opt:1069 c-family/c.opt:1073 c-family/c.opt:1077
-#, fuzzy, c-format
+#, c-format
 msgid "missing path after %qs"
-msgstr "%s の後ろの数字を欠いています"
+msgstr "%qs の後にパスがありません"
 
 #: c-family/c.opt:186
 msgid "-A<question>=<answer>\tAssert the <answer> to <question>.  Putting '-' before <question> disables the <answer> to <question>"
 msgstr ""
 
 #: c-family/c.opt:190
-#, fuzzy
 msgid "Do not discard comments"
-msgstr "終端されていないコメント"
+msgstr "コメントを破棄しない"
 
 #: c-family/c.opt:194
-#, fuzzy
 msgid "Do not discard comments in macro expansions"
-msgstr "ビット演算での即値サイズを調停しない"
+msgstr "マクロ展開内のコメントを破棄しない"
 
 #: c-family/c.opt:198
 msgid "-D<macro>[=<val>]\tDefine a <macro> with <val> as its value.  If just <macro> is given, <val> is taken to be 1"
-msgstr ""
+msgstr "-D<macro>[=<val>]\tマクロ <macro> を値 <val> として定義する。<macro> のみ与えられた場合、 <val> は 1 になる"
 
 #: c-family/c.opt:205
 msgid "-F <dir>\tAdd <dir> to the end of the main framework include path"
-msgstr ""
+msgstr "-F <dir>\t主フレームワークインクルードパスの最後に <dir> を追加する"
 
 #: c-family/c.opt:209
-#, fuzzy
 msgid "Print the name of header files as they are used"
-msgstr "コンパイルされたプログラム単位の名前を表示する"
+msgstr "使用されるヘッダファイル名を表示する"
 
 #: c-family/c.opt:213
 msgid "-I <dir>\tAdd <dir> to the end of the main include path"
-msgstr ""
+msgstr "-I <dir>\t主インクルードパスの最後に <dir> を追加する"
 
 #: c-family/c.opt:217
-#, fuzzy
 msgid "Generate make dependencies"
-msgstr "動的依存関係。\n"
+msgstr "make 依存関係を生成する"
 
 #: c-family/c.opt:221
-#, fuzzy
 msgid "Generate make dependencies and compile"
-msgstr "リトルエンディアンのコードを生成"
+msgstr "make 依存関係を生成し、コンパイルする"
 
 #: c-family/c.opt:225
 msgid "-MF <file>\tWrite dependency output to the given file"
-msgstr ""
+msgstr "-MF <file>\t与えられたファイルに依存関係を出力する"
 
 #: c-family/c.opt:229
 msgid "Treat missing header files as generated files"
-msgstr ""
+msgstr "存在しないヘッダファイルを生成されたファイルとして取り扱う"
 
 #: c-family/c.opt:233
 msgid "Like -M but ignore system header files"
-msgstr ""
+msgstr "-M と同様だがシステムヘッダファイルを無視する"
 
 #: c-family/c.opt:237
 msgid "Like -MD but ignore system header files"
-msgstr ""
+msgstr "-MD と同様だがシステムヘッダファイルを無視する"
 
 #: c-family/c.opt:241
-#, fuzzy
 msgid "Generate phony targets for all headers"
-msgstr "Intel as 用のコードを生成する"
+msgstr ""
 
 #: c-family/c.opt:244 c-family/c.opt:248
-#, fuzzy, c-format
+#, c-format
 msgid "missing makefile target after %qs"
-msgstr "正式な仮引数項を欠いています"
+msgstr "%qs の後に makefile ターゲットがありません"
 
 #: c-family/c.opt:245
 msgid "-MQ <target>\tAdd a MAKE-quoted target"
@@ -8988,26 +8778,24 @@ msgid "-MT <target>\tAdd an unquoted target"
 msgstr ""
 
 #: c-family/c.opt:253
-#, fuzzy
 msgid "Do not generate #line directives"
-msgstr ".size 疑似命令を生成しない"
+msgstr "#line 指示を生成しない"
 
 #: c-family/c.opt:257
 msgid "-U<macro>\tUndefine <macro>"
-msgstr ""
+msgstr "-U<macro>\tマクロ <macro> を未定義状態にする"
 
 #: c-family/c.opt:261
 msgid "Warn about things that will change when compiling with an ABI-compliant compiler"
-msgstr ""
+msgstr "ABI に適合したコンパイラでコンパイルしたときに変更されることに関して警告する"
 
 #: c-family/c.opt:268
-#, fuzzy
 msgid "Warn about suspicious uses of memory addresses"
-msgstr "疑わしい main の宣言に関して警告する"
+msgstr "メモリアドレスの疑わしい使用法について警告する"
 
 #: c-family/c.opt:272
 msgid "Enable most warning messages"
-msgstr "殆んどの警告メッセージを有効にする"
+msgstr "ほとんどの警告メッセージを有効にする"
 
 #: c-family/c.opt:276
 msgid "Warn whenever an Objective-C assignment is being intercepted by the garbage collector"
@@ -9015,102 +8803,91 @@ msgstr ""
 
 #: c-family/c.opt:280
 msgid "Warn about casting functions to incompatible types"
-msgstr "型に互換性のない関数のキャストに関して警告する"
+msgstr "互換性のない型への関数キャストに関して警告する"
 
 #: c-family/c.opt:284
 msgid "Warn when a built-in preprocessor macro is undefined or redefined"
-msgstr ""
+msgstr "組み込み前処理マクロが未定義になるか再定義されたときに警告する"
 
 #: c-family/c.opt:288
 msgid "Warn about C constructs that are not in the common subset of C and C++"
 msgstr ""
 
 #: c-family/c.opt:292
-#, fuzzy
 msgid "Warn about C++ constructs whose meaning differs between ISO C++ 1998 and ISO C++ 200x"
-msgstr "ISO C でその意味が変更された内容に関して警告する"
+msgstr ""
 
 #: c-family/c.opt:296
 msgid "Warn about casts which discard qualifiers"
-msgstr "修飾子を取り去るキャストについて警告する"
+msgstr ""
 
 #: c-family/c.opt:300
-#, fuzzy
 msgid "Warn about subscripts whose type is \"char\""
-msgstr "添字の型が 'char' であれば警告する"
+msgstr "添え字の型が \"char\" である場合に警告する"
 
 #: c-family/c.opt:304
-#, fuzzy
 msgid "Warn about variables that might be changed by \"longjmp\" or \"vfork\""
-msgstr "変数 `%s' は `longjmp' や `vfork' によって酷いことになる可能性があります"
+msgstr "\"longjmp\" または \"vfork\" によって変更されるかもしれない変数に関して警告する"
 
 #: c-family/c.opt:308
 msgid "Warn about possibly nested block comments, and C++ comments spanning more than one physical line"
-msgstr ""
+msgstr "ブロックコメントが入れ子になっている可能性または C++ コメントが物理的に一行以上にまたがっている可能性に関して警告する"
 
 #: c-family/c.opt:312
 msgid "Synonym for -Wcomment"
-msgstr ""
+msgstr "-Wcomment の別名"
 
 #: c-family/c.opt:316
 msgid "Warn for implicit type conversions that may change a value"
-msgstr ""
+msgstr "値が変更される場合がある暗黙的な型変換に関して警告する"
 
 #: c-family/c.opt:320
-#, fuzzy
 msgid "Warn for converting NULL from/to a non-pointer type"
-msgstr "ポインタ型に変換できません"
+msgstr "非ポインタ型から NULL へ、または NULL から非ポインタ型への変換に関して警告する"
 
 #: c-family/c.opt:324
-#, fuzzy
 msgid "Warn for implicit type conversions between signed and unsigned integers"
-msgstr "符合付きと符合無しの整数式同士の比較です"
+msgstr "符号付き整数と符号無し整数間の暗黙的な型変換に関して警告する"
 
 #: c-family/c.opt:328
-#, fuzzy
 msgid "Warn when all constructors and destructors are private"
-msgstr "全てのコンストラクタ/デストラクタが private でも警告しない"
+msgstr "すべてのコンストラクタとデストラクタが非公開の場合に警告する"
 
 #: c-family/c.opt:332
-#, fuzzy
 msgid "Warn when a declaration is found after a statement"
-msgstr "宣言が型を指定していない場合に警告する"
+msgstr "実行文より後に宣言が見つかったときに警告する"
 
 #: c-family/c.opt:336
 msgid "Warn if a deprecated compiler feature, class, method, or field is used"
-msgstr ""
+msgstr "廃止されたコンパイラ機能、クラス、メソッドまたはフィールドが使用されたときに警告する"
 
 #: c-family/c.opt:340
-#, fuzzy
 msgid "Warn about compile-time integer division by zero"
-msgstr "整数のゼロ除算をトラップする"
+msgstr "コンパイル時に整数の 0 による除算が行われたときに警告する"
 
 #: c-family/c.opt:344
 msgid "Warn about violations of Effective C++ style rules"
 msgstr "Effective C++ 式の指針からはずれるものについて警告する"
 
 #: c-family/c.opt:348
-#, fuzzy
 msgid "Warn about an empty body in an if or else statement"
-msgstr "else 文の中身が空です"
+msgstr "if または else 文の中身が空の場合に警告する"
 
 #: c-family/c.opt:352
 msgid "Warn about stray tokens after #elif and #endif"
 msgstr ""
 
 #: c-family/c.opt:356
-#, fuzzy
 msgid "Warn about comparison of different enum types"
-msgstr "戻り値の型と一致しないものについて警告する"
+msgstr "異なる列挙型の比較に関して警告する"
 
 #: c-family/c.opt:364
 msgid "This switch is deprecated; use -Werror=implicit-function-declaration instead"
-msgstr ""
+msgstr "このスイッチは廃止されました。代わりに -Werror=implicit-function-declaration を使用してください"
 
 #: c-family/c.opt:368
-#, fuzzy
 msgid "Warn if testing floating point numbers for equality"
-msgstr "浮動小数点数の等価テストに関して警告する"
+msgstr "浮動小数点数の等価比較に関して警告する"
 
 #: c-family/c.opt:372
 #, fuzzy
@@ -9118,22 +8895,20 @@ msgid "Warn about printf/scanf/strftime/strfmon format string anomalies"
 msgstr "printf/scanf/strftime/strfmon 形式の変則的なものに関して警告する"
 
 #: c-family/c.opt:376
-#, fuzzy
 msgid "Warn if passing too many arguments to a function for its format string"
-msgstr "`va_start' に対する引数が多すぎます"
+msgstr "関数の書式文字列用に渡す引数が多すぎる場合に警告する"
 
 #: c-family/c.opt:380
-#, fuzzy
 msgid "Warn about format strings that are not literals"
-msgstr "複数文字リテラルの使用に関して警告する"
+msgstr "書式文字列が文字列リテラルでない場合に警告する"
 
 #: c-family/c.opt:384
 msgid "Warn about format strings that contain NUL bytes"
-msgstr ""
+msgstr "書式文字列に NUL バイトが含まれる場合に警告する"
 
 #: c-family/c.opt:388
 msgid "Warn about possible security problems with format functions"
-msgstr "セキュリティ的な問題となりうる format 関数に関して警告する"
+msgstr "セキュリティ問題になる可能性がある書式関数に関して警告する"
 
 #: c-family/c.opt:392
 #, fuzzy
@@ -9141,26 +8916,24 @@ msgid "Warn about strftime formats yielding 2-digit years"
 msgstr "strftime 形式が二桁で年を表している時の警告しない"
 
 #: c-family/c.opt:396
-#, fuzzy
 msgid "Warn about zero-length formats"
-msgstr "長さ 0 のフォーマット文字列"
+msgstr "長さが 0 の書式文字列に関して警告する"
 
 #: c-family/c.opt:403
-#, fuzzy
 msgid "Warn whenever type qualifiers are ignored."
-msgstr "トライグラフを発見したときに警告する"
+msgstr ""
 
 #: c-family/c.opt:407
 msgid "Warn about variables which are initialized to themselves"
-msgstr ""
+msgstr "変数がそれ自身によって初期化されている場合に警告する"
 
 #: c-family/c.opt:411
 msgid "Warn about implicit declarations"
-msgstr ""
+msgstr "暗黙的宣言に関して警告する"
 
 #: c-family/c.opt:415
 msgid "Warn about implicit conversions from \"float\" to \"double\""
-msgstr ""
+msgstr "\"float\" から \"double\" への暗黙的変換に関して警告する"
 
 #: c-family/c.opt:419
 msgid "Warn about implicit function declarations"
@@ -9171,18 +8944,16 @@ msgid "Warn when a declaration does not specify a type"
 msgstr "宣言が型を指定していない場合に警告する"
 
 #: c-family/c.opt:430
-#, fuzzy
 msgid "Warn when there is a cast to a pointer from an integer of a different size"
-msgstr "異なるサイズの整数からポインタにキャストされました"
+msgstr "サイズが異なる整数からポインタへのキャストに関して警告する"
 
 #: c-family/c.opt:434
-#, fuzzy
 msgid "Warn about invalid uses of the \"offsetof\" macro"
-msgstr "#import ディレクティブの利用に関して警告する"
+msgstr "\"offsetof\" マクロの無効な使用方法に関して警告する"
 
 #: c-family/c.opt:438
 msgid "Warn about PCH files that are found but not used"
-msgstr ""
+msgstr "PCH ファイルが見つかったにもかかわらず使用されていない場合に警告する"
 
 #: c-family/c.opt:442
 msgid "Warn when a jump misses a variable initialization"
@@ -9190,32 +8961,27 @@ msgstr ""
 
 #: c-family/c.opt:446
 msgid "Warn when a logical operator is suspiciously always evaluating to true or false"
-msgstr ""
+msgstr "論理演算子が常に true または false と評価されるように思われる場合に警告する"
 
 #: c-family/c.opt:450
-#, fuzzy
 msgid "Do not warn about using \"long long\" when -pedantic"
-msgstr "-pedantic 指定時でも 'long long' の使用については警告しない"
+msgstr "-pedantic を使用しているときに\"long long\" が使用されても警告しない"
 
 #: c-family/c.opt:454
-#, fuzzy
 msgid "Warn about suspicious declarations of \"main\""
 msgstr "疑わしい main の宣言に関して警告する"
 
 #: c-family/c.opt:458
-#, fuzzy
 msgid "Warn about possibly missing braces around initializers"
-msgstr "初期化子の周りにブレースを欠いている様であれば警告する"
+msgstr "初期化子のまわりに中括弧が無い可能性がある場合に警告する"
 
 #: c-family/c.opt:462
-#, fuzzy
 msgid "Warn about global functions without previous declarations"
-msgstr "事前の宣言なしの大域関数に関して警告する"
+msgstr "前に宣言が無い大域関数に関して警告する"
 
 #: c-family/c.opt:466
-#, fuzzy
 msgid "Warn about missing fields in struct initializers"
-msgstr "初期化子の周りにブレースを欠いている様であれば警告する"
+msgstr "構造体の初期化子にフィールドが足りない場合に警告する"
 
 #: c-family/c.opt:470
 msgid "Warn about functions which might be candidates for format attributes"
@@ -9223,67 +8989,59 @@ msgstr "format 属性をの候補となりそうな関数について警告す�
 
 #: c-family/c.opt:474
 msgid "Warn about user-specified include directories that do not exist"
-msgstr ""
+msgstr "利用者が指定したインクルードディレクトリが存在しない場合に警告する"
 
 #: c-family/c.opt:478
 msgid "Warn about function parameters declared without a type specifier in K&R-style functions"
-msgstr ""
+msgstr "K&R スタイルの関数内に型指定がない引数が宣言されている関数に関して警告する"
 
 #: c-family/c.opt:482
-#, fuzzy
 msgid "Warn about global functions without prototypes"
-msgstr "プロトタイプなしの大域関数に関して警告する"
+msgstr "プロトタイプ無しの大域関数に関して警告する"
 
 #: c-family/c.opt:486
-#, fuzzy
 msgid "Warn about use of multi-character character constants"
-msgstr "複数文字リテラルの使用に関して警告する"
+msgstr "複数文字による文字定数が使用されている場合に警告する"
 
 #: c-family/c.opt:490
-#, fuzzy
 msgid "Warn about \"extern\" declarations not at file scope"
-msgstr "ファイルスコープレベルでない extern に関して警告する"
+msgstr "\"extern\" 宣言がファイルスコープでない場合に警告する"
 
 #: c-family/c.opt:494
 msgid "Warn when a noexcept expression evaluates to false even though the expression can't actually throw"
 msgstr ""
 
 #: c-family/c.opt:498
-#, fuzzy
 msgid "Warn when non-templatized friend functions are declared within a template"
-msgstr "template 内で非 template の friend 関数が宣言された場合でも警告しない"
+msgstr "テンプレート内でテンプレート化されていないフレンド関数が宣言された場合に警告する"
 
 #: c-family/c.opt:502
-#, fuzzy
 msgid "Warn about non-virtual destructors"
-msgstr "非仮想デストラクタについて警告する"
+msgstr "非仮想デストラクタに関して警告する"
 
 #: c-family/c.opt:506
 msgid "Warn about NULL being passed to argument slots marked as requiring non-NULL"
-msgstr ""
+msgstr "NULL で無いことが必要であるとマークされている引数の位置に NULL が渡された場合に警告する"
 
 #: c-family/c.opt:510
 msgid "-Wnormalized=<id|nfc|nfkc>\tWarn about non-normalised Unicode strings"
-msgstr ""
+msgstr "-Wnormalized=<id|nfc|nfkc>\t正準化されていないユニコード文字列に関して警告する"
 
 #: c-family/c.opt:514
-#, fuzzy
 msgid "Warn if a C-style cast is used in a program"
-msgstr "C 式のキャストがプログラムで使われたら警告する"
+msgstr "C スタイルのキャストがプログラム内で使用された場合に警告する"
 
 #: c-family/c.opt:518
-#, fuzzy
 msgid "Warn for obsolescent usage in a declaration"
-msgstr "暗黙の関数宣言に関して警告する"
+msgstr "廃止された宣言方法が使用された場合に警告する"
 
 #: c-family/c.opt:522
-#, fuzzy
 msgid "Warn if an old-style parameter definition is used"
-msgstr "関数の仮引数が使われないときに警告する"
+msgstr "古いスタイルの引数宣言が使用されたときに警告する"
 
 #: c-family/c.opt:526
 msgid "Warn if a string is longer than the maximum portable length specified by the standard"
-msgstr ""
+msgstr "標準によって指定されている移植性があるとされる最大文字列長を超える文字列がある場合に警告する"
 
 #: c-family/c.opt:530
 msgid "Warn about overloaded virtual function names"
@@ -9294,42 +9052,36 @@ msgid "Warn about overriding initializers without side effects"
 msgstr ""
 
 #: c-family/c.opt:538
-#, fuzzy
 msgid "Warn about packed bit-fields whose offset changed in GCC 4.4"
-msgstr "ISO C でその意味が変更された内容に関して警告する"
+msgstr ""
 
 #: c-family/c.opt:542
-#, fuzzy
 msgid "Warn about possibly missing parentheses"
-msgstr "括弧を欠いている可能性がある場合に警告する"
+msgstr "小括弧が無い可能性がある場合に警告する"
 
 #: c-family/c.opt:546
-#, fuzzy
 msgid "Warn when converting the type of pointers to member functions"
-msgstr "ポインタからメンバ関数への型変換の場合でも警告しない"
+msgstr "ポインタからメンバ関数への型変換に関して警告する"
 
 #: c-family/c.opt:550
 msgid "Warn about function pointer arithmetic"
 msgstr "関数ポインタの計算に関して警告する"
 
 #: c-family/c.opt:554
-#, fuzzy
 msgid "Warn when a pointer is cast to an integer of a different size"
-msgstr "キャストによってポインタから異なるサイズの整数となります"
+msgstr "ポインタからサイズが異なる整数型への変換に関して警告する"
 
 #: c-family/c.opt:558
-#, fuzzy
 msgid "Warn about misuses of pragmas"
-msgstr "認識できない pragma に関して警告する"
+msgstr "pragma の誤用に関して警告する"
 
 #: c-family/c.opt:562
 msgid "Warn if a property for an Objective-C object has no assign semantics specified"
 msgstr ""
 
 #: c-family/c.opt:566
-#, fuzzy
 msgid "Warn if inherited methods are unimplemented"
-msgstr "派生メソッドが未実装の場合でも警告しない"
+msgstr "継承されたメソッドが実装されていない場合に警告する"
 
 #: c-family/c.opt:570
 msgid "Warn about multiple declarations of the same object"
@@ -9352,7 +9104,6 @@ msgid "Warn about possible violations of sequence point rules"
 msgstr "副作用完了点規則を破る可能性がある場合に警告する"
 
 #: c-family/c.opt:590
-#, fuzzy
 msgid "Warn about signed-unsigned comparisons"
 msgstr "符合付き/符合無しの比較に関して警告する"
 
@@ -9365,9 +9116,8 @@ msgid "Warn about uncasted NULL used as sentinel"
 msgstr ""
 
 #: c-family/c.opt:602
-#, fuzzy
 msgid "Warn about unprototyped function declarations"
-msgstr "プロトタイプされていない関数宣言に関して警告する"
+msgstr "プロトタイプが無い関数宣言に関して警告する"
 
 #: c-family/c.opt:606
 msgid "Warn if type signatures of candidate methods do not match exactly"
@@ -9375,16 +9125,15 @@ msgstr ""
 
 #: c-family/c.opt:610
 msgid "Warn when __sync_fetch_and_nand and __sync_nand_and_fetch built-in functions are used"
-msgstr ""
+msgstr "__sync_fetch_and_nand と __sync_nand_and_fetch 組み込み関数が使用された場合に警告する"
 
 #: c-family/c.opt:614
 msgid "Deprecated.  This switch has no effect"
-msgstr ""
+msgstr "廃止されている。このスイッチは効果はない。"
 
 #: c-family/c.opt:622
-#, fuzzy
 msgid "Warn about features not present in traditional C"
-msgstr "古い C では #elif を使わない方がいいです"
+msgstr "古い (traditional) C には存在しない機能に関して警告する"
 
 #: c-family/c.opt:626
 msgid "Warn of prototypes causing type conversions different from what would happen in the absence of prototype"
@@ -9392,26 +9141,23 @@ msgstr ""
 
 #: c-family/c.opt:630
 msgid "Warn if trigraphs are encountered that might affect the meaning of the program"
-msgstr ""
+msgstr "トライグラフに遭遇し、プログラムないで意味を持つ場合に警告する"
 
 #: c-family/c.opt:634
-#, fuzzy
 msgid "Warn about @selector()s without previously declared methods"
-msgstr "事前の宣言なしの大域関数に関して警告する"
+msgstr "前に宣言されたメソッドでない @selector() に関して警告する"
 
 #: c-family/c.opt:638
-#, fuzzy
 msgid "Warn if an undefined macro is used in an #if directive"
-msgstr "未定義又は不正な # ディレクティブです"
+msgstr "#if 指示内で未定義マクロが使用された場合に警告する"
 
 #: c-family/c.opt:642
 msgid "Warn about unrecognized pragmas"
 msgstr "認識できない pragma に関して警告する"
 
 #: c-family/c.opt:646
-#, fuzzy
 msgid "Warn about unsuffixed float constants"
-msgstr "浮動小数定数に 'f' と 'l' 接尾辞の両方があります"
+msgstr "接尾辞がない浮動小数定数に関して警告する"
 
 #: c-family/c.opt:650
 msgid "Warn about macros defined in the main file that are not used"
