@@ -14,7 +14,7 @@
 	clearly state that the conflict is due to conflicting types, and
 	produce it for protocols as well.  Emit an error if two identical
 	methods are declared in a protocol, but one is @required and the
-	other one is @optional.  When
+	other one is @optional.
 
 2010-12-30  Nicola Pero  <nicola.pero@meta-innovation.com>
 
