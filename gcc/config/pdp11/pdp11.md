@@ -1212,11 +1212,14 @@
   [(set_attr "length" "4")])
 
 (define_insn "tablejump"
-  [(set (pc) (match_operand:HI 0 "general_operand" "rR,Q"))
+  [(set (pc) (match_operand:HI 0 "general_operand" "r,R,Q"))
    (use (label_ref (match_operand 1 "" "")))]
   ""
-  "jmp %0"
-  [(set_attr "length" "2,4")])
+  "@
+  jmp (%0)
+  jmp %@%0
+  jmp %@%0"
+  [(set_attr "length" "2,2,4")])
 
 ;; indirect jump - let's be conservative!
 ;; allow only register_operand, even though we could also 
