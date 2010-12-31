@@ -1,6 +1,6 @@
 #
 # Expect driver script for GCC Regression Tests
-#   Copyright (C) 1993, 1996, 2001, 2005, 2007, 2008 Free Software Foundation
+#   Copyright (C) 1993, 1996, 2001, 2005, 2007, 2008, 2010 Free Software Foundation
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ load_lib c-torture.exp
 # C torture test suite, and other contributors.
 
 # Disable tests on machines with no hardware support for IEEE arithmetic.
-if { [istarget "vax-*-*"] || [ istarget "powerpc-*-*spe"] } { return }
+if { [istarget "vax-*-*"] || [ istarget "powerpc-*-*spe"] || [istarget "pdp11-*-*"] } { return }
 
 if $tracelevel then {
     strace $tracelevel

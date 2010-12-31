@@ -1,3 +1,5 @@
+/* { dg-skip-if "not enough registers" { pdp11-*-* } { "-O[12s]" } { "" } } */
+
 typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 
