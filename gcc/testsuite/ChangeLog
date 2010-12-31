@@ -1,3 +1,8 @@
+2010-12-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/45338
+	* gfortran.dg/userdef_operator_2.f90:  New test case.
+
 2010-12-31  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/46971
@@ -6,16 +11,16 @@
 2010-12-30  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/method-conflict-3.m: New.
-	* objc.dg/method-conflict-4.m: New.	
-	* obj-c++.dg/method-conflict-3.m: New.	
+	* objc.dg/method-conflict-4.m: New.
+	* obj-c++.dg/method-conflict-3.m: New.
 	* obj-c++.dg/method-conflict-4.mm: New.
 
 2010-12-30  Nicola Pero  <nicola.pero@meta-innovation.com>
-	
+
 	* objc.dg/class-extension-3.m: Updated.
 	* objc.dg/method-1.m: Updated.
 	* objc.dg/method-conflict-1.m: New.
-	* objc.dg/method-conflict-2.m: New.	
+	* objc.dg/method-conflict-2.m: New.
 	* obj-c++.dg/class-extension-3.mm: Updated.
 	* obj-c++.dg/method-8.mm: Updated.
 	* obj-c++.dg/method-conflict-1.mm: New.
