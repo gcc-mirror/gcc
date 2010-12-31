@@ -235,6 +235,12 @@ static const struct default_options pdp11_option_optimization_table[] =
 
 #undef  TARGET_ASM_FUNCTION_SECTION
 #define TARGET_ASM_FUNCTION_SECTION pdp11_function_section
+
+#undef  TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND pdp11_asm_print_operand
+
+#undef  TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#define TARGET_PRINT_OPERAND_PUNCT_VALID_P pdp11_asm_print_operand_punct_valid_p
 
 /* Implement TARGET_HANDLE_OPTION.  */
 
@@ -721,11 +727,52 @@ pdp11_asm_output_var (FILE *file, const char *name, int size,
 {
   if (align > 8)
     fprintf (file, "\n\t.even\n");
-  fprintf (file, ".globl ");
-  assemble_name (file, name);
+  if (global)
+    {
+      fprintf (file, ".globl ");
+      assemble_name (file, name);
+    }
   fprintf (file, "\n");
   assemble_name (file, name);
   fprintf (file, ": .=.+ %#ho\n", (unsigned short)size);
+}
+
+static void
+pdp11_asm_print_operand (FILE *file, rtx x, int code)
+{
+  REAL_VALUE_TYPE r;
+  long sval[2];
+ 
+  if (code == '#')
+    fprintf (file, "#");
+  else if (code == '@')
+    {
+      if (TARGET_UNIX_ASM)
+	fprintf (file, "*");
+      else
+	fprintf (file, "@");
+    }
+  else if (GET_CODE (x) == REG)
+    fprintf (file, "%s", reg_names[REGNO (x)]);
+  else if (GET_CODE (x) == MEM)
+    output_address (XEXP (x, 0));
+  else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) != SImode)
+    {
+      REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+      REAL_VALUE_TO_TARGET_DOUBLE (r, sval);
+      fprintf (file, "$%#lo", sval[0] >> 16);
+    }
+  else
+    {
+      putc ('$', file);
+      output_addr_const_pdp11 (file, x);
+    }
+}
+
+static bool
+pdp11_asm_print_operand_punct_valid_p (char c)
+{
+  return (c == '#' || c == '@');
 }
 
 void

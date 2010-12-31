@@ -1,3 +1,12 @@
+2010-12-31  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11.h (PRINT_OPERAND): Delete.
+	* config/pdp11/pdp11.c (TARGET_PRINT_OPERAND,
+	TARGET_PRINT_OPERAND_PUNCT_VALID_P): Define
+	(pdp11_asm_print_operand, pdp11_asm_print_operand_punct_valid_p):
+	New function.
+	* config/pdp11/pdp11.md (tablejump): Fix generated assembly.
+
 2010-12-31  Joern Rennecke  <amylaar@spamcop.net>
 
 	PR target/47111
