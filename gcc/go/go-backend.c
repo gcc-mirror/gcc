@@ -53,7 +53,7 @@ go_field_alignment (tree t)
 
 #ifdef ADJUST_FIELD_ALIGN
   {
-    tree field;
+    tree field ATTRIBUTE_UNUSED;
     field = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL, t);
     v = ADJUST_FIELD_ALIGN (field, v);
   }

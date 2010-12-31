@@ -1,3 +1,9 @@
+2010-12-31  Joern Rennecke  <amylaar@spamcop.net>
+
+	PR go/47113
+	* go-backend.c: (go_field_alignment): Add ATTRIBUTE_UNUSED to
+	variable ‘field’ .
+
 2010-12-21  Ian Lance Taylor  <iant@google.com>
 
 	* Make-lang.in (check-go): Remove.
