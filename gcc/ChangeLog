@@ -1,3 +1,8 @@
+2010-12-31  Joern Rennecke  <amylaar@spamcop.net>
+
+	PR target/47111
+	* config/rtems.h (NO_IMPLICIT_EXTERN_C): Undef before defining.
+
 2010-12-30  Mingjie Xing  <mingjie.xing@gmail.com>
 
 	* config/mips/mips.h (SHIFT_COUNT_TRUNCATED): Change
