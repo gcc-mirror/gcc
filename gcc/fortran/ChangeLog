@@ -1,5 +1,15 @@
 2010-12-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/47065
+	* frontend-passes.c (count_arglist):  Static variable to
+	count the nesting of argument lists.
+	(optimize_code):  Set count_arglist to 1 if within a call
+	statement, to 0 otherwise.
+	(optimize_trim):  New function.
+	(optimize_expr):  Adjust count_arglist.  Call optimize_trim.
+
+2010-12-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/45338
 	* resolve.c (resolve_operator):  Mark function for user-defined
 	operator as referenced.

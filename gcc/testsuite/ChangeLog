@@ -1,5 +1,11 @@
 2010-12-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/47065
+	* gfortran.dg/trim_optimize_3.f90:  New test.
+	* gfortran.dg/trim_optimize_4.f90:  New test.
+
+2010-12-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/45338
 	* gfortran.dg/userdef_operator_2.f90:  New test case.
 
