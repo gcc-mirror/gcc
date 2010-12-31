@@ -34,6 +34,11 @@ static void optimize_namespace (gfc_namespace *);
 static void optimize_assignment (gfc_code *);
 static bool optimize_op (gfc_expr *);
 static bool optimize_comparison (gfc_expr *, gfc_intrinsic_op);
+static bool optimize_trim (gfc_expr *);
+
+/* How deep we are inside an argument list.  */
+
+static int count_arglist;
 
 /* Entry point - run all passes for a namespace.  So far, only an
    optimization pass is run.  */
@@ -56,7 +61,18 @@ static int
 optimize_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
 	       void *data ATTRIBUTE_UNUSED)
 {
-  if ((*c)->op == EXEC_ASSIGN)
+
+  gfc_exec_op op;
+
+  op = (*c)->op;
+
+  if (op == EXEC_CALL || op == EXEC_COMPCALL || op == EXEC_ASSIGN_CALL
+      || op == EXEC_CALL_PPC)
+    count_arglist = 1;
+  else
+    count_arglist = 0;
+
+  if (op == EXEC_ASSIGN)
     optimize_assignment (*c);
   return 0;
 }
@@ -68,8 +84,25 @@ static int
 optimize_expr (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 	       void *data ATTRIBUTE_UNUSED)
 {
+  bool function_expr;
+
+  if ((*e)->expr_type == EXPR_FUNCTION)
+    {
+      count_arglist ++;
+      function_expr = true;
+    }
+  else
+    function_expr = false;
+
+  if (optimize_trim (*e))
+    gfc_simplify_expr (*e, 0);
+
   if ((*e)->expr_type == EXPR_OP && optimize_op (*e))
     gfc_simplify_expr (*e, 0);
+
+  if (function_expr)
+    count_arglist --;
+
   return 0;
 }
 
@@ -393,6 +426,76 @@ optimize_comparison (gfc_expr *e, gfc_intrinsic_op op)
     }
 
   return false;
+}
+
+/* Optimize a trim function by replacing it with an equivalent substring
+   involving a call to len_trim.  This only works for expressions where
+   variables are trimmed.  Return true if anything was modified.  */
+
+static bool
+optimize_trim (gfc_expr *e)
+{
+  gfc_expr *a;
+  gfc_ref *ref;
+  gfc_expr *fcn;
+  gfc_actual_arglist *actual_arglist, *next;
+
+  /* Don't do this optimization within an argument list, because
+     otherwise aliasing issues may occur.  */
+
+  if (count_arglist != 1)
+    return false;
+
+  if (e->ts.type != BT_CHARACTER || e->expr_type != EXPR_FUNCTION
+      || e->value.function.isym == NULL
+      || e->value.function.isym->id != GFC_ISYM_TRIM)
+    return false;
+
+  a = e->value.function.actual->expr;
+
+  if (a->expr_type != EXPR_VARIABLE)
+    return false;
+
+  if (a->ref)
+    {
+      /* FIXME - also handle substring references, by modifying the
+	 reference itself.  Make sure not to evaluate functions in
+	 the references twice.  */
+      return false;
+    }
+  else
+    {
+      strip_function_call (e);
+
+      /* Create the reference.  */
+
+      ref = gfc_get_ref ();
+      ref->type = REF_SUBSTRING;
+
+      /* Set the start of the reference.  */
+
+      ref->u.ss.start = gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
+
+      /* Build the function call to len_trim(x, gfc_defaul_integer_kind).  */
+
+      fcn = gfc_get_expr ();
+      fcn->expr_type = EXPR_FUNCTION;
+      fcn->value.function.isym =
+	gfc_intrinsic_function_by_id (GFC_ISYM_LEN_TRIM);
+      actual_arglist = gfc_get_actual_arglist ();
+      actual_arglist->expr = gfc_copy_expr (e);
+      next = gfc_get_actual_arglist ();
+      next->expr = gfc_get_int_expr (gfc_default_integer_kind, NULL,
+				     gfc_default_integer_kind);
+      actual_arglist->next = next;
+      fcn->value.function.actual = actual_arglist;
+
+      /* Set the end of the reference to the call to len_trim.  */
+
+      ref->u.ss.end = fcn;
+      e->ref = ref;
+      return true;
+    }
 }
 
 #define WALK_SUBEXPR(NODE) \
