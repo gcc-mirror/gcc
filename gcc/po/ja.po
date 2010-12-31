@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.6-b20101218\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-12-18 20:02+0000\n"
-"PO-Revision-Date: 2010-12-30 14:56+0900\n"
+"PO-Revision-Date: 2010-12-31 16:34+0900\n"
 "Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -5159,23 +5159,23 @@ msgstr ""
 
 #: fortran/lang.opt:567
 msgid "Conform to the ISO Fortran 2003 standard"
-msgstr ""
+msgstr "ISO Fortran 2003 標準に準拠させる"
 
 #: fortran/lang.opt:571
 msgid "Conform to the ISO Fortran 2008 standard"
-msgstr ""
+msgstr "ISO Fortran 2008 標準に準拠させる"
 
 #: fortran/lang.opt:575
 msgid "Conform to the ISO Fortran 95 standard"
-msgstr ""
+msgstr "ISO Fortran 95 標準に準拠させる"
 
 #: fortran/lang.opt:579
 msgid "Conform to nothing in particular"
-msgstr ""
+msgstr "特に何も準拠させない"
 
 #: fortran/lang.opt:583
 msgid "Accept extensions to support legacy code"
-msgstr ""
+msgstr "古いコードをサポートするための拡張を受け付ける"
 
 #: config/alpha/alpha.opt:23 config/i386/i386.opt:209
 msgid "Do not use hardware fp"
@@ -6212,7 +6212,7 @@ msgstr "TLS データにアクセスするときに %gs に対する直接参照
 
 #: config/i386/i386.opt:241
 msgid "Generate code that conforms to the given ABI"
-msgstr "与えられた ABI に従ったコードを生成する"
+msgstr "与えられた ABI に準拠したコードを生成する"
 
 #: config/i386/i386.opt:245 config/rs6000/rs6000.opt:228
 msgid "Vector library ABI to use"
@@ -7239,7 +7239,7 @@ msgstr "浮動小数点レジスタで浮動小数点引数を渡す"
 
 #: config/arm/arm.opt:38
 msgid "Generate APCS conformant stack frames"
-msgstr "APCS に適合したスタックフレームを生成する"
+msgstr "APCS に準拠したスタックフレームを生成する"
 
 #: config/arm/arm.opt:42
 msgid "Generate re-entrant, PIC code"
@@ -7569,7 +7569,7 @@ msgstr "シミュレータ用ライブラリを提供する"
 
 #: config/mips/mips.opt:23
 msgid "-mabi=ABI\tGenerate code that conforms to the given ABI"
-msgstr "-mabi=ABI\t与えられた ABI に適合したコードを生成する"
+msgstr "-mabi=ABI\t与えられた ABI に準拠したコードを生成する"
 
 #: config/mips/mips.opt:27
 msgid "Generate code that can be used in SVR4-style dynamic objects"
@@ -9161,26 +9161,23 @@ msgstr "接尾辞がない浮動小数定数に関して警告する"
 
 #: c-family/c.opt:650
 msgid "Warn about macros defined in the main file that are not used"
-msgstr ""
+msgstr "主ファイル内で定義されているが使用されていないマクロに関して警告する"
 
 #: c-family/c.opt:654
 msgid "Warn if a caller of a function, marked with attribute warn_unused_result, does not use its return value"
-msgstr ""
+msgstr "warn_unused_result 属性が設定されている呼び出し元関数で戻り値が使用されていない場合に警告する"
 
 #: c-family/c.opt:658
-#, fuzzy
 msgid "Do not warn about using variadic macros when -pedantic"
-msgstr "-pedantic 指定時でも 'long long' の使用については警告しない"
+msgstr "-pedantic を使用しているときに variadic マクロを使用している場合でも警告しない"
 
 #: c-family/c.opt:662
-#, fuzzy
 msgid "Warn if a variable length array is used"
-msgstr "変数が使われないときに警告する"
+msgstr "可変長配列が使用されたときに警告する"
 
 #: c-family/c.opt:666
-#, fuzzy
 msgid "Warn when a register variable is declared volatile"
-msgstr "インスタンス変数 `%s' は private と宣言されています"
+msgstr "レジスタ変数が volatile と宣言されたときに警告する"
 
 #: c-family/c.opt:670
 msgid "In C++, nonzero means warn about deprecated conversion from string literals to 'char *'.  In C, similar warning, except that the conversion is of course not deprecated by the ISO C standard."
@@ -9193,36 +9190,33 @@ msgstr "オーバーロードが符合無しから符合付きに格上げとな
 
 #: c-family/c.opt:678
 msgid "A synonym for -std=c89 (for C) or -std=c++98 (for C++)"
-msgstr ""
+msgstr "-std=c89 (C 用) または -std=c++98 (C++ 用) の別名"
 
 #: c-family/c.opt:686
-#, fuzzy
 msgid "Enforce class member access control semantics"
-msgstr "アクセス制御の意味に従わない"
+msgstr ""
 
 #: c-family/c.opt:689 c-family/c.opt:692 c-family/c.opt:746 c-family/c.opt:762
 #: c-family/c.opt:785 c-family/c.opt:791 c-family/c.opt:798 c-family/c.opt:818
 #: c-family/c.opt:829 c-family/c.opt:832 c-family/c.opt:846 c-family/c.opt:949
 #: c-family/c.opt:960 c-family/c.opt:974 c-family/c.opt:1005
 #: c-family/c.opt:1009 c-family/c.opt:1025 c-family/c-opts.c:561
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "switch %qs is no longer supported"
-msgstr "-f%s はもはやサポートされません"
+msgstr "%qs スイッチは既にサポートされていません"
 
 #: c-family/c.opt:693 c-family/c.opt:799 c-family/c.opt:1006
 #: c-family/c.opt:1010 c-family/c.opt:1026
 msgid "No longer supported"
-msgstr ""
+msgstr "既にサポートされていません"
 
 #: c-family/c.opt:697
-#, fuzzy
 msgid "Recognize the \"asm\" keyword"
-msgstr "'asm' 予約語を認識させない"
+msgstr "\"asm\" 予約語を認識する"
 
 #: c-family/c.opt:701
-#, fuzzy
 msgid "Recognize built-in functions"
-msgstr "いくつかの組み込み関数を認識させない"
+msgstr "組み込み関数を認識する"
 
 #: c-family/c.opt:708
 msgid "Check the return value of new"
@@ -9230,21 +9224,20 @@ msgstr "new の戻り値を検査する"
 
 #: c-family/c.opt:712
 msgid "Allow the arguments of the '?' operator to have different types"
-msgstr ""
+msgstr "'?' 演算子の引数に異なる型を取ることを許可する"
 
 #: c-family/c.opt:716
-#, fuzzy
 msgid "Reduce the size of object files"
 msgstr "オブジェクトファイルのサイズを小さくする"
 
 #: c-family/c.opt:719
-#, fuzzy, c-format
+#, c-format
 msgid "no class name specified with %qs"
-msgstr "%s に対する記憶クラス指定子 `%s'"
+msgstr "%qs にクラス名が指定されていません"
 
 #: c-family/c.opt:720
 msgid "-fconst-string-class=<name>\tUse class <name> for constant strings"
-msgstr ""
+msgstr "-fconst-string-class=<name>\t文字列定数用にクラス <name> を使用する"
 
 #: c-family/c.opt:724
 msgid "-fno-deduce-init-list\tdisable deduction of std::initializer_list for a template type parameter from a brace-enclosed initializer-list"
@@ -9254,64 +9247,55 @@ msgstr ""
 #: common.opt:1303 common.opt:1569 common.opt:1605 common.opt:1690
 #: common.opt:1761 common.opt:1839 common.opt:1855 common.opt:1931
 msgid "Does nothing.  Preserved for backward compatibility."
-msgstr ""
+msgstr "何もしない。後方互換性のために残されている。"
 
 #: c-family/c.opt:732
-#, fuzzy
 msgid "Preprocess directives only."
-msgstr "#ident ディレクティブを処理する"
+msgstr "前処理指示のみ行う。"
 
 #: c-family/c.opt:736
-#, fuzzy
 msgid "Permit '$' as an identifier character"
-msgstr "フォーマットがワイド文字列です"
+msgstr "'$' を識別子用の文字として許可する"
 
 #: c-family/c.opt:743
-#, fuzzy
 msgid "Generate code to check exception specifications"
-msgstr "例外仕様の検査をするコードを生成しない"
+msgstr "例外仕様を検査するためのコードを生成する"
 
 #: c-family/c.opt:750
 msgid "-fexec-charset=<cset>\tConvert all strings and character constants to character set <cset>"
-msgstr ""
+msgstr "-fexec-charset=<cset>\tすべての文字列と文字定数を文字集合 <cset> に変換する"
 
 #: c-family/c.opt:754
-#, fuzzy
 msgid "Permit universal character names (\\u and \\U) in identifiers"
-msgstr "ユニバーサル文字名 `\\u%04x' は識別子の中では有効ではありません"
+msgstr "ユニバーサル文字名 (\\u and \\U) を識別子内で使用することを許可する"
 
 #: c-family/c.opt:758
 msgid "-finput-charset=<cset>\tSpecify the default character set for source files"
-msgstr ""
+msgstr "-finput-charset=<cset>\tソースファイルのデフォルトの文字集合を指定する"
 
 #: c-family/c.opt:766
-#, fuzzy
 msgid "Scope of for-init-statement variables is local to the loop"
-msgstr "for 初期化文の変数をスコープ外に拡大する"
+msgstr "for 文内で初期化した (for-init-statement) 変数のスコープをループ局所にする"
 
 #: c-family/c.opt:770
-#, fuzzy
 msgid "Do not assume that standard C libraries and \"main\" exist"
-msgstr "標準ライブラリや main が存在しない可能性があるものとする"
+msgstr "標準 C ライブラリと \"main\" が存在すると見なさない"
 
 #: c-family/c.opt:774
-#, fuzzy
 msgid "Recognize GNU-defined keywords"
-msgstr "GNU 定義の予約語を認識させない"
+msgstr "GNU が定義した予約語を認識する"
 
 #: c-family/c.opt:778
 msgid "Generate code for GNU runtime environment"
 msgstr "GNU 実行環境用のコードを生成する"
 
 #: c-family/c.opt:782
-#, fuzzy
 msgid "Use traditional GNU semantics for inline functions"
-msgstr "古い C は共用体の初期を拒絶します"
+msgstr "インライン関数を古い (traditional) GNU の意味で使用する"
 
 #: c-family/c.opt:788
-#, fuzzy
 msgid "-fhandle-exceptions has been renamed -fexceptions (and is now on by default)"
-msgstr "-fhandle-exceptions は -fexception に変更されました(さらにデフォルトで有効です)"
+msgstr "-fhandle-exceptions は -fexceptions に名前が変更されました (またデフォルトで有効になっています)"
 
 #: c-family/c.opt:795
 msgid "Assume normal C execution environment"
@@ -9319,40 +9303,35 @@ msgstr "通常の C 実行環境を前提とする"
 
 #: c-family/c.opt:803
 msgid "Export functions even if they can be inlined"
-msgstr "インラインにできる関数でも export する"
+msgstr "インラインにできる関数でもエクスポートする"
 
 #: c-family/c.opt:807
-#, fuzzy
 msgid "Emit implicit instantiations of inline templates"
-msgstr "インラインテンプレートの明示的な実体化のみを生成する"
+msgstr "インラインテンプレートの暗黙的なインスタンス化を発行する"
 
 #: c-family/c.opt:811
-#, fuzzy
 msgid "Emit implicit instantiations of templates"
-msgstr "インラインテンプレートの明示的な実体化のみを生成する"
+msgstr "テンプレートの暗黙的なインスタンス化を発行する"
 
 #: c-family/c.opt:815
-#, fuzzy
 msgid "Inject friend functions into enclosing namespace"
-msgstr "単純な関数を呼び出し側に統合する"
+msgstr "フレンド関数を囲まれた名前空間内に入れる"
 
 #: c-family/c.opt:822
 msgid "Allow implicit conversions between vectors with differing numbers of subparts and/or differing element types."
 msgstr ""
 
 #: c-family/c.opt:826
-#, fuzzy
 msgid "Don't warn about uses of Microsoft extensions"
-msgstr "Microsoft 拡張の利用に関して pedantic 警告を行わない"
+msgstr "Microsoft 拡張の使用に関して警告しない"
 
 #: c-family/c.opt:836
-#, fuzzy
 msgid "Generate code for NeXT (Apple Mac OS X) runtime environment"
-msgstr "NeXT 実行環境用のコードを生成する"
+msgstr "NeXT (Apple Mac OS X) 実行環境用のコードを生成する"
 
 #: c-family/c.opt:840
 msgid "Assume that receivers of Objective-C messages may be nil"
-msgstr ""
+msgstr "Objective-C メッセージの受信側が無い (nil) かもしれないと見なす"
 
 #: c-family/c.opt:850
 msgid "Treat a throw() exception specification as noexcept to improve code size"
@@ -9368,44 +9347,43 @@ msgstr ""
 
 #: c-family/c.opt:866
 msgid "Enable Objective-C exception and synchronization syntax"
-msgstr ""
+msgstr "Objective-C 例外と同期構文を有効にする"
 
 #: c-family/c.opt:870
 msgid "Enable garbage collection (GC) in Objective-C/Objective-C++ programs"
-msgstr ""
+msgstr "Objective-C/Objective-C++ プログラム内でガベージコレクション (GC) を有効にする"
 
 #: c-family/c.opt:875
-#, fuzzy
 msgid "Enable Objective-C setjmp exception handling runtime"
-msgstr "例外捕捉を有効にする"
+msgstr "Objective-C setjmp 例外処理ランタイムを有効にする"
 
 #: c-family/c.opt:879
 msgid "Conform to the Objective-C 1.0 language as implemented in GCC 4.0"
-msgstr ""
+msgstr "GCC 4.0 で実装されたように Objective-C 1.0 言語に準拠する"
 
 #: c-family/c.opt:883
 msgid "Enable OpenMP (implies -frecursive in Fortran)"
-msgstr ""
+msgstr "OpenMP を有効にする (Fortran では暗黙的に -frecursive が指定される)"
 
 #: c-family/c.opt:887
 msgid "Recognize C++ keywords like \"compl\" and \"xor\""
-msgstr ""
+msgstr "\"compl\" や \"xor\" などの C++ 予約語を認識する"
 
 #: c-family/c.opt:898
 msgid "Look for and use PCH files even when preprocessing"
-msgstr ""
+msgstr "前処理時でも PCH ファイルを探して使用する"
 
 #: c-family/c.opt:902
 msgid "Downgrade conformance errors to warnings"
-msgstr "規格適合性エラーを警告に格下げする"
+msgstr "規格準拠性エラーを警告に格下げする"
 
 #: c-family/c.opt:906
 msgid "Enable Plan 9 language extensions"
-msgstr ""
+msgstr "Plan 9 言語拡張を有効にする"
 
 #: c-family/c.opt:910
 msgid "Treat the input file as already preprocessed"
-msgstr ""
+msgstr "入力ファイルを前処理済として取り扱う"
 
 #: c-family/c.opt:914
 msgid "-fno-pretty-templates Do not pretty-print template specializations as the template signature followed by the arguments"
@@ -9420,31 +9398,28 @@ msgid "Enable automatic template instantiation"
 msgstr "自動テンプレート実体化を有効にする"
 
 #: c-family/c.opt:926
-#, fuzzy
 msgid "Generate run time type descriptor information"
-msgstr "実行時型記述情報を生成しない"
+msgstr ""
 
 #: c-family/c.opt:930
 msgid "Use the same size for double as for float"
-msgstr "double のサイズを float と同じとして使用する"
+msgstr "double と float を同じサイズとして使用する"
 
 #: c-family/c.opt:934
 msgid "Use the narrowest integer type possible for enumeration types"
-msgstr ""
+msgstr "列挙型として可能な限り最小幅の整数型を使用する"
 
 #: c-family/c.opt:938
-#, fuzzy
 msgid "Force the underlying type for \"wchar_t\" to be \"unsigned short\""
-msgstr "wchar_t の根本的な型を `unsigned short' と覆す"
+msgstr "\"wchar_t\" の元となる型を強制的に \"unsigned short\" とする"
 
 #: c-family/c.opt:942
 msgid "When \"signed\" or \"unsigned\" is not given make the bitfield signed"
-msgstr ""
+msgstr "\"signed\" または \"unsigned\" が与えられない場合、ビットフィールドを符号付きとする"
 
 #: c-family/c.opt:946
-#, fuzzy
 msgid "Make \"char\" signed by default"
-msgstr "'char' をデフォルトで符合付きとする"
+msgstr "\"char\" をデフォルトで符号付きにする"
 
 #: c-family/c.opt:953
 msgid "Display statistics accumulated during compilation"
@@ -9452,16 +9427,15 @@ msgstr "コンパイル中に蓄積された統計情報を表示する"
 
 #: c-family/c.opt:957
 msgid "Assume that values of enumeration type are always within the minimum range of that type"
-msgstr ""
+msgstr "列挙型の値は常にその型の範囲内にあるとみなす"
 
 #: c-family/c.opt:964
 msgid "-ftabstop=<number>\tDistance between tab stops for column reporting"
-msgstr ""
+msgstr "-ftabstop=<number>\t列を報告用する時のタブ位置までの距離を <number> にする"
 
 #: c-family/c.opt:971
-#, fuzzy
 msgid "-ftemplate-depth=<number>\tSpecify maximum template instantiation depth"
-msgstr "テンプレート実体化の深さの最大値を指定する"
+msgstr ""
 
 #: c-family/c.opt:978
 msgid "-fno-threadsafe-statics\tDo not generate thread-safe code for initializing local statics"
@@ -9469,70 +9443,67 @@ msgstr ""
 
 #: c-family/c.opt:982
 msgid "When \"signed\" or \"unsigned\" is not given make the bitfield unsigned"
-msgstr ""
+msgstr "\"signed\" または \"unsigned\" が与えられていない場合、ビットフィールドを符号無しにする"
 
 #: c-family/c.opt:986
-#, fuzzy
 msgid "Make \"char\" unsigned by default"
-msgstr "'char' をデフォルトで符合無しとする"
+msgstr "\"char\" をデフォルトで符号無しにする"
 
 #: c-family/c.opt:990
-#, fuzzy
 msgid "Use __cxa_atexit to register destructors"
-msgstr "デストラクタの登録に __cxa_atexit を利用する"
+msgstr "デストラクタを登録するために __cxa_atexit を使用する"
 
 #: c-family/c.opt:994
 msgid "Use __cxa_get_exception_ptr in exception handling"
-msgstr ""
+msgstr "例外処理内で __cxa_get_exception_ptr を使用する"
 
 #: c-family/c.opt:998
 msgid "Marks all inlined methods as having hidden visibility"
-msgstr ""
+msgstr "すべてのインライン化されたメソッドが隠された可視性を持つとマークする"
 
 #: c-family/c.opt:1002
 msgid "Changes visibility to match Microsoft Visual Studio by default"
-msgstr ""
+msgstr "デフォルトの可視性を Microsoft Visual Studio に適合するように変更する"
 
 #: c-family/c.opt:1014
 msgid "Emit common-like symbols as weak symbols"
-msgstr "コモンシンボルをウィークシンボルの様に生成する"
+msgstr ""
 
 #: c-family/c.opt:1018
 msgid "-fwide-exec-charset=<cset>\tConvert all wide strings and character constants to character set <cset>"
-msgstr ""
+msgstr "-fwide-exec-charset=<cset>\tすべてのワイド文字列と文字定数を文字集合 <cset> に変換する"
 
 #: c-family/c.opt:1022
 msgid "Generate a #line directive pointing at the current working directory"
-msgstr ""
+msgstr "現在の作業ディレクトリを指す #line 指示を生成する"
 
 #: c-family/c.opt:1030
 msgid "Generate lazy class lookup (via objc_getClass()) for use in Zero-Link mode"
 msgstr ""
 
 #: c-family/c.opt:1034
-#, fuzzy
 msgid "Dump declarations to a .decl file"
 msgstr "宣言を .decl ファイルにダンプする"
 
 #: c-family/c.opt:1038
 msgid "-femit-struct-debug-baseonly\tAggressive reduced debug info for structs"
-msgstr ""
+msgstr "-femit-struct-debug-baseonly\t構造体用のデバッグ情報を積極的に削減する"
 
 #: c-family/c.opt:1042
 msgid "-femit-struct-debug-reduced\tConservative reduced debug info for structs"
-msgstr ""
+msgstr "-femit-struct-debug-reduced\t構造体用のデバッグ情報を保守的に削減する"
 
 #: c-family/c.opt:1046
 msgid "-femit-struct-debug-detailed=<spec-list>\tDetailed reduced debug info for structs"
-msgstr ""
+msgstr "-femit-struct-debug-detailed=<spec-list>\t構造体用のデバッグ情報の削減方法を詳細に指定する"
 
 #: c-family/c.opt:1050
 msgid "-idirafter <dir>\tAdd <dir> to the end of the system include path"
-msgstr ""
+msgstr "-idirafter <dir>\tシステムインクルードパスの最後に <dir> を追加する"
 
 #: c-family/c.opt:1054
 msgid "-imacros <file>\tAccept definition of macros in <file>"
-msgstr ""
+msgstr "-imacros <file>\t<file>内にあるマクロ定義を受け付ける"
 
 #: c-family/c.opt:1058
 msgid "-imultilib <dir>\tSet <dir> to be the multilib include subdirectory"
@@ -9540,7 +9511,7 @@ msgstr ""
 
 #: c-family/c.opt:1062
 msgid "-include <file>\tInclude the contents of <file> before other files"
-msgstr ""
+msgstr "-include <file>\t他のファイルの前に <file> の中身をインクルードする"
 
 #: c-family/c.opt:1066
 msgid "-iprefix <path>\tSpecify <path> as a prefix for next two options"
@@ -9548,11 +9519,11 @@ msgstr ""
 
 #: c-family/c.opt:1070
 msgid "-isysroot <dir>\tSet <dir> to be the system root directory"
-msgstr ""
+msgstr "-isysroot <dir>\tシステムルートディレクトリを <dir> に設定する"
 
 #: c-family/c.opt:1074
 msgid "-isystem <dir>\tAdd <dir> to the start of the system include path"
-msgstr ""
+msgstr "-isystem <dir>\tシステムインクルードパスの先頭に <dir> を追加する"
 
 #: c-family/c.opt:1078
 msgid "-iquote <dir>\tAdd <dir> to the end of the quote include path"
@@ -9560,57 +9531,55 @@ msgstr ""
 
 #: c-family/c.opt:1082
 msgid "-iwithprefix <dir>\tAdd <dir> to the end of the system include path"
-msgstr ""
+msgstr "-iwithprefix <dir>\tシステムインクルードパスの最後に <dir> を追加する"
 
 #: c-family/c.opt:1086
 msgid "-iwithprefixbefore <dir>\tAdd <dir> to the end of the main include path"
-msgstr ""
+msgstr "-iwithprefixbefore <dir>\t主インクルードパスの最後に <dir> を追加する"
 
 #: c-family/c.opt:1096
 msgid "Do not search standard system include directories (those specified with -isystem will still be used)"
-msgstr ""
+msgstr "標準のシステムインクルードディレクトリを探査しない (-isystem で指定されたディレクトリは使用される)"
 
 #: c-family/c.opt:1100
 msgid "Do not search standard system include directories for C++"
-msgstr ""
+msgstr "C++ 用の標準システムインクルードディレクトリを探査しない"
 
 #: c-family/c.opt:1116
-#, fuzzy
 msgid "Generate C header of platform-specific features"
-msgstr "プラットフォーム固有の機能の C ヘッダを生成する"
+msgstr "プラットフォーム固有機能の C ヘッダを生成する"
 
 #: c-family/c.opt:1120
-#, fuzzy
 msgid "Remap file names when including files"
-msgstr "#%s でのファイル名が空です"
+msgstr "ファイルをインクルードするときにファイル名を再マップする"
 
 #: c-family/c.opt:1124
 msgid "Conform to the ISO 1998 C++ standard"
-msgstr ""
+msgstr "ISO 1998 C++ 標準に準拠させる"
 
 #: c-family/c.opt:1128
 msgid "Conform to the ISO 1998 C++ standard, with extensions that are likely to"
-msgstr ""
+msgstr "ISO 1998 C++ 標準に準拠させる。拡張も同様にする"
 
 #: c-family/c.opt:1135
 msgid "Conform to the ISO 201X C standard draft (experimental and incomplete support)"
-msgstr ""
+msgstr "ISO 201X C 標準ドラフト版に準拠させる (実験的かつ不完全なサポート)"
 
 #: c-family/c.opt:1139 c-family/c.opt:1143 c-family/c.opt:1186
 msgid "Conform to the ISO 1990 C standard"
-msgstr ""
+msgstr "ISO 1990 C 標準に準拠させる"
 
 #: c-family/c.opt:1147 c-family/c.opt:1194
 msgid "Conform to the ISO 1999 C standard"
-msgstr ""
+msgstr "ISO 1999 C 標準に準拠させる"
 
 #: c-family/c.opt:1151
 msgid "Deprecated in favor of -std=c99"
-msgstr ""
+msgstr "-std=c99 によって廃止された"
 
 #: c-family/c.opt:1155
 msgid "Conform to the ISO 1998 C++ standard with GNU extensions"
-msgstr ""
+msgstr "ISO 1998 C++ 標準に GNU 拡張付きで準拠させる"
 
 #: c-family/c.opt:1159
 msgid "Conform to the ISO 1998 C++ standard, with GNU extensions and"
@@ -9618,57 +9587,55 @@ msgstr ""
 
 #: c-family/c.opt:1166
 msgid "Conform to the ISO 201X C standard draft with GNU extensions (experimental and incomplete support)"
-msgstr ""
+msgstr "ISO 201X C 標準ドラフト版に GNU 拡張付きで準拠させる (実験的かつ不完全なサポート)"
 
 #: c-family/c.opt:1170 c-family/c.opt:1174
 msgid "Conform to the ISO 1990 C standard with GNU extensions"
-msgstr ""
+msgstr "ISO 1990 C 標準に GNU 拡張付きで準拠させる"
 
 #: c-family/c.opt:1178
 msgid "Conform to the ISO 1999 C standard with GNU extensions"
-msgstr ""
+msgstr "ISO 1999 C 標準に GNU 拡張付きで準拠させる"
 
 #: c-family/c.opt:1182
 msgid "Deprecated in favor of -std=gnu99"
-msgstr ""
+msgstr "-std=gnu99 によって廃止された"
 
 #: c-family/c.opt:1190
 msgid "Conform to the ISO 1990 C standard as amended in 1994"
-msgstr ""
+msgstr "ISO 1990 C 標準 (1994年改正) に準拠させる"
 
 #: c-family/c.opt:1198
 msgid "Deprecated in favor of -std=iso9899:1999"
-msgstr ""
+msgstr "-std=iso9899:1999 によって廃止された"
 
 #: c-family/c.opt:1205
-#, fuzzy
 msgid "Enable traditional preprocessing"
-msgstr "スタック探索を有効にする"
+msgstr "古い (traditional) 前処理を有効にする"
 
 #: c-family/c.opt:1209
 msgid "-trigraphs\tSupport ISO C trigraphs"
-msgstr ""
+msgstr "-trigraphs\tISO C トライグラフをサポートする"
 
 #: c-family/c.opt:1213
 msgid "Do not predefine system-specific and GCC-specific macros"
-msgstr ""
+msgstr "システムおよび GCC 固有のマクロを事前定義しない"
 
 #: go/lang.opt:42
 msgid "-fgo-dump-<type>\tDump Go frontend internal information"
-msgstr ""
+msgstr "-fgo-dump-<type>\tGo フロントエンドの内部情報をダンプする"
 
 #: go/lang.opt:46
 msgid "-fgo-prefix=<string>\tSet package-specific prefix for exported Go names"
 msgstr ""
 
 #: go/lang.opt:50
-#, fuzzy
 msgid "Functions which return values must end with return statements"
-msgstr "`noreturn' の宣言された関数に `return' 文があります"
+msgstr "戻り値を返す関数は return 文で終了しなければならないこととする"
 
 #: lto/lang.opt:29
 msgid "Run the link-time optimizer in local transformation (LTRANS) mode."
-msgstr ""
+msgstr "リンク時最適化を局所変形 (LTRANS) モードで実行する。"
 
 #: lto/lang.opt:33
 msgid "Specify a file to which a list of files output by LTRANS is written."
@@ -9676,72 +9643,67 @@ msgstr ""
 
 #: lto/lang.opt:37
 msgid "Run the link-time optimizer in whole program analysis (WPA) mode."
-msgstr ""
+msgstr "リンク時最適化をプログラム全体分析 (WPA) モードで実行する。"
 
 #: lto/lang.opt:41
 msgid "The resolution file"
 msgstr ""
 
 #: common.opt:254
-#, fuzzy
 msgid "Display this information"
-msgstr "  --help                  この情報を表示する\n"
+msgstr "この情報を表示する"
 
 #: common.opt:258
 msgid "--help=<class>\tDisplay descriptions of a specific class of options.  <class> is one or more of optimizers, target, warnings, undocumented, params"
-msgstr ""
+msgstr "--help=<class>\tオプションの指定したクラスの説明を表示する。<class> は optimizers、target、warnings、undocumented、params のうちの一つ以上とする"
 
 #: common.opt:370
 msgid "Alias for --help=target"
-msgstr ""
+msgstr "--help=target の別名"
 
 #: common.opt:395
 msgid "--param <param>=<value>\tSet parameter <param> to value.  See below for a complete list of parameters"
-msgstr ""
+msgstr "--param <param>=<value>\tパラメータ <param> を<value> に設定する。パラメータの完全な一覧は下記を参照"
 
 #: common.opt:423
-#, fuzzy
 msgid "-O<number>\tSet optimization level to <number>"
-msgstr "  -O[number]              最適化レベルを [number] に設定する\n"
+msgstr "-O<number>\t最適化レベルを <number> に設定する"
 
 #: common.opt:427
-#, fuzzy
 msgid "Optimize for space rather than speed"
-msgstr "  -Os                     速度よりもサイズの最適化を行なう\n"
+msgstr "速度よりもサイズを重視した最適化を行う"
 
 #: common.opt:431
 msgid "Optimize for speed disregarding exact standards compliance"
-msgstr ""
+msgstr "標準への厳密な準拠を無視して速度に関する最適化を行う"
 
 #: common.opt:462
 msgid "This switch is deprecated; use -Wextra instead"
-msgstr ""
+msgstr "このスイッチは廃止されました。代わりに -Wextra を使用してください"
 
 #: common.opt:475
 msgid "Warn about returning structures, unions or arrays"
-msgstr "構造体、共用体又は配列を返すものに関して警告する"
+msgstr "構造体、共用体または配列を返すものに関して警告する"
 
 #: common.opt:479
-#, fuzzy
 msgid "Warn if an array is accessed out of bounds"
-msgstr ".class ファイルがソースファイルより古ければ警告する"
+msgstr "配列の範囲外にアクセスがある場合に警告する"
 
 #: common.opt:483
-#, fuzzy
 msgid "Warn about inappropriate attribute usage"
-msgstr "関数ポインタの計算に関して警告する"
+msgstr "不適切な属性の使用法に関して警告する"
 
 #: common.opt:487
 msgid "Warn about pointer casts which increase alignment"
-msgstr "ポインタのキャストでアラインメントが増加するものに関して警告する"
+msgstr "ポインタのキャストによって整列が増加する場合に警告する"
 
 #: common.opt:491
 msgid "Warn when a #warning directive is encountered"
-msgstr ""
+msgstr "#warning 指示に遭遇したときに警告する"
 
 #: common.opt:495
 msgid "Warn about uses of __attribute__((deprecated)) declarations"
-msgstr ""
+msgstr "__attribute__((deprecated)) 宣言の使用に関して警告する"
 
 #: common.opt:499
 msgid "Warn when an optimization pass is disabled"
@@ -9752,59 +9714,52 @@ msgid "Treat all warnings as errors"
 msgstr "全ての警告をエラーとして取り扱う"
 
 #: common.opt:507
-#, fuzzy
 msgid "Treat specified warning as error"
-msgstr "全ての警告をエラーとして取り扱う"
+msgstr "指定した警告をエラーとして取り扱う"
 
 #: common.opt:511
 msgid "Print extra (possibly unwanted) warnings"
-msgstr ""
+msgstr "余分な (望まないかもしれない) 警告を表示する"
 
 #: common.opt:515
 msgid "Exit on the first error occurred"
-msgstr ""
+msgstr "最初のエラーが発生したときに終了する"
 
 #: common.opt:519
-#, fuzzy
 msgid "-Wframe-larger-than=<number>\tWarn if a function's stack frame requires more than <number> bytes"
-msgstr "  -Wlarger-than-<number>  オブジェクトが <number> バイトより大きければ警告する\n"
+msgstr "-Wframe-larger-than=<number>\t関数スタックフレームが <number> バイト以上要求した場合に警告する"
 
 #: common.opt:523
 msgid "Warn when an inlined function cannot be inlined"
 msgstr "インライン関数をインライン化できない場合に警告する"
 
 #: common.opt:530
-#, fuzzy
 msgid "-Wlarger-than=<number>\tWarn if an object is larger than <number> bytes"
-msgstr "  -Wlarger-than-<number>  オブジェクトが <number> バイトより大きければ警告する\n"
+msgstr "-Wlarger-than=<number>\tオブジェクトが <number> バイト以上の場合に警告する"
 
 #: common.opt:534
 msgid "Warn if the loop cannot be optimized due to nontrivial assumptions."
 msgstr ""
 
 #: common.opt:538 common.opt:590
-#, fuzzy
 msgid "Warn about functions which might be candidates for __attribute__((noreturn))"
-msgstr "noreturn 属性の候補となりそうな関数に関して警告する"
+msgstr "関数が __attribute__((noreturn)) の候補となりそうな場合に警告する"
 
 #: common.opt:542
-#, fuzzy
 msgid "Warn about constructs not instrumented by -fmudflap"
-msgstr "解釈に誤解を招くものについて警告する"
+msgstr ""
 
 #: common.opt:546
-#, fuzzy
 msgid "Warn about overflow in arithmetic expressions"
-msgstr "式の浮動小数点数がオーバーフローしました"
+msgstr "計算式内のオーバーフローに関して警告する"
 
 #: common.opt:550
 msgid "Warn when the packed attribute has no effect on struct layout"
 msgstr "packed 属性が構造体配置に影響しない場合に警告する"
 
 #: common.opt:554
-#, fuzzy
 msgid "Warn when padding is required to align structure members"
-msgstr "構造体メンバのアラインで、パディングを要する場合に警告する"
+msgstr ""
 
 #: common.opt:558
 msgid "Warn when one local variable shadows another"
@@ -9815,9 +9770,8 @@ msgid "Warn when not issuing stack smashing protection for some reason"
 msgstr ""
 
 #: common.opt:566 common.opt:570
-#, fuzzy
 msgid "Warn about code which might break strict aliasing rules"
-msgstr "format 属性をの候補となりそうな関数について警告する"
+msgstr "厳密な別名規約を壊す可能性があるコードに関して警告する"
 
 #: common.opt:574 common.opt:578
 msgid "Warn about optimizations that assume that signed overflow is undefined"
@@ -9825,11 +9779,11 @@ msgstr ""
 
 #: common.opt:582
 msgid "Warn about functions which might be candidates for __attribute__((const))"
-msgstr ""
+msgstr "関数が __attribute__((const)) の候補となりそうな場合に警告する"
 
 #: common.opt:586
 msgid "Warn about functions which might be candidates for __attribute__((pure))"
-msgstr ""
+msgstr "関数が __attribute__((pure)) の候補となりそうな場合に警告する"
 
 #: common.opt:594
 #, fuzzy
@@ -9855,99 +9809,92 @@ msgid "Warn whenever a trampoline is generated"
 msgstr ""
 
 #: common.opt:614
-#, fuzzy
 msgid "Warn if a comparison is always true or always false due to the limited range of the data type"
-msgstr "データ型の範囲制限によって、比較が常に false となります"
+msgstr "データ型の範囲制限により比較が常に true または常に false になる場合に警告する"
 
 #: common.opt:618
-#, fuzzy
 msgid "Warn about uninitialized automatic variables"
-msgstr "初期化されない自動変数に関して警告する"
+msgstr "初期化されていない自動変数に関して警告する"
 
 #: common.opt:622 common.opt:767 common.opt:771 common.opt:775 common.opt:779
 msgid "Does nothing. Preserved for backward compatibility."
-msgstr ""
+msgstr "何もしない。後方互換性のために残されている。"
 
 #: common.opt:626
 msgid "Enable all -Wunused- warnings"
-msgstr ""
+msgstr "すべての -Wunused- 警告を有効にする"
 
 #: common.opt:630
 msgid "Warn when a function parameter is only set, otherwise unused"
-msgstr ""
+msgstr "関数の仮引数が設定されているだけで、使用されていない場合に警告する"
 
 #: common.opt:634
 msgid "Warn when a variable is only set, otherwise unused"
-msgstr ""
+msgstr "変数が設定されているだけで、使用されていない場合に警告する"
 
 #: common.opt:638
 msgid "Warn when a function is unused"
-msgstr "関数が使われないときに警告する"
+msgstr "関数が使用されていない場合に警告する"
 
 #: common.opt:642
 msgid "Warn when a label is unused"
-msgstr "ラベルが使われないときに警告する"
+msgstr "ラベルが使用されていないときに警告する"
 
 #: common.opt:646
 msgid "Warn when a function parameter is unused"
-msgstr "関数の仮引数が使われないときに警告する"
+msgstr "関数の仮引数が使用されていない場合に警告する"
 
 #: common.opt:650
 msgid "Warn when an expression value is unused"
-msgstr "式の値が使われないときに警告する"
+msgstr "式の値が使用されていない場合に警告する"
 
 #: common.opt:654
 msgid "Warn when a variable is unused"
-msgstr "変数が使われないときに警告する"
+msgstr "変数が使用されていない場合に警告する"
 
 #: common.opt:658
 msgid "Warn in case profiles in -fprofile-use do not match"
 msgstr ""
 
 #: common.opt:674
-#, fuzzy
 msgid "-aux-info <file>\tEmit declaration information into <file>"
-msgstr "  -aux-info <file>        宣言情報を <file> へ発行する\n"
+msgstr "-aux-info <file>\t宣言情報を <file> に発行する"
 
 #: common.opt:693
-#, fuzzy
 msgid "-d<letters>\tEnable dumps from specific passes of the compiler"
-msgstr "  -d[letters]             コンパイラの過程からのダンプを有効にする\n"
+msgstr "-d<letters>\tコンパイラの特定の過程からのダンプを有効にする"
 
 #: common.opt:697
-#, fuzzy
 msgid "-dumpbase <file>\tSet the file basename to be used for dumps"
-msgstr "  -dumpbase <file>        過程からのダンプに使われる名前のベースとする\n"
+msgstr "-dumpbase <file>\tダンプ用に使用されるファイルの基となる名前を設定する"
 
 #: common.opt:701
 msgid "-dumpdir <dir>\tSet the directory name to be used for dumps"
-msgstr ""
+msgstr "-dumpdir <dir>\tダンプ用に使用されるディレクトリ名を設定する"
 
 #: common.opt:739
 msgid "Align the start of functions"
-msgstr "関数の開始をアラインする"
+msgstr "関数に開始を整列する"
 
 #: common.opt:746
 msgid "Align labels which are only reached by jumping"
-msgstr "ラベルのうちジャンプ到達先となるものだけをアラインする"
+msgstr "ジャンプの到達先となるラベルのみ整列する"
 
 #: common.opt:753
 msgid "Align all labels"
-msgstr "全てのラベルをアラインする"
+msgstr "全てのラベルを整列する"
 
 #: common.opt:760
 msgid "Align the start of loops"
-msgstr "ループの開始をアラインする"
+msgstr "ループの開始を整列する"
 
 #: common.opt:783
-#, fuzzy
 msgid "Generate unwind tables that are exact at each instruction boundary"
-msgstr "巻き戻しを行なう例外補足用テーブルを生成する"
+msgstr ""
 
 #: common.opt:787
-#, fuzzy
 msgid "Generate auto-inc/dec instructions"
-msgstr "文字命令を生成する"
+msgstr "自動増加/減少命令を生成する"
 
 #: common.opt:795
 #, fuzzy
@@ -9976,19 +9923,16 @@ msgid "Restrict target load migration not to re-use registers in any basic block
 msgstr ""
 
 #: common.opt:819
-#, fuzzy
 msgid "-fcall-saved-<register>\tMark <register> as being preserved across functions"
-msgstr "  -fcall-saved-<register> <register> が関数を通じて保持されるとマークする\n"
+msgstr "-fcall-saved-<register>  <register> が関数を通じて保全されるとマークする"
 
 #: common.opt:823
-#, fuzzy
 msgid "-fcall-used-<register>\tMark <register> as being corrupted by function calls"
-msgstr "  -fcall-used-<register>  関数呼び出しで破壊される <register> としてマークする\n"
+msgstr "-fcall-used-<register>\t<register> が関数呼び出しによって変更されるとマークする"
 
 #: common.opt:830
-#, fuzzy
 msgid "Save registers around function calls"
-msgstr "関数呼び出しの前後でレジスタの保存を有効にする"
+msgstr "関数呼び出しの前後でレジスタを保存する"
 
 #: common.opt:834
 msgid "Compare the results of several data dependence analyzers."
@@ -9999,9 +9943,8 @@ msgid "Looks for opportunities to reduce stack adjustments and stack references.
 msgstr ""
 
 #: common.opt:842
-#, fuzzy
 msgid "Do not put uninitialized globals in the common section"
-msgstr "大域変数等を初期化されないコモンセクションに置かない"
+msgstr "初期化されない大域変数類を共通セクションに配置しない"
 
 #: common.opt:850
 msgid "-fcompare-debug[=<opts>]\tCompile with and without e.g. -gtoggle, and compare the final-insns dump"
@@ -10021,9 +9964,8 @@ msgid "Perform a register copy-propagation optimization pass"
 msgstr "最適化過程のレジスタつけ変えを行なう"
 
 #: common.opt:866
-#, fuzzy
 msgid "Perform cross-jumping optimization"
-msgstr "ジャンプ分岐最適化を行なう"
+msgstr "ジャンプをまたがった最適化を行う"
 
 #: common.opt:870
 msgid "When running CSE, follow jumps to their targets"
@@ -10035,10 +9977,9 @@ msgstr ""
 
 #: common.opt:882
 msgid "Complex multiplication and division follow Fortran rules"
-msgstr ""
+msgstr "Fortran 規格に従った複素数の乗除算を行う"
 
 #: common.opt:886
-#, fuzzy
 msgid "Place data items into their own section"
 msgstr "データ項目をそれら自身のセクションに配置する"
 
@@ -10048,7 +9989,7 @@ msgstr ""
 
 #: common.opt:894
 msgid "-fdbg-cnt=<counter>:<limit>[,<counter>:<limit>,...]\tSet the debug counter limit.   "
-msgstr ""
+msgstr "-fdbg-cnt=<counter>:<limit>[,<counter>:<limit>,...]\tデバッグカウンタ制限を設定する。"
 
 #: common.opt:898
 msgid "Map one directory name to another in debug information"
@@ -10079,7 +10020,7 @@ msgstr ""
 
 #: common.opt:937
 msgid "-fdump-<type>\tDump various compiler internals to a file"
-msgstr ""
+msgstr "-fdump-<type>\t様々なコンパイラ内部情報をファイルにダンプする"
 
 #: common.opt:944
 msgid "-fdump-final-insns=filename\tDump to filename the insns at the end of translation"
@@ -10090,9 +10031,8 @@ msgid "-fdump-go-spec=filename\tWrite all declarations to file as Go code"
 msgstr ""
 
 #: common.opt:952
-#, fuzzy
 msgid "Suppress output of addresses in debugging dumps"
-msgstr "デバッグダンプで命令番号と行番号ノートの出力を抑制する"
+msgstr "デバッグダンプ内でアドレスの出力を抑止する"
 
 #: common.opt:956
 #, fuzzy
@@ -10106,16 +10046,15 @@ msgstr "デバッグダンプで命令番号と行番号ノートの出力を抑
 
 #: common.opt:964
 msgid "Enable CFI tables via GAS assembler directives."
-msgstr ""
+msgstr "GAS アセンブラ指示を経由して CFI 表を有効にする"
 
 #: common.opt:968
 msgid "Perform early inlining"
 msgstr ""
 
 #: common.opt:972
-#, fuzzy
 msgid "Perform DWARF2 duplicate elimination"
-msgstr "末尾呼び出し最適化を行う"
+msgstr "DWARF2 重複削除を行う"
 
 #: common.opt:976
 msgid "Perform interprocedural reduction of aggregates"
@@ -10127,7 +10066,7 @@ msgstr ""
 
 #: common.opt:988
 msgid "Do not suppress C++ class debug information."
-msgstr ""
+msgstr "C++ クラスデバッグ情報を抑止しない。"
 
 #: common.opt:992
 msgid "Generate debug information to support Identical Code Folding (ICF)"
@@ -10135,7 +10074,7 @@ msgstr ""
 
 #: common.opt:996
 msgid "Enable exception handling"
-msgstr "例外捕捉を有効にする"
+msgstr "例外処理を有効にする"
 
 #: common.opt:1000
 #, fuzzy
@@ -10153,17 +10092,15 @@ msgstr "不明なマシンモード `%s'"
 
 #: common.opt:1020
 msgid "Assume no NaNs or infinities are generated"
-msgstr ""
+msgstr "NaN または無限大が生成されないと見なす"
 
 #: common.opt:1024
-#, fuzzy
 msgid "-ffixed-<register>\tMark <register> as being unavailable to the compiler"
-msgstr "  -ffixed-<register>      コンパイラに対し <register> を使用不可とマークする\n"
+msgstr "-ffixed-<register>\t<register> がコンパイラでは使用できないとマークする"
 
 #: common.opt:1028
-#, fuzzy
 msgid "Don't allocate floats and doubles in extended-precision registers"
-msgstr "整数レジスタの確保順を制御する"
+msgstr "拡張精度レジスタ内に float と double を配置しない"
 
 #: common.opt:1036
 msgid "Perform a forward propagation pass on RTL"
@@ -10223,7 +10160,7 @@ msgstr "呼び出しグラフ情報を送出する"
 
 #: common.opt:1099
 msgid "Mark all loops as parallel"
-msgstr ""
+msgstr "全てのループを並列としてマークする"
 
 #: common.opt:1103
 msgid "Enable Loop Strip Mining transformation"
@@ -10234,9 +10171,8 @@ msgid "Enable Loop Interchange transformation"
 msgstr ""
 
 #: common.opt:1111
-#, fuzzy
 msgid "Enable Loop Blocking transformation"
-msgstr "リンカの緩和を有効にする"
+msgstr ""
 
 #: common.opt:1115
 msgid "Enable Loop Flattening transformation"
@@ -10247,13 +10183,12 @@ msgid "Force bitfield accesses to match their type width"
 msgstr ""
 
 #: common.opt:1123
-#, fuzzy
 msgid "Enable guessing of branch probabilities"
-msgstr "分岐経路推測を有効にする"
+msgstr "分岐可能性の推測を有効にする"
 
 #: common.opt:1131
 msgid "Process #ident directives"
-msgstr "#ident ディレクティブを処理する"
+msgstr "#ident 指示を処理する"
 
 #: common.opt:1135
 msgid "Perform conversion of conditional jumps to branchless equivalents"
@@ -10274,16 +10209,15 @@ msgstr ""
 
 #: common.opt:1155
 msgid "Do not generate .size directives"
-msgstr ".size 疑似命令を生成しない"
+msgstr ".size 指示を生成しない"
 
 #: common.opt:1159
 msgid "Perform indirect inlining"
-msgstr ""
+msgstr "間接インライン化を実行する"
 
 #: common.opt:1168
-#, fuzzy
 msgid "Pay attention to the \"inline\" keyword"
-msgstr "'inline' キーワードに注意を払う"
+msgstr "\"inline\" 予約語に注意を払う"
 
 #: common.opt:1172
 #, fuzzy
@@ -10347,27 +10281,26 @@ msgid "Perform matrix layout flattening and transposing based"
 msgstr ""
 
 #: common.opt:1232
-#, fuzzy
 msgid "Perform structure layout optimizations based"
-msgstr "強度削減最適化を行なう"
+msgstr "構造体の配置を最適化に基づいて行う"
 
 #: common.opt:1237
 msgid "-fira-algorithm=[CB|priority] Set the used IRA algorithm"
-msgstr ""
+msgstr "-fira-algorithm=[CB|priority] 使用する IRA アルゴリズムを設定する"
 
 #: common.opt:1240
-#, fuzzy, c-format
+#, c-format
 msgid "unknown IRA algorithm %qs"
-msgstr "不明なレジスタ名です: %s"
+msgstr "不明な IRA アルゴリズム %qs です"
 
 #: common.opt:1250
 msgid "-fira-region=[one|all|mixed] Set regions for IRA"
-msgstr ""
+msgstr "-fira-region=[one|all|mixed] IRA 用の範囲を設定する"
 
 #: common.opt:1253
 #, fuzzy, c-format
 msgid "unknown IRA region %qs"
-msgstr "不明なレジスタ名です: %s"
+msgstr "不明な IRA 範囲 %qs です"
 
 #: common.opt:1266
 msgid "Use IRA based register pressure calculation"
@@ -10391,9 +10324,8 @@ msgid "Optimize induction variables on trees"
 msgstr ""
 
 #: common.opt:1287
-#, fuzzy
 msgid "Use jump tables for sufficiently large switch statements"
-msgstr "case ラベルが switch 文の中にありません"
+msgstr "十分に大きな switch 文ではジャンプ表を使用する"
 
 #: common.opt:1291
 #, fuzzy
@@ -10405,14 +10337,12 @@ msgid "Emit static const variables even if they are not used"
 msgstr "使用されない静的定数変数であっても出力する"
 
 #: common.opt:1299
-#, fuzzy
 msgid "Give external symbols a leading underscore"
-msgstr "外部シンボルに頭文字アンダースコアを持たせる"
+msgstr "外部シンボルの先頭に下線 (_) を付ける"
 
 #: common.opt:1307
-#, fuzzy
 msgid "Enable link-time optimization."
-msgstr "SSA 最適化を有効にする"
+msgstr "リンク時最適化を有効にする"
 
 #: common.opt:1311
 msgid "Link-time optimization with number of parallel jobs or jobserver."
@@ -10436,7 +10366,7 @@ msgstr ""
 
 #: common.opt:1332
 msgid "Report various link-time optimization statistics"
-msgstr ""
+msgstr "様々なリンク時最適化統計情報に関して報告する"
 
 #: common.opt:1336
 msgid "Set errno after built-in math functions"
@@ -10444,7 +10374,7 @@ msgstr "組み込み数学関数の後に errno をセットする"
 
 #: common.opt:1340
 msgid "-fmax-errors=<number>\tMaximum number of errors to report"
-msgstr ""
+msgstr "-fmax-errors=<number>\tエラー報告する最大数を <number> にする"
 
 #: common.opt:1344
 #, fuzzy
@@ -10477,9 +10407,8 @@ msgid "Perform SMS based modulo scheduling with register moves allowed"
 msgstr ""
 
 #: common.opt:1375
-#, fuzzy
 msgid "Move loop invariant computations out of loops"
-msgstr "ループ中に不変な計算をループの外に移動する"
+msgstr "ループの中で変更がない計算をループの外に移動する"
 
 #: common.opt:1379
 msgid "Add mudflap bounds-checking instrumentation for single-threaded program"
@@ -10494,14 +10423,12 @@ msgid "Ignore read operations when inserting mudflap instrumentation"
 msgstr ""
 
 #: common.opt:1391
-#, fuzzy
 msgid "Use the RTL dead code elimination pass"
-msgstr "デッドコードの除去を行なう"
+msgstr ""
 
 #: common.opt:1395
-#, fuzzy
 msgid "Use the RTL dead store elimination pass"
-msgstr "デッドコードの除去を行なう"
+msgstr ""
 
 #: common.opt:1399
 msgid "Enable/Disable the traditional scheduling in loops that already passed modulo scheduling"
@@ -10516,9 +10443,8 @@ msgid "When possible do not generate stack frames"
 msgstr "可能な場合、スタックフレームを生成しない"
 
 #: common.opt:1411
-#, fuzzy
 msgid "Do the full register move optimization pass"
-msgstr "最適化過程で最大限の regmove を行なう"
+msgstr ""
 
 #: common.opt:1415
 msgid "Optimize sibling and tail recursive calls"
@@ -10526,7 +10452,7 @@ msgstr "sibling 呼び出しや末尾再帰呼び出しを最適化する"
 
 #: common.opt:1419
 msgid "Perform partial inlining"
-msgstr ""
+msgstr "部分的なインライン化を行う"
 
 #: common.opt:1423 common.opt:1427
 msgid "Report on memory allocation before interprocedural optimization"
@@ -10541,71 +10467,60 @@ msgid "-fpack-struct=<number>\tSet initial maximum structure member alignment"
 msgstr ""
 
 #: common.opt:1439
-#, fuzzy
 msgid "Return small aggregates in memory, not registers"
-msgstr "'小さな' 集合体をレジスタではなくメモリに格納して返す"
+msgstr "小さな集合体を (レジスタではなく) メモリで返す"
 
 #: common.opt:1443
-#, fuzzy
 msgid "Perform loop peeling"
-msgstr "全てのループでループ展開を行なう"
+msgstr "ループの展開を行う"
 
 #: common.opt:1447
-#, fuzzy
 msgid "Enable machine specific peephole optimizations"
-msgstr "機種固有の覗き穴最適化を有効にする"
+msgstr ""
 
 #: common.opt:1451
-#, fuzzy
 msgid "Enable an RTL peephole pass before sched2"
-msgstr "第二命令配置の前で rtl 覗き穴過程を有効にする"
+msgstr ""
 
 #: common.opt:1455
-#, fuzzy
 msgid "Generate position-independent code if possible (large mode)"
-msgstr "可能であれば位置独立コードを生成する"
+msgstr "可能であれば位置非依存コードを生成する (large モード)"
 
 #: common.opt:1459
-#, fuzzy
 msgid "Generate position-independent code for executables if possible (large mode)"
-msgstr "可能であれば位置独立コードを生成する"
+msgstr "可能であれば実行可能な位置非依存コードを生成する (large モード)"
 
 #: common.opt:1463
-#, fuzzy
 msgid "Generate position-independent code if possible (small mode)"
-msgstr "可能であれば位置独立コードを生成する"
+msgstr "可能であれば胃非値非損コードを生成する (small モード)"
 
 #: common.opt:1467
-#, fuzzy
 msgid "Generate position-independent code for executables if possible (small mode)"
-msgstr "可能であれば位置独立コードを生成する"
+msgstr "可能であれば実行可能な非値非依存コードを生成する (small モード)"
 
 #: common.opt:1471
 msgid "Specify a plugin to load"
-msgstr ""
+msgstr "ロードするプラグインを指定する"
 
 #: common.opt:1475
 msgid "-fplugin-arg-<name>-<key>[=<value>]\tSpecify argument <key>=<value> for plugin <name>"
-msgstr ""
+msgstr "-fplugin-arg-<name>-<key>[=<value>]\tプラグイン <name> 用に引数 <key>=<value> を指定する"
 
 #: common.opt:1479
-#, fuzzy
 msgid "Run predictive commoning optimization."
-msgstr "最適化過程のレジスタつけ変えを行なう"
+msgstr ""
 
 #: common.opt:1483
 msgid "Generate prefetch instructions, if available, for arrays in loops"
-msgstr ""
+msgstr "ループ内の配列で、可能であればプリフェッチ命令を生成する"
 
 #: common.opt:1487
-#, fuzzy
 msgid "Enable basic program profiling code"
-msgstr "プログラムがコードプロファイルする元になる弧を挿入する"
+msgstr ""
 
 #: common.opt:1491
-#, fuzzy
 msgid "Insert arc-based program profiling code"
-msgstr "プログラムがコードプロファイルする元になる弧を挿入する"
+msgstr ""
 
 #: common.opt:1495
 msgid "Set the top-level directory for storing the profile data."
@@ -10637,53 +10552,47 @@ msgstr ""
 
 #: common.opt:1527
 msgid "-frandom-seed=<string>\tMake compile reproducible using <string>"
-msgstr ""
+msgstr "-frandom-seed=<string>\t<string> を使用してコンパイルを再現可能にする"
 
 #: common.opt:1537
 msgid "Record gcc command line switches in the object file."
-msgstr ""
+msgstr "オブジェクトファイル内に gcc のコマンドラインスイッチを記録する。"
 
 #: common.opt:1541
-#, fuzzy
 msgid "Return small aggregates in registers"
-msgstr "'小さな' 集合体をレジスタに格納して返す"
+msgstr "小さな集合体をレジスタで返す"
 
 #: common.opt:1545
-#, fuzzy
 msgid "Enables a register move optimization"
-msgstr "移動命令最適化レジスタを有効にする"
+msgstr "レジスタによる移動命令の最適化を有効にする"
 
 #: common.opt:1549
-#, fuzzy
 msgid "Perform a register renaming optimization pass"
-msgstr "最適化過程のレジスタつけ変えを行なう"
+msgstr ""
 
 #: common.opt:1553
 msgid "Reorder basic blocks to improve code placement"
-msgstr "コード配置を改善するために基本ブロックを再整理する"
+msgstr "コード配置を改善するために基本ブロックを並べ替える"
 
 #: common.opt:1557
-#, fuzzy
 msgid "Reorder basic blocks and partition into hot and cold sections"
-msgstr "コード配置を改善するために基本ブロックを再整理する"
+msgstr ""
 
 #: common.opt:1561
-#, fuzzy
 msgid "Reorder functions to improve code placement"
-msgstr "コード配置を改善するために基本ブロックを再整理する"
+msgstr "コード配置を改善するために関数を並べ替える"
 
 #: common.opt:1565
-#, fuzzy
 msgid "Add a common subexpression elimination pass after loop optimizations"
-msgstr "ループ最適化後に共通部分式除去過程を実行"
+msgstr "ループ最適化後に共通部分式を除去する過程を追加する"
 
 #: common.opt:1573
 msgid "Disable optimizations that assume default FP rounding behavior"
-msgstr ""
+msgstr "デフォルトの浮動小数点丸め動作と見なせる最適化を無効にする"
 
 #: common.opt:1577
 msgid "Enable scheduling across basic blocks"
-msgstr "基本ブロックを跨ぐ命令配置を有効にする"
+msgstr "基本ブロックをまたがるスケジューリングを有効にする"
 
 #: common.opt:1581
 msgid "Enable register pressure sensitive insn scheduling"
@@ -10702,9 +10611,8 @@ msgid "Allow speculative motion of more loads"
 msgstr "より多くのロードでの不確実な動作を許可する"
 
 #: common.opt:1597
-#, fuzzy
 msgid "-fsched-verbose=<number>\tSet the verbosity level of the scheduler"
-msgstr "  -fsched-verbose=<number> スケジューラの饒舌レベルを設定する\n"
+msgstr "-fsched-verbose=<number>\tスケジューラの冗長レベルを設定する"
 
 #: common.opt:1601
 msgid "If scheduling post reload, do superblock scheduling"
@@ -10799,7 +10707,6 @@ msgid "Disable floating point optimizations that ignore the IEEE signedness of z
 msgstr ""
 
 #: common.opt:1710
-#, fuzzy
 msgid "Convert floating point constants to single precision constants"
 msgstr "浮動小数点定数を単精度定数に変換する"
 
@@ -10809,25 +10716,23 @@ msgstr ""
 
 #: common.opt:1718
 msgid "Generate discontiguous stack frames"
-msgstr ""
+msgstr "不連続なスタックフレームを生成する"
 
 #: common.opt:1722
 msgid "Split wide types into independent registers"
-msgstr ""
+msgstr "ワイド型を独立したレジスタに分割する"
 
 #: common.opt:1726
 msgid "Apply variable expansion when loops are unrolled"
-msgstr ""
+msgstr "ループを展開したときに変数の展開を行う"
 
 #: common.opt:1730
-#, fuzzy
 msgid "-fstack-check=[no|generic|specific]\tInsert stack checking code into the program"
-msgstr "プログラムにスタック境界検出コードを挿入する"
+msgstr "-fstack-check=[no|generic|specific]\tプログラム内にスタック検査コードを挿入する"
 
 #: common.opt:1734
-#, fuzzy
 msgid "Insert stack checking code into the program.  Same as -fstack-check=specific"
-msgstr "プログラムにスタック境界検出コードを挿入する"
+msgstr "プログラム内にスタック検査コードを挿入する。 -fstack-check=specific と同様"
 
 #: common.opt:1741
 msgid "-fstack-limit-register=<register>\tTrap if the stack goes past <register>"
@@ -10839,56 +10744,52 @@ msgstr ""
 
 #: common.opt:1749
 msgid "Use propolice as a stack protection method"
-msgstr ""
+msgstr "スタック保護方法としてプロポリス (propolice) を使用する"
 
 #: common.opt:1753
 msgid "Use a stack protection method for every function"
-msgstr ""
+msgstr "それぞれの関数に関してスタック保護方法を使用する"
 
 #: common.opt:1757
 msgid "Output stack usage information on a per-function basis"
-msgstr ""
+msgstr "関数単位でスタック使用情報を出力する"
 
 #: common.opt:1769
 msgid "Assume strict aliasing rules apply"
-msgstr "厳密な別名規則に適合するとみなす"
+msgstr "厳密な別名規則を適用するとみなす"
 
 #: common.opt:1773
-#, fuzzy
 msgid "Treat signed overflow as undefined"
-msgstr "Windows の define を設定する"
+msgstr "符号のオーバーフローを未定義として取り扱う"
 
 #: common.opt:1777
 msgid "Check for syntax errors, then stop"
-msgstr "文法エラーを検出して、そこで停止する"
+msgstr "構文エラーを検査して、そこで停止する"
 
 #: common.opt:1781
-#, fuzzy
 msgid "Create data files needed by \"gcov\""
-msgstr "gcov が必要とするデータファイルを作成する"
+msgstr "\"gcov\" で必要となるデータファイルを作成する"
 
 #: common.opt:1785
-#, fuzzy
 msgid "Perform jump threading optimizations"
-msgstr "ジャンプ分岐最適化を行なう"
+msgstr ""
 
 #: common.opt:1789
-#, fuzzy
 msgid "Report the time taken by each compiler pass"
-msgstr "実行終了時にコンパイラの各過程に要した時間を報告する"
+msgstr "各コンパイル過程で費やした時間を報告する"
 
 #: common.opt:1793
 msgid "-ftls-model=[global-dynamic|local-dynamic|initial-exec|local-exec]\tSet the default thread-local storage code generation model"
-msgstr ""
+msgstr "-ftls-model=[global-dynamic|local-dynamic|initial-exec|local-exec]\tデフォルトのスレッド局所ストレージ (TLS) コード生成モデルを設定する"
 
 #: common.opt:1796
-#, fuzzy, c-format
+#, c-format
 msgid "unknown TLS model %qs"
-msgstr "不明なマシンモード `%s'"
+msgstr "不明な TLS モデル %qs です"
 
 #: common.opt:1812
 msgid "Reorder top level functions, variables, and asms"
-msgstr ""
+msgstr "トップレベルの関数、変数、アセンブラを並べ替える"
 
 #: common.opt:1816
 msgid "Perform superblock formation via tail duplication"
@@ -10896,17 +10797,15 @@ msgstr ""
 
 #: common.opt:1823
 msgid "Assume floating-point operations can trap"
-msgstr ""
+msgstr "浮動小数点操作をトラップできると見なす"
 
 #: common.opt:1827
-#, fuzzy
 msgid "Trap for signed overflow in addition, subtraction and multiplication"
-msgstr "符合付きの加算/減算/乗算での桁あふれをトラップする"
+msgstr "加算、減算、乗算内での符号付きのオーバーフローをトラップする"
 
 #: common.opt:1831
-#, fuzzy
 msgid "Enable SSA-CCP optimization on trees"
-msgstr "SSA 最適化を有効にする"
+msgstr ""
 
 #: common.opt:1835
 msgid "Enable SSA-BIT-CCP optimization on trees"
@@ -10938,9 +10837,8 @@ msgid "Enable SSA dead code elimination optimization on trees"
 msgstr "デッドコードの除去を行なう"
 
 #: common.opt:1871
-#, fuzzy
 msgid "Enable dominator optimizations"
-msgstr "SSA 最適化を有効にする"
+msgstr ""
 
 #: common.opt:1875
 #, fuzzy
@@ -10984,9 +10882,8 @@ msgid "Enable loop optimizations on tree level"
 msgstr "SSA 最適化を有効にする"
 
 #: common.opt:1911
-#, fuzzy
 msgid "Enable automatic parallelization of loops"
-msgstr "自動テンプレート実体化を有効にする"
+msgstr "ループの自動並列化を有効にする"
 
 #: common.opt:1915
 #, fuzzy
@@ -11028,9 +10925,8 @@ msgid "Perform Value Range Propagation on trees"
 msgstr ""
 
 #: common.opt:1955
-#, fuzzy
 msgid "Compile whole compilation unit at a time"
-msgstr "翻訳単位全体をファイルにダンプする"
+msgstr "コンパイル単位全体を一回でコンパイルする"
 
 #: common.opt:1959
 msgid "Perform loop unrolling when iteration count is known"
@@ -11042,7 +10938,7 @@ msgstr "全てのループでループ展開を行なう"
 
 #: common.opt:1970
 msgid "Allow loop optimizations to assume that the loops behave in normal way"
-msgstr ""
+msgstr "ループが通常の方法で振る舞うと見なせる場合にループ最適化を許可する"
 
 #: common.opt:1974
 msgid "Allow optimization for floating-point arithmetic which may change the"
@@ -11151,34 +11047,28 @@ msgid "Put zero initialized data in the bss section"
 msgstr "大域変数等を初期化されないコモンセクションに置かない"
 
 #: common.opt:2106
-#, fuzzy
 msgid "Generate debug information in default format"
-msgstr "デフォルト形式のデバッグ情報を生成する"
+msgstr "デフォルト形式でデバッグ情報を生成する"
 
 #: common.opt:2110
-#, fuzzy
 msgid "Generate debug information in COFF format"
-msgstr "デフォルト形式のデバッグ情報を生成する"
+msgstr "COFF 形式でデバッグ情報を生成する"
 
 #: common.opt:2114
-#, fuzzy
 msgid "Generate debug information in DWARF v2 (or later) format"
-msgstr "デフォルト形式のデバッグ情報を生成する"
+msgstr "DWARF v2 (またはそれ以降) 形式でデバッグ情報を生成する"
 
 #: common.opt:2118
-#, fuzzy
 msgid "Generate debug information in default extended format"
-msgstr "デフォルト拡張形式のデバッグ情報を生成する"
+msgstr "デフォルト拡張形式でデバッグ情報を生成する"
 
 #: common.opt:2122
-#, fuzzy
 msgid "Generate debug information in STABS format"
-msgstr "デフォルト形式のデバッグ情報を生成する"
+msgstr "STABS 形式でデバッグ情報を生成する"
 
 #: common.opt:2126
-#, fuzzy
 msgid "Generate debug information in extended STABS format"
-msgstr "デフォルト拡張形式のデバッグ情報を生成する"
+msgstr "拡張 STABS 形式でデバッグ情報を生成する"
 
 #: common.opt:2130
 msgid "Emit DWARF additions beyond selected version"
@@ -11190,259 +11080,217 @@ msgstr ""
 
 #: common.opt:2138
 msgid "Toggle debug information generation"
-msgstr ""
+msgstr "デバッグ情報生成の有効・無効を切り替える"
 
 #: common.opt:2142
-#, fuzzy
 msgid "Generate debug information in VMS format"
-msgstr "デフォルト形式のデバッグ情報を生成する"
+msgstr "VMS 形式でデバッグ情報を生成する"
 
 #: common.opt:2146
-#, fuzzy
 msgid "Generate debug information in XCOFF format"
-msgstr "デフォルト形式のデバッグ情報を生成する"
+msgstr "XCOFF 形式でデバッグ情報を生成する"
 
 #: common.opt:2150
-#, fuzzy
 msgid "Generate debug information in extended XCOFF format"
-msgstr "デフォルト拡張形式のデバッグ情報を生成する"
+msgstr "拡張 XCOFF 形式でデバッグ情報を生成する"
 
 #: common.opt:2157
 msgid "-iplugindir=<dir>\tSet <dir> to be the default plugin directory"
-msgstr ""
+msgstr "-iplugindir=<dir>\tデフォルトのプラグインディレクトリを <dir> に設定する"
 
 #: common.opt:2176
-#, fuzzy
 msgid "-o <file>\tPlace output into <file>"
-msgstr "  -o <file>               出力を <file> に書き込む\n"
+msgstr "-o <file>\t出力を <file> に配置する"
 
 #: common.opt:2180
-#, fuzzy
 msgid "Enable function profiling"
-msgstr "mips16 関数プロファイル"
+msgstr "関数プロファイルを有効にする"
 
 #: common.opt:2187
-#, fuzzy
 msgid "Issue warnings needed for strict compliance to the standard"
-msgstr "  -pedantic               厳密な ISO C への適合に要する警告を発する\n"
+msgstr "標準に厳密に準拠するために必要な警告を出力する"
 
 #: common.opt:2191
 msgid "Like -pedantic but issue them as errors"
-msgstr ""
+msgstr "-pedantic と同様だが、エラーとして出力する"
 
 #: common.opt:2228
-#, fuzzy
 msgid "Do not display functions compiled or elapsed time"
-msgstr "  -quiet                  コンパイルされた関数や経過時間を表示しない\n"
+msgstr "コンパイルされた関数または費やした時間に関して出力しない"
 
 #: common.opt:2260
-#, fuzzy
 msgid "Enable verbose output"
-msgstr "デバッグ出力を有効にする"
+msgstr "冗長な出力を有効にする"
 
 #: common.opt:2264
-#, fuzzy
 msgid "Display the compiler's version"
-msgstr "  -version                コンパイラのバージョンを表示する\n"
+msgstr "`コンパイラのバージョンを表示する"
 
 #: common.opt:2268
-#, fuzzy
 msgid "Suppress warnings"
-msgstr "%s: 警告: "
+msgstr "警告を抑止する"
 
 #: common.opt:2278
 msgid "Create a shared library"
-msgstr ""
+msgstr "共有ライブラリを作成する"
 
 #: common.opt:2311
-#, fuzzy
 msgid "Create a position independent executable"
-msgstr "可能であれば位置独立コードを生成する"
+msgstr "位置非依存実行可能ファイルを生成する"
 
 #: go/gofrontend/expressions.cc:876
-#, fuzzy
 msgid "invalid use of type"
-msgstr "`restrict' の用法が不適切です"
+msgstr "無効な型の使用法です"
 
 #: go/gofrontend/expressions.cc:1974 go/gofrontend/expressions.cc:2628
-#, fuzzy
 msgid "floating point constant truncated to integer"
-msgstr "浮動小数定数を使い損ねました"
+msgstr "浮動小数点定数が整数に切り詰められました"
 
 #: go/gofrontend/expressions.cc:2533 go/gofrontend/expressions.cc:2606
 msgid "constant refers to itself"
-msgstr ""
+msgstr "定数が自身を参照しています"
 
 #: go/gofrontend/expressions.cc:3962
-#, fuzzy
 msgid "expected numeric type"
-msgstr "MCU 名を指定する"
+msgstr "数値型が予期されます"
 
 #: go/gofrontend/expressions.cc:3969
-#, fuzzy
 msgid "expected integer or boolean type"
-msgstr "']' が必要で、無効な型表現です"
+msgstr "整数またはブール型が予期されます"
 
 #: go/gofrontend/expressions.cc:3974
-#, fuzzy
 msgid "invalid operand for unary %<&%>"
-msgstr "%R コードに対する無効なオペランド"
+msgstr "単項演算子 %<&%> への無効な被演算子です"
 
 #: go/gofrontend/expressions.cc:3982
-#, fuzzy
 msgid "expected pointer"
-msgstr "述語は識別子でなければなりません"
+msgstr "ポインタが予期されます"
 
 #: go/gofrontend/expressions.cc:5608 go/gofrontend/expressions.cc:5624
-#, fuzzy
 msgid "incompatible types in binary expression"
-msgstr "条件式での型の組合わせが適合しません"
+msgstr ""
 
 #: go/gofrontend/expressions.cc:5637
-#, fuzzy
 msgid "shift of non-integer operand"
-msgstr "配列 `%s' の大きさは非整数型"
+msgstr "被演算子が非整数型のシフト演算です"
 
 #: go/gofrontend/expressions.cc:5642
-#, fuzzy
 msgid "shift count not unsigned integer"
-msgstr "switch の内容が整数ではありません"
+msgstr "シフト数が符号無し整数ではありません"
 
 #: go/gofrontend/expressions.cc:5651
-#, fuzzy
 msgid "negative shift count"
-msgstr "負の命令長です"
+msgstr "負のシフト数です"
 
 #: go/gofrontend/expressions.cc:6299
-#, fuzzy
 msgid "object is not a method"
-msgstr "呼び出されたオブジェクトは関数ではありません"
+msgstr "オブジェクトがメソッドではありません"
 
 #: go/gofrontend/expressions.cc:6308
-#, fuzzy
 msgid "method type does not match object type"
-msgstr "仮引数 `%s' はプロトタイプに一致しません"
+msgstr "メソッド型がオブジェクト型に一致しません"
 
 #: go/gofrontend/expressions.cc:6552 go/gofrontend/expressions.cc:6571
 #: go/gofrontend/expressions.cc:7192 go/gofrontend/expressions.cc:7331
 #: go/gofrontend/expressions.cc:7374 go/gofrontend/expressions.cc:7409
 #: go/gofrontend/expressions.cc:8468 go/gofrontend/expressions.cc:8489
-#, fuzzy
 msgid "not enough arguments"
-msgstr "引数がありません"
+msgstr "十分な引数がありません"
 
 #: go/gofrontend/expressions.cc:6554 go/gofrontend/expressions.cc:7197
 #: go/gofrontend/expressions.cc:7314 go/gofrontend/expressions.cc:7336
 #: go/gofrontend/expressions.cc:7411 go/gofrontend/expressions.cc:8157
 #: go/gofrontend/expressions.cc:8471 go/gofrontend/expressions.cc:8482
-#, fuzzy
 msgid "too many arguments"
-msgstr "関数に対する引数が多すぎます"
+msgstr "引数が多すぎます"
 
 #: go/gofrontend/expressions.cc:7239
-#, fuzzy
 msgid "argument must be array or slice or channel"
-msgstr "`asm' の引数が定数文字列ではありません "
+msgstr ""
 
 #: go/gofrontend/expressions.cc:7249
 msgid "argument must be string or array or slice or map or channel"
 msgstr ""
 
 #: go/gofrontend/expressions.cc:7290
-#, fuzzy
 msgid "unsupported argument type to builtin function"
-msgstr "関数に対する引数が多すぎます"
+msgstr "組み込み関数へのサポートされていない引数の型です"
 
 #: go/gofrontend/expressions.cc:7302
-#, fuzzy
 msgid "argument must be channel"
-msgstr "`asm' の引数が定数文字列ではありません "
+msgstr ""
 
 #: go/gofrontend/expressions.cc:7322
-#, fuzzy
 msgid "argument must be a field reference"
-msgstr "マスクは即値でなければなりません"
+msgstr "引数はフィールド参照でなければいけません"
 
 #: go/gofrontend/expressions.cc:7349
-#, fuzzy
 msgid "left argument must be a slice"
-msgstr "マスクは即値でなければなりません"
+msgstr ""
 
 #: go/gofrontend/expressions.cc:7360
-#, fuzzy
 msgid "right argument must be a slice or a string"
-msgstr "`asm' の引数が定数文字列ではありません "
+msgstr ""
 
 #: go/gofrontend/expressions.cc:7365
 msgid "element types must be the same"
-msgstr ""
+msgstr "要素の型が同じでなければいけません"
 
 #: go/gofrontend/expressions.cc:7384
 msgid "arguments 1 and 2 have different types"
-msgstr ""
+msgstr "引数1と引数2が異なる型を持っています"
 
 #: go/gofrontend/expressions.cc:7401
-#, fuzzy
 msgid "argument must have complex type"
-msgstr "仮引数が不完全型です"
+msgstr "引数は複素数型でなければいけません"
 
 #: go/gofrontend/expressions.cc:7419
-#, fuzzy
 msgid "cmplx arguments must have identical types"
-msgstr "マスクは即値でなければなりません"
+msgstr ""
 
 #: go/gofrontend/expressions.cc:7421
-#, fuzzy
 msgid "cmplx arguments must have floating-point type"
-msgstr "ハードウェア浮動小数点を利用しない"
+msgstr ""
 
 #: go/gofrontend/expressions.cc:8425
-#, fuzzy
 msgid "expected function"
-msgstr "述語は識別子でなければなりません"
+msgstr "関数が予期されます"
 
 #: go/gofrontend/expressions.cc:8436
 msgid "method call without object"
-msgstr ""
+msgstr "オブジェクト無しのメソッド呼び出しです"
 
 #: go/gofrontend/expressions.cc:8449
-#, fuzzy
 msgid "incompatible type for receiver"
-msgstr "%d 番目の引数が `%s' の型と互換性がありません"
+msgstr ""
 
 #: go/gofrontend/expressions.cc:8827
-#, fuzzy
 msgid "number of results does not match number of values"
-msgstr "仮引数の数がプロトタイプと一致しません"
+msgstr "結果の数が値の数と一致しません"
 
 #: go/gofrontend/expressions.cc:9071 go/gofrontend/expressions.cc:9443
-#, fuzzy
 msgid "index must be integer"
-msgstr "述語は識別子でなければなりません"
+msgstr "添え字は整数でなければいけません"
 
 #: go/gofrontend/expressions.cc:9075 go/gofrontend/expressions.cc:9447
-#, fuzzy
 msgid "slice end must be integer"
-msgstr "述語は識別子でなければなりません"
+msgstr ""
 
 #: go/gofrontend/expressions.cc:9126
-#, fuzzy
 msgid "array is not addressable"
-msgstr "出力番号 %d は直接アドレス指定できません"
+msgstr ""
 
 #: go/gofrontend/expressions.cc:9654
-#, fuzzy
 msgid "incompatible type for map index"
-msgstr "%d 番目の引数が `%s' の型と互換性がありません"
+msgstr ""
 
 #: go/gofrontend/expressions.cc:9933
 msgid "expected interface or pointer to interface"
-msgstr ""
+msgstr "インターフェースまたはインターフェースへのポインタが予期されます"
 
 #: go/gofrontend/expressions.cc:10231
-#, fuzzy
 msgid "invalid new of function type"
-msgstr "関数 `%s' に対して不適切な保存クラス"
+msgstr ""
 
 #: go/gofrontend/expressions.cc:10332
 #, fuzzy
@@ -11464,9 +11312,8 @@ msgid "too many elements in composite literal"
 msgstr ""
 
 #: go/gofrontend/expressions.cc:11828 go/gofrontend/expressions.cc:11836
-#, fuzzy
 msgid "invalid unsafe.Pointer conversion"
-msgstr "dump_definition に 無効なハッシュタイプ %d"
+msgstr "無効な unsafe.Pointer 変換です"
 
 #: go/gofrontend/expressions.cc:11841 go/gofrontend/statements.cc:1312
 msgid "type assertion only valid for interface types"
@@ -11477,61 +11324,52 @@ msgid "impossible type assertion: type does not implement interface"
 msgstr ""
 
 #: go/gofrontend/expressions.cc:12009 go/gofrontend/statements.cc:1163
-#, fuzzy
 msgid "expected channel"
-msgstr "クラスパスを設定する"
+msgstr ""
 
 #: go/gofrontend/expressions.cc:12014 go/gofrontend/statements.cc:1168
 msgid "invalid receive on send-only channel"
 msgstr ""
 
 #: go/gofrontend/expressions.cc:12101
-#, fuzzy
 msgid "incompatible types in send"
-msgstr "%d 番目の引数が `%s' の型と互換性がありません"
+msgstr ""
 
 #: go/gofrontend/expressions.cc:12106
-#, fuzzy
 msgid "invalid send on receive-only channel"
-msgstr "二項演算子 %s が不適切です"
+msgstr ""
 
 #: go/gofrontend/statements.cc:488
-#, fuzzy
 msgid "invalid left hand side of assignment"
-msgstr "代入として無効な左辺値です"
+msgstr "無効な代入の左辺です"
 
 #: go/gofrontend/statements.cc:897
 msgid "expected map index on right hand side"
 msgstr ""
 
 #: go/gofrontend/statements.cc:1041
-#, fuzzy
 msgid "expected map index on left hand side"
-msgstr "行末 (EOL) が予期されます"
+msgstr ""
 
 #: go/gofrontend/statements.cc:1765
 msgid "no object for method call"
-msgstr ""
+msgstr "メソッド呼び出し用のオブジェクトがありません"
 
 #: go/gofrontend/statements.cc:2518
-#, fuzzy
 msgid "return with value in function with no return type"
-msgstr "戻り型が void の関数で、`return' に値があります"
+msgstr ""
 
 #: go/gofrontend/statements.cc:2531
-#, fuzzy
 msgid "too many values in return statement"
-msgstr "無効な初期化式です"
+msgstr "return 文内の値が多すぎます"
 
 #: go/gofrontend/statements.cc:2560
-#, fuzzy
 msgid "not enough values in return statement"
-msgstr "無効な初期化式です"
+msgstr "return 文に十分な値がありません"
 
 #: go/gofrontend/statements.cc:2932
-#, fuzzy
 msgid "expected boolean expression"
-msgstr "空の #if 式です"
+msgstr "ブール式が予期されます"
 
 #: go/gofrontend/statements.cc:4517
 msgid "too many variables for range clause with channel"
@@ -11542,34 +11380,30 @@ msgid "range clause must have array, slice, setring, map, or channel type"
 msgstr ""
 
 #: go/gofrontend/types.cc:559
-#, fuzzy
 msgid "need explicit conversion"
-msgstr "`%s' の引数として無効な型"
+msgstr "明示的な変換が必要です"
 
 #: go/gofrontend/types.cc:561
 msgid "multiple value function call in single value context"
 msgstr ""
 
 #: go/gofrontend/types.cc:569
-#, fuzzy, c-format
+#, c-format
 msgid "cannot use type %s as type %s"
-msgstr "ポインタ型に変換できません"
+msgstr "型 %s を型 %s として使用できません"
 
 #: go/gofrontend/types.cc:2432
-#, fuzzy
 msgid "different receiver types"
-msgstr "レシーバ型 `%s' が無効です"
+msgstr ""
 
 #: go/gofrontend/types.cc:2452 go/gofrontend/types.cc:2465
 #: go/gofrontend/types.cc:2480
-#, fuzzy
 msgid "different number of parameters"
-msgstr "RPTS 用の最大反復数を指定する"
+msgstr "引数の数が異なります"
 
 #: go/gofrontend/types.cc:2473
-#, fuzzy
 msgid "different parameter types"
-msgstr "仮引数 `%s' は無効です"
+msgstr "引数の型が異なります"
 
 #: go/gofrontend/types.cc:2488
 msgid "different varargs"
@@ -11578,16 +11412,16 @@ msgstr ""
 #: go/gofrontend/types.cc:2497 go/gofrontend/types.cc:2510
 #: go/gofrontend/types.cc:2525
 msgid "different number of results"
-msgstr ""
+msgstr "結果の数が異なります"
 
 #: go/gofrontend/types.cc:2518
 msgid "different result types"
-msgstr ""
+msgstr "結果の型が異なります"
 
 #: go/gofrontend/types.cc:3500
 #, c-format
 msgid "implicit assignment of %s%s%s hidden field %s%s%s"
-msgstr ""
+msgstr "暗黙的な代入 %s%s%s が隠されたフィールド %s%s%s に行われます"
 
 #: go/gofrontend/types.cc:4313
 msgid "bad length when making slice"
@@ -11608,71 +11442,70 @@ msgstr ""
 #: go/gofrontend/types.cc:5714
 #, c-format
 msgid "need explicit conversion; missing method %s%s%s"
-msgstr ""
+msgstr "明示的な変換が必要です。存在しないメソッド %s%s%s です"
 
 #: go/gofrontend/types.cc:5731 go/gofrontend/types.cc:5866
-#, fuzzy, c-format
+#, c-format
 msgid "incompatible type for method %s%s%s"
-msgstr "%d 番目の引数が `%s' の型と互換性がありません"
+msgstr "メソッド %s%s%s への互換性のない型です"
 
 #: go/gofrontend/types.cc:5735 go/gofrontend/types.cc:5870
-#, fuzzy, c-format
+#, c-format
 msgid "incompatible type for method %s%s%s (%s)"
-msgstr "%d 番目の引数が `%s' の型と互換性がありません"
+msgstr ""
 
 #: go/gofrontend/types.cc:5807 go/gofrontend/types.cc:5820
 msgid "pointer to interface type has no methods"
-msgstr ""
+msgstr "インターフェース型へのポインタがメソッドを持っていません"
 
 #: go/gofrontend/types.cc:5809 go/gofrontend/types.cc:5822
-#, fuzzy
 msgid "type has no methods"
-msgstr "メソッドの構文解析中にエラーが発生しました"
+msgstr "型がメソッドを持っていません"
 
 #: go/gofrontend/types.cc:5843
-#, fuzzy, c-format
+#, c-format
 msgid "ambiguous method %s%s%s"
-msgstr "%2$s に対する引数 %1$s が曖昧です"
+msgstr "曖昧なメソッド %s%s%s です"
 
 #: go/gofrontend/types.cc:5846
-#, fuzzy, c-format
+#, c-format
 msgid "missing method %s%s%s"
-msgstr "フィールド '%s'('%s' 内) を欠いています"
+msgstr "メソッド %s%s%s がありません"
 
 #: go/gofrontend/types.cc:5886
 #, c-format
 msgid "method %s%s%s requires a pointer"
-msgstr ""
+msgstr "メソッド %s%s%s にはポインタが必要です"
 
 #: attribs.c:306 objc/objc-act.c:7712
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute directive ignored"
-msgstr "`%s' 属性の疑似命令が無視されました"
+msgstr "%qE 属性指示が無視されました"
 
 #: attribs.c:314
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "wrong number of arguments specified for %qE attribute"
-msgstr "`%s' 属性に指定された引数の個数が間違っています"
+msgstr "%qE 属性用に間違った数の引数が指定されました"
 
 #: attribs.c:332
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute does not apply to types"
-msgstr "`%s' 属性は型には適用されません"
+msgstr "%qE 属性は型に適用できません"
 
 #: attribs.c:384
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute only applies to function types"
-msgstr "`%s' 属性は関数に対してのみ適用されます"
+msgstr "%qE 属性は関数型にのみ適用できます"
 
 #: attribs.c:394
 #, gcc-internal-format
 msgid "type attributes ignored after type is already defined"
-msgstr ""
+msgstr "型が既に定義されているため型属性が無視されました"
 
 #: bb-reorder.c:1886
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "multiple hot/cold transitions found (bb %i)"
-msgstr "メソッド `%s' の宣言が重複しています。"
+msgstr ""
 
 #: bt-load.c:1547
 #, gcc-internal-format
@@ -11685,76 +11518,76 @@ msgid "offset outside bounds of constant string"
 msgstr "オフセットが定数文字列の境界の外にあります"
 
 #: builtins.c:1118
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "second argument to %<__builtin_prefetch%> must be a constant"
-msgstr "`__builtin_expect' への第二引数は定数でなければなりません"
+msgstr "%<__builtin_prefetch%> への第二引数は定数でなければいけません"
 
 #: builtins.c:1125
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid second argument to %<__builtin_prefetch%>; using zero"
-msgstr "`__builtin_return_address' への引数が不適切です"
+msgstr "無効な %<__builtin_prefetch%> の第二引数です。0 を使用します"
 
 #: builtins.c:1133
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "third argument to %<__builtin_prefetch%> must be a constant"
-msgstr "`__builtin_expect' への第二引数は定数でなければなりません"
+msgstr "%<__builtin_prefetch%> への第三引数は定数でなければいけません"
 
 #: builtins.c:1140
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid third argument to %<__builtin_prefetch%>; using zero"
-msgstr "`__builtin_return_address' への引数が不適切です"
+msgstr "無効な %<__builtin_prefetch%> の第三引数です。0 を使用します"
 
 #: builtins.c:4665 gimplify.c:2328
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too few arguments to function %<va_start%>"
-msgstr "`va_start' に対する引数が多すぎます"
+msgstr "関数 %<va_start%> への引数が少なすぎます"
 
 #: builtins.c:4827
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "first argument to %<va_arg%> not of type %<va_list%>"
-msgstr "`va_arg' に対する第一引数が `va_list' 型ではありません"
+msgstr "%<va_arg%> の第一引数が %<va_list%> 型ではありません"
 
 #: builtins.c:4843
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qT is promoted to %qT when passed through %<...%>"
-msgstr "`%s' は `...' の処理の過程で `%s' に格上げされました"
+msgstr ""
 
 #: builtins.c:4848
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "(so you should pass %qT not %qT to %<va_arg%>)"
-msgstr "(従って、`va_arg' には `%s' を(`%s' でなく)渡さなければなりません)"
+msgstr ""
 
 #. We can, however, treat "undefined" any way we please.
 #. Call abort to encourage the user to fix the program.
 #: builtins.c:4855 c-typeck.c:2775
 #, gcc-internal-format
 msgid "if this code is reached, the program will abort"
-msgstr ""
+msgstr "このコードまで到達した場合、プログラムは中止されます"
 
 #: builtins.c:4982
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid argument to %<__builtin_frame_address%>"
-msgstr "`__builtin_frame_address' への引数が不適切です"
+msgstr "%<__builtin_frame_address%> への無効な引数です"
 
 #: builtins.c:4984
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid argument to %<__builtin_return_address%>"
-msgstr "`__builtin_return_address' への引数が不適切です"
+msgstr "%<__builtin_return_address%> への無効な引数です"
 
 #: builtins.c:4997
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unsupported argument to %<__builtin_frame_address%>"
-msgstr "サポートされていない `__builtin_frame_address' への引数です"
+msgstr "%<__builtin_frame_address%> へのサポートされていない引数です"
 
 #: builtins.c:4999
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unsupported argument to %<__builtin_return_address%>"
-msgstr "サポートされていない `__builtin_return_address' へ引数です"
+msgstr "%<__builtin_return_address%> へのサポートされていない引数です"
 
 #: builtins.c:5234
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "both arguments to %<__builtin___clear_cache%> must be pointers"
-msgstr "`__builtin_eh_return_regno' の引数は定数でなければなりません"
+msgstr "%<__builtin___clear_cache%> への両方の引数はポインタでなければいけません"
 
 #: builtins.c:5332
 #, gcc-internal-format
@@ -11764,7 +11597,7 @@ msgstr ""
 #: builtins.c:5609 builtins.c:5623
 #, gcc-internal-format
 msgid "%qD changed semantics in GCC 4.4"
-msgstr ""
+msgstr "%qD の意味合いは GCC 4.4 で変更になりました"
 
 #. All valid uses of __builtin_va_arg_pack () are removed during
 #. inlining.
@@ -11781,36 +11614,36 @@ msgid "%Kinvalid use of %<__builtin_va_arg_pack_len ()%>"
 msgstr ""
 
 #: builtins.c:6254
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<__builtin_longjmp%> second argument must be 1"
-msgstr "__builtin_longjmp 第二引数は 1 でなければなりません"
+msgstr "%<__builtin_longjmp%> の第二引数は 1 でなければいけません"
 
 #: builtins.c:6849
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "target format does not support infinity"
-msgstr "ターゲット CPU は interworking をサポートしません"
+msgstr "ターゲット形式は無限大をサポートしません"
 
 #: builtins.c:11753
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<va_start%> used in function with fixed args"
-msgstr "`va_start' が固定個引数の関数内で使われました"
+msgstr "%<va_start%> が引数の数が固定の関数内で使用されました"
 
 #: builtins.c:11761
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "wrong number of arguments to function %<va_start%>"
-msgstr "`va_start' に対する引数が多すぎます"
+msgstr "関数 %<va_start%> への引数の数が間違っています"
 
 #. Evidently an out of date version of <stdarg.h>; can't validate
 #. va_start's second argument, but can still work as intended.
 #: builtins.c:11774
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<__builtin_next_arg%> called without an argument"
-msgstr "`__builtin_next_arg' が引数無しでで呼び出されました"
+msgstr "%<__builtin_next_arg%> が引数無しで呼び出されました"
 
 #: builtins.c:11779
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "wrong number of arguments to function %<__builtin_next_arg%>"
-msgstr "`%s' 属性に指定された引数の個数が間違っています"
+msgstr "関数 %<__builtin_next_arg%> への引数の数が間違っています"
 
 #. FIXME: Sometimes with the tree optimizers we can get the
 #. not the last argument even though the user used the last
@@ -11818,9 +11651,9 @@ msgstr "`%s' 属性に指定された引数の個数が間違っています"
 #. argument so that we will get wrong-code because of
 #. it.
 #: builtins.c:11809
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "second parameter of %<va_start%> not last named argument"
-msgstr "`va_start' の二番目の値が引数の最後の名前になっていません"
+msgstr "%<va_start%> の第二引数が、最後の名前付き引数ではありません"
 
 #: builtins.c:11819
 #, gcc-internal-format
