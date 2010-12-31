@@ -4545,8 +4545,6 @@ and Subsystem for UNIX-based Applications (SUA).  Applications compiled
 with this target run in the Interix subsystem, which is separate from 
 the Win32 subsystem.  This target was last known to work in GCC 3.3.
 
-For more information, see @uref{http://www.interix.com/}.
-
 @html
 <hr />
 @end html
