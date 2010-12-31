@@ -1,3 +1,9 @@
+2010-12-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/45338
+	* resolve.c (resolve_operator):  Mark function for user-defined
+	operator as referenced.
+
 2010-12-31  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/46971

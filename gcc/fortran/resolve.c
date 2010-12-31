@@ -3793,9 +3793,12 @@ resolve_operator (gfc_expr *e)
 	sprintf (msg, _("Operand of user operator '%s' at %%L is %s"),
 		 e->value.op.uop->name, gfc_typename (&op1->ts));
       else
-	sprintf (msg, _("Operands of user operator '%s' at %%L are %s/%s"),
-		 e->value.op.uop->name, gfc_typename (&op1->ts),
-		 gfc_typename (&op2->ts));
+	{
+	  sprintf (msg, _("Operands of user operator '%s' at %%L are %s/%s"),
+		   e->value.op.uop->name, gfc_typename (&op1->ts),
+		   gfc_typename (&op2->ts));
+	  e->value.op.uop->op->sym->attr.referenced = 1;
+	}
 
       goto bad_op;
 
