@@ -1,3 +1,11 @@
+2010-12-31  Ken Werner  <ken.werner@de.ibm.com>
+
+	* config/arm/sync.md (sync_clobber, sync_t2_reqd): New code attribute.
+	(arm_sync_old_<sync_optab>si, arm_sync_old_<sync_optab><mode>): Use
+	the sync_clobber and sync_t2_reqd code attributes.
+	* config/arm/arm.c (arm_output_sync_loop): Reverse the operation if
+	the t2 argument is NULL.
+
 2010-12-31  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/sourcebuild.texi (Top Level): Adjust link to libgo.

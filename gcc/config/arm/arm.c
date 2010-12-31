@@ -23266,10 +23266,46 @@ arm_output_sync_loop (emit_f emit,
       break;
     }
 
-  arm_output_strex (emit, mode, "", t2, t1, memory);
-  operands[0] = t2;
-  arm_output_asm_insn (emit, 0, operands, "teq\t%%0, #0");
-  arm_output_asm_insn (emit, 0, operands, "bne\t%sLSYT%%=", LOCAL_LABEL_PREFIX);
+  if (t2)
+    {
+       arm_output_strex (emit, mode, "", t2, t1, memory);
+       operands[0] = t2;
+       arm_output_asm_insn (emit, 0, operands, "teq\t%%0, #0");
+       arm_output_asm_insn (emit, 0, operands, "bne\t%sLSYT%%=",
+			    LOCAL_LABEL_PREFIX);
+    }
+  else
+    {
+      /* Use old_value for the return value because for some operations
+	 the old_value can easily be restored.  This saves one register.  */
+      arm_output_strex (emit, mode, "", old_value, t1, memory);
+      operands[0] = old_value;
+      arm_output_asm_insn (emit, 0, operands, "teq\t%%0, #0");
+      arm_output_asm_insn (emit, 0, operands, "bne\t%sLSYT%%=",
+			   LOCAL_LABEL_PREFIX);
+
+      switch (sync_op)
+	{
+	case SYNC_OP_ADD:
+	  arm_output_op3 (emit, "sub", old_value, t1, new_value);
+	  break;
+
+	case SYNC_OP_SUB:
+	  arm_output_op3 (emit, "add", old_value, t1, new_value);
+	  break;
+
+	case SYNC_OP_XOR:
+	  arm_output_op3 (emit, "eor", old_value, t1, new_value);
+	  break;
+
+	case SYNC_OP_NONE:
+	  arm_output_op2 (emit, "mov", old_value, required_value);
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
 
   arm_process_output_memory_barrier (emit, NULL);
   arm_output_asm_insn (emit, 1, operands, "%sLSYB%%=:", LOCAL_LABEL_PREFIX);
