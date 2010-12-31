@@ -1,5 +1,9 @@
 2010-12-31  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* doc/sourcebuild.texi (Top Level): Adjust link to libgo.
+
+2010-12-31  Gerald Pfeifer  <gerald@pfeifer.com>
+	
 	* doc/install.texi (Specific): Remove reference to interix.com.
 
 2010-12-31  Paul Koning  <ni1d@arrl.net>
