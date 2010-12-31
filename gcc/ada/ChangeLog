@@ -1,3 +1,10 @@
+2010-12-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (substitute_in_type): Do not deal with
+	LANG_TYPE, METHOD_TYPE or OFFSET_TYPE.
+	* gcc-interface/utils.c (handle_vector_size_attribute): Do not deal
+	with METHOD_TYPE or OFFSET_TYPE.
+
 2010-12-22  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* gcc-interface/utils.c (handle_nonnull_attribute): Use prototype_p.

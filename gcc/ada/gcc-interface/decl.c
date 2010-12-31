@@ -8638,10 +8638,7 @@ substitute_in_type (tree t, tree f, tree r)
 
       return build_complex_type (nt);
 
-    case OFFSET_TYPE:
-    case METHOD_TYPE:
     case FUNCTION_TYPE:
-    case LANG_TYPE:
       /* These should never show up here.  */
       gcc_unreachable ();
 
