@@ -938,8 +938,8 @@ static rtx rs6000_function_value (const_tree, const_tree, bool);
 static void rs6000_file_start (void);
 #if TARGET_ELF
 static int rs6000_elf_reloc_rw_mask (void);
-static void rs6000_elf_asm_out_constructor (rtx, int);
-static void rs6000_elf_asm_out_destructor (rtx, int);
+static void rs6000_elf_asm_out_constructor (rtx, int) ATTRIBUTE_UNUSED;
+static void rs6000_elf_asm_out_destructor (rtx, int) ATTRIBUTE_UNUSED;
 static void rs6000_elf_end_indicate_exec_stack (void) ATTRIBUTE_UNUSED;
 static void rs6000_elf_asm_init_sections (void);
 static section *rs6000_elf_select_rtx_section (enum machine_mode, rtx,
