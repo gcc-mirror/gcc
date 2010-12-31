@@ -1,3 +1,8 @@
+2010-12-31  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (powerpc-*-darwin*): Update reference to
+	Apple Developer Tools.
+
 2010-12-31  Ken Werner  <ken.werner@de.ibm.com>
 
 	* config/arm/sync.md (sync_clobber, sync_t2_reqd): New code attribute.
