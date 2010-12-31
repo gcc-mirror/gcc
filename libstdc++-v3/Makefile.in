@@ -42,7 +42,8 @@ DIST_COMMON = $(top_srcdir)/fragment.am README ChangeLog \
 	$(top_srcdir)/scripts/extract_symvers.in
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/enable.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+	$(top_srcdir)/../config/enable.m4 \
 	$(top_srcdir)/../config/futex.m4 \
 	$(top_srcdir)/../config/iconv.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
@@ -131,8 +132,12 @@ CXXFILT = @CXXFILT@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 C_INCLUDE_DIR = @C_INCLUDE_DIR@
+DBLATEX = @DBLATEX@
+DBTOEPUB = @DBTOEPUB@
 DEBUG_FLAGS = @DEBUG_FLAGS@
 DEFS = @DEFS@
+DOT = @DOT@
+DOXYGEN = @DOXYGEN@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -182,7 +187,9 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PDFLATEX = @PDFLATEX@
 RANLIB = @RANLIB@
+RUBY = @RUBY@
 SECTION_FLAGS = @SECTION_FLAGS@
 SECTION_LDFLAGS = @SECTION_LDFLAGS@
 SED = @SED@
@@ -195,6 +202,8 @@ USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 WARN_FLAGS = @WARN_FLAGS@
 WERROR = @WERROR@
+XMLLINT = @XMLLINT@
+XSLTPROC = @XSLTPROC@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -293,6 +302,28 @@ AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
 @GLIBCXX_HOSTED_TRUE@hosted_source = doc src po testsuite
 SUBDIRS = include libsupc++ $(hosted_source) python
 ACLOCAL_AMFLAGS = -I . -I .. -I ../config
+@BUILD_XML_FALSE@STAMP_XML = 
+
+# Documentation conditionals for output.
+@BUILD_XML_TRUE@STAMP_XML = doc-xml
+@BUILD_XML_FALSE@STAMP_INSTALL_XML = 
+@BUILD_XML_TRUE@STAMP_INSTALL_XML = doc-install-xml
+@BUILD_HTML_FALSE@STAMP_HTML = 
+@BUILD_HTML_TRUE@STAMP_HTML = doc-html
+@BUILD_HTML_FALSE@STAMP_INSTALL_HTML = 
+@BUILD_HTML_TRUE@STAMP_INSTALL_HTML = doc-install-html
+@BUILD_MAN_FALSE@STAMP_MAN = 
+@BUILD_MAN_TRUE@STAMP_MAN = doc-man
+@BUILD_MAN_FALSE@STAMP_INSTALL_MAN = 
+@BUILD_MAN_TRUE@STAMP_INSTALL_MAN = doc-install-man
+@BUILD_PDF_FALSE@STAMP_PDF = 
+@BUILD_PDF_TRUE@STAMP_PDF = doc-pdf
+@BUILD_PDF_FALSE@STAMP_INSTALL_PDF = 
+@BUILD_PDF_TRUE@STAMP_INSTALL_PDF = doc-install-pdf
+@BUILD_EPUB_FALSE@STAMP_EPUB = doc-epub
+@BUILD_EPUB_TRUE@STAMP_EPUB = doc-epub
+@BUILD_EPUB_FALSE@STAMP_INSTALL_EPUB = doc-install-epub
+@BUILD_EPUB_TRUE@STAMP_INSTALL_EPUB = doc-install-epub
 
 # Multilib support.
 MAKEOVERRIDES = 
@@ -566,41 +597,23 @@ distclean: distclean-multi distclean-recursive
 distclean-am: clean-am distclean-generic distclean-hdr \
 	distclean-libtool distclean-tags
 
-dvi: dvi-recursive
-
 dvi-am:
 
-html: html-recursive
-
 html-am:
-
-info: info-recursive
 
 info-am:
 
 install-data-am:
 
-install-dvi: install-dvi-recursive
-
 install-dvi-am:
 
 install-exec-am: install-multi
 
-install-html: install-html-recursive
-
 install-html-am:
-
-install-info: install-info-recursive
 
 install-info-am:
 
-install-man:
-
-install-pdf: install-pdf-recursive
-
 install-pdf-am:
-
-install-ps: install-ps-recursive
 
 install-ps-am:
 
@@ -616,11 +629,7 @@ mostlyclean: mostlyclean-multi mostlyclean-recursive
 
 mostlyclean-am: mostlyclean-generic mostlyclean-libtool
 
-pdf: pdf-recursive
-
 pdf-am:
-
-ps: ps-recursive
 
 ps-am:
 
@@ -647,12 +656,56 @@ uninstall-am:
 	pdf-am ps ps-am tags tags-recursive uninstall uninstall-am
 
 
-# Handy forwarding targets.
+# Testsuite/check forwarding targets.
 check-%:
 	cd testsuite && $(MAKE) $@
 
+# Documentation forwarding targets.
 doc-%:
 	cd doc && $(MAKE) $@
+
+# Documentation primary rules.
+#
+# xml:
+# html:
+# pdf:
+# man:
+# info:
+# ps:
+# dvi:
+# epub:
+# install-xml:
+# install-html:
+# install-pdf:
+# install-man:
+# install-info:
+# install-ps:
+# install-dvi:
+# install-epub:
+
+xml: $(STAMP_XML)
+install-xml: $(STAMP_INSTALL_XML)
+
+html: $(STAMP_HTML)
+install-html: $(STAMP_INSTALL_HTML)
+
+man: $(STAMP_MAN)
+install-man: $(STAMP_INSTALL_MAN)
+
+pdf: $(STAMP_PDF)
+install-pdf: $(STAMP_INSTALL_PDF)
+
+epub: $(STAMP_EPUB)
+install-epub: $(STAMP_INSTALL_EPUB)
+
+info:
+install-info:
+
+ps:
+install-ps:
+
+dvi:
+install-dvi:
 
 # All the machinations with string instantiations messes up the
 # automake-generated TAGS rule. Make a simple one here.

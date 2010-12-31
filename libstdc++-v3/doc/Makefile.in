@@ -38,7 +38,8 @@ DIST_COMMON = $(top_srcdir)/fragment.am $(srcdir)/Makefile.in \
 	$(srcdir)/Makefile.am
 subdir = doc
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/enable.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+	$(top_srcdir)/../config/enable.m4 \
 	$(top_srcdir)/../config/futex.m4 \
 	$(top_srcdir)/../config/iconv.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
@@ -105,8 +106,12 @@ CXXFILT = @CXXFILT@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 C_INCLUDE_DIR = @C_INCLUDE_DIR@
+DBLATEX = @DBLATEX@
+DBTOEPUB = @DBTOEPUB@
 DEBUG_FLAGS = @DEBUG_FLAGS@
 DEFS = @DEFS@
+DOT = @DOT@
+DOXYGEN = @DOXYGEN@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -156,7 +161,9 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PDFLATEX = @PDFLATEX@
 RANLIB = @RANLIB@
+RUBY = @RUBY@
 SECTION_FLAGS = @SECTION_FLAGS@
 SECTION_LDFLAGS = @SECTION_LDFLAGS@
 SED = @SED@
@@ -169,6 +176,10 @@ USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 WARN_FLAGS = @WARN_FLAGS@
 WERROR = @WERROR@
+
+# Validate existing XML structure.
+XMLLINT = xmllint
+XSLTPROC = xsltproc
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -211,9 +222,13 @@ host_alias = @host_alias@
 host_cpu = @host_cpu@
 host_os = @host_os@
 host_vendor = @host_vendor@
-htmldir = @htmldir@
+
+# HTML
+htmldir = "$(DESTDIR)@docdir@"
 includedir = @includedir@
-infodir = @infodir@
+
+# TEXINFO,INFO
+infodir = "$(DESTDIR)@infodir@"
 install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
@@ -221,11 +236,15 @@ libtool_VERSION = @libtool_VERSION@
 localedir = @localedir@
 localstatedir = @localstatedir@
 lt_host_flags = @lt_host_flags@
-mandir = @mandir@
+
+# MAN
+mandir = "$(DESTDIR)@mandir@"
 mkdir_p = @mkdir_p@
 multi_basedir = @multi_basedir@
 oldincludedir = @oldincludedir@
-pdfdir = @pdfdir@
+
+# PDF
+pdfdir = "$(DESTDIR)@docdir@"
 port_specific_symbol_files = @port_specific_symbol_files@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
@@ -264,18 +283,56 @@ WARN_CXXFLAGS = \
 
 # -I/-D flags to pass when compiling.
 AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
+@BUILD_XML_FALSE@STAMP_XML = 
+
+# Documentation Overview
+#
+# There are two main input materials for libstdc++ documentation.
+# The first is the doxygen markup in libstdc++ sources, which is a
+# reference to the API. And the second is the manual, via docbook markup in
+# doc/xml/.
+#
+# A third and more obscure option deals with charting performance
+# tests, and should be considered experimental.
+
+# Documentation conditionals for output.
+@BUILD_XML_TRUE@STAMP_XML = doc-xml
+@BUILD_XML_FALSE@STAMP_INSTALL_XML = 
+@BUILD_XML_TRUE@STAMP_INSTALL_XML = doc-install-xml
+@BUILD_HTML_FALSE@STAMP_HTML = 
+@BUILD_HTML_TRUE@STAMP_HTML = doc-html
+@BUILD_HTML_FALSE@STAMP_INSTALL_HTML = 
+@BUILD_HTML_TRUE@STAMP_INSTALL_HTML = doc-install-html
+@BUILD_MAN_FALSE@STAMP_MAN = 
+@BUILD_MAN_TRUE@STAMP_MAN = doc-man
+@BUILD_MAN_FALSE@STAMP_INSTALL_MAN = 
+@BUILD_MAN_TRUE@STAMP_INSTALL_MAN = doc-install-man
+@BUILD_PDF_FALSE@STAMP_PDF = 
+@BUILD_PDF_TRUE@STAMP_PDF = doc-pdf
+@BUILD_PDF_FALSE@STAMP_INSTALL_PDF = 
+@BUILD_PDF_TRUE@STAMP_INSTALL_PDF = doc-install-pdf
+@BUILD_EPUB_FALSE@STAMP_EPUB = doc-epub
+@BUILD_EPUB_TRUE@STAMP_EPUB = doc-epub
+@BUILD_EPUB_FALSE@STAMP_INSTALL_EPUB = doc-install-epub
+@BUILD_EPUB_TRUE@STAMP_INSTALL_EPUB = doc-install-epub
+
+# Default creation and installation rules.
+# Point to best sub-rule for the requested documentation target and
+# create, and then install toplevel directory with standardized names
+# and layouts.
+
+# XML
+xmldir = "$(DESTDIR)@docdir@"
+
+# EPUB
+# Assumes ruby installed
+epubdir = "$(DESTDIR)@docdir@"
 
 # Doxygen configuration
 # Assumes doxygen, graphviz (with dot), pdflatex installed
 doxygen_script = ${top_srcdir}/scripts/run_doxygen
 doxygen_outdir = ${glibcxx_builddir}/doc/doxygen
 api_xml = ${doxygen_outdir}/xml/libstdc++-api-single.xml
-
-# Chance of loooooonnggg creation time on this rule.  Iff this fails,
-# look at refman.log and see if TeX's memory is exhausted. Symptoms
-# include asking a wizard to enlarge capacity. If this is the case,
-# find texmf.cnf and add a zero for pool_size, string_vacancies,
-# max_strings, and pool_free values.
 doxygen_pdf = ${doxygen_outdir}/latex/refman.pdf
 api_pdf = ${doxygen_outdir}/pdf/libstdc++-api.pdf
 
@@ -286,7 +343,6 @@ api_pdf = ${doxygen_outdir}/pdf/libstdc++-api.pdf
 # pdflatex
 # docbook-style-xsl
 # emacs-nxml-mode
-# xmlto passivetex
 docbook_outdir = ${glibcxx_builddir}/doc/docbook
 xml_dir = ${glibcxx_srcdir}/doc/xml
 xml_sources_basic = \
@@ -359,27 +415,29 @@ xml_noinst = \
 	${xml_dir}/chapter.txml \
 	${xml_dir}/class.txml
 
-XSLTPROC = xsltproc
 XSLTPROC_FLAGS = --nonet --xinclude
+#XSL_STYLE_DIR = /usr/share/sgml/docbook/xsl-stylesheets
 XSL_STYLE_DIR = /usr/share/sgml/docbook/xsl-ns-stylesheets
 XSL_FO_STYLE = $(XSL_STYLE_DIR)/fo/docbook.xsl
-XSL_HTML_STYLE = $(XSL_STYLE_DIR)/xhtml/chunk.xsl
+#XSL_HTML_STYLE = $(XSL_STYLE_DIR)/xhtml/chunk.xsl
 #XSL_HTML_SINGLE_STYLE = $(XSL_STYLE_DIR)/xhtml/onechunk.xsl
-XSL_HTML_SINGLE_STYLE = $(XSL_STYLE_DIR)/xhtml/docbook.xsl
-
-# Validate existing XML structure.
-XMLLINT = xmllint
-#LINT_FLAGS = --debug --nonet --xinclude --nsclean --postvalid --nowarning
-#LINT_FLAGS = --noblanks --noout --xinclude --postvalid --noent
+#XSL_HTML_SINGLE_STYLE = $(XSL_STYLE_DIR)/xhtml/docbook.xsl
+XSL_HTML_STYLE = $(XSL_STYLE_DIR)/xhtml-1_1/chunk.xsl
+XSL_HTML_SINGLE_STYLE = $(XSL_STYLE_DIR)/xhtml-1_1/docbook.xsl
+XSL_EPUB_STYLE = $(XSL_STYLE_DIR)/epub/docbook.xsl
+#LINT_FLAGS = --debug --xinclude --nsclean --postvalid --nowarning --nonet
+#LINT_FLAGS = --xinclude --postvalid --noent --noblanks --noout
 LINT_FLAGS = --debug --xinclude --noent --noblanks  --nonet --noout
 #SCHEMA_FLAGS = --relaxng /usr/share/xml/docbook5/schema/rng/5.0/docbookxi.rng
 SCHEMA_FLAGS = --dtdvalid /usr/share/xml/docbook5/schema/dtd/5.0/docbook.dtd
-XMLLINT_FLAGS = $(LINT_FLAGS) $(SCHEMA_FLAGS)
+XMLLINT_FLAGS = --xinclude --nsclean --c14n --noent --noblanks --nocdata
+XMLLINT_VALID_FLAGS = $(LINT_FLAGS) $(SCHEMA_FLAGS)
 
 # XML, all one page
 # Some info on canonicalization
 # http://www.mail-archive.com/help-texinfo@gnu.org/msg00864.html
 manual_xml = ${docbook_outdir}/xml/libstdc++-manual-single.xml
+set_xml = ${docbook_outdir}/xml/libstdc++-set-single.xml
 
 # HTML, all one page
 manual_html = ${docbook_outdir}/html/libstdc++-manual-single.html
@@ -388,7 +446,10 @@ manual_html = ${docbook_outdir}/html/libstdc++-manual-single.html
 manual_pdf = ${docbook_outdir}/pdf/libstdc++-manual.pdf
 DBLATEX_FLAGS = --dump --verbose --pdf -o ${manual_pdf}
 
-# Texinfo, via docbook2X
+# TEXINFO, via docbook2X
+# NB: Both experimental and tempermental
+manual_texi = ${docbook_outdir}/texinfo/libstdc++-manual.texi
+manual_info = ${docbook_outdir}/texinfo/libstdc++-manual.info
 DB2TEXI_FLAGS = \
 	--encoding=utf-8//TRANSLIT \
 	--string-param output-file="libstdc++-manual" \
@@ -396,13 +457,16 @@ DB2TEXI_FLAGS = \
 	--string-param explicit-node-names=true
 
 
+# EPUB, via dbtoepub + ruby
+manual_epub = ${docbook_outdir}/epub/libstdc++-manual.epub
+
 # Performance doc and graph configuration.
 # Assumes pychart, beautiful soup installed.
 # Generates the plots and graphs for performance testing.
 doc_performance_script = ${top_srcdir}/scripts/make_graphs.py
 
 # By adding these files here, automake will remove them for 'make clean'
-CLEANFILES = *.log
+CLEANFILES = *.log stamp*
 all: all-am
 
 .SUFFIXES:
@@ -486,41 +550,23 @@ distclean: distclean-am
 	-rm -f Makefile
 distclean-am: clean-am distclean-generic
 
-dvi: dvi-am
-
 dvi-am:
 
-html: html-am
-
 html-am:
-
-info: info-am
 
 info-am:
 
 install-data-am:
 
-install-dvi: install-dvi-am
-
 install-dvi-am:
 
 install-exec-am:
 
-install-html: install-html-am
-
 install-html-am:
-
-install-info: install-info-am
 
 install-info-am:
 
-install-man:
-
-install-pdf: install-pdf-am
-
 install-pdf-am:
-
-install-ps: install-ps-am
 
 install-ps-am:
 
@@ -534,11 +580,7 @@ mostlyclean: mostlyclean-am
 
 mostlyclean-am: mostlyclean-generic mostlyclean-libtool
 
-pdf: pdf-am
-
 pdf-am:
-
-ps: ps-am
 
 ps-am:
 
@@ -558,76 +600,157 @@ uninstall-am:
 	mostlyclean-libtool pdf pdf-am ps ps-am uninstall uninstall-am
 
 
-# Documentation Overview
+# Documentation primary rules.
 #
-# There are two main source materials for libstdc++ documentation.
-# The first is the doxygen markup in libstdc++ sources, which is a
-# reference to the API. And the second is the docbook markup in
-# doc/xml/.
-#
-# A third and more obscure option deals with charting
-# performance tests, and should be considered experimental.
+# xml:
+# html:
+# pdf:
+# man:
+# info:
+# ps:
+# dvi:
+# epub:
+# install-xml:
+# install-html:
+# install-pdf:
+# install-man:
+# install-info:
+# install-ps:
+# install-dvi:
+# install-epub:
 
-# Default rules.
-#
-# Point to best sub-rule for the requested documentation target,
-# create, and then copy into toplevel directory with standardized names
-# and layouts.
+xml: $(STAMP_XML)
+install-xml: $(STAMP_INSTALL_XML)
 
-# HTML
-doc-html: doc-html-docbook doc-html-doxygen
-	cp -R ${docbook_outdir}/html ./libstdc++-manual.html
-	cp -R ${doxygen_outdir}/html ./libstdc++-api.html
+html: $(STAMP_HTML)
+install-html: $(STAMP_INSTALL_HTML)
 
-# MAN
-doc-man: doc-man-doxygen
-	cp -R ${doxygen_outdir}/man ./libstdc++-api.man
+man: $(STAMP_MAN)
+install-man: $(STAMP_INSTALL_MAN)
 
-# PDF
-doc-pdf: doc-pdf-docbook doc-pdf-doxygen
-	cp ${docbook_outdir}/pdf/libstdc++-manual.pdf .
-	cp ${doxygen_outdir}/pdf/libstdc++-api.pdf .
+pdf: $(STAMP_PDF)
+install-pdf: $(STAMP_INSTALL_PDF)
 
-# TEXINFO
-doc-texinfo: doc-texinfo-docbook
+epub: $(STAMP_EPUB)
+install-epub: $(STAMP_INSTALL_EPUB)
 
-# XML
-doc-xml: doc-xml-single-docbook doc-xml-single-doxygen
-	cp ${manual_xml} .
-	cp ${api_xml} .
+info:
+install-info:
 
-doc-html-doxygen:
-	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
-	  builddir=`cd ..; ${PWD_COMMAND}`; \
-	  ${SHELL} ${doxygen_script} \
-	  --host_alias=${host_alias} --mode=html $${srcdir} $${builddir} YES)
+ps:
+install-ps:
 
-doc-man-doxygen:
-	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
-	  builddir=`cd ..; ${PWD_COMMAND}`; \
-	  ${SHELL} ${doxygen_script} \
-	  --host_alias=${host_alias} --mode=man $${srcdir} $${builddir} YES)
+dvi:
+install-dvi:
+stamp-xml: stamp-xml-single-docbook stamp-xml-single-doxygen
+	$(STAMP) stamp-xml
 
-doc-xml-doxygen:
-	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
-	  builddir=`cd ..; ${PWD_COMMAND}`; \
-	  ${SHELL} ${doxygen_script} \
-	  --host_alias=${host_alias} --mode=xml $${srcdir} $${builddir} NO)
-doc-xml-single-doxygen: doc-xml-doxygen
-	@echo "Generating doxygen xml single file..."
-	$(XSLTPROC) ${doxygen_outdir}/xml/combine.xslt \
-	${doxygen_outdir}/xml/index.xml > ${api_xml};
+doc-xml: stamp-xml
 
-doc-latex-doxygen:
-	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
-	  builddir=`cd ..; ${PWD_COMMAND}`; \
-	  ${SHELL} ${doxygen_script} \
-	  --host_alias=${host_alias} --mode=latex $${srcdir} $${builddir} NO)
+doc-install-xml: doc-xml
+	test -z ${xmldir} || $(mkinstalldirs) ${xmldir}
+	$(INSTALL_DATA) ${manual_xml} ${xmldir}
+	$(INSTALL_DATA)	${api_xml} ${xmldir}
+stamp-html: stamp-html-docbook stamp-html-doxygen
+	$(STAMP) stamp-html
+
+doc-html: stamp-html
+
+doc-install-html: doc-html
+	test -z ${htmldir} || $(mkinstalldirs) ${htmldir}
+	cp -r ${docbook_outdir}/html ${htmldir}/libstdc++-manual.html;
+	cp -r ${doxygen_outdir}/html ${htmldir}/libstdc++-api.html;
+stamp-pdf: stamp-pdf-docbook stamp-pdf-doxygen
+	$(STAMP) stamp-pdf
+
+doc-pdf: stamp-pdf
+
+doc-install-pdf: doc-pdf
+	test -z ${pdfdir} || $(mkinstalldirs) ${pdfdir}
+	$(INSTALL_DATA) ${docbook_outdir}/pdf/libstdc++-manual.pdf ${pdfdir}
+	$(INSTALL_DATA) ${doxygen_outdir}/pdf/libstdc++-api.pdf ${pdfdir}
+stamp-man: stamp-man-doxygen
+	$(STAMP) stamp-man
+
+doc-man: stamp-man
+
+doc-install-man: doc-man
+	test -z ${mandir} || $(mkinstalldirs) ${mandir}
+	cp -r ${doxygen_outdir}/man/man3 ${mandir}
+stamp-texinfo: stamp-texinfo-docbook
+	$(STAMP) stamp-texinfo
+
+stamp-info: stamp-info-docbook
+	$(STAMP) stamp-info
+
+doc-texinfo: stamp-texinfo
+
+doc-info: stamp-info
+
+doc-install-texinfo: doc-texinfo
+	test -z ${infodir} || $(mkinstalldirs) ${infodir}
+	$(INSTALL_DATA) ${manual_texi} ${infodir}
+
+doc-install-info: doc-info
+	test -z ${infodir} || $(mkinstalldirs) ${infodir}
+	$(INSTALL_DATA) ${manual_info} ${infodir}
+stamp-epub: stamp-epub-docbook
+	$(STAMP) stamp-epub
+
+doc-epub: stamp-epub
+
+doc-install-epub: doc-epub
+	test -z ${epubdir} || $(mkinstalldirs) ${epubdir}
+	$(INSTALL_DATA) ${manual_epub} ${epubdir}
+
+${doxygen_outdir}/xml:
+	mkdir -p ${doxygen_outdir}/xml
+
+${doxygen_outdir}/html:
+	mkdir -p ${doxygen_outdir}/html
+
+${doxygen_outdir}/latex:
+	mkdir -p ${doxygen_outdir}/latex
 
 ${doxygen_outdir}/pdf:
 	mkdir -p ${doxygen_outdir}/pdf
 
-doc-pdf-doxygen: stamp-latex-doxygen ${doxygen_outdir}/pdf
+${doxygen_outdir}/man:
+	mkdir -p ${doxygen_outdir}/man
+
+stamp-xml-doxygen: ${doxygen_outdir}/xml
+	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
+	  builddir=`cd ..; ${PWD_COMMAND}`; \
+	  ${SHELL} ${doxygen_script} \
+	  --host_alias=${host_alias} --mode=xml $${srcdir} $${builddir} NO)
+	$(STAMP) stamp-xml-doxygen
+
+stamp-xml-single-doxygen: stamp-xml-doxygen
+	@echo "Generating doxygen xml single file..."
+	$(XSLTPROC) ${doxygen_outdir}/xml/combine.xslt \
+	${doxygen_outdir}/xml/index.xml > ${api_xml};
+	$(STAMP) stamp-xml-single-doxygen
+
+stamp-html-doxygen: ${doxygen_outdir}/html
+	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
+	  builddir=`cd ..; ${PWD_COMMAND}`; \
+	  ${SHELL} ${doxygen_script} \
+	  --host_alias=${host_alias} --mode=html $${srcdir} $${builddir} YES)
+	$(STAMP) stamp-html-doxygen
+
+stamp-latex-doxygen: ${doxygen_outdir}/latex
+	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
+	  builddir=`cd ..; ${PWD_COMMAND}`; \
+	  ${SHELL} ${doxygen_script} \
+	  --host_alias=${host_alias} --mode=latex $${srcdir} $${builddir} NO)
+	$(STAMP) stamp-latex-doxygen
+
+# Chance of loooooonnggg creation time on this rule.  Iff this fails,
+# look at refman.log and see if TeX's memory is exhausted. Symptoms
+# include asking a wizard to enlarge capacity. If this is the case,
+# find texmf.cnf and add a zero for pool_size, string_vacancies,
+# max_strings, and pool_free values.
+stamp-pdf-doxygen: stamp-latex-doxygen ${doxygen_outdir}/pdf
 	-(cd ${doxygen_outdir}/latex && $(MAKE) -i pdf;)
 	echo "Generating doxygen pdf file...";
 	if [ -f ${doxygen_pdf} ]; then \
@@ -637,25 +760,24 @@ doc-pdf-doxygen: stamp-latex-doxygen ${doxygen_outdir}/pdf
 	  echo "... error"; \
 	  exit 12; \
 	fi
-
-stamp-pdf-doxygen:
-	@if [ ! -f stamp-pdf-doxygen ]; then \
-	  $(MAKE) doc-pdf-doxygen; \
-	fi
 	$(STAMP) stamp-pdf-doxygen
 
-stamp-xml-doxygen:
-	@if [ ! -f stamp-xml-doxygen ]; then \
-	  $(MAKE) doc-xml-doxygen; \
-	  $(MAKE) doc-xml-single-doxygen; \
-	fi
-	$(STAMP) stamp-xml-doxygen
+stamp-man-doxygen: ${doxygen_outdir}/man
+	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
+	  builddir=`cd ..; ${PWD_COMMAND}`; \
+	  ${SHELL} ${doxygen_script} \
+	  --host_alias=${host_alias} --mode=man $${srcdir} $${builddir} YES)
+	$(STAMP) stamp-man-doxygen
 
-stamp-latex-doxygen:
-	@if [ ! -f stamp-latex-doxygen ]; then \
-	  $(MAKE) doc-latex-doxygen; \
-	fi
-	$(STAMP) stamp-latex-doxygen
+doc-xml-doxygen: stamp-xml-doxygen
+doc-xml-single-doxygen: stamp-xml-single-doxygen
+doc-html-doxygen: stamp-html-doxygen
+doc-latex-doxygen: stamp-latex-doxygen
+doc-pdf-doxygen: stamp-pdf-doxygen
+doc-man-doxygen: stamp-man-doxygen
+
+${docbook_outdir}/epub:
+	mkdir -p ${docbook_outdir}/epub
 
 ${docbook_outdir}/fo:
 	mkdir -p ${docbook_outdir}/fo
@@ -673,35 +795,71 @@ ${docbook_outdir}/xml:
 	mkdir -p ${docbook_outdir}/xml
 doc-xml-validate-docbook: $(xml_sources)
 	@echo "Generating XML validation log..."
-	$(XMLLINT) $(XMLLINT_FLAGS) ${top_srcdir}/doc/xml/spine.xml
-doc-xml-single-docbook: $(xml_sources) ${docbook_outdir}/xml
+	$(XMLLINT) $(XMLLINT_VALID_FLAGS) ${top_srcdir}/doc/xml/spine.xml
+stamp-xml-single-docbook: $(xml_sources) ${docbook_outdir}/xml
 	@echo "Generating XML single..."
-	$(XMLLINT) --xinclude --noent --noblanks --nocdata --nsclean --c14n \
-	${top_srcdir}/doc/xml/manual/spine.xml > ${manual_xml}
+	$(XMLLINT) $(XMLLINT_FLAGS) \
+	${top_srcdir}/doc/xml/manual/spine.xml > ${manual_xml};
+	$(XMLLINT) $(XMLLINT_FLAGS) \
+	${top_srcdir}/doc/xml/spine.xml > ${set_xml};
+	if [ ! -d "${docbook_outdir}/xml/images" ]; then \
+	  $(LN_S) ${top_srcdir}/doc/xml/images ${docbook_outdir}/xml/; \
+	fi
+	$(STAMP) stamp-xml-single-docbook
+
+doc-xml-single-docbook: stamp-xml-single-docbook
 
 # HTML, index plus chapters
-doc-html-docbook: $(xml_sources) ${docbook_outdir}/html
+stamp-html-docbook: $(xml_sources) ${docbook_outdir}/html
 	@echo "Generating html files..."
 	$(XSLTPROC) $(XSLTPROC_FLAGS) -o ${docbook_outdir}/html/ \
 	$(XSL_HTML_STYLE) ${top_srcdir}/doc/xml/spine.xml
-doc-html-single-docbook: $(xml_sources) ${docbook_outdir}/html
+	$(STAMP) stamp-html-docbook
+
+doc-html-docbook: stamp-html-docbook
+stamp-html-single-docbook: $(xml_sources) ${docbook_outdir}/html
 	@echo "Generating html single file..."
 	$(XSLTPROC) $(XSLTPROC_FLAGS) -o ${manual_html} \
 	$(XSL_HTML_SINGLE_STYLE) ${top_srcdir}/doc/xml/spine.xml
+	$(STAMP) stamp-html-single-docbook
+
+doc-html-single-docbook: stamp-html-single-docbook
 
 # FO
-doc-fo-docbook: $(xml_sources) ${docbook_outdir}/fo
+stamp-fo-docbook: $(xml_sources) ${docbook_outdir}/fo
 	@echo "Generating FO files..."
 	$(XSLTPROC) $(XSLTPROC_FLAGS) -o ${docbook_outdir}/fo/spine.fo \
 	$(XSL_FO_STYLE) ${top_srcdir}/doc/xml/spine.xml
-doc-pdf-docbook: doc-pdf-dblatex-docbook
+	$(STAMP) stamp-fo-docbook
 
-doc-pdf-dblatex-docbook: $(xml_sources) ${docbook_outdir}/pdf
+doc-fo-docbook: stamp-fo-docbook
+stamp-pdf-docbook: $(xml_sources) ${docbook_outdir}/pdf
 	@echo "Generating pdf dblatex files..."
 	dblatex $(DBLATEX_FLAGS) ${top_srcdir}/doc/xml/spine.xml
-doc-texinfo-docbook: doc-xml-single-docbook ${docbook_outdir}/texinfo
+	$(STAMP) stamp-pdf-docbook
+
+doc-pdf-docbook: stamp-pdf-docbook
+
+stamp-texinfo-docbook: stamp-xml-single-docbook ${docbook_outdir}/texinfo
 	@echo "Generating texinfo files..."
-	db2x_docbook2texi $(DB2TEXI_FLAGS) ${manual_xml}
+	db2x_docbook2texi $(DB2TEXI_FLAGS) ${set_xml}
+	mv libstdc++-manual.texi ${manual_texi}
+	$(STAMP) stamp-texinfo-docbook
+
+stamp-info-docbook: stamp-texinfo-docbook
+	@echo "Generating info files..."
+	$(MAKEINFO) $(MAKEINFOFLAGS) ${manual_texi}
+	$(STAMP) stamp-info-docbook
+
+doc-texinfo-docbook: stamp-texinfo-docbook
+
+doc-info-docbook: stamp-info-docbook
+stamp-epub-docbook: stamp-xml-single-docbook ${docbook_outdir}/epub
+	@echo "Generating epub files..."
+	${XSL_STYLE_DIR}/epub/bin/dbtoepub -v -d -o ${manual_epub} ${set_xml}
+	$(STAMP) stamp-epub-docbook
+
+doc-epub-docbook: stamp-epub-docbook
 doc-html-performance:
 	-@(chmod + ${doc_performance_script}; \
 	${doc_performance_script} ${top_srcdir} \
@@ -713,7 +871,7 @@ doc-html-performance:
 
 # To remove directories.
 clean-local:
-	rm -rf man html pdf fo xml doxygen docbook stamp* ./libstdc++-* db2t*
+	rm -rf man html pdf fo xml doxygen docbook ./libstdc++-* db2t*
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

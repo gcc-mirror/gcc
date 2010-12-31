@@ -46,7 +46,7 @@
   <screen>
   <inlinemediaobject>
     <imageobject>
-      <imagedata fileref="../images/confdeps.png"/>
+      <imagedata fileref="images/confdeps.png"/>
     </imageobject>
     <textobject>
       <phrase>Dependency Graph Configure to Build Files</phrase>
