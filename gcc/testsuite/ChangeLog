@@ -1,5 +1,11 @@
 2010-12-31  Paul Koning  <ni1d@arrl.net>
 
+	* gcc.c-torture/compile/pr46534.c: Skip if pdp11.
+	* gcc.c-torture/compile/920520-1.c: Ditto.
+	* gcc.c-torture/compile/pr35318.c: Ditto.
+	
+2010-12-31  Paul Koning  <ni1d@arrl.net>
+
 	* gcc.c-torture/execute/ieee/ieee.exp: Skip if pdp11.
 	* gcc.c-torture/compile/20000804-1.c: Skip if pdp11 -O0.
 	* gcc.c-torture/compile/20020312-1.c: Ditto.
