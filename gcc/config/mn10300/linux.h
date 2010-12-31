@@ -56,7 +56,7 @@ extern int mn10300_protect_label;
   do						\
     {						\
       mn10300_protect_label = 1;		\
-      print_operand ((FILE), (X), (CODE));	\
+      mn10300_print_operand ((FILE), (X), (CODE));	\
       mn10300_protect_label = 0;		\
     }						\
   while (0)
@@ -66,7 +66,7 @@ extern int mn10300_protect_label;
   do						\
     {						\
       mn10300_protect_label = 1;		\
-      print_operand_address ((FILE), (X));	\
+      mn10300_print_operand_address ((FILE), (X));	\
       mn10300_protect_label = 0;		\
     }						\
    while (0)

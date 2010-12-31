@@ -42,6 +42,10 @@
 	ATTRIBUTE_UNUSED to declaration.
 	(rs6000_elf_asm_out_destructor): Likewise.
 
+	PR target/47084
+	* config/mn10300/linux.h (PRINT_OPERAND): Update for name changes
+	to mn10300_print_operand / mn10300_print_operand_address.
+
 2010-12-30  Mingjie Xing  <mingjie.xing@gmail.com>
 
 	* config/mips/mips.h (SHIFT_COUNT_TRUNCATED): Change
