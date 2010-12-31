@@ -1,3 +1,9 @@
+2010-12-30  Mingjie Xing  <mingjie.xing@gmail.com>
+
+	* config/mips/mips.h (SHIFT_COUNT_TRUNCATED): Change
+	TARGET_LOONGSON_2EF to TARGET_LOONGSON_VECTORS.
+	* config/mips/mips.c (mips_shift_truncation_mask): Likewise.
+
 2010-12-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/openbsd.opt: New.
