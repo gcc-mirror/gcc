@@ -12,6 +12,11 @@
 	PR target/47111
 	* config/rtems.h (NO_IMPLICIT_EXTERN_C): Undef before defining.
 
+	PR target/47112
+	* config/mips/r3900.h: Update Copyright years.
+	(MIPS_CPU_STRING_DEFAULT): Undef before defining.
+	(MULTILIB_DEFAULTS, MIPS_ABI_DEFAULT, SUBTARGET_CC1_SPEC): Likewise.
+
 2010-12-30  Mingjie Xing  <mingjie.xing@gmail.com>
 
 	* config/mips/mips.h (SHIFT_COUNT_TRUNCATED): Change
