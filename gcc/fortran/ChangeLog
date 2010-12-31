@@ -1,3 +1,8 @@
+2010-12-31  Janus Weil  <janus@gcc.gnu.org>
+
+	* intrinsic.texi (IANY): Correct section title.
+	(IALL, IANY, IPARITY): Fix example codes.
+
 2010-12-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/47065

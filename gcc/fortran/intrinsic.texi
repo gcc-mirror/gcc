@@ -5966,7 +5966,7 @@ PROGRAM test_iall
   INTEGER(1) :: a(2)
 
   a(1) = b'00100100'
-  a(1) = b'01101010'
+  a(2) = b'01101010'
 
   ! prints 00100000
   PRINT '(b8.8)', IALL(a)
@@ -6028,7 +6028,7 @@ END PROGRAM
 
 
 @node IANY
-@section @code{IANY} --- Bitwise XOR of array elements
+@section @code{IANY} --- Bitwise OR of array elements
 @fnindex IANY
 @cindex array, OR
 @cindex bits, OR of array elements
@@ -6074,9 +6074,9 @@ PROGRAM test_iany
   INTEGER(1) :: a(2)
 
   a(1) = b'00100100'
-  a(1) = b'01101010'
+  a(2) = b'01101010'
 
-  ! prints 01111011
+  ! prints 01101110
   PRINT '(b8.8)', IANY(a)
 END PROGRAM
 @end smallexample
@@ -6755,9 +6755,9 @@ PROGRAM test_iparity
   INTEGER(1) :: a(2)
 
   a(1) = b'00100100'
-  a(1) = b'01101010'
+  a(2) = b'01101010'
 
-  ! prints 10111011
+  ! prints 01001110
   PRINT '(b8.8)', IPARITY(a)
 END PROGRAM
 @end smallexample
