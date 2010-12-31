@@ -770,7 +770,7 @@ pdp11_asm_print_operand (FILE *file, rtx x, int code)
 }
 
 static bool
-pdp11_asm_print_operand_punct_valid_p (char c)
+pdp11_asm_print_operand_punct_valid_p (unsigned char c)
 {
   return (c == '#' || c == '@');
 }

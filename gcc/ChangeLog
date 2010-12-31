@@ -33,6 +33,10 @@
 	(MIPS_CPU_STRING_DEFAULT): Undef before defining.
 	(MULTILIB_DEFAULTS, MIPS_ABI_DEFAULT, SUBTARGET_CC1_SPEC): Likewise.
 
+	PR target/47135
+	* config/pdp11/pdp11.c (pdp11_asm_print_operand_punct_valid_p): Change
+	type to match target.def .
+
 2010-12-30  Mingjie Xing  <mingjie.xing@gmail.com>
 
 	* config/mips/mips.h (SHIFT_COUNT_TRUNCATED): Change
