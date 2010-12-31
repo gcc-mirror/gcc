@@ -1,7 +1,8 @@
 /* Implementation of Fortran 2003 Polymorphism.
    Copyright (C) 2009, 2010
    Free Software Foundation, Inc.
-   Contributed by Paul Richard Thomas & Janus Weil
+   Contributed by Paul Richard Thomas <pault@gcc.gnu.org>
+   and Janus Weil <janus@gcc.gnu.org>
 
 This file is part of GCC.
 
@@ -116,8 +117,51 @@ get_unique_type_string (char *string, gfc_symbol *derived)
 {  
   if (derived->module)
     sprintf (string, "%s_%s", derived->module, derived->name);
-  else
+  else if (derived->ns->proc_name)
     sprintf (string, "%s_%s", derived->ns->proc_name->name, derived->name);
+  else
+    sprintf (string, "_%s", derived->name);
+}
+
+
+/* A relative of 'get_unique_type_string' which makes sure the generated
+   string will not be too long (replacing it by a hash string if needed).  */
+
+static void
+get_unique_hashed_string (char *string, gfc_symbol *derived)
+{
+  char tmp[2*GFC_MAX_SYMBOL_LEN+2];
+  get_unique_type_string (&tmp[0], derived);
+  /* If string is too long, use hash value in hex representation
+     (allow for extra decoration, cf. gfc_build_class_symbol)*/
+  if (strlen (tmp) > GFC_MAX_SYMBOL_LEN - 10)
+    {
+      int h = gfc_hash_value (derived);
+      sprintf (string, "%X", h);
+    }
+  else
+    strcpy (string, tmp);
+}
+
+
+/* Assign a hash value for a derived type. The algorithm is that of SDBM.  */
+
+unsigned int
+gfc_hash_value (gfc_symbol *sym)
+{
+  unsigned int hash = 0;
+  char c[2*(GFC_MAX_SYMBOL_LEN+1)];
+  int i, len;
+  
+  get_unique_type_string (&c[0], sym);
+  len = strlen (c);
+  
+  for (i = 0; i < len; i++)
+    hash = (hash << 6) + (hash << 16) - hash + c[i];
+
+  /* Return the hash but take the modulus for the sake of module read,
+     even though this slightly increases the chance of collision.  */
+  return (hash % 100000000);
 }
 
 
@@ -130,13 +174,13 @@ gfc_try
 gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
 			gfc_array_spec **as, bool delayed_vtab)
 {
-  char name[GFC_MAX_SYMBOL_LEN], tname[GFC_MAX_SYMBOL_LEN];
+  char name[GFC_MAX_SYMBOL_LEN+1], tname[GFC_MAX_SYMBOL_LEN+1];
   gfc_symbol *fclass;
   gfc_symbol *vtab;
   gfc_component *c;
 
   /* Determine the name of the encapsulating type.  */
-  get_unique_type_string (tname, ts->u.derived);
+  get_unique_hashed_string (tname, ts->u.derived);
   if ((*as) && (*as)->rank && attr->allocatable)
     sprintf (name, "__class_%s_%d_a", tname, (*as)->rank);
   else if ((*as) && (*as)->rank)
@@ -343,9 +387,9 @@ gfc_find_derived_vtab (gfc_symbol *derived)
     
   if (ns)
     {
-      char name[GFC_MAX_SYMBOL_LEN], tname[GFC_MAX_SYMBOL_LEN];
+      char name[GFC_MAX_SYMBOL_LEN+1], tname[GFC_MAX_SYMBOL_LEN+1];
       
-      get_unique_type_string (tname, derived);
+      get_unique_hashed_string (tname, derived);
       sprintf (name, "__vtab_%s", tname);
 
       /* Look for the vtab symbol in various namespaces.  */
