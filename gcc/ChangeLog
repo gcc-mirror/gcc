@@ -37,6 +37,11 @@
 	* config/pdp11/pdp11.c (pdp11_asm_print_operand_punct_valid_p): Change
 	type to match target.def .
 
+	PR target/47114
+	* config/rs6000/rs6000.c (rs6000_elf_asm_out_constructor): Add
+	ATTRIBUTE_UNUSED to declaration.
+	(rs6000_elf_asm_out_destructor): Likewise.
+
 2010-12-30  Mingjie Xing  <mingjie.xing@gmail.com>
 
 	* config/mips/mips.h (SHIFT_COUNT_TRUNCATED): Change
