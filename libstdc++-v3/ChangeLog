@@ -1,3 +1,33 @@
+2010-12-31  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* scripts/run_doxygen: Allow doxygen 1.7.1 again.
+
+	* doc/xml/manual/build_hacking.xml: Update.
+	* doc/xml/images/confdeps.dot: Same.
+	* doc/xml/images/confdeps.png: Same.
+
+	* configure.ac: Define BUILD_INFO, BUILD_XML, BUILD_HTML,
+	BUILD_MAN, BUILD_PDF, BUILD_EPUB conditionally.
+	* Makefile.am (xml, html, pdf, man, info, pd, dvi, epub): Define,
+	and install rules.
+	* doc/Makefile.am: Same. Add stamp rules.
+	(doc-epub-docbook): Add.
+	(stamp-xml-single-docbook): Make set too.
+	* configure: Regenerate.
+	* Makefile.in: Same.
+	* doc/Makefile.in: Same.
+	* include/Makefile.in: Same.
+	* libsupc++/Makefile.in: Same.
+	* po/Makefile.in: Same.
+	* python/Makefile.in: Same.
+	* src/Makefile.in: Same.
+	* testsuite/Makefile.in: Same.
+	* aclocal.m4: Same.
+
+2010-12-31  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Disable PDF_HYPERLINKS.
+
 2010-12-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR libstdc++/46869
