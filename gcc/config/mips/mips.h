@@ -2421,7 +2421,7 @@ typedef struct mips_args {
 /* Standard MIPS integer shifts truncate the shift amount to the
    width of the shifted operand.  However, Loongson vector shifts
    do not truncate the shift amount at all.  */
-#define SHIFT_COUNT_TRUNCATED (!TARGET_LOONGSON_2EF)
+#define SHIFT_COUNT_TRUNCATED (!TARGET_LOONGSON_VECTORS)
 
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
    is done just by pretending it is already truncated.  */
