@@ -1,3 +1,16 @@
+2010-12-31  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/46971
+	* gfortran.h (gfc_hash_value): Add prototype.
+	* class.c (get_unique_type_string): Check if proc_name is present and
+	make sure string contains an underscore.
+	(get_unique_hashed_string): New function which creates a hashed string
+	if the given unique string is too long.
+	(gfc_hash_value): Moved here from decl.c, renamed and simplified.
+	(gfc_build_class_symbol, gfc_find_derived_vtab): Use hashed strings.
+	* decl.c (hash_value): Moved to class.c.
+	(gfc_match_derived_decl): Renamed 'hash_value'.
+
 2010-12-30  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47085
