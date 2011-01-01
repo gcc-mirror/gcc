@@ -1214,6 +1214,7 @@ tree_loop_distribution (void)
   FOR_EACH_LOOP (li, loop, 0)
     {
       VEC (gimple, heap) *work_list = NULL;
+      int num = loop->num;
 
       /* If the loop doesn't have a single exit we will fail anyway,
 	 so do that early.  */
@@ -1255,9 +1256,9 @@ tree_loop_distribution (void)
 	{
 	  if (nb_generated_loops > 1)
 	    fprintf (dump_file, "Loop %d distributed: split to %d loops.\n",
-		     loop->num, nb_generated_loops);
+		     num, nb_generated_loops);
 	  else
-	    fprintf (dump_file, "Loop %d is the same.\n", loop->num);
+	    fprintf (dump_file, "Loop %d is the same.\n", num);
 	}
 
       verify_loop_structure ();

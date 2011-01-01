@@ -1,3 +1,8 @@
+2011-01-01  Jan Hubicka  <jh@suse.cz>
+
+	* tree-loop-distribution.c (tree_loop_distribution): Do not
+	use freed memory.
+
 2011-01-01  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR target/38662
