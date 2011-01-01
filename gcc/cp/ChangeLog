@@ -1,3 +1,9 @@
+2011-01-01  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR target/38662
+	* tree.c (cxx_type_hash_eq):
+	Allow METHOD_TYPE, too.
+
 2010-12-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/47068
