@@ -1,3 +1,8 @@
+2011-01-01  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR target/38662
+	* g++.dg/eh/pr38662.C: New testcase.
+
 2011-01-01  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* gcc.target/arm/vfp-1.c (test_ldst): Fixed fsts test to

@@ -1,3 +1,9 @@
+2011-01-01  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR target/38662
+	* tree.c (type_hash_eq): Call
+	language hook for METHOD_TYPEs, too.
+
 2010-12-31  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (powerpc-*-darwin*): Update reference to
