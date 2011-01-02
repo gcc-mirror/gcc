@@ -1,3 +1,14 @@
+2011-01-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* regrename.c: Add general comment describing the pass.
+	(struct du_head): Remove 'length' field.
+	(get_element, merge_sort_comparison, merge, sort_du_head): Remove.
+	(regrename_optimize): Do not sort chains.  Rework comments, add others.
+	Force renaming to the preferred class (if any) in the first pass and do
+	not consider registers that belong to it in the second pass.
+	(create_new_chain): Do not set 'length' field.
+	(scan_rtx_reg): Likewise.
+
 2011-01-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/47140
@@ -6,9 +17,8 @@
 	to bit_value_binop.
 
 	PR rtl-optimization/47028
-	* cfgexpand.c (gimple_expand_cfg): Insert entry edge
-	insertions after parm_birth_insn instead of at the beginning
-	of first bb.
+	* cfgexpand.c (gimple_expand_cfg): Insert entry edge insertions after
+	parm_birth_insn instead of at the beginning of first bb.
 
 2011-01-02  Mingjie Xing  <mingjie.xing@gmail.com>
 
@@ -18,14 +28,13 @@
 
 2011-01-01  Jan Hubicka  <jh@suse.cz>
 
-	* tree-loop-distribution.c (tree_loop_distribution): Do not
-	use freed memory.
+	* tree-loop-distribution.c (tree_loop_distribution): Do not use freed
+	memory.
 
 2011-01-01  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR target/38662
-	* tree.c (type_hash_eq): Call
-	language hook for METHOD_TYPEs, too.
+	* tree.c (type_hash_eq): Call language hook for METHOD_TYPEs, too.
 
 
 Copyright (C) 2011 Free Software Foundation, Inc.
