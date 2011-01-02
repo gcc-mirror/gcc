@@ -1271,7 +1271,7 @@ accumulator.  The default format is ``64.64''.
 is a machine-specific set of bits used to represent the result of a
 comparison operation.  Other machine-specific modes may also be used for
 the condition code.  These modes are not used on machines that use
-@code{cc0} (see @pxref{Condition Code}).
+@code{cc0} (@pxref{Condition Code}).
 
 @findex BLKmode
 @item BLKmode
