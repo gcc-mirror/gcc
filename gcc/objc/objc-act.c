@@ -10944,7 +10944,7 @@ check_that_protocol_is_defined (tree protocol)
     {
       tree p;
 
-      for (p = PROTOCOL_LIST (p); p; p = TREE_CHAIN (p))
+      for (p = PROTOCOL_LIST (protocol); p; p = TREE_CHAIN (p))
 	check_that_protocol_is_defined (TREE_VALUE (p));
     }
 }
