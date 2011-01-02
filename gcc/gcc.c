@@ -6582,7 +6582,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 
   explicit_link_files = XCNEWVEC (char, n_infiles);
 
-  combine_inputs = have_o || flag_wpa;
+  combine_inputs = flag_wpa;
 
   for (i = 0; (int) i < n_infiles; i++)
     {
