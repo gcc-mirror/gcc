@@ -1,3 +1,10 @@
+2011-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/47028
+	* cfgexpand.c (gimple_expand_cfg): Insert entry edge
+	insertions after parm_birth_insn instead of at the beginning
+	of first bb.
+
 2011-01-02  Mingjie Xing  <mingjie.xing@gmail.com>
 
 	* doc/generic.texi: Remove duplicated "@subsubsection Statements".
