@@ -1,4 +1,4 @@
-2010-01-02  Mingjie Xing  <mingjie.xing@gmail.com>
+2011-01-02  Mingjie Xing  <mingjie.xing@gmail.com>
 
 	* doc/generic.texi: Remove duplicated "@subsubsection Statements".
 	Remove the word "see" before "@pxref".
