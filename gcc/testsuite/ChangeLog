@@ -1,3 +1,8 @@
+2011-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/47028
+	* gcc.dg/pr47028.c: New test.
+
 2011-01-02  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/protocol-forward-1.m: Removed TODO.
