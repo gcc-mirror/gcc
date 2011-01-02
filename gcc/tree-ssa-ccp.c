@@ -2156,9 +2156,10 @@ evaluate_stmt (gimple stmt)
 	      if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
 		  || POINTER_TYPE_P (TREE_TYPE (rhs1)))
 		{
+		  tree lhs = gimple_assign_lhs (stmt);
 		  tree rhs2 = gimple_assign_rhs2 (stmt);
 		  val = bit_value_binop (subcode,
-					 TREE_TYPE (rhs1), rhs1, rhs2);
+					 TREE_TYPE (lhs), rhs1, rhs2);
 		}
 	      break;
 

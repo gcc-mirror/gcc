@@ -1,5 +1,8 @@
 2011-01-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/47140
+	* gcc.c-torture/compile/pr47140.c: New test.
+
 	PR rtl-optimization/47028
 	* gcc.dg/pr47028.c: New test.
 

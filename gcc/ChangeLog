@@ -1,5 +1,10 @@
 2011-01-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/47140
+	* tree-ssa-ccp.c (evaluate_stmt): For binary assignments, use
+	TREE_TYPE (lhs) instead of TREE_TYPE (rhs1) as second argument
+	to bit_value_binop.
+
 	PR rtl-optimization/47028
 	* cfgexpand.c (gimple_expand_cfg): Insert entry edge
 	insertions after parm_birth_insn instead of at the beginning
