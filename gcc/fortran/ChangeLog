@@ -1,3 +1,10 @@
+2011-02-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from mainline
+	PR fortran/45338
+	* resolve.c (resolve_operator):  Mark function for user-defined
+	operator as referenced.
+
 2010-12-16  Release Manager
 
 	* GCC 4.5.2 released.
