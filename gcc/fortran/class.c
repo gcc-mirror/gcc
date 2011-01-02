@@ -548,7 +548,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		  copy->formal->next->sym = dst;
 		  /* Set up code.  */
 		  sub_ns->code = gfc_get_code ();
-		  sub_ns->code->op = EXEC_ASSIGN;
+		  sub_ns->code->op = EXEC_INIT_ASSIGN;
 		  sub_ns->code->expr1 = gfc_lval_expr_from_sym (dst);
 		  sub_ns->code->expr2 = gfc_lval_expr_from_sym (src);
 		  /* Set initializer.  */
