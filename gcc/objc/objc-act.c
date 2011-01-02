@@ -10929,11 +10929,30 @@ add_protocol (tree protocol)
   return protocol_chain;
 }
 
+/* Check that a protocol is defined, and, recursively, that all
+   protocols that this protocol conforms to are defined too.  */
+static void
+check_that_protocol_is_defined (tree protocol)
+{
+  if (!PROTOCOL_DEFINED (protocol))
+    warning (0, "definition of protocol %qE not found",
+	     PROTOCOL_NAME (protocol));
+
+  /* If the protocol itself conforms to other protocols, check them
+     too, recursively.  */
+  if (PROTOCOL_LIST (protocol))
+    {
+      tree p;
+
+      for (p = PROTOCOL_LIST (p); p; p = TREE_CHAIN (p))
+	check_that_protocol_is_defined (TREE_VALUE (p));
+    }
+}
+
 /* Looks up a protocol.  If 'warn_if_deprecated' is true, a warning is
    emitted if the protocol is deprecated.  If 'definition_required' is
    true, a warning is emitted if a full @protocol definition has not
    been seen.  */
-
 static tree
 lookup_protocol (tree ident, bool warn_if_deprecated, bool definition_required)
 {
@@ -10951,9 +10970,8 @@ lookup_protocol (tree ident, bool warn_if_deprecated, bool definition_required)
 		     PROTOCOL_NAME (chain));
 	  }
 
-	if (definition_required && !PROTOCOL_DEFINED (chain))
-	  warning (0, "definition of protocol %qE not found",
-		   PROTOCOL_NAME (chain));
+	if (definition_required)
+	  check_that_protocol_is_defined (chain);
 
 	return chain;
       }
