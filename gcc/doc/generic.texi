@@ -2420,14 +2420,6 @@ optimization options specified on the command line.
 
 @end ftable
 
-@subsubsection Statements
-
-There are tree nodes corresponding to all of the source-level
-statement constructs, used within the C and C++ frontends.  These are
-enumerated here, together with a list of the various macros that can
-be used to obtain information about them.  There are a few macros that
-can be used with all statements:
-
 @c ---------------------------------------------------------------------
 @c Language-dependent trees
 @c ---------------------------------------------------------------------
@@ -2637,7 +2629,7 @@ type.  In that case, the @code{TYPE_PTRMEMFUNC_FN_TYPE} is a
 @code{POINTER_TYPE} pointing to a @code{METHOD_TYPE}.  The
 @code{METHOD_TYPE} is the type of a function pointed to by the
 pointer-to-member function.  If @code{TYPE_PTRMEMFUNC_P} does not hold,
-this type is a class type.  For more information, see @pxref{Classes}.
+this type is a class type.  For more information, @pxref{Classes}.
 
 @item UNKNOWN_TYPE
 This node is used to represent a type the knowledge of which is
