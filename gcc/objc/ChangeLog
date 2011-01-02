@@ -1,3 +1,7 @@
+2011-01-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* objc-act.c (check_that_protocol_is_defined): Fix a typo.
+
 2011-01-02  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (check_that_protocol_is_defined): New.
