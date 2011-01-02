@@ -1,3 +1,8 @@
+2011-01-02  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (check_that_protocol_is_defined): New.
+	(lookup_protocol): Call check_that_protocol_is_defined.
+
 2010-12-30  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_types_are_equivalent): Fixed comparing protocol
