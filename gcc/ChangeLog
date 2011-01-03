@@ -1,3 +1,22 @@
+2011-01-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+	2010-12-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/47038
+	* config/sparc/sparc.c (sparc_file_end): Call resolve_unique_section
+	on the GOT helper if USE_HIDDEN_LINKONCE.
+
+	2010-12-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/46685
+	* config/sparc/sparc.c (can_use_mov_pic_label_ref): New predicate.
+	(sparc_expand_move): Call it to decide whether to emit the special
+	mov{si,di}_pic_label_ref patterns.
+	(sparc_legitimize_pic_address): Call it to decide whether to emit
+	the regular PIC sequence for labels.  Fix long line.
+	(sparc_file_end): Set is_thunk for the PIC helper.
+
 2010-12-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config/pa/pa.md: Add ",*" condition to 64-bit add/subtract boolean
