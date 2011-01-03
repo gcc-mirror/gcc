@@ -1,3 +1,8 @@
+2010-01-03  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* tree-vect-generic.c (expand_vector_operations_1): When using vector/
+	vector optab to expand vector/scalar shift, update gimple to vector.
+
 2011-01-03  Martin Jambor  <mjambor@suse.cz>
 
 	* cgraphunit.c (verify_cgraph_node): Verify there is no direct call to
