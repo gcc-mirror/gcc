@@ -1,3 +1,8 @@
+2011-01-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR driver/47137
+	* gcc.c (main): Revert revision 168407.
+
 2011-01-03  Martin Jambor  <mjambor@suse.cz>
 
 	* lto-cgraph.c (input_cgraph_opt_section): Use the correct section type.
