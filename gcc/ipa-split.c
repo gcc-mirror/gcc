@@ -1,5 +1,5 @@
 /* Function splitting pass
-   Copyright (C) 2010
+   Copyright (C) 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Jan Hubicka  <jh@suse.cz>
 
@@ -943,6 +943,9 @@ split_function (struct split_point *split_point)
   tree retval = NULL, real_retval = NULL;
   bool split_part_return_p = false;
   gimple last_stmt = NULL;
+  bool conv_needed = false;
+  unsigned int i;
+  tree arg;
 
   if (dump_file)
     {
@@ -959,7 +962,16 @@ split_function (struct split_point *split_point)
 			  SSA_NAME_VERSION (gimple_default_def (cfun, parm))))
       bitmap_set_bit (args_to_skip, num);
     else
-      VEC_safe_push (tree, heap, args_to_pass, gimple_default_def (cfun, parm));
+      {
+	arg = gimple_default_def (cfun, parm);
+	if (TYPE_MAIN_VARIANT (DECL_ARG_TYPE (parm))
+	    != TYPE_MAIN_VARIANT (TREE_TYPE (arg)))
+	  {
+	    conv_needed = true;
+	    arg = fold_convert (DECL_ARG_TYPE (parm), arg);
+	  }
+	VEC_safe_push (tree, heap, args_to_pass, arg);
+      }
 
   /* See if the split function will return.  */
   FOR_EACH_EDGE (e, ei, return_bb->preds)
@@ -1056,6 +1068,14 @@ split_function (struct split_point *split_point)
 
   /* Produce the call statement.  */
   gsi = gsi_last_bb (call_bb);
+  if (conv_needed)
+    FOR_EACH_VEC_ELT (tree, args_to_pass, i, arg)
+      if (!is_gimple_val (arg))
+	{
+	  arg = force_gimple_operand_gsi (&gsi, arg, true, NULL_TREE,
+					  false, GSI_NEW_STMT);
+	  VEC_replace (tree, args_to_pass, i, arg);
+	}
   call = gimple_build_call_vec (node->decl, args_to_pass);
   gimple_set_block (call, DECL_INITIAL (current_function_decl));
 
