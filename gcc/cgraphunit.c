@@ -647,6 +647,8 @@ verify_cgraph_node (struct cgraph_node *node)
 			  }
 			if (!e->indirect_unknown_callee)
 			  {
+			    struct cgraph_node *n;
+
 			    if (e->callee->same_body_alias)
 			      {
 				error ("edge points to same body alias:");
@@ -666,6 +668,15 @@ verify_cgraph_node (struct cgraph_node *node)
 				fprintf (stderr," Instead of:");
 				debug_tree (decl);
 				error_found = true;
+			      }
+			    else if (decl
+				     && (n = cgraph_get_node_or_alias (decl))
+				     && (n->same_body_alias
+					 && n->thunk.thunk_p))
+			      {
+				error ("a call to thunk improperly represented "
+				       "in the call graph:");
+				debug_gimple_stmt (stmt);
 			      }
 			  }
 			else if (decl)
