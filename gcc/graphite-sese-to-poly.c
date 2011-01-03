@@ -1,5 +1,5 @@
 /* Conversion of SESE regions to Polyhedra.
-   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@amd.com>.
 
 This file is part of GCC.
@@ -829,6 +829,9 @@ scan_tree_for_params (sese s, tree e, ppl_Linear_Expression_t c,
     CASE_CONVERT:
     case NON_LVALUE_EXPR:
       scan_tree_for_params (s, TREE_OPERAND (e, 0), c, k);
+      break;
+
+    case ADDR_EXPR:
       break;
 
    default:
