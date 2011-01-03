@@ -1374,4 +1374,10 @@ CXXABI_1.3.5 {
     # FNV hash.
     _ZSt15_Fnv_hash_bytesPKv*;
 
+    # std::bad_function_call.
+    _ZNSt17bad_function_callD*;
+    _ZTISt17bad_function_call;
+    _ZTSSt17bad_function_call;
+    _ZTVSt17bad_function_call;
+
 } CXXABI_1.3.4;
