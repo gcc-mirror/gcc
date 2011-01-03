@@ -1,3 +1,9 @@
+2011-01-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/47017
+	* expr.c (expand_expr_real_1) <MEM_REF>: Call memory_address_addr_space
+	instead of convert_memory_address_addr_space on the base expression.
+
 2011-01-03  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu.c (spu_option_override): Update error text
