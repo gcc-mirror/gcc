@@ -1797,7 +1797,7 @@ input_cgraph_opt_section (struct lto_file_decl_data *file_data,
       input_node_opt_summary (VEC_index (cgraph_node_ptr, nodes, ref),
 			      &ib_main, data_in);
     }
-  lto_free_section_data (file_data, LTO_section_jump_functions, NULL, data,
+  lto_free_section_data (file_data, LTO_section_cgraph_opt_sum, NULL, data,
 			 len);
   lto_data_in_delete (data_in);
 }
