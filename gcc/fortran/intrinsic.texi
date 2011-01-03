@@ -7316,7 +7316,8 @@ If all the bits of @code{I} are zero, the result value is @code{BIT_SIZE(I)}.
 @item @emph{Example}:
 @smallexample
 PROGRAM test_leadz
-  WRITE (*,*) LEADZ(1)  ! prints 8 if BITSIZE(I) has the value 32
+  WRITE (*,*) BIT_SIZE(1)  ! prints 32
+  WRITE (*,*) LEADZ(1)     ! prints 31
 END PROGRAM
 @end smallexample
 
