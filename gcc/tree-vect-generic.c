@@ -520,7 +520,24 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
       /* Try for a vector/scalar shift, and if we don't have one, see if we
          have a vector/vector shift */
       else if (!vector_scalar_shift)
-        op = optab_for_tree_code (code, type, optab_vector);
+	{
+	  op = optab_for_tree_code (code, type, optab_vector);
+
+	  if (op && (optab_handler (op, TYPE_MODE (type)) 
+		     != CODE_FOR_nothing))
+	    {
+	      /* Transform vector <op> scalar => vector <op> {x,x,x,x}.  */
+	      int n_parts = TYPE_VECTOR_SUBPARTS (type);
+	      int part_size = tree_low_cst (TYPE_SIZE (TREE_TYPE (type)), 1);
+	      tree part_type = lang_hooks.types.type_for_size (part_size, 1);
+	      tree vect_type = build_vector_type (part_type, n_parts);
+
+	      rhs2 = fold_convert (part_type, rhs2);
+	      rhs2 = build_vector_from_val (vect_type, rhs2);
+	      gimple_assign_set_rhs2 (stmt, rhs2);
+	      update_stmt (stmt);
+	    }
+	}
     }
   else
     op = optab_for_tree_code (code, type, optab_default);
