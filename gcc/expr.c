@@ -8731,7 +8731,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	align = MAX (TYPE_ALIGN (TREE_TYPE (exp)),
 		     get_object_alignment (exp, BIGGEST_ALIGNMENT));
 	op0 = expand_expr (base, NULL_RTX, VOIDmode, EXPAND_SUM);
-	op0 = convert_memory_address_addr_space (address_mode, op0, as);
+	op0 = memory_address_addr_space (address_mode, op0, as);
 	if (!integer_zerop (TREE_OPERAND (exp, 1)))
 	  {
 	    rtx off
