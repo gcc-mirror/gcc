@@ -1,5 +1,10 @@
 2011-01-03  Martin Jambor  <mjambor@suse.cz>
 
+	PR tree-optimization/46801
+	* gnat.dg/pack9.adb: Remove xfail.
+
+2011-01-03  Martin Jambor  <mjambor@suse.cz>
+
 	PR tree-optimization/46984
 	* g++.dg/ipa/pr46984.C: New test.
 
