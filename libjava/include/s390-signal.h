@@ -1,7 +1,7 @@
 // s390-signal.h - Catch runtime signals and turn them into exceptions
 // on an s390 based Linux system.
 
-/* Copyright (C) 2002  Free Software Foundation
+/* Copyright (C) 2002, 2010  Free Software Foundation
 
    This file is part of libgcj.
 

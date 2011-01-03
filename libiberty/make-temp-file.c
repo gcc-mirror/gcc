@@ -1,5 +1,6 @@
 /* Utility to pick a temporary filename prefix.
-   Copyright (C) 1996, 1997, 1998, 2001, 2009 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 2001, 2009, 2010
+   Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or
