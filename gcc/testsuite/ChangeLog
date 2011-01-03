@@ -1,3 +1,7 @@
+2011-01-03  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* g++.dg/torture/pr46111.C: Add dg-require-effective-target pthread.
+
 2011-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/47148
