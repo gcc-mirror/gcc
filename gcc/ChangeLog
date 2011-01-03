@@ -1,5 +1,10 @@
 2011-01-03  Martin Jambor  <mjambor@suse.cz>
 
+	* cgraphunit.c (verify_cgraph_node): Verify there is no direct call to
+	a thunk.
+
+2011-01-03  Martin Jambor  <mjambor@suse.cz>
+
 	PR tree-optimization/46984
 	* cgraph.h (cgraph_indirect_call_info): make field thunk_delta
 	HOST_WIDE_INT.
