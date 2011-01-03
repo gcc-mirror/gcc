@@ -1,6 +1,6 @@
 /* nwld.h -- defines to be used when targeting GCC for some generic NetWare
    system while using the Novell linker.
-   Copyright (C) 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2007, 2010 Free Software Foundation, Inc.
 
    Written by Jan Beulich (jbeulich@novell.com)
 

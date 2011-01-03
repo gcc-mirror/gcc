@@ -1,5 +1,6 @@
 /* Prototypes for fr30.c functions used in the md file & elsewhere.
-   Copyright (C) 1999, 2000, 2002, 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2004, 2007, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 

@@ -1,5 +1,5 @@
 /* Configuration file for ARM GNU/Linux EABI targets.
-   Copyright (C) 2004, 2005, 2006, 2007
+   Copyright (C) 2004, 2005, 2006, 2007, 2010
    Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC   
 
