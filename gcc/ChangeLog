@@ -41,7 +41,7 @@
 
 	* lto-cgraph.c (input_cgraph_opt_section): Use the correct section type.
 
-2010-01-03  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+2011-01-03  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* tree-vect-generic.c (expand_vector_operations_1): When using vector/
 	vector optab to expand vector/scalar shift, update gimple to vector.
