@@ -1,7 +1,7 @@
 /* Optimize by combining instructions for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -4376,6 +4376,15 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
     {
       *new_direct_jump_p = 1;
       update_cfg_for_uncondjump (i3);
+    }
+
+  if (undobuf.other_insn != NULL_RTX
+      && GET_CODE (PATTERN (undobuf.other_insn)) == SET
+      && SET_SRC (PATTERN (undobuf.other_insn)) == pc_rtx
+      && SET_DEST (PATTERN (undobuf.other_insn)) == pc_rtx)
+    {
+      *new_direct_jump_p = 1;
+      update_cfg_for_uncondjump (undobuf.other_insn);
     }
 
   combine_successes++;
