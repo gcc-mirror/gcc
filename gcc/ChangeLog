@@ -1,3 +1,26 @@
+2011-01-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/46984
+	* cgraph.h (cgraph_indirect_call_info): make field thunk_delta
+	HOST_WIDE_INT.
+	(cgraph_create_indirect_edge): Fixed line length.
+	(cgraph_indirect_call_info): Declare.
+	(cgraph_make_edge_direct) Update declaration.
+	* cgraph.c (cgraph_allocate_init_indirect_info): New function.
+	(cgraph_create_indirect_edge): Use it.
+	(cgraph_make_edge_direct): Made delta HOST_WIDE_INT.  Updated all
+	callees.
+	* cgraphunit.c (cgraph_redirect_edge_call_stmt_to_callee): Update for
+	the new thunk_delta representation.
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Convert delta to
+	HOST_WIDE_INT.
+	(ipa_write_indirect_edge_info): Remove streaming of thunk_delta.
+	(ipa_read_indirect_edge_info): Likewise.
+	* lto-cgraph.c (output_edge_opt_summary): New function.
+	(output_node_opt_summary): Call it on all outgoing edges.
+	(input_edge_opt_summary): New function.
+	(input_node_opt_summary): Call it on all outgoing edges.
+
 2011-01-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR driver/47137

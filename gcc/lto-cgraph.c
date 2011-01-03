@@ -1605,6 +1605,18 @@ output_cgraph_opt_summary_p (struct cgraph_node *node)
           || node->clone.combined_args_to_skip);
 }
 
+/* Output optimization summary for EDGE to OB.  */
+static void
+output_edge_opt_summary (struct output_block *ob,
+			 struct cgraph_edge *edge)
+{
+  if (edge->indirect_info)
+    lto_output_sleb128_stream (ob->main_stream,
+			       edge->indirect_info->thunk_delta);
+  else
+    lto_output_sleb128_stream (ob->main_stream, 0);
+}
+
 /* Output optimization summary for NODE to OB.  */
 
 static void
@@ -1616,6 +1628,7 @@ output_node_opt_summary (struct output_block *ob,
   struct ipa_replace_map *map;
   struct bitpack_d bp;
   int i;
+  struct cgraph_edge *e;
 
   lto_output_uleb128_stream (ob->main_stream,
 			     bitmap_count_bits (node->clone.args_to_skip));
@@ -1646,6 +1659,10 @@ output_node_opt_summary (struct output_block *ob,
       bp_pack_value (&bp, map->ref_p, 1);
       lto_output_bitpack (&bp);
     }
+  for (e = node->callees; e; e = e->next_callee)
+    output_edge_opt_summary (ob, e);
+  for (e = node->indirect_calls; e; e = e->next_callee)
+    output_edge_opt_summary (ob, e);
 }
 
 /* Output optimization summaries stored in callgraph.
@@ -1680,7 +1697,23 @@ output_cgraph_opt_summary (void)
   destroy_output_block (ob);
 }
 
-/* Input optimiation summary of NODE.  */
+/* Input optimisation summary of EDGE.  */
+
+static void
+input_edge_opt_summary (struct cgraph_edge *edge,
+			struct lto_input_block *ib_main)
+{
+  HOST_WIDE_INT thunk_delta;
+  thunk_delta = lto_input_sleb128 (ib_main);
+  if (thunk_delta != 0)
+    {
+      gcc_assert (!edge->indirect_info);
+      edge->indirect_info = cgraph_allocate_init_indirect_info ();
+      edge->indirect_info->thunk_delta = thunk_delta;
+    }
+}
+
+/* Input optimisation summary of NODE.  */
 
 static void
 input_node_opt_summary (struct cgraph_node *node,
@@ -1691,6 +1724,7 @@ input_node_opt_summary (struct cgraph_node *node,
   int count;
   int bit;
   struct bitpack_d bp;
+  struct cgraph_edge *e;
 
   count = lto_input_uleb128 (ib_main);
   if (count)
@@ -1726,6 +1760,10 @@ input_node_opt_summary (struct cgraph_node *node,
       map->replace_p = bp_unpack_value (&bp, 1);
       map->ref_p = bp_unpack_value (&bp, 1);
     }
+  for (e = node->callees; e; e = e->next_callee)
+    input_edge_opt_summary (e, ib_main);
+  for (e = node->indirect_calls; e; e = e->next_callee)
+    input_edge_opt_summary (e, ib_main);
 }
 
 /* Read section in file FILE_DATA of length LEN with data DATA.  */

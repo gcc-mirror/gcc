@@ -860,7 +860,7 @@ cgraph_set_call_stmt (struct cgraph_edge *e, gimple new_stmt)
 	 indirect call into a direct one.  */
       struct cgraph_node *new_callee = cgraph_node (decl);
 
-      cgraph_make_edge_direct (e, new_callee, NULL);
+      cgraph_make_edge_direct (e, new_callee, 0);
     }
 
   push_cfun (DECL_STRUCT_FUNCTION (e->caller->decl));
@@ -1070,6 +1070,17 @@ cgraph_create_edge (struct cgraph_node *caller, struct cgraph_node *callee,
   return edge;
 }
 
+/* Allocate cgraph_indirect_call_info and set its fields to default values. */
+
+struct cgraph_indirect_call_info *
+cgraph_allocate_init_indirect_info (void)
+{
+  struct cgraph_indirect_call_info *ii;
+
+  ii = ggc_alloc_cleared_cgraph_indirect_call_info ();
+  ii->param_index = -1;
+  return ii;
+}
 
 /* Create an indirect edge with a yet-undetermined callee where the call
    statement destination is a formal parameter of the caller with index
@@ -1086,8 +1097,7 @@ cgraph_create_indirect_edge (struct cgraph_node *caller, gimple call_stmt,
   edge->indirect_unknown_callee = 1;
   initialize_inline_failed (edge);
 
-  edge->indirect_info = ggc_alloc_cleared_cgraph_indirect_call_info ();
-  edge->indirect_info->param_index = -1;
+  edge->indirect_info = cgraph_allocate_init_indirect_info ();
   edge->indirect_info->ecf_flags = ecf_flags;
 
   edge->next_callee = caller->indirect_calls;
@@ -1195,12 +1205,12 @@ cgraph_redirect_edge_callee (struct cgraph_edge *e, struct cgraph_node *n)
 }
 
 /* Make an indirect EDGE with an unknown callee an ordinary edge leading to
-   CALLEE.  DELTA, if non-NULL, is an integer constant that is to be added to
-   the this pointer (first parameter).  */
+   CALLEE.  DELTA is an integer constant that is to be added to the this
+   pointer (first parameter) to compensate for skipping a thunk adjustment.  */
 
 void
 cgraph_make_edge_direct (struct cgraph_edge *edge, struct cgraph_node *callee,
-			 tree delta)
+			 HOST_WIDE_INT delta)
 {
   edge->indirect_unknown_callee = 0;
   edge->indirect_info->thunk_delta = delta;

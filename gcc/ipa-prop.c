@@ -1483,7 +1483,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target, tree delta)
     return NULL;
   ipa_check_create_node_params ();
 
-  cgraph_make_edge_direct (ie, callee, delta);
+  cgraph_make_edge_direct (ie, callee, delta ? tree_low_cst (delta, 0) : 0);
   if (dump_file)
     {
       fprintf (dump_file, "ipa-prop: Discovered %s call to a known target "
@@ -2549,7 +2549,6 @@ ipa_write_indirect_edge_info (struct output_block *ob,
     {
       lto_output_sleb128_stream (ob->main_stream, ii->otr_token);
       lto_output_tree (ob, ii->otr_type, true);
-      lto_output_tree (ob, ii->thunk_delta, true);
     }
 }
 
@@ -2572,7 +2571,6 @@ ipa_read_indirect_edge_info (struct lto_input_block *ib,
     {
       ii->otr_token = (HOST_WIDE_INT) lto_input_sleb128 (ib);
       ii->otr_type = lto_input_tree (ib, data_in);
-      ii->thunk_delta = lto_input_tree (ib, data_in);
     }
 }
 
