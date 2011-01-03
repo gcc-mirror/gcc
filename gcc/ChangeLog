@@ -1,3 +1,8 @@
+2011-01-03  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.c (asm_file_start): Only reset flag_var_tracking
+	if branch-hint optimization will be performed.
+
 2011-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/47148
