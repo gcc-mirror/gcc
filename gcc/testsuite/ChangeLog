@@ -1,3 +1,9 @@
+2011-01-03  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* gcc.dg/torture/vector-shift2.c (schar): Define.
+	(main): Always use schar or uchar instead of plain "char" to avoid
+	dependencies on implementation-defined char signedness.
+
 2011-01-03  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/46801
