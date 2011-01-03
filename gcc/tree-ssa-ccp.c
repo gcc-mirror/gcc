@@ -1764,8 +1764,8 @@ bit_value_binop_1 (enum tree_code code, tree type,
 		   tree r1type, double_int r1val, double_int r1mask,
 		   tree r2type, double_int r2val, double_int r2mask)
 {
-  bool uns = (TREE_CODE (type) == INTEGER_TYPE
-	      && TYPE_IS_SIZETYPE (type) ? 0 : TYPE_UNSIGNED (type));
+  bool uns = (TREE_CODE (r1type) == INTEGER_TYPE
+	      && TYPE_IS_SIZETYPE (r1type) ? 0 : TYPE_UNSIGNED (r1type));
   /* Assume we'll get a constant result.  Use an initial varying value,
      we fall back to varying in the end if necessary.  */
   *mask = double_int_minus_one;

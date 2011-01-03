@@ -1,5 +1,9 @@
 2011-01-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/47155
+	* tree-ssa-ccp.c (bit_value_binop_1): Use r1type instead of type
+	when computing uns.
+
 	PR rtl-optimization/47157
 	* combine.c (try_combine): If undobuf.other_insn becomes
 	(set (pc) (pc)) jump, call update_cfg_for_uncondjump on it
