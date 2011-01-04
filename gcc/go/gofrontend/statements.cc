@@ -4165,6 +4165,14 @@ Select_clauses::get_tree(Translate_context* context,
 	  continue;
 	}
 
+      if (p->channel()->type()->channel_type() == NULL)
+	{
+	  // We should have given an error in the send or receive
+	  // statement we created via lowering.
+	  gcc_assert(saw_errors());
+	  return error_mark_node;
+	}
+
       tree channel_tree = p->channel()->get_tree(context);
       if (channel_tree == error_mark_node)
 	return error_mark_node;
