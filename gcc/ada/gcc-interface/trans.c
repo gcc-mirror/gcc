@@ -1954,6 +1954,7 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 {
   tree gnu_result, gnu_expr, gnu_label;
   Node_Id gnat_when;
+  location_t end_locus;
   bool may_fallthru = false;
 
   gnu_expr = gnat_to_gnu (Expression (gnat_node));
@@ -1977,7 +1978,10 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 
   /* We build a SWITCH_EXPR that contains the code with interspersed
      CASE_LABEL_EXPRs for each label.  */
-  gnu_label = create_artificial_label (input_location);
+  if (!Sloc_to_locus (Sloc (gnat_node) + UI_To_Int (End_Span (gnat_node)),
+      &end_locus))
+    end_locus = input_location;
+  gnu_label = create_artificial_label (end_locus);
   start_stmt_group ();
 
   for (gnat_when = First_Non_Pragma (Alternatives (gnat_node));
@@ -2062,7 +2066,9 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 	  add_stmt (group);
 	  if (group_may_fallthru)
 	    {
-	      add_stmt (build1 (GOTO_EXPR, void_type_node, gnu_label));
+	      tree stmt = build1 (GOTO_EXPR, void_type_node, gnu_label);
+	      SET_EXPR_LOCATION (stmt, end_locus);
+	      add_stmt (stmt);
 	      may_fallthru = true;
 	    }
 	}
