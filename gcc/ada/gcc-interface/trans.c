@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2011, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -979,27 +979,6 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
     }
   else
     gnu_result = gnat_to_gnu_entity (gnat_temp, NULL_TREE, 0);
-
-  /* If we are in an exception handler, force this variable into memory to
-     ensure optimization does not remove stores that appear redundant but are
-     actually needed in case an exception occurs.
-
-     ??? Note that we need not do this if the variable is declared within the
-     handler, only if it is referenced in the handler and declared in an
-     enclosing block, but we have no way of testing that right now.
-
-     ??? We used to essentially set the TREE_ADDRESSABLE flag on the variable
-     here, but it can now be removed by the Tree aliasing machinery if the
-     address of the variable is never taken.  All we can do is to make the
-     variable volatile, which might incur the generation of temporaries just
-     to access the memory in some circumstances.  This can be avoided for
-     variables of non-constant size because they are automatically allocated
-     to memory.  There might be no way of allocating a proper temporary for
-     them in any case.  We only do this for SJLJ though.  */
-  if (VEC_last (tree, gnu_except_ptr_stack)
-      && TREE_CODE (gnu_result) == VAR_DECL
-      && TREE_CODE (DECL_SIZE_UNIT (gnu_result)) == INTEGER_CST)
-    TREE_THIS_VOLATILE (gnu_result) = TREE_SIDE_EFFECTS (gnu_result) = 1;
 
   /* Some objects (such as parameters passed by reference, globals of
      variable size, and renamed objects) actually represent the address
