@@ -1,3 +1,8 @@
+2011-01-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/vxworks.opt (Bdynamic, Bstatic, Xbind-lazy, Xbind-now,
+	non-static): New Driver options.
+
 2011-01-04  Jie Zhang  <jie@codesourcery.com>
 
 	PR driver/47137
