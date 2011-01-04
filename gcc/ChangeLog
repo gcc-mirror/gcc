@@ -1,5 +1,12 @@
 2011-01-04  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR tree-optimization/47056
+	* cgraphbuild.c (mark_address): Remove ATTRIBUTE_UNUSED markers.
+	(mark_load): Likewise.  Handle FUNCTION_DECL specially.
+	(mark_store): Likewise.  Pass STMT to ipa_record_reference.
+
+2011-01-04  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* dwarf2out.c (rtl_for_decl_init): Strip no-op conversions off the
 	initializer.  Skip view conversions from aggregate types.
 
