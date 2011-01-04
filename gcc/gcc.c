@@ -935,11 +935,11 @@ static const struct compiler default_compilers[] =
   {".i", "@cpp-output", 0, 0, 0},
   {"@cpp-output",
    "%{!M:%{!MM:%{!E:cc1 -fpreprocessed %i %(cc1_options) %{!fsyntax-only:%(invoke_as)}}}}", 0, 1, 0},
-  {".s", "@assembler", 0, 1, 0},
+  {".s", "@assembler", 0, 0, 0},
   {"@assembler",
-   "%{!M:%{!MM:%{!E:%{!S:as %(asm_debug) %(asm_options) %i %A }}}}", 0, 1, 0},
-  {".sx", "@assembler-with-cpp", 0, 1, 0},
-  {".S", "@assembler-with-cpp", 0, 1, 0},
+   "%{!M:%{!MM:%{!E:%{!S:as %(asm_debug) %(asm_options) %i %A }}}}", 0, 0, 0},
+  {".sx", "@assembler-with-cpp", 0, 0, 0},
+  {".S", "@assembler-with-cpp", 0, 0, 0},
   {"@assembler-with-cpp",
 #ifdef AS_NEEDS_DASH_FOR_PIPED_INPUT
    "%(trad_capable_cpp) -lang-asm %(cpp_options) -fno-directives-only\
@@ -952,7 +952,7 @@ static const struct compiler default_compilers[] =
       %{!M:%{!MM:%{!E:%{!S:-o %|.s |\n\
        as %(asm_debug) %(asm_options) %m.s %A }}}}"
 #endif
-   , 0, 1, 0},
+   , 0, 0, 0},
 
 #include "specs.h"
   /* Mark end of table.  */
