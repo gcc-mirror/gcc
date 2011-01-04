@@ -1,3 +1,9 @@
+2011-01-04  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* gcc.dg/torture/builtin-cproj-1.c: On the __SPU__ target, do not
+	use __builtin_inff.  Skip all single-precision tests that require
+	Infinity.
+
 2011-01-03  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* g++.dg/torture/pr46111.C: Add dg-require-effective-target pthread.
