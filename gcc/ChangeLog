@@ -1,3 +1,8 @@
+2011-01-04  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR bootstrap/47055
+	* libgcov.c (gcov_exit): Check for HAS_DRIVE_SPEC.
+
 2011-01-04  Philipp Thomas <pth@suse.de>
 
 	* config/microblaze/microbalse.opt (mxl-float-convert): Fix
