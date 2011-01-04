@@ -1,3 +1,9 @@
+2011-01-04  Jie Zhang  <jie@codesourcery.com>
+
+	PR driver/47137
+	* gcc.c (default_compilers[]): Set combinable field to 0
+	for all assembly languages.
+
 2011-01-04  Mingjie Xing  <mingjie.xing@gmail.com>
 
 	* config/mips/loongson3a.md: New file.
