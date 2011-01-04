@@ -238,14 +238,14 @@ class Parse
   void if_stat();
   void switch_stat(const Label*);
   Statement* expr_switch_body(const Label*, Expression*, source_location);
-  void expr_case_clause(Case_clauses*);
+  void expr_case_clause(Case_clauses*, bool* saw_default);
   Expression_list* expr_switch_case(bool*);
   Statement* type_switch_body(const Label*, const Type_switch&,
 			      source_location);
-  void type_case_clause(Named_object*, Type_case_clauses*);
+  void type_case_clause(Named_object*, Type_case_clauses*, bool* saw_default);
   void type_switch_case(std::vector<Type*>*, bool*);
   void select_stat(const Label*);
-  void comm_clause(Select_clauses*);
+  void comm_clause(Select_clauses*, bool* saw_default);
   bool comm_case(bool*, Expression**, Expression**, std::string*, bool*);
   bool send_or_recv_expr(bool*, Expression**, Expression**, std::string*);
   void for_stat(const Label*);
