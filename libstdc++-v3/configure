@@ -59186,27 +59186,11 @@ $as_echo "no" >&6; }
 fi
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for /usr/share/sgml/docbook/xsl-ns-stylesheets/VERSION" >&5
-$as_echo_n "checking for /usr/share/sgml/docbook/xsl-ns-stylesheets/VERSION... " >&6; }
-if test "${ac_cv_file__usr_share_sgml_docbook_xsl_ns_stylesheets_VERSION+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  test "$cross_compiling" = yes &&
-  as_fn_error "cannot check for file existence when cross compiling" "$LINENO" 5
-if test -r "/usr/share/sgml/docbook/xsl-ns-stylesheets/VERSION"; then
-  ac_cv_file__usr_share_sgml_docbook_xsl_ns_stylesheets_VERSION=yes
-else
-  ac_cv_file__usr_share_sgml_docbook_xsl_ns_stylesheets_VERSION=no
-fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_file__usr_share_sgml_docbook_xsl_ns_stylesheets_VERSION" >&5
-$as_echo "$ac_cv_file__usr_share_sgml_docbook_xsl_ns_stylesheets_VERSION" >&6; }
-if test "x$ac_cv_file__usr_share_sgml_docbook_xsl_ns_stylesheets_VERSION" = x""yes; then :
-  glibcxx_stylesheets=yes
-else
-  glibcxx_stylesheets=no
-fi
 
+glibcxx_stylesheets=no
+if test -f /usr/share/sgml/docbook/xsl-ns-stylesheets/VERSION; then
+  glibcxx_stylesheets=yes
+fi
 
 # Check for xml/html dependencies.
  if test $ac_cv_prog_DOXYGEN = "yes" &&

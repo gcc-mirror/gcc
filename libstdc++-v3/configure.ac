@@ -343,8 +343,11 @@ AC_CHECK_PROG([DOT], dot, yes, no)
 # Check for docbook
 AC_CHECK_PROG([XSLTPROC], xsltproc, yes, no)
 AC_CHECK_PROG([XMLLINT], xmllint, yes, no)
-AC_CHECK_FILE([/usr/share/sgml/docbook/xsl-ns-stylesheets/VERSION],
-	      [glibcxx_stylesheets=yes], [glibcxx_stylesheets=no])
+
+glibcxx_stylesheets=no
+if test -f /usr/share/sgml/docbook/xsl-ns-stylesheets/VERSION; then
+  glibcxx_stylesheets=yes
+fi
 
 # Check for xml/html dependencies.
 AM_CONDITIONAL(BUILD_XML,
