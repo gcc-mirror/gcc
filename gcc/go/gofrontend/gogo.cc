@@ -330,8 +330,11 @@ Gogo::import_package(const std::string& filename,
   Import imp(stream, location);
   imp.register_builtin_types(this);
   Package* package = imp.import(this, local_name, is_local_name_exported);
-  this->imports_.insert(std::make_pair(filename, package));
-  package->set_is_imported();
+  if (package != NULL)
+    {
+      this->imports_.insert(std::make_pair(filename, package));
+      package->set_is_imported();
+    }
 
   delete stream;
 }
