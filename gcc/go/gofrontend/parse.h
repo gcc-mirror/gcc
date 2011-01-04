@@ -294,9 +294,9 @@ class Parse
   // The code we are generating.
   Gogo* gogo_;
   // A stack of statements for which break may be used.
-  Bc_stack break_stack_;
+  Bc_stack* break_stack_;
   // A stack of statements for which continue may be used.
-  Bc_stack continue_stack_;
+  Bc_stack* continue_stack_;
   // The current iota value.
   int iota_;
   // References from the local function to variables defined in
