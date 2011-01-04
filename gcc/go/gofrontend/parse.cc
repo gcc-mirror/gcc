@@ -1655,9 +1655,15 @@ Parse::init_vars_from_map(const Typed_identifier_list* vars, Type* type,
   if (!this->gogo_->in_global_scope())
     this->gogo_->add_statement(s);
   else if (!val_no->is_sink())
-    val_no->var_value()->add_preinit_statement(s);
+    {
+      if (val_no->is_variable())
+	val_no->var_value()->add_preinit_statement(s);
+    }
   else if (!no->is_sink())
-    no->var_value()->add_preinit_statement(s);
+    {
+      if (no->is_variable())
+	no->var_value()->add_preinit_statement(s);
+    }
   else
     {
       // Execute the map index expression just so that we can fail if
@@ -1716,9 +1722,15 @@ Parse::init_vars_from_receive(const Typed_identifier_list* vars, Type* type,
   if (!this->gogo_->in_global_scope())
     this->gogo_->add_statement(s);
   else if (!val_no->is_sink())
-    val_no->var_value()->add_preinit_statement(s);
+    {
+      if (val_no->is_variable())
+	val_no->var_value()->add_preinit_statement(s);
+    }
   else if (!no->is_sink())
-    no->var_value()->add_preinit_statement(s);
+    {
+      if (no->is_variable())
+	no->var_value()->add_preinit_statement(s);
+    }
   else
     {
       Named_object* dummy = this->create_dummy_global(Type::lookup_bool_type(),
@@ -1776,9 +1788,15 @@ Parse::init_vars_from_type_guard(const Typed_identifier_list* vars,
   if (!this->gogo_->in_global_scope())
     this->gogo_->add_statement(s);
   else if (!val_no->is_sink())
-    val_no->var_value()->add_preinit_statement(s);
+    {
+      if (val_no->is_variable())
+	val_no->var_value()->add_preinit_statement(s);
+    }
   else if (!no->is_sink())
-    no->var_value()->add_preinit_statement(s);
+    {
+      if (no->is_variable())
+	no->var_value()->add_preinit_statement(s);
+    }
   else
     {
       Named_object* dummy = this->create_dummy_global(type, NULL, location);
