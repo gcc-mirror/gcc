@@ -332,6 +332,12 @@ Gogo::import_package(const std::string& filename,
   Package* package = imp.import(this, local_name, is_local_name_exported);
   if (package != NULL)
     {
+      if (package->name() == this->package_name()
+	  && package->unique_prefix() == this->unique_prefix())
+	error_at(location,
+		 ("imported package uses same package name and prefix "
+		  "as package being compiled (see -fgo-prefix option)"));
+
       this->imports_.insert(std::make_pair(filename, package));
       package->set_is_imported();
     }
