@@ -908,6 +908,7 @@
 (include "9000.md")
 (include "10000.md")
 (include "loongson2ef.md")
+(include "loongson3a.md")
 (include "octeon.md")
 (include "sb1.md")
 (include "sr71k.md")
