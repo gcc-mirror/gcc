@@ -7965,13 +7965,13 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 	Expression* arg1 = args->front();
 	Expression* arg2 = args->back();
 
-	Array_type* at = arg1->type()->array_type();
-	Type* element_type = at->element_type();
-
 	tree arg1_tree = arg1->get_tree(context);
 	tree arg2_tree = arg2->get_tree(context);
 	if (arg1_tree == error_mark_node || arg2_tree == error_mark_node)
 	  return error_mark_node;
+
+	Array_type* at = arg1->type()->array_type();
+	Type* element_type = at->element_type();
 
 	arg2_tree = Expression::convert_for_assignment(context, at,
 						       arg2->type(),
