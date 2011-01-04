@@ -1,3 +1,8 @@
+2011-01-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/46448
+	* gfortran.dg/class_34.f90: New.
+
 2011-01-04  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* gcc.dg/torture/builtin-cproj-1.c: On the __SPU__ target, do not
