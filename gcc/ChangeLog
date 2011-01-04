@@ -1,3 +1,8 @@
+2011-01-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (rtl_for_decl_init): Strip no-op conversions off the
+	initializer.  Skip view conversions from aggregate types.
+
 2011-01-04  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR bootstrap/47055

@@ -16526,6 +16526,8 @@ rtl_for_decl_init (tree init, tree type)
 {
   rtx rtl = NULL_RTX;
 
+  STRIP_NOPS (init);
+
   /* If a variable is initialized with a string constant without embedded
      zeros, build CONST_STRING.  */
   if (TREE_CODE (init) == STRING_CST && TREE_CODE (type) == ARRAY_TYPE)
@@ -16550,7 +16552,10 @@ rtl_for_decl_init (tree init, tree type)
     }
   /* Other aggregates, and complex values, could be represented using
      CONCAT: FIXME!  */
-  else if (AGGREGATE_TYPE_P (type) || TREE_CODE (type) == COMPLEX_TYPE)
+  else if (AGGREGATE_TYPE_P (type)
+	   || (TREE_CODE (init) == VIEW_CONVERT_EXPR
+	       && AGGREGATE_TYPE_P (TREE_TYPE (TREE_OPERAND (init, 0))))
+	   || TREE_CODE (type) == COMPLEX_TYPE)
     ;
   /* Vectors only work if their mode is supported by the target.
      FIXME: generic vectors ought to work too.  */
