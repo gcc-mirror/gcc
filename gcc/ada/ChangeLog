@@ -1,3 +1,15 @@
+2011-01-04  Olivier Hainque  <hainque@adacore.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (BLOCK_SOURCE_END_LOCATION): Provide default.
+	(set_end_locus_from_node): New function.
+	(Subprogram_Body_to_gnu): Use it to mark both the inner BIND_EXPR we
+	make and the function end_locus.
+	(Compilation_Unit_to_gnu): Call it instead of a straight Sloc_to_locus
+	for the elaboration subprogram.
+	(set_gnu_expr_location_from_node) <default case>: Use it to attempt to
+	set the end_locus of the expression as well.
+
 2011-01-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/47131
