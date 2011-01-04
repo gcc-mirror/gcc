@@ -283,7 +283,7 @@ gcov_exit (void)
 	      }
         }
       /* Update complete filename with stripped original. */
-      if (!IS_DIR_SEPARATOR (*fname))
+      if (!IS_DIR_SEPARATOR (*fname) && !HAS_DRIVE_SPEC(fname))
 	{
 	  strcpy (gi_filename_up, "/");
 	  strcpy (gi_filename_up + 1, fname);
