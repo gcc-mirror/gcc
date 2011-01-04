@@ -1,3 +1,8 @@
+2011-01-04  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* function.c (thread_prologue_and_epilogue_insns): Do not crash
+	on empty epilogue sequences.
+
 2011-01-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/vxworks.opt (Bdynamic, Bstatic, Xbind-lazy, Xbind-now,
