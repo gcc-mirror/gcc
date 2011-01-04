@@ -1,3 +1,7 @@
+2011-01-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/unchecked_convert8.ad[sb]: New test.
+
 2011-01-04  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/46448
