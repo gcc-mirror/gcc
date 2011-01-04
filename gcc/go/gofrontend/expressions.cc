@@ -2680,7 +2680,8 @@ Const_expression::do_get_tree(Translate_context* context)
   // object is an abstract int or float, we try to get the abstract
   // value.  Otherwise we may lose something in the conversion.
   if (this->type_ != NULL
-      && this->constant_->const_value()->type()->is_abstract())
+      && (this->constant_->const_value()->type() == NULL
+	  || this->constant_->const_value()->type()->is_abstract()))
     {
       Expression* expr = this->constant_->const_value()->expr();
       mpz_t ival;
