@@ -340,6 +340,9 @@ Temporary_statement::do_traverse_assignments(Traverse_assignments* tassign)
 void
 Temporary_statement::do_determine_types()
 {
+  if (this->type_ != NULL && this->type_->is_abstract())
+    this->type_ = this->type_->make_non_abstract_type();
+
   if (this->init_ != NULL)
     {
       if (this->type_ == NULL)
@@ -352,10 +355,10 @@ Temporary_statement::do_determine_types()
     }
 
   if (this->type_ == NULL)
-    this->type_ = this->init_->type();
-
-  if (this->type_->is_abstract())
-    this->type_ = this->type_->make_non_abstract_type();
+    {
+      this->type_ = this->init_->type();
+      gcc_assert(!this->type_->is_abstract());
+    }
 }
 
 // Check types.
