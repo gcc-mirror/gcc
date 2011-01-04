@@ -4159,9 +4159,6 @@ Bindings::traverse(Traverse* traverse, bool is_global)
 	      if (t != NULL
 		  && Type::traverse(t, traverse) == TRAVERSE_EXIT)
 		return TRAVERSE_EXIT;
-	    }
-	  if ((traverse_mask & Traverse::traverse_expressions) != 0)
-	    {
 	      if (p->const_value()->traverse_expression(traverse)
 		  == TRAVERSE_EXIT)
 		return TRAVERSE_EXIT;
@@ -4188,7 +4185,8 @@ Bindings::traverse(Traverse* traverse, bool is_global)
 		return TRAVERSE_EXIT;
 	    }
 	  if (p->is_variable()
-	      && (traverse_mask & Traverse::traverse_expressions) != 0)
+	      && ((traverse_mask & Traverse::traverse_types) != 0
+		  || (traverse_mask & Traverse::traverse_expressions) != 0))
 	    {
 	      if (p->var_value()->traverse_expression(traverse)
 		  == TRAVERSE_EXIT)
