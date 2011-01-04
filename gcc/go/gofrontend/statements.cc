@@ -2985,14 +2985,19 @@ tree
 If_statement::do_get_tree(Translate_context* context)
 {
   gcc_assert(this->cond_ == NULL || this->cond_->type()->is_boolean_type());
-  tree ret = build3(COND_EXPR, void_type_node,
-		    (this->cond_ == NULL
-		     ? boolean_true_node
-		     : this->cond_->get_tree(context)),
-		    this->then_block_->get_tree(context),
-		    (this->else_block_ == NULL
-		     ? NULL_TREE
-		     : this->else_block_->get_tree(context)));
+  tree cond_tree = (this->cond_ == NULL
+		    ? boolean_true_node
+		    : this->cond_->get_tree(context));
+  tree then_tree = this->then_block_->get_tree(context);
+  tree else_tree = (this->else_block_ == NULL
+		    ? NULL_TREE
+		    : this->else_block_->get_tree(context));
+  if (cond_tree == error_mark_node
+      || then_tree == error_mark_node
+      || else_tree == error_mark_node)
+    return error_mark_node;
+  tree ret = build3(COND_EXPR, void_type_node, cond_tree, then_tree,
+		    else_tree);
   SET_EXPR_LOCATION(ret, this->location());
   return ret;
 }
