@@ -2603,6 +2603,31 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   gnat_poplevel ();
   gnu_result = end_stmt_group ();
 
+  /* If we populated the parameter attributes cache, we need to make sure that
+     the cached expressions are evaluated on all the possible paths leading to
+     their uses.  So we force their evaluation on entry of the function.  */
+  cache = DECL_STRUCT_FUNCTION (gnu_subprog_decl)->language->parm_attr_cache;
+  if (cache)
+    {
+      struct parm_attr_d *pa;
+      int i;
+
+      start_stmt_group ();
+
+      FOR_EACH_VEC_ELT (parm_attr, cache, i, pa)
+	{
+	  if (pa->first)
+	    add_stmt_with_node_force (pa->first, gnat_node);
+	  if (pa->last)
+	    add_stmt_with_node_force (pa->last, gnat_node);
+	  if (pa->length)
+	    add_stmt_with_node_force (pa->length, gnat_node);
+	}
+
+      add_stmt (gnu_result);
+      gnu_result = end_stmt_group ();
+    }
+
   /* If we are dealing with a return from an Ada procedure with parameters
      passed by copy-in/copy-out, we need to return a record containing the
      final values of these parameters.  If the list contains only one entry,
@@ -2636,31 +2661,6 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
     }
 
   VEC_pop (tree, gnu_return_label_stack);
-
-  /* If we populated the parameter attributes cache, we need to make sure that
-     the cached expressions are evaluated on all the possible paths leading to
-     their uses.  So we force their evaluation on entry of the function.  */
-  cache = DECL_STRUCT_FUNCTION (gnu_subprog_decl)->language->parm_attr_cache;
-  if (cache)
-    {
-      struct parm_attr_d *pa;
-      int i;
-
-      start_stmt_group ();
-
-      FOR_EACH_VEC_ELT (parm_attr, cache, i, pa)
-	{
-	  if (pa->first)
-	    add_stmt_with_node_force (pa->first, gnat_node);
-	  if (pa->last)
-	    add_stmt_with_node_force (pa->last, gnat_node);
-	  if (pa->length)
-	    add_stmt_with_node_force (pa->length, gnat_node);
-	}
-
-      add_stmt (gnu_result);
-      gnu_result = end_stmt_group ();
-    }
 
   end_subprog_body (gnu_result);
 
