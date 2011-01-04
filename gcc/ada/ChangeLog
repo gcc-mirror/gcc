@@ -1,3 +1,8 @@
+2011-01-04  Pascal Obry  <obry@adacore.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c: Disable Stdcall convention handling for 64-bit.
+
 2011-01-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Case_Statement_to_gnu): Put the SLOC of the
