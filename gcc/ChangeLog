@@ -1,3 +1,10 @@
+2011-01-04  Mingjie Xing  <mingjie.xing@gmail.com>
+
+	* config/mips/loongson3a.md: New file.
+	* config/mips/mips.md: Include loongson3a.md.
+	* config/mips/mips.c (mips_multipass_dfa_lookahead): Return 4 when
+	TUNE_LOONGSON_3A.
+
 2011-01-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/47017
