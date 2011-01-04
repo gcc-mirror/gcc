@@ -8898,10 +8898,16 @@ Call_result_expression::do_type()
   // Call_expression::do_must_eval_in_order when there is an error.
   Call_expression* ce = this->call_->call_expression();
   if (ce == NULL)
-    return Type::make_error_type();
+    {
+      this->set_is_error();
+      return Type::make_error_type();
+    }
   Function_type* fntype = ce->get_function_type();
   if (fntype == NULL)
-    return Type::make_error_type();
+    {
+      this->set_is_error();
+      return Type::make_error_type();
+    }
   const Typed_identifier_list* results = fntype->results();
   if (results == NULL)
     {
@@ -8952,7 +8958,11 @@ Call_result_expression::do_get_tree(Translate_context* context)
   tree call_tree = this->call_->get_tree(context);
   if (call_tree == error_mark_node)
     return error_mark_node;
-  gcc_assert(TREE_CODE(TREE_TYPE(call_tree)) == RECORD_TYPE);
+  if (TREE_CODE(TREE_TYPE(call_tree)) != RECORD_TYPE)
+    {
+      gcc_assert(saw_errors());
+      return error_mark_node;
+    }
   tree field = TYPE_FIELDS(TREE_TYPE(call_tree));
   for (unsigned int i = 0; i < this->index_; ++i)
     {
