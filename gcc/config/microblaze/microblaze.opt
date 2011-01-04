@@ -74,7 +74,7 @@ Use multiply high instructions for high part of 32x32 multiply
 
 mxl-float-convert
 Target Mask(FLOAT_CONVERT)
-Use hardware floating point converstion instructions
+Use hardware floating point conversion instructions
 
 mxl-float-sqrt
 Target Mask(FLOAT_SQRT)
