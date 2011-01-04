@@ -1,3 +1,9 @@
+2011-01-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Evaluate the
+	expressions of the parameter cache within the statement group of
+	the CICO mechanism.
+
 2011-01-04  Olivier Hainque  <hainque@adacore.com>
             Eric Botcazou  <ebotcazou@adacore.com>
 
