@@ -276,16 +276,17 @@ start_directive (cpp_reader *pfile)
 static void
 end_directive (cpp_reader *pfile, int skip_line)
 {
-  if (pfile->state.in_deferred_pragma)
-    ;
-  else if (CPP_OPTION (pfile, traditional))
+  if (CPP_OPTION (pfile, traditional))
     {
       /* Revert change of prepare_directive_trad.  */
-      pfile->state.prevent_expansion--;
+      if (!pfile->state.in_deferred_pragma)
+	pfile->state.prevent_expansion--;
 
       if (pfile->directive != &dtable[T_DEFINE])
 	_cpp_remove_overlay (pfile);
     }
+  else if (pfile->state.in_deferred_pragma)
+    ;
   /* We don't skip for an assembler #.  */
   else if (skip_line)
     {
