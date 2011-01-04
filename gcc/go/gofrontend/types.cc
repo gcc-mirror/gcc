@@ -401,6 +401,11 @@ Type::are_identical(const Type* t1, const Type* t2, bool errors_are_identical,
       return t1->interface_type()->is_identical(t2->interface_type(),
 						errors_are_identical);
 
+    case TYPE_CALL_MULTIPLE_RESULT:
+      if (reason != NULL)
+	*reason = "invalid use of multiple value function call";
+      return false;
+
     default:
       gcc_unreachable();
     }
