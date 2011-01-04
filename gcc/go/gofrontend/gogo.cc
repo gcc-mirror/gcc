@@ -2062,7 +2062,7 @@ Build_recover_thunks::function(Named_object* orig_no)
       for (Typed_identifier_list::const_iterator p = orig_results->begin();
 	   p != orig_results->end();
 	   ++p)
-	new_results->push_back(*p);
+	new_results->push_back(Typed_identifier("", p->type(), p->location()));
     }
 
   Function_type *new_fntype = Type::make_function_type(NULL, new_params,
@@ -2120,7 +2120,7 @@ Build_recover_thunks::function(Named_object* orig_no)
     }
   args->push_back(this->can_recover_arg(location));
 
-  Expression* call = Expression::make_call(fn, args, false, location);
+  Call_expression* call = Expression::make_call(fn, args, false, location);
 
   Statement* s;
   if (orig_fntype->results() == NULL || orig_fntype->results()->empty())
@@ -2128,7 +2128,14 @@ Build_recover_thunks::function(Named_object* orig_no)
   else
     {
       Expression_list* vals = new Expression_list();
-      vals->push_back(call);
+      size_t rc = orig_fntype->results()->size();
+      if (rc == 1)
+	vals->push_back(call);
+      else
+	{
+	  for (size_t i = 0; i < rc; ++i)
+	    vals->push_back(Expression::make_call_result(call, i));
+	}
       s = Statement::make_return_statement(new_func->type()->results(),
 					   vals, location);
     }
