@@ -108,7 +108,8 @@ Statement::traverse_expression_list(Traverse* traverse,
 {
   if (expr_list == NULL)
     return TRAVERSE_CONTINUE;
-  if ((traverse->traverse_mask() & Traverse::traverse_expressions) == 0)
+  if ((traverse->traverse_mask()
+       & (Traverse::traverse_types | Traverse::traverse_expressions)) == 0)
     return TRAVERSE_CONTINUE;
   return expr_list->traverse(traverse);
 }
@@ -3010,7 +3011,8 @@ int
 Case_clauses::Case_clause::traverse(Traverse* traverse)
 {
   if (this->cases_ != NULL
-      && (traverse->traverse_mask() & Traverse::traverse_expressions) != 0)
+      && (traverse->traverse_mask()
+	  & (Traverse::traverse_types | Traverse::traverse_expressions)) != 0)
     {
       if (this->cases_->traverse(traverse) == TRAVERSE_EXIT)
 	return TRAVERSE_EXIT;
@@ -3941,7 +3943,8 @@ int
 Select_clauses::Select_clause::traverse(Traverse* traverse)
 {
   if (!this->is_lowered_
-      && (traverse->traverse_mask() & Traverse::traverse_expressions) != 0)
+      && (traverse->traverse_mask()
+	  & (Traverse::traverse_types | Traverse::traverse_expressions)) != 0)
     {
       if (this->channel_ != NULL)
 	{
