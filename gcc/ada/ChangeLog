@@ -1,5 +1,10 @@
 2011-01-04  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Case_Statement_to_gnu): Put the SLOC of the
+	end-of-case on the end label and its associated gotos, if any.
+
+2011-01-04  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Evaluate the
 	expressions of the parameter cache within the statement group of
 	the CICO mechanism.
