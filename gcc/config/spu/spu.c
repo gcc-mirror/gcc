@@ -2086,6 +2086,8 @@ spu_expand_prologue (void)
 	}
     }
 
+  if (flag_stack_usage)
+    current_function_static_stack_size = total_size;
 }
 
 void
