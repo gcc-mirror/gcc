@@ -2832,7 +2832,11 @@ Gogo::call_builtin(tree* pdecl, source_location location, const char* name,
       types[i] = va_arg(ap, tree);
       args[i] = va_arg(ap, tree);
       if (types[i] == error_mark_node || args[i] == error_mark_node)
-	return error_mark_node;
+	{
+	  delete[] types;
+	  delete[] args;
+	  return error_mark_node;
+	}
     }
   va_end(ap);
 

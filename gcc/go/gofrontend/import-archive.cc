@@ -180,16 +180,16 @@ Archive_file::initialize()
     }
   if (filename == "/")
     {
-      char* buf = new char[size];
-      if (::read(this->fd_, buf, size) != size)
+      char* rdbuf = new char[size];
+      if (::read(this->fd_, rdbuf, size) != size)
 	{
 	  error_at(this->location_, "%s: could not read extended names",
 		   filename.c_str());
-	  delete buf;
+	  delete[] rdbuf;
 	  return false;
 	}
-      this->extended_names_.assign(buf, size);
-      delete buf;
+      this->extended_names_.assign(rdbuf, size);
+      delete[] rdbuf;
     }
 
   return true;
