@@ -1,3 +1,12 @@
+2011-01-05  François Dumont  <francois.cppdevs@free.fr>
+
+	* include/debug/safe_base.h (_Safe_iterator_base::_M_unlink): New.
+	* include/src/debug.cc: Use latter
+	* include/debug/forward_list (forward_list<>::_M_swap):  Fix to
+	correctly handle before_begin iterators.
+	* testsuite/23_containers/forward_list/debug/swap.cc: Remove now
+	useless _GLIBCXX_DEBUG checks.
+
 2011-01-04  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR libstdc++/47145

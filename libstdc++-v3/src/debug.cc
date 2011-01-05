@@ -257,11 +257,7 @@ namespace __gnu_debug
   _M_detach_single(_Safe_iterator_base* __it) throw ()
   {
     // Remove __it from this sequence's list
-    if (__it->_M_prior)
-      __it->_M_prior->_M_next = __it->_M_next;
-    if (__it->_M_next)
-      __it->_M_next->_M_prior = __it->_M_prior;
-	
+    __it->_M_unlink();
     if (_M_const_iterators == __it)
       _M_const_iterators = __it->_M_next;
     if (_M_iterators == __it)
