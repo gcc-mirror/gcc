@@ -1,3 +1,9 @@
+2011-01-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/46017
+	* resolve.c (resolve_allocate_deallocate): Follow references to
+	check for duplicate occurence of allocation/deallocation objects.
+
 2011-01-05  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47024
