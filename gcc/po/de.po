@@ -3,13 +3,13 @@
 # This file is distributed under the same license as the gcc package.
 # Karl Eichwalder <ke@suse.de>, 2002, 2003.
 # Roland Stigge <stigge@antcom.de>, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011.
-#
+# Philipp Thomas <pth@suse.de>, 1999, 2000, 2001, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: gcc 4.6-b20101218\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-12-18 20:02+0000\n"
-"PO-Revision-Date: 2011-01-02 18:15+0100\n"
+"PO-Revision-Date: 2011-01-04 01:15+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -8606,95 +8606,87 @@ msgid "Use hardware floating point instructions"
 msgstr "Hardware-Gleitkommabefehle verwenden"
 
 #: config/microblaze/microblaze.opt:33
-#, fuzzy
 msgid "Use table lookup optimization for small signed integer divisions"
-msgstr "Schleifenoptimierungen auf Baumebene einschalten"
+msgstr "Verwende Tabellen als Optimierung für die Division kleiner vorzeichenbehafteter Ganzzahlen"
 
 #: config/microblaze/microblaze.opt:37
-#, fuzzy
 msgid "-mcpu=PROCESSOR\t\tUse features of and schedule code for given CPU"
-msgstr "Eigenschaften der gegebenen CPU verwenden und entsprechend Code planen"
+msgstr "-mcpu=PROCESSOR\t\tEigenschaften der gegebenen CPU verwenden und entsprechend Code planen"
 
 #: config/microblaze/microblaze.opt:41
-#, fuzzy
 msgid "Don't optimize block moves, use memcpy"
-msgstr "Blockkopierbefehle nicht optimieren"
+msgstr "Blockverschiebungen nicht optimieren sondern memcpy verwenden"
 
 #: config/microblaze/microblaze.opt:45
 msgid "Use the soft multiply emulation (default)"
-msgstr ""
+msgstr "Verwendet die Software-Multiplikationsemulation (Vorgabe)"
 
 #: config/microblaze/microblaze.opt:49
 msgid "Use the software emulation for divides (default)"
-msgstr ""
+msgstr "Verwendet die Softwareemulation für Divisionen (Vorgabe)"
 
 #: config/microblaze/microblaze.opt:53
 msgid "Use the hardware barrel shifter instead of emulation"
-msgstr ""
+msgstr "Verwendet den Hardware-Berrelshifter statt der Emulation"
 
 #: config/microblaze/microblaze.opt:57
-#, fuzzy
 msgid "Use pattern compare instructions"
-msgstr "Gleitkomma-double-Befehle verwenden"
+msgstr "Verwendet Mustervergleichsbefehle"
 
 #: config/microblaze/microblaze.opt:61
-#, fuzzy
 msgid "Check for stack overflow at runtime"
-msgstr "Auf Syntaxfehler prüfen und anhalten"
+msgstr "Zur Laufzeit auf Stapelüberlauf prüfen"
 
 #: config/microblaze/microblaze.opt:69
 msgid "Clear the BSS to zero and place zero initialized in BSS"
-msgstr ""
+msgstr "BSS komplett löschen und mit Null initialisierte Werte in BSS plazieren"
 
 #: config/microblaze/microblaze.opt:73
 msgid "Use multiply high instructions for high part of 32x32 multiply"
-msgstr ""
+msgstr "Verwendet »multiply high«-Befehle für den oberen Teil einer 32x32 Multiplikation"
 
 #: config/microblaze/microblaze.opt:77
 #, fuzzy
 msgid "Use hardware floating point converstion instructions"
-msgstr "Dezimale Gleitkommabefehle verwenden"
+msgstr "Verwendet Hardware Fließkommakonversionsbefehle"
 
 #: config/microblaze/microblaze.opt:81
-#, fuzzy
 msgid "Use hardware floating point square root instruction"
-msgstr "Dezimale Gleitkommabefehle verwenden"
+msgstr "Verwendet Hardware Fließkomma Wurzel-Instruktion"
 
 #: config/microblaze/microblaze.opt:85
 msgid "Description for mxl-mode-executable"
-msgstr ""
+msgstr "Beschreibung für mxl-mode-executable"
 
 #: config/microblaze/microblaze.opt:89
 msgid "Description for mxl-mode-xmdstub"
-msgstr ""
+msgstr "Beschreibung für mxl-mode-xmdstub"
 
 #: config/microblaze/microblaze.opt:93
 msgid "Description for mxl-mode-bootstrap"
-msgstr ""
+msgstr "Beschreibung für mxl-mode-bootstrap"
 
 #: config/microblaze/microblaze.opt:97
 msgid "Description for mxl-mode-novectors"
-msgstr ""
+msgstr "Beschreibung für mxl-mode-novectors"
 
 #: config/linux-android.opt:23
-#, fuzzy
 msgid "Generate code for the Android platform."
-msgstr "Code für den Boehm GC erzeugen"
+msgstr "Erzeugt Code für die Android-Plattform"
 
 #: config/g.opt:28
-#, fuzzy
 msgid "-G<number>\tPut global and static data smaller than <number> bytes into a special section (on some targets)"
-msgstr "Globale und statische Daten kleiner als <Anzahl> Bytes in einen gesonderten Abschnitt legen (bei manchen Zielen)"
+msgstr "-G<Anzahl>\tGlobale und statische Daten kleiner als <Anzahl> Bytes in einen gesonderten Abschnitt legen (bei manchen Zielarchitekturen)"
 
 #: config/sol2.opt:23
 #, fuzzy
 msgid "Pass -z text to linker"
-msgstr "-assert pure-text an Binder übergeben"
+msgstr "-z text an den Binder weiter reichen"
 
 #: config/fused-madd.opt:23
 #, fuzzy
 msgid "%<-mfused-madd%> is deprecated; use %<-ffp-contract=%> instead"
-msgstr "Dieser Schalter ist veraltet; stattdessen -Wextra verwenden"
+msgstr "%<-mfused-madd%> ist veraltet; stattdessen %<-ffp-contract=%> verwenden"
 
 #: c-family/c.opt:44 c-family/c.opt:47 c-family/c.opt:185
 #, c-format
@@ -8715,9 +8707,8 @@ msgid "missing path after %qs"
 msgstr "fehlender Pfad hinter %qs"
 
 #: c-family/c.opt:186
-#, fuzzy
 msgid "-A<question>=<answer>\tAssert the <answer> to <question>.  Putting '-' before <question> disables the <answer> to <question>"
-msgstr "Die <Antwort> auf eine <Frage> behaupten. Angabe von »-« vor <Frage> schaltet die <Antwort> auf <Frage> aus"
+msgstr "-A<Frage>=<Antwort>\tDie <Antwort> auf eine <Frage> annehmen. Angabe von »-« vor <Frage> schaltet die <Antwort> auf <Frage> aus"
 
 #: c-family/c.opt:190
 msgid "Do not discard comments"
@@ -8728,23 +8719,20 @@ msgid "Do not discard comments in macro expansions"
 msgstr "Kommentare in Makroexpansionen nicht verwerfen"
 
 #: c-family/c.opt:198
-#, fuzzy
 msgid "-D<macro>[=<val>]\tDefine a <macro> with <val> as its value.  If just <macro> is given, <val> is taken to be 1"
-msgstr "Ein <Makro> mit <Wert> definieren. Wenn nur <Makro> angegeben wird, wird <Wert> auf 1 gesetzt"
+msgstr "-D<Makro>[=<Wert>]\tEin <Makro> mit <Wert> definieren. Wenn nur <Makro> angegeben wird, wird <Wert> auf 1 gesetzt"
 
 #: c-family/c.opt:205
-#, fuzzy
 msgid "-F <dir>\tAdd <dir> to the end of the main framework include path"
-msgstr "<Verz> an das Ende des Einfügepfades des Haupt-Frameworks anfügen"
+msgstr "-F <Verz>\t<Verz> an das Ende des Einfügepfades des Haupt-Frameworks anfügen"
 
 #: c-family/c.opt:209
 msgid "Print the name of header files as they are used"
 msgstr "Namen der Header-Dateien ausgeben, wie sie verwendet werden"
 
 #: c-family/c.opt:213
-#, fuzzy
 msgid "-I <dir>\tAdd <dir> to the end of the main include path"
-msgstr "<Verz> an das Ende des Haupteinfügepfades anfügen"
+msgstr "-I <Verz>\t<Verz> an das Ende des Haupteinfügepfades anfügen"
 
 #: c-family/c.opt:217
 msgid "Generate make dependencies"
@@ -8755,9 +8743,8 @@ msgid "Generate make dependencies and compile"
 msgstr "Make-Abhängigkeiten erzeugen und übersetzen"
 
 #: c-family/c.opt:225
-#, fuzzy
 msgid "-MF <file>\tWrite dependency output to the given file"
-msgstr "Abhängigkeiten-Ausgabe in angegebene Datei schreiben"
+msgstr "-MF <file>\tAbhängigkeiten-Ausgabe in angegebene Datei schreiben"
 
 #: c-family/c.opt:229
 msgid "Treat missing header files as generated files"
@@ -8781,23 +8768,20 @@ msgid "missing makefile target after %qs"
 msgstr "fehlendes Makefile-Ziel hinter %qs"
 
 #: c-family/c.opt:245
-#, fuzzy
 msgid "-MQ <target>\tAdd a MAKE-quoted target"
-msgstr "MAKE-zitiertes Ziel hinzufügen"
+msgstr "-MQ <target>\tMAKE-zitiertes Ziel hinzufügen"
 
 #: c-family/c.opt:249
-#, fuzzy
 msgid "-MT <target>\tAdd an unquoted target"
-msgstr "Ein unzitiertes Ziel hinzufügen"
+msgstr "-MT <target>\tEin Ziel ohne Anführungszeichen hinzufügen"
 
 #: c-family/c.opt:253
 msgid "Do not generate #line directives"
 msgstr "Keine #line-Direktiven erzeugen"
 
 #: c-family/c.opt:257
-#, fuzzy
 msgid "-U<macro>\tUndefine <macro>"
-msgstr "<Makro> undefinieren"
+msgstr "-U<Makro>\t<Makro> undefinieren"
 
 #: c-family/c.opt:261
 msgid "Warn about things that will change when compiling with an ABI-compliant compiler"
@@ -8856,9 +8840,8 @@ msgid "Warn for implicit type conversions that may change a value"
 msgstr "Bei impliziten Typumwandlungen warnen, die einen Wert ändern könnten"
 
 #: c-family/c.opt:320
-#, fuzzy
 msgid "Warn for converting NULL from/to a non-pointer type"
-msgstr "Umwandlung von NULL in Nicht-Zeiger-Typ"
+msgstr "Warnen bei Umwandlung von NULL in Nicht-Zeiger-Typ oder umgekehrt"
 
 #: c-family/c.opt:324
 msgid "Warn for implicit type conversions between signed and unsigned integers"
@@ -8893,9 +8876,8 @@ msgid "Warn about stray tokens after #elif and #endif"
 msgstr "Bei verirrten Symbolen hinter #elif und #endif warnen"
 
 #: c-family/c.opt:356
-#, fuzzy
 msgid "Warn about comparison of different enum types"
-msgstr "Bei Verstößen gegen die Stil-Richtlinien von »Effective C++« warnen"
+msgstr "Beim Vergleich verschiedener Enum-Typen warnen"
 
 #: c-family/c.opt:364
 msgid "This switch is deprecated; use -Werror=implicit-function-declaration instead"
@@ -8942,14 +8924,13 @@ msgid "Warn about variables which are initialized to themselves"
 msgstr "Bei Variablen, die mit sich selbst initialisiert werden, warnen"
 
 #: c-family/c.opt:411
-#, fuzzy
 msgid "Warn about implicit declarations"
-msgstr "Bei impliziten Funktionsdeklarationen warnen"
+msgstr "Bei impliziten Deklarationen warnen"
 
 #: c-family/c.opt:415
 #, fuzzy
 msgid "Warn about implicit conversions from \"float\" to \"double\""
-msgstr "Bei impliziten Umwandlungen warnen"
+msgstr "Bei impliziten Umwandlungen von \"float\" nach \"double\" warnen"
 
 #: c-family/c.opt:419
 msgid "Warn about implicit function declarations"
@@ -8972,12 +8953,10 @@ msgid "Warn about PCH files that are found but not used"
 msgstr "Bei PCH-Dateien, die gefunden, aber nicht benutzt werden, warnen"
 
 #: c-family/c.opt:442
-#, fuzzy
 msgid "Warn when a jump misses a variable initialization"
-msgstr "Warnen, wenn Registervariable als »volatile« deklariert ist"
+msgstr "Warnen, wenn ein Sprung die Initialisierung einer Variable überspringt"
 
 #: c-family/c.opt:446
-#, fuzzy
 msgid "Warn when a logical operator is suspiciously always evaluating to true or false"
 msgstr "Warnen, wenn ein logischer Operator verdächtigerweise immer zu »wahr« oder »falsch« auswertet"
 
@@ -9042,9 +9021,8 @@ msgid "Warn about NULL being passed to argument slots marked as requiring non-NU
 msgstr "Warnen, wenn NULL an Argumentstellen, die als nicht-NULL erfordernd markiert sind, übergeben wird"
 
 #: c-family/c.opt:510
-#, fuzzy
 msgid "-Wnormalized=<id|nfc|nfkc>\tWarn about non-normalised Unicode strings"
-msgstr "Bei nicht-normalisierten Unicode-Zeichenketten warnen"
+msgstr "-Wnormalized=<id|nfc|nfkc>\tBei nicht-normalisierten Unicode-Zeichenketten warnen"
 
 #: c-family/c.opt:514
 msgid "Warn if a C-style cast is used in a program"
@@ -9096,7 +9074,7 @@ msgstr "Bei Pragmamissbrauch warnen"
 
 #: c-family/c.opt:562
 msgid "Warn if a property for an Objective-C object has no assign semantics specified"
-msgstr ""
+msgstr "Warnen, wenn die Eigenschaft eines Ojective-C Objektes keine Zuweisungssemantik spezifiert"
 
 #: c-family/c.opt:566
 msgid "Warn if inherited methods are unimplemented"
@@ -9144,7 +9122,7 @@ msgstr "Wenn Typsignaturen der Kandidatenmethoden nicht exakt passen, warnen"
 
 #: c-family/c.opt:610
 msgid "Warn when __sync_fetch_and_nand and __sync_nand_and_fetch built-in functions are used"
-msgstr ""
+msgstr "Warnen, wenn die eingebauten Funktionen __sync_fetch_and_nand und __sync_nand_and_fetch verwendet werden"
 
 #: c-family/c.opt:614
 msgid "Deprecated.  This switch has no effect"
@@ -9175,18 +9153,16 @@ msgid "Warn about unrecognized pragmas"
 msgstr "Bei nicht erkannten Pragmas warnen"
 
 #: c-family/c.opt:646
-#, fuzzy
 msgid "Warn about unsuffixed float constants"
-msgstr "Nicht-Standard-Suffix an Gleitkommakonstante"
+msgstr "Bei Gleitkommakonstanten ohne Suffix warnen"
 
 #: c-family/c.opt:650
 msgid "Warn about macros defined in the main file that are not used"
 msgstr "Bei in der Hauptdatei definierten, ungenutzten Makros warnen"
 
 #: c-family/c.opt:654
-#, fuzzy
 msgid "Warn if a caller of a function, marked with attribute warn_unused_result, does not use its return value"
-msgstr "Rückgabewert der mit dem Attribut warn_unused_result definierten Funktion wird ignoriert"
+msgstr "Warnen, wenn der Rückgabewert der mit dem Attribut warn_unused_result definierten Funktion ignoriert wird"
 
 #: c-family/c.opt:658
 msgid "Do not warn about using variadic macros when -pedantic"
@@ -9203,7 +9179,7 @@ msgstr "Warnen, wenn Registervariable als »volatile« deklariert ist"
 #: c-family/c.opt:670
 #, fuzzy
 msgid "In C++, nonzero means warn about deprecated conversion from string literals to 'char *'.  In C, similar warning, except that the conversion is of course not deprecated by the ISO C standard."
-msgstr "In C++ bedeutet ungleich Null die Warnung vor veralteter Umwandlung von Zeichenkettenliteralen in »char *«. In C erfolgt ähnliche Warnung, nur ist die Umwandlung nat. laut ISO-C-Standard nicht veraltet."
+msgstr "In C++ bedeutet ungleich Null die Warnung vor veralteter Umwandlung von Zeichenkettenliteralen in »char *«. In C erfolgt eine ähnliche Warnung, nur ist die Umwandlung nat. laut ISO-C-Standard nicht veraltet."
 
 #: c-family/c.opt:674
 msgid "Warn when a pointer differs in signedness in an assignment"
@@ -9228,9 +9204,8 @@ msgstr "Schalter %qs wird nicht mehr unterstützt"
 
 #: c-family/c.opt:693 c-family/c.opt:799 c-family/c.opt:1006
 #: c-family/c.opt:1010 c-family/c.opt:1026
-#, fuzzy
 msgid "No longer supported"
-msgstr "--driver wird nicht mehr unterstützt"
+msgstr "Wird nicht mehr unterstützt"
 
 #: c-family/c.opt:697
 msgid "Recognize the \"asm\" keyword"
@@ -9260,11 +9235,11 @@ msgstr "kein Klassenname mit %qs angegeben"
 #: c-family/c.opt:720
 #, fuzzy
 msgid "-fconst-string-class=<name>\tUse class <name> for constant strings"
-msgstr "Klasse <Name> für konstante Zeichenketten verwenden"
+msgstr "-fconst-string-class=<Name>\tKlasse <Name> für konstante Zeichenketten verwenden"
 
 #: c-family/c.opt:724
 msgid "-fno-deduce-init-list\tdisable deduction of std::initializer_list for a template type parameter from a brace-enclosed initializer-list"
-msgstr ""
+msgstr "-fno-deduce-init-list\tUnterbindet die Ableitung einer std::initializer_list für den Typ-Parameter eines Templates von einer in Klammern eingeschlossenen Initialisierungsliste"
 
 #: c-family/c.opt:728 c-family/c.opt:891 common.opt:874 common.opt:1032
 #: common.opt:1303 common.opt:1569 common.opt:1605 common.opt:1690
@@ -9285,18 +9260,16 @@ msgid "Generate code to check exception specifications"
 msgstr "Code zur Überprüfung von Exception-Spezifikationen erzeugen"
 
 #: c-family/c.opt:750
-#, fuzzy
 msgid "-fexec-charset=<cset>\tConvert all strings and character constants to character set <cset>"
-msgstr "Alle Zeichenketten und Zeichenkonstanten in <Zeichensatz> umwandeln"
+msgstr "-fexec-charset=<Zeichensatz>\tAlle Zeichenketten und Zeichenkonstanten in <Zeichensatz> umwandeln"
 
 #: c-family/c.opt:754
 msgid "Permit universal character names (\\u and \\U) in identifiers"
 msgstr "Universelle Zeichennamen (\\u und \\U) in Bezeichnern zulassen"
 
 #: c-family/c.opt:758
-#, fuzzy
 msgid "-finput-charset=<cset>\tSpecify the default character set for source files"
-msgstr "Standard-Zeichensatz für Quelldateien angeben"
+msgstr "-finput-charset=<Zeichensatz>\tStandard-Zeichensatz für Quelldateien angeben"
 
 #: c-family/c.opt:766
 msgid "Scope of for-init-statement variables is local to the loop"
@@ -9383,17 +9356,14 @@ msgid "Enable Objective-C setjmp exception handling runtime"
 msgstr "Laufzeitbibliothek zur Objective-C setjmp-Ausnahmebehandlung einschalten"
 
 #: c-family/c.opt:879
-#, fuzzy
 msgid "Conform to the Objective-C 1.0 language as implemented in GCC 4.0"
-msgstr "Mit dem Standard ISO 1990 C, wie 1994 erweitert, übereinstimmen"
+msgstr "Mit der in GCC 4.0 implementierten Version Objective-C 1.0 übereinstimmen"
 
 #: c-family/c.opt:883
-#, fuzzy
 msgid "Enable OpenMP (implies -frecursive in Fortran)"
-msgstr "OpenMP aktivieren (setzt auch frecursive)"
+msgstr "OpenMP aktivieren (impliziert -frecursive in Fortran)"
 
 #: c-family/c.opt:887
-#, fuzzy
 msgid "Recognize C++ keywords like \"compl\" and \"xor\""
 msgstr "C++-Schlüsselworte wie »compl« und »xor« erkennen"
 
@@ -9406,9 +9376,8 @@ msgid "Downgrade conformance errors to warnings"
 msgstr "Übereinstimmungsfehler zu Warnungen degradieren"
 
 #: c-family/c.opt:906
-#, fuzzy
 msgid "Enable Plan 9 language extensions"
-msgstr "Binderlockerungen einschalten"
+msgstr "Plan 9 Spracherweiterungen zulassen"
 
 #: c-family/c.opt:910
 msgid "Treat the input file as already preprocessed"
@@ -9416,7 +9385,7 @@ msgstr "Die Eingabedatei als bereits vorverarbeitet behandeln"
 
 #: c-family/c.opt:914
 msgid "-fno-pretty-templates Do not pretty-print template specializations as the template signature followed by the arguments"
-msgstr ""
+msgstr "-fno-pretty-templates Template-Spezialisierungen nicht für die Ausgabe umformatieren als Template-Signatur gefolgt von den Argumenten"
 
 #: c-family/c.opt:918
 msgid "Used in Fix-and-Continue mode to indicate that object files may be swapped in at runtime"
@@ -9448,7 +9417,7 @@ msgstr "Wenn »signed« und »unsigned« nicht angegeben wurden, das Bitfeld vor
 
 #: c-family/c.opt:946
 msgid "Make \"char\" signed by default"
-msgstr "»char« standardmäßig vorzeichenbehaftet machen"
+msgstr "Macht »char« standardmäßig vorzeichenbehaftet"
 
 #: c-family/c.opt:953
 msgid "Display statistics accumulated during compilation"
@@ -9456,22 +9425,19 @@ msgstr "Während der Übersetzung angesammelte Statistik anzeigen"
 
 #: c-family/c.opt:957
 msgid "Assume that values of enumeration type are always within the minimum range of that type"
-msgstr ""
+msgstr "Nimmt an, dass die Werte einer Aufzählung immer im kleinsten Bereich des Typs liegen"
 
 #: c-family/c.opt:964
-#, fuzzy
 msgid "-ftabstop=<number>\tDistance between tab stops for column reporting"
-msgstr "Tabulatorentfernungen für Spaltenmeldungen"
+msgstr "-ftabstop=<Zahl>\tTabulatorentfernungen für Spaltenmeldungen"
 
 #: c-family/c.opt:971
-#, fuzzy
 msgid "-ftemplate-depth=<number>\tSpecify maximum template instantiation depth"
-msgstr "Größte Template-Instantiierungstiefe angeben"
+msgstr "-ftemplate-depth=<Zahl>\tGrößte Template-Instantiierungstiefe angeben"
 
 #: c-family/c.opt:978
-#, fuzzy
 msgid "-fno-threadsafe-statics\tDo not generate thread-safe code for initializing local statics"
-msgstr "Keinen threadsicheren Code für Initialisierung lokaler statischer Objekte erzeugen"
+msgstr "-fno-threadsafe-statics\tKeinen threadsicheren Code für Initialisierung lokaler statischer Objekte erzeugen"
 
 #: c-family/c.opt:982
 msgid "When \"signed\" or \"unsigned\" is not given make the bitfield unsigned"
@@ -9502,9 +9468,8 @@ msgid "Emit common-like symbols as weak symbols"
 msgstr "Common-ähnliche Symbole als schwache Symbole ausgeben"
 
 #: c-family/c.opt:1018
-#, fuzzy
 msgid "-fwide-exec-charset=<cset>\tConvert all wide strings and character constants to character set <cset>"
-msgstr "Alle Wide-Zeichenketten und -konstanten in Zeichenmenge <Zeichensatz> umwandeln"
+msgstr "-fwide-exec-charset=<Zeichensatz>\tAlle Wide-Zeichenketten und -konstanten in Zeichenmenge <Zeichensatz> umwandeln"
 
 #: c-family/c.opt:1022
 msgid "Generate a #line directive pointing at the current working directory"
@@ -9519,63 +9484,52 @@ msgid "Dump declarations to a .decl file"
 msgstr "Deklaration in .decl-Datei ausgeben"
 
 #: c-family/c.opt:1038
-#, fuzzy
 msgid "-femit-struct-debug-baseonly\tAggressive reduced debug info for structs"
-msgstr "Aggressiv reduzierte Debuginfo für Structs"
+msgstr "-femit-struct-debug-baseonly\tAggressiv reduzierte Debuginfo für Strukturen"
 
 #: c-family/c.opt:1042
-#, fuzzy
 msgid "-femit-struct-debug-reduced\tConservative reduced debug info for structs"
-msgstr "Konservativ reduzierte Debuginfo für Structs"
+msgstr "-femit-struct-debug-reduced\tKonservativ reduzierte Debuginfo für Strukturen"
 
 #: c-family/c.opt:1046
-#, fuzzy
 msgid "-femit-struct-debug-detailed=<spec-list>\tDetailed reduced debug info for structs"
-msgstr "Ausführlich reduzierte Debuginfo für Structs"
+msgstr "-femit-struct-debug-detailed=<spec-list>Ausführliche reduzierte Debuginfo für Strukturen"
 
 #: c-family/c.opt:1050
-#, fuzzy
 msgid "-idirafter <dir>\tAdd <dir> to the end of the system include path"
-msgstr "-iwithprefix <Verz>\t<Verz> an das Ende des System-Einfügepfades anfügen"
+msgstr "-idirafter <Verzeichnis>\t<Verzeichnis> an das Ende des System-Einfügepfades anfügen"
 
 #: c-family/c.opt:1054
-#, fuzzy
 msgid "-imacros <file>\tAccept definition of macros in <file>"
-msgstr "Definitionen von Makros in <Datei> akzeptieren"
+msgstr "-imacros <Datei>\tDefinition von Makros in <Datei> akzeptieren"
 
 #: c-family/c.opt:1058
-#, fuzzy
 msgid "-imultilib <dir>\tSet <dir> to be the multilib include subdirectory"
-msgstr "-imultilib <dir> <dir> als Multilib-include-Verzeichnis setzen"
+msgstr "-imultilib <Verzeichnis>\t<Verzeichnis> als Multilib-include-Verzeichnis setzen"
 
 #: c-family/c.opt:1062
-#, fuzzy
 msgid "-include <file>\tInclude the contents of <file> before other files"
-msgstr "Inhalt der <Datei> vor anderen Dateien einfügen"
+msgstr "-include <Datei>\tInhalt von <Datei> vor anderen Dateien einfügen"
 
 #: c-family/c.opt:1066
-#, fuzzy
 msgid "-iprefix <path>\tSpecify <path> as a prefix for next two options"
-msgstr "<Pfad> als ein Prefix für die nächsten zwei Optionen angeben"
+msgstr "-iprefix <Pfad>\t<Pfad> als ein Präfix für die nächsten zwei Optionen angeben"
 
 #: c-family/c.opt:1070
-#, fuzzy
 msgid "-isysroot <dir>\tSet <dir> to be the system root directory"
-msgstr "<Verz> als System-Wurzelverzeichnis setzen"
+msgstr "-isysroot <verzeichnis>\t<Verzeichnis> als System-Wurzelverzeichnis setzen"
 
 #: c-family/c.opt:1074
-#, fuzzy
 msgid "-isystem <dir>\tAdd <dir> to the start of the system include path"
-msgstr "<Verz> an den Anfang des System-Einfügepfades anfügen"
+msgstr "-isystem <Verzeichnis>\t<Verzeichnis> an den Anfang des System-Einfügepfades anfügen"
 
 #: c-family/c.opt:1078
-#, fuzzy
 msgid "-iquote <dir>\tAdd <dir> to the end of the quote include path"
-msgstr "<Verz> an das Ende des Zitat-Einfügepfades anfügen"
+msgstr "-iquote <Verzeichnis>\t<Verzeichnis> am Ende des Einfügepfades in Anführungszeichen anfügen"
 
 #: c-family/c.opt:1082
 msgid "-iwithprefix <dir>\tAdd <dir> to the end of the system include path"
-msgstr "-iwithprefix <Verz>\t<Verz> an das Ende des System-Einfügepfades anfügen"
+msgstr "-iwithprefix <Verzeichnis>\t<Verzeichnis> an das Ende des System-Einfügepfades anfügen"
 
 #: c-family/c.opt:1086
 msgid "-iwithprefixbefore <dir>\tAdd <dir> to the end of the main include path"
@@ -9608,7 +9562,7 @@ msgstr "Mit dem Standard ISO 1998 C++ mit geeigneten Erweiterungen übereinstimm
 #: c-family/c.opt:1135
 #, fuzzy
 msgid "Conform to the ISO 201X C standard draft (experimental and incomplete support)"
-msgstr "Mit dem Standard ISO 1990 C, wie 1994 erweitert, übereinstimmen"
+msgstr "Mit dem Entwurf des C Standards ISO 201X (experimentelle und unvollstänndige Unterstützung) übereinstimmen"
 
 #: c-family/c.opt:1139 c-family/c.opt:1143 c-family/c.opt:1186
 msgid "Conform to the ISO 1990 C standard"
@@ -9631,9 +9585,8 @@ msgid "Conform to the ISO 1998 C++ standard, with GNU extensions and"
 msgstr "Mit dem Standard ISO 1998 C++ mit GNU-Erweiterungen übereinstimmen und"
 
 #: c-family/c.opt:1166
-#, fuzzy
 msgid "Conform to the ISO 201X C standard draft with GNU extensions (experimental and incomplete support)"
-msgstr "Mit dem Standard ISO 1998 C++ mit GNU-Erweiterungen übereinstimmen und"
+msgstr "Mit dem Entwurf des C Standards ISO 201X mit GNU-Erweiterungen (experimentelle und unvollstänndige Unterstützung) übereinstimmen"
 
 #: c-family/c.opt:1170 c-family/c.opt:1174
 msgid "Conform to the ISO 1990 C standard with GNU extensions"
@@ -9660,52 +9613,48 @@ msgid "Enable traditional preprocessing"
 msgstr "Traditionelle Vorverarbeitung einschalten"
 
 #: c-family/c.opt:1209
-#, fuzzy
 msgid "-trigraphs\tSupport ISO C trigraphs"
-msgstr "Trigraphs nach ISO C unterstützen"
+msgstr "-trigraphs\tTrigraphs nach ISO C unterstützen"
 
 #: c-family/c.opt:1213
 msgid "Do not predefine system-specific and GCC-specific macros"
 msgstr "Keine system- oder GCC-spezifischen Makros vordefinieren"
 
 #: go/lang.opt:42
-#, fuzzy
 msgid "-fgo-dump-<type>\tDump Go frontend internal information"
-msgstr "Verschiedene compilerinterne Informationen in eine Datei abziehen"
+msgstr "-fgo-dump-<Typ>\tInterne Information des Go-Frontends in Datei ausgeben"
 
 #: go/lang.opt:46
 msgid "-fgo-prefix=<string>\tSet package-specific prefix for exported Go names"
-msgstr ""
+msgstr "-fgo-prefix=<Zeichenkette>\tSetzt den paketspezifischen Präfix für exportierte Go-Namen"
 
 #: go/lang.opt:50
-#, fuzzy
 msgid "Functions which return values must end with return statements"
-msgstr "als %<noreturn%> deklarierte Funktion hat %<return%>-Anweisung"
+msgstr "Funktionen die Werte zurück geben müssen mit return-Anweisungen enden"
 
 #: lto/lang.opt:29
 msgid "Run the link-time optimizer in local transformation (LTRANS) mode."
-msgstr ""
+msgstr "Den Bindezeitoptimierer im lokalen Transformationsmodus (LTRANS) laufen lassen."
 
 #: lto/lang.opt:33
 msgid "Specify a file to which a list of files output by LTRANS is written."
-msgstr ""
+msgstr "Gibt die Datei an, welche die Liste der von LTRANS ausgegebenen Dateien geschrieben wird."
 
 #: lto/lang.opt:37
 msgid "Run the link-time optimizer in whole program analysis (WPA) mode."
-msgstr ""
+msgstr "Den Bindezeitoptimierer im Modus »komplettes Programm« (WPA) laufen lassen."
 
 #: lto/lang.opt:41
 msgid "The resolution file"
-msgstr ""
+msgstr "Die Datei mit den Auflösungen"
 
 #: common.opt:254
 msgid "Display this information"
 msgstr "Diese Informationen anzeigen"
 
 #: common.opt:258
-#, fuzzy
 msgid "--help=<class>\tDisplay descriptions of a specific class of options.  <class> is one or more of optimizers, target, warnings, undocumented, params"
-msgstr "Beschreibungen für eine bestimmte Klasse von Optionen anzeigen. <class> ist ein oder mehrere Optimierer, Ziel, Warnungen, undokumentierte Option, Parameter"
+msgstr "--help=<Klasse>\tBeschreibungen für eine bestimmte Klasse von Optionen anzeigen. <Klasse> ist ein oder mehrere Elemente aus optimizers, target, warnings, undocumented, param"
 
 #: common.opt:370
 msgid "Alias for --help=target"
@@ -9717,9 +9666,8 @@ msgid "--param <param>=<value>\tSet parameter <param> to value.  See below for a
 msgstr "Parameter <Param> auf Wert setzen. Siehe unten für komplette Parameterliste"
 
 #: common.opt:423
-#, fuzzy
 msgid "-O<number>\tSet optimization level to <number>"
-msgstr "Optimierungsstufe auf <Zahl> setzen"
+msgstr "-O<Zahl>\tOptimierungsstufe auf <Zahl> setzen"
 
 #: common.opt:427
 msgid "Optimize for space rather than speed"
@@ -9727,7 +9675,7 @@ msgstr "Auf Größe statt Geschwindigkeit optimieren"
 
 #: common.opt:431
 msgid "Optimize for speed disregarding exact standards compliance"
-msgstr ""
+msgstr "Optimiert auf Geschwindigkeit unter Missachtung genauer Standardkonformität"
 
 #: common.opt:462
 msgid "This switch is deprecated; use -Wextra instead"
@@ -9750,9 +9698,8 @@ msgid "Warn about pointer casts which increase alignment"
 msgstr "Warnen, wenn Zeigerumwandlungen die Ausrichtung vergrößern"
 
 #: common.opt:491
-#, fuzzy
 msgid "Warn when a #warning directive is encountered"
-msgstr "Warnen, wenn ein Funktionsparameter nicht verwendet wird"
+msgstr "Warnen, wenn eine #warning-Anweisung verwendet wird"
 
 #: common.opt:495
 msgid "Warn about uses of __attribute__((deprecated)) declarations"
@@ -9780,16 +9727,15 @@ msgstr "Beim ersten auftretenden Fehler beenden"
 
 #: common.opt:519
 msgid "-Wframe-larger-than=<number>\tWarn if a function's stack frame requires more than <number> bytes"
-msgstr ""
+msgstr "-Wframe-larger-than=<Anzahl>\tWarnen, wenn der Stapelrahmen einer Funktion mehr als <Anzahl> Bytes benötigt"
 
 #: common.opt:523
 msgid "Warn when an inlined function cannot be inlined"
 msgstr "Warnen, wenn eine inline-Funktion nicht als solche erzeugt werden kann"
 
 #: common.opt:530
-#, fuzzy
 msgid "-Wlarger-than=<number>\tWarn if an object is larger than <number> bytes"
-msgstr "Warnen, wenn ein Objekt größer als <Anzahl> Bytes ist"
+msgstr "-Wlarger-than=<Anzahl>\tWarnen, wenn ein Objekt größer als <Anzahl> Bytes ist"
 
 #: common.opt:534
 msgid "Warn if the loop cannot be optimized due to nontrivial assumptions."
@@ -9801,7 +9747,7 @@ msgstr "Bei Funktionen, die Kandidaten für __attribute__((noreturn)) sind, warn
 
 #: common.opt:542
 msgid "Warn about constructs not instrumented by -fmudflap"
-msgstr ""
+msgstr "Bei nicht von -fmudflap instrumentierten Konstrukten warnen"
 
 #: common.opt:546
 msgid "Warn about overflow in arithmetic expressions"
@@ -9832,14 +9778,12 @@ msgid "Warn about optimizations that assume that signed overflow is undefined"
 msgstr "Bei Optimierungen, die annehmen, dass vorzeichenbehafteter Überlauf undefiniert ist, warnen"
 
 #: common.opt:582
-#, fuzzy
 msgid "Warn about functions which might be candidates for __attribute__((const))"
-msgstr "Bei Funktionen, die Kandidaten für __attribute__((noreturn)) sind, warnen"
+msgstr "Bei Funktionen, die Kandidaten für __attribute__((const)) sein könnten, warnen"
 
 #: common.opt:586
-#, fuzzy
 msgid "Warn about functions which might be candidates for __attribute__((pure))"
-msgstr "Bei Funktionen, die Kandidaten für __attribute__((noreturn)) sind, warnen"
+msgstr "Bei Funktionen, die Kandidaten für __attribute__((pure)) sein könnten, warnen"
 
 #: common.opt:594
 msgid "Warn about enumerated switches, with no default, missing a case"
@@ -9858,9 +9802,8 @@ msgid "Do not suppress warnings from system headers"
 msgstr "Nicht Warnungen von System-Headern unterdrücken"
 
 #: common.opt:610
-#, fuzzy
 msgid "Warn whenever a trampoline is generated"
-msgstr "Warnen, wenn eine Variable nicht verwendet wird"
+msgstr "Warnen, wenn ein Trampolin generiert wird"
 
 #: common.opt:614
 msgid "Warn if a comparison is always true or always false due to the limited range of the data type"
@@ -9871,7 +9814,6 @@ msgid "Warn about uninitialized automatic variables"
 msgstr "Bei nicht initialisierten automatischen Variablen warnen"
 
 #: common.opt:622 common.opt:767 common.opt:771 common.opt:775 common.opt:779
-#, fuzzy
 msgid "Does nothing. Preserved for backward compatibility."
 msgstr "Tut nichts. Für Rückwärtskompatibilität erhalten."
 
@@ -9880,14 +9822,12 @@ msgid "Enable all -Wunused- warnings"
 msgstr "Alle -Wunused- Warnungen einschalten"
 
 #: common.opt:630
-#, fuzzy
 msgid "Warn when a function parameter is only set, otherwise unused"
-msgstr "Warnen, wenn ein Funktionsparameter nicht verwendet wird"
+msgstr "Warnen, wenn ein Funktionsparameter zwar gesetzt aber nicht verwendet wird"
 
 #: common.opt:634
-#, fuzzy
 msgid "Warn when a variable is only set, otherwise unused"
-msgstr "Warnen, wenn eine Variable nicht verwendet wird"
+msgstr "Warnen, wenn eine Variable zwar gesetzt aber nicht verwendet wird"
 
 #: common.opt:638
 msgid "Warn when a function is unused"
@@ -9910,29 +9850,24 @@ msgid "Warn when a variable is unused"
 msgstr "Warnen, wenn eine Variable nicht verwendet wird"
 
 #: common.opt:658
-#, fuzzy
 msgid "Warn in case profiles in -fprofile-use do not match"
-msgstr "Wenn Profile in -fprofile-use nicht passen, warnen statt Fehler melden"
+msgstr "Warnen, wenn Profile in -fprofile-use nicht zueinander passen"
 
 #: common.opt:674
-#, fuzzy
 msgid "-aux-info <file>\tEmit declaration information into <file>"
-msgstr "Deklarationsinformationen in <Datei> ausgeben"
+msgstr "-aux-info <Datei>\tDeklarationsinformationen in <Datei> ausgeben"
 
 #: common.opt:693
-#, fuzzy
 msgid "-d<letters>\tEnable dumps from specific passes of the compiler"
-msgstr "Abzüge von bestimmten Durchläufen des Compilers einschalten"
+msgstr "-d<Buchstaben>\tAusgaben von bestimmten Durchläufen des Kompilers einschalten"
 
 #: common.opt:697
-#, fuzzy
 msgid "-dumpbase <file>\tSet the file basename to be used for dumps"
-msgstr "Den Basis-Dateinamen für Abzüge setzen"
+msgstr "-dumpbase <Datei>\tDen Basis-Dateinamen für Ausgaben setzen"
 
 #: common.opt:701
-#, fuzzy
 msgid "-dumpdir <dir>\tSet the directory name to be used for dumps"
-msgstr "Den Basis-Dateinamen für Abzüge setzen"
+msgstr "-dumpdir <verzeichnis>\tDen Basis-verzeichnisnamen für Ausgaben setzen"
 
 #: common.opt:739
 msgid "Align the start of functions"
@@ -9983,9 +9918,8 @@ msgid "Restrict target load migration not to re-use registers in any basic block
 msgstr "In Basis-Blöcken keine Register bei der Ziel-Lade-Bewegung wiederverwenden"
 
 #: common.opt:819
-#, fuzzy
 msgid "-fcall-saved-<register>\tMark <register> as being preserved across functions"
-msgstr "<Register> als über Funktionsgrenzen hinweg reserviert markieren"
+msgstr "-fcall-saved-<Register>\t<Register> als über Funktionsgrenzen hinweg reserviert markieren"
 
 #: common.opt:823
 #, fuzzy
