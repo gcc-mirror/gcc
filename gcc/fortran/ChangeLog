@@ -1,3 +1,9 @@
+2011-01-05  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47024
+	* trans-decl.c (gfc_trans_deferred_vars): Initialize the _vpr component
+	of polymorphic allocatables according to their declared type.
+
 2011-01-04  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/46448
