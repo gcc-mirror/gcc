@@ -244,11 +244,13 @@ Import::find_object_export_data(const std::string& filename,
   if (c < 0)
     {
       error_at(location, "read %s failed: %m", filename.c_str());
+      delete[] buf;
       return NULL;
     }
   if (c < sec_length)
     {
       error_at(location, "%s: short read", filename.c_str());
+      delete[] buf;
       return NULL;
     }
 

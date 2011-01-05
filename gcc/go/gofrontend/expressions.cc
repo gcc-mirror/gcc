@@ -8726,7 +8726,10 @@ Call_expression::do_get_tree(Translate_context* context)
 						       arg_val,
 						       location);
 	  if (args[i] == error_mark_node)
-	    return error_mark_node;
+	    {
+	      delete[] args;
+	      return error_mark_node;
+	    }
 	}
       gcc_assert(pp == params->end());
       gcc_assert(i == nargs);
@@ -8734,7 +8737,10 @@ Call_expression::do_get_tree(Translate_context* context)
 
   tree rettype = TREE_TYPE(TREE_TYPE(fntype->get_tree(gogo)));
   if (rettype == error_mark_node)
-    return error_mark_node;
+    {
+      delete[] args;
+      return error_mark_node;
+    }
 
   tree fn;
   if (has_closure)
@@ -8749,7 +8755,10 @@ Call_expression::do_get_tree(Translate_context* context)
     gcc_unreachable();
 
   if (fn == error_mark_node || TREE_TYPE(fn) == error_mark_node)
-    return error_mark_node;
+    {
+      delete[] args;
+      return error_mark_node;
+    }
 
   // This is to support builtin math functions when using 80387 math.
   tree fndecl = fn;
