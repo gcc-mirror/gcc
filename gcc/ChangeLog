@@ -1,3 +1,8 @@
+2011-01-05  Jan Hubicka  <jh@suse.cz>
+
+	* lto-wrapper.c (run_gcc): Default to WHOPR mode when none is specified
+	at the command line.
+
 2011-01-05  Martin Jambor  <mjambor@suse.cz>
 
 	PR lto/47162
