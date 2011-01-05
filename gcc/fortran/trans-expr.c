@@ -6121,7 +6121,7 @@ gfc_trans_class_assign (gfc_expr *expr1, gfc_expr *expr2, gfc_exec_op op)
   if (expr2->ts.type != BT_CLASS)
     {
       /* Insert an additional assignment which sets the '_vptr' field.  */
-      gfc_symbol *vtab;
+      gfc_symbol *vtab = NULL;
       gfc_symtree *st;
 
       lhs = gfc_copy_expr (expr1);

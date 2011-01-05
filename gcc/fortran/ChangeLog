@@ -1,6 +1,12 @@
 2011-01-05  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47180
+	* trans-expr.c (gfc_trans_class_assign): Bugfix for r168524 (make sure
+	'vtab' is initialized).
+
+2011-01-05  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47180
 	* trans-expr.c (gfc_trans_class_assign): For a polymorphic NULL pointer
 	assignment, set the _vptr component to the declared type.
 
