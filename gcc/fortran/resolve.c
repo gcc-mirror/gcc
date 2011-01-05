@@ -6981,17 +6981,66 @@ resolve_allocate_deallocate (gfc_code *code, const char *fcn)
   for (p = code->ext.alloc.list; p; p = p->next)
     {
       pe = p->expr;
-      if ((pe->ref && pe->ref->type != REF_COMPONENT)
-	   && (pe->symtree->n.sym->ts.type != BT_DERIVED))
+      for (q = p->next; q; q = q->next)
 	{
-	  for (q = p->next; q; q = q->next)
+	  qe = q->expr;
+	  if (pe->symtree->n.sym->name == qe->symtree->n.sym->name)
 	    {
-	      qe = q->expr;
-	      if ((qe->ref && qe->ref->type != REF_COMPONENT)
-		  && (qe->symtree->n.sym->ts.type != BT_DERIVED)
-		  && (pe->symtree->n.sym->name == qe->symtree->n.sym->name))
-		gfc_error ("Allocate-object at %L also appears at %L",
-			   &pe->where, &qe->where);
+	      /* This is a potential collision.  */
+	      gfc_ref *pr = pe->ref;
+	      gfc_ref *qr = qe->ref;
+	      
+	      /* Follow the references  until
+		 a) They start to differ, in which case there is no error;
+		 you can deallocate a%b and a%c in a single statement
+		 b) Both of them stop, which is an error
+		 c) One of them stops, which is also an error.  */
+	      while (1)
+		{
+		  if (pr == NULL && qr == NULL)
+		    {
+		      gfc_error ("Allocate-object at %L also appears at %L",
+				 &pe->where, &qe->where);
+		      break;
+		    }
+		  else if (pr != NULL && qr == NULL)
+		    {
+		      gfc_error ("Allocate-object at %L is subobject of"
+				 " object at %L", &pe->where, &qe->where);
+		      break;
+		    }
+		  else if (pr == NULL && qr != NULL)
+		    {
+		      gfc_error ("Allocate-object at %L is subobject of"
+				 " object at %L", &qe->where, &pe->where);
+		      break;
+		    }
+		  /* Here, pr != NULL && qr != NULL  */
+		  gcc_assert(pr->type == qr->type);
+		  if (pr->type == REF_ARRAY)
+		    {
+		      /* Handle cases like allocate(v(3)%x(3), v(2)%x(3)),
+			 which are legal.  */
+		      gcc_assert (qr->type == REF_ARRAY);
+
+		      if (pr->next && qr->next)
+			{
+			  gfc_array_ref *par = &(pr->u.ar);
+			  gfc_array_ref *qar = &(qr->u.ar);
+			  if (gfc_dep_compare_expr (par->start[0],
+						    qar->start[0]) != 0)
+			      break;
+			}
+		    }
+		  else
+		    {
+		      if (pr->u.c.component->name != qr->u.c.component->name)
+			break;
+		    }
+		  
+		  pr = pr->next;
+		  qr = qr->next;
+		}
 	    }
 	}
     }
