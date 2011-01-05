@@ -2984,8 +2984,7 @@ namelist_read (st_parameter_dt *dtp)
      node names or namelist on stdout.  */
 
 find_nml_name:
-  if ((c = next_char (dtp)) == EOF)
-    goto nml_err_eof;
+  c = next_char (dtp);
   switch (c)
     {
     case '$':
@@ -2993,13 +2992,11 @@ find_nml_name:
           break;
 
     case '!':
-      if (eat_line (dtp))
-	goto nml_err_eof;
+      eat_line (dtp);
       goto find_nml_name;
 
     case '=':
-      if ((c = next_char (dtp)) == EOF)
-	goto nml_err_eof;
+      c = next_char (dtp);
       if (c == '?')
 	nml_query (dtp, '=');
       else
@@ -3008,6 +3005,9 @@ find_nml_name:
 
     case '?':
       nml_query (dtp, '?');
+
+    case EOF:
+      return;
 
     default:
       goto find_nml_name;
@@ -3021,8 +3021,7 @@ find_nml_name:
     goto find_nml_name;
 
   /* A trailing space is required, we give a little lattitude here, 10.9.1.  */ 
-  if ((c = next_char (dtp)) == EOF)
-    goto nml_err_eof;
+  c = next_char (dtp);
   if (!is_separator(c) && c != '!')
     {
       unget_char (dtp, c);
@@ -3050,13 +3049,10 @@ find_nml_name:
   free_line (dtp);
   return;
 
-  /* All namelist error calls return from here */
-
-nml_err_eof:
-  hit_eof (dtp);
 
 nml_err_ret:
 
+  /* All namelist error calls return from here */
   free_saved (dtp);
   free_line (dtp);
   generate_error (&dtp->common, LIBERROR_READ_VALUE, nml_err_msg);
