@@ -3312,7 +3312,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	    {
 	      /* Nullify and automatic deallocation of allocatable
 		 scalars.  */
-	      tree tmp;
+	      tree tmp = NULL;
 	      gfc_expr *e;
 	      gfc_se se;
 	      stmtblock_t init;
@@ -3337,8 +3337,23 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	      if (!sym->attr.result)
 		tmp = gfc_deallocate_scalar_with_status (se.expr, NULL, true,
 							 NULL, sym->ts);
-	      else
-		tmp = NULL;
+
+	      if (sym->ts.type == BT_CLASS)
+		{
+		  /* Initialize _vptr to declared type.  */
+		  gfc_symbol *vtab = gfc_find_derived_vtab (sym->ts.u.derived);
+		  tree rhs;
+		  e = gfc_lval_expr_from_sym (sym);
+		  gfc_add_vptr_component (e);
+		  gfc_init_se (&se, NULL);
+		  se.want_pointer = 1;
+		  gfc_conv_expr (&se, e);
+		  gfc_free_expr (e);
+		  rhs = gfc_build_addr_expr (TREE_TYPE (se.expr),
+					     gfc_get_symbol_decl (vtab));
+		  gfc_add_modify (&init, se.expr, rhs);
+		}
+
 	      gfc_add_init_cleanup (block, gfc_finish_block (&init), tmp);
 	    }
 	}
