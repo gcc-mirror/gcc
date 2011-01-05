@@ -1,3 +1,8 @@
+2011-01-05  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47180
+	* gfortran.dg/extends_type_of_2.f03: New.
+
 2011-01-05  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* gcc.dg/stack-usage-1.c (SIZE): Provide proper value for __SPU__.

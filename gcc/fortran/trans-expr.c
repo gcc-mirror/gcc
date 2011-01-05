@@ -6121,24 +6121,23 @@ gfc_trans_class_assign (gfc_expr *expr1, gfc_expr *expr2, gfc_exec_op op)
   if (expr2->ts.type != BT_CLASS)
     {
       /* Insert an additional assignment which sets the '_vptr' field.  */
+      gfc_symbol *vtab;
+      gfc_symtree *st;
+
       lhs = gfc_copy_expr (expr1);
       gfc_add_vptr_component (lhs);
+
       if (expr2->ts.type == BT_DERIVED)
-	{
-	  gfc_symbol *vtab;
-	  gfc_symtree *st;
-	  vtab = gfc_find_derived_vtab (expr2->ts.u.derived);
-	  gcc_assert (vtab);
-	  rhs = gfc_get_expr ();
-	  rhs->expr_type = EXPR_VARIABLE;
-	  gfc_find_sym_tree (vtab->name, vtab->ns, 1, &st);
-	  rhs->symtree = st;
-	  rhs->ts = vtab->ts;
-	}
+	vtab = gfc_find_derived_vtab (expr2->ts.u.derived);
       else if (expr2->expr_type == EXPR_NULL)
-	rhs = gfc_get_int_expr (gfc_default_integer_kind, NULL, 0);
-      else
-	gcc_unreachable ();
+	vtab = gfc_find_derived_vtab (expr1->ts.u.derived);
+      gcc_assert (vtab);
+
+      rhs = gfc_get_expr ();
+      rhs->expr_type = EXPR_VARIABLE;
+      gfc_find_sym_tree (vtab->name, vtab->ns, 1, &st);
+      rhs->symtree = st;
+      rhs->ts = vtab->ts;
 
       tmp = gfc_trans_pointer_assignment (lhs, rhs);
       gfc_add_expr_to_block (&block, tmp);
