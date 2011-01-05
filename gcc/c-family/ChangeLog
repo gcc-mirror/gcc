@@ -1,3 +1,9 @@
+2011-01-05  Tom Tromey  <tromey@redhat.com>
+
+	* c-common.h (lvalue_error): Update.
+	* c-common.c (lvalue_error): Add 'loc' argument.  Call error_at,
+	not error.
+
 2010-12-29  Nicola Pero  <nicola@nicola.brainstorm.co.uk>
 
 	PR objc/47075

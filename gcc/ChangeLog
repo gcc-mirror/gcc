@@ -1,3 +1,12 @@
+2011-01-05  Tom Tromey  <tromey@redhat.com>
+
+	* c-parser.c (c_parser_omp_atomic): Pass location of assignment
+	operator to c_finish_omp_atomic.
+	* c-typeck.c (lvalue_or_else): Add 'loc' argument.
+	(build_unary_op): Update.
+	(build_modify_expr): Update.
+	(build_asm_expr): Update.
+
 2011-01-05  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu.c (emit_nop_for_insn): Set INSN_LOCATOR for

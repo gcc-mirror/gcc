@@ -1,3 +1,8 @@
+2011-01-05  Tom Tromey  <tromey@redhat.com>
+
+	* typeck.c (cp_build_addr_expr_1): Update call to lvalue_error.
+	(lvalue_or_else): Likewise.
+
 2011-01-01  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR target/38662
