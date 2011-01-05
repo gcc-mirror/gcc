@@ -46,7 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcov-io.h"
 
 static void output_varpool (cgraph_node_set, varpool_node_set);
-static void output_cgraph_opt_summary (void);
+static void output_cgraph_opt_summary (cgraph_node_set set);
 static void input_cgraph_opt_summary (VEC (cgraph_node_ptr, heap) * nodes);
 
 
@@ -861,7 +861,7 @@ output_cgraph (cgraph_node_set set, varpool_node_set vset)
   static bool asm_nodes_output = false;
 
   if (flag_wpa)
-    output_cgraph_opt_summary ();
+    output_cgraph_opt_summary (set);
 
   ob = lto_create_simple_output_block (LTO_section_cgraph);
 
@@ -1596,13 +1596,26 @@ input_cgraph (void)
 /* True when we need optimization summary for NODE.  */
 
 static int
-output_cgraph_opt_summary_p (struct cgraph_node *node)
+output_cgraph_opt_summary_p (struct cgraph_node *node, cgraph_node_set set)
 {
-  if (!node->clone_of)
-    return false;
-  return (node->clone.tree_map
-          || node->clone.args_to_skip
-          || node->clone.combined_args_to_skip);
+  struct cgraph_edge *e;
+
+  if (cgraph_node_in_set_p (node, set))
+    {
+      for (e = node->callees; e; e = e->next_callee)
+	if (e->indirect_info
+	    && e->indirect_info->thunk_delta != 0)
+	  return true;
+
+      for (e = node->indirect_calls; e; e = e->next_callee)
+	if (e->indirect_info->thunk_delta != 0)
+	  return true;
+    }
+
+  return (node->clone_of
+	  && (node->clone.tree_map
+	      || node->clone.args_to_skip
+	      || node->clone.combined_args_to_skip));
 }
 
 /* Output optimization summary for EDGE to OB.  */
@@ -1621,7 +1634,8 @@ output_edge_opt_summary (struct output_block *ob,
 
 static void
 output_node_opt_summary (struct output_block *ob,
-			 struct cgraph_node *node)
+			 struct cgraph_node *node,
+			 cgraph_node_set set)
 {
   unsigned int index;
   bitmap_iterator bi;
@@ -1659,17 +1673,21 @@ output_node_opt_summary (struct output_block *ob,
       bp_pack_value (&bp, map->ref_p, 1);
       lto_output_bitpack (&bp);
     }
-  for (e = node->callees; e; e = e->next_callee)
-    output_edge_opt_summary (ob, e);
-  for (e = node->indirect_calls; e; e = e->next_callee)
-    output_edge_opt_summary (ob, e);
+
+  if (cgraph_node_in_set_p (node, set))
+    {
+      for (e = node->callees; e; e = e->next_callee)
+	output_edge_opt_summary (ob, e);
+      for (e = node->indirect_calls; e; e = e->next_callee)
+	output_edge_opt_summary (ob, e);
+    }
 }
 
 /* Output optimization summaries stored in callgraph.
    At the moment it is the clone info structure.  */
 
 static void
-output_cgraph_opt_summary (void)
+output_cgraph_opt_summary (cgraph_node_set set)
 {
   struct cgraph_node *node;
   int i, n_nodes;
@@ -1681,16 +1699,17 @@ output_cgraph_opt_summary (void)
   encoder = ob->decl_state->cgraph_node_encoder;
   n_nodes = lto_cgraph_encoder_size (encoder);
   for (i = 0; i < n_nodes; i++)
-    if (output_cgraph_opt_summary_p (lto_cgraph_encoder_deref (encoder, i)))
+    if (output_cgraph_opt_summary_p (lto_cgraph_encoder_deref (encoder, i),
+				     set))
       count++;
   lto_output_uleb128_stream (ob->main_stream, count);
   for (i = 0; i < n_nodes; i++)
     {
       node = lto_cgraph_encoder_deref (encoder, i);
-      if (output_cgraph_opt_summary_p (node))
+      if (output_cgraph_opt_summary_p (node, set))
 	{
 	  lto_output_uleb128_stream (ob->main_stream, i);
-	  output_node_opt_summary (ob, node);
+	  output_node_opt_summary (ob, node, set);
 	}
     }
   produce_asm (ob, NULL);
