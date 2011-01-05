@@ -173,6 +173,9 @@ struct access
      entirely? */
   unsigned total_scalarization : 1;
 
+  /* Is this access an access to a non-addressable field? */
+  unsigned non_addressable : 1;
+
   /* Is this access currently in the work queue?  */
   unsigned grp_queued : 1;
 
@@ -815,6 +818,10 @@ create_access (tree expr, gimple stmt, bool write)
   access->write = write;
   access->grp_unscalarizable_region = unscalarizable_region;
   access->stmt = stmt;
+
+  if (TREE_CODE (expr) == COMPONENT_REF
+      && DECL_NONADDRESSABLE_P (TREE_OPERAND (expr, 1)))
+    access->non_addressable = 1;
 
   return access;
 }
@@ -3666,13 +3673,18 @@ decide_one_param_reduction (struct access *repr)
   for (; repr; repr = repr->next_grp)
     {
       gcc_assert (parm == repr->base);
-      new_param_count++;
+
+      /* Taking the address of a non-addressable field is verboten.  */
+      if (by_ref && repr->non_addressable)
+	return 0;
 
       if (!by_ref || (!repr->grp_maybe_modified
 		      && !repr->grp_not_necessarilly_dereferenced))
 	total_size += repr->size;
       else
 	total_size += cur_parm_size;
+
+      new_param_count++;
     }
 
   gcc_assert (new_param_count > 0);
