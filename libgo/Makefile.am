@@ -1366,7 +1366,8 @@ bufio/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: bufio/check
 
-bytes/libbytes.a: $(go_bytes_files) $(go_bytes_c_files) io.gox os.gox utf8.gox
+bytes/libbytes.a: $(go_bytes_files) $(go_bytes_c_files) io.gox os.gox \
+		unicode.gox utf8.gox
 	test -d bytes || $(MKDIR_P) bytes
 	$(LTGOCOMPILE) -c -o bytes/bytes.$(OBJEXT) -fgo-prefix=libgo_bytes $(srcdir)/go/bytes/buffer.go $(srcdir)/go/bytes/bytes.go $(srcdir)/go/bytes/bytes_decl.go
 	$(LTCOMPILE) -c -o bytes/index.$(OBJEXT) $(srcdir)/go/bytes/indexbyte.c
