@@ -2266,6 +2266,7 @@ emit_nop_for_insn (rtx insn)
   else
     new_insn = emit_insn_after (gen_lnop (), insn);
   recog_memoized (new_insn);
+  INSN_LOCATOR (new_insn) = INSN_LOCATOR (insn);
 }
 
 /* Insert nops in basic blocks to meet dual issue alignment
@@ -2304,6 +2305,7 @@ pad_bb(void)
 		  prev_insn = emit_insn_before (gen_lnop (), insn);
 		  PUT_MODE (prev_insn, GET_MODE (insn));
 		  PUT_MODE (insn, TImode);
+		  INSN_LOCATOR (prev_insn) = INSN_LOCATOR (insn);
 		  length += 4;
 		}
 	    }
@@ -2372,6 +2374,7 @@ spu_emit_branch_hint (rtx before, rtx branch, rtx target,
 
   hint = emit_insn_before (gen_hbr (branch_label, target), before);
   recog_memoized (hint);
+  INSN_LOCATOR (hint) = INSN_LOCATOR (branch);
   HINTED_P (branch) = 1;
 
   if (GET_CODE (target) == LABEL_REF)
@@ -2392,7 +2395,9 @@ spu_emit_branch_hint (rtx before, rtx branch, rtx target,
     {
       /* Make sure the hint isn't scheduled any earlier than this point,
          which could make it too far for the branch offest to fit */
-      recog_memoized (emit_insn_before (gen_blockage (), hint));
+      insn = emit_insn_before (gen_blockage (), hint);
+      recog_memoized (insn);
+      INSN_LOCATOR (insn) = INSN_LOCATOR (hint);
     }
   else if (distance <= 8 * 4)
     {
@@ -2404,14 +2409,21 @@ spu_emit_branch_hint (rtx before, rtx branch, rtx target,
 	  insn =
 	    emit_insn_after (gen_nopn_nv (gen_rtx_REG (SImode, 127)), hint);
 	  recog_memoized (insn);
+	  INSN_LOCATOR (insn) = INSN_LOCATOR (hint);
 	}
 
       /* Make sure any nops inserted aren't scheduled before the hint. */
-      recog_memoized (emit_insn_after (gen_blockage (), hint));
+      insn = emit_insn_after (gen_blockage (), hint);
+      recog_memoized (insn);
+      INSN_LOCATOR (insn) = INSN_LOCATOR (hint);
 
       /* Make sure any nops inserted aren't scheduled after the call. */
       if (CALL_P (branch) && distance < 8 * 4)
-	recog_memoized (emit_insn_before (gen_blockage (), branch));
+	{
+	  insn = emit_insn_before (gen_blockage (), branch);
+	  recog_memoized (insn);
+	  INSN_LOCATOR (insn) = INSN_LOCATOR (branch);
+	}
     }
 }
 
@@ -2596,6 +2608,7 @@ insert_hbrp_for_ilb_runout (rtx first)
 		insn =
 		  emit_insn_before (gen_iprefetch (GEN_INT (1)), before_4);
 		recog_memoized (insn);
+		INSN_LOCATOR (insn) = INSN_LOCATOR (before_4);
 		INSN_ADDRESSES_NEW (insn,
 				    INSN_ADDRESSES (INSN_UID (before_4)));
 		PUT_MODE (insn, GET_MODE (before_4));
@@ -2604,6 +2617,7 @@ insert_hbrp_for_ilb_runout (rtx first)
 		  {
 		    insn = emit_insn_before (gen_lnop (), before_4);
 		    recog_memoized (insn);
+		    INSN_LOCATOR (insn) = INSN_LOCATOR (before_4);
 		    INSN_ADDRESSES_NEW (insn,
 					INSN_ADDRESSES (INSN_UID (before_4)));
 		    PUT_MODE (insn, TImode);
@@ -2615,6 +2629,7 @@ insert_hbrp_for_ilb_runout (rtx first)
 		insn =
 		  emit_insn_before (gen_iprefetch (GEN_INT (2)), before_16);
 		recog_memoized (insn);
+		INSN_LOCATOR (insn) = INSN_LOCATOR (before_16);
 		INSN_ADDRESSES_NEW (insn,
 				    INSN_ADDRESSES (INSN_UID (before_16)));
 		PUT_MODE (insn, GET_MODE (before_16));
@@ -2623,6 +2638,7 @@ insert_hbrp_for_ilb_runout (rtx first)
 		  {
 		    insn = emit_insn_before (gen_lnop (), before_16);
 		    recog_memoized (insn);
+		    INSN_LOCATOR (insn) = INSN_LOCATOR (before_16);
 		    INSN_ADDRESSES_NEW (insn,
 					INSN_ADDRESSES (INSN_UID
 							(before_16)));
@@ -2865,6 +2881,7 @@ spu_machine_dependent_reorg (void)
 
   /* The hints need to be scheduled, so call it again. */
   schedule_insns ();
+  df_finish_pass (true);
 
   insert_hbrp ();
 

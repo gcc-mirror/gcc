@@ -1,5 +1,15 @@
 2011-01-05  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* config/spu/spu.c (emit_nop_for_insn): Set INSN_LOCATOR for
+	newly inserted insns.
+	(pad_bb): Likewise.
+	(spu_emit_branch_hint): Likewise.
+	(insert_hbrp_for_ilb_runout): Likewise.
+	(spu_machine_dependent_reorg): Call df_finish_pass after
+	schedule_insns returns.
+
+2011-01-05  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* config/spu/spu.c (spu_expand_prologue): Support -fstack-usage.
 
 2011-01-05  Eric Botcazou  <ebotcazou@adacore.com>
