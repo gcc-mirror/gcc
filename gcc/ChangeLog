@@ -1,3 +1,14 @@
+2011-01-05  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/47162
+	* lto-cgraph.c (output_cgraph_opt_summary_p): Also check for thunk
+	deltas on streamed outgoing edges.
+	(output_node_opt_summary): Output info for outgoing edges only when
+	the node is in new parameter set.
+	(output_cgraph_opt_summary): New parameter set, passed to the two
+	aforementioned functions.  Update its forward declaration and its
+	callee too.
+
 2011-01-05  Tom Tromey  <tromey@redhat.com>
 
 	* c-parser.c (c_parser_omp_atomic): Pass location of assignment
