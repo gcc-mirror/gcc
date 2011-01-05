@@ -1,3 +1,7 @@
+2011-01-05  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* gcc.dg/stack-usage-1.c (SIZE): Provide proper value for __SPU__.
+
 2011-01-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt14.adb: New test.
