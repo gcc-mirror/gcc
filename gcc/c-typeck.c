@@ -1,6 +1,6 @@
 /* Build expressions with type checking for C compiler.
    Copyright (C) 1987, 1988, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -98,7 +98,7 @@ static void set_nonincremental_init (struct obstack *);
 static void set_nonincremental_init_from_string (tree, struct obstack *);
 static tree find_init_member (tree, struct obstack *);
 static void readonly_warning (tree, enum lvalue_use);
-static int lvalue_or_else (const_tree, enum lvalue_use);
+static int lvalue_or_else (location_t, const_tree, enum lvalue_use);
 static void record_maybe_used_decl (tree);
 static int comptypes_internal (const_tree, const_tree, bool *, bool *);
 
@@ -3564,7 +3564,8 @@ build_unary_op (location_t location,
       /* Complain about anything that is not a true lvalue.  In
 	 Objective-C, skip this check for property_refs.  */
       if (!objc_is_property_ref (arg) 
-	  && !lvalue_or_else (arg, ((code == PREINCREMENT_EXPR
+	  && !lvalue_or_else (location,
+			      arg, ((code == PREINCREMENT_EXPR
 				     || code == POSTINCREMENT_EXPR)
 				    ? lv_increment
 				    : lv_decrement)))
@@ -3747,7 +3748,7 @@ build_unary_op (location_t location,
       /* Anything not already handled and not a true memory reference
 	 or a non-lvalue array is an error.  */
       else if (typecode != FUNCTION_TYPE && !flag
-	       && !lvalue_or_else (arg, lv_addressof))
+	       && !lvalue_or_else (location, arg, lv_addressof))
 	return error_mark_node;
 
       /* Move address operations inside C_MAYBE_CONST_EXPR to simplify
@@ -3905,15 +3906,16 @@ readonly_warning (tree arg, enum lvalue_use use)
 
 /* Return nonzero if REF is an lvalue valid for this language;
    otherwise, print an error message and return zero.  USE says
-   how the lvalue is being used and so selects the error message.  */
+   how the lvalue is being used and so selects the error message.
+   LOCATION is the location at which any error should be reported.  */
 
 static int
-lvalue_or_else (const_tree ref, enum lvalue_use use)
+lvalue_or_else (location_t loc, const_tree ref, enum lvalue_use use)
 {
   int win = lvalue_p (ref);
 
   if (!win)
-    lvalue_error (use);
+    lvalue_error (loc, use);
 
   return win;
 }
@@ -4801,7 +4803,7 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
     return error_mark_node;
 
   /* For ObjC properties, defer this check.  */
-  if (!objc_is_property_ref (lhs) && !lvalue_or_else (lhs, lv_assign))
+  if (!objc_is_property_ref (lhs) && !lvalue_or_else (location, lhs, lv_assign))
     return error_mark_node;
 
   if (TREE_CODE (rhs) == EXCESS_PRECISION_EXPR)
@@ -4851,7 +4853,7 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
 	return result;
 
       /* Else, do the check that we postponed for Objective-C.  */
-      if (!lvalue_or_else (lhs, lv_assign))
+      if (!lvalue_or_else (location, lhs, lv_assign))
 	return error_mark_node;
     }
 
@@ -8479,7 +8481,7 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
 	 get an error.  Gross, but ...  */
       STRIP_NOPS (output);
 
-      if (!lvalue_or_else (output, lv_asm))
+      if (!lvalue_or_else (loc, output, lv_asm))
 	output = error_mark_node;
 
       if (output != error_mark_node

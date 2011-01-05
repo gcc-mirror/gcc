@@ -1,6 +1,6 @@
 /* Parser for C and Objective-C.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
    Parser actions based on the old Bison parser; structure somewhat
@@ -9104,6 +9104,9 @@ c_parser_omp_atomic (location_t loc, c_parser *parser)
 	  goto saw_error;
 	}
 
+      /* Arrange to pass the location of the assignment operator to
+	 c_finish_omp_atomic.  */
+      loc = c_parser_peek_token (parser)->location;
       c_parser_consume_token (parser);
       {
 	location_t rhs_loc = c_parser_peek_token (parser)->location;
