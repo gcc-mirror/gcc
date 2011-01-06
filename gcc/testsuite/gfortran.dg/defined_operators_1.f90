@@ -17,10 +17,21 @@ module mymod
        character(*) :: foo_chr
        character(*), intent(in) :: chr
      end function foo_chr
+  end interface
+
+  !
+  ! PR fortran/33117
+  ! PR fortran/46478
+  ! Mixing FUNCTIONs and SUBROUTINEs in an INTERFACE hides the
+  ! errors that should be tested here. Hence split out subroutine
+  ! to test separately.
+  !
+  interface operator (.bar.)
      subroutine bad_foo (chr) ! { dg-error "must be a FUNCTION" }
        character(*), intent(in) :: chr
      end subroutine bad_foo
   end interface
+
 contains
   function foo_0 () ! { dg-error "must have at least one argument" }
     integer :: foo_1
