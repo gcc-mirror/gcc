@@ -1,3 +1,10 @@
+2011-01-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR other/45915
+	* configure.ac (gcc_cv_as_gnu_unique_object): Only use ldd
+	--version output if supported.
+	* configure: Regenerate.
+
 2011-01-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/linux-android.opt (tno-android-cc, tno-android-ld): New
