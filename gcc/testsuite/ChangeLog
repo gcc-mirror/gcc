@@ -1,3 +1,11 @@
+2011-01-06  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/47195
+	* gfortran.dg/interface_33.f90: Fixed dg-error declarations.
+	* gfortran.dg/defined_operators_1.f90: Split the subroutine
+	from the interface of functions to not hide the errors that
+	shall be tested.
+
 2011-01-06  Jan Hubicka  <jh@suse.cz>
 
 	* testsuite/gcc.dg/lto/pr47188_0.c: New testcase.

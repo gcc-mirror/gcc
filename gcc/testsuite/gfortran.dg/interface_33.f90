@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 !
 ! PR fortran/33117, PR fortran/46478
 ! Procedures of a generic interface must be either
@@ -10,7 +10,7 @@
 !
 module m1
   interface gen
-    subroutine sub()            ! dg-error { "all SUBROUTINEs or all FUNCTIONs" }
+    subroutine sub()            ! { dg-error "all SUBROUTINEs or all FUNCTIONs" }
     end subroutine sub
     function bar()
       real :: bar
@@ -27,7 +27,7 @@ MODULE m2
     MODULE PROCEDURE subr_name
   END INTERFACE
 CONTAINS
-   LOGICAL FUNCTION func_name()  ! dg-error { "all SUBROUTINEs or all FUNCTIONs" }
+   LOGICAL FUNCTION func_name()  ! { dg-error "all SUBROUTINEs or all FUNCTIONs" }
    END FUNCTION
    SUBROUTINE subr_name()
    END SUBROUTINE
