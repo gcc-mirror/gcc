@@ -207,6 +207,7 @@ sources = \
 	locale-inst.cc \
 	misc-inst.cc \
 	ostream-inst.cc \
+	placeholders.cc \
 	sstream-inst.cc \
 	streambuf-inst.cc \
 	streambuf.cc \
@@ -352,6 +353,11 @@ future.o: future.cc
 debug.lo: debug.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 debug.o: debug.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
+
+placeholders.lo: placeholders.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+placeholders.o: placeholders.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 if GLIBCXX_LDBL_COMPAT

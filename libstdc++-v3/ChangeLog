@@ -1,3 +1,13 @@
+2011-01-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/47185
+	* src/placeholders.cc: New.
+	* src/Makefile.am: Adjust.
+	* src/Makefile.in: Regenerate.
+	* include/std/functional (placeholders::_1, _2, ..., _29): Declare
+	extern.
+	* config/abi/pre/gnu.ver: Export.
+
 2011-01-05  François Dumont  <francois.cppdevs@free.fr>
 
 	* include/debug/safe_base.h (_Safe_iterator_base::_M_unlink): New.
