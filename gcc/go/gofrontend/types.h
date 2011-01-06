@@ -1843,7 +1843,8 @@ class Struct_type : public Type
  public:
   Struct_type(Struct_field_list* fields, source_location location)
     : Type(TYPE_STRUCT),
-      fields_(fields), location_(location), all_methods_(NULL)
+      fields_(fields), location_(location), all_methods_(NULL),
+      prerequisites_()
   { }
 
   // Return the field NAME.  This only looks at local fields, not at
@@ -1938,6 +1939,17 @@ class Struct_type : public Type
   tree
   fill_in_tree(Gogo*, tree);
 
+  // Note that a struct must be converted to the backend
+  // representation before we convert this struct.
+  void
+  add_prerequisite(Named_type* nt)
+  { this->prerequisites_.push_back(nt); }
+
+  // If there are any structs which must be converted to the backend
+  // representation before this one, convert them.
+  void
+  convert_prerequisites(Gogo*);
+
  protected:
   int
   do_traverse(Traverse*);
@@ -1983,6 +1995,16 @@ class Struct_type : public Type
   source_location location_;
   // If this struct is unnamed, a list of methods.
   Methods* all_methods_;
+  // A list of structs which must be converted to the backend
+  // representation before this struct can be converted.  This is for
+  // cases like
+  //   type S1 { p *S2 }
+  //   type S2 { s S1 }
+  // where we must start converting S2 before we start converting S1.
+  // That is because we can fully convert S1 before S2 is complete,
+  // but we can not fully convert S2 before S1 is complete.  If we
+  // start converting S1 first, we won't be able to convert S2.
+  std::vector<Named_type*> prerequisites_;
 };
 
 // The type of an array.

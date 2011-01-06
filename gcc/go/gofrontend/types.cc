@@ -3768,6 +3768,19 @@ Struct_type::fill_in_tree(Gogo* gogo, tree type)
   return type;
 }
 
+// Make sure that all structs which must be converted to the backend
+// representation before this one are in fact converted.
+
+void
+Struct_type::convert_prerequisites(Gogo* gogo)
+{
+  for (std::vector<Named_type*>::const_iterator p
+	 = this->prerequisites_.begin();
+       p != this->prerequisites_.end();
+       ++p)
+    (*p)->get_tree(gogo);
+}
+
 // Initialize struct fields.
 
 tree
@@ -5977,20 +5990,44 @@ Interface_type::fill_in_tree(Gogo* gogo, tree type)
 {
   gcc_assert(this->methods_ != NULL);
 
+  // Because the methods may refer to the interface type itself, we
+  // need to build the interface type first, and then update the
+  // method pointer later.
+
+  tree field_trees = NULL_TREE;
+  tree* pp = &field_trees;
+
+  tree name_tree = get_identifier("__methods");
+  tree methods_field = build_decl(this->location_, FIELD_DECL, name_tree,
+				  ptr_type_node);
+  DECL_CONTEXT(methods_field) = type;
+  *pp = methods_field;
+  pp = &DECL_CHAIN(methods_field);
+
+  name_tree = get_identifier("__object");
+  tree field = build_decl(this->location_, FIELD_DECL, name_tree,
+			  ptr_type_node);
+  DECL_CONTEXT(field) = type;
+  *pp = field;
+
+  TYPE_FIELDS(type) = field_trees;
+
+  layout_type(type);
+
   // Build the type of the table of methods.
 
   tree method_table = make_node(RECORD_TYPE);
 
   // The first field is a pointer to the type descriptor.
-  tree name_tree = get_identifier("__type_descriptor");
+  name_tree = get_identifier("__type_descriptor");
   tree dtype = Type::make_type_descriptor_type()->get_tree(gogo);
   dtype = build_pointer_type(build_qualified_type(dtype, TYPE_QUAL_CONST));
-  tree field = build_decl(this->location_, FIELD_DECL, name_tree, dtype);
+  field = build_decl(this->location_, FIELD_DECL, name_tree, dtype);
   DECL_CONTEXT(field) = method_table;
   TYPE_FIELDS(method_table) = field;
 
   std::string last_name = "";
-  tree* pp = &DECL_CHAIN(field);
+  pp = &DECL_CHAIN(field);
   for (Typed_identifier_list::const_iterator p = this->methods_->begin();
        p != this->methods_->end();
        ++p)
@@ -6010,25 +6047,9 @@ Interface_type::fill_in_tree(Gogo* gogo, tree type)
     }
   layout_type(method_table);
 
-  tree mtype = build_pointer_type(method_table);
-
-  tree field_trees = NULL_TREE;
-  pp = &field_trees;
-
-  name_tree = get_identifier("__methods");
-  field = build_decl(this->location_, FIELD_DECL, name_tree, mtype);
-  DECL_CONTEXT(field) = type;
-  *pp = field;
-  pp = &DECL_CHAIN(field);
-
-  name_tree = get_identifier("__object");
-  field = build_decl(this->location_, FIELD_DECL, name_tree, ptr_type_node);
-  DECL_CONTEXT(field) = type;
-  *pp = field;
-
-  TYPE_FIELDS(type) = field_trees;
-
-  layout_type(type);
+  // Update the type of the __methods field from a generic pointer to
+  // a pointer to the method table.
+  TREE_TYPE(methods_field) = build_pointer_type(method_table);
 
   return type;
 }
@@ -6864,6 +6885,26 @@ Named_type::do_verify()
 	return false;
     }
 
+  // If this is a struct, then if any of the fields of the struct
+  // themselves have struct type, then this struct must be converted
+  // to the backend representation before the field's type is
+  // converted.  That may seem backward, but it works because if the
+  // field's type refers to this one, e.g., via a pointer, then the
+  // conversion process will pick up the half-built struct and do the
+  // right thing.
+  if (this->struct_type() != NULL)
+    {
+      const Struct_field_list* fields = this->struct_type()->fields();
+      for (Struct_field_list::const_iterator p = fields->begin();
+	   p != fields->end();
+	   ++p)
+	{
+	  Struct_type* st = p->type()->struct_type();
+	  if (st != NULL)
+	    st->add_prerequisite(this);
+	}
+    }
+
   return true;
 }
 
@@ -6994,8 +7035,17 @@ Named_type::do_get_tree(Gogo* gogo)
       break;
 
     case TYPE_STRUCT:
+      // If there are structs which must be converted first, do them.
+      if (this->seen_ == 0)
+	{
+	  ++this->seen_;
+	  this->type_->struct_type()->convert_prerequisites(gogo);
+	  --this->seen_;
+	}
+
       if (this->named_tree_ != NULL_TREE)
 	return this->named_tree_;
+
       t = make_node(RECORD_TYPE);
       this->named_tree_ = t;
       t = this->type_->struct_type()->fill_in_tree(gogo, t);
