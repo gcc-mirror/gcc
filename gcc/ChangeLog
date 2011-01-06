@@ -1,3 +1,11 @@
+2011-01-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/43309
+	* config/i386/i386.c (legitimize_tls_address)
+	<TLS_MODEL_INITIAL_EXEC>: Handle TARGET_64BIT && TARGET_SUN_TLS.
+	* config/i386/i386.md (UNSPEC_TLS_IE_SUN): Declare.
+	(tls_initial_exec_64_sun): New pattern.
+
 2011-01-06  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/invoke.texi (Overall Options): Improve wording and markup
