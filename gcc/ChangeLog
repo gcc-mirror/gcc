@@ -1,3 +1,8 @@
+2011-01-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rtems.opt: New.
+	* config.gcc (*-*-rtems*): Use rtems.opt.
+
 2011-01-05  Changpeng Fang  <changpeng.fang@amd.com>
 
 	* config/i386/i386.c (ix86_option_override_internal): Bulldozer
