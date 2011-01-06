@@ -126,8 +126,6 @@ stamp-geninsrc: libquadmath.info
 	cp -p $(top_builddir)/libquadmath.info $(srcdir)/libquadmath.info
 	@touch $@
 
-libquadmath.info: $(STAMP_BUILD_INFO)
-
 stamp-build-info: libquadmath.texi
 	$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) -o libquadmath.info $(srcdir)/libquadmath.texi
 	@touch $@
@@ -135,7 +133,11 @@ stamp-build-info: libquadmath.texi
 CLEANFILES = $(STAMP_GENINSRC) $(STAMP_BUILD_INFO) libquadmath.info
 MAINTAINERCLEANFILES = $(srcdir)/libquadmath.info
 
-endif
+endif BUILD_LIBQUADMATH
+
+# Unconditionally override this target, so that automake's definition
+# does not wrongly interfere.
+libquadmath.info: $(STAMP_BUILD_INFO)
 
 
 # Automake Documentation:
