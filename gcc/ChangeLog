@@ -1,3 +1,12 @@
+2011-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/47150
+	* c-convert.c (convert): When converting a complex expression
+	other than COMPLEX_EXPR to a different complex type, ensure
+	c_save_expr is called instead of save_expr, unless in_late_binary_op.
+	* c-typeck.c (convert_for_assignment): Set in_late_binary_op also
+	when converting COMPLEX_TYPE.
+
 2011-01-06  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/47139
