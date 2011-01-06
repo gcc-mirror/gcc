@@ -1092,8 +1092,9 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 
 
 /* Given a pointer to an interface pointer, remove duplicate
-   interfaces and make sure that all symbols are either functions or
-   subroutines.  Returns nonzero if something goes wrong.  */
+   interfaces and make sure that all symbols are either functions
+   or subroutines, and all of the same kind.  Returns nonzero if
+   something goes wrong.  */
 
 static int
 check_interface0 (gfc_interface *p, const char *interface_name)
@@ -1101,21 +1102,32 @@ check_interface0 (gfc_interface *p, const char *interface_name)
   gfc_interface *psave, *q, *qlast;
 
   psave = p;
-  /* Make sure all symbols in the interface have been defined as
-     functions or subroutines.  */
   for (; p; p = p->next)
-    if ((!p->sym->attr.function && !p->sym->attr.subroutine)
-	|| !p->sym->attr.if_source)
-      {
-	if (p->sym->attr.external)
-	  gfc_error ("Procedure '%s' in %s at %L has no explicit interface",
-		     p->sym->name, interface_name, &p->sym->declared_at);
-	else
-	  gfc_error ("Procedure '%s' in %s at %L is neither function nor "
-		     "subroutine", p->sym->name, interface_name,
-		     &p->sym->declared_at);
-	return 1;
-      }
+    {
+      /* Make sure all symbols in the interface have been defined as
+	 functions or subroutines.  */
+      if ((!p->sym->attr.function && !p->sym->attr.subroutine)
+	  || !p->sym->attr.if_source)
+	{
+	  if (p->sym->attr.external)
+	    gfc_error ("Procedure '%s' in %s at %L has no explicit interface",
+		       p->sym->name, interface_name, &p->sym->declared_at);
+	  else
+	    gfc_error ("Procedure '%s' in %s at %L is neither function nor "
+		       "subroutine", p->sym->name, interface_name,
+		      &p->sym->declared_at);
+	  return 1;
+	}
+
+      /* Verify that procedures are either all SUBROUTINEs or all FUNCTIONs.  */
+      if ((psave->sym->attr.function && !p->sym->attr.function)
+	  || (psave->sym->attr.subroutine && !p->sym->attr.subroutine))
+	{
+	  gfc_error ("In %s at %L procedures must be either all SUBROUTINEs"
+		     " or all FUNCTIONs", interface_name, &p->sym->declared_at);
+	  return 1;
+	}
+    }
   p = psave;
 
   /* Remove duplicate interfaces in this interface list.  */
