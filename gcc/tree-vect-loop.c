@@ -1649,9 +1649,10 @@ report_vect_op (gimple stmt, const char *msg)
    1. operation is commutative and associative and it is safe to
       change the order of the computation (if CHECK_REDUCTION is true)
    2. no uses for a2 in the loop (a2 is used out of the loop)
-   3. no uses of a1 in the loop besides the reduction operation.
+   3. no uses of a1 in the loop besides the reduction operation
+   4. no uses of a1 outside the loop.
 
-   Condition 1 is tested here.
+   Conditions 1,4 are tested here.
    Conditions 2,3 are tested in vect_mark_stmts_to_be_vectorized.
 
    (2) Detect a cross-iteration def-use cycle in nested loops, i.e.,
@@ -1702,8 +1703,16 @@ vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple phi,
       gimple use_stmt = USE_STMT (use_p);
       if (is_gimple_debug (use_stmt))
 	continue;
-      if (flow_bb_inside_loop_p (loop, gimple_bb (use_stmt))
-	  && vinfo_for_stmt (use_stmt)
+
+      if (!flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
+        {
+          if (vect_print_dump_info (REPORT_DETAILS))
+            fprintf (vect_dump, "intermediate value used outside loop.");
+
+          return NULL;
+        }
+
+      if (vinfo_for_stmt (use_stmt)
 	  && !is_pattern_stmt_p (vinfo_for_stmt (use_stmt)))
         nloop_uses++;
       if (nloop_uses > 1)
