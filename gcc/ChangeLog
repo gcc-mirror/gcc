@@ -1,4 +1,10 @@
-2011-01-06  Changpeng Fang <changpeng.fang@amd.com>
+2011-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR debug/46704
+	* dwarf2out.c (dwarf2out_finish): Output the debug_aranges section
+	only when it is not empty.
+
+2011-01-06  Changpeng Fang  <changpeng.fang@amd.com>
 
 	Bobcat (btver1) Enablement
 	* config.gcc (i[34567]86-*-linux* | ...): Add btver1.

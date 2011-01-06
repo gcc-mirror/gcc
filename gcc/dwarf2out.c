@@ -23324,7 +23324,7 @@ dwarf2out_finish (const char *filename)
 
   /* Output the address range information.  We only put functions in the arange
      table, so don't write it out if we don't have any.  */
-  if (fde_table_in_use)
+  if (arange_table_in_use)
     {
       switch_to_section (debug_aranges_section);
       output_aranges ();
