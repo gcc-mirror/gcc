@@ -844,39 +844,36 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
    *  unique names for each.
    */
   namespace placeholders 
-  { 
-    namespace 
-    {
-      _Placeholder<1> _1;
-      _Placeholder<2> _2;
-      _Placeholder<3> _3;
-      _Placeholder<4> _4;
-      _Placeholder<5> _5;
-      _Placeholder<6> _6;
-      _Placeholder<7> _7;
-      _Placeholder<8> _8;
-      _Placeholder<9> _9;
-      _Placeholder<10> _10;
-      _Placeholder<11> _11;
-      _Placeholder<12> _12;
-      _Placeholder<13> _13;
-      _Placeholder<14> _14;
-      _Placeholder<15> _15;
-      _Placeholder<16> _16;
-      _Placeholder<17> _17;
-      _Placeholder<18> _18;
-      _Placeholder<19> _19;
-      _Placeholder<20> _20;
-      _Placeholder<21> _21;
-      _Placeholder<22> _22;
-      _Placeholder<23> _23;
-      _Placeholder<24> _24;
-      _Placeholder<25> _25;
-      _Placeholder<26> _26;
-      _Placeholder<27> _27;
-      _Placeholder<28> _28;
-      _Placeholder<29> _29;
-    } 
+  {
+    extern const _Placeholder<1> _1;
+    extern const _Placeholder<2> _2;
+    extern const _Placeholder<3> _3;
+    extern const _Placeholder<4> _4;
+    extern const _Placeholder<5> _5;
+    extern const _Placeholder<6> _6;
+    extern const _Placeholder<7> _7;
+    extern const _Placeholder<8> _8;
+    extern const _Placeholder<9> _9;
+    extern const _Placeholder<10> _10;
+    extern const _Placeholder<11> _11;
+    extern const _Placeholder<12> _12;
+    extern const _Placeholder<13> _13;
+    extern const _Placeholder<14> _14;
+    extern const _Placeholder<15> _15;
+    extern const _Placeholder<16> _16;
+    extern const _Placeholder<17> _17;
+    extern const _Placeholder<18> _18;
+    extern const _Placeholder<19> _19;
+    extern const _Placeholder<20> _20;
+    extern const _Placeholder<21> _21;
+    extern const _Placeholder<22> _22;
+    extern const _Placeholder<23> _23;
+    extern const _Placeholder<24> _24;
+    extern const _Placeholder<25> _25;
+    extern const _Placeholder<26> _26;
+    extern const _Placeholder<27> _27;
+    extern const _Placeholder<28> _28;
+    extern const _Placeholder<29> _29;
   }
 
   /**

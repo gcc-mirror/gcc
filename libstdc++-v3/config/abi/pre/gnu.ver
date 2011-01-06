@@ -1196,6 +1196,9 @@ GLIBCXX_3.4.15 {
     # std::future_category is now a function
     _ZSt15future_categoryv;
 
+    # std::placeholders
+    _ZNSt12placeholders*;
+
 } GLIBCXX_3.4.14;
 
 # Symbols in the support library (libsupc++) have their own tag.

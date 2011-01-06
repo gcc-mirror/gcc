@@ -109,10 +109,11 @@ am__objects_5 = atomic.lo bitmap_allocator.lo pool_allocator.lo \
 	strstream.lo system_error.lo tree.lo allocator-inst.lo \
 	concept-inst.lo fstream-inst.lo ext-inst.lo ios-inst.lo \
 	iostream-inst.lo istream-inst.lo istream.lo locale-inst.lo \
-	misc-inst.lo ostream-inst.lo sstream-inst.lo streambuf-inst.lo \
-	streambuf.lo string-inst.lo valarray-inst.lo wlocale-inst.lo \
-	wstring-inst.lo mutex.lo condition_variable.lo chrono.lo \
-	thread.lo future.lo $(am__objects_1) $(am__objects_4)
+	misc-inst.lo ostream-inst.lo placeholders.lo sstream-inst.lo \
+	streambuf-inst.lo streambuf.lo string-inst.lo valarray-inst.lo \
+	wlocale-inst.lo wstring-inst.lo mutex.lo condition_variable.lo \
+	chrono.lo thread.lo future.lo $(am__objects_1) \
+	$(am__objects_4)
 am_libstdc___la_OBJECTS = $(am__objects_5)
 libstdc___la_OBJECTS = $(am_libstdc___la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -422,6 +423,7 @@ sources = \
 	locale-inst.cc \
 	misc-inst.cc \
 	ostream-inst.cc \
+	placeholders.cc \
 	sstream-inst.cc \
 	streambuf-inst.cc \
 	streambuf.cc \
@@ -939,6 +941,11 @@ future.o: future.cc
 debug.lo: debug.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 debug.o: debug.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
+
+placeholders.lo: placeholders.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+placeholders.o: placeholders.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 # Use special rules for compatibility-ldbl.cc compilation, as we need to
