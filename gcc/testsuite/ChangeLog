@@ -1,3 +1,8 @@
+2011-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/47150
+	* gcc.c-torture/compile/pr47150.c: New test.
+
 2011-01-06  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/47139
