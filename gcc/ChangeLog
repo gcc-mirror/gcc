@@ -1,3 +1,8 @@
+2011-01-06  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/invoke.texi (Overall Options): Improve wording and markup
+	of the description of -wrapper.
+
 2011-01-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/sol2.opt (G, YP,, Ym,, compat-bsd, pthread, pthreads,
