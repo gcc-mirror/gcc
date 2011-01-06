@@ -26,7 +26,7 @@ ACX_NONCANONICAL_TARGET
 target_alias=${target_alias-$host_alias}
 AC_SUBST(target_alias)
 
-AM_INIT_AUTOMAKE([1.9.0 foreign subdir-objects no-dist -Wall -Werror])
+AM_INIT_AUTOMAKE([1.9.0 foreign subdir-objects no-dist -Wall -Wno-override -Werror])
 
 AC_MSG_CHECKING([for --enable-version-specific-runtime-libs])
 AC_ARG_ENABLE(version-specific-runtime-libs,

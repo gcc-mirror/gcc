@@ -1,3 +1,12 @@
+2011-01-06  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR fortran/47174
+	* Makefile.am (libquadmath.info): Unconditionally override
+	target, not only if BUILD_LIBQUADMATH.
+	* Makefile.in: Regenerate.
+	* configure.ac (AM_INIT_AUTOMAKE): Add -Wno-override option to
+	avoid warning from automake.
+
 2010-12-19  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/46520
