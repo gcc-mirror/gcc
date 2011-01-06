@@ -500,6 +500,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	processor = PROCESSOR_GEODE;
       else if (has_xop)
 	processor = PROCESSOR_BDVER1;
+      else if (has_sse4a && has_ssse3)
+        processor = PROCESSOR_BTVER1;
       else if (has_sse4a)
 	processor = PROCESSOR_AMDFAM10;
       else if (has_sse2 || has_longmode)
@@ -646,6 +648,9 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       break;
     case PROCESSOR_BDVER1:
       cpu = "bdver1";
+      break;
+    case PROCESSOR_BTVER1:
+      cpu = "btver1";
       break;
 
     default:

@@ -1,3 +1,28 @@
+2011-01-06  Changpeng Fang <changpeng.fang@amd.com>
+
+	Bobcat (btver1) Enablement
+	* config.gcc (i[34567]86-*-linux* | ...): Add btver1.
+	  (case ${target}): Add btver1.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Let
+	  -march=native recognize btver1 processors.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Add
+	  btver1 def_and_undef
+	* config/i386/i386.c (struct processor_costs btver1_cost): New
+	  btver1 cost table.
+	  (m_BTVER1): New definition.
+	  ( m_AMD_MULTIPLE): Includes m_BTVER1.
+	  (initial_ix86_tune_features): Add btver1 tune.
+	  (processor_target_table): Add btver1 entry.
+	  (static const char *const cpu_names): Add btver1 entry.
+	  (software_prefetching_beneficial_p): Add btver1.
+	  (ix86_option_override_internal): Add btver1 instruction sets.
+	  (ix86_issue_rate): Add btver1.
+	  (ix86_adjust_cost): Add btver1.
+	* config/i386/i386.h (TARGET_BTVER1): New definition.
+	  (enum target_cpu_default): Add TARGET_CPU_DEFAULT_btver1.
+	  (enum processor_type): Add PROCESSOR_BTVER1.
+	* config/i386/i386.md (define_attr "cpu"): Add btver1.
+
 2011-01-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/43309
