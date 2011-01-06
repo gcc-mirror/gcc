@@ -1360,16 +1360,17 @@ Display the version number and copyrights of the invoked GCC@.
 
 @item -wrapper
 @opindex wrapper
-Invoke all subcommands under a wrapper program. It takes a single
-comma separated list as an argument, which will be used to invoke
-the wrapper:
+Invoke all subcommands under a wrapper program.  The name of the
+wrapper program and its parameters are passed as a comma separated
+list.
 
 @smallexample
 gcc -c t.c -wrapper gdb,--args
 @end smallexample
 
-This will invoke all subprograms of gcc under "gdb --args",
-thus cc1 invocation will be "gdb --args cc1 ...".
+This will invoke all subprograms of @command{gcc} under
+@samp{gdb --args}, thus the invocation of @command{cc1} will be
+@samp{gdb --args cc1 @dots{}}.
 
 @item -fplugin=@var{name}.so
 Load the plugin code in file @var{name}.so, assumed to be a
