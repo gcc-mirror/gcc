@@ -1,3 +1,8 @@
+2011-01-06  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/47188
+	* collect2.c (main): Do not enable LTOmode when plugin is active.
+
 2011-01-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR other/45915
