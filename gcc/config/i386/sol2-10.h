@@ -58,8 +58,7 @@ along with GCC; see the file COPYING3.  If not see
     {									\
       if (TARGET_SUN_TLS						\
 	  && in_section							\
-	  && ((in_section->common.flags & (SECTION_TLS | SECTION_BSS))	\
-	      == (SECTION_TLS | SECTION_BSS)))				\
+	  && ((in_section->common.flags & SECTION_TLS) == SECTION_TLS))	\
 	switch_to_section (bss_section);				\
       x86_elf_aligned_common (FILE, NAME, SIZE, ALIGN);			\
     }									\

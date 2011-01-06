@@ -1,3 +1,10 @@
+2011-01-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/38118
+	* config/sol2.h (ASM_OUTPUT_ALIGNED_COMMON): Also switch to .bss
+	if coming from .tdata.
+	* config/i386/sol2-10.h (ASM_OUTPUT_ALIGNED_COMMON): Likewise.
+
 2011-01-06  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/47188

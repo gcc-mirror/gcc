@@ -277,7 +277,7 @@ __enable_execute_stack (void *addr)					\
     }								\
   while (0)
 
-/* Solaris 'as' has a bug: a .common directive in .tbss section
+/* Solaris 'as' has a bug: a .common directive in .tbss or .tdata section
    behaves as .tls_common rather than normal non-TLS .common.  */
 #undef  ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
@@ -285,8 +285,7 @@ __enable_execute_stack (void *addr)					\
     {									\
       if (TARGET_SUN_TLS						\
 	  && in_section							\
-	  && ((in_section->common.flags & (SECTION_TLS | SECTION_BSS))	\
-	      == (SECTION_TLS | SECTION_BSS)))				\
+	  && ((in_section->common.flags & SECTION_TLS) == SECTION_TLS))	\
 	switch_to_section (bss_section);				\
       fprintf ((FILE), "%s", COMMON_ASM_OP);				\
       assemble_name ((FILE), (NAME));					\
