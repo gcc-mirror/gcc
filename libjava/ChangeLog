@@ -1,3 +1,9 @@
+2011-01-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/libjava.jni/jni.exp (gcj_jni_get_cxxflags_invocation):
+	Add -shared-libgcc to cxxflags for *-*-solaris*.
+	Remove -lsocket.
+
 2011-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* gnu/gcj/convert/Convert.java (version): Update copyright notice
