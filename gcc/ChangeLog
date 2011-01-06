@@ -1,3 +1,10 @@
+2011-01-06  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/47139
+	* tree-vect-loop.c (vect_is_simple_reduction_1): Check that
+	only the last reduction value is used outside the loop.  Update
+	documentation.
+
 2011-01-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rtems.opt: New.
