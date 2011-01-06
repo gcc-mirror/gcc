@@ -1,3 +1,11 @@
+2011-01-06  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/33117
+	PR fortran/46478
+	* parse.c (parse_interface): Remove check for procedure types.
+	* interface.c (check_interface0): Verify that procedures are
+	either all SUBROUTINEs or all FUNCTIONs.
+
 2011-01-05  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47180

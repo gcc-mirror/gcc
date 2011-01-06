@@ -2263,32 +2263,16 @@ loop:
     }
 
 
-  /* Make sure that a generic interface has only subroutines or
-     functions and that the generic name has the right attribute.  */
-  if (current_interface.type == INTERFACE_GENERIC)
+  /* Make sure that the generic name has the right attribute.  */
+  if (current_interface.type == INTERFACE_GENERIC
+      && current_state == COMP_NONE)
     {
-      if (current_state == COMP_NONE)
-	{
-	  if (new_state == COMP_FUNCTION && sym)
-	    gfc_add_function (&sym->attr, sym->name, NULL);
-	  else if (new_state == COMP_SUBROUTINE && sym)
-	    gfc_add_subroutine (&sym->attr, sym->name, NULL);
+      if (new_state == COMP_FUNCTION && sym)
+	gfc_add_function (&sym->attr, sym->name, NULL);
+      else if (new_state == COMP_SUBROUTINE && sym)
+	gfc_add_subroutine (&sym->attr, sym->name, NULL);
 
-	  current_state = new_state;
-	}
-      else
-	{
-	  if (new_state != current_state)
-	    {
-	      if (new_state == COMP_SUBROUTINE)
-		gfc_error ("SUBROUTINE at %C does not belong in a "
-			   "generic function interface");
-
-	      if (new_state == COMP_FUNCTION)
-		gfc_error ("FUNCTION at %C does not belong in a "
-			   "generic subroutine interface");
-	    }
-	}
+      current_state = new_state;
     }
 
   if (current_interface.type == INTERFACE_ABSTRACT)
