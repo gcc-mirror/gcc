@@ -1,3 +1,8 @@
+2011-01-06  Jan Hubicka  <jh@suse.cz>
+
+	* testsuite/gcc.dg/lto/pr47188_0.c: New testcase.
+	* testsuite/gcc.dg/lto/pr47188_1.c: New testcase.
+
 2011-01-06  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/33117
