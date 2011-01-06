@@ -1,3 +1,8 @@
+2011-01-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/sol2.opt (G, YP,, Ym,, compat-bsd, pthread, pthreads,
+	rdynamic, threads): New Driver options.
+
 2011-01-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/38118
