@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on IA-32.
    Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -13254,7 +13254,11 @@ ix86_delegitimize_address (rtx x)
 	return ix86_delegitimize_tls_address (orig_x);
       x = XVECEXP (XEXP (x, 0), 0, 0);
       if (GET_MODE (orig_x) != Pmode)
-	return simplify_gen_subreg (GET_MODE (orig_x), x, Pmode, 0);
+	{
+	  x = simplify_gen_subreg (GET_MODE (orig_x), x, Pmode, 0);
+	  if (x == NULL_RTX)
+	    return orig_x;
+	}
       return x;
     }
 
@@ -13323,7 +13327,11 @@ ix86_delegitimize_address (rtx x)
 	return orig_x;
     }
   if (GET_MODE (orig_x) != Pmode && MEM_P (orig_x))
-    return simplify_gen_subreg (GET_MODE (orig_x), result, Pmode, 0);
+    {
+      result = simplify_gen_subreg (GET_MODE (orig_x), result, Pmode, 0);
+      if (result == NULL_RTX)
+	return orig_x;
+    }
   return result;
 }
 
