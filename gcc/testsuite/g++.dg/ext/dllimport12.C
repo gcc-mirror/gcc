@@ -1,7 +1,7 @@
 // PR target/27650
 // Don't use dllimport semantics on virtual methods when initializing
 // vtables
-// { dg-do compile { target i?86-*-cygwin* i?86-*-mingw*} }
+// { dg-do compile { target i?86-*-cygwin* i?86-*-mingw* x86_64-*-mingw* } }
 
 // Use import lib thunk for vtable entry of explicitly virtual method,
 struct base

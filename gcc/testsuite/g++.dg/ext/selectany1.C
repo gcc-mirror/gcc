@@ -1,11 +1,10 @@
 // { dg-do compile { target i?86-pc-cygwin } }
-// { dg-do compile { target i?86-pc-mingw* } }
+// { dg-do compile { target i?86-*-mingw* x86_64-*-mingw* } }
 
 // Check that selectany attribute puts symbols into link-once sections.
 
 // { dg-final { scan-assembler "\.section\t\.data\\\$foo\[^\n\]*\n\t\.linkonce discard" } }
 // { dg-final { scan-assembler "\.section\t\.data\\\$x\[^\n\]*\n\t\.linkonce discard" } }
-// { dg-final { scan-assembler-dem "\nguard variable for x:" } }
 
 __declspec (selectany) int foo = 1;
 

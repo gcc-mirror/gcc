@@ -1,5 +1,5 @@
 //  Handle dllimport attribute for functions declared inline.
-// { dg-do compile { target i?86-*-cygwin* i?86-*-mingw*} }
+// { dg-do compile { target i?86-*-cygwin* i?86-*-mingw* x86_64-*-mingw* } }
 // { dg-options { -W } }
 
 inline __attribute__((dllimport)) void bar() { }	// { dg-warning "inline" }
@@ -20,4 +20,4 @@ void use_inlines()
   aBlah.out_blah ();
 }
 
-// { dg-final { scan-assembler-not "__imp__" } }
+// { dg-final { scan-assembler-not "__imp_" } }

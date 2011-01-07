@@ -1,3 +1,24 @@
+2011-01-07  Kai Tietz  <kai.tietz@onevision.com>
+
+	* g++.dg/ext/dllexport-MI1.C: Adjust test.
+	* g++.dg/ext/dllimport-MI1.C: Likewise.
+	* g++.dg/ext/dllimport1.C: Add test for x86_64-*-mingw*.
+	* g++.dg/ext/dllimport10.C: Likewise.
+	* g++.dg/ext/dllimport11.C: Likewise.
+	* g++.dg/ext/dllimport12.C: Likewise.
+	* g++.dg/ext/dllimport13.C: Likewise.
+	* g++.dg/ext/dllimport2.C: Likewise.
+	* g++.dg/ext/dllimport3.C: Likewise.
+	* g++.dg/ext/dllimport4.C: Likewise.
+	* g++.dg/ext/dllimport5.C: Likewise.
+	* g++.dg/ext/dllimport6.C: Likewise.
+	* g++.dg/ext/dllimport8.C: Likewise.
+	* g++.dg/ext/dllimport9.C: Likewise.
+	* g++.dg/ext/selectany2.C: Enable test for x86_64-*-mingw*
+	targets, too. Additionally enable test for i?86-*-mingw*.
+	* g++.dg/ext/selectany1.C: Likewise.
+	Remove guard variable check.
+
 2011-01-07  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47189
