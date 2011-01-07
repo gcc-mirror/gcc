@@ -1,3 +1,7 @@
+2011-01-07  Kai Tietz  <kai.tietz@onevision.com>
+
+	* decl.c (java_init_decl_processing): Setup va_list_type_node.
+
 2011-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* jcf-dump.c (version): Update copyright notice dates.
