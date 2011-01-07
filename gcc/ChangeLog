@@ -1,5 +1,20 @@
 2011-01-07  Iain Sandoe  <iains@gcc.gnu.org>
 
+	* target.def (function_switched_text_sections): New Hook.
+	* doc/tm.texi Regenerated.
+	* doc/tm.texi.in (TARGET_ASM_FUNCTION_SWITCHED_TEXT_SECTIONS)
+	New.
+	* final.c (default_function_switched_text_sections): New.
+	(final_scan_insn): Call function_switched_text_sections when a mid-function section
+	change occurs.
+	* output.h (default_function_switched_text_sections): Declare.
+	* config/darwin-protos.h (darwin_function_switched_text_sections) : Likewise.
+	* config/darwin.c (darwin_function_switched_text_sections): New.
+	* config/darwin.h (TARGET_ASM_FUNCTION_SWITCHED_TEXT_SECTIONS)
+	New.
+
+2011-01-07  Iain Sandoe  <iains@gcc.gnu.org>
+
 	* dwarf2out.c (gen_subprogram_die):  Add pubnames with code ranges for
 	DWARF >= 3.  Add pubnames for the primary section and a reduced DIE for
 	the secondary code fragment when outputting for DWARF == 2.

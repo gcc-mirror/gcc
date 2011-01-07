@@ -7298,6 +7298,8 @@ at startup (from static constructors or it is @code{main()}).
 Return NULL if function should go to default text section.
 @end deftypefn
 
+@hook TARGET_ASM_FUNCTION_SWITCHED_TEXT_SECTIONS
+
 @hook TARGET_HAVE_NAMED_SECTIONS
 This flag is true if the target supports @code{TARGET_ASM_NAMED_SECTION}.
 It must not be modified by command-line option processing.

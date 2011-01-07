@@ -7325,6 +7325,10 @@ at startup (from static constructors or it is @code{main()}).
 Return NULL if function should go to default text section.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_ASM_FUNCTION_SWITCHED_TEXT_SECTIONS (FILE *@var{file}, tree @var{decl}, bool @var{new_is_cold})
+Used by the target to emit any assembler directives or additional  labels needed when a function is partitioned between different  sections.  Output should be written to @var{file}.  The function  decl is available as @var{decl} and the new section is `cold' if  @var{new_is_cold} is @code{true}.
+@end deftypefn
+
 @deftypevr {Target Hook} bool TARGET_HAVE_NAMED_SECTIONS
 This flag is true if the target supports @code{TARGET_ASM_NAMED_SECTION}.
 It must not be modified by command-line option processing.
