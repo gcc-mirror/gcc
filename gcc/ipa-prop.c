@@ -1483,6 +1483,10 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target, tree delta)
     return NULL;
   ipa_check_create_node_params ();
 
+  /* We can not make edges to inline clones.  It is bug that someone removed the cgraph
+     node too early.  */
+  gcc_assert (!callee->global.inlined_to);
+
   cgraph_make_edge_direct (ie, callee, delta ? tree_low_cst (delta, 0) : 0);
   if (dump_file)
     {

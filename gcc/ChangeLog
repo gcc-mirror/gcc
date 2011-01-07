@@ -1,3 +1,11 @@
+2011-01-07  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/46367
+	* ipa-inline.c (cgraph_clone_inlined_nodes): Use original function only
+	when we can update original.
+	(cgraph_mark_inline_edge): Sanity check.
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Sanity check.
+
 2011-01-07  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu.h (ASM_COMMENT_START): Define.

@@ -1,3 +1,8 @@
+2011-01-07  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/46367
+	* g++.dg/torture/pr46367.C: New file.
+
 2011-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/47201
