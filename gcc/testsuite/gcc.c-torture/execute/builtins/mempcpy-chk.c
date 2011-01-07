@@ -13,9 +13,9 @@ extern int memcmp (const void *, const void *, size_t);
 
 const char s1[] = "123";
 char p[32] = "";
-char *s2 = "defg";
-char *s3 = "FGH";
-size_t l1 = 1;
+volatile char *s2 = "defg"; /* prevent constant propagation to happen when whole program assumptions are made.  */
+volatile char *s3 = "FGH"; /* prevent constant propagation to happen when whole program assumptions are made.  */
+volatile size_t l1 = 1; /* prevent constant propagation to happen when whole program assumptions are made.  */
 
 void
 __attribute__((noinline))
