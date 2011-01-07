@@ -1,7 +1,7 @@
 /* Header file for intrinsics check, resolve and simplify function
    prototypes.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010 Free Software Foundation, Inc.
+   2010, 2011 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -267,6 +267,7 @@ gfc_expr *gfc_simplify_erfc (gfc_expr *);
 gfc_expr *gfc_simplify_erfc_scaled (gfc_expr *);
 gfc_expr *gfc_simplify_exp (gfc_expr *);
 gfc_expr *gfc_simplify_exponent (gfc_expr *);
+gfc_expr *gfc_simplify_extends_type_of (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_float (gfc_expr *);
 gfc_expr *gfc_simplify_floor (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_fraction (gfc_expr *);
@@ -351,6 +352,7 @@ gfc_expr *gfc_simplify_reshape (gfc_expr *, gfc_expr *, gfc_expr *,
 				gfc_expr *);
 gfc_expr *gfc_simplify_rrspacing (gfc_expr *);
 gfc_expr *gfc_simplify_rshift (gfc_expr *, gfc_expr *);
+gfc_expr *gfc_simplify_same_type_as (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_scale (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_scan (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_selected_char_kind (gfc_expr *);

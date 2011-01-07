@@ -1,6 +1,6 @@
 /* Simplify intrinsic functions at compile-time.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010 Free Software Foundation, Inc.
+   2010, 2011 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -2199,6 +2199,93 @@ gfc_simplify_float (gfc_expr *a)
     result = gfc_int2real (a, gfc_default_real_kind);
 
   return range_check (result, "FLOAT");
+}
+
+
+static bool
+is_last_ref_vtab (gfc_expr *e)
+{
+  gfc_ref *ref;
+  gfc_component *comp = NULL;
+
+  if (e->expr_type != EXPR_VARIABLE)
+    return false;
+
+  for (ref = e->ref; ref; ref = ref->next)
+    if (ref->type == REF_COMPONENT)
+      comp = ref->u.c.component;
+
+  if (!e->ref || !comp)
+    return e->symtree->n.sym->attr.vtab;
+
+  if (comp->name[0] == '_' && strcmp (comp->name, "_vptr") == 0)
+    return true;
+
+  return false;
+}
+
+
+gfc_expr *
+gfc_simplify_extends_type_of (gfc_expr *a, gfc_expr *mold)
+{
+  /* Avoid simplification of resolved symbols.  */
+  if (is_last_ref_vtab (a) || is_last_ref_vtab (mold))
+    return NULL;
+
+  if (a->ts.type == BT_DERIVED && mold->ts.type == BT_DERIVED)
+    return gfc_get_logical_expr (gfc_default_logical_kind, &a->where,
+				 gfc_type_is_extension_of (mold->ts.u.derived,
+							   a->ts.u.derived));
+  /* Return .false. if the dynamic type can never be the same.  */
+  if ((a->ts.type == BT_CLASS && mold->ts.type == BT_CLASS
+       && !gfc_type_is_extension_of
+			(mold->ts.u.derived->components->ts.u.derived,
+			 a->ts.u.derived->components->ts.u.derived)
+       && !gfc_type_is_extension_of
+			(a->ts.u.derived->components->ts.u.derived,
+			 mold->ts.u.derived->components->ts.u.derived))
+      || (a->ts.type == BT_DERIVED && mold->ts.type == BT_CLASS
+	  && !gfc_type_is_extension_of
+			(a->ts.u.derived,
+			 mold->ts.u.derived->components->ts.u.derived)
+	  && !gfc_type_is_extension_of
+			(mold->ts.u.derived->components->ts.u.derived,
+			 a->ts.u.derived))
+      || (a->ts.type == BT_CLASS && mold->ts.type == BT_DERIVED
+	  && !gfc_type_is_extension_of
+			(mold->ts.u.derived,
+			 a->ts.u.derived->components->ts.u.derived)))
+    return gfc_get_logical_expr (gfc_default_logical_kind, &a->where, false);
+
+  if (mold->ts.type == BT_DERIVED
+      && gfc_type_is_extension_of (mold->ts.u.derived,
+				   a->ts.u.derived->components->ts.u.derived))
+    return gfc_get_logical_expr (gfc_default_logical_kind, &a->where, true);
+
+  return NULL;
+}
+
+
+gfc_expr *
+gfc_simplify_same_type_as (gfc_expr *a, gfc_expr *b)
+{
+  /* Avoid simplification of resolved symbols.  */
+  if (is_last_ref_vtab (a) || is_last_ref_vtab (b))
+    return NULL;
+
+  /* Return .false. if the dynamic type can never be the
+     same.  */
+  if ((a->ts.type == BT_CLASS || b->ts.type == BT_CLASS)
+      && !gfc_type_compatible (&a->ts, &b->ts)
+      && !gfc_type_compatible (&b->ts, &a->ts))
+    return gfc_get_logical_expr (gfc_default_logical_kind, &a->where, false);
+
+  if (a->ts.type != BT_DERIVED || b->ts.type != BT_DERIVED)
+     return NULL;
+
+  return gfc_get_logical_expr (gfc_default_logical_kind, &a->where,
+			       gfc_compare_derived_types (a->ts.u.derived,
+							  b->ts.u.derived));
 }
 
 
