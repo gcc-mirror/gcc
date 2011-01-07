@@ -1,5 +1,10 @@
 2011-01-07  Kai Tietz  <kai.tietz@onevision.com>
 
+	PR bootstrap/47215
+        * decl.c (java_init_decl_processing): Initialize unsigned_type_node.
+
+2011-01-07  Kai Tietz  <kai.tietz@onevision.com>
+
 	* decl.c (java_init_decl_processing): Setup va_list_type_node.
 
 2011-01-03  Jakub Jelinek  <jakub@redhat.com>
