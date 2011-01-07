@@ -1,5 +1,8 @@
 2011-01-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/47201
+	* gcc.dg/pr47201.c: New test.
+
 	PR bootstrap/47187
 	* gcc.dg/tree-prof/pr47187.c: New test.
 
