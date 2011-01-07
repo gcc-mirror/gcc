@@ -1,5 +1,15 @@
 2011-01-07  Jan Hubicka  <jh@suse.cz>
 
+	Get builtins tests ready for linker plugin.
+	* gcc.c-torture/execute/builtins/memcpy-chk.c (s2,s3,l1): Mark volatile.
+	* gcc.c-torture/execute/builtins/memops-asm-lib.c (my_memcpy, my_bcopy, my_memset,
+	my_bzero): Mark used.
+	* gcc.c-torture/execute/builtins/memset-chk.c (l1, l3): Mark volatile.
+	* gcc.c-torture/execute/builtins/memmove-chk.c (s1,s2,s3,l1): Mark volatile.
+	* gcc.c-torture/execute/builtins/mempcpy-chk.c (s2,s3,l1): Mark volatile
+
+2011-01-07  Jan Hubicka  <jh@suse.cz>
+
 	PR tree-optimization/46367
 	* g++.dg/torture/pr46367.C: New file.
 
