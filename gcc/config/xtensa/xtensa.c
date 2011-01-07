@@ -157,6 +157,7 @@ static bool xtensa_frame_pointer_required (void);
 static rtx xtensa_static_chain (const_tree, bool);
 static void xtensa_asm_trampoline_template (FILE *);
 static void xtensa_trampoline_init (rtx, tree, rtx);
+static bool xtensa_output_addr_const_extra (FILE *, rtx);
 
 static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
   REG_ALLOC_ORDER;
@@ -273,6 +274,9 @@ static const struct default_options xtensa_option_optimization_table[] =
 #define TARGET_OPTION_OVERRIDE xtensa_option_override
 #undef TARGET_OPTION_OPTIMIZATION_TABLE
 #define TARGET_OPTION_OPTIMIZATION_TABLE xtensa_option_optimization_table
+
+#undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
+#define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA xtensa_output_addr_const_extra
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2437,8 +2441,9 @@ print_operand_address (FILE *file, rtx addr)
     }
 }
 
+/* Implement TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA.  */
 
-bool
+static bool
 xtensa_output_addr_const_extra (FILE *fp, rtx x)
 {
   if (GET_CODE (x) == UNSPEC && XVECLEN (x, 0) == 1)

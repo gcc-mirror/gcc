@@ -816,14 +816,6 @@ typedef struct xtensa_args
 #define PRINT_OPERAND(FILE, X, CODE) print_operand (FILE, X, CODE)
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
 
-/* Recognize machine-specific patterns that may appear within
-   constants.  Used for PIC-specific UNSPECs.  */
-#define OUTPUT_ADDR_CONST_EXTRA(STREAM, X, FAIL)			\
-  do {									\
-    if (xtensa_output_addr_const_extra (STREAM, X) == FALSE)		\
-      goto FAIL;							\
-  } while (0)
-
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP "\t.global\t"
 
