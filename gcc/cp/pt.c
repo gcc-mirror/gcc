@@ -13239,8 +13239,7 @@ tsubst_copy_and_build (tree t,
 
     case VA_ARG_EXPR:
       return build_x_va_arg (RECUR (TREE_OPERAND (t, 0)),
-			     tsubst_copy (TREE_TYPE (t), args, complain,
-					  in_decl));
+			     tsubst (TREE_TYPE (t), args, complain, in_decl));
 
     case OFFSETOF_EXPR:
       return finish_offsetof (RECUR (TREE_OPERAND (t, 0)));
