@@ -1,3 +1,8 @@
+2011-01-07  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/45375
+	* lto-opt.c (lto_reissue_options): Set flag_shlib.
+
 2011-01-07  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* target.def (function_switched_text_sections): New Hook.
