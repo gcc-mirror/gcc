@@ -1,3 +1,9 @@
+2011-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/47022
+	* pt.c (tsubst_copy_and_build): Use tsubst instead of tsubst_copy
+	for the second build_x_va_arg argument.
+
 2011-01-05  Tom Tromey  <tromey@redhat.com>
 
 	* typeck.c (cp_build_addr_expr_1): Update call to lvalue_error.
