@@ -232,6 +232,8 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
       /* We may eliminate the need for out-of-line copy to be output.
 	 In that case just go ahead and re-use it.  */
       if (!e->callee->callers->next_caller
+	  /* Recursive inlining never wants the master clone to be overwritten.  */
+	  && update_original
 	  /* FIXME: When address is taken of DECL_EXTERNAL function we still can remove its
 	     offline copy, but we would need to keep unanalyzed node in the callgraph so
 	     references can point to it.  */
@@ -303,7 +305,11 @@ cgraph_mark_inline_edge (struct cgraph_edge *e, bool update_original,
   struct cgraph_edge *curr = e;
   int freq;
 
+  /* Don't inline inlined edges.  */
   gcc_assert (e->inline_failed);
+  /* Don't even think of inlining inline clone.  */
+  gcc_assert (!e->callee->global.inlined_to);
+
   e->inline_failed = CIF_OK;
   DECL_POSSIBLY_INLINED (e->callee->decl) = true;
 
@@ -863,7 +869,6 @@ cgraph_decide_recursive_inlining (struct cgraph_node *node,
   master_clone = cgraph_clone_node (node, node->decl,
 				    node->count, CGRAPH_FREQ_BASE, 1,
   				    false, NULL);
-  master_clone->needed = true;
   for (e = master_clone->callees; e; e = e->next_callee)
     if (!e->inline_failed)
       cgraph_clone_inlined_nodes (e, true, false);
