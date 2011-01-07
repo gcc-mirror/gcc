@@ -390,6 +390,7 @@ or with constant text in a single argument.
         Note - this command is position dependent.  % commands in the
         spec string before this one will see -S, % commands in the
         spec string after this one will not.
+ %>S	Similar to "%<S", but keep it in the GCC command line.
  %<S*	remove all occurrences of all switches beginning with -S from the
         command line.
  %:function(args)
@@ -2743,10 +2744,11 @@ execute (void)
    The `validated' field is nonzero if any spec has looked at this switch;
    if it remains zero at the end of the run, it must be meaningless.  */
 
-#define SWITCH_LIVE    			0x1
-#define SWITCH_FALSE   			0x2
-#define SWITCH_IGNORE			0x4
-#define SWITCH_IGNORE_PERMANENTLY	0x8
+#define SWITCH_LIVE    			(1 << 0)
+#define SWITCH_FALSE   			(1 << 1)
+#define SWITCH_IGNORE			(1 << 2)
+#define SWITCH_IGNORE_PERMANENTLY	(1 << 3)
+#define SWITCH_KEEP_FOR_GCC		(1 << 4)
 
 struct switchstr
 {
@@ -3926,7 +3928,9 @@ set_collect_gcc_options (void)
       first_time = FALSE;
 
       /* Ignore elided switches.  */
-      if ((switches[i].live_cond & SWITCH_IGNORE) != 0)
+      if ((switches[i].live_cond
+	   & (SWITCH_IGNORE | SWITCH_KEEP_FOR_GCC))
+	  == SWITCH_IGNORE)
 	continue;
 
       obstack_grow (&collect_obstack, "'-", 2);
@@ -5091,10 +5095,17 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	   /* Henceforth ignore the option(s) matching the pattern
 	      after the %<.  */
 	  case '<':
+	  case '>':
 	    {
 	      unsigned len = 0;
 	      int have_wildcard = 0;
 	      int i;
+	      int switch_option;
+
+	      if (c == '>')
+		switch_option = SWITCH_IGNORE | SWITCH_KEEP_FOR_GCC;
+	      else
+		switch_option = SWITCH_IGNORE;
 
 	      while (p[len] && p[len] != ' ' && p[len] != '\t')
 		len++;
@@ -5106,7 +5117,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		if (!strncmp (switches[i].part1, p, len - have_wildcard)
 		    && (have_wildcard || switches[i].part1[len] == '\0'))
 		  {
-		    switches[i].live_cond |= SWITCH_IGNORE;
+		    switches[i].live_cond |= switch_option;
 		    switches[i].validated = 1;
 		  }
 
