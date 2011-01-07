@@ -2536,8 +2536,6 @@ void gfc_free_st_label (gfc_st_label *);
 void gfc_define_st_label (gfc_st_label *, gfc_sl_type, locus *);
 gfc_try gfc_reference_st_label (gfc_st_label *, gfc_sl_type);
 
-gfc_expr * gfc_lval_expr_from_sym (gfc_symbol *);
-
 gfc_namespace *gfc_get_namespace (gfc_namespace *, int);
 gfc_symtree *gfc_new_symtree (gfc_symtree **, const char *);
 gfc_symtree *gfc_find_symtree (gfc_symtree *, const char *);
@@ -2701,6 +2699,7 @@ gfc_try gfc_check_assign_symbol (gfc_symbol *, gfc_expr *);
 bool gfc_has_default_initializer (gfc_symbol *);
 gfc_expr *gfc_default_initializer (gfc_typespec *);
 gfc_expr *gfc_get_variable_expr (gfc_symtree *);
+gfc_expr * gfc_lval_expr_from_sym (gfc_symbol *);
 
 gfc_array_spec *gfc_get_full_arrayspec_from_expr (gfc_expr *expr);
 

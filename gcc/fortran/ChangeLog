@@ -1,3 +1,16 @@
+2011-01-07  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47189
+	PR fortran/47194
+	* gfortran.h (gfc_lval_expr_from_sym): Moved prototype.
+	* class.c (gfc_class_null_initializer): Initialize _vptr to declared
+	type.
+	* expr.c (gfc_lval_expr_from_sym): Moved here from symbol.c.
+	* resolve.c (resolve_deallocate_expr): _data component will be added
+	at translation stage.
+	* symbol.c (gfc_lval_expr_from_sym): Moved to expr.c.
+	* trans-stmt.c (gfc_trans_deallocate): Reset _vptr to declared type.
+
 2011-01-06  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/33117

@@ -4738,7 +4738,6 @@ gfc_trans_deallocate (gfc_code *code)
 {
   gfc_se se;
   gfc_alloc *al;
-  gfc_expr *expr;
   tree apstat, astat, pstat, stat, tmp;
   stmtblock_t block;
 
@@ -4766,8 +4765,11 @@ gfc_trans_deallocate (gfc_code *code)
 
   for (al = code->ext.alloc.list; al != NULL; al = al->next)
     {
-      expr = al->expr;
+      gfc_expr *expr = gfc_copy_expr (al->expr);
       gcc_assert (expr->expr_type == EXPR_VARIABLE);
+
+      if (expr->ts.type == BT_CLASS)
+	gfc_add_data_component (expr);
 
       gfc_init_se (&se, NULL);
       gfc_start_block (&se.pre);
@@ -4797,6 +4799,7 @@ gfc_trans_deallocate (gfc_code *code)
 		}
 	    }
 	  tmp = gfc_array_deallocate (se.expr, pstat, expr);
+	  gfc_add_expr_to_block (&se.pre, tmp);
 	}
       else
 	{
@@ -4804,12 +4807,25 @@ gfc_trans_deallocate (gfc_code *code)
 						   expr, expr->ts);
 	  gfc_add_expr_to_block (&se.pre, tmp);
 
+	  /* Set to zero after deallocation.  */
 	  tmp = fold_build2_loc (input_location, MODIFY_EXPR, void_type_node,
 				 se.expr,
 				 build_int_cst (TREE_TYPE (se.expr), 0));
+	  gfc_add_expr_to_block (&se.pre, tmp);
+	  
+	  if (al->expr->ts.type == BT_CLASS)
+	    {
+	      /* Reset _vptr component to declared type.  */
+	      gfc_expr *rhs, *lhs = gfc_copy_expr (al->expr);
+	      gfc_symbol *vtab = gfc_find_derived_vtab (al->expr->ts.u.derived);
+	      gfc_add_vptr_component (lhs);
+	      rhs = gfc_lval_expr_from_sym (vtab);
+	      tmp = gfc_trans_pointer_assignment (lhs, rhs);
+	      gfc_add_expr_to_block (&se.pre, tmp);
+	      gfc_free_expr (lhs);
+	      gfc_free_expr (rhs);
+	    }
 	}
-
-      gfc_add_expr_to_block (&se.pre, tmp);
 
       /* Keep track of the number of failed deallocations by adding stat
 	 of the last deallocation to the running total.  */
@@ -4822,7 +4838,7 @@ gfc_trans_deallocate (gfc_code *code)
 
       tmp = gfc_finish_block (&se.pre);
       gfc_add_expr_to_block (&block, tmp);
-
+      gfc_free_expr (expr);
     }
 
   /* Set STAT.  */
