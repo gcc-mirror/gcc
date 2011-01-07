@@ -2999,8 +2999,6 @@ override_options (bool main_args_p)
 	ix86_tls_dialect = TLS_DIALECT_GNU;
       else if (strcmp (ix86_tls_dialect_string, "gnu2") == 0)
 	ix86_tls_dialect = TLS_DIALECT_GNU2;
-      else if (strcmp (ix86_tls_dialect_string, "sun") == 0)
-	ix86_tls_dialect = TLS_DIALECT_SUN;
       else
 	error ("bad value (%s) for %stls-dialect=%s %s",
 	       ix86_tls_dialect_string, prefix, suffix, sw);
@@ -9869,6 +9867,17 @@ legitimize_tls_address (rtx x, enum tls_model model, int for_mov)
     case TLS_MODEL_INITIAL_EXEC:
       if (TARGET_64BIT)
 	{
+	  if (TARGET_SUN_TLS)
+	    {
+	      /* The Sun linker took the AMD64 TLS spec literally
+		 and can only handle %rax as destination of the
+		 initial executable code sequence.  */
+
+	      dest = gen_reg_rtx (Pmode);
+	      emit_insn (gen_tls_initial_exec_64_sun (dest, x));
+	      return dest;
+	    }
+
 	  pic = NULL;
 	  type = UNSPEC_GOTNTPOFF;
 	}

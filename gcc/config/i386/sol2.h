@@ -91,6 +91,11 @@ along with GCC; see the file COPYING3.  If not see
       }							\
   } while (0)
 
+/* Follow Sun requirements for TLS code sequences and use Sun assembler TLS
+   syntax.  */
+#undef TARGET_SUN_TLS
+#define TARGET_SUN_TLS 1
+
 /* The Solaris assembler cannot grok .stabd directives.  */
 #undef NO_DBX_BNSYM_ENSYM
 #define NO_DBX_BNSYM_ENSYM 1

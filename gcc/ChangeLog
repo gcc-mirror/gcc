@@ -1,3 +1,23 @@
+2011-01-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2011-01-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/43309
+	* config/i386/i386.c (legitimize_tls_address)
+	<TLS_MODEL_INITIAL_EXEC>: Handle TARGET_64BIT && TARGET_SUN_TLS.
+	* config/i386/i386.md (UNSPEC_TLS_IE_SUN): Declare.
+	(tls_initial_exec_64_sun): New pattern.
+
+	2010-03-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/i386/i386.c (override_options): Don't accept
+	-mtls-dialect=sun any longer.
+	* config/i386/i386.h (TARGET_SUN_TLS): Define as 0.
+	* config/i386/i386.md (*tls_global_dynamic_32_sun): Remove.
+	(*tls_local_dynamic_base_32_sun): Likewise.
+	* config/i386/sol2.h (TARGET_SUN_TLS): Redefine.
+
 2010-12-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config/pa/pa.md: Add ",*" condition to 64-bit add/subtract boolean
