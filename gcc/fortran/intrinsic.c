@@ -1,7 +1,7 @@
 /* Build up a list of intrinsic subroutines and functions for the
    name-resolution stage.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010
+   2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
@@ -1663,7 +1663,8 @@ add_functions (void)
 
   add_sym_2 ("extends_type_of", GFC_ISYM_EXTENDS_TYPE_OF, CLASS_INQUIRY,
 	     ACTUAL_NO, BT_LOGICAL, dl, GFC_STD_F2003,
-	     gfc_check_same_type_as, NULL, gfc_resolve_extends_type_of,
+	     gfc_check_same_type_as, gfc_simplify_extends_type_of,
+	     gfc_resolve_extends_type_of,
 	     a, BT_UNKNOWN, 0, REQUIRED,
 	     mo, BT_UNKNOWN, 0, REQUIRED);
 
@@ -2481,7 +2482,7 @@ add_functions (void)
 
   add_sym_2 ("same_type_as", GFC_ISYM_SAME_TYPE_AS, CLASS_INQUIRY, ACTUAL_NO,
 	     BT_LOGICAL, dl, GFC_STD_F2003,
-	     gfc_check_same_type_as, NULL, NULL,
+	     gfc_check_same_type_as, gfc_simplify_same_type_as, NULL,
 	     a, BT_UNKNOWN, 0, REQUIRED,
 	     b, BT_UNKNOWN, 0, REQUIRED);
 

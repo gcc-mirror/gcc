@@ -1,3 +1,14 @@
+2011-01-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41580
+	* class.c (gfc_build_class_symbol): Mark __vtab as attr.vtab.
+	* intrinsic.c (add_functions): Use simplify functions for
+	EXTENDS_TYPE_OF and SAME_TYPE_AS.
+	* intrinsic.h (gfc_simplify_extends_type_of,
+	gfc_simplify_same_type_as): New prototypes.
+	* simplify.c (is_last_ref_vtab, gfc_simplify_extends_type_of,
+	gfc_simplify_same_type_as): New functions.
+
 2011-01-07  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47189

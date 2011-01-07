@@ -1,3 +1,8 @@
+2011-01-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41580
+	* gfortran.dg/extends_type_of_3.f90: New.
+
 2011-01-07  Kai Tietz  <kai.tietz@onevision.com>
 
 	* g++.dg/ext/dllexport-MI1.C: Adjust test.
