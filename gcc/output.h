@@ -417,6 +417,9 @@ extern const char *user_label_prefix;
 /* Default target function prologue and epilogue assembler output.  */
 extern void default_function_pro_epilogue (FILE *, HOST_WIDE_INT);
 
+/* Default target function switched text sections.  */
+extern void default_function_switched_text_sections (FILE *, tree, bool);
+
 /* Default target hook that outputs nothing to a stream.  */
 extern void no_asm_to_stream (FILE *);
 

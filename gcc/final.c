@@ -256,6 +256,13 @@ default_function_pro_epilogue (FILE *file ATTRIBUTE_UNUSED,
 {
 }
 
+void
+default_function_switched_text_sections (FILE *file ATTRIBUTE_UNUSED,
+					 tree decl ATTRIBUTE_UNUSED,
+					 bool new_is_cold ATTRIBUTE_UNUSED)
+{
+}
+
 /* Default target hook that outputs nothing to a stream.  */
 void
 no_asm_to_stream (FILE *file ATTRIBUTE_UNUSED)
@@ -1841,6 +1848,9 @@ final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	    debug_hooks->switch_text_section ();
 
 	  switch_to_section (current_function_section ());
+	  targetm.asm_out.function_switched_text_sections (asm_out_file,
+							   current_function_decl,
+							   in_cold_section_p);
 	  break;
 
 	case NOTE_INSN_BASIC_BLOCK:
