@@ -83,7 +83,8 @@ gfc_add_component_ref (gfc_expr *e, const char *name)
 
 
 /* Build a NULL initializer for CLASS pointers,
-   initializing the _data and _vptr components to zero.  */
+   initializing the _data component to NULL and
+   the _vptr component to the declared type.  */
 
 gfc_expr *
 gfc_class_null_initializer (gfc_typespec *ts)
@@ -98,9 +99,10 @@ gfc_class_null_initializer (gfc_typespec *ts)
   for (comp = ts->u.derived->components; comp; comp = comp->next)
     {
       gfc_constructor *ctor = gfc_constructor_get();
-      ctor->expr = gfc_get_expr ();
-      ctor->expr->expr_type = EXPR_NULL;
-      ctor->expr->ts = comp->ts;
+      if (strcmp (comp->name, "_vptr") == 0)
+	ctor->expr = gfc_lval_expr_from_sym (gfc_find_derived_vtab (ts->u.derived));
+      else
+	ctor->expr = gfc_get_null_expr (NULL);
       gfc_constructor_append (&init->value.constructor, ctor);
     }
 

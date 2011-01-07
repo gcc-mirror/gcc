@@ -6417,12 +6417,6 @@ resolve_deallocate_expr (gfc_expr *e)
   if (gfc_check_vardef_context (e, false, _("DEALLOCATE object")) == FAILURE)
     return FAILURE;
 
-  if (e->ts.type == BT_CLASS)
-    {
-      /* Only deallocate the DATA component.  */
-      gfc_add_data_component (e);
-    }
-
   return SUCCESS;
 }
 

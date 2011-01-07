@@ -2245,35 +2245,6 @@ done:
 }
 
 
-/*******A helper function for creating new expressions*************/
-
-
-gfc_expr *
-gfc_lval_expr_from_sym (gfc_symbol *sym)
-{
-  gfc_expr *lval;
-  lval = gfc_get_expr ();
-  lval->expr_type = EXPR_VARIABLE;
-  lval->where = sym->declared_at;
-  lval->ts = sym->ts;
-  lval->symtree = gfc_find_symtree (sym->ns->sym_root, sym->name);
-
-  /* It will always be a full array.  */
-  lval->rank = sym->as ? sym->as->rank : 0;
-  if (lval->rank)
-    {
-      lval->ref = gfc_get_ref ();
-      lval->ref->type = REF_ARRAY;
-      lval->ref->u.ar.type = AR_FULL;
-      lval->ref->u.ar.dimen = lval->rank;
-      lval->ref->u.ar.where = sym->declared_at;
-      lval->ref->u.ar.as = sym->as;
-    }
-
-  return lval;
-}
-
-
 /************** Symbol table management subroutines ****************/
 
 /* Basic details: Fortran 95 requires a potentially unlimited number
