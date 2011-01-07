@@ -484,6 +484,8 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 
 #define USER_LABEL_PREFIX ""
 
+#define ASM_COMMENT_START "#"
+
 
 /* Dispatch Tables */
 
