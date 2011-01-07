@@ -1,4 +1,4 @@
-// { dg-do compile { target i?86-*-cygwin* i?86-*-mingw*} }
+// { dg-do compile { target i?86-*-cygwin* i?86-*-mingw* x86_64-*-mingw* } }
 
 // PR 10148  Dllimport attribute of object is overriden by later
 // redefinition without attribute.

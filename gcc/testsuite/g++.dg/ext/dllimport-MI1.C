@@ -1,4 +1,4 @@
-// { dg-do compile { target i?86-*-cygwin* i?86-*-mingw*} }
+// { dg-do compile { target i?86-*-cygwin* i?86-*-mingw* x86_64-*-mingw* } }
 //  Test handling of MI thunks in dllimported classes.
 
 // To build the dll and client app:
@@ -49,5 +49,5 @@ int main ()
 
 // Scan for import of explicit copy ctor for D2, but no import
 // of compiler generated copy ctor for D1. 
-// { dg-final { scan-assembler  "__imp___ZN2D2C2ERKS_" } }
-// { dg-final { scan-assembler-not "__imp___ZN2D1C2ERKS_" } }
+// { dg-final { scan-assembler  "__imp\[_\]*__ZN2D2C2ERKS_" } }
+// { dg-final { scan-assembler-not "__imp\[_\]*__ZN2D1C2ERKS_" } }

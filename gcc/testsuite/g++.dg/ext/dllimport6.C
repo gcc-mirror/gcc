@@ -1,4 +1,4 @@
-// { dg-do compile { target i?86-*-cygwin* i?86-*-mingw*} }
+// { dg-do compile { target i?86-*-cygwin* i?86-*-mingw* x86_64-*-mingw* } }
 //  Mark class static members as dllimport.
 
 struct Baz
@@ -25,6 +25,6 @@ int foo()
   return (a + b + c + *baz);
 }
 
-// { dg-final { scan-assembler __imp___ZN3Bar3twoE } }
-// { dg-final { scan-assembler __imp___ZN3Bar5threeE } }
-// { dg-final { scan-assembler __imp___ZN3Bar8null_bazE } }
+// { dg-final { scan-assembler __imp\[_\]*__ZN3Bar3twoE } }
+// { dg-final { scan-assembler __imp\[_\]*__ZN3Bar5threeE } }
+// { dg-final { scan-assembler __imp\[_\]*__ZN3Bar8null_bazE } }

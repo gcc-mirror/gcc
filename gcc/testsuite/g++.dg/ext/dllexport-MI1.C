@@ -33,12 +33,12 @@ DLL_IMPEXP MI1 dllMI1Copy =  dllMI1;
 
 // and MI thunks,
 
-// { dg-final { scan-assembler "-export:\[\\\\\"\]*_ZThn4_NK3MI12vfEv" } }
-// { dg-final { scan-assembler "-export:\[\\\\\"\]*_ZTv0_n12_NK2D12vfEv" } }
+// { dg-final { scan-assembler "-export:\[\\\\\"\]*_ZThn._NK3MI12vfEv" } }
+// { dg-final { scan-assembler "-export:\[\\\\\"\]*_ZTv0_n.._NK2D12vfEv" } }
 
 // and a vtable data variable.
 
-// { dg-final { scan-assembler "-export:\[\\\\\"\]*_ZTV2D1\[\\\"\]*,data" } }
+// { dg-final { scan-assembler "-export:\[\\\\\"\]*_ZTV2D1\[\\\\\"\]*,data" } }
 
 // an explicit copy ctor
 // { dg-final { scan-assembler "-export:\[\\\\\"\]*_ZN2D2C2ERKS_" } }
