@@ -1,3 +1,8 @@
+2011-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/47187
+	* gcc.dg/tree-prof/pr47187.c: New test.
+
 2011-01-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41580

@@ -1,3 +1,9 @@
+2011-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/47187
+	* value-prof.c (gimple_stringop_fixed_value): Handle
+	lhs of the call properly.
+
 2011-01-07  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/45375
