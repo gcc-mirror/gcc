@@ -18902,7 +18902,6 @@ premark_types_used_by_global_vars (void)
 static void
 gen_subprogram_die (tree decl, dw_die_ref context_die)
 {
-  char label_id[MAX_ARTIFICIAL_LABEL_BYTES];
   tree origin = decl_ultimate_origin (decl);
   dw_die_ref subr_die;
   tree outer_scope;
@@ -19071,12 +19070,24 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 
       if (!flag_reorder_blocks_and_partition)
 	{
-	  ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_BEGIN_LABEL,
-				       current_function_funcdef_no);
-	  add_AT_lbl_id (subr_die, DW_AT_low_pc, label_id);
-	  ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_END_LABEL,
-				       current_function_funcdef_no);
-	  add_AT_lbl_id (subr_die, DW_AT_high_pc, label_id);
+	  dw_fde_ref fde = &fde_table[current_funcdef_fde];
+	  if (fde->dw_fde_begin)
+	    {
+	      /* We have already generated the labels.  */
+	      add_AT_lbl_id (subr_die, DW_AT_low_pc, fde->dw_fde_begin);
+	      add_AT_lbl_id (subr_die, DW_AT_high_pc, fde->dw_fde_end);
+	    }
+	  else
+	    {
+	      /* Create start/end labels and add the range.  */
+	      char label_id[MAX_ARTIFICIAL_LABEL_BYTES];
+	      ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_BEGIN_LABEL,
+					   current_function_funcdef_no);
+	      add_AT_lbl_id (subr_die, DW_AT_low_pc, label_id);
+	      ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_END_LABEL,
+					   current_function_funcdef_no);
+	      add_AT_lbl_id (subr_die, DW_AT_high_pc, label_id);
+	    }
 
 #if VMS_DEBUGGING_INFO
       /* HP OpenVMS Industry Standard 64: DWARF Extensions
@@ -19092,8 +19103,6 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	 attributes allow a compiler to communicate the location(s) to use.  */
 
       {
-        dw_fde_ref fde = &fde_table[current_funcdef_fde];
-
         if (fde->dw_fde_vms_end_prologue)
           add_AT_vms_delta (subr_die, DW_AT_HP_prologue,
 	    fde->dw_fde_begin, fde->dw_fde_vms_end_prologue);
@@ -19108,19 +19117,116 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	  add_arange (decl, subr_die);
 	}
       else
-	{  /* Do nothing for now; maybe need to duplicate die, one for
-	      hot section and one for cold section, then use the hot/cold
-	      section begin/end labels to generate the aranges...  */
-	  /*
-	    add_AT_lbl_id (subr_die, DW_AT_low_pc, hot_section_label);
-	    add_AT_lbl_id (subr_die, DW_AT_high_pc, hot_section_end_label);
-	    add_AT_lbl_id (subr_die, DW_AT_lo_user, unlikely_section_label);
-	    add_AT_lbl_id (subr_die, DW_AT_hi_user, cold_section_end_label);
+	{  /* Generate pubnames entries for the split function code
+	      ranges.  */
+	  dw_fde_ref fde = &fde_table[current_funcdef_fde];
 
-	    add_pubname (decl, subr_die);
-	    add_arange (decl, subr_die);
-	    add_arange (decl, subr_die);
-	   */
+	  if (fde->dw_fde_switched_sections)
+	    {
+	      if (dwarf_version >= 3 || !dwarf_strict)
+		{
+		  /* We should use ranges for non-contiguous code section 
+		     addresses.  Use the actual code range for the initial
+		     section, since the HOT/COLD labels might precede an 
+		     alignment offset.  */
+		  bool range_list_added = false;
+		  if (fde->in_std_section)
+		    {
+		      add_ranges_by_labels (subr_die,
+					    fde->dw_fde_begin,
+					    fde->dw_fde_end,
+					    &range_list_added);
+		      add_ranges_by_labels (subr_die,
+					    fde->dw_fde_unlikely_section_label,
+					    fde->dw_fde_unlikely_section_end_label,
+					    &range_list_added);
+		    }
+		  else
+		    {
+		      add_ranges_by_labels (subr_die,
+					    fde->dw_fde_begin,
+					    fde->dw_fde_end,
+					    &range_list_added);
+		      add_ranges_by_labels (subr_die,
+					    fde->dw_fde_hot_section_label,
+					    fde->dw_fde_hot_section_end_label,
+					    &range_list_added);
+		    }
+		  add_pubname (decl, subr_die);
+		  if (range_list_added)
+		    add_ranges (NULL);
+		}
+	      else
+		{
+		  /* There is no real support in DW2 for this .. so we make
+		     a work-around.  First, emit the pub name for the segment
+		     containing the function label.  Then make and emit a
+		     simplified subprogram DIE for the second segment with the
+		     name pre-fixed by __hot/cold_sect_of_.  We use the same
+		     linkage name for the second die so that gdb will find both
+		     sections when given "b foo".  */
+		  const char *name = NULL;
+		  tree decl_name = DECL_NAME (decl);
+		  dw_die_ref seg_die;
+
+		  /* Do the 'primary' section.   */
+		  add_AT_lbl_id (subr_die, DW_AT_low_pc,
+				 fde->dw_fde_begin);
+		  add_AT_lbl_id (subr_die, DW_AT_high_pc,
+				 fde->dw_fde_end);
+		  /* Add it.   */
+		  add_pubname (decl, subr_die);
+		  add_arange (decl, subr_die);
+
+		  /* Build a minimal DIE for the secondary section.  */
+		  seg_die = new_die (DW_TAG_subprogram,
+				     subr_die->die_parent, decl);
+
+		  if (TREE_PUBLIC (decl))
+		    add_AT_flag (seg_die, DW_AT_external, 1);
+
+		  if (decl_name != NULL 
+		      && IDENTIFIER_POINTER (decl_name) != NULL)
+		    {
+		      name = dwarf2_name (decl, 1);
+		      if (! DECL_ARTIFICIAL (decl))
+			add_src_coords_attributes (seg_die, decl);
+
+		      add_linkage_name (seg_die, decl);
+		    }
+		  gcc_assert (name!=NULL);
+		  add_pure_or_virtual_attribute (seg_die, decl);
+		  if (DECL_ARTIFICIAL (decl))
+		    add_AT_flag (seg_die, DW_AT_artificial, 1);
+
+		  if (fde->in_std_section)
+		    {
+		      name = concat ("__cold_sect_of_", name, NULL); 
+		      add_AT_lbl_id (seg_die, DW_AT_low_pc,
+				     fde->dw_fde_unlikely_section_label);
+		      add_AT_lbl_id (seg_die, DW_AT_high_pc,
+				     fde->dw_fde_unlikely_section_end_label); 
+		    }
+		  else 
+		    {
+		      name = concat ("__hot_sect_of_", name, NULL); 
+		      add_AT_lbl_id (seg_die, DW_AT_low_pc,
+				     fde->dw_fde_hot_section_label);
+		      add_AT_lbl_id (seg_die, DW_AT_high_pc,
+				     fde->dw_fde_hot_section_end_label); 
+		    }
+		  add_name_attribute (seg_die, name);
+		  add_pubname_string (name, seg_die);
+		  add_arange (decl, seg_die);
+		}
+	    }
+	  else
+	    {
+	      add_AT_lbl_id (subr_die, DW_AT_low_pc, fde->dw_fde_begin);
+	      add_AT_lbl_id (subr_die, DW_AT_high_pc, fde->dw_fde_end);
+	      add_pubname (decl, subr_die);
+	      add_arange (decl, subr_die);
+	    }
 	}
 
 #ifdef MIPS_DEBUGGING_INFO
@@ -23164,8 +23270,8 @@ dwarf2out_finish (const char *filename)
 
   /* We can only use the low/high_pc attributes if all of the code was
      in .text.  */
-  if (!have_multiple_function_sections
-      || !(dwarf_version >= 3 || !dwarf_strict))
+  if (!have_multiple_function_sections 
+      || (dwarf_version < 3 && dwarf_strict))
     {
       add_AT_lbl_id (comp_unit_die (), DW_AT_low_pc, text_section_label);
       add_AT_lbl_id (comp_unit_die (), DW_AT_high_pc, text_end_label);

@@ -1,3 +1,9 @@
+2011-01-07  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* dwarf2out.c (gen_subprogram_die):  Add pubnames with code ranges for
+	DWARF >= 3.  Add pubnames for the primary section and a reduced DIE for
+	the secondary code fragment when outputting for DWARF == 2.
+
 2011-01-07  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/xtensa/xtensa.h (OUTPUT_ADDR_CONST_EXTRA): Remove.
