@@ -62,7 +62,6 @@ extern void init_cumulative_args (CUMULATIVE_ARGS *, int);
 
 extern void print_operand (FILE *, rtx, int);
 extern void print_operand_address (FILE *, rtx);
-extern bool xtensa_output_addr_const_extra (FILE *, rtx);
 extern void xtensa_output_literal (FILE *, rtx, enum machine_mode, int);
 extern rtx xtensa_return_addr (int, rtx);
 extern enum reg_class xtensa_preferred_reload_class (rtx, enum reg_class, int);

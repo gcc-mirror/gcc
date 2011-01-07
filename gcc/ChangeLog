@@ -1,3 +1,11 @@
+2011-01-07  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/xtensa/xtensa.h (OUTPUT_ADDR_CONST_EXTRA): Remove.
+	* config/xtensa/xtensa-protos.h (xtensa_output_addr_const_extra):
+	Remove.
+	* config/xtensa/xtensa.c (xtensa_output_addr_const_extra): Make static.
+	(TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA): Define.
+
 2011-01-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR debug/46704
