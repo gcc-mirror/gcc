@@ -1,3 +1,8 @@
+2011-01-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* opts.c (finish_options): Set opts->x_flag_opts_finished to true,
+	not false.
+
 2011-01-07  Jan Hubicka  <jh@suse.cz>
 
 	* doc/invoke.texi: (-flto, -fuse-linker-plugin): Update defaults
