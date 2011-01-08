@@ -7482,6 +7482,14 @@ c_parser_objc_type_name (c_parser *parser)
     type_name = c_parser_type_name (parser);
   if (type_name)
     type = groktypename (type_name, NULL, NULL);
+
+  /* If the type is unknown, and error has already been produced and
+     we need to recover from the error.  In that case, use NULL_TREE
+     for the type, as if no type had been specified; this will use the
+     default type ('id') which is good for error recovery.  */
+  if (type == error_mark_node)
+    type = NULL_TREE;
+
   return build_tree_list (quals, type);
 }
 

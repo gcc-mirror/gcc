@@ -1,3 +1,10 @@
+2011-01-08  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/47078
+	* c-parser.c (c_parser_objc_type_name): If the type is unknown,
+	for error recovery purposes behave as if it was not specified so
+	that the default type is usd.
+
 2011-01-07  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optmization/46469
