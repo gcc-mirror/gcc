@@ -1,3 +1,16 @@
+2011-01-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/45777
+	* symbol.c (gfc_symbols_could_alias):  Strip gfc_ prefix,
+	make static and move in front of its only caller, to ...
+	* trans-array.c (symbols_could_alias): ... here.
+	Pass information about pointer and target status as
+	arguments.  Allocatable arrays don't alias anything
+	unless they have the POINTER attribute.
+	(gfc_could_be_alias):  Keep track of pointer and target
+	status when following references.  Also check if typespecs
+	of components match those of other components or symbols.
+
 2011-01-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41580
