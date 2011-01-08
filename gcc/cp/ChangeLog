@@ -1,3 +1,10 @@
+2011-01-08  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/47078
+	* parser.c (cp_parser_objc_typename): If the type is unknown, for
+	error recovery purposes behave as if it was not specified so that
+	the default type is used.
+
 2011-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/47022

@@ -21915,7 +21915,25 @@ cp_parser_objc_typename (cp_parser* parser)
       /* An ObjC type name may consist of just protocol qualifiers, in which
 	 case the type shall default to 'id'.  */
       if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_PAREN))
-	cp_type = cp_parser_type_id (parser);
+	{
+	  cp_type = cp_parser_type_id (parser);
+	  
+	  /* If the type could not be parsed, an error has already
+	     been produced.  For error recovery, behave as if it had
+	     not been specified, which will use the default type
+	     'id'.  */
+	  if (cp_type == error_mark_node)
+	    {
+	      cp_type = NULL_TREE;
+	      /* We need to skip to the closing parenthesis as
+		 cp_parser_type_id() does not seem to do it for
+		 us.  */
+	      cp_parser_skip_to_closing_parenthesis (parser,
+						     /*recovering=*/true,
+						     /*or_comma=*/false,
+						     /*consume_paren=*/false);
+	    }
+	}
 
       cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
       type_name = build_tree_list (proto_quals, cp_type);
