@@ -394,9 +394,11 @@ this option to manually enable preprocessing of any kind of Fortran file.
 To disable preprocessing of files with any of the above listed extensions,
 use the negative form: @option{-nocpp}.
 
-The preprocessor is run in traditional mode, be aware that any
-restrictions of the file-format, e.g. fixed-form line width,
-apply for preprocessed output as well.
+The preprocessor is run in traditional mode. Any restrictions of the
+file-format, especially the limits on line length, apply for
+preprocessed output as well, so it might be advisable to use the
+@option{-ffree-line-length-none} or @option{-ffixed-line-length-none}
+options.
 
 @item -dM
 @opindex @code{dM}
