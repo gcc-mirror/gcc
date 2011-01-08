@@ -1,3 +1,8 @@
+2011-01-08  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optmization/46469
+	* g++.dg/torture/pr46469.C: New testcase.
+
 2011-01-08  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc-obj-c++-shared/next-mapping.h: Move code and definitions for

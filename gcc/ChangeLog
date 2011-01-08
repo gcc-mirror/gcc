@@ -1,3 +1,9 @@
+2011-01-07  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optmization/46469
+	* ipa.c (function_and_variable_visibility): Clear needed flags on
+	nodes with external decls; handle weakrefs merging correctly.
+
 2011-01-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* opts.c (finish_options): Set opts->x_flag_opts_finished to true,
