@@ -1,6 +1,6 @@
 /* gfortran header file
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010
+   2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -722,6 +722,11 @@ typedef struct
   /* Function/subroutine attributes */
   unsigned sequence:1, elemental:1, pure:1, recursive:1;
   unsigned unmaskable:1, masked:1, contained:1, mod_proc:1, abstract:1;
+
+  /* This is set if a contained procedure could be declared pure.  This is
+     used for certain optimizations that require the result or arguments
+     cannot alias.  Note that this is zero for PURE procedures.  */
+  unsigned implicit_pure:1;
 
   /* This is set if the subroutine doesn't return.  Currently, this
      is only possible for intrinsic subroutines.  */
@@ -2736,6 +2741,7 @@ void gfc_resolve (gfc_namespace *);
 void gfc_resolve_blocks (gfc_code *, gfc_namespace *);
 int gfc_impure_variable (gfc_symbol *);
 int gfc_pure (gfc_symbol *);
+int gfc_implicit_pure (gfc_symbol *);
 int gfc_elemental (gfc_symbol *);
 gfc_try gfc_resolve_iterator (gfc_iterator *, bool);
 gfc_try find_forall_index (gfc_expr *, gfc_symbol *, int);

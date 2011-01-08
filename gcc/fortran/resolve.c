@@ -1,5 +1,6 @@
 /* Perform type resolution on the various structures.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010, 2011
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -273,6 +274,9 @@ resolve_formal_arglist (gfc_symbol *proc)
 	      continue;
 	    }
 
+	  if (proc->attr.implicit_pure && !gfc_pure(sym))
+	    proc->attr.implicit_pure = 0;
+
 	  if (gfc_elemental (proc))
 	    {
 	      gfc_error ("Dummy procedure at %L not allowed in ELEMENTAL "
@@ -343,6 +347,16 @@ resolve_formal_arglist (gfc_symbol *proc)
 	    gfc_error ("Argument '%s' of pure subroutine '%s' at %L must "
 		       "have its INTENT specified", sym->name, proc->name,
 		       &sym->declared_at);
+	}
+
+      if (proc->attr.implicit_pure && !sym->attr.pointer
+	  && sym->attr.flavor != FL_PROCEDURE)
+	{
+	  if (proc->attr.function && sym->attr.intent != INTENT_IN)
+	    proc->attr.implicit_pure = 0;
+
+	  if (proc->attr.subroutine && sym->attr.intent == INTENT_UNKNOWN)
+	    proc->attr.implicit_pure = 0;
 	}
 
       if (gfc_elemental (proc))
@@ -1123,6 +1137,12 @@ resolve_structure_cons (gfc_expr *expr, int init)
 		     "pointer component '%s' at %L in PURE procedure",
 		     comp->name, &cons->expr->where);
 	}
+
+      if (gfc_implicit_pure (NULL)
+	    && cons->expr->expr_type == EXPR_VARIABLE
+	    && (gfc_impure_variable (cons->expr->symtree->n.sym)
+		|| gfc_is_coindexed (cons->expr)))
+	gfc_current_ns->proc_name->attr.implicit_pure = 0;
 
     }
 
@@ -3066,6 +3086,9 @@ resolve_function (gfc_expr *expr)
 	  t = FAILURE;
 	}
     }
+
+  if (!pure_function (expr, &name) && name && gfc_implicit_pure (NULL))
+    gfc_current_ns->proc_name->attr.implicit_pure = 0;
 
   /* Functions without the RECURSIVE attribution are not allowed to
    * call themselves.  */
@@ -8812,6 +8835,26 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 	}
     }
 
+  if (gfc_implicit_pure (NULL))
+    {
+      if (lhs->expr_type == EXPR_VARIABLE
+	    && lhs->symtree->n.sym != gfc_current_ns->proc_name
+	    && lhs->symtree->n.sym->ns != gfc_current_ns)
+	gfc_current_ns->proc_name->attr.implicit_pure = 0;
+
+      if (lhs->ts.type == BT_DERIVED
+	    && lhs->expr_type == EXPR_VARIABLE
+	    && lhs->ts.u.derived->attr.pointer_comp
+	    && rhs->expr_type == EXPR_VARIABLE
+	    && (gfc_impure_variable (rhs->symtree->n.sym)
+		|| gfc_is_coindexed (rhs)))
+	gfc_current_ns->proc_name->attr.implicit_pure = 0;
+
+      /* Fortran 2008, C1283.  */
+      if (gfc_is_coindexed (lhs))
+	gfc_current_ns->proc_name->attr.implicit_pure = 0;
+    }
+
   /* F03:7.4.1.2.  */
   /* FIXME: Valid in Fortran 2008, unless the LHS is both polymorphic
      and coindexed; cf. F2008, 7.2.1.2 and PR 43366.  */
@@ -12761,6 +12804,34 @@ gfc_pure (gfc_symbol *sym)
   attr = sym->attr;
 
   return attr.flavor == FL_PROCEDURE && attr.pure;
+}
+
+
+/* Test whether a symbol is implicitly pure or not.  For a NULL pointer,
+   checks if the current namespace is implicitly pure.  Note that this
+   function returns false for a PURE procedure.  */
+
+int
+gfc_implicit_pure (gfc_symbol *sym)
+{
+  symbol_attribute attr;
+
+  if (sym == NULL)
+    {
+      /* Check if the current namespace is implicit_pure.  */
+      sym = gfc_current_ns->proc_name;
+      if (sym == NULL)
+	return 0;
+      attr = sym->attr;
+      if (attr.flavor == FL_PROCEDURE
+	    && attr.implicit_pure && !attr.pure)
+	return 1;
+      return 0;
+    }
+
+  attr = sym->attr;
+
+  return attr.flavor == FL_PROCEDURE && attr.implicit_pure && !attr.pure;
 }
 
 

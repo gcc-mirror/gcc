@@ -1,6 +1,6 @@
 /* Maintain binary trees of symbols.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010
+   2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -1109,6 +1109,9 @@ gfc_add_save (symbol_attribute *attr, save_state s, const char *name,
 	 where);
       return FAILURE;
     }
+
+  if (s == SAVE_EXPLICIT && gfc_implicit_pure (NULL))
+    gfc_current_ns->proc_name->attr.implicit_pure = 0;
 
   if (s == SAVE_EXPLICIT && attr->save == SAVE_EXPLICIT)
     {

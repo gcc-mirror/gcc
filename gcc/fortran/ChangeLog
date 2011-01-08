@@ -1,3 +1,33 @@
+2011-01-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/46896
+	* trans-expr.c (gfc_conv_procedure_call): With a non-copying
+	procedure argument (eg TRANSPOSE) use a temporary if there is
+	any chance of aliasing due to host or use association.
+	(arrayfunc_assign_needs_temporary): Correct logic for function
+	results and do not use a temporary for implicitly PURE
+	variables.  Use a temporary for Cray pointees.
+	* symbol.c (gfc_add_save): Explicit SAVE not compatible with
+	implicit pureness of containing procedure.
+	* decl.c (match_old_style_init, gfc_match_data): Where decl
+	would fail in PURE procedure, set implicit_pure to zero.
+	* gfortran.h : Add implicit_pure to structure symbol_attr and
+	add prototype for function gfc_implicit_pure.
+	* expr.c (gfc_check_pointer_assign, gfc_check_vardef_context):
+	Where decl would fail in PURE procedure, reset implicit_pure.
+	* io.c (match_vtag, gfc_match_open, gfc_match_close,
+	gfc_match_print, gfc_match_inquire, gfc_match_wait): The same.
+	* match.c (gfc_match_critical, gfc_match_stopcode,
+	sync_statement, gfc_match_allocate, gfc_match_deallocate): The
+	same.
+	* parse.c (decode_omp_directive): The same.
+	(parse_contained): If not PURE, set implicit pure attribute.
+	* resolve.c (resolve_formal_arglist, resolve_structure_cons,
+	resolve_function, resolve_ordinary_assign) : The same.
+	(gfc_implicit_pure): New function.
+	* module.c (mio_symbol_attribute): Introduce AB_IMPLICIT_PURE
+	to ab_attribute enum and use it in this function.
+
 2011-01-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/45777

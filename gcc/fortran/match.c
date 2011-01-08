@@ -1,7 +1,7 @@
 /* Matching subroutines in all sizes, shapes and colors.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010
-   2010 Free Software Foundation, Inc.
+   2009, 2010, 2011
+   Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1746,6 +1746,9 @@ gfc_match_critical (void)
       return MATCH_ERROR;
     }
 
+  if (gfc_implicit_pure (NULL))
+    gfc_current_ns->proc_name->attr.implicit_pure = 0;
+
   if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: CRITICAL statement at %C")
       == FAILURE)
     return MATCH_ERROR;
@@ -2189,6 +2192,9 @@ gfc_match_stopcode (gfc_statement st)
       goto cleanup;
     }
 
+  if (gfc_implicit_pure (NULL))
+    gfc_current_ns->proc_name->attr.implicit_pure = 0;
+
   if (st == ST_STOP && gfc_find_state (COMP_CRITICAL) == SUCCESS)
     {
       gfc_error ("Image control statement STOP at %C in CRITICAL block");
@@ -2320,6 +2326,9 @@ sync_statement (gfc_statement st)
       gfc_error ("Image control statement SYNC at %C in PURE procedure");
       return MATCH_ERROR;
     }
+
+  if (gfc_implicit_pure (NULL))
+    gfc_current_ns->proc_name->attr.implicit_pure = 0;
 
   if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: SYNC statement at %C")
       == FAILURE)
@@ -2920,6 +2929,10 @@ gfc_match_allocate (void)
 	  goto cleanup;
 	}
 
+      if (gfc_implicit_pure (NULL)
+	    && gfc_impure_variable (tail->expr->symtree->n.sym))
+	gfc_current_ns->proc_name->attr.implicit_pure = 0;
+
       if (tail->expr->ts.deferred)
 	{
 	  saw_deferred = true;
@@ -3262,6 +3275,9 @@ gfc_match_deallocate (void)
 	  gfc_error ("Illegal allocate-object at %C for a PURE procedure");
 	  goto cleanup;
 	}
+
+      if (gfc_implicit_pure (NULL) && gfc_impure_variable (sym))
+	gfc_current_ns->proc_name->attr.implicit_pure = 0;
 
       /* FIXME: disable the checking on derived types.  */
       b1 = !(tail->expr->ref
