@@ -693,7 +693,7 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	opts->x_flag_pic = opts->x_flag_pie;
       if (opts->x_flag_pic && !opts->x_flag_pie)
 	opts->x_flag_shlib = 1;
-      opts->x_flag_opts_finished = false;
+      opts->x_flag_opts_finished = true;
     }
 
   if (opts->x_optimize == 0)
