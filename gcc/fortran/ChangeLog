@@ -1,3 +1,9 @@
+2011-01-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/46405
+	* invoke.texi:  Mention -ffree-line-length-none and
+	-ffixed-line-length-none for preprocessing.
+
 2011-01-08  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/46896
