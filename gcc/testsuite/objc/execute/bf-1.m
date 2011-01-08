@@ -1,5 +1,4 @@
-#import "../../objc-obj-c++-shared/Object1.h"
-#include <objc/objc-api.h>
+#include <objc/objc.h>
 
 @interface MyObject
 {

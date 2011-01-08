@@ -1,3 +1,34 @@
+2011-01-08  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc-obj-c++-shared/next-mapping.h: Move code and definitions for
+	emulation of libobjc-gnu structure layout functionality to ..
+	* objc-obj-c++-shared/objc-test-suite-next-encode-assist.h: New.
+	* objc-obj-c++-shared/objc-test-suite-next-encode-assist-impl.h: New.
+	* objc/execute/bf-common.h: Adjust headers.
+	* objc/execute/bf-1.m: Likewise.
+	* objc/execute/bf-2.m: Likewise.
+	* objc/execute/bf-3.m: Likewise.
+	* objc/execute/bf-4.m: Likewise.
+	* objc/execute/bf-5.m: Likewise.
+	* objc/execute/bf-6.m: Likewise.
+	* objc/execute/bf-7.m: Likewise.
+	* objc/execute/bf-8.m: Likewise.
+	* objc/execute/bf-9.m: Likewise.
+	* objc/execute/bf-10.m: Likewise.
+	* objc/execute/bf-11.m: Likewise.
+	* objc/execute/bf-12.m: Likewise.
+	* objc/execute/bf-13.m: Likewise.
+	* objc/execute/bf-14.m: Likewise.
+	* objc/execute/bf-15.m: Likewise.
+	* objc/execute/bf-16.m: Likewise.
+	* objc/execute/bf-17.m: Likewise.
+	* objc/execute/bf-18.m: Likewise.
+	* objc/execute/bf-19.m: Likewise.
+	* objc/execute/bf-20.m: Likewise.
+	* objc/execute/bf-21.m: Likewise.
+	* objc/execute/bycopy-3.m: Adjust headers, add next-specific code for
+	objc_get_type_qualifiers ().
+
 2011-01-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/45777
