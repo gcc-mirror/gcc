@@ -1,3 +1,8 @@
+2011-01-08  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc-act.c (objc_finish_foreach_loop): Mark collection expression
+	as read.
+
 2011-01-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* objc-act.c (check_that_protocol_is_defined): Fix a typo.

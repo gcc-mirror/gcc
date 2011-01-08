@@ -1,3 +1,7 @@
+2011-01-08  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc.dg/foreach-1.m: Add "-Wall" to flags.
+
 2011-01-08  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/47078
