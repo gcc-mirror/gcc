@@ -7587,23 +7587,21 @@ types in separate translation units to be linked together (undefined
 behavior according to ISO C99 6.2.7), a non-fatal diagnostic may be
 issued.  The behavior is still undefined at runtime.
 
-If object files containing GIMPLE bytecode are stored in a library
-archive, say @file{libfoo.a}, it is possible to extract and use them
-in an LTO link if you are using @command{gold} as the linker (which,
-in turn requires GCC to be configured with @option{--enable-gold}).
-To enable this feature, use the flag @option{-fuse-linker-plugin} at
-link-time:
+If object files containing GIMPLE bytecode are stored in a library archive, say
+@file{libfoo.a}, it is possible to extract and use them in an LTO link if you
+are using a linker with linker plugin support.  To enable this feature, use
+the flag @option{-fuse-linker-plugin} at link-time:
 
 @smallexample
 gcc -o myprog -O2 -flto -fuse-linker-plugin a.o b.o -lfoo
 @end smallexample
 
-With the linker plugin enabled, @command{gold} will extract the needed
+With the linker plugin enabled, the linker will extract the needed
 GIMPLE files from @file{libfoo.a} and pass them on to the running GCC
 to make them part of the aggregated GIMPLE image to be optimized.
 
-If you are not using @command{gold} and/or do not specify
-@option{-fuse-linker-plugin} then the objects inside @file{libfoo.a}
+If you are not using a linker with linker plugin support and/or do not 
+enable linker plugin then the objects inside @file{libfoo.a}
 will be extracted and linked as usual, but they will not participate
 in the LTO optimization process.
 
@@ -7667,13 +7665,20 @@ files in LTO mode (via @option{-flto}).
 Disabled by default.
 
 @item -fuse-linker-plugin
-Enables the extraction of objects with GIMPLE bytecode information
-from library archives.  This option relies on features available only
-in @command{gold}, so to use this you must configure GCC with
-@option{--enable-gold}.  See @option{-flto} for a description on the
-effect of this flag and how to use it.
+Enables the use of linker plugin during link time optimization.  This option
+relies on the linker plugin support in linker that is available in @code{gold}
+or in GNU ld 2.21.51 or newer..
 
-Disabled by default.
+This option enables the extraction of object files with GIMPLE bytecode out of
+library archives. This improves the quality of optimization by exposing more
+code the the link time optimizer.  This information specify what symbols 
+can be accessed externally (by non-LTO object or during dynamic linking).
+Resulting code quality improvements on binaries (and shared libaries that do
+use hidden visibility) is similar to @code{-fwhole-program}.  See
+@option{-flto} for a description on the effect of this flag and how to use it.
+
+Enabled by default when LTO support in GCC is enabled and GCC was compiled
+with linker supporting plugins (GNU ld or @code{gold}).
 
 @item -fcprop-registers
 @opindex fcprop-registers

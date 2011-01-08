@@ -1142,6 +1142,10 @@
 #undef HAVE_LDFCN_H
 #endif
 
+/* Define if your linker supports plugin. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LTO_PLUGIN
+#endif
 
 /* Define if your linker supports --as-needed and --no-as-needed options. */
 #ifndef USED_FOR_TARGET

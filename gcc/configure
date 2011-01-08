@@ -23093,6 +23093,29 @@ $as_echo "#define HAVE_LD_DEMANGLE 1" >>confdefs.h
 $as_echo "$gcc_cv_ld_demangle" >&6; }
 fi
 
+if test -f ../lto-plugin/Makefile ; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking linker plugin support" >&5
+$as_echo_n "checking linker plugin support... " >&6; }
+  gcc_cv_lto_plugin=no
+  if test $in_tree_ld = yes -a x"$ORIGINAL_PLUGIN_LD_FOR_TARGET=" = x"$gcc_cv_ld"; then
+    if test x"$ld_is_gold" = xyes; then
+      gcc_cv_lto_plugin=yes
+    elif test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 21 -o "$gcc_cv_gld_major_version" -gt 2; then \
+      gcc_cv_lto_plugin=yes
+    fi
+  # Check if the linker supports --plugin-opt option
+  elif $ORIGINAL_PLUGIN_LD_FOR_TARGET --help 2>/dev/null | grep plugin-opt > /dev/null; then
+    gcc_cv_lto_plugin=yes
+  fi
+  if test x"$gcc_cv_lto_plugin" = xyes; then
+
+$as_echo "#define HAVE_LTO_PLUGIN 1" >>confdefs.h
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_lto_plugin" >&5
+$as_echo "$gcc_cv_lto_plugin" >&6; }
+fi
+
 case "$target" in
   # All TARGET_ABI_OSF targets.
   alpha*-*-osf* | alpha*-*-linux* | alpha*-*-*bsd*)

@@ -321,6 +321,7 @@ dependencies = { module=all-build-fixincludes; on=all-build-libiberty; };
 
 // Host modules specific to gcc.
 dependencies = { module=configure-gcc; on=configure-intl; };
+dependencies = { module=configure-gcc; on=configure-lto-plugin; };
 dependencies = { module=configure-gcc; on=all-binutils; };
 dependencies = { module=configure-gcc; on=all-gas; };
 dependencies = { module=configure-gcc; on=all-ld; };
@@ -344,6 +345,7 @@ dependencies = { module=all-gcc; on=all-libcpp; hard=true; };
 dependencies = { module=all-gcc; on=all-libdecnumber; hard=true; };
 dependencies = { module=all-gcc; on=all-libiberty; };
 dependencies = { module=all-gcc; on=all-fixincludes; };
+dependencies = { module=all-gcc; on=all-lto-plugin; };
 dependencies = { module=info-gcc; on=all-build-libiberty; };
 dependencies = { module=dvi-gcc; on=all-build-libiberty; };
 dependencies = { module=pdf-gcc; on=all-build-libiberty; };
@@ -360,7 +362,7 @@ dependencies = { module=all-fixincludes; on=all-libiberty; };
 
 dependencies = { module=all-gnattools; on=all-target-libada; };
 
-dependencies = { module=all-lto-plugin; on=all-gcc; };
+dependencies = { module=all-lto-plugin; on=all-libiberty; };
 
 dependencies = { module=configure-mpfr; on=all-gmp; };
 dependencies = { module=configure-mpc; on=all-mpfr; };

@@ -3149,6 +3149,26 @@ if test x"$demangler_in_ld" = xyes; then
   AC_MSG_RESULT($gcc_cv_ld_demangle)
 fi
 
+AC_MSG_CHECKING(linker plugin support)
+gcc_cv_lto_plugin=no
+if test -f ../lto-plugin/Makefile ; then
+  if test $in_tree_ld = yes -a x"$ORIGINAL_PLUGIN_LD_FOR_TARGET=" = x"$gcc_cv_ld"; then
+    if test x"$ld_is_gold" = xyes; then
+      gcc_cv_lto_plugin=yes
+    elif test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 21 -o "$gcc_cv_gld_major_version" -gt 2; then \
+      gcc_cv_lto_plugin=yes
+    fi
+  # Check if the linker supports --plugin-opt option
+  elif $ORIGINAL_PLUGIN_LD_FOR_TARGET --help 2>/dev/null | grep plugin-opt > /dev/null; then
+    gcc_cv_lto_plugin=yes
+  fi
+fi
+if test x"$gcc_cv_lto_plugin" = xyes; then
+  AC_DEFINE(HAVE_LTO_PLUGIN, 1,
+[Define if your linker supports plugin.])
+fi
+AC_MSG_RESULT($gcc_cv_lto_plugin)
+
 case "$target" in
   # All TARGET_ABI_OSF targets.
   alpha*-*-osf* | alpha*-*-linux* | alpha*-*-*bsd*)

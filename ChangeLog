@@ -1,3 +1,11 @@
+2011-01-07  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in: Regenerate.
+	* Makefile.def (gcc host module) and soft dependency on lto-plugin
+	and configure dependency on lto-plugin configure.
+	(lto-plugin module): Remove dependency on GCC; add dependency on
+	liniberty.
+
 2011-01-07  William Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
