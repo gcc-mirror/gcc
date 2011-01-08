@@ -621,6 +621,13 @@ proper position among the other output files.  */
 # endif
 #endif
 
+/* Conditional to test whether plugin is used or not.  */
+#ifdef HAVE_LTO_PLUGIN
+#define PLUGIN_COND "!fno-use-linker-plugin"
+#else
+#define PLUGIN_COND "fuse-linker-plugin"
+#endif
+
 
 /* -u* was put back because both BSD and SysV seem to support it.  */
 /* %{static:} simply prevents an error message if the target machine
@@ -634,7 +641,7 @@ proper position among the other output files.  */
 #define LINK_COMMAND_SPEC "\
 %{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
     %(linker) \
-    %{fuse-linker-plugin: \
+    %{"PLUGIN_COND": \
     -plugin %(linker_plugin_file) \
     -plugin-opt=%(lto_wrapper) \
     -plugin-opt=-fresolution=%u.res \
@@ -6779,7 +6786,11 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
   if (num_linker_inputs > 0 && !seen_error () && print_subprocess_help < 2)
     {
       int tmp = execution_count;
+#ifdef HAVE_LTO_PLUGIN
+      const char *fno_use_linker_plugin = "fno-use-linker-plugin";
+#else
       const char *fuse_linker_plugin = "fuse-linker-plugin";
+#endif
 
       /* We'll use ld if we can't find collect2.  */
       if (! strcmp (linker_name_spec, "collect2"))
@@ -6789,8 +6800,13 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	    linker_name_spec = "ld";
 	}
 
+#ifdef HAVE_LTO_PLUGIN
+      if (!switch_matches (fno_use_linker_plugin,
+			   fno_use_linker_plugin + strlen (fno_use_linker_plugin), 0))
+#else
       if (switch_matches (fuse_linker_plugin,
 			  fuse_linker_plugin + strlen (fuse_linker_plugin), 0))
+#endif
 	{
 	  linker_plugin_file_spec = find_a_file (&exec_prefixes,
 						 LTOPLUGINSONAME, R_OK,

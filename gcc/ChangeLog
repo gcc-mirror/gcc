@@ -1,5 +1,17 @@
 2011-01-07  Jan Hubicka  <jh@suse.cz>
 
+	* doc/invoke.texi: (-flto, -fuse-linker-plugin): Update defaults
+	and no longer claim that gold is required for linker plugin.
+	* configure: Regenerate.
+	* gcc.c (PLUGIN_COND): New macro.
+	(LINK_COMMAND_SPEC): Use it.
+	(main): Default to plugin enabled with HAVE_LTO_PLUGIN is set.
+	* config.in (HAVE_LTO_PLUGIN): New.
+	* configure.ac (--with-lto-plugin): New parameter; autodetect
+	HAVE_LTO_PLUGIN.
+
+2011-01-07  Jan Hubicka  <jh@suse.cz>
+
 	PR tree-optimization/46367
 	* ipa-inline.c (cgraph_clone_inlined_nodes): Use original function only
 	when we can update original.

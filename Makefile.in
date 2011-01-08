@@ -60260,6 +60260,14 @@ configure-stage3-gcc: maybe-configure-stage3-intl
 configure-stage4-gcc: maybe-configure-stage4-intl
 configure-stageprofile-gcc: maybe-configure-stageprofile-intl
 configure-stagefeedback-gcc: maybe-configure-stagefeedback-intl
+configure-gcc: maybe-configure-lto-plugin
+
+configure-stage1-gcc: maybe-configure-stage1-lto-plugin
+configure-stage2-gcc: maybe-configure-stage2-lto-plugin
+configure-stage3-gcc: maybe-configure-stage3-lto-plugin
+configure-stage4-gcc: maybe-configure-stage4-lto-plugin
+configure-stageprofile-gcc: maybe-configure-stageprofile-lto-plugin
+configure-stagefeedback-gcc: maybe-configure-stagefeedback-lto-plugin
 configure-gcc: maybe-all-binutils
 
 configure-stage1-gcc: maybe-all-stage1-binutils
@@ -60437,6 +60445,14 @@ all-stage4-gcc: maybe-all-stage4-libiberty
 all-stageprofile-gcc: maybe-all-stageprofile-libiberty
 all-stagefeedback-gcc: maybe-all-stagefeedback-libiberty
 all-gcc: maybe-all-fixincludes
+all-gcc: maybe-all-lto-plugin
+
+all-stage1-gcc: maybe-all-stage1-lto-plugin
+all-stage2-gcc: maybe-all-stage2-lto-plugin
+all-stage3-gcc: maybe-all-stage3-lto-plugin
+all-stage4-gcc: maybe-all-stage4-lto-plugin
+all-stageprofile-gcc: maybe-all-stageprofile-lto-plugin
+all-stagefeedback-gcc: maybe-all-stagefeedback-lto-plugin
 info-gcc: maybe-all-build-libiberty
 
 info-stage1-gcc: maybe-all-build-libiberty
@@ -60505,14 +60521,14 @@ all-stageprofile-libcpp: maybe-all-stageprofile-intl
 all-stagefeedback-libcpp: maybe-all-stagefeedback-intl
 all-fixincludes: maybe-all-libiberty
 all-gnattools: maybe-all-target-libada
-all-lto-plugin: maybe-all-gcc
+all-lto-plugin: maybe-all-libiberty
 
-all-stage1-lto-plugin: maybe-all-stage1-gcc
-all-stage2-lto-plugin: maybe-all-stage2-gcc
-all-stage3-lto-plugin: maybe-all-stage3-gcc
-all-stage4-lto-plugin: maybe-all-stage4-gcc
-all-stageprofile-lto-plugin: maybe-all-stageprofile-gcc
-all-stagefeedback-lto-plugin: maybe-all-stagefeedback-gcc
+all-stage1-lto-plugin: maybe-all-stage1-libiberty
+all-stage2-lto-plugin: maybe-all-stage2-libiberty
+all-stage3-lto-plugin: maybe-all-stage3-libiberty
+all-stage4-lto-plugin: maybe-all-stage4-libiberty
+all-stageprofile-lto-plugin: maybe-all-stageprofile-libiberty
+all-stagefeedback-lto-plugin: maybe-all-stagefeedback-libiberty
 configure-mpfr: maybe-all-gmp
 
 configure-stage1-mpfr: maybe-all-stage1-gmp
