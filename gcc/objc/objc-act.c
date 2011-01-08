@@ -13635,6 +13635,8 @@ objc_finish_foreach_loop (location_t location, tree object_expression, tree coll
   t = build2 (MODIFY_EXPR, void_type_node, objc_foreach_collection_decl, collection_expression);
   SET_EXPR_LOCATION (t, location);
   append_to_statement_list (t, &BIND_EXPR_BODY (bind));
+  /* We have used 'collection_expression'.  */
+  mark_exp_read (collection_expression);
 
   /*  __objc_foreach_enum_state.state = 0; */
   t = build2 (MODIFY_EXPR, void_type_node, objc_build_component_ref (objc_foreach_enum_state_decl, 
