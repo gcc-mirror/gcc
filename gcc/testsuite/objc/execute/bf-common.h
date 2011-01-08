@@ -1,7 +1,14 @@
+#include <stdio.h>
 #include <stdlib.h>
-#include "../../objc-obj-c++-shared/next-mapping.h"
+
 #ifndef __NEXT_RUNTIME__
 #include <objc/encoding.h>
+#else
+/* The following header, together with the implementation included below,
+   emulate functionality provided by the GNU runtime but not available from
+   the NeXT runtime.  */
+#include "../../objc-obj-c++-shared/objc-test-suite-next-encode-assist.h"
+#define objc_get_class(C) objc_getClass(C)
 #endif
 
 void print_ivars (Class class)
@@ -63,7 +70,6 @@ int main ()
     };
   int size1, size2;
   Class class = objc_get_class ("MyObject");
-
   printf ("type = %s\n", @encode (struct class_vars));
   print_ivars (class);
 
@@ -77,3 +83,5 @@ int main ()
   
   exit (0);
 }
+
+#include "../../objc-obj-c++-shared/objc-test-suite-next-encode-assist-impl.h"
