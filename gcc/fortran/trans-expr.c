@@ -1,5 +1,6 @@
 /* Expression translation
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011
    Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
@@ -3078,6 +3079,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		 argument and another one.  */
 	      if (gfc_get_noncopying_intrinsic_argument (e) != NULL)
 		{
+		  gfc_expr *iarg;
 		  sym_intent intent;
 
 		  if (fsym != NULL)
@@ -3087,6 +3089,25 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 		  if (gfc_check_fncall_dependency (e, intent, sym, args,
 						   NOT_ELEMENTAL))
+		    parmse.force_tmp = 1;
+
+		  iarg = e->value.function.actual->expr;
+
+		  /* Temporary needed if aliasing due to host association.  */
+		  if (sym->attr.contained
+			&& !sym->attr.pure
+			&& !sym->attr.implicit_pure
+			&& !sym->attr.use_assoc
+			&& iarg->expr_type == EXPR_VARIABLE
+			&& sym->ns == iarg->symtree->n.sym->ns)
+		    parmse.force_tmp = 1;
+
+		  /* Ditto within module.  */
+		  if (sym->attr.use_assoc
+			&& !sym->attr.pure
+			&& !sym->attr.implicit_pure
+			&& iarg->expr_type == EXPR_VARIABLE
+			&& sym->module == iarg->symtree->n.sym->module)
 		    parmse.force_tmp = 1;
 		}
 
@@ -3382,7 +3403,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 	  /* If the lhs of an assignment x = f(..) is allocatable and
 	     f2003 is allowed, we must do the automatic reallocation.
-	     TODO - deal with instrinsics, without using a temporary.  */
+	     TODO - deal with intrinsics, without using a temporary.  */
 	  if (gfc_option.flag_realloc_lhs
 		&& se->ss && se->ss->loop_chain
 		&& se->ss->loop_chain->is_alloc_lhs
@@ -5376,18 +5397,34 @@ arrayfunc_assign_needs_temporary (gfc_expr * expr1, gfc_expr * expr2)
   if (sym->attr.dummy && sym->attr.intent != INTENT_OUT)
     return true;
 
+  /* If the lhs has been host_associated, is in common, a pointer or is
+     a target and the function is not using a RESULT variable, aliasing
+     can occur and a temporary is needed.  */
+  if ((sym->attr.host_assoc
+	   || sym->attr.in_common
+	   || sym->attr.pointer
+	   || sym->attr.cray_pointee
+	   || sym->attr.target)
+	&& expr2->symtree != NULL
+	&& expr2->symtree->n.sym == expr2->symtree->n.sym->result)
+    return true;
+
   /* A PURE function can unconditionally be called without a temporary.  */
   if (expr2->value.function.esym != NULL
       && expr2->value.function.esym->attr.pure)
     return false;
 
-  /* TODO a function that could correctly be declared PURE but is not
-     could do with returning false as well.  */
+  /* Implicit_pure functions are those which could legally be declared
+     to be PURE.  */
+  if (expr2->value.function.esym != NULL
+      && expr2->value.function.esym->attr.implicit_pure)
+    return false;
 
   if (!sym->attr.use_assoc
 	&& !sym->attr.in_common
 	&& !sym->attr.pointer
 	&& !sym->attr.target
+	&& !sym->attr.cray_pointee
 	&& expr2->value.function.esym)
     {
       /* A temporary is not needed if the function is not contained and
@@ -6003,7 +6040,7 @@ gfc_trans_assignment (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 		      bool dealloc)
 {
   tree tmp;
-  
+
   if (expr1->ts.type == BT_CHARACTER && expr1->ts.deferred)
     {
       gfc_error ("Assignment to deferred-length character variable at %L "

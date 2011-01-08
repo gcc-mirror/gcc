@@ -1,6 +1,6 @@
 /* Main parser.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010
+   2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -494,6 +494,9 @@ decode_omp_directive (void)
       gfc_error_recovery ();
       return ST_NONE;
     }
+
+  if (gfc_implicit_pure (NULL))
+    gfc_current_ns->proc_name->attr.implicit_pure = 0;
 
   old_locus = gfc_current_locus;
 
@@ -3849,6 +3852,12 @@ parse_contained (int module)
 	     by other module functions.  */
 	  sym->attr.contained = 1;
 	  sym->attr.referenced = 1;
+
+	  /* Set implicit_pure so that it can be reset if any of the
+	     tests for purity fail.  This is used for some optimisation
+	     during translation.  */
+	  if (!sym->attr.pure)
+	    sym->attr.implicit_pure = 1;
 
 	  parse_progunit (ST_NONE);
 
