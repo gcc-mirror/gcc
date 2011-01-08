@@ -1,23 +1,7 @@
 # Japanese messages for GNU gcc
-# Copyright (C) 1999, 2010 Free Software Foundation, Inc.
+# Copyright (C) 1999, 2010, 2011 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
-# Daisuke Yamashita <yamad@mb.infoweb.ne.jp>, 1999-2001
-#    Masahito Yamaga <yamaga@ipc.chiba-u.ac.jp>, 1999.
-#    IIDA Yosiaki <iida@secom.ne.jp>, 1999.
-# Yasuaki Taniguchi <yasuakit@gmail.com>, 2010
-msgid ""
-msgstr ""
-"Project-Id-Version: gcc 4.6-b20101218\n"
-"Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-12-18 20:02+0000\n"
-"PO-Revision-Date: 2011-01-02 22:03+0900\n"
-"Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
-"Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
-
+#
 # gcc では解釈される書式文字列が数種類あります
 # (1) gcc/pretty-print.c 内にある pp_printf()
 # (2) gettext のドキュメントにある書式
@@ -25,6 +9,25 @@ msgstr ""
 # (3) gcc/tree-pretty-print.c 内にある percent_K_format() 
 # c-format フラグがあっても位置パラメータ (%1$s, %2$d) などは使わないことを推奨します
 #  - 2010/12/27 gcc-4.6-20101218 で確認 (谷口)
+#
+#
+# Daisuke Yamashita <yamad@mb.infoweb.ne.jp>, 1999-2001
+#    Masahito Yamaga <yamaga@ipc.chiba-u.ac.jp>, 1999.
+#    IIDA Yosiaki <iida@secom.ne.jp>, 1999.
+# Yasuaki Taniguchi <yasuakit@gmail.com>, 2010, 2011
+msgid ""
+msgstr ""
+"Project-Id-Version: gcc 4.6-b20101218\n"
+"Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
+"POT-Creation-Date: 2010-12-18 20:02+0000\n"
+"PO-Revision-Date: 2011-01-09 00:44+0900\n"
+"Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
+"Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
 #: c-decl.c:4636 c-typeck.c:5849 toplev.c:1013 c-family/c-pretty-print.c:423
 #: cp/error.c:610 cp/error.c:889
 msgid "<anonymous>"
@@ -504,7 +507,7 @@ msgstr "  --help                   このヘルプ情報を表示する\n"
 
 #: gcc.c:2894
 msgid "  --target-help            Display target specific command line options\n"
-msgstr "  --target-help            ターゲット固有のコマンドラインオプションを表示\n"
+msgstr "  --target-help            ターゲット固有のコマンドラインオプションを表示する\n"
 
 #: gcc.c:2895
 msgid "  --help={target|optimizers|warnings|params|[^]{joined|separate|undocumented}}[,...]\n"
@@ -14353,7 +14356,7 @@ msgstr "ISO C は関数ポインタと %<void *%> 間の初期化を禁止して
 #: c-typeck.c:5541
 #, gcc-internal-format
 msgid "ISO C forbids return between function pointer and %<void *%>"
-msgstr ""
+msgstr "ISO C は関数ポインタと %<void *%> の間の戻りを禁止しています"
 
 #: c-typeck.c:5570
 #, gcc-internal-format
@@ -14460,7 +14463,7 @@ msgstr "型 %qT を型 %qT を使用して初期化時に互換性のない型�
 #: c-typeck.c:5681
 #, gcc-internal-format
 msgid "incompatible types when returning type %qT but %qT was expected"
-msgstr ""
+msgstr "型 %qT を戻すときに互換性のない型です。型 %qT が予期されます"
 
 #: c-typeck.c:5745
 #, gcc-internal-format
@@ -14664,7 +14667,7 @@ msgid "excess elements in scalar initializer"
 msgstr "スカラー初期化子内の要素が多すぎます"
 
 #: c-typeck.c:8575
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C forbids %<goto *expr;%>"
 msgstr "ISO C は %<goto *expr;%> を禁止しています"
 
@@ -15076,7 +15079,7 @@ msgstr "%s は flow_call_edges_add をサポートしていません"
 #: cfgloop.c:1334
 #, gcc-internal-format
 msgid "size of loop %d should be %d, not %d"
-msgstr ""
+msgstr "ループ %d のサイズは %d であるべきです。%d ではありません"
 
 #: cfgloop.c:1348
 #, gcc-internal-format
@@ -15114,14 +15117,14 @@ msgid "loop %d%'s latch is marked as part of irreducible region"
 msgstr ""
 
 #: cfgloop.c:1425
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "basic block %d should be marked irreducible"
-msgstr "基本ブロック %d pred edge リストが機能していません"
+msgstr ""
 
 #: cfgloop.c:1431
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "basic block %d should not be marked irreducible"
-msgstr "基本ブロックが連続的に番号付けられていません"
+msgstr ""
 
 #: cfgloop.c:1439
 #, gcc-internal-format
@@ -15204,9 +15207,9 @@ msgid "missing REG_EH_REGION note in the end of bb %i"
 msgstr ""
 
 #: cfgrtl.c:1932
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too many eh edges %i"
-msgstr "入力ファイルが多すぎます"
+msgstr ""
 
 #: cfgrtl.c:1940
 #, gcc-internal-format
@@ -15219,14 +15222,14 @@ msgid "fallthru edge after unconditional jump %i"
 msgstr ""
 
 #: cfgrtl.c:1950
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "wrong number of branch edges after unconditional jump %i"
-msgstr "条件の実行よりは分岐の生成を優先する"
+msgstr ""
 
 #: cfgrtl.c:1957
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "wrong amount of branch edges after conditional jump %i"
-msgstr "条件の実行よりは分岐の生成を優先する"
+msgstr ""
 
 #: cfgrtl.c:1963
 #, gcc-internal-format
@@ -15269,19 +15272,19 @@ msgid "insn %d outside of basic blocks has non-NULL bb field"
 msgstr ""
 
 #: cfgrtl.c:2095
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "end insn %d for block %d not found in the insn stream"
-msgstr "終了命令 %d(ブロック %d) が一連の命令列の中に見つかりません。"
+msgstr ""
 
 #: cfgrtl.c:2108
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "insn %d is in multiple basic blocks (%d and %d)"
-msgstr "命令 %d が複数の基本ブロック(%d と %d)の中にあります"
+msgstr ""
 
 #: cfgrtl.c:2120
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "head insn %d for block %d not found in the insn stream"
-msgstr "開始命令 %d(ブロック %d) が一連の命令列の中に見つかりません。"
+msgstr ""
 
 #: cfgrtl.c:2137
 #, gcc-internal-format
@@ -15476,32 +15479,32 @@ msgstr ""
 #: cgraphunit.c:722
 #, gcc-internal-format
 msgid "verify_cgraph_node failed"
-msgstr ""
+msgstr "verify_cgraph_node に失敗しました"
 
 #: cgraphunit.c:830 cgraphunit.c:856
 #, gcc-internal-format
 msgid "%<externally_visible%> attribute have effect only on public objects"
-msgstr ""
+msgstr "%<externally_visible%> 属性は公開オブジェクトに関してのみ効果があります"
 
 #: cgraphunit.c:1102 cgraphunit.c:1128
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "failed to reclaim unneeded function"
-msgstr "領域 `%s' は関数として宣言されています"
+msgstr ""
 
 #: cgraphunit.c:1859
 #, gcc-internal-format
 msgid "nodes with unreleased memory found"
-msgstr ""
+msgstr "メモリを解放していないノードが見つかりました"
 
 #: collect2.c:1487 opts.c:795
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "LTO support has not been enabled in this configuration"
-msgstr "%s はこのコンフィギュレーションではサポートされません"
+msgstr "`この設定内では LTO サポートが有効になっていません"
 
 #: collect2.c:1575
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unknown demangling style '%s'"
-msgstr "不明なマシンモード `%s'"
+msgstr "不明な名前復元 (demangle) スタイル '%s' です"
 
 #: collect2.c:1970
 #, gcc-internal-format
