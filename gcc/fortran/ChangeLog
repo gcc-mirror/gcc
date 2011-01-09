@@ -1,3 +1,9 @@
+2011-01-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47224
+	* resolve.c (resolve_actual_arglist): Remove unneeded and buggy piece
+	of code.
+
 2011-01-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/38536
