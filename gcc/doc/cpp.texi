@@ -2429,7 +2429,7 @@ check specifically for features you need, using a tool such as
 @subsection C++ Named Operators
 @cindex named operators
 @cindex C++ named operators
-@cindex iso646.h
+@cindex @file{iso646.h}
 
 In C++, there are eleven keywords which are simply alternate spellings
 of operators normally written with punctuation.  These keywords are
