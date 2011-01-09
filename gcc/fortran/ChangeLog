@@ -1,3 +1,9 @@
+2011-01-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/46313
+	* class.c (get_unique_type_string): Make type name start with upper
+	case letter.
+
 2011-01-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/46405

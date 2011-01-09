@@ -1,3 +1,8 @@
+2011-01-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/46313
+	* gfortran.dg/class_35.f90: New.
+
 2011-01-08  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc.dg/foreach-1.m: Add "-Wall" to flags.
