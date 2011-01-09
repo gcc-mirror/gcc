@@ -1555,8 +1555,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	case RID_AT_PROPERTY:
 	  if (specs->attrs)
 	    {
-	      c_parser_error (parser, 
-	      		      "attributes may not be specified before" );
+	      c_parser_error (parser, "unexpected attribute");
 	      specs->attrs = NULL;
 	    }
 	  break;
