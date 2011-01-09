@@ -1,3 +1,8 @@
+2011-01-09  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/winnt.c (i386_pe_start_function): Make sure
+	to switch back to function's section.
+
 2011-01-09  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR gcc/46902
