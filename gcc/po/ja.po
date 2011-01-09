@@ -20,7 +20,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.6-b20101218\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-12-18 20:02+0000\n"
-"PO-Revision-Date: 2011-01-09 00:44+0900\n"
+"PO-Revision-Date: 2011-01-09 21:26+0900\n"
 "Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -15512,14 +15512,14 @@ msgid "%s terminated with signal %d [%s]%s"
 msgstr "%s シグナル %d [%s]%s で終了させられました"
 
 #: collect2.c:2790
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot find 'ldd'"
-msgstr "`ldd' が見つかりません"
+msgstr "'ldd' が見つかりません"
 
 #: convert.c:88
 #, gcc-internal-format
 msgid "cannot convert to a pointer type"
-msgstr "ポインタ型に変換できません"
+msgstr "ポインタ型へ変換できません"
 
 #: convert.c:389
 #, gcc-internal-format
@@ -15539,7 +15539,7 @@ msgstr "不完全型への変換です"
 #: convert.c:852 convert.c:928
 #, gcc-internal-format
 msgid "can%'t convert between vector values of different size"
-msgstr ""
+msgstr "異なるサイズのベクトル値の間での変換はできません"
 
 #: convert.c:858
 #, gcc-internal-format
@@ -15559,22 +15559,22 @@ msgstr "複素数型があるべき箇所で、集合体の値が使われまし
 #: convert.c:934
 #, gcc-internal-format
 msgid "can%'t convert value to a vector"
-msgstr ""
+msgstr "値をベクトルへ変換できません"
 
 #: convert.c:973
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "aggregate value used where a fixed-point was expected"
-msgstr "浮動小数点型があるべき箇所で、集合体の値が使われました"
+msgstr "固定小数点型があるべき箇所で、集合体の値が使われました"
 
 #: coverage.c:184
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs is not a gcov data file"
-msgstr "\"%s\" は正常なファイル名ではありません"
+msgstr "%qs は gcov データファイルではありません"
 
 #: coverage.c:195
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs is version %q.*s, expected version %q.*s"
-msgstr "gcc ドライババージョン %s 実行 gcc バージョン %s\n"
+msgstr "%qs はバージョン %q.*s ですが、予期されるバージョンは %q.*s です"
 
 #: coverage.c:275 coverage.c:283
 #, gcc-internal-format
@@ -15592,19 +15592,19 @@ msgid "number of counters is %d instead of %d"
 msgstr ""
 
 #: coverage.c:291
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot merge separate %s counters for function %u"
-msgstr "他の関数内で static 関数を宣言できません"
+msgstr ""
 
 #: coverage.c:312
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs has overflowed"
-msgstr "構文解析器のスタックが溢れました"
+msgstr "%qs がオーバーフローしました"
 
 #: coverage.c:349
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no coverage for function %qE found"
-msgstr "関数 `%s' に対して不適切な保存クラス"
+msgstr ""
 
 #: coverage.c:364
 #, gcc-internal-format
@@ -15632,19 +15632,19 @@ msgid "this can result in poorly optimized code"
 msgstr ""
 
 #: coverage.c:568
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot open %s"
 msgstr "%s を開けません"
 
 #: coverage.c:603
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "error writing %qs"
-msgstr "%s への書き込みエラーです"
+msgstr "%qs へ書き込み中にエラーが発生しました"
 
 #: cppspec.c:92
 #, gcc-internal-format
 msgid "%qs is not a valid option to the preprocessor"
-msgstr ""
+msgstr "%qs は前処理の有効なオプションではありません"
 
 #: cppspec.c:111
 #, gcc-internal-format
@@ -15659,22 +15659,22 @@ msgstr ""
 #: dbgcnt.c:136
 #, gcc-internal-format
 msgid "-fdbg-cnt=%s"
-msgstr ""
+msgstr "-fdbg-cnt=%s"
 
 #: dbgcnt.c:137
 #, gcc-internal-format
 msgid "          %s"
-msgstr ""
+msgstr "          %s"
 
 #: dbxout.c:3270
 #, gcc-internal-format
 msgid "common symbol debug info is not structured as symbol+offset"
-msgstr ""
+msgstr "共通シンボルでバッグ情報がシンボル+オフセットの構造になっていません"
 
 #: diagnostic.c:893
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "in %s, at %s:%d"
-msgstr "%s で中断, 位置 %s:%d"
+msgstr "%s 内、位置 %s:%d"
 
 #: dominance.c:1027
 #, gcc-internal-format
@@ -15692,9 +15692,9 @@ msgid "multiple EH personalities are supported only with assemblers supporting .
 msgstr ""
 
 #: dwarf2out.c:5654
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "DW_LOC_OP %s not implemented"
-msgstr "DW_LOC_OP %s は実装されていません\n"
+msgstr "DW_LOC_OP %s は実装されていません"
 
 #: dwarf2out.c:13630
 #, gcc-internal-format
@@ -15704,32 +15704,32 @@ msgstr ""
 #: emit-rtl.c:2473
 #, gcc-internal-format
 msgid "invalid rtl sharing found in the insn"
-msgstr ""
+msgstr "命令内に無効な rtl 共有が見つかりました"
 
 #: emit-rtl.c:2475
 #, gcc-internal-format
 msgid "shared rtx"
-msgstr ""
+msgstr "共有 rtx"
 
 #: emit-rtl.c:2477
 #, gcc-internal-format
 msgid "internal consistency failure"
-msgstr ""
+msgstr "内部一貫性がありません"
 
 #: emit-rtl.c:3584
 #, gcc-internal-format
 msgid "ICE: emit_insn used where emit_jump_insn needed:\n"
-msgstr "ICE: emit_insn が emit_jump_insn を要する所で使われました:\n"
+msgstr "ICE: emit_insn が emit_jump_insn が必要な場所で使用されました:\n"
 
 #: errors.c:133
 #, gcc-internal-format
 msgid "abort in %s, at %s:%d"
-msgstr "%s で中断, 位置 %s:%d"
+msgstr "%s内、位置 %s で中断しました:%d"
 
 #: except.c:2000
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument of %<__builtin_eh_return_regno%> must be constant"
-msgstr "`__builtin_eh_return_regno' の引数は定数でなければなりません"
+msgstr "%<__builtin_eh_return_regno%> の引数は定数でなければいけません"
 
 #: except.c:2137
 #, gcc-internal-format
@@ -15739,27 +15739,27 @@ msgstr "__builtin_eh_return はこのターゲットではサポートされて�
 #: except.c:3305 except.c:3330
 #, gcc-internal-format
 msgid "region_array is corrupted for region %i"
-msgstr ""
+msgstr "領域 %i 用の region_array が破損しています"
 
 #: except.c:3318 except.c:3349
 #, gcc-internal-format
 msgid "lp_array is corrupted for lp %i"
-msgstr ""
+msgstr "%i 用の lp_array が破損しています"
 
 #: except.c:3335
 #, gcc-internal-format
 msgid "outer block of region %i is wrong"
-msgstr ""
+msgstr "領域 %i の外部ブロックが間違っています"
 
 #: except.c:3340
 #, gcc-internal-format
 msgid "negative nesting depth of region %i"
-msgstr ""
+msgstr "領域 %i の入れ子の深さが負です"
 
 #: except.c:3354
 #, gcc-internal-format
 msgid "region of lp %i is wrong"
-msgstr ""
+msgstr "lp %i の領域が間違っています"
 
 #: except.c:3381
 #, gcc-internal-format
@@ -15767,19 +15767,19 @@ msgid "tree list ends on depth %i"
 msgstr ""
 
 #: except.c:3386
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "region_array does not match region_tree"
-msgstr "キャストによる関数の型が適合しません"
+msgstr "region_array が region_tree と適合しません"
 
 #: except.c:3391
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "lp_array does not match region_tree"
-msgstr "キャストによる関数の型が適合しません"
+msgstr "lp_array が region_tree と適合しません"
 
 #: except.c:3398
 #, gcc-internal-format
 msgid "verify_eh_tree failed"
-msgstr ""
+msgstr "verify_eh_tree に失敗しました"
 
 #: explow.c:1458
 #, gcc-internal-format
@@ -15799,12 +15799,12 @@ msgstr ""
 #: expmed.c:1793
 #, gcc-internal-format
 msgid "mis-aligned access used for structure member"
-msgstr ""
+msgstr "構造体メンバ用に整列されていないアクセスが使用されました"
 
 #: expmed.c:1796
 #, gcc-internal-format
 msgid "mis-aligned access used for structure bitfield"
-msgstr ""
+msgstr "構造体ビットフィールド用に整列されていないアクセスが使用されました"
 
 #: expmed.c:1802
 #, gcc-internal-format
@@ -15824,27 +15824,27 @@ msgstr ""
 #: final.c:1463
 #, gcc-internal-format
 msgid "invalid argument %qs to -fdebug-prefix-map"
-msgstr ""
+msgstr "-fdebug-prefix-map への無効な引数 %qs です"
 
 #: final.c:1576
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "the frame size of %wd bytes is larger than %wd bytes"
-msgstr "`%s' のサイズが %d バイトより大きくなっています"
+msgstr "フレームサイズ (%wd バイト) が %wd バイトより大きいです"
 
 #: final.c:4366 toplev.c:1403 tree-optimize.c:171
 #, gcc-internal-format
 msgid "could not open final insn dump file %qs: %m"
-msgstr ""
+msgstr "最終命令ダンプファイル %qs が開けません: %m"
 
 #: final.c:4427 tree-optimize.c:187
 #, gcc-internal-format
 msgid "could not close final insn dump file %qs: %m"
-msgstr ""
+msgstr "最終命令ダンプファイル %qs を閉じられません: %m"
 
 #: fixed-value.c:103
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "large fixed-point constant implicitly truncated to fixed-point type"
-msgstr "大きな整数が暗黙に符合無し型に切り詰められました"
+msgstr "大きな固定小数定数が暗黙的に固定整数型に切り詰められました"
 
 #: fold-const.c:655
 #, gcc-internal-format
@@ -15852,9 +15852,9 @@ msgid "assuming signed overflow does not occur when negating a division"
 msgstr ""
 
 #: fold-const.c:3493 fold-const.c:3505
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "comparison is always %d due to width of bit-field"
-msgstr "ビットフィールドの幅のせいで比較が常に %d となります"
+msgstr "ビットフィールド幅のため、比較が常に %d になります"
 
 #: fold-const.c:4842
 #, gcc-internal-format
@@ -15867,14 +15867,14 @@ msgid "comparison is always %d"
 msgstr "比較が常に %d となります"
 
 #: fold-const.c:5435
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<or%> of unmatched not-equal tests is always 1"
-msgstr "一致しない値同士での非等価の `or' テストは常に 1 です"
+msgstr ""
 
 #: fold-const.c:5440
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<and%> of mutually exclusive equal-tests is always 0"
-msgstr "相互排他的な値の等価の `and' テストは常に 0 です"
+msgstr ""
 
 #: fold-const.c:8411
 #, gcc-internal-format
@@ -15897,44 +15897,44 @@ msgid "fold check: original tree changed by fold"
 msgstr ""
 
 #: function.c:253
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "total size of local objects too large"
-msgstr "変数 `%s' のサイズが大きすぎます"
+msgstr "局所オブジェクトの総サイズが大きすぎます"
 
 #: function.c:1732 gimplify.c:5061
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "impossible constraint in %<asm%>"
-msgstr "`asm' 内ではレジスタ制約を行なえません"
+msgstr "%<asm%> 内で制約を行うことは出来ません"
 
 #: function.c:3936
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "variable %q+D might be clobbered by %<longjmp%> or %<vfork%>"
-msgstr "変数 `%s' は `longjmp' や `vfork' によって酷いことになる可能性があります"
+msgstr "変数 %q+D が %<longjmp%> または %<vfork%> によって破壊されるかもしれません"
 
 #: function.c:3957
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument %q+D might be clobbered by %<longjmp%> or %<vfork%>"
-msgstr "引数 `%s' は `longjmp' や `vfork' によって酷いことになる可能性があります"
+msgstr "引数 %q+D が %<longjmp%> または %<vfork%> によって破壊されるかもしれません"
 
 #: function.c:4443
 #, gcc-internal-format
 msgid "function returns an aggregate"
-msgstr "関数が集合体を返しています"
+msgstr "関数が集合体を返します"
 
 #: function.c:4837
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unused parameter %q+D"
-msgstr "引数 `%s' が未使用です"
+msgstr "仮引数 %q+D が未使用です"
 
 #: gcc.c:1682 gcc.c:1702
 #, gcc-internal-format
 msgid "specs %%include syntax malformed after %ld characters"
-msgstr "specs の %ld 文字目以降の %%include の書式が変です"
+msgstr "specs の %%include 構文の %ld 文字以降の形式に誤りがあります"
 
 #: gcc.c:1728 gcc.c:1737 gcc.c:1747 gcc.c:1757
 #, gcc-internal-format
 msgid "specs %%rename syntax malformed after %ld characters"
-msgstr "specs の %ld 文字目以降の %%rename の書式が変です"
+msgstr "specs の %%rename 構文の %ld 文字以降の形式に誤りがあります"
 
 #: gcc.c:1767
 #, gcc-internal-format
@@ -15964,7 +15964,7 @@ msgstr "spec ファイルにリンクに関する spec がありません"
 #: gcc.c:2400
 #, gcc-internal-format
 msgid "system path %qs is not absolute"
-msgstr ""
+msgstr "システムパス %qs が絶対パスではありません"
 
 #: gcc.c:2477
 #, gcc-internal-format
@@ -15974,52 +15974,52 @@ msgstr "-pipe は実装されていません"
 #: gcc.c:2593
 #, gcc-internal-format
 msgid "pex_init failed: %m"
-msgstr ""
+msgstr "pex_init に失敗しました: %m"
 
 #: gcc.c:2632
 #, gcc-internal-format
 msgid "failed to get exit status: %m"
-msgstr ""
+msgstr "終了ステータスの取得に失敗しました: %m"
 
 #: gcc.c:2638
 #, gcc-internal-format
 msgid "failed to get process times: %m"
-msgstr ""
+msgstr "プロセス時間の取得に失敗しました: %m"
 
 #: gcc.c:2664
 #, gcc-internal-format
 msgid "%s (program %s)"
-msgstr ""
+msgstr "%s (プログラム %s)"
 
 #: gcc.c:3072 opts-common.c:947 opts-common.c:1019
 #, gcc-internal-format
 msgid "unrecognized command line option %qs"
-msgstr ""
+msgstr "認識できないコマンドラインオプション %qs です"
 
 #: gcc.c:3328
 #, gcc-internal-format
 msgid "%qs is an unknown -save-temps option"
-msgstr ""
+msgstr "%qs は不明な -save-temps オプションです"
 
 #: gcc.c:3786
 #, gcc-internal-format
 msgid "-pipe ignored because -save-temps specified"
-msgstr ""
+msgstr "-save-temps が指定されたため、-pipe は無視されました"
 
 #: gcc.c:3872
 #, gcc-internal-format
 msgid "%<-x %s%> after last input file has no effect"
-msgstr ""
+msgstr "最後の入力ファイル以降の %<-x %s%> は効果がありません"
 
 #: gcc.c:4037
 #, gcc-internal-format
 msgid "unable to locate default linker script %qs in the library search paths"
-msgstr ""
+msgstr "ライブラリ探索パス内にデフォルトリンカスクリプト %qs の位置確認ができません"
 
 #: gcc.c:4240
 #, gcc-internal-format
 msgid "switch %qs does not start with %<-%>"
-msgstr ""
+msgstr "スイッチ %qs が %<-%> で開始されていません"
 
 #: gcc.c:4243
 #, gcc-internal-format
@@ -16027,39 +16027,39 @@ msgid "spec-generated switch is just %<-%>"
 msgstr ""
 
 #: gcc.c:4334
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "could not open temporary response file %s"
-msgstr "ダンプファイル %s を開けませんでした"
+msgstr "一時応答ファイル %s を開けませんでした"
 
 #: gcc.c:4340
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "could not write to temporary response file %s"
-msgstr "一時ファイルを作成できません"
+msgstr "一時応答ファイル %s に書き込むことが出来ませんでした"
 
 #: gcc.c:4346
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "could not close temporary response file %s"
-msgstr "ダンプファイル %s を開けませんでした"
+msgstr "一時応答ファイル %s を閉じることが出来ませんでした"
 
 #: gcc.c:4465
 #, gcc-internal-format
 msgid "spec %qs invalid"
-msgstr ""
+msgstr "spec %qs が無効です"
 
 #: gcc.c:4614
 #, gcc-internal-format
 msgid "spec %qs has invalid %<%%0%c%>"
-msgstr ""
+msgstr "spec %qs に無効な %<%%0%c%> があります"
 
 #: gcc.c:4925
 #, gcc-internal-format
 msgid "spec %qs has invalid %<%%W%c%>"
-msgstr ""
+msgstr "spec %qs に無効な %<%%W%c%> があります"
 
 #: gcc.c:4947
 #, gcc-internal-format
 msgid "spec %qs has invalid %<%%x%c%>"
-msgstr ""
+msgstr "spec %qs に無効な %<%%x%c%> があります"
 
 #. Catch the case where a spec string contains something like
 #. '%{foo:%*}'.  i.e. there is no * in the pattern on the left
@@ -16067,110 +16067,110 @@ msgstr ""
 #: gcc.c:5127
 #, gcc-internal-format
 msgid "spec failure: %<%%*%> has not been initialized by pattern match"
-msgstr ""
+msgstr "spec 失敗: %<%%*%> はパターンマッチによって初期化されていません"
 
 #: gcc.c:5136
 #, gcc-internal-format
 msgid "use of obsolete %%[ operator in specs"
-msgstr ""
+msgstr "spec 内で廃止された %%[ 演算子が使用されています"
 
 #: gcc.c:5217
 #, gcc-internal-format
 msgid "spec failure: unrecognized spec option %qc"
-msgstr ""
+msgstr "spec 失敗: 認識できない spec オプション %qc です"
 
 #: gcc.c:5277
 #, gcc-internal-format
 msgid "unknown spec function %qs"
-msgstr ""
+msgstr "不明な spec 関数 %qs です"
 
 #: gcc.c:5295
 #, gcc-internal-format
 msgid "error in args to spec function %qs"
-msgstr ""
+msgstr "spec 関数 %qs の引数内でエラーが発生しました"
 
 #: gcc.c:5343
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed spec function name"
-msgstr "キャストは関数型を指定しています"
+msgstr "間違った形式の spec 関数名です"
 
 #. )
 #: gcc.c:5346
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no arguments for spec function"
-msgstr "関数への引数が少なすぎます"
+msgstr "spec 関数用の引数がありません"
 
 #: gcc.c:5365
 #, gcc-internal-format
 msgid "malformed spec function arguments"
-msgstr ""
+msgstr "間違った形式の spec 関数引数です"
 
 #: gcc.c:5611
 #, gcc-internal-format
 msgid "braced spec %qs is invalid at %qc"
-msgstr ""
+msgstr "忠括弧で括られた spec %qs は無効です(位置 %qc)"
 
 #: gcc.c:5699
 #, gcc-internal-format
 msgid "braced spec body %qs is invalid"
-msgstr ""
+msgstr "忠括弧で括られた spec 本体 %qs は無効です"
 
 #: gcc.c:5948
 #, gcc-internal-format
 msgid "%s: could not determine length of compare-debug file %s"
-msgstr ""
+msgstr "%s:比較デバッグファイル %s の長さを決定することが出来ません"
 
 #: gcc.c:5959
 #, gcc-internal-format
 msgid "%s: -fcompare-debug failure (length)"
-msgstr ""
+msgstr "%s: -fcompare-debug 失敗です (長さ)"
 
 #: gcc.c:5969 gcc.c:6010
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s: could not open compare-debug file %s"
-msgstr "ダンプファイル %s を開けませんでした"
+msgstr "%s: 比較デバッグファイル %s を開くことが出来ません"
 
 #: gcc.c:5989 gcc.c:6026
 #, gcc-internal-format
 msgid "%s: -fcompare-debug failure"
-msgstr ""
+msgstr "%s: -fcompare-debug 失敗です"
 
 #: gcc.c:6100
 #, gcc-internal-format
 msgid "atexit failed"
-msgstr ""
+msgstr "atexit に失敗しました"
 
 #: gcc.c:6279
 #, gcc-internal-format
 msgid "spec failure: more than one arg to SYSROOT_SUFFIX_SPEC"
-msgstr ""
+msgstr "spec 失敗: SYSROOT_SUFFIX_SPEC に二個以上の引数があります"
 
 #: gcc.c:6302
 #, gcc-internal-format
 msgid "spec failure: more than one arg to SYSROOT_HEADERS_SUFFIX_SPEC"
-msgstr ""
+msgstr "spec 失敗: SYSROOT_HEADERS_SUFFIX_SPEC に二個以上の引数があります"
 
 #: gcc.c:6412
 #, gcc-internal-format
 msgid "unrecognized option %<-%s%>"
-msgstr ""
+msgstr "認識できないオプション %<-%s%> です"
 
 #. The error status indicates that only one set of fixed
 #. headers should be built.
 #: gcc.c:6489
 #, gcc-internal-format
 msgid "not configured with sysroot headers suffix"
-msgstr ""
+msgstr "システムルートヘッダ接尾辞付きで設定されていません"
 
 #: gcc.c:6572
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no input files"
 msgstr "入力ファイルがありません"
 
 #: gcc.c:6618
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot specify -o with -c, -S or -E with multiple files"
-msgstr "-c や -S と一緒に -o を指定すると、複数コンパイルできません"
+msgstr "複数ファイルがあるときに -o と -c、-S または -E を併せて指定できません"
 
 #: gcc.c:6648
 #, gcc-internal-format
@@ -16180,17 +16180,17 @@ msgstr "%s: %s コンパイラはこのシステムにインストールされ�
 #: gcc.c:6672
 #, gcc-internal-format
 msgid "recompiling with -fcompare-debug"
-msgstr ""
+msgstr "-fcompare-debug 付きで再コンパイルしています"
 
 #: gcc.c:6688
 #, gcc-internal-format
 msgid "during -fcompare-debug recompilation"
-msgstr ""
+msgstr "-fcompare-debug 再コンパイルの間"
 
 #: gcc.c:6697
 #, gcc-internal-format
 msgid "comparing final insns dumps"
-msgstr ""
+msgstr "最終命令ダンプを比較しています"
 
 #: gcc.c:6788
 #, gcc-internal-format
@@ -16210,12 +16210,12 @@ msgstr "言語 %s は認識できません"
 #: gcc.c:6928
 #, gcc-internal-format
 msgid "%s: %m"
-msgstr ""
+msgstr "%s: %m"
 
 #: gcc.c:7083
 #, gcc-internal-format
 msgid "multilib spec %qs is invalid"
-msgstr ""
+msgstr "multilib spec %qs は無効です"
 
 #: gcc.c:7275
 #, gcc-internal-format
@@ -16235,74 +16235,74 @@ msgstr ""
 #: gcc.c:7718
 #, gcc-internal-format
 msgid "environment variable %qs not defined"
-msgstr ""
+msgstr "環境変数 %qs が定義されていません"
 
 #: gcc.c:7830 gcc.c:7835
 #, gcc-internal-format
 msgid "invalid version number %qs"
-msgstr ""
+msgstr "無効なバージョン番号 %qs です"
 
 #: gcc.c:7878
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too few arguments to %%:version-compare"
-msgstr "関数への引数が少なすぎます"
+msgstr "%%:version-compare への引数が少なすぎます"
 
 #: gcc.c:7884
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too many arguments to %%:version-compare"
-msgstr "関数に対する引数が多すぎます"
+msgstr "%%:version-compare への引数が多すぎます"
 
 #: gcc.c:7925
 #, gcc-internal-format
 msgid "unknown operator %qs in %%:version-compare"
-msgstr ""
+msgstr "不明な演算子 %qs が %%:version-compare 内にあります"
 
 #: gcc.c:8038
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too many arguments to %%:compare-debug-dump-opt"
-msgstr "フォーマットへの引数が多すぎます"
+msgstr "%%:compare-debug-dump-opt への引数が多すぎます"
 
 #: gcc.c:8106
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too many arguments to %%:compare-debug-self-opt"
-msgstr "フォーマットへの引数が多すぎます"
+msgstr "%%:compare-debug-self-opt への引数が多すぎます"
 
 #: gcc.c:8141
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too few arguments to %%:compare-debug-auxbase-opt"
-msgstr "フォーマットへの引数が少なすぎます"
+msgstr "%%:compare-debug-auxbase-opt への引数が少なすぎます"
 
 #: gcc.c:8144
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too many arguments to %%:compare-debug-auxbase-opt"
-msgstr "フォーマットへの引数が多すぎます"
+msgstr "%%:compare-debug-auxbase-opt への引数が多すぎます"
 
 #: gcc.c:8151
 #, gcc-internal-format
 msgid "argument to %%:compare-debug-auxbase-opt does not end in .gk"
-msgstr ""
+msgstr "%%:compare-debug-auxbase-opt への引数が .gk で終了していません"
 
 #: gcse.c:5105
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s: %d basic blocks and %d edges/basic block"
-msgstr "GCSE を無効化: %d > 1000 基本ブロック、及び %d >= 20 edge/基本ブロック"
+msgstr ""
 
 #: gcse.c:5118
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s: %d basic blocks and %d registers"
-msgstr "GCSE を無効化: %d 基本ブロック、及び %d 個のレジスタ"
+msgstr "%s: %d 個の基本ブロックおよび %d 個のレジスタ"
 
 #: ggc-common.c:467 ggc-common.c:475 ggc-common.c:549 ggc-common.c:568
 #: ggc-page.c:2170 ggc-page.c:2201 ggc-page.c:2208 ggc-zone.c:2420
 #: ggc-zone.c:2431 ggc-zone.c:2435
 #, gcc-internal-format
 msgid "can%'t write PCH file: %m"
-msgstr ""
+msgstr "PCH ファイルを書き込めません: %m"
 
 #: ggc-common.c:561 config/i386/host-cygwin.c:55
 #, gcc-internal-format
 msgid "can%'t get position in PCH file: %m"
-msgstr ""
+msgstr "PCH ファイルの位置を取得できません: %m"
 
 #: ggc-common.c:571
 #, gcc-internal-format
@@ -16313,42 +16313,42 @@ msgstr ""
 #: ggc-common.c:654 ggc-common.c:657 ggc-page.c:2298 ggc-zone.c:2454
 #, gcc-internal-format
 msgid "can%'t read PCH file: %m"
-msgstr ""
+msgstr "PCH ファイルを読み込めません: %m"
 
 #: ggc-common.c:649
 #, gcc-internal-format
 msgid "had to relocate PCH"
-msgstr ""
+msgstr "PCH を再配置しなければいけませんでした"
 
 #: ggc-page.c:1510
 #, gcc-internal-format
 msgid "open /dev/zero: %m"
-msgstr ""
+msgstr "/dev/zero を開きます: %m"
 
 #: ggc-page.c:2186 ggc-page.c:2192
 #, gcc-internal-format
 msgid "can%'t write PCH file"
-msgstr ""
+msgstr "PCH ファイルを書き込めません"
 
 #: ggc-zone.c:2417 ggc-zone.c:2428
 #, gcc-internal-format
 msgid "can%'t seek PCH file: %m"
-msgstr ""
+msgstr "PCH ファイルを探査 (seek) 出来ません: %m"
 
 #: gimple.c:1071
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "gimple check: expected %s(%s), have %s(%s) in %s, at %s:%d"
-msgstr "Tree 検査: %s があるべき所に %s があります(%s 内, %s:%d)"
+msgstr ""
 
 #: gimplify.c:2430
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "using result of function returning %<void%>"
-msgstr "戻り型が void の関数で、`return' に値があります"
+msgstr "%<void%> を返す関数の結果を使用しています"
 
 #: gimplify.c:4946
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid lvalue in asm output %d"
-msgstr "asm 文の中に無効な左辺値"
+msgstr ""
 
 #: gimplify.c:5062
 #, gcc-internal-format
@@ -16356,9 +16356,9 @@ msgid "non-memory input %d must stay in memory"
 msgstr ""
 
 #: gimplify.c:5084
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "memory input %d is not directly addressable"
-msgstr "出力番号 %d は直接アドレス指定できません"
+msgstr ""
 
 #: gimplify.c:5551
 #, gcc-internal-format
@@ -16381,9 +16381,9 @@ msgid "enclosing parallel"
 msgstr ""
 
 #: gimplify.c:5721
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "iteration variable %qE should be private"
-msgstr "インスタンス変数 `%s' は private と宣言されています"
+msgstr ""
 
 #: gimplify.c:5735
 #, gcc-internal-format
@@ -16391,9 +16391,9 @@ msgid "iteration variable %qE should not be firstprivate"
 msgstr ""
 
 #: gimplify.c:5738
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "iteration variable %qE should not be reduction"
-msgstr "レジスタ変数 `%s' が入れ子関数の中で使われました"
+msgstr ""
 
 #: gimplify.c:5901
 #, gcc-internal-format
@@ -16403,39 +16403,39 @@ msgstr ""
 #: gimplify.c:7494
 #, gcc-internal-format
 msgid "gimplification failed"
-msgstr ""
+msgstr "gimplification に失敗しました"
 
 #: godump.c:843
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "could not close Go dump file: %m"
-msgstr "応答ファイル %s を閉じられませんでした"
+msgstr "Go ダンプファイルを閉じられません: %m"
 
 #: godump.c:855
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "could not open Go dump file %qs: %m"
-msgstr "%s: 出力ファイル '%s' を開けませんでした\n"
+msgstr "Go ダンプファイル %qs を開けません: %m"
 
 #: graph.c:411 toplev.c:1513 java/jcf-parse.c:1751 java/jcf-parse.c:1890
 #: objc/objc-act.c:591
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can%'t open %s: %m"
-msgstr "%s を開けません"
+msgstr "%s を開けません: %m"
 
 #: graphite-clast-to-gimple.c:1242 graphite-poly.c:706 toplev.c:928
 #: toplev.c:1115
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can%'t open %s for writing: %m"
-msgstr "%s を書き込み用に開けませんでした"
+msgstr "%s を書き込み用に開けません: %m"
 
 #: graphite-poly.c:608
 #, gcc-internal-format
 msgid "the file is not in OpenScop format"
-msgstr ""
+msgstr "ファイルは OpenScop 形式ではありません"
 
 #: graphite-poly.c:619
 #, gcc-internal-format
 msgid "the language is not recognized"
-msgstr ""
+msgstr "言語が認識できません"
 
 #: graphite-poly.c:630
 #, gcc-internal-format
@@ -16450,7 +16450,7 @@ msgstr ""
 #: graphite-poly.c:734
 #, gcc-internal-format
 msgid "can%'t open %s for reading: %m"
-msgstr ""
+msgstr "%s を読み込み用に開けません: %m"
 
 #: graphite-poly.c:757
 #, gcc-internal-format
@@ -16471,9 +16471,9 @@ msgid "ipa reference summary is missing in ltrans unit"
 msgstr ""
 
 #: ira.c:1385 ira.c:1398 ira.c:1412
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s cannot be used in asm here"
-msgstr "\"%s\" はマクロ名としては使えません"
+msgstr ""
 
 #: lto-cgraph.c:1070
 #, gcc-internal-format
@@ -16567,9 +16567,9 @@ msgid "use of type %<%E%> with two mismatching declarations at field %<%E%>"
 msgstr ""
 
 #: lto-streamer-in.c:992
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "original type declared here"
-msgstr "`%s' は前にここで定義されました"
+msgstr "元の型はここで宣言されました"
 
 #: lto-streamer-in.c:994
 #, gcc-internal-format
@@ -16577,14 +16577,14 @@ msgid "field in mismatching type declared here"
 msgstr ""
 
 #: lto-streamer-in.c:1000
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type of field declared here"
-msgstr "`%s' は前にここで宣言されました"
+msgstr "フィールドの型はここで宣言されました"
 
 #: lto-streamer-in.c:1007
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type of mismatching field declared here"
-msgstr "条件式での型の組合わせが適合しません"
+msgstr ""
 
 #: lto-streamer-in.c:1028
 #, gcc-internal-format
@@ -16597,9 +16597,9 @@ msgid "cl_target_option size mismatch in LTO reader and writer"
 msgstr ""
 
 #: lto-streamer-in.c:2392
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "optimization options not supported yet"
-msgstr "スタック制限式を受け付けません"
+msgstr "最適化オプションはまだサポートされていません"
 
 #: lto-streamer-in.c:2540
 #, gcc-internal-format
@@ -16617,9 +16617,9 @@ msgid "gimple bytecode streams do not support the optimization attribute"
 msgstr ""
 
 #: lto-streamer-out.c:1261
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "tree code %qs is not supported in gimple streams"
-msgstr "-mcmodel= は 32 bit システム上ではサポートされません"
+msgstr ""
 
 #: lto-streamer-out.c:1305
 #, gcc-internal-format
@@ -16637,29 +16637,29 @@ msgid "bytecode stream generated with LTO version %d.%d instead of the expected 
 msgstr ""
 
 #: lto-symtab.c:544
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD has already been defined"
-msgstr "`%s' が使われましたが未定義です"
+msgstr "%qD は既に定義されています"
 
 #: lto-symtab.c:546
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previously defined here"
-msgstr "`%s' は前にここで定義されました"
+msgstr "前はここで定義されました"
 
 #: lto-symtab.c:628
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type of %qD does not match original declaration"
-msgstr "`%s' は宣言の始まりではありません"
+msgstr "%qD の型は元の宣言と一致しません"
 
 #: lto-symtab.c:635
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "alignment of %qD is bigger than original declaration"
-msgstr "宣言の中に代入(初期化ではなく)があります"
+msgstr "%qD の整列は元の宣言より大きいです"
 
 #: lto-symtab.c:641 lto-symtab.c:747
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previously declared here"
-msgstr "`%s' は前にここで宣言されました"
+msgstr "前はここで宣言されました"
 
 #: lto-symtab.c:672
 #, gcc-internal-format
@@ -16667,14 +16667,14 @@ msgid "multiple prevailing defs for %qE"
 msgstr ""
 
 #: lto-symtab.c:730
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "variable %qD redeclared as function"
-msgstr "領域 `%s' は関数として宣言されています"
+msgstr "変数 %qD が関数として再宣言されました"
 
 #: lto-symtab.c:736
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "function %qD redeclared as variable"
-msgstr "関数 `%s' が変数であるかのように初期化されました"
+msgstr "関数 %qD が変数として再宣言されました"
 
 #: omp-low.c:1830
 #, gcc-internal-format
@@ -16714,38 +16714,38 @@ msgstr ""
 #: omp-low.c:6783 omp-low.c:6788
 #, gcc-internal-format
 msgid "invalid entry to OpenMP structured block"
-msgstr ""
+msgstr "OpenMP 構造化ブロックへの無効なエントリです"
 
 #. Otherwise, be vague and lazy, but efficient.
 #: omp-low.c:6791
 #, gcc-internal-format
 msgid "invalid branch to/from an OpenMP structured block"
-msgstr ""
+msgstr "OpenMP 構造化ブロックへ/からの無効な分岐です"
 
 #: opts-common.c:958
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "command line option %qs is not supported by this configuration"
-msgstr "%s はこのコンフィギュレーションではサポートされません"
+msgstr "コマンドラインオプション %qs はこの設定ではサポートされていません"
 
 #: opts-common.c:974
 #, gcc-internal-format
 msgid "missing argument to %qs"
-msgstr ""
+msgstr "%qs への引数がありません"
 
 #: opts-common.c:980 opts.c:546
 #, gcc-internal-format
 msgid "argument to %qs should be a non-negative integer"
-msgstr ""
+msgstr "%qs への引数は非負整数であるべきです"
 
 #: opts-common.c:995
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unrecognized argument in option %qs"
-msgstr "コマンドラインオプション '%s' を無視します"
+msgstr "オプション %qs 内で認識できない引数です"
 
 #: opts-common.c:1011
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "valid arguments to %qs are: %s"
-msgstr "%2$s に対する引数 %1$s が間違っています"
+msgstr "%qs への有効な引数は次の通りです: %s"
 
 #: opts-global.c:102
 #, gcc-internal-format
@@ -16756,37 +16756,37 @@ msgstr ""
 #: opts-global.c:108
 #, gcc-internal-format
 msgid "command line option %qs is valid for %s but not for %s"
-msgstr ""
+msgstr "コマンドラインオプション %qs は %s 用としては有効ですが、%s 用としては有効ではありません"
 
 #: opts-global.c:139
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unrecognized command line option \"%s\""
-msgstr "コマンドラインオプション '%s' を無視します"
+msgstr "認識できないコマンドラインオプション \"%s\" です"
 
 #: opts-global.c:375
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unrecognized command line option %<-fdump-%s%>"
-msgstr "コマンドラインオプション '%s' を無視します"
+msgstr "認識できないコマンドラインオプション %<-fdump-%s%> です"
 
 #: opts-global.c:387 opts-global.c:395
 #, gcc-internal-format
 msgid "plugin support is disabled; configure with --enable-plugin"
-msgstr ""
+msgstr "プラグインサポートは無効です。--enable-plugin を付けて configure を行ってください"
 
 #: opts-global.c:419
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unrecognized register name %qs"
-msgstr "認識できないレジスタ名 `%s'"
+msgstr "認識できないレジスタ名 %qs です"
 
 #: opts.c:86
 #, gcc-internal-format
 msgid "argument %qs to %<-femit-struct-debug-detailed%> not recognized"
-msgstr ""
+msgstr "%<-femit-struct-debug-detailed%> への引数 %qs は認識できません"
 
 #: opts.c:122
 #, gcc-internal-format
 msgid "argument %qs to %<-femit-struct-debug-detailed%> unknown"
-msgstr ""
+msgstr "%<-femit-struct-debug-detailed%> への引数 %qs は不明です"
 
 #: opts.c:129
 #, gcc-internal-format
@@ -16816,123 +16816,124 @@ msgstr ""
 #: opts.c:735 config/sh/sh.c:974
 #, gcc-internal-format
 msgid "-freorder-blocks-and-partition does not support unwind info on this architecture"
-msgstr ""
+msgstr "-freorder-blocks-and-partition はこのアーキテクチャ上では巻き戻し (unwind) 情報をサポートしません"
 
 #: opts.c:752 config/pa/pa.c:580
 #, gcc-internal-format
 msgid "-freorder-blocks-and-partition does not work on this architecture"
-msgstr ""
+msgstr "-freorder-blocks-and-partition はこのアーキテクチャ上では動作しません"
 
 #: opts.c:767
 #, gcc-internal-format
 msgid "-fira-algorithm=CB does not work on this architecture"
-msgstr ""
+msgstr "-fira-algorithm=CB はこのアーキテクチャ上では動作しません"
 
 #: opts.c:804
 #, gcc-internal-format
 msgid "only one -flto-partition value can be specified"
-msgstr ""
+msgstr "-flto-partition の値は一つのみ指定できます"
 
 #: opts.c:815
 #, gcc-internal-format
 msgid "%<-fsplit-stack%> is not supported by this compiler configuration"
-msgstr ""
+msgstr "このコンパイラ設定では %<-fsplit-stack%> はサポートされていません"
 
 #: opts.c:1182
 #, gcc-internal-format
 msgid "unrecognized include_flags 0x%x passed to print_specific_help"
-msgstr ""
+msgstr "print_specific_help へ認識できない include_flags 0x%x が渡されました"
 
 #: opts.c:1357
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "--help argument %q.*s is ambiguous, please be more specific"
-msgstr "警告: --help の引数 %.*s は曖昧です。より特定してください\n"
+msgstr "--help 引数 %q.*s は曖昧です。より特定してください"
 
 #: opts.c:1366
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unrecognized argument to --help= option: %q.*s"
-msgstr "警告: --help= オプションに対する認識できない引数です: %.*s\n"
+msgstr "--help= オプションへの認識できない引数です: %q.*s"
 
 #: opts.c:1503
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "structure alignment must be a small power of two, not %d"
-msgstr "要求されたアラインメントが 2 のべき乗ではありません"
+msgstr "構造体の整列は %d ではなく、小さな二の乗数でなければいけません"
 
 #: opts.c:1611
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unknown stack check parameter \"%s\""
-msgstr "引数 `%s' が未使用です"
+msgstr "不明なスタック検査パラメータ \"%s\" です"
 
+# 規格に合わせて DWARF と大文字で表記する
 #: opts.c:1641
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "dwarf version %d is not supported"
-msgstr "スタック制限式を受け付けません"
+msgstr "DWARF バージョン %d はサポートされていません"
 
 #: opts.c:1709
 #, gcc-internal-format
 msgid "%s: --param arguments should be of the form NAME=VALUE"
-msgstr ""
+msgstr "%s: --param 引数は NAME=VALUE の形式であるべきです"
 
 #: opts.c:1715
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid --param value %qs"
-msgstr "無効なパラメタ値 `%s'"
+msgstr "無効な --param の値 %qs です"
 
 #: opts.c:1821
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "target system does not support debug output"
-msgstr "ターゲット CPU は interworking をサポートしません"
+msgstr "ターゲットシステムはデバッグ出力をサポートしていません"
 
 #: opts.c:1830
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "debug format \"%s\" conflicts with prior selection"
-msgstr "データ領域 '%s' は前の宣言と矛盾します"
+msgstr "デバッグ形式 \"%s\" は前の選択と競合しています"
 
 #: opts.c:1846
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unrecognised debug output level \"%s\""
-msgstr "認識できないセクション名 \"%s\""
+msgstr "認識できないでバッグ出力レベル \"%s\" です"
 
 #: opts.c:1848
 #, gcc-internal-format
 msgid "debug output level %s is too high"
-msgstr ""
+msgstr "デバッグ出力レベル %s は高すぎます"
 
 #: opts.c:1868
 #, gcc-internal-format
 msgid "getting core file size maximum limit: %m"
-msgstr ""
+msgstr "コアファイルサイズ最大制限を取得しています: %m"
 
 #: opts.c:1871
 #, gcc-internal-format
 msgid "setting core file size limit to maximum: %m"
-msgstr ""
+msgstr "コアファイルサイズ制限を最大へ設定しています: %m"
 
 #: opts.c:1919
 #, gcc-internal-format
 msgid "unrecognized gcc debugging option: %c"
-msgstr "認識できない gcc デバッグオプション: %c"
+msgstr "認識できない gcc デバッグオプションです: %c"
 
 #: opts.c:1945
 #, gcc-internal-format
 msgid "-Werror=%s: no option -%s"
-msgstr ""
+msgstr "-Werror=%s: オプション -%s はありません"
 
 #: params.c:103
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "minimum value of parameter %qs is %u"
-msgstr "仮引数 `%s' は無効です"
+msgstr "パラメータ %qs の最小値は %u です"
 
 #: params.c:108
 #, gcc-internal-format
 msgid "maximum value of parameter %qs is %u"
-msgstr ""
+msgstr "パラメータ %qs の最大値は %u です"
 
 #. If we didn't find this parameter, issue an error message.
 #: params.c:118
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid parameter %qs"
-msgstr "仮引数 `%s' は無効です"
+msgstr "無効なパラメータ %qs です"
 
 #: passes.c:591
 #, gcc-internal-format
@@ -16940,14 +16941,14 @@ msgid "invalid pass positioning operation"
 msgstr ""
 
 #: passes.c:633
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "plugin cannot register a missing pass"
-msgstr "`asm' 中に不明なレジスタ名 `%s' があります"
+msgstr ""
 
 #: passes.c:636
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "plugin cannot register an unnamed pass"
-msgstr "不明なレジスタ名です: %s"
+msgstr ""
 
 #: passes.c:640
 #, gcc-internal-format
@@ -16975,27 +16976,27 @@ msgstr ""
 #: plugin.c:228
 #, gcc-internal-format
 msgid "malformed option -fplugin-arg-%s (multiple '=' signs)"
-msgstr ""
+msgstr "間違った形式のオプション -fplugin-arg-%s です (複数の '=' 符号があります)"
 
 #: plugin.c:244
 #, gcc-internal-format
 msgid "malformed option -fplugin-arg-%s (missing -<key>[=<value>])"
-msgstr ""
+msgstr "間違った形式のオプション -fplugin-arg-%s です (-<key>[=<value>] がありません)"
 
 #: plugin.c:306
 #, gcc-internal-format
 msgid "plugin %s should be specified before -fplugin-arg-%s in the command line"
-msgstr ""
+msgstr "プラグイン %s はコマンドライン内の -fplugin-arg-%s より前で指定されるべきです"
 
 #: plugin.c:426
 #, gcc-internal-format
 msgid "unknown callback event registered by plugin %s"
-msgstr ""
+msgstr "プラグイン %s によって不明なコールバックイベントが登録されました"
 
 #: plugin.c:454
 #, gcc-internal-format
 msgid "plugin %s registered a null callback function for event %s"
-msgstr ""
+msgstr "プラグイン %s はイベント %s 用に NULL コールバック関数を登録しました"
 
 #: plugin.c:574
 #, gcc-internal-format
@@ -17003,6 +17004,8 @@ msgid ""
 "cannot load plugin %s\n"
 "%s"
 msgstr ""
+"プラグイン %s をロードできません\n"
+"%s"
 
 #: plugin.c:583
 #, gcc-internal-format
@@ -17010,6 +17013,8 @@ msgid ""
 "plugin %s is not licensed under a GPL-compatible license\n"
 "%s"
 msgstr ""
+"プラグイン %s は GPL に適合したライセンスではありません\n"
+"%s"
 
 #: plugin.c:592
 #, gcc-internal-format
@@ -17017,16 +17022,18 @@ msgid ""
 "cannot find %s in plugin %s\n"
 "%s"
 msgstr ""
+"%s がプラグイン %s 内に見つかりません\n"
+"%s"
 
 #: plugin.c:600
 #, gcc-internal-format
 msgid "fail to initialize plugin %s"
-msgstr ""
+msgstr "プラグイン %s の初期化に失敗しました"
 
 #: plugin.c:881
 #, gcc-internal-format
 msgid "-iplugindir <dir> option not passed from the gcc driver"
-msgstr ""
+msgstr "-iplugindir <dir> オプションが gcc ドライバから渡されませんでした"
 
 #: profile.c:415
 #, gcc-internal-format
@@ -17036,17 +17043,17 @@ msgstr ""
 #: profile.c:459
 #, gcc-internal-format
 msgid "corrupted profile info: run_max * runs < sum_max"
-msgstr ""
+msgstr "破損したプロファイル情報: run_max * runs < sum_max です"
 
 #: profile.c:465
 #, gcc-internal-format
 msgid "corrupted profile info: sum_all is smaller than sum_max"
-msgstr ""
+msgstr "破損したプロファイル情報: sum_all が sum_max より小さいです"
 
 #: profile.c:631
 #, gcc-internal-format
 msgid "correcting inconsistent profile data"
-msgstr ""
+msgstr "一貫性のないプロファイルデータを訂正しています"
 
 #: profile.c:641
 #, gcc-internal-format
@@ -17064,29 +17071,29 @@ msgid "corrupted profile info: number of executions for edge %d-%d thought to be
 msgstr ""
 
 #: reg-stack.c:536
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "output constraint %d must specify a single register"
-msgstr "出力制約 %d は一つのレジスタを指定しなければなりません"
+msgstr "出力制約 %d は単一レジスタを指定しなければいけません"
 
 #: reg-stack.c:546
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "output constraint %d cannot be specified together with \"%s\" clobber"
-msgstr "出力制約 %d は一つのレジスタを指定しなければなりません"
+msgstr ""
 
 #: reg-stack.c:569
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "output regs must be grouped at top of stack"
-msgstr "出力レジスタはスタックのトップにグループされていなければなりません"
+msgstr ""
 
 #: reg-stack.c:606
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "implicitly popped regs must be grouped at top of stack"
-msgstr "暗黙に pop されるレジスタはスタックのトップにグループされていなければなりません"
+msgstr ""
 
 #: reg-stack.c:625
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "output operand %d must use %<&%> constraint"
-msgstr "出力オペランド %d は `&' 制約を使わなければなりません"
+msgstr "出力被演算子 %d は %<&%> 制約を使用しなければいけません"
 
 #: regcprop.c:1136
 #, gcc-internal-format
@@ -17111,17 +17118,17 @@ msgstr ""
 #: reginfo.c:779
 #, gcc-internal-format
 msgid "can%'t use %qs as a call-saved register"
-msgstr ""
+msgstr "%qs を呼び出しで保存されるレジスタとして使用できません"
 
 #: reginfo.c:783
 #, gcc-internal-format
 msgid "can%'t use %qs as a call-used register"
-msgstr ""
+msgstr "%qs を呼び出しで使用されるレジスタとして使用できません"
 
 #: reginfo.c:795
 #, gcc-internal-format
 msgid "can%'t use %qs as a fixed register"
-msgstr ""
+msgstr "%qs を固定レジスタとして使用できません"
 
 #: reginfo.c:821 config/ia64/ia64.c:5667 config/ia64/ia64.c:5674
 #: config/pa/pa.c:432 config/pa/pa.c:439 config/sh/sh.c:8861
@@ -17133,47 +17140,47 @@ msgstr "不明なレジスタ名です: %s"
 #: reginfo.c:832
 #, gcc-internal-format
 msgid "stack register used for global register variable"
-msgstr ""
+msgstr "大域レジスタ変数用にスタックレジスタが使用されました"
 
 #: reginfo.c:838
 #, gcc-internal-format
 msgid "global register variable follows a function definition"
-msgstr "大域 register 変数が関数定義の後ろにあります"
+msgstr "大域レジスタ変数が関数定義に続いてあります"
 
 #: reginfo.c:842
 #, gcc-internal-format
 msgid "register used for two global register variables"
-msgstr "レジスタが二つのグローバルレジスタ変数として使われました"
+msgstr "レジスタが二つの大域レジスタ変数として使われました"
 
 #: reginfo.c:847
 #, gcc-internal-format
 msgid "call-clobbered register used for global register variable"
-msgstr "呼び出しで破壊されるレジスタがグローバルレジスタ変数として使われました"
+msgstr "呼び出しで破壊されるレジスタが大域レジスタ変数として使用されました"
 
 #: reload.c:1269
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot reload integer constant operand in %<asm%>"
-msgstr "整数定数オペランドを `asm' 内で再ロードできません"
+msgstr "%<asm%> 内で整数定数被演算子を再ロードできません"
 
 #: reload.c:1283
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "impossible register constraint in %<asm%>"
-msgstr "`asm' 内ではレジスタ制約を行なえません"
+msgstr "%<asm%> 内でレジスタ制約は不可能です"
 
 #: reload.c:3630
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<&%> constraint used with no register class"
-msgstr "`&' 制約がレジスタクラス無しで使われました"
+msgstr "%<&%> 制約がレジスタクラス無しで使用されました"
 
 #: reload.c:3806 reload.c:4066
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "inconsistent operand constraints in an %<asm%>"
-msgstr "`asm' 内でのオペランド制約が矛盾しています"
+msgstr "%<asm%> 内の被演算子制約に一貫性がありません"
 
 #: reload1.c:1256
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<asm%> operand has impossible constraints"
-msgstr "asm オペランド %d は恐らく制約に適合しません"
+msgstr "%<asm%> 被演算子が不可能な制約を持っています"
 
 #: reload1.c:1276
 #, gcc-internal-format
@@ -17188,12 +17195,12 @@ msgstr "ローカル変数の数を削減してみてください"
 #: reload1.c:2092
 #, gcc-internal-format
 msgid "can%'t find a register in class %qs while reloading %<asm%>"
-msgstr ""
+msgstr "クラス %qs 内のレジスタを %<asm%> 再ロード中に見つけられません"
 
 #: reload1.c:2097
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unable to find a register to spill in class %qs"
-msgstr "クラス `%s' 内でふるい落とすレジスタを見つけられません"
+msgstr ""
 
 #: reload1.c:4625
 #, fuzzy, gcc-internal-format
@@ -17201,14 +17208,14 @@ msgid "%<asm%> operand requires impossible reload"
 msgstr "`asm' オペランドは再ロードできない事が要求されます"
 
 #: reload1.c:6014
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<asm%> operand constraint incompatible with operand size"
-msgstr "`asm' オペランド制約がオペランドサイズと整合しません"
+msgstr "%<asm%> 被演算子制約が被演算子サイズと互換性がありません"
 
 #: reload1.c:7864
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "output operand is constant in %<asm%>"
-msgstr "出力オペランドが `asm' 内で定数です"
+msgstr "出力被演算子が %<asm%> 内の定数です"
 
 #: rtl.c:730
 #, fuzzy, gcc-internal-format
@@ -17251,49 +17258,49 @@ msgid "RTL flag check: %s used with unexpected rtx code '%s' in %s, at %s:%d"
 msgstr "RTL 検査: コード `%s' のはずなのに `%s' (%s 中)です (%s:%d)"
 
 #: stmt.c:314
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "output operand constraint lacks %<=%>"
-msgstr "出力オペランド制約に `=' が欠けています"
+msgstr "出力被演算子制約に %<=%> がありません"
 
 #: stmt.c:329
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "output constraint %qc for operand %d is not at the beginning"
-msgstr "出力制約 `%c' (operand %d 用) が開始部分にありません"
+msgstr "出力制約 %qc (被演算子 %d 用) が先頭にありません"
 
 #: stmt.c:352
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "operand constraint contains incorrectly positioned %<+%> or %<=%>"
-msgstr "オペランド制約中、不正な位置に '+' や '=' が含まれています"
+msgstr "被演算子制約に正しくない位置にある %<+%> または %<=%> が含まれます"
 
 #: stmt.c:359 stmt.c:458
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%%%> constraint used with last operand"
-msgstr "`%%' 制約が最後のオペランドとともに使われました"
+msgstr "%<%%%> 制約が最後の被演算子で使用されました"
 
 #: stmt.c:378
 #, gcc-internal-format
 msgid "matching constraint not valid in output operand"
-msgstr "出力オペランド内の制約が正しくありません"
+msgstr "一致制約は出力被演算子内では有効ではありません"
 
 #: stmt.c:449
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "input operand constraint contains %qc"
-msgstr "入力オペランド制約が `%c' を含んでいます"
+msgstr "入力被演算子制約に %qc が含まれます"
 
 #: stmt.c:491
 #, gcc-internal-format
 msgid "matching constraint references invalid operand number"
-msgstr "制約に適合させる時に、無効なオペランド番号を参照しました"
+msgstr "一致制約が無効な被演算子番号を参照しています"
 
 #: stmt.c:529
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid punctuation %qc in constraint"
-msgstr "無効な句読点 `%c' が制約内にあります"
+msgstr "無効な句読点 %qc が制約内にあります"
 
 #: stmt.c:553
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "matching constraint does not allow a register"
-msgstr "出力オペランド内の制約が正しくありません"
+msgstr "一致制約はレジスタでは許可されていません"
 
 #: stmt.c:607
 #, gcc-internal-format
@@ -17301,19 +17308,19 @@ msgid "asm-specifier for variable %qE conflicts with asm clobber list"
 msgstr ""
 
 #: stmt.c:699
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unknown register name %qs in %<asm%>"
-msgstr "`asm' 中に不明なレジスタ名 `%s' があります"
+msgstr "不明なレジスタ名 %qs が %<asm%> 内にあります"
 
 #: stmt.c:713
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "PIC register clobbered by %qs in %<asm%>"
-msgstr "`asm' 中に不明なレジスタ名 `%s' があります"
+msgstr "PIC レジスタが %qs によって %<asm%> 内で破壊されます"
 
 #: stmt.c:761
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "more than %d operands in %<asm%>"
-msgstr "`asm' の中に %d を越えるオペランドがあります"
+msgstr "%d 個より多い被演算子が %<asm%> 内にあります"
 
 #: stmt.c:828
 #, gcc-internal-format
@@ -17321,9 +17328,9 @@ msgid "output number %d not directly addressable"
 msgstr "出力番号 %d は直接アドレス指定できません"
 
 #: stmt.c:914
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "asm operand %d probably doesn%'t match constraints"
-msgstr "asm オペランド %d は恐らく制約に適合しません"
+msgstr "asm 被演算子 %d は制約に適合しない可能性があります"
 
 #: stmt.c:924
 #, gcc-internal-format
@@ -17341,54 +17348,54 @@ msgid "asm clobber conflict with input operand"
 msgstr ""
 
 #: stmt.c:1220
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too many alternatives in %<asm%>"
-msgstr "`asm' 中の代替キーワードが多すぎます"
+msgstr ""
 
 #: stmt.c:1232
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "operand constraints for %<asm%> differ in number of alternatives"
-msgstr "`asm' のオペランド制約が代替番号とは異なります"
+msgstr ""
 
 #: stmt.c:1299
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "duplicate asm operand name %qs"
-msgstr "重複したメンバ `%s'"
+msgstr "重複した asm 被演算子名 %qs です"
 
 #: stmt.c:1396
 #, gcc-internal-format
 msgid "missing close brace for named operand"
-msgstr ""
+msgstr "名前付き非演算子用の閉じる中括弧がありません"
 
 #: stmt.c:1421
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "undefined named operand %qs"
-msgstr "登録されていない演算子 %s です"
+msgstr "未定義の名前付き非演算子 %qs です"
 
 #: stmt.c:1566 cp/cvt.c:1093 cp/cvt.c:1337
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "value computed is not used"
-msgstr ".da ファイルの内容を使い切っていません\n"
+msgstr "計算された値が使用されません"
 
 #: stor-layout.c:158
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type size can%'t be explicitly evaluated"
-msgstr "型の大きさは明示的に評価されるものではありえません"
+msgstr "型のサイズが明示的に評価できません"
 
 #: stor-layout.c:160
 #, gcc-internal-format
 msgid "variable-size type declared outside of any function"
-msgstr "変数サイズ型が関数の外側で宣言されました"
+msgstr "可変サイズ型が関数の外側で宣言されました"
 
 #: stor-layout.c:748
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "size of %q+D is %d bytes"
-msgstr "`%s' のサイズが %d バイトです"
+msgstr "%q+D のサイズは %d バイトです"
 
 #: stor-layout.c:750
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "size of %q+D is larger than %wd bytes"
-msgstr "`%s' のサイズが %d バイトより大きくなっています"
+msgstr "%q+D のサイズは %wd バイトより大きいです"
 
 #: stor-layout.c:1167
 #, fuzzy, gcc-internal-format
@@ -17401,9 +17408,9 @@ msgid "packed attribute is unnecessary for %q+D"
 msgstr "packed 属性は `%s' には必要ありません"
 
 #: stor-layout.c:1189
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "padding struct to align %q+D"
-msgstr "`%s' をアラインするために構造体をパディングします"
+msgstr ""
 
 #: stor-layout.c:1250
 #, gcc-internal-format
@@ -17416,19 +17423,19 @@ msgid "padding struct size to alignment boundary"
 msgstr "アラインメント境界のサイズに構造体をパディングします"
 
 #: stor-layout.c:1584
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "packed attribute causes inefficient alignment for %qE"
-msgstr "packed 属性は `%s' に対して不効率なアラインメントを引き起こします"
+msgstr ""
 
 #: stor-layout.c:1588
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "packed attribute is unnecessary for %qE"
-msgstr "packed 属性は `%s' には必要ありません"
+msgstr ""
 
 #: stor-layout.c:1594
 #, gcc-internal-format
 msgid "packed attribute causes inefficient alignment"
-msgstr "packed 属性は不効率なアラインメントを引き起こします"
+msgstr ""
 
 #: stor-layout.c:1596
 #, gcc-internal-format
@@ -17436,34 +17443,34 @@ msgid "packed attribute is unnecessary"
 msgstr "packed 属性は必要ありません"
 
 #: stor-layout.c:2073
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "alignment of array elements is greater than element size"
-msgstr "`%s' のアラインメントはオブジェクトファイルの最大値よりも大きいです。 %d を使います。"
+msgstr "配列要素の整列が要素のサイズより大きいです"
 
 #: targhooks.c:166
 #, gcc-internal-format
 msgid "__builtin_saveregs not supported by this target"
-msgstr "__builtin_saveregs はこのターゲットでは実装されていません"
+msgstr "__builtin_saveregs はこのターゲットではサポートされていません"
 
 #: targhooks.c:826
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "nested functions not supported on this target"
-msgstr "-fdata-sections はこのターゲットで受け入れられません"
+msgstr "入れ子になった関数はこのターゲットではサポートされていません"
 
 #: targhooks.c:839
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "nested function trampolines not supported on this target"
-msgstr "セクション属性はこのターゲットでは実装されていません"
+msgstr ""
 
 #: targhooks.c:1164
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "target attribute is not supported on this machine"
-msgstr "init_priority 属性はこのプラットフォームではサポートされていません"
+msgstr "target 属性はこのマシン上ではサポートされていません"
 
 #: targhooks.c:1174
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "#pragma GCC target is not supported for this machine"
-msgstr "-fdata-sections はこのターゲットで受け入れられません"
+msgstr "#pragma GCC target はこのマシン用にはサポートされていません"
 
 #: tlink.c:486
 #, gcc-internal-format
@@ -17481,29 +17488,29 @@ msgid "ld returned %d exit status"
 msgstr "ld はステータス %d で終了しました"
 
 #: toplev.c:499
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q+F declared %<static%> but never defined"
-msgstr "`%s' が `static' と宣言されましたが未定義です"
+msgstr "%q+F が %<static%> と宣言されましたが定義されていません"
 
 #: toplev.c:527
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q+D defined but not used"
-msgstr "`%s' が定義されましたが使われませんでした"
+msgstr "%q+D が定義されましたが使用されません"
 
 #: toplev.c:949
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-frecord-gcc-switches is not supported by the current target"
-msgstr "-fdata-sections はこのターゲットで受け入れられません"
+msgstr "-frecord-gcc-switches は現在のターゲットではサポートされていません"
 
 #: toplev.c:1058
 #, gcc-internal-format
 msgid "-fstack-usage not supported for this target"
-msgstr ""
+msgstr "-fstack-usage はこのターゲットではサポートされていません"
 
 #: toplev.c:1295
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "this target does not support %qs"
-msgstr "%s は %s を受け付けません"
+msgstr "このターゲットでは %qs はサポートされていません"
 
 #: toplev.c:1348
 #, gcc-internal-format
@@ -17526,19 +17533,19 @@ msgid "could not close zeroed insn dump file %qs: %m"
 msgstr ""
 
 #: toplev.c:1448
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "target system does not support the \"%s\" debug format"
-msgstr "%s は `%%%s%c' %s フォーマットを受け付けません"
+msgstr "ターゲットシステムは \"%s\" デバッグ形式をサポートしません"
 
 #: toplev.c:1460
 #, gcc-internal-format
 msgid "variable tracking requested, but useless unless producing debug info"
-msgstr ""
+msgstr "変数追跡が要求されましたが、デバッグ情報を生成しない限り意味がありません"
 
 #: toplev.c:1463
 #, gcc-internal-format
 msgid "variable tracking requested, but not supported by this debug format"
-msgstr ""
+msgstr "変数追跡が要求されましたが、このデバッグ形式ではサポートされていません"
 
 #: toplev.c:1497
 #, gcc-internal-format
@@ -17546,44 +17553,44 @@ msgid "var-tracking-assignments changes selective scheduling"
 msgstr ""
 
 #: toplev.c:1520
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-ffunction-sections not supported for this target"
-msgstr "-ffunction-sections はこのターゲットで受け入れられません"
+msgstr "-ffunction-sections はこのターゲットではサポートされていません"
 
 #: toplev.c:1525
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-fdata-sections not supported for this target"
-msgstr "-fdata-sections はこのターゲットで受け入れられません"
+msgstr "-fdata-sections はこのターゲットではサポートされていません"
 
 #: toplev.c:1532
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-ffunction-sections disabled; it makes profiling impossible"
-msgstr "-ffunction-sections が無効です -- プロファイルは不可能です"
+msgstr "-ffunction-sections が無効です。これによりプロファイルが不可能になります"
 
 #: toplev.c:1539
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-fprefetch-loop-arrays not supported for this target"
-msgstr "-fdata-sections はこのターゲットで受け入れられません"
+msgstr "-fprefetch-loop-arrays はこのターゲットではサポートされていません"
 
 #: toplev.c:1545
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-fprefetch-loop-arrays not supported for this target (try -march switches)"
-msgstr "-f%sleading-underscore はこのターゲットマシンではサポートされません"
+msgstr "-fprefetch-loop-arrays はこのターゲットではサポートされていません (-march スイッチを試してください)"
 
 #: toplev.c:1554
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-fprefetch-loop-arrays is not supported with -Os"
-msgstr "-mg でのプロファイルは提供されません\n"
+msgstr "-fprefetch-loop-arrays を -Os と併せて使用することはサポートされていません"
 
 #: toplev.c:1565
 #, gcc-internal-format
 msgid "-fassociative-math disabled; other options take precedence"
-msgstr ""
+msgstr "-fassociative-math は無効です。他のオプションが優先して使用されます"
 
 #: toplev.c:1581
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-fstack-protector not supported for this target"
-msgstr "-fdata-sections はこのターゲットで受け入れられません"
+msgstr "-fstack-protector はこのターゲットではサポートされていません"
 
 #: toplev.c:1594
 #, gcc-internal-format
@@ -17591,24 +17598,24 @@ msgid "unwind tables currently require a frame pointer for correctness"
 msgstr ""
 
 #: toplev.c:1822
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "error writing to %s: %m"
-msgstr "%s への書き込みエラーです"
+msgstr "%s への書き込み中にエラーが発生しました: %m"
 
 #: toplev.c:1824 java/jcf-parse.c:1770
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "error closing %s: %m"
-msgstr "エラーにより %s を閉じます"
+msgstr "%s を閉じているときにエラーが発生しました: %m"
 
 #: tree-cfg.c:2554
 #, gcc-internal-format
 msgid "constant not recomputed when ADDR_EXPR changed"
-msgstr ""
+msgstr "ADDR_EXPR が変更されたときに定数が再計算されません"
 
 #: tree-cfg.c:2559
 #, gcc-internal-format
 msgid "side effects not recomputed when ADDR_EXPR changed"
-msgstr ""
+msgstr "ADDR_EXPR が変更されたときに副作用が計算されません"
 
 #: tree-cfg.c:2570
 #, gcc-internal-format
@@ -17628,12 +17635,12 @@ msgstr ""
 #: tree-cfg.c:2613
 #, gcc-internal-format
 msgid "invalid first operand of MEM_REF"
-msgstr ""
+msgstr "MEM_REF の無効な第一被演算子です"
 
 #: tree-cfg.c:2619
 #, gcc-internal-format
 msgid "invalid offset operand of MEM_REF"
-msgstr ""
+msgstr "MEM_REF の無効なオフセット被演算子です"
 
 #: tree-cfg.c:2632
 #, gcc-internal-format
@@ -17651,19 +17658,19 @@ msgid "address taken, but ADDRESSABLE bit not set"
 msgstr ""
 
 #: tree-cfg.c:2676
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-integral used in condition"
-msgstr "終端のない #%s 条件"
+msgstr "条件内で非整数が使用されました"
 
 #: tree-cfg.c:2681
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid conditional operand"
-msgstr "オペランドとして無効な式"
+msgstr "無効な条件被演算子です"
 
 #: tree-cfg.c:2728
 #, gcc-internal-format
 msgid "invalid position or size operand to BIT_FIELD_REF"
-msgstr ""
+msgstr "BIT_FIELD_REF への無効な位置またはサイズ被演算子です"
 
 #: tree-cfg.c:2735
 #, gcc-internal-format
@@ -17676,59 +17683,59 @@ msgid "mode precision of non-integral result does not match field size of BIT_FI
 msgstr ""
 
 #: tree-cfg.c:2754
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid reference prefix"
-msgstr "無効な参照型です"
+msgstr "無効な参照接頭辞です"
 
 #: tree-cfg.c:2765
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid operand to plus/minus, type is a pointer"
-msgstr "二項演算子 %s が不適切です"
+msgstr "プラス/マイナスへの無効な被演算子です。型がポインタです"
 
 #: tree-cfg.c:2776
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid operand to pointer plus, first operand is not a pointer"
-msgstr "`->' のベースオペランドがポインタではありません"
+msgstr "ポインタ加算への無効な被演算子です。第一被演算子がポインタではありません"
 
 #: tree-cfg.c:2784
 #, gcc-internal-format
 msgid "invalid operand to pointer plus, second operand is not an integer with type of sizetype"
-msgstr ""
+msgstr "ポインタ加算への無効な被演算子です。第二被演算子が整数でも型サイズでもありません"
 
 #: tree-cfg.c:2855
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid expression for min lvalue"
-msgstr "オペランドとして無効な式"
+msgstr ""
 
 #: tree-cfg.c:2866
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid operand in indirect reference"
-msgstr "二項演算子 %s が不適切です"
+msgstr "間接参照内で無効な被演算子です"
 
 #: tree-cfg.c:2895
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid operands to array reference"
-msgstr "二項演算子 %s が不適切です"
+msgstr "配列参照への無効な被演算子です"
 
 #: tree-cfg.c:2906
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type mismatch in array reference"
-msgstr "配列参照での添字を欠いています"
+msgstr "配列参照内で型不一致です"
 
 #: tree-cfg.c:2915
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type mismatch in array range reference"
-msgstr "配列参照での添字を欠いています"
+msgstr "配列範囲参照内で型不一致です"
 
 #: tree-cfg.c:2926
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type mismatch in real/imagpart reference"
-msgstr "型が前方の外部宣言と一致しません"
+msgstr "実部/虚部参照内で型不一致です"
 
 #: tree-cfg.c:2936
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type mismatch in component reference"
-msgstr "条件式での型の組合わせが適合しません"
+msgstr ""
 
 #: tree-cfg.c:2953
 #, gcc-internal-format
@@ -17743,37 +17750,37 @@ msgstr ""
 #: tree-cfg.c:2975
 #, gcc-internal-format
 msgid "invalid address operand in MEM_REF"
-msgstr ""
+msgstr "MEM_REF 内で無効なアドレス被演算子です"
 
 #: tree-cfg.c:2982
 #, gcc-internal-format
 msgid "invalid offset operand in MEM_REF"
-msgstr ""
+msgstr "MEM_REF 内で無効なオフセット被演算子です"
 
 #: tree-cfg.c:2992
 #, gcc-internal-format
 msgid "invalid address operand in in TARGET_MEM_REF"
-msgstr ""
+msgstr "TARGET_MEM_REF 内で無効なアドレス被演算子です"
 
 #: tree-cfg.c:2999
 #, gcc-internal-format
 msgid "invalid offset operand in TARGET_MEM_REF"
-msgstr ""
+msgstr "TARGET_MEM_REF 内で無効なオフセット被演算子です"
 
 #: tree-cfg.c:3052
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid function in gimple call"
-msgstr "無効な PC が行番号テーブルにあります"
+msgstr "gimple 呼び出し内で無効な関数です"
 
 #: tree-cfg.c:3061
 #, gcc-internal-format
 msgid "non-function in gimple call"
-msgstr ""
+msgstr "gimple 呼び出し内で非関数です"
 
 #: tree-cfg.c:3069
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid LHS in gimple call"
-msgstr "無効な PC が行番号テーブルにあります"
+msgstr "gimple 呼び出し内で無効な LHS です"
 
 #: tree-cfg.c:3075
 #, gcc-internal-format
@@ -17781,14 +17788,14 @@ msgid "LHS in noreturn call"
 msgstr ""
 
 #: tree-cfg.c:3091
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid conversion in gimple call"
-msgstr "無効なバージョン番号形式"
+msgstr "gimple 呼び出し内で無効な変換ですcall"
 
 #: tree-cfg.c:3100
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid static chain in gimple call"
-msgstr "無効な PC が行番号テーブルにあります"
+msgstr ""
 
 #: tree-cfg.c:3111
 #, gcc-internal-format
@@ -17801,19 +17808,19 @@ msgid "static chain with function that doesn%'t use one"
 msgstr ""
 
 #: tree-cfg.c:3136
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid argument to gimple call"
-msgstr "`%s' の引数として無効な型"
+msgstr "gimple 呼び出しへの無効な引数です"
 
 #: tree-cfg.c:3155
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid operands in gimple comparison"
-msgstr "二項演算子 %s が不適切です"
+msgstr "gimple 比較内で無効な被演算子です"
 
 #: tree-cfg.c:3173
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type mismatch in comparison expression"
-msgstr "条件式での型の組合わせが適合しません"
+msgstr "比較式内で型不一致です"
 
 #: tree-cfg.c:3199
 #, gcc-internal-format
@@ -17821,39 +17828,39 @@ msgid "non-register as LHS of unary operation"
 msgstr ""
 
 #: tree-cfg.c:3205
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid operand in unary operation"
-msgstr "二項演算子 %s が不適切です"
+msgstr "単項演算子内で無効な被演算子です"
 
 #: tree-cfg.c:3240
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid types in nop conversion"
-msgstr "無効な型表現です"
+msgstr ""
 
 #: tree-cfg.c:3255
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid types in address space conversion"
-msgstr "オペランドとして無効な式"
+msgstr "アドレス空間変換内で無効な型です"
 
 #: tree-cfg.c:3269
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid types in fixed-point conversion"
-msgstr "dump_definition に 無効なハッシュタイプ %d"
+msgstr "固定小数変換内で無効な型です"
 
 #: tree-cfg.c:3282
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid types in conversion to floating point"
-msgstr "浮動小数点エミュレータのバージョンを指定する"
+msgstr "浮動小数点への変換内で無効な型です"
 
 #: tree-cfg.c:3295
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid types in conversion to integer"
-msgstr "new に対して無効な型である `void'"
+msgstr "整数への変換内で無効な型です"
 
 #: tree-cfg.c:3330
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-trivial conversion in unary operation"
-msgstr "無効なバージョン番号形式"
+msgstr ""
 
 #: tree-cfg.c:3357
 #, gcc-internal-format
@@ -17861,29 +17868,29 @@ msgid "non-register as LHS of binary operation"
 msgstr ""
 
 #: tree-cfg.c:3364
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid operands in binary operation"
-msgstr "二項演算子 %s が不適切です"
+msgstr "二進演算内で無効な被演算子です"
 
 #: tree-cfg.c:3379
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type mismatch in complex expression"
-msgstr "条件式での型の組合わせが適合しません"
+msgstr "複素数式内で型不一致です"
 
 #: tree-cfg.c:3408
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type mismatch in shift expression"
-msgstr "条件式での型の組合わせが適合しません"
+msgstr "シフト式内で型不一致です"
 
 #: tree-cfg.c:3431
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type mismatch in vector shift expression"
-msgstr "条件式での型の組合わせが適合しません"
+msgstr "ベクトルシフト式内で型不一致です"
 
 #: tree-cfg.c:3444
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-element sized vector shift of floating point vector"
-msgstr "浮動小数点エミュレータのバージョンを指定する"
+msgstr ""
 
 #: tree-cfg.c:3463
 #, gcc-internal-format
@@ -17891,24 +17898,24 @@ msgid "invalid non-vector operands to vector valued plus"
 msgstr ""
 
 #: tree-cfg.c:3483
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid (pointer) operands to plus/minus"
-msgstr "二項演算子 %s が不適切です"
+msgstr "プラス/マイナスへの無効な (ポインタ) 被演算子です"
 
 #: tree-cfg.c:3498
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type mismatch in pointer plus expression"
-msgstr "条件式での型の組合わせが適合しません"
+msgstr "ポインタ加算式内で型不一致です"
 
 #: tree-cfg.c:3521
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type mismatch in binary truth expression"
-msgstr "条件式での型の組合わせが適合しません"
+msgstr "二進真偽式内で型不一致です"
 
 #: tree-cfg.c:3594
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type mismatch in binary expression"
-msgstr "条件式での型の組合わせが適合しません"
+msgstr "二進式内で型不一致です"
 
 #: tree-cfg.c:3624
 #, gcc-internal-format
@@ -17931,19 +17938,19 @@ msgid "type mismatch in fused multiply-add expression"
 msgstr ""
 
 #: tree-cfg.c:3692
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-trivial conversion at assignment"
-msgstr "代入として無効な左辺値です"
+msgstr ""
 
 #: tree-cfg.c:3709
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid operand in unary expression"
-msgstr "無効なトークンが式にあります"
+msgstr "単項演算式内で無効な被演算子です"
 
 #: tree-cfg.c:3723
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type mismatch in address expression"
-msgstr "条件式での型の組合わせが適合しません"
+msgstr "アドレス式内で型不一致です"
 
 #: tree-cfg.c:3749 tree-cfg.c:3775
 #, gcc-internal-format
@@ -17956,69 +17963,69 @@ msgid "invalid COND_EXPR in gimple assignment"
 msgstr ""
 
 #: tree-cfg.c:3856
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid operand in return statement"
-msgstr "無効な初期化式です"
+msgstr "return 文内で無効な被演算子です"
 
 #: tree-cfg.c:3870
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid conversion in return statement"
-msgstr "無効な初期化式です"
+msgstr "return 文内で無効な変換です"
 
 #: tree-cfg.c:3894
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "goto destination is neither a label nor a pointer"
-msgstr "添字をつけられた値が配列でもポインタでもありません"
+msgstr "goto の先がラベルでもポインタでもありません"
 
 #: tree-cfg.c:3909
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid operand to switch statement"
-msgstr "%s コードに対する無効なオペランド"
+msgstr "switch 文への無効な被演算子です"
 
 #: tree-cfg.c:3929
 #, gcc-internal-format
 msgid "invalid PHI result"
-msgstr ""
+msgstr "無効な PHI 結果です"
 
 #: tree-cfg.c:3941
 #, gcc-internal-format
 msgid "invalid PHI argument"
-msgstr ""
+msgstr "無効な PHI 引数です"
 
 #: tree-cfg.c:3947
 #, gcc-internal-format
 msgid "incompatible types in PHI argument %u"
-msgstr ""
+msgstr "PHI 引数 %u 内で互換性のない型です"
 
 #: tree-cfg.c:3994
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid comparison code in gimple cond"
-msgstr "%p コードに対する無効なオペランド"
+msgstr "gimple 条件内で無効な比較コードです"
 
 #: tree-cfg.c:4002
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid labels in gimple cond"
-msgstr "インクリメントの中での左辺値が無効です"
+msgstr "gimple 条件内で無効なラベルです"
 
 #: tree-cfg.c:4101
 #, gcc-internal-format
 msgid "verify_gimple failed"
-msgstr ""
+msgstr "verify_gimple に失敗しました"
 
 #: tree-cfg.c:4136
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid function in call statement"
-msgstr "asm 文の中に無効な左辺値"
+msgstr "call 文内で無効な関数です"
 
 #: tree-cfg.c:4147
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid pure const state for function"
-msgstr "関数 `%s' に対して不適切な保存クラス"
+msgstr ""
 
 #: tree-cfg.c:4160 tree-ssa.c:1007 tree-ssa.c:1017
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "in statement"
-msgstr "無効な初期化式です"
+msgstr "式内"
 
 #: tree-cfg.c:4175
 #, gcc-internal-format
@@ -18041,14 +18048,14 @@ msgid "gimple_bb (phi) is set to a wrong basic block"
 msgstr ""
 
 #: tree-cfg.c:4301
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "missing PHI def"
-msgstr "識別子を欠いています"
+msgstr "PHI 定義がありません"
 
 #: tree-cfg.c:4312
 #, gcc-internal-format
 msgid "PHI argument is not a GIMPLE value"
-msgstr ""
+msgstr "PHI 引数が GIMPLE 値ではありません"
 
 #: tree-cfg.c:4321 tree-cfg.c:4394
 #, gcc-internal-format
@@ -18056,9 +18063,9 @@ msgid "incorrect sharing of tree nodes"
 msgstr ""
 
 #: tree-cfg.c:4344
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid GIMPLE statement"
-msgstr "無効な初期化式です"
+msgstr "無効な GIMPLE 式です"
 
 #: tree-cfg.c:4353
 #, gcc-internal-format
@@ -18071,14 +18078,14 @@ msgid "incorrect entry in label_to_block_map"
 msgstr ""
 
 #: tree-cfg.c:4376
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "incorrect setting of landing pad number"
-msgstr "フォーマット文字列に不適切なオペランド数があります"
+msgstr ""
 
 #: tree-cfg.c:4410
 #, gcc-internal-format
 msgid "verify_stmts failed"
-msgstr ""
+msgstr "verify_stmts に失敗しました"
 
 #: tree-cfg.c:4433
 #, gcc-internal-format
@@ -18098,7 +18105,7 @@ msgstr ""
 #: tree-cfg.c:4470
 #, gcc-internal-format
 msgid "nonlocal label "
-msgstr ""
+msgstr "非局所ラベル "
 
 #: tree-cfg.c:4479
 #, gcc-internal-format
@@ -18108,12 +18115,12 @@ msgstr ""
 #: tree-cfg.c:4488 tree-cfg.c:4497 tree-cfg.c:4522
 #, gcc-internal-format
 msgid "label "
-msgstr ""
+msgstr "ラベル "
 
 #: tree-cfg.c:4512
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "control flow in the middle of basic block %d"
-msgstr "NOTE_INSN_BASIC_BLOCK %d が基本ブロック %d の中ほどにあります"
+msgstr ""
 
 #: tree-cfg.c:4545
 #, gcc-internal-format
@@ -18146,9 +18153,9 @@ msgid "found default case not at the start of case vector"
 msgstr ""
 
 #: tree-cfg.c:4663
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "case labels not sorted: "
-msgstr "%s は %s を受け付けません"
+msgstr ""
 
 #: tree-cfg.c:4680
 #, gcc-internal-format
@@ -18161,9 +18168,9 @@ msgid "missing edge %i->%i"
 msgstr ""
 
 #: tree-cfg.c:7343
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<noreturn%> function does return"
-msgstr "`noreturn' 関数が return しています"
+msgstr ""
 
 #: tree-cfg.c:7363
 #, gcc-internal-format
@@ -18183,12 +18190,12 @@ msgstr ""
 #: tree-dump.c:934
 #, gcc-internal-format
 msgid "could not open dump file %qs: %m"
-msgstr ""
+msgstr "ダンプファイル %qs を開けませんでした: %m"
 
 #: tree-dump.c:1067
 #, gcc-internal-format
 msgid "ignoring unknown option %q.*s in %<-fdump-%s%>"
-msgstr ""
+msgstr "不明なオプション %q.*s (%<-fdump-%s%> 内) を無視しています"
 
 #: tree-eh.c:3985
 #, gcc-internal-format
@@ -18201,9 +18208,9 @@ msgid "BB %i can not throw but has an EH edge"
 msgstr ""
 
 #: tree-eh.c:4005
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "BB %i last statement has incorrectly set lp"
-msgstr "式の中の文に不完全型があります"
+msgstr ""
 
 #: tree-eh.c:4011
 #, gcc-internal-format
@@ -18253,27 +18260,27 @@ msgstr ""
 #: tree-inline.c:3036
 #, gcc-internal-format
 msgid "function %q+F can never be inlined because it uses setjmp"
-msgstr ""
+msgstr "関数 %q+F は setjmp を使用しているため決してインライン化されません"
 
 #: tree-inline.c:3050
 #, gcc-internal-format
 msgid "function %q+F can never be inlined because it uses variable argument lists"
-msgstr ""
+msgstr "関数 %q+F は可変引数リストを使用しているため決してインライン化されません"
 
 #: tree-inline.c:3062
 #, gcc-internal-format
 msgid "function %q+F can never be inlined because it uses setjmp-longjmp exception handling"
-msgstr ""
+msgstr "関数 %q+F は setjmp-longjmp 例外処理を使用しているため決してインライン化されません"
 
 #: tree-inline.c:3070
 #, gcc-internal-format
 msgid "function %q+F can never be inlined because it uses non-local goto"
-msgstr ""
+msgstr "関数 %q+F は非局所 goto を使用しているため決してインライン化されません"
 
 #: tree-inline.c:3082
 #, gcc-internal-format
 msgid "function %q+F can never be inlined because it uses __builtin_return or __builtin_apply_args"
-msgstr ""
+msgstr "関数 %q+F は __builtin_return または __builtin_apply_args を使用しているため決してインライン化されません"
 
 #: tree-inline.c:3102
 #, gcc-internal-format
@@ -18283,27 +18290,27 @@ msgstr ""
 #: tree-inline.c:3205
 #, gcc-internal-format
 msgid "function %q+F can never be inlined because it is suppressed using -fno-inline"
-msgstr ""
+msgstr "関数 %q+F は -fno-inline を使用して抑止されているため決してインライン化されません"
 
 #: tree-inline.c:3213
 #, gcc-internal-format
 msgid "function %q+F can never be inlined because it uses attributes conflicting with inlining"
-msgstr ""
+msgstr "関数 %q+F はインライン化と競合する属性を使用しているため決してインライン化されません"
 
 #: tree-inline.c:3830 tree-inline.c:3841
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "inlining failed in call to %q+F: %s"
-msgstr "`%s' への呼び出しのインライン化に失敗しました"
+msgstr "%q+F 呼び出しのインライン化に失敗しました: %s"
 
 #: tree-inline.c:3832 tree-inline.c:3843
 #, gcc-internal-format
 msgid "called from here"
-msgstr "ここから呼ばれました"
+msgstr "ここから呼び出されました"
 
 #: tree-mudflap.c:895
 #, gcc-internal-format
 msgid "mudflap checking not yet implemented for ARRAY_RANGE_REF"
-msgstr ""
+msgstr "mudflap 検査は ARRAY_RANGE_REF 用にはまだ実装されていません"
 
 #: tree-mudflap.c:1102
 #, gcc-internal-format
