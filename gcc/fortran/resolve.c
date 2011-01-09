@@ -2567,21 +2567,11 @@ is_scalar_expr_ptr (gfc_expr *expr)
       switch (ref->type)
         {
         case REF_SUBSTRING:
-          if (ref->u.ss.length != NULL 
-              && ref->u.ss.length->length != NULL
-              && ref->u.ss.start
-              && ref->u.ss.start->expr_type == EXPR_CONSTANT 
-              && ref->u.ss.end
-              && ref->u.ss.end->expr_type == EXPR_CONSTANT)
-            {
-              start = (int) mpz_get_si (ref->u.ss.start->value.integer);
-              end = (int) mpz_get_si (ref->u.ss.end->value.integer);
-              if (end - start + 1 != 1)
-                retval = FAILURE;
-            }
-          else
-            retval = FAILURE;
+          if (ref->u.ss.start == NULL || ref->u.ss.end == NULL
+	      || gfc_dep_compare_expr (ref->u.ss.start, ref->u.ss.end) != 0)
+	    retval = FAILURE;
           break;
+
         case REF_ARRAY:
           if (ref->u.ar.type == AR_ELEMENT)
             retval = SUCCESS;
@@ -2610,7 +2600,8 @@ is_scalar_expr_ptr (gfc_expr *expr)
 		    {
 		      /* We have constant lower and upper bounds.  If the
 			 difference between is 1, it can be considered a
-			 scalar.  */
+			 scalar.  
+			 FIXME: Use gfc_dep_compare_expr instead.  */
 		      start = (int) mpz_get_si
 				(ref->u.ar.as->lower[0]->value.integer);
 		      end = (int) mpz_get_si
