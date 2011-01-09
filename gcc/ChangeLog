@@ -1,3 +1,10 @@
+2010-01-09  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/cpp.texi (C++ Named Operators): Fix markup for header
+	file name.
+	* doc/cppinternals.texi (Top): Wrap node in @ifnottex to avoid
+	two extra empty pages in PDF output.
+
 2011-01-08  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/47078
