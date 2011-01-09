@@ -3,6 +3,7 @@
   This is test 'property', covering all functions starting with 'property'.  */
 
 /* { dg-do run } */
+/* { dg-skip-if "No API#2 pre-Darwin9" { *-*-darwin[5-8]* } { "-fnext-runtime" } { "" } } */
 
 /* To get the modern GNU Objective-C Runtime API, you include
    objc/runtime.h.  */

@@ -1,5 +1,24 @@
 2011-01-09  Iain Sandoe  <iains@gcc.gnu.org>
 
+	* obj-c++.dg/gnu-api-2-class.mm: Skip for Darwin < 9.
+	* obj-c++.dg/gnu-api-2-ivar.mm: Likewise.
+	* obj-c++.dg/gnu-api-2-method.mm: Likewise.
+	* obj-c++.dg/gnu-api-2-objc.mm: Likewise.
+	* obj-c++.dg/gnu-api-2-object.mm: Likewise.
+	* obj-c++.dg/gnu-api-2-property.mm: Likewise.
+	* obj-c++.dg/gnu-api-2-protocol.mm: Likewise.
+	* obj-c++.dg/gnu-api-2-sel.mm: Likewise.
+	* objc.dg/gnu-api-2-class.m: Likewise.
+	* objc.dg/gnu-api-2-ivar.m: Likewise.
+	* objc.dg/gnu-api-2-method.m: Likewise.
+	* objc.dg/gnu-api-2-objc.m: Likewise.
+	* objc.dg/gnu-api-2-object.m: Likewise.
+	* objc.dg/gnu-api-2-property.m: Likewise.
+	* objc.dg/gnu-api-2-protocol.m: Likewise.
+	* objc.dg/gnu-api-2-sel.m: Likewise.
+
+2011-01-09  Iain Sandoe  <iains@gcc.gnu.org>
+
 	* objc.dg/foreach-1.m: Skip for Darwin < 9.
 	* objc.dg/objc-foreach-4.m: Likewise.
 	* objc.dg/objc-foreach-5.m: Skip for Darwin < 9, adjust headers.
