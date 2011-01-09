@@ -1528,7 +1528,6 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
   gfc_symtree *parent_st;
   gfc_expr *e;
   int save_need_full_assumed_size;
-  gfc_component *comp;
 
   for (; arg; arg = arg->next)
     {
@@ -1546,20 +1545,6 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 		}
 	    }
 	  continue;
-	}
-
-      if (gfc_is_proc_ptr_comp (e, &comp))
-	{
-	  e->ts = comp->ts;
-	  if (e->expr_type == EXPR_PPC)
-	    {
-	      if (comp->as != NULL)
-		e->rank = comp->as->rank;
-	      e->expr_type = EXPR_FUNCTION;
-	    }
-	  if (gfc_resolve_expr (e) == FAILURE)                          
-	    return FAILURE; 
-	  goto argument_list;
 	}
 
       if (e->expr_type == EXPR_VARIABLE
