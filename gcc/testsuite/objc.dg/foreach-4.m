@@ -2,6 +2,7 @@
    the declaration syntax 'for (id object in array) statements'
 */
 /* { dg-do run } */
+/* { dg-skip-if "No NeXT fast enum. pre-Darwin9" { *-*-darwin[5-8]* } { "-fnext-runtime" } { "" } } */
 /* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 /* { dg-options "-mno-constant-cfstrings" { target *-*-darwin* } } */
 /* { dg-additional-sources "../objc-obj-c++-shared/Object1.m" } */
@@ -49,6 +50,7 @@ struct __objcFastEnumerationState
   length = l;
   objects = o;
   mutated = 0;
+  return self;
 }
 - (void) mutate
 {

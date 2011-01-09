@@ -1,3 +1,13 @@
+2011-01-09  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc.dg/foreach-1.m: Skip for Darwin < 9.
+	* objc.dg/objc-foreach-4.m: Likewise.
+	* objc.dg/objc-foreach-5.m: Skip for Darwin < 9, adjust headers.
+	* objc.dg/foreach-2.m: Skip for Darwin < 9, return self from init.
+	* objc.dg/foreach-4.m: Likewise.
+	* objc.dg/foreach-5.m: Likewise.
+	* objc.dg/foreach-3.m: Return self from init.
+
 2011-01-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/38536
