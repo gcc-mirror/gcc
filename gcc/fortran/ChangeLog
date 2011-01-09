@@ -1,3 +1,10 @@
+2011-01-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/38536
+	* resolve.c (is_scalar_expr_ptr):  For a substring reference,
+	use gfc_dep_compare_expr to compare start and end expession.
+	Add FIXME for using gfc_deb_compare_expr elsewhere.
+
 2011-01-09  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/46313

@@ -1,3 +1,8 @@
+2011-01-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/38536
+	* gfortran.dg/iso_c_binding_c_loc_char_1.f03:  New test.
+
 2011-01-09  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/46313
