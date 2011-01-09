@@ -1,4 +1,11 @@
-2010-01-09  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+2011-01-09  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR gcc/46902
+	PR testsuite/46912
+	* plugin.c: Move include of dlfcn.h from here...
+	* system.h: ... to here.
+
+2011-01-09  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/cpp.texi (C++ Named Operators): Fix markup for header
 	file name.
