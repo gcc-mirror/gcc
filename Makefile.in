@@ -45248,7 +45248,7 @@ configure-lto-plugin:
 	libsrcdir="$$s/lto-plugin"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias} $${srcdiroption} -enable-shared \
 	  || exit 1
 @endif lto-plugin
 
@@ -45282,7 +45282,8 @@ configure-stage1-lto-plugin:
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
-	  $(STAGE1_CONFIGURE_FLAGS)
+	  $(STAGE1_CONFIGURE_FLAGS) \
+	  -enable-shared
 @endif lto-plugin-bootstrap
 
 .PHONY: configure-stage2-lto-plugin maybe-configure-stage2-lto-plugin
@@ -45315,7 +45316,8 @@ configure-stage2-lto-plugin:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGE2_CONFIGURE_FLAGS)
+	  $(STAGE2_CONFIGURE_FLAGS) \
+	  -enable-shared
 @endif lto-plugin-bootstrap
 
 .PHONY: configure-stage3-lto-plugin maybe-configure-stage3-lto-plugin
@@ -45348,7 +45350,8 @@ configure-stage3-lto-plugin:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGE3_CONFIGURE_FLAGS)
+	  $(STAGE3_CONFIGURE_FLAGS) \
+	  -enable-shared
 @endif lto-plugin-bootstrap
 
 .PHONY: configure-stage4-lto-plugin maybe-configure-stage4-lto-plugin
@@ -45381,7 +45384,8 @@ configure-stage4-lto-plugin:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGE4_CONFIGURE_FLAGS)
+	  $(STAGE4_CONFIGURE_FLAGS) \
+	  -enable-shared
 @endif lto-plugin-bootstrap
 
 .PHONY: configure-stageprofile-lto-plugin maybe-configure-stageprofile-lto-plugin
@@ -45414,7 +45418,8 @@ configure-stageprofile-lto-plugin:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEprofile_CONFIGURE_FLAGS)
+	  $(STAGEprofile_CONFIGURE_FLAGS) \
+	  -enable-shared
 @endif lto-plugin-bootstrap
 
 .PHONY: configure-stagefeedback-lto-plugin maybe-configure-stagefeedback-lto-plugin
@@ -45447,7 +45452,8 @@ configure-stagefeedback-lto-plugin:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEfeedback_CONFIGURE_FLAGS)
+	  $(STAGEfeedback_CONFIGURE_FLAGS) \
+	  -enable-shared
 @endif lto-plugin-bootstrap
 
 
