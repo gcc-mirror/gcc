@@ -1,5 +1,12 @@
 2011-01-07  Jan Hubicka  <jh@suse.cz>
 
+	PR lto/47225
+	* Makefile.in: Regenerate.
+	* Makefile.def (lto-plugin): Always pass enable-shared to the plugin
+	configure.
+
+2011-01-07  Jan Hubicka  <jh@suse.cz>
+
 	* Makefile.in: Regenerate.
 	* Makefile.def (gcc host module) and soft dependency on lto-plugin
 	and configure dependency on lto-plugin configure.
