@@ -43,7 +43,8 @@ This host hook is used to set up handling for extra signals.  The most
 common thing to do in this hook is to detect stack overflow.
 @end deftypefn
 
-@deftypefn {Host Hook} void * HOST_HOOKS_GT_PCH_GET_ADDRESS (size_t @var{size}, int @var{fd})
+@deftypefn {Host Hook} {void *} HOST_HOOKS_GT_PCH_GET_ADDRESS (size_t @
+  @var{size}, int @var{fd})
 This host hook returns the address of some space that is likely to be
 free in some subsequent invocation of the compiler.  We intend to load
 the PCH data at this address such that the data need not be relocated.
@@ -52,7 +53,8 @@ The area should be able to hold @var{size} bytes.  If the host uses
 probing.
 @end deftypefn
 
-@deftypefn {Host Hook} int HOST_HOOKS_GT_PCH_USE_ADDRESS (void * @var{address}, size_t @var{size}, int @var{fd}, size_t @var{offset})
+@deftypefn {Host Hook} int HOST_HOOKS_GT_PCH_USE_ADDRESS (void * @var{address}, @
+  size_t @var{size}, int @var{fd}, size_t @var{offset})
 This host hook is called when a PCH file is about to be loaded.
 We want to load @var{size} bytes from @var{fd} at @var{offset}
 into memory at @var{address}.  The given address will be the result of
