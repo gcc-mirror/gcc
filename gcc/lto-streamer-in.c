@@ -1683,6 +1683,11 @@ unpack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
   DECL_DISREGARD_INLINE_LIMITS (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_PURE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_LOOPING_CONST_OR_PURE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
+  if (DECL_STATIC_DESTRUCTOR (expr))
+    {
+       priority_type p = (priority_type) bp_unpack_value (bp, HOST_BITS_PER_SHORT);
+       SET_DECL_FINI_PRIORITY (expr, p);
+    }
 }
 
 

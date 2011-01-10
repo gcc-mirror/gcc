@@ -1,3 +1,11 @@
+2011-01-10  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/46083
+	* lto-streamer-out.c (pack_ts_function_decl_value_fields): Store
+	DECL_FINI_PRIORITY.
+	* lto-streamer-in.c (unpack_ts_function_decl_value_fields):
+	Restore DECL_FINI_PRIORITY.
+
 2011-01-10  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/gimple.texi: Fix quoting of multi-word return values in
