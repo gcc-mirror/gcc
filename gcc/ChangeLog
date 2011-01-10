@@ -1,5 +1,11 @@
 2011-01-10  Jan Hubicka  <jh@suse.cz>
 
+	PR lto/45375
+	* profile.c (read_profile_edge_counts): Ignore profile inconistency
+	when correcting profile.
+
+2011-01-10  Jan Hubicka  <jh@suse.cz>
+
 	PR lto/46083
 	* lto-streamer-out.c (pack_ts_function_decl_value_fields): Store
 	DECL_FINI_PRIORITY.
