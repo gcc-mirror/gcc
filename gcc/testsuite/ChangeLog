@@ -1,3 +1,8 @@
+2011-01-10  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/46083
+	* gcc.dg/initpri3.c: New testcase.
+
 2011-01-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR lto/47222
