@@ -785,6 +785,10 @@ init_optimization_passes (void)
       NEXT_PASS (pass_inline_parameters);
     }
   NEXT_PASS (pass_ipa_tree_profile);
+    {
+      struct opt_pass **p = &pass_ipa_tree_profile.pass.sub;
+      NEXT_PASS (pass_feedback_split_functions);
+    }
   NEXT_PASS (pass_ipa_increase_alignment);
   NEXT_PASS (pass_ipa_matrix_reorg);
   NEXT_PASS (pass_ipa_lower_emutls);
@@ -1226,6 +1230,9 @@ execute_function_todo (void *data)
 
   if (flags & TODO_rebuild_frequencies)
     rebuild_frequencies ();
+
+  if (flags & TODO_rebuild_cgraph_edges)
+    rebuild_cgraph_edges ();
 
   /* If we've seen errors do not bother running any verifiers.  */
   if (seen_error ())

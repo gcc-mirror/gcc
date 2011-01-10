@@ -1265,7 +1265,9 @@ execute_split_functions (void)
   /* See if it makes sense to try to split.
      It makes sense to split if we inline, that is if we have direct calls to
      handle or direct calls are possibly going to appear as result of indirect
-     inlining or LTO.
+     inlining or LTO.  Also handle -fprofile-generate as LTO to allow non-LTO
+     training for LTO -fprofile-use build.
+
      Note that we are not completely conservative about disqualifying functions
      called once.  It is possible that the caller is called more then once and
      then inlining would still benefit.  */
@@ -1336,10 +1338,15 @@ execute_split_functions (void)
   return todo;
 }
 
+/* Gate function splitting pass.  When doing profile feedback, we want
+   to execute the pass after profiling is read.  So disable one in 
+   early optimization.  */
+
 static bool
 gate_split_functions (void)
 {
-  return flag_partial_inlining;
+  return (flag_partial_inlining
+	  && !profile_arc_flag && !flag_branch_probabilities);
 }
 
 struct gimple_opt_pass pass_split_functions =
@@ -1349,6 +1356,47 @@ struct gimple_opt_pass pass_split_functions =
   "fnsplit",				/* name */
   gate_split_functions,			/* gate */
   execute_split_functions,		/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_IPA_FNSPLIT,			/* tv_id */
+  PROP_cfg,				/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_func			/* todo_flags_finish */
+ }
+};
+
+/* Gate feedback driven function splitting pass.
+   We don't need to split when profiling at all, we are producing
+   lousy code anyway.  */
+
+static bool
+gate_feedback_split_functions (void)
+{
+  return (flag_partial_inlining
+	  && flag_branch_probabilities);
+}
+
+/* Execute function splitting pass.  */
+
+static unsigned int
+execute_feedback_split_functions (void)
+{
+  unsigned int retval = execute_split_functions ();
+  if (retval)
+    retval |= TODO_rebuild_cgraph_edges;
+  return retval;
+}
+
+struct gimple_opt_pass pass_feedback_split_functions =
+{
+ {
+  GIMPLE_PASS,
+  "feedback_fnsplit",			/* name */
+  gate_feedback_split_functions,	/* gate */
+  execute_feedback_split_functions,	/* execute */
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
