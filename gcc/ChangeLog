@@ -1,3 +1,9 @@
+2011-01-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR lto/46760
+	* tree-inline.c (tree_can_inline_p): Check e->call_stmt before
+	calling gimple_call_set_cannot_inline.
+
 2011-01-10  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/darwin-sections.def: Remove unused section.
