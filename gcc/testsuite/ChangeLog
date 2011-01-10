@@ -1,6 +1,12 @@
 2011-01-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR testsuite/46230
+	* gcc.dg/vect/vect-vfa-slp.c: Remove XFAIL.
+	* gcc.dg/vect/slp-23.c: Remove XFAIL for SLP.
+	* gcc.dg/vect/slp-35.c: Remove XFAILs.
+	* gcc.dg/vect/no-tree-pre-slp-29.c: Likewise.
+
+	PR testsuite/46230
 	* gcc.dg/vect/vect-peel-1.c (main): Prevent initialization loop from
 	being vectorized.  Adjust dg-final pattern.  Remove XFAIL.
 	* gcc.dg/vect/vect-peel-2.c (main): Likewise.
