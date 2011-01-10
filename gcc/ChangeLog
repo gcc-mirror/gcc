@@ -1,5 +1,15 @@
 2011-01-10  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* doc/gimple.texi: Fix quoting of multi-word return values in
+	@deftypefn statements.  Ensure presence of return value.  Wrap
+	overlong @deftypefn lines.
+	(is_gimple_operand, is_gimple_min_invariant_address): Remove
+	descriptions of removed functions.
+	* doc/hostconfig.texi (Host Common): Wrap long line, fix quoting
+	of multi-word return value in @deftypefn statement.
+
+2011-01-10  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
 	* doc/gimple.texi (Temporaries, Operands, Compound Lvalues)
 	(Conditional Expressions, Logical Operators)
 	(Statement and operand traversals): Do not indent smallexample
