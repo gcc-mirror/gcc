@@ -1,3 +1,11 @@
+2011-01-09  Gary Funck  <gary@intrepid.com>
+
+	Fix behavior of upc_localsizef() when called in a dynamic
+	threads compilation environment.  This bug, and the expected
+	behavior is documented in this bug report:
+	https://upc-bugs.lbl.gov/bugzilla/show_bug.cgi?id=2960.
+	* upc_act.c (upc_localsizeof): Re-implement.
+
 2010-12-15  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 167307 into gupc branch.

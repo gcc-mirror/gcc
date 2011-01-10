@@ -430,15 +430,18 @@ upc_elemsizeof_type (location_t loc, struct c_type_name *t)
   return ret;
 }
 
-/* Compute the value of the `upc_localsizeof' operator.  This value
-   can vary from thread to thread if the array size is not a multiple of
-   (THREADS * block_factor * upc_elementsizeof (type)). */
+/* Compute the value of the `upc_localsizeof' operator.  Per the language spec:
+   The upc localsizeof operator returns the size, in bytes, of the local portion
+   of its operand, which may be a shared object or a shared-qualified type.  It
+   returns the same value on all threads; the value is an upper bound of the size
+   allocated with affinity to any single thread and may include an unspecified
+   amount of padding. The result of upc localsizeof is an integer constant.  */
 
 static
 tree
 upc_localsizeof (location_t loc, tree type)
 {
-  tree block_factor, local_size, total_size, elt_type, elt_size;
+  tree block_factor, local_size, total_size;
 
   if (!(type && upc_sizeof_type_check ("upc_localsizeof", type)))
     return size_one_node;
@@ -449,23 +452,9 @@ upc_localsizeof (location_t loc, tree type)
     return c_sizeof(loc, type);
 
   block_factor = upc_blocksizeof (loc, type);
+  block_factor = convert (bitsizetype, block_factor);
   total_size = TYPE_SIZE (type);
-  elt_type = strip_array_types (type);
-  if (!elt_type || TREE_CODE (elt_type) == ERROR_MARK)
-    return size_one_node;
-  elt_size = TYPE_SIZE (elt_type);
 
-  if (UPC_TYPE_HAS_THREADS_FACTOR (type))
-    {
-      /* Neither an indefinite block size, nor static threads
-         environment should be asserted if "threads factor"
-	 is present. */
-      if (integer_zerop (block_factor) || flag_upc_threads)
-        abort ();
-      /* The type size has already been scaled to give
-         the per thread contribution (in bits). */
-      local_size = total_size;
-    }
   if (integer_zerop (block_factor))
     {
       /* local size is total size, because the entire
@@ -474,36 +463,34 @@ upc_localsizeof (location_t loc, tree type)
     }
   else
     {
-      tree n_threads, n_elts, n_full_blocks;
+      tree elt_type, elt_size, n_elts;
+      tree t_factor, n_full_blocks;
       tree n_full_blocks_per_thread, n_elts_in_full_blocks;
       tree n_rem_elts, n_local_elts;
-      block_factor = convert (bitsizetype, block_factor);
+      elt_type = strip_array_types (type);
+      if (!elt_type || TREE_CODE (elt_type) == ERROR_MARK)
+        return size_one_node;
+      elt_size = TYPE_SIZE (elt_type);
       n_elts = size_binop (EXACT_DIV_EXPR, total_size, elt_size);
-      if (UPC_TYPE_HAS_THREADS_FACTOR (type))
-        {
-	   /* In the worst case, round up the local contribution
-	      to the next multiple of the block factor */
-	   n_local_elts = size_binop (MULT_EXPR,
-	              size_binop (CEIL_DIV_EXPR, n_elts, block_factor),
-		      block_factor);
-	}
-      else
-        {
-	  n_threads = convert (bitsizetype, upc_num_threads ());
-	  n_full_blocks = size_binop (FLOOR_DIV_EXPR, n_elts, block_factor);
-	  n_full_blocks_per_thread = size_binop (FLOOR_DIV_EXPR,
-				       n_full_blocks, n_threads);
-	  n_elts_in_full_blocks    = size_binop (MULT_EXPR,
-	    size_binop (MULT_EXPR, n_full_blocks_per_thread, n_threads),
-	    block_factor);
-	  n_rem_elts = size_binop (MINUS_EXPR, n_elts,
-	                           n_elts_in_full_blocks);
-	  n_local_elts = size_binop (PLUS_EXPR,
-			    size_binop (MULT_EXPR,
-			       n_full_blocks_per_thread, block_factor),
-			    size_binop (MIN_EXPR, n_rem_elts,
-			       block_factor));
-	}
+      /* Use the worst case size, if compiling in a dynamic
+	 threads environment.  The worst case size can
+	 be derived by setting T_FACTOR to 1 in the calculations
+	 that follow.  Otherwise T_FACTOR is equal to THREADS. */
+      t_factor = flag_upc_threads ? upc_num_threads () : size_one_node;
+      t_factor = convert (bitsizetype, t_factor);
+      n_full_blocks = size_binop (FLOOR_DIV_EXPR, n_elts, block_factor);
+      n_full_blocks_per_thread = size_binop (FLOOR_DIV_EXPR,
+				   n_full_blocks, t_factor);
+      n_elts_in_full_blocks    = size_binop (MULT_EXPR,
+	size_binop (MULT_EXPR, n_full_blocks_per_thread, t_factor),
+	block_factor);
+      n_rem_elts = size_binop (MINUS_EXPR, n_elts,
+			       n_elts_in_full_blocks);
+      n_local_elts = size_binop (MULT_EXPR,
+			   n_full_blocks_per_thread, block_factor);
+      /* If any elements remain, add a full block size.  */
+      if (!integer_zerop (n_rem_elts))
+        n_local_elts = size_binop (PLUS_EXPR, n_local_elts, block_factor);
       local_size = size_binop (MULT_EXPR, n_local_elts, elt_size);
     }
 
