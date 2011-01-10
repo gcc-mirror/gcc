@@ -1016,20 +1016,31 @@ split_function (struct split_point *split_point)
       e->probability = REG_BR_PROB_BASE;
       e->count = new_return_bb->count;
       bitmap_set_bit (split_point->split_bbs, new_return_bb->index);
-      /* We change CFG in a way tree-inline is not able to compensate on while
-	 updating PHIs.  There are only virtuals in return_bb, so recompute
-	 them.  */
+    }
+  /* When we pass around the value, use existing return block.  */
+  else
+    bitmap_set_bit (split_point->split_bbs, return_bb->index);
+
+  /* If RETURN_BB has virtual operand PHIs, they must be removed and the
+     virtual operand marked for renaming as we change the CFG in a way that
+     tree-inline is not able to compensate for. 
+
+     Note this can happen whether or not we have a return value.  If we have
+     a return value, then RETURN_BB may have PHIs for real operands too.  */
+  if (return_bb != EXIT_BLOCK_PTR)
+    {
       for (gsi = gsi_start_phis (return_bb); !gsi_end_p (gsi);)
 	{
 	  gimple stmt = gsi_stmt (gsi);
-	  gcc_assert (!is_gimple_reg (gimple_phi_result (stmt)));
+	  if (is_gimple_reg (gimple_phi_result (stmt)))
+	    {
+	      gsi_next (&gsi);
+	      continue;
+	    }
 	  mark_virtual_phi_result_for_renaming (stmt);
 	  remove_phi_node (&gsi, true);
 	}
     }
-  /* When we pass aorund the value, use existing return block.  */
-  else
-    bitmap_set_bit (split_point->split_bbs, return_bb->index);
 
   /* Now create the actual clone.  */
   rebuild_cgraph_edges ();
