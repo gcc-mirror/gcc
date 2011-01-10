@@ -1435,9 +1435,6 @@ input_profile_summary (struct lto_input_block *ib,
     {
       file_data->profile_info.runs = runs;
       file_data->profile_info.sum_max = lto_input_uleb128 (ib);
-      if (runs > file_data->profile_info.sum_max)
-	fatal_error ("Corrupted profile info in %s: sum_max is smaller than runs",
-		     file_data->file_name);
     }
 
 }

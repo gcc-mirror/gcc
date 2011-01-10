@@ -1,6 +1,11 @@
 2011-01-10  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/45375
+	* lto-cgraph.c (input_profile_summary): Remove overactive sanity check.
+
+2011-01-10  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/45375
 	* profile.c (read_profile_edge_counts): Ignore profile inconistency
 	when correcting profile.
 
