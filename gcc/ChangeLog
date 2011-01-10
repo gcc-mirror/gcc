@@ -1,3 +1,16 @@
+2011-01-10  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/47234 
+	* tree-pass.h (TODO_rebuild_cgraph_edges): New TODO.
+	(pass_feedback_split_functions): Declare.
+	* passes.c (init_optimization_passes): Add ipa-split as subpass of
+	tree-profile.
+	* ipa-split.c (gate_split_functions): Update comments; disable
+	split-functions for profile_arc_flag and branch_probabilities.
+	(gate_feedback_split_functions): New function.
+	(execute_feedback_split_functions): New function.
+	(pass_feedback_split_functions): New global var.
+
 2011-01-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR lto/46760
