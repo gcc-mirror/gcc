@@ -20,7 +20,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.6-b20101218\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-12-18 20:02+0000\n"
-"PO-Revision-Date: 2011-01-09 21:26+0900\n"
+"PO-Revision-Date: 2011-01-10 21:00+0900\n"
 "Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -18323,14 +18323,14 @@ msgid "mudflap cannot track unknown size extern %qE"
 msgstr ""
 
 #: tree-nomudflap.c:47
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "mudflap: this language is not supported"
-msgstr "-pipe は実装されていません"
+msgstr "mudflap: この言語はサポートされていません"
 
 #: tree-optimize.c:450
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "size of return value of %q+D is %u bytes"
-msgstr "`%s' の戻り値のサイズが %u バイトです"
+msgstr "%q+D の戻り値のサイズが %u バイトです"
 
 #: tree-optimize.c:453
 #, fuzzy, gcc-internal-format
@@ -18341,27 +18341,27 @@ msgstr "`%s' の戻り値のサイズが %d バイトよりも大きくなりま
 #: tree-ssa-coalesce.c:967 tree-ssa-coalesce.c:1189 tree-ssa-live.c:1296
 #, gcc-internal-format
 msgid "SSA corruption"
-msgstr ""
+msgstr "SSA が破損しています"
 
 #: tree-profile.c:397
 #, gcc-internal-format
 msgid "unimplemented functionality"
-msgstr ""
+msgstr "未実装の機能です"
 
 #: tree-ssa-uninit.c:1799 tree-ssa.c:1731
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD may be used uninitialized in this function"
-msgstr "`%s' はこの関数内で初期化されずに使用される可能性があります"
+msgstr "%qD はこの関数内初期化されずに使用されるかもしれません"
 
 #: tree-ssa.c:578
 #, gcc-internal-format
 msgid "expected an SSA_NAME object"
-msgstr ""
+msgstr "SSA_NAME オブジェクトが予期されます"
 
 #: tree-ssa.c:584
 #, gcc-internal-format
 msgid "type mismatch between an SSA_NAME and its symbol"
-msgstr ""
+msgstr "SSA_NAME とそのシンボル間で型が一致しません"
 
 #: tree-ssa.c:590
 #, gcc-internal-format
@@ -18371,17 +18371,17 @@ msgstr ""
 #: tree-ssa.c:596
 #, gcc-internal-format
 msgid "found a virtual definition for a GIMPLE register"
-msgstr ""
+msgstr "GIMPLE レジスタ用の仮想定義が見つかりました"
 
 #: tree-ssa.c:602
 #, gcc-internal-format
 msgid "virtual SSA name for non-VOP decl"
-msgstr ""
+msgstr "非 VOP 宣言用の仮想 SSA 名です"
 
 #: tree-ssa.c:608
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "found a real definition for a non-register"
-msgstr "関数の定義が `register' と宣言されました"
+msgstr "非レジスタ用の実定義が見つかりました"
 
 #: tree-ssa.c:615
 #, gcc-internal-format
@@ -18391,22 +18391,22 @@ msgstr ""
 #: tree-ssa.c:644
 #, gcc-internal-format
 msgid "RESULT_DECL should be read only when DECL_BY_REFERENCE is set"
-msgstr ""
+msgstr "RESULT_DECL は DECL_BY_REFERENCE が設定されている時は読み取り専用です"
 
 #: tree-ssa.c:650
 #, gcc-internal-format
 msgid "SSA_NAME created in two different blocks %i and %i"
-msgstr ""
+msgstr "SSA_NAME が二個の異なるブロック %i と %i で作成されました"
 
 #: tree-ssa.c:659 tree-ssa.c:1048
 #, gcc-internal-format
 msgid "SSA_NAME_DEF_STMT is wrong"
-msgstr ""
+msgstr "SSA_NAME_DEF_STMT が間違っています"
 
 #: tree-ssa.c:711
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "missing definition"
-msgstr "初期化子を欠いています"
+msgstr "定義がありません"
 
 #: tree-ssa.c:717
 #, gcc-internal-format
@@ -18421,12 +18421,12 @@ msgstr ""
 #: tree-ssa.c:732
 #, gcc-internal-format
 msgid "SSA_NAME_OCCURS_IN_ABNORMAL_PHI should be set"
-msgstr ""
+msgstr "SSA_NAME_OCCURS_IN_ABNORMAL_PHI が設定されているべきです"
 
 #: tree-ssa.c:740
 #, gcc-internal-format
 msgid "no immediate_use list"
-msgstr ""
+msgstr "immediate_use リストがありません"
 
 #: tree-ssa.c:752
 #, gcc-internal-format
@@ -18439,9 +18439,9 @@ msgid "incoming edge count does not match number of PHI arguments"
 msgstr ""
 
 #: tree-ssa.c:800
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "PHI argument is missing for edge %d->%d"
-msgstr "%s の後ろの引数を欠いています"
+msgstr ""
 
 #: tree-ssa.c:809
 #, gcc-internal-format
@@ -18466,62 +18466,62 @@ msgstr ""
 #: tree-ssa.c:965
 #, gcc-internal-format
 msgid "statement makes a memory store, but has no VDEFS"
-msgstr ""
+msgstr "文はメモリ記憶域を作成しますが、VDEFS がありません"
 
 #: tree-ssa.c:980
 #, gcc-internal-format
 msgid "statement has VDEF operand not in defs list"
-msgstr ""
+msgstr "文は VDEF 被演算子を持っていますが、定義リスト内にありません"
 
 #: tree-ssa.c:985
 #, gcc-internal-format
 msgid "statement has VDEF but no VUSE operand"
-msgstr ""
+msgstr "文は VDEF を持っていますが VUSE 被演算子がありません"
 
 #: tree-ssa.c:991
 #, gcc-internal-format
 msgid "VDEF and VUSE do not use the same symbol"
-msgstr ""
+msgstr "VDEF と VUSE が同じシンボルを使用していません"
 
 #: tree-ssa.c:1000
 #, gcc-internal-format
 msgid "statement has VUSE operand not in uses list"
-msgstr ""
+msgstr "文は VUSE 被演算子を持っていますが、使用リスト内にありません"
 
 #: tree-ssa.c:1029
 #, gcc-internal-format
 msgid "number of operands and imm-links don%'t agree in statement"
-msgstr ""
+msgstr "文内で被演算子の数と imm-links が一致しません"
 
 #: tree-ssa.c:1077
 #, gcc-internal-format
 msgid "verify_ssa failed"
-msgstr ""
+msgstr "verify_ssa に失敗しました"
 
 #: tree-ssa.c:1655
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD was declared here"
-msgstr "`%s' は前にここで宣言されました"
+msgstr "%qD はここで定義されています"
 
 #: tree-ssa.c:1728
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is used uninitialized in this function"
-msgstr "`%s' はこの関数内で初期化されずに使用される可能性があります"
+msgstr "%qD はこの関数内で初期化されずに使用されています"
 
 #: tree-vrp.c:5268
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "array subscript is outside array bounds"
-msgstr "配列の添字が整数型ではありません"
+msgstr "配列の添字が配列境界の外にあります"
 
 #: tree-vrp.c:5280 tree-vrp.c:5367
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "array subscript is above array bounds"
-msgstr "配列の添字が整数型ではありません"
+msgstr "配列の添字が配列の境界を上回っています"
 
 #: tree-vrp.c:5287 tree-vrp.c:5355
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "array subscript is below array bounds"
-msgstr "配列の添字が整数型ではありません"
+msgstr "配列の添字が配列の境界を下回っています"
 
 #: tree-vrp.c:5974
 #, gcc-internal-format
@@ -18534,44 +18534,44 @@ msgid "assuming signed overflow does not occur when simplifying conditional"
 msgstr ""
 
 #: tree-vrp.c:6024
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "comparison always false due to limited range of data type"
-msgstr "データ型の範囲制限によって、比較が常に false となります"
+msgstr "データ型の範囲制限により比較が常に偽 (false) となります"
 
 #: tree-vrp.c:6026
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "comparison always true due to limited range of data type"
-msgstr "データ型の範囲制限によって、比較が常に true となります"
+msgstr "データ型の範囲制限により比較が常に真 (true) となります"
 
 #: tree-vrp.c:6878
 #, gcc-internal-format
 msgid "assuming signed overflow does not occur when simplifying %</%> or %<%%%> to %<>>%> or %<&%>"
-msgstr ""
+msgstr "%</%> または %<%%%> を %<>>%> または %<&%> へ単純化するときに符号のオーバーフローが発生しないと見なしています"
 
 #: tree-vrp.c:6960
 #, gcc-internal-format
 msgid "assuming signed overflow does not occur when simplifying %<abs (X)%> to %<X%> or %<-X%>"
-msgstr ""
+msgstr "%<abs (X)%> を %<X%> または %<-X%> へ単純化するときに符号のオーバーフローが発生しないと見なしています"
 
 #: tree.c:4231
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ignoring attributes applied to %qT after definition"
-msgstr "`com_interface' 属性はクラス定義にのみ用いる事ができます"
+msgstr "定義した後に %qT に適用される属性を無視しています"
 
 #: tree.c:5351
 #, gcc-internal-format
 msgid "%q+D already declared with dllexport attribute: dllimport ignored"
-msgstr ""
+msgstr "%q+D は既に dllexport 属性と宣言されています: dllimport は無視されます"
 
 #: tree.c:5363
 #, gcc-internal-format
 msgid "%q+D redeclared without dllimport attribute after being referenced with dll linkage"
-msgstr ""
+msgstr "%q+D は dll からの参照後に dllimport 属性無しで再宣言されました"
 
 #: tree.c:5378
 #, gcc-internal-format
 msgid "%q+D redeclared without dllimport attribute: previous dllimport ignored"
-msgstr ""
+msgstr "%q+D は dllimport 属性無しで再宣言されました: 前の dllimport は無視されます"
 
 #: tree.c:5438 tree.c:5450 tree.c:5460 c-family/c-common.c:5706
 #: c-family/c-common.c:5725 c-family/c-common.c:5743 c-family/c-common.c:5771
@@ -18592,34 +18592,34 @@ msgstr ""
 #: config/i386/i386.c:29195 config/ia64/ia64.c:728
 #: config/m68hc11/m68hc11.c:1197 config/rs6000/rs6000.c:24988
 #: config/spu/spu.c:3933 ada/gcc-interface/utils.c:5214 lto/lto-lang.c:200
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute ignored"
-msgstr "`%s' 属性は無視されました"
+msgstr "%qE 属性は無視されました"
 
 #: tree.c:5478
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "inline function %q+D declared as  dllimport: attribute ignored"
-msgstr "組み込み関数 `%s' は非関数として宣言されました"
+msgstr "インライン関数 %q+D は dllimport として宣言されました: 属性が無視されました"
 
 #: tree.c:5486
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "function %q+D definition is marked dllimport"
-msgstr "関数の定義が `auto' と宣言されました"
+msgstr "関数 %q+D 定義は dllimport としてマークされています"
 
 #: tree.c:5494 config/sh/symbian-c.c:144 config/sh/symbian-cxx.c:576
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "variable %q+D definition is marked dllimport"
-msgstr "静的変数 `%s' は dllimport とマークされています"
+msgstr "変数 %q+D 定義は dllimport としてマークされています"
 
 #: tree.c:5521 config/sh/symbian-c.c:164 config/sh/symbian-cxx.c:651
 #, gcc-internal-format
 msgid "external linkage required for symbol %q+D because of %qE attribute"
-msgstr ""
+msgstr "シンボル %q+D 用に外部リンクが要求されます (%qE 属性のため)"
 
 #: tree.c:5535
 #, gcc-internal-format
 msgid "%qE implies default visibility, but %qD has already been declared with a different visibility"
-msgstr ""
+msgstr "%qE は暗黙的にデフォルトの可視性となりますが、%qD は既に異なる可視性として宣言されています"
 
 #: tree.c:7228
 #, gcc-internal-format
@@ -18632,99 +18632,99 @@ msgid "function return type cannot be function"
 msgstr "関数の返す型が関数であってはなりません"
 
 #: tree.c:8618 tree.c:8703 tree.c:8764
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "tree check: %s, have %s in %s, at %s:%d"
-msgstr "Tree 検査: %s があるべき所に %s があります(%s 内, %s:%d)"
+msgstr ""
 
 #: tree.c:8655
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "tree check: expected none of %s, have %s in %s, at %s:%d"
-msgstr "Tree 検査: %s があるべき所に %s があります(%s 内, %s:%d)"
+msgstr ""
 
 #: tree.c:8668
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "tree check: expected class %qs, have %qs (%s) in %s, at %s:%d"
-msgstr "Tree 検査: クラス '%c' のはずが '%c' (%s) です(%s 内, %s:%d)"
+msgstr ""
 
 #: tree.c:8717
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "tree check: did not expect class %qs, have %qs (%s) in %s, at %s:%d"
-msgstr "Tree 検査: クラス '%c' のはずが '%c' (%s) です(%s 内, %s:%d)"
+msgstr ""
 
 #: tree.c:8730
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "tree check: expected omp_clause %s, have %s in %s, at %s:%d"
-msgstr "Tree 検査: %s があるべき所に %s があります(%s 内, %s:%d)"
+msgstr ""
 
 #: tree.c:8790
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "tree check: expected tree that contains %qs structure, have %qs in %s, at %s:%d"
-msgstr "Tree 検査: %s があるべき所に %s があります(%s 内, %s:%d)"
+msgstr ""
 
 #: tree.c:8804
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "tree check: accessed elt %d of tree_vec with %d elts in %s, at %s:%d"
-msgstr "RTL check: ベクトルの elt %d を最後の elt %d (%s 中)と一緒にアクセスします (%s:%d)"
+msgstr ""
 
 #: tree.c:8817
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "tree check: accessed operand %d of %s with %d operands in %s, at %s:%d"
-msgstr "RTL 検査: elt %d(%s) が最後の elt %d(%s 中) と一緒にアクセスします (%s:%d)"
+msgstr ""
 
 #: tree.c:8830
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "tree check: accessed operand %d of omp_clause %s with %d operands in %s, at %s:%d"
-msgstr "RTL 検査: elt %d(%s) が最後の elt %d(%s 中) と一緒にアクセスします (%s:%d)"
+msgstr ""
 
 #: tree.c:11042
 #, gcc-internal-format
 msgid "%qD is deprecated (declared at %s:%d): %s"
-msgstr ""
+msgstr "%qD は廃止されました (宣言位置 %s:%d): %s"
 
 #: tree.c:11046
 #, gcc-internal-format
 msgid "%qD is deprecated (declared at %s:%d)"
-msgstr ""
+msgstr "%qD は廃止されました (宣言位置 %s:%d)"
 
 #: tree.c:11071
 #, gcc-internal-format
 msgid "%qE is deprecated (declared at %s:%d): %s"
-msgstr ""
+msgstr "%qE は廃止されました (宣言位置 %s:%d): %s"
 
 #: tree.c:11075
 #, gcc-internal-format
 msgid "%qE is deprecated (declared at %s:%d)"
-msgstr ""
+msgstr "%qE は廃止されました (宣言位置 %s:%d)"
 
 #: tree.c:11082
 #, gcc-internal-format
 msgid "type is deprecated (declared at %s:%d): %s"
-msgstr ""
+msgstr "型は廃止されました (宣言位置 %s:%d): %s"
 
 #: tree.c:11086
 #, gcc-internal-format
 msgid "type is deprecated (declared at %s:%d)"
-msgstr ""
+msgstr "型は廃止されました (宣言位置 %s:%d)"
 
 #: tree.c:11095
 #, gcc-internal-format
 msgid "%qE is deprecated: %s"
-msgstr ""
+msgstr "%qE は廃止されました: %s"
 
 #: tree.c:11098
 #, gcc-internal-format
 msgid "%qE is deprecated"
-msgstr ""
+msgstr "%qE は廃止されました"
 
 #: tree.c:11103
 #, gcc-internal-format
 msgid "type is deprecated: %s"
-msgstr ""
+msgstr "型は廃止されました: %s"
 
 #: tree.c:11106
 #, gcc-internal-format
 msgid "type is deprecated"
-msgstr ""
+msgstr "型は廃止されました"
 
 #: value-prof.c:377
 #, gcc-internal-format
@@ -18739,97 +18739,97 @@ msgstr ""
 #: value-prof.c:421
 #, gcc-internal-format
 msgid "verify_histograms failed"
-msgstr ""
+msgstr "verify_histograms に失敗しました"
 
 #: value-prof.c:468
 #, gcc-internal-format
 msgid "correcting inconsistent value profile: %s profiler overall count (%d) does not match BB count (%d)"
-msgstr ""
+msgstr "一貫性がない値を持つプロファイルを修正しています: %s プロファイルの総合計数 (%d) は BB 数 (%d) と一致しません"
 
 #: value-prof.c:478
 #, gcc-internal-format
 msgid "corrupted value profile: %s profiler overall count (%d) does not match BB count (%d)"
-msgstr ""
+msgstr "破損した値のプロファイルです: %s プロファイルの総合計数 (%d) は BB 数 (%d) と一致しません"
 
 #: var-tracking.c:6140
 #, gcc-internal-format
 msgid "variable tracking size limit exceeded with -fvar-tracking-assignments, retrying without"
-msgstr ""
+msgstr "変数追跡サイズ制限が -fvar-tracking-assignments を超過しています。-fvar-tracking-assignments 無しで再度試みています"
 
 #: var-tracking.c:6144
 #, gcc-internal-format
 msgid "variable tracking size limit exceeded"
-msgstr ""
+msgstr "変数追跡サイズ制限が超過しました"
 
 #: varasm.c:301
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%+D causes a section type conflict"
-msgstr "%s はセクションタイプの競合を引き起こします"
+msgstr "%+D によりセクション型が競合します"
 
 #: varasm.c:950
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "alignment of %q+D is greater than maximum object file alignment.  Using %d"
-msgstr "`%s' のアラインメントはオブジェクトファイルの最大値よりも大きいです。 %d を使います。"
+msgstr "%q+D の整列がオブジェクトファイルの整列の最大値より大きいです。%d を使用します"
 
 #: varasm.c:1188 varasm.c:1196
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "register name not specified for %q+D"
-msgstr "レジスタ名が `%s' 用に指定されていません"
+msgstr "レジスタ名が %q+D 用に指定されていません"
 
 #: varasm.c:1198
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid register name for %q+D"
-msgstr "`%s' に対するレジスタ名として無効です"
+msgstr "無効な %q+D 用のレジスタ名です"
 
 #: varasm.c:1200
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "data type of %q+D isn%'t suitable for a register"
-msgstr "`%s' のデータ型は register にはふさわしくありません"
+msgstr "%q+D のデータ型がレジスタに適合しません"
 
 #: varasm.c:1203
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "register specified for %q+D isn%'t suitable for data type"
-msgstr "`%s' に指定された register はデータ型にふさわしくありません"
+msgstr "%q+D 用に指定されたレジスタがデータ型に適合しません"
 
 #: varasm.c:1213
 #, gcc-internal-format
 msgid "global register variable has initial value"
-msgstr "大域 register 変数が初期値を持っています"
+msgstr "大域レジスタ変数が初期値を持っています"
 
 #: varasm.c:1217
 #, gcc-internal-format
 msgid "optimization may eliminate reads and/or writes to register variables"
-msgstr ""
+msgstr "最適化によりレジスタ変数の読み込み/書き込みが削除されるかもしれません"
 
 #: varasm.c:1255
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "register name given for non-register variable %q+D"
-msgstr "レジスタ名が非 register 変数 `%s' に与えられました"
+msgstr "非レジスタ変数 %q+D 用にレジスタ名が与えられました"
 
 #: varasm.c:1372
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "global destructors not supported on this target"
-msgstr "スタック制限はこのターゲットでは実装されていません"
+msgstr "大域デストラクタはこのターゲットではサポートされていません"
 
 #: varasm.c:1438
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "global constructors not supported on this target"
-msgstr "スタック制限はこのターゲットでは実装されていません"
+msgstr "大域コンストラクタはこのターゲットではサポートされていません"
 
 #: varasm.c:1818
 #, gcc-internal-format
 msgid "thread-local COMMON data not implemented"
-msgstr ""
+msgstr "スレッド局所 COMMON データは実装されていません"
 
 #: varasm.c:1847
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "requested alignment for %q+D is greater than implemented alignment of %wu"
-msgstr "%s に要求されたアラインメントは実装されたアラインメント %d より大きいです"
+msgstr "要求された %q+D 用の整列は実装されている整列 %wu より大きいです"
 
 #: varasm.c:4526
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "initializer for integer/fixed-point value is too complicated"
-msgstr "整数の初期設定子の値が複雑すぎます"
+msgstr "整数/固定小数用の初期化子が複雑すぎます"
 
 #: varasm.c:4531
 #, gcc-internal-format
@@ -18837,54 +18837,54 @@ msgid "initializer for floating value is not a floating constant"
 msgstr "浮動小数点数の初期設定子の値が、浮動小数点定数ではありません"
 
 #: varasm.c:4837
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid initial value for member %qE"
-msgstr "メンバ `%s' に対する無効な初期値"
+msgstr "メンバ %qE 用の無効な初期値です"
 
 #: varasm.c:5146 varasm.c:5190
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "weak declaration of %q+D must precede definition"
-msgstr "`%s' の weak 宣言は定義よりも先になければなりません"
+msgstr "%q+D の弱い (weak) 宣言は定義の前に無ければ行けません"
 
 #: varasm.c:5154
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "weak declaration of %q+D after first use results in unspecified behavior"
-msgstr "`%s' の weak 宣言は定義よりも先になければなりません"
+msgstr "%q+D の弱い (weak) 宣言が最初に使用された後に行われていますが、この結果は不定です"
 
 #: varasm.c:5188
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "weak declaration of %q+D must be public"
-msgstr "`%s' の weak 宣言は public でなければなりません"
+msgstr "%q+D の弱い (weak) 宣言は公開 (public) でなければいけません"
 
 #: varasm.c:5192
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "weak declaration of %q+D not supported"
-msgstr "`%s' の weak 宣言は定義よりも先になければなりません"
+msgstr "%q+D の弱い (weak) 宣言はサポートされていません"
 
 #: varasm.c:5221 varasm.c:5706
 #, gcc-internal-format
 msgid "only weak aliases are supported in this configuration"
-msgstr "現在の設定では weak alias しかサポートされません"
+msgstr "弱い別名のみこの設定ではサポートされています"
 
 #: varasm.c:5440
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "weakref is not supported in this configuration"
-msgstr "%s はこのコンフィギュレーションではサポートされません"
+msgstr "弱い参照はこの設定ではサポートされていません"
 
 #: varasm.c:5463 varasm.c:5703
 #, gcc-internal-format
 msgid "ifunc is not supported in this configuration"
-msgstr ""
+msgstr "ifunc はこの設定ではサポートされていません"
 
 #: varasm.c:5623
 #, gcc-internal-format
 msgid "%q+D aliased to undefined symbol %qE"
-msgstr ""
+msgstr "%q+D が未定義シンボル %qE の別名となっています"
 
 #: varasm.c:5637
 #, gcc-internal-format
 msgid "%q+D aliased to external symbol %qE"
-msgstr ""
+msgstr "%q+D が外部シンボル %qE の別名となっています"
 
 #: varasm.c:5680
 #, gcc-internal-format
@@ -18894,83 +18894,83 @@ msgstr ""
 #: varasm.c:5689
 #, gcc-internal-format
 msgid "weakref %q+D must have static linkage"
-msgstr ""
+msgstr "弱い参照 %q+D は静的リンクされなければいけません"
 
 #: varasm.c:5696
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "alias definitions not supported in this configuration"
-msgstr "現在の設定では alias 定義はサポートされません -- 無視されました"
+msgstr "この設定では別名定義はサポートされていません"
 
 #: varasm.c:5764 config/sol2.c:155
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "visibility attribute not supported in this configuration; ignored"
-msgstr "現在の設定では alias 定義はサポートされません -- 無視されました"
+msgstr "可視性属性はこの設定ではサポートされていません。無視されました"
 
 #: vec.c:523
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "vector %s %s domain error, in %s at %s:%u"
-msgstr "%s で内部コンパイラエラー (%s:%d)"
+msgstr ""
 
 #. Print an error message for unrecognized stab codes.
 #: xcoffout.c:187
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no sclass for %s stab (0x%x)"
-msgstr "%s スタブ用の sclass がありません (0x%x)\n"
+msgstr ""
 
 #: c-family/c-common.c:877
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not defined outside of function scope"
-msgstr "ラベル %s があらゆる関数の外側で参照されました"
+msgstr "%qD は関数スコープの外側で定義されていません"
 
 #: c-family/c-common.c:927
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "string length %qd is greater than the length %qd ISO C%d compilers are required to support"
-msgstr "文字列長 `%d' は、長さ `%d' (ISO C%d コンパイラのサポート要件)より大きくなっています"
+msgstr "文字列長 %qd は長さ %qd (ISO C%d コンパイラでサポートが要求される長さ) より長いです"
 
 #: c-family/c-common.c:1420 c-family/c-common.c:1432 cp/semantics.c:6053
 #, gcc-internal-format
 msgid "overflow in constant expression"
-msgstr "定数式がオーバーフローしました"
+msgstr "定数式内でオーバーフローしました"
 
 #: c-family/c-common.c:1455
 #, gcc-internal-format
 msgid "integer overflow in expression"
-msgstr "式の整数がオーバーフローしました"
+msgstr "式内で整数がオーバーフローしました"
 
 #: c-family/c-common.c:1460
 #, gcc-internal-format
 msgid "floating point overflow in expression"
-msgstr "式の浮動小数点数がオーバーフローしました"
+msgstr "式内で浮動小数点数がオーバーフローしました"
 
 #: c-family/c-common.c:1464
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "fixed-point overflow in expression"
-msgstr "式の浮動小数点数がオーバーフローしました"
+msgstr "式内で固定小数点数がオーバーフローしました"
 
 #: c-family/c-common.c:1468
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "vector overflow in expression"
-msgstr "式の整数がオーバーフローしました"
+msgstr "式内でベクトルがオーバーフローしました"
 
 #: c-family/c-common.c:1474
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "complex integer overflow in expression"
-msgstr "式の整数がオーバーフローしました"
+msgstr "式内で複素整数がオーバーフローしました"
 
 #: c-family/c-common.c:1477
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "complex floating point overflow in expression"
-msgstr "式の浮動小数点数がオーバーフローしました"
+msgstr "式内で複素浮動小数点数がオーバーフローしました"
 
 #: c-family/c-common.c:1520
 #, gcc-internal-format
 msgid "logical %<or%> applied to non-boolean constant"
-msgstr ""
+msgstr "論理 %<or%> が非真偽定数に適用されています"
 
 #: c-family/c-common.c:1523
 #, gcc-internal-format
 msgid "logical %<and%> applied to non-boolean constant"
-msgstr ""
+msgstr "論理 %<and%> が非真偽定数に適用されています"
 
 #: c-family/c-common.c:1568
 #, gcc-internal-format
@@ -18978,9 +18978,9 @@ msgid "logical %<or%> of collectively exhaustive tests is always true"
 msgstr ""
 
 #: c-family/c-common.c:1572
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "logical %<and%> of mutually exclusive tests is always false"
-msgstr "相互排他的な値の等価の `and' テストは常に 0 です"
+msgstr ""
 
 #: c-family/c-common.c:1607
 #, gcc-internal-format
@@ -18998,24 +18998,24 @@ msgid "dereferencing type-punned pointer might break strict-aliasing rules"
 msgstr ""
 
 #: c-family/c-common.c:1678
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "first argument of %q+D should be %<int%>"
-msgstr "`%s' の第一引数は `int' とすべきです"
+msgstr "%q+D の第一引数は %<int%> であるべきです"
 
 #: c-family/c-common.c:1687
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "second argument of %q+D should be %<char **%>"
-msgstr "`%s' の第二引数は `char **' とすべきです"
+msgstr "%q+D の第二引数は %<char **%> であるべきです"
 
 #: c-family/c-common.c:1696
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "third argument of %q+D should probably be %<char **%>"
-msgstr "`%s' の第三引数はおそらく `char **' とすべきでしょう"
+msgstr "%q+D の第三引数は %<char **%> とすべきでしょう"
 
 #: c-family/c-common.c:1706
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q+D takes only zero or two arguments"
-msgstr "`%s' は 0 か 2 個の引数しかとりません"
+msgstr "%q+D は 0 個または 2 個の引数のみとります"
 
 #: c-family/c-common.c:1755
 #, gcc-internal-format
@@ -19023,34 +19023,34 @@ msgid "use -flax-vector-conversions to permit conversions between vectors with d
 msgstr ""
 
 #: c-family/c-common.c:1911
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conversion to %qT from boolean expression"
-msgstr "不完全型への変換です"
+msgstr "真偽式から %qT への変換です"
 
 #: c-family/c-common.c:1932
 #, gcc-internal-format
 msgid "negative integer implicitly converted to unsigned type"
-msgstr "負の整数が暗黙に符合無し型に変換されました"
+msgstr "負の整数が暗黙的に符号無し型に変換されました"
 
 #: c-family/c-common.c:1935
 #, gcc-internal-format
 msgid "conversion of unsigned constant value to negative integer"
-msgstr ""
+msgstr "符号無し定数値から負の整数への変換です"
 
 #: c-family/c-common.c:1962
 #, gcc-internal-format
 msgid "conversion to %qT alters %qT constant value"
-msgstr ""
+msgstr "%qT への変換は %qT 定数値を変更します"
 
 #: c-family/c-common.c:2054
 #, gcc-internal-format
 msgid "conversion to %qT from %qT may change the sign of the result"
-msgstr ""
+msgstr "%qT への %qT からの変換は結果の符号が変更になるかもしれません"
 
 #: c-family/c-common.c:2091
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conversion to %qT from %qT may alter its value"
-msgstr "NaN から整数への変換です"
+msgstr "%qT への %qT からの変換はその値が変更になるかもしれません"
 
 #: c-family/c-common.c:2119
 #, gcc-internal-format
@@ -19063,9 +19063,9 @@ msgid "overflow in implicit constant conversion"
 msgstr "暗黙の定数変換でオーバーフローしました"
 
 #: c-family/c-common.c:2312
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "operation on %qE may be undefined"
-msgstr "`%s' での演算が定義されていないと思われます"
+msgstr "%qE に関する演算は定義されていません"
 
 #: c-family/c-common.c:2620
 #, gcc-internal-format
@@ -19073,34 +19073,34 @@ msgid "case label does not reduce to an integer constant"
 msgstr "case ラベルを整数定数に還元できません"
 
 #: c-family/c-common.c:2660
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "case label value is less than minimum value for type"
-msgstr "その型の最大値よりも大きな値の整数定数です"
+msgstr "case ラベルの値がその型の最小値より小さいです"
 
 #: c-family/c-common.c:2668
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "case label value exceeds maximum value for type"
-msgstr "その型の最大値よりも大きな値の整数定数です"
+msgstr "case ラベルの値がその型の最大値を超えています"
 
 #: c-family/c-common.c:2676
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "lower value in case label range less than minimum value for type"
-msgstr "その型の最大値よりも大きな値の整数定数です"
+msgstr "case ラベル範囲の下部の値が型の最小値より小さいです"
 
 #: c-family/c-common.c:2685
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "upper value in case label range exceeds maximum value for type"
-msgstr "その型の最大値よりも大きな値の整数定数です"
+msgstr "case ラベル範囲の上部の値が型の最大値より大きいです"
 
 #: c-family/c-common.c:2764
 #, gcc-internal-format
 msgid "GCC cannot support operators with integer types and fixed-point types that have too many integral and fractional bits together"
-msgstr ""
+msgstr "GCC は、整数型と固定小数点型の演算子で、整数部と小数部のビット数が非常に多いものをサポートできません"
 
 #: c-family/c-common.c:3266
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid operands to binary %s (have %qT and %qT)"
-msgstr "二項演算子 %s が不適切です"
+msgstr "二項演算子 %s への無効な被演算子です (%qT と %qT)"
 
 #: c-family/c-common.c:3501
 #, gcc-internal-format
@@ -19123,24 +19123,24 @@ msgid "comparison of unsigned expression < 0 is always false"
 msgstr "符合無しの式 < 0 という比較は常に false です"
 
 #: c-family/c-common.c:3634
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "pointer of type %<void *%> used in arithmetic"
-msgstr "`void *' 型のポインタが計算で使われました"
+msgstr "%<void *%> 型のポインタが計算内で使用されています"
 
 #: c-family/c-common.c:3640
 #, gcc-internal-format
 msgid "pointer to a function used in arithmetic"
-msgstr "関数ポインタが計算で使われました"
+msgstr "関数へのポインタが計算内で使用されています"
 
 #: c-family/c-common.c:3646
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "pointer to member function used in arithmetic"
-msgstr "関数ポインタが計算で使われました"
+msgstr "メンバ関数へのポインタが計算内で使用されています"
 
 #: c-family/c-common.c:3858
 #, gcc-internal-format
 msgid "the address of %qD will always evaluate as %<true%>"
-msgstr ""
+msgstr "%qD のアドレスは常に %<true%> と評価されます"
 
 #: c-family/c-common.c:3943 cp/semantics.c:610 cp/typeck.c:7359
 #, gcc-internal-format
@@ -19148,39 +19148,39 @@ msgid "suggest parentheses around assignment used as truth value"
 msgstr "真偽値として使われる代入のまわりでは、丸括弧の使用をお勧めします"
 
 #: c-family/c-common.c:4217
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid application of %<sizeof%> to a function type"
-msgstr "ISO C++ は関数型への `sizeof' の適用を禁じます"
+msgstr "%<sizeof%> を関数型へ適用することは無効です"
 
 #: c-family/c-common.c:4230
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid application of %qs to a void type"
-msgstr "インスタンス化されない型に対する無効な操作です"
+msgstr "%qs をvoid 型へ適用することは無効です"
 
 #: c-family/c-common.c:4238
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid application of %qs to incomplete type %qT "
-msgstr "不完全な typedef `%s' の使用は不適切です"
+msgstr "%qs を不完全型 %qT へ適用することは無効です "
 
 #: c-family/c-common.c:4280
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<__alignof%> applied to a bit-field"
-msgstr "ビットフィールドに `__alignof' が適用されました"
+msgstr "%<__alignof%> がビットフィールドに適用されています"
 
 #: c-family/c-common.c:4996
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot disable built-in function %qs"
-msgstr "組み込み関数 `%s' を覆い隠します"
+msgstr "組み込み関数 %qs を無効に出来ません"
 
 #: c-family/c-common.c:5188
 #, gcc-internal-format
 msgid "pointers are not permitted as case values"
-msgstr "case の値としてのポインタは許されていません"
+msgstr "case の値としてポインタは許可されていません"
 
 #: c-family/c-common.c:5195
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "range expressions in switch statements are non-standard"
-msgstr "ISO C では switch 文での範囲式は禁じられています"
+msgstr "switch 文内での範囲式は非標準です"
 
 #: c-family/c-common.c:5221
 #, gcc-internal-format
@@ -19190,17 +19190,17 @@ msgstr "空の範囲が指定されました"
 #: c-family/c-common.c:5281
 #, gcc-internal-format
 msgid "duplicate (or overlapping) case value"
-msgstr "二重の(あるいは重複している) case の値"
+msgstr "重複している (または重なり合っている) case の値です"
 
 #: c-family/c-common.c:5283
 #, gcc-internal-format
 msgid "this is the first entry overlapping that value"
-msgstr "これがその値と重複した最初の項目です"
+msgstr "これが重なり合っている値の最初の項目です"
 
 #: c-family/c-common.c:5287
 #, gcc-internal-format
 msgid "duplicate case value"
-msgstr "重複した case の値"
+msgstr "重複した case の値です"
 
 #: c-family/c-common.c:5288
 #, gcc-internal-format
@@ -19218,145 +19218,145 @@ msgid "this is the first default label"
 msgstr "これが最初の default ラベルです"
 
 #: c-family/c-common.c:5346
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "case value %qs not in enumerated type"
-msgstr "case 値 `%ld' は列挙型にはありません"
+msgstr "case 値 %qs は列挙型ではありません"
 
 #: c-family/c-common.c:5351
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "case value %qs not in enumerated type %qT"
-msgstr "case 値 `%ld' は列挙型にはありません"
+msgstr "case 値 %qs は列挙型 %qT ではありません"
 
 #: c-family/c-common.c:5410
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "switch missing default case"
-msgstr "これが最初の default ラベルです"
+msgstr "default の case が無い switch です"
 
 #: c-family/c-common.c:5482
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "enumeration value %qE not handled in switch"
-msgstr "列挙値 `%s' は switch 内で扱われていません"
+msgstr "列挙値 %qE は switch 内で取り扱われません"
 
 #: c-family/c-common.c:5508
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "taking the address of a label is non-standard"
-msgstr "一時オブジェクトのアドレスを取ろうとしています"
+msgstr "ラベルのアドレスを取得することは非標準です"
 
 #: c-family/c-common.c:5695
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute ignored for field of type %qT"
-msgstr "`%s' 属性は型には適用されません"
+msgstr "%qE 属性は %qT 型のフィールド用としては無視されます"
 
 #: c-family/c-common.c:5789 c-family/c-common.c:5815
 #, gcc-internal-format
 msgid "%qE attribute conflicts with attribute %s"
-msgstr ""
+msgstr "%qE 属性は %s 属性と競合します"
 
 #: c-family/c-common.c:5929 lto/lto-lang.c:205
 #, gcc-internal-format
 msgid "%qE attribute has no effect on unit local functions"
-msgstr ""
+msgstr "%qE 属性はユニット局所関数に関しては効果がありません"
 
 #: c-family/c-common.c:6082
 #, gcc-internal-format
 msgid "%qE attribute have effect only on public objects"
-msgstr ""
+msgstr "%qE 属性は公開オブジェクトに関してのみ効果があります"
 
 #: c-family/c-common.c:6179
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "destructor priorities are not supported"
-msgstr "スタック制限式を受け付けません"
+msgstr "デストラクタのプロパティはサポートされません"
 
 #: c-family/c-common.c:6181
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "constructor priorities are not supported"
-msgstr "スタック制限式を受け付けません"
+msgstr "コンストラクタのプロパティはサポートされません"
 
 #: c-family/c-common.c:6198
 #, gcc-internal-format
 msgid "destructor priorities from 0 to %d are reserved for the implementation"
-msgstr ""
+msgstr "0 から %d までのデストラクタの優先度は実装によって予約されています"
 
 #: c-family/c-common.c:6203
 #, gcc-internal-format
 msgid "constructor priorities from 0 to %d are reserved for the implementation"
-msgstr ""
+msgstr "0 から %d までのコンストラクタの優先度は実装によって予約されています"
 
 #: c-family/c-common.c:6211
 #, gcc-internal-format
 msgid "destructor priorities must be integers from 0 to %d inclusive"
-msgstr ""
+msgstr "デストラクタの優先度は 0 から %d までに含まれる整数でなければいけません"
 
 #: c-family/c-common.c:6214
 #, gcc-internal-format
 msgid "constructor priorities must be integers from 0 to %d inclusive"
-msgstr ""
+msgstr "コンストラクタの優先度は 0 から %d までに含まれる整数でなければいけません"
 
 #: c-family/c-common.c:6370
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unknown machine mode %qE"
-msgstr "不明なマシンモード `%s'"
+msgstr "不明なマシンモード %qE です"
 
 #: c-family/c-common.c:6399
 #, gcc-internal-format
 msgid "specifying vector types with __attribute__ ((mode)) is deprecated"
-msgstr ""
+msgstr "ベクトル型を __attribute__ ((mode)) で指定することは廃止されています"
 
 #: c-family/c-common.c:6402
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "use __attribute__ ((vector_size)) instead"
-msgstr "`%s' 属性の疑似命令が無視されました"
+msgstr "代わりに __attribute__ ((vector_size)) を使用してください"
 
 #: c-family/c-common.c:6411
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unable to emulate %qs"
-msgstr "ファイル '%s' を open できません"
+msgstr "%qs をエミュレートできません"
 
 #: c-family/c-common.c:6422
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid pointer mode %qs"
-msgstr "無効な識別子 `%s'"
+msgstr "無効なポインタモード %qs です"
 
 #: c-family/c-common.c:6439
 #, gcc-internal-format
 msgid "signedness of type and machine mode %qs don%'t match"
-msgstr ""
+msgstr "型の符号とマシンモード %qs が適合しません"
 
 #: c-family/c-common.c:6450
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no data type for mode %qs"
-msgstr "モード `%s' に対するデータ型がありません"
+msgstr "モード %qs 用のデータ型がありません"
 
 #: c-family/c-common.c:6460
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot use mode %qs for enumeral types"
-msgstr "ポインタ型に変換できません"
+msgstr "モード %qs を列挙型用に使用できません"
 
 #: c-family/c-common.c:6487
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "mode %qs applied to inappropriate type"
-msgstr "sizeof が不完全な型に適用されました"
+msgstr "モード %qs が適切でない型に適用されています"
 
 #: c-family/c-common.c:6519
 #, gcc-internal-format
 msgid "section attribute cannot be specified for local variables"
-msgstr "section 属性はローカル変数に対しては指定できません"
+msgstr "section 属性は局所変数用には指定できません"
 
 #: c-family/c-common.c:6530 config/bfin/bfin.c:5663 config/bfin/bfin.c:5714
 #: config/bfin/bfin.c:5741 config/bfin/bfin.c:5754
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "section of %q+D conflicts with previous declaration"
-msgstr "`%s' のセクションは前方でに宣言されたものと衝突します"
+msgstr "%q+D のセクションが前の宣言と競合しています"
 
 #: c-family/c-common.c:6538
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "section of %q+D cannot be overridden"
-msgstr "%s: '%s' の宣言は変換されません\n"
+msgstr "%q+D のセクションは上書きできません"
 
 #: c-family/c-common.c:6546
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "section attribute not allowed for %q+D"
-msgstr "セクション属性は `%s' には使えません"
+msgstr "セクション属性は %q+D 用には許可されていません"
 
 #: c-family/c-common.c:6553
 #, gcc-internal-format
@@ -19366,143 +19366,143 @@ msgstr "セクション属性はこのターゲットでは実装されていま
 #: c-family/c-common.c:6585
 #, gcc-internal-format
 msgid "requested alignment is not a constant"
-msgstr "要求されたアラインメントが定数ではありません"
+msgstr "要求された整列が定数ではありません"
 
 #: c-family/c-common.c:6590
 #, gcc-internal-format
 msgid "requested alignment is not a power of 2"
-msgstr "要求されたアラインメントが 2 のべき乗ではありません"
+msgstr "要求された整列が 2 の乗数ではありません"
 
 #: c-family/c-common.c:6595
 #, gcc-internal-format
 msgid "requested alignment is too large"
-msgstr "要求されたアラインメントが大きすぎます"
+msgstr "要求された整列が大きすぎます"
 
 #: c-family/c-common.c:6623
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "alignment may not be specified for %q+D"
-msgstr "`%s' に対してのアラインメントは指定できません"
+msgstr "%q+D 用の整列が指定されていないようです"
 
 #: c-family/c-common.c:6630
 #, gcc-internal-format
 msgid "alignment for %q+D was previously specified as %d and may not be decreased"
-msgstr ""
+msgstr "%q+D 用の整列は前に %d として指定されていて、減らすことは出来ません"
 
 #: c-family/c-common.c:6634
 #, gcc-internal-format
 msgid "alignment for %q+D must be at least %d"
-msgstr ""
+msgstr "%q+D 用の整列は最低 %d でなければいけません"
 
 #: c-family/c-common.c:6659
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "inline function %q+D cannot be declared weak"
-msgstr "関数 `%s' を `mutable' としては宣言できません"
+msgstr "インライン関数 %q+D を弱いとして宣言できません"
 
 #: c-family/c-common.c:6664
 #, gcc-internal-format
 msgid "indirect function %q+D cannot be declared weak"
-msgstr ""
+msgstr "間接関数 %q+D を弱いとして宣言できません"
 
 #: c-family/c-common.c:6701
 #, gcc-internal-format
 msgid "%q+D defined both normally and as %qE attribute"
-msgstr ""
+msgstr "%q+D が通常と %qE 属性との両方で定義されています"
 
 #: c-family/c-common.c:6709
 #, gcc-internal-format
 msgid "weak %q+D cannot be defined %qE"
-msgstr ""
+msgstr "弱い %q+D は %qE として定義できません"
 
 #: c-family/c-common.c:6726
 #, gcc-internal-format
 msgid "attribute %qE argument not a string"
-msgstr ""
+msgstr "属性 %qE の引数が文字列ではありません"
 
 #: c-family/c-common.c:6802
 #, gcc-internal-format
 msgid "indirect function %q+D cannot be declared weakref"
-msgstr ""
+msgstr "間接関数 %q+D は弱い参照として宣言できません"
 
 #: c-family/c-common.c:6824
 #, gcc-internal-format
 msgid "weakref attribute must appear before alias attribute"
-msgstr ""
+msgstr "弱い参照属性は別名属性より前に出現しなければいけません"
 
 #: c-family/c-common.c:6853
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute ignored on non-class types"
-msgstr "`%s' 属性は型には適用されません"
+msgstr "%qE 属性は非クラス型に関しては無視されます"
 
 #: c-family/c-common.c:6859
 #, gcc-internal-format
 msgid "%qE attribute ignored because %qT is already defined"
-msgstr ""
+msgstr "%qE 属性は %qT が既に定義されているため無視されます"
 
 #: c-family/c-common.c:6872
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "visibility argument not a string"
-msgstr "alias 引数が文字列ではない"
+msgstr "可視性の引数が文字列ではありません"
 
 #: c-family/c-common.c:6884
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute ignored on types"
-msgstr "`%s' 属性は無視されました"
+msgstr "%qE 属性は型に関しては無視されます"
 
 #: c-family/c-common.c:6900
 #, gcc-internal-format
 msgid "visibility argument must be one of \"default\", \"hidden\", \"protected\" or \"internal\""
-msgstr ""
+msgstr "可視性の引数は \"default\"、\"hidden\"、\"protected\" または \"internal\" のうち一つでなければいけません"
 
 #: c-family/c-common.c:6911
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD redeclared with different visibility"
-msgstr "`%s' が別のシンボル種として再宣言されました"
+msgstr "%qD が別の可視性で再宣言されました"
 
 #: c-family/c-common.c:6914 c-family/c-common.c:6918
 #, gcc-internal-format
 msgid "%qD was declared %qs which implies default visibility"
-msgstr ""
+msgstr "%qD は %qs として宣言されていて、暗黙的にデフォルトの可視性になります"
 
 #: c-family/c-common.c:7002
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "tls_model argument not a string"
-msgstr "alias 引数が文字列ではない"
+msgstr "tls_model の引数が文字列ではありません"
 
 #: c-family/c-common.c:7015
 #, gcc-internal-format
 msgid "tls_model argument must be one of \"local-exec\", \"initial-exec\", \"local-dynamic\" or \"global-dynamic\""
-msgstr ""
+msgstr "tls_model の引数は \"local-exec\"、\"initial-exec\"、\"local-dynamic\" または \"global-dynamic\" のうちの一つでなければいけません"
 
 #: c-family/c-common.c:7035 c-family/c-common.c:7141 c-family/c-common.c:7899
 #: config/m32c/m32c.c:3168
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute applies only to functions"
-msgstr "`%s' 属性は関数に対してのみ適用されます"
+msgstr "%qE 属性は関数にのみ適用できます"
 
 #: c-family/c-common.c:7041 c-family/c-common.c:7147 c-family/c-common.c:7905
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can%'t set %qE attribute after definition"
-msgstr "定義の後で `%s' 属性をセットすることはできません"
+msgstr "定義の後に %qE 属性を設定できません"
 
 #: c-family/c-common.c:7087
 #, gcc-internal-format
 msgid "alloc_size parameter outside range"
-msgstr ""
+msgstr "alloc_size パラメータが範囲外です"
 
 #: c-family/c-common.c:7204
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "deprecated message is not a string"
-msgstr "#line の後の二つ目のトークンが文字列ではありません"
+msgstr "廃止された (deprecated) メッセージが文字列ではありません"
 
 #: c-family/c-common.c:7245
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute ignored for %qE"
-msgstr "`%s' 属性は無視されました"
+msgstr "%qE 属性は %qE 用としては無視されます"
 
 #: c-family/c-common.c:7305
 #, gcc-internal-format
 msgid "invalid vector type for attribute %qE"
-msgstr ""
+msgstr "%qE 属性用としては無効なベクトル型です"
 
 #: c-family/c-common.c:7311 ada/gcc-interface/utils.c:5340
 #: ada/gcc-interface/utils.c:5434
@@ -19514,7 +19514,7 @@ msgstr ""
 #: ada/gcc-interface/utils.c:5440
 #, gcc-internal-format
 msgid "zero vector size"
-msgstr ""
+msgstr "ベクトルのサイズが 0 です"
 
 #: c-family/c-common.c:7325 ada/gcc-interface/utils.c:5354
 #: ada/gcc-interface/utils.c:5447
