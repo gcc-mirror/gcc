@@ -1,6 +1,6 @@
 /* Callgraph based interprocedural optimizations.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -1316,6 +1316,9 @@ assemble_thunk (struct cgraph_node *node)
   tree a = DECL_ARGUMENTS (thunk_fndecl);
 
   current_function_decl = thunk_fndecl;
+
+  /* Ensure thunks are emitted in their correct sections.  */
+  resolve_unique_section (thunk_fndecl, 0, flag_function_sections);
 
   if (this_adjusting
       && targetm.asm_out.can_output_mi_thunk (thunk_fndecl, fixed_offset,
