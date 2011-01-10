@@ -5380,7 +5380,8 @@ tree_can_inline_p (struct cgraph_edge *e)
   if (inline_forbidden_into_p (caller, callee))
     {
       e->inline_failed = CIF_UNSPECIFIED;
-      gimple_call_set_cannot_inline (e->call_stmt, true);
+      if (e->call_stmt)
+	gimple_call_set_cannot_inline (e->call_stmt, true);
       return false;
     }
 
@@ -5388,7 +5389,8 @@ tree_can_inline_p (struct cgraph_edge *e)
   if (!targetm.target_option.can_inline_p (caller, callee))
     {
       e->inline_failed = CIF_TARGET_OPTION_MISMATCH;
-      gimple_call_set_cannot_inline (e->call_stmt, true);
+      if (e->call_stmt)
+	gimple_call_set_cannot_inline (e->call_stmt, true);
       e->call_stmt_cannot_inline_p = true;
       return false;
     }
@@ -5405,7 +5407,8 @@ tree_can_inline_p (struct cgraph_edge *e)
 	  || !gimple_check_call_args (e->call_stmt)))
     {
       e->inline_failed = CIF_MISMATCHED_ARGUMENTS;
-      gimple_call_set_cannot_inline (e->call_stmt, true);
+      if (e->call_stmt)
+	gimple_call_set_cannot_inline (e->call_stmt, true);
       e->call_stmt_cannot_inline_p = true;
       return false;
     }
