@@ -1,3 +1,9 @@
+2011-01-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR testsuite/46230
+	* gcc.dg/vect/pr33804.c: XFAIL only for ilp32.
+	* gcc.dg/vect/slp-24.c: Likewise.
+
 2011-01-10  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR c++/47218
