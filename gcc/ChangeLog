@@ -1,3 +1,8 @@
+2011-01-10  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR c++/47218
+	* cgraphunit.c (assemble_thunk): Call resolve_unique_section.
+
 2011-01-09  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/47232
