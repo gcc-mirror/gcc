@@ -424,8 +424,8 @@ using @code{get_initialized_tmp_var} or @code{create_tmp_var}.
 Currently, an expression like @code{a = b + 5} is not reduced any
 further.  We tried converting it to something like
 @smallexample
-  T1 = b + 5;
-  a = T1;
+T1 = b + 5;
+a = T1;
 @end smallexample
 but this bloated the representation for minimal benefit.  However, a
 variable which must live in memory cannot appear in an expression; its
@@ -443,12 +443,12 @@ GIMPLE rvalue (@code{is_gimple_val}), i.e.@: a constant or a register
 variable.  More complex operands are factored out into temporaries, so
 that
 @smallexample
-  a = b + c + d
+a = b + c + d
 @end smallexample
 becomes
 @smallexample
-  T1 = b + c;
-  a = T1 + d;
+T1 = b + c;
+a = T1 + d;
 @end smallexample
 
 The same rule holds for arguments to a @code{GIMPLE_CALL}.
@@ -481,8 +481,8 @@ workaround for limitations in later optimizers; if we were to convert this
 to
 
 @smallexample
-  T1 = &a.b;
-  T1[2] = 42;
+T1 = &a.b;
+T1[2] = 42;
 @end smallexample
 
 alias analysis would not remember that the reference to @code{T1[2]} came
@@ -498,15 +498,15 @@ A C @code{?:} expression is converted into an @code{if} statement with
 each branch assigning to the same temporary.  So,
 
 @smallexample
-  a = b ? c : d;
+a = b ? c : d;
 @end smallexample
 becomes
 @smallexample
-  if (b == 1)
-    T1 = c;
-  else
-    T1 = d;
-  a = T1;
+if (b == 1)
+  T1 = c;
+else
+  T1 = d;
+a = T1;
 @end smallexample
 
 The GIMPLE level if-conversion pass re-introduces @code{?:}
@@ -525,10 +525,10 @@ Except when they appear in the condition operand of a
 as follows: @code{a = b && c} becomes
 
 @smallexample
-  T1 = (bool)b;
-  if (T1 == true)
-    T1 = (bool)c;
-  a = T1;
+T1 = (bool)b;
+if (T1 == true)
+  T1 = (bool)c;
+a = T1;
 @end smallexample
 
 Note that @code{T1} in this example cannot be an expression temporary,
@@ -2545,7 +2545,7 @@ Additional parameters to @code{walk_tree} must be stored in @code{WI}.  For
 each operand @code{OP}, @code{walk_tree} is called as:
 
 @smallexample
-    walk_tree (&@code{OP}, @code{CALLBACK_OP}, @code{WI}, @code{WI}- @code{PSET})
+walk_tree (&@code{OP}, @code{CALLBACK_OP}, @code{WI}, @code{PSET})
 @end smallexample
 
 If @code{CALLBACK_OP} returns non-@code{NULL} for an operand, the remaining
