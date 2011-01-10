@@ -1,5 +1,9 @@
 2011-01-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* g++.dg/ipa/pr46984.C: Add dg-require-effective-target lto.
+
+2011-01-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	PR tree-optimization/46021
 	* gcc.dg/tree-ssa/20040204-1.c: Don't XFAIL on alpha*-*-*,
 	i?86-*-*, x86_64-*-*.
