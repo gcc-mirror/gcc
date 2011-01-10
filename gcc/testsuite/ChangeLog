@@ -1,3 +1,15 @@
+2011-01-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR lto/47222
+	* g++.dg/torture/stackalign/test-unwind.h (g_edi): Mark it
+	externally visible.
+	(g_esi): Likewise.
+	(g_ebx): Likewise.
+	(g_ebp): Likewise.
+	(g_esp): Likewise.
+	(g_ebp_save): Likewise.
+	(g_esp_save): Likewise.
+
 2011-01-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/ipa/pr46984.C: Add dg-require-effective-target lto.
