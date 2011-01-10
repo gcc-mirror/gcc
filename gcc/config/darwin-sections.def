@@ -27,12 +27,9 @@ along with GCC; see the file COPYING3.  If not see
    Items that might be coalesced by the linker are prevented from participating,
    (and those in mergeable sections are disallowed in varasm.c).  */
 
-/* .text handled in varasm.c  */
+/* The .text section is generated in varasm.c  */
 DEF_SECTION (text_coal_section, SECTION_CODE|SECTION_NO_ANCHOR,
 	     ".section __TEXT,__textcoal_nt,coalesced,pure_instructions", 0)
-DEF_SECTION (text_unlikely_coal_section, SECTION_CODE|SECTION_NO_ANCHOR,
-	     ".section __TEXT,__text_unlikely_coal,"
-	     "coalesced,pure_instructions", 0)
 
 DEF_SECTION (text_hot_section, SECTION_CODE,
 	     ".section __TEXT,__text_hot,regular,pure_instructions", 0)
