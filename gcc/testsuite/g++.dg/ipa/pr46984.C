@@ -1,5 +1,6 @@
 // { dg-options "-O -fipa-cp -fno-early-inlining -flto" }
 // { dg-do run }
+// { dg-require-effective-target lto }
 
 extern "C" void abort ();
 
