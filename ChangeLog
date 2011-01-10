@@ -1,3 +1,8 @@
+2011-01-10  Jan Hubicka  <jh@suse.cz>
+
+	* config/bootstrap-lto.mk: -fuse-linker-plugin is default now;
+	pass -fno-lto to STAGEprofile.
+
 2011-01-07  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/47225
