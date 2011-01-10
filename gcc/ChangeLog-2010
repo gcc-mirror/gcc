@@ -16,7 +16,7 @@
 	* doc/sourcebuild.texi (Top Level): Adjust link to libgo.
 
 2010-12-31  Gerald Pfeifer  <gerald@pfeifer.com>
-	
+
 	* doc/install.texi (Specific): Remove reference to interix.com.
 
 2010-12-31  Paul Koning  <ni1d@arrl.net>
@@ -116,7 +116,7 @@
 2010-12-30  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11.md (movmemhi, movmemhi1): Correct
-	constraints. 
+	constraints.
 	* config/pdp11/pdp11.c (output_block_move): Rewrite.
 
 2010-12-30  Jakub Jelinek  <jakub@redhat.com>
@@ -17250,6 +17250,7 @@
 
 2010-08-17  Jack Howarth  <howarth@bromo.med.uc.edu>
 
+	PR target/45258
 	* gcc.c (spec_function): Add remove-outfile.
 	(remove_outfile_spec_function): New function.
 	* config/darwin.h (LINK_SPEC): Add removal of -ldl, -lm and -lpthread.
