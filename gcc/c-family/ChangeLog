@@ -1,3 +1,9 @@
+2011-01-12  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/32511
+	* c-common.c (handle_weak_attribute): Warn instead of error
+	on declaring an inline function weak.
+
 2011-01-05  Tom Tromey  <tromey@redhat.com>
 
 	* c-common.h (lvalue_error): Update.

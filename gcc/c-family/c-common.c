@@ -6656,7 +6656,7 @@ handle_weak_attribute (tree *node, tree name,
   if (TREE_CODE (*node) == FUNCTION_DECL
       && DECL_DECLARED_INLINE_P (*node))
     {
-      error ("inline function %q+D cannot be declared weak", *node);
+      warning (OPT_Wattributes, "inline function %q+D declared weak", *node);
       *no_add_attrs = true;
     }
   else if (lookup_attribute ("ifunc", DECL_ATTRIBUTES (*node)))
