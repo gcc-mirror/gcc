@@ -1,5 +1,9 @@
 2011-01-11  Richard Henderson  <rth@redhat.com>
 
+	* config/mn10300/mn10300.h (ARG_PIONTER_CFA_OFFSET): New.
+	(DEBUGGER_AUTO_OFFSET): Remove.
+	(DEBUGGER_ARG_OFFSET): Remove.
+
 	* config/mn10300/mn10300.c (mn10300_gen_multiple_store): Make static.
 	Emit register stores with the same offsets as the hardware.
 	(mn10300_store_multiple_operation): Don't check that the register
