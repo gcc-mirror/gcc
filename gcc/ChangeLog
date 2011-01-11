@@ -8,6 +8,7 @@
 	(iorqi3, *am33_iorqi3, *mn10300_iorqi3): Remove.
 	(*test_int_bitfield, *test_byte_bitfield): Remove.
 	(*bit_test, *subreg_bit_test): Remove.
+	* config/mn10300/predicates.md (const_8bit_operand): Remove.
 
 	* config/mn10300/constraints.md ("c"): Rename from "A".
 	("A", "D"): New constraint letters.
