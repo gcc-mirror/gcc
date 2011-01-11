@@ -1,4 +1,4 @@
-/* IKeyring.java -- 
+/* IKeyring.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -79,7 +79,7 @@ public interface IKeyring
    * <p>
    * What happens to the current contents of this keyring? are the new ones
    * merged with the current ones or do they simply replace them?
-   * 
+   *
    * @param attributes The attributes that designate the source where the store
    *          is to be loaded from. What happens
    * @throws IllegalArgumentException If the attributes are inappropriate.
@@ -92,7 +92,7 @@ public interface IKeyring
   /**
    * Stores the contents of this keyring to persistent storage as specified by
    * the designated <code>attributes</code>.
-   * 
+   *
    * @param attributes the attributes that define where the contents of this
    *          keyring will be stored.
    * @throws IOException if an exception occurs during the process.
@@ -107,7 +107,7 @@ public interface IKeyring
 
   /**
    * Returns the number of entries in this keyring.
-   * 
+   *
    * @return The number of current entries in this keyring.
    */
   int size();
@@ -115,7 +115,7 @@ public interface IKeyring
   /**
    * Returns an {@link Enumeration} of all aliases (instances of {@link String})
    * in this keyring.
-   * 
+   *
    * @return The enumeration of {@link String}s each representing an <i>alias</i>
    *         found in this keyring.
    */
@@ -123,7 +123,7 @@ public interface IKeyring
 
   /**
    * Tests whether or not this keyring contains the given alias.
-   * 
+   *
    * @param alias The alias to check.
    * @return true if this keyring contains the alias.
    */
@@ -133,7 +133,7 @@ public interface IKeyring
    * Returns a {@link List} of entries (instances of {@link Entry}) for the
    * given <code>alias</code>, or <code>null</code> if there no such entry
    * exists.
-   * 
+   *
    * @param alias The alias of the entry(ies) to return.
    * @return A list of all entries (instances of {@link Entry} that have the
    *         given <code>alias</code>, or <code>null</code> if no one
@@ -145,7 +145,7 @@ public interface IKeyring
    * Adds a designated {@link Entry} to this keyring.
    * <p>
    * What happens if there is already an entry with the same alias?
-   * 
+   *
    * @param entry The entry to put in this keyring.
    */
   void add(Entry entry);
@@ -155,7 +155,7 @@ public interface IKeyring
    * keyring. Does nothing if there was no such entry.
    * <p>
    * What happens if there are more than one?
-   * 
+   *
    * @param alias The alias of the entry to remove.
    */
   void remove(String alias);

@@ -63,35 +63,35 @@ final class VMChannels
   {
     try
       {
-	Class[] argTypes = new Class[1];
-	argTypes[0] = FileChannelImpl.class;
-	Constructor constructor =
-	  streamClass.getDeclaredConstructor(argTypes);
-	constructor.setAccessible(true);
-	Object[] args = new Object[1];
-	args[0] = ch;
-	return constructor.newInstance(args);
+        Class[] argTypes = new Class[1];
+        argTypes[0] = FileChannelImpl.class;
+        Constructor constructor =
+          streamClass.getDeclaredConstructor(argTypes);
+        constructor.setAccessible(true);
+        Object[] args = new Object[1];
+        args[0] = ch;
+        return constructor.newInstance(args);
       }
     catch (IllegalAccessException e)
       {
-	// Ignored.
+        // Ignored.
       }
     catch (InstantiationException e)
       {
-	// Ignored.
+        // Ignored.
       }
     catch (InvocationTargetException e)
       {
-	// Ignored.
+        // Ignored.
       }
     catch (NoSuchMethodException e)
       {
-	// Ignored.
+        // Ignored.
       }
 
     return null;
   }
-  
+
   /**
    * Constructs a stream that reads bytes from the given channel.
    */
@@ -99,7 +99,7 @@ final class VMChannels
   {
     if (ch instanceof FileChannelImpl)
       return (FileInputStream) createStream(FileInputStream.class, ch);
-    
+
     return  new ChannelInputStream(ch);
   }
 
@@ -110,7 +110,7 @@ final class VMChannels
   {
     if (ch instanceof FileChannelImpl)
       return (FileOutputStream) createStream(FileOutputStream.class, ch);
-    
+
     return new ChannelOutputStream(ch);
   }
 }

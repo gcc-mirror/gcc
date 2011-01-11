@@ -189,7 +189,7 @@ public class StringTokenizer implements Enumeration<Object>
         int start = pos;
         while (++pos < len && delim.indexOf(str.charAt(pos)) < 0)
           ;
-        
+
         return str.substring(start, pos);
       }
     throw new NoSuchElementException();

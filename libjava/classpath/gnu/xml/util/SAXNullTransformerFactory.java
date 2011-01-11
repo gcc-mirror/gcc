@@ -1,4 +1,4 @@
-/* SAXNullTransformerFactory.java -- 
+/* SAXNullTransformerFactory.java --
    Copyright (C) 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -95,17 +95,17 @@ import org.xml.sax.helpers.LocatorImpl;
  */
 public class SAXNullTransformerFactory extends SAXTransformerFactory
 {
-  
-  private ErrorListener	errListener;
-  private URIResolver		uriResolver;
-  
+
+  private ErrorListener errListener;
+  private URIResolver           uriResolver;
+
   /** Default constructor */
   public SAXNullTransformerFactory () { }
-  
+
   //
   // only has stuff that makes sense with null transforms
   //
-  
+
   /**
    * Returns true if the requested feature is supported.
    * All three kinds of input and output are accepted:
@@ -172,14 +172,14 @@ public class SAXNullTransformerFactory extends SAXTransformerFactory
   public TransformerHandler newTransformerHandler ()
     throws TransformerConfigurationException
   {
-    NullTransformer	transformer = new NullTransformer ();
+    NullTransformer     transformer = new NullTransformer ();
     return transformer.handler;
   }
 
   //
   // Stuff that depends on XSLT support, which we don't provide
   //
-  private static final String		noXSLT = "No XSLT support";
+  private static final String           noXSLT = "No XSLT support";
 
   /** Throws an exception (XSLT is not supported). */
   public Transformer newTransformer (Source stylesheet)
@@ -271,15 +271,15 @@ public class SAXNullTransformerFactory extends SAXTransformerFactory
       super (DomDocument.class);
       setHandler (new DomHandler (this, result));
     }
-    
+
   }
 
   static class DomHandler
     extends Consumer.Backdoor
   {
-  
-    private DOMResult	result;
-    
+
+    private DOMResult   result;
+
     DomHandler (DomConsumer c, DOMResult r)
       throws SAXException
     {
@@ -294,33 +294,33 @@ public class SAXNullTransformerFactory extends SAXTransformerFactory
       super.endDocument ();
       result.setNode (getDocument ());
     }
-    
+
   }
 
   private static OutputStream getOutputStream (String uri)
     throws IOException
   {
-    // JDK stupidity:  file "protocol does not support output" ... 
+    // JDK stupidity:  file "protocol does not support output" ...
     if (uri.startsWith ("file:"))
       return new FileOutputStream (uri.substring (5));
-    
+
     // Otherwise ...
-    URL		url = new URL (uri);
-    URLConnection	conn = url.openConnection ();
-    
+    URL         url = new URL (uri);
+    URLConnection       conn = url.openConnection ();
+
     conn.setDoOutput (true);
     return conn.getOutputStream ();
   }
-  
+
 
   static class NullHandler
     extends EventFilter
     implements TransformerHandler
   {
-   
-    private String		systemId;
-    private Transformer	transformer;
-    
+
+    private String              systemId;
+    private Transformer transformer;
+
     NullHandler (Transformer t)
     {
       transformer = t;
@@ -345,24 +345,24 @@ public class SAXNullTransformerFactory extends SAXTransformerFactory
     {
       if (result.getSystemId () != null)
         systemId = result.getSystemId ();
-      
+
       try
         {
-          
+
           // output to partial SAX event stream?
           if (result instanceof SAXResult)
             {
-              SAXResult 	r = (SAXResult) result;
-              
+              SAXResult         r = (SAXResult) result;
+
               setContentHandler (r.getHandler ());
               setProperty (LEXICAL_HANDLER, r.getLexicalHandler ());
               // DTD info is filtered out by javax.transform
-              
+
               // output to DOM tree?
             }
           else if (result instanceof DOMResult)
             {
-              DomTerminus	out = new DomTerminus ((DOMResult) result);
+              DomTerminus       out = new DomTerminus ((DOMResult) result);
 
               setContentHandler (out.getContentHandler ());
               setProperty (LEXICAL_HANDLER,
@@ -378,8 +378,8 @@ public class SAXNullTransformerFactory extends SAXTransformerFactory
             }
           else if (result instanceof StreamResult)
             {
-              StreamResult	r = (StreamResult) result;
-              XMLWriter		out;
+              StreamResult      r = (StreamResult) result;
+              XMLWriter         out;
 
               // FIXME:  when do output properties take effect?
               // encoding, standalone decl, xml/xhtml/... ...
@@ -416,7 +416,7 @@ public class SAXNullTransformerFactory extends SAXTransformerFactory
               setDTDHandler (out);
               setProperty (DECL_HANDLER, out);
             }
-          
+
         }
       catch (SAXException e)
         {
@@ -434,7 +434,7 @@ public class SAXNullTransformerFactory extends SAXTransformerFactory
     extends LocatorImpl
     implements SourceLocator
   {
-  
+
     LocatorAdapter (SAXParseException e)
     {
       setSystemId (e.getSystemId ());
@@ -442,21 +442,21 @@ public class SAXNullTransformerFactory extends SAXTransformerFactory
       setLineNumber (e.getLineNumber ());
       setColumnNumber (e.getColumnNumber ());
     }
-    
+
   }
 
   // another interface that adds no value
   static class ListenerAdapter
     implements ErrorHandler
   {
-    
-    NullTransformer	transformer;
-    
+
+    NullTransformer     transformer;
+
     ListenerAdapter (NullTransformer t)
     {
       transformer = t;
     }
-    
+
     private TransformerException map (SAXParseException e)
     {
       return new TransformerException (
@@ -514,36 +514,36 @@ public class SAXNullTransformerFactory extends SAXTransformerFactory
   static class NullTransformer
     extends Transformer
   {
-  
-    private URIResolver		uriResolver;
-    private Properties		props = new Properties ();
-    private Hashtable		params = new Hashtable (7);
-    
-    ErrorListener			errListener = null;
-    TransformerException		ex = null;
-    NullHandler			handler;
-    
+
+    private URIResolver         uriResolver;
+    private Properties          props = new Properties ();
+    private Hashtable           params = new Hashtable (7);
+
+    ErrorListener                       errListener = null;
+    TransformerException                ex = null;
+    NullHandler                 handler;
+
     NullTransformer ()
     {
       super ();
       handler = new NullHandler (this);
     }
-    
+
     public ErrorListener getErrorListener ()
     {
       return errListener;
     }
-    
+
     public void setErrorListener (ErrorListener e)
     {
       errListener = e;
     }
-    
+
     public URIResolver getURIResolver ()
     {
       return uriResolver;
     }
-    
+
     public void setURIResolver (URIResolver u)
     {
       uriResolver = u;
@@ -553,7 +553,7 @@ public class SAXNullTransformerFactory extends SAXTransformerFactory
     {
       props = (Properties) p.clone ();
     }
-    
+
     public Properties getOutputProperties ()
     {
       return (Properties) props.clone ();
@@ -563,7 +563,7 @@ public class SAXNullTransformerFactory extends SAXTransformerFactory
     {
       props.setProperty (name, value);
     }
-    
+
     public String getOutputProperty (String name)
     {
       return props.getProperty (name);
@@ -573,12 +573,12 @@ public class SAXNullTransformerFactory extends SAXTransformerFactory
     {
       params.clear ();
     }
-    
+
     public void setParameter (String name, Object value)
     {
       props.put (name, value);
     }
-    
+
     public Object getParameter (String name)
     {
       return props.get (name);
@@ -589,29 +589,29 @@ public class SAXNullTransformerFactory extends SAXTransformerFactory
     {
       try
         {
-          XMLReader		producer;
-          InputSource		input;
-          
+          XMLReader             producer;
+          InputSource           input;
+
           // Input from DOM?
           if (in instanceof DOMSource)
             {
-              DOMSource	source = (DOMSource) in;
-              
+              DOMSource source = (DOMSource) in;
+
               if (source.getNode () == null)
                 throw new IllegalArgumentException ("no DOM node");
               producer = new DomParser (source.getNode ());
               input = null;
-              
+
               // Input from SAX?
             }
           else if (in instanceof SAXSource)
             {
-              SAXSource	source = (SAXSource) in;
-              
+              SAXSource source = (SAXSource) in;
+
               producer = source.getXMLReader ();
               if (producer == null)
                 producer = XMLReaderFactory.createXMLReader ();
-              
+
               input = source.getInputSource ();
               if (input == null)
                 {
@@ -621,7 +621,7 @@ public class SAXNullTransformerFactory extends SAXTransformerFactory
                     throw new IllegalArgumentException (
                                                         "missing SAX input");
                 }
-              
+
               // Input from a stream or something?
             }
           else
@@ -631,7 +631,7 @@ public class SAXNullTransformerFactory extends SAXTransformerFactory
               if (input == null)
                 throw new IllegalArgumentException ("missing input");
             }
-          
+
           // preserve original namespace prefixes
           try
             {
@@ -644,19 +644,19 @@ public class SAXNullTransformerFactory extends SAXTransformerFactory
               /* ignore */
               // FIXME if we couldn't, "NsFix" stage before the output ..
             }
-          
+
           // arrange the output
           handler.setResult (out);
           EventFilter.bind (producer, handler);
-          
+
           // then parse ... single element pipeline
           producer.parse (input);
-          
+
         }
       catch (IOException e)
         {
           throw new TransformerException ("transform failed", e);
-          
+
         }
       catch (SAXException e)
         {
@@ -664,7 +664,7 @@ public class SAXNullTransformerFactory extends SAXTransformerFactory
             throw ex;
           else
             throw new TransformerException ("transform failed", e);
-          
+
         }
       finally
         {

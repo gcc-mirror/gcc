@@ -1,4 +1,4 @@
-/* LocalNameFunction.java -- 
+/* LocalNameFunction.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -69,7 +69,7 @@ final class LocalNameFunction
     this.arg = arg;
   }
 
-  @Override 
+  @Override
   public Object evaluate(Node context, int pos, int len)
   {
     /* Suppression is safe, as we know context produces Collection<Node> */
@@ -94,5 +94,5 @@ final class LocalNameFunction
   {
     return (arg == null) ? "local-name()" : "local-name(" + arg + ")";
   }
-  
+
 }

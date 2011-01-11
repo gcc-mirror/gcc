@@ -97,7 +97,7 @@ class MultiAttributeSet
         }
       return current.nextElement();
     }
-    
+
   }
 
   /**

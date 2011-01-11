@@ -165,14 +165,14 @@ public class Server
   {
     try
       {
-	DELEGATE_NAME = 
-	  new ObjectName("JMImplementation:type=MBeanServerDelegate");
+        DELEGATE_NAME =
+          new ObjectName("JMImplementation:type=MBeanServerDelegate");
       }
     catch (MalformedObjectNameException e)
       {
-	throw (Error) 
-	  (new InternalError("Failed to construct " +
-			     "the delegate's object name.").initCause(e));
+        throw (Error)
+          (new InternalError("Failed to construct " +
+                             "the delegate's object name.").initCause(e));
       }
   }
 
@@ -189,32 +189,32 @@ public class Server
    * @param delegate the delegate bean for this server.
    */
   public Server(String defaultDomain, MBeanServer outer,
-		MBeanServerDelegate delegate)
+                MBeanServerDelegate delegate)
   {
     this.defaultDomain = defaultDomain;
     this.outer = outer;
     this.delegate = delegate;
     try
       {
-	registerMBean(delegate, DELEGATE_NAME);
+        registerMBean(delegate, DELEGATE_NAME);
       }
     catch (InstanceAlreadyExistsException e)
       {
-	throw (Error) 
-	  (new InternalError("The delegate bean is " +
-			     "already registered.").initCause(e));
+        throw (Error)
+          (new InternalError("The delegate bean is " +
+                             "already registered.").initCause(e));
       }
     catch (MBeanRegistrationException e)
       {
-	throw (Error) 
-	  (new InternalError("The delegate bean's preRegister " +
-			     "methods threw an exception.").initCause(e));
+        throw (Error)
+          (new InternalError("The delegate bean's preRegister " +
+                             "methods threw an exception.").initCause(e));
       }
     catch (NotCompliantMBeanException e)
       {
-	throw (Error) 
-	  (new InternalError("The delegate bean is " +
-			     "not compliant.").initCause(e));
+        throw (Error)
+          (new InternalError("The delegate bean is " +
+                             "not compliant.").initCause(e));
       }
   }
 
@@ -230,48 +230,48 @@ public class Server
    * @throws SecurityException if the action is denied.
    */
   private void checkSecurity(ObjectName name, String member,
-			     String action)
+                             String action)
   {
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
       try
-	{
-	  MBeanInfo info = null;
-	  if (name != null)
-	    {
-	      Object bean = getBean(name);
-	      Method method = bean.getClass().getMethod("getMBeanInfo");
-	      info = (MBeanInfo) method.invoke(bean);
-	    }
-	  sm.checkPermission(new MBeanPermission((info == null) ? 
-						 null : info.getClassName(),
-						 member, name, action));
-	}
+        {
+          MBeanInfo info = null;
+          if (name != null)
+            {
+              Object bean = getBean(name);
+              Method method = bean.getClass().getMethod("getMBeanInfo");
+              info = (MBeanInfo) method.invoke(bean);
+            }
+          sm.checkPermission(new MBeanPermission((info == null) ?
+                                                 null : info.getClassName(),
+                                                 member, name, action));
+        }
       catch (InstanceNotFoundException e)
-	{
-	  throw (Error) 
-	    (new InternalError("Failed to get bean.").initCause(e));
-	}
+        {
+          throw (Error)
+            (new InternalError("Failed to get bean.").initCause(e));
+        }
       catch (NoSuchMethodException e)
-	{
-	  throw (Error) 
-	    (new InternalError("Failed to get bean info.").initCause(e));
-	}
+        {
+          throw (Error)
+            (new InternalError("Failed to get bean info.").initCause(e));
+        }
       catch (IllegalAccessException e)
-	{
-	  throw (Error) 
-	    (new InternalError("Failed to get bean info.").initCause(e));
-	}
+        {
+          throw (Error)
+            (new InternalError("Failed to get bean info.").initCause(e));
+        }
       catch (IllegalArgumentException e)
-	{
-	  throw (Error) 
-	    (new InternalError("Failed to get bean info.").initCause(e));
-	}
+        {
+          throw (Error)
+            (new InternalError("Failed to get bean info.").initCause(e));
+        }
       catch (InvocationTargetException e)
-	{
-	  throw (Error) 
-	    (new InternalError("Failed to get bean info.").initCause(e));
-	}
+        {
+          throw (Error)
+            (new InternalError("Failed to get bean info.").initCause(e));
+        }
   }
 
   /**
@@ -288,7 +288,7 @@ public class Server
     ServerInfo bean = beans.get(name);
     if (bean == null)
       throw new InstanceNotFoundException("The bean, " + name +
-					  ", was not found.");
+                                          ", was not found.");
     return bean.getObject();
   }
 
@@ -322,18 +322,18 @@ public class Server
    *                                                      Object)
    */
   public void addNotificationListener(ObjectName name, NotificationListener listener,
-				      NotificationFilter filter, Object passback)
+                                      NotificationFilter filter, Object passback)
     throws InstanceNotFoundException
   {
     Object bean = getBean(name);
     checkSecurity(name, null, "addNotificationListener");
     if (bean instanceof NotificationBroadcaster)
       {
-	NotificationBroadcaster bbean = (NotificationBroadcaster) bean;
-	NotificationListener indirection = new ServerNotificationListener(bean, name,
-									  listener);
-	bbean.addNotificationListener(indirection, filter, passback);
-	LazyListenersHolder.listeners.put(listener, indirection);
+        NotificationBroadcaster bbean = (NotificationBroadcaster) bean;
+        NotificationListener indirection = new ServerNotificationListener(bean, name,
+                                                                          listener);
+        bbean.addNotificationListener(indirection, filter, passback);
+        LazyListenersHolder.listeners.put(listener, indirection);
       }
   }
 
@@ -343,7 +343,7 @@ public class Server
    * bean.  Notifications emitted by the management bean are forwarded
    * to the listener via the server, which will convert any MBean
    * references in the source to portable {@link ObjectName}
-   * instances.  The notification is otherwise unchanged.  
+   * instances.  The notification is otherwise unchanged.
    * </p>
    * <p>
    * The listener that receives notifications will be the one that is
@@ -380,16 +380,16 @@ public class Server
    *                                                      Object)
    */
   public void addNotificationListener(ObjectName name, ObjectName listener,
-				      NotificationFilter filter, Object passback)
+                                      NotificationFilter filter, Object passback)
     throws InstanceNotFoundException
   {
     Object lbean = getBean(listener);
     if (!(lbean instanceof NotificationListener))
       {
-	RuntimeException e =
-	  new IllegalArgumentException("The supplied listener name does not " +
-				       "correspond to a notification listener.");
-	throw new RuntimeOperationsException(e);
+        RuntimeException e =
+          new IllegalArgumentException("The supplied listener name does not " +
+                                       "correspond to a notification listener.");
+        throw new RuntimeOperationsException(e);
       }
     addNotificationListener(name, ((NotificationListener) lbean), filter, passback);
   }
@@ -400,7 +400,7 @@ public class Server
    * using the default constructor and registers it with the server
    * under the supplied name.  The class is loaded using the
    * {@link javax.management.loading.ClassLoaderRepository default
-   * loader repository} of the server. 
+   * loader repository} of the server.
    * </p>
    * <p>
    * If the name supplied is <code>null</code>, then the bean is
@@ -409,7 +409,7 @@ public class Server
    * of this interface will be used to obtain the name in this case.
    * </p>
    * <p>
-   * This method is equivalent to calling {@link 
+   * This method is equivalent to calling {@link
    * #createMBean(String, ObjectName, Object[], String[])
    * <code>createMBean(className, name, (Object[]) null,
    * (String[]) null)</code>} with <code>null</code> parameters
@@ -443,19 +443,19 @@ public class Server
    */
   public ObjectInstance createMBean(String className, ObjectName name)
     throws ReflectionException, InstanceAlreadyExistsException,
-	   MBeanRegistrationException, MBeanException,
-	   NotCompliantMBeanException
+           MBeanRegistrationException, MBeanException,
+           NotCompliantMBeanException
   {
     return createMBean(className, name, (Object[]) null, (String[]) null);
   }
-  
+
   /**
    * <p>
    * Instantiates a new instance of the specified management bean
    * using the given constructor and registers it with the server
    * under the supplied name.  The class is loaded using the
    * {@link javax.management.loading.ClassLoaderRepository default
-   * loader repository} of the server. 
+   * loader repository} of the server.
    * </p>
    * <p>
    * If the name supplied is <code>null</code>, then the bean is
@@ -463,7 +463,7 @@ public class Server
    * The {@link MBeanRegistration#preRegister preRegister} method
    * of this interface will be used to obtain the name in this case.
    * </p>
-   * 
+   *
    * @param className the class of the management bean, of which
    *                  an instance should be created.
    * @param name the name to register the new bean with.
@@ -491,13 +491,13 @@ public class Server
    *                           and <code>registerMBean</code> methods.
    */
   public ObjectInstance createMBean(String className, ObjectName name,
-				    Object[] params, String[] sig)
+                                    Object[] params, String[] sig)
     throws ReflectionException, InstanceAlreadyExistsException,
-	   MBeanRegistrationException, MBeanException,
-	   NotCompliantMBeanException
+           MBeanRegistrationException, MBeanException,
+           NotCompliantMBeanException
   {
     return registerMBean(instantiate(className, params, sig), name);
-  } 
+  }
 
   /**
    * <p>
@@ -515,7 +515,7 @@ public class Server
    * of this interface will be used to obtain the name in this case.
    * </p>
    * <p>
-   * This method is equivalent to calling {@link 
+   * This method is equivalent to calling {@link
    * #createMBean(String, ObjectName, ObjectName, Object[], String)
    * <code>createMBean(className, name, loaderName, (Object[]) null,
    * (String) null)</code>} with <code>null</code> parameters
@@ -550,14 +550,14 @@ public class Server
    *                           and <code>registerMBean</code> methods.
    * @see #createMBean(String, ObjectName, ObjectName, Object[], String[])
    */
-  public ObjectInstance createMBean(String className, ObjectName name, 
-				    ObjectName loaderName)
+  public ObjectInstance createMBean(String className, ObjectName name,
+                                    ObjectName loaderName)
     throws ReflectionException, InstanceAlreadyExistsException,
-	   MBeanRegistrationException, MBeanException,
-	   NotCompliantMBeanException, InstanceNotFoundException
+           MBeanRegistrationException, MBeanException,
+           NotCompliantMBeanException, InstanceNotFoundException
   {
     return createMBean(className, name, loaderName, (Object[]) null,
-		       (String[]) null);
+                       (String[]) null);
   }
 
   /**
@@ -567,7 +567,7 @@ public class Server
    * under the supplied name.  The class is loaded using the
    * given class loader.  If this argument is <code>null</code>,
    * then the same class loader as was used to load the server
-   * is used. 
+   * is used.
    * </p>
    * <p>
    * If the name supplied is <code>null</code>, then the bean is
@@ -575,7 +575,7 @@ public class Server
    * The {@link MBeanRegistration#preRegister preRegister} method
    * of this interface will be used to obtain the name in this case.
    * </p>
-   * 
+   *
    * @param className the class of the management bean, of which
    *                  an instance should be created.
    * @param name the name to register the new bean with.
@@ -606,14 +606,14 @@ public class Server
    *                           and <code>registerMBean</code> methods.
    */
   public ObjectInstance createMBean(String className, ObjectName name,
-				    ObjectName loaderName, Object[] params,
-				    String[] sig)
+                                    ObjectName loaderName, Object[] params,
+                                    String[] sig)
     throws ReflectionException, InstanceAlreadyExistsException,
-	   MBeanRegistrationException, MBeanException,
-	   NotCompliantMBeanException, InstanceNotFoundException
+           MBeanRegistrationException, MBeanException,
+           NotCompliantMBeanException, InstanceNotFoundException
   {
     return registerMBean(instantiate(className, loaderName, params, sig),
-			 name);
+                         name);
   }
 
   /**
@@ -641,12 +641,12 @@ public class Server
   {
     try
       {
-	return new ServerInputStream(new ByteArrayInputStream(data),
-				     getClassLoaderFor(name));
+        return new ServerInputStream(new ByteArrayInputStream(data),
+                                     getClassLoaderFor(name));
       }
     catch (IOException e)
       {
-	throw new OperationsException("An I/O error occurred: " + e);
+        throw new OperationsException("An I/O error occurred: " + e);
       }
   }
 
@@ -680,17 +680,17 @@ public class Server
   {
     try
       {
-	Class<?> c = getClassLoaderRepository().loadClass(name);
-	return new ServerInputStream(new ByteArrayInputStream(data),
-					   c.getClassLoader());
+        Class<?> c = getClassLoaderRepository().loadClass(name);
+        return new ServerInputStream(new ByteArrayInputStream(data),
+                                           c.getClassLoader());
       }
     catch (IOException e)
       {
-	throw new OperationsException("An I/O error occurred: " + e);
+        throw new OperationsException("An I/O error occurred: " + e);
       }
     catch (ClassNotFoundException e)
       {
-	throw new ReflectionException(e, "The class could not be found.");
+        throw new ReflectionException(e, "The class could not be found.");
       }
   }
 
@@ -722,21 +722,21 @@ public class Server
    */
   public ObjectInputStream deserialize(String name, ObjectName loader, byte[] data)
     throws InstanceNotFoundException, ReflectionException,
-	   OperationsException
+           OperationsException
   {
     try
       {
-	Class<?> c = getClassLoader(loader).loadClass(name);
-	return new ServerInputStream(new ByteArrayInputStream(data),
-					   c.getClassLoader());
+        Class<?> c = getClassLoader(loader).loadClass(name);
+        return new ServerInputStream(new ByteArrayInputStream(data),
+                                           c.getClassLoader());
       }
     catch (IOException e)
       {
-	throw new OperationsException("An I/O error occurred: " + e);
+        throw new OperationsException("An I/O error occurred: " + e);
       }
     catch (ClassNotFoundException e)
       {
-	throw new ReflectionException(e, "The class could not be found.");
+        throw new ReflectionException(e, "The class could not be found.");
       }
   }
 
@@ -767,13 +767,13 @@ public class Server
    */
   public Object getAttribute(ObjectName bean, String name)
     throws MBeanException, AttributeNotFoundException,
-	   InstanceNotFoundException, ReflectionException
+           InstanceNotFoundException, ReflectionException
   {
     if (bean == null || name == null)
       {
-	RuntimeException e =
-	  new IllegalArgumentException("One of the supplied arguments was null.");
-	throw new RuntimeOperationsException(e);
+        RuntimeException e =
+          new IllegalArgumentException("One of the supplied arguments was null.");
+        throw new RuntimeOperationsException(e);
       }
     Object abean = getBean(bean);
     checkSecurity(bean, name, "getAttribute");
@@ -781,14 +781,14 @@ public class Server
       return ((DynamicMBean) abean).getAttribute(name);
     else
       try
-	{
-	  return new StandardMBean(abean, null).getAttribute(name);
-	}
+        {
+          return new StandardMBean(abean, null).getAttribute(name);
+        }
       catch (NotCompliantMBeanException e)
-	{
-	  throw (Error) 
-	    (new InternalError("Failed to create dynamic bean.").initCause(e));
-	}
+        {
+          throw (Error)
+            (new InternalError("Failed to create dynamic bean.").initCause(e));
+        }
   }
 
 
@@ -817,7 +817,7 @@ public class Server
    *                           <code>MBeanPermission(className, n, bean,
    *                           "getAttribute")</code>} or that attribute will
    *                           not be included.
-   *                           
+   *
    * @see DynamicMBean#getAttributes(String[])
    */
   public AttributeList getAttributes(ObjectName bean, String[] names)
@@ -825,47 +825,47 @@ public class Server
   {
     if (bean == null || names == null)
       {
-	RuntimeException e =
-	  new IllegalArgumentException("One of the supplied arguments was null.");
-	throw new RuntimeOperationsException(e);
+        RuntimeException e =
+          new IllegalArgumentException("One of the supplied arguments was null.");
+        throw new RuntimeOperationsException(e);
       }
     Object abean = getBean(bean);
     checkSecurity(bean, null, "getAttribute");
     AttributeList list = new AttributeList(names.length);
     for (int a = 0; a < names.length; ++a)
       {
-	if (names[a] == null)
-	  {
-	    RuntimeException e =
-	      new IllegalArgumentException("Argument " + a + " was null.");
-	    throw new RuntimeOperationsException(e);
-	  }
-	checkSecurity(bean, names[a], "getAttribute");
-	try
-	  {
-	    Object value;
-	    if (abean instanceof DynamicMBean)
-	      value = ((DynamicMBean) abean).getAttribute(names[a]);
-	    else
-	      try
-		{
-		  value = new StandardMBean(abean, null).getAttribute(names[a]);
-		}
-	      catch (NotCompliantMBeanException e)
-		{
-		  throw (Error) 
-		    (new InternalError("Failed to create dynamic bean.").initCause(e));
-		}
-	    list.add(new Attribute(names[a], value));
-	  }
-	catch (AttributeNotFoundException e)
-	  {
-	    /* Ignored */
-	  }
-	catch (MBeanException e)
-	  {
-	    /* Ignored */
-	  }
+        if (names[a] == null)
+          {
+            RuntimeException e =
+              new IllegalArgumentException("Argument " + a + " was null.");
+            throw new RuntimeOperationsException(e);
+          }
+        checkSecurity(bean, names[a], "getAttribute");
+        try
+          {
+            Object value;
+            if (abean instanceof DynamicMBean)
+              value = ((DynamicMBean) abean).getAttribute(names[a]);
+            else
+              try
+                {
+                  value = new StandardMBean(abean, null).getAttribute(names[a]);
+                }
+              catch (NotCompliantMBeanException e)
+                {
+                  throw (Error)
+                    (new InternalError("Failed to create dynamic bean.").initCause(e));
+                }
+            list.add(new Attribute(names[a], value));
+          }
+        catch (AttributeNotFoundException e)
+          {
+            /* Ignored */
+          }
+        catch (MBeanException e)
+          {
+            /* Ignored */
+          }
       }
     return list;
   }
@@ -897,14 +897,14 @@ public class Server
   {
     if (name == null)
       {
-	checkSecurity(null, null, "getClassLoader");
-	return getClass().getClassLoader();
+        checkSecurity(null, null, "getClassLoader");
+        return getClass().getClassLoader();
       }
     Object bean = getBean(name);
     checkSecurity(name, null, "getClassLoader");
     return (ClassLoader) bean;
   }
- 
+
   /**
    * Returns the class loader of the specified management bean.  If
    * <code>l</code> is the requested class loader, and <code>r</code>
@@ -932,7 +932,7 @@ public class Server
     Object bean = getBean(name);
     checkSecurity(name, null, "getClassLoaderFor");
     return bean.getClass().getClassLoader();
-  }    
+  }
 
   /**
    * Returns the class loader repository used by this server.
@@ -987,16 +987,16 @@ public class Server
     Iterator<ObjectName> iterator = beans.keySet().iterator();
     while (iterator.hasNext())
       {
-	String d = iterator.next().getDomain();
-	try
-	  {
-	    checkSecurity(new ObjectName(d + ":x=x"), null, "getDomains");
-	    domains.add(d);
-	  }
-	catch (MalformedObjectNameException e)
-	  {
-	    /* Ignored */
-	  }
+        String d = iterator.next().getDomain();
+        try
+          {
+            checkSecurity(new ObjectName(d + ":x=x"), null, "getDomains");
+            domains.add(d);
+          }
+        catch (MalformedObjectNameException e)
+          {
+            /* Ignored */
+          }
       }
     return domains.toArray(new String[domains.size()]);
   }
@@ -1033,38 +1033,38 @@ public class Server
    */
   public MBeanInfo getMBeanInfo(ObjectName name)
     throws InstanceNotFoundException, IntrospectionException,
-	   ReflectionException
+           ReflectionException
   {
     Object bean = getBean(name);
     checkSecurity(name, null, "getMBeanInfo");
     try
       {
-	Method method = bean.getClass().getMethod("getMBeanInfo");
-	return (MBeanInfo) method.invoke(bean);
+        Method method = bean.getClass().getMethod("getMBeanInfo");
+        return (MBeanInfo) method.invoke(bean);
       }
     catch (NoSuchMethodException e)
       {
-	try
-	  {
-	    return new StandardMBean(bean, null).getMBeanInfo();
-	  }
-	catch (NotCompliantMBeanException ex)
-	  {
-	    throw new IntrospectionException("An error occurred in executing " +
-					     "getMBeanInfo on the bean: " + ex + ".");
-	  }
+        try
+          {
+            return new StandardMBean(bean, null).getMBeanInfo();
+          }
+        catch (NotCompliantMBeanException ex)
+          {
+            throw new IntrospectionException("An error occurred in executing " +
+                                             "getMBeanInfo on the bean: " + ex + ".");
+          }
       }
     catch (IllegalAccessException e)
       {
-	throw new ReflectionException(e, "Failed to call getMBeanInfo");
+        throw new ReflectionException(e, "Failed to call getMBeanInfo");
       }
     catch (IllegalArgumentException e)
       {
-	throw new ReflectionException(e, "Failed to call getMBeanInfo");
+        throw new ReflectionException(e, "Failed to call getMBeanInfo");
       }
     catch (InvocationTargetException e)
       {
-	throw new ReflectionException(e, "The method threw an exception");
+        throw new ReflectionException(e, "The method threw an exception");
       }
   }
 
@@ -1088,7 +1088,7 @@ public class Server
     ServerInfo bean = beans.get(name);
     if (bean == null)
       throw new InstanceNotFoundException("The bean, " + name +
-					  ", was not found.");
+                                          ", was not found.");
     return bean.getInstance();
   }
 
@@ -1102,7 +1102,7 @@ public class Server
    * but the instance is not yet registered with the server.
    * </p>
    * <p>
-   * This method is equivalent to calling {@link 
+   * This method is equivalent to calling {@link
    * #instantiate(String, Object[], String[])
    * <code>instantiate(name, (Object[]) null, (String[]) null)</code>}
    * with <code>null</code> parameters and signature.
@@ -1162,53 +1162,53 @@ public class Server
     checkSecurity(null, null, "instantiate");
     if (name == null)
       {
-	RuntimeException e = 
-	  new IllegalArgumentException("The name was null.");
-	throw new RuntimeOperationsException(e);
+        RuntimeException e =
+          new IllegalArgumentException("The name was null.");
+        throw new RuntimeOperationsException(e);
       }
     Class<?>[] sigTypes = new Class[sig.length];
     for (int a = 0; a < sigTypes.length; ++a)
       {
-	try 
-	  {
-	    sigTypes[a] = repository.loadClass(sig[a]);
-	  }
-	catch (ClassNotFoundException e)
-	  {
-	    throw new ReflectionException(e, "The class, " + sigTypes[a] + 
-					  ", in the method signature " +
-					  "could not be loaded.");
-	  }
+        try
+          {
+            sigTypes[a] = repository.loadClass(sig[a]);
+          }
+        catch (ClassNotFoundException e)
+          {
+            throw new ReflectionException(e, "The class, " + sigTypes[a] +
+                                          ", in the method signature " +
+                                          "could not be loaded.");
+          }
       }
     try
       {
-	Constructor<?> cons =
-	  repository.loadClass(name).getConstructor(sigTypes);
-	return cons.newInstance(params);
+        Constructor<?> cons =
+          repository.loadClass(name).getConstructor(sigTypes);
+        return cons.newInstance(params);
       }
     catch (ClassNotFoundException e)
       {
-	throw new ReflectionException(e, "The class, " + name + 
-				      ", of the constructor " +
-				      "could not be loaded.");
+        throw new ReflectionException(e, "The class, " + name +
+                                      ", of the constructor " +
+                                      "could not be loaded.");
       }
     catch (NoSuchMethodException e)
       {
-	throw new ReflectionException(e, "The method, " + name +
-				      ", could not be found.");
+        throw new ReflectionException(e, "The method, " + name +
+                                      ", could not be found.");
       }
     catch (IllegalAccessException e)
       {
-	throw new ReflectionException(e, "Failed to instantiate the object");
+        throw new ReflectionException(e, "Failed to instantiate the object");
       }
     catch (InstantiationException e)
       {
-	throw new ReflectionException(e, "Failed to instantiate the object");
+        throw new ReflectionException(e, "Failed to instantiate the object");
       }
     catch (InvocationTargetException e)
       {
-	throw new MBeanException((Exception) e.getCause(), "The constructor "
-				 + name + " threw an exception");
+        throw new MBeanException((Exception) e.getCause(), "The constructor "
+                                 + name + " threw an exception");
       }
   }
 
@@ -1222,7 +1222,7 @@ public class Server
    * registered with the server.
    * </p>
    * <p>
-   * This method is equivalent to calling {@link 
+   * This method is equivalent to calling {@link
    * #instantiate(String, ObjectName, Object[], String[])
    * <code>instantiate(name, loaderName, (Object[]) null,
    * (String[]) null)</code>} with <code>null</code> parameters
@@ -1250,7 +1250,7 @@ public class Server
    */
   public Object instantiate(String name, ObjectName loaderName)
     throws InstanceNotFoundException, ReflectionException,
-	   MBeanException
+           MBeanException
   {
     return instantiate(name, loaderName);
   }
@@ -1284,61 +1284,61 @@ public class Server
    *                           "instantiate")</code>}.
    */
   public Object instantiate(String name, ObjectName loaderName,
-			    Object[] params, String[] sig)
+                            Object[] params, String[] sig)
     throws InstanceNotFoundException, ReflectionException,
-	   MBeanException
+           MBeanException
   {
     checkSecurity(null, null, "instantiate");
     if (name == null)
       {
-	RuntimeException e = 
-	  new IllegalArgumentException("The name was null.");
-	throw new RuntimeOperationsException(e);
+        RuntimeException e =
+          new IllegalArgumentException("The name was null.");
+        throw new RuntimeOperationsException(e);
       }
     ClassLoader loader = getClassLoader(loaderName);
     Class<?>[] sigTypes = new Class[sig.length];
     for (int a = 0; a < sig.length; ++a)
       {
-	try 
-	  {
-	    sigTypes[a] = Class.forName(sig[a], true, loader);
-	  }
-	catch (ClassNotFoundException e)
-	  {
-	    throw new ReflectionException(e, "The class, " + sig[a] + 
-					  ", in the method signature " +
-					  "could not be loaded.");
-	  }
+        try
+          {
+            sigTypes[a] = Class.forName(sig[a], true, loader);
+          }
+        catch (ClassNotFoundException e)
+          {
+            throw new ReflectionException(e, "The class, " + sig[a] +
+                                          ", in the method signature " +
+                                          "could not be loaded.");
+          }
       }
     try
       {
-	Constructor<?> cons =
-	  Class.forName(name, true, loader).getConstructor(sigTypes);
-	return cons.newInstance(params);
+        Constructor<?> cons =
+          Class.forName(name, true, loader).getConstructor(sigTypes);
+        return cons.newInstance(params);
       }
     catch (ClassNotFoundException e)
       {
-	throw new ReflectionException(e, "The class, " + name + 
-				      ", of the constructor " +
-				      "could not be loaded.");
+        throw new ReflectionException(e, "The class, " + name +
+                                      ", of the constructor " +
+                                      "could not be loaded.");
       }
     catch (NoSuchMethodException e)
       {
-	throw new ReflectionException(e, "The method, " + name +
-				      ", could not be found.");
+        throw new ReflectionException(e, "The method, " + name +
+                                      ", could not be found.");
       }
     catch (IllegalAccessException e)
       {
-	throw new ReflectionException(e, "Failed to instantiate the object");
+        throw new ReflectionException(e, "Failed to instantiate the object");
       }
     catch (InstantiationException e)
       {
-	throw new ReflectionException(e, "Failed to instantiate the object");
+        throw new ReflectionException(e, "Failed to instantiate the object");
       }
     catch (InvocationTargetException e)
       {
-	throw new MBeanException((Exception) e.getCause(), "The constructor "
-				 + name + " threw an exception");
+        throw new MBeanException((Exception) e.getCause(), "The constructor "
+                                 + name + " threw an exception");
       }
   }
 
@@ -1368,13 +1368,13 @@ public class Server
    */
   public Object invoke(ObjectName bean, String name, Object[] params, String[] sig)
     throws InstanceNotFoundException, MBeanException,
-	   ReflectionException
+           ReflectionException
   {
     if (bean == null)
       {
-	RuntimeException e =
-	  new IllegalArgumentException("The bean was null.");
-	throw new RuntimeOperationsException(e);
+        RuntimeException e =
+          new IllegalArgumentException("The bean was null.");
+        throw new RuntimeOperationsException(e);
       }
     Object abean = getBean(bean);
     checkSecurity(bean, name, "invoke");
@@ -1382,14 +1382,14 @@ public class Server
       return ((DynamicMBean) abean).invoke(name, params, sig);
     else
       try
-	{
-	  return new StandardMBean(abean, null).invoke(name, params, sig);
-	}
+        {
+          return new StandardMBean(abean, null).invoke(name, params, sig);
+        }
       catch (NotCompliantMBeanException e)
-	{
-	  throw (Error) 
-	    (new InternalError("Failed to create dynamic bean.").initCause(e));
-	}
+        {
+          throw (Error)
+            (new InternalError("Failed to create dynamic bean.").initCause(e));
+        }
   }
 
   /**
@@ -1407,7 +1407,7 @@ public class Server
    * <li>Both the class of B and C were loaded by the same class loader,
    * and B is assignable to C.</li>
    * </ul>
-   * 
+   *
    * @param name the name of the management bean.
    * @param className the name of the class to test if <code>name</code> is
    *                  an instance of.
@@ -1431,26 +1431,26 @@ public class Server
       info = ((DynamicMBean) bean).getMBeanInfo();
     else
       try
-	{
-	  info = new StandardMBean(bean, null).getMBeanInfo();
-	}
+        {
+          info = new StandardMBean(bean, null).getMBeanInfo();
+        }
       catch (NotCompliantMBeanException e)
-	{
-	  throw (Error) 
-	    (new InternalError("Failed to create dynamic bean.").initCause(e));
-	}
+        {
+          throw (Error)
+            (new InternalError("Failed to create dynamic bean.").initCause(e));
+        }
     if (info.getClassName().equals(className))
       return true;
     Class<?> bclass = bean.getClass();
     try
       {
-	Class<?> oclass = Class.forName(className);
-	return (bclass.getClassLoader().equals(oclass.getClassLoader()) &&
-		oclass.isAssignableFrom(bclass));  
+        Class<?> oclass = Class.forName(className);
+        return (bclass.getClassLoader().equals(oclass.getClassLoader()) &&
+                oclass.isAssignableFrom(bclass));
       }
     catch (ClassNotFoundException e)
       {
-	return false;
+        return false;
       }
   }
 
@@ -1468,9 +1468,9 @@ public class Server
   {
     if (name == null)
       {
-	RuntimeException e =
-	  new IllegalArgumentException("The name was null.");
-	throw new RuntimeOperationsException(e);
+        RuntimeException e =
+          new IllegalArgumentException("The name was null.");
+        throw new RuntimeOperationsException(e);
       }
     return beans.containsKey(name);
   }
@@ -1489,7 +1489,7 @@ public class Server
    * <p>
    * If both the object name and the query expression are <code>null</code>,
    * or the object name has no domain and no key properties,
-   * no filtering will be performed and all beans are returned. 
+   * no filtering will be performed and all beans are returned.
    * </p>
    *
    * @param name an {@link ObjectName} to use as a filter.
@@ -1516,34 +1516,34 @@ public class Server
     Set<ObjectInstance> results = new HashSet<ObjectInstance>();
     for (Map.Entry<ObjectName,ServerInfo> entry : beans.entrySet())
       {
-	ObjectName nextName = entry.getKey();
-	checkSecurity(name, nextName.toString(), "queryMBeans");
-	try
-	  {
-	    if ((name == null || name.apply(nextName)) &&
-		(query == null || query.apply(nextName)))
-	      results.add(entry.getValue().getInstance());
-	  }
-	catch (BadStringOperationException e)
-	  {
-	    /* Ignored -- assume false result */
-	  }
-	catch (BadBinaryOpValueExpException e)
-	  {
-	    /* Ignored -- assume false result */
-	  }
-	catch (BadAttributeValueExpException e)
-	  {
-	    /* Ignored -- assume false result */
-	  }
-	catch (InvalidApplicationException e)
-	  {
-	    /* Ignored -- assume false result */
-	  }
+        ObjectName nextName = entry.getKey();
+        checkSecurity(name, nextName.toString(), "queryMBeans");
+        try
+          {
+            if ((name == null || name.apply(nextName)) &&
+                (query == null || query.apply(nextName)))
+              results.add(entry.getValue().getInstance());
+          }
+        catch (BadStringOperationException e)
+          {
+            /* Ignored -- assume false result */
+          }
+        catch (BadBinaryOpValueExpException e)
+          {
+            /* Ignored -- assume false result */
+          }
+        catch (BadAttributeValueExpException e)
+          {
+            /* Ignored -- assume false result */
+          }
+        catch (InvalidApplicationException e)
+          {
+            /* Ignored -- assume false result */
+          }
       }
     return results;
   }
- 
+
   /**
    * <p>
    * Returns a set of {@link ObjectName}s matching the specified
@@ -1558,7 +1558,7 @@ public class Server
    * <p>
    * If both the object name and the query expression are <code>null</code>,
    * or the object name has no domain and no key properties,
-   * no filtering will be performed and all beans are returned. 
+   * no filtering will be performed and all beans are returned.
    * </p>
    *
    * @param name an {@link ObjectName} to use as a filter.
@@ -1587,29 +1587,29 @@ public class Server
     Set<ObjectName> results = new HashSet<ObjectName>();
     for (ObjectName nextName : beans.keySet())
       {
-	checkSecurity(name, nextName.toString(), "queryNames");
-	try
-	  {
-	    if ((name == null || name.apply(nextName)) &&
-		(query == null || query.apply(nextName)))
-	      results.add(nextName);
-	  }
-	catch (BadStringOperationException e)
-	  {
-	    /* Ignored -- assume false result */
-	  }
-	catch (BadBinaryOpValueExpException e)
-	  {
-	    /* Ignored -- assume false result */
-	  }
-	catch (BadAttributeValueExpException e)
-	  {
-	    /* Ignored -- assume false result */
-	  }
-	catch (InvalidApplicationException e)
-	  {
-	    /* Ignored -- assume false result */
-	  }
+        checkSecurity(name, nextName.toString(), "queryNames");
+        try
+          {
+            if ((name == null || name.apply(nextName)) &&
+                (query == null || query.apply(nextName)))
+              results.add(nextName);
+          }
+        catch (BadStringOperationException e)
+          {
+            /* Ignored -- assume false result */
+          }
+        catch (BadBinaryOpValueExpException e)
+          {
+            /* Ignored -- assume false result */
+          }
+        catch (BadAttributeValueExpException e)
+          {
+            /* Ignored -- assume false result */
+          }
+        catch (InvalidApplicationException e)
+          {
+            /* Ignored -- assume false result */
+          }
       }
     return results;
   }
@@ -1618,7 +1618,7 @@ public class Server
    * Registers the supplied instance with the server, using the specified
    * {@link ObjectName}.  If the name given is <code>null</code>, then
    * the bean supplied is expected to implement the {@link MBeanRegistration}
-   * interface and provide the name via the 
+   * interface and provide the name via the
    * {@link MBeanRegistration#preRegister preRegister} method
    * of this interface.
    *
@@ -1656,71 +1656,71 @@ public class Server
    */
   public ObjectInstance registerMBean(Object obj, ObjectName name)
     throws InstanceAlreadyExistsException, MBeanRegistrationException,
-	   NotCompliantMBeanException
-  {  
+           NotCompliantMBeanException
+  {
     SecurityManager sm = System.getSecurityManager();
     Class<?> cl = obj.getClass();
     String className = cl.getName();
     if (sm != null)
       {
-	sm.checkPermission(new MBeanPermission(className, null, name,
-					       "registerMBean"));
-	if (!(cl.getProtectionDomain().implies(new MBeanTrustPermission("register"))))
-	  throw new SecurityException("The protection domain of the object's class" +
-				      "does not imply the trust permission," +
-				      "register");
+        sm.checkPermission(new MBeanPermission(className, null, name,
+                                               "registerMBean"));
+        if (!(cl.getProtectionDomain().implies(new MBeanTrustPermission("register"))))
+          throw new SecurityException("The protection domain of the object's class" +
+                                      "does not imply the trust permission," +
+                                      "register");
       }
     if (obj == null)
       {
-	RuntimeException e =
-	  new IllegalArgumentException("The object was null.");
-	throw new RuntimeOperationsException(e);
+        RuntimeException e =
+          new IllegalArgumentException("The object was null.");
+        throw new RuntimeOperationsException(e);
       }
     MBeanRegistration register = null;
     if (obj instanceof MBeanRegistration)
       register = (MBeanRegistration) obj;
     if (name == null && register == null)
       {
-	RuntimeException e =
-	  new IllegalArgumentException("The name was null and " +
-				       "the bean does not implement " +
-				       "MBeanRegistration.");
-	throw new RuntimeOperationsException(e);
+        RuntimeException e =
+          new IllegalArgumentException("The name was null and " +
+                                       "the bean does not implement " +
+                                       "MBeanRegistration.");
+        throw new RuntimeOperationsException(e);
       }
     if (register != null)
       {
-	try
-	  {
-	    name = register.preRegister(this, name);
-	    if (name == null)
-	      {
-		RuntimeException e =
-		  new NullPointerException("The name returned by " +
-					   "MBeanRegistration.preRegister() " +
-					   "was null");
-		throw e;
-	      }
-	    if (sm != null)
-	      sm.checkPermission(new MBeanPermission(className, null, name,
-						     "registerMBean"));
-	  }
-	catch (SecurityException e)
-	  {
-	    register.postRegister(Boolean.FALSE);
-	    throw e;
-	  }
-	catch (Exception e)
-	  {
-	    register.postRegister(Boolean.FALSE);
-	    throw new MBeanRegistrationException(e, "Pre-registration failed.");
-	  }
+        try
+          {
+            name = register.preRegister(this, name);
+            if (name == null)
+              {
+                RuntimeException e =
+                  new NullPointerException("The name returned by " +
+                                           "MBeanRegistration.preRegister() " +
+                                           "was null");
+                throw e;
+              }
+            if (sm != null)
+              sm.checkPermission(new MBeanPermission(className, null, name,
+                                                     "registerMBean"));
+          }
+        catch (SecurityException e)
+          {
+            register.postRegister(Boolean.FALSE);
+            throw e;
+          }
+        catch (Exception e)
+          {
+            register.postRegister(Boolean.FALSE);
+            throw new MBeanRegistrationException(e, "Pre-registration failed.");
+          }
       }
     ObjectInstance obji = new ObjectInstance(name, className);
     if (beans.putIfAbsent(name, new ServerInfo(obji, obj)) != null)
       {
-	if (register != null)
-	  register.postRegister(Boolean.FALSE);
-	throw new InstanceAlreadyExistsException(name + "is already registered.");
+        if (register != null)
+          register.postRegister(Boolean.FALSE);
+        throw new InstanceAlreadyExistsException(name + "is already registered.");
       }
     if (register != null)
       register.postRegister(Boolean.TRUE);
@@ -1752,16 +1752,16 @@ public class Server
    * @see NotificationBroadcaster#removeNotificationListener(NotificationListener)
    */
   public void removeNotificationListener(ObjectName name,
-					 NotificationListener listener)
+                                         NotificationListener listener)
     throws InstanceNotFoundException, ListenerNotFoundException
   {
     Object bean = getBean(name);
     checkSecurity(name, null, "removeNotificationListener");
     if (bean instanceof NotificationBroadcaster)
       {
-	NotificationBroadcaster bbean = (NotificationBroadcaster) bean;
-	bbean.removeNotificationListener(listener);
-	LazyListenersHolder.listeners.remove(listener);
+        NotificationBroadcaster bbean = (NotificationBroadcaster) bean;
+        bbean.removeNotificationListener(listener);
+        LazyListenersHolder.listeners.remove(listener);
       }
   }
 
@@ -1794,18 +1794,18 @@ public class Server
    *                                                     Object)
    */
   public void removeNotificationListener(ObjectName name,
-					 NotificationListener listener,
-					 NotificationFilter filter,
-					 Object passback)
+                                         NotificationListener listener,
+                                         NotificationFilter filter,
+                                         Object passback)
     throws InstanceNotFoundException, ListenerNotFoundException
   {
     Object bean = getBean(name);
     checkSecurity(name, null, "removeNotificationListener");
     if (bean instanceof NotificationEmitter)
       {
-	NotificationEmitter bbean = (NotificationEmitter) bean;
-	bbean.removeNotificationListener(listener, filter, passback);
-	LazyListenersHolder.listeners.remove(listener);
+        NotificationEmitter bbean = (NotificationEmitter) bean;
+        bbean.removeNotificationListener(listener, filter, passback);
+        LazyListenersHolder.listeners.remove(listener);
       }
   }
 
@@ -1839,10 +1839,10 @@ public class Server
     Object lbean = getBean(listener);
     if (!(lbean instanceof NotificationListener))
       {
-	RuntimeException e =
-	  new IllegalArgumentException("The supplied listener name does not " +
-				       "correspond to a notification listener.");
-	throw new RuntimeOperationsException(e);
+        RuntimeException e =
+          new IllegalArgumentException("The supplied listener name does not " +
+                                       "correspond to a notification listener.");
+        throw new RuntimeOperationsException(e);
       }
     removeNotificationListener(name, ((NotificationListener) lbean));
   }
@@ -1877,26 +1877,26 @@ public class Server
    *                                                     Object)
    */
   public void removeNotificationListener(ObjectName name,
-				  ObjectName listener,
-				  NotificationFilter filter,
-				  Object passback)
+                                  ObjectName listener,
+                                  NotificationFilter filter,
+                                  Object passback)
     throws InstanceNotFoundException, ListenerNotFoundException
   {
     Object lbean = getBean(listener);
     if (!(lbean instanceof NotificationListener))
       {
-	RuntimeException e =
-	  new IllegalArgumentException("The supplied listener name does not " +
-				       "correspond to a notification listener.");
-	throw new RuntimeOperationsException(e);
+        RuntimeException e =
+          new IllegalArgumentException("The supplied listener name does not " +
+                                       "correspond to a notification listener.");
+        throw new RuntimeOperationsException(e);
       }
     removeNotificationListener(name, ((NotificationListener) lbean), filter,
-			       passback);
+                               passback);
   }
 
   /**
    * Sets the value of the specified attribute of the supplied
-   * management bean.  
+   * management bean.
    *
    * @param name the name of the management bean.
    * @param attribute the attribute to set.
@@ -1929,14 +1929,14 @@ public class Server
    */
   public void setAttribute(ObjectName name, Attribute attribute)
     throws InstanceNotFoundException, AttributeNotFoundException,
-	   InvalidAttributeValueException, MBeanException,
-	   ReflectionException
+           InvalidAttributeValueException, MBeanException,
+           ReflectionException
   {
     if (attribute == null || name == null)
       {
-	RuntimeException e =
-	  new IllegalArgumentException("One of the supplied arguments was null.");
-	throw new RuntimeOperationsException(e);
+        RuntimeException e =
+          new IllegalArgumentException("One of the supplied arguments was null.");
+        throw new RuntimeOperationsException(e);
       }
     Object bean = getBean(name);
     checkSecurity(name, attribute.getName(), "setAttribute");
@@ -1944,14 +1944,14 @@ public class Server
       ((DynamicMBean) bean).setAttribute(attribute);
     else
       try
-	{
-	  new StandardMBean(bean, null).setAttribute(attribute);
-	}
+        {
+          new StandardMBean(bean, null).setAttribute(attribute);
+        }
       catch (NotCompliantMBeanException e)
-	{
-	  throw (Error) 
-	    (new InternalError("Failed to create dynamic bean.").initCause(e));
-	}
+        {
+          throw (Error)
+            (new InternalError("Failed to create dynamic bean.").initCause(e));
+        }
   }
 
   /**
@@ -1992,9 +1992,9 @@ public class Server
   {
     if (name == null || attributes == null)
       {
-	RuntimeException e =
-	  new IllegalArgumentException("One of the supplied arguments was null.");
-	throw new RuntimeOperationsException(e);
+        RuntimeException e =
+          new IllegalArgumentException("One of the supplied arguments was null.");
+        throw new RuntimeOperationsException(e);
       }
     Object abean = getBean(name);
     checkSecurity(name, null, "setAttribute");
@@ -2002,42 +2002,42 @@ public class Server
     Iterator<Object> it = attributes.iterator();
     while (it.hasNext())
       {
-	try
-	  {
-	    Attribute attrib = (Attribute) it.next();
-	    if (attrib == null)
-	      {
-		RuntimeException e =
-		  new IllegalArgumentException("An attribute was null.");
-		throw new RuntimeOperationsException(e);
-	      }
-	    checkSecurity(name, attrib.getName(), "setAttribute");
-	    if (abean instanceof DynamicMBean)
-	      ((DynamicMBean) abean).setAttribute(attrib);
-	    else
-	      try
-		{
-		  new StandardMBean(abean, null).setAttribute(attrib);
-		}
-	      catch (NotCompliantMBeanException e)
-		{
-		  throw (Error) 
-		    (new InternalError("Failed to create dynamic bean.").initCause(e));
-		}
-	    list.add(attrib);
-	  }
-	catch (AttributeNotFoundException e)
-	  {
-	    /* Ignored */
-	  }
-	catch (InvalidAttributeValueException e)
-	  {
-	    /* Ignored */
-	  }
-	catch (MBeanException e)
-	  {
-	    /* Ignored */
-	  }
+        try
+          {
+            Attribute attrib = (Attribute) it.next();
+            if (attrib == null)
+              {
+                RuntimeException e =
+                  new IllegalArgumentException("An attribute was null.");
+                throw new RuntimeOperationsException(e);
+              }
+            checkSecurity(name, attrib.getName(), "setAttribute");
+            if (abean instanceof DynamicMBean)
+              ((DynamicMBean) abean).setAttribute(attrib);
+            else
+              try
+                {
+                  new StandardMBean(abean, null).setAttribute(attrib);
+                }
+              catch (NotCompliantMBeanException e)
+                {
+                  throw (Error)
+                    (new InternalError("Failed to create dynamic bean.").initCause(e));
+                }
+            list.add(attrib);
+          }
+        catch (AttributeNotFoundException e)
+          {
+            /* Ignored */
+          }
+        catch (InvalidAttributeValueException e)
+          {
+            /* Ignored */
+          }
+        catch (MBeanException e)
+          {
+            /* Ignored */
+          }
       }
     return list;
   }
@@ -2064,36 +2064,36 @@ public class Server
    *                           MBeanPermission(String,String,ObjectName,String)
    *                           <code>MBeanPermission(className, null, name,
    *                           "unregisterMBean")</code>}.
-   */ 
+   */
   public void unregisterMBean(ObjectName name)
     throws InstanceNotFoundException, MBeanRegistrationException
   {
     if (name == null)
       {
-	RuntimeException e =
-	  new IllegalArgumentException("The name was null.");
-	throw new RuntimeOperationsException(e);
+        RuntimeException e =
+          new IllegalArgumentException("The name was null.");
+        throw new RuntimeOperationsException(e);
       }
     if (name.equals(DELEGATE_NAME))
       {
-	RuntimeException e =
-	  new IllegalArgumentException("The delegate can not be unregistered.");
-	throw new RuntimeOperationsException(e);
-      }	
-    Object bean = getBean(name);    
+        RuntimeException e =
+          new IllegalArgumentException("The delegate can not be unregistered.");
+        throw new RuntimeOperationsException(e);
+      }
+    Object bean = getBean(name);
     checkSecurity(name, null, "unregisterMBean");
     MBeanRegistration register = null;
     if (bean instanceof MBeanRegistration)
       {
-	register = (MBeanRegistration) bean;
-	try
-	  {
-	    register.preDeregister();
-	  }
-	catch (Exception e)
-	  {
-	    throw new MBeanRegistrationException(e, "Pre-deregistration failed.");
-	  }
+        register = (MBeanRegistration) bean;
+        try
+          {
+            register.preDeregister();
+          }
+        catch (Exception e)
+          {
+            throw new MBeanRegistrationException(e, "Pre-deregistration failed.");
+          }
       }
     beans.remove(name);
     notify(name, MBeanServerNotification.UNREGISTRATION_NOTIFICATION);
@@ -2113,8 +2113,8 @@ public class Server
    private void notify(ObjectName name, String type)
    {
       delegate.sendNotification
-	(new MBeanServerNotification
-	 (type, DELEGATE_NAME, sequenceNumber.getAndIncrement(), name));
+        (new MBeanServerNotification
+         (type, DELEGATE_NAME, sequenceNumber.getAndIncrement(), name));
    }
 
   /**
@@ -2137,13 +2137,13 @@ public class Server
       throws ClassNotFoundException, IOException
     {
       try
-	{
-	  return Class.forName(osc.getName(), true, cl);
-	}
+        {
+          return Class.forName(osc.getName(), true, cl);
+        }
       catch (ClassNotFoundException e)
-	{
-	  return super.resolveClass(osc);
-	}
+        {
+          return super.resolveClass(osc);
+        }
     }
 
   }
@@ -2152,7 +2152,7 @@ public class Server
    * Holder for information on registered beans.
    */
   private class ServerInfo
-  {  
+  {
     private ObjectInstance instance;
 
     private Object object;
@@ -2206,7 +2206,7 @@ public class Server
      * @param listener the listener events eventually reach.
      */
     public ServerNotificationListener(Object bean, ObjectName name,
-				      NotificationListener listener)
+                                      NotificationListener listener)
     {
       this.bean = bean;
       this.name = name;
@@ -2224,7 +2224,7 @@ public class Server
     public void handleNotification(Notification notif, Object handback)
     {
       if (notif.getSource() == bean)
-	notif.setSource(name);
+        notif.setSource(name);
       listener.handleNotification(notif, handback);
     }
 

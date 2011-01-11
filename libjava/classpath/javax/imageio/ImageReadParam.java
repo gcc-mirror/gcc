@@ -112,17 +112,17 @@ public class ImageReadParam extends IIOParam
     this.minProgressivePass = minPass;
     this.numProgressivePasses = numPasses;
   }
-  
+
   public void setSourceRenderSize(Dimension size)
     throws UnsupportedOperationException
   {
     if (! canSetSourceRenderSize())
       throw new UnsupportedOperationException
-	("setting source render size not supported");
-    
+        ("setting source render size not supported");
+
     if (size.width <= 0 || size.height <= 0)
       throw new IllegalArgumentException("negative dimension not allowed");
-    
+
     sourceRenderSize = size;
   }
 }

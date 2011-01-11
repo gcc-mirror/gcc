@@ -50,7 +50,7 @@ import java.io.Reader;
  *
  * This scanner is based upon the RTF specification 1.6
  * available at:
- * 
+ *
  * <a
  * href="http://msdn.microsoft.com/library/en-us/dnrtfspec/html/rtfspec.asp">
  * RTF specification at MSDN</a>

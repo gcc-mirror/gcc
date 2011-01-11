@@ -85,17 +85,17 @@ final class VMProcess extends Process
   static int reapedExitValue;
 
   // Information about this process
-  int state;				       // current state of process
-  final String[] cmd;			       // copied from Runtime.exec()
-  final String[] env;			       // copied from Runtime.exec()
-  final File dir;			       // copied from Runtime.exec()
-  Throwable exception;			       // if process failed to start
-  long pid;				       // process id
-  OutputStream stdin;			       // process input stream
-  InputStream stdout;			       // process output stream
-  InputStream stderr;			       // process error stream
-  int exitValue;			       // process exit value
-  boolean redirect;			       // redirect stderr -> stdout
+  int state;                                   // current state of process
+  final String[] cmd;                          // copied from Runtime.exec()
+  final String[] env;                          // copied from Runtime.exec()
+  final File dir;                              // copied from Runtime.exec()
+  Throwable exception;                         // if process failed to start
+  long pid;                                    // process id
+  OutputStream stdin;                          // process input stream
+  InputStream stdout;                          // process output stream
+  InputStream stderr;                          // process error stream
+  int exitValue;                               // process exit value
+  boolean redirect;                            // redirect stderr -> stdout
 
   //
   // Dedicated thread that does all the fork()'ing and wait()'ing
@@ -125,97 +125,97 @@ final class VMProcess extends Process
     {
       final LinkedList workList = VMProcess.workList;
       while (true)
-	{
+        {
 
-	  // Get the next process to spawn (if any) and spawn it. Spawn
-	  // at most one at a time before checking for reapable children.
-	  VMProcess process = null;
-	  synchronized (workList)
-	    {
-	      if (!workList.isEmpty())
-		process = (VMProcess)workList.removeFirst();
-	    }
+          // Get the next process to spawn (if any) and spawn it. Spawn
+          // at most one at a time before checking for reapable children.
+          VMProcess process = null;
+          synchronized (workList)
+            {
+              if (!workList.isEmpty())
+                process = (VMProcess)workList.removeFirst();
+            }
 
-	  if (process != null)
-	    spawn(process);
-
-
-	  // Check for termination of active child processes
-	  while (!activeMap.isEmpty() && VMProcess.nativeReap())
-	    {
-	      long pid = VMProcess.reapedPid;
-	      int exitValue = VMProcess.reapedExitValue;
-	      process = (VMProcess)activeMap.remove(new Long(pid));
-	      if (process != null)
-		{
-		  synchronized (process)
-		    {
-		      process.exitValue = exitValue;
-		      process.state = TERMINATED;
-		      process.notify();
-		    }
-		}
-	      else
-		System.err.println("VMProcess WARNING reaped unknown process: "
-				   + pid);
-	    }
+          if (process != null)
+            spawn(process);
 
 
-	  // If there are more new processes to create, go do that now.
-	  // If there is nothing left to do, exit this thread. Otherwise,
-	  // sleep a little while, and then check again for reapable children.
-	  // We will get woken up immediately if there are new processes to
-	  // spawn, but not if there are new children to reap. So we only
-	  // sleep a short time, in effect polling while processes are active.
-	  synchronized (workList)
-	    {
-	      if (!workList.isEmpty())
-		continue;
-	      if (activeMap.isEmpty())
-		{
-		  processThread = null;
-		  break;
-		}
-	
-	      try
-		{
-		  workList.wait(MAX_REAP_DELAY);
-		}
-	      catch (InterruptedException e)
-		{
-		  /* ignore */
-		}
-	    }
-	}
+          // Check for termination of active child processes
+          while (!activeMap.isEmpty() && VMProcess.nativeReap())
+            {
+              long pid = VMProcess.reapedPid;
+              int exitValue = VMProcess.reapedExitValue;
+              process = (VMProcess)activeMap.remove(new Long(pid));
+              if (process != null)
+                {
+                  synchronized (process)
+                    {
+                      process.exitValue = exitValue;
+                      process.state = TERMINATED;
+                      process.notify();
+                    }
+                }
+              else
+                System.err.println("VMProcess WARNING reaped unknown process: "
+                                   + pid);
+            }
+
+
+          // If there are more new processes to create, go do that now.
+          // If there is nothing left to do, exit this thread. Otherwise,
+          // sleep a little while, and then check again for reapable children.
+          // We will get woken up immediately if there are new processes to
+          // spawn, but not if there are new children to reap. So we only
+          // sleep a short time, in effect polling while processes are active.
+          synchronized (workList)
+            {
+              if (!workList.isEmpty())
+                continue;
+              if (activeMap.isEmpty())
+                {
+                  processThread = null;
+                  break;
+                }
+
+              try
+                {
+                  workList.wait(MAX_REAP_DELAY);
+                }
+              catch (InterruptedException e)
+                {
+                  /* ignore */
+                }
+            }
+        }
     }
 
     // Spawn a process
     private void spawn(VMProcess process)
     {
-      
+
       // Spawn the process and put it in our active map indexed by pid.
       // If the spawn operation fails, store the exception with the process.
       // In either case, wake up thread that created the process.
       synchronized (process)
-	{
-	  try
-	    {
-	      process.nativeSpawn(process.cmd, process.env, process.dir,
-				  process.redirect);
-	      process.state = RUNNING;
-	      activeMap.put(new Long(process.pid), process);
-	    }
+        {
+          try
+            {
+              process.nativeSpawn(process.cmd, process.env, process.dir,
+                                  process.redirect);
+              process.state = RUNNING;
+              activeMap.put(new Long(process.pid), process);
+            }
           catch (ThreadDeath death)
             {
               throw death;
             }
-	  catch (Throwable t)
-	    {
-	      process.state = TERMINATED;
-	      process.exception = t;
-	    }
-	  process.notify();
-	}
+          catch (Throwable t)
+            {
+              process.state = TERMINATED;
+              process.exception = t;
+            }
+          process.notify();
+        }
     }
   }
 
@@ -223,77 +223,77 @@ final class VMProcess extends Process
   private VMProcess(String[] cmd, String[] env, File dir, boolean redirect)
     throws IOException
   {
-    
+
     // Initialize this process
     this.state = INITIAL;
     this.cmd = cmd;
     this.env = env;
     this.dir = dir;
     this.redirect = redirect;
-  
+
     // Add process to the new process work list and wakeup processThread
     synchronized (workList)
       {
-	workList.add(this);
-	if (processThread == null)
-	  {
-	    processThread = new ProcessThread();
-	    processThread.setDaemon(true);
-	    processThread.start();
-	  }
-	else
-	  {
-	    workList.notify();
-	  }
+        workList.add(this);
+        if (processThread == null)
+          {
+            processThread = new ProcessThread();
+            processThread.setDaemon(true);
+            processThread.start();
+          }
+        else
+          {
+            workList.notify();
+          }
       }
 
     // Wait for processThread to spawn this process and update its state
     synchronized (this)
       {
-	while (state == INITIAL)
-	  {
-	    try
-	      {
-		wait();
-	      }
-	    catch (InterruptedException e)
-	      {
-		/* ignore */
-	      }
-	  }
+        while (state == INITIAL)
+          {
+            try
+              {
+                wait();
+              }
+            catch (InterruptedException e)
+              {
+                /* ignore */
+              }
+          }
       }
 
     // If spawning failed, rethrow the exception in this thread
     if (exception != null)
       {
-	exception.fillInStackTrace();
-	if (exception instanceof IOException)
-	  throw (IOException)exception;
+        exception.fillInStackTrace();
+        if (exception instanceof IOException)
+          throw (IOException)exception;
 
-	if (exception instanceof Error)
-	  throw (Error)exception;
+        if (exception instanceof Error)
+          throw (Error)exception;
 
-	if (exception instanceof RuntimeException)
-	  throw (RuntimeException)exception;
+        if (exception instanceof RuntimeException)
+          throw (RuntimeException)exception;
 
-	throw new RuntimeException(exception);
+        throw new RuntimeException(exception);
       }
   }
 
   // Invoked by native code (from nativeSpawn()) to record process info.
   private void setProcessInfo(OutputStream stdin,
-			      InputStream stdout, InputStream stderr, long pid)
+                              InputStream stdout, InputStream stderr, long pid)
   {
     this.stdin = stdin;
     this.stdout = stdout;
     if (stderr == null)
       this.stderr = new InputStream()
-	{
-	  public int read() throws IOException
-	  {
-	    return -1;
-	  }
-	};
+        {
+          public int read() throws IOException
+          {
+            return -1;
+          }
+        };
     else
       this.stderr = stderr;
     this.pid = pid;
@@ -308,7 +308,7 @@ final class VMProcess extends Process
   }
 
   static Process exec(List cmd, Map env,
-		      File dir, boolean redirect) throws IOException
+                      File dir, boolean redirect) throws IOException
   {
     String[] acmd = (String[]) cmd.toArray(new String[cmd.size()]);
     String[] aenv = new String[env.size()];
@@ -317,8 +317,8 @@ final class VMProcess extends Process
     Iterator iter = env.entrySet().iterator();
     while (iter.hasNext())
       {
-	Map.Entry entry = (Map.Entry) iter.next();
-	aenv[i++] = entry.getKey() + "=" + entry.getValue();
+        Map.Entry entry = (Map.Entry) iter.next();
+        aenv[i++] = entry.getKey() + "=" + entry.getValue();
       }
 
     return new VMProcess(acmd, aenv, dir, redirect);
@@ -359,17 +359,17 @@ final class VMProcess extends Process
       return;
 
     nativeKill(pid);
-    
+
     while (state != TERMINATED)
       {
-	try
-	  {
-	    wait();
-	  }
-	catch (InterruptedException e)
-	  {
-	    /* ignore */
-	  }
+        try
+          {
+            wait();
+          }
+        catch (InterruptedException e)
+          {
+            /* ignore */
+          }
       }
   }
 
@@ -381,7 +381,7 @@ final class VMProcess extends Process
    * @throws IOException if the O/S process could not be created.
    */
   native void nativeSpawn(String[] cmd, String[] env, File dir,
-			  boolean redirect)
+                          boolean redirect)
     throws IOException;
 
   /**

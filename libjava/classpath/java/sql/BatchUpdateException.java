@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,12 +39,12 @@ package java.sql;
 
 /**
  * This class extends <code>SQLException</code> to count the successful
- * updates in each statement in a batch that was successfully updated prior 
+ * updates in each statement in a batch that was successfully updated prior
  * to the error.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
-public class BatchUpdateException extends SQLException 
+public class BatchUpdateException extends SQLException
 {
   static final long serialVersionUID = 5977529877145521757L;
 
@@ -84,7 +84,7 @@ public class BatchUpdateException extends SQLException
     int[] updateCounts)
   {
     super(message, SQLState);
-    this.updateCounts = updateCounts;  
+    this.updateCounts = updateCounts;
   }
 
   /**
@@ -118,7 +118,7 @@ public class BatchUpdateException extends SQLException
   /**
    * Initializes a new instance of <code>BatchUpdateException</code>
    * with no descriptive error message.  The SQL state and update count will
-   * be initialized to <code>null</code> and the vendor specific error code will 
+   * be initialized to <code>null</code> and the vendor specific error code will
    * initialized to 0.
    */
   public BatchUpdateException()

@@ -56,7 +56,7 @@ public class BasicPasswordFieldUI extends BasicTextFieldUI
   {
     return new PasswordView(elem);
   }
-  
+
   public static ComponentUI createUI(JComponent c)
   {
     return new BasicPasswordFieldUI();

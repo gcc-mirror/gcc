@@ -57,5 +57,4 @@ public interface ListPeer extends ComponentPeer
   void setMultipleSelections(boolean multi);
   Dimension getPreferredSize(int s);
   Dimension getMinimumSize(int s);
-} // interface ListPeer 
-
+} // interface ListPeer

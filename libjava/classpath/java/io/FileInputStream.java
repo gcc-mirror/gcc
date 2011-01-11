@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -48,9 +48,9 @@ import java.nio.channels.FileChannel;
  * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
  * Status:  Believed complete and correct.
  */
- 
+
 /**
- * This class is a stream that reads its bytes from a file. 
+ * This class is a stream that reads its bytes from a file.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Warren Levy (warrenl@cygnus.com)
@@ -68,7 +68,7 @@ public class FileInputStream extends InputStream
    * This method initializes a <code>FileInputStream</code> to read from the
    * specified named file.  A security check is first made to determine
    * whether or not access to this file is allowed.  This is done by
-   * calling the <code>checkRead()</code> method of the 
+   * calling the <code>checkRead()</code> method of the
    * <code>SecurityManager</code>
    * (if one exists) with the name of this file.  An exception is thrown
    * if reading is not allowed.  If the file does not exist, an exception
@@ -77,7 +77,7 @@ public class FileInputStream extends InputStream
    * @param name The name of the file this stream should read from
    *
    * @exception SecurityException If read access to the file is not allowed
-   * @exception FileNotFoundException If the file does not exist 
+   * @exception FileNotFoundException If the file does not exist
    * or if it is a directory
    */
   public FileInputStream(String name) throws FileNotFoundException
@@ -129,13 +129,13 @@ public class FileInputStream extends InputStream
    * specified <code>FileDescriptor</code> object.  A security
    * check is first made to
    * determine whether or not access to this file is allowed.  This is done by
-   * calling the <code>checkRead()</code> method of the 
+   * calling the <code>checkRead()</code> method of the
    * <code>SecurityManager</code>
-   * (if one exists) with the specified <code>FileDescriptor</code>  
-   * An exception is 
+   * (if one exists) with the specified <code>FileDescriptor</code>
+   * An exception is
    * thrown if reading is not allowed.
    *
-   * @param fdObj The <code>FileDescriptor</code> object this stream 
+   * @param fdObj The <code>FileDescriptor</code> object this stream
    * should read from
    *
    * @exception SecurityException If read access to the file is not allowed
@@ -210,9 +210,9 @@ public class FileInputStream extends InputStream
   {
     synchronized (this)
       {
-	if (fd == null)
-	  fd = new FileDescriptor (ch);
-	return fd;
+        if (fd == null)
+          fd = new FileDescriptor (ch);
+        return fd;
       }
   }
 
@@ -256,7 +256,7 @@ public class FileInputStream extends InputStream
 
   /**
    * This method read bytes from a stream and stores them into a caller
-   * supplied buffer.  It starts storing the data at index 
+   * supplied buffer.  It starts storing the data at index
    * <code>offset</code> into
    * the buffer and attempts to read <code>len</code> bytes.  This method can
    * return before reading the number of bytes requested.  The actual number
@@ -297,7 +297,7 @@ public class FileInputStream extends InputStream
   public synchronized long skip (long numBytes) throws IOException
   {
     if (numBytes < 0)
-      throw new IllegalArgumentException ("Can't skip negative bytes: " + 
+      throw new IllegalArgumentException ("Can't skip negative bytes: " +
                                           numBytes);
 
     if (numBytes == 0)
@@ -314,10 +314,9 @@ public class FileInputStream extends InputStream
    * A file channel must be created by first creating an instance of
    * Input/Output/RandomAccessFile and invoking the getChannel() method on it.
    */
-  public synchronized FileChannel getChannel () 
+  public synchronized FileChannel getChannel ()
   {
     return ch;
   }
 
 } // class FileInputStream
-

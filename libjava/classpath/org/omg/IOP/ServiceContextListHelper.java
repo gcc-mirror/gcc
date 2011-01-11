@@ -91,7 +91,7 @@ public abstract class ServiceContextListHelper
     catch (ClassCastException ex)
       {
         BAD_OPERATION bad = new BAD_OPERATION("ServiceContext[] expected");
-        bad.minor = Minor.Any;        
+        bad.minor = Minor.Any;
         bad.initCause(ex);
         throw bad;
       }

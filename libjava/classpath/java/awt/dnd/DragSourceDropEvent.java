@@ -60,7 +60,7 @@ public class DragSourceDropEvent extends DragSourceEvent
     this.dropAction = 0;
     this.dropSuccess = false;
   }
-  
+
   public DragSourceDropEvent (DragSourceContext context, int dropAction,
                               boolean dropSuccess)
   {

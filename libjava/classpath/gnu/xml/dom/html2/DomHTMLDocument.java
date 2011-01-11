@@ -1,4 +1,4 @@
-/* DomHTMLDocument.java -- 
+/* DomHTMLDocument.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -424,4 +424,3 @@ public class DomHTMLDocument
   }
 
 }
-

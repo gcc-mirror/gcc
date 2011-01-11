@@ -77,29 +77,29 @@ public final class Util
   {
     return wrapBuffer(buffer, "");
   }
-  
+
   public static Object wrapBuffer(ByteBuffer buffer, String prefix)
   {
     return new WrappedBuffer(buffer, prefix);
   }
-  
+
   private static class WrappedBuffer
   {
     private final ByteBuffer buffer;
     private final String prefix;
-    
+
     WrappedBuffer(ByteBuffer buffer, String prefix)
     {
       this.buffer = buffer;
       this.prefix = prefix;
     }
-    
+
     public String toString()
     {
       return hexDump(buffer, prefix);
     }
   }
-  
+
   /**
    * Convert a hexadecimal string into its byte representation.
    *

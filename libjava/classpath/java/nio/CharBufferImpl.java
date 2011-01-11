@@ -1,4 +1,4 @@
-/* CharBufferImpl.java -- 
+/* CharBufferImpl.java --
    Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -49,39 +49,39 @@ final class CharBufferImpl extends CharBuffer
   {
     this (new char [capacity], 0, capacity, capacity, 0, -1, false);
   }
-  
+
   CharBufferImpl (char[] buffer, int offset, int capacity, int limit, int position, int mark, boolean readOnly)
   {
     super (capacity, limit, position, mark, null, buffer, offset);
     this.readOnly = readOnly;
   }
-  
+
   public CharBufferImpl (CharBufferImpl copy)
   {
     super (copy.capacity (), copy.limit (), copy.position (), 0, null, copy.backing_buffer, copy.array_offset);
     this.readOnly = copy.isReadOnly ();
   }
-  
+
   public boolean isReadOnly ()
   {
     return readOnly;
   }
-  
+
   public CharBuffer slice ()
   {
     return new CharBufferImpl (backing_buffer, array_offset + position (), remaining (), remaining (), 0, -1, isReadOnly ());
   }
-  
+
   public CharBuffer duplicate ()
   {
     return new CharBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, isReadOnly ());
   }
-  
+
   public CharBuffer asReadOnlyBuffer ()
   {
     return new CharBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, true);
   }
-  
+
   public CharBuffer compact ()
   {
     checkIfReadOnly();
@@ -97,7 +97,7 @@ final class CharBufferImpl extends CharBuffer
     limit(capacity());
     return this;
   }
-  
+
   public boolean isDirect ()
   {
     return false;
@@ -113,7 +113,7 @@ final class CharBufferImpl extends CharBuffer
 
     return new CharBufferImpl (backing_buffer, array_offset, capacity (), position () + end, position () + start, -1, isReadOnly ());
   }
-  
+
   /**
    * Reads the <code>char</code> at this buffer's current position,
    * and then increments the position.
@@ -128,11 +128,11 @@ final class CharBufferImpl extends CharBuffer
 
     return backing_buffer [(pos++) + array_offset];
   }
-  
+
   /**
    * Relative put method. Writes <code>value</code> to the next position
    * in the buffer.
-   * 
+   *
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
   public CharBuffer put (char value)
@@ -145,7 +145,7 @@ final class CharBufferImpl extends CharBuffer
     backing_buffer [(pos++) + array_offset] = value;
     return this;
   }
-  
+
   /**
    * Absolute get method. Reads the <code>char</code> at position
    * <code>index</code>.
@@ -158,10 +158,10 @@ final class CharBufferImpl extends CharBuffer
   public char get (int index)
   {
     checkIndex(index);
-    
+
     return backing_buffer [index + array_offset];
   }
-  
+
   /**
    * Bulk get, overloaded for speed.
    */
@@ -170,8 +170,8 @@ final class CharBufferImpl extends CharBuffer
     checkArraySize(dst.length, offset, length);
     checkForUnderflow(length);
 
-    System.arraycopy(backing_buffer, pos + array_offset, 
-		     dst, offset, length);
+    System.arraycopy(backing_buffer, pos + array_offset,
+                     dst, offset, length);
     pos += length;
     return this;
   }
@@ -183,9 +183,9 @@ final class CharBufferImpl extends CharBuffer
   {
     checkArraySize(src.length, offset, length);
     checkForOverflow(length);
-		    
+
     System.arraycopy(src, offset,
-		     backing_buffer, pos + array_offset, length);
+                     backing_buffer, pos + array_offset, length);
     pos += length;
     return this;
   }
@@ -202,11 +202,11 @@ final class CharBufferImpl extends CharBuffer
   {
     checkIndex(index);
     checkIfReadOnly();
-    	    
+
     backing_buffer [index + array_offset] = value;
     return this;
   }
-  
+
   public ByteOrder order ()
   {
     return ByteOrder.nativeOrder ();

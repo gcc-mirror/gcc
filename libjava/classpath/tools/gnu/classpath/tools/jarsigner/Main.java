@@ -166,7 +166,7 @@ public class Main
   /**
    * Read the command line arguments setting the tool's parameters in
    * preparation for the user desired action.
-   * 
+   *
    * @param args an array of options (strings).
    * @throws Exception if an exception occurs during the process.
    */
@@ -223,7 +223,7 @@ public class Main
    * <p>
    * Depending on the result of processing the command line arguments, this
    * handler may be one for signing the jar, or verifying it.
-   * 
+   *
    * @throws Exception if an exception occurs during the process.
    */
   private void start() throws Exception
@@ -271,7 +271,7 @@ public class Main
    * <p>
    * Common parameters are those which are allowed in both signing and
    * verification modes.
-   * 
+   *
    * @throws InstantiationException if a security provider class name is
    *           specified but that class name is that of either an interface or
    *           an abstract class.
@@ -342,7 +342,7 @@ public class Main
    * After processing the command line arguments, this method is invoked to
    * process the parameters which may have been encountered among the actual
    * arguments, and which are specific to the signing action of the tool.
-   * 
+   *
    * @throws KeyStoreException if no implementation of the designated (or
    *           default type) of a key store is availabe.
    * @throws IOException if an I/O related exception occurs during the process.
@@ -524,7 +524,7 @@ public class Main
    * If no installed providers were found, this method falls back on the GNU
    * provider, by-passing the Security search mechanism. The default console
    * callback handler implementation is {@link ConsoleCallbackHandler}.
-   * 
+   *
    * @return a console-based {@link CallbackHandler}.
    */
   protected CallbackHandler getCallbackHandler()

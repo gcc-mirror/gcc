@@ -45,7 +45,7 @@ import java.util.HashMap;
  * ObjectId provides an object identification mechanism which gives each object
  * a name in the form <code>&lt;class&gt;&lt;Nameindex&gt;</code>.
  * </p>
- * 
+ *
  * <p>
  * Each id can be in an unused state which means that only one instance of the
  * object is in use and a special id is not needed. Certain {@link
@@ -57,7 +57,7 @@ import java.util.HashMap;
  * The second user should then invoke the {@link #init} method to generate the
  * identification string and bring the id in the 'used' state.
  * </p>
- * 
+ *
  * @author Robert Schuster (robertschuster@fsfe.org)
  */
 public class ObjectId

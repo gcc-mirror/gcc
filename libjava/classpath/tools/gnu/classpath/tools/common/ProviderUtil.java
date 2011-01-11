@@ -64,7 +64,7 @@ public abstract class ProviderUtil
    * <p>
    * <b>IMPORTANT</b>: This method overrides the security check usually carried
    * out by the security manager when inserting a new {@link Provider}.
-   * 
+   *
    * @param providerClass a fully qualified, non-null, class name of a
    *          <i>Security Provider</i> to add if it is not already installed.
    * @return an instance of {@link SecurityProviderInfo} referencing the
@@ -110,7 +110,7 @@ public abstract class ProviderUtil
    * <p>
    * <b>IMPORTANT</b>: This method overrides the security check usually carried
    * out by the security manager when inserting a new {@link Provider}.
-   * 
+   *
    * @param provider a non-null <i>Security Provider</i> to add if it is not
    *          already installed.
    * @return the new position of the designated provider in the list if it was
@@ -142,7 +142,7 @@ public abstract class ProviderUtil
    * <p>
    * <b>IMPORTANT</b>: This method overrides the security check usually carried
    * out by the security manager when removing a {@link Provider}.
-   * 
+   *
    * @param providerName the name of the {@link Provider} to remove.
    */
   public static final void removeProvider(final String providerName)

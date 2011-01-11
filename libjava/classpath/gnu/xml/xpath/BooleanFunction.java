@@ -1,4 +1,4 @@
-/* BooleanFunction.java -- 
+/* BooleanFunction.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -60,7 +60,7 @@ final class BooleanFunction
 {
 
   final Expr arg;
-  
+
   BooleanFunction(List<Expr> args)
   {
     this(args.get(0));
@@ -70,7 +70,7 @@ final class BooleanFunction
   {
     this.arg = arg;
   }
-  
+
   public Object evaluate(Node context, int pos, int len)
   {
     Object val = arg.evaluate(context, pos, len);
@@ -86,10 +86,10 @@ final class BooleanFunction
   {
     return arg.references(var);
   }
-  
+
   public String toString()
   {
     return "boolean(" + arg + ")";
   }
-  
+
 }

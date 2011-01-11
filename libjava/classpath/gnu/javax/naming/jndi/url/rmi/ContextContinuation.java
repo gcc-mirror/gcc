@@ -60,8 +60,8 @@ import javax.naming.NamingException;
 import javax.naming.OperationNotSupportedException;
 
 /**
- * The implementation of the RMI URL context. This context connects 
- * 
+ * The implementation of the RMI URL context. This context connects
+ *
  * @author Audrius Meskauskas
  */
 public class ContextContinuation implements Context
@@ -70,18 +70,18 @@ public class ContextContinuation implements Context
    * The default registry location.
    */
   public static final String DEFAULT_REGISTRY_LOCATION = "rmi://localhost:1099";
-  
+
   /**
    * The local or remote RMI registry, performing the actual work for this
    * context.
    */
   Registry registry;
-  
+
  /**
    * The properties.
    */
   Properties properties;
-  
+
   /**
    * The flag, indicating, that the lookup methods were called before.
    * If the lookup methods were called before, the existing ORB cannot be
@@ -89,14 +89,14 @@ public class ContextContinuation implements Context
    * unfunctional.
    */
   boolean lookupCalled;
-  
+
   /**
    * Add new environment property to the environment of this context. Both name
    * and value of the new property must not be null. If the property is already
    * defined, is current value is replaced by the propVal. This method replaces
    * the registry. The new registry will be lazily instantiated on the first
    * call.
-   * 
+   *
    * @param key
    *          the name of the new property
    * @param value
@@ -117,7 +117,7 @@ public class ContextContinuation implements Context
    * table should never be modified by the caller (the registry would not be updated
    * in such case). Use {@link #addToEnvironment} and
    * {@link #removeFromEnvironment} to modify the environement, if needed.
-   * 
+   *
    * @return the table, representing the environment of this context
    * @throws NamingException
    */
@@ -132,7 +132,7 @@ public class ContextContinuation implements Context
    * constructing the new ORB with the changes set of properties (you can
    * replace the CORBA implementation provider, for instance). The new ORB will
    * be lazily instantiated on the first call.
-   * 
+   *
    * @param propName
    *          the name of the property being removed.
    * @return the value of the property that has been removed or null if the
@@ -144,18 +144,18 @@ public class ContextContinuation implements Context
     removeRegistry();
     return properties.remove(propName);
   }
-  
+
   /**
    * Remove the current registry reference.
    */
   public void removeRegistry()
   {
-    registry = null;    
+    registry = null;
   }
-  
+
   /**
    * Get the cached or new registry reference.
-   * 
+   *
    * @return the registry reference, either cached or new.
    */
   public Registry getRegistry() throws NamingException
@@ -164,17 +164,17 @@ public class ContextContinuation implements Context
       {
         String address = properties.getProperty(Context.PROVIDER_URL,
                                                 DEFAULT_REGISTRY_LOCATION);
-        
+
         // The format like rmi://localhost:1099 is expected. Parse.
         if (!address.startsWith("rmi://"))
           throw new InvalidNameException(address);
-        
+
         String a = address.substring("rmi://".length());
-        
+
         // The colon, if present, indicates the start of the port number.
         int colon = a.lastIndexOf(':');
         int port;
-        
+
         try
           {
             if (colon >=0)
@@ -188,8 +188,8 @@ public class ContextContinuation implements Context
         catch (NumberFormatException e1)
           {
             throw new InvalidNameException(address);
-          } 
-            
+          }
+
         try
           {
             registry = LocateRegistry.getRegistry(a, port);
@@ -204,7 +204,7 @@ public class ContextContinuation implements Context
 
   /**
    * Create the rmi url context that works, talking with the given RMI registry.
-   * 
+   *
    * @param props
    *          the properties for this context
    * @param initialRegistry
@@ -217,11 +217,11 @@ public class ContextContinuation implements Context
       properties.putAll(props);
     registry = initialRegistry;
   }
-  
+
   /**
    * Bind the given name into this context. The .toString() is called to
    * convert into the string representation, required by RMI registry.
-   * 
+   *
    * @throws NamingException if the object is not an instance of Remote
    */
   public void bind(Name name, Object obj) throws NamingException
@@ -362,7 +362,7 @@ public class ContextContinuation implements Context
   {
     if (name.length() > 0)
       throw new OperationNotSupportedException("Only empty name is accepted");
-    
+
     try
       {
         return new ListEnumeration(getRegistry().list());
@@ -375,7 +375,7 @@ public class ContextContinuation implements Context
 
   /**
    * List existing bindings of this context (the parameter must be empty name,
-   * indicating the root context). 
+   * indicating the root context).
    */
   public NamingEnumeration listBindings(Name name) throws NamingException
   {
@@ -386,13 +386,13 @@ public class ContextContinuation implements Context
 
   /**
    * List existing bindings of this context (the parameter must be empty name,
-   * indicating the root context). 
+   * indicating the root context).
    */
   public NamingEnumeration listBindings(String name) throws NamingException
   {
     if (name.length() > 0)
       throw new OperationNotSupportedException("Only empty name is accepted");
-    
+
     try
       {
         Registry r = getRegistry();
@@ -422,7 +422,7 @@ public class ContextContinuation implements Context
 
   /**
    * Rebinds this object.
-   * 
+   *
    * @param name
    *          the object name (.toString()) is used to convert into string
    *          representation.
@@ -436,7 +436,7 @@ public class ContextContinuation implements Context
 
   /**
    * Rebinds this object.
-   * 
+   *
    * @param name
    *          the object name.
    * @param obj
@@ -462,7 +462,7 @@ public class ContextContinuation implements Context
                                   + obj.getClass().getName());
       }
   }
-  
+
   /**
    * Renames the object. If the new name is already bound in the given context,
    * the {@link AlreadyBoundException} is thrown and the oldName binding is
@@ -549,7 +549,7 @@ public class ContextContinuation implements Context
         throw new CommunicationException(e.toString());
       }
   }
-  
+
   /**
    * Release the associated resources.
    */
@@ -557,10 +557,10 @@ public class ContextContinuation implements Context
   {
     removeRegistry();
   }
-  
+
   /**
    * Resolve the object by name.
-   * 
+   *
    * @param name
    *          the object name, .toString() is used to get the string
    *          representation.
@@ -569,10 +569,10 @@ public class ContextContinuation implements Context
   {
     return lookup(name.toString());
   }
-  
+
   /**
    * Resolve the object by name
-   * 
+   *
    * @param name the object name.
    */
   public Object lookup(String name) throws NamingException

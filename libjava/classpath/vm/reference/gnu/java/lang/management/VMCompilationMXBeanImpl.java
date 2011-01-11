@@ -38,7 +38,7 @@ exception statement from your version. */
 package gnu.java.lang.management;
 
 /**
- * Provides access to information about the JIT 
+ * Provides access to information about the JIT
  * compiler of the virtual machine, if one exists.
  * Instances of this bean are obtained by calling
  * {@link ManagementFactory#getCompilationMXBean()},

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -40,13 +40,13 @@ package java.security.spec;
 import java.math.BigInteger;
 
 /**
-	RSA Private Certificate Key class Specification. Used to 
-	maintain the RSA Private Certificate Keys with the 
-	<I>Chinese Remainder Theorem</I>(CRT) as specified by PKCS#1.
+        RSA Private Certificate Key class Specification. Used to
+        maintain the RSA Private Certificate Keys with the
+        <I>Chinese Remainder Theorem</I>(CRT) as specified by PKCS#1.
 
-	@since JDK 1.2
+        @since JDK 1.2
 
-	@author Mark Benvenuto
+        @author Mark Benvenuto
 */
 public class RSAPrivateCrtKeySpec extends RSAPrivateKeySpec
 {
@@ -71,13 +71,13 @@ public class RSAPrivateCrtKeySpec extends RSAPrivateKeySpec
      @param crtCoefficient the CRT coefficient
   */
   public RSAPrivateCrtKeySpec(BigInteger modulus,
-			      BigInteger publicExponent,
-			      BigInteger privateExponent,
-			      BigInteger primeP,
-			      BigInteger primeQ,
-			      BigInteger primeExponentP,
-			      BigInteger primeExponentQ,
-			      BigInteger crtCoefficient)
+                              BigInteger publicExponent,
+                              BigInteger privateExponent,
+                              BigInteger primeP,
+                              BigInteger primeQ,
+                              BigInteger primeExponentP,
+                              BigInteger primeExponentQ,
+                              BigInteger crtCoefficient)
   {
     super( modulus, privateExponent);
     this.publicExponent = publicExponent;

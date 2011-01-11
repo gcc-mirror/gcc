@@ -126,11 +126,11 @@ public class DefaultDesktopManager implements DesktopManager, Serializable
     Container c = frame.getParent();
     if (c != null)
       {
-	if (frame.isIcon())
-	  c.remove(frame.getDesktopIcon());
-	else
-	  c.remove(frame);
-	c.repaint();
+        if (frame.isIcon())
+          c.remove(frame.getDesktopIcon());
+        else
+          c.remove(frame);
+        c.repaint();
       }
   }
 
@@ -151,25 +151,25 @@ public class DefaultDesktopManager implements DesktopManager, Serializable
     Container p = frame.getParent();
     if (p != null)
       {
-	Rectangle pBounds = p.getBounds();
-	Insets insets = p.getInsets();
-	pBounds.width -= insets.left + insets.right;
-	pBounds.height -= insets.top + insets.bottom;
+        Rectangle pBounds = p.getBounds();
+        Insets insets = p.getInsets();
+        pBounds.width -= insets.left + insets.right;
+        pBounds.height -= insets.top + insets.bottom;
 
-	setBoundsForFrame(frame, 0, 0, pBounds.width, pBounds.height);
+        setBoundsForFrame(frame, 0, 0, pBounds.width, pBounds.height);
       }
     if (p instanceof JDesktopPane)
       ((JDesktopPane) p).setSelectedFrame(frame);
     else
       {
-	try
-	  {
-	    frame.setSelected(true);
-	  }
-	catch (PropertyVetoException e)
-	  {
-	    // Do nothing.
-	  }
+        try
+          {
+            frame.setSelected(true);
+          }
+        catch (PropertyVetoException e)
+          {
+            // Do nothing.
+          }
       }
   }
 
@@ -320,7 +320,7 @@ public class DefaultDesktopManager implements DesktopManager, Serializable
           {
             p.setSelectedFrame(frame);
           }
-        
+
       }
     frame.toFront();
   }
@@ -414,7 +414,7 @@ public class DefaultDesktopManager implements DesktopManager, Serializable
                           dragCache.width, dragCache.height);
         pane = null;
         dragCache = null;
-        component.repaint();        
+        component.repaint();
       }
   }
 
@@ -477,7 +477,7 @@ public class DefaultDesktopManager implements DesktopManager, Serializable
                           dragCache.width, dragCache.height);
         pane = null;
         dragCache = null;
-        component.repaint();        
+        component.repaint();
       }
   }
 
@@ -527,9 +527,9 @@ public class DefaultDesktopManager implements DesktopManager, Serializable
   protected Rectangle getBoundsForIconOf(JInternalFrame frame)
   {
     // IconRects has no order to it.
-    // The icon _must_ be placed in the first free slot (working from 
+    // The icon _must_ be placed in the first free slot (working from
     // the bottom left corner)
-    // The icon also must not be placed where another icon is placed 
+    // The icon also must not be placed where another icon is placed
     // (regardless whether that frame is an icon currently or not)
     JDesktopPane desktopPane = frame.getDesktopPane();
 
@@ -547,7 +547,7 @@ public class DefaultDesktopManager implements DesktopManager, Serializable
       if (frames[i] instanceof JDesktopIcon
           || frames[i] instanceof JInternalFrame
           && ((JInternalFrame) frames[i]).getWasIcon() && frames[i] != frame)
-	count++;
+        count++;
     iconRects = new Rectangle[count];
     for (int i = 0, j = 0; i < frames.length; i++)
       if (frames[i] instanceof JDesktopIcon)

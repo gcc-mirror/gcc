@@ -40,12 +40,12 @@ package java.util.zip;
 /**
  * This class is general purpose class for writing data to a buffer.
  *
- * It allows you to write bits as well as bytes 
+ * It allows you to write bits as well as bytes
  *
  * Based on DeflaterPending.java
  *
  * @author Jochen Hoenicke
- * @date Jan 5, 2000 
+ * @date Jan 5, 2000
  */
 
 class PendingBuffer
@@ -71,14 +71,14 @@ class PendingBuffer
     start = end = bitCount = 0;
   }
 
-  public final void writeByte(int b) 
+  public final void writeByte(int b)
   {
     if (DeflaterConstants.DEBUGGING && start != 0)
       throw new IllegalStateException();
     buf[end++] = (byte) b;
   }
 
-  public final void writeShort(int s) 
+  public final void writeShort(int s)
   {
     if (DeflaterConstants.DEBUGGING && start != 0)
       throw new IllegalStateException();
@@ -86,7 +86,7 @@ class PendingBuffer
     buf[end++] = (byte) (s >> 8);
   }
 
-  public final void writeInt(int s) 
+  public final void writeInt(int s)
   {
     if (DeflaterConstants.DEBUGGING && start != 0)
       throw new IllegalStateException();
@@ -96,7 +96,7 @@ class PendingBuffer
     buf[end++] = (byte) (s >> 24);
   }
 
-  public final void writeBlock(byte[] block, int offset, int len) 
+  public final void writeBlock(byte[] block, int offset, int len)
   {
     if (DeflaterConstants.DEBUGGING && start != 0)
       throw new IllegalStateException();
@@ -113,9 +113,9 @@ class PendingBuffer
       throw new IllegalStateException();
     if (bitCount > 0)
       {
-	buf[end++] = (byte) bits;
-	if (bitCount > 8)
-	  buf[end++] = (byte) (bits >>> 8);
+        buf[end++] = (byte) bits;
+        if (bitCount > 8)
+          buf[end++] = (byte) (bits >>> 8);
       }
     bits = 0;
     bitCount = 0;
@@ -161,28 +161,28 @@ class PendingBuffer
   public final int flush(byte[] output, int offset, int length) {
     if (bitCount >= 8)
       {
-	buf[end++] = (byte) bits;
-	bits >>>= 8;
-	bitCount -= 8;
+        buf[end++] = (byte) bits;
+        bits >>>= 8;
+        bitCount -= 8;
       }
     if (length > end - start)
       {
-	length = end - start;
-	System.arraycopy(buf, start, output, offset, length);
-	start = 0;
-	end = 0;
+        length = end - start;
+        System.arraycopy(buf, start, output, offset, length);
+        start = 0;
+        end = 0;
       }
     else
       {
-	System.arraycopy(buf, start, output, offset, length);
-	start += length;
+        System.arraycopy(buf, start, output, offset, length);
+        start += length;
       }
     return length;
   }
 
   /**
    * Flushes the pending buffer and returns that data in a new array
-   * 
+   *
    * @return the output stream
    */
 
@@ -197,4 +197,3 @@ class PendingBuffer
 
 
 }
-

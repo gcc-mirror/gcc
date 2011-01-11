@@ -709,7 +709,7 @@ public final class Math
    * zero, then the original value is returned.  The returned result is
    * within 1 ulp of the exact result.  For a finite value, <code>x</code>,
    * the cube root of <code>-x</code> is equal to the negation of the cube root
-   * of <code>x</code>. 
+   * of <code>x</code>.
    * </p>
    * <p>
    * For a square root, use <code>sqrt</code>.  For other roots, use
@@ -730,7 +730,7 @@ public final class Math
   /**
    * <p>
    * Returns the hyperbolic cosine of the given value.  For a value,
-   * <code>x</code>, the hyperbolic cosine is <code>(e<sup>x</sup> + 
+   * <code>x</code>, the hyperbolic cosine is <code>(e<sup>x</sup> +
    * e<sup>-x</sup>)/2</code>
    * with <code>e</code> being <a href="#E">Euler's number</a>.  The returned
    * result is within 2.5 ulps of the exact result.
@@ -740,7 +740,7 @@ public final class Math
    * returned.  For either infinity, positive infinity is returned.
    * The hyperbolic cosine of zero is 1.0.
    * </p>
-   * 
+   *
    * @param a the numeric argument
    * @return the hyperbolic cosine of <code>a</code>.
    * @since 1.5
@@ -758,12 +758,12 @@ public final class Math
    * 1 ulp of the exact result, and results are semi-monotonic.  For finite
    * inputs, the returned value is greater than or equal to -1.0.  Once
    * a result enters within half a ulp of this limit, the limit is returned.
-   * </p>   
+   * </p>
    * <p>
    * For <code>NaN</code>, positive infinity and zero, the original value
    * is returned.  Negative infinity returns a result of -1.0 (the limit).
    * </p>
-   * 
+   *
    * @param a the numeric argument
    * @return <code>e<sup>a</sup> - 1</code>
    * @since 1.5
@@ -785,7 +785,7 @@ public final class Math
    * is positive infinity.  Otherwise, if either argument is <code>NaN</code>,
    * then <code>NaN</code> is returned.
    * </p>
-   * 
+   *
    * @param a the first parameter.
    * @param b the second parameter.
    * @return the hypotenuse matching the supplied parameters.
@@ -855,7 +855,7 @@ public final class Math
    * <li>If <code>a</code> is positive or negative zero, the result is the
    * same.</li>
    * </ul>
-   * 
+   *
    * @param a the numeric argument.
    * @return the sign of the argument.
    * @since 1.5.
@@ -882,7 +882,7 @@ public final class Math
    * <li>If <code>a</code> is positive or negative zero, the result is the
    * same.</li>
    * </ul>
-   * 
+   *
    * @param a the numeric argument.
    * @return the sign of the argument.
    * @since 1.5.
@@ -901,7 +901,7 @@ public final class Math
   /**
    * <p>
    * Returns the hyperbolic sine of the given value.  For a value,
-   * <code>x</code>, the hyperbolic sine is <code>(e<sup>x</sup> - 
+   * <code>x</code>, the hyperbolic sine is <code>(e<sup>x</sup> -
    * e<sup>-x</sup>)/2</code>
    * with <code>e</code> being <a href="#E">Euler's number</a>.  The returned
    * result is within 2.5 ulps of the exact result.
@@ -910,7 +910,7 @@ public final class Math
    * If the supplied value is <code>NaN</code>, an infinity or a zero, then the
    * original value is returned.
    * </p>
-   * 
+   *
    * @param a the numeric argument
    * @return the hyperbolic sine of <code>a</code>.
    * @since 1.5
@@ -923,7 +923,7 @@ public final class Math
   /**
    * <p>
    * Returns the hyperbolic tangent of the given value.  For a value,
-   * <code>x</code>, the hyperbolic tangent is <code>(e<sup>x</sup> - 
+   * <code>x</code>, the hyperbolic tangent is <code>(e<sup>x</sup> -
    * e<sup>-x</sup>)/(e<sup>x</sup> + e<sup>-x</sup>)</code>
    * (i.e. <code>sinh(a)/cosh(a)</code>)
    * with <code>e</code> being <a href="#E">Euler's number</a>.  The returned
@@ -938,7 +938,7 @@ public final class Math
    * value is returned.  Positive infinity returns +1.0 and negative infinity
    * returns -1.0.
    * </p>
-   * 
+   *
    * @param a the numeric argument
    * @return the hyperbolic tangent of <code>a</code>.
    * @since 1.5

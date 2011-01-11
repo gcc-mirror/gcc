@@ -117,7 +117,7 @@ public class JToolTip extends JComponent implements Accessible
    * Returns the text displayed by the tool tip.
    *
    * @return The text (possibly <code>null</code>).
-   * 
+   *
    * @see #setTipText(String)
    */
   public String getTipText()
@@ -142,7 +142,7 @@ public class JToolTip extends JComponent implements Accessible
    * Returns the component that the tool tip is associated with.
    *
    * @return The component (possibly <code>null</code>).
-   * 
+   *
    * @see #setComponent(JComponent)
    */
   public JComponent getComponent()
@@ -173,7 +173,7 @@ public class JToolTip extends JComponent implements Accessible
 
   /**
    * Returns a string describing the attributes for the <code>JToolTip</code>
-   * component, for use in debugging.  The return value is guaranteed to be 
+   * component, for use in debugging.  The return value is guaranteed to be
    * non-<code>null</code>, but the format of the string may vary between
    * implementations.
    *
@@ -189,12 +189,12 @@ public class JToolTip extends JComponent implements Accessible
   }
 
   /**
-   * Sets the component that the tool tip is associated with and sends a 
-   * {@link PropertyChangeEvent} (with the property name 'component') to all 
+   * Sets the component that the tool tip is associated with and sends a
+   * {@link PropertyChangeEvent} (with the property name 'component') to all
    * registered listeners.
    *
    * @param c  the component (<code>null</code> permitted).
-   * 
+   *
    * @see #getComponent()
    */
   public void setComponent(JComponent c)
@@ -205,12 +205,12 @@ public class JToolTip extends JComponent implements Accessible
   }
 
   /**
-   * Sets the text to be displayed by the tool tip and sends a 
-   * {@link PropertyChangeEvent} (with the property name 'tiptext') to all 
+   * Sets the text to be displayed by the tool tip and sends a
+   * {@link PropertyChangeEvent} (with the property name 'tiptext') to all
    * registered listeners.
    *
    * @param tipText the text (<code>null</code> permitted).
-   * 
+   *
    * @see #getTipText()
    */
   public void setTipText(String tipText)

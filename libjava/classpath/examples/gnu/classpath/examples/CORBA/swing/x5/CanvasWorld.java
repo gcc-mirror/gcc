@@ -56,8 +56,8 @@ import javax.swing.JScrollPane;
  * The purpose of this simple example is to check if the mouse events are
  * correctly received in a scrollable canvas and also if the canvas are
  * correctly repainted. The similar canvas are used in various games and
- * interactive demonstrations. 
- * 
+ * interactive demonstrations.
+ *
  * The user can set one of the three possible figures with the different
  * mouse buttons. The figure must be set where the user have clicked the
  * mouse.
@@ -82,17 +82,17 @@ public class CanvasWorld
    * Black cross, set by the right mouse button.
    */
   public static final int BLACK = 1;
-  
+
   /**
    * Blue and smaller oval, set by the middle mouse button.
    */
   public static final int HINT = 2;
-  
+
   /**
    * The message string is displayed at the top of the window.
    */
   String message = "Click left, right or middle button in to set the figure";
-  
+
   /**
    * The additinal message, related to the mouse events.
    */
@@ -117,7 +117,7 @@ public class CanvasWorld
    * The collection of the black crosses.
    */
   ArrayList blacks = new ArrayList();
-  
+
   /**
    * The collection of the smaller blue crosses.
    */
@@ -147,12 +147,12 @@ public class CanvasWorld
     g.fillRect(0, 0, w, h);
 
     drawGrid(w, h, g);
-    
+
     g.setColor(Color.black);
-    
+
     g.drawString(message, W, W);
     g.drawString(mouse, W, 2*W);
-    
+
     drawFigures(g);
   }
 
@@ -177,7 +177,7 @@ public class CanvasWorld
     g.setColor(Color.lightGray);
 
     int xs = 2*W+W/2;
-    
+
     // Draw vertical lines:
     for (int x = 0; x < w; x += W)
       {
@@ -189,7 +189,7 @@ public class CanvasWorld
       {
         g.drawLine(0, y, w, y);
       }
-      
+
     g.setColor(Color.gray);
   }
 
@@ -200,7 +200,7 @@ public class CanvasWorld
 
     g.setColor(Color.black);
     drawDots(blacks, g, BLACK);
-    
+
     g.setColor(Color.blue);
     drawDots(hints, g, HINT);
   }
@@ -273,7 +273,7 @@ public class CanvasWorld
   public void mouseEntered(MouseEvent m)
   {
     mouse = "Mouse entered.";
-    repaint();  
+    repaint();
   }
 
   public void mousePressed(MouseEvent m)
@@ -284,7 +284,7 @@ public class CanvasWorld
 
   public void mouseReleased(MouseEvent m)
   {
-    mouse = "Mouse released at "+m.getX()+","+m.getY();    
+    mouse = "Mouse released at "+m.getX()+","+m.getY();
     repaint();
   }
 
@@ -293,7 +293,7 @@ public class CanvasWorld
     mouse = "Mouse exited";
     repaint();
   }
-  
+
   public static void main(String[] args)
   {
     JFrame frame = new JFrame();

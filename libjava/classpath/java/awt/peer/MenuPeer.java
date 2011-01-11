@@ -46,4 +46,3 @@ public interface MenuPeer extends MenuItemPeer
   void addSeparator ();
   void delItem (int index);
 }
-

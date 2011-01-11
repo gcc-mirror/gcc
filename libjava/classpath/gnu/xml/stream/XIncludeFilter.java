@@ -1,4 +1,4 @@
-/* XIncludeFilter.java -- 
+/* XIncludeFilter.java --
    Copyright (C) 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -107,7 +107,7 @@ class XIncludeFilter
   HashSet seen = new HashSet();
   boolean backtracking;
   boolean lookahead;
-  
+
   Reader includedText;
   char[] buf;
   int len = -1;
@@ -677,7 +677,7 @@ class XIncludeFilter
     String base = (String) getParent().getProperty("gnu.xml.stream.baseURI");
     return (base == null) ? systemId : base;
   }
-  
+
   boolean includeResource(String href, String parse, String xpointer,
                           String encoding, String accept,
                           String acceptLanguage)
@@ -700,7 +700,7 @@ class XIncludeFilter
             walker = null;
             current = null;
             backtracking = false;
-            
+
             URLConnection connection = getURLConnection(href, accept,
                                                         acceptLanguage);
             InputStream in = connection.getInputStream();
@@ -927,5 +927,5 @@ class XIncludeFilter
       }
     return null;
   }
-  
+
 }

@@ -1,4 +1,4 @@
-/* UnionSimpleType.java -- 
+/* UnionSimpleType.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -57,7 +57,7 @@ public class UnionSimpleType
    * The member types in this union.
    */
   public final List memberTypes;
-  
+
   public UnionSimpleType(QName name, Set facets,
                          int fundamentalFacets, SimpleType baseType,
                          Annotation annotation, List memberTypes)
@@ -78,6 +78,5 @@ public class UnionSimpleType
       }
     throw new DatatypeException("invalid union type value");
   }
-  
-}
 
+}

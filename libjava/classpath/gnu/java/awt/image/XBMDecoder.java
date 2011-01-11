@@ -55,8 +55,8 @@ public class XBMDecoder extends ImageDecoder
   static final ColorModel cm = ColorModel.getRGBdefault ();
   static final int black = 0xff000000;
   static final int transparent = 0x00000000;
-  static final int masktable[] = { 0x01, 0x02, 0x04, 0x08, 
-				   0x10, 0x20, 0x40, 0x80 };
+  static final int masktable[] = { 0x01, 0x02, 0x04, 0x08,
+                                   0x10, 0x20, 0x40, 0x80 };
 
   public XBMDecoder (String filename)
   {
@@ -75,27 +75,27 @@ public class XBMDecoder extends ImageDecoder
 
     for (int i = 0; i < 2; i++)
       {
-	String line = reader.readLine ();
-	StringTokenizer st = new StringTokenizer (line);
-	
-	st.nextToken ();		// #define
-	st.nextToken ();		// name_[width|height]
-	if (i == 0)
-	  width = Integer.parseInt (st.nextToken (), 10);
-	else
-	  height = Integer.parseInt (st.nextToken (), 10);
+        String line = reader.readLine ();
+        StringTokenizer st = new StringTokenizer (line);
+
+        st.nextToken ();                // #define
+        st.nextToken ();                // name_[width|height]
+        if (i == 0)
+          width = Integer.parseInt (st.nextToken (), 10);
+        else
+          height = Integer.parseInt (st.nextToken (), 10);
       }
 
     for (int i = 0; i < v.size (); i++)
       {
-	ImageConsumer ic = (ImageConsumer) v.elementAt (i);
+        ImageConsumer ic = (ImageConsumer) v.elementAt (i);
 
-	ic.setDimensions (width, height);
-	ic.setColorModel (cm);
-	ic.setHints (ImageConsumer.COMPLETESCANLINES
-		     | ImageConsumer.SINGLEFRAME
-		     | ImageConsumer.SINGLEPASS
-		     | ImageConsumer.TOPDOWNLEFTRIGHT);
+        ic.setDimensions (width, height);
+        ic.setColorModel (cm);
+        ic.setHints (ImageConsumer.COMPLETESCANLINES
+                     | ImageConsumer.SINGLEFRAME
+                     | ImageConsumer.SINGLEPASS
+                     | ImageConsumer.TOPDOWNLEFTRIGHT);
       }
 
     /* skip to the byte array */
@@ -104,22 +104,22 @@ public class XBMDecoder extends ImageDecoder
     /* loop through each scanline */
     for (int line = 0; line < height; line++)
       {
-	int scanline[] = getScanline (reader, width);
+        int scanline[] = getScanline (reader, width);
 
-	for (int i = 0; i < v.size (); i++)
-	  {
-	    ImageConsumer ic = (ImageConsumer) v.elementAt (i);
-	    ic.setPixels (0, 0 + line, width, 1, cm, scanline, 0, width);
-	  }
+        for (int i = 0; i < v.size (); i++)
+          {
+            ImageConsumer ic = (ImageConsumer) v.elementAt (i);
+            ic.setPixels (0, 0 + line, width, 1, cm, scanline, 0, width);
+          }
       }
 
     /* tell each ImageConsumer that we're finished */
     for (int i = 0; i < v.size (); i++)
       {
-	ImageConsumer ic = (ImageConsumer) v.elementAt (i);
-	ic.imageComplete (ImageConsumer.STATICIMAGEDONE);
+        ImageConsumer ic = (ImageConsumer) v.elementAt (i);
+        ic.imageComplete (ImageConsumer.STATICIMAGEDONE);
       }
-  }    
+  }
 
   public static int[] getScanline (Reader in, int len) throws IOException
   {
@@ -129,25 +129,25 @@ public class XBMDecoder extends ImageDecoder
 
     while (x < len)
       {
-	int ch = in.read ();
-	if (ch == '0')
-	  {
-	    in.read ();		// 'x'
-	    
-	    byteStr[0] = (char) in.read ();
-	    byteStr[1] = (char) in.read ();
+        int ch = in.read ();
+        if (ch == '0')
+          {
+            in.read ();         // 'x'
 
-	    int byteVal = Integer.parseInt (new String (byteStr), 16);
+            byteStr[0] = (char) in.read ();
+            byteStr[1] = (char) in.read ();
 
-	    for (int i = 0; i < 8; i++, x++)
-	      {
-		if (x == len)	// condition occurs if bitmap is padded
-		  return scanline;
+            int byteVal = Integer.parseInt (new String (byteStr), 16);
 
-		scanline[x] = ((byteVal & masktable[i]) != 0) ? 
-		               black : transparent;
-	      }
-	  }	
+            for (int i = 0; i < 8; i++, x++)
+              {
+                if (x == len)   // condition occurs if bitmap is padded
+                  return scanline;
+
+                scanline[x] = ((byteVal & masktable[i]) != 0) ?
+                               black : transparent;
+              }
+          }
       }
 
     return scanline;

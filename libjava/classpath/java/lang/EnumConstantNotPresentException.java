@@ -69,7 +69,7 @@ public class EnumConstantNotPresentException extends RuntimeException
    * @param name the name of the missing enum constant
    */
   public EnumConstantNotPresentException(Class<? extends Enum> theEnum,
-					 String name)
+                                         String name)
   {
     super("enum " + theEnum + " is missing the constant " + name);
     enumType = theEnum;

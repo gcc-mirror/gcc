@@ -99,7 +99,7 @@ public class CSPRNG
    * <li>An {@link Integer}, indicating the number of bytes to read.</li>
    * <li>A {@link String}, indicating the path to the file.</li>
    * </ol>
-   * 
+   *
    * @see gnu.java.security.util.SimpleList
    */
   public static final String FILE_SOURCES = "gnu.crypto.prng.pool.files";
@@ -268,16 +268,16 @@ public class CSPRNG
    * An example of valid properties would be:
    * <pre>
    *  gnu.crypto.csprng.blocking=true
-   * 
+   *
    *  gnu.crypto.csprng.file.1=75.0;0;256;/dev/random
    *  gnu.crypto.csprng.file.2=10.0;0;100;/home/user/file
-   * 
+   *
    *  gnu.crypto.csprng.url.1=5.0;0;256;http://www.random.org/cgi-bin/randbyte?nbytes=256
    *  gnu.crypto.csprng.url.2=0;256;256;http://slashdot.org/
-   * 
+   *
    *  gnu.crypto.csprng.program.1=0.5;0;10;last -n 50
    *  gnu.crypto.csprng.program.2=0.5;0;10;tcpdump -c 5
-   * 
+   *
    *  gnu.crypto.csprng.other.1=foo.bar.MyEntropySource
    *  gnu.crypto.csprng.other.2=com.company.OtherEntropySource
    * </pre>
@@ -592,7 +592,7 @@ public class CSPRNG
    * Add an array of bytes into the randomness pool. Note that this method will
    * <i>not</i> increment the pool's quality counter (this can only be done via
    * a source provided to the setup method).
-   * 
+   *
    * @param buf The byte array.
    * @param off The offset from whence to start reading bytes.
    * @param len The number of bytes to add.
@@ -624,7 +624,7 @@ public class CSPRNG
    * Add a single random byte to the randomness pool. Note that this method will
    * <i>not</i> increment the pool's quality counter (this can only be done via
    * a source provided to the setup method).
-   * 
+   *
    * @param b The byte to add.
    */
   public synchronized void addRandomByte(byte b)

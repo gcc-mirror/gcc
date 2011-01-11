@@ -158,10 +158,10 @@ public abstract class IIOParam
   {
     if (controller == null)
       {
-	if (defaultController == null || no_controller)
-	  return false;
-	else
-	  return defaultController.activate (this);
+        if (defaultController == null || no_controller)
+          return false;
+        else
+          return defaultController.activate (this);
       }
     else
       return controller.activate(this);
@@ -173,7 +173,7 @@ public abstract class IIOParam
    * set to null.
    *
    * @return the currently used controller or null
-   */  
+   */
   public IIOParamController getController()
   {
     return controller == null ?
@@ -254,7 +254,7 @@ public abstract class IIOParam
   {
     return sourceXSubsampling;
   }
-  
+
   /**
    * Retrieve the number of pixel rows to advance before taking a
    * pixel sample.
@@ -313,13 +313,13 @@ public abstract class IIOParam
   {
     if (controller == defaultController)
       {
-	this.controller = null;
-	no_controller = false;
+        this.controller = null;
+        no_controller = false;
       }
     else
       {
-	no_controller = (controller == null);
-	this.controller = controller;
+        no_controller = (controller == null);
+        this.controller = controller;
       }
   }
 
@@ -401,24 +401,24 @@ public abstract class IIOParam
   public void setSourceRegion(Rectangle sourceRegion)
   {
     if (sourceRegion != null
-	&& (sourceRegion.x < 0
-	    || sourceRegion.y < 0
-	    || sourceRegion.width <= 0
-	    || sourceRegion.height <= 0))
+        && (sourceRegion.x < 0
+            || sourceRegion.y < 0
+            || sourceRegion.width <= 0
+            || sourceRegion.height <= 0))
       throw new IllegalArgumentException("illegal source region");
 
     if (sourceRegion != null)
       {
-	int num_rows =
-	  (sourceRegion.height - subsamplingYOffset + sourceYSubsampling - 1)
-	  / sourceYSubsampling;
+        int num_rows =
+          (sourceRegion.height - subsamplingYOffset + sourceYSubsampling - 1)
+          / sourceYSubsampling;
 
-	int num_columns =
-	  (sourceRegion.width - subsamplingXOffset + sourceXSubsampling - 1)
-	  / sourceXSubsampling;
+        int num_columns =
+          (sourceRegion.width - subsamplingXOffset + sourceXSubsampling - 1)
+          / sourceXSubsampling;
 
-	if (num_rows <= 0 || num_columns <= 0)
-	  throw new IllegalStateException("zero pixels in source region");
+        if (num_rows <= 0 || num_columns <= 0)
+          throw new IllegalStateException("zero pixels in source region");
       }
 
     this.sourceRegion = sourceRegion;
@@ -462,25 +462,25 @@ public abstract class IIOParam
    * zero pixel samples
    */
   public void setSourceSubsampling(int sourceXSubsampling, int sourceYSubsampling,
-				   int subsamplingXOffset, int subsamplingYOffset)
+                                   int subsamplingXOffset, int subsamplingYOffset)
   {
     if (subsamplingXOffset < 0 || subsamplingYOffset < 0)
       throw new IllegalArgumentException("subsampling offset < 0");
 
     if (sourceRegion != null)
       {
-	int num_rows =
-	  (sourceRegion.height - subsamplingYOffset + sourceYSubsampling - 1)
-	  / sourceYSubsampling;
+        int num_rows =
+          (sourceRegion.height - subsamplingYOffset + sourceYSubsampling - 1)
+          / sourceYSubsampling;
 
-	int num_columns =
-	  (sourceRegion.width - subsamplingXOffset + sourceXSubsampling - 1)
-	  / sourceXSubsampling;
+        int num_columns =
+          (sourceRegion.width - subsamplingXOffset + sourceXSubsampling - 1)
+          / sourceXSubsampling;
 
-	if (num_rows <= 0 || num_columns <= 0)
-	  throw new IllegalStateException("subsampling parameters would"
-					  + " produce zero pixel samples"
-					  + " in source region");
+        if (num_rows <= 0 || num_columns <= 0)
+          throw new IllegalStateException("subsampling parameters would"
+                                          + " produce zero pixel samples"
+                                          + " in source region");
       }
 
     this.sourceXSubsampling = sourceXSubsampling;

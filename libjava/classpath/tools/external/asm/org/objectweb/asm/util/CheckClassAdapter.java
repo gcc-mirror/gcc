@@ -58,7 +58,7 @@ import org.objectweb.asm.tree.analysis.Frame;
  * <tt>visitField(ACC_PUBLIC, "i", "I", null)</tt> <tt>visitField(ACC_PUBLIC,
  * "i", "D", null)</tt>
  * will <i>not</i> be detected by this class adapter.
- * 
+ *
  * @author Eric Bruneton
  */
 public class CheckClassAdapter extends ClassAdapter {
@@ -86,9 +86,9 @@ public class CheckClassAdapter extends ClassAdapter {
     /**
      * Checks a given class. <p> Usage: CheckClassAdapter &lt;fully qualified
      * class name or class file name&gt;
-     * 
+     *
      * @param args the command line arguments.
-     * 
+     *
      * @throws Exception if the class cannot be found, or if an IO exception
      *         occurs.
      */
@@ -111,8 +111,8 @@ public class CheckClassAdapter extends ClassAdapter {
 
     /**
      * Checks a given class
-     * 
-     * @param cr a <code>ClassReader</code> that contains bytecode for the analysis. 
+     *
+     * @param cr a <code>ClassReader</code> that contains bytecode for the analysis.
      * @param dump true if bytecode should be printed out not only when errors are found.
      * @param pw write where results going to be printed
      */
@@ -143,7 +143,7 @@ public class CheckClassAdapter extends ClassAdapter {
                 pw.println(method.name + method.desc);
                 for (int j = 0; j < method.instructions.size(); ++j) {
                     ((AbstractInsnNode) method.instructions.get(j)).accept(mv);
-                    
+
                     StringBuffer s = new StringBuffer();
                     Frame f = frames[j];
                     if (f == null) {
@@ -184,7 +184,7 @@ public class CheckClassAdapter extends ClassAdapter {
 
     /**
      * Constructs a new {@link CheckClassAdapter}.
-     * 
+     *
      * @param cv the class visitor to which this adapter must delegate calls.
      */
     public CheckClassAdapter(final ClassVisitor cv) {
@@ -390,7 +390,7 @@ public class CheckClassAdapter extends ClassAdapter {
      * Checks that the given access flags do not contain invalid flags. This
      * method also checks that mutually incompatible flags are not set
      * simultaneously.
-     * 
+     *
      * @param access the access flags to be checked
      * @param possibleAccess the valid access flags.
      */

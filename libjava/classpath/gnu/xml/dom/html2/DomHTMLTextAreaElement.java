@@ -1,4 +1,4 @@
-/* DomHTMLTextAreaElement.java -- 
+/* DomHTMLTextAreaElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -73,7 +73,7 @@ public class DomHTMLTextAreaElement
   {
     return (HTMLFormElement) getParentElement("form");
   }
-  
+
   public String getAccessKey()
   {
     return getHTMLAttribute("accesskey");
@@ -83,7 +83,7 @@ public class DomHTMLTextAreaElement
   {
     setHTMLAttribute("accesskey", accessKey);
   }
-  
+
   public int getCols()
   {
     return getIntHTMLAttribute("cols");
@@ -93,7 +93,7 @@ public class DomHTMLTextAreaElement
   {
     setIntHTMLAttribute("cols", cols);
   }
-  
+
   public boolean getDisabled()
   {
     return getBooleanHTMLAttribute("disabled");
@@ -103,7 +103,7 @@ public class DomHTMLTextAreaElement
   {
     setBooleanHTMLAttribute("disabled", disabled);
   }
-  
+
   public String getName()
   {
     return getHTMLAttribute("name");
@@ -113,7 +113,7 @@ public class DomHTMLTextAreaElement
   {
     setHTMLAttribute("name", name);
   }
-  
+
   public boolean getReadOnly()
   {
     return getBooleanHTMLAttribute("readOnly");
@@ -123,7 +123,7 @@ public class DomHTMLTextAreaElement
   {
     setBooleanHTMLAttribute("readonly", readOnly);
   }
-  
+
   public int getRows()
   {
     return getIntHTMLAttribute("rows");
@@ -133,7 +133,7 @@ public class DomHTMLTextAreaElement
   {
     setIntHTMLAttribute("rows", rows);
   }
-  
+
   public int getTabIndex()
   {
     return getIntHTMLAttribute("tabindex");
@@ -143,7 +143,7 @@ public class DomHTMLTextAreaElement
   {
     setIntHTMLAttribute("tabindex", tabIndex);
   }
-  
+
   public String getType()
   {
     return "textarea";
@@ -172,11 +172,10 @@ public class DomHTMLTextAreaElement
   {
     dispatchUIEvent("focus");
   }
-  
+
   public void select()
   {
     dispatchUIEvent("select");
   }
-  
-}
 
+}

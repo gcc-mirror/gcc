@@ -1,4 +1,4 @@
-/* GnuRSAKey.java -- 
+/* GnuRSAKey.java --
    Copyright 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -72,7 +72,7 @@ public abstract class GnuRSAKey
 
   /**
    * Trivial protected constructor.
-   * 
+   *
    * @param defaultFormat the identifier of the encoding format to use by
    *          default when externalizing the key.
    * @param n the public modulus <code>n</code>.
@@ -111,7 +111,7 @@ public abstract class GnuRSAKey
 
   /**
    * Returns the modulus <code>n</code>.
-   * 
+   *
    * @return the modulus <code>n</code>.
    */
   public BigInteger getN()
@@ -121,7 +121,7 @@ public abstract class GnuRSAKey
 
   /**
    * Returns the public exponent <code>e</code>.
-   * 
+   *
    * @return the public exponent <code>e</code>.
    */
   public BigInteger getPublicExponent()
@@ -131,7 +131,7 @@ public abstract class GnuRSAKey
 
   /**
    * Same as {@link #getPublicExponent()}.
-   * 
+   *
    * @return the public exponent <code>e</code>.
    */
   public BigInteger getE()
@@ -142,7 +142,7 @@ public abstract class GnuRSAKey
   /**
    * Returns <code>true</code> if the designated object is an instance of
    * {@link RSAKey} and has the same RSA parameter values as this one.
-   * 
+   *
    * @param obj the other non-null RSA key to compare to.
    * @return <code>true</code> if the designated object is of the same type
    *         and value as this one.

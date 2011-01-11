@@ -1,4 +1,4 @@
-/* Spring.java -- 
+/* Spring.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -156,12 +156,12 @@ public abstract class Spring
    */
   public abstract void setValue(int value);
 
-  private int getShrinkRange() 
+  private int getShrinkRange()
   {
     return (getPreferredValue() - getMinimumValue());
   }
 
-  private int getExpandRange() 
+  private int getExpandRange()
   {
     return (getMaximumValue() - getPreferredValue());
   }
@@ -176,7 +176,7 @@ public abstract class Spring
     return (double)(v - p) / r;
   }
 
-  void setStrain(double strain) 
+  void setStrain(double strain)
   {
     int r = (strain < 0) ? getShrinkRange() : getExpandRange();
     int v = (getPreferredValue() + (int)(strain * r));
@@ -411,7 +411,7 @@ public abstract class Spring
           return pref;
       return value;
     }
-	
+
     /**
      * Sets the current value.
      *
@@ -536,7 +536,7 @@ public abstract class Spring
       int remainder = val - s1.getValue();
       s2.setValue(remainder);
     }
-	
+
   }
 
 
@@ -735,7 +735,7 @@ public abstract class Spring
         s1.setValue(Math.min(val, p1));
         s2.setValue(val);
       }
-      else 
+      else
       {
         s1.setValue(val);
         s2.setValue(Math.min(val, p2));

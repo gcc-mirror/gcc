@@ -1,4 +1,4 @@
-/* IAuthInfoProvider.java -- 
+/* IAuthInfoProvider.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -50,7 +50,7 @@ public interface IAuthInfoProvider
   /**
    * Activates (initialises) this provider instance. SHOULD be the first method
    * invoked on the provider.
-   * 
+   *
    * @param context a collection of name-value bindings describing the
    *          activation context.
    * @throws AuthenticationException if an exception occurs during the
@@ -62,7 +62,7 @@ public interface IAuthInfoProvider
    * Passivates (releases) this provider instance. SHOULD be the last method
    * invoked on the provider. Once it is done, no other method may be invoked on
    * the same instance before it is <i>activated</i> agains.
-   * 
+   *
    * @throws AuthenticationException if an exception occurs during the
    *           operation.
    */
@@ -70,7 +70,7 @@ public interface IAuthInfoProvider
 
   /**
    * Checks if a user with a designated name is known to this provider.
-   * 
+   *
    * @param userName the name of a user to check.
    * @return <code>true</code> if the user with the designated name is known
    *         to this provider; <code>false</code> otherwise.
@@ -82,7 +82,7 @@ public interface IAuthInfoProvider
   /**
    * Returns a collection of information about a designated user. The contents
    * of the returned map is provider-specific of name-to-value mappings.
-   * 
+   *
    * @param userID a map of name-to-value bindings that fully describe a user.
    * @return a collection of information about the designated user.
    * @throws AuthenticationException if an exception occurs during the
@@ -92,7 +92,7 @@ public interface IAuthInfoProvider
 
   /**
    * Updates the credentials of a designated user.
-   * 
+   *
    * @param userCredentials a map of name-to-value bindings that fully describe
    *          a user, including per new credentials.
    * @throws AuthenticationException if an exception occurs during the
@@ -105,7 +105,7 @@ public interface IAuthInfoProvider
    * credentials computed in more than one message digest algorithm. This method
    * returns the set of name-to-value bindings describing the mode of the
    * provider.
-   * 
+   *
    * @param mode a unique identifier describing the operational mode.
    * @return a collection of name-to-value bindings describing the designated
    *         mode.

@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package java.util;
 
-/** 
+/**
  * Thrown when a {@link Scanner} instance encounters a mismatch
  * between the input data and the pattern it is trying to match it
  * against.  This could be because the input data represents an
@@ -47,9 +47,9 @@ package java.util;
  *
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
- * @since 1.5 
+ * @since 1.5
  */
-public class InputMismatchException 
+public class InputMismatchException
   extends NoSuchElementException
 {
   /**

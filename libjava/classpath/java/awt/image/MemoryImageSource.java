@@ -77,7 +77,7 @@ public class MemoryImageSource implements ImageProducer
 
   /**
    * Constructs an ImageProducer from memory.
-   * 
+   *
    * @param w  the image width.
    * @param h  the image height.
    * @param cm  the color model.
@@ -85,7 +85,7 @@ public class MemoryImageSource implements ImageProducer
    * @param off  the offset to the first pixel in the array.
    * @param scan  the number of array elements from a pixel on one row to the
    *     corresponding pixel on the next row.
-   * @param props  image properties (<code>null</code> permitted). 
+   * @param props  image properties (<code>null</code> permitted).
    */
   public MemoryImageSource(int w, int h, ColorModel cm, byte[] pix, int off,
                            int scan, Hashtable<?,?> props)
@@ -119,7 +119,7 @@ public class MemoryImageSource implements ImageProducer
 
   /**
    * Constructs an ImageProducer from memory
-   * 
+   *
    * @param w  the image width.
    * @param h  the image height.
    * @param cm  the color model.
@@ -127,7 +127,7 @@ public class MemoryImageSource implements ImageProducer
    * @param off  the offset to the first pixel in the array.
    * @param scan  the number of array elements from a pixel on one row to the
    *     corresponding pixel on the next row.
-   * @param props  image properties (<code>null</code> permitted). 
+   * @param props  image properties (<code>null</code> permitted).
    */
   public MemoryImageSource(int w, int h, ColorModel cm, int[] pix, int off,
                            int scan, Hashtable<?,?> props)
@@ -144,14 +144,14 @@ public class MemoryImageSource implements ImageProducer
 
   /**
    * Constructs an ImageProducer from memory using the default RGB ColorModel.
-   * 
+   *
    * @param w  the image width.
    * @param h  the image height.
    * @param pix  the image data.
    * @param off  the offset to the first pixel in the array.
    * @param scan  the number of array elements from a pixel on one row to the
    *     corresponding pixel on the next row.
-   * @param props  image properties (<code>null</code> permitted). 
+   * @param props  image properties (<code>null</code> permitted).
 
    */
   public MemoryImageSource(int w, int h, int[] pix, int off, int scan,
@@ -162,13 +162,13 @@ public class MemoryImageSource implements ImageProducer
 
   /**
    * Constructs an ImageProducer from memory using the default RGB ColorModel.
-   * 
+   *
    * @param w  the image width.
    * @param h  the image height.
    * @param pix  the image data.
    * @param off  the offset to the first pixel in the array.
    * @param scan  the number of array elements from a pixel on one row to the
-   *     corresponding pixel on the next row. 
+   *     corresponding pixel on the next row.
    */
   public MemoryImageSource(int w, int h, int[] pix, int off, int scan)
   {
@@ -178,7 +178,7 @@ public class MemoryImageSource implements ImageProducer
   /**
    * Used to register an <code>ImageConsumer</code> with this
    * <code>ImageProducer</code>.
-   * 
+   *
    * @param ic  the image consumer.
    */
   public synchronized void addConsumer(ImageConsumer ic)
@@ -192,7 +192,7 @@ public class MemoryImageSource implements ImageProducer
   /**
    * Used to determine if the given <code>ImageConsumer</code> is
    * already registered with this <code>ImageProducer</code>.
-   * 
+   *
    * @param ic  the image consumer.
    */
   public synchronized boolean isConsumer(ImageConsumer ic)
@@ -205,7 +205,7 @@ public class MemoryImageSource implements ImageProducer
   /**
    * Used to remove an <code>ImageConsumer</code> from the list of
    * registered consumers for this <code>ImageProducer</code>.
-   * 
+   *
    * @param ic  the image consumer.
    */
   public synchronized void removeConsumer(ImageConsumer ic)
@@ -227,12 +227,12 @@ public class MemoryImageSource implements ImageProducer
     Vector list = (Vector) consumers.clone();
     for (int i = 0; i < list.size(); i++)
       {
-	ic = (ImageConsumer) list.elementAt(i);
-	sendPicture(ic);
-	if (animated)
-	  ic.imageComplete(ImageConsumer.SINGLEFRAMEDONE);
-	else
-	  ic.imageComplete(ImageConsumer.STATICIMAGEDONE);
+        ic = (ImageConsumer) list.elementAt(i);
+        sendPicture(ic);
+        if (animated)
+          ic.imageComplete(ImageConsumer.SINGLEFRAMEDONE);
+        else
+          ic.imageComplete(ImageConsumer.STATICIMAGEDONE);
       }
   }
 
@@ -240,7 +240,7 @@ public class MemoryImageSource implements ImageProducer
    * Used to register an <code>ImageConsumer</code> with this
    * <code>ImageProducer</code> and then request that this producer
    * resend the image data in the order top-down, left-right.
-   * 
+   *
    * @param ic  the image consumer.
    */
   public void requestTopDownLeftRightResend(ImageConsumer ic)
@@ -278,14 +278,14 @@ public class MemoryImageSource implements ImageProducer
   {
     if (animated == true)
       {
-	ImageConsumer ic;
-	Vector list = (Vector) consumers.clone();
-	for (int i = 0; i < list.size(); i++)
-	  {
-	    ic = (ImageConsumer) list.elementAt(i);
-	    sendPicture(ic);
-	    ic.imageComplete(ImageConsumer.SINGLEFRAME);
-	  }
+        ImageConsumer ic;
+        Vector list = (Vector) consumers.clone();
+        for (int i = 0; i < list.size(); i++)
+          {
+            ic = (ImageConsumer) list.elementAt(i);
+            sendPicture(ic);
+            ic.imageComplete(ImageConsumer.SINGLEFRAME);
+          }
       }
   }
 
@@ -305,7 +305,7 @@ public class MemoryImageSource implements ImageProducer
   /**
    * Send an animation frame to the image consumers containing the specified
    * pixels unless setFullBufferUpdates is set.
-   * 
+   *
    * @param x  the x-coordinate.
    * @param y  the y-coordinate.
    * @param w  the width.
@@ -315,38 +315,38 @@ public class MemoryImageSource implements ImageProducer
   {
     if (animated == true)
       {
-	if (fullbuffers)
-	  newPixels();
-	else
-	  {
-	    ImageConsumer ic;
-	    Vector list = (Vector) consumers.clone();
-	    for (int i = 0; i < list.size(); i++)
-	      {
-		ic = (ImageConsumer) list.elementAt(i);
-		ic.setHints(ImageConsumer.TOPDOWNLEFTRIGHT);
-		if (props != null)
-		  ic.setProperties(props);
-		if (pixeli != null)
-		  {
-		    int[] pixelbuf = new int[w * h];
-		    for (int row = y; row < y + h; row++)
-		      System.arraycopy(pixeli, row * scansize + x + offset,
-		                       pixelbuf, 0, w * h);
-		    ic.setPixels(x, y, w, h, cm, pixelbuf, 0, w);
-		  }
-		else
-		  {
-		    byte[] pixelbuf = new byte[w * h];
-		    for (int row = y; row < y + h; row++)
-		      System.arraycopy(pixelb, row * scansize + x + offset,
-		                       pixelbuf, 0, w * h);
+        if (fullbuffers)
+          newPixels();
+        else
+          {
+            ImageConsumer ic;
+            Vector list = (Vector) consumers.clone();
+            for (int i = 0; i < list.size(); i++)
+              {
+                ic = (ImageConsumer) list.elementAt(i);
+                ic.setHints(ImageConsumer.TOPDOWNLEFTRIGHT);
+                if (props != null)
+                  ic.setProperties(props);
+                if (pixeli != null)
+                  {
+                    int[] pixelbuf = new int[w * h];
+                    for (int row = y; row < y + h; row++)
+                      System.arraycopy(pixeli, row * scansize + x + offset,
+                                       pixelbuf, 0, w * h);
+                    ic.setPixels(x, y, w, h, cm, pixelbuf, 0, w);
+                  }
+                else
+                  {
+                    byte[] pixelbuf = new byte[w * h];
+                    for (int row = y; row < y + h; row++)
+                      System.arraycopy(pixelb, row * scansize + x + offset,
+                                       pixelbuf, 0, w * h);
 
-		    ic.setPixels(x, y, w, h, cm, pixelbuf, 0, w);
-		  }
-		ic.imageComplete(ImageConsumer.SINGLEFRAME);
-	      }
-	  }
+                    ic.setPixels(x, y, w, h, cm, pixelbuf, 0, w);
+                  }
+                ic.imageComplete(ImageConsumer.SINGLEFRAME);
+              }
+          }
       }
   }
 
@@ -356,7 +356,7 @@ public class MemoryImageSource implements ImageProducer
    *
    * If framenotify is set then a notification is sent when the frame
    * is sent otherwise no status is sent.
-   * 
+   *
    * @param x  the x-coordinate.
    * @param y  the y-coordinate.
    * @param w  the width.
@@ -368,38 +368,38 @@ public class MemoryImageSource implements ImageProducer
   {
     if (animated == true)
       {
-	if (fullbuffers)
-	  newPixels();
-	else
-	  {
-	    ImageConsumer ic;
-	    Vector list = (Vector) consumers.clone();
-	    for (int i = 0; i < list.size(); i++)
-	      {
-		ic = (ImageConsumer) list.elementAt(i);
-		ic.setHints(ImageConsumer.TOPDOWNLEFTRIGHT);
-		if (props != null)
-		  ic.setProperties(props);
-		if (pixeli != null)
-		  {
-		    int[] pixelbuf = new int[w * h];
-		    for (int row = y; row < y + h; row++)
-		      System.arraycopy(pixeli, row * scansize + x + offset,
-		                       pixelbuf, 0, w * h);
-		    ic.setPixels(x, y, w, h, cm, pixelbuf, 0, w);
-		  }
-		else
-		  {
-		    byte[] pixelbuf = new byte[w * h];
-		    for (int row = y; row < y + h; row++)
-		      System.arraycopy(pixelb, row * scansize + x + offset,
-		                       pixelbuf, 0, w * h);
-		    ic.setPixels(x, y, w, h, cm, pixelbuf, 0, w);
-		  }
-		if (framenotify == true)
-		  ic.imageComplete(ImageConsumer.SINGLEFRAME);
-	      }
-	  }
+        if (fullbuffers)
+          newPixels();
+        else
+          {
+            ImageConsumer ic;
+            Vector list = (Vector) consumers.clone();
+            for (int i = 0; i < list.size(); i++)
+              {
+                ic = (ImageConsumer) list.elementAt(i);
+                ic.setHints(ImageConsumer.TOPDOWNLEFTRIGHT);
+                if (props != null)
+                  ic.setProperties(props);
+                if (pixeli != null)
+                  {
+                    int[] pixelbuf = new int[w * h];
+                    for (int row = y; row < y + h; row++)
+                      System.arraycopy(pixeli, row * scansize + x + offset,
+                                       pixelbuf, 0, w * h);
+                    ic.setPixels(x, y, w, h, cm, pixelbuf, 0, w);
+                  }
+                else
+                  {
+                    byte[] pixelbuf = new byte[w * h];
+                    for (int row = y; row < y + h; row++)
+                      System.arraycopy(pixelb, row * scansize + x + offset,
+                                       pixelbuf, 0, w * h);
+                    ic.setPixels(x, y, w, h, cm, pixelbuf, 0, w);
+                  }
+                if (framenotify == true)
+                  ic.imageComplete(ImageConsumer.SINGLEFRAME);
+              }
+          }
       }
   }
 

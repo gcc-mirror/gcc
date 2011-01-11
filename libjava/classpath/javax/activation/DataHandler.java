@@ -59,7 +59,7 @@ public class DataHandler
 
   private static final DataFlavor[] NO_FLAVORS = new DataFlavor[0];
   private static DataContentHandlerFactory factory = null;
-  
+
   private final DataSource dataSource;
   private DataSource objDataSource;
   private Object object;
@@ -70,7 +70,7 @@ public class DataHandler
   private DataContentHandler factoryDCH;
   private DataContentHandlerFactory oldFactory;
   private String shortType;
-  
+
   /**
    * Constructor in which the data is read from a data source.
    * @param ds the data source
@@ -80,7 +80,7 @@ public class DataHandler
     dataSource = ds;
     oldFactory = factory;
   }
-  
+
   /**
    * Constructor using a reified object representation.
    * @param obj the object representation of the data
@@ -93,7 +93,7 @@ public class DataHandler
     objectMimeType = mimeType;
     oldFactory = factory;
   }
-  
+
   /**
    * Constructor in which the data is read from a URL.
    * @param url the URL
@@ -103,7 +103,7 @@ public class DataHandler
     dataSource = new URLDataSource(url);
     oldFactory = factory;
   }
-  
+
   /**
    * Returns the data source from which data is read.
    */
@@ -119,7 +119,7 @@ public class DataHandler
       }
     return objDataSource;
   }
-  
+
   /**
    * Returns the name of the data object if created with a DataSource.
    */
@@ -131,7 +131,7 @@ public class DataHandler
       }
     return null;
   }
-  
+
   /**
    * Returns the MIME type of the data (with parameters).
    */
@@ -143,7 +143,7 @@ public class DataHandler
       }
     return objectMimeType;
   }
-  
+
   /**
    * Returns an input stream from which the data can be read.
    */
@@ -174,16 +174,16 @@ public class DataHandler
     thread.start();
     return new PipedInputStream(pos);
   }
-  
+
   static class DataContentHandlerWriter
     implements Runnable
   {
-    
+
     DataContentHandler dch;
     Object object;
     String mimeType;
     OutputStream out;
-    
+
     DataContentHandlerWriter(DataContentHandler dch, Object object,
                              String mimeType, OutputStream out)
     {
@@ -192,7 +192,7 @@ public class DataHandler
       this.mimeType = mimeType;
       this.out = out;
     }
-    
+
     public void run()
     {
       try
@@ -214,7 +214,7 @@ public class DataHandler
         }
     }
   }
-  
+
   /**
    * Writes the data as a byte stream.
    * @param os the stream to write to
@@ -238,7 +238,7 @@ public class DataHandler
         dch.writeTo(object, objectMimeType, os);
       }
   }
-  
+
   /**
    * Returns an output stream that can be used to overwrite the underlying
    * data, if the DataSource constructor was used.
@@ -252,7 +252,7 @@ public class DataHandler
       }
     return null;
   }
-  
+
   /**
    * Returns the data flavors in which this data is available.
    */
@@ -265,7 +265,7 @@ public class DataHandler
       }
     return transferFlavors;
   }
-  
+
   /**
    * Indicates whether the specified data flavor is supported for this
    * data.
@@ -282,7 +282,7 @@ public class DataHandler
       }
     return false;
   }
-  
+
   /**
    * Returns an object representing the data to be transferred.
    * @param flavor the requested data flavor
@@ -293,7 +293,7 @@ public class DataHandler
     DataContentHandler dch = getDataContentHandler();
     return dch.getTransferData(flavor, dataSource);
   }
-  
+
   /**
    * Sets the command map to be used by this data handler.
    * Setting to null uses the default command map.
@@ -308,7 +308,7 @@ public class DataHandler
         currentCommandMap = commandMap;
       }
   }
-  
+
   /**
    * Returns the preferred commands for this type of data.
    */
@@ -336,7 +336,7 @@ public class DataHandler
     CommandMap commandMap = getCommandMap();
     return commandMap.getCommand(getShortType(), cmdName);
   }
-  
+
   /**
    * Returns the data as a reified object.
    */
@@ -346,7 +346,7 @@ public class DataHandler
     DataContentHandler dch = getDataContentHandler();
     return dch.getContent(getDataSource());
   }
-  
+
   /**
    * Returns the instantiated bean using the specified command.
    * @param cmdInfo the command to instantiate the bean with
@@ -399,7 +399,7 @@ public class DataHandler
       }
     factory = newFactory;
   }
-  
+
   /*
    * Returns just the base part of the data's content-type, with no
    * parameters.
@@ -421,7 +421,7 @@ public class DataHandler
       }
     return shortType;
   }
-  
+
   /*
    * Returns the command map for this handler.
    */
@@ -433,7 +433,7 @@ public class DataHandler
       }
     return CommandMap.getDefaultCommandMap();
   }
-  
+
   /*
    * Returns the DCH for this handler.
    */
@@ -477,6 +477,5 @@ public class DataHandler
       }
     return dataContentHandler;
   }
-  
-}
 
+}

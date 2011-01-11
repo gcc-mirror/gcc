@@ -123,20 +123,20 @@ public class JMenuItem extends AbstractButton implements Accessible,
     init(null, null);
     if (action != null)
       {
-	String name = (String) action.getValue(Action.NAME);
-	if (name != null)
+        String name = (String) action.getValue(Action.NAME);
+        if (name != null)
           setName(name);
 
-	KeyStroke accel = (KeyStroke) action.getValue(Action.ACCELERATOR_KEY);
-	if (accel != null)
+        KeyStroke accel = (KeyStroke) action.getValue(Action.ACCELERATOR_KEY);
+        if (accel != null)
           setAccelerator(accel);
 
-	Integer mnemonic = (Integer) action.getValue(Action.MNEMONIC_KEY);
-	if (mnemonic != null)
+        Integer mnemonic = (Integer) action.getValue(Action.MNEMONIC_KEY);
+        if (mnemonic != null)
           setMnemonic(mnemonic.intValue());
 
-	String command = (String) action.getValue(Action.ACTION_COMMAND_KEY);
-	if (command != null)
+        String command = (String) action.getValue(Action.ACTION_COMMAND_KEY);
+        if (command != null)
           setActionCommand(command);
       }
   }
@@ -180,7 +180,7 @@ public class JMenuItem extends AbstractButton implements Accessible,
     super.init(text, icon);
 
     // Initializes properties for this menu item, that are different
-    // from Abstract button properties. 
+    // from Abstract button properties.
     /* NOTE: According to java specifications paint_border should be set to false,
       since menu item should not have a border. However running few java programs
       it seems that menu items and menues can have a border. Commenting
@@ -201,7 +201,7 @@ public class JMenuItem extends AbstractButton implements Accessible,
   {
     super.setUI(ui);
   }
-  
+
   /**
    * This method sets this menuItem's UI to the UIManager's default for the
    * current look and feel.
@@ -265,11 +265,11 @@ public class JMenuItem extends AbstractButton implements Accessible,
   }
 
   /**
-   * Sets the key combination which invokes the menu item's action 
-   * listeners without navigating the menu hierarchy. Note that when the 
-   * keyboard accelerator is typed, it will work whether or not the 
+   * Sets the key combination which invokes the menu item's action
+   * listeners without navigating the menu hierarchy. Note that when the
+   * keyboard accelerator is typed, it will work whether or not the
    * menu is currently displayed.
-   * 
+   *
    * @param keystroke accelerator for this menu item.
    */
   public void setAccelerator(KeyStroke keystroke)
@@ -294,7 +294,7 @@ public class JMenuItem extends AbstractButton implements Accessible,
       {
         setAccelerator((KeyStroke) (action.getValue(Action.ACCELERATOR_KEY)));
         if (accelerator != null)
-          super.registerKeyboardAction(action, accelerator, 
+          super.registerKeyboardAction(action, accelerator,
                                        JComponent.WHEN_IN_FOCUSED_WINDOW);
       }
   }
@@ -312,11 +312,11 @@ public class JMenuItem extends AbstractButton implements Accessible,
   {
     return new PropertyChangeListener()
       {
-	public void propertyChange(PropertyChangeEvent e)
-	{
-	  Action act = (Action) (e.getSource());
-	  configurePropertiesFromAction(act);
-	}
+        public void propertyChange(PropertyChangeEvent e)
+        {
+          Action act = (Action) (e.getSource());
+          configurePropertiesFromAction(act);
+        }
       };
   }
 
@@ -374,20 +374,20 @@ public class JMenuItem extends AbstractButton implements Accessible,
       {
       case MouseEvent.MOUSE_ENTERED:
         isDragging = false;
-	fireMenuDragMouseEntered(event);
-	break;
+        fireMenuDragMouseEntered(event);
+        break;
       case MouseEvent.MOUSE_EXITED:
         isDragging = false;
-	fireMenuDragMouseExited(event);
-	break;
+        fireMenuDragMouseExited(event);
+        break;
       case MouseEvent.MOUSE_DRAGGED:
         isDragging = true;
-	fireMenuDragMouseDragged(event);
-	break;
+        fireMenuDragMouseDragged(event);
+        break;
       case MouseEvent.MOUSE_RELEASED:
         if (isDragging)
           fireMenuDragMouseReleased(event);
-	break;
+        break;
       }
   }
 
@@ -524,17 +524,17 @@ public class JMenuItem extends AbstractButton implements Accessible,
     Component parent = this.getParent();
     if (changed)
       {
-	model.setArmed(true);
+        model.setArmed(true);
 
-	if (parent != null && parent instanceof JPopupMenu)
-	  ((JPopupMenu) parent).setSelected(this);
+        if (parent != null && parent instanceof JPopupMenu)
+          ((JPopupMenu) parent).setSelected(this);
       }
     else
       {
-	model.setArmed(false);
+        model.setArmed(false);
 
-	if (parent != null && parent instanceof JPopupMenu)
-	  ((JPopupMenu) parent).getSelectionModel().clearSelection();
+        if (parent != null && parent instanceof JPopupMenu)
+          ((JPopupMenu) parent).getSelectionModel().clearSelection();
       }
   }
 
@@ -630,7 +630,7 @@ public class JMenuItem extends AbstractButton implements Accessible,
 
   /**
    * Returns a string describing the attributes for the <code>JMenuItem</code>
-   * component, for use in debugging.  The return value is guaranteed to be 
+   * component, for use in debugging.  The return value is guaranteed to be
    * non-<code>null</code>, but the format of the string may vary between
    * implementations.
    *
@@ -646,14 +646,14 @@ public class JMenuItem extends AbstractButton implements Accessible,
    * Returns the object that provides accessibility features for this
    * <code>JMenuItem</code> component.
    *
-   * @return The accessible context (an instance of 
+   * @return The accessible context (an instance of
    *     {@link AccessibleJMenuItem}).
    */
   public AccessibleContext getAccessibleContext()
   {
     if (accessibleContext == null)
       {
-        AccessibleJMenuItem ctx = new AccessibleJMenuItem(); 
+        AccessibleJMenuItem ctx = new AccessibleJMenuItem();
         addChangeListener(ctx);
         accessibleContext = ctx;
       }
@@ -662,9 +662,9 @@ public class JMenuItem extends AbstractButton implements Accessible,
   }
 
   /**
-   * Provides the accessibility features for the <code>JMenuItem</code> 
+   * Provides the accessibility features for the <code>JMenuItem</code>
    * component.
-   * 
+   *
    * @see JMenuItem#getAccessibleContext()
    */
   protected class AccessibleJMenuItem extends AccessibleAbstractButton

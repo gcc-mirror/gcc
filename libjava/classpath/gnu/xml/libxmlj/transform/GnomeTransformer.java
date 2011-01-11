@@ -1,4 +1,4 @@
-/* GnomeTransformer.java - 
+/* GnomeTransformer.java -
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -120,19 +120,19 @@ public class GnomeTransformer
    * @param errorListener the error listener for transformation errors
    */
   GnomeTransformer (Source source,
-                    URIResolver resolver, 
-                    ErrorListener errorListener) 
+                    URIResolver resolver,
+                    ErrorListener errorListener)
     throws TransformerConfigurationException
   {
     this.resolver = resolver;
     this.errorListener = errorListener;
     parameters = new HashMap ();
     outputProperties = new Properties ();
-   
+
     if (source == null)
       {
         stylesheet = newStylesheet ();
-      } 
+      }
     else if (source instanceof StreamSource)
       {
         try
@@ -176,12 +176,12 @@ public class GnomeTransformer
         throw new TransformerConfigurationException (msg);
       }
   }
-  
+
   /**
    * Copy constructor.
    */
   private GnomeTransformer (Object stylesheet,
-                            URIResolver resolver, 
+                            URIResolver resolver,
                             ErrorListener errorListener,
                             Map parameters,
                             Properties outputProperties)
@@ -215,7 +215,7 @@ public class GnomeTransformer
   public synchronized void setParameter (String parameter, Object value)
   {
     parameters.put (parameter, value);
-  } 
+  }
 
   public synchronized Object getParameter (String name)
   {
@@ -232,7 +232,7 @@ public class GnomeTransformer
   public void setErrorListener (ErrorListener listener)
   {
     this.errorListener = listener;
-  } 
+  }
 
   public ErrorListener getErrorListener ()
   {
@@ -244,7 +244,7 @@ public class GnomeTransformer
   public void setURIResolver (URIResolver resolver)
   {
     this.resolver = resolver;
-  } 
+  }
 
   public URIResolver getURIResolver ()
   {
@@ -259,12 +259,12 @@ public class GnomeTransformer
   {
     // Note: defensive copying
     this.outputProperties = new Properties (outputProperties);
-  } 
+  }
 
   public void setOutputProperty (String name, String value)
   {
     outputProperties.setProperty (name, value);
-  } 
+  }
 
   public Properties getOutputProperties ()
   {
@@ -510,7 +510,7 @@ public class GnomeTransformer
         throw new TransformerException (e);
       }
   }
-  
+
   private void setDocumentLocator (Object ctx, Object loc)
   {
   }
@@ -550,7 +550,7 @@ public class GnomeTransformer
                                              systemId);
     errorListener.error (new TransformerException (message, l));
   }
-  
+
   private void fatalError (String message,
                            int lineNumber,
                            int columnNumber,
@@ -568,5 +568,5 @@ public class GnomeTransformer
                                              systemId);
     errorListener.fatalError (new TransformerException (message, l));
   }
-  
+
 }

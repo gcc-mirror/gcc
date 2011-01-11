@@ -56,7 +56,7 @@ public interface AccessibleExtendedText
 
   /**
    * This constant indicates that the retrieved text should consist
-   * of a run with identical attributes. 
+   * of a run with identical attributes.
    */
   int ATTRIBUTE_RUN = 5;
 
@@ -81,7 +81,7 @@ public interface AccessibleExtendedText
    * parameter describes the type of sequence to return; it is one
    * of the constants from {@link AccessibleText} or from this
    * class.
-   * @param part the type of the sequence to return 
+   * @param part the type of the sequence to return
    * @param index start of the sequence
    */
   AccessibleTextSequence getTextSequenceAfter(int part, int index);
@@ -91,7 +91,7 @@ public interface AccessibleExtendedText
    * parameter describes the type of sequence to return; it is one
    * of the constants from {@link AccessibleText} or from this
    * class.
-   * @param part the type of the sequence to return 
+   * @param part the type of the sequence to return
    * @param index start of the sequence
    */
   AccessibleTextSequence getTextSequenceAt(int part, int index);
@@ -101,7 +101,7 @@ public interface AccessibleExtendedText
    * parameter describes the type of sequence to return; it is one
    * of the constants from {@link AccessibleText} or from this
    * class.
-   * @param part the type of the sequence to return 
+   * @param part the type of the sequence to return
    * @param index end of the sequence
    */
   AccessibleTextSequence getTextSequenceBefore(int part, int index);

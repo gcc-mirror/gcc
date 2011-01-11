@@ -33,18 +33,18 @@ import java.util.Map;
 
 /**
  * An attribute that can print eadable representation of the attribute.
- * 
+ *
  * Implementation should construct readable output from an attribute data
  * structures for current attribute state. Such representation could be used in
  * unit test assertions.
- * 
+ *
  * @author Eugene Kuleshov
  */
 public interface Traceable {
 
     /**
      * Build a human readable representation of the attribute.
-     * 
+     *
      * @param buf A buffer used for printing Java code.
      * @param labelNames map of label instances to their names.
      */

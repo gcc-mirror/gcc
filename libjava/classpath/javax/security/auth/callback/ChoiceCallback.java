@@ -108,7 +108,7 @@ public class ChoiceCallback implements Callback, Serializable
    * <code>choices</code>.
    */
   public ChoiceCallback(String prompt, String[] choices, int defaultChoice,
-			boolean multipleSelectionsAllowed)
+                        boolean multipleSelectionsAllowed)
   {
     super();
 
@@ -116,7 +116,7 @@ public class ChoiceCallback implements Callback, Serializable
     setChoices(choices);
     if (defaultChoice < 0 || defaultChoice >= this.choices.length)
       {
-	throw new IllegalArgumentException("default choice is out of bounds");
+        throw new IllegalArgumentException("default choice is out of bounds");
       }
     this.defaultChoice = defaultChoice;
     this.multipleSelectionsAllowed = multipleSelectionsAllowed;
@@ -192,7 +192,7 @@ public class ChoiceCallback implements Callback, Serializable
   {
     if (!multipleSelectionsAllowed)
       {
-	throw new UnsupportedOperationException("not allowed");
+        throw new UnsupportedOperationException("not allowed");
       }
 
     this.selections = selections;
@@ -213,7 +213,7 @@ public class ChoiceCallback implements Callback, Serializable
   {
     if ((prompt == null) || (prompt.length() == 0))
       {
-	throw new IllegalArgumentException("invalid prompt");
+        throw new IllegalArgumentException("invalid prompt");
       }
     this.prompt = prompt;
   }
@@ -222,14 +222,14 @@ public class ChoiceCallback implements Callback, Serializable
   {
     if (choices == null || choices.length == 0)
       {
-	throw new IllegalArgumentException("invalid choices");
+        throw new IllegalArgumentException("invalid choices");
       }
     for (int i = 0; i < choices.length; i++)
       {
-	if (choices[i] == null || choices[i].length() == 0)
-	  {
-	    throw new IllegalArgumentException("invalid choice at index #"+i);
-	  }
+        if (choices[i] == null || choices[i].length() == 0)
+          {
+            throw new IllegalArgumentException("invalid choice at index #"+i);
+          }
       }
     this.choices = choices;
   }

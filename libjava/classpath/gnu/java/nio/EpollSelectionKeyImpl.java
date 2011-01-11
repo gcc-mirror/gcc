@@ -58,7 +58,7 @@ public class EpollSelectionKeyImpl extends AbstractSelectionKey
   int key;
   boolean valid;
   boolean cancelled;
-  
+
   EpollSelectionKeyImpl(EpollSelectorImpl selector,
                         SelectableChannel channel, int fd)
   {

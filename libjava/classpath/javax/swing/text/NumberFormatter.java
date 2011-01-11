@@ -1,4 +1,4 @@
-/* NumberFormatter.java -- 
+/* NumberFormatter.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,22 +45,22 @@ import java.text.NumberFormat;
  * <code>NumberFormatter</code> is an {@link InternationalFormatter}
  * that implements value to string and string to value conversion via
  * an instance of {@link NumberFormat}.
- * 
+ *
  * @author Anthony Balkissoon abalkiss at redhat dot com
  * @since 1.4
  */
 public class NumberFormatter extends InternationalFormatter
 {
-  
+
   /**
-   * Creates a NumberFormatter with the default NumberFormat from 
-   * NumberFormat.getNumberInstance().   
+   * Creates a NumberFormatter with the default NumberFormat from
+   * NumberFormat.getNumberInstance().
    */
   public NumberFormatter ()
   {
     this (NumberFormat.getNumberInstance());
   }
-  
+
   /**
    * Creates a NumberFormatter with the specified NumberFormat.
    * @param format the NumberFormat to use for this NumberFormatter.
@@ -70,11 +70,11 @@ public class NumberFormatter extends InternationalFormatter
     super(format);
     setFormat(format);
   }
-  
+
   /**
    * Sets the NumberFormat that this NumberFormatter will use to determine
    * legal values for editing and displaying.
-   * 
+   *
    * @param format the Format to use to determine legal values.
    */
   public void setFormat (Format format)

@@ -31,7 +31,7 @@ package org.objectweb.asm;
 
 /**
  * An {@link AnnotationVisitor} that generates annotations in bytecode form.
- * 
+ *
  * @author Eric Bruneton
  * @author Eugene Kuleshov
  */
@@ -48,7 +48,7 @@ final class AnnotationWriter implements AnnotationVisitor {
     private int size;
 
     /**
-     * <tt>true<tt> if values are named, <tt>false</tt> otherwise. Annotation 
+     * <tt>true<tt> if values are named, <tt>false</tt> otherwise. Annotation
      * writers used for annotation default and annotation arrays use unnamed
      * values.
      */
@@ -89,12 +89,12 @@ final class AnnotationWriter implements AnnotationVisitor {
 
     /**
      * Constructs a new {@link AnnotationWriter}.
-     * 
+     *
      * @param cw the class writer to which this annotation must be added.
      * @param named <tt>true<tt> if values are named, <tt>false</tt> otherwise.
      * @param bv where the annotation values must be stored.
      * @param parent where the number of annotation values must be stored.
-     * @param offset where in <tt>parent</tt> the number of annotation values must 
+     * @param offset where in <tt>parent</tt> the number of annotation values must
      *      be stored.
      */
     AnnotationWriter(
@@ -236,7 +236,7 @@ final class AnnotationWriter implements AnnotationVisitor {
 
     /**
      * Returns the size of this annotation writer list.
-     * 
+     *
      * @return the size of this annotation writer list.
      */
     int getSize() {
@@ -252,7 +252,7 @@ final class AnnotationWriter implements AnnotationVisitor {
     /**
      * Puts the annotations of this annotation writer list into the given byte
      * vector.
-     * 
+     *
      * @param out where the annotations must be put.
      */
     void put(final ByteVector out) {
@@ -279,7 +279,7 @@ final class AnnotationWriter implements AnnotationVisitor {
 
     /**
      * Puts the given annotation lists into the given byte vector.
-     * 
+     *
      * @param panns an array of annotation writer lists.
      * @param out where the annotations must be put.
      */

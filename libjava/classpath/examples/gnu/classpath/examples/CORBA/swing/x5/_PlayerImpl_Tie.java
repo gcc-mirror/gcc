@@ -57,14 +57,14 @@ import org.omg.PortableServer.Servant;
  * Generate with rmic, command line
  * rmic -iiop -poa -keep gnu.classpath.examples.CORBA.swing.x5.PlayerImpl
  * (the compiled package must be present in the current folder).
- * 
- * This class is normally generated with rmic or grmic from the 
+ *
+ * This class is normally generated with rmic or grmic from the
  * {@link PlayerImpl}. See tools/gnu/classpath/tools/giop/README.
- * 
- * In this example the class was manually edited and commented for better 
+ *
+ * In this example the class was manually edited and commented for better
  * understanding of functionality.
- * 
- * @author Audrius Meskauskas (AudriusA@Bioinformatics.org) 
+ *
+ * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class _PlayerImpl_Tie extends Servant implements Tie
 {

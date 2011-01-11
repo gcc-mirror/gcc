@@ -1,4 +1,4 @@
-/* ClientDHE_PSKParameters.java -- 
+/* ClientDHE_PSKParameters.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -60,7 +60,7 @@ public class ClientDHE_PSKParameters extends ExchangeKeys implements Builder, Co
   {
     super(buffer);
   }
-  
+
   public ClientDHE_PSKParameters(String identity, ClientDiffieHellmanPublic dh)
   {
     super(null);
@@ -80,12 +80,12 @@ public class ClientDHE_PSKParameters extends ExchangeKeys implements Builder, Co
   {
     return (ByteBuffer) buffer.duplicate().rewind().limit(length());
   }
-  
+
   private int identityLength()
   {
     return (buffer.getShort(0) & 0xFFFF) + 2;
   }
-  
+
   public String identity()
   {
     Charset utf8 = Charset.forName("UTF-8");
@@ -109,7 +109,7 @@ public class ClientDHE_PSKParameters extends ExchangeKeys implements Builder, Co
     return new ClientDiffieHellmanPublic(((ByteBuffer) buffer.duplicate()
                                           .position(identityLength()).limit(length())).slice());
   }
-  
+
   /* (non-Javadoc)
    * @see gnu.javax.net.ssl.provider.Constructed#toString(java.lang.String)
    */

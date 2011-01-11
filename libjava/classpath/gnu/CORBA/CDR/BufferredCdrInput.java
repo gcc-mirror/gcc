@@ -45,14 +45,14 @@ package gnu.CORBA.CDR;
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class BufferredCdrInput
-  extends AbstractCdrInput 
+  extends AbstractCdrInput
   implements gnuValueStream
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1;
-  
+
   /**
    * The byte array input stream to read data from.
    */
@@ -114,17 +114,17 @@ public class BufferredCdrInput
     buffer.reset();
     setInputStream(buffer);
   }
-  
+
   /**
    * Get the current position in the buffer.
-   * 
+   *
    * @return The position in the buffer, taking offset into consideration.
    */
   public int getPosition()
   {
     return buffer.getPosition();
   }
-  
+
   /**
    * Jump to the given position, taking offset into consideration.
    */
@@ -133,15 +133,15 @@ public class BufferredCdrInput
     buffer.seek(position);
     setInputStream(buffer);
   }
-  
+
   /**
    * Get the associated RunTime.
    */
   public gnuRuntime getRunTime()
   {
     return runtime;
-  }  
-  
+  }
+
   /**
    * Replace the instance of RunTime.
    */
@@ -149,5 +149,5 @@ public class BufferredCdrInput
   {
     runtime = a_runtime;
   }
-  
+
 }

@@ -44,7 +44,7 @@ import java.io.IOException;
 
 /**
  * Wrapper for an long value.
- * 
+ *
  * @author Kyle Galloway <kgallowa@redhat.com>
  */
 public final class LongValue
@@ -55,7 +55,7 @@ public final class LongValue
 
   /**
    * Create a new LongValue from an long
-   * 
+   *
    * @param value the long to wrap
    */
   public LongValue(long value)
@@ -63,20 +63,20 @@ public final class LongValue
     super(JdwpConstants.Tag.LONG);
     _value = value;
   }
-  
+
   /**
    * Get the value held in this Value
-   * 
+   *
    * @return the value represented by this Value object
    */
   public long getValue()
   {
     return _value;
   }
-  
+
   /**
    * Return an object representing this type
-   * 
+   *
    * @return an Object represntation of this value
    */
   @Override
@@ -87,7 +87,7 @@ public final class LongValue
 
   /**
    * Write the wrapped long to the given DataOutputStream.
-   * 
+   *
    * @param os the output stream to write to
    */
   @Override
@@ -97,4 +97,3 @@ public final class LongValue
     os.writeLong(_value);
   }
 }
-

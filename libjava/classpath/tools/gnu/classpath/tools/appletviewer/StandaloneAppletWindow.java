@@ -72,12 +72,12 @@ class StandaloneAppletWindow
     MouseListener, MouseMotionListener, InputMethodListener, HierarchyListener,
     HierarchyBoundsListener
 {
-  
+
   // This class implements various listeners because the author of an applet
-  // may attach listeners to it, unaware of the applet's parent (this class). 
+  // may attach listeners to it, unaware of the applet's parent (this class).
   // So, we must pass all listener events on this plugin applet window to the
   // actual applet.
-  
+
   private static int testWindowCount;
   private static HashMap contexts = new HashMap();
   private Applet applet;
@@ -112,14 +112,14 @@ class StandaloneAppletWindow
 
     addWindowListener(new WindowAdapter()
         {
-	  public void windowClosing(WindowEvent event)
-	  {
-	    applet.stop();
-	    StandaloneAppletWindow.this.hide();
-	    System.exit(0);
-	  }
+          public void windowClosing(WindowEvent event)
+          {
+            applet.stop();
+            StandaloneAppletWindow.this.hide();
+            System.exit(0);
+          }
         });
-    
+
     addContainerListener(this);
     addComponentListener(this);
     addMouseListener(this);
@@ -127,7 +127,7 @@ class StandaloneAppletWindow
     addInputMethodListener(this);
     addHierarchyListener(this);
     addHierarchyBoundsListener(this);
-    
+
     restartItem = new MenuItem(Messages.getString("StandaloneAppletWindow.MenuRestart"));
     restartItem.setEnabled(false);
     restartItem.addActionListener(this);
@@ -240,11 +240,11 @@ class StandaloneAppletWindow
       }
     else if (e.getSource() == closeItem)
       {
-	// Close current window.
-	closeWindow();
-	
-	// Exit if there are other windows left.
-	if (StandaloneAppletViewer.appletWindows.isEmpty())
+        // Close current window.
+        closeWindow();
+
+        // Exit if there are other windows left.
+        if (StandaloneAppletViewer.appletWindows.isEmpty())
           System.exit(0);
       }
   }
@@ -253,15 +253,15 @@ class StandaloneAppletWindow
   {
     this.status.setText(status);
   }
-  
+
 
   ///////////////////////////////////
   /// ContainerListener Methods /////
   ///////////////////////////////////
-  
+
   /**
    * This method is called when a component is added to the container.
-   * 
+   *
    * @param event the <code>ContainerEvent</code> indicating component
    *          addition
    */
@@ -277,7 +277,7 @@ class StandaloneAppletWindow
 
   /**
    * This method is called when a component is removed from the container.
-   * 
+   *
    * @param event the <code>ContainerEvent</code> indicating component removal
    */
   public void componentRemoved(ContainerEvent event)
@@ -289,11 +289,11 @@ class StandaloneAppletWindow
           l[i].componentRemoved(event);
       }
   }
-  
+
   ///////////////////////////////////
   /// ComponentListener Methods /////
   ///////////////////////////////////
-  
+
   /**
    * This method is called when the component is resized.
    *
@@ -353,11 +353,11 @@ class StandaloneAppletWindow
           l[i].componentHidden(event);
       }
   }
-     
+
   ///////////////////////////////////
   ////// MouseListener Methods //////
   ///////////////////////////////////
-  
+
   /**
    * This method is called when the mouse is clicked (pressed and released
    * in short succession) on a component.
@@ -419,7 +419,7 @@ class StandaloneAppletWindow
       }
   }
 
-  /** 
+  /**
    * This method is called when the mouse exits a component.
    *
    * @param event the <code>MouseEvent</code> for the exit
@@ -433,11 +433,11 @@ class StandaloneAppletWindow
           l[i].mouseExited(event);
       }
   }
-  
+
   ///////////////////////////////////
   /// MouseMotionListener Methods ///
   ///////////////////////////////////
-  
+
   /**
    * This method is called when the mouse is moved over a component
    * while a button has been pressed.
@@ -469,11 +469,11 @@ class StandaloneAppletWindow
           l[i].mouseMoved(event);
       }
   }
-  
+
   ///////////////////////////////////
   /// InputMethodListener Methods ///
   ///////////////////////////////////
-  
+
   /**
    * This method is called when the text is changed.
    *
@@ -503,11 +503,11 @@ class StandaloneAppletWindow
           l[i].caretPositionChanged(event);
       }
   }
-  
+
   ///////////////////////////////////
   //// HierarchyListener Methods ////
   ///////////////////////////////////
-  
+
   /**
    * Called when the hierarchy of this component changes. Use
    * <code>getChangeFlags()</code> on the event to see what exactly changed.
@@ -523,11 +523,11 @@ class StandaloneAppletWindow
           l[i].hierarchyChanged(event);
       }
   }
-  
+
   /////////////////////////////////////////
   //// HierarchyBoundsListener Methods ////
   /////////////////////////////////////////
-  
+
   /**
    * Called when an ancestor component of the source is moved.
    *

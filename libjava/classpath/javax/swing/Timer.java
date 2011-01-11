@@ -51,7 +51,7 @@ import javax.swing.event.EventListenerList;
  * firing <code>ActionEvent</code>s. All Timers share one (daemon)
  * Thread (or java.util.Timer). All events are fired from the event
  * queue.
- * 
+ *
  * @author Ronald Veldema
  * @author Audrius Meskauskas (audriusa@Bionformatics.org) - bug fixes
  * and documentation comments
@@ -99,7 +99,7 @@ public class Timer
    * running, even if there's no task scheduled in it.
    */
   private static java.util.Timer timer = new java.util.Timer("swing.Timer",
-							     true);
+                                                             true);
 
   /**
    * If <code>true</code>, the timer prints a message to
@@ -264,12 +264,12 @@ public class Timer
    * firing the first event.
    *
    * @param d The time gap between the subsequent events, in milliseconds
-   * 
+   *
    * @throws IllegalArgumentException if <code>d</code> is less than zero.
    */
   public void setDelay(int d)
   {
-    if (d < 0) 
+    if (d < 0)
       throw new IllegalArgumentException("Invalid delay: " + d);
     delay = d;
   }
@@ -291,7 +291,7 @@ public class Timer
    * subsequent events.
    *
    * @param i the initial delay, in milliseconds
-   * 
+   *
    * @throws IllegalArgumentException if <code>i</code> is less than zero.
    */
   public void setInitialDelay(int i)
@@ -387,12 +387,12 @@ public class Timer
     Task t = task;
     if (t == null)
       {
-	t = new Task();
-	if (isRepeats())
-	  timer.schedule(t, getInitialDelay(), getDelay());
-	else
-	  timer.schedule(t, getInitialDelay());
-	task = t;
+        t = new Task();
+        if (isRepeats())
+          timer.schedule(t, getInitialDelay(), getDelay());
+        else
+          timer.schedule(t, getInitialDelay());
+        task = t;
       }
   }
 
@@ -404,8 +404,8 @@ public class Timer
     Task t = task;
     if (t != null)
       {
-	t.cancel();
-	task = null;
+        t.cancel();
+        task = null;
       }
   }
 
@@ -468,9 +468,9 @@ public class Timer
   {
     synchronized(queueLock)
       {
-	queue++;
-	if (queue == 1)
-	  SwingUtilities.invokeLater(drainer);
+        queue++;
+        if (queue == 1)
+          SwingUtilities.invokeLater(drainer);
       }
   }
 }

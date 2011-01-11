@@ -47,11 +47,11 @@ import org.omg.CORBA.portable.IDLEntity;
 public class StructureToReturn
   implements IDLEntity
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1;
-  
+
   /**
    * The string field.
    */

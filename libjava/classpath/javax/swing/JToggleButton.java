@@ -1,4 +1,4 @@
-/* JToggleButton.java -- 
+/* JToggleButton.java --
    Copyright (C) 2002, 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -92,7 +92,7 @@ public class JToggleButton extends AbstractButton implements Accessible
     {
       return AccessibleRole.TOGGLE_BUTTON;
     }
-    
+
     /**
      * Monitors the toggle button for state changes and fires accessible
      * property change events when they occur.
@@ -106,14 +106,14 @@ public class JToggleButton extends AbstractButton implements Accessible
           {
             /* State has changed from unselected (null) to selected */
             firePropertyChange(ACCESSIBLE_STATE_PROPERTY, null, AccessibleState.SELECTED);
-          } 
+          }
         else
           {
             /* State has changed from selected to unselected (null) */
             firePropertyChange(ACCESSIBLE_STATE_PROPERTY, AccessibleState.ENABLED, null);
           }
     }
-    
+
   }
 
   /**
@@ -129,19 +129,19 @@ public class JToggleButton extends AbstractButton implements Accessible
      * Compatible with Sun's JDK.
      */
     private static final long serialVersionUID = -1589950750899943974L;
-    
+
     /**
      * Sets the pressed state of the button.  The selected state
      * of the button also changes follwing the button being pressed.
      *
      * @param p true if the button is pressed down.
      */
-    public void setPressed(boolean p)  
+    public void setPressed(boolean p)
     {
       // cannot change PRESSED state unless button is enabled
       if (! isEnabled())
         return;
-      
+
       // if this call does not represent a CHANGE in state, then return
       if ((p && isPressed()) || (!p && !isPressed()))
         return;
@@ -164,7 +164,7 @@ public class JToggleButton extends AbstractButton implements Accessible
         stateMask = stateMask | PRESSED;
       else
         stateMask = stateMask & (~PRESSED);
-      
+
       // notify interested ChangeListeners
       fireStateChanged();
 
@@ -175,36 +175,36 @@ public class JToggleButton extends AbstractButton implements Accessible
                                               actionCommand));
         }
     }
-      
+
       /**
        * Checks if the button is selected.
-       * 
+       *
        * @return <code>true</code> if the button is selected.
        */
       public boolean isSelected()
       {
         return super.isSelected();
       }
-      
+
       /**
        * Sets the selected state of the button.
-       * 
+       *
        * @param b true if button is selected
        */
       public void setSelected(boolean b)
       {
         super.setSelected(b);
-      }  
+      }
   }
 
   /**
    * Compatible with Sun's JDK.
    */
   private static final long serialVersionUID = -3128248873429850443L;
-    
+
   /**
    * Constructs an unselected toggle button with no text or icon.
-   */ 
+   */
   public JToggleButton()
   {
     this(null, null, false);
@@ -229,10 +229,10 @@ public class JToggleButton extends AbstractButton implements Accessible
    * @param icon the icon to use.
    */
   public JToggleButton(Icon icon)
-  { 
+  {
     this(null, icon, false);
-  }    
-  
+  }
+
   /**
    * Constructs a toggle button with the supplied icon and state.
    *
@@ -240,22 +240,22 @@ public class JToggleButton extends AbstractButton implements Accessible
    * @param selected if true, the toggle button is initially in the
    *        selected state.  Otherwise, the button is unselected.
    */
-  public JToggleButton(Icon icon, boolean selected) 
+  public JToggleButton(Icon icon, boolean selected)
   {
     this(null, icon, selected);
   }
-  
+
   /**
    * Constructs an unselected toggle button using the supplied text
    * and no icon.
    *
    * @param text the text to use.
-   */ 
+   */
   public JToggleButton(String text)
   {
     this(text, null, false);
   }
-      
+
   /**
    * Constructs a toggle button with the supplied text and state.
    *
@@ -288,10 +288,10 @@ public class JToggleButton extends AbstractButton implements Accessible
    * @param selected if true, the toggle button is initially in the
    *        selected state.  Otherwise, the button is unselected.
    */
-  public JToggleButton (String text, Icon icon, boolean selected) 
+  public JToggleButton (String text, Icon icon, boolean selected)
   {
     super();
-    setModel(new ToggleButtonModel());  
+    setModel(new ToggleButtonModel());
     init(text, icon);
     model.setSelected(selected);
     setAlignmentX(LEFT_ALIGNMENT);
@@ -309,11 +309,11 @@ public class JToggleButton extends AbstractButton implements Accessible
     if (accessibleContext == null)
       {
         /* Create the context */
-	accessibleContext = new AccessibleJToggleButton();
+        accessibleContext = new AccessibleJToggleButton();
       }
     return accessibleContext;
   }
-  
+
   /**
    * Returns a string that specifies the name of the Look and Feel
    * class that renders this component.
@@ -324,7 +324,7 @@ public class JToggleButton extends AbstractButton implements Accessible
   {
     return "ToggleButtonUI";
   }
-  
+
   /**
    * Returns a textual representation of this component for debugging.
    * Users should not depend on anything as regards the content or formatting
@@ -337,17 +337,14 @@ public class JToggleButton extends AbstractButton implements Accessible
   {
     return super.paramString();
   }
-  
+
   /**
    * This method resets the toggle button's UI delegate to the default UI for
    * the current look and feel.
    */
   public void updateUI()
-  {	
+  {
     setUI((ButtonUI)UIManager.getUI(this));
   }
 
 }
-
-
-

@@ -197,13 +197,13 @@ class MetalSplitPaneDivider extends BasicSplitPaneDivider
 
   /** The light color in the pattern. */
   Color light;
-  
+
   /** The JSplitPane the divider is on. */
   JSplitPane splitPane;
 
   /** The split pane orientation. */
   int orientation;
-  
+
   /**
    * Creates a new instance of <code>MetalSplitPaneDivider</code>.
    *
@@ -232,7 +232,7 @@ class MetalSplitPaneDivider extends BasicSplitPaneDivider
         g.setColor(UIManager.getColor("SplitPane.dividerFocusColor"));
         g.fillRect(0, 0, s.width, s.height);
       }
-    
+
     // Paint border if one exists.
     Border border = getBorder();
     if (border != null)

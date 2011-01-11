@@ -51,8 +51,8 @@ import org.xml.sax.Locator;
  */
 public class LocatorImpl implements Locator
 {
-    
-    
+
+
     /**
      * Zero-argument constructor.
      *
@@ -62,8 +62,8 @@ public class LocatorImpl implements Locator
     public LocatorImpl ()
     {
     }
-    
-    
+
+
     /**
      * Copy constructor.
      *
@@ -76,19 +76,19 @@ public class LocatorImpl implements Locator
      */
     public LocatorImpl (Locator locator)
     {
-	setPublicId(locator.getPublicId());
-	setSystemId(locator.getSystemId());
-	setLineNumber(locator.getLineNumber());
-	setColumnNumber(locator.getColumnNumber());
+        setPublicId(locator.getPublicId());
+        setSystemId(locator.getSystemId());
+        setLineNumber(locator.getLineNumber());
+        setColumnNumber(locator.getColumnNumber());
     }
-    
-    
-
+
+
+
     ////////////////////////////////////////////////////////////////////
     // Implementation of org.xml.sax.Locator
     ////////////////////////////////////////////////////////////////////
-    
-    
+
+
     /**
      * Return the saved public identifier.
      *
@@ -99,10 +99,10 @@ public class LocatorImpl implements Locator
      */
     public String getPublicId ()
     {
-	return publicId;
+        return publicId;
     }
-    
-    
+
+
     /**
      * Return the saved system identifier.
      *
@@ -113,10 +113,10 @@ public class LocatorImpl implements Locator
      */
     public String getSystemId ()
     {
-	return systemId;
+        return systemId;
     }
-    
-    
+
+
     /**
      * Return the saved line number (1-based).
      *
@@ -126,10 +126,10 @@ public class LocatorImpl implements Locator
      */
     public int getLineNumber ()
     {
-	return lineNumber;
+        return lineNumber;
     }
-    
-    
+
+
     /**
      * Return the saved column number (1-based).
      *
@@ -139,42 +139,42 @@ public class LocatorImpl implements Locator
      */
     public int getColumnNumber ()
     {
-	return columnNumber;
+        return columnNumber;
     }
-    
-    
-
+
+
+
     ////////////////////////////////////////////////////////////////////
     // Setters for the properties (not in org.xml.sax.Locator)
     ////////////////////////////////////////////////////////////////////
-    
-    
+
+
     /**
      * Set the public identifier for this locator.
      *
-     * @param publicId The new public identifier, or null 
+     * @param publicId The new public identifier, or null
      *        if none is available.
      * @see #getPublicId
      */
     public void setPublicId (String publicId)
     {
-	this.publicId = publicId;
+        this.publicId = publicId;
     }
-    
-    
+
+
     /**
      * Set the system identifier for this locator.
      *
-     * @param systemId The new system identifier, or null 
+     * @param systemId The new system identifier, or null
      *        if none is available.
      * @see #getSystemId
      */
     public void setSystemId (String systemId)
     {
-	this.systemId = systemId;
+        this.systemId = systemId;
     }
-    
-    
+
+
     /**
      * Set the line number for this locator (1-based).
      *
@@ -183,10 +183,10 @@ public class LocatorImpl implements Locator
      */
     public void setLineNumber (int lineNumber)
     {
-	this.lineNumber = lineNumber;
+        this.lineNumber = lineNumber;
     }
-    
-    
+
+
     /**
      * Set the column number for this locator (1-based).
      *
@@ -195,20 +195,20 @@ public class LocatorImpl implements Locator
      */
     public void setColumnNumber (int columnNumber)
     {
-	this.columnNumber = columnNumber;
+        this.columnNumber = columnNumber;
     }
-    
-    
-
+
+
+
     ////////////////////////////////////////////////////////////////////
     // Internal state.
     ////////////////////////////////////////////////////////////////////
-    
+
     private String publicId;
     private String systemId;
     private int lineNumber;
     private int columnNumber;
-    
+
 }
 
 // end of LocatorImpl.java

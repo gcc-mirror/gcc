@@ -58,7 +58,7 @@ public final class FontFactory
   {
   }
 
-  
+
   /**
    * Creates FontDelegate objects for the fonts in the specified buffer.
    * The following font formats are currently recognized:

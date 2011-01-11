@@ -40,7 +40,7 @@ package javax.sound.midi;
 
 /**
  * This exception is thrown when we encounter bad MIDI data.
- * 
+ *
  * @author Anthony Green (green@redhat.com)
  * @since 1.3
  *
@@ -48,7 +48,7 @@ package javax.sound.midi;
 public class InvalidMidiDataException extends Exception
 {
   private static final long serialVersionUID = 2780771756789932067L;
- 
+
   /**
    * Create an InvalidMidiDataException object.
    */
@@ -59,7 +59,7 @@ public class InvalidMidiDataException extends Exception
 
   /**
    * Create an InvalidMidiDataException object.
-   * 
+   *
    * @param s the exception message string
    */
   public InvalidMidiDataException(String s)

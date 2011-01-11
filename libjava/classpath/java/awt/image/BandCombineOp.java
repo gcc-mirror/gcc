@@ -44,29 +44,29 @@ import java.util.Arrays;
 
 /**
  * Filter Raster pixels by applying a matrix.
- * 
+ *
  * BandCombineOp applies a matrix to each pixel to produce new pixel values.
  * The width of the matrix must be the same or one more than the number of
  * bands in the source Raster.  If one more, the pixels in the source are
  * assumed to contain an implicit 1.0 at the end.
- * 
+ *
  * The rows of the matrix are multiplied by the pixel to produce the values
  * for the destination.  Therefore the destination Raster must contain the
  * same number of bands as the number of rows in the filter matrix.
- * 
+ *
  * This Op assumes that samples are integers; floating point sample types will
  * be rounded to their nearest integer value during filtering.
- * 
+ *
  * @author Jerry Quinn (jlquinn@optonline.net)
  */
 public class BandCombineOp implements RasterOp
 {
   private RenderingHints hints;
   private float[][] matrix;
-  
+
   /**
    * Construct a BandCombineOp.
-   * 
+   *
    * @param matrix The matrix to filter pixels with.
    * @param hints Rendering hints to apply.  Ignored.
    * @throws ArrayIndexOutOfBoundsException if the matrix is invalid
@@ -96,7 +96,7 @@ public class BandCombineOp implements RasterOp
    * by 1, i.e. added to the sum for that dest component. If dest is null, a
    * suitable Raster is created. This implementation uses
    * createCompatibleDestRaster.
-   * 
+   *
    * @param src The source Raster.
    * @param dest The destination Raster, or null.
    * @throws IllegalArgumentException if the destination raster is incompatible
@@ -122,7 +122,7 @@ public class BandCombineOp implements RasterOp
           // In case matrix rows have implicit translation
           spix[spix.length - 1] = 1;
           src.getPixel(x, y, spix);
-          
+
           // Do not re-calculate if pixel is identical to the last one
           // (ie, blocks of the same colour)
           if (!Arrays.equals(spix, spix2))
@@ -154,7 +154,7 @@ public class BandCombineOp implements RasterOp
    * Op. The number of bands in the source raster must equal the number of rows
    * in the op matrix, which must also be equal to either the number of columns
    * or (columns - 1) in the matrix.
-   * 
+   *
    * @param src The source raster.
    * @return A compatible raster.
    * @see java.awt.image.RasterOp#createCompatibleDestRaster(java.awt.image.Raster)
@@ -181,18 +181,18 @@ public class BandCombineOp implements RasterOp
   /**
    * Return corresponding destination point for source point.  Because this is
    * not a geometric operation, it simply returns a copy of the source.
-   * 
+   *
    * @param src The source point.
    * @param dst The destination point.
    * @return dst The destination point.
    * @see java.awt.image.RasterOp#getPoint2D(java.awt.geom.Point2D,
-   *java.awt.geom.Point2D) 
+   *java.awt.geom.Point2D)
    */
   public final Point2D getPoint2D(Point2D src, Point2D dst)
   {
     if (dst == null)
       return (Point2D)src.clone();
-    
+
     dst.setLocation(src);
     return dst;
   }
@@ -204,7 +204,7 @@ public class BandCombineOp implements RasterOp
   {
     return hints;
   }
-  
+
   /**
    * Return the matrix used in this operation.
    *

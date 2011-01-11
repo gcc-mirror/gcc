@@ -1,4 +1,4 @@
-/* NSFilter.java -- 
+/* NSFilter.java --
    Copyright (C) 1999,2000,2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -56,23 +56,23 @@ import org.xml.sax.helpers.NamespaceSupport;
  * information using XML.  There are various common ways that such data
  * gets discarded: <ul>
  *
- *	<li> By default, SAX2 parsers must discard the "xmlns*"
- *	attributes, and may also choose not to report properly prefixed
- *	names for elements or attributes.  (Some parsers may support
- *	changing the <em>namespace-prefixes</em> value from the default
- *	to <em>true</em>, effectively eliminating the need to use this
- *	filter on their output.)
+ *      <li> By default, SAX2 parsers must discard the "xmlns*"
+ *      attributes, and may also choose not to report properly prefixed
+ *      names for elements or attributes.  (Some parsers may support
+ *      changing the <em>namespace-prefixes</em> value from the default
+ *      to <em>true</em>, effectively eliminating the need to use this
+ *      filter on their output.)
  *
- *	<li> When event streams are generated from a DOM tree, they may
- *	have never have had prefixes or declarations for namespaces; or
- *	the existing prefixes or declarations may have been invalidated
- *	by structural modifications to that DOM tree.
+ *      <li> When event streams are generated from a DOM tree, they may
+ *      have never have had prefixes or declarations for namespaces; or
+ *      the existing prefixes or declarations may have been invalidated
+ *      by structural modifications to that DOM tree.
  *
- *	<li> Other software writing SAX event streams won't necessarily
- *	be worrying about prefix management, and so they will need to
- *	have a transparent solution for managing them.
+ *      <li> Other software writing SAX event streams won't necessarily
+ *      be worrying about prefix management, and so they will need to
+ *      have a transparent solution for managing them.
  *
- *	</ul>
+ *      </ul>
  *
  * <p> This filter uses a heuristic to choose the prefix to assign to any
  * particular name which wasn't already corectly prefixed.  The associated
@@ -91,55 +91,55 @@ import org.xml.sax.helpers.NamespaceSupport;
  */
 public class NSFilter extends EventFilter
 {
-    private NamespaceSupport	nsStack = new NamespaceSupport ();
-    private Stack		elementStack = new Stack ();
+    private NamespaceSupport    nsStack = new NamespaceSupport ();
+    private Stack               elementStack = new Stack ();
 
-    private boolean		pushedContext;
-    private String		nsTemp [] = new String [3];
-    private AttributesImpl	attributes = new AttributesImpl ();
-    private boolean		usedDefault;
+    private boolean             pushedContext;
+    private String              nsTemp [] = new String [3];
+    private AttributesImpl      attributes = new AttributesImpl ();
+    private boolean             usedDefault;
 
     // gensymmed prefixes use this root name
-    private static final String	prefixRoot = "prefix-";
+    private static final String prefixRoot = "prefix-";
 
-    
+
     /**
      * Passes events through to the specified consumer, after first
      * processing them.
      *
      * @param next the next event consumer to receive events.
      */
-	// constructor used by PipelineFactory
+        // constructor used by PipelineFactory
     public NSFilter (EventConsumer next)
     {
-	super (next);
+        super (next);
 
-	setContentHandler (this);
+        setContentHandler (this);
     }
 
     private void fatalError (String message)
     throws SAXException
     {
-	SAXParseException	e;
-	ErrorHandler		handler = getErrorHandler ();
-	Locator			locator = getDocumentLocator ();
+        SAXParseException       e;
+        ErrorHandler            handler = getErrorHandler ();
+        Locator                 locator = getDocumentLocator ();
 
-	if (locator == null)
-	    e = new SAXParseException (message, null, null, -1, -1);
-	else
-	    e = new SAXParseException (message, locator);
-	if (handler != null)
-	    handler.fatalError (e);
-	throw e;
+        if (locator == null)
+            e = new SAXParseException (message, null, null, -1, -1);
+        else
+            e = new SAXParseException (message, locator);
+        if (handler != null)
+            handler.fatalError (e);
+        throw e;
     }
 
 
     public void startDocument () throws SAXException
     {
-	elementStack.removeAllElements ();
-	nsStack.reset ();
-	pushedContext = false;
-	super.startDocument ();
+        elementStack.removeAllElements ();
+        nsStack.reset ();
+        pushedContext = false;
+        super.startDocument ();
     }
 
     /**
@@ -151,176 +151,176 @@ public class NSFilter extends EventFilter
     public void startPrefixMapping (String prefix, String uri)
     throws SAXException
     {
-	if (pushedContext == false) {
-	    nsStack.pushContext ();
-	    pushedContext = true;
-	}
+        if (pushedContext == false) {
+            nsStack.pushContext ();
+            pushedContext = true;
+        }
 
-	// this check is awkward, but the paranoia prevents big trouble
-	for (Enumeration e = nsStack.getDeclaredPrefixes ();
-		e.hasMoreElements ();
-		/* NOP */ ) {
-	    String	declared = (String) e.nextElement ();
+        // this check is awkward, but the paranoia prevents big trouble
+        for (Enumeration e = nsStack.getDeclaredPrefixes ();
+                e.hasMoreElements ();
+                /* NOP */ ) {
+            String      declared = (String) e.nextElement ();
 
-	    if (!declared.equals (prefix))
-		continue;
-	    if (uri.equals (nsStack.getURI (prefix)))
-		return;
-	    fatalError ("inconsistent binding for prefix '" + prefix
-		+ "' ... " + uri + " (was " + nsStack.getURI (prefix) + ")");
-	}
+            if (!declared.equals (prefix))
+                continue;
+            if (uri.equals (nsStack.getURI (prefix)))
+                return;
+            fatalError ("inconsistent binding for prefix '" + prefix
+                + "' ... " + uri + " (was " + nsStack.getURI (prefix) + ")");
+        }
 
-	if (!nsStack.declarePrefix (prefix, uri))
-	    fatalError ("illegal prefix declared: " + prefix);
+        if (!nsStack.declarePrefix (prefix, uri))
+            fatalError ("illegal prefix declared: " + prefix);
     }
 
     private String fixName (String ns, String l, String name, boolean isAttr)
     throws SAXException
     {
-	if ("".equals (name) || name == null) {
-	    name = l;
-	    if ("".equals (name) || name == null)
-		fatalError ("empty/null name");
-	}
+        if ("".equals (name) || name == null) {
+            name = l;
+            if ("".equals (name) || name == null)
+                fatalError ("empty/null name");
+        }
 
-	// can we correctly process the name as-is?
-	// handles "element scope" attribute names here.
-	if (nsStack.processName (name, nsTemp, isAttr) != null
-		&& nsTemp [0].equals (ns)
-		) {
-	    return nsTemp [2];
-	}
+        // can we correctly process the name as-is?
+        // handles "element scope" attribute names here.
+        if (nsStack.processName (name, nsTemp, isAttr) != null
+                && nsTemp [0].equals (ns)
+                ) {
+            return nsTemp [2];
+        }
 
-	// nope, gotta modify the name or declare a default mapping
-	int	temp;
+        // nope, gotta modify the name or declare a default mapping
+        int     temp;
 
-	// get rid of any current prefix
-	if ((temp = name.indexOf (':')) >= 0) {
-	    name = name.substring (temp + 1);
+        // get rid of any current prefix
+        if ((temp = name.indexOf (':')) >= 0) {
+            name = name.substring (temp + 1);
 
-	    // ... maybe that's enough (use/prefer default namespace) ...
-	    if (!isAttr && nsStack.processName (name, nsTemp, false) != null
-		    && nsTemp [0].equals (ns)
-		    ) {
-		return nsTemp [2];
-	    }
-	}
+            // ... maybe that's enough (use/prefer default namespace) ...
+            if (!isAttr && nsStack.processName (name, nsTemp, false) != null
+                    && nsTemp [0].equals (ns)
+                    ) {
+                return nsTemp [2];
+            }
+        }
 
-	// must we define and use the default/undefined prefix?
-	if ("".equals (ns)) {
-	    if (isAttr)
-		fatalError ("processName bug");
-	    if (attributes.getIndex ("xmlns") != -1)
-		fatalError ("need to undefine default NS, but it's bound: "
-			+ attributes.getValue ("xmlns"));
-	    
-	    nsStack.declarePrefix ("", "");
-	    attributes.addAttribute ("", "", "xmlns", "CDATA", "");
-	    return name;
-	}
+        // must we define and use the default/undefined prefix?
+        if ("".equals (ns)) {
+            if (isAttr)
+                fatalError ("processName bug");
+            if (attributes.getIndex ("xmlns") != -1)
+                fatalError ("need to undefine default NS, but it's bound: "
+                        + attributes.getValue ("xmlns"));
 
-	// is there at least one non-null prefix we can use?
-	for (Enumeration e = nsStack.getDeclaredPrefixes ();
-		e.hasMoreElements ();
-		/* NOP */) {
-	    String prefix = (String) e.nextElement ();
-	    String uri = nsStack.getURI (prefix);
+            nsStack.declarePrefix ("", "");
+            attributes.addAttribute ("", "", "xmlns", "CDATA", "");
+            return name;
+        }
 
-	    if (uri == null || !uri.equals (ns))
-		continue;
-	    return prefix + ":" + name;
-	}
+        // is there at least one non-null prefix we can use?
+        for (Enumeration e = nsStack.getDeclaredPrefixes ();
+                e.hasMoreElements ();
+                /* NOP */) {
+            String prefix = (String) e.nextElement ();
+            String uri = nsStack.getURI (prefix);
 
-	// no such luck.  create a prefix name, declare it, use it.
-	for (temp = 0; temp >= 0; temp++) {
-	    String	prefix = prefixRoot + temp;
+            if (uri == null || !uri.equals (ns))
+                continue;
+            return prefix + ":" + name;
+        }
 
-	    if (nsStack.getURI (prefix) == null) {
-		nsStack.declarePrefix (prefix, ns);
-		attributes.addAttribute ("", "", "xmlns:" + prefix,
-			"CDATA", ns);
-		return prefix + ":" + name;
-	    }
-	}
-	fatalError ("too many prefixes genned");
-	// NOTREACHED
-	return null;
+        // no such luck.  create a prefix name, declare it, use it.
+        for (temp = 0; temp >= 0; temp++) {
+            String      prefix = prefixRoot + temp;
+
+            if (nsStack.getURI (prefix) == null) {
+                nsStack.declarePrefix (prefix, ns);
+                attributes.addAttribute ("", "", "xmlns:" + prefix,
+                        "CDATA", ns);
+                return prefix + ":" + name;
+            }
+        }
+        fatalError ("too many prefixes genned");
+        // NOTREACHED
+        return null;
     }
 
     public void startElement (
-	String uri, String localName,
-	String qName, Attributes atts
+        String uri, String localName,
+        String qName, Attributes atts
     ) throws SAXException
     {
-	if (!pushedContext)
-	    nsStack.pushContext ();
-	pushedContext = false;
+        if (!pushedContext)
+            nsStack.pushContext ();
+        pushedContext = false;
 
-	// make sure we have all NS declarations handy before we start
-	int	length = atts.getLength ();
+        // make sure we have all NS declarations handy before we start
+        int     length = atts.getLength ();
 
-	for (int i = 0; i < length; i++) {
-	    String	aName = atts.getQName (i);
+        for (int i = 0; i < length; i++) {
+            String      aName = atts.getQName (i);
 
-	    if (!aName.startsWith ("xmlns"))
-		continue;
+            if (!aName.startsWith ("xmlns"))
+                continue;
 
-	    String	prefix;
+            String      prefix;
 
-	    if ("xmlns".equals (aName))
-		prefix = "";
-	    else if (aName.indexOf (':') == 5)
-		prefix = aName.substring (6);
-	    else	// "xmlnsfoo" etc.
-		continue;
-	    startPrefixMapping (prefix, atts.getValue (i));
-	}
+            if ("xmlns".equals (aName))
+                prefix = "";
+            else if (aName.indexOf (':') == 5)
+                prefix = aName.substring (6);
+            else        // "xmlnsfoo" etc.
+                continue;
+            startPrefixMapping (prefix, atts.getValue (i));
+        }
 
-	// put namespace decls at the start of our regenned attlist
-	attributes.clear ();
-	for (Enumeration e = nsStack.getDeclaredPrefixes ();
-		e.hasMoreElements ();
-		/* NOP */) {
-	    String prefix = (String) e.nextElement ();
+        // put namespace decls at the start of our regenned attlist
+        attributes.clear ();
+        for (Enumeration e = nsStack.getDeclaredPrefixes ();
+                e.hasMoreElements ();
+                /* NOP */) {
+            String prefix = (String) e.nextElement ();
 
-	    attributes.addAttribute ("", "",
-		    ("".equals (prefix)
-			? "xmlns"
-			: "xmlns:" + prefix),
-		    "CDATA",
-		    nsStack.getURI (prefix));
-	}
+            attributes.addAttribute ("", "",
+                    ("".equals (prefix)
+                        ? "xmlns"
+                        : "xmlns:" + prefix),
+                    "CDATA",
+                    nsStack.getURI (prefix));
+        }
 
-	// name fixups:  element, then attributes.
-	// fixName may declare a new prefix or, for the element,
-	// redeclare the default (if element name needs it).
-	qName = fixName (uri, localName, qName, false);
+        // name fixups:  element, then attributes.
+        // fixName may declare a new prefix or, for the element,
+        // redeclare the default (if element name needs it).
+        qName = fixName (uri, localName, qName, false);
 
-	for (int i = 0; i < length; i++) {
-	    String	aName = atts.getQName (i);
-	    String	aNS = atts.getURI (i);
-	    String	aLocal = atts.getLocalName (i);
-	    String	aType = atts.getType (i);
-	    String	aValue = atts.getValue (i);
+        for (int i = 0; i < length; i++) {
+            String      aName = atts.getQName (i);
+            String      aNS = atts.getURI (i);
+            String      aLocal = atts.getLocalName (i);
+            String      aType = atts.getType (i);
+            String      aValue = atts.getValue (i);
 
-	    if (aName.startsWith ("xmlns"))
-		continue;
-	    aName = fixName (aNS, aLocal, aName, true);
-	    attributes.addAttribute (aNS, aLocal, aName, aType, aValue);
-	}
+            if (aName.startsWith ("xmlns"))
+                continue;
+            aName = fixName (aNS, aLocal, aName, true);
+            attributes.addAttribute (aNS, aLocal, aName, aType, aValue);
+        }
 
-	elementStack.push (qName);
+        elementStack.push (qName);
 
-	// pass event along, with cleaned-up names and decls.
-	super.startElement (uri, localName, qName, attributes);
+        // pass event along, with cleaned-up names and decls.
+        super.startElement (uri, localName, qName, attributes);
     }
 
     public void endElement (String uri, String localName, String qName)
     throws SAXException
     {
-	nsStack.popContext ();
-	qName = (String) elementStack.pop ();
-	super.endElement (uri, localName, qName);
+        nsStack.popContext ();
+        qName = (String) elementStack.pop ();
+        super.endElement (uri, localName, qName);
     }
 
     /**
@@ -330,12 +330,12 @@ public class NSFilter extends EventFilter
      */
     public void endPrefixMapping (String prefix)
     throws SAXException
-	{ }
+        { }
 
     public void endDocument () throws SAXException
     {
-	elementStack.removeAllElements ();
-	nsStack.reset ();
-	super.endDocument ();
+        elementStack.removeAllElements ();
+        nsStack.reset ();
+        super.endDocument ();
     }
 }

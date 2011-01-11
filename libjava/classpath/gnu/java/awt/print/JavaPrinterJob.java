@@ -113,15 +113,15 @@ public class JavaPrinterJob extends PrinterJob
   {
     // lookup all services without any constraints
     services = PrintServiceLookup.lookupPrintServices
-      (DocFlavor.INPUT_STREAM.POSTSCRIPT, null);   
+      (DocFlavor.INPUT_STREAM.POSTSCRIPT, null);
   }
 
   private static final Class copyClass = (new Copies(1)).getClass();
   private static final Class jobNameClass = (new JobName("", null)).getClass();
   private static final Class userNameClass = (new RequestingUserName("", null)).getClass();
-  
+
   /**
-   * Initializes a new instance of <code>PrinterJob</code>. 
+   * Initializes a new instance of <code>PrinterJob</code>.
    */
   public JavaPrinterJob()
   {
@@ -143,7 +143,7 @@ public class JavaPrinterJob extends PrinterJob
     else if( orientation.equals(OrientationRequested.LANDSCAPE) )
       pageFormat.setOrientation(PageFormat.LANDSCAPE);
     else if( orientation.equals(OrientationRequested.REVERSE_LANDSCAPE) )
-	pageFormat.setOrientation(PageFormat.REVERSE_LANDSCAPE);
+        pageFormat.setOrientation(PageFormat.REVERSE_LANDSCAPE);
   }
 
   /**
@@ -203,11 +203,11 @@ public class JavaPrinterJob extends PrinterJob
   {
     try
       {
-	if(printJob != null && (printJob instanceof CancelablePrintJob))
-	  {
-	    ((CancelablePrintJob)printJob).cancel();
-	    cancelled = true;
-	  }
+        if(printJob != null && (printJob instanceof CancelablePrintJob))
+          {
+            ((CancelablePrintJob)printJob).cancel();
+            cancelled = true;
+          }
       }
     catch(PrintException pe)
       {
@@ -261,20 +261,20 @@ public class JavaPrinterJob extends PrinterJob
       return;
 
     PostScriptGraphics2D pg = new PostScriptGraphics2D( this );
-    SpooledDocument doc = pg.spoolPostScript( printable, pageFormat, 
-					      pageable );
+    SpooledDocument doc = pg.spoolPostScript( printable, pageFormat,
+                                              pageable );
 
     cancelled = false;
     printJob = printer.createPrintJob();
     try
       {
-	printJob.print(doc, attributes);
+        printJob.print(doc, attributes);
       }
-    catch (PrintException pe) 
+    catch (PrintException pe)
       {
-	PrinterException p = new PrinterException();
-	p.initCause(pe);
-	throw p;
+        PrinterException p = new PrinterException();
+        p.initCause(pe);
+        throw p;
       }
     // no printjob active.
     printJob = null;
@@ -313,22 +313,22 @@ public class JavaPrinterJob extends PrinterJob
     throws HeadlessException
   {
     PrintService chosenPrinter = ServiceUI.printDialog
-      (null, 50, 50, services, null, 
+      (null, 50, 50, services, null,
        DocFlavor.INPUT_STREAM.POSTSCRIPT, attributes);
 
     getPageAttributes();
 
     if( chosenPrinter != null )
       {
-	try
-	  {
-	    setPrintService( chosenPrinter );
-	  }
-	catch(PrinterException pe)
-	  {
-	    // Should not happen.
-	  }
-	return true;
+        try
+          {
+            setPrintService( chosenPrinter );
+          }
+        catch(PrinterException pe)
+          {
+            // Should not happen.
+          }
+        return true;
       }
     return false;
   }

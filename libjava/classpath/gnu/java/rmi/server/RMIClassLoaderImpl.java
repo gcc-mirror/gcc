@@ -90,21 +90,21 @@ public class RMIClassLoaderImpl extends RMIClassLoaderSpi
     private final String annotation;
   }
 
-  /** 
-   * This class is used to identify a cached classloader by its codebase and 
+  /**
+   * This class is used to identify a cached classloader by its codebase and
    * the context classloader that is its parent.
-   */  
+   */
   private static class CacheKey
   {
      private String mCodeBase;
      private ClassLoader mContextClassLoader;
-    
+
      public CacheKey (String theCodebase, ClassLoader theContextClassLoader)
      {
        mCodeBase = theCodebase;
        mContextClassLoader = theContextClassLoader;
      }
-    
+
     /**
      * @return true if the codebase and the context classloader are equal
      */
@@ -113,13 +113,13 @@ public class RMIClassLoaderImpl extends RMIClassLoaderSpi
       if (theOther instanceof CacheKey)
       {
         CacheKey key = (CacheKey) theOther;
-    
+
         return (equals (this.mCodeBase,key.mCodeBase)
                 && equals (this.mContextClassLoader, key.mContextClassLoader));
         }
       return false;
     }
-    
+
     /**
      * Test if the two objects are equal or both null.
      * @param theOne
@@ -132,17 +132,17 @@ public class RMIClassLoaderImpl extends RMIClassLoaderSpi
     }
 
     /**
-     * @return hashCode  
+     * @return hashCode
      */
     public int hashCode()
     {
-      return ((mCodeBase != null           ? mCodeBase.hashCode()           :  0) 
+      return ((mCodeBase != null           ? mCodeBase.hashCode()           :  0)
               ^(mContextClassLoader != null ? mContextClassLoader.hashCode() : -1));
     }
 
     public String toString()
     {
-      return "[" + mCodeBase + "," + mContextClassLoader + "]"; 
+      return "[" + mCodeBase + "," + mContextClassLoader + "]";
     }
 
   }
@@ -214,7 +214,7 @@ public class RMIClassLoaderImpl extends RMIClassLoaderSpi
                          ClassLoader defaultLoader)
     throws MalformedURLException, ClassNotFoundException
   {
-    try 
+    try
       {
         if (defaultLoader != null)
             return Class.forName(name, false, defaultLoader);
@@ -236,7 +236,7 @@ public class RMIClassLoaderImpl extends RMIClassLoaderSpi
       {
         clss[i] = loadClass(codeBase, interfaces[i], defaultLoader);
       }
-    
+
     // Chain all class loaders (they may differ).
     ArrayList loaders = new ArrayList(clss.length);
     ClassLoader loader = null;
@@ -266,11 +266,11 @@ public class RMIClassLoaderImpl extends RMIClassLoaderSpi
   /**
    * Gets a classloader for the given codebase and with the current
    * context classloader as parent.
-   * 
+   *
    * @param codebase
-   * 
+   *
    * @return a classloader for the given codebase
-   * 
+   *
    * @throws MalformedURLException if the codebase contains a malformed URL
    */
   public ClassLoader getClassLoader(String codebase)
@@ -283,23 +283,23 @@ public class RMIClassLoaderImpl extends RMIClassLoaderSpi
     CacheKey loaderKey = new CacheKey
     (codebase, Thread.currentThread().getContextClassLoader());
     loader = (ClassLoader) cacheLoaders.get (loaderKey);
-    
+
     if (loader == null)
       {
         //create an entry in cacheLoaders mapping a loader to codebases.
         // codebases are separated by " "
         StringTokenizer tok = new StringTokenizer (codebase, " ");
         ArrayList urls = new ArrayList();
-        
+
         while (tok.hasMoreTokens())
           urls.add (new URL(tok.nextToken()));
-        
+
         loader = new MyClassLoader((URL[]) urls.toArray(new URL [urls.size()]),
                                  Thread.currentThread().getContextClassLoader(),
                                  codebase);
         cacheLoaders.put (loaderKey, loader);
       }
-    
+
     return loader;
   }
 
@@ -315,38 +315,38 @@ public class RMIClassLoaderImpl extends RMIClassLoaderSpi
   public String getClassAnnotation(Class cl)
   {
     ClassLoader loader = cl.getClassLoader();
-    
+
     if (loader == null
         || loader == ClassLoader.getSystemClassLoader())
       {
         return System.getProperty ("java.rmi.server.codebase");
       }
-    
+
     if (loader instanceof MyClassLoader)
       {
         return ((MyClassLoader) loader).getClassAnnotation();
       }
-    
+
     String s = (String) cacheAnnotations.get (loader);
-    
+
     if (s != null)
       return s;
-    
+
     if (loader instanceof URLClassLoader)
       {
         URL[] urls = ((URLClassLoader) loader).getURLs();
-        
+
         if (urls.length == 0)
           return null;
-        
+
         CPStringBuilder annotation = new CPStringBuilder (64 * urls.length);
-        
+
         for (int i = 0; i < urls.length; i++)
           {
             annotation.append (urls [i].toExternalForm());
             annotation.append (' ');
           }
-        
+
         s = annotation.toString();
         cacheAnnotations.put (loader, s);
         return s;

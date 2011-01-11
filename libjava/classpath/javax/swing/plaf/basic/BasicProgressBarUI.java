@@ -71,13 +71,13 @@ import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.ProgressBarUI;
 
 /**
- * The Basic Look and Feel UI delegate for the 
+ * The Basic Look and Feel UI delegate for the
  * JProgressBar.
  */
 public class BasicProgressBarUI extends ProgressBarUI
 {
   /**
-   * A helper class that listens for ChangeEvents 
+   * A helper class that listens for ChangeEvents
    * from the progressBar's model.
    *
    * @specnote Apparently this class was intended to be protected,
@@ -99,13 +99,13 @@ public class BasicProgressBarUI extends ProgressBarUI
   }
 
   /**
-   * This helper class is used to listen for 
+   * This helper class is used to listen for
    * PropertyChangeEvents from the progressBar.
    */
   private class PropertyChangeHandler implements PropertyChangeListener
   {
     /**
-     * Called every time the properties of the 
+     * Called every time the properties of the
      * progressBar change.
      *
      * @param e The PropertyChangeEvent given by the progressBar.
@@ -163,11 +163,11 @@ public class BasicProgressBarUI extends ProgressBarUI
     {
       // Nothing to do here.
     }
-    
+
   }
 
   /**
-   * This helper class is used to listen for 
+   * This helper class is used to listen for
    * the animationTimer's intervals. On every interval,
    * the bouncing box should move.
    */
@@ -215,7 +215,7 @@ public class BasicProgressBarUI extends ProgressBarUI
    * Holds the value of the bouncing box that is returned by {@link #getBox}.
    *
    * @since 1.5
-   */ 
+   */
   protected Rectangle boxRect;
 
   /** The timer used to move the bouncing box. */
@@ -230,7 +230,7 @@ public class BasicProgressBarUI extends ProgressBarUI
   // | frame0 | frame1 | frame2 | frame 3 | frame 4  |
   // |        | frame7 | frame6 | frame 5 |          |
   // +-----------------------------------------------+
-  
+
   /** The current animation index. */
   private transient int animationIndex;
 
@@ -260,7 +260,7 @@ public class BasicProgressBarUI extends ProgressBarUI
   /**
    * The size of the box returned by {@link #getBox} against the orientation
    * direction of the progress bar. This is package private to avoid accessor
-   * method. 
+   * method.
    */
   transient int boxIndependent = - 1;
 
@@ -346,7 +346,7 @@ public class BasicProgressBarUI extends ProgressBarUI
 
   /**
    * This method returns the size and position of the bouncing box
-   * for the current animation index. It stores the values in the 
+   * for the current animation index. It stores the values in the
    * given rectangle and returns it. It returns null if no box should
    * be drawn.
    *
@@ -487,7 +487,7 @@ public class BasicProgressBarUI extends ProgressBarUI
    * rectangle (the bounds without the insets) if the
    * progressBar is horizontal.
    *
-   * @return The preferred size of the progressBar minus 
+   * @return The preferred size of the progressBar minus
    *         insets if it's horizontal.
    */
   protected Dimension getPreferredInnerHorizontal()
@@ -512,7 +512,7 @@ public class BasicProgressBarUI extends ProgressBarUI
 
   /**
    * This method returns the preferred size of the inner
-   * rectangle (the bounds without insets) if the 
+   * rectangle (the bounds without insets) if the
    * progressBar is vertical.
    *
    * @return The preferred size of the progressBar minus
@@ -539,7 +539,7 @@ public class BasicProgressBarUI extends ProgressBarUI
   }
 
   /**
-   * This method returns the preferred size of the 
+   * This method returns the preferred size of the
    * given JComponent. If it returns null, then it
    * is up to the LayoutManager to give it a size.
    *
@@ -585,7 +585,7 @@ public class BasicProgressBarUI extends ProgressBarUI
 
   /**
    * This method returns the point (the top left of the bounding box)
-   * where the text should be painted. 
+   * where the text should be painted.
    *
    * @param g The Graphics object to measure FontMetrics with.
    * @param progressString The string to paint.
@@ -602,7 +602,7 @@ public class BasicProgressBarUI extends ProgressBarUI
     Rectangle tr = new Rectangle();
     Rectangle vr = new Rectangle();
     Rectangle ir = new Rectangle();
-    
+
     if (progressBar.getOrientation() == JProgressBar.HORIZONTAL)
       vr.setBounds(x, y, width, height);
     else
@@ -616,7 +616,7 @@ public class BasicProgressBarUI extends ProgressBarUI
                                        SwingConstants.CENTER,
                                        SwingConstants.CENTER,
                                        SwingConstants.CENTER, vr, ir, tr, 0);
-    
+
     if (progressBar.getOrientation() == JProgressBar.HORIZONTAL)
       return new Point(tr.x, tr.y);
     else
@@ -651,7 +651,7 @@ public class BasicProgressBarUI extends ProgressBarUI
   }
 
   /**
-   * This method is called if the painting to be done is 
+   * This method is called if the painting to be done is
    * for a determinate progressBar.
    *
    * @param g The Graphics object to paint with.
@@ -672,17 +672,17 @@ public class BasicProgressBarUI extends ProgressBarUI
 
     int amountFull = getAmountFull(insets, or.width, or.height);
 
-	if (progressBar.getOrientation() == JProgressBar.HORIZONTAL)
-	  {
-	    g.setColor(c.getForeground());
-	    g.fillRect(vr.x, vr.y, amountFull, vr.height);
-	  }
-	else
-	  {
-	    g.setColor(c.getForeground());
-	    g.fillRect(vr.x, vr.y + vr.height - amountFull, vr.width, 
+        if (progressBar.getOrientation() == JProgressBar.HORIZONTAL)
+          {
+            g.setColor(c.getForeground());
+            g.fillRect(vr.x, vr.y, amountFull, vr.height);
+          }
+        else
+          {
+            g.setColor(c.getForeground());
+            g.fillRect(vr.x, vr.y + vr.height - amountFull, vr.width,
                        amountFull);
-	  }
+          }
 
     if (progressBar.isStringPainted() && !progressBar.getString().equals(""))
       paintString(g, 0, 0, or.width, or.height, amountFull, insets);
@@ -739,13 +739,13 @@ public class BasicProgressBarUI extends ProgressBarUI
     String str = progressBar.getString();
     int full = getAmountFull(b, width, height);
     Point placement = getStringPlacement(g, progressBar.getString(),
-                                         x + b.left, y + b.top, 
+                                         x + b.left, y + b.top,
                                          width - b.left - b.right,
                                          height - b.top - b.bottom);
     Color savedColor = g.getColor();
     Shape savedClip = g.getClip();
     FontMetrics fm = g.getFontMetrics(progressBar.getFont());
-    
+
     if (progressBar.getOrientation() == JProgressBar.VERTICAL)
       {
         AffineTransform rotate = AffineTransform.getRotateInstance(Math.PI / 2);
@@ -756,7 +756,7 @@ public class BasicProgressBarUI extends ProgressBarUI
       {
         placement.y += fm.getAscent();
       }
-    
+
     g.setColor(getSelectionForeground());
     g.setClip(0, 0, full + b.left, height);
     g.drawString(str, placement.x, placement.y);
@@ -770,7 +770,7 @@ public class BasicProgressBarUI extends ProgressBarUI
   /**
    * This method sets the current animation index. If the index is greater than
    * the number of frames, it resets to 0.
-   * 
+   *
    * @param newValue The new animation index.
    */
   protected void setAnimationIndex(int newValue)
@@ -849,10 +849,10 @@ public class BasicProgressBarUI extends ProgressBarUI
     if (cycleTime % repaintInterval != 0
         && (cycleTime / repaintInterval) % 2 != 0)
       {
-	int div = (cycleTime / repaintInterval) + 2;
-	div /= 2;
-	div *= 2;
-	cycleTime = div * repaintInterval;
+        int div = (cycleTime / repaintInterval) + 2;
+        div /= 2;
+        div *= 2;
+        cycleTime = div * repaintInterval;
       }
     setAnimationIndex(0);
     numFrames = cycleTime / repaintInterval;
@@ -874,7 +874,7 @@ public class BasicProgressBarUI extends ProgressBarUI
   }
 
   /**
-   * This method registers listeners to all the 
+   * This method registers listeners to all the
    * components that this UI delegate needs to listen to.
    */
   protected void installListeners()
@@ -895,7 +895,7 @@ public class BasicProgressBarUI extends ProgressBarUI
   }
 
   /**
-   * This method unregisters listeners to all the 
+   * This method unregisters listeners to all the
    * components that were listened to.
    */
   protected void uninstallListeners()
@@ -930,13 +930,13 @@ public class BasicProgressBarUI extends ProgressBarUI
     super.installUI(c);
     if (c instanceof JProgressBar)
       {
-	progressBar = (JProgressBar) c;
+        progressBar = (JProgressBar) c;
 
-	animationTimer = new Timer(200, null);
-	animationTimer.setRepeats(true);
+        animationTimer = new Timer(200, null);
+        animationTimer.setRepeats(true);
 
-	installDefaults();
-	installListeners();
+        installDefaults();
+        installListeners();
       }
     if (progressBar.isIndeterminate())
       startAnimationTimer();

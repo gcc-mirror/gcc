@@ -1,4 +1,4 @@
-/* DomDOMException.java -- 
+/* DomDOMException.java --
    Copyright (C) 1999,2000,2001,2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -48,7 +48,7 @@ import org.w3c.dom.Node;
  * that is being reported, in terms of the relevant DOM structures
  * and data.
  *
- * @author David Brownell 
+ * @author David Brownell
  */
 public class DomDOMException
   extends DOMException
@@ -56,13 +56,13 @@ public class DomDOMException
 
   /** @serial Data that caused an error to be reported */
   private String data;
-  
+
   /** @serial Node associated with the error. */
   private Node node;
-  
+
   /** @serial Data associated with the error. */
   private int value;
-  
+
   /**
    * Constructs an exception, with the diagnostic message
    * corresponding to the specified code.
@@ -71,7 +71,7 @@ public class DomDOMException
   {
     super(code, diagnostic(code));
   }
-  
+
   /**
    * Constructs an exception, with the diagnostic message
    * corresponding to the specified code and additional
@@ -110,7 +110,7 @@ public class DomDOMException
   public String getMessage()
   {
     String retval = super.getMessage();
-    
+
     if (data != null)
       {
         retval += "\nMore Information: " + data;
@@ -127,11 +127,11 @@ public class DomDOMException
   }
 
   // these strings should be localizable.
-  
+
   private static String diagnostic(short code)
   {
     switch (code)
-      {        
+      {
         // DOM L1:
       case INDEX_SIZE_ERR:
         return "An index or size is out of range.";
@@ -153,7 +153,7 @@ public class DomDOMException
         return "That object is not supported.";
       case INUSE_ATTRIBUTE_ERR:
         return "The attribute belongs to a different element.";
-        
+
         // DOM L2:
       case INVALID_STATE_ERR:
         return "The object is not usable.";
@@ -172,4 +172,3 @@ public class DomDOMException
   }
 
 }
-

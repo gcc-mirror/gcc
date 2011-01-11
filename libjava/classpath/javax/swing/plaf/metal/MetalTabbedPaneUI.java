@@ -57,15 +57,15 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
 {
 
   /**
-   * A {@link LayoutManager} responsible for placing all the tabs and the 
-   * visible component inside the {@link JTabbedPane}. This class is only used 
+   * A {@link LayoutManager} responsible for placing all the tabs and the
+   * visible component inside the {@link JTabbedPane}. This class is only used
    * for {@link JTabbedPane#WRAP_TAB_LAYOUT}.
    *
    * @specnote Apparently this class was intended to be protected,
    *           but was made public by a compiler bug and is now
    *           public for compatibility.
    */
-  public class TabbedPaneLayout 
+  public class TabbedPaneLayout
     extends BasicTabbedPaneUI.TabbedPaneLayout
   {
     /**
@@ -75,12 +75,12 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
     {
       // Nothing to do here.
     }
-    
+
     /**
-     * Overridden to do nothing, because tab runs are not rotated in the 
+     * Overridden to do nothing, because tab runs are not rotated in the
      * {@link MetalLookAndFeel}.
-     * 
-     * @param tabPlacement  the tab placement (one of {@link #TOP}, 
+     *
+     * @param tabPlacement  the tab placement (one of {@link #TOP},
      *        {@link #BOTTOM}, {@link #LEFT} or {@link #RIGHT}).
      * @param selectedRun  the index of the selected run.
      */
@@ -88,18 +88,18 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
     {
       // do nothing, because tab runs are not rotated in the MetalLookAndFeel
     }
-    
+
     /**
      * Overridden to do nothing, because the selected tab does not have extra
      * padding in the {@link MetalLookAndFeel}.
-     * 
-     * @param tabPlacement  the tab placement (one of {@link #TOP}, 
+     *
+     * @param tabPlacement  the tab placement (one of {@link #TOP},
      *        {@link #BOTTOM}, {@link #LEFT} or {@link #RIGHT}).
      * @param selectedIndex  the index of the selected tab.
      */
     protected void padSelectedTab(int tabPlacement, int selectedIndex)
     {
-      // do nothing, because the selected tab does not have extra padding in 
+      // do nothing, because the selected tab does not have extra padding in
       // the MetalLookAndFeel
     }
 
@@ -162,10 +162,10 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
   {
     return new MetalTabbedPaneUI();
   }
-  
+
   /**
    * Creates and returns an instance of {@link TabbedPaneLayout}.
-   * 
+   *
    * @return A layout manager used by this UI delegate.
    */
   protected LayoutManager createLayoutManager()
@@ -174,12 +174,12 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
            ? new MetalTabbedPaneUI.TabbedPaneLayout()
            : super.createLayoutManager();
   }
-  
+
   /**
    * Paints the border for a single tab.
-   * 
+   *
    * @param g  the graphics device.
-   * @param tabPlacement  the tab placement ({@link #TOP}, {@link #LEFT}, 
+   * @param tabPlacement  the tab placement ({@link #TOP}, {@link #LEFT},
    *        {@link #BOTTOM} or {@link #RIGHT}).
    * @param tabIndex  the index of the tab to draw the border for.
    * @param x  the x-coordinate for the tab's bounding rectangle.
@@ -188,15 +188,15 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
    * @param h  the height for the tab's bounding rectangle.
    * @param isSelected  indicates whether or not the tab is selected.
    */
-  protected void paintTabBorder(Graphics g, int tabPlacement, int tabIndex, 
-          int x, int y, int w, int h, boolean isSelected) 
+  protected void paintTabBorder(Graphics g, int tabPlacement, int tabIndex,
+          int x, int y, int w, int h, boolean isSelected)
   {
     int bottom = y + h - 1;
     int right = x + w - 1;
 
     switch (tabPlacement)
     {
-    case LEFT: 
+    case LEFT:
       paintLeftTabBorder(tabIndex, g, x, y, w, h, bottom, right, isSelected);
       break;
     case BOTTOM:
@@ -206,7 +206,7 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
       paintRightTabBorder(tabIndex, g, x, y, w, h, bottom, right, isSelected);
       break;
     case TOP:
-    default: 
+    default:
       paintTopTabBorder(tabIndex, g, x, y, w, h, bottom, right, isSelected);
     }
   }
@@ -214,7 +214,7 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
   /**
    * Paints the border for a tab assuming that the tab position is at the top
    * ({@link #TOP}).
-   * 
+   *
    * @param tabIndex  the tab index.
    * @param g  the graphics device.
    * @param x  the x-coordinate for the tab's bounding rectangle.
@@ -306,11 +306,11 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
 
     g.translate(-x, -y);
   }
-  
+
   /**
    * Paints the border for a tab assuming that the tab position is at the left
    * ({@link #LEFT}).
-   * 
+   *
    * @param tabIndex  the tab index.
    * @param g  the graphics device.
    * @param x  the x-coordinate for the tab's bounding rectangle.
@@ -436,11 +436,11 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
 
     g.translate(-x, -y);
   }
-  
+
   /**
    * Paints the border for a tab assuming that the tab position is at the right
    * ({@link #RIGHT}).
-   * 
+   *
    * @param tabIndex  the tab index.
    * @param g  the graphics device.
    * @param x  the x-coordinate for the tab's bounding rectangle.
@@ -545,11 +545,11 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
       }
     g.translate(-x, -y);
   }
-  
+
   /**
    * Paints the border for a tab assuming that the tab position is at the bottom
    * ({@link #BOTTOM}).
-   * 
+   *
    * @param tabIndex  the tab index.
    * @param g  the graphics device.
    * @param x  the x-coordinate for the tab's bounding rectangle.
@@ -606,7 +606,7 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
     if (isOcean && isSelected)
       {
         g.drawLine(0, 0, 0, bottom - 5);
-        
+
         // Paint a connecting line to the tab below for all
         // but the first tab in the last run.
         if (tabIndex != tabRuns[runCount-1])
@@ -657,9 +657,9 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
 
   /**
    * Paints the background for a tab.
-   * 
+   *
    * @param g  the graphics device.
-   * @param tabPlacement  the tab placement ({@link #TOP}, {@link #LEFT}, 
+   * @param tabPlacement  the tab placement ({@link #TOP}, {@link #LEFT},
    *        {@link #BOTTOM} or {@link #RIGHT}).
    * @param tabIndex  the index of the tab to draw the border for.
    * @param x  the x-coordinate for the tab's bounding rectangle.
@@ -696,7 +696,7 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
         g.fillRect(x + 2, y + 5, 2, h - 5);
     }
   }
-  
+
   /**
    * This method paints the focus rectangle around the selected tab.
    *
@@ -719,19 +719,19 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
 
         g.setColor(focus);
         g.translate(rect.x, rect.y);
-        
+
         switch (tabPlacement)
           {
           case LEFT:
             // Top line
             g.drawLine(7, 2, rect.width-2, 2);
-            
+
             // Right line
             g.drawLine(rect.width-1, 2, rect.width-1, rect.height-3);
-            
+
             // Bottom line
             g.drawLine(rect.width-2, rect.height-2, 3, rect.height-2);
-            
+
             // Left line
             g.drawLine(2, rect.height-3, 2, 7);
 
@@ -741,13 +741,13 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
           case RIGHT:
             // Top line
             g.drawLine(1, 2, rect.width-8, 2);
-            
+
             // Slant
             g.drawLine(rect.width-7, 2, rect.width-3, 6);
-            
+
             // Right line
             g.drawLine(rect.width-3, 7, rect.width-3, rect.height-3);
-            
+
             // Bottom line
             g.drawLine(rect.width-3, rect.height-2, 2, rect.height-2);
 
@@ -757,51 +757,51 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
           case BOTTOM:
             // Top line
             g.drawLine(2, 1, rect.width-2, 1);
-            
+
             // Right line
             g.drawLine(rect.width-1, 2, rect.width-1, rect.height-3);
-            
+
             // Bottom line
             g.drawLine(7, rect.height-3, rect.width-2, rect.height-3);
-            
+
             // Slant
             g.drawLine(6, rect.height-3, 2, rect.height-7);
-            
+
             // Left line
             g.drawLine(2, rect.height-8, 2, 2);
-            
+
             break;
           case TOP:
           default:
             // Top line
             g.drawLine(6, 2, rect.width-2, 2);
-            
+
             // Right line
             g.drawLine(rect.width-1, 2, rect.width-1, rect.height-3);
-            
+
             // Bottom line
             g.drawLine(3, rect.height-3, rect.width-2, rect.height-3);
-            
+
             // Left line
             g.drawLine(2, rect.height-3, 2, 7);
-            
+
             // Slant
             g.drawLine(2, 6, 6, 2);
-            
+
           }
-        
+
         g.translate(-rect.x, -rect.y);
       }
   }
-  
+
   /**
-   * Returns <code>true</code> if the tabs in the specified run should be 
+   * Returns <code>true</code> if the tabs in the specified run should be
    * padded to make the run fill the width/height of the {@link JTabbedPane}.
-   * 
+   *
    * @param tabPlacement  the tab placement for the {@link JTabbedPane} (one of
    *        {@link #TOP}, {@link #BOTTOM}, {@link #LEFT} and {@link #RIGHT}).
    * @param run  the run index.
-   * 
+   *
    * @return A boolean.
    */
   protected boolean shouldPadTabRun(int tabPlacement, int run)
@@ -824,14 +824,14 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
     tabsOpaque = UIManager.getBoolean("TabbedPane.tabsOpaque");
     minTabWidth = 0;
   }
-  
+
   /**
    * Returns the color for the gap.
-   * 
+   *
    * @param currentRun - The current run to return the color for
    * @param x - The x position of the current run
    * @param y - The y position of the current run
-   * 
+   *
    * @return the color for the gap in the current run.
    */
   protected Color getColorForGap(int currentRun, int x, int y)
@@ -842,23 +842,23 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
       return selectColor;
     return tabAreaBackground;
   }
-  
+
   /**
    * Returns true if the gap should be filled in.
-   * 
+   *
    * @param currentRun - The current run
    * @param tabIndex - The current tab
    * @param x - The x position of the tab
    * @param y - The y position of the tab
-   * 
-   * @return true if the gap at the current run should be filled 
+   *
+   * @return true if the gap at the current run should be filled
    */
   protected boolean shouldFillGap(int currentRun, int tabIndex, int x, int y)
   {
     // As far as I can tell, the gap is never filled in.
     return false;
   }
-  
+
   /**
    * Paints the highlight below the tab, if there is one.
    */
@@ -867,14 +867,14 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
     int selected = tabPane.getSelectedIndex();
     int tabPlacement = tabPane.getTabPlacement();
     Rectangle bounds = getTabBounds(tabPane, selected);
-    
+
     hg.setColor(selectColor);
     int x = bounds.x;
     int y = bounds.y;
     int w = bounds.width;
     int h = bounds.height;
 
-    if (tabPlacement == TOP) 
+    if (tabPlacement == TOP)
         hg.fillRect(x, y + h - 2, w, 30);
     else if (tabPlacement == LEFT)
         hg.fillRect(x + w - 1, y, 20, h);
@@ -882,17 +882,17 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
         hg.fillRect(x, y - h + 2, w, 30);
     else if (tabPlacement == RIGHT)
         hg.fillRect(x - 18, y, 20, h);
-    else 
+    else
       throw new AssertionError("Unrecognised 'tabPlacement' argument.");
     hg = null;
   }
-  
+
   /**
-   * Returns true if we should rotate the tab runs. 
-   * 
+   * Returns true if we should rotate the tab runs.
+   *
    * @param tabPlacement - The current tab placement.
    * @param selectedRun - The selected run.
-   * 
+   *
    * @return true if the tab runs should be rotated.
    */
   protected boolean shouldRotateTabRuns(int tabPlacement,
@@ -1052,7 +1052,7 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
                                               int w, int h)
   {
     g.setColor(darkShadow);
-    
+
     // If tabs are not placed on BOTTOM, or if the selected tab is not in the
     // run directly below the content or the selected tab is not visible,
     // then we draw an unbroken line.
@@ -1144,7 +1144,7 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
           {
             g.setColor(MetalLookAndFeel.getWhite());
             g.drawLine(x, y + 1, x, y + h - 2);
-          }       
+          }
       }
     else
       {
@@ -1163,7 +1163,7 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
               }
           }
       }
-    
+
   }
 
   /**
@@ -1251,7 +1251,7 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
       bg = unselectedBackground;
     return bg;
   }
-  
+
   protected int getTabLabelShiftX(int tabPlacement,
                                   int index,
                                   boolean isSelected)
@@ -1265,5 +1265,5 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
   {
     return 0;
   }
-  
+
 }

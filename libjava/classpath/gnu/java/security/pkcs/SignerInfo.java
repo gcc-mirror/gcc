@@ -90,9 +90,9 @@ public class SignerInfo
    *   issuer       Name,
    *   serialNumber CertificateSerialNumber
    * }
-   * 
+   *
    * DigestAlgorithmIdentifier ::= AlgorithmIdentifier
-   * 
+   *
    * DigestEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier
    *
    * EncryptedDigest ::= OCTET STRING
@@ -269,7 +269,7 @@ public class SignerInfo
   /**
    * Constructs a new instance of <code>SignerInfo</code> given a designated
    * set of fields.
-   * 
+   *
    * @param issuer the X.500 Principal name of the signer referenced by this
    *          instance.
    * @param serialNumber the serial number of the certificate being used. Both
@@ -369,7 +369,7 @@ public class SignerInfo
   /**
    * Writes to the designated output stream the DER encoding of the current
    * contents of this instance.
-   * 
+   *
    * @param out the destination output stream.
    * @throws IOException if an I/O related exception occurs during the process.
    */

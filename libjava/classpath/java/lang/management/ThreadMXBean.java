@@ -39,7 +39,7 @@ package java.lang.management;
 
 /**
  * <p>
- * Provides access to information about the threads 
+ * Provides access to information about the threads
  * of the virtual machine.  An instance of this bean is
  * obtained by calling
  * {@link ManagementFactory#getThreadMXBean()}.
@@ -122,8 +122,8 @@ public interface ThreadMXBean
    * @see #isSynchronizerUsageSupported()
    */
   ThreadInfo[] dumpAllThreads(boolean lockedMonitors,
-			      boolean lockedSynchronizers);
-  
+                              boolean lockedSynchronizers);
+
   /**
    * <p>
    * This method obtains a list of threads which are deadlocked
@@ -140,7 +140,7 @@ public interface ThreadMXBean
    * then {@link #findMonitorDeadlockedThreads()} should be used in
    * preference to this method.
    * </p>
-   * 
+   *
    * @return an array of thread identifiers, corresponding to threads
    *         which are currently in a deadlocked situation, or
    *         <code>null</code> if there are no deadlocks.
@@ -161,7 +161,7 @@ public interface ThreadMXBean
    * waiting to obtain monitor ownership.  On entering a synchronized
    * method of an object, or re-entering it after returning from an
    * {@link java.lang.Object#wait()} call, a thread obtains ownership
-   * of the object's monitor.  
+   * of the object's monitor.
    * </p>
    * <p>
    * Deadlocks can occur in this situation if one or more threads end up
@@ -174,7 +174,7 @@ public interface ThreadMXBean
    * of a different object.  While in that method, it then wants to
    * call the original synchronized method, R,  called by A.  Doing so
    * requires ownership of P, which is still held by A.  Hence, it
-   * becomes blocked.  
+   * becomes blocked.
    * </p>
    * <p>
    * A then finishes its sleep, becomes runnable, and is then allowed
@@ -193,7 +193,7 @@ public interface ThreadMXBean
    * to include deadlocks involving ownable synchronizers,
    * {@link #findDeadlockedThreads()} should be used instead.
    * </p>
-   * 
+   *
    * @return an array of thread identifiers, corresponding to threads
    *         which are currently in a deadlocked situation, or
    *         <code>null</code> if there are no deadlocks.
@@ -221,7 +221,7 @@ public interface ThreadMXBean
    * Returns the total number of nanoseconds of CPU time
    * the current thread has used.  This is equivalent to calling
    * <code>{@link #getThreadCpuTime()}(Thread.currentThread.getId())</code>.
-   * </p> 
+   * </p>
    * <p>
    * Note that the value is only nanosecond-precise, and not accurate; there
    * is no guarantee that the difference between two values is really a
@@ -248,7 +248,7 @@ public interface ThreadMXBean
    * the current thread has executed in user mode.  This is
    * equivalent to calling
    * <code>{@link #getThreadUserTime()}(Thread.currentThread.getId())</code>.
-   * </p> 
+   * </p>
    * <p>
    * Note that the value is only nanosecond-precise, and not accurate; there
    * is no guarantee that the difference between two values is really a
@@ -298,8 +298,8 @@ public interface ThreadMXBean
   /**
    * <p>
    * Returns the total number of nanoseconds of CPU time
-   * the specified thread has used.  
-   * </p> 
+   * the specified thread has used.
+   * </p>
    * <p>
    * Note that the value is only nanosecond-precise, and not accurate; there
    * is no guarantee that the difference between two values is really a
@@ -329,7 +329,7 @@ public interface ThreadMXBean
    * <code>{@link #getThreadInfo}(id, 0)</code>.  If the
    * identifier specifies a thread which is either non-existant
    * or not alive, then the method returns <code>null</code>.
-   * 
+   *
    * @param id the identifier of the thread to return information
    *           on.
    * @return a {@link ThreadInfo} object pertaining to the specified
@@ -348,11 +348,11 @@ public interface ThreadMXBean
    * identifier specifies a thread which is either non-existant
    * or not alive, then the corresponding element in the returned
    * array is <code>null</code>.
-   * 
+   *
    * @param ids an array of thread identifiers to return information
    *           on.
    * @return an array of {@link ThreadInfo} objects matching the
-   *         specified threads.  The corresponding element is 
+   *         specified threads.  The corresponding element is
    *         <code>null</code> if the identifier specifies
    *         a thread that doesn't exist or is not alive.
    * @throws IllegalArgumentException if an identifier in the array is
@@ -379,15 +379,15 @@ public interface ThreadMXBean
    * If an identifier specifies a thread which is either non-existant
    * or not alive, then the corresponding element in the returned
    * array is <code>null</code>.
-   * 
+   *
    * @param ids an array of thread identifiers to return information
    *           on.
    * @param lockedMonitors true if information on locked monitors
    *                       should be included.
    * @param lockedSynchronizers true if information on locked
-   *                            ownable synchronizers should be included. 
+   *                            ownable synchronizers should be included.
    * @return an array of {@link ThreadInfo} objects matching the
-   *         specified threads.  The corresponding element is 
+   *         specified threads.  The corresponding element is
    *         <code>null</code> if the identifier specifies
    *         a thread that doesn't exist or is not alive.
    * @throws IllegalArgumentException if an identifier in the array is
@@ -407,7 +407,7 @@ public interface ThreadMXBean
    * @see #isSynchronizerUsageSupported()
    */
   ThreadInfo[] getThreadInfo(long[] ids, boolean lockedMonitors,
-			     boolean lockedSynchronizers);
+                             boolean lockedSynchronizers);
 
   /**
    * Returns information on the specified thread with
@@ -444,7 +444,7 @@ public interface ThreadMXBean
    * to an empty stack trace (an empty array is returned by the
    * appropriate {@link ThreadInfo} method).  A maximum depth of
    * <code>Integer.MAX_VALUE</code> returns the full stack trace.
-   * 
+   *
    * @param ids an array of thread identifiers to return information
    *           on.
    * @param maxDepth the maximum depth of the stack trace.
@@ -452,7 +452,7 @@ public interface ThreadMXBean
    *                 correspond to an empty and full stack trace
    *                 respectively.
    * @return an array of {@link ThreadInfo} objects matching the
-   *         specified threads.  The corresponding element is 
+   *         specified threads.  The corresponding element is
    *         <code>null</code> if the identifier specifies
    *         a thread that doesn't exist or is not alive.
    * @throws IllegalArgumentException if an identifier in the array is
@@ -466,8 +466,8 @@ public interface ThreadMXBean
   /**
    * <p>
    * Returns the total number of nanoseconds of CPU time
-   * the specified thread has executed in user mode.  
-   * </p> 
+   * the specified thread has executed in user mode.
+   * </p>
    * <p>
    * Note that the value is only nanosecond-precise, and not accurate; there
    * is no guarantee that the difference between two values is really a

@@ -1,4 +1,4 @@
-/* SelectionKeyImpl.java -- 
+/* SelectionKeyImpl.java --
    Copyright (C) 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -65,7 +65,7 @@ public abstract class SelectionKeyImpl extends AbstractSelectionKey
   {
     if (!isValid())
       throw new CancelledKeyException();
-    
+
     return readyOps;
   }
 
@@ -73,7 +73,7 @@ public abstract class SelectionKeyImpl extends AbstractSelectionKey
   {
     if (!isValid())
       throw new CancelledKeyException();
-    
+
     readyOps = ops;
     return this;
   }
@@ -82,10 +82,10 @@ public abstract class SelectionKeyImpl extends AbstractSelectionKey
   {
     if (!isValid())
       throw new CancelledKeyException();
-    
+
     synchronized (impl.selectedKeys())
       {
-	return interestOps;
+        return interestOps;
       }
   }
 
@@ -96,11 +96,11 @@ public abstract class SelectionKeyImpl extends AbstractSelectionKey
 
     synchronized (impl.selectedKeys())
       {
-	interestOps = ops;
+        interestOps = ops;
       }
     return this;
   }
-    
+
   public Selector selector ()
   {
     return impl;

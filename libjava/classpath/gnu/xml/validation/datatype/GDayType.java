@@ -1,4 +1,4 @@
-/* GDayType.java -- 
+/* GDayType.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -80,7 +80,7 @@ final class GDayType
         }
       return 0;
     }
-    
+
   }
 
   static final int[] CONSTRAINING_FACETS = {
@@ -157,7 +157,7 @@ final class GDayType
         throw new DatatypeException("invalid GDay value");
       }
   }
-  
+
   public Object createValue(String literal, ValidationContext context) {
     try
       {
@@ -170,6 +170,5 @@ final class GDayType
         return null;
       }
   }
-  
-}
 
+}

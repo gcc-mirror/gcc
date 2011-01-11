@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -63,7 +63,7 @@ import java.util.Enumeration;
 public interface Name extends Cloneable, Serializable, Comparable<Object>
 {
   // This class is implemented as gnu.javax.naming.ictxImpl.trans.GnuName
-  
+
   long serialVersionUID = -3617482732056931635L;
 
   /**
@@ -96,7 +96,7 @@ public interface Name extends Cloneable, Serializable, Comparable<Object>
    * Returns the components till the given index as a <code>Name</code>.
    * The returned <code>Name</code> can be modified without changing the
    * original.
-   * 
+   *
    * @param posn the ending position, exclusive
    *
    * @exception ArrayIndexOutOfBoundsException if the given index is smaller
@@ -109,7 +109,7 @@ public interface Name extends Cloneable, Serializable, Comparable<Object>
    * <code>Name</code>.
    * The returned <code>Name</code> can be modified without changing the
    * original.
-   * 
+   *
    * @param posn the starting position, inclusive. If it is equal to the size
    *        of the name, the empty name is returned.
    *

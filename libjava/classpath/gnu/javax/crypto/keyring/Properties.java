@@ -1,4 +1,4 @@
-/* Properties.java -- 
+/* Properties.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -74,7 +74,7 @@ public class Properties
 
   /**
    * Creates a copy of this properties object.
-   * 
+   *
    * @return The copy.
    */
   public Object clone()
@@ -86,7 +86,7 @@ public class Properties
 
   /**
    * Tests if this object contains a given property name.
-   * 
+   *
    * @param key The key to test.
    * @return True if this object contains the given key.
    */
@@ -99,7 +99,7 @@ public class Properties
 
   /**
    * Tests if this object contains a given property value.
-   * 
+   *
    * @param value The value to test.
    * @return True if this object contains the given value.
    */
@@ -112,7 +112,7 @@ public class Properties
 
   /**
    * Adds a new property to this object.
-   * 
+   *
    * @param key The key, which can neither be null nor empty.
    * @param value The value, which cannot be null.
    * @return The old value mapped by the key, if any.
@@ -129,7 +129,7 @@ public class Properties
   /**
    * Returns the value mapped by the given key, or null if there is no such
    * mapping.
-   * 
+   *
    * @param key
    */
   public String get(String key)
@@ -141,7 +141,7 @@ public class Properties
 
   /**
    * Removes a key and its value from this object.
-   * 
+   *
    * @param key The key of the property to remove.
    * @return The old value mapped by the key, if any.
    */
@@ -154,7 +154,7 @@ public class Properties
 
   /**
    * Decodes a set of properties from the given input stream.
-   * 
+   *
    * @param in The input stream.
    * @throws IOException If an I/O error occurs.
    */
@@ -173,7 +173,7 @@ public class Properties
 
   /**
    * Encodes this set of properties to the given output stream.
-   * 
+   *
    * @param out The output stream to encode to.
    * @throws IOException If an I/O error occurs.
    */

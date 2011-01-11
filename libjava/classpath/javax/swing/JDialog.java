@@ -61,7 +61,7 @@ import javax.accessibility.AccessibleContext;
  *
  * Also, unlike <code>java.awt.Dialog</code>s, JDialogs support the
  * Swing Pluggable Look &amp; Feel architecture.
- * 
+ *
  * @author Ronald Veldema (rveldema@cs.vu.nl)
  */
 public class JDialog extends Dialog implements Accessible, WindowConstants,
@@ -94,16 +94,16 @@ public class JDialog extends Dialog implements Accessible, WindowConstants,
    * Whether checking is enabled on the RootPane.
    *
    * @specnote Should be false to comply with J2SE 5.0
-   */ 
+   */
   protected boolean rootPaneCheckingEnabled = false;
 
   /** The default action taken when closed. */
   private int closeAction = HIDE_ON_CLOSE;
-  
+
   /** Whether JDialogs are decorated by the Look and Feel. */
   private static boolean decorated;
 
-  /* Creates a new non-modal JDialog with no title 
+  /* Creates a new non-modal JDialog with no title
    * using a shared Frame as the owner.
    */
   public JDialog()
@@ -135,7 +135,7 @@ public class JDialog extends Dialog implements Accessible, WindowConstants,
   }
 
   /**
-   * Creates a new non-modal JDialog using the 
+   * Creates a new non-modal JDialog using the
    * given title and owner.
    *
    * @param owner The owner of the JDialog.
@@ -147,7 +147,7 @@ public class JDialog extends Dialog implements Accessible, WindowConstants,
   }
 
   /**
-   * Creates a new JDialog using the given modal 
+   * Creates a new JDialog using the given modal
    * settings, title, and owner.
    *
    * @param owner The owner of the JDialog.
@@ -160,7 +160,7 @@ public class JDialog extends Dialog implements Accessible, WindowConstants,
   }
 
   /**
-   * Creates a new JDialog using the given modal 
+   * Creates a new JDialog using the given modal
    * settings, title, owner and graphics configuration.
    *
    * @param owner The owner of the JDialog.
@@ -199,7 +199,7 @@ public class JDialog extends Dialog implements Accessible, WindowConstants,
   }
 
   /**
-   * Creates a new non-modal JDialog using the 
+   * Creates a new non-modal JDialog using the
    * given title and owner.
    *
    * @param owner The owner of the JDialog.
@@ -211,7 +211,7 @@ public class JDialog extends Dialog implements Accessible, WindowConstants,
   }
 
   /**
-   * Creates a new JDialog using the given modal 
+   * Creates a new JDialog using the given modal
    * settings, title, and owner.
    *
    * @param owner The owner of the JDialog.
@@ -224,7 +224,7 @@ public class JDialog extends Dialog implements Accessible, WindowConstants,
   }
 
   /**
-   * Creates a new JDialog using the given modal 
+   * Creates a new JDialog using the given modal
    * settings, title, owner and graphics configuration.
    *
    * @param owner The owner of the JDialog.
@@ -240,8 +240,8 @@ public class JDialog extends Dialog implements Accessible, WindowConstants,
   }
 
   /**
-   * This method is called to initialize the 
-   * JDialog. It sets the layout used, the locale, 
+   * This method is called to initialize the
+   * JDialog. It sets the layout used, the locale,
    * and creates the RootPane.
    */
   protected void dialogInit()
@@ -283,7 +283,7 @@ public class JDialog extends Dialog implements Accessible, WindowConstants,
   }
 
   /**
-   * This method returns the preferred size of 
+   * This method returns the preferred size of
    * the JDialog.
    *
    * @return The preferred size.
@@ -306,7 +306,7 @@ public class JDialog extends Dialog implements Accessible, WindowConstants,
   }
 
   /**
-   * This method sets the JMenuBar used 
+   * This method sets the JMenuBar used
    * in this JDialog.
    *
    * @param menubar The JMenuBar to use.
@@ -318,7 +318,7 @@ public class JDialog extends Dialog implements Accessible, WindowConstants,
 
   /**
    * This method sets the LayoutManager used in the JDialog.
-   * This method will throw an Error if rootPaneChecking is 
+   * This method will throw an Error if rootPaneChecking is
    * enabled.
    *
    * @param manager The LayoutManager to use.
@@ -440,7 +440,7 @@ public class JDialog extends Dialog implements Accessible, WindowConstants,
   }
 
   /**
-   * This method is called when a component is added to the 
+   * This method is called when a component is added to the
    * the JDialog. Calling this method with rootPaneCheckingEnabled
    * will cause an Error to be thrown.
    *
@@ -469,7 +469,7 @@ public class JDialog extends Dialog implements Accessible, WindowConstants,
     // pass it on to the content pane instead.
     if (comp == rootPane)
       super.remove(rootPane);
-    else 
+    else
       getContentPane().remove(comp);
   }
 
@@ -502,8 +502,8 @@ public class JDialog extends Dialog implements Accessible, WindowConstants,
   {
     paint(g);
   }
-  
-  
+
+
   /**
    * This method handles window events. This allows the JDialog
    * to honour its default close operation.

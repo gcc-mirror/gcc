@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -47,7 +47,7 @@ final class VMObjectStreamClass
   {
     if (Configuration.INIT_LOAD_LIBRARY)
       {
-	System.loadLibrary("javaio");
+        System.loadLibrary("javaio");
       }
   }
 
@@ -92,7 +92,7 @@ final class VMObjectStreamClass
    */
   static native void setLongNative(Field field, Object obj, long val)
     throws InternalError;
-  
+
   /**
    * Sets the value of the specified field. This method handles "int".
    * Warning ! The types are not truely checked here and final values may be
@@ -102,9 +102,9 @@ final class VMObjectStreamClass
    * @param obj Instance which will have its field set.
    * @param val Value to put in the field.
    */
-  static native void setIntNative(Field field, Object obj, int val) 
+  static native void setIntNative(Field field, Object obj, int val)
     throws InternalError;
-  
+
   /**
    * Sets the value of the specified field. This method handles "short".
    * Warning ! The types are not truely checked here and final values may be
@@ -114,7 +114,7 @@ final class VMObjectStreamClass
    * @param obj Instance which will have its field set.
    * @param val Value to put in the field.
    */
-  static native void setShortNative(Field field, Object obj, short val) 
+  static native void setShortNative(Field field, Object obj, short val)
     throws InternalError;
 
   /**
@@ -126,7 +126,7 @@ final class VMObjectStreamClass
    * @param obj Instance which will have its field set.
    * @param val Value to put in the field.
    */
-  static native void setCharNative(Field field, Object obj, char val) 
+  static native void setCharNative(Field field, Object obj, char val)
     throws InternalError;
 
   /**
@@ -138,7 +138,7 @@ final class VMObjectStreamClass
    * @param obj Instance which will have its field set.
    * @param val Value to put in the field.
    */
-  static native void setByteNative(Field field, Object obj, byte val) 
+  static native void setByteNative(Field field, Object obj, byte val)
     throws InternalError;
 
   /**
@@ -150,7 +150,7 @@ final class VMObjectStreamClass
    * @param obj Instance which will have its field set.
    * @param val Value to put in the field.
    */
-  static native void setBooleanNative(Field field, Object obj, boolean val) 
+  static native void setBooleanNative(Field field, Object obj, boolean val)
     throws InternalError;
 
   /**
@@ -162,8 +162,7 @@ final class VMObjectStreamClass
    * @param obj Instance which will have its field set.
    * @param val Value to put in the field.
    */
-  static native void setObjectNative(Field field, Object obj, Object val) 
+  static native void setObjectNative(Field field, Object obj, Object val)
     throws InternalError;
-  
-}
 
+}

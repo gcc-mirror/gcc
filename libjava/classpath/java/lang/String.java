@@ -107,7 +107,7 @@ public final class String
    * @see CharData#UPPER_EXPAND
    */
   private static final char[] upperExpand
-	= zeroBasedStringValue(CharData.UPPER_EXPAND);
+        = zeroBasedStringValue(CharData.UPPER_EXPAND);
 
   /**
    * Stores unicode multi-character uppercase special casing table.
@@ -115,8 +115,8 @@ public final class String
    * @see CharData#UPPER_SPECIAL
    */
   private static final char[] upperSpecial
-	  = zeroBasedStringValue(CharData.UPPER_SPECIAL);
-  
+          = zeroBasedStringValue(CharData.UPPER_SPECIAL);
+
   /**
    * Characters which make up the String.
    * Package access is granted for use by StringBuffer.
@@ -281,7 +281,7 @@ public final class String
     // equivalent to: offset + count < 0 || offset + count > ascii.length
     if (ascii.length - offset < count)
       throw new StringIndexOutOfBoundsException("offset + count: "
-						+ (offset + count));
+                                                + (offset + count));
     value = new char[count];
     this.offset = 0;
     this.count = count;
@@ -355,18 +355,18 @@ public final class String
   {
     try
       {
-	return Charset.forName(encoding);
+        return Charset.forName(encoding);
       }
     catch(IllegalCharsetNameException e)
       {
-	throw new UnsupportedEncodingException("Encoding: "+encoding+
-					       " not found.");
+        throw new UnsupportedEncodingException("Encoding: "+encoding+
+                                               " not found.");
       }
     catch(UnsupportedCharsetException e)
       {
-	throw new UnsupportedEncodingException("Encoding: "+encoding+
-					       " not found.");
-      }    
+        throw new UnsupportedEncodingException("Encoding: "+encoding+
+                                               " not found.");
+      }
   }
 
   /**
@@ -397,31 +397,31 @@ public final class String
     // equivalent to: offset + count < 0 || offset + count > data.length
     if (data.length - offset < count)
       throw new StringIndexOutOfBoundsException("offset + count: "
-						+ (offset + count));
-    try 
+                                                + (offset + count));
+    try
       {
         CharsetDecoder csd = encoding.newDecoder();
-	csd.onMalformedInput(CodingErrorAction.REPLACE);
-	csd.onUnmappableCharacter(CodingErrorAction.REPLACE);
-	CharBuffer cbuf = csd.decode(ByteBuffer.wrap(data, offset, count));
- 	if(cbuf.hasArray())
- 	  {
- 	    value = cbuf.array();
-	    this.offset = cbuf.position();
-	    this.count = cbuf.remaining();
- 	  } else {
-	    // Doubt this will happen. But just in case.
-	    value = new char[cbuf.remaining()];
-	    cbuf.get(value);
-	    this.offset = 0;
-	    this.count = value.length;
-	  }
-      } 
+        csd.onMalformedInput(CodingErrorAction.REPLACE);
+        csd.onUnmappableCharacter(CodingErrorAction.REPLACE);
+        CharBuffer cbuf = csd.decode(ByteBuffer.wrap(data, offset, count));
+        if(cbuf.hasArray())
+          {
+            value = cbuf.array();
+            this.offset = cbuf.position();
+            this.count = cbuf.remaining();
+          } else {
+            // Doubt this will happen. But just in case.
+            value = new char[cbuf.remaining()];
+            cbuf.get(value);
+            this.offset = 0;
+            this.count = value.length;
+          }
+      }
     catch(CharacterCodingException e)
       {
-	// This shouldn't ever happen.
-	throw (InternalError) new InternalError().initCause(e);
-      }	  
+        // This shouldn't ever happen.
+        throw (InternalError) new InternalError().initCause(e);
+      }
   }
 
   /**
@@ -494,39 +494,39 @@ public final class String
     // equivalent to: offset + count < 0 || offset + count > data.length
     if (data.length - offset < count)
       throw new StringIndexOutOfBoundsException("offset + count: "
-						+ (offset + count));
+                                                + (offset + count));
     int o, c;
     char[] v;
     String encoding;
-    try 
-	{
-	  encoding = System.getProperty("file.encoding");
-	  CharsetDecoder csd = Charset.forName(encoding).newDecoder();
-	  csd.onMalformedInput(CodingErrorAction.REPLACE);
-	  csd.onUnmappableCharacter(CodingErrorAction.REPLACE);
-	  CharBuffer cbuf = csd.decode(ByteBuffer.wrap(data, offset, count));
-	  if(cbuf.hasArray())
-	    {
+    try
+        {
+          encoding = System.getProperty("file.encoding");
+          CharsetDecoder csd = Charset.forName(encoding).newDecoder();
+          csd.onMalformedInput(CodingErrorAction.REPLACE);
+          csd.onUnmappableCharacter(CodingErrorAction.REPLACE);
+          CharBuffer cbuf = csd.decode(ByteBuffer.wrap(data, offset, count));
+          if(cbuf.hasArray())
+            {
               v = cbuf.array();
-	      o = cbuf.position();
-	      c = cbuf.remaining();
-	    } else {
-	      // Doubt this will happen. But just in case.
-	      v = new char[cbuf.remaining()];
-	      cbuf.get(v);
-	      o = 0;
-	      c = v.length;
-	    }
-	} catch(Exception ex){
-	    // If anything goes wrong (System property not set,
-	    // NIO provider not available, etc)
-	    // Default to the 'safe' encoding ISO8859_1
-	    v = new char[count];
-	    o = 0;
-	    c = count;
-	    for (int i=0;i<count;i++)
-	      v[i] = (char)data[offset+i];
-	}
+              o = cbuf.position();
+              c = cbuf.remaining();
+            } else {
+              // Doubt this will happen. But just in case.
+              v = new char[cbuf.remaining()];
+              cbuf.get(v);
+              o = 0;
+              c = v.length;
+            }
+        } catch(Exception ex){
+            // If anything goes wrong (System property not set,
+            // NIO provider not available, etc)
+            // Default to the 'safe' encoding ISO8859_1
+            v = new char[count];
+            o = 0;
+            c = count;
+            for (int i=0;i<count;i++)
+              v[i] = (char)data[offset+i];
+        }
     this.value = v;
     this.offset = o;
     this.count = c;
@@ -610,7 +610,7 @@ public final class String
     // equivalent to: offset + count < 0 || offset + count > data.length
     if (data.length - offset < count)
       throw new StringIndexOutOfBoundsException("offset + count: "
-						+ (offset + count));
+                                                + (offset + count));
     if (dont_copy)
       {
         value = data;
@@ -631,7 +631,7 @@ public final class String
    * @param codePoints the entire array of code points
    * @param offset the start of the subarray
    * @param count the length of the subarray
-   * 
+   *
    * @throws IllegalArgumentException if an invalid code point is found
    * in the codePoints array
    * @throws IndexOutOfBoundsException if offset is negative or offset + count
@@ -640,34 +640,34 @@ public final class String
   public String(int[] codePoints, int offset, int count)
   {
     // FIXME: This implementation appears to give correct internal
-    // representation of the String because: 
+    // representation of the String because:
     //   - length() is correct
-    //   - getting a char[] from toCharArray() and testing 
+    //   - getting a char[] from toCharArray() and testing
     //     Character.codePointAt() on all the characters in that array gives
     //     the appropriate results
-    // however printing the String gives incorrect results.  This may be 
+    // however printing the String gives incorrect results.  This may be
     // due to printing method errors (such as incorrectly looping through
     // the String one char at a time rather than one "character" at a time.
-    
+
     if (offset < 0)
       throw new IndexOutOfBoundsException();
     int end = offset + count;
     int pos = 0;
     // This creates a char array that is long enough for all of the code
     // points to represent supplementary characters.  This is more than likely
-    // a waste of storage, so we use it only temporarily and then copy the 
+    // a waste of storage, so we use it only temporarily and then copy the
     // used portion into the value array.
     char[] temp = new char[2 * codePoints.length];
     for (int i = offset; i < end; i++)
       {
-        pos += Character.toChars(codePoints[i], temp, pos);        
+        pos += Character.toChars(codePoints[i], temp, pos);
       }
     this.count = pos;
     this.value = new char[pos];
     System.arraycopy(temp, 0, value, 0, pos);
     this.offset = 0;
   }
-  
+
   /**
    * Returns the number of characters contained in this String.
    *
@@ -813,25 +813,25 @@ public final class String
    */
   public byte[] getBytes(Charset enc)
   {
-    try 
+    try
       {
-	CharsetEncoder cse = enc.newEncoder();
-	cse.onMalformedInput(CodingErrorAction.REPLACE);
-	cse.onUnmappableCharacter(CodingErrorAction.REPLACE);
-	ByteBuffer bbuf = cse.encode(CharBuffer.wrap(value, offset, count));
-	if(bbuf.hasArray())
-	  return bbuf.array();
-	
-	// Doubt this will happen. But just in case.
-	byte[] bytes = new byte[bbuf.remaining()];
-	bbuf.get(bytes);
-	return bytes;
-      } 
+        CharsetEncoder cse = enc.newEncoder();
+        cse.onMalformedInput(CodingErrorAction.REPLACE);
+        cse.onUnmappableCharacter(CodingErrorAction.REPLACE);
+        ByteBuffer bbuf = cse.encode(CharBuffer.wrap(value, offset, count));
+        if(bbuf.hasArray())
+          return bbuf.array();
+
+        // Doubt this will happen. But just in case.
+        byte[] bytes = new byte[bbuf.remaining()];
+        bbuf.get(bytes);
+        return bytes;
+      }
     catch(CharacterCodingException e)
       {
-	// This shouldn't ever happen.
-	throw (InternalError) new InternalError().initCause(e);
-      }	  
+        // This shouldn't ever happen.
+        throw (InternalError) new InternalError().initCause(e);
+      }
   }
 
   /**
@@ -845,18 +845,18 @@ public final class String
    * @since 1.1
    */
   public byte[] getBytes()
-  { 
-      try 
-	  {
-	      return getBytes(System.getProperty("file.encoding"));
-	  } catch(Exception e) {
-	      // XXX - Throw an error here? 
-	      // For now, default to the 'safe' encoding.
-	      byte[] bytes = new byte[count];
-	      for(int i=0;i<count;i++)
-		  bytes[i] = (byte)((value[offset+i] <= 0xFF)?
-				    value[offset+i]:'?');
-	      return bytes;
+  {
+      try
+          {
+              return getBytes(System.getProperty("file.encoding"));
+          } catch(Exception e) {
+              // XXX - Throw an error here?
+              // For now, default to the 'safe' encoding.
+              byte[] bytes = new byte[count];
+              for(int i=0;i<count;i++)
+                  bytes[i] = (byte)((value[offset+i] <= 0xFF)?
+                                    value[offset+i]:'?');
+              return bytes;
       }
   }
 
@@ -929,7 +929,7 @@ public final class String
       return false;
     for (int i = 0; i < count; ++i)
       if (value[offset + i] != seq.charAt(i))
-	return false;
+        return false;
     return true;
   }
 
@@ -1025,7 +1025,7 @@ public final class String
           return result;
       }
     return count - str.count;
-  }  
+  }
 
   /**
    * Predicate which determines if this String matches another String
@@ -1789,7 +1789,7 @@ public final class String
       if (begin == limit)
         return "";
     while (value[begin++] <= '\u0020');
-    
+
     int end = limit;
     while (value[--end] <= '\u0020')
       ;
@@ -1991,10 +1991,10 @@ public final class String
   }
 
   /**
-   * If two Strings are considered equal, by the equals() method, 
-   * then intern() will return the same String instance. ie. 
-   * if (s1.equals(s2)) then (s1.intern() == s2.intern()). 
-   * All string literals and string-valued constant expressions 
+   * If two Strings are considered equal, by the equals() method,
+   * then intern() will return the same String instance. ie.
+   * if (s1.equals(s2)) then (s1.intern() == s2.intern()).
+   * All string literals and string-valued constant expressions
    * are already interned.
    *
    * @return the interned String
@@ -2026,23 +2026,23 @@ public final class String
     int count = 0;
     while (start < end)
       {
-	char base = value[start];
-	if (base < Character.MIN_HIGH_SURROGATE
-	    || base > Character.MAX_HIGH_SURROGATE
-	    || start == end
-	    || start == count
-	    || value[start + 1] < Character.MIN_LOW_SURROGATE
-	    || value[start + 1] > Character.MAX_LOW_SURROGATE)
-	  {
-	    // Nothing.
-	  }
-	else
-	  {
-	    // Surrogate pair.
-	    ++start;
-	  }
-	++start;
-	++count;
+        char base = value[start];
+        if (base < Character.MIN_HIGH_SURROGATE
+            || base > Character.MAX_HIGH_SURROGATE
+            || start == end
+            || start == count
+            || value[start + 1] < Character.MIN_LOW_SURROGATE
+            || value[start + 1] > Character.MAX_LOW_SURROGATE)
+          {
+            // Nothing.
+          }
+        else
+          {
+            // Surrogate pair.
+            ++start;
+          }
+        ++start;
+        ++count;
       }
     return count;
   }
@@ -2111,30 +2111,30 @@ public final class String
       value = s.value;
     else
       {
-	int count = s.count;
-	value = new char[count];
-	VMSystem.arraycopy(s.value, s.offset, value, 0, count);
+        int count = s.count;
+        value = new char[count];
+        VMSystem.arraycopy(s.value, s.offset, value, 0, count);
       }
 
     return value;
   }
-  
+
   /**
    * Returns true iff this String contains the sequence of Characters
    * described in s.
    * @param s the CharSequence
    * @return true iff this String contains s
-   * 
+   *
    * @since 1.5
    */
   public boolean contains (CharSequence s)
   {
     return this.indexOf(s.toString()) != -1;
   }
-  
+
   /**
    * Returns a string that is this string with all instances of the sequence
-   * represented by <code>target</code> replaced by the sequence in 
+   * represented by <code>target</code> replaced by the sequence in
    * <code>replacement</code>.
    * @param target the sequence to be replaced
    * @param replacement the sequence used as the replacement
@@ -2146,9 +2146,9 @@ public final class String
     String replaceString = replacement.toString();
     int targetLength = target.length();
     int replaceLength = replacement.length();
-    
+
     int startPos = this.indexOf(targetString);
-    CPStringBuilder result = new CPStringBuilder(this);    
+    CPStringBuilder result = new CPStringBuilder(this);
     while (startPos != -1)
       {
         // Replace the target with the replacement
@@ -2159,15 +2159,15 @@ public final class String
       }
     return result.toString();
   }
-  
+
   /**
-   * Return the index into this String that is offset from the given index by 
+   * Return the index into this String that is offset from the given index by
    * <code>codePointOffset</code> code points.
    * @param index the index at which to start
    * @param codePointOffset the number of code points to offset
    * @return the index into this String that is <code>codePointOffset</code>
    * code points offset from <code>index</code>.
-   * 
+   *
    * @throws IndexOutOfBoundsException if index is negative or larger than the
    * length of this string.
    * @throws IndexOutOfBoundsException if codePointOffset is positive and the
@@ -2180,7 +2180,7 @@ public final class String
   {
     if (index < 0 || index > count)
       throw new IndexOutOfBoundsException();
-    
+
     return Character.offsetByCodePoints(value, offset, count, offset + index,
                                         codePointOffset);
   }

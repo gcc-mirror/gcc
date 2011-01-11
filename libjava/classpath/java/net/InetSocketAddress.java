@@ -181,14 +181,14 @@ public class InetSocketAddress extends SocketAddress
     // The hostname may differ.
     if (obj instanceof InetSocketAddress)
       {
-	InetSocketAddress sa = (InetSocketAddress) obj;
+        InetSocketAddress sa = (InetSocketAddress) obj;
 
-	if (addr == null && sa.addr != null)
-	  return false;
-	else if (addr == null && sa.addr == null) // we know hostname != null
-	  return hostname.equals(sa.hostname) && sa.port == port;
-	else
-	  return addr.equals(sa.addr) && sa.port == port;
+        if (addr == null && sa.addr != null)
+          return false;
+        else if (addr == null && sa.addr == null) // we know hostname != null
+          return hostname.equals(sa.hostname) && sa.port == port;
+        else
+          return addr.equals(sa.addr) && sa.port == port;
       }
 
     return false;

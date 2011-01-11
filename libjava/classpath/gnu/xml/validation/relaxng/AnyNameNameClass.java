@@ -1,4 +1,4 @@
-/* AnyNameNameClass.java -- 
+/* AnyNameNameClass.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -47,7 +47,7 @@ class AnyNameNameClass
 {
 
   NameClass exceptNameClass;
-  
+
   boolean matchesName(String uri, String localName)
   {
     return (exceptNameClass == null) ? true :
@@ -55,4 +55,3 @@ class AnyNameNameClass
   }
 
 }
-

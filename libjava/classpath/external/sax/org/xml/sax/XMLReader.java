@@ -19,9 +19,9 @@ import java.io.IOException;
  * for further information.
  * </blockquote>
  *
- * <p><strong>Note:</strong> despite its name, this interface does 
- * <em>not</em> extend the standard Java {@link java.io.Reader Reader} 
- * interface, because reading XML is a fundamentally different activity 
+ * <p><strong>Note:</strong> despite its name, this interface does
+ * <em>not</em> extend the standard Java {@link java.io.Reader Reader}
+ * interface, because reading XML is a fundamentally different activity
  * than reading character data.</p>
  *
  * <p>XMLReader is the interface that an XML parser's SAX2 driver must
@@ -41,7 +41,7 @@ import java.io.IOException;
  * interface (as well as some minor ones):</p>
  *
  * <ol>
- * <li>it adds a standard way to query and set features and 
+ * <li>it adds a standard way to query and set features and
  *  properties; and</li>
  * <li>it adds Namespace support, which is required for many
  *  higher-level XML standards.</li>
@@ -55,12 +55,12 @@ import java.io.IOException;
  * @version 2.0.1+ (sax2r3pre1)
  * @see org.xml.sax.XMLFilter
  * @see org.xml.sax.helpers.ParserAdapter
- * @see org.xml.sax.helpers.XMLReaderAdapter 
+ * @see org.xml.sax.helpers.XMLReaderAdapter
  */
 public interface XMLReader
 {
 
-
+
     ////////////////////////////////////////////////////////////////////
     // Configuration.
     ////////////////////////////////////////////////////////////////////
@@ -93,7 +93,7 @@ public interface XMLReader
      * try {
      *   r.setFeature("http://xml.org/sax/features/validation", true);
      * } catch (SAXException e) {
-     *   System.err.println("Cannot activate validation."); 
+     *   System.err.println("Cannot activate validation.");
      * }
      *
      *                         // register event handlers
@@ -118,7 +118,7 @@ public interface XMLReader
      * @exception org.xml.sax.SAXNotRecognizedException If the feature
      *            value can't be assigned or retrieved.
      * @exception org.xml.sax.SAXNotSupportedException When the
-     *            XMLReader recognizes the feature name but 
+     *            XMLReader recognizes the feature name but
      *            cannot determine its value at this time.
      * @see #setFeature
      */
@@ -132,8 +132,8 @@ public interface XMLReader
      * <p>The feature name is any fully-qualified URI.  It is
      * possible for an XMLReader to expose a feature value but
      * to be unable to change the current value.
-     * Some feature values may be immutable or mutable only 
-     * in specific contexts, such as before, during, or after 
+     * Some feature values may be immutable or mutable only
+     * in specific contexts, such as before, during, or after
      * a parse.</p>
      *
      * <p>All XMLReaders are required to support setting
@@ -145,12 +145,12 @@ public interface XMLReader
      * @exception org.xml.sax.SAXNotRecognizedException If the feature
      *            value can't be assigned or retrieved.
      * @exception org.xml.sax.SAXNotSupportedException When the
-     *            XMLReader recognizes the feature name but 
+     *            XMLReader recognizes the feature name but
      *            cannot set the requested value.
      * @see #getFeature
      */
     public void setFeature (String name, boolean value)
-	throws SAXNotRecognizedException, SAXNotSupportedException;
+        throws SAXNotRecognizedException, SAXNotSupportedException;
 
 
     /**
@@ -174,12 +174,12 @@ public interface XMLReader
      * @exception org.xml.sax.SAXNotRecognizedException If the property
      *            value can't be assigned or retrieved.
      * @exception org.xml.sax.SAXNotSupportedException When the
-     *            XMLReader recognizes the property name but 
+     *            XMLReader recognizes the property name but
      *            cannot determine its value at this time.
      * @see #setProperty
      */
     public Object getProperty (String name)
-	throws SAXNotRecognizedException, SAXNotSupportedException;
+        throws SAXNotRecognizedException, SAXNotSupportedException;
 
 
     /**
@@ -188,12 +188,12 @@ public interface XMLReader
      * <p>The property name is any fully-qualified URI.  It is
      * possible for an XMLReader to recognize a property name but
      * to be unable to change the current value.
-     * Some property values may be immutable or mutable only 
-     * in specific contexts, such as before, during, or after 
+     * Some property values may be immutable or mutable only
+     * in specific contexts, such as before, during, or after
      * a parse.</p>
      *
      * <p>XMLReaders are not required to recognize setting
-     * any specific property names, though a core set is defined by 
+     * any specific property names, though a core set is defined by
      * SAX2.</p>
      *
      * <p>This method is also the standard mechanism for setting
@@ -204,14 +204,14 @@ public interface XMLReader
      * @exception org.xml.sax.SAXNotRecognizedException If the property
      *            value can't be assigned or retrieved.
      * @exception org.xml.sax.SAXNotSupportedException When the
-     *            XMLReader recognizes the property name but 
+     *            XMLReader recognizes the property name but
      *            cannot set the requested value.
      */
     public void setProperty (String name, Object value)
-	throws SAXNotRecognizedException, SAXNotSupportedException;
+        throws SAXNotRecognizedException, SAXNotSupportedException;
 
 
-
+
     ////////////////////////////////////////////////////////////////////
     // Event handlers.
     ////////////////////////////////////////////////////////////////////
@@ -325,7 +325,7 @@ public interface XMLReader
     public ErrorHandler getErrorHandler ();
 
 
-
+
     ////////////////////////////////////////////////////////////////////
     // Parsing.
     ////////////////////////////////////////////////////////////////////
@@ -355,7 +355,7 @@ public interface XMLReader
      * handlers.</p>
      *
      * <p>This method is synchronous: it will not return until parsing
-     * has ended.  If a client application wants to terminate 
+     * has ended.  If a client application wants to terminate
      * parsing early, it should throw an exception.</p>
      *
      * @param input The input source for the top-level of the
@@ -370,10 +370,10 @@ public interface XMLReader
      * @see #setEntityResolver
      * @see #setDTDHandler
      * @see #setContentHandler
-     * @see #setErrorHandler 
+     * @see #setErrorHandler
      */
     public void parse (InputSource input)
-	throws IOException, SAXException;
+        throws IOException, SAXException;
 
 
     /**
@@ -399,6 +399,6 @@ public interface XMLReader
      * @see #parse(org.xml.sax.InputSource)
      */
     public void parse (String systemId)
-	throws IOException, SAXException;
+        throws IOException, SAXException;
 
 }

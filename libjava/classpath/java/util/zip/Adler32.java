@@ -45,8 +45,8 @@ package java.util.zip;
  */
 
 /**
- * Computes Adler32 checksum for a stream of data. An Adler32 
- * checksum is not as reliable as a CRC32 checksum, but a lot faster to 
+ * Computes Adler32 checksum for a stream of data. An Adler32
+ * checksum is not as reliable as a CRC32 checksum, but a lot faster to
  * compute.
  *<p>
  * The specification for Adler32 may be found in RFC 1950.
@@ -60,7 +60,7 @@ package java.util.zip;
  *       (excluding any dictionary data) computed according to Adler-32
  *       algorithm. This algorithm is a 32-bit extension and improvement
  *       of the Fletcher algorithm, used in the ITU-T X.224 / ISO 8073
- *       standard. 
+ *       standard.
  *<p>
  *       Adler-32 is composed of two sums accumulated per byte: s1 is
  *       the sum of all bytes, s2 is the sum of all s1 values. Both sums
@@ -103,13 +103,13 @@ public class Adler32 implements Checksum
   private int checksum; //we do all in int.
 
   //Note that java doesn't have unsigned integers,
-  //so we have to be careful with what arithmetic 
-  //we do. We return the checksum as a long to 
+  //so we have to be careful with what arithmetic
+  //we do. We return the checksum as a long to
   //avoid sign confusion.
 
   /**
-   * Creates a new instance of the <code>Adler32</code> class. 
-   * The checksum starts off with a value of 1. 
+   * Creates a new instance of the <code>Adler32</code> class.
+   * The checksum starts off with a value of 1.
    */
   public Adler32 ()
   {
@@ -119,13 +119,13 @@ public class Adler32 implements Checksum
   /**
    * Resets the Adler32 checksum to the initial value.
    */
-  public void reset () 
+  public void reset ()
   {
-    checksum = 1; //Initialize to 1    
+    checksum = 1; //Initialize to 1
   }
 
   /**
-   * Updates the checksum with the byte b. 
+   * Updates the checksum with the byte b.
    *
    * @param bval the data value to add. The high byte of the int is ignored.
    */
@@ -135,16 +135,16 @@ public class Adler32 implements Checksum
     //would rather not have that overhead
     int s1 = checksum & 0xffff;
     int s2 = checksum >>> 16;
-    
+
     s1 = (s1 + (bval & 0xFF)) % BASE;
     s2 = (s1 + s2) % BASE;
-    
+
     checksum = (s2 << 16) + s1;
   }
 
   /**
-   * Updates the checksum with the bytes taken from the array. 
-   * 
+   * Updates the checksum with the bytes taken from the array.
+   *
    * @param buffer an array of bytes
    */
   public void update (byte[] buffer)
@@ -153,8 +153,8 @@ public class Adler32 implements Checksum
   }
 
   /**
-   * Updates the checksum with the bytes taken from the array. 
-   * 
+   * Updates the checksum with the bytes taken from the array.
+   *
    * @param buf an array of bytes
    * @param off the start of the data used for this update
    * @param len the number of bytes to use for this update
@@ -167,31 +167,31 @@ public class Adler32 implements Checksum
 
     while (len > 0)
       {
-	// We can defer the modulo operation:
-	// s1 maximally grows from 65521 to 65521 + 255 * 3800
-	// s2 maximally grows by 3800 * median(s1) = 2090079800 < 2^31
-	int n = 3800;
-	if (n > len)
-	  n = len;
-	len -= n;
-	while (--n >= 0)
-	  {
-	    s1 = s1 + (buf[off++] & 0xFF);
-	    s2 = s2 + s1;
-	  }
-	s1 %= BASE;
-	s2 %= BASE;
+        // We can defer the modulo operation:
+        // s1 maximally grows from 65521 to 65521 + 255 * 3800
+        // s2 maximally grows by 3800 * median(s1) = 2090079800 < 2^31
+        int n = 3800;
+        if (n > len)
+          n = len;
+        len -= n;
+        while (--n >= 0)
+          {
+            s1 = s1 + (buf[off++] & 0xFF);
+            s2 = s2 + s1;
+          }
+        s1 %= BASE;
+        s2 %= BASE;
       }
 
     /*Old implementation, borrowed from somewhere:
     int n;
-    
+
     while (len-- > 0) {
 
-      s1 = (s1 + (bs[offset++] & 0xff)) % BASE; 
+      s1 = (s1 + (bs[offset++] & 0xff)) % BASE;
       s2 = (s2 + s1) % BASE;
     }*/
-    
+
     checksum = (s2 << 16) | s1;
   }
 

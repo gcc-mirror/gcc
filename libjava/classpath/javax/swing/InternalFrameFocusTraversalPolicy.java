@@ -47,7 +47,7 @@ import java.awt.FocusTraversalPolicy;
  * when it is selected.
  *
  * @author Michael Koch
- * 
+ *
  * @since 1.4
  */
 public abstract class InternalFrameFocusTraversalPolicy

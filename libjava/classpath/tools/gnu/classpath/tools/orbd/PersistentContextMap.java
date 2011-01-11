@@ -44,8 +44,8 @@ import org.omg.CORBA.ORB;
 import org.omg.CORBA.Object;
 
 /**
- * The persistent context naming map for the persistent naming service. 
- * 
+ * The persistent context naming map for the persistent naming service.
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class PersistentContextMap extends PersistentMap
@@ -53,7 +53,7 @@ public class PersistentContextMap extends PersistentMap
   /**
    * Create the persistent context map that stores information in the given
    * file.
-   * 
+   *
    * @param an_orb the naming service ORB, used to obtain and produce the object
    *          stringified references.
    * @param mapFile the file, where the persistent information is stored.

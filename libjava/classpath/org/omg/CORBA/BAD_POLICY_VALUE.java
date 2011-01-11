@@ -1,4 +1,4 @@
-/* BAD_POLICY_VALUE.java -- 
+/* BAD_POLICY_VALUE.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -39,17 +39,17 @@ package org.omg.CORBA;
 
 /**
  * Holds a single constant, specifying, that
- * the requested {@link Policy} value is not valid. One of the 
+ * the requested {@link Policy} value is not valid. One of the
  * PolicyErrorCodes, others being {@link UNSUPPORTED_POLICY},
  * {@link BAD_POLICY}, {@link BAD_POLICY_TYPE},
  * {@link BAD_POLICY_VALUE}.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public interface BAD_POLICY_VALUE
 {
   /**
-   * States that the requested {@link Policy} value is not valid. 
+   * States that the requested {@link Policy} value is not valid.
    */
   short value = 3;
 }

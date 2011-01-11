@@ -51,7 +51,7 @@ import java.util.List;
 /**
  * The NameConstraints extension. From RFC 3280, section 4.2.1.11, this
  * extension is defined as:
- * 
+ *
  * <pre>
   id-ce-nameConstraints OBJECT IDENTIFIER ::=  { id-ce 30 }
 
@@ -68,29 +68,29 @@ import java.util.List;
 
   BaseDistance ::= INTEGER (0..MAX)
   </pre>
- * 
+ *
  * See also the classes {@link GeneralNames} and {@link GeneralSubtree}.
- * 
+ *
  * @author csm
  */
 public class NameConstraints extends Value
 {
   public static final OID ID = new OID("2.5.29.30");
-  
+
   private List<GeneralSubtree> permittedSubtrees;
   private List<GeneralSubtree> excludedSubtrees;
-  
+
   public NameConstraints(byte[] encoded) throws IOException
   {
     super(encoded);
-    
+
     DERReader der = new DERReader(encoded);
     DERValue value = der.read();
     if (!value.isConstructed())
       {
         throw new IOException("malformed NameConstraints");
       }
-    
+
     permittedSubtrees = new LinkedList<GeneralSubtree>();
     excludedSubtrees = new LinkedList<GeneralSubtree>();
     int len = 0;
@@ -108,7 +108,7 @@ public class NameConstraints extends Value
                 len2 += subtree.getEncodedLength();
               }
             len += subtrees.getEncodedLength();
-            
+
             if (len < value.getLength())
               {
                 subtrees = der.read();
@@ -134,24 +134,24 @@ public class NameConstraints extends Value
                 excludedSubtrees.add(new GeneralSubtree(subtree.getEncoded()));
                 der.skip(subtree.getLength());
                 len2 += subtree.getEncodedLength();
-              }            
+              }
           }
         else
           throw new IOException("unexpected tag " + subtrees.getTag()
                                 + " (expecting 0 or 1)");
       }
   }
-  
+
   public List<GeneralSubtree> permittedSubtrees()
   {
     return Collections.unmodifiableList(permittedSubtrees);
   }
-  
+
   public List<GeneralSubtree> excludedSubtrees()
   {
     return Collections.unmodifiableList(excludedSubtrees);
   }
-  
+
   public String toString()
   {
     return NameConstraints.class.getName() + " [ permittedSubtrees="

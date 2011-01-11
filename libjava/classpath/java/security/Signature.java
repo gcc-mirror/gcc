@@ -52,30 +52,30 @@ import java.security.spec.AlgorithmParameterSpec;
  * <code>Signature</code> is used to provide an interface to digital signature
  * algorithms. Digital signatures provide authentication and data integrity of
  * digital data.
- * 
+ *
  * <p>The GNU provider provides the NIST standard DSA which uses DSA and SHA-1.
  * It can be specified by SHA/DSA, SHA-1/DSA or its OID. If the RSA signature
  * algorithm is provided then it could be MD2/RSA. MD5/RSA, or SHA-1/RSA. The
  * algorithm must be specified because there is no default.</p>
- * 
+ *
  * <p>Signature provides implementation-independent algorithms which are
  * requested by the user through the <code>getInstance()<?code> methods. It can
  * be requested by specifying just the algorithm name or by specifying both the
  * algorithm name and provider name.</p>
- * 
+ *
  * <p>The three phases of using <code>Signature</code> are:</p>
- * 
+ *
  * <ol>
  *   <li>Initializing:
  *     <ul>
  *       <li>It must be initialized with a private key for signing.</li>
  *       <li>It must be initialized with a public key for verifying.</li>
  *   </li>
- *   
+ *
  *   <li>Updating:
  *   <p>Update the bytes for signing or verifying with calls to update.</p>
  *   </li>
- *   
+ *
  *   <li>Signing or Verify the signature on the currently stored bytes by
  *   calling sign or verify.</li>
  * </ol>
@@ -117,7 +117,7 @@ public abstract class Signature extends SignatureSpi
   /**
    * Constructs a new <code>Signature</code> instance for a designated digital
    * signature algorithm.
-   * 
+   *
    * @param algorithm
    *          the algorithm to use.
    */
@@ -130,7 +130,7 @@ public abstract class Signature extends SignatureSpi
   /**
    * Returns an instance of <code>Signature</code> representing the specified
    * signature.
-   * 
+   *
    * @param algorithm the algorithm to use.
    * @return a new instance repesenting the desired algorithm.
    * @throws NoSuchAlgorithmException if the algorithm is not implemented by any
@@ -160,7 +160,7 @@ public abstract class Signature extends SignatureSpi
   /**
    * Returns an instance of <code>Signature</code> representing the specified
    * signature from the named provider.
-   * 
+   *
    * @param algorithm the algorithm to use.
    * @param provider the name of the provider to use.
    * @return a new instance repesenting the desired algorithm.
@@ -187,7 +187,7 @@ public abstract class Signature extends SignatureSpi
   /**
    * Returns an instance of <code>Signature</code> representing the specified
    * signature from the specified {@link Provider}.
-   * 
+   *
    * @param algorithm the algorithm to use.
    * @param provider the {@link Provider} to use.
    * @return a new instance repesenting the desired algorithm.
@@ -239,7 +239,7 @@ public abstract class Signature extends SignatureSpi
 
   /**
    * Returns the {@link Provider} of this instance.
-   * 
+   *
    * @return the {@link Provider} of this instance.
    */
   public final Provider getProvider()
@@ -249,7 +249,7 @@ public abstract class Signature extends SignatureSpi
 
   /**
    * Initializes this instance with the public key for verification purposes.
-   * 
+   *
    * @param publicKey
    *          the public key to verify with.
    * @throws InvalidKeyException
@@ -264,11 +264,11 @@ public abstract class Signature extends SignatureSpi
   /**
    * Verify a signature with a designated {@link Certificate}. This is a FIPS
    * 140-1 compatible method since it verifies a signature with a certificate.
-   * 
+   *
    * <p>If the {@link Certificate} is an X.509 one, has a <i>KeyUsage</i>
    * parameter and that parameter indicates this key is not to be used for
    * signing then an exception is thrown.</p>
-   * 
+   *
    * @param certificate
    *          a {@link Certificate} containing a public key to verify with.
    * @throws InvalidKeyException if the key is invalid.
@@ -290,7 +290,7 @@ public abstract class Signature extends SignatureSpi
 
   /**
    * Initializes this class with the private key for signing purposes.
-   * 
+   *
    * @param privateKey
    *          the private key to sign with.
    * @throws InvalidKeyException
@@ -305,7 +305,7 @@ public abstract class Signature extends SignatureSpi
   /**
    * Initializes this class with the private key and source of randomness for
    * signing purposes.
-   * 
+   *
    * @param privateKey
    *          the private key to sign with.
    * @param random
@@ -323,7 +323,7 @@ public abstract class Signature extends SignatureSpi
   /**
    * Returns the signature bytes of all the data fed to this instance. The
    * format of the output depends on the underlying signature algorithm.
-   * 
+   *
    * @return the signature bytes.
    * @throws SignatureException
    *           if the engine is not properly initialized.
@@ -340,15 +340,15 @@ public abstract class Signature extends SignatureSpi
    * Generates signature bytes of all the data fed to this instance and stores
    * it in the designated array. The format of the result depends on the
    * underlying signature algorithm.
-   * 
+   *
    * <p>After calling this method, the instance is reset to its initial state
    * and can then be used to generate additional signatures.</p>
-   * 
+   *
    * <p><b>IMPLEMENTATION NOTE:</b> Neither this method nor the GNU provider
    * will return partial digests. If <code>len</code> is less than the
    * signature length, this method will throw a {@link SignatureException}. If
    * it is greater than or equal then it is ignored.</p>
-   * 
+   *
    * @param outbuf
    *          array of bytes of where to store the resulting signature bytes.
    * @param offset
@@ -371,7 +371,7 @@ public abstract class Signature extends SignatureSpi
 
   /**
    * Verifies a designated signature.
-   * 
+   *
    * @param signature
    *          the signature bytes to verify.
    * @return <code>true</code> if verified, <code>false</code> otherwise.
@@ -389,7 +389,7 @@ public abstract class Signature extends SignatureSpi
 
   /**
    * Verifies a designated signature.
-   * 
+   *
    * @param signature
    *          the signature bytes to verify.
    * @param offset
@@ -427,7 +427,7 @@ public abstract class Signature extends SignatureSpi
 
   /**
    * Updates the data to be signed or verified with the specified byte.
-   * 
+   *
    * @param b
    *          the byte to update with.
    * @throws SignatureException
@@ -443,7 +443,7 @@ public abstract class Signature extends SignatureSpi
 
   /**
    * Updates the data to be signed or verified with the specified bytes.
-   * 
+   *
    * @param data
    *          the array of bytes to use.
    * @throws SignatureException
@@ -459,7 +459,7 @@ public abstract class Signature extends SignatureSpi
 
   /**
    * Updates the data to be signed or verified with the specified bytes.
-   * 
+   *
    * @param data
    *          an array of bytes to use.
    * @param off
@@ -477,11 +477,11 @@ public abstract class Signature extends SignatureSpi
     else
       throw new SignatureException();
   }
-  
+
   /**
    * Update this signature with the {@link java.nio.Buffer#remaining()}
    * bytes of the input buffer.
-   * 
+   *
    * @param input The input buffer.
    * @throws SignatureException If this instance was not properly
    *  initialized.
@@ -497,7 +497,7 @@ public abstract class Signature extends SignatureSpi
   /**
    * Returns the name of the algorithm currently used. The names of algorithms
    * are usually SHA/DSA or SHA/RSA.
-   * 
+   *
    * @return name of algorithm.
    */
   public final String getAlgorithm()
@@ -507,7 +507,7 @@ public abstract class Signature extends SignatureSpi
 
   /**
    * Returns a rstring representation of this instance.
-   * 
+   *
    * @return a rstring representation of this instance.
    */
   public String toString()
@@ -517,7 +517,7 @@ public abstract class Signature extends SignatureSpi
 
   /**
    * Sets the specified algorithm parameter to the specified value.
-   * 
+   *
    * @param param
    *          the parameter name.
    * @param value
@@ -535,10 +535,10 @@ public abstract class Signature extends SignatureSpi
 
   /**
    * Sets the signature engine with the specified {@link AlgorithmParameterSpec}.
-   * 
+   *
    * <p>By default, and unless overriden by the concrete SPI, this method always
    * throws an {@link UnsupportedOperationException}.</p>
-   * 
+   *
    * @param params
    *          the parameters to use for intializing this instance.
    * @throws InvalidParameterException
@@ -554,7 +554,7 @@ public abstract class Signature extends SignatureSpi
   /**
    * Return the parameters of the algorithm used in this instance as an
    * {@link AlgorithmParameters}.
-   * 
+   *
    * @return the parameters used with this instance, or <code>null</code> if
    *         this instance does not use any parameters.
    */
@@ -565,7 +565,7 @@ public abstract class Signature extends SignatureSpi
 
   /**
    * Returns the value for the specified algorithm parameter.
-   * 
+   *
    * @param param
    *          the parameter name.
    * @return the parameter value.
@@ -581,7 +581,7 @@ public abstract class Signature extends SignatureSpi
 
   /**
    * Returns a clone of this instance.
-   * 
+   *
    * @return a clone of this instace.
    * @throws CloneNotSupportedException
    *           if the implementation does not support cloning.

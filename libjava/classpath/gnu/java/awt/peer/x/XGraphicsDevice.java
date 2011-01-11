@@ -136,7 +136,7 @@ public class XGraphicsDevice
                   }
                 catch (EscherServerConnectionException e)
                   {
-                    throw new RuntimeException(e.getCause()); 
+                    throw new RuntimeException(e.getCause());
                   }
               }
           }
@@ -155,7 +155,7 @@ public class XGraphicsDevice
                 throw new RuntimeException(e.getCause());
               }
           }
-        
+
         eventPump = new XEventPump(display);
       }
     return display;
@@ -167,7 +167,7 @@ public class XGraphicsDevice
   }
 
   /**
-   * Tries to load the LocalSocket class and initiate a connection to the 
+   * Tries to load the LocalSocket class and initiate a connection to the
    * local X server.
    */
   private Socket createLocalSocket()

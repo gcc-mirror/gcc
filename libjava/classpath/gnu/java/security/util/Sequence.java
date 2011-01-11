@@ -55,7 +55,7 @@ public final class Sequence
    * through all positive integers then negative integers until the end value is
    * reached. Naturally, this will result in an enormous object, so don't do
    * this.
-   * 
+   *
    * @param end The ending value.
    */
   public Sequence(int end)
@@ -68,7 +68,7 @@ public final class Sequence
    * increment of 1. If <i>end</i> is less than <i>start</i>, then the
    * sequence will wrap around until the end value is reached. Naturally, this
    * will result in an enormous object, so don't do this.
-   * 
+   *
    * @param start The starting value.
    * @param end The ending value.
    */
@@ -88,7 +88,7 @@ public final class Sequence
    * If <i>span</i> is 0, then the sequence will contain {<i>start</i>,
    * <i>end</i>} if <i>start</i> != <i>end</i>, or just the singleton
    * <i>start</i> if <i>start</i> == <i>end</i>.
-   * 
+   *
    * @param start The starting value.
    * @param end The ending value.
    * @param span The increment value.

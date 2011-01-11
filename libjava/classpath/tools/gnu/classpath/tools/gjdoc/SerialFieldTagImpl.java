@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -16,7 +16,7 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU Classpath; see the file COPYING.  If not, write to the
 Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-02111-1307 USA. 
+02111-1307 USA.
 
 Linking this library statically or dynamically with other modules is
 making a combined work based on this library.  Thus, the terms and
@@ -49,8 +49,8 @@ public class SerialFieldTagImpl extends AbstractTagImpl implements SerialFieldTa
    private ClassDoc     fieldTypeDoc;
    private ClassDocImpl contextClass;
 
-   public SerialFieldTagImpl(String text, 
-                             ClassDocImpl contextClass, 
+   public SerialFieldTagImpl(String text,
+                             ClassDocImpl contextClass,
                              MemberDocImpl contextMember) {
       super(text);
       this.contextClass=contextClass;
@@ -65,22 +65,22 @@ public class SerialFieldTagImpl extends AbstractTagImpl implements SerialFieldTa
       int state=1;
       char[] textArr=text.toCharArray();
       for (int i=0; i<textArr.length; ++i) {
-	 char c=textArr[i];
-	 switch (state) {
-	 case 1:
-	    if (Parser.isWhitespace(c)) state=2;
-	    else fieldName+=c;
-	    break;
-	 case 2:
-	    if (Parser.isWhitespace(c)) state=3;
-	    else fieldType+=c;
-	    break;
-	 case 3:
-	    description+=c;
-	    break;
-	 }
+         char c=textArr[i];
+         switch (state) {
+         case 1:
+            if (Parser.isWhitespace(c)) state=2;
+            else fieldName+=c;
+            break;
+         case 2:
+            if (Parser.isWhitespace(c)) state=3;
+            else fieldType+=c;
+            break;
+         case 3:
+            description+=c;
+            break;
+         }
       }
-      
+
       setBody(description, contextClass, contextMember);
 
    }
@@ -89,11 +89,11 @@ public class SerialFieldTagImpl extends AbstractTagImpl implements SerialFieldTa
 
       super.resolve();
       try {
-	  Type type=contextClass.typeForString(fieldType);
-	  this.fieldTypeDoc=type.asClassDoc();
+          Type type=contextClass.typeForString(fieldType);
+          this.fieldTypeDoc=type.asClassDoc();
       } catch (ParseException e) {
-	  System.err.println("FIXME: add try-catch to force compilation"
-			     + e);
+          System.err.println("FIXME: add try-catch to force compilation"
+                             + e);
       }
    }
 
@@ -119,10 +119,10 @@ public class SerialFieldTagImpl extends AbstractTagImpl implements SerialFieldTa
 
    public int compareTo(Object o) {
       if (o!=null && o instanceof SerialFieldTagImpl) {
-	 return fieldName().compareTo(((SerialFieldTagImpl)o).fieldName());
+         return fieldName().compareTo(((SerialFieldTagImpl)o).fieldName());
       }
       else {
-	 return 0;
+         return 0;
       }
    }
 }

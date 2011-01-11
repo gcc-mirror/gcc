@@ -263,7 +263,7 @@ public class GnuKeyring
           result = privateKR.getPublicKey(alias);
       }
     else if (privateKR.containsPrivateKey(alias))
-      result = privateKR.getPrivateKey(alias, password); 
+      result = privateKR.getPrivateKey(alias, password);
 
     if (Configuration.DEBUG)
       log.exiting(this.getClass().getName(), "engineGetKey",
@@ -400,7 +400,7 @@ public class GnuKeyring
 
   /**
    * Load the private keyring from the designated input stream.
-   * 
+   *
    * @param in the input stream to process.
    * @param password the password protecting the keyring.
    * @throws MalformedKeyringException if the keyring is not a private one.
@@ -433,7 +433,7 @@ public class GnuKeyring
 
   /**
    * Load the public keyring from the designated input stream.
-   * 
+   *
    * @param in the input stream to process.
    * @param password the password protecting the keyring.
    * @throws MalformedKeyringException if the keyring is not a public one.
@@ -466,7 +466,7 @@ public class GnuKeyring
 
   /**
    * Return the creation date of a named alias in a designated keyring.
-   * 
+   *
    * @param alias the alias to look for.
    * @param keyring the keyring to search.
    * @return the creattion date of the entry named <code>alias</code>. Return

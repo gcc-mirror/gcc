@@ -81,12 +81,12 @@ import javax.swing.plaf.SliderUI;
  * BasicSliderUI.java This is the UI delegate in the Basic look and feel that
  * paints JSliders.
  * </p>
- * 
+ *
  * <p>
  * The UI delegate keeps track of 6 rectangles that place the various parts of
  * the JSlider inside the component.
  * </p>
- * 
+ *
  * <p>
  * The rectangles are organized as follows:
  * </p>
@@ -110,27 +110,27 @@ import javax.swing.plaf.SliderUI;
  *     |  |  |                                           |  |  |
  *     |  |                                              |  |  |
  * </pre>
- * 
+ *
  * <p>
  * The space between the contentRect and the focusRect are the FocusInsets.
  * </p>
- * 
+ *
  * <p>
  * The space between the focusRect and the component bounds is the insetCache
  * which are the component's insets.
  * </p>
- * 
+ *
  * <p>
  * The top of the thumb is the top of the contentRect. The trackRect has to be
  * as tall as the thumb.
  * </p>
- * 
+ *
  * <p>
  * The trackRect and tickRect do not start from the left edge of the
  * focusRect. They are trackBuffer away from each side of the focusRect. This
  * is so that the thumb has room to move.
  * </p>
- * 
+ *
  * <p>
  * The labelRect does start right against the contentRect's left and right
  * edges and it gets all remaining space.
@@ -420,8 +420,8 @@ public class BasicSliderUI extends SliderUI
           if (slider.getSnapToTicks())
             value = findClosestTick(value);
 
-          // If the thumb is hit, then we don't need to set the timers to 
-          // move it. 
+          // If the thumb is hit, then we don't need to set the timers to
+          // move it.
           if (! thumbRect.contains(e.getPoint()))
             {
               // The mouse has hit some other part of the slider.
@@ -605,16 +605,16 @@ public class BasicSliderUI extends SliderUI
 
   /**
    * Returns true if the user is dragging the slider.
-   * 
+   *
    * @return true if the slider is being dragged.
-   * 
+   *
    * @since 1.5
    */
   protected boolean isDragging()
   {
     return dragging;
   }
-  
+
   /**
    * Gets the shadow color to be used for this slider. The shadow color is the
    * color used for drawing the top and left edges of the track.
@@ -1099,15 +1099,15 @@ public class BasicSliderUI extends SliderUI
   }
 
   /**
-   * Updates the <code>contentRect</code> field to an area inside the 
-   * <code>focusRect</code>. This method does not need to be called if the 
+   * Updates the <code>contentRect</code> field to an area inside the
+   * <code>focusRect</code>. This method does not need to be called if the
    * orientation changes.
    */
   protected void calculateContentRect()
   {
     contentRect.x = focusRect.x + focusInsets.left;
     contentRect.y = focusRect.y + focusInsets.top;
-    
+
     contentRect.width = focusRect.width - focusInsets.left - focusInsets.right;
     contentRect.height = focusRect.height - focusInsets.top
                          - focusInsets.bottom;
@@ -1134,9 +1134,9 @@ public class BasicSliderUI extends SliderUI
   }
 
   /**
-   * Calculates the gap size between the edge of the <code>contentRect</code> 
+   * Calculates the gap size between the edge of the <code>contentRect</code>
    * and the edge of the <code>trackRect</code>, storing the result in the
-   * <code>trackBuffer</code> field.  Sufficient space needs to be reserved 
+   * <code>trackBuffer</code> field.  Sufficient space needs to be reserved
    * for the slider thumb and/or the labels at each end of the slider track.
    */
   protected void calculateTrackBuffer()
@@ -1145,11 +1145,11 @@ public class BasicSliderUI extends SliderUI
       {
         int w = Math.max(getWidthOfLowValueLabel(), getWidthOfHighValueLabel());
         trackBuffer = Math.max(thumbRect.width / 2, w / 2);
-        
+
       }
     else
       {
-        int h = Math.max(getHeightOfLowValueLabel(), 
+        int h = Math.max(getHeightOfLowValueLabel(),
                          getHeightOfHighValueLabel());
         trackBuffer = Math.max(thumbRect.height / 2, h / 2);
       }
@@ -1157,10 +1157,10 @@ public class BasicSliderUI extends SliderUI
 
   /**
    * Returns the size of the slider's thumb.  The size is hard coded to
-   * <code>11 x 20</code> for horizontal sliders, and <code>20 x 11</code> for 
-   * vertical sliders. Note that a new instance of {@link Dimension} is 
-   * returned for every call to this method (this seems wasteful, but 
-   * {@link Dimension} instances are not immutable, so this is probably 
+   * <code>11 x 20</code> for horizontal sliders, and <code>20 x 11</code> for
+   * vertical sliders. Note that a new instance of {@link Dimension} is
+   * returned for every call to this method (this seems wasteful, but
+   * {@link Dimension} instances are not immutable, so this is probably
    * unavoidable).
    *
    * @return The size of the slider's thumb.
@@ -1232,7 +1232,7 @@ public class BasicSliderUI extends SliderUI
         tickRect.y = trackRect.y + trackRect.height;
         tickRect.width = trackRect.width;
         tickRect.height = getTickLength();
-        
+
         // this makes our Mauve tests pass...can't explain it!
         if (!slider.getPaintTicks())
           {
@@ -1257,7 +1257,7 @@ public class BasicSliderUI extends SliderUI
   }
 
   /**
-   * Calculates the <code>labelRect</code> field, taking into account the 
+   * Calculates the <code>labelRect</code> field, taking into account the
    * orientation of the slider.
    */
   protected void calculateLabelRect()
@@ -1353,7 +1353,7 @@ public class BasicSliderUI extends SliderUI
    * there are no labels.
    *
    * @return The width of the label whose key has the highest value.
-   * 
+   *
    * @see #getHighestValueLabel()
    */
   protected int getWidthOfHighValueLabel()
@@ -1370,7 +1370,7 @@ public class BasicSliderUI extends SliderUI
    * there are no labels.
    *
    * @return The width of the label whose key has the lowest value.
-   * 
+   *
    * @see #getLowestValueLabel()
    */
   protected int getWidthOfLowValueLabel()
@@ -1455,7 +1455,7 @@ public class BasicSliderUI extends SliderUI
   /**
    * Returns the label whose key has the highest value.
    *
-   * @return The label whose key has the highest value or <code>null</code> if 
+   * @return The label whose key has the highest value or <code>null</code> if
    *     no label table exists.
    */
   protected Component getHighestValueLabel()
@@ -1527,7 +1527,7 @@ public class BasicSliderUI extends SliderUI
   protected void recalculateIfOrientationChanged()
   {
     // Examining a test program shows that either Sun calls private
-    // methods that we don't know about, or these don't do anything.  
+    // methods that we don't know about, or these don't do anything.
     calculateThumbSize();
     calculateTrackBuffer();
     calculateTrackRect();
@@ -1549,7 +1549,7 @@ public class BasicSliderUI extends SliderUI
     Color saved_color = g.getColor();
 
     g.setColor(getFocusColor());
-    
+
     g.drawRect(focusRect.x, focusRect.y, focusRect.width, focusRect.height);
 
     g.setColor(saved_color);
@@ -1564,16 +1564,16 @@ public class BasicSliderUI extends SliderUI
    * with the highlight color.
    * </p>
    * <pre>
-   *    a---d   
-   *    |   |   
+   *    a---d
+   *    |   |
    *    |   |   a------------------------d
    *    |   |   |                        |
    *    |   |   b------------------------c
    *    |   |
-   *    |   |   
+   *    |   |
    *    b---c
    * </pre>
-   * 
+   *
    * <p>
    * The b-a-d path needs to be drawn with the shadow color and the b-c-d path
    * needs to be drawn with the highlight color.
@@ -1676,7 +1676,7 @@ public class BasicSliderUI extends SliderUI
       }
   }
 
-  /* Minor ticks start at 1/4 of the height (or width) of the tickRect and 
+  /* Minor ticks start at 1/4 of the height (or width) of the tickRect and
      extend to 1/2 of the tickRect.
 
      Major ticks start at 1/4 of the height and extend to 3/4.
@@ -1849,7 +1849,7 @@ public class BasicSliderUI extends SliderUI
    *     \ /             |      /
    *      d              e-----d
    *  </pre>
-   * 
+   *
    * <p>
    * In the case of vertical thumbs, we highlight the path b-a-e-d and shadow
    * the path b-c-d. In the case of horizontal thumbs, we highlight the path
@@ -1958,10 +1958,10 @@ public class BasicSliderUI extends SliderUI
 
   /**
    * Moves the thumb one block in the direction specified (a block is 1/10th
-   * of the slider range).   If the slider snaps to ticks, this method is 
+   * of the slider range).   If the slider snaps to ticks, this method is
    * responsible for snapping it to a tick after the thumb has been moved.
    *
-   * @param direction  the direction (positive values increment the thumb 
+   * @param direction  the direction (positive values increment the thumb
    *   position by one block, zero/negative values decrement the thumb position
    *   by one block).
    */
@@ -1981,11 +1981,11 @@ public class BasicSliderUI extends SliderUI
   }
 
   /**
-   * Moves the thumb one unit in the specified direction. If the slider snaps 
-   * to ticks, this method is responsible for snapping it to a tick after the 
+   * Moves the thumb one unit in the specified direction. If the slider snaps
+   * to ticks, this method is responsible for snapping it to a tick after the
    * thumb has been moved.
    *
-   * @param direction  the direction (positive values increment the thumb 
+   * @param direction  the direction (positive values increment the thumb
    *   position by one, zero/negative values decrement the thumb position by
    *   one).
    */
@@ -2021,7 +2021,7 @@ public class BasicSliderUI extends SliderUI
   }
 
   /**
-   * Returns the x-coordinate (relative to the component) for the given slider 
+   * Returns the x-coordinate (relative to the component) for the given slider
    * value.  This method assumes that the <code>trackRect</code> field is
    * set up.
    *
@@ -2049,8 +2049,8 @@ public class BasicSliderUI extends SliderUI
   }
 
   /**
-   * Returns the y-coordinate (relative to the component) for the given slider 
-   * value.  This method assumes that the <code>trackRect</code> field is 
+   * Returns the y-coordinate (relative to the component) for the given slider
+   * value.  This method assumes that the <code>trackRect</code> field is
    * set up.
    *
    * @param value  the slider value.
@@ -2093,8 +2093,8 @@ public class BasicSliderUI extends SliderUI
 
     int value;
 
-    // If the length is 0, you shouldn't be able to even see where the slider 
-    // is.  This really shouldn't ever happen, but just in case, we'll return 
+    // If the length is 0, you shouldn't be able to even see where the slider
+    // is.  This really shouldn't ever happen, but just in case, we'll return
     // the middle.
     if (len == 0)
       return (max - min) / 2;
@@ -2129,8 +2129,8 @@ public class BasicSliderUI extends SliderUI
 
     int value;
 
-    // If the length is 0, you shouldn't be able to even see where the slider 
-    // is.  This really shouldn't ever happen, but just in case, we'll return 
+    // If the length is 0, you shouldn't be able to even see where the slider
+    // is.  This really shouldn't ever happen, but just in case, we'll return
     // the middle.
     if (len == 0)
       return (max - min) / 2;
@@ -2164,14 +2164,14 @@ public class BasicSliderUI extends SliderUI
     int minorSpace = slider.getMinorTickSpacing();
 
     // The default value to return is value + minor or
-    // value + major. 
+    // value + major.
     // Initializing at min - value leaves us with a default
     // return value of min, which always has tick marks
     // (if ticks are painted).
     int minor = min - value;
     int major = min - value;
 
-    // If there are no major tick marks or minor tick marks 
+    // If there are no major tick marks or minor tick marks
     // e.g. snap is set to true but no ticks are set, then
     // we can just return the value.
     if (majorSpace <= 0 && minorSpace <= 0)
@@ -2208,8 +2208,8 @@ public class BasicSliderUI extends SliderUI
     else
       return value + minor;
   }
-  
-  InputMap getInputMap(int condition) 
+
+  InputMap getInputMap(int condition)
   {
     if (condition == JComponent.WHEN_FOCUSED)
       return (InputMap) UIManager.get("Slider.focusInputMap");
@@ -2218,12 +2218,12 @@ public class BasicSliderUI extends SliderUI
 
   /**
    * Returns the action map for the {@link JSlider}.  All sliders share
-   * a single action map which is created the first time this method is 
+   * a single action map which is created the first time this method is
    * called, then stored in the UIDefaults table for subsequent access.
-   * 
+   *
    * @return The shared action map.
    */
-  ActionMap getActionMap() 
+  ActionMap getActionMap()
   {
     ActionMap map = (ActionMap) UIManager.get("Slider.actionMap");
 
@@ -2238,18 +2238,18 @@ public class BasicSliderUI extends SliderUI
 
   /**
    * Creates the action map shared by all {@link JSlider} instances.
-   * This method is called once by {@link #getActionMap()} when it 
-   * finds no action map in the UIDefaults table...after the map is 
-   * created, it gets added to the defaults table so that subsequent 
-   * calls to {@link #getActionMap()} will return the same shared 
+   * This method is called once by {@link #getActionMap()} when it
+   * finds no action map in the UIDefaults table...after the map is
+   * created, it gets added to the defaults table so that subsequent
+   * calls to {@link #getActionMap()} will return the same shared
    * instance.
-   * 
+   *
    * @return The action map.
    */
   ActionMap createActionMap()
   {
     ActionMap map = new ActionMapUIResource();
-    map.put("positiveUnitIncrement", 
+    map.put("positiveUnitIncrement",
             new AbstractAction("positiveUnitIncrement") {
               public void actionPerformed(ActionEvent event)
               {
@@ -2262,7 +2262,7 @@ public class BasicSliderUI extends SliderUI
               }
             }
     );
-    map.put("negativeUnitIncrement", 
+    map.put("negativeUnitIncrement",
             new AbstractAction("negativeUnitIncrement") {
               public void actionPerformed(ActionEvent event)
               {
@@ -2275,7 +2275,7 @@ public class BasicSliderUI extends SliderUI
               }
             }
     );
-    map.put("positiveBlockIncrement", 
+    map.put("positiveBlockIncrement",
             new AbstractAction("positiveBlockIncrement") {
               public void actionPerformed(ActionEvent event)
               {
@@ -2288,7 +2288,7 @@ public class BasicSliderUI extends SliderUI
               }
             }
     );
-    map.put("negativeBlockIncrement", 
+    map.put("negativeBlockIncrement",
             new AbstractAction("negativeBlockIncrement") {
               public void actionPerformed(ActionEvent event)
               {
@@ -2301,7 +2301,7 @@ public class BasicSliderUI extends SliderUI
               }
             }
     );
-    map.put("minScroll", 
+    map.put("minScroll",
             new AbstractAction("minScroll") {
               public void actionPerformed(ActionEvent event)
               {
@@ -2309,11 +2309,11 @@ public class BasicSliderUI extends SliderUI
                 if (slider.getInverted())
                   slider.setValue(slider.getMaximum());
                 else
-                  slider.setValue(slider.getMinimum());   
+                  slider.setValue(slider.getMinimum());
               }
             }
     );
-    map.put("maxScroll", 
+    map.put("maxScroll",
             new AbstractAction("maxScroll") {
               public void actionPerformed(ActionEvent event)
               {
@@ -2321,7 +2321,7 @@ public class BasicSliderUI extends SliderUI
                 if (slider.getInverted())
                   slider.setValue(slider.getMinimum());
                 else
-                  slider.setValue(slider.getMaximum());                  
+                  slider.setValue(slider.getMaximum());
               }
             }
     );

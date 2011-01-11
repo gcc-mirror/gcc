@@ -1,4 +1,4 @@
-/* TypeLibraryFactory.java -- 
+/* TypeLibraryFactory.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -56,5 +56,5 @@ public class TypeLibraryFactory
       return new TypeLibrary();
     return null;
   }
-  
+
 }

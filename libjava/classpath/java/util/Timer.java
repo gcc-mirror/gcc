@@ -111,11 +111,11 @@ public class Timer
     {
       elements++;
       if (elements == heap.length)
-	{
-	  TimerTask new_heap[] = new TimerTask[heap.length * 2];
-	  System.arraycopy(heap, 0, new_heap, 0, heap.length);
-	  heap = new_heap;
-	}
+        {
+          TimerTask new_heap[] = new TimerTask[heap.length * 2];
+          System.arraycopy(heap, 0, new_heap, 0, heap.length);
+          heap = new_heap;
+        }
       heap[elements] = task;
     }
 
@@ -130,11 +130,11 @@ public class Timer
       heap[elements] = null;
       elements--;
       if (elements + DEFAULT_SIZE / 2 <= (heap.length / 4))
-	{
-	  TimerTask new_heap[] = new TimerTask[heap.length / 2];
-	  System.arraycopy(heap, 0, new_heap, 0, elements + 1);
-	  heap = new_heap;
-	}
+        {
+          TimerTask new_heap[] = new TimerTask[heap.length / 2];
+          System.arraycopy(heap, 0, new_heap, 0, elements + 1);
+          heap = new_heap;
+        }
     }
 
     /**
@@ -145,25 +145,25 @@ public class Timer
     {
       // Check if it is legal to add another element
       if (heap == null)
-	{
-	  throw new IllegalStateException
-	    ("cannot enqueue when stop() has been called on queue");
-	}
+        {
+          throw new IllegalStateException
+            ("cannot enqueue when stop() has been called on queue");
+        }
 
-      heap[0] = task;		// sentinel
-      add(task);		// put the new task at the end
+      heap[0] = task;           // sentinel
+      add(task);                // put the new task at the end
       // Now push the task up in the heap until it has reached its place
       int child = elements;
       int parent = child / 2;
       while (heap[parent].scheduled > task.scheduled)
-	{
-	  heap[child] = heap[parent];
-	  child = parent;
-	  parent = child / 2;
-	}
+        {
+          heap[child] = heap[parent];
+          child = parent;
+          parent = child / 2;
+        }
       // This is the correct place for the new task
       heap[child] = task;
-      heap[0] = null;		// clear sentinel
+      heap[0] = null;           // clear sentinel
       // Maybe sched() is waiting for a new element
       this.notify();
     }
@@ -175,13 +175,13 @@ public class Timer
     private TimerTask top()
     {
       if (elements == 0)
-	{
-	  return null;
-	}
+        {
+          return null;
+        }
       else
-	{
-	  return heap[1];
-	}
+        {
+          return heap[1];
+        }
     }
 
     /**
@@ -195,50 +195,50 @@ public class Timer
       TimerTask task = null;
 
       while (task == null)
-	{
-	  // Get the next task
-	  task = top();
+        {
+          // Get the next task
+          task = top();
 
-	  // return null when asked to stop
-	  // or if asked to return null when the queue is empty
-	  if ((heap == null) || (task == null && nullOnEmpty))
-	    {
-	      return null;
-	    }
+          // return null when asked to stop
+          // or if asked to return null when the queue is empty
+          if ((heap == null) || (task == null && nullOnEmpty))
+            {
+              return null;
+            }
 
-	  // Do we have a task?
-	  if (task != null)
-	    {
-	      // The time to wait until the task should be served
-	      long time = task.scheduled - System.currentTimeMillis();
-	      if (time > 0)
-		{
-		  // This task should not yet be served
-		  // So wait until this task is ready
-		  // or something else happens to the queue
-		  task = null;	// set to null to make sure we call top()
-		  try
-		    {
-		      this.wait(time);
-		    }
-		  catch (InterruptedException _)
-		    {
-		    }
-		}
-	    }
-	  else
-	    {
-	      // wait until a task is added
-	      // or something else happens to the queue
-	      try
-		{
-		  this.wait();
-		}
-	      catch (InterruptedException _)
-		{
-		}
-	    }
-	}
+          // Do we have a task?
+          if (task != null)
+            {
+              // The time to wait until the task should be served
+              long time = task.scheduled - System.currentTimeMillis();
+              if (time > 0)
+                {
+                  // This task should not yet be served
+                  // So wait until this task is ready
+                  // or something else happens to the queue
+                  task = null;  // set to null to make sure we call top()
+                  try
+                    {
+                      this.wait(time);
+                    }
+                  catch (InterruptedException _)
+                    {
+                    }
+                }
+            }
+          else
+            {
+              // wait until a task is added
+              // or something else happens to the queue
+              try
+                {
+                  this.wait();
+                }
+              catch (InterruptedException _)
+                {
+                }
+            }
+        }
 
       // reconstruct the heap
       TimerTask lastTask = heap[elements];
@@ -249,22 +249,22 @@ public class Timer
       int child = 2;
       heap[1] = lastTask;
       while (child <= elements)
-	{
-	  if (child < elements)
-	    {
-	      if (heap[child].scheduled > heap[child + 1].scheduled)
-		{
-		  child++;
-		}
-	    }
+        {
+          if (child < elements)
+            {
+              if (heap[child].scheduled > heap[child + 1].scheduled)
+                {
+                  child++;
+                }
+            }
 
-	  if (lastTask.scheduled <= heap[child].scheduled)
-	    break;		// found the correct place (the parent) - done
+          if (lastTask.scheduled <= heap[child].scheduled)
+            break;              // found the correct place (the parent) - done
 
-	  heap[parent] = heap[child];
-	  parent = child;
-	  child = parent * 2;
-	}
+          heap[parent] = heap[child];
+          parent = child;
+          child = parent * 2;
+        }
 
       // this is the correct new place for the lastTask
       heap[parent] = lastTask;
@@ -306,53 +306,53 @@ public class Timer
       // Null out any elements that are canceled.  Skip element 0 as
       // it is the sentinel.
       for (int i = elements; i > 0; --i)
-	{
-	  if (heap[i].scheduled < 0)
-	    {
-	      ++removed;
+        {
+          if (heap[i].scheduled < 0)
+            {
+              ++removed;
 
-	      // Remove an element by pushing the appropriate child
-	      // into place, and then iterating to the bottom of the
-	      // tree.
-	      int index = i;
-	      while (heap[index] != null)
-		{
-		  int child = 2 * index;
-		  if (child >= heap.length)
-		    {
-		      // Off end; we're done.
-		      heap[index] = null;
-		      break;
-		    }
+              // Remove an element by pushing the appropriate child
+              // into place, and then iterating to the bottom of the
+              // tree.
+              int index = i;
+              while (heap[index] != null)
+                {
+                  int child = 2 * index;
+                  if (child >= heap.length)
+                    {
+                      // Off end; we're done.
+                      heap[index] = null;
+                      break;
+                    }
 
-		  if (child + 1 >= heap.length || heap[child + 1] == null)
-		    {
-		      // Nothing -- we're done.
-		    }
-		  else if (heap[child] == null
-			   || (heap[child].scheduled
-			       > heap[child + 1].scheduled))
-		    ++child;
-		  heap[index] = heap[child];
-		  index = child;
-		}
-	    }
-	}
+                  if (child + 1 >= heap.length || heap[child + 1] == null)
+                    {
+                      // Nothing -- we're done.
+                    }
+                  else if (heap[child] == null
+                           || (heap[child].scheduled
+                               > heap[child + 1].scheduled))
+                    ++child;
+                  heap[index] = heap[child];
+                  index = child;
+                }
+            }
+        }
 
       // Make a new heap if we shrank enough.
       int newLen = heap.length;
       while (elements - removed + DEFAULT_SIZE / 2 <= newLen / 4)
-	newLen /= 2;
+        newLen /= 2;
       if (newLen != heap.length)
-	{
-	  TimerTask[] newHeap = new TimerTask[newLen];
-	  System.arraycopy(heap, 0, newHeap, 0, elements + 1);
-	  heap = newHeap;
-	}
+        {
+          TimerTask[] newHeap = new TimerTask[newLen];
+          System.arraycopy(heap, 0, newHeap, 0, elements + 1);
+          heap = newHeap;
+        }
 
       return removed;
     }
-  }				// TaskQueue
+  }                             // TaskQueue
 
   /**
    * The scheduler that executes all the tasks on a particular TaskQueue,
@@ -378,63 +378,63 @@ public class Timer
     {
       TimerTask task;
       while ((task = queue.serve()) != null)
-	{
-	  // If this task has not been canceled
-	  if (task.scheduled >= 0)
-	    {
+        {
+          // If this task has not been canceled
+          if (task.scheduled >= 0)
+            {
 
-	      // Mark execution time
-	      task.lastExecutionTime = task.scheduled;
+              // Mark execution time
+              task.lastExecutionTime = task.scheduled;
 
-	      // Repeatable task?
-	      if (task.period < 0)
-		{
-		  // Last time this task is executed
-		  task.scheduled = -1;
-		}
+              // Repeatable task?
+              if (task.period < 0)
+                {
+                  // Last time this task is executed
+                  task.scheduled = -1;
+                }
 
-	      // Run the task
-	      try
-		{
-		  task.run();
-		}
+              // Run the task
+              try
+                {
+                  task.run();
+                }
               catch (ThreadDeath death)
                 {
                   // If an exception escapes, the Timer becomes invalid.
                   queue.stop();
                   throw death;
                 }
-	      catch (Throwable t)
-		{
-		  // If an exception escapes, the Timer becomes invalid.
+              catch (Throwable t)
+                {
+                  // If an exception escapes, the Timer becomes invalid.
                   queue.stop();
-		}
-	    }
+                }
+            }
 
-	  // Calculate next time and possibly re-enqueue.
-	  if (task.scheduled >= 0)
-	    {
-	      if (task.fixed)
-		{
-		  task.scheduled += task.period;
-		}
-	      else
-		{
-		  task.scheduled = task.period + System.currentTimeMillis();
-		}
+          // Calculate next time and possibly re-enqueue.
+          if (task.scheduled >= 0)
+            {
+              if (task.fixed)
+                {
+                  task.scheduled += task.period;
+                }
+              else
+                {
+                  task.scheduled = task.period + System.currentTimeMillis();
+                }
 
-	      try
-	        {
-	          queue.enqueue(task);
-		}
-	      catch (IllegalStateException ise)
-	        {
-		  // Ignore. Apparently the Timer queue has been stopped.
-		}
-	    }
-	}
+              try
+                {
+                  queue.enqueue(task);
+                }
+              catch (IllegalStateException ise)
+                {
+                  // Ignore. Apparently the Timer queue has been stopped.
+                }
+            }
+        }
     }
-  }				// Scheduler
+  }                             // Scheduler
 
   // Number of Timers created.
   // Used for creating nice Thread names.
@@ -474,11 +474,11 @@ public class Timer
     this(daemon, Thread.NORM_PRIORITY);
   }
 
-  /** 
-   * Create a new Timer whose Thread has the indicated name.  It will have 
-   * normal priority and will not be a daemon thread. 
+  /**
+   * Create a new Timer whose Thread has the indicated name.  It will have
+   * normal priority and will not be a daemon thread.
    * @param name the name of the Thread
-   * @since 1.5 
+   * @since 1.5
    */
   public Timer(String name)
   {
@@ -486,7 +486,7 @@ public class Timer
   }
 
   /**
-   * Create a new Timer whose Thread has the indicated name.  It will have 
+   * Create a new Timer whose Thread has the indicated name.  It will have
    * normal priority.  The boolean argument controls whether or not it
    * will be a daemon thread.
    * @param name the name of the Thread
@@ -548,24 +548,24 @@ public class Timer
 
     if (task.scheduled == 0 && task.lastExecutionTime == -1)
       {
-	task.scheduled = time;
-	task.period = period;
-	task.fixed = fixed;
+        task.scheduled = time;
+        task.period = period;
+        task.fixed = fixed;
       }
     else
       {
-	throw new IllegalStateException
-	  ("task was already scheduled or canceled");
+        throw new IllegalStateException
+          ("task was already scheduled or canceled");
       }
 
     if (!this.canceled && this.thread != null)
       {
-	queue.enqueue(task);
+        queue.enqueue(task);
       }
     else
       {
-	throw new IllegalStateException
-	  ("timer was canceled or scheduler thread has died");
+        throw new IllegalStateException
+          ("timer was canceled or scheduler thread has died");
       }
   }
 
@@ -573,7 +573,7 @@ public class Timer
   {
     if (delay < 0)
       {
-	throw new IllegalArgumentException("delay is negative");
+        throw new IllegalArgumentException("delay is negative");
       }
   }
 
@@ -581,7 +581,7 @@ public class Timer
   {
     if (period < 0)
       {
-	throw new IllegalArgumentException("period is negative");
+        throw new IllegalArgumentException("period is negative");
       }
   }
 

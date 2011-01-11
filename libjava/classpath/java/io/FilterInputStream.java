@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -45,7 +45,7 @@ package java.io;
  */
 
 /**
-  * This is the common superclass of all standard classes that filter 
+  * This is the common superclass of all standard classes that filter
   * input.  It acts as a layer on top of an underlying <code>InputStream</code>
   * and simply redirects calls made to it to the subordinate InputStream
   * instead.  Subclasses of this class perform additional filtering
@@ -60,7 +60,7 @@ package java.io;
   * When creating a subclass of <code>FilterInputStream</code>, override the
   * appropriate methods to implement the desired filtering.  However, note
   * that the <code>read(byte[])</code> method does not need to be overridden
-  * as this class redirects calls to that method to 
+  * as this class redirects calls to that method to
   * <code>read(byte[], int, int)</code> instead of to the subordinate
   * <code>InputStream read(byte[])</code> method.
   *
@@ -132,7 +132,7 @@ public class FilterInputStream extends InputStream
   /**
     * Calls the <code>in.skip(long)</code> method
     *
-    * @param numBytes The requested number of bytes to skip. 
+    * @param numBytes The requested number of bytes to skip.
     *
     * @return The value returned from <code>in.skip(long)</code>
     *
@@ -156,8 +156,8 @@ public class FilterInputStream extends InputStream
   }
 
   /**
-    * Calls the <code>read(byte[], int, int)</code> overloaded method.  
-    * Note that 
+    * Calls the <code>read(byte[], int, int)</code> overloaded method.
+    * Note that
     * this method does not redirect its call directly to a corresponding
     * method in <code>in</code>.  This allows subclasses to override only the
     * three argument version of <code>read</code>.
@@ -193,7 +193,7 @@ public class FilterInputStream extends InputStream
     * This method closes the input stream by closing the input stream that
     * this object is filtering.  Future attempts to access this stream may
     * throw an exception.
-    * 
+    *
     * @exception IOException If an error occurs
     */
   public void close() throws IOException

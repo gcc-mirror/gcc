@@ -41,7 +41,7 @@ package gnu.java.beans.encoder.elements;
 import gnu.java.beans.encoder.Writer;
 
 /** Generates an XML element denoting the resolution of a class.
- * 
+ *
  * @author Robert Schuster (robertschuster@fsfe.org)
  *
  */
@@ -58,7 +58,7 @@ public class ClassResolution extends Element
   {
     writer.writeNoChildren("class", className);
   }
-  
+
   public void writeEnd(Writer writer)
   {
     writer.writeEndNoChildren();

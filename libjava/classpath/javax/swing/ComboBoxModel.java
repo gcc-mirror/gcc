@@ -41,9 +41,9 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
 /**
- * The data model for a {@link JComboBox}. This model keeps track of elements 
+ * The data model for a {@link JComboBox}. This model keeps track of elements
  * contained in the <code>JComboBox</code> as well as the current
- * combo box selection. Whenever the selection in the <code>JComboBox</code> 
+ * combo box selection. Whenever the selection in the <code>JComboBox</code>
  * changes, the <code>ComboBoxModel</code> should fire a {@link ListDataEvent}
  * to the model's {@link ListDataListener}s.
  *
@@ -52,8 +52,8 @@ import javax.swing.event.ListDataListener;
 public interface ComboBoxModel extends ListModel
 {
   /**
-   * Sets the selected item in the combo box. Classes implementing this 
-   * interface should fire a {@link ListDataEvent} to all registered 
+   * Sets the selected item in the combo box. Classes implementing this
+   * interface should fire a {@link ListDataEvent} to all registered
    * {@link ListDataListener}s to indicate that the selection has changed.
    *
    * @param item  the selected item (<code>null</code> permitted).

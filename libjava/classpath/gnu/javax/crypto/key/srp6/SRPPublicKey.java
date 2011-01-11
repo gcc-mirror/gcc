@@ -1,4 +1,4 @@
-/* SRPPublicKey.java -- 
+/* SRPPublicKey.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -65,7 +65,7 @@ public class SRPPublicKey
 
   /**
    * Public constructor for use from outside this package.
-   * 
+   *
    * @param N the public shared modulus.
    * @param g the generator.
    * @param Y the public exponent of the ephemeral key.
@@ -80,7 +80,7 @@ public class SRPPublicKey
 
   /**
    * Default constructor. Assumes that N and g are already validated.
-   * 
+   *
    * @param params an array of 3 values representing N, g and Y; the latter
    *          being the client's or server's public exponent.
    */
@@ -96,7 +96,7 @@ public class SRPPublicKey
    * method of an SRP keypair codec object (an instance implementing
    * {@link IKeyPairCodec} for SRP keys, and re-constructs an instance of this
    * object.
-   * 
+   *
    * @param k the contents of a previously encoded instance of this object.
    * @throws ArrayIndexOutOfBoundsException if there is not enough bytes, in
    *           <code>k</code>, to represent a valid encoding of an instance
@@ -123,7 +123,7 @@ public class SRPPublicKey
 
   /**
    * Returns the public exponent of the key as a {@link BigInteger}.
-   * 
+   *
    * @return the public exponent of the key as a {@link BigInteger}.
    */
   public BigInteger getY()
@@ -134,7 +134,7 @@ public class SRPPublicKey
   /**
    * Returns the encoded form of this public key according to the designated
    * format.
-   * 
+   *
    * @param format the desired format identifier of the resulting encoding.
    * @return the byte sequence encoding this key according to the designated
    *         format.
@@ -158,7 +158,7 @@ public class SRPPublicKey
    * Returns <code>true</code> if the designated object is an instance of
    * <code>SRPPublicKey</code>and has the same SRP parameter values as this
    * one.
-   * 
+   *
    * @param obj the other non-null SRP key to compare to.
    * @return <code>true</code> if the designated object is of the same type
    *         and value as this one.

@@ -33,7 +33,7 @@ import org.objectweb.asm.MethodVisitor;
 
 /**
  * A node that represents a bytecode instruction.
- * 
+ *
  * @author Eric Bruneton
  */
 public abstract class AbstractInsnNode {
@@ -110,7 +110,7 @@ public abstract class AbstractInsnNode {
 
     /**
      * Constructs a new {@link AbstractInsnNode}.
-     * 
+     *
      * @param opcode the opcode of the instruction to be constructed.
      */
     protected AbstractInsnNode(final int opcode) {
@@ -119,7 +119,7 @@ public abstract class AbstractInsnNode {
 
     /**
      * Returns the opcode of this instruction.
-     * 
+     *
      * @return the opcode of this instruction.
      */
     public int getOpcode() {
@@ -128,7 +128,7 @@ public abstract class AbstractInsnNode {
 
     /**
      * Returns the type of this instruction.
-     * 
+     *
      * @return the type of this instruction, i.e. one the constants defined in
      *         this class.
      */
@@ -136,7 +136,7 @@ public abstract class AbstractInsnNode {
 
     /**
      * Makes the given code visitor visit this instruction.
-     * 
+     *
      * @param cv a code visitor.
      */
     public abstract void accept(final MethodVisitor cv);

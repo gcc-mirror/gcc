@@ -1,4 +1,4 @@
-/* XMLSchemaBuilder.java -- 
+/* XMLSchemaBuilder.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -209,7 +209,7 @@ class XMLSchemaBuilder
                                         datatype,
                                         annotation);
       }
-    else 
+    else
       {
         boolean required = "required".equals(use);
         // TODO ref
@@ -427,7 +427,7 @@ class XMLSchemaBuilder
         String sgNamespace = node.lookupNamespaceURI(sgPrefix);
         substitutionGroup = new QName(sgNamespace, sgName);
       }
-    
+
     String block = getAttribute(attrs, "block");
     int substitutionGroupExclusions = (block == null) ?
       schema.blockDefault :
@@ -436,10 +436,10 @@ class XMLSchemaBuilder
     int disallowedSubstitutions = (final_ == null) ?
       schema.finalDefault :
       parseFullDerivationSet(final_);
-    
+
     boolean nillable = "true".equals(getAttribute(attrs, "nillable"));
     boolean isAbstract = "true".equals(getAttribute(attrs, "abstract"));
-    
+
     if (notTopLevel)
       {
         minOccurs = getOccurrence(getAttribute(attrs, "minOccurs"));
@@ -463,11 +463,11 @@ class XMLSchemaBuilder
                              scope, parent,
                              constraintType, constraintValue,
                              nillable,
-                             substitutionGroup, 
-                             substitutionGroupExclusions, 
+                             substitutionGroup,
+                             substitutionGroupExclusions,
                              disallowedSubstitutions,
                              isAbstract);
-    
+
     for (Node child = node.getFirstChild(); child != null;
          child = child.getNextSibling())
       {
@@ -623,7 +623,7 @@ class XMLSchemaBuilder
     if (mixed)
       {
         type.contentType = XMLSchema.CONTENT_MIXED;
-      } 
+      }
     return type;
   }
 
@@ -835,6 +835,5 @@ class XMLSchemaBuilder
       }
     return name;
   }
-  
-}
 
+}

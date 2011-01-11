@@ -1,4 +1,4 @@
-/* SelectorProviderImpl.java -- 
+/* SelectorProviderImpl.java --
    Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -54,7 +54,7 @@ public class SelectorProviderImpl extends SelectorProvider
   private static final String SELECTOR_IMPL_EPOLL = "epoll";
   private static final String SELECTOR_IMPL = "gnu.java.nio.selectorImpl";
   private static boolean epoll_failed = false;
-  
+
   public SelectorProviderImpl ()
   {
   }
@@ -70,7 +70,7 @@ public class SelectorProviderImpl extends SelectorProvider
   {
     return new PipeImpl (this);
   }
-    
+
   public AbstractSelector openSelector ()
     throws IOException
   {

@@ -81,7 +81,7 @@ public class ConsoleHandler
   public ConsoleHandler()
   {
     super(System.err, "java.util.logging.ConsoleHandler", Level.INFO,
-	 /* formatter */ null, SimpleFormatter.class);
+         /* formatter */ null, SimpleFormatter.class);
   }
 
 

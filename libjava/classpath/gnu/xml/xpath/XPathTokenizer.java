@@ -1,4 +1,4 @@
-/* XPathTokenizer.java -- 
+/* XPathTokenizer.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -53,7 +53,7 @@ import antlr.TokenStreamIOException;*/
 
 /**
  * XPath 1.0 expression tokenizer.
- * 
+ *
  * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  */
 public class XPathTokenizer
@@ -89,7 +89,7 @@ implements XPathParser.yyInput
     {
       return val;
     }
-    
+
   }
 
   static final Map<String,Integer> keywords = new TreeMap<String,Integer> ();
@@ -151,7 +151,7 @@ implements XPathParser.yyInput
         throw new TokenStreamIOException (e);
       }
   }
-  
+
   * End ANTLR specific */
 
   public boolean advance ()

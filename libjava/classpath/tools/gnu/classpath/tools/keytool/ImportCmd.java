@@ -120,12 +120,12 @@ import javax.security.auth.callback.UnsupportedCallbackException;
  *      a default value of <code>mykey</code> shall be used when this option is
  *      omitted from the command line.
  *      <p></dd>
- *      
+ *
  *      <dt>-file FILE_NAME</dt>
  *      <dd>The fully qualified path of the file to read from. If omitted, the
  *      tool will process STDIN.
  *      <p></dd>
- *      
+ *
  *      <dt>-keypass PASSWORD</dt>
  *      <dd>Use this option to specify the password which the tool will use to
  *      protect the <i>Key Entry</i> associated with the designated <i>Alias</i>,
@@ -137,18 +137,18 @@ import javax.security.auth.callback.UnsupportedCallbackException;
  *      <i>Key Entry</i> using the same password protecting the key store. If
  *      this fails, you will then be prompted to provide a password.
  *      <p></dd>
- *      
+ *
  *      <dt>-noprompt</dt>
  *      <dd>Use this option to prevent the tool from prompting the user.
  *      <p></dd>
- *      
+ *
  *      <dt>-trustcacerts</dt>
  *      <dd>Use this option to indicate to the tool that a key store, of type
  *      <code>JKS</code>, named <code>cacerts</code>, and usually located in
  *      <code>lib/security</code> in an installed Java Runtime Environment
  *      should be considered when trying to establish chain-of-trusts.
  *      <p></dd>
- *      
+ *
  *      <dt>-storetype STORE_TYPE</dt>
  *      <dd>Use this option to specify the type of the key store to use. The
  *      default value, if this option is omitted, is that of the property
@@ -156,7 +156,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
  *      obtained by invoking the {@link java.security.KeyStore#getDefaultType()}
  *      static method.
  *      <p></dd>
- *      
+ *
  *      <dt>-keystore URL</dt>
  *      <dd>Use this option to specify the location of the key store to use.
  *      The default value is a file {@link java.net.URL} referencing the file
@@ -169,13 +169,13 @@ import javax.security.auth.callback.UnsupportedCallbackException;
  *      name (with absolute or relative path-name) of a key store --as if the
  *      protocol was <code>file:</code>.
  *      <p></dd>
- *      
+ *
  *      <dt>-storepass PASSWORD</dt>
  *      <dd>Use this option to specify the password protecting the key store. If
  *      this option is omitted from the command line, you will be prompted to
  *      provide a password.
  *      <p></dd>
- *      
+ *
  *      <dt>-provider PROVIDER_CLASS_NAME</dt>
  *      <dd>A fully qualified class name of a Security Provider to add to the
  *      current list of Security Providers already installed in the JVM in-use.
@@ -183,7 +183,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
  *      added to the runtime --i.e. it was not already installed-- then the tool
  *      will attempt to removed this Security Provider before exiting.
  *      <p></dd>
- *      
+ *
  *      <dt>-v</dt>
  *      <dd>Use this option to enable more verbose output.</dd>
  * </dl>
@@ -468,14 +468,14 @@ class ImportCmd extends Command
    * with the option of aborting the import operation. If however the option
    * <code>-noprompt</code> was detected on the command line, no interaction
    * with the user will take place and the import operation will abort.
-   * 
+   *
    * @throws CertificateException
    * @throws KeyStoreException
    * @throws NoSuchAlgorithmException
-   * @throws UnsupportedCallbackException 
-   * @throws IOException 
-   * @throws UnrecoverableKeyException 
-   * @throws CertPathValidatorException 
+   * @throws UnsupportedCallbackException
+   * @throws IOException
+   * @throws UnrecoverableKeyException
+   * @throws CertPathValidatorException
    */
   private void importNewTrustedCertificate() throws CertificateException,
       KeyStoreException, NoSuchAlgorithmException, IOException,
@@ -514,7 +514,7 @@ class ImportCmd extends Command
    * found in the key store, of type <code>JKS</code> named <code>cacerts</code>
    * located in <code>${JAVA_HOME}/lib/security</code>, where
    * <code>${JAVA_HOME}</code> is the root folder location of a Java runtime.
-   * 
+   *
    * @throws CertificateException
    * @throws UnsupportedCallbackException
    * @throws IOException
@@ -552,15 +552,15 @@ class ImportCmd extends Command
    * out the certificate, nor does it prompt the user to verify it. This is
    * because it is very hard (if not impossible) for a user to determine the
    * authenticity of the certificate reply.
-   * 
+   *
    * @param certificate the certificate reply to import into the key store.
-   * @throws NoSuchAlgorithmException 
-   * @throws CertPathValidatorException 
-   * @throws UnsupportedCallbackException 
-   * @throws IOException 
-   * @throws UnrecoverableKeyException 
-   * @throws KeyStoreException 
-   * @throws CertificateException 
+   * @throws NoSuchAlgorithmException
+   * @throws CertPathValidatorException
+   * @throws UnsupportedCallbackException
+   * @throws IOException
+   * @throws UnrecoverableKeyException
+   * @throws KeyStoreException
+   * @throws CertificateException
    */
   private void importCertificate(Certificate certificate)
       throws NoSuchAlgorithmException, CertPathValidatorException,
@@ -596,16 +596,16 @@ class ImportCmd extends Command
    * The user then has the option of aborting the import operation. If the
    * -noprompt option is given, however, there will be no interaction with the
    * user.
-   * 
+   *
    * @param chain the collection of certificates parsed from the user
    *          designated input.
-   * @throws UnsupportedCallbackException 
-   * @throws IOException 
-   * @throws UnrecoverableKeyException 
-   * @throws KeyStoreException 
-   * @throws CertPathValidatorException 
-   * @throws NoSuchAlgorithmException 
-   * @throws CertificateException 
+   * @throws UnsupportedCallbackException
+   * @throws IOException
+   * @throws UnrecoverableKeyException
+   * @throws KeyStoreException
+   * @throws CertPathValidatorException
+   * @throws NoSuchAlgorithmException
+   * @throws CertificateException
    */
   private void importChain(Collection chain) throws NoSuchAlgorithmException,
       CertPathValidatorException, KeyStoreException, UnrecoverableKeyException,
@@ -629,7 +629,7 @@ class ImportCmd extends Command
    * Check to ensure that alias's public key is the subject of the first
    * certificate in the passed certificate collection. Throws an exception if
    * the public keys do not match.
-   * 
+   *
    * @param certificates a {@link Collection} of certificate replies (either a
    *          signle certificate reply, or a PKCS#7 certificate reply chain)
    *          usually sent by a CA as a response to a Certificate Signing
@@ -720,7 +720,7 @@ class ImportCmd extends Command
    * designated collection which can be used as the start of the chain, or (b)
    * if a chain can not be constructed using all the certificates in the
    * designated collection.
-   * 
+   *
    * @param chain a collection of certificates, not necessarily ordered, but
    *          assumed to include a CA certificate authenticating our alias
    *          public key, which is the subject of the alias self-signed
@@ -772,7 +772,7 @@ class ImportCmd extends Command
    * the import operation. On the other hand if the <code>promptUser</code>
    * parameter is <code>false</code> then this method will throw an exception
    * if no trust anchor is to be found.
-   * 
+   *
    * @param reply an ordered certificate path, where the last entry is the CA's
    *          self-signed certificate.
    * @param promptUser a boolean flag indicating whether or not to prompt the
@@ -863,7 +863,7 @@ class ImportCmd extends Command
   /**
    * Return an instance of {@link PKIXParameters} constructed using a key store
    * of the designated type and located at the designated path.
-   * 
+   *
    * @param type the type of the key-store to load.
    * @param pathName the local File System fully qualified path name to the key
    *          store.

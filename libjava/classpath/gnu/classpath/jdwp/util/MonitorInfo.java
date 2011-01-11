@@ -69,8 +69,8 @@ public class MonitorInfo
     os.write(waiters.length);
     for (int i = 0; i < waiters.length; ++i)
       {
-	id = idm.getObjectId(waiters[i]);
-	id.write(os);
+        id = idm.getObjectId(waiters[i]);
+        id.write(os);
       }
   }
 }

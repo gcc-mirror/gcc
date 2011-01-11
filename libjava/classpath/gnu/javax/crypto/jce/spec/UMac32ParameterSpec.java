@@ -1,4 +1,4 @@
-/* UMac32ParameterSpec.java -- 
+/* UMac32ParameterSpec.java --
    Copyright (C) 2002, 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -53,7 +53,7 @@ public class UMac32ParameterSpec
 
   /**
    * Create a new parameter instance.
-   * 
+   *
    * @param nonce The nonce material.
    */
   public UMac32ParameterSpec(byte[] nonce)
@@ -63,7 +63,7 @@ public class UMac32ParameterSpec
 
   /**
    * Return the nonce material.
-   * 
+   *
    * @return The nonce material.
    */
   public byte[] getNonce()

@@ -51,7 +51,7 @@ import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleValue;
 
 /**
-  * This class provides a button widget for the AWT. 
+  * This class provides a button widget for the AWT.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   * @author Tom Tromey (tromey@cygnus.com)
@@ -94,7 +94,7 @@ private transient ActionListener action_listeners;
    * The number used to generate the name returned by getName.
    */
   private static transient long next_button_number;
-  
+
   protected class AccessibleAWTButton extends AccessibleAWTComponent
     implements AccessibleAction, AccessibleValue
   {
@@ -138,17 +138,17 @@ private transient ActionListener action_listeners;
       processActionEvent(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, actionCommand));
       return true;
     }
-    
+
     public String getAccessibleName()
     {
       return label;
     }
-    
+
     public AccessibleAction getAccessibleAction()
     {
       return this;
     }
-    
+
     public AccessibleValue getAccessibleValue()
     {
       return this;
@@ -188,7 +188,7 @@ private transient ActionListener action_listeners;
     {
       return new Integer(0);
     }
-    
+
     public AccessibleRole getAccessibleRole()
     {
       return AccessibleRole.PUSH_BUTTON;
@@ -315,7 +315,7 @@ addActionListener(ActionListener listener)
 /**
   * Removes the specified listener from the list of listeners that will
   * receive action events from this button.
-  * 
+  *
   * @param listener The listener to remove.
   */
 public synchronized void
@@ -339,18 +339,18 @@ removeActionListener(ActionListener listener)
   }
 
 /**
- * Returns all registered EventListers of the given listenerType. 
- * listenerType must be a subclass of EventListener, or a 
+ * Returns all registered EventListers of the given listenerType.
+ * listenerType must be a subclass of EventListener, or a
  * ClassClassException is thrown.
  *
  * @param listenerType the listener type to return
  *
  * @return an array of listeners
- * 
+ *
  * @exception ClassCastException If listenerType doesn't specify a class or
  * interface that implements @see java.util.EventListener.
  *
- * @since 1.3 
+ * @since 1.3
  */
   public <T extends EventListener> T[] getListeners(Class<T> listenerType)
   {
@@ -412,10 +412,10 @@ processActionEvent(ActionEvent event)
 void
 dispatchEventImpl(AWTEvent e)
 {
-  if (e.id <= ActionEvent.ACTION_LAST 
+  if (e.id <= ActionEvent.ACTION_LAST
       && e.id >= ActionEvent.ACTION_FIRST
-      && (action_listeners != null 
-	  || (eventMask & AWTEvent.ACTION_EVENT_MASK) != 0))
+      && (action_listeners != null
+          || (eventMask & AWTEvent.ACTION_EVENT_MASK) != 0))
     processEvent(e);
   else
     super.dispatchEventImpl(e);
@@ -464,5 +464,4 @@ public AccessibleContext getAccessibleContext()
     return next_button_number++;
   }
 
-} // class Button 
-
+} // class Button

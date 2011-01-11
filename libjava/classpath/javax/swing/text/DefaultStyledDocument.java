@@ -62,7 +62,7 @@ import javax.swing.undo.UndoableEdit;
  * single root, which has one or more {@link AbstractDocument.BranchElement}s
  * as paragraph nodes and each paragraph node having one or more
  * {@link AbstractDocument.LeafElement}s as content nodes.
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  * @author Roman Kennke (roman@kennke.org)
  */
@@ -72,7 +72,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
   /**
    * An {@link UndoableEdit} that can undo attribute changes to an element.
-   * 
+   *
    * @author Roman Kennke (kennke@aicas.com)
    */
   public static class AttributeUndoableEdit extends AbstractUndoableEdit
@@ -100,7 +100,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
     /**
      * Creates a new <code>AttributeUndoableEdit</code>.
-     * 
+     *
      * @param el
      *          the element that changes attributes
      * @param newAtts
@@ -233,7 +233,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
     /**
      * Creates a new <code>ElementSpec</code> with no content, length or
      * offset. This is most useful for start and end tags.
-     * 
+     *
      * @param a
      *          the attributes for the element to be created
      * @param type
@@ -248,7 +248,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
      * Creates a new <code>ElementSpec</code> that specifies the length but
      * not the offset of an element. Such <code>ElementSpec</code>s are
      * processed sequentially from a known starting point.
-     * 
+     *
      * @param a
      *          the attributes for the element to be created
      * @param type
@@ -263,7 +263,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
     /**
      * Creates a new <code>ElementSpec</code> with document content.
-     * 
+     *
      * @param a
      *          the attributes for the element to be created
      * @param type
@@ -287,7 +287,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
     /**
      * Sets the type of the element.
-     * 
+     *
      * @param type
      *          the type of the element to be set
      */
@@ -298,7 +298,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
     /**
      * Returns the type of the element.
-     * 
+     *
      * @return the type of the element
      */
     public short getType()
@@ -308,7 +308,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
     /**
      * Sets the direction of the element.
-     * 
+     *
      * @param dir
      *          the direction of the element to be set
      */
@@ -319,7 +319,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
     /**
      * Returns the direction of the element.
-     * 
+     *
      * @return the direction of the element
      */
     public short getDirection()
@@ -329,7 +329,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
     /**
      * Returns the attributes of the element.
-     * 
+     *
      * @return the attributes of the element
      */
     public AttributeSet getAttributes()
@@ -339,7 +339,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
     /**
      * Returns the actual content of the element.
-     * 
+     *
      * @return the actual content of the element
      */
     public char[] getArray()
@@ -349,7 +349,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
     /**
      * Returns the offset of the content.
-     * 
+     *
      * @return the offset of the content
      */
     public int getOffset()
@@ -359,7 +359,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
     /**
      * Returns the length of the content.
-     * 
+     *
      * @return the length of the content
      */
     public int getLength()
@@ -371,7 +371,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
      * Returns a String representation of this <code>ElementSpec</code>
      * describing the type, direction and length of this
      * <code>ElementSpec</code>.
-     * 
+     *
      * @return a String representation of this <code>ElementSpec</code>
      */
     public String toString()
@@ -534,7 +534,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
     /**
      * Creates a new <code>ElementBuffer</code> for the specified
      * <code>root</code> element.
-     * 
+     *
      * @param root
      *          the root element for this <code>ElementBuffer</code>
      */
@@ -545,7 +545,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
     /**
      * Returns the root element of this <code>ElementBuffer</code>.
-     * 
+     *
      * @return the root element of this <code>ElementBuffer</code>
      */
     public Element getRootElement()
@@ -556,7 +556,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
     /**
      * Removes the content. This method sets some internal parameters and
      * delegates the work to {@link #removeUpdate}.
-     * 
+     *
      * @param offs
      *          the offset from which content is remove
      * @param len
@@ -583,7 +583,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
     private boolean removeElements(Element elem, int rmOffs0, int rmOffs1)
     {
-      boolean ret = false; 
+      boolean ret = false;
       if (! elem.isLeaf())
         {
           // Update stack for changes.
@@ -874,7 +874,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
      * created as necessary. This also updates the
      * <code>DefaultDocumentEvent</code> to reflect the structural changes.
      * The bulk work is delegated to {@link #changeUpdate()}.
-     * 
+     *
      * @param offset
      *          the start index of the interval to be changed
      * @param length
@@ -967,7 +967,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
      * Inserts new <code>Element</code> in the document at the specified
      * position. Most of the work is done by {@link #insertUpdate}, after some
      * fields have been prepared for it.
-     * 
+     *
      * @param offset
      *          the location in the document at which the content is inserted
      * @param length
@@ -982,11 +982,11 @@ public class DefaultStyledDocument extends AbstractDocument implements
                        DefaultDocumentEvent ev)
     {
       if (length > 0)
-	{
-	  prepareEdit(offset, length);
-	  insertUpdate(data);
-	  finishEdit(ev);
-	}
+        {
+          prepareEdit(offset, length);
+          insertUpdate(data);
+          finishEdit(ev);
+        }
     }
 
     /**
@@ -1003,14 +1003,14 @@ public class DefaultStyledDocument extends AbstractDocument implements
       this.length = length;
 
       if (edits == null)
-	edits = new ArrayList();
+        edits = new ArrayList();
       else
-	edits.clear();
+        edits.clear();
 
       if (elementStack == null)
-	elementStack = new Stack();
+        elementStack = new Stack();
       else
-	elementStack.clear();
+        elementStack.clear();
 
       fracturedParent = null;
       fracturedChild = null;
@@ -1029,7 +1029,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
       // This for loop applies all the changes that were made and updates the
       // DocumentEvent.
       for (Iterator i = edits.iterator(); i.hasNext();)
-	{
+        {
           Edit edits = (Edit) i.next();
           Element[] removed = new Element[edits.removed.size()];
           removed = (Element[]) edits.removed.toArray(removed);
@@ -1040,14 +1040,14 @@ public class DefaultStyledDocument extends AbstractDocument implements
           parent.replace(index, removed.length, added);
           ElementEdit ee = new ElementEdit(parent, index, removed, added);
           ev.addEdit(ee);
-	}
+        }
       edits.clear();
       elementStack.clear();
     }
 
     /**
      * Inserts new content.
-     * 
+     *
      * @param data the element specifications for the elements to be inserted
      */
     protected void insertUpdate(ElementSpec[] data)
@@ -1130,7 +1130,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
                p < data.length && data[p].getType() == ElementSpec.EndTagType;
                p++)
             ;
-          
+
           Edit edit = insertPath[insertPath.length - p - 1];
           edit.index--;
           edit.removed.add(0, edit.e.getElement(edit.index));
@@ -1162,7 +1162,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
     {
       if (elementStack.isEmpty())
         return;
-      
+
       Edit edit = (Edit) elementStack.peek();
       switch (spec.getType())
         {
@@ -1223,7 +1223,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
     /**
      * Inserts the first tag into the document.
-     * 
+     *
      * @param data -
      *          the data to be inserted.
      */
@@ -1301,7 +1301,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
     /**
      * Inserts a content element into the document structure.
-     * 
+     *
      * @param tag -
      *          the element spec
      */
@@ -1342,7 +1342,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
               edit.removed.add(first);
             }
         }
-      else 
+      else
         {
           Element leaf = createLeafElement(edit.e, tag.getAttributes(), pos,
                                            pos + len);
@@ -1350,13 +1350,13 @@ public class DefaultStyledDocument extends AbstractDocument implements
         }
 
       pos += len;
-      
+
     }
 
     /**
      * This method fractures bottomost leaf in the elementStack. This
      * happens when the first inserted tag is not content.
-     * 
+     *
      * @param data
      *          the ElementSpecs used for the entire insertion
      */
@@ -1644,12 +1644,12 @@ public class DefaultStyledDocument extends AbstractDocument implements
               ec.added.add(e);
               e = createLeafElement(ec.e, child.getAttributes(),
                                     pos, child.getEndOffset());
-              
+
               ec.added.add(e);
             }
         }
       return splitEnd;
-      
+
     }
 
   }
@@ -1672,7 +1672,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
     /**
      * Returns the name of the element. This method always returns
      * &quot;section&quot;.
-     * 
+     *
      * @return the name of the element
      */
     public String getName()
@@ -1684,7 +1684,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
   /**
    * Receives notification when any of the document's style changes and calls
    * {@link DefaultStyledDocument#styleChanged(Style)}.
-   * 
+   *
    * @author Roman Kennke (kennke@aicas.com)
    */
   private class StyleChangeListener implements ChangeListener
@@ -1693,7 +1693,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
     /**
      * Receives notification when any of the document's style changes and calls
      * {@link DefaultStyledDocument#styleChanged(Style)}.
-     * 
+     *
      * @param event
      *          the change event
      */
@@ -1734,7 +1734,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
   /**
    * Creates a new <code>DefaultStyledDocument</code> that uses the specified
    * {@link StyleContext}.
-   * 
+   *
    * @param context
    *          the <code>StyleContext</code> to use
    */
@@ -1746,7 +1746,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
   /**
    * Creates a new <code>DefaultStyledDocument</code> that uses the specified
    * {@link StyleContext} and {@link Content} buffer.
-   * 
+   *
    * @param content
    *          the <code>Content</code> buffer to use
    * @param context
@@ -1790,7 +1790,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
   /**
    * Create the default root element for this kind of <code>Document</code>.
-   * 
+   *
    * @return the default root element for this kind of <code>Document</code>
    */
   protected AbstractDocument.AbstractElement createDefaultRoot()
@@ -1814,7 +1814,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
   /**
    * Returns the <code>Element</code> that corresponds to the character at the
    * specified position.
-   * 
+   *
    * @param position
    *          the position of which we query the corresponding
    *          <code>Element</code>
@@ -1836,7 +1836,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
   /**
    * Extracts a background color from a set of attributes.
-   * 
+   *
    * @param attributes
    *          the attributes from which to get a background color
    * @return the background color that correspond to the attributes
@@ -1849,7 +1849,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
   /**
    * Returns the default root element.
-   * 
+   *
    * @return the default root element
    */
   public Element getDefaultRootElement()
@@ -1859,7 +1859,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
   /**
    * Extracts a font from a set of attributes.
-   * 
+   *
    * @param attributes
    *          the attributes from which to get a font
    * @return the font that correspond to the attributes
@@ -1872,7 +1872,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
   /**
    * Extracts a foreground color from a set of attributes.
-   * 
+   *
    * @param attributes
    *          the attributes from which to get a foreground color
    * @return the foreground color that correspond to the attributes
@@ -1885,7 +1885,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
   /**
    * Returns the logical <code>Style</code> for the specified position.
-   * 
+   *
    * @param position
    *          the position from which to query to logical style
    * @return the logical <code>Style</code> for the specified position
@@ -1907,7 +1907,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
    * element is returned. That is the last paragraph if
    * <code>position >= endIndex</code> or the first paragraph if
    * <code>position < startIndex</code>.
-   * 
+   *
    * @param position
    *          the position for which to query the paragraph element
    * @return the paragraph element for the specified position
@@ -1925,7 +1925,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
   /**
    * Looks up and returns a named <code>Style</code>.
-   * 
+   *
    * @param nm
    *          the name of the <code>Style</code>
    * @return the found <code>Style</code> of <code>null</code> if no such
@@ -1939,7 +1939,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
   /**
    * Removes a named <code>Style</code> from the style hierarchy.
-   * 
+   *
    * @param nm
    *          the name of the <code>Style</code> to be removed
    */
@@ -1952,7 +1952,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
   /**
    * Sets text attributes for the fragment specified by <code>offset</code>
    * and <code>length</code>.
-   * 
+   *
    * @param offset
    *          the start offset of the fragment
    * @param length
@@ -2015,7 +2015,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
   /**
    * Sets the logical style for the paragraph at the specified position.
-   * 
+   *
    * @param position
    *          the position at which the logical style is added
    * @param style
@@ -2056,7 +2056,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
   /**
    * Sets text attributes for the paragraph at the specified fragment.
-   * 
+   *
    * @param offset
    *          the beginning of the fragment
    * @param length
@@ -2115,7 +2115,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
   /**
    * Called in response to content insert actions. This is used to update the
    * element structure.
-   * 
+   *
    * @param ev
    *          the <code>DocumentEvent</code> describing the change
    * @param attr
@@ -2310,7 +2310,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
           }
 
         if (e != null)
-       
+
           {
             // e is now the common parent.
             // Insert the end tags.
@@ -2342,7 +2342,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
   /**
    * A helper method to set up the ElementSpec buffer for the special case of an
    * insertion occurring immediately after a newline.
-   * 
+   *
    * @param specs
    *          the ElementSpec buffer to initialize.
    */
@@ -2369,7 +2369,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
    * forwarded to the {@link ElementBuffer} of this document. Any changes to the
    * document structure are added to the specified document event and sent to
    * registered listeners.
-   * 
+   *
    * @param ev
    *          the document event that records the changes to the document
    */
@@ -2381,7 +2381,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
   /**
    * Returns an enumeration of all style names.
-   * 
+   *
    * @return an enumeration of all style names
    */
   public Enumeration<?> getStyleNames()
@@ -2392,7 +2392,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
   /**
    * Called when any of this document's styles changes.
-   * 
+   *
    * @param style
    *          the style that changed
    */
@@ -2403,7 +2403,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
   /**
    * Inserts a bulk of structured content at once.
-   * 
+   *
    * @param offset
    *          the offset at which the content should be inserted
    * @param data
@@ -2469,7 +2469,7 @@ public class DefaultStyledDocument extends AbstractDocument implements
   /**
    * Initializes the <code>DefaultStyledDocument</code> with the specified
    * data.
-   * 
+   *
    * @param data
    *          the specification of the content with which the document is
    *          initialized

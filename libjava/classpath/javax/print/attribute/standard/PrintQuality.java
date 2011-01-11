@@ -50,7 +50,7 @@ import javax.print.attribute.PrintRequestAttribute;
  * <p>
  * <b>IPP Compatibility:</b> PrintQuality is an IPP 1.1 attribute.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
@@ -59,28 +59,28 @@ public class PrintQuality extends EnumSyntax
 {
   private static final long serialVersionUID = -3072341285225858365L;
 
-  /** 
-   * Draft quality of the printer. 
+  /**
+   * Draft quality of the printer.
    */
   public static final PrintQuality DRAFT = new PrintQuality(3);
-  
-  /** 
-   * Normal quality of the printer. 
+
+  /**
+   * Normal quality of the printer.
    */
   public static final PrintQuality NORMAL = new PrintQuality(4);
-  
-  /** 
-   * High quality of the printer. 
+
+  /**
+   * High quality of the printer.
    */
   public static final PrintQuality HIGH = new PrintQuality(5);
 
   private static final String[] stringTable = { "draft", "normal", "high" };
-  
+
   private static final PrintQuality[] enumValueTable = { DRAFT, NORMAL, HIGH };
-  
+
   /**
    * Constructs a <code>PrintQuality</code> object.
-   * 
+   *
    * @param value the value of the enum
    */
   protected PrintQuality(int value)
@@ -107,7 +107,7 @@ public class PrintQuality extends EnumSyntax
   {
     return "print-quality";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.
@@ -127,7 +127,7 @@ public class PrintQuality extends EnumSyntax
   protected EnumSyntax[] getEnumValueTable()
   {
     return enumValueTable;
-  }  
+  }
 
   /**
    * Returns the lowest used value by the enumerations of this class.

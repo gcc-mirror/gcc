@@ -1,4 +1,4 @@
-/* XPathFactory.java -- 
+/* XPathFactory.java --
    Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -58,7 +58,7 @@ public abstract class XPathFactory
    * The default property name according to the JAXP specification.
    */
   public static final String DEFAULT_PROPERTY_NAME =
-	 	"javax.xml.xpath.XPathFactory";
+                "javax.xml.xpath.XPathFactory";
 
   /**
    * The default object model URI.
@@ -223,5 +223,5 @@ public abstract class XPathFactory
    * Returns a new XPath evaluation environment.
    */
   public abstract XPath newXPath();
-  
+
 }

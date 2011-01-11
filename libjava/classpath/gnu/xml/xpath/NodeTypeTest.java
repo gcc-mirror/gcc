@@ -1,4 +1,4 @@
-/* NodeTypeTest.java -- 
+/* NodeTypeTest.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -137,5 +137,5 @@ public final class NodeTypeTest
         throw new IllegalStateException();
       }
   }
-  
+
 }

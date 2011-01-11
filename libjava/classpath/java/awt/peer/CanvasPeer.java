@@ -41,5 +41,4 @@ package java.awt.peer;
 public interface CanvasPeer extends ComponentPeer
 {
 
-} // interface CanvasPeer 
-
+} // interface CanvasPeer

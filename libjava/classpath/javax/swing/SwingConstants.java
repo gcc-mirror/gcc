@@ -1,4 +1,4 @@
-/* SwingConstants.java -- 
+/* SwingConstants.java --
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -48,7 +48,7 @@ public interface SwingConstants
   int LEFT         = 2;
   int BOTTOM       = 3;
   int RIGHT        = 4;
-    
+
   int NORTH        = 1;
   int NORTH_EAST   = 2;
   int EAST         = 3;
@@ -57,10 +57,10 @@ public interface SwingConstants
   int SOUTH_WEST   = 6;
   int WEST         = 7;
   int NORTH_WEST   = 8;
-    
+
   int HORIZONTAL   = 0;
-  int VERTICAL     = 1; 
-    
+  int VERTICAL     = 1;
+
   int LEADING      = 10;
   int TRAILING     = 11;
 
@@ -74,4 +74,3 @@ public interface SwingConstants
    */
   int PREVIOUS     = 13;
 }
-

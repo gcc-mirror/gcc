@@ -1,4 +1,4 @@
-/* BasePRNG.java -- 
+/* BasePRNG.java --
    Copyright (C) 2001, 2002, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -60,7 +60,7 @@ public abstract class BasePRNG
 
   /**
    * Trivial constructor for use by concrete subclasses.
-   * 
+   *
    * @param name the canonical name of this instance.
    */
   protected BasePRNG(String name)

@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -55,7 +55,7 @@ import java.util.ResourceBundle;
 import java.util.ServiceLoader;
 
 /**
- * This is the abstract superclass of all classes which format and 
+ * This is the abstract superclass of all classes which format and
  * parse numeric values such as decimal numbers, integers, currency values,
  * and percentages.  These classes perform their parsing and formatting
  * in a locale specific manner, accounting for such items as differing
@@ -63,9 +63,9 @@ import java.util.ServiceLoader;
  * <p>
  * To create an instance of a concrete subclass of <code>NumberFormat</code>,
  * do not call a class constructor directly.  Instead, use one of the
- * static factory methods in this class such as 
+ * static factory methods in this class such as
  * <code>getCurrencyInstance</code>.
- * 
+ *
  * @author Tom Tromey (tromey@cygnus.com)
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @date March 4, 1999
@@ -195,7 +195,7 @@ public abstract class NumberFormat extends Format implements Cloneable
 
     /**
      * This function is used by the deserializer to know which object
-     * to use when it encounters an encoded NumberFormat.Field in a 
+     * to use when it encounters an encoded NumberFormat.Field in a
      * serialization stream. If the stream is valid it should return
      * one of the above field. In the other case we throw an exception.
      *
@@ -207,11 +207,11 @@ public abstract class NumberFormat extends Format implements Cloneable
     {
       String s = getName();
       for (int i = 0; i < allFields.length; i++)
-	if (s.equals(allFields[i].getName()))
-	  return allFields[i];
+        if (s.equals(allFields[i].getName()))
+          return allFields[i];
 
       throw new InvalidObjectException("no such NumberFormat field called "
-				       + s);
+                                       + s);
     }
   }
 
@@ -238,7 +238,7 @@ public abstract class NumberFormat extends Format implements Cloneable
   {
     if (obj instanceof Number)
       return format(((Number) obj).doubleValue(), sbuf, pos);
-  
+
     throw new
       IllegalArgumentException("Cannot format given Object as a Number");
   }
@@ -246,30 +246,30 @@ public abstract class NumberFormat extends Format implements Cloneable
   /**
    * This method formats the specified <code>double</code> and appends it to
    * a <code>StringBuffer</code>.
-   * 
+   *
    * @param number The <code>double</code> to format.
-   * @param sbuf The <code>StringBuffer</code> to append the formatted number 
+   * @param sbuf The <code>StringBuffer</code> to append the formatted number
    *             to.
    * @param pos The desired <code>FieldPosition</code>.
    *
    * @return The <code>StringBuffer</code> with the appended number.
    */
   public abstract StringBuffer format (double number,
-				       StringBuffer sbuf, FieldPosition pos);
+                                       StringBuffer sbuf, FieldPosition pos);
 
   /**
    * This method formats the specified <code>long</code> and appends it to
    * a <code>StringBuffer</code>.
-   * 
+   *
    * @param number The <code>long</code> to format.
-   * @param sbuf The <code>StringBuffer</code> to append the formatted number 
+   * @param sbuf The <code>StringBuffer</code> to append the formatted number
    *             to.
    * @param pos The desired <code>FieldPosition</code>.
    *
    * @return The <code>StringBuffer</code> with the appended number.
    */
   public abstract StringBuffer format (long number,
-				       StringBuffer sbuf, FieldPosition pos);
+                                       StringBuffer sbuf, FieldPosition pos);
 
   /**
    * This method tests the specified object for equality against this object.
@@ -280,14 +280,14 @@ public abstract class NumberFormat extends Format implements Cloneable
    * <li>The specified object is an instance of <code>NumberFormat</code>.
    * </ul>
    * <p>
-   * Since this method does not test much, it is highly advised that 
+   * Since this method does not test much, it is highly advised that
    * concrete subclasses override this method.
    *
    * @param obj The <code>Object</code> to test against equality with
-   *            this object. 
-   * 
+   *            this object.
+   *
    * @return <code>true</code> if the specified object is equal to
-   * this object, <code>false</code> otherwise. 
+   * this object, <code>false</code> otherwise.
    */
   public boolean equals (Object obj)
   {
@@ -295,11 +295,11 @@ public abstract class NumberFormat extends Format implements Cloneable
       return false;
     NumberFormat nf = (NumberFormat) obj;
     return (groupingUsed == nf.groupingUsed
-	    && maximumFractionDigits == nf.maximumFractionDigits
-	    && maximumIntegerDigits == nf.maximumIntegerDigits
-	    && minimumFractionDigits == nf.minimumFractionDigits
-	    && minimumIntegerDigits == nf.minimumIntegerDigits
-	    && parseIntegerOnly == nf.parseIntegerOnly);
+            && maximumFractionDigits == nf.maximumFractionDigits
+            && maximumIntegerDigits == nf.maximumIntegerDigits
+            && minimumFractionDigits == nf.minimumFractionDigits
+            && minimumIntegerDigits == nf.minimumIntegerDigits
+            && parseIntegerOnly == nf.parseIntegerOnly);
   }
 
   /**
@@ -320,18 +320,18 @@ public abstract class NumberFormat extends Format implements Cloneable
     throws MissingResourceException
   {
     if (loc.equals(Locale.ROOT))
-      return new DecimalFormat(def, DecimalFormatSymbols.getInstance(loc)); 
+      return new DecimalFormat(def, DecimalFormatSymbols.getInstance(loc));
     ResourceBundle res =
       ResourceBundle.getBundle("gnu.java.locale.LocaleInformation",
-			       loc, ClassLoader.getSystemClassLoader());
+                               loc, ClassLoader.getSystemClassLoader());
     String fmt;
     try
       {
-	fmt = res == null ? def : res.getString(resource);
+        fmt = res == null ? def : res.getString(resource);
       }
     catch (MissingResourceException x)
       {
-	fmt = def;
+        fmt = def;
       }
     DecimalFormatSymbols dfs = DecimalFormatSymbols.getInstance(loc);
     return new DecimalFormat (fmt, dfs);
@@ -358,36 +358,36 @@ public abstract class NumberFormat extends Format implements Cloneable
   {
     try
       {
-	NumberFormat format;
-	
-	format = computeInstance (loc, "currencyFormat",
-				  "\u00A4#,##0.00;(\u00A4#,##0.00)");
-	format.setMaximumFractionDigits(format.getCurrency().getDefaultFractionDigits());  
-	return format;
+        NumberFormat format;
+
+        format = computeInstance (loc, "currencyFormat",
+                                  "\u00A4#,##0.00;(\u00A4#,##0.00)");
+        format.setMaximumFractionDigits(format.getCurrency().getDefaultFractionDigits());
+        return format;
       }
     catch (MissingResourceException e)
       {
-	for (NumberFormatProvider p :
-	       ServiceLoader.load(NumberFormatProvider.class))
-	  {
-	    for (Locale l : p.getAvailableLocales())
-	      {
-		if (l.equals(loc))
-		  {
-		    NumberFormat nf = p.getCurrencyInstance(loc);
-		    if (nf != null)
-		      return nf;
-		    break;
-		  }
-	      }
-	  }
-	return getCurrencyInstance(LocaleHelper.getFallbackLocale(loc));
+        for (NumberFormatProvider p :
+               ServiceLoader.load(NumberFormatProvider.class))
+          {
+            for (Locale l : p.getAvailableLocales())
+              {
+                if (l.equals(loc))
+                  {
+                    NumberFormat nf = p.getCurrencyInstance(loc);
+                    if (nf != null)
+                      return nf;
+                    break;
+                  }
+              }
+          }
+        return getCurrencyInstance(LocaleHelper.getFallbackLocale(loc));
       }
   }
 
   /**
    * This method returns a default instance for the default locale. This
-   * will be a concrete subclass of <code>NumberFormat</code>, but the 
+   * will be a concrete subclass of <code>NumberFormat</code>, but the
    * actual class returned is dependent on the locale.
    *
    * @return An instance of the default <code>NumberFormat</code> class.
@@ -399,7 +399,7 @@ public abstract class NumberFormat extends Format implements Cloneable
 
   /**
    * This method returns a default instance for the specified locale. This
-   * will be a concrete subclass of <code>NumberFormat</code>, but the 
+   * will be a concrete subclass of <code>NumberFormat</code>, but the
    * actual class returned is dependent on the locale.
    *
    * @param loc The desired locale.
@@ -417,7 +417,7 @@ public abstract class NumberFormat extends Format implements Cloneable
    * portion of a number.
    *
    * @return The maximum number of digits allowed in the fraction
-   * portion of a number. 
+   * portion of a number.
    */
   public int getMaximumFractionDigits ()
   {
@@ -429,7 +429,7 @@ public abstract class NumberFormat extends Format implements Cloneable
    * portion of a number.
    *
    * @return The maximum number of digits allowed in the integer
-   * portion of a number. 
+   * portion of a number.
    */
   public int getMaximumIntegerDigits ()
   {
@@ -441,7 +441,7 @@ public abstract class NumberFormat extends Format implements Cloneable
    * portion of a number.
    *
    * @return The minimum number of digits allowed in the fraction
-   * portion of a number. 
+   * portion of a number.
    */
   public int getMinimumFractionDigits ()
   {
@@ -453,7 +453,7 @@ public abstract class NumberFormat extends Format implements Cloneable
    * portion of a number.
    *
    * @return The minimum number of digits allowed in the integer
-   * portion of a number. 
+   * portion of a number.
    */
   public int getMinimumIntegerDigits ()
   {
@@ -462,7 +462,7 @@ public abstract class NumberFormat extends Format implements Cloneable
 
   /**
    * This method returns a default instance for the specified locale. This
-   * will be a concrete subclass of <code>NumberFormat</code>, but the 
+   * will be a concrete subclass of <code>NumberFormat</code>, but the
    * actual class returned is dependent on the locale.
    *
    * @return An instance of the default <code>NumberFormat</code> class.
@@ -484,25 +484,25 @@ public abstract class NumberFormat extends Format implements Cloneable
   {
     try
       {
-	return computeInstance (loc, "numberFormat", "#,##0.###");
+        return computeInstance (loc, "numberFormat", "#,##0.###");
       }
     catch (MissingResourceException e)
       {
-	for (NumberFormatProvider p :
-	       ServiceLoader.load(NumberFormatProvider.class))
-	  {
-	    for (Locale l : p.getAvailableLocales())
-	      {
-		if (l.equals(loc))
-		  {
-		    NumberFormat nf = p.getNumberInstance(loc);
-		    if (nf != null)
-		      return nf;
-		    break;
-		  }
-	      }
-	  }
-	return getNumberInstance(LocaleHelper.getFallbackLocale(loc));
+        for (NumberFormatProvider p :
+               ServiceLoader.load(NumberFormatProvider.class))
+          {
+            for (Locale l : p.getAvailableLocales())
+              {
+                if (l.equals(loc))
+                  {
+                    NumberFormat nf = p.getNumberInstance(loc);
+                    if (nf != null)
+                      return nf;
+                    break;
+                  }
+              }
+          }
+        return getNumberInstance(LocaleHelper.getFallbackLocale(loc));
       }
   }
 
@@ -512,7 +512,7 @@ public abstract class NumberFormat extends Format implements Cloneable
    * but the actual class returned is dependent on the locale.
    *
    * @return An instance of an integer number formatter for the default locale.
-   * @since 1.4 
+   * @since 1.4
    */
   public static final NumberFormat getIntegerInstance()
   {
@@ -527,35 +527,35 @@ public abstract class NumberFormat extends Format implements Cloneable
    * @param locale the desired locale.
    *
    * @return An instance of an integer number formatter for the desired locale.
-   * @since 1.4 
+   * @since 1.4
    */
   public static NumberFormat getIntegerInstance(Locale locale)
   {
     try
       {
-	NumberFormat format = computeInstance (locale,
-					       "integerFormat", "#,##0");
-	format.setMaximumFractionDigits(0);
-	format.setParseIntegerOnly (true);
-	return format;
+        NumberFormat format = computeInstance (locale,
+                                               "integerFormat", "#,##0");
+        format.setMaximumFractionDigits(0);
+        format.setParseIntegerOnly (true);
+        return format;
       }
     catch (MissingResourceException e)
       {
-	for (NumberFormatProvider p :
-	       ServiceLoader.load(NumberFormatProvider.class))
-	  {
-	    for (Locale l : p.getAvailableLocales())
-	      {
-		if (l.equals(locale))
-		  {
-		    NumberFormat nf = p.getIntegerInstance(locale);
-		    if (nf != null)
-		      return nf;
-		    break;
-		  }
-	      }
-	  }
-	return getIntegerInstance(LocaleHelper.getFallbackLocale(locale));
+        for (NumberFormatProvider p :
+               ServiceLoader.load(NumberFormatProvider.class))
+          {
+            for (Locale l : p.getAvailableLocales())
+              {
+                if (l.equals(locale))
+                  {
+                    NumberFormat nf = p.getIntegerInstance(locale);
+                    if (nf != null)
+                      return nf;
+                    break;
+                  }
+              }
+          }
+        return getIntegerInstance(LocaleHelper.getFallbackLocale(locale));
       }
   }
 
@@ -582,25 +582,25 @@ public abstract class NumberFormat extends Format implements Cloneable
   {
     try
       {
-	return computeInstance (loc, "percentFormat", "#,##0%");
+        return computeInstance (loc, "percentFormat", "#,##0%");
       }
     catch (MissingResourceException e)
       {
-	for (NumberFormatProvider p :
-	       ServiceLoader.load(NumberFormatProvider.class))
-	  {
-	    for (Locale l : p.getAvailableLocales())
-	      {
-		if (l.equals(loc))
-		  {
-		    NumberFormat nf = p.getPercentInstance(loc);
-		    if (nf != null)
-		      return nf;
-		    break;
-		  }
-	      }
-	  }
-	return getPercentInstance(LocaleHelper.getFallbackLocale(loc));
+        for (NumberFormatProvider p :
+               ServiceLoader.load(NumberFormatProvider.class))
+          {
+            for (Locale l : p.getAvailableLocales())
+              {
+                if (l.equals(loc))
+                  {
+                    NumberFormat nf = p.getPercentInstance(loc);
+                    if (nf != null)
+                      return nf;
+                    break;
+                  }
+              }
+          }
+        return getPercentInstance(LocaleHelper.getFallbackLocale(loc));
       }
   }
 
@@ -613,7 +613,7 @@ public abstract class NumberFormat extends Format implements Cloneable
   {
     int hash = super.hashCode();
     hash ^= (maximumFractionDigits + maximumIntegerDigits
-	     + minimumFractionDigits + minimumIntegerDigits);
+             + minimumFractionDigits + minimumIntegerDigits);
     if (groupingUsed)
       hash ^= 0xf0f0;
     if (parseIntegerOnly)
@@ -631,7 +631,7 @@ public abstract class NumberFormat extends Format implements Cloneable
    * locale).
    *
    * @return <code>true</code> if grouping is enabled,
-   * <code>false</code> otherwise. 
+   * <code>false</code> otherwise.
    */
   public boolean isGroupingUsed ()
   {
@@ -644,7 +644,7 @@ public abstract class NumberFormat extends Format implements Cloneable
    * point.
    *
    * @return <code>true</code> if only integers are parsed,
-   * <code>false</code> otherwise. 
+   * <code>false</code> otherwise.
    */
   public boolean isParseIntegerOnly ()
   {
@@ -689,10 +689,10 @@ public abstract class NumberFormat extends Format implements Cloneable
     Number r = parse (sourceStr, pp);
     if (r == null)
       {
-	int index = pp.getErrorIndex();
-	if (index < 0)
-	  index = pp.getIndex();
-	throw new ParseException ("couldn't parse number", index);
+        int index = pp.getErrorIndex();
+        if (index < 0)
+          index = pp.getIndex();
+        throw new ParseException ("couldn't parse number", index);
       }
     return r;
   }
@@ -723,7 +723,7 @@ public abstract class NumberFormat extends Format implements Cloneable
    * locale).
    *
    * @param newValue <code>true</code> to enable grouping,
-   *                     <code>false</code> to disable it. 
+   *                     <code>false</code> to disable it.
    */
   public void setGroupingUsed (boolean newValue)
   {
@@ -790,12 +790,12 @@ public abstract class NumberFormat extends Format implements Cloneable
       setMaximumIntegerDigits (minimumIntegerDigits);
   }
 
-  /** 
-   * This method sets the parsing behavior of this object to parse only 
+  /**
+   * This method sets the parsing behavior of this object to parse only
    * integers or not.
    *
    * @param value <code>true</code> to parse only integers,
-   *                         <code>false</code> otherwise. 
+   *                         <code>false</code> otherwise.
    */
   public void setParseIntegerOnly (boolean value)
   {
@@ -814,7 +814,7 @@ public abstract class NumberFormat extends Format implements Cloneable
   {
     StringBuffer sbuf = new StringBuffer(50);
     FieldPosition position = new FieldPosition(0);
-    
+
     format (number, sbuf, position);
     return sbuf.toString();
   }
@@ -840,10 +840,10 @@ public abstract class NumberFormat extends Format implements Cloneable
     if (serialVersionOnStream < 1)
       {
         maximumFractionDigits = maxFractionDigits;
-	maximumIntegerDigits = maxIntegerDigits;
-	minimumFractionDigits = minFractionDigits;
-	minimumIntegerDigits = minIntegerDigits;
-	serialVersionOnStream = 1;
+        maximumIntegerDigits = maxIntegerDigits;
+        minimumFractionDigits = minFractionDigits;
+        minimumIntegerDigits = minIntegerDigits;
+        serialVersionOnStream = 1;
       }
   }
 
@@ -897,7 +897,7 @@ public abstract class NumberFormat extends Format implements Cloneable
   {
     if (currency == null)
       throw new NullPointerException("currency may not be null");
-    
+
     throw new UnsupportedOperationException();
   }
 }

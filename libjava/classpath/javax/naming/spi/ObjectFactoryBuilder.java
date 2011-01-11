@@ -43,19 +43,19 @@ import java.util.Hashtable;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
- 
+
 /**
  * Represents the builder that creates the object factories.
- * 
+ *
  * @see NamingManager#setObjectFactoryBuilder(ObjectFactoryBuilder)
- * 
+ *
  * @author Warren Levy (warrenl@redhat.com)
  */
 public interface ObjectFactoryBuilder
 {
   /**
    * Create a new object using the supplied environment.
-   * 
+   *
    * @param refInfo the referencing object, for which the new object must be
    *          created (can be null). If not null, it is usually an instance of
    *          the {@link Reference} or {@link Referenceable}.
@@ -65,6 +65,6 @@ public interface ObjectFactoryBuilder
    * @throws NamingException
    */
   ObjectFactory createObjectFactory(Object refInfo,
-  					   Hashtable<?, ?> environment)
-					   throws NamingException;
+                                           Hashtable<?, ?> environment)
+                                           throws NamingException;
 }

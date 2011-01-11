@@ -38,14 +38,14 @@ exception statement from your version. */
 
 package java.util;
 
-/** 
+/**
  * Thrown when the flags supplied to the {@link Formatter#format()}
  * method of a {@link Formatter} contains a flag that does not match
  * the conversion character specified for it.
  *
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
- * @since 1.5 
+ * @since 1.5
  */
 public class FormatFlagsConversionMismatchException
   extends IllegalFormatException
@@ -83,7 +83,7 @@ public class FormatFlagsConversionMismatchException
     super("Invalid flag " + f + " for conversion " + c);
     if (f == null)
       throw new
-	NullPointerException("Null flag value passed to constructor.");
+        NullPointerException("Null flag value passed to constructor.");
     this.f = f;
     this.c = c;
   }

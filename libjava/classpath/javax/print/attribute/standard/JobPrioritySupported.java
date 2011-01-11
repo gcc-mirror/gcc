@@ -1,4 +1,4 @@
-/* JobPrioritySupported.java -- 
+/* JobPrioritySupported.java --
    Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -48,7 +48,7 @@ import javax.print.attribute.SupportedValuesAttribute;
  * <p>
  * A client may specify any JobPriority value between 1 and 100. If a
  * print service supports fewer priority levels it indicates the maximum
- * levels through this attribute. The print service then automatically 
+ * levels through this attribute. The print service then automatically
  * maps the job priority value provided by the client in an even distribution
  * over the whole range of 1 to 100.
  * </p>
@@ -56,7 +56,7 @@ import javax.print.attribute.SupportedValuesAttribute;
  * <b>IPP Compatibility:</b> JobPrioritySupported is an IPP 1.1 attribute.
  * </p>
  * @see javax.print.attribute.standard.JobPriority
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class JobPrioritySupported extends IntegerSyntax
@@ -84,7 +84,7 @@ public final class JobPrioritySupported extends IntegerSyntax
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

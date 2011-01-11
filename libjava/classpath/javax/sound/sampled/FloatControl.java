@@ -97,7 +97,7 @@ public abstract class FloatControl extends Control
   /**
    * Create a new FloatControl given its type and various parameters.
    * The minimum, maximum, and midpoint labels will all be the empty string.
-   * 
+   *
    * @param type the type
    * @param min the minimum valuee
    * @param max the maximum value
@@ -107,7 +107,7 @@ public abstract class FloatControl extends Control
    * @param units the description of the units
    */
   protected FloatControl(Type type, float min, float max, float prec,
-			 int update, float init, String units)
+                         int update, float init, String units)
   {
     super(type);
     this.minimum = min;
@@ -123,7 +123,7 @@ public abstract class FloatControl extends Control
 
   /**
    * Create a new FloatControl given its type and various parameters.
-   * 
+   *
    * @param type the type
    * @param min the minimum valuee
    * @param max the maximum value
@@ -136,8 +136,8 @@ public abstract class FloatControl extends Control
    * @param maxLabel the label for the maximum value
    */
   protected FloatControl(Type type, float min, float max, float prec,
-			 int update, float init, String units,
-			 String minLabel, String midLabel, String maxLabel)
+                         int update, float init, String units,
+                         String minLabel, String midLabel, String maxLabel)
   {
     super(type);
     this.minimum = min;
@@ -242,7 +242,7 @@ public abstract class FloatControl extends Control
    * over the given time interval, specified in microseconds.
    * The default implementation does not do this, but instead
    * simply sets the value to the final value immediately.
-   * 
+   *
    * @param from the starting value
    * @param to the final value
    * @param ms the number of microseconds

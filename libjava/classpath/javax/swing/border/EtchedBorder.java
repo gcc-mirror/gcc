@@ -1,4 +1,4 @@
-/* EtchedBorder.java -- 
+/* EtchedBorder.java --
    Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -63,8 +63,8 @@ public class EtchedBorder extends AbstractBorder
    * of Apple/Sun JDK 1.3.1 on MacOS X 10.1.5.
    */
   static final long serialVersionUID = 4001244046866360638L;
-  
-  
+
+
   /**
    * Indicates that the border appears as coming out of the
    * background.
@@ -78,13 +78,13 @@ public class EtchedBorder extends AbstractBorder
    */
   public static final int LOWERED = 1;
 
-  
+
   /**
    * The type of this EtchedBorder, which is either {@link #RAISED}
    * or {@link #LOWERED}.
    */
   protected int etchType;
-  
+
 
   /**
    * The highlight color, or <code>null</code> to indicate that the
@@ -139,8 +139,8 @@ public class EtchedBorder extends AbstractBorder
      * assign a value here.
      */
   }
-  
-  
+
+
   /**
    * Constructs a lowered EtchedBorder, explicitly selecting the
    * colors that will be used for highlight and shadow.
@@ -157,8 +157,8 @@ public class EtchedBorder extends AbstractBorder
   {
     this(LOWERED, highlight, shadow);
   }
-  
-  
+
+
   /**
    * Constructs an EtchedBorder with the specified appearance,
    * explicitly selecting the colors that will be used for
@@ -186,8 +186,8 @@ public class EtchedBorder extends AbstractBorder
     this.highlight = highlight;
     this.shadow = shadow;
   }
-  
-  
+
+
   /**
    * Paints the border for a given component.
    *
@@ -214,8 +214,8 @@ public class EtchedBorder extends AbstractBorder
       break;
     }
   }
-  
-  
+
+
   /**
    * Measures the width of this border.
    *
@@ -277,11 +277,11 @@ public class EtchedBorder extends AbstractBorder
       ((highlight == null) || (highlight.getAlpha() == 255))
       && ((shadow == null) || (shadow.getAlpha() == 255));
   }
-  
+
   /**
    * Returns the appearance of this EtchedBorder, which is either
    * {@link #RAISED} or {@link #LOWERED}.
-   * 
+   *
    * @return The type ({@link #RAISED} or {@link #LOWERED}).
    */
   public int getEtchType()
@@ -300,7 +300,7 @@ public class EtchedBorder extends AbstractBorder
    * @param c the component enclosed by this border.
    *
    * @return The color.
-   * 
+   *
    * @see java.awt.Component#getBackground()
    * @see java.awt.Color#brighter()
    */
@@ -316,7 +316,7 @@ public class EtchedBorder extends AbstractBorder
    * Returns the color that will be used for highlighted parts when
    * painting the border, or <code>null</code> if that color will be
    * derived from the background of the enclosed Component.
-   * 
+   *
    * @return The highlight color (possibly <code>null</code>).
    */
   public Color getHighlightColor()
@@ -335,7 +335,7 @@ public class EtchedBorder extends AbstractBorder
    * @param c the component enclosed by this border.
    *
    * @return The shadow color.
-   * 
+   *
    * @see java.awt.Component#getBackground()
    * @see java.awt.Color#darker()
    */
@@ -346,13 +346,13 @@ public class EtchedBorder extends AbstractBorder
     else
       return c.getBackground().darker();
   }
-  
-  
+
+
   /**
    * Returns the color that will be used for shadowed parts when
    * painting the border, or <code>null</code> if that color will be
    * derived from the background of the enclosed Component.
-   * 
+   *
    * @return The shadow color (possibly <code>null</code>).
    */
   public Color getShadowColor()

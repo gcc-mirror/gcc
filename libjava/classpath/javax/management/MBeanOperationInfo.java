@@ -118,13 +118,13 @@ public class MBeanOperationInfo
     signature = new MBeanParameterInfo[paramTypes.length];
     for (int a = 0; a < paramTypes.length; ++a)
       {
-	Type t = paramTypes[a];
-	if (t instanceof Class)
-	  signature[a] = new MBeanParameterInfo(null,
-						((Class<?>) t).getName(),
-						 null);
-	else
-	  signature[a] = new MBeanParameterInfo(null, t.toString(), null);
+        Type t = paramTypes[a];
+        if (t instanceof Class)
+          signature[a] = new MBeanParameterInfo(null,
+                                                ((Class<?>) t).getName(),
+                                                 null);
+        else
+          signature[a] = new MBeanParameterInfo(null, t.toString(), null);
       }
     Type retType = method.getGenericReturnType();
     if (retType instanceof Class)
@@ -133,17 +133,17 @@ public class MBeanOperationInfo
       type = retType.toString();
     if (method.getReturnType() == Void.TYPE)
       {
-	if (paramTypes.length == 0)
-	  impact = UNKNOWN;
-	else
-	  impact = ACTION;
+        if (paramTypes.length == 0)
+          impact = UNKNOWN;
+        else
+          impact = ACTION;
       }
     else
       {
-	if (paramTypes.length == 0)
-	  impact = INFO;
-	else
-	  impact = ACTION_INFO;
+        if (paramTypes.length == 0)
+          impact = INFO;
+        else
+          impact = ACTION_INFO;
       }
   }
 
@@ -163,16 +163,16 @@ public class MBeanOperationInfo
    * @param impact the impact of performing the operation.
    */
   public MBeanOperationInfo(String name, String desc,
-			    MBeanParameterInfo[] sig, String type,
-			    int impact)
+                            MBeanParameterInfo[] sig, String type,
+                            int impact)
   {
     super(name, desc);
     if (sig == null)
       signature = new MBeanParameterInfo[0];
     else
       {
-	signature = new MBeanParameterInfo[sig.length];
-	System.arraycopy(sig, 0, signature, 0, sig.length);
+        signature = new MBeanParameterInfo[sig.length];
+        System.arraycopy(sig, 0, signature, 0, sig.length);
       }
     this.type = type;
     this.impact = impact;
@@ -192,13 +192,13 @@ public class MBeanOperationInfo
   {
     try
       {
-	return super.clone();
+        return super.clone();
       }
     catch (CloneNotSupportedException e)
       {
-	/* This shouldn't happen; we implement Cloneable */
-	throw new IllegalStateException("clone() called on " +
-					"non-cloneable object.");
+        /* This shouldn't happen; we implement Cloneable */
+        throw new IllegalStateException("clone() called on " +
+                                        "non-cloneable object.");
       }
   }
 
@@ -214,7 +214,7 @@ public class MBeanOperationInfo
    *
    * @param obj the object to compare.
    * @return true if the object is a {@link MBeanOperationInfo}
-   *         instance, 
+   *         instance,
    *         <code>name.equals(object.getName())</code>,
    *         <code>description.equals(object.getDescription())</code>,
    *         <code>type.equals(object.getReturnType())</code>,
@@ -232,15 +232,15 @@ public class MBeanOperationInfo
     MBeanParameterInfo[] sig = o.getSignature();
     for (int a = 0; a < signature.length; ++a)
       {
-	if (a == sig.length)
-	  return true;
-	if (!(signature[a].equals(sig[a])))
-	  return false;
+        if (a == sig.length)
+          return true;
+        if (!(signature[a].equals(sig[a])))
+          return false;
       }
     return (type.equals(o.getReturnType()) &&
-	    impact == o.getImpact());
+            impact == o.getImpact());
   }
-  
+
   /**
    * <p>
    * Returns the impact of performing this operation.
@@ -328,30 +328,30 @@ public class MBeanOperationInfo
   {
     if (string == null)
       {
-	String impactString;
-	switch (impact)
-	  {
-	  case INFO:
-	    impactString = "INFO";
-	    break;
-	  case ACTION:
-	    impactString = "ACTION";
-	    break;
-	  case ACTION_INFO:
-	    impactString = "ACTION_INFO";
-	    break;
-	  case UNKNOWN:
-	    impactString = "UNKNOWN";
-	    break;
-	  default:
-	    impactString = "ERRONEOUS VALUE";
-	  }
-	super.toString();
-	string = string.substring(0, string.length() - 1) 
-	  + ",returnType=" + type
-	  + ",impact=" + impactString 
-	  + ",signature=" + Arrays.toString(signature)
-	  + "]";
+        String impactString;
+        switch (impact)
+          {
+          case INFO:
+            impactString = "INFO";
+            break;
+          case ACTION:
+            impactString = "ACTION";
+            break;
+          case ACTION_INFO:
+            impactString = "ACTION_INFO";
+            break;
+          case UNKNOWN:
+            impactString = "UNKNOWN";
+            break;
+          default:
+            impactString = "ERRONEOUS VALUE";
+          }
+        super.toString();
+        string = string.substring(0, string.length() - 1)
+          + ",returnType=" + type
+          + ",impact=" + impactString
+          + ",signature=" + Arrays.toString(signature)
+          + "]";
       }
     return string;
   }

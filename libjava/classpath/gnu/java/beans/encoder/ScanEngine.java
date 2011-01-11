@@ -1,4 +1,4 @@
-/* ScanEngine.java 
+/* ScanEngine.java
  -- Scans the input and generates an object tree that can be written as XML.
  Copyright (C) 2005 Free Software Foundation, Inc.
 
@@ -54,7 +54,7 @@ import java.util.Stack;
  * {@link #writeObject} method and feeds it to a state machine. The
  * state machine then constructs and object tree which is finally
  * written as XML by a {@link Writer} implementation.</p>
- * 
+ *
  * <p>How does it work?</p>
  * <p>The <code>ScanEngine</code> sits below the {@link java.beans.XMLEncoder}
  * class and is called by it exclusively. The <code>XMLEncoder</code> sends
@@ -65,7 +65,7 @@ import java.util.Stack;
  * Furthermore the meaning of certain <code>Expressions</code> differs
  * depending on the enclosing elements or the inner elements have to be
  * simply discarded.</p>
- * 
+ *
  * <p>To cope with this state dependant nature the <code>ScanEngine</code>
  * contains a state machine which is programmed statically (no adjustments are
  * needed, all <code>ScanEngine</code> engines use the same setup). The
@@ -83,7 +83,7 @@ import java.util.Stack;
  * the current state and then the event method is called in the new current
  * state. The last step allows the state instance to do something meaningful
  * to the object tree.</p>
- * 
+ *
  * <p>The state machine knows the concept of returning to the previous
  * state. This is done using a stack of states which is popped every
  * time a call to <code>writeStatement</code>, <code>writeExpression</code>
@@ -93,7 +93,7 @@ import java.util.Stack;
  * <code>ScanEngine</code> itself to decide when an expression or statement
  * ended. This can only be done in case of {@link #writeObject} calls because
  * they are not nested.</p>
- * 
+ *
  * <p>When the XML persistence mechanism reaches an object twice (and more)
  * it should generate an XML element using the "idref" attribute and add
  * an "id" attribute to its first instantiation. This complicates things a bit
@@ -106,12 +106,12 @@ import java.util.Stack;
  * instance is stored in the <code>ScanEngine</code> and gets cleared whenever
  * the {@link #flush} method is called. This method also writes the currently
  * built object tree and generates the XML representation.</p>
- * 
+ *
  * @author Robert Schuster (robertschuster@fsfe.org)
  */
 public class ScanEngine
 {
-  
+
   /** Change this to true to let the ScanEngine print state transition
    * information.
    */
@@ -145,7 +145,7 @@ public class ScanEngine
   /** Stores the relationship between objects and their {@link ObjectId} instance.
    */
   IdentityHashMap objects = new IdentityHashMap();
-  
+
   public ScanEngine(OutputStream os)
   {
     // TODO: Provide another Writer implementation (e.g. one that does not use
@@ -182,7 +182,7 @@ public class ScanEngine
                        "newObj0");
     conf = register("newObj0", new GenericScannerState(root));
     conf.setDefaultSuccessor("ignoreAll");
-    
+
     // Simply use the start state to encode method invocations inside of
     // objects.
     conf.putSuccessor(ScannerState.TRANSITION_METHOD_INVOCATION, "start");
@@ -203,14 +203,14 @@ public class ScanEngine
     conf.putSuccessor(ScannerState.TRANSITION_CLASS_RESOLUTION, "ignoreAll");
     conf.putSuccessor(ScannerState.TRANSITION_PRIMITIVE_INSTANTIATION,
                       "ignoreAll");
-    
+
     // Get here when a value is set in the array.
     register("newOArrayGet",
              conf = new GenericScannerState(root));
-    
+
     conf.putSuccessor(ScannerState.TRANSITION_PRIMITIVE_INSTANTIATION,
                       "newOArrayGet_ignoreFirstInteger");
-    
+
     // "newArrayGet_ignoreFirstInteger" is set up mostly identical like the "start"
     // state. Otherwise things would not behave the same when done inside
     // arrays.
@@ -223,21 +223,21 @@ public class ScanEngine
                       "newPrimitiveArray");
     conf.putSuccessor(ScannerState.TRANSITION_OBJECT_ARRAY_INSTANTIATION,
                       "newObjectArray");
-    
+
     conf = register("newOArrayGet_ignoreFirstInteger",
                     new GenericScannerState(root, 1));
-    
+
     // In non-int primitive arrays class resolutions can happen
     // but they should be ignored.
     conf.putSuccessor(ScannerState.TRANSITION_CLASS_RESOLUTION, "ignoreAll");
-    
+
     // Spurious object and string references occur when setting array
     // elements. This suppresses them.
     conf.putSuccessor(ScannerState.TRANSITION_PRIMITIVE_INSTANTIATION,
                       "ignoreAll");
     conf.putSuccessor(ScannerState.TRANSITION_OBJECT_REFERENCE, "ignoreAll");
     conf.putSuccessor(ScannerState.TRANSITION_STRING_REFERENCE, "ignoreAll");
-    
+
     conf.setDefaultSuccessor("start");
 
     // Primitive arrays use the ARRAY_SET transition to create setting the
@@ -252,11 +252,11 @@ public class ScanEngine
     conf.putSuccessor(ScannerState.TRANSITION_CLASS_RESOLUTION, "ignoreAll");
     conf.putSuccessor(ScannerState.TRANSITION_PRIMITIVE_INSTANTIATION,
                       "ignoreAll");
-    
+
     conf = register("newPArraySet", new GenericScannerState(root));
     conf.putSuccessor(ScannerState.TRANSITION_PRIMITIVE_INSTANTIATION,
                       "newPArraySet_ignoreFirstInteger");
-    
+
     // Primitive arrays ignore all kinds of non-primitive object information.
     conf.putSuccessor(ScannerState.TRANSITION_OBJECT_REFERENCE,
                       "ignoreAll");
@@ -271,11 +271,11 @@ public class ScanEngine
 
     conf = register("newPArraySet_ignoreFirstInteger",
                     new GenericScannerState(root, 1));
-    
+
     // In non-int primitive arrays class resolutions can happen
     // but they should be ignored.
     conf.putSuccessor(ScannerState.TRANSITION_CLASS_RESOLUTION, "ignoreAll");
-    
+
     // Spurious object and string references occur when setting array
     // elements. This suppresses them.
     conf.putSuccessor(ScannerState.TRANSITION_PRIMITIVE_INSTANTIATION,
@@ -287,7 +287,7 @@ public class ScanEngine
   }
 
   /** Registers a <code>ScannerState</code> under a certain name.
-   * 
+   *
    * @param name Name of the state
    * @param state The <code>ScannerState</code> instance.
    * @return The second argument.
@@ -295,26 +295,26 @@ public class ScanEngine
   private ScannerState register(String name, ScannerState state)
   {
     state.init(name);
-    
+
     states.put(name, state);
 
     return state;
   }
-  
+
   /** Generates or returns an id for the given object which can be activated
    * later if the object is suitable.
-   * 
+   *
    * <p>Objects are unsuitable if they are an instance of a primitive wrapper
    * or String.</p>
-   * 
-   * @param value The object to retrieve an id for. 
+   *
+   * @param value The object to retrieve an id for.
    * @return The id for the object or <code>null</code>.
    */
   private ObjectId retrieveId(Object value)
   {
     Class valueClass = value.getClass();
     ObjectId id = null;
-    
+
     // Although multiple accesses to Class objects are not handled
     // through ids we generate one for them, too. This allows us to detect
     // second time references to such objects in the writeObject method
@@ -329,13 +329,13 @@ public class ScanEngine
             objects.put(value, id);
           }
       }
-    
+
     return id;
   }
 
   /** Scans the argument and calls one of event methods. See
    * the introduction of this class for details.
-   * 
+   *
    * @param expr The expression to serialize.
    */
   public void writeExpression(Expression expr)
@@ -344,7 +344,7 @@ public class ScanEngine
     Object[] args = expr.getArguments();
     Object target = expr.getTarget();
     Object value = null;
-    
+
     try
       {
         value = expr.getValue();
@@ -366,9 +366,9 @@ public class ScanEngine
         if (methodName.equals("newInstance"))
           {
             id = retrieveId(value);
-            
+
             Class ct = (Class) args[0];
-            
+
             if (ct.isPrimitive() || ct == Boolean.class || ct == Byte.class
                 || ct == Short.class || ct == Integer.class || ct == Long.class
                 || ct == Float.class || ct == Double.class)
@@ -379,7 +379,7 @@ public class ScanEngine
               objectArrayInstantiation(ct.getName(),
                                        args[1].toString(),
                                        id);
-            
+
             return;
           }
         else if (methodName.equals("get"))
@@ -398,7 +398,7 @@ public class ScanEngine
                 objectReference(id);
                 end();
               }
-            
+
             return;
           }
         else if (methodName.equals("set"))
@@ -407,7 +407,7 @@ public class ScanEngine
             return;
           }
       }
-    
+
     id = retrieveId(value);
 
     if (target instanceof Class)
@@ -517,7 +517,7 @@ public class ScanEngine
 
   /** Scans the argument and calls one of event methods. See
    * the introduction of this class for details.
-   * 
+   *
    * @param stmt The statement to serialize.
    */
   public void writeStatement(Statement stmt)
@@ -553,7 +553,7 @@ public class ScanEngine
 
   /** Scans the argument and calls one of event methods. See
    * the introduction of this class for details.
-   * 
+   *
    * @param o The object to serialize.
    */
   public boolean writeObject(Object o)
@@ -585,9 +585,9 @@ public class ScanEngine
             end();
             return false;
           }
-        
+
         // If our object has a corresponding ObjectId instance
-        // then generate an objectReference. This will 
+        // then generate an objectReference. This will
         // initialize the id (= brings it in the "used" state)
         // when this is the first referal.
         objectReference(id);
@@ -622,10 +622,10 @@ public class ScanEngine
 
   /**
    * Does a transition from one state to another using the given event.
-   * 
+   *
    * <p>This involves saving the current state, retrieving it's
    * successor and setting it as the current state.</p>
-   * 
+   *
    * @param transition One of {@link ScannerStates]'s transition constants.
    */
   private void transition(int transition)
@@ -633,7 +633,7 @@ public class ScanEngine
     parents.push(current);
 
     String stateName = current.getSuccessor(transition);
-    
+
     if (DEBUG)
       {
         System.err.println("from state: " + current.getName() + "\n\troute: "
@@ -641,9 +641,9 @@ public class ScanEngine
                            + "\n\t\tto state: "
                            + stateName);
       }
-    
+
     ScannerState newState = (ScannerState) states.get(stateName);
-    
+
     newState.enter(new Context(current.getName(), current.getCalls()));
 
     assert (newState != null) : "State '" + stateName + "' was not defined.";
@@ -655,7 +655,7 @@ public class ScanEngine
    *
    * <p>More details about this method can be found in this
    * class' introduction.</p>
-   * 
+   *
    * @param methodName The name of the method which is called.
    */
   void methodInvocation(String methodName)
@@ -669,7 +669,7 @@ public class ScanEngine
   *
   * <p>More details about this method can be found in this
   * class' introduction.</p>
-  * 
+  *
   * @param methodName The name of the method which is called.
   * @param className The name of the class in which the method is called.
   */
@@ -684,7 +684,7 @@ public class ScanEngine
   *
   * <p>More details about this method can be found in this
   * class' introduction.</p>
-  * 
+  *
   * @param fieldName The name of the field whose value is retrieved.
   * @param className The name of the class in which the method is called.
   */
@@ -699,7 +699,7 @@ public class ScanEngine
   *
   * <p>More details about this method can be found in this
   * class' introduction.</p>
-  * 
+  *
   * @param className The name of the class in which the method is called.
   */
   void classResolution(String className)
@@ -713,7 +713,7 @@ public class ScanEngine
   *
   * <p>More details about this method can be found in this
   * class' introduction.</p>
-  * 
+  *
   * @param className The name of the class in which the method is called.
   * @param objectId An ObjectId instance which can be activated later.
   */
@@ -728,7 +728,7 @@ public class ScanEngine
   *
   * <p>More details about this method can be found in this
   * class' introduction.</p>
-  * 
+  *
   * @param primitiveName One of "boolean, "byte", "short", "int", "long"
   * , "float" or "double"
   * @param valueAsString The value of the primitive as a String.
@@ -744,7 +744,7 @@ public class ScanEngine
   *
   * <p>More details about this method can be found in this
   * class' introduction.</p>
-  * 
+  *
   * @param arrayClassName The array's class name.
   * @param objectId An ObjectId instance which can be activated later.
   * @param lengthAsString The array's length as String.
@@ -761,7 +761,7 @@ public class ScanEngine
   *
   * <p>More details about this method can be found in this
   * class' introduction.</p>
-  * 
+  *
   * @param arrayClassName The array's class name.
   * @param objectId An ObjectId instance which can be activated later.
   * @param lengthAsString The array's length as String.
@@ -773,12 +773,12 @@ public class ScanEngine
 
     current.objectArrayInstantiation(arrayClassName, lengthAsString, objectId);
   }
-  
+
   /** Event method that denotes the setting of a value in an array.
   *
   * <p>More details about this method can be found in this
   * class' introduction.</p>
-  * 
+  *
   * @param indexAsString The index to as a String.
   */
   void arraySet(String indexAsString)
@@ -792,7 +792,7 @@ public class ScanEngine
   *
   * <p>More details about this method can be found in this
   * class' introduction.</p>
-  * 
+  *
   * @param indexAsString The index to as a String.
   */
   void arrayGet(String indexAsString)
@@ -836,7 +836,7 @@ public class ScanEngine
   }
 
   /** Event method that denotes a string.
-   * 
+   *
    * @param string The string that should be written.
    */
   void stringReference(String string)
@@ -847,7 +847,7 @@ public class ScanEngine
   }
 
   /** Event method that denotes a reference to an existing object.
-   * 
+   *
    * @param id The ObjectId to be used.
    */
   void objectReference(ObjectId id)

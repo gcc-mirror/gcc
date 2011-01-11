@@ -1,4 +1,4 @@
-/* JniHelper.java - name mangling and other JNI support 
+/* JniHelper.java - name mangling and other JNI support
  Copyright (C) 2006 Free Software Foundation, Inc.
 
  This file is part of GNU Classpath.

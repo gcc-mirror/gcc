@@ -104,10 +104,10 @@ public class SocketHandler
     throws java.io.IOException
   {
     this(LogManager.getLogManager().getProperty("java.util.logging.SocketHandler.host"),
-	 getPortNumber());
+         getPortNumber());
   }
 
-    
+
   /**
    * Constructs a <code>SocketHandler</code> that publishes log
    * records to a TCP/IP socket.  With the exception of the internet
@@ -131,10 +131,10 @@ public class SocketHandler
     throws java.io.IOException
   {
     super(createSocket(host, port),
-	  "java.util.logging.SocketHandler",
-	  /* default level */ Level.ALL,
-	  /* formatter */ null,
-	  /* default formatter */ XMLFormatter.class);
+          "java.util.logging.SocketHandler",
+          /* default level */ Level.ALL,
+          /* formatter */ null,
+          /* default formatter */ XMLFormatter.class);
   }
 
 
@@ -218,4 +218,3 @@ public class SocketHandler
     flush();
   }
 }
-    

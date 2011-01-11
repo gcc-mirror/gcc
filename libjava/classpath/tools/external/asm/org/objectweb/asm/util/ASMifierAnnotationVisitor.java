@@ -34,7 +34,7 @@ import org.objectweb.asm.AnnotationVisitor;
 /**
  * An {@link AnnotationVisitor} that prints the ASM code that generates the
  * annotations it visits.
- * 
+ *
  * @author Eric Bruneton
  */
 public class ASMifierAnnotationVisitor extends AbstractVisitor implements
@@ -48,7 +48,7 @@ public class ASMifierAnnotationVisitor extends AbstractVisitor implements
 
     /**
      * Constructs a new {@link ASMifierAnnotationVisitor}.
-     * 
+     *
      * @param id identifier of the annotation visitor variable in the produced
      *        code.
      */

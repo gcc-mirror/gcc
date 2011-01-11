@@ -1,4 +1,4 @@
-/* DomNamedNodeMap.java -- 
+/* DomNamedNodeMap.java --
    Copyright (C) 1999,2000,2001,2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -46,7 +46,7 @@ import org.w3c.dom.Node;
  * Used mostly to hold element attributes, but sometimes also
  * to list notations or entities.
  *
- * @author David Brownell 
+ * @author David Brownell
  * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  */
 public class DomNamedNodeMap
@@ -55,11 +55,11 @@ public class DomNamedNodeMap
 
   final DomNode owner;
   final short type;
-  
+
   DomNode first;
   int length;
   boolean readonly;
-  
+
   // package private
   DomNamedNodeMap(DomNode owner, short type)
   {
@@ -76,8 +76,8 @@ public class DomNamedNodeMap
   public final boolean isReadonly()
   {
     return readonly;
-  }  
-    
+  }
+
   /**
    * Sets the internal "readonly" flag so the node and its
    * children can't be changed.
@@ -90,7 +90,7 @@ public class DomNamedNodeMap
         ctx.makeReadonly();
       }
   }
-  
+
   /**
    * <b>DOM L1</b>
    * Returns the named item from the map, or null; names are just
@@ -189,7 +189,7 @@ public class DomNamedNodeMap
         node.parent = owner;
         node.depth = owner.depth + 1;
       }
-    
+
     String nodeName = node.getNodeName();
     String localName = ns ? node.getLocalName() : null;
     String namespaceURI = ns ? node.getNamespaceURI() : null;
@@ -197,7 +197,7 @@ public class DomNamedNodeMap
       {
         namespaceURI = null;
       }
-    
+
     // maybe attribute ADDITION events (?)
     DomNode last = null;
     for (DomNode ctx = first; ctx != null; ctx = ctx.next)
@@ -373,10 +373,10 @@ public class DomNamedNodeMap
             ctx.index = 0;
             return ctx;
           }
-      }    
+      }
     throw new DomDOMException(DOMException.NOT_FOUND_ERR);
   }
-  
+
   String getDefaultValue(String name)
   {
     DomDoctype doctype = (DomDoctype) owner.owner.getDoctype();
@@ -417,5 +417,5 @@ public class DomNamedNodeMap
   {
     return length;
   }
-  
+
 }

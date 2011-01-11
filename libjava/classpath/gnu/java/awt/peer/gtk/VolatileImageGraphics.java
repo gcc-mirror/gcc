@@ -108,7 +108,7 @@ public class VolatileImageGraphics extends ComponentGraphics
   {
     if (comp == null || comp instanceof AlphaComposite)
       super.draw(s);
-    
+
     // Custom composite
     else
       {
@@ -119,11 +119,11 @@ public class VolatileImageGraphics extends ComponentGraphics
         g2d.setColor(this.getColor());
         g2d.setStroke(this.getStroke());
         g2d.draw(s);
-        
+
         drawComposite(s.getBounds2D(), null);
       }
   }
-  
+
   public void fill(Shape s)
   {
     if (comp == null || comp instanceof AlphaComposite)
@@ -139,16 +139,16 @@ public class VolatileImageGraphics extends ComponentGraphics
         g2d.setPaint(this.getPaint());
         g2d.setColor(this.getColor());
         g2d.fill(s);
-        
+
         drawComposite(s.getBounds2D(), null);
       }
   }
-  
+
   public void drawGlyphVector(GlyphVector gv, float x, float y)
   {
     if (comp == null || comp instanceof AlphaComposite)
       super.drawGlyphVector(gv, x, y);
-    
+
     // Custom composite
     else
       {
@@ -156,11 +156,11 @@ public class VolatileImageGraphics extends ComponentGraphics
         createBuffer();
 
         Graphics2D g2d = (Graphics2D)buffer.getGraphics();
-        
+
         g2d.setPaint(this.getPaint());
         g2d.setColor(this.getColor());
         g2d.drawGlyphVector(gv, x, y);
-        
+
         Rectangle2D bounds = gv.getLogicalBounds();
         bounds = new Rectangle2D.Double(x + bounds.getX(), y + bounds.getY(),
                                         bounds.getWidth(), bounds.getHeight());
@@ -173,7 +173,7 @@ public class VolatileImageGraphics extends ComponentGraphics
     {
       if (comp == null || comp instanceof AlphaComposite)
         return super.drawImage(img, xform, bgcolor, obs);
-      
+
       // Custom composite
       else
         {
@@ -186,7 +186,7 @@ public class VolatileImageGraphics extends ComponentGraphics
               img = Toolkit.getDefaultToolkit().createImage(source);
             }
           BufferedImage bImg = (BufferedImage) img;
-          
+
           // Find dimensions of translation
           Point2D origin = new Point2D.Double(bImg.getMinX(), bImg.getMinY());
           Point2D pt = new Point2D.Double(bImg.getWidth(), bImg.getHeight());
@@ -195,10 +195,10 @@ public class VolatileImageGraphics extends ComponentGraphics
               origin = xform.transform(origin, origin);
               pt = xform.transform(pt, pt);
             }
-          
+
           // Create buffer and draw image
           createBuffer();
-          
+
           Graphics2D g2d = (Graphics2D)buffer.getGraphics();
           g2d.setRenderingHints(this.getRenderingHints());
           g2d.drawImage(img, xform, obs);
@@ -211,31 +211,31 @@ public class VolatileImageGraphics extends ComponentGraphics
                                obs);
         }
     }
-  
+
   public boolean drawImage(Image img, int x, int y, ImageObserver observer)
   {
     if (img instanceof GtkVolatileImage
         && (comp == null || comp instanceof AlphaComposite))
       {
-        owner.drawVolatile( ((GtkVolatileImage)img).nativePointer, 
+        owner.drawVolatile( ((GtkVolatileImage)img).nativePointer,
                             x, y,
-                            ((GtkVolatileImage)img).width, 
+                            ((GtkVolatileImage)img).width,
                             ((GtkVolatileImage)img).height );
         return true;
-      }      
+      }
     return super.drawImage( img, x, y, observer );
   }
-  
+
   public boolean drawImage(Image img, int x, int y, int width, int height,
                            ImageObserver observer)
   {
     if ((img instanceof GtkVolatileImage)
         && (comp == null || comp instanceof AlphaComposite))
       {
-        owner.drawVolatile( ((GtkVolatileImage)img).nativePointer, 
+        owner.drawVolatile( ((GtkVolatileImage)img).nativePointer,
                             x, y, width, height );
         return true;
-      }      
+      }
     return super.drawImage( img, x, y, width, height, observer );
   }
 
@@ -243,31 +243,31 @@ public class VolatileImageGraphics extends ComponentGraphics
   {
     return new Rectangle2D.Double(0, 0, owner.width, owner.height);
   }
-  
+
   private boolean drawComposite(Rectangle2D bounds, ImageObserver observer)
   {
     // Clip source to visible areas that need updating
     Rectangle2D clip = this.getClipBounds();
     Rectangle2D.intersect(bounds, clip, bounds);
-    
+
     BufferedImage buffer2 = buffer;
     if (!bounds.equals(buffer2.getRaster().getBounds()))
       buffer2 = buffer2.getSubimage((int)bounds.getX(), (int)bounds.getY(),
                                     (int)bounds.getWidth(),
                                     (int)bounds.getHeight());
-    
+
     // Get current on-screen pixels (destination) and clip to bounds
     BufferedImage current = owner.getSnapshot();
 
     double[] points = new double[] {bounds.getX(), bounds.getY(),
                                     bounds.getMaxX(), bounds.getMaxY()};
     transform.transform(points, 0, points, 0, 2);
-    
+
     Rectangle2D deviceBounds = new Rectangle2D.Double(points[0], points[1],
                                                       points[2] - points[0],
                                                       points[3] - points[1]);
     Rectangle2D.intersect(deviceBounds, this.getClipInDevSpace(), deviceBounds);
-    
+
     current = current.getSubimage((int)deviceBounds.getX(),
                                   (int)deviceBounds.getY(),
                                   (int)deviceBounds.getWidth(),
@@ -276,7 +276,7 @@ public class VolatileImageGraphics extends ComponentGraphics
     // Perform actual composite operation
     compCtx.compose(buffer2.getRaster(), current.getRaster(),
                     buffer2.getRaster());
-    
+
     // This MUST call directly into the "action" method in CairoGraphics2D,
     // not one of the wrappers, to ensure that the composite isn't processed
     // more than once!
@@ -290,7 +290,7 @@ public class VolatileImageGraphics extends ComponentGraphics
 
     return rv;
   }
-  
+
   private void createBuffer()
   {
     if (buffer == null)
@@ -299,7 +299,7 @@ public class VolatileImageGraphics extends ComponentGraphics
         rst = Raster.createWritableRaster(GtkVolatileImage.createGdkSampleModel(owner.width,
                                                                   owner.height),
                                           new Point(0,0));
-        
+
         buffer = new BufferedImage(GtkVolatileImage.gdkColorModel, rst,
                                    GtkVolatileImage.gdkColorModel.isAlphaPremultiplied(),
                                    new Hashtable());
@@ -307,12 +307,12 @@ public class VolatileImageGraphics extends ComponentGraphics
     else
       {
         Graphics2D g2d = ((Graphics2D)buffer.getGraphics());
-        
+
         g2d.setBackground(new Color(0,0,0,0));
         g2d.clearRect(0, 0, buffer.getWidth(), buffer.getHeight());
       }
   }
-  
+
   protected ColorModel getNativeCM()
   {
     // We should really return GtkVolatileImage.gdkColorModel ,
@@ -323,4 +323,3 @@ public class VolatileImageGraphics extends ComponentGraphics
     return CairoSurface.cairoCM_pre;
   }
 }
-

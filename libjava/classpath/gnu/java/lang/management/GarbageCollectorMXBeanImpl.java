@@ -42,7 +42,7 @@ import java.lang.management.GarbageCollectorMXBean;
 import javax.management.NotCompliantMBeanException;
 
 /**
- * Provides access to information about one of the garbage 
+ * Provides access to information about one of the garbage
  * collectors used by the current invocation of the
  * virtual machine.  An instance of this bean for each garbage
  * collector is obtained by calling

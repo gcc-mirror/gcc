@@ -1,4 +1,4 @@
-/* DomHTMLFrameSetElement.java -- 
+/* DomHTMLFrameSetElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -64,7 +64,7 @@ public class DomHTMLFrameSetElement
   {
     setHTMLAttribute("cols", cols);
   }
-  
+
   public String getRows()
   {
     return getHTMLAttribute("rows");
@@ -74,6 +74,5 @@ public class DomHTMLFrameSetElement
   {
     setHTMLAttribute("rows", rows);
   }
-  
-}
 
+}

@@ -1,4 +1,4 @@
-/* CFB.java -- 
+/* CFB.java --
    Copyright (C) 2002, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -83,7 +83,7 @@ public class CFB
 
   /**
    * Package-private constructor for the factory class.
-   * 
+   *
    * @param underlyingCipher The cipher implementation.
    * @param cipherBlockSize The cipher's block size.
    */
@@ -94,7 +94,7 @@ public class CFB
 
   /**
    * Cloneing constructor.
-   * 
+   *
    * @param that The instance being cloned.
    */
   private CFB(CFB that)

@@ -1,4 +1,4 @@
-/* SignatureFactory.java -- 
+/* SignatureFactory.java --
    Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -61,7 +61,7 @@ public class SignatureFactory
 
   /**
    * Returns an instance of a signature-with-appendix scheme given its name.
-   * 
+   *
    * @param ssa the case-insensitive signature-with-appendix scheme name.
    * @return an instance of the scheme, or <code>null</code> if none found.
    */
@@ -84,7 +84,7 @@ public class SignatureFactory
   /**
    * Returns a {@link Set} of signature-with-appendix scheme names supported by
    * this <i>Factory</i>.
-   * 
+   *
    * @return a {@link Set} of signature-with-appendix scheme names (Strings).
    */
   public static synchronized final Set getNames()

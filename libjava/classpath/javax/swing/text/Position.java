@@ -1,4 +1,4 @@
-/* Position.java -- 
+/* Position.java --
    Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -46,7 +46,7 @@ public interface Position
     public static final Bias Forward = new Bias("Forward");
 
     private String name;
-    
+
     private Bias(String n)
     {
       name = n;
@@ -57,6 +57,6 @@ public interface Position
       return name;
     }
   }
-    
+
   int getOffset();
 }

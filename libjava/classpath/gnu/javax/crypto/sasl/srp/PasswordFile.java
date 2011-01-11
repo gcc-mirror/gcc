@@ -1,4 +1,4 @@
-/* PasswordFile.java -- 
+/* PasswordFile.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -190,7 +190,7 @@ public class PasswordFile
   /**
    * Returns a string representing the decimal value of an integer identifying
    * the message digest algorithm to use for the SRP computations.
-   * 
+   *
    * @param mdName the canonical name of a message digest algorithm.
    * @return a string representing the decimal value of an ID for that
    *         algorithm.
@@ -219,7 +219,7 @@ public class PasswordFile
   /**
    * Checks if the current configuration file contains the &lt;N, g> pair for
    * the designated <code>index</code>.
-   * 
+   *
    * @param index a string representing 1-digit identification of an &lt;N, g>
    *          pair used.
    * @return <code>true</code> if the designated <code>index</code> is that
@@ -243,7 +243,7 @@ public class PasswordFile
   /**
    * Returns a pair of strings representing the pair of <code>N</code> and
    * <code>g</code> MPIs for the designated <code>index</code>.
-   * 
+   *
    * @param index a string representing 1-digit identification of an &lt;N, g>
    *          pair to look up.
    * @return a pair of strings, arranged in an array, where the first (at index
@@ -362,7 +362,7 @@ public class PasswordFile
    * Returns the triplet: verifier, salt and configuration file index, of a
    * designated user, and a designated message digest algorithm name, as an
    * array of strings.
-   * 
+   *
    * @param user the username.
    * @param mdName the canonical name of the SRP's message digest algorithm.
    * @return a string array containing, in this order, the BASE-64 encodings of
@@ -465,7 +465,7 @@ public class PasswordFile
    * <b>IMPORTANT:</b> This method computes the verifiers as described in
    * RFC-2945, which differs from the description given on the web page for
    * SRP-6.
-   * 
+   *
    * @param user the user's name.
    * @param s the user's salt.
    * @param password the user's password

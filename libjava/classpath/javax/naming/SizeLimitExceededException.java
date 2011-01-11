@@ -43,7 +43,7 @@ package javax.naming;
  * indicates that there are more elements than the previously specified
  * size limit. Hence the enumeration represents only part of the existing
  * elements that would be an answer to the specified request.
- */ 
+ */
 public class SizeLimitExceededException extends LimitExceededException
 {
   private static final long serialVersionUID = 7129289564879168579L;

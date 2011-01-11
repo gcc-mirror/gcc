@@ -49,11 +49,11 @@ import java.net.Socket;
  * for implementing the desired timeout policies, for HTTP tunnels and in some
  * other similar cases. While such functionality is provided by near all
  * existing CORBA implementations, no standard mechanism is defined.
- * 
+ *
  * The socket factory may need to put additional information to the IORs of the
  * objects, released by the ORB. Because of this reason, this interface extends
  * IORInterceptorOperations.
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public interface SocketFactory
@@ -63,28 +63,28 @@ public interface SocketFactory
    * factory class, the name of that (String) is the value of this property.
    */
   final String PROPERTY = "gnu.CORBA.SocketFactory";
-  
+
   /**
    * Create a server socket that should serve remote invocations on the given
    * port. The ORB may use this socket to serve either one or more objects.
-   * 
+   *
    * @param port the port, on that the socket should be listening for requests.
    * The port policy can be controlled by {@link gnuPortManager}.
-   * 
+   *
    * @throws IOException if the socket cannot be created on the given port due
    * any reasons. The ORB may try to open the socket on another port, calling
    * this method with the different parameter.
    */
   ServerSocket createServerSocket(int port)
     throws IOException;
-  
+
   /**
    * Create a client socket that should send a request to the remote side. When
    * returned, the socket should be opened and ready to communicate.
-   * 
+   *
    * @param port the port, on that the socket should be openend. The port is
    * usually part of the internet profile.
-   * 
+   *
    * @throws IOException if the socket cannot be created on the given port due
    * any reasons. The ORB may try to open the socket on another port, calling
    * this method with the different parameter.

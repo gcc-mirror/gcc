@@ -1,4 +1,4 @@
-/* ServerSocketChannelSelectionKey.java -- 
+/* ServerSocketChannelSelectionKey.java --
    Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.

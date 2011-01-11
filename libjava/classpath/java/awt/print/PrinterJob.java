@@ -68,7 +68,7 @@ public abstract class PrinterJob
   }
 
   /**
-   * Initializes a new instance of <code>PrinterJob</code>. 
+   * Initializes a new instance of <code>PrinterJob</code>.
    */
   public PrinterJob()
   {
@@ -163,7 +163,7 @@ public abstract class PrinterJob
     // FIXME: Implement this for real.
     return pageDialog((PageFormat) null);
   }
-  
+
   /**
    * Prints the pages.
    */
@@ -239,7 +239,7 @@ public abstract class PrinterJob
 
   /**
    * Find and return 2D image print services.
-   * 
+   *
    * This is the same as calling PrintServiceLookup.lookupPrintServices()
    * with Pageable service-specified DocFlavor.
    * @return Array of PrintService objects, could be empty.
@@ -250,13 +250,13 @@ public abstract class PrinterJob
     return PrintServiceLookup.lookupPrintServices
       (
        new DocFlavor("application/x-java-jvm-local-objectref",
-		     "java.awt.print.Pageable"),
+                     "java.awt.print.Pageable"),
        null);
   }
 
   /**
    * Find and return 2D image stream print services.
-   * 
+   *
    * This is the same as calling
    * StreamPrintServiceFactory.lookupStreamPrintServices()
    * with Pageable service-specified DocFlavor.
@@ -274,7 +274,7 @@ public abstract class PrinterJob
   /**
    * Return the printer for this job.  If print services aren't supported by
    * the subclass, returns null.
-   * 
+   *
    * @return The associated PrintService.
    * @since 1.4
    */

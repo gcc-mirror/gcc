@@ -1,4 +1,4 @@
-/* FlavorListener -- Interface for tagging an interest in FlavorEvents. 
+/* FlavorListener -- Interface for tagging an interest in FlavorEvents.
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.

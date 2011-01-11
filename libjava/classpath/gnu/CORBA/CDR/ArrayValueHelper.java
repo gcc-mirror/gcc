@@ -63,7 +63,7 @@ import javax.rmi.CORBA.ValueHandler;
  * Writes arrays as a boxed value types. A single instance is used to write a
  * single array. This class is only used with RMI/IIOP, to handle array boxed
  * values.
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 class ArrayValueHelper

@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -47,11 +47,11 @@ import java.rmi.server.RMIClassLoader;
 import java.rmi.server.RemoteStub;
 
 public class RMIObjectOutputStream
-	extends ObjectOutputStream {
+        extends ObjectOutputStream {
 
 public RMIObjectOutputStream(OutputStream strm) throws IOException {
-	super(strm);
-	enableReplaceObject(true);
+        super(strm);
+        enableReplaceObject(true);
 }
 
 //Separate it for override by MarshalledObject
@@ -60,7 +60,7 @@ protected void setAnnotation(String annotation) throws IOException{
 }
 
 protected void annotateClass(Class cls) throws IOException {
-	setAnnotation(RMIClassLoader.getClassAnnotation(cls));
+        setAnnotation(RMIClassLoader.getClassAnnotation(cls));
 }
 
 protected void annotateProxyClass(Class cls)
@@ -68,14 +68,14 @@ protected void annotateProxyClass(Class cls)
 {
     annotateClass(cls);
 }
-    
+
 protected Object replaceObject(Object obj)
         throws IOException
 {
     if((obj instanceof Remote) && !(obj instanceof RemoteStub)){
-	    UnicastServerRef ref = UnicastServer.getExportedRef((Remote)obj);
-	    if (ref != null)
-		    return ref.getStub();
+            UnicastServerRef ref = UnicastServer.getExportedRef((Remote)obj);
+            if (ref != null)
+                    return ref.getStub();
     }
     return obj;
 }

@@ -48,21 +48,21 @@ public class DocumentFilter
     }
 
     public abstract Document getDocument();
-    
+
     public abstract void insertString(int offset, String string,
-				      AttributeSet attr)
+                                      AttributeSet attr)
       throws BadLocationException;
-    
+
     public abstract void remove(int offset, int length)
       throws BadLocationException;
-    
+
     public abstract void replace(int offset, int length, String string,
-				 AttributeSet attrs)
+                                 AttributeSet attrs)
       throws BadLocationException;
   }
-  
+
   public void insertString(DocumentFilter.FilterBypass fb, int offset,
-			   String string, AttributeSet attr)
+                           String string, AttributeSet attr)
     throws BadLocationException
   {
     fb.insertString(offset, string, attr);
@@ -75,7 +75,7 @@ public class DocumentFilter
   }
 
   public void replace(DocumentFilter.FilterBypass fb, int offset, int length,
-		      String text, AttributeSet attr)
+                      String text, AttributeSet attr)
     throws BadLocationException
   {
     fb.replace(offset, length, text, attr);

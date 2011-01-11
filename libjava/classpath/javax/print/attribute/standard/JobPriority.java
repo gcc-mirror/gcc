@@ -1,4 +1,4 @@
-/* JobPriority.java -- 
+/* JobPriority.java --
    Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -47,14 +47,14 @@ import javax.print.attribute.PrintRequestAttribute;
  * The <code>JobPriority</code> printing attribute specifies
  * the priority for scheduling a job on the print service.
  * <p>
- * A client may specify any value between 1 (lowest priority) and 100 
+ * A client may specify any value between 1 (lowest priority) and 100
  * (highest priority). A print service prints jobs with a priority
  * value of n before those with a priority value of n-1.
  * </p>
  * <p>
  * <b>IPP Compatibility:</b> JobPriority is an IPP 1.1 attribute.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class JobPriority extends IntegerSyntax
@@ -82,7 +82,7 @@ public final class JobPriority extends IntegerSyntax
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

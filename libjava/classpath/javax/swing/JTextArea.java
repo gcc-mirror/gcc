@@ -1,4 +1,4 @@
-/* JTextArea.java -- 
+/* JTextArea.java --
    Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -126,7 +126,7 @@ public class JTextArea extends JTextComponent
    * Compatible with Sun's JDK
    */
   private static final long serialVersionUID = -6141680179310439825L;
-  
+
   /**
    * The number of rows used by the component.
    */
@@ -235,14 +235,14 @@ public class JTextArea extends JTextComponent
   public void append(String toAppend)
   {
       try
-	  {
-	      getDocument().insertString(getText().length(), toAppend, null);
-	  }
+          {
+              getDocument().insertString(getText().length(), toAppend, null);
+          }
       catch (BadLocationException exception)
-	  {
-	      /* This shouldn't happen in theory -- but, if it does...  */
-	      throw new RuntimeException("Unexpected exception occurred.", exception);
-	  }
+          {
+              /* This shouldn't happen in theory -- but, if it does...  */
+              throw new RuntimeException("Unexpected exception occurred.", exception);
+          }
       if (toAppend != null && toAppend.length() > 0)
         revalidate();
   }
@@ -337,7 +337,7 @@ public class JTextArea extends JTextComponent
   {
     return columns;
   }
-  
+
   /**
    * Sets the number of rows.
    *
@@ -349,7 +349,7 @@ public class JTextArea extends JTextComponent
   {
     if (columns < 0)
       throw new IllegalArgumentException();
-    
+
     if (columns != this.columns)
       {
         this.columns = columns;
@@ -378,7 +378,7 @@ public class JTextArea extends JTextComponent
   {
     if (rows < 0)
       throw new IllegalArgumentException();
-   
+
     if (rows != this.rows)
       {
         this.rows = rows;
@@ -423,7 +423,7 @@ public class JTextArea extends JTextComponent
   {
     return wrapStyleWord;
   }
-  
+
   /**
    * Enables/Disables word style wrapping.
    *
@@ -434,12 +434,12 @@ public class JTextArea extends JTextComponent
   {
     if (wrapStyleWord == flag)
       return;
-    
+
     boolean oldValue = wrapStyleWord;
     wrapStyleWord = flag;
     firePropertyChange("wrapStyleWord", oldValue, wrapStyleWord);
   }
-  
+
   /**
    * Returns the number of characters used for a tab.
    * This defaults to 8.
@@ -456,14 +456,14 @@ public class JTextArea extends JTextComponent
    * supplied value.  If a change to the tab size property
    * occurs (i.e. newSize != tabSize), a property change event
    * is fired.
-   * 
+   *
    * @param newSize The new number of characters to use for a tab.
    */
   public void setTabSize(int newSize)
   {
     if (tabSize == newSize)
       return;
-    
+
     int oldValue = tabSize;
     tabSize = newSize;
     firePropertyChange("tabSize", oldValue, tabSize);
@@ -484,7 +484,7 @@ public class JTextArea extends JTextComponent
      throws BadLocationException
   {
     int lineCount = getLineCount();
-    
+
     if (line < 0 || line > lineCount)
       throw new BadLocationException("Non-existing line number", line);
 
@@ -496,7 +496,7 @@ public class JTextArea extends JTextComponent
      throws BadLocationException
   {
     int lineCount = getLineCount();
-    
+
     if (line < 0 || line > lineCount)
       throw new BadLocationException("Non-existing line number", line);
 
@@ -510,7 +510,7 @@ public class JTextArea extends JTextComponent
     Document doc = getDocument();
 
     if (offset < doc.getStartPosition().getOffset()
-	|| offset >= doc.getEndPosition().getOffset())
+        || offset >= doc.getEndPosition().getOffset())
       throw new BadLocationException("offset outside of document", offset);
 
     return doc.getDefaultRootElement().getElementIndex(offset);
@@ -536,32 +536,32 @@ public class JTextArea extends JTextComponent
   {
     // Retrieve the document model.
     Document doc = getDocument();
-      
+
     // Check the model and string for validity.
     if (doc == null
-	|| string == null
-	|| string.length() == 0)
+        || string == null
+        || string.length() == 0)
       return;
 
     // Insert the text into the model.
     try
       {
-	doc.insertString(position, string, null);
+        doc.insertString(position, string, null);
       }
     catch (BadLocationException e)
       {
-	throw new IllegalArgumentException("The supplied position, "
-					   + position + ", was invalid.");
+        throw new IllegalArgumentException("The supplied position, "
+                                           + position + ", was invalid.");
       }
   }
 
   public void replaceRange(String text, int start, int end)
   {
     Document doc = getDocument();
-    
+
     if (start > end
-	|| start < doc.getStartPosition().getOffset()
-	|| end >= doc.getEndPosition().getOffset())
+        || start < doc.getStartPosition().getOffset()
+        || end >= doc.getEndPosition().getOffset())
       throw new IllegalArgumentException();
 
     try
@@ -571,7 +571,7 @@ public class JTextArea extends JTextComponent
       }
     catch (BadLocationException e)
       {
-	// This cannot happen as we check offset above.
+        // This cannot happen as we check offset above.
       }
   }
 

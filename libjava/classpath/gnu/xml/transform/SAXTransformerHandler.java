@@ -1,4 +1,4 @@
-/* SAXTransformerHandler.java -- 
+/* SAXTransformerHandler.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -107,5 +107,5 @@ class SAXTransformerHandler
         throw e2;
       }
   }
-  
+
 }

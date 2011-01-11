@@ -7,7 +7,7 @@
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation; either version 2, or (at your option)
  any later version.
- 
+
  GNU Classpath is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -46,7 +46,7 @@ import java.io.OutputStream;
  * This class uses the {@link PersistenceDelegate} and {@link Encoder}
  * infrastructure to generate an XML representation of the objects it
  * serializes.
- * 
+ *
  * @author Robert Schuster (robertschuster@fsfe.org)
  * @since 1.4
  */
@@ -92,11 +92,11 @@ public class XMLEncoder extends Encoder
     // I needed for a succesfull operation of XMLEncoder.
     //
     // The same is true for the writeStatement method.
-    
+
     //  Silently ignore out of bounds calls.
     if (accessCounter <= 0)
       return;
-    
+
     scanEngine.writeExpression(expr);
 
 
@@ -113,8 +113,8 @@ public class XMLEncoder extends Encoder
         getExceptionListener().exceptionThrown(e);
         return;
       }
-    
-    
+
+
     newValue = get(value);
 
     if (newValue == null)
@@ -144,15 +144,15 @@ public class XMLEncoder extends Encoder
                 newArgs[i] = get(args[i]);
               }
           }
-        
+
         Expression newExpr = new Expression(newTarget, expr.getMethodName(),
                                             newArgs);
-        
+
         // Fakes the result of Class.forName(<primitiveType>) to make it possible
         // to hand such a type to the encoding process.
         if (value instanceof Class && ((Class) value).isPrimitive())
           newExpr.setValue(value);
-        
+
         // Instantiates the new object.
         try
           {
@@ -163,15 +163,15 @@ public class XMLEncoder extends Encoder
         catch (Exception e)
           {
             getExceptionListener().exceptionThrown(e);
-            
+
             // In Statement.writeExpression we had no possibility to flags
             // an erroneous state to the ScanEngine without behaving different
-            // to the JDK.            
+            // to the JDK.
             scanEngine.revoke();
-            
+
             return;
           }
-        
+
         writeObject(value);
 
       }
@@ -187,7 +187,7 @@ public class XMLEncoder extends Encoder
   {
     // In case of questions have a at the implementation note in
     // writeExpression.
-    
+
     scanEngine.writeStatement(stmt);
 
     //  Silently ignore out of bounds calls.
@@ -234,7 +234,7 @@ public class XMLEncoder extends Encoder
 
         // In Statement.writeStatement we had no possibility to flags
         // an erroneous state to the ScanEngine without behaving different
-        // to the JDK.            
+        // to the JDK.
         scanEngine.revoke();
         return;
       }
@@ -245,15 +245,15 @@ public class XMLEncoder extends Encoder
   public void writeObject(Object o)
   {
     accessCounter++;
-    
+
     scanEngine.writeObject(o);
-    
+
     if (get(o) == null)
       super.writeObject(o);
-      
+
     accessCounter--;
   }
-  
+
   public void setOwner(Object o)
   {
     owner = o;

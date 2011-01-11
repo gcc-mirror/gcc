@@ -90,7 +90,7 @@ private String file;
 private FilenameFilter filter;
 
 /**
-  * @serial The mode of this dialog, either <code>LOAD</code> or 
+  * @serial The mode of this dialog, either <code>LOAD</code> or
   * <code>SAVE</code>.
   */
 private int mode;
@@ -109,41 +109,41 @@ private static transient long next_file_dialog_number;
   /**
    * Initializes a new instance of <code>FileDialog</code> with the specified
    * parent. This dialog will have no title and will be for loading a file.
-   * 
+   *
    * @param parent The parent dialog for this.
-   * 
+   *
    * @since 1.5
    */
   public FileDialog(Dialog parent)
   {
     this(parent, "", LOAD);
   }
-  
+
   /**
    * Initialized a new instance of <code>FileDialog</code> with the
    * specified parent and title.  This dialog will be for opening a file.
    *
    * @param parent The parent dialog for this.
    * @param title The title for this dialog.
-   * 
+   *
    * @since 1.5
    */
   public FileDialog(Dialog parent, String title)
   {
     this(parent, title, LOAD);
   }
-  
+
   /**
    * Initialized a new instance of <code>FileDialog</code> with the specified
    * parent, title, and mode.
-   * 
+   *
    * @param parent The parent dialog for this.
    * @param title The title for this dialog.
    * @param mode The mode of the dialog, either <code>LOAD</code> or
    *          <code>SAVE</code>.
    * @throws IllegalArgumentException - if illegal mode, if
    *           GraphicsEnvironment.isHeadless or if parent is null.
-   *           
+   *
    * @since 1.5
    */
   public FileDialog(Dialog parent, String title, int mode)
@@ -154,12 +154,12 @@ private static transient long next_file_dialog_number;
     if (mode != LOAD && mode != SAVE)
       throw new IllegalArgumentException (
         "Mode argument must be either LOAD or SAVE");
-    
+
     setMode(mode);
   }
 
 /**
-  * Initializes a new instance of <code>FileDialog</code> with the 
+  * Initializes a new instance of <code>FileDialog</code> with the
   * specified parent.  This dialog will have no title and will be for
   * loading a file.
   *
@@ -204,7 +204,7 @@ public
 FileDialog(Frame parent, String title, int mode)
 {
   super(parent, title, true);
-  
+
   if ((mode != LOAD) && (mode != SAVE))
     throw new IllegalArgumentException (
       "Mode argument must be either LOAD or SAVE");
@@ -309,7 +309,7 @@ setFile(String file)
     this.file = null;
   else
     this.file = file;
-  
+
   if (peer != null)
     {
       FileDialogPeer f = (FileDialogPeer) peer;
@@ -372,7 +372,7 @@ protected String
 paramString()
 {
   return ("dir=" + dir + ",file=" + file +
-	  ",mode=" + mode + "," + super.paramString());
+          ",mode=" + mode + "," + super.paramString());
 }
 
 /**
@@ -380,17 +380,16 @@ paramString()
  *
  * @return A unique name for this <code>FileDialog</code>.
  */
-String 
+String
 generateName()
 {
   return "filedlg" + getUniqueLong();
 }
 
-private static synchronized long 
+private static synchronized long
 getUniqueLong()
 {
   return next_file_dialog_number++;
 }
 
-} // class FileDialog 
-
+} // class FileDialog

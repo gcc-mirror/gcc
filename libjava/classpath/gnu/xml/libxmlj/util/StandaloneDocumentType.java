@@ -1,4 +1,4 @@
-/* StandaloneDocumentType.java - 
+/* StandaloneDocumentType.java -
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -75,7 +75,7 @@ implements DocumentType
     // TODO
     return null;
   }
-  
+
   public NamedNodeMap getNotations ()
   {
     // TODO
@@ -96,7 +96,7 @@ implements DocumentType
   {
     return null;
   }
-  
+
   // -- Node --
 
   public String getNodeName ()
@@ -109,7 +109,7 @@ implements DocumentType
   {
     return null;
   }
-  
+
   public void setNodeValue (String nodeValue)
     throws DOMException
   {
@@ -254,12 +254,12 @@ implements DocumentType
   {
     return equals (other);
   }
-  
+
   public String lookupPrefix (String namespace)
   {
     return null;
   }
-  
+
   public boolean isDefaultNamespace (String namespace)
   {
     return false;

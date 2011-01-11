@@ -120,7 +120,7 @@ public class BasicButtonUI extends ButtonUI
    *
    * @return A new UI capable of drawing the component
    */
-  public static ComponentUI createUI(final JComponent c) 
+  public static ComponentUI createUI(final JComponent c)
   {
     if (sharedUI == null)
       sharedUI = new BasicButtonUI();
@@ -129,9 +129,9 @@ public class BasicButtonUI extends ButtonUI
 
   /**
    * Returns the default gap between the button's text and icon (in pixels).
-   * 
+   *
    * @param b  the button (ignored).
-   * 
+   *
    * @return The gap.
    */
   public int getDefaultTextIconGap(AbstractButton b)
@@ -141,19 +141,19 @@ public class BasicButtonUI extends ButtonUI
 
   /**
    * Sets the text shift offset to zero.
-   * 
+   *
    * @see #setTextShiftOffset()
    */
   protected void clearTextShiftOffset()
   {
     textShiftOffset = 0;
   }
-  
+
   /**
    * Returns the text shift offset.
-   * 
+   *
    * @return The text shift offset.
-   * 
+   *
    * @see #clearTextShiftOffset()
    * @see #setTextShiftOffset()
    */
@@ -164,7 +164,7 @@ public class BasicButtonUI extends ButtonUI
 
   /**
    * Sets the text shift offset to the value in {@link #defaultTextShiftOffset}.
-   * 
+   *
    * @see #clearTextShiftOffset()
    */
   protected void setTextShiftOffset()
@@ -185,7 +185,7 @@ public class BasicButtonUI extends ButtonUI
 
   /**
    * Installs the default settings.
-   * 
+   *
    * @param b  the button (<code>null</code> not permitted).
    */
   protected void installDefaults(AbstractButton b)
@@ -218,7 +218,7 @@ public class BasicButtonUI extends ButtonUI
 
   /**
    * Removes the defaults added by {@link #installDefaults(AbstractButton)}.
-   * 
+   *
    * @param b  the button (<code>null</code> not permitted).
    */
   protected void uninstallDefaults(AbstractButton b)
@@ -229,11 +229,11 @@ public class BasicButtonUI extends ButtonUI
 
   /**
    * Creates and returns a new instance of {@link BasicButtonListener}.  This
-   * method provides a hook to make it easy for subclasses to install a 
+   * method provides a hook to make it easy for subclasses to install a
    * different listener.
-   * 
+   *
    * @param b  the button.
-   * 
+   *
    * @return A new listener.
    */
   protected BasicButtonListener createButtonListener(AbstractButton b)
@@ -249,7 +249,7 @@ public class BasicButtonUI extends ButtonUI
 
   /**
    * Installs listeners for the button.
-   * 
+   *
    * @param b  the button (<code>null</code> not permitted).
    */
   protected void installListeners(AbstractButton b)
@@ -259,7 +259,7 @@ public class BasicButtonUI extends ButtonUI
       {
         b.addChangeListener(listener);
         b.addPropertyChangeListener(listener);
-        b.addFocusListener(listener);    
+        b.addFocusListener(listener);
         b.addMouseListener(listener);
         b.addMouseMotionListener(listener);
       }
@@ -271,7 +271,7 @@ public class BasicButtonUI extends ButtonUI
 
   /**
    * Uninstalls listeners for the button.
-   * 
+   *
    * @param b  the button (<code>null</code> not permitted).
    */
   protected void uninstallListeners(AbstractButton b)
@@ -281,7 +281,7 @@ public class BasicButtonUI extends ButtonUI
       {
         b.removeChangeListener(listener);
         b.removePropertyChangeListener(listener);
-        b.removeFocusListener(listener);    
+        b.removeFocusListener(listener);
         b.removeMouseListener(listener);
         b.removeMouseMotionListener(listener);
       }
@@ -304,12 +304,12 @@ public class BasicButtonUI extends ButtonUI
   /**
    * Install the BasicButtonUI as the UI for a particular component.
    * This means registering all the UI's listeners with the component,
-   * and setting any properties of the button which are particular to 
+   * and setting any properties of the button which are particular to
    * this look and feel.
    *
    * @param c The component to install the UI into
    */
-  public void installUI(final JComponent c) 
+  public void installUI(final JComponent c)
   {
     super.installUI(c);
     if (c instanceof AbstractButton)
@@ -395,7 +395,7 @@ public class BasicButtonUI extends ButtonUI
    *
    * @return The preferred dimensions of the component
    */
-  public Dimension getPreferredSize(JComponent c) 
+  public Dimension getPreferredSize(JComponent c)
   {
     AbstractButton b = (AbstractButton) c;
     Dimension d = BasicGraphicsUtils.getPreferredButtonSize(b,
@@ -417,7 +417,7 @@ public class BasicButtonUI extends ButtonUI
           i = b.getRolloverSelectedIcon();
         else if (b.getRolloverIcon() != null)
           i = b.getRolloverIcon();
-      }    
+      }
 
     else if (b.isSelected() && b.isEnabled())
       {
@@ -434,7 +434,7 @@ public class BasicButtonUI extends ButtonUI
   }
 
   /**
-   * Paint the component, which is an {@link AbstractButton}, according to 
+   * Paint the component, which is an {@link AbstractButton}, according to
    * its current state.
    *
    * @param g The graphics context to paint with
@@ -462,13 +462,13 @@ public class BasicButtonUI extends ButtonUI
     g.setFont(f);
     Icon icon = b.getIcon();
     String text = b.getText();
-    text = SwingUtilities.layoutCompoundLabel(c, g.getFontMetrics(f), 
+    text = SwingUtilities.layoutCompoundLabel(c, g.getFontMetrics(f),
                                               text, icon,
-                                              b.getVerticalAlignment(), 
+                                              b.getVerticalAlignment(),
                                               b.getHorizontalAlignment(),
-                                              b.getVerticalTextPosition(), 
+                                              b.getVerticalTextPosition(),
                                               b.getHorizontalTextPosition(),
-                                              viewR, iconR, textR, 
+                                              viewR, iconR, textR,
                                               text == null ? 0
                                                          : b.getIconTextGap());
 
@@ -541,7 +541,7 @@ public class BasicButtonUI extends ButtonUI
 
   /**
    * Paints the background area of an {@link AbstractButton} in the pressed
-   * state.  This means filling the supplied area with a darker than normal 
+   * state.  This means filling the supplied area with a darker than normal
    * background.
    *
    * @param g The graphics context to paint with
@@ -557,7 +557,7 @@ public class BasicButtonUI extends ButtonUI
         g.fillRect(area.x, area.y, area.width, area.height);
       }
   }
-    
+
   /**
    * Paints the "text" property of an {@link AbstractButton}.
    *
@@ -567,8 +567,8 @@ public class BasicButtonUI extends ButtonUI
    * @param text The text to paint
    */
   protected void paintText(Graphics g, JComponent c, Rectangle textRect,
-                           String text) 
-  {	
+                           String text)
+  {
     AbstractButton b = (AbstractButton) c;
     Font f = b.getFont();
     g.setFont(f);
@@ -602,10 +602,10 @@ public class BasicButtonUI extends ButtonUI
    * @since 1.4
    */
   protected void paintText(Graphics g, AbstractButton b, Rectangle textRect,
-			   String text)
+                           String text)
   {
     paintText(g, (JComponent) b, textRect, text);
-  } 
+  }
 
   /**
    * A helper method that finds the BasicButtonListener for the specified

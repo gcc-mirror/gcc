@@ -85,7 +85,7 @@ public abstract class LocaleNameProvider
    * @see java.util.Locale#getDisplayCountry(java.util.Locale)
    */
   public abstract String getDisplayCountry(String countryCode,
-					   Locale locale);
+                                           Locale locale);
 
   /**
    * Returns the localized name for the specified ISO 639
@@ -111,7 +111,7 @@ public abstract class LocaleNameProvider
    * @see java.util.Locale#getDisplayLanguage(java.util.Locale)
    */
   public abstract String getDisplayLanguage(String langCode,
-					    Locale locale);
+                                            Locale locale);
 
   /**
    * Returns the localized name for the specified variant
@@ -130,6 +130,6 @@ public abstract class LocaleNameProvider
    * @see java.util.Locale#getDisplayVariant(java.util.Locale)
    */
   public abstract String getDisplayVariant(String variant,
-					   Locale locale);
+                                           Locale locale);
 
 }

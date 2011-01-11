@@ -42,7 +42,7 @@ package gnu.classpath.jdwp.exception;
 import gnu.classpath.jdwp.JdwpConstants;
 
 /**
- * An exception thrown when an invalid Slot id is used by the debugger 
+ * An exception thrown when an invalid Slot id is used by the debugger
  * (i.e. when trying to access a variable slot which doesn't exist).
  *
  * @author Kyle Galloway (kgallowa@redhat.com)

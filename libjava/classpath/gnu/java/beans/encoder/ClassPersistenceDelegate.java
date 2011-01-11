@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -43,7 +43,7 @@ import java.beans.PersistenceDelegate;
 
 /** <p>The <code>ClassPersistenceDelegate</code> creates
  * <code>Expression</code> instances which denote class resolutions.</p>
- * 
+ *
  * <p>The class resolution is always the last step when serializing a tree
  * of objects. Due to the recursive nature of the algorithm we need a way
  * to end the recursion. This is achieved by the implementation of this
@@ -52,8 +52,8 @@ import java.beans.PersistenceDelegate;
  * we call <code>getClass()</code> on a <code>String.class</code> instance.
  * This in turn lead to the resolution of the String class which is always
  * encoded as <code>"".getClass()</code>. Finally the <code>Encoder</code>
- * treats strings in a special way so that the recursion ends here.  
- * 
+ * treats strings in a special way so that the recursion ends here.
+ *
  * @author Robert Schuster (robertschuster@fsfe.org)
  */
 public class ClassPersistenceDelegate extends PersistenceDelegate
@@ -62,7 +62,7 @@ public class ClassPersistenceDelegate extends PersistenceDelegate
   protected Expression instantiate(Object oldInstance, Encoder out)
   {
     Class oldClass = (Class) oldInstance;
-    
+
     // Due to the special handling of String instances in the Encoder
     // this Expression does not lead to further class resolutions.
     if (oldClass == String.class)
@@ -72,7 +72,7 @@ public class ClassPersistenceDelegate extends PersistenceDelegate
     if (oldClass == Class.class)
       return new Expression(oldClass, String.class, "getClass", null);
 
-    // This Expression will lead to the class resolution of Class.class. 
+    // This Expression will lead to the class resolution of Class.class.
     return new Expression(oldClass, Class.class, "forName",
                           new Object[] { oldClass.getName() });
   }

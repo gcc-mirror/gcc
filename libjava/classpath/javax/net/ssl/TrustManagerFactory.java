@@ -96,7 +96,7 @@ public class TrustManagerFactory
   /**
    * Returns an instance of a trust manager factory for the given algorithm from
    * the first provider that implements it.
-   * 
+   *
    * @param algorithm The name of the algorithm to get.
    * @return The instance of the trust manager factory.
    * @throws NoSuchAlgorithmException If no provider implements the given
@@ -126,7 +126,7 @@ public class TrustManagerFactory
   /**
    * Returns an instance of a trust manager factory for the given algorithm from
    * the named provider.
-   * 
+   *
    * @param algorithm The name of the algorithm to get.
    * @param provider The name of the provider to get the instance from.
    * @return The instance of the trust manager factory.
@@ -152,7 +152,7 @@ public class TrustManagerFactory
   /**
    * Returns an instance of a trust manager factory for the given algorithm from
    * the specified provider.
-   * 
+   *
    * @param algorithm The name of the algorithm to get.
    * @param provider The provider to get the instance from.
    * @return The instance of the trust manager factory.

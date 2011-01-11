@@ -134,7 +134,7 @@ public class MetalCheckBoxIcon
       MetalUtils.paintGradient(g, x, y, getIconWidth(), getIconHeight(),
                                SwingConstants.VERTICAL, "CheckBox.gradient");
     border.paintBorder(c, g, x, y, getIconWidth(), getIconHeight());
-    
+
     AbstractButton b = (AbstractButton) c;
     if (b.isSelected())
       drawCheck(b, g, x, y);

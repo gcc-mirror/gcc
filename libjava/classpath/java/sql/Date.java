@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -46,7 +46,7 @@ import java.text.SimpleDateFormat;
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public class Date extends java.util.Date 
+public class Date extends java.util.Date
 {
   static final long serialVersionUID = 1511598038487230103L;
 
@@ -67,12 +67,12 @@ public class Date extends java.util.Date
    */
   public Date(int year, int month, int day)
   {
-    super(year, month, day);  
+    super(year, month, day);
   }
 
   /**
    * This method initializes a new instance of this class with the
-   * specified time value representing the number of milliseconds since 
+   * specified time value representing the number of milliseconds since
    * Jan 1, 1970 at 12:00 midnight GMT.
    *
    * @param date The time value to intialize this date to.
@@ -157,18 +157,18 @@ public class Date extends java.util.Date
    */
   public static Date valueOf (String str)
   {
-    try 
+    try
       {
-	java.util.Date d = (java.util.Date) sdf.parseObject(str);
+        java.util.Date d = (java.util.Date) sdf.parseObject(str);
 
-	if (d == null)
-	  throw new IllegalArgumentException(str);
-	else
-	  return new Date(d.getTime());
+        if (d == null)
+          throw new IllegalArgumentException(str);
+        else
+          return new Date(d.getTime());
       }
     catch (ParseException e)
       {
-	throw new IllegalArgumentException(str);
+        throw new IllegalArgumentException(str);
       }
   }
 

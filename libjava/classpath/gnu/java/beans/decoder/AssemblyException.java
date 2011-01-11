@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -41,7 +41,7 @@ package gnu.java.beans.decoder;
 /** The AssemblyException is used to wrap the cause of problems when assembling objects.
  * In all cases only the wrapped exception is given to the PersistenceParser's
  * ExceptionListener instance (never the AssemblyException itself).
- * 
+ *
  * <p>Note: Often multiple steps are needed to construct a fully usuable object instance.
  * Such a construction can be called assembly and thats why this exception was
  * named AssemblyException.</p>

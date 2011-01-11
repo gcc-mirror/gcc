@@ -1,4 +1,4 @@
-/* Dictionary.java -- an abstract (and essentially worthless) 
+/* Dictionary.java -- an abstract (and essentially worthless)
    class which is Hashtable's superclass
    Copyright (C) 1998, 2001, 2002, 2004 Free Software Foundation, Inc.
 
@@ -42,12 +42,12 @@ package java.util;
 /**
  * A Dictionary maps keys to values; <i>how</i> it does that is
  * implementation-specific.
- * 
+ *
  * This is an abstract class which has really gone by the wayside.
  * People at Javasoft are probably embarrassed by it.  At this point,
  * it might as well be an interface rather than a class, but it remains
  * this poor, laughable skeleton for the sake of backwards compatibility.
- * At any rate, this was what came before the {@link Map} interface 
+ * At any rate, this was what came before the {@link Map} interface
  * in the Collections framework.
  *
  * @author Jon Zeppieri
@@ -77,7 +77,7 @@ public abstract class Dictionary<K, V>
    */
   public abstract Enumeration<V> elements();
 
-  /** 
+  /**
    * Returns the value associated with the supplied key, or null
    * if no such value exists. Since Dictionaries are not allowed null keys
    * or elements, a null result always means the key is not present.

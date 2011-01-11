@@ -19,7 +19,7 @@ package org.w3c.dom.views;
  */
 public interface AbstractView {
     /**
-     * The source <code>DocumentView</code> of which this is an 
+     * The source <code>DocumentView</code> of which this is an
      * <code>AbstractView</code>.
      */
     public DocumentView getDocument();

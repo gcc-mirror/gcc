@@ -1,4 +1,4 @@
-/* ChannelInputStream.java -- 
+/* ChannelInputStream.java --
    Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -51,11 +51,11 @@ import java.nio.channels.SelectableChannel;
 public final class ChannelInputStream extends InputStream
 {
   private ReadableByteChannel ch;
-  
+
   public ChannelInputStream (ReadableByteChannel ch)
   {
     super();
-    
+
     this.ch = ch;
   }
 
@@ -72,9 +72,9 @@ public final class ChannelInputStream extends InputStream
   public int read() throws IOException
   {
     if (ch instanceof SelectableChannel
-	&& (! ((SelectableChannel) ch).isBlocking()))
+        && (! ((SelectableChannel) ch).isBlocking()))
       throw new IllegalBlockingModeException();
-      
+
     ByteBuffer buffer = ByteBuffer.allocate(1);
     int result = ch.read(buffer);
 

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -51,23 +51,23 @@ import java.rmi.UnexpectedException;
 
 /**
  * This class delegates its method calls to the remote RMI object, referenced
- * by {@link RemoteRef}. 
+ * by {@link RemoteRef}.
  *
  * It is normally generated with rmic.
  */
-public final class RegistryImpl_Stub 
+public final class RegistryImpl_Stub
     extends RemoteStub
     implements Registry
 {
     /**
-     * Use serialVersionUID for interoperability 
+     * Use serialVersionUID for interoperability
      */
     private static final long serialVersionUID = 3;
-    
+
     /**
      * The explaining message for {@ling UnexpectedException}.
      */
-    private static final String exception_message = 
+    private static final String exception_message =
       "undeclared checked exception";
 
      /* All remote methods, invoked by this stub: */
@@ -79,8 +79,8 @@ public final class RegistryImpl_Stub
     private static final Object[] NO_ARGS = new Object[0];
     static
       {
-        final Class[]  NO_ARGSc = new Class[0];      
-        try 
+        final Class[]  NO_ARGSc = new Class[0];
+        try
           {
              met_list =
                Registry.class.getMethod("list", NO_ARGSc);
@@ -112,23 +112,23 @@ public final class RegistryImpl_Stub
                "RegistryImpl_Stub class initialization failed");
              err.initCause(nex);
              throw err;
-          }  
+          }
       }
-    
+
     /**
      * Create the instance for _RegistryImpl_Stub that forwards method calls to the
      * remote object.
      *
      * @para the reference to the remote object.
      */
-    public RegistryImpl_Stub(RemoteRef reference) 
+    public RegistryImpl_Stub(RemoteRef reference)
     {
        super(reference);
-    }    
-    
-    /* Methods */    
+    }
+
+    /* Methods */
   /** @inheritDoc */
-  public String [] list() 
+  public String [] list()
     throws RemoteException, AccessException
   {
     try
@@ -136,7 +136,7 @@ public final class RegistryImpl_Stub
         Object result =  ref.invoke(this, met_list,
                    NO_ARGS,
                    2571371476350237748L);
-        return (String []) result;           
+        return (String []) result;
       }
     catch (RuntimeException e)
       {
@@ -153,9 +153,9 @@ public final class RegistryImpl_Stub
         throw uex;
       }
   }
-   
+
   /** @inheritDoc */
-  public void rebind(String p0, Remote p1) 
+  public void rebind(String p0, Remote p1)
     throws RemoteException, AccessException
   {
     try
@@ -179,9 +179,9 @@ public final class RegistryImpl_Stub
         throw uex;
       }
   }
-   
+
   /** @inheritDoc */
-  public void unbind(String p0) 
+  public void unbind(String p0)
     throws RemoteException, NotBoundException, AccessException
   {
     try
@@ -205,9 +205,9 @@ public final class RegistryImpl_Stub
         throw uex;
       }
   }
-   
+
   /** @inheritDoc */
-  public Remote lookup(String p0) 
+  public Remote lookup(String p0)
     throws RemoteException, NotBoundException, AccessException
   {
     try
@@ -215,7 +215,7 @@ public final class RegistryImpl_Stub
         Object result =  ref.invoke(this, met_lookup,
                    new Object[] {p0},
                    -7538657168040752697L);
-        return (Remote) result;           
+        return (Remote) result;
       }
     catch (RuntimeException e)
       {
@@ -232,9 +232,9 @@ public final class RegistryImpl_Stub
         throw uex;
       }
   }
-   
+
   /** @inheritDoc */
-  public void bind(String p0, Remote p1) 
+  public void bind(String p0, Remote p1)
     throws RemoteException, AlreadyBoundException, AccessException
   {
     try
@@ -258,6 +258,6 @@ public final class RegistryImpl_Stub
         throw uex;
       }
   }
-   
-    
+
+
 }

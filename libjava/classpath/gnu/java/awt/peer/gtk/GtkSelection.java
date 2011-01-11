@@ -87,7 +87,7 @@ public class GtkSelection implements Transferable
    * mimeTypesDelivered is true.
    */
   private DataFlavor[] dataFlavors;
-  
+
   /**
    * Indicates a requestText() call was made and the corresponding
    * textAvailable() callback was triggered.
@@ -100,7 +100,7 @@ public class GtkSelection implements Transferable
    * is true.
    */
   private String text;
-  
+
   /**
    * Indicates a requestImage() call was made and the corresponding
    * imageAvailable() callback was triggered.
@@ -228,7 +228,7 @@ public class GtkSelection implements Transferable
             // extra element.
             ArrayList<DataFlavor> flavorsList =
               new ArrayList<DataFlavor>(mimeTypes.length + 1);
-            
+
             for (int i = 0; i < mimeTypes.length; i++)
               {
                 try
@@ -262,7 +262,7 @@ public class GtkSelection implements Transferable
                     npe.printStackTrace();
                   }
               }
-	    
+
             dataFlavors = new DataFlavor[flavorsList.size()];
             flavorsList.toArray(dataFlavors);
           }
@@ -406,10 +406,10 @@ public class GtkSelection implements Transferable
                   }
                 requestInProgress = false;
               }
-            
+
             if (imagePointer != null)
               image = new GtkImage(imagePointer);
-            
+
             imagePointer = null;
             result = image;
             if (! GtkClipboard.canCache)
@@ -572,7 +572,7 @@ public class GtkSelection implements Transferable
         bytes = null;
         bytesDelivered = false;
         requestInProgress = false;
-	
+
         requestLock.notifyAll();
       }
     return result;

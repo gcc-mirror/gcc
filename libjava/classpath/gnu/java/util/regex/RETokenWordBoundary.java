@@ -71,24 +71,24 @@ final class RETokenWordBoundary extends REToken
     //  In the string "one two three", these positions match:
     //  |o|n|e| |t|w|o| |t|h|r|e|e|
     //  ^     ^ ^     ^ ^         ^
-    boolean after = false;	// is current character a letter or digit?
-    boolean before = false;	// is previous character a letter or digit?
+    boolean after = false;      // is current character a letter or digit?
+    boolean before = false;     // is previous character a letter or digit?
     char ch;
 
     // TODO: Also check REG_ANCHORINDEX vs. anchor
     if (((mymatch.eflags & RE.REG_ANCHORINDEX) != RE.REG_ANCHORINDEX)
-	|| (mymatch.offset + mymatch.index > mymatch.anchor))
+        || (mymatch.offset + mymatch.index > mymatch.anchor))
       {
-	if ((ch =
-	     input.charAt (mymatch.index - 1)) != CharIndexed.OUT_OF_BOUNDS)
-	  {
-	    before = Character.isLetterOrDigit (ch) || (ch == '_');
-	  }
+        if ((ch =
+             input.charAt (mymatch.index - 1)) != CharIndexed.OUT_OF_BOUNDS)
+          {
+            before = Character.isLetterOrDigit (ch) || (ch == '_');
+          }
       }
 
     if ((ch = input.charAt (mymatch.index)) != CharIndexed.OUT_OF_BOUNDS)
       {
-	after = Character.isLetterOrDigit (ch) || (ch == '_');
+        after = Character.isLetterOrDigit (ch) || (ch == '_');
       }
 
     // if (before) and (!after), we're at end (\>)
@@ -97,11 +97,11 @@ final class RETokenWordBoundary extends REToken
 
     if ((where & BEGIN) == BEGIN)
       {
-	doNext = after && !before;
+        doNext = after && !before;
       }
     if ((where & END) == END)
       {
-	doNext ^= before && !after;
+        doNext ^= before && !after;
       }
 
     if (negated)
@@ -127,15 +127,15 @@ final class RETokenWordBoundary extends REToken
   {
     if (where == (BEGIN | END))
       {
-	os.append (negated ? "\\B" : "\\b");
+        os.append (negated ? "\\B" : "\\b");
       }
     else if (where == BEGIN)
       {
-	os.append ("\\<");
+        os.append ("\\<");
       }
     else
       {
-	os.append ("\\>");
+        os.append ("\\>");
       }
   }
 }

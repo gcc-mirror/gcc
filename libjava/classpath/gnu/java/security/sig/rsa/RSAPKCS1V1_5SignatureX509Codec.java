@@ -51,7 +51,7 @@ import java.security.InvalidParameterException;
  * <p>
  * Digital signatures when transmitted in an X.509 certificates are encoded
  * in DER (Distinguished Encoding Rules) as a BIT STRING; i.e.
- * 
+ *
  * <pre>
  * Certificate ::= SEQUENCE {
  *   tbsCertificate       TBSCertificate,
@@ -95,7 +95,7 @@ public class RSAPKCS1V1_5SignatureX509Codec
   /**
    * Encodes an RSA Signature output as a <i>signature</i> BIT STRING as
    * defined in the documentation of this class.
-   * 
+   *
    * @param signature the output of the RSA PKCS1 (v1.5) signature algorithm;
    *          i.e. the value returned by the invocation of
    *          {@link gnu.java.security.sig.ISignature#sign()} method. In the
@@ -111,7 +111,7 @@ public class RSAPKCS1V1_5SignatureX509Codec
 
   /**
    * Decodes a <i>signature</i> as defined in the documentation of this class.
-   * 
+   *
    * @param input the byte array to unmarshall into a valid RSA PKCS1 (v1.5)
    *          signature instance; i.e. a byte array. MUST NOT be null.
    * @return an array of raw bytes decoded from the designated input. In the

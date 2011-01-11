@@ -45,16 +45,16 @@ import javax.print.attribute.PrintServiceAttribute;
 import javax.print.attribute.URISyntax;
 
 /**
- * The <code>PrinterURI</code> attribute provides the URI of a printer. 
+ * The <code>PrinterURI</code> attribute provides the URI of a printer.
  * <p>
- * The URI identifies the printer against all the other print services 
- * available. This attribute is used to direct a print service request 
+ * The URI identifies the printer against all the other print services
+ * available. This attribute is used to direct a print service request
  * to this specific printer.
- * </p> 
+ * </p>
  * <p>
  * <b>IPP Compatibility:</b> PrinterURI is an IPP 1.1 attribute.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
@@ -65,7 +65,7 @@ public final class PrinterURI extends URISyntax
 
   /**
    * Constructs a <code>PrinterURI</code> object.
-   * 
+   *
    * @param uri the URI of the print service.
    * @throws NullPointerException if the given uri is null.
    */
@@ -73,13 +73,13 @@ public final class PrinterURI extends URISyntax
   {
     super(uri);
   }
-  
+
   /**
    * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

@@ -215,13 +215,13 @@ public final class CPStringBuilder
         /* If the StringBuffer's value just grew, then we know that
            value is newly allocated and the region between count and
            newLength is filled with '\0'.  */
-	count = newLength;
+        count = newLength;
       }
     else
       {
-	/* The StringBuffer's value doesn't need to grow.  However,
-	   we should clear out any cruft that may exist.  */
-	while (count < newLength)
+        /* The StringBuffer's value doesn't need to grow.  However,
+           we should clear out any cruft that may exist.  */
+        while (count < newLength)
           value[count++] = '\0';
       }
   }
@@ -290,7 +290,7 @@ public final class CPStringBuilder
    * @see System#arraycopy(Object, int, Object, int, int)
    */
   public void getChars(int srcOffset, int srcEnd,
-		       char[] dst, int dstOffset)
+                       char[] dst, int dstOffset)
   {
     if (srcOffset < 0 || srcEnd > count || srcEnd < srcOffset)
       throw new StringIndexOutOfBoundsException();
@@ -362,10 +362,10 @@ public final class CPStringBuilder
       return append("null");
     synchronized (stringBuffer)
       {
-	int len = stringBuffer.length();
-	ensureCapacity(count + len);
-	stringBuffer.getChars(0, len, value, count);
-	count += len;
+        int len = stringBuffer.length();
+        ensureCapacity(count + len);
+        stringBuffer.getChars(0, len, value, count);
+        count += len;
       }
     return this;
   }
@@ -466,9 +466,9 @@ public final class CPStringBuilder
       return append("null");
     if (end - start > 0)
       {
-	ensureCapacity(count + end - start);
-	for (; start < end; ++start)
-	  value[count++] = seq.charAt(start);
+        ensureCapacity(count + end - start);
+        for (; start < end; ++start)
+          value[count++] = seq.charAt(start);
       }
     return this;
   }
@@ -979,23 +979,23 @@ public final class CPStringBuilder
     int count = 0;
     while (start < end)
       {
-	char base = value[start];
-	if (base < Character.MIN_HIGH_SURROGATE
-	    || base > Character.MAX_HIGH_SURROGATE
-	    || start == end
-	    || start == count
-	    || value[start + 1] < Character.MIN_LOW_SURROGATE
-	    || value[start + 1] > Character.MAX_LOW_SURROGATE)
-	  {
-	    // Nothing.
-	  }
-	else
-	  {
-	    // Surrogate pair.
-	    ++start;
-	  }
-	++start;
-	++count;
+        char base = value[start];
+        if (base < Character.MIN_HIGH_SURROGATE
+            || base > Character.MAX_HIGH_SURROGATE
+            || start == end
+            || start == count
+            || value[start + 1] < Character.MIN_LOW_SURROGATE
+            || value[start + 1] > Character.MAX_LOW_SURROGATE)
+          {
+            // Nothing.
+          }
+        else
+          {
+            // Surrogate pair.
+            ++start;
+          }
+        ++start;
+        ++count;
       }
     return count;
   }
@@ -1015,22 +1015,22 @@ public final class CPStringBuilder
   {
     while (codePoints > 0)
       {
-	char base = value[start];
-	if (base < Character.MIN_HIGH_SURROGATE
-	    || base > Character.MAX_HIGH_SURROGATE
-	    || start == count
-	    || value[start + 1] < Character.MIN_LOW_SURROGATE
-	    || value[start + 1] > Character.MAX_LOW_SURROGATE)
-	  {
-	    // Nothing.
-	  }
-	else
-	  {
-	    // Surrogate pair.
-	    ++start;
-	  }
-	++start;
-	--codePoints;
+        char base = value[start];
+        if (base < Character.MIN_HIGH_SURROGATE
+            || base > Character.MAX_HIGH_SURROGATE
+            || start == count
+            || value[start + 1] < Character.MIN_LOW_SURROGATE
+            || value[start + 1] > Character.MAX_LOW_SURROGATE)
+          {
+            // Nothing.
+          }
+        else
+          {
+            // Surrogate pair.
+            ++start;
+          }
+        ++start;
+        --codePoints;
       }
     return start;
   }
@@ -1040,7 +1040,7 @@ public final class CPStringBuilder
    * ensure that an expensive growing operation will not occur until either
    * <code>minimumCapacity</code> is reached or the array has been allocated.
    * The buffer is grown to either <code>minimumCapacity * 2</code>, if
-   * the array has been allocated or the larger of <code>minimumCapacity</code> and 
+   * the array has been allocated or the larger of <code>minimumCapacity</code> and
    * <code>capacity() * 2 + 2</code>, if it is not already large enough.
    *
    * @param minimumCapacity the new capacity
@@ -1050,14 +1050,14 @@ public final class CPStringBuilder
   {
     if (allocated || minimumCapacity > value.length)
       {
-	if (minimumCapacity > value.length)
-	  {
-	    int max = value.length * 2 + 2;
-	    minimumCapacity = (minimumCapacity < max ? max : minimumCapacity);
-	  }
-	else
-	  minimumCapacity *= 2;
-	allocateArray(minimumCapacity);
+        if (minimumCapacity > value.length)
+          {
+            int max = value.length * 2 + 2;
+            minimumCapacity = (minimumCapacity < max ? max : minimumCapacity);
+          }
+        else
+          minimumCapacity *= 2;
+        allocateArray(minimumCapacity);
       }
   }
 
@@ -1076,7 +1076,7 @@ public final class CPStringBuilder
     value = nb;
     allocated = false;
   }
-    
+
   /**
    * Get the length of the <code>String</code> this <code>StringBuilder</code>
    * would create. Not to be confused with the <em>capacity</em> of the

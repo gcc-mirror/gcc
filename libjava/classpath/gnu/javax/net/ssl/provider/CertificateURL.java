@@ -52,7 +52,7 @@ import java.util.NoSuchElementException;
 
 /**
  * The CertificateURL extension value.
- * 
+ *
  * <pre>
 enum {
   individual_certs(0), pkipath(1), (255)
@@ -84,12 +84,12 @@ opaque SHA1Hash[20];</pre>
 public class CertificateURL extends Value implements Iterable<CertificateURL.URLAndOptionalHash>
 {
   private ByteBuffer buffer;
-  
+
   public CertificateURL(final ByteBuffer buffer)
   {
     this.buffer = buffer;
   }
-  
+
   public CertificateURL(CertChainType type, List<URLAndOptionalHash> urls)
   {
     int length = 3;
@@ -102,12 +102,12 @@ public class CertificateURL extends Value implements Iterable<CertificateURL.URL
       buffer.put(url.buffer());
     buffer.rewind();
   }
-  
+
   public int length()
   {
     return 3 + (buffer.getShort(1) & 0xFFFF);
   }
-  
+
   public ByteBuffer buffer()
   {
     return (ByteBuffer) buffer.duplicate().limit(length());
@@ -122,7 +122,7 @@ public class CertificateURL extends Value implements Iterable<CertificateURL.URL
       }
     throw new IllegalArgumentException("unknown certificate URL type");
   }
-  
+
   public int size()
   {
     int len = buffer.getShort(1) & 0xFFFF;
@@ -137,7 +137,7 @@ public class CertificateURL extends Value implements Iterable<CertificateURL.URL
       }
     return n;
   }
-  
+
   public URLAndOptionalHash get(int index)
   {
     int len = buffer.getShort(1) & 0xFFFF;
@@ -156,7 +156,7 @@ public class CertificateURL extends Value implements Iterable<CertificateURL.URL
       throw new IndexOutOfBoundsException();
     return new URLAndOptionalHash(((ByteBuffer) buffer.duplicate().position(i).limit(i+l)).slice());
   }
-  
+
   public void set(int index, URLAndOptionalHash url)
   {
     int len = buffer.getShort(1) & 0xFFFF;
@@ -179,19 +179,19 @@ public class CertificateURL extends Value implements Iterable<CertificateURL.URL
     if (url.hashPresent())
       ((ByteBuffer) buffer.duplicate().position(i+l+3)).put (url.sha1Hash());
   }
-  
+
   public void setLength(final int length)
   {
     if (length < 0 || length > 65535)
       throw new IllegalArgumentException("length must be between 0 and 65535");
     buffer.putShort(1, (short) length);
   }
-  
+
   public String toString()
   {
     return toString(null);
   }
-  
+
   public String toString(String prefix)
   {
     StringWriter str = new StringWriter();
@@ -221,16 +221,16 @@ public class CertificateURL extends Value implements Iterable<CertificateURL.URL
   {
     return new Iterator();
   }
-  
+
   public class Iterator implements java.util.Iterator<URLAndOptionalHash>
   {
     private int index;
-    
+
     public Iterator()
     {
       index = 0;
     }
-    
+
     public URLAndOptionalHash next() throws NoSuchElementException
     {
       try
@@ -242,49 +242,49 @@ public class CertificateURL extends Value implements Iterable<CertificateURL.URL
           throw new NoSuchElementException();
         }
     }
-    
+
     public boolean hasNext()
     {
       return index < size();
     }
-    
+
     public void remove()
     {
       throw new UnsupportedOperationException();
     }
   }
-  
+
   public static enum CertChainType
   {
     INDIVIDUAL_CERTS (0), PKIPATH (1);
-    
+
     private final int value;
-    
+
     private CertChainType (final int value)
     {
       this.value = value;
     }
-    
+
     public int getValue()
     {
       return value;
     }
   }
-  
+
   public static class URLAndOptionalHash implements Builder, Constructed
   {
     private ByteBuffer buffer;
-    
+
     public URLAndOptionalHash (final ByteBuffer buffer)
     {
       this.buffer = buffer.duplicate().order(ByteOrder.BIG_ENDIAN);
     }
-    
+
     public URLAndOptionalHash(String url)
     {
       this(url, null);
     }
-    
+
     public URLAndOptionalHash(String url, byte[] hash)
     {
       if (hash != null && hash.length < 20)
@@ -302,35 +302,35 @@ public class CertificateURL extends Value implements Iterable<CertificateURL.URL
         buffer.put(hash, 0, 20);
       buffer.rewind();
     }
-    
+
     public int length()
     {
       return ((buffer.getShort(0) & 0xFFFF)
               + (hashPresent() ? 23 : 3));
     }
-    
+
     public ByteBuffer buffer()
     {
       return (ByteBuffer) buffer.duplicate().limit(length());
     }
-    
+
     public String url()
     {
       Charset cs = Charset.forName("ASCII");
       return cs.decode(urlBuffer()).toString();
     }
-    
+
     public int urlLength()
     {
       return buffer.getShort(0) & 0xFFFF;
     }
-    
+
     public ByteBuffer urlBuffer()
     {
       int len = urlLength();
       return ((ByteBuffer) buffer.duplicate().position(2).limit(2+len)).slice();
     }
-    
+
     public boolean hashPresent()
     {
       int i = (buffer.getShort(0) & 0xFFFF) + 2;
@@ -341,7 +341,7 @@ public class CertificateURL extends Value implements Iterable<CertificateURL.URL
         return true;
       throw new IllegalArgumentException("expecting 0 or 1: " + (b & 0xFF));
     }
-    
+
     public byte[] sha1Hash()
     {
       int i = (buffer.getShort(0) & 0xFFFF) + 2;
@@ -352,12 +352,12 @@ public class CertificateURL extends Value implements Iterable<CertificateURL.URL
       ((ByteBuffer) buffer.duplicate().position(i+1)).get(buf);
       return buf;
     }
-    
+
     public String toString()
     {
       return toString(null);
     }
-    
+
     public String toString(final String prefix)
     {
       StringWriter str = new StringWriter();

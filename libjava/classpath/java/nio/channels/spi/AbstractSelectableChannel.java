@@ -90,11 +90,11 @@ public abstract class AbstractSelectableChannel extends SelectableChannel
   {
     synchronized (blockingLock())
       {
-	if (this.blocking != blocking)
-	  {
-	    implConfigureBlocking(blocking);
-	    this.blocking = blocking;
-	  }
+        if (this.blocking != blocking)
+          {
+            implConfigureBlocking(blocking);
+            this.blocking = blocking;
+          }
       }
 
     return this;
@@ -173,14 +173,14 @@ public abstract class AbstractSelectableChannel extends SelectableChannel
 
     try
       {
-	synchronized (blockingLock())
-	  {
-	    return locate(selector);
-	  }
+        synchronized (blockingLock())
+          {
+            return locate(selector);
+          }
       }
     catch (Exception e)
       {
-	return null;
+        return null;
       }
   }
 
@@ -200,10 +200,10 @@ public abstract class AbstractSelectableChannel extends SelectableChannel
 
     while (it.hasNext())
       {
-	SelectionKey key = (SelectionKey) it.next();
+        SelectionKey key = (SelectionKey) it.next();
 
-	if (key.selector() == selector)
-	  return key;
+        if (key.selector() == selector)
+          return key;
       }
 
     return null;
@@ -217,7 +217,7 @@ public abstract class AbstractSelectableChannel extends SelectableChannel
    * @param att an attachment for the returned selection key
    *
    * @return the registered selection key
-   * 
+   *
    * @exception ClosedChannelException If the channel is already closed.
    * @exception IllegalBlockingModeException If the channel is configured in
    * blocking mode.
@@ -230,29 +230,29 @@ public abstract class AbstractSelectableChannel extends SelectableChannel
 
     if ((ops & ~validOps()) != 0)
       throw new IllegalArgumentException();
-    
+
     SelectionKey key = null;
     AbstractSelector selector = (AbstractSelector) selin;
 
     synchronized (blockingLock())
       {
-	if (blocking)
-	  throw new IllegalBlockingModeException();
+        if (blocking)
+          throw new IllegalBlockingModeException();
 
-	key = locate(selector);
+        key = locate(selector);
 
-	if (key != null && key.isValid())
-	  {
+        if (key != null && key.isValid())
+          {
             key.interestOps(ops);
             key.attach(att);
-	  }
-	else
-	  {
-	    key = selector.register(this, ops, att);
+          }
+        else
+          {
+            key = selector.register(this, ops, att);
 
-	    if (key != null)
-	      addSelectionKey(key);
-	  }
+            if (key != null)
+              addSelectionKey(key);
+          }
       }
 
     return key;

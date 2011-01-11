@@ -43,13 +43,13 @@ import javax.print.attribute.SupportedValuesAttribute;
 
 
 /**
- * The <code>JobKOctetsSupported</code> printing attribute specifies the 
- * supported range of values for the 
+ * The <code>JobKOctetsSupported</code> printing attribute specifies the
+ * supported range of values for the
  * {@link javax.print.attribute.standard.JobKOctets} attribute.
  * <p>
  * <b>IPP Compatibility:</b> JobKOctetsSupported is an IPP 1.1 attribute.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
@@ -71,24 +71,24 @@ public final class JobKOctetsSupported extends SetOfIntegerSyntax
   public JobKOctetsSupported(int lowerBound, int upperBound)
   {
     super(lowerBound, upperBound);
-    
+
     if (lowerBound < 1)
       throw new IllegalArgumentException("lowerBound may not be less than 1");
   }
-  
+
   /**
    * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
   {
     if (! (obj instanceof JobKOctetsSupported))
       return false;
-   
+
     return super.equals(obj);
   }
 

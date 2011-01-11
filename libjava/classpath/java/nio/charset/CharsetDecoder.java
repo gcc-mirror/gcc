@@ -1,4 +1,4 @@
-/* CharsetDecoder.java -- 
+/* CharsetDecoder.java --
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -160,7 +160,7 @@ public abstract class CharsetDecoder
             cr = decodeLoop (in, out);
           }
         catch (RuntimeException e)
-	  {
+          {
             throw new CoderMalfunctionError (e);
           }
 
@@ -199,7 +199,7 @@ public abstract class CharsetDecoder
   {
     throw new UnsupportedOperationException ();
   }
-    
+
   public final CoderResult flush (CharBuffer out)
   {
     // It seems weird that you can flush after reset, but Sun's javadoc

@@ -42,15 +42,15 @@ import java.io.Serializable;
 
 /**
  * Means invalid flag, passed during operation.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public final class INV_FLAG
   extends SystemException
   implements Serializable
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = -4863924749863817671L;
 

@@ -211,7 +211,7 @@ public class InitialDirContext extends InitialContext implements DirContext
     throws NamingException
   {
     return getURLOrDefaultInitDirCtx (name).search (name, matchingAttributes,
-						    attributesToReturn);
+                                                    attributesToReturn);
   }
 
   public NamingEnumeration<SearchResult> search(String name,
@@ -220,7 +220,7 @@ public class InitialDirContext extends InitialContext implements DirContext
     throws NamingException
   {
     return getURLOrDefaultInitDirCtx (name).search (name, matchingAttributes,
-						    attributesToReturn);
+                                                    attributesToReturn);
   }
 
   public NamingEnumeration<SearchResult> search(Name name,
@@ -257,7 +257,7 @@ public class InitialDirContext extends InitialContext implements DirContext
     throws NamingException
   {
     return getURLOrDefaultInitDirCtx (name).search (name, filterExpr,
-						    filterArgs, cons);
+                                                    filterArgs, cons);
   }
 
   public NamingEnumeration<SearchResult> search(String name,
@@ -267,6 +267,6 @@ public class InitialDirContext extends InitialContext implements DirContext
     throws NamingException
   {
     return getURLOrDefaultInitDirCtx (name).search (name, filterExpr,
-						    filterArgs, cons);
+                                                    filterArgs, cons);
   }
 }

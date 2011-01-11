@@ -1,4 +1,4 @@
-/* DomImpl.java -- 
+/* DomImpl.java --
    Copyright (C) 1999,2000,2001,2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -64,13 +64,13 @@ import gnu.xml.dom.ls.DomLSSerializer;
  * It is possible to compile the package so it doesn't support some of these
  * features (notably, Traversal).
  *
- * @author David Brownell 
+ * @author David Brownell
  * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  */
 public class DomImpl
   implements DOMImplementation, DOMImplementationLS
 {
-  
+
   /**
    * Constructs a DOMImplementation object which supports
    * "XML" and other DOM Level 2 features.
@@ -95,7 +95,7 @@ public class DomImpl
       {
         name = name.substring(1);
       }
-    
+
     if ("xml".equals(name) || "core".equals(name))
       {
         return (version == null ||
@@ -103,7 +103,7 @@ public class DomImpl
                 "1.0".equals(version) ||
                 "2.0".equals(version) ||
                 "3.0".equals(version));
-      
+
       }
     else if ("ls".equals(name) || "ls-async".equals(name))
       {
@@ -120,7 +120,7 @@ public class DomImpl
         return (version == null ||
                 "".equals(version) ||
                 "2.0".equals(version));
-	
+
         // Extension:  "USER-" prefix event types can
         // be created and passed through the DOM.
 
@@ -131,11 +131,11 @@ public class DomImpl
                 "".equals(version) ||
                 "0.1".equals(version));
 
-	// NOTE:  "hasFeature" for events is here interpreted to
-	// mean the DOM can manufacture those sorts of events,
-	// since actually choosing to report the events is more
-	// often part of the environment or application.  It's
-	// only really an issue for mutation events.
+        // NOTE:  "hasFeature" for events is here interpreted to
+        // mean the DOM can manufacture those sorts of events,
+        // since actually choosing to report the events is more
+        // often part of the environment or application.  It's
+        // only really an issue for mutation events.
 
       }
     else if (DomNode.reportMutations
@@ -143,7 +143,7 @@ public class DomImpl
       {
         return (version == null ||
                 "".equals(version) ||
-		"2.0".equals(version));
+                "2.0".equals(version));
       }
     else if ("xpath".equals(name))
       {
@@ -162,7 +162,7 @@ public class DomImpl
     // stylesheets
     // css, css2
     // range
-    
+
     return false;
   }
 
@@ -208,7 +208,7 @@ public class DomImpl
   {
     Document doc = createDocument();
     Element root = null;
-    
+
     if (rootName != null)
       {
         root = doc.createElementNS(namespaceURI, rootName);
@@ -221,7 +221,7 @@ public class DomImpl
     // Bleech -- L2 seemingly _requires_ omission of xmlns attributes.
     if (doctype != null)
       {
-        doc.appendChild(doctype);		// handles WRONG_DOCUMENT error
+        doc.appendChild(doctype);               // handles WRONG_DOCUMENT error
       }
     if (root != null)
       {
@@ -236,7 +236,7 @@ public class DomImpl
   }
 
   // DOM Level 3
-  
+
   public Object getFeature(String feature, String version)
   {
     if (hasFeature(feature, version))
@@ -273,6 +273,5 @@ public class DomImpl
   {
     return new DomLSOutput();
   }
-  
-}
 
+}

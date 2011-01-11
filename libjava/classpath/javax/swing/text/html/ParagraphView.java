@@ -208,7 +208,7 @@ public class ParagraphView
   /**
    * Sets the span on the SizeRequirements object according to the
    * according CSS span value, when it is set.
-   * 
+   *
    * @param r the size requirements
    * @param axis the axis
    *

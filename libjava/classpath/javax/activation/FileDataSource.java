@@ -56,7 +56,7 @@ public class FileDataSource
 
   private final File file;
   private FileTypeMap typeMap;
-  
+
   /**
    * Constructor.
    * @param file the underlying file to use
@@ -65,7 +65,7 @@ public class FileDataSource
   {
     this.file = file;
   }
-  
+
   /**
    * Constructor.
    * @param name the path to the underlying file to use
@@ -74,7 +74,7 @@ public class FileDataSource
   {
     this(new File(name));
   }
-  
+
   public InputStream getInputStream()
     throws IOException
   {
@@ -86,7 +86,7 @@ public class FileDataSource
   {
     return new FileOutputStream(file);
   }
-  
+
   public String getContentType()
   {
     if (typeMap == null)
@@ -96,12 +96,12 @@ public class FileDataSource
       }
     return typeMap.getContentType(file);
   }
-  
+
   public String getName()
   {
     return file.getName();
   }
-  
+
   /**
    * Returns the underlying file.
    */
@@ -118,6 +118,5 @@ public class FileDataSource
   {
     typeMap = map;
   }
-  
-}
 
+}

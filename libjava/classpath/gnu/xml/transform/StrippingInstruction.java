@@ -1,4 +1,4 @@
-/* StrippingInstruction.java -- 
+/* StrippingInstruction.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -49,7 +49,7 @@ class StrippingInstruction
 
   final NameTest element;
   final int precedence;
-  
+
   StrippingInstruction(NameTest element, int precedence)
   {
     this.element = element;
@@ -69,5 +69,5 @@ class StrippingInstruction
     else
       return 0.0f;
   }
-  
+
 }

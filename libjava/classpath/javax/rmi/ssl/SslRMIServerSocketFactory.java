@@ -1,4 +1,4 @@
-/* SslRMIServerSocketFactory.java -- 
+/* SslRMIServerSocketFactory.java --
    Copyright (C) 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
@@ -60,7 +60,7 @@ public class SslRMIServerSocketFactory implements RMIServerSocketFactory
   /**
    * The SSL ServerSocket factory.
    */
-  private static SSLServerSocketFactory socketFactory = 
+  private static SSLServerSocketFactory socketFactory =
     (SSLServerSocketFactory)SSLServerSocketFactory.getDefault();
 
   /**
@@ -80,33 +80,33 @@ public class SslRMIServerSocketFactory implements RMIServerSocketFactory
    *
    * @param enabledCipherSuites - the cypher suites to enable
    * or <code>null</code> for the defauls.
-   * @param enabledCipherSuites - the protocols to enable, 
+   * @param enabledCipherSuites - the protocols to enable,
    * or <code>null</code> for the defauls.
    * @param needClientAuth - specify client authorization requirement.
    * @throws IllegalArgumentException if any of the ciphers or protocols
    *  specified are not available.
    */
-  public SslRMIServerSocketFactory(String[] enabledCipherSuites, 
-				   String[] enabledProtocols, 
-				   boolean needClientAuth)
+  public SslRMIServerSocketFactory(String[] enabledCipherSuites,
+                                   String[] enabledProtocols,
+                                   boolean needClientAuth)
   {
     this.enabledCipherSuites = enabledCipherSuites;
-    this.enabledProtocols = enabledProtocols; 
+    this.enabledProtocols = enabledProtocols;
     this.needClientAuth = needClientAuth;
-    try 
+    try
       {
-	if( enabledProtocols != null || enabledCipherSuites != null )
-	  createServerSocket( 0 ); // stupid way to test the parameters  
+        if( enabledProtocols != null || enabledCipherSuites != null )
+          createServerSocket( 0 ); // stupid way to test the parameters
       }
     catch(IOException e)
       {
-	// Can this happen? FIXME.
-	throw new IllegalArgumentException();
+        // Can this happen? FIXME.
+        throw new IllegalArgumentException();
       }
   }
 
   /**
-   * Creates an SSLServerSocket on a given port 
+   * Creates an SSLServerSocket on a given port
    *
    * @throws IOException if an error occurs on socket creation.
    */
@@ -124,7 +124,7 @@ public class SslRMIServerSocketFactory implements RMIServerSocketFactory
 
   /**
    * Compare two SslRMIServerSocketFactor instances
-   */ 
+   */
   public boolean equals(Object obj)
   {
     if( !(obj instanceof SslRMIServerSocketFactory) )
@@ -132,7 +132,7 @@ public class SslRMIServerSocketFactory implements RMIServerSocketFactory
     SslRMIServerSocketFactory s = (SslRMIServerSocketFactory)obj;
     if( needClientAuth != s.needClientAuth )
       return false;
-    
+
     if(!cmpStrArray(enabledCipherSuites, s.enabledCipherSuites))
       return false;
 
@@ -152,23 +152,23 @@ public class SslRMIServerSocketFactory implements RMIServerSocketFactory
 
     if( a != null )
       {
-	if( a.length != b.length )
-	  return false;
-	for( int i = 0; i < a.length; i++ )
-	  if(!a[i].equals(b[i]))
-	    return false;
+        if( a.length != b.length )
+          return false;
+        for( int i = 0; i < a.length; i++ )
+          if(!a[i].equals(b[i]))
+            return false;
       }
 
     return true;
   }
 
   /**
-   * Returns the enabled cipher suites, or <code>null</code> 
+   * Returns the enabled cipher suites, or <code>null</code>
    * if the defaults are to be used.
    * @returns a string array of cipher suite names
    */
   public String[] getEnabledCipherSuites()
-  {  
+  {
     if( enabledCipherSuites == null )
       return null;
     return (String[])enabledCipherSuites.clone();
@@ -203,10 +203,10 @@ public class SslRMIServerSocketFactory implements RMIServerSocketFactory
     int hash = 0;
     if( enabledCipherSuites != null )
       for(int i = 0; i < enabledCipherSuites.length; i++ )
-	hash = hash ^ enabledCipherSuites[i].hashCode();
+        hash = hash ^ enabledCipherSuites[i].hashCode();
     if( enabledProtocols != null )
       for(int i = 0; i < enabledProtocols.length; i++ )
-	hash = hash ^ enabledProtocols[i].hashCode();
+        hash = hash ^ enabledProtocols[i].hashCode();
     hash = ( needClientAuth ) ? (hash^0xFFFF) : hash;
     return hash;
  }

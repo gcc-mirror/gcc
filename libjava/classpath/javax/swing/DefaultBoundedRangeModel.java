@@ -371,7 +371,7 @@ public class DefaultBoundedRangeModel
     this.minimum = minimum;
     this.maximum = maximum;
     this.isAdjusting = isAdjusting;
-		
+
     fireStateChanged();
   }
 
@@ -405,7 +405,7 @@ public class DefaultBoundedRangeModel
   protected void fireStateChanged()
   {
     ChangeListener[] listeners = getChangeListeners();
-    
+
     if (changeEvent == null)
       changeEvent = new ChangeEvent(this);
 
@@ -443,7 +443,7 @@ public class DefaultBoundedRangeModel
   {
     return (ChangeListener[]) getListeners(ChangeListener.class);
   }
-  
+
   /**
    * Provides serialization support.
    *
@@ -451,8 +451,8 @@ public class DefaultBoundedRangeModel
    *
    * @throws IOException  if there is an I/O error.
    */
-  private void writeObject(ObjectOutputStream stream) 
-    throws IOException 
+  private void writeObject(ObjectOutputStream stream)
+    throws IOException
   {
     stream.defaultWriteObject();
   }

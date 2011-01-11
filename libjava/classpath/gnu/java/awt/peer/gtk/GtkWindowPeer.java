@@ -119,13 +119,13 @@ public class GtkWindowPeer extends GtkContainerPeer
     y = awtComponent.getY();
     height = awtComponent.getHeight();
     width = awtComponent.getWidth();
-    
+
     if (!window.isFocusableWindow())
       type = GDK_WINDOW_TYPE_HINT_MENU;
-    
+
     if (parent != null)
       parent_peer = (GtkWindowPeer) awtComponent.getParent().getPeer();
-    
+
     create (type, decorated, parent_peer);
   }
 
@@ -173,14 +173,14 @@ public class GtkWindowPeer extends GtkContainerPeer
 
   public void setBounds (int x, int y, int width, int height)
   {
-    if (x != getX()	|| y != getY() || width != getWidth() 
+    if (x != getX()     || y != getY() || width != getWidth()
         || height != getHeight())
       {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-	
+
         nativeSetBounds (x, y,
                          width - insets.left - insets.right,
                          height - insets.top - insets.bottom);
@@ -194,7 +194,7 @@ public class GtkWindowPeer extends GtkContainerPeer
 
   // Called from setResizable
   protected native void setSize (int width, int height);
-  
+
   /**
    * Needed by both GtkFramePeer and GtkDialogPeer subclasses, so
    * implemented here. But never actually called on a GtkWindowPeer
@@ -215,7 +215,7 @@ public class GtkWindowPeer extends GtkContainerPeer
   }
 
   protected void postInsetsChangedEvent (int top, int left,
-					 int bottom, int right)
+                                         int bottom, int right)
   {
     insets.top = top;
     insets.left = left;
@@ -324,8 +324,8 @@ public class GtkWindowPeer extends GtkContainerPeer
     // insets but GtkFramePeer and GtkDialogPeer insets will be
     // non-zero.
     q().postEvent (new PaintEvent (awtComponent, PaintEvent.PAINT,
-                                   new Rectangle (x + insets.left, 
-                                                  y + insets.top, 
+                                   new Rectangle (x + insets.left,
+                                                  y + insets.top,
                                                   width, height)));
   }
 
@@ -335,7 +335,7 @@ public class GtkWindowPeer extends GtkContainerPeer
     return false;
   }
 
-  public boolean requestFocus (Component request, boolean temporary, 
+  public boolean requestFocus (Component request, boolean temporary,
                                boolean allowWindowFocus, long time)
   {
     assert request == awtComponent || isLightweightDescendant(request);
@@ -380,7 +380,7 @@ public class GtkWindowPeer extends GtkContainerPeer
     return g;
   }
 
-  protected void postMouseEvent(int id, long when, int mods, int x, int y, 
+  protected void postMouseEvent(int id, long when, int mods, int x, int y,
                                 int clickCount, boolean popupTrigger)
   {
     // Translate AWT co-ordinates, which include a window frame's
@@ -388,8 +388,8 @@ public class GtkWindowPeer extends GtkContainerPeer
     // frame's insets.  GtkWindowPeer should always have all-zero
     // insets but GtkFramePeer and GtkDialogPeer insets will be
     // non-zero.
-    super.postMouseEvent (id, when, mods, 
-                          x + insets.left, y + insets.top, 
+    super.postMouseEvent (id, when, mods,
+                          x + insets.left, y + insets.top,
                           clickCount, popupTrigger);
   }
 

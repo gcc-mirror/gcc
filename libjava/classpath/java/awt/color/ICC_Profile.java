@@ -114,7 +114,7 @@ public class ICC_Profile implements Serializable
   /**
    * Color space signatures
    */
-  public static final int icSigXYZData = 0x58595A20; // 'XYZ ' 
+  public static final int icSigXYZData = 0x58595A20; // 'XYZ '
   public static final int icSigLabData = 0x4C616220; // 'Lab '
   public static final int icSigLuvData = 0x4C757620; // 'Luv '
   public static final int icSigYCbCrData = 0x59436272; // 'YCbr'
@@ -151,50 +151,50 @@ public class ICC_Profile implements Serializable
   /**
    * Tag signatures
    */
-  public static final int icSigAToB0Tag = 0x41324230; // 'A2B0' 
-  public static final int icSigAToB1Tag = 0x41324231; // 'A2B1' 
-  public static final int icSigAToB2Tag = 0x41324232; // 'A2B2' 
-  public static final int icSigBlueColorantTag = 0x6258595A; // 'bXYZ' 
-  public static final int icSigBlueTRCTag = 0x62545243; // 'bTRC' 
-  public static final int icSigBToA0Tag = 0x42324130; // 'B2A0' 
-  public static final int icSigBToA1Tag = 0x42324131; // 'B2A1' 
-  public static final int icSigBToA2Tag = 0x42324132; // 'B2A2' 
-  public static final int icSigCalibrationDateTimeTag = 0x63616C74; // 'calt' 
-  public static final int icSigCharTargetTag = 0x74617267; // 'targ' 
-  public static final int icSigCopyrightTag = 0x63707274; // 'cprt' 
-  public static final int icSigCrdInfoTag = 0x63726469; // 'crdi' 
-  public static final int icSigDeviceMfgDescTag = 0x646D6E64; // 'dmnd' 
-  public static final int icSigDeviceModelDescTag = 0x646D6464; // 'dmdd' 
-  public static final int icSigDeviceSettingsTag = 0x64657673; // 'devs' 
-  public static final int icSigGamutTag = 0x67616D74; // 'gamt' 
-  public static final int icSigGrayTRCTag = 0x6b545243; // 'kTRC' 
-  public static final int icSigGreenColorantTag = 0x6758595A; // 'gXYZ' 
-  public static final int icSigGreenTRCTag = 0x67545243; // 'gTRC' 
-  public static final int icSigLuminanceTag = 0x6C756d69; // 'lumi' 
-  public static final int icSigMeasurementTag = 0x6D656173; // 'meas' 
-  public static final int icSigMediaBlackPointTag = 0x626B7074; // 'bkpt' 
-  public static final int icSigMediaWhitePointTag = 0x77747074; // 'wtpt' 
-  public static final int icSigNamedColor2Tag = 0x6E636C32; // 'ncl2' 
-  public static final int icSigOutputResponseTag = 0x72657370; // 'resp' 
-  public static final int icSigPreview0Tag = 0x70726530; // 'pre0' 
-  public static final int icSigPreview1Tag = 0x70726531; // 'pre1' 
-  public static final int icSigPreview2Tag = 0x70726532; // 'pre2' 
-  public static final int icSigProfileDescriptionTag = 0x64657363; // 'desc' 
-  public static final int icSigProfileSequenceDescTag = 0x70736571; // 'pseq' 
-  public static final int icSigPs2CRD0Tag = 0x70736430; // 'psd0' 
-  public static final int icSigPs2CRD1Tag = 0x70736431; // 'psd1' 
-  public static final int icSigPs2CRD2Tag = 0x70736432; // 'psd2' 
-  public static final int icSigPs2CRD3Tag = 0x70736433; // 'psd3' 
-  public static final int icSigPs2CSATag = 0x70733273; // 'ps2s' 
-  public static final int icSigPs2RenderingIntentTag = 0x70733269; // 'ps2i' 
-  public static final int icSigRedColorantTag = 0x7258595A; // 'rXYZ' 
-  public static final int icSigRedTRCTag = 0x72545243; // 'rTRC' 
-  public static final int icSigScreeningDescTag = 0x73637264; // 'scrd' 
-  public static final int icSigScreeningTag = 0x7363726E; // 'scrn' 
-  public static final int icSigTechnologyTag = 0x74656368; // 'tech' 
-  public static final int icSigUcrBgTag = 0x62666420; // 'bfd ' 
-  public static final int icSigViewingCondDescTag = 0x76756564; // 'vued' 
-  public static final int icSigViewingConditionsTag = 0x76696577; // 'view' 
+  public static final int icSigAToB0Tag = 0x41324230; // 'A2B0'
+  public static final int icSigAToB1Tag = 0x41324231; // 'A2B1'
+  public static final int icSigAToB2Tag = 0x41324232; // 'A2B2'
+  public static final int icSigBlueColorantTag = 0x6258595A; // 'bXYZ'
+  public static final int icSigBlueTRCTag = 0x62545243; // 'bTRC'
+  public static final int icSigBToA0Tag = 0x42324130; // 'B2A0'
+  public static final int icSigBToA1Tag = 0x42324131; // 'B2A1'
+  public static final int icSigBToA2Tag = 0x42324132; // 'B2A2'
+  public static final int icSigCalibrationDateTimeTag = 0x63616C74; // 'calt'
+  public static final int icSigCharTargetTag = 0x74617267; // 'targ'
+  public static final int icSigCopyrightTag = 0x63707274; // 'cprt'
+  public static final int icSigCrdInfoTag = 0x63726469; // 'crdi'
+  public static final int icSigDeviceMfgDescTag = 0x646D6E64; // 'dmnd'
+  public static final int icSigDeviceModelDescTag = 0x646D6464; // 'dmdd'
+  public static final int icSigDeviceSettingsTag = 0x64657673; // 'devs'
+  public static final int icSigGamutTag = 0x67616D74; // 'gamt'
+  public static final int icSigGrayTRCTag = 0x6b545243; // 'kTRC'
+  public static final int icSigGreenColorantTag = 0x6758595A; // 'gXYZ'
+  public static final int icSigGreenTRCTag = 0x67545243; // 'gTRC'
+  public static final int icSigLuminanceTag = 0x6C756d69; // 'lumi'
+  public static final int icSigMeasurementTag = 0x6D656173; // 'meas'
+  public static final int icSigMediaBlackPointTag = 0x626B7074; // 'bkpt'
+  public static final int icSigMediaWhitePointTag = 0x77747074; // 'wtpt'
+  public static final int icSigNamedColor2Tag = 0x6E636C32; // 'ncl2'
+  public static final int icSigOutputResponseTag = 0x72657370; // 'resp'
+  public static final int icSigPreview0Tag = 0x70726530; // 'pre0'
+  public static final int icSigPreview1Tag = 0x70726531; // 'pre1'
+  public static final int icSigPreview2Tag = 0x70726532; // 'pre2'
+  public static final int icSigProfileDescriptionTag = 0x64657363; // 'desc'
+  public static final int icSigProfileSequenceDescTag = 0x70736571; // 'pseq'
+  public static final int icSigPs2CRD0Tag = 0x70736430; // 'psd0'
+  public static final int icSigPs2CRD1Tag = 0x70736431; // 'psd1'
+  public static final int icSigPs2CRD2Tag = 0x70736432; // 'psd2'
+  public static final int icSigPs2CRD3Tag = 0x70736433; // 'psd3'
+  public static final int icSigPs2CSATag = 0x70733273; // 'ps2s'
+  public static final int icSigPs2RenderingIntentTag = 0x70733269; // 'ps2i'
+  public static final int icSigRedColorantTag = 0x7258595A; // 'rXYZ'
+  public static final int icSigRedTRCTag = 0x72545243; // 'rTRC'
+  public static final int icSigScreeningDescTag = 0x73637264; // 'scrd'
+  public static final int icSigScreeningTag = 0x7363726E; // 'scrn'
+  public static final int icSigTechnologyTag = 0x74656368; // 'tech'
+  public static final int icSigUcrBgTag = 0x62666420; // 'bfd '
+  public static final int icSigViewingCondDescTag = 0x76756564; // 'vued'
+  public static final int icSigViewingConditionsTag = 0x76696577; // 'view'
   public static final int icSigChromaticityTag = 0x6368726D; // 'chrm'
 
   /**
@@ -430,10 +430,10 @@ public class ICC_Profile implements Serializable
     int bytesLeft = totalBytes;
     while (bytesLeft > 0)
       {
-    	int read = in.read(data,
+        int read = in.read(data,
                            ProfileHeader.HEADERSIZE + (totalBytes - bytesLeft),
                            bytesLeft);
-    	bytesLeft -= read;
+        bytesLeft -= read;
       }
 
     return getInstance(data);
@@ -540,9 +540,9 @@ public class ICC_Profile implements Serializable
     Enumeration e = tagTable.elements();
     while (e.hasMoreElements())
       {
-	TagEntry tag = (TagEntry) e.nextElement();
-	System.arraycopy(tag.getData(), 0, 
-			 data, tag.getOffset(), tag.getSize());
+        TagEntry tag = (TagEntry) e.nextElement();
+        System.arraycopy(tag.getData(), 0,
+                         data, tag.getOffset(), tag.getSize());
       }
     return data;
   }
@@ -582,8 +582,8 @@ public class ICC_Profile implements Serializable
       header = new ProfileHeader(data);
     else
       {
-	TagEntry t = new TagEntry(tagSignature, data);
-	tagTable.put(t.hashKey(), t);
+        TagEntry t = new TagEntry(tagSignature, data);
+        tagTable.put(t.hashKey(), t);
       }
   }
 
@@ -592,7 +592,7 @@ public class ICC_Profile implements Serializable
    */
   public int getNumComponents()
   {
-    int[] lookup = 
+    int[] lookup =
                    {
                      ColorSpace.TYPE_RGB, 3, ColorSpace.TYPE_CMY, 3,
                      ColorSpace.TYPE_CMYK, 4, ColorSpace.TYPE_GRAY, 1,
@@ -610,7 +610,7 @@ public class ICC_Profile implements Serializable
                    };
     for (int i = 0; i < lookup.length; i += 2)
       if (header.getColorSpace() == lookup[i])
-	return lookup[i + 1];
+        return lookup[i + 1];
     return 3; // should never happen.
   }
 
@@ -640,24 +640,24 @@ public class ICC_Profile implements Serializable
 
     if (data != null)
       {
-	header = new ProfileHeader(data);
-	tagTable = createTagTable(data);
-	profileID = -1; // Not a predefined color space
+        header = new ProfileHeader(data);
+        tagTable = createTagTable(data);
+        profileID = -1; // Not a predefined color space
       }
 
     if (predef != null)
       {
-	predef = predef.intern();
-	if (predef.equals("CS_sRGB"))
-	  createProfile(ColorSpace.CS_sRGB);
-	if (predef.equals("CS_LINEAR_RGB"))
-	  createProfile(ColorSpace.CS_LINEAR_RGB);
-	if (predef.equals("CS_CIEXYZ"))
-	  createProfile(ColorSpace.CS_CIEXYZ);
-	if (predef.equals("CS_GRAY"))
-	  createProfile(ColorSpace.CS_GRAY);
-	if (predef.equals("CS_PYCC"))
-	  createProfile(ColorSpace.CS_PYCC);
+        predef = predef.intern();
+        if (predef.equals("CS_sRGB"))
+          createProfile(ColorSpace.CS_sRGB);
+        if (predef.equals("CS_LINEAR_RGB"))
+          createProfile(ColorSpace.CS_LINEAR_RGB);
+        if (predef.equals("CS_CIEXYZ"))
+          createProfile(ColorSpace.CS_CIEXYZ);
+        if (predef.equals("CS_GRAY"))
+          createProfile(ColorSpace.CS_GRAY);
+        if (predef.equals("CS_PYCC"))
+          createProfile(ColorSpace.CS_PYCC);
       }
   }
 
@@ -682,9 +682,9 @@ public class ICC_Profile implements Serializable
       s.writeObject("CS_PYCC");
     else
       {
-	s.writeObject(null); // null string
-	s.writeObject(getData()); // data
-	return;
+        s.writeObject(null); // null string
+        s.writeObject(getData()); // data
+        return;
       }
     s.writeObject(null); // null data
   }
@@ -702,16 +702,16 @@ public class ICC_Profile implements Serializable
     Hashtable tagTable = new Hashtable();
     for (int i = 0; i < nTags; i++)
       {
-	TagEntry te = new TagEntry(buf.getInt(tagTableOffset
-	                                      + i * TagEntry.entrySize + 4),
-	                           buf.getInt(tagTableOffset
-	                                      + i * TagEntry.entrySize + 8),
-	                           buf.getInt(tagTableOffset
-	                                      + i * TagEntry.entrySize + 12),
-	                           data);
+        TagEntry te = new TagEntry(buf.getInt(tagTableOffset
+                                              + i * TagEntry.entrySize + 4),
+                                   buf.getInt(tagTableOffset
+                                              + i * TagEntry.entrySize + 8),
+                                   buf.getInt(tagTableOffset
+                                              + i * TagEntry.entrySize + 12),
+                                   data);
 
-	if (tagTable.put(te.hashKey(), te) != null)
-	  throw new IllegalArgumentException("Duplicate tag in profile:" + te);
+        if (tagTable.put(te.hashKey(), te) != null)
+          throw new IllegalArgumentException("Duplicate tag in profile:" + te);
       }
     return tagTable;
   }
@@ -724,7 +724,7 @@ public class ICC_Profile implements Serializable
   {
     int totalSize = ProfileHeader.HEADERSIZE; // size of header
 
-    int tagTableSize = 4 + tagTable.size() * TagEntry.entrySize; // size of tag table	
+    int tagTableSize = 4 + tagTable.size() * TagEntry.entrySize; // size of tag table
     if ((tagTableSize & 0x0003) != 0)
       tagTableSize += 4 - (tagTableSize & 0x0003); // pad
     totalSize += tagTableSize;
@@ -732,10 +732,10 @@ public class ICC_Profile implements Serializable
     Enumeration e = tagTable.elements();
     while (e.hasMoreElements())
       { // tag data
-	int tagSize = ((TagEntry) e.nextElement()).getSize();
-	if ((tagSize & 0x0003) != 0)
-	  tagSize += 4 - (tagSize & 0x0003); // pad
-	totalSize += tagSize;
+        int tagSize = ((TagEntry) e.nextElement()).getSize();
+        if ((tagSize & 0x0003) != 0)
+          tagSize += 4 - (tagSize & 0x0003); // pad
+        totalSize += tagSize;
       }
     return totalSize;
   }
@@ -747,7 +747,7 @@ public class ICC_Profile implements Serializable
   {
     int tagTableSize = 4 + tagTable.size() * TagEntry.entrySize;
     if ((tagTableSize & 0x0003) != 0)
-      tagTableSize += 4 - (tagTableSize & 0x0003); // pad 
+      tagTableSize += 4 - (tagTableSize & 0x0003); // pad
 
     int offset = 4;
     int tagOffset = ProfileHeader.HEADERSIZE + tagTableSize;
@@ -757,16 +757,16 @@ public class ICC_Profile implements Serializable
     Enumeration e = tagTable.elements();
     while (e.hasMoreElements())
       {
-	TagEntry tag = (TagEntry) e.nextElement();
-	buf.putInt(offset, tag.getSignature());
-	buf.putInt(offset + 4, tagOffset);
-	buf.putInt(offset + 8, tag.getSize());
-	tag.setOffset(tagOffset);
-	int tagSize = tag.getSize();
-	if ((tagSize & 0x0003) != 0)
-	  tagSize += 4 - (tagSize & 0x0003); // pad	    
-	tagOffset += tagSize;
-	offset += 12;
+        TagEntry tag = (TagEntry) e.nextElement();
+        buf.putInt(offset, tag.getSignature());
+        buf.putInt(offset + 4, tagOffset);
+        buf.putInt(offset + 8, tag.getSize());
+        tag.setOffset(tagOffset);
+        int tagSize = tag.getSize();
+        if ((tagSize & 0x0003) != 0)
+          tagSize += 4 - (tagSize & 0x0003); // pad
+        tagOffset += tagSize;
+        offset += 12;
       }
     return buf.array();
   }
@@ -838,15 +838,15 @@ public class ICC_Profile implements Serializable
     int count = buf.getInt(8);
     if (count == 0)
       {
-	curve = new short[1];
-	curve[0] = 0x0100; // 1.00 in u8fixed8
-	return curve;
+        curve = new short[1];
+        curve[0] = 0x0100; // 1.00 in u8fixed8
+        return curve;
       }
     if (count == 1)
       {
-	curve = new short[1];
-	curve[0] = buf.getShort(12); // other u8fixed8 gamma
-	return curve;
+        curve = new short[1];
+        curve[0] = buf.getShort(12); // other u8fixed8 gamma
+        return curve;
       }
     curve = new short[count];
     for (int i = 0; i < count; i++)
@@ -917,11 +917,11 @@ public class ICC_Profile implements Serializable
     byte[] data;
     try
       {
-	data = text.getBytes("US-ASCII");
+        data = text.getBytes("US-ASCII");
       }
     catch (UnsupportedEncodingException e)
       {
-	data = new byte[length]; // shouldn't happen
+        data = new byte[length]; // shouldn't happen
       }
 
     buf.putInt(0, (int) 0x74657874); // 'text'
@@ -940,17 +940,17 @@ public class ICC_Profile implements Serializable
     int length = text.length();
     ByteBuffer buf = ByteBuffer.allocate(90 + length + 1);
     buf.putInt(0, (int) 0x64657363); // 'desc'
-    buf.putInt(4, 0); // reserved 
+    buf.putInt(4, 0); // reserved
     buf.putInt(8, length + 1); // ASCII length, including null termination
     byte[] data;
 
     try
       {
-	data = text.getBytes("US-ASCII");
+        data = text.getBytes("US-ASCII");
       }
     catch (UnsupportedEncodingException e)
       {
-	data = new byte[length]; // shouldn't happen
+        data = new byte[length]; // shouldn't happen
       }
 
     for (int i = 0; i < length; i++)
@@ -999,7 +999,7 @@ public class ICC_Profile implements Serializable
     buf.putInt(4, 0); // reserved
     buf.putInt(8, trc.length); // number of points
 
-    // put the curve values 
+    // put the curve values
     for (int i = 0; i < trc.length; i++)
       buf.putShort(12 + i * 2, (short) (trc[i] * 65535f));
 
@@ -1049,31 +1049,31 @@ public class ICC_Profile implements Serializable
     for (int channel = 0; channel < 3; channel++)
       for (int i = 0; i < nInEntries; i++)
         {
-	  short n = (short) ((i << 8) | i); // assumes 256 entries
-	  buf.putShort(52 + (channel * nInEntries + i) * 2, n);
+          short n = (short) ((i << 8) | i); // assumes 256 entries
+          buf.putShort(52 + (channel * nInEntries + i) * 2, n);
         }
     int clutOffset = 52 + nInEntries * nIn * 2;
 
     for (int x = 0; x < gridpoints; x++)
       for (int y = 0; y < gridpoints; y++)
-	for (int z = 0; z < gridpoints; z++)
-	  {
-	    int offset = clutOffset + z * 2 * nOut + y * gridpoints * 2 * nOut
-	                 + x * gridpoints * gridpoints * 2 * nOut;
-	    double xf = ((double) x) / ((double) gridpoints - 1.0);
-	    double yf = ((double) y) / ((double) gridpoints - 1.0);
-	    double zf = ((double) z) / ((double) gridpoints - 1.0);
-	    buf.putShort(offset, (short) (xf * 65535.0));
-	    buf.putShort(offset + 2, (short) (yf * 65535.0));
-	    buf.putShort(offset + 4, (short) (zf * 65535.0));
-	  }
+        for (int z = 0; z < gridpoints; z++)
+          {
+            int offset = clutOffset + z * 2 * nOut + y * gridpoints * 2 * nOut
+                         + x * gridpoints * gridpoints * 2 * nOut;
+            double xf = ((double) x) / ((double) gridpoints - 1.0);
+            double yf = ((double) y) / ((double) gridpoints - 1.0);
+            double zf = ((double) z) / ((double) gridpoints - 1.0);
+            buf.putShort(offset, (short) (xf * 65535.0));
+            buf.putShort(offset + 2, (short) (yf * 65535.0));
+            buf.putShort(offset + 4, (short) (zf * 65535.0));
+          }
 
     for (int channel = 0; channel < 3; channel++)
       for (int i = 0; i < nOutEntries; i++)
         {
-	  short n = (short) ((i << 8) | i); // assumes 256 entries
-	  buf.putShort(clutOffset + clutSize + (channel * nOutEntries + i) * 2,
-	               n);
+          short n = (short) ((i << 8) | i); // assumes 256 entries
+          buf.putShort(clutOffset + clutSize + (channel * nOutEntries + i) * 2,
+                       n);
         }
 
     return buf.array();
@@ -1091,22 +1091,22 @@ public class ICC_Profile implements Serializable
     switch (colorSpace)
       {
       case ColorSpace.CS_sRGB:
-	createRGBProfile();
-	return;
+        createRGBProfile();
+        return;
       case ColorSpace.CS_LINEAR_RGB:
-	createLinearRGBProfile();
-	return;
+        createLinearRGBProfile();
+        return;
       case ColorSpace.CS_CIEXYZ:
-	createCIEProfile();
-	return;
+        createCIEProfile();
+        return;
       case ColorSpace.CS_GRAY:
-	createGrayProfile();
-	return;
+        createGrayProfile();
+        return;
       case ColorSpace.CS_PYCC:
-	createPyccProfile();
-	return;
+        createPyccProfile();
+        return;
       default:
-	throw new IllegalArgumentException("Not a predefined color space!");
+        throw new IllegalArgumentException("Not a predefined color space!");
       }
   }
 
@@ -1139,10 +1139,10 @@ public class ICC_Profile implements Serializable
     float[] in = new float[3];
     for (int i = 0; i < TRC_POINTS; i++)
       {
-	in[0] = in[1] = in[2] = ((float) i) / ((float) TRC_POINTS - 1);
-	in = cs.fromRGB(in);
-	// Note this value is the same for all components.
-	points[i] = in[0];
+        in[0] = in[1] = in[2] = ((float) i) / ((float) TRC_POINTS - 1);
+        in = cs.fromRGB(in);
+        // Note this value is the same for all components.
+        points[i] = in[0];
       }
 
     setData(icSigRedColorantTag, makeXYZData(r));

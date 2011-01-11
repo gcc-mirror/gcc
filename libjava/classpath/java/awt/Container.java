@@ -330,7 +330,7 @@ public class Container extends Component
 
         if (component == null)
           component = new Component[4]; // FIXME, better initial size?
-   
+
         // This isn't the most efficient implementation.  We could do less
         // copying when growing the array.  It probably doesn't matter.
         if (ncomponents >= component.length)
@@ -340,7 +340,7 @@ public class Container extends Component
             System.arraycopy(component, 0, c, 0, ncomponents);
             component = c;
           }
-  
+
         if (index == -1)
           component[ncomponents++] = comp;
         else
@@ -379,8 +379,8 @@ public class Container extends Component
         // Notify the layout manager.
         if (layoutMgr != null)
           {
-	    // If we have a LayoutManager2 the constraints are "real",
-	    // otherwise they are the "name" of the Component to add.
+            // If we have a LayoutManager2 the constraints are "real",
+            // otherwise they are the "name" of the Component to add.
             if (layoutMgr instanceof LayoutManager2)
               {
                 LayoutManager2 lm2 = (LayoutManager2) layoutMgr;
@@ -990,21 +990,21 @@ public class Container extends Component
   }
 
   /**
-   * Returns all registered {@link EventListener}s of the given 
+   * Returns all registered {@link EventListener}s of the given
    * <code>listenerType</code>.
    *
-   * @param listenerType the class of listeners to filter (<code>null</code> 
+   * @param listenerType the class of listeners to filter (<code>null</code>
    *                     not permitted).
-   *                     
+   *
    * @return An array of registered listeners.
-   * 
+   *
    * @throws ClassCastException if <code>listenerType</code> does not implement
    *                            the {@link EventListener} interface.
-   * @throws NullPointerException if <code>listenerType</code> is 
+   * @throws NullPointerException if <code>listenerType</code> is
    *                              <code>null</code>.
-   *                            
+   *
    * @see #getContainerListeners()
-   * 
+   *
    * @since 1.3
    */
   public <T extends EventListener> T[] getListeners(Class<T> listenerType)
@@ -1080,11 +1080,11 @@ public class Container extends Component
    * child component claims the point, the container itself is returned,
    * unless the point does not exist within this container, in which
    * case <code>null</code> is returned.
-   * 
+   *
    * When components overlap, the first component is returned. The component
-   * that is closest to (x, y), containing that location, is returned. 
+   * that is closest to (x, y), containing that location, is returned.
    * Heavyweight components take precedence of lightweight components.
-   * 
+   *
    * This function does not ignore invisible components. If there is an invisible
    * component at (x,y), it will be returned.
    *
@@ -1133,14 +1133,14 @@ public class Container extends Component
    * child component claims the point, the container itself is returned,
    * unless the point does not exist within this container, in which
    * case <code>null</code> is returned.
-   * 
+   *
    * When components overlap, the first component is returned. The component
-   * that is closest to (x, y), containing that location, is returned. 
+   * that is closest to (x, y), containing that location, is returned.
    * Heavyweight components take precedence of lightweight components.
-   * 
+   *
    * This function does not ignore invisible components. If there is an invisible
    * component at (x,y), it will be returned.
-   * 
+   *
    * @param x The x position of the point to return the component at.
    * @param y The y position of the point to return the component at.
    *
@@ -1155,7 +1155,7 @@ public class Container extends Component
       {
         if (!contains (x, y))
           return null;
-        
+
         // First find the component closest to (x,y) that is a heavyweight.
         for (int i = 0; i < ncomponents; ++i)
           {
@@ -1165,7 +1165,7 @@ public class Container extends Component
             if (comp.contains (x2, y2) && !comp.isLightweight())
               return comp;
           }
-        
+
         // if a heavyweight component is not found, look for a lightweight
         // closest to (x,y).
         for (int i = 0; i < ncomponents; ++i)
@@ -1176,7 +1176,7 @@ public class Container extends Component
             if (comp.contains (x2, y2) && comp.isLightweight())
               return comp;
           }
-        
+
         return this;
       }
   }
@@ -1190,12 +1190,12 @@ public class Container extends Component
    * case <code>null</code> is returned.
    *
    * The top-most child component is returned in the case where components overlap.
-   * This is determined by finding the component closest to (x,y) and contains 
+   * This is determined by finding the component closest to (x,y) and contains
    * that location. Heavyweight components take precedence of lightweight components.
-   * 
+   *
    * This function does not ignore invisible components. If there is an invisible
    * component at (x,y), it will be returned.
-   * 
+   *
    * @param p The point to return the component at.
    * @return The component containing the specified point, or <code>null</code>
    * if there is no such point.
@@ -1206,19 +1206,19 @@ public class Container extends Component
   }
 
   /**
-   * Locates the visible child component that contains the specified position. 
+   * Locates the visible child component that contains the specified position.
    * The top-most child component is returned in the case where there is overlap
    * in the components. If the containing child component is a Container,
-   * this method will continue searching for the deepest nested child 
+   * this method will continue searching for the deepest nested child
    * component. Components which are not visible are ignored during the search.
-   * 
-   * findComponentAt differs from getComponentAt, because it recursively 
+   *
+   * findComponentAt differs from getComponentAt, because it recursively
    * searches a Container's children.
-   * 
+   *
    * @param x - x coordinate
    * @param y - y coordinate
-   * @return null if the component does not contain the position. 
-   * If there is no child component at the requested point and the point is 
+   * @return null if the component does not contain the position.
+   * If there is no child component at the requested point and the point is
    * within the bounds of the container the container itself is returned.
    */
   public Component findComponentAt(int x, int y)
@@ -1252,20 +1252,20 @@ public class Container extends Component
         return this;
       }
   }
-  
+
   /**
-   * Locates the visible child component that contains the specified position. 
+   * Locates the visible child component that contains the specified position.
    * The top-most child component is returned in the case where there is overlap
    * in the components. If the containing child component is a Container,
-   * this method will continue searching for the deepest nested child 
+   * this method will continue searching for the deepest nested child
    * component. Components which are not visible are ignored during the search.
-   * 
-   * findComponentAt differs from getComponentAt, because it recursively 
+   *
+   * findComponentAt differs from getComponentAt, because it recursively
    * searches a Container's children.
-   * 
+   *
    * @param p - the component's location
-   * @return null if the component does not contain the position. 
-   * If there is no child component at the requested point and the point is 
+   * @return null if the component does not contain the position.
+   * If there is no child component at the requested point and the point is
    * within the bounds of the container the container itself is returned.
    */
   public Component findComponentAt(Point p)
@@ -1324,10 +1324,10 @@ public class Container extends Component
         while (true)
           {
             if (comp == null)
-	      return false;
+              return false;
             comp = comp.getParent();
             if (comp == this)
-	      return true;
+              return true;
           }
       }
   }
@@ -1401,7 +1401,7 @@ public class Container extends Component
    * @since 1.4
    */
   public void setFocusTraversalKeys(int id,
-				    Set<? extends AWTKeyStroke> keystrokes)
+                                    Set<? extends AWTKeyStroke> keystrokes)
   {
     if (id != KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS &&
         id != KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS &&
@@ -1495,7 +1495,7 @@ public class Container extends Component
 
     focusTraversalKeys[id] = keystrokes;
   }
-  
+
   /**
    * Returns the Set of focus traversal keys for a given traversal operation for
    * this Container.
@@ -1619,14 +1619,14 @@ public class Container extends Component
       {
         Container ancestor = getFocusCycleRootAncestor ();
 
-	if (ancestor != this && ancestor !=  null)
-	  return ancestor.getFocusTraversalPolicy ();
-	else
-	  {
-	    KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager ();
+        if (ancestor != this && ancestor !=  null)
+          return ancestor.getFocusTraversalPolicy ();
+        else
+          {
+            KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager ();
 
-	    return manager.getDefaultFocusTraversalPolicy ();
-	  }
+            return manager.getDefaultFocusTraversalPolicy ();
+          }
       }
     else
       return focusTraversalPolicy;
@@ -1692,7 +1692,7 @@ public class Container extends Component
    * @param b <code>true</code> if this container provides a focus traversal
    *        policy, <code>false</code> when the root container's focus
    *        traversal policy should be used
-   * 
+   *
    * @see #isFocusTraversalPolicyProvider()
    *
    * @since 1.5
@@ -1754,7 +1754,7 @@ public class Container extends Component
     for (int i = 0; i < ncomponents; i++)
       {
         if (component[i] instanceof Container)
-             ((Container) component[i]).applyComponentOrientation(orientation); 
+             ((Container) component[i]).applyComponentOrientation(orientation);
           else
              component[i].setComponentOrientation(orientation);
       }
@@ -1892,7 +1892,7 @@ public class Container extends Component
             Component comp = component[i];
             boolean applicable = comp.isVisible()
                                  && (comp.isLightweight() || ! lightweightOnly);
-            
+
             if (applicable)
               visitChild(gfx, visitor, comp);
           }
@@ -1916,7 +1916,7 @@ public class Container extends Component
                           Component comp)
   {
     Rectangle bounds = comp.getBounds();
-    
+
     if(!gfx.hitClip(bounds.x,bounds.y, bounds.width, bounds.height))
       return;
     Graphics g2 = gfx.create(bounds.x, bounds.y, bounds.width,
@@ -1939,7 +1939,7 @@ public class Container extends Component
    */
   void dispatchEventImpl(AWTEvent e)
   {
-    LightweightDispatcher dispatcher = LightweightDispatcher.getInstance(); 
+    LightweightDispatcher dispatcher = LightweightDispatcher.getInstance();
     if (! isLightweight() && dispatcher.dispatchEvent(e))
       {
         // Some lightweight descendent got this event dispatched. Consume
@@ -1980,11 +1980,11 @@ public class Container extends Component
    */
   boolean eventTypeEnabled(int eventId)
   {
-    if(eventId <= ContainerEvent.CONTAINER_LAST 
+    if(eventId <= ContainerEvent.CONTAINER_LAST
        && eventId >= ContainerEvent.CONTAINER_FIRST)
       return containerListener != null
         || (eventMask & AWTEvent.CONTAINER_EVENT_MASK) != 0;
-      else 
+      else
         return super.eventTypeEnabled(eventId);
   }
 
@@ -2199,7 +2199,7 @@ public class Container extends Component
   static class GfxPaintVisitor extends GfxVisitor
   {
     public static final GfxVisitor INSTANCE = new GfxPaintVisitor();
-    
+
     public void visit(Component c, Graphics gfx)
     {
       c.paint(gfx);
@@ -2209,7 +2209,7 @@ public class Container extends Component
   static class GfxPrintVisitor extends GfxVisitor
   {
     public static final GfxVisitor INSTANCE = new GfxPrintVisitor();
-    
+
     public void visit(Component c, Graphics gfx)
     {
       c.print(gfx);

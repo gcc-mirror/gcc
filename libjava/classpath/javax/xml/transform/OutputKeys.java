@@ -1,4 +1,4 @@
-/* OutputKeys.java -- 
+/* OutputKeys.java --
    Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -39,7 +39,7 @@ package javax.xml.transform;
 
 /**
  * Constants for XSLT output attributes.
- * 
+ *
  * @author (a href='mailto:dog@gnu.org'>Chris Burdess</a)
  */
 public class OutputKeys
@@ -49,53 +49,53 @@ public class OutputKeys
    * The output method (xml, html, or text).
    */
   public static final String METHOD = "method";
-  
+
   /**
    * The version of the output method.
    */
   public static final String VERSION = "version";
-  
+
   /**
    * The preferred output character encoding.
    */
   public static final String ENCODING = "encoding";
-  
+
   /**
    * Whether not to output an XML declaration (yes or no).
    */
   public static final String OMIT_XML_DECLARATION = "omit-xml-declaration";
-  
+
   /**
    * Whether to output a standalone document declaration (yes or no).
    */
   public static final String STANDALONE = "standalone";
- 
+
    /**
    * The public ID to output in the doctype declaration.
    */
   public static final String DOCTYPE_PUBLIC = "doctype-public";
-  
+
   /**
    * The system ID to output in the doctype declaration.
    */
   public static final String DOCTYPE_SYSTEM = "doctype-system";
-  
+
   /**
    * Whitespace-separated list of element names for which text children
    * should be output as CDATA sections.
    */
   public static final String CDATA_SECTION_ELEMENTS = "cdata-section-elements";
-  
+
   /**
    * Whether to indent the result tree (yes or no).
    */
   public static final String INDENT = "indent";
-  
+
   /**
    * The MIME content type of the output data.
    */
   public static final String MEDIA_TYPE = "media-type";
-  
+
   private OutputKeys()
   {
   }

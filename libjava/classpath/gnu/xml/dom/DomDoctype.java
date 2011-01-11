@@ -1,4 +1,4 @@
-/* DomDoctype.java -- 
+/* DomDoctype.java --
    Copyright (C) 1999,2000,2001,2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -72,22 +72,22 @@ import org.w3c.dom.Notation;
  * @see DomEntityReference
  * @see DomNotation
  *
- * @author David Brownell 
+ * @author David Brownell
  * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  */
 public class DomDoctype
   extends DomExtern
   implements DocumentType
 {
-  
+
   private DomNamedNodeMap notations;
   private DomNamedNodeMap entities;
   private final DOMImplementation implementation;
   private String subset;
-  
+
   private HashMap elements = new HashMap();
   private boolean ids;
-  
+
   /**
    * Constructs a DocumentType node associated with the specified
    * implementation, with the specified name.
@@ -103,11 +103,11 @@ public class DomDoctype
    * @param impl The implementation with which this object is associated
    * @param name Name of this root element
    * @param publicId If non-null, provides the external subset's
-   *	PUBLIC identifier
+   *    PUBLIC identifier
    * @param systemId If non-null, provides the external subset's
-   *	SYSTEM identifier
+   *    SYSTEM identifier
    * @param internalSubset Provides the literal value (unparsed, no
-   *	entities expanded) of the DTD's internal subset.
+   *    entities expanded) of the DTD's internal subset.
    */
   protected DomDoctype(DOMImplementation impl,
                        String name,
@@ -154,7 +154,7 @@ public class DomDoctype
    * then it doesn't have the strange construction rules of L2.</em>
    *
    * @exception DOMException HIERARCHY_REQUEST_ERR if the DocumentType
-   *	is not associated with a document.
+   *    is not associated with a document.
    */
   public NamedNodeMap getEntities()
   {
@@ -172,15 +172,15 @@ public class DomDoctype
    * @param publicId If non-null, provides the entity's PUBLIC identifier
    * @param systemId Provides the entity's SYSTEM identifier
    * @param notation If non-null, provides the entity's notation
-   *	(indicating an unparsed entity)
+   *    (indicating an unparsed entity)
    * @return The Entity that was declared, or null if the entity wasn't
-   *	recorded (because it's a parameter entity or because an entity with
-   *	this name was already declared).
+   *    recorded (because it's a parameter entity or because an entity with
+   *    this name was already declared).
    *
    * @exception DOMException NO_MODIFICATION_ALLOWED_ERR if the
-   *	DocumentType is no longer writable.
+   *    DocumentType is no longer writable.
    * @exception DOMException HIERARCHY_REQUEST_ERR if the DocumentType
-   *	is not associated with a document.
+   *    is not associated with a document.
    */
   public Entity declareEntity(String name,
                               String publicId,
@@ -188,7 +188,7 @@ public class DomDoctype
                               String notation)
   {
     DomEntity entity;
-    
+
     if (name.charAt(0) == '%' || "[dtd]".equals(name))
       {
         return null;
@@ -198,19 +198,19 @@ public class DomDoctype
         throw new DomDOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR);
       }
     getEntities();
-    
+
     DomDocument.checkName(name, (owner != null) ?
                           "1.1".equals(owner.getXmlVersion()) : false);
     if (entities.getNamedItem(name) != null)
       {
         return null;
       }
-    
+
     entity = new DomEntity(owner, name, publicId, systemId, notation);
     entities.setNamedItem(entity);
     return entity;
   }
-  
+
   /**
    * <b>DOM L1</b>
    * Returns information about any notations declared in the DTD.
@@ -219,7 +219,7 @@ public class DomDoctype
    * then it doesn't have the strange construction rules of L2.</em>
    *
    * @exception DOMException HIERARCHY_REQUEST_ERR if the DocumentType
-   *	is not associated with a document.
+   *    is not associated with a document.
    */
   public NamedNodeMap getNotations()
   {
@@ -239,25 +239,25 @@ public class DomDoctype
    * @return The notation that was declared.
    *
    * @exception DOMException NO_MODIFICATION_ALLOWED_ERR if the
-   *	DocumentType is no longer writable.
+   *    DocumentType is no longer writable.
    * @exception DOMException HIERARCHY_REQUEST_ERR if the DocumentType
-   *	is not associated with a document.
+   *    is not associated with a document.
    */
   public Notation declareNotation(String name,
                                   String publicId,
                                   String systemId)
   {
     DomNotation notation;
-    
+
     if (isReadonly())
       {
         throw new DomDOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR);
       }
     getNotations();
-    
+
     DomDocument.checkName(name, (owner != null) ?
                           "1.1".equals(owner.getXmlVersion()) : false);
-    
+
     notation = new DomNotation(owner, name, publicId, systemId);
     notations.setNamedItem(notation);
     return notation;
@@ -290,7 +290,7 @@ public class DomDoctype
   {
     return null;
   }
-    
+
   /**
    * Sets the internal "readonly" flag so the node and its associated
    * data (only lists of entities and notations, no type information
@@ -337,7 +337,7 @@ public class DomDoctype
   {
     return implementation.hasFeature(feature, version);
   }
-    
+
   /**
    * Returns the implementation associated with this document type.
    */
@@ -395,7 +395,7 @@ public class DomDoctype
   {
     return ids;
   }
-  
+
   public boolean isSameNode(Node arg)
   {
     if (equals(arg))
@@ -423,7 +423,7 @@ public class DomDoctype
     // TODO notations
     return true;
   }
-  
+
   /**
    * Shallow clone of the doctype, except that associated
    * entities and notations are (deep) cloned.

@@ -40,11 +40,11 @@ import java.io.Serializable;
 
 /**
    SecureRandomSpi is the Service Provider Interface for SecureRandom
-   providers. It provides an interface for providers to the 
+   providers. It provides an interface for providers to the
    SecureRandom engine to write their own pseudo-random number
    generator.
 
-   @since JDK 1.2       
+   @since JDK 1.2
 
    @author Mark Benvenuto (ivymccough@worldnet.att.net)
  */
@@ -60,7 +60,7 @@ public abstract class SecureRandomSpi implements Serializable
   }
 
   /**
-     Updates the seed for SecureRandomSpi but does not reset seed. 
+     Updates the seed for SecureRandomSpi but does not reset seed.
      It does to this so repeated called never decrease randomness.
    */
   protected abstract void engineSetSeed(byte[] seed);
@@ -74,7 +74,7 @@ public abstract class SecureRandomSpi implements Serializable
   protected abstract void engineNextBytes(byte[] bytes);
 
   /**
-     Gets a user specified number of bytes specified by the 
+     Gets a user specified number of bytes specified by the
      parameter.
 
      @param numBytes number of random bytes to generate

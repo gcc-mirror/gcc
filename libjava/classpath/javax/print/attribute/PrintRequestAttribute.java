@@ -1,4 +1,4 @@
-/* PrintRequestAttribute.java -- 
+/* PrintRequestAttribute.java --
    Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -39,14 +39,14 @@ package javax.print.attribute;
 
 /**
  * Marker interface for all attribute classes which specify a requested
- * attribute of {@link javax.print.DocPrintJob} object. 
+ * attribute of {@link javax.print.DocPrintJob} object.
  * <p>
- * Instances of implementing attribute classes may be collected in a 
+ * Instances of implementing attribute classes may be collected in a
  * {@link javax.print.attribute.PrintRequestAttributeSet}.
  * </p>
- * 
+ *
  * @see javax.print.attribute.PrintRequestAttributeSet
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public interface PrintRequestAttribute extends Attribute

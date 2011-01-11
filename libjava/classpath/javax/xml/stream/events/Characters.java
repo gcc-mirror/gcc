@@ -1,4 +1,4 @@
-/* Characters.java -- 
+/* Characters.java --
    Copyright (C) 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -58,11 +58,10 @@ public interface Characters
    * Indicates whether this is a CDATA section.
    */
   boolean isCData();
-  
+
   /**
    * Indicates whether this text is all ignorable whitespace.
    */
   boolean isIgnorableWhiteSpace();
-  
-}
 
+}

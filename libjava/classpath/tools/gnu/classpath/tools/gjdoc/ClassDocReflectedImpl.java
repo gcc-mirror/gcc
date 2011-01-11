@@ -7,7 +7,7 @@
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2, or (at your option)
    any later version.
- 
+
    GNU Classpath is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -16,7 +16,7 @@
    You should have received a copy of the GNU General Public License
    along with GNU Classpath; see the file COPYING.  If not, write to the
    Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA. 
+   02111-1307 USA.
 
    Linking this library statically or dynamically with other modules is
    making a combined work based on this library.  Thus, the terms and
@@ -54,7 +54,7 @@ public class ClassDocReflectedImpl
 
    public static ClassDocReflectedImpl newInstance(Class clazz)
    {
-      ClassDocReflectedImpl result 
+      ClassDocReflectedImpl result
          = (ClassDocReflectedImpl)reflectionCache.get(clazz);
       if (null != result) {
          return result;
@@ -69,7 +69,7 @@ public class ClassDocReflectedImpl
       reflectionCache.put(clazz, this);
 
       //System.err.println("ClassDocReflectedImpl: " + clazz);
-      
+
       this.clazz = clazz;
       String className = clazz.getName();
       int ndx = className.lastIndexOf('.');
@@ -99,17 +99,17 @@ public class ClassDocReflectedImpl
       }
    }
 
-   public ConstructorDoc[] constructors() { return new ConstructorDoc[0]; } 
+   public ConstructorDoc[] constructors() { return new ConstructorDoc[0]; }
    public ConstructorDoc[] constructors(boolean filtered) { return new ConstructorDoc[0]; }
-   public boolean definesSerializableFields() { return false; } 
-   public FieldDoc[] fields() { return new FieldDoc[0]; } 
-   public FieldDoc[] fields(boolean filtered) { return new FieldDoc[0]; } 
-   public ClassDoc findClass(java.lang.String className) { return null; } 
-   public ClassDoc[] importedClasses() { return new ClassDoc[0]; } 
-   public PackageDoc[] importedPackages() { return new PackageDoc[0]; } 
-   public ClassDoc[] innerClasses() { return new ClassDoc[0]; } 
-   public ClassDoc[] innerClasses(boolean filtered) 
-   { 
+   public boolean definesSerializableFields() { return false; }
+   public FieldDoc[] fields() { return new FieldDoc[0]; }
+   public FieldDoc[] fields(boolean filtered) { return new FieldDoc[0]; }
+   public ClassDoc findClass(java.lang.String className) { return null; }
+   public ClassDoc[] importedClasses() { return new ClassDoc[0]; }
+   public PackageDoc[] importedPackages() { return new PackageDoc[0]; }
+   public ClassDoc[] innerClasses() { return new ClassDoc[0]; }
+   public ClassDoc[] innerClasses(boolean filtered)
+   {
       if (filtered) {
          return new ClassDoc[0];
       }
@@ -117,20 +117,20 @@ public class ClassDocReflectedImpl
          return unfilteredInnerClasses;
       }
    }
-   
-   public ClassDoc[] interfaces() { return new ClassDoc[0]; } 
-   public boolean isAbstract() { return false; } 
-   public boolean isExternalizable() { return false; } 
-   public boolean isSerializable() { return false; } 
-   public MethodDoc[] methods() { return new MethodDoc[0]; } 
-   public MethodDoc[] methods(boolean filtered) { return new MethodDoc[0]; } 
-   public FieldDoc[] serializableFields() { return new FieldDoc[0]; } 
-   public MethodDoc[] serializationMethods() { return new MethodDoc[0]; } 
-   public boolean subclassOf(ClassDoc cd) { return false; } 
-   public ClassDoc superclass() { 
+
+   public ClassDoc[] interfaces() { return new ClassDoc[0]; }
+   public boolean isAbstract() { return false; }
+   public boolean isExternalizable() { return false; }
+   public boolean isSerializable() { return false; }
+   public MethodDoc[] methods() { return new MethodDoc[0]; }
+   public MethodDoc[] methods(boolean filtered) { return new MethodDoc[0]; }
+   public FieldDoc[] serializableFields() { return new FieldDoc[0]; }
+   public MethodDoc[] serializationMethods() { return new MethodDoc[0]; }
+   public boolean subclassOf(ClassDoc cd) { return false; }
+   public ClassDoc superclass() {
       return superclassDoc;
-   } 
-   public ClassDoc containingClass() 
+   }
+   public ClassDoc containingClass()
    {
       Class declaringClass = clazz.getDeclaringClass();
       if (null != declaringClass) {
@@ -139,8 +139,8 @@ public class ClassDocReflectedImpl
       else {
          return null;
       }
-   } 
-   public PackageDoc containingPackage() 
+   }
+   public PackageDoc containingPackage()
    {
       Class outerClass = clazz;
       while (null != outerClass.getDeclaringClass()) {
@@ -159,33 +159,33 @@ public class ClassDocReflectedImpl
       return result;
    }
 
-   public boolean isFinal() { return false; } 
-   public boolean isPackagePrivate() { return false; } 
-   public boolean isPrivate() { return false; } 
-   public boolean isProtected() { return false; } 
-   public boolean isPublic() { return false; } 
-   public boolean isStatic() { return false; } 
-   public String modifiers() { return ""; } 
-   public int modifierSpecifier() { return 0; } 
-   public String qualifiedName() { return clazz.getName().replace('$', '.'); } 
-   public String commentText() { return null; } 
-   public Tag[] firstSentenceTags() { return new Tag[0]; } 
-   public String getRawCommentText() { return null; } 
-   public Tag[] inlineTags() { return new Tag[0]; } 
-   public boolean isClass() { return false; } 
-   public boolean isConstructor() { return false; } 
-   public boolean isError() { return false; } 
-   public boolean isException() { return false; } 
-   public boolean isField() { return false; } 
-   public boolean isIncluded() { return false; } 
-   public boolean isInterface() { return false; } 
-   public boolean isMethod() { return false; } 
-   public boolean isOrdinaryClass() { return false; } 
-   public String name() { return name; } 
+   public boolean isFinal() { return false; }
+   public boolean isPackagePrivate() { return false; }
+   public boolean isPrivate() { return false; }
+   public boolean isProtected() { return false; }
+   public boolean isPublic() { return false; }
+   public boolean isStatic() { return false; }
+   public String modifiers() { return ""; }
+   public int modifierSpecifier() { return 0; }
+   public String qualifiedName() { return clazz.getName().replace('$', '.'); }
+   public String commentText() { return null; }
+   public Tag[] firstSentenceTags() { return new Tag[0]; }
+   public String getRawCommentText() { return null; }
+   public Tag[] inlineTags() { return new Tag[0]; }
+   public boolean isClass() { return false; }
+   public boolean isConstructor() { return false; }
+   public boolean isError() { return false; }
+   public boolean isException() { return false; }
+   public boolean isField() { return false; }
+   public boolean isIncluded() { return false; }
+   public boolean isInterface() { return false; }
+   public boolean isMethod() { return false; }
+   public boolean isOrdinaryClass() { return false; }
+   public String name() { return name; }
    public SourcePosition position() { return null; }
-   public SeeTag[] seeTags() { return new SeeTag[0]; } 
-   public void setRawCommentText(java.lang.String rawDocumentation) {} 
-   public Tag[] tags() { return new Tag[0]; } 
+   public SeeTag[] seeTags() { return new SeeTag[0]; }
+   public void setRawCommentText(java.lang.String rawDocumentation) {}
+   public Tag[] tags() { return new Tag[0]; }
    public Tag[] tags(java.lang.String tagname) { return new Tag[0]; }
    public String typeName() { return name; }
    public String qualifiedTypeName() { return qualifiedName(); }
@@ -214,6 +214,6 @@ public class ClassDocReflectedImpl
       return super.clone();
    }
 
-   public TypeVariable[] typeParameters() { return new TypeVariable[0]; } 
+   public TypeVariable[] typeParameters() { return new TypeVariable[0]; }
 
 }

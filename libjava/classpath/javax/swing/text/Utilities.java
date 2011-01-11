@@ -97,7 +97,7 @@ public class Utilities
 
     int pos = s.offset;
     int len = 0;
-    
+
     int end = s.offset + s.count;
 
     for (int offset = s.offset; offset < end; ++offset)
@@ -138,7 +138,7 @@ public class Utilities
         g.drawChars(buffer, pos, len, pixelX, y);
         pixelX += metrics.charsWidth(buffer, pos, len);
       }
-    
+
     return pixelX;
   }
 
@@ -171,21 +171,21 @@ public class Utilities
     int count = 0;
     for (int offset = s.offset; offset < end; offset++)
       {
-	switch (buffer[offset])
-	  {
-	  case '\t':
-	    // In case we have a tab, we just 'jump' over the tab.
-	    // When we have no tab expander we just use the width of 'm'.
-	    if (e != null)
-	      pixelX = (int) e.nextTabStop(pixelX,
-					   startOffset + offset - s.offset);
-	    else
-	      pixelX += metrics.charWidth(' ');
-	    break;
-	  case '\n':
-	    // In case we have a newline, we must 'draw'
-	    // the buffer and jump on the next line.
-	    pixelX += metrics.charsWidth(buffer, offset - count, count);
+        switch (buffer[offset])
+          {
+          case '\t':
+            // In case we have a tab, we just 'jump' over the tab.
+            // When we have no tab expander we just use the width of 'm'.
+            if (e != null)
+              pixelX = (int) e.nextTabStop(pixelX,
+                                           startOffset + offset - s.offset);
+            else
+              pixelX += metrics.charWidth(' ');
+            break;
+          case '\n':
+            // In case we have a newline, we must 'draw'
+            // the buffer and jump on the next line.
+            pixelX += metrics.charsWidth(buffer, offset - count, count);
             count = 0;
             break;
           default:
@@ -234,12 +234,12 @@ public class Utilities
     int found = s.count;
     int currentX = x0;
     int nextX = currentX;
-    
+
     int end = s.offset + s.count;
     for (int pos = s.offset; pos < end && found == s.count; pos++)
       {
         char nextChar = s.array[pos];
-        
+
         if (nextChar != '\t')
           nextX += fm.charWidth(nextChar);
         else
@@ -249,7 +249,7 @@ public class Utilities
             else
               nextX += ((int) te.nextTabStop(nextX, p0 + pos - s.offset));
           }
-        
+
         if (x >= currentX && x < nextX)
           {
             // Found position.
@@ -295,10 +295,10 @@ public class Utilities
   {
     return getTabbedTextOffset(s, fm, x0, x, te, p0, true);
   }
-  
+
   /**
    * Finds the start of the next word for the given offset.
-   * 
+   *
    * @param c
    *          the text component
    * @param offs
@@ -315,7 +315,7 @@ public class Utilities
     String text = c.getText();
     BreakIterator wb = BreakIterator.getWordInstance();
     wb.setText(text);
-        
+
     int last = wb.following(offs);
     int current = wb.next();
     int cp;
@@ -325,7 +325,7 @@ public class Utilities
         for (int i = last; i < current; i++)
           {
             cp = text.codePointAt(i);
-            
+
             // Return the last found bound if there is a letter at the current
             // location or is not whitespace (meaning it is a number or
             // punctuation). The first case means that 'last' denotes the
@@ -338,13 +338,13 @@ public class Utilities
         last = current;
         current = wb.next();
       }
-    
+
     throw new BadLocationException("no more words", offs);
   }
 
   /**
    * Finds the start of the previous word for the given offset.
-   * 
+   *
    * @param c
    *          the text component
    * @param offs
@@ -357,10 +357,10 @@ public class Utilities
       throws BadLocationException
   {
     String text = c.getText();
-    
+
     if (offs <= 0 || offs > text.length())
       throw new BadLocationException("invalid offset specified", offs);
-    
+
     BreakIterator wb = BreakIterator.getWordInstance();
     wb.setText(text);
     int last = wb.preceding(offs);
@@ -372,7 +372,7 @@ public class Utilities
         for (int i = last; i < offs; i++)
           {
             cp = text.codePointAt(i);
-            
+
             // Return the last found bound if there is a letter at the current
             // location or is not whitespace (meaning it is a number or
             // punctuation). The first case means that 'last' denotes the
@@ -385,10 +385,10 @@ public class Utilities
         last = current;
         current = wb.previous();
       }
-    
+
     return 0;
   }
-  
+
   /**
    * Finds the start of a word for the given location.
    * @param c the text component
@@ -400,10 +400,10 @@ public class Utilities
       throws BadLocationException
   {
     String text = c.getText();
-    
+
     if (offs < 0 || offs > text.length())
       throw new BadLocationException("invalid offset specified", offs);
-    
+
     BreakIterator wb = BreakIterator.getWordInstance();
     wb.setText(text);
 
@@ -412,7 +412,7 @@ public class Utilities
 
     return wb.preceding(offs);
   }
-  
+
   /**
    * Finds the end of a word for the given location.
    * @param c the text component
@@ -425,20 +425,20 @@ public class Utilities
   {
     if (offs < 0 || offs >= c.getText().length())
       throw new BadLocationException("invalid offset specified", offs);
-    
+
     String text = c.getText();
     BreakIterator wb = BreakIterator.getWordInstance();
     wb.setText(text);
     return wb.following(offs);
   }
-  
+
   /**
-   * Get the model position of the end of the row that contains the 
+   * Get the model position of the end of the row that contains the
    * specified model position.  Return null if the given JTextComponent
    * does not have a size.
    * @param c the JTextComponent
    * @param offs the model position
-   * @return the model position of the end of the row containing the given 
+   * @return the model position of the end of the row containing the given
    * offset
    * @throws BadLocationException if the offset is invalid
    */
@@ -473,12 +473,12 @@ public class Utilities
           }
       }
   }
-      
+
   /**
    * Get the model position of the start of the row that contains the specified
    * model position. Return null if the given JTextComponent does not have a
    * size.
-   * 
+   *
    * @param c the JTextComponent
    * @param offs the model position
    * @return the model position of the start of the row containing the given
@@ -516,7 +516,7 @@ public class Utilities
           }
       }
   }
-  
+
   /**
    * Determine where to break the text in the given Segment, attempting to find
    * a word boundary.
@@ -612,23 +612,23 @@ public class Utilities
     throws BadLocationException
   {
     int offs = getRowStart(c, offset);
-    
+
     if(offs == -1)
       return -1;
 
     // Effectively calculates the y value of the previous line.
     Point pt = c.modelToView(offs-1).getLocation();
-    
+
     pt.x = x;
-    
+
     // Calculate a simple fitting offset.
     offs = c.viewToModel(pt);
-    
+
     // Find out the real x positions of the calculated character and its
     // neighbour.
     int offsX = c.modelToView(offs).getLocation().x;
     int offsXNext = c.modelToView(offs+1).getLocation().x;
-    
+
     // Chose the one which is nearer to us and return its offset.
     if (Math.abs(offsX-x) <= Math.abs(offsXNext-x))
       return offs;
@@ -653,12 +653,12 @@ public class Utilities
     throws BadLocationException
   {
     int offs = getRowEnd(c, offset);
-    
+
     if(offs == -1)
       return -1;
 
     Point pt = null;
-    
+
     // Note: Some views represent the position after the last
     // typed character others do not. Converting offset 3 in "a\nb"
     // in a PlainView will return a valid rectangle while in a
@@ -673,12 +673,12 @@ public class Utilities
       {
         return offset;
       }
-    
+
     pt.x = x;
-    
+
     // Calculate a simple fitting offset.
     offs = c.viewToModel(pt);
-    
+
     if (offs == c.getDocument().getLength())
       return offs;
 
@@ -686,29 +686,29 @@ public class Utilities
     // neighbour.
     int offsX = c.modelToView(offs).getLocation().x;
     int offsXNext = c.modelToView(offs+1).getLocation().x;
-    
+
     // Chose the one which is nearer to us and return its offset.
     if (Math.abs(offsX-x) <= Math.abs(offsXNext-x))
       return offs;
     else
       return offs+1;
     }
-  
+
   /** This is an internal helper method which is used by the
    * <code>javax.swing.text</code> package. It simply delegates the
    * call to a method with the same name on the <code>NavigationFilter</code>
    * of the provided <code>JTextComponent</code> (if it has one) or its UI.
-   * 
+   *
    * If the underlying method throws a <code>BadLocationException</code> it
    * will be swallowed and the initial offset is returned.
    */
   static int getNextVisualPositionFrom(JTextComponent t, int offset, int direction)
   {
     NavigationFilter nf = t.getNavigationFilter();
-    
+
     try
       {
-        return (nf != null) 
+        return (nf != null)
           ? nf.getNextVisualPositionFrom(t,
                                          offset,
                                          Bias.Forward,
@@ -724,7 +724,7 @@ public class Utilities
     {
       return offset;
     }
-    
+
   }
-  
+
 }

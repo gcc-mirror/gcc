@@ -46,7 +46,7 @@ import gnu.classpath.Configuration;
  */
 
 /**
- * Code relocated from java.lang.Float by 
+ * Code relocated from java.lang.Float by
  * @author Dave Grove <groved@us.ibm.com>
  */
 final class VMFloat

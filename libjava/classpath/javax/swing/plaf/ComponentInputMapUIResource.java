@@ -66,4 +66,3 @@ public class ComponentInputMapUIResource extends ComponentInputMap
     super(component);
   }
 }
-

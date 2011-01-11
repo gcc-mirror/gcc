@@ -126,7 +126,7 @@ public final class OpenTypeFontFactory
 
       rsrc = fork.getResources(OpenTypeFont.TAG_SFNT);
       fonts = new OpenTypeFont[rsrc.length];
-      for (int i = 0; i < fonts.length; i++)      
+      for (int i = 0; i < fonts.length; i++)
         fonts[i] = new OpenTypeFont(rsrc[i].getContent(), 0);
 
       return fonts;

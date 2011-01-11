@@ -54,7 +54,7 @@ import java.util.NoSuchElementException;
 public final class EmptyEnumeration<T> implements Enumeration<T>, Serializable
 {
   /** The only instance of this class */
-  private static final EmptyEnumeration<Object> instance = 
+  private static final EmptyEnumeration<Object> instance =
     new EmptyEnumeration<Object>();
 
   /**

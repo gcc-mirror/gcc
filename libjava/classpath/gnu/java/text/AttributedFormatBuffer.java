@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -56,13 +56,13 @@ public class AttributedFormatBuffer implements FormatBuffer
   private final ArrayList ranges;
   private final ArrayList attributes;
   private int[] a_ranges;
-  private HashMap[] a_attributes; 
+  private HashMap[] a_attributes;
   private int startingRange;
   AttributedCharacterIterator.Attribute defaultAttr;
 
   /**
    * This constructor accepts a StringBuffer. If the buffer contains
-   * already some characters they will not be attributed. 
+   * already some characters they will not be attributed.
    */
   public AttributedFormatBuffer(CPStringBuilder buffer)
   {
@@ -72,8 +72,8 @@ public class AttributedFormatBuffer implements FormatBuffer
     this.defaultAttr = null;
     if (buffer.length() != 0)
       {
-	this.startingRange = buffer.length();
-	addAttribute(buffer.length(), null);
+        this.startingRange = buffer.length();
+        addAttribute(buffer.length(), null);
       }
     else
       this.startingRange = -1;
@@ -96,16 +96,16 @@ public class AttributedFormatBuffer implements FormatBuffer
    *
    * @param new_range A new range to insert in the list.
    * @param attr A new attribute to insert in the list.
-   */  
+   */
   private final void addAttribute(int new_range, AttributedCharacterIterator.Attribute attr)
   {
     HashMap map;
 
     if (attr != null)
       {
-	map = new HashMap();
-	map.put(attr, attr);
-	attributes.add(map);
+        map = new HashMap();
+        map.put(attr, attr);
+        attributes.add(map);
       }
     else
       attributes.add(null);
@@ -119,7 +119,7 @@ public class AttributedFormatBuffer implements FormatBuffer
       startingRange = 0;
     buffer.append(s);
   }
-  
+
   public void append(String s, AttributedCharacterIterator.Attribute attr)
   {
     setDefaultAttribute(attr);
@@ -135,11 +135,11 @@ public class AttributedFormatBuffer implements FormatBuffer
     setDefaultAttribute(null);
     if (ranges != null)
       {
-	for (int i = 0; i < ranges.length; i++)
-	  {	    
-	    this.ranges.add(new Integer(ranges[i] + curPos));
-	    this.attributes.add(attrs[i]);
-	  }
+        for (int i = 0; i < ranges.length; i++)
+          {
+            this.ranges.add(new Integer(ranges[i] + curPos));
+            this.attributes.add(attrs[i]);
+          }
       }
     startingRange = buffer.length();
     buffer.append(s);
@@ -168,7 +168,7 @@ public class AttributedFormatBuffer implements FormatBuffer
 
     if (startingRange != currentPos && startingRange >= 0)
       {
-	addAttribute(currentPos, defaultAttr);
+        addAttribute(currentPos, defaultAttr);
       }
     defaultAttr = attr;
     startingRange = currentPos;
@@ -212,7 +212,7 @@ public class AttributedFormatBuffer implements FormatBuffer
     a_ranges = new int[ranges.size()];
     for (int i = 0; i < a_ranges.length; i++)
       a_ranges[i] = ((Integer)(ranges.get (i))).intValue();
-    
+
     a_attributes = new HashMap[attributes.size()];
     System.arraycopy(attributes.toArray(), 0, a_attributes, 0, a_attributes.length);
   }
@@ -239,7 +239,7 @@ public class AttributedFormatBuffer implements FormatBuffer
   }
 
   /**
-   * This method returns the array containing the map on the 
+   * This method returns the array containing the map on the
    * attributes.
    *
    * @return An array of {@link java.util.Map} containing the attributes.

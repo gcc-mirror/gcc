@@ -1,4 +1,4 @@
-/* Size2DSyntax.java -- 
+/* Size2DSyntax.java --
    Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -40,12 +40,12 @@ package javax.print.attribute;
 import java.io.Serializable;
 
 /**
- * <code>Size2DSyntax</code> is the abstract base class of all attribute 
+ * <code>Size2DSyntax</code> is the abstract base class of all attribute
  * classes which provide a two dimensional size as value (e.g. the size of
  * a media like Letter or A4).
  * <p>
  * A <code>Size2DSyntax</code> instance consists of two integer values
- * describing the size in the x and y dimension. The units of 
+ * describing the size in the x and y dimension. The units of
  * the given values is determined by two defined constants:
  * <ul>
  * <li>INCH - defines an inch</li>
@@ -54,7 +54,7 @@ import java.io.Serializable;
  * </p>
  * <p>
  * A size 2D attribute is constructed by two values for the size of the x and
- * y dimension and the actual units of the given values as defined by the 
+ * y dimension and the actual units of the given values as defined by the
  * constants.
  * </p>
  * <p>
@@ -64,16 +64,16 @@ import java.io.Serializable;
  * </p>
  * <p>
  * <b>Internal storage:</b><br>
- * The size of the x,y dimensions are stored internally in micrometers. The 
+ * The size of the x,y dimensions are stored internally in micrometers. The
  * values of the provided constants for inch (value 25400) and millimeters
  * (value 1000) are used as conversion factors to the internal storage units.
  * To get the internal micrometers values a multiplication of a given
  * size value with its units constant value is done. Retrieving the size value
- * for specific units is done by dividing the internal stored value by the 
- * units constant value. Clients are therefore able to provide their own 
+ * for specific units is done by dividing the internal stored value by the
+ * units constant value. Clients are therefore able to provide their own
  * size units by supplying other conversion factors.
  * Subclasses of <code>Size2DSyntax</code> have access to the internal
- * size values through the protected methods 
+ * size values through the protected methods
  * {@link #getXMicrometers()} and {@link #getYMicrometers()}.
  * </p>
  *
@@ -221,7 +221,7 @@ public abstract class Size2DSyntax implements Cloneable, Serializable
 
     return ((float) y) / ((float) units);
   }
-  
+
   /**
    * Returns the size in y direction in mircometers.
    * To be used by sublcasses that need access to the internal storage value.
@@ -247,10 +247,10 @@ public abstract class Size2DSyntax implements Cloneable, Serializable
    * Returns the string representation for this object.
    * <p>
    * The returned string is in the form "XxY um" with X standing
-   * for size in x and Y for the size in y direction. The used 
+   * for size in x and Y for the size in y direction. The used
    * micrometers units is indicated by the appended "um" notation.
    * </p>
-   * 
+   *
    * @return The string representation in micrometers.
    */
   public String toString()
@@ -262,11 +262,11 @@ public abstract class Size2DSyntax implements Cloneable, Serializable
    * Returns the string representation for this object.
    * <p>
    * The returned string is in the form "XxY U" with X standing
-   * for size in x and Y for the size in y direction. U denotes 
+   * for size in x and Y for the size in y direction. U denotes
    * the units name if one is supplied. The values are given as
    * floating point values.
    * </p>
-   * 
+   *
    * @param units the units to use
    * @param unitsName the name of the units. If <code>null</code>
    * it is ommitted from the string representation.
@@ -277,7 +277,7 @@ public abstract class Size2DSyntax implements Cloneable, Serializable
   {
     if (unitsName == null)
       return getX(units) + "x" + getY(units);
-    
+
     return getX(units) + "x" + getY(units) + " " + unitsName;
   }
 }

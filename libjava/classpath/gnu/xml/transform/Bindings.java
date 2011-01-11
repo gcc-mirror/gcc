@@ -1,4 +1,4 @@
-/* Bindings.java -- 
+/* Bindings.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -202,7 +202,7 @@ public class Bindings
     if (ret == null)
       {
         for (Iterator<Map<QName,Object>> i = variables.iterator();
-	     i.hasNext() && ret == null; )
+             i.hasNext() && ret == null; )
           {
             Map<QName,Object> vctx = i.next();
             ret = vctx.get(name);
@@ -212,7 +212,7 @@ public class Bindings
     if (ret == null)
       {
         for (Iterator<Map<QName,Object>> i = parameters.iterator();
-	     i.hasNext() && ret == null; )
+             i.hasNext() && ret == null; )
           {
             Map<QName,Object> pctx = i.next();
             ret = pctx.get(name);
@@ -260,7 +260,7 @@ public class Bindings
   {
     return get(qName, null, 1, 1);
   }
-  
+
   public String toString()
   {
     CPStringBuilder buf = new CPStringBuilder();
@@ -311,7 +311,7 @@ public class Bindings
                 buf.append(entry.getValue());
                 seen.add(key);
               }
-          } 
+          }
       }
     buf.append('}');
     next = false;
@@ -337,7 +337,7 @@ public class Bindings
                 buf.append(entry.getValue());
                 seen.add(key);
               }
-          } 
+          }
       }
     buf.append(']');
     return buf.toString();

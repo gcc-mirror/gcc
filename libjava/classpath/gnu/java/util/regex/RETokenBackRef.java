@@ -64,30 +64,30 @@ final class RETokenBackRef extends REToken
     b = mymatch.start[num];
     e = mymatch.end[num];
     if ((b == -1) || (e == -1))
-      return null;		// this shouldn't happen, but...
+      return null;              // this shouldn't happen, but...
     if (b < 0)
       b += 1;
     if (e < 0)
       e += 1;
     for (int i = b; i < e; i++)
       {
-	char c1 = input.charAt (mymatch.index + i - b);
-	char c2 = input.charAt (i);
-	if (c1 != c2)
-	  {
-	    if (insens)
-	      {
-		if (c1 != toLowerCase (c2, unicodeAware) &&
-		    c1 != toUpperCase (c2, unicodeAware))
-		  {
-		    return null;
-		  }
-	      }
-	    else
-	      {
-		return null;
-	      }
-	  }
+        char c1 = input.charAt (mymatch.index + i - b);
+        char c2 = input.charAt (i);
+        if (c1 != c2)
+          {
+            if (insens)
+              {
+                if (c1 != toLowerCase (c2, unicodeAware) &&
+                    c1 != toUpperCase (c2, unicodeAware))
+                  {
+                    return null;
+                  }
+              }
+            else
+              {
+                return null;
+              }
+          }
       }
     mymatch.index += e - b;
     return mymatch;

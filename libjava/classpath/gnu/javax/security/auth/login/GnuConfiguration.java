@@ -61,7 +61,7 @@ import javax.security.auth.login.Configuration;
  * Login Configuration files written in the <i>default</i> syntax described in
  * the publicly available documentation of that class. A more formal definition
  * of this syntax is as follows:
- * 
+ *
  * <pre>
  *   CONFIG              ::= APP_OR_OTHER_ENTRY+
  *   APP_OR_OTHER_ENTRY  ::= APP_NAME_OR_OTHER JAAS_CONFIG_BLOCK
@@ -80,12 +80,12 @@ import javax.security.auth.login.Configuration;
  *   PARAM_NAME   ::= STRING
  *   PARAM_VALUE  ::= '"' STRING '"' | ''' STRING ''' | STRING
  * </pre>
- * 
+ *
  * <p>This implementation will specifically attempt to process one or more
  * Login Configuration files in the following locations, and when found parse
  * them and merge their contents. The locations, and the order in which they are
  * investigated, follows:</p>
- * 
+ *
  * <ol>
  *   <li>If the following Security properties:
  *   <i>java.security.auth.login.config.url.<b>N</b></i>, where <i><b>N</b></i>
@@ -99,7 +99,7 @@ import javax.security.auth.login.Configuration;
  *       <li>The GNU Classpath security file, named <i>classpath.security</i>,
  *       where all Security properties are encoded, is usually located in
  *       <i>/usr/local/classpath/lib/security</i> folder.</li>
- *       
+ *
  *       <li>The numbers used in the properties
  *       <i>java.security.auth.login.config.url.<b>N</b></i> MUST be sequential,
  *       with no breaks in-between.</li>
@@ -120,7 +120,7 @@ import javax.security.auth.login.Configuration;
  *   (in that order) is found in the location referenced by the value of the
  *   System property <i>user.home</i>, then that file is parsed as a JAAS Login
  *   Configuration written in the default syntax.</li>
- *   
+ *
  *   <li>If none of the above resulted in a correctly parsed JAAS Login
  *   Configuration file, then this implementation will install a <i>Null
  *   Configuration</i> which basically does not recognize any Application.</li>
@@ -182,11 +182,11 @@ public final class GnuConfiguration extends Configuration
 
   /**
    * Refreshes and reloads this <code>Configuration</code>.
-   * 
+   *
    * <p>This method causes this <code>Configuration</code> object to refresh /
    * reload its contents following the locations and logic described above in
    * the class documentation section.</p>
-   * 
+   *
    * @throws SecurityException if the caller does not have an
    * {@link AuthPermission} for the action named
    * <code>refreshLoginConfiguration</code>.
@@ -237,7 +237,7 @@ public final class GnuConfiguration extends Configuration
    * Attempts to locate and parse one or more JAAS Login Configuration files
    * defined as the values of the Security properties
    * <i>java.security.auth.login.config.url.N</i>.
-   * 
+   *
    * @return <code>true</code> if it succeeds, and <code>false</code>
    *         otherwsie.
    */
@@ -279,7 +279,7 @@ public final class GnuConfiguration extends Configuration
    * {@link MalformedURLException} occurs, this method then tries to open that
    * string as a {@link File} (with the same name). If it succeeds, an
    * {@link InputStream} is constructed and returned.
-   * 
+   *
    * @param s
    *          the designated name of either a {@link URL} or a {@link File}
    *          assumed to contain a JAAS Login Configuration in the default
@@ -308,7 +308,7 @@ public final class GnuConfiguration extends Configuration
   /**
    * Attempts to locate and parse a JAAS Login Configuration file defined as the
    * value of the System property <i>java.security.auth.login.config</i>.
-   * 
+   *
    * @return <code>true</code> if it succeeds, and <code>false</code>
    *         otherwsie.
    */
@@ -343,7 +343,7 @@ public final class GnuConfiguration extends Configuration
    * as <i>.java.login.config</i> or <i>java.login.config</i> (without the
    * leading dot) in the folder referenced by the System property
    * <code>user.home</code>.
-   * 
+   *
    * @return <code>true</code> if it succeeds, and <code>false</code>
    *         otherwsie.
    */

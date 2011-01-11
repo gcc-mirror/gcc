@@ -31,8 +31,8 @@ public class TestCompilation
     CompilationMXBean bean = ManagementFactory.getCompilationMXBean();
     if (bean == null)
       {
-	System.out.println("The compilation bean is not supported by this VM.");
-	System.exit(-1);
+        System.out.println("The compilation bean is not supported by this VM.");
+        System.exit(-1);
       }
     System.out.println("Bean: " + bean);
     System.out.println("JIT compiler name: " + bean.getName());
@@ -40,8 +40,8 @@ public class TestCompilation
     System.out.println("Compilation time monitoring supported: " + timeMonitoring);
     if (timeMonitoring)
       {
-	System.out.println("Compilation time: "
-			   + bean.getTotalCompilationTime() + "ms");
+        System.out.println("Compilation time: "
+                           + bean.getTotalCompilationTime() + "ms");
       }
   }
 

@@ -48,7 +48,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.ImageObserver;
 
 /**
- * Implementation of Graphics2D for Components for servers which 
+ * Implementation of Graphics2D for Components for servers which
  * do not have xrender.
  *
  * A mirrored GtkImage of the component is stored in memory
@@ -62,17 +62,17 @@ public class ComponentGraphicsCopy extends CairoSurfaceGraphics
    * GtkImage sharing its data buffer with this Cairo surface.
    */
   private GtkImage gtkimage;
-  
+
   private int width, height;
 
   native void getPixbuf( GtkComponentPeer component, GtkImage image );
 
-  native void copyPixbuf( GtkComponentPeer component, GtkImage image, 
-			  int x, int y, int w, int h );
+  native void copyPixbuf( GtkComponentPeer component, GtkImage image,
+                          int x, int y, int w, int h );
 
-  public ComponentGraphicsCopy(int width, int height, 
-			       GtkComponentPeer component)
-  { 
+  public ComponentGraphicsCopy(int width, int height,
+                               GtkComponentPeer component)
+  {
     super( new CairoSurface( width, height ) );
     this.component = component;
     this.width = width;
@@ -82,7 +82,7 @@ public class ComponentGraphicsCopy extends CairoSurfaceGraphics
   }
 
   /**
-   * Overloaded methods that do actual drawing need to enter the gdk threads 
+   * Overloaded methods that do actual drawing need to enter the gdk threads
    * and also do certain things before and after.
    */
   public void draw(Shape s)
@@ -106,7 +106,7 @@ public class ComponentGraphicsCopy extends CairoSurfaceGraphics
   }
 
   protected boolean drawImage(Image img, AffineTransform xform,
-			      Color bgcolor, ImageObserver obs)
+                              Color bgcolor, ImageObserver obs)
   {
     boolean rv = super.drawImage(img, xform, bgcolor, obs);
     copyPixbuf(component, gtkimage, 0, 0, width, height);
@@ -120,4 +120,3 @@ public class ComponentGraphicsCopy extends CairoSurfaceGraphics
     copyPixbuf(component, gtkimage, r.x, r.y, r.width, r.height);
   }
 }
-

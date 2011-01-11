@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -66,13 +66,13 @@ public interface ActivationSystem
    * .
    */
   int SYSTEM_PORT = 1098;
-  
+
   /**
    * Registers the activation descriptor and creates (and returns) its
    * activation identifier. The map entry (identifier to descriptor) is stored
    * in the stable map and used when the {@link Activator} receives the request
    * to activate the object.
-   * 
+   *
    * @param desc the activation descriptor to register.
    * @return the created activation identifier that is mapped to the passed
    *         descriptor.
@@ -84,11 +84,11 @@ public interface ActivationSystem
    */
   ActivationID registerObject(ActivationDesc desc) throws ActivationException,
       UnknownGroupException, RemoteException;
-  
+
   /**
    * Removes the stored identifier-description map entry. The object will no
    * longer be activable using the passed activation id
-   * 
+   *
    * @param id the activation id to remove
    * @throws ActivationException if the entry removing operation failed
    *           (database update problems, etc)
@@ -97,11 +97,11 @@ public interface ActivationSystem
    */
   void unregisterObject(ActivationID id) throws ActivationException,
       UnknownObjectException, RemoteException;
-  
+
   /**
    * Register the new activation group. For instance, it can be one activation
    * group per virtual machine.
-   * 
+   *
    * @param groupDesc the activation group descriptor.
    * @return the created activation group ID for the activation group
    * @throws ActivationException if the group registration fails
@@ -109,13 +109,13 @@ public interface ActivationSystem
    */
   ActivationGroupID registerGroup(ActivationGroupDesc groupDesc)
       throws ActivationException, RemoteException;
-  
+
   /**
    * This method is called from the {@link ActivationGroup} to inform the
    * ActivatinSystem that the group is now active and there is the
    * {@link ActivationInstantiator} for that group. This call is made internally
    * from the {@link ActivationGroup#createGroup}.
-   * 
+   *
    * @param id the group id
    * @param group the group activation instantiator
    * @param incarnation the groups incarnatin number.
@@ -132,7 +132,7 @@ public interface ActivationSystem
   /**
    * Removes the activation group with the given identifier. The group calls
    * back, informing the activator about the shutdown.
-   * 
+   *
    * @param id the group activation id.
    * @throws ActivationException if the database update fails
    * @throws UnknownGroupException if such group is not registered
@@ -140,10 +140,10 @@ public interface ActivationSystem
    */
   void unregisterGroup(ActivationGroupID id) throws ActivationException,
       UnknownGroupException, RemoteException;
-  
+
   /**
    * Shutdown the activation system and all associated activation groups
-   * 
+   *
    * @throws RemoteException if the remote call fails
    */
   void shutdown() throws RemoteException;
@@ -151,7 +151,7 @@ public interface ActivationSystem
   /**
    * Replace the activation descriptor for the object with the given activation
    * id.
-   * 
+   *
    * @param id the activation id
    * @param desc the new activation descriptor
    * @return the previous activation descriptor for that object.
@@ -164,11 +164,11 @@ public interface ActivationSystem
   ActivationDesc setActivationDesc(ActivationID id, ActivationDesc desc)
       throws ActivationException, UnknownObjectException,
       UnknownGroupException, RemoteException;
-  
+
   /**
    * Replaces the group descriptor for the group with the given group activation
    * id.
-   * 
+   *
    * @param groupId the group id
    * @param groupDesc the new group descriptor
    * @return the previous group descriptor
@@ -179,10 +179,10 @@ public interface ActivationSystem
   ActivationGroupDesc setActivationGroupDesc(ActivationGroupID groupId,
                                              ActivationGroupDesc groupDesc)
       throws ActivationException, UnknownGroupException, RemoteException;
-  
+
   /**
    * Get the activation descriptor for the object with the given activation id.
-   * 
+   *
    * @param id the object activation id
    * @return the activation descriptor for that object
    * @throws ActivationException if the database access fails
@@ -191,10 +191,10 @@ public interface ActivationSystem
    */
   ActivationDesc getActivationDesc(ActivationID id) throws ActivationException,
       UnknownObjectException, RemoteException;
-  
+
   /**
    * Get the group descriptor for the group with the given id.
-   * 
+   *
    * @param groupId the group id
    * @return the group descriptor
    * @throws ActivationException if the database access fails

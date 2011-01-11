@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -16,7 +16,7 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU Classpath; see the file COPYING.  If not, write to the
 Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-02111-1307 USA. 
+02111-1307 USA.
 
 Linking this library statically or dynamically with other modules is
 making a combined work based on this library.  Thus, the terms and
@@ -81,7 +81,7 @@ import java.util.Set;
  *
  *  @author Julian Scheid
  */
-public class NotifyingInputStreamReader 
+public class NotifyingInputStreamReader
    extends Reader
 {
    /**
@@ -121,7 +121,7 @@ public class NotifyingInputStreamReader
     *  read().
     */
    private CharBuffer charBuffer;
-   
+
    /**
     *  This is the primitive byte array wrapped in byteBuffer for
     *  passing to to InputStream.read().
@@ -299,7 +299,7 @@ public class NotifyingInputStreamReader
                   byteBuffer.get(readBuffer, 0, nRemainingBytes);
                }
                byteBuffer.rewind();
-               int nread = in.read(readBuffer, nRemainingBytes, 
+               int nread = in.read(readBuffer, nRemainingBytes,
                                    readBuffer.length - nRemainingBytes);
                if (nread < 0) {
                   allInputConsumed = true;
@@ -353,7 +353,7 @@ public class NotifyingInputStreamReader
          listener.malformedInputEncountered(event);
       }
    }
-   
+
    public int read(char[] cbuf, int offset, int length)
       throws IOException
    {
@@ -364,7 +364,7 @@ public class NotifyingInputStreamReader
          int nread = 0;
          while (nread < length && !flushed) {
             while (charBuffer.hasRemaining() && nread < length) {
-               int copyLen = Math.min(length - nread, 
+               int copyLen = Math.min(length - nread,
                                       charBuffer.remaining());
                charBuffer.get(cbuf, offset + nread, copyLen);
                nread += copyLen;

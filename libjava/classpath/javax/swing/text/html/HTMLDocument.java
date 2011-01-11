@@ -76,7 +76,7 @@ import javax.swing.text.html.HTML.Tag;
  * data structure when it is needed to parse HTML and then obtain the content of
  * the certain types of tags. This class also has methods for modifying the HTML
  * content.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  * @author Anthony Balkissoon (abalkiss@redhat.com)
  * @author Lillian Angel (langel@redhat.com)
@@ -85,7 +85,7 @@ public class HTMLDocument extends DefaultStyledDocument
 {
   /** A key for document properies.  The value for the key is
    * a Vector of Strings of comments not found in the body.
-   */  
+   */
   public static final String AdditionalComments = "AdditionalComments";
   URL baseURL = null;
   boolean preservesUnknownTags = true;
@@ -110,22 +110,22 @@ public class HTMLDocument extends DefaultStyledDocument
   {
     this(new GapContent(BUFFER_SIZE_DEFAULT), new StyleSheet());
   }
-  
+
   /**
-   * Constructs an HTML document with the default content storage 
+   * Constructs an HTML document with the default content storage
    * implementation and the specified style/attribute storage mechanism.
-   * 
+   *
    * @param styles - the style sheet
    */
   public HTMLDocument(StyleSheet styles)
   {
    this(new GapContent(BUFFER_SIZE_DEFAULT), styles);
   }
-  
+
   /**
-   * Constructs an HTML document with the given content storage implementation 
+   * Constructs an HTML document with the given content storage implementation
    * and the given style/attribute storage mechanism.
-   * 
+   *
    * @param c - the document's content
    * @param styles - the style sheet
    */
@@ -133,21 +133,21 @@ public class HTMLDocument extends DefaultStyledDocument
   {
     super(c, styles);
   }
-  
+
   /**
-   * Gets the style sheet with the document display rules (CSS) that were specified 
+   * Gets the style sheet with the document display rules (CSS) that were specified
    * in the HTML document.
-   * 
+   *
    * @return - the style sheet
    */
   public StyleSheet getStyleSheet()
   {
     return (StyleSheet) getAttributeContext();
   }
-  
+
   /**
    * This method creates a root element for the new document.
-   * 
+   *
    * @return the new default root
    */
   protected AbstractElement createDefaultRoot()
@@ -180,12 +180,12 @@ public class HTMLDocument extends DefaultStyledDocument
 
     return html;
   }
-  
+
   /**
    * This method returns an HTMLDocument.RunElement object attached to
-   * parent representing a run of text from p0 to p1. The run has 
+   * parent representing a run of text from p0 to p1. The run has
    * attributes described by a.
-   * 
+   *
    * @param parent - the parent element
    * @param a - the attributes for the element
    * @param p0 - the beginning of the range >= 0
@@ -202,7 +202,7 @@ public class HTMLDocument extends DefaultStyledDocument
   /**
    * This method returns an HTMLDocument.BlockElement object representing the
    * attribute set a and attached to parent.
-   * 
+   *
    * @param parent - the parent element
    * @param a - the attributes for the element
    *
@@ -212,20 +212,20 @@ public class HTMLDocument extends DefaultStyledDocument
   {
     return new BlockElement(parent, a);
   }
-  
+
   /**
    * Returns the parser used by this HTMLDocument to insert HTML.
-   * 
+   *
    * @return the parser used by this HTMLDocument to insert HTML.
    */
   public HTMLEditorKit.Parser getParser()
   {
-    return parser; 
+    return parser;
   }
-  
+
   /**
    * Sets the parser used by this HTMLDocument to insert HTML.
-   * 
+   *
    * @param p the parser to use
    */
   public void setParser (HTMLEditorKit.Parser p)
@@ -235,25 +235,25 @@ public class HTMLDocument extends DefaultStyledDocument
   /**
    * Sets the number of tokens to buffer before trying to display the
    * Document.
-   * 
+   *
    * @param n the number of tokens to buffer
    */
   public void setTokenThreshold (int n)
   {
     tokenThreshold = n;
   }
-  
+
   /**
    * Returns the number of tokens that are buffered before the document
    * is rendered.
-   * 
+   *
    * @return the number of tokens buffered
    */
   public int getTokenThreshold ()
   {
     return tokenThreshold;
   }
-  
+
   /**
    * Returns the location against which to resolve relative URLs.
    * This is the document's URL if the document was loaded from a URL.
@@ -264,7 +264,7 @@ public class HTMLDocument extends DefaultStyledDocument
   {
     return baseURL;
   }
-  
+
   /**
    * Sets the location against which to resolve relative URLs.
    * @param u the new base URL
@@ -274,7 +274,7 @@ public class HTMLDocument extends DefaultStyledDocument
     baseURL = u;
     getStyleSheet().setBase(u);
   }
-  
+
   /**
    * Returns whether or not the parser preserves unknown HTML tags.
    * @return true if the parser preserves unknown tags
@@ -283,7 +283,7 @@ public class HTMLDocument extends DefaultStyledDocument
   {
     return preservesUnknownTags;
   }
-  
+
   /**
    * Sets the behaviour of the parser when it encounters unknown HTML tags.
    * @param preservesTags true if the parser should preserve unknown tags.
@@ -292,7 +292,7 @@ public class HTMLDocument extends DefaultStyledDocument
   {
     preservesUnknownTags = preservesTags;
   }
-  
+
   /**
    * An iterator to iterate through LeafElements in the document.
    */
@@ -308,7 +308,7 @@ public class HTMLDocument extends DefaultStyledDocument
       tag = t;
       it = new ElementIterator(doc);
     }
-    
+
     /**
      * Return the attributes for the tag associated with this iteartor
      * @return the AttributeSet
@@ -464,7 +464,7 @@ public class HTMLDocument extends DefaultStyledDocument
   {
     int start = el.getStartOffset();
     int end = el.getEndOffset();
-    
+
     StringBuilder html = new StringBuilder();
     html.append("<frame");
     if (url != null)
@@ -499,7 +499,7 @@ public class HTMLDocument extends DefaultStyledDocument
   {
     return new HTMLDocument.LeafIterator(t, this);
   }
-  
+
   /**
    * An iterator over a particular type of tag.
    */
@@ -510,26 +510,26 @@ public class HTMLDocument extends DefaultStyledDocument
      * @return the <code>AttributeSet</code> (null if none found).
      */
     public abstract AttributeSet getAttributes();
-    
+
     /**
      * Get the end of the range for the current occurrence of the tag
      * being defined and having the same attributes.
      * @return the end of the range
      */
     public abstract int getEndOffset();
-    
+
     /**
      * Get the start of the range for the current occurrence of the tag
      * being defined and having the same attributes.
      * @return the start of the range (-1 if it can't be found).
      */
     public abstract int getStartOffset();
-    
+
     /**
      * Move the iterator forward.
      */
     public abstract void next();
-    
+
     /**
      * Indicates whether or not the iterator currently represents an occurrence
      * of the tag.
@@ -537,33 +537,33 @@ public class HTMLDocument extends DefaultStyledDocument
      * tag.
      */
     public abstract boolean isValid();
-    
+
     /**
      * Type of tag this iterator represents.
      * @return the tag.
      */
     public abstract HTML.Tag getTag();
   }
-  
+
   public class BlockElement extends AbstractDocument.BranchElement
   {
     public BlockElement (Element parent, AttributeSet a)
     {
       super(parent, a);
     }
-    
+
     /**
-     * Gets the resolving parent.  Since HTML attributes are not 
+     * Gets the resolving parent.  Since HTML attributes are not
      * inherited at the model level, this returns null.
      */
     public AttributeSet getResolveParent()
     {
       return null;
     }
-    
+
     /**
      * Gets the name of the element.
-     * 
+     *
      * @return the name of the element if it exists, null otherwise.
      */
     public String getName()
@@ -579,29 +579,29 @@ public class HTMLDocument extends DefaultStyledDocument
   }
 
   /**
-   * RunElement represents a section of text that has a set of 
+   * RunElement represents a section of text that has a set of
    * HTML character level attributes assigned to it.
    */
   public class RunElement extends AbstractDocument.LeafElement
   {
-    
+
     /**
      * Constructs an element that has no children. It represents content
      * within the document.
-     * 
+     *
      * @param parent - parent of this
      * @param a - elements attributes
      * @param start - the start offset >= 0
-     * @param end - the end offset 
+     * @param end - the end offset
      */
     public RunElement(Element parent, AttributeSet a, int start, int end)
     {
       super(parent, a, start, end);
     }
-    
+
     /**
      * Gets the name of the element.
-     * 
+     *
      * @return the name of the element if it exists, null otherwise.
      */
     public String getName()
@@ -614,11 +614,11 @@ public class HTMLDocument extends DefaultStyledDocument
         name = super.getName();
       return name;
     }
-    
+
     /**
      * Gets the resolving parent. HTML attributes do not inherit at the
      * model level, so this method returns null.
-     * 
+     *
      * @return null
      */
     public AttributeSet getResolveParent()
@@ -626,10 +626,10 @@ public class HTMLDocument extends DefaultStyledDocument
       return null;
     }
   }
-  
+
   /**
    * A reader to load an HTMLDocument with HTML structure.
-   * 
+   *
    * @author Anthony Balkissoon abalkiss at redhat dot com
    */
   public class HTMLReader extends HTMLEditorKit.ParserCallback
@@ -648,51 +648,51 @@ public class HTMLDocument extends DefaultStyledDocument
      * Holds the current character attribute set *
      */
     protected MutableAttributeSet charAttr = new SimpleAttributeSet();
-    
-    protected Vector<ElementSpec> parseBuffer = new Vector<ElementSpec>();   
+
+    protected Vector<ElementSpec> parseBuffer = new Vector<ElementSpec>();
 
     /**
      * The parse stack. It holds the current element tree path.
      */
     private Stack<HTML.Tag> parseStack = new Stack<HTML.Tag>();
 
-    /** 
+    /**
      * A stack for character attribute sets *
      */
     Stack charAttrStack = new Stack();
-   
+
     /** A mapping between HTML.Tag objects and the actions that handle them **/
     HashMap tagToAction;
-    
+
     /** Tells us whether we've received the '</html>' tag yet **/
     boolean endHTMLEncountered = false;
-    
-    /** 
-     * Related to the constructor with explicit insertTag 
-     */
-    int popDepth;
-    
+
     /**
      * Related to the constructor with explicit insertTag
-     */    
-    int pushDepth;
-    
-    /** 
+     */
+    int popDepth;
+
+    /**
      * Related to the constructor with explicit insertTag
-     */    
+     */
+    int pushDepth;
+
+    /**
+     * Related to the constructor with explicit insertTag
+     */
     int offset;
-    
+
     /**
      * The tag (inclusve), after that the insertion should start.
      */
     HTML.Tag insertTag;
-    
+
     /**
      * This variable becomes true after the insert tag has been encountered.
      */
     boolean insertTagEncountered;
 
-    
+
     /** A temporary variable that helps with the printing out of debug information **/
     boolean debug = false;
 
@@ -767,7 +767,7 @@ public class HTMLDocument extends DefaultStyledDocument
       {
         // Nothing to do here.
       }
-      
+
       /**
        * Called when an end tag is seen for one of the types of tags associated
        * with this Action.  By default does nothing.
@@ -779,7 +779,7 @@ public class HTMLDocument extends DefaultStyledDocument
     }
 
     public class BlockAction extends TagAction
-    {      
+    {
       /**
        * This method is called when a start tag is seen for one of the types
        * of tags associated with this Action.
@@ -789,7 +789,7 @@ public class HTMLDocument extends DefaultStyledDocument
         // Tell the parse buffer to open a new block for this tag.
         blockOpen(t, a);
       }
-      
+
       /**
        * Called when an end tag is seen for one of the types of tags associated
        * with this Action.
@@ -800,7 +800,7 @@ public class HTMLDocument extends DefaultStyledDocument
         blockClose(t);
       }
     }
-    
+
     public class CharacterAction extends TagAction
     {
       /**
@@ -827,7 +827,7 @@ public class HTMLDocument extends DefaultStyledDocument
       public void end(HTML.Tag t)
       {
         popCharacterStyle();
-      } 
+      }
     }
 
     /**
@@ -909,7 +909,7 @@ public class HTMLDocument extends DefaultStyledDocument
             super.start(t, a);
           }
       }
-      
+
       /**
        * Called when an end tag is seen for one of the types of tags associated
        * with this Action.
@@ -1012,7 +1012,7 @@ public class HTMLDocument extends DefaultStyledDocument
       {
         super.end(t);
         buttonGroups = null;
-      } 
+      }
     }
 
     /**
@@ -1035,7 +1035,7 @@ public class HTMLDocument extends DefaultStyledDocument
       {
         blockOpen(t, a);
       }
-      
+
       /**
        * Called when an end tag is seen for one of the types of tags associated
        * with this Action.
@@ -1043,7 +1043,7 @@ public class HTMLDocument extends DefaultStyledDocument
       public void end(HTML.Tag t)
       {
         blockClose(t);
-      } 
+      }
     }
 
     /**
@@ -1062,7 +1062,7 @@ public class HTMLDocument extends DefaultStyledDocument
         blockClose(HTML.Tag.IMPLIED);
       }
     }
-    
+
     public class ParagraphAction extends BlockAction
     {
       /**
@@ -1073,7 +1073,7 @@ public class HTMLDocument extends DefaultStyledDocument
       {
         super.start(t, a);
       }
-      
+
       /**
        * Called when an end tag is seen for one of the types of tags associated
        * with this Action.
@@ -1081,7 +1081,7 @@ public class HTMLDocument extends DefaultStyledDocument
       public void end(HTML.Tag t)
       {
         super.end(t);
-      } 
+      }
     }
 
     /**
@@ -1100,7 +1100,7 @@ public class HTMLDocument extends DefaultStyledDocument
         a.addAttribute(CSS.Attribute.WHITE_SPACE, "pre");
         blockOpen(HTML.Tag.IMPLIED, a);
       }
-      
+
       /**
        * Called when an end tag is seen for one of the types of tags associated
        * with this Action.
@@ -1110,11 +1110,11 @@ public class HTMLDocument extends DefaultStyledDocument
         blockClose(HTML.Tag.IMPLIED);
         inPreTag = false;
         blockClose(t);
-      } 
+      }
     }
-    
+
     /**
-     * Inserts the elements that are represented by ths single tag with 
+     * Inserts the elements that are represented by ths single tag with
      * attributes (only). The closing tag, even if present, mut follow
      * immediately after the starting tag without providing any additional
      * information. Hence the {@link TagAction#end} method need not be
@@ -1130,7 +1130,7 @@ public class HTMLDocument extends DefaultStyledDocument
         addSpecialElement(t, a);
       }
     }
-    
+
     class AreaAction extends TagAction
     {
       /**
@@ -1142,7 +1142,7 @@ public class HTMLDocument extends DefaultStyledDocument
       {
         // FIXME: Implement.
       }
-      
+
       /**
        * Called when an end tag is seen for one of the types of tags associated
        * with this Action.
@@ -1151,7 +1151,7 @@ public class HTMLDocument extends DefaultStyledDocument
         throws NotImplementedException
       {
         // FIXME: Implement.
-      } 
+      }
     }
 
     /**
@@ -1200,7 +1200,7 @@ public class HTMLDocument extends DefaultStyledDocument
         baseTarget = (String) a.getAttribute(HTML.Attribute.TARGET);
       }
     }
-    
+
     class HeadAction extends BlockAction
     {
       /**
@@ -1213,7 +1213,7 @@ public class HTMLDocument extends DefaultStyledDocument
         // FIXME: Implement.
         super.start(t, a);
       }
-      
+
       /**
        * Called when an end tag is seen for one of the types of tags associated
        * with this Action.
@@ -1234,7 +1234,7 @@ public class HTMLDocument extends DefaultStyledDocument
         super.end(t);
       }
     }
-    
+
     class LinkAction extends HiddenAction
     {
       /**
@@ -1295,13 +1295,13 @@ public class HTMLDocument extends DefaultStyledDocument
                             ex.printStackTrace();
                           }
                       }
-                  }                  
+                  }
               }
           }
       }
-      
+
     }
-    
+
     class MapAction extends TagAction
     {
       /**
@@ -1313,7 +1313,7 @@ public class HTMLDocument extends DefaultStyledDocument
       {
         // FIXME: Implement.
       }
-      
+
       /**
        * Called when an end tag is seen for one of the types of tags associated
        * with this Action.
@@ -1322,9 +1322,9 @@ public class HTMLDocument extends DefaultStyledDocument
         throws NotImplementedException
       {
         // FIXME: Implement.
-      } 
+      }
     }
-    
+
     class MetaAction extends TagAction
     {
       /**
@@ -1336,7 +1336,7 @@ public class HTMLDocument extends DefaultStyledDocument
       {
         // FIXME: Implement.
       }
-      
+
       /**
        * Called when an end tag is seen for one of the types of tags associated
        * with this Action.
@@ -1345,7 +1345,7 @@ public class HTMLDocument extends DefaultStyledDocument
         throws NotImplementedException
       {
         // FIXME: Implement.
-      } 
+      }
     }
 
     class StyleAction extends TagAction
@@ -1358,7 +1358,7 @@ public class HTMLDocument extends DefaultStyledDocument
       {
         inStyleTag = true;
       }
-      
+
       /**
        * Called when an end tag is seen for one of the types of tags associated
        * with this Action.
@@ -1366,9 +1366,9 @@ public class HTMLDocument extends DefaultStyledDocument
       public void end(HTML.Tag t)
       {
         inStyleTag = false;
-      } 
+      }
     }
-    
+
     class TitleAction extends TagAction
     {
       /**
@@ -1380,7 +1380,7 @@ public class HTMLDocument extends DefaultStyledDocument
       {
         // FIXME: Implement.
       }
-      
+
       /**
        * Called when an end tag is seen for one of the types of tags associated
        * with this Action.
@@ -1389,14 +1389,14 @@ public class HTMLDocument extends DefaultStyledDocument
         throws NotImplementedException
       {
         // FIXME: Implement.
-      } 
-    }    
-    
+      }
+    }
+
     public HTMLReader(int offset)
     {
       this (offset, 0, 0, null);
     }
-    
+
     public HTMLReader(int offset, int popDepth, int pushDepth,
                       HTML.Tag insertTag)
     {
@@ -1407,7 +1407,7 @@ public class HTMLDocument extends DefaultStyledDocument
       threshold = getTokenThreshold();
       initTags();
     }
-    
+
     void initTags()
     {
       tagToAction = new HashMap(72);
@@ -1427,7 +1427,7 @@ public class HTMLDocument extends DefaultStyledDocument
       MetaAction metaAction = new MetaAction();
       StyleAction styleAction = new StyleAction();
       TitleAction titleAction = new TitleAction();
-      
+
       ConvertAction convertAction = new ConvertAction();
       tagToAction.put(HTML.Tag.A, characterAction);
       tagToAction.put(HTML.Tag.ADDRESS, characterAction);
@@ -1486,7 +1486,7 @@ public class HTMLDocument extends DefaultStyledDocument
       tagToAction.put(HTML.Tag.SELECT, formAction);
       tagToAction.put(HTML.Tag.SMALL, characterAction);
       tagToAction.put(HTML.Tag.STRIKE, characterAction);
-      tagToAction.put(HTML.Tag.S, characterAction);      
+      tagToAction.put(HTML.Tag.S, characterAction);
       tagToAction.put(HTML.Tag.STRONG, characterAction);
       tagToAction.put(HTML.Tag.STYLE, styleAction);
       tagToAction.put(HTML.Tag.SUB, characterAction);
@@ -1502,7 +1502,7 @@ public class HTMLDocument extends DefaultStyledDocument
       tagToAction.put(HTML.Tag.UL, blockAction);
       tagToAction.put(HTML.Tag.VAR, characterAction);
     }
-    
+
     /**
      * Pushes the current character style onto the stack.
      *
@@ -1511,9 +1511,9 @@ public class HTMLDocument extends DefaultStyledDocument
     {
       charAttrStack.push(charAttr.copyAttributes());
     }
-    
+
     /**
-     * Pops a character style off of the stack and uses it as the 
+     * Pops a character style off of the stack and uses it as the
      * current character style.
      *
      */
@@ -1522,12 +1522,12 @@ public class HTMLDocument extends DefaultStyledDocument
       if (!charAttrStack.isEmpty())
         charAttr = (MutableAttributeSet) charAttrStack.pop();
     }
-    
+
     /**
      * Registers a given tag with a given Action.  All of the well-known tags
      * are registered by default, but this method can change their behaviour
      * or add support for custom or currently unsupported tags.
-     * 
+     *
      * @param t the Tag to register
      * @param a the Action for the Tag
      */
@@ -1535,7 +1535,7 @@ public class HTMLDocument extends DefaultStyledDocument
     {
       tagToAction.put (t, a);
     }
-    
+
     /**
      * This is the last method called on the HTMLReader, allowing any pending
      * changes to be flushed to the HTMLDocument.
@@ -1565,9 +1565,9 @@ public class HTMLDocument extends DefaultStyledDocument
     }
 
     /**
-     * This method is called by the parser to indicate a block of 
+     * This method is called by the parser to indicate a block of
      * text was encountered.  Should insert the text appropriately.
-     * 
+     *
      * @param data the text that was inserted
      * @param pos the position at which the text was inserted
      */
@@ -1589,15 +1589,15 @@ public class HTMLDocument extends DefaultStyledDocument
             }
           else
             addContent(data, 0, data.length);
-            
+
         }
     }
-    
+
     /**
      * Checks if the HTML tag should be inserted. The tags before insert tag (if
      * specified) are not inserted. Also, the tags after the end of the html are
      * not inserted.
-     * 
+     *
      * @return true if the tag should be inserted, false otherwise.
      */
     private boolean shouldInsert()
@@ -1605,11 +1605,11 @@ public class HTMLDocument extends DefaultStyledDocument
       return ! endHTMLEncountered
              && (insertTagEncountered || insertTag == null);
     }
-    
+
     /**
      * This method is called by the parser and should route the call to the
      * proper handler for the tag.
-     * 
+     *
      * @param t the HTML.Tag
      * @param a the attribute set
      * @param pos the position at which the tag was encountered
@@ -1626,10 +1626,10 @@ public class HTMLDocument extends DefaultStyledDocument
             action.start(t, a);
         }
     }
-    
+
     /**
      * This method called by parser to handle a comment block.
-     * 
+     *
      * @param data the comment
      * @param pos the position at which the comment was encountered
      */
@@ -1645,11 +1645,11 @@ public class HTMLDocument extends DefaultStyledDocument
             }
         }
     }
-    
+
     /**
      * This method is called by the parser and should route the call to the
      * proper handler for the tag.
-     * 
+     *
      * @param t the HTML.Tag
      * @param pos the position at which the tag was encountered
      */
@@ -1666,11 +1666,11 @@ public class HTMLDocument extends DefaultStyledDocument
             action.end(t);
         }
     }
-    
+
     /**
      * This is a callback from the parser that should be routed to the
      * appropriate handler for the tag.
-     * 
+     *
      * @param t the HTML.Tag that was encountered
      * @param a the attribute set
      * @param pos the position at which the tag was encountered
@@ -1690,12 +1690,12 @@ public class HTMLDocument extends DefaultStyledDocument
             }
         }
     }
-    
+
     /**
      * This is invoked after the stream has been parsed but before it has been
      * flushed.
-     * 
-     * @param eol one of \n, \r, or \r\n, whichever was encountered the most in 
+     *
+     * @param eol one of \n, \r, or \r\n, whichever was encountered the most in
      * parsing the stream
      * @since 1.3
      */
@@ -1703,11 +1703,11 @@ public class HTMLDocument extends DefaultStyledDocument
     {
       // FIXME: Implement.
     }
-    
+
     /**
      * Adds the given text to the textarea document.  Called only when we are
-     * within a textarea.  
-     * 
+     * within a textarea.
+     *
      * @param data the text to add to the textarea
      */
     protected void textAreaContent(char[] data)
@@ -1726,7 +1726,7 @@ public class HTMLDocument extends DefaultStyledDocument
           assert false;
         }
     }
-    
+
     /**
      * Adds the given text that was encountered in a <PRE> element.
      * This adds synthesized lines to hold the text runs.
@@ -1754,11 +1754,11 @@ public class HTMLDocument extends DefaultStyledDocument
           addContent(data, start, data.length - start);
         }
     }
-    
+
     /**
-     * Instructs the parse buffer to create a block element with the given 
+     * Instructs the parse buffer to create a block element with the given
      * attributes.
-     * 
+     *
      * @param t the tag that requires opening a new block
      * @param attr the attribute set for the new block
      */
@@ -1809,9 +1809,9 @@ public class HTMLDocument extends DefaultStyledDocument
     }
 
     /**
-     * Instructs the parse buffer to close the block element associated with 
+     * Instructs the parse buffer to close the block element associated with
      * the given HTML.Tag
-     * 
+     *
      * @param t the HTML.Tag that is closing its block
      */
     protected void blockClose(HTML.Tag t)
@@ -1837,14 +1837,14 @@ public class HTMLDocument extends DefaultStyledDocument
         }
 
       element = new DefaultStyledDocument.ElementSpec(null,
-				DefaultStyledDocument.ElementSpec.EndTagType);
+                                DefaultStyledDocument.ElementSpec.EndTagType);
       parseBuffer.addElement(element);
     }
-    
+
     /**
      * Adds text to the appropriate context using the current character
      * attribute set.
-     * 
+     *
      * @param data the text to add
      * @param offs the offset at which to add it
      * @param length the length of the text to add
@@ -1853,11 +1853,11 @@ public class HTMLDocument extends DefaultStyledDocument
     {
       addContent(data, offs, length, true);
     }
-    
+
     /**
      * Adds text to the appropriate context using the current character
      * attribute set, and possibly generating an IMPLIED Tag if necessary.
-     * 
+     *
      * @param data the text to add
      * @param offs the offset at which to add it
      * @param length the length of the text to add
@@ -1876,7 +1876,7 @@ public class HTMLDocument extends DefaultStyledDocument
       DefaultStyledDocument.ElementSpec element;
       AttributeSet attributes = null;
 
-      // Copy the attribute set, don't use the same object because 
+      // Copy the attribute set, don't use the same object because
       // it may change
       if (charAttr != null)
         attributes = charAttr.copyAttributes();
@@ -1887,7 +1887,7 @@ public class HTMLDocument extends DefaultStyledDocument
       element = new DefaultStyledDocument.ElementSpec(attributes,
                                 DefaultStyledDocument.ElementSpec.ContentType,
                                 data, offs, length);
-      
+
       // Add the element to the buffer
       parseBuffer.addElement(element);
 
@@ -1905,10 +1905,10 @@ public class HTMLDocument extends DefaultStyledDocument
             }
         }
     }
-    
+
     /**
      * Adds content that is specified in the attribute set.
-     * 
+     *
      * @param t the HTML.Tag
      * @param a the attribute set specifying the special content
      */
@@ -1920,37 +1920,37 @@ public class HTMLDocument extends DefaultStyledDocument
         }
 
       a.addAttribute(StyleConstants.NameAttribute, t);
-      
+
       // The two spaces are required because some special elements like HR
       // must be broken. At least two characters are needed to break into the
       // two parts.
       DefaultStyledDocument.ElementSpec spec =
         new DefaultStyledDocument.ElementSpec(a.copyAttributes(),
-	  DefaultStyledDocument.ElementSpec.ContentType, 
+          DefaultStyledDocument.ElementSpec.ContentType,
           new char[] {' '}, 0, 1 );
       parseBuffer.add(spec);
     }
-    
+
   }
-  
+
   /**
-   * Gets the reader for the parser to use when loading the document with HTML. 
-   * 
+   * Gets the reader for the parser to use when loading the document with HTML.
+   *
    * @param pos - the starting position
    * @return - the reader
    */
   public HTMLEditorKit.ParserCallback getReader(int pos)
   {
     return new HTMLReader(pos);
-  }  
-  
+  }
+
   /**
-   * Gets the reader for the parser to use when loading the document with HTML. 
-   * 
+   * Gets the reader for the parser to use when loading the document with HTML.
+   *
    * @param pos - the starting position
    * @param popDepth - the number of EndTagTypes to generate before inserting
-   * @param pushDepth - the number of StartTagTypes with a direction 
-   * of JoinNextDirection that should be generated before inserting, 
+   * @param pushDepth - the number of StartTagTypes with a direction
+   * of JoinNextDirection that should be generated before inserting,
    * but after the end tags have been generated.
    * @param insertTag - the first tag to start inserting into document
    * @return - the reader
@@ -1962,13 +1962,13 @@ public class HTMLDocument extends DefaultStyledDocument
   {
     return new HTMLReader(pos, popDepth, pushDepth, insertTag);
   }
-  
+
   /**
    * Gets the reader for the parser to use when inserting the HTML fragment into
    * the document. Checks if the parser is present, sets the parent in the
    * element stack and removes any actions for BODY (it can be only one body in
    * a HTMLDocument).
-   * 
+   *
    * @param pos - the starting position
    * @param popDepth - the number of EndTagTypes to generate before inserting
    * @param pushDepth - the number of StartTagTypes with a direction of
@@ -2009,14 +2009,14 @@ public class HTMLDocument extends DefaultStyledDocument
           super.handleEndTag(t, pos);
       }
     };
-      
+
     return reader;
-  }   
-  
+  }
+
   /**
    * Gets the child element that contains the attribute with the value or null.
    * Not thread-safe.
-   * 
+   *
    * @param e - the element to begin search at
    * @param attribute - the desired attribute
    * @param value - the desired value
@@ -2029,14 +2029,14 @@ public class HTMLDocument extends DefaultStyledDocument
       {
         if (e.getAttributes().containsAttribute(attribute, value))
           return e;
-        
+
         int count = e.getElementCount();
         for (int j = 0; j < count; j++)
           {
             Element child = e.getElement(j);
             if (child.getAttributes().containsAttribute(attribute, value))
               return child;
-            
+
             Element grandChild = getElement(child, attribute, value);
             if (grandChild != null)
               return grandChild;
@@ -2044,13 +2044,13 @@ public class HTMLDocument extends DefaultStyledDocument
       }
     return null;
   }
-  
+
   /**
    * Returns the element that has the given id Attribute (for instance, &lt;p id
    * ='my paragraph &gt;'). If it is not found, null is returned. The HTML tag,
    * having this attribute, is not checked by this method and can be any. The
    * method is not thread-safe.
-   * 
+   *
    * @param attrId - the value of the attribute id to look for
    * @return the element that has the given id.
    */
@@ -2059,25 +2059,25 @@ public class HTMLDocument extends DefaultStyledDocument
     return getElement(getDefaultRootElement(), HTML.Attribute.ID,
                       attrId);
   }
-  
+
   /**
    * Replaces the children of the given element with the contents of
    * the string. The document must have an HTMLEditorKit.Parser set.
    * This will be seen as at least two events, n inserts followed by a remove.
-   * 
+   *
    * @param elem - the brance element whose children will be replaced
    * @param htmlText - the string to be parsed and assigned to element.
    * @throws BadLocationException
    * @throws IOException
-   * @throws IllegalArgumentException - if elem is a leaf 
+   * @throws IllegalArgumentException - if elem is a leaf
    * @throws IllegalStateException - if an HTMLEditorKit.Parser has not been set
    */
-  public void setInnerHTML(Element elem, String htmlText) 
+  public void setInnerHTML(Element elem, String htmlText)
     throws BadLocationException, IOException
   {
     if (elem.isLeaf())
       throw new IllegalArgumentException("Element is a leaf");
-    
+
     int start = elem.getStartOffset();
     int end = elem.getEndOffset();
 
@@ -2086,18 +2086,18 @@ public class HTMLDocument extends DefaultStyledDocument
 
     // TODO charset
     getParser().parse(new StringReader(htmlText), reader, true);
-    
+
     // Remove the previous content
     remove(start, end - start);
   }
-  
+
   /**
    * Replaces the given element in the parent with the string. When replacing a
    * leaf, this will attempt to make sure there is a newline present if one is
    * needed. This may result in an additional element being inserted. This will
    * be seen as at least two events, n inserts followed by a remove. The
    * HTMLEditorKit.Parser must be set.
-   * 
+   *
    * @param elem - the branch element whose parent will be replaced
    * @param htmlText - the string to be parsed and assigned to elem
    * @throws BadLocationException
@@ -2112,18 +2112,18 @@ public void setOuterHTML(Element elem, String htmlText)
     int end = elem.getEndOffset();
 
     remove(start, end-start);
-       
+
     HTMLEditorKit.ParserCallback reader = getInsertingReader(
       start, 0, 0, HTML.Tag.BODY, elem);
 
     // TODO charset
     getParser().parse(new StringReader(htmlText), reader, true);
   }
-  
+
   /**
    * Inserts the string before the start of the given element. The parser must
    * be set.
-   * 
+   *
    * @param elem - the element to be the root for the new text.
    * @param htmlText - the string to be parsed and assigned to elem
    * @throws BadLocationException
@@ -2139,12 +2139,12 @@ public void setOuterHTML(Element elem, String htmlText)
     // TODO charset
     getParser().parse(new StringReader(htmlText), reader, true);
   }
-  
+
   /**
    * Inserts the string at the end of the element. If elem's children are
    * leaves, and the character at elem.getEndOffset() - 1 is a newline, then it
    * will be inserted before the newline. The parser must be set.
-   * 
+   *
    * @param elem - the element to be the root for the new text
    * @param htmlText - the text to insert
    * @throws BadLocationException
@@ -2161,11 +2161,11 @@ public void setOuterHTML(Element elem, String htmlText)
     getParser().parse(new StringReader(htmlText), reader, true);
 
   }
-  
+
   /**
    * Inserts the string after the end of the given element.
    * The parser must be set.
-   * 
+   *
    * @param elem - the element to be the root for the new text
    * @param htmlText - the text to insert
    * @throws BadLocationException
@@ -2181,11 +2181,11 @@ public void setOuterHTML(Element elem, String htmlText)
     // TODO charset
     getParser().parse(new StringReader(htmlText), reader, true);
   }
-  
+
   /**
    * Inserts the string at the start of the element.
    * The parser must be set.
-   * 
+   *
    * @param elem - the element to be the root for the new text
    * @param htmlText - the text to insert
    * @throws BadLocationException

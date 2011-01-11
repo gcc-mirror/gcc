@@ -99,7 +99,7 @@ public abstract class NoContextHelper
     catch (ClassCastException cex)
       {
         BAD_OPERATION bad = new BAD_OPERATION("NoContext expected");
-        bad.minor = Minor.Any;        
+        bad.minor = Minor.Any;
         bad.initCause(cex);
         throw bad;
       }

@@ -131,7 +131,7 @@ public class gnuServantObject extends ObjectImpl
    * ids are requested from the servant.
    */
   public final String[] repository_ids;
-  
+
   /**
    * True indicates that the NO_RETAIN policy applies for the servant.
    * The servant must be discarded after the each call.
@@ -155,16 +155,16 @@ public class gnuServantObject extends ObjectImpl
     manager = a_poa.the_POAManager();
     poa = a_poa;
     orb = an_orb;
-    
-    noRetain = poa.applies(ServantRetentionPolicyValue.NON_RETAIN);    
+
+    noRetain = poa.applies(ServantRetentionPolicyValue.NON_RETAIN);
   }
-  
+
   /**
    * Get the IOR as it would be for this object.
    */
   public IOR getIor()
   {
-    return orb.getLocalIor(this);    
+    return orb.getLocalIor(this);
   }
 
   /**
@@ -192,7 +192,7 @@ public class gnuServantObject extends ObjectImpl
       }
     repository_ids = null;
     orb = an_orb;
-    
+
     noRetain = poa != null && poa.applies(ServantRetentionPolicyValue.NON_RETAIN);
   }
 

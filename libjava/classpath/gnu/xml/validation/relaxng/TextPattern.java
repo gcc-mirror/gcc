@@ -1,4 +1,4 @@
-/* TextPattern.java -- 
+/* TextPattern.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -49,4 +49,3 @@ class TextPattern
   static final TextPattern INSTANCE = new TextPattern();
 
 }
-

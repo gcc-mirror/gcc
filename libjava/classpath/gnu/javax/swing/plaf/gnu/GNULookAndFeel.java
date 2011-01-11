@@ -72,25 +72,25 @@ public class GNULookAndFeel extends BasicLookAndFeel
           "CheckBox.icon", new CheckBoxIcon(),
           "RadioButton.icon", new RadioButtonIcon(),
           "Tree.hash", new ColorUIResource(Color.black),
-	  
-	"Tree.closedIcon",
-	  new IconUIResource(new ImageIcon
-			     (getClass().getResource
-			      (iconspath + "TreeClosed.png"))),
-	  "Tree.leafIcon",
-	  new IconUIResource(new ImageIcon
-			     (getClass().getResource
-			      (iconspath + "TreeLeaf.png"))),
-	  "Tree.openIcon",
-	  new IconUIResource(new ImageIcon
-			     (getClass().getResource
-			      (iconspath + "TreeOpen.png"))),
+
+        "Tree.closedIcon",
+          new IconUIResource(new ImageIcon
+                             (getClass().getResource
+                              (iconspath + "TreeClosed.png"))),
+          "Tree.leafIcon",
+          new IconUIResource(new ImageIcon
+                             (getClass().getResource
+                              (iconspath + "TreeLeaf.png"))),
+          "Tree.openIcon",
+          new IconUIResource(new ImageIcon
+                             (getClass().getResource
+                              (iconspath + "TreeOpen.png"))),
         };
         LAF_defaults.putDefaults(myDefaults);
       }
     return LAF_defaults;
   }
-  
+
   /**
    * The icon used for CheckBoxes in the BasicLookAndFeel. This is an empty
    * icon with a size of 13x13 pixels.
@@ -133,21 +133,21 @@ public class GNULookAndFeel extends BasicLookAndFeel
     {
       Color save = g.getColor();
       g.setColor(c.getForeground());
-      g.drawRect(x, y, getIconWidth(), getIconHeight());    
-      
+      g.drawRect(x, y, getIconWidth(), getIconHeight());
+
       JCheckBox item = (JCheckBox) c;
-      if (item.isSelected()) 
+      if (item.isSelected())
         {
           g.drawLine(3 + x, 5 + y, 3 + x, 9 + y);
           g.drawLine(4 + x, 5 + y, 4 + x, 9 + y);
           g.drawLine(5 + x, 7 + y, 9 + x, 3 + y);
           g.drawLine(5 + x, 8 + y, 9 + x, 4 + y);
         }
-      
+
       g.setColor(save);
     }
   }
-  
+
   /**
    * The icon used for RadioButtons in the GNULookAndFeel. This is an empty
    * icon with a size of 13x13 pixels.
@@ -190,7 +190,7 @@ public class GNULookAndFeel extends BasicLookAndFeel
     {
       Color savedColor = g.getColor();
       JRadioButton b = (JRadioButton) c;
-      
+
       // draw outer circle
       if (b.isEnabled())
         g.setColor(Color.GRAY);
@@ -218,13 +218,13 @@ public class GNULookAndFeel extends BasicLookAndFeel
           g.drawLine(x + 10, y + 4, x + 10, y + 7);
           g.fillRect(x + 2, y + 2, 8, 8);
         }
-      else 
+      else
         {
           // only draw inner highlight if not filled
           if (b.isEnabled())
             {
               g.setColor(Color.WHITE);
-          
+
               g.drawLine(x + 2, y + 8, x + 2, y + 9);
               g.drawLine(x + 1, y + 4, x + 1, y + 7);
               g.drawLine(x + 2, y + 2, x + 2, y + 3);
@@ -238,7 +238,7 @@ public class GNULookAndFeel extends BasicLookAndFeel
       if (b.isEnabled())
         {
           g.setColor(Color.WHITE);
-          
+
           // outer
           g.drawLine(x + 10, y + 1, x + 10, y + 1);
           g.drawLine(x + 11, y + 2, x + 11, y + 3);
@@ -249,7 +249,7 @@ public class GNULookAndFeel extends BasicLookAndFeel
           g.drawLine(x + 4, y + 12, x + 7, y + 12);
           g.drawLine(x + 2, y + 11, x + 3, y + 11);
         }
-      
+
       if (b.isSelected())
         {
           if (b.isEnabled())
@@ -261,6 +261,6 @@ public class GNULookAndFeel extends BasicLookAndFeel
           g.drawLine(x + 4, y + 8, x + 7, y + 8);
         }
       g.setColor(savedColor);
-    }  
+    }
   }
 }

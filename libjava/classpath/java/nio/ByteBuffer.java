@@ -1,4 +1,4 @@
-/* ByteBuffer.java -- 
+/* ByteBuffer.java --
    Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -53,7 +53,7 @@ public abstract class ByteBuffer extends Buffer
   final int array_offset;
 
   ByteBuffer (int capacity, int limit, int position, int mark,
-	      RawData address, byte[] backing_buffer, int array_offset)
+              RawData address, byte[] backing_buffer, int array_offset)
   {
     super (capacity, limit, position, mark, address);
     this.backing_buffer = backing_buffer;
@@ -62,7 +62,7 @@ public abstract class ByteBuffer extends Buffer
 
   /**
    * Allocates a new direct byte buffer.
-   */ 
+   */
   public static ByteBuffer allocateDirect (int capacity)
   {
     return DirectByteBufferImpl.allocate (capacity);
@@ -104,7 +104,7 @@ public abstract class ByteBuffer extends Buffer
   {
     return wrap (array, 0, array.length);
   }
-  
+
   /**
    * This method transfers <code>byte</code>s from this buffer into the given
    * destination array. Before the transfer, it checks if there are fewer than
@@ -187,7 +187,7 @@ public abstract class ByteBuffer extends Buffer
    * must be non-negative and no larger than src.length.
    * @param length The number of bytes to be read from the given array;
    * must be non-negative and no larger than src.length - offset.
-   * 
+   *
    * @exception BufferOverflowException If there is insufficient space in this
    * buffer for the remaining <code>byte</code>s in the source array.
    * @exception IndexOutOfBoundsException If the preconditions on the offset
@@ -210,7 +210,7 @@ public abstract class ByteBuffer extends Buffer
    * into the buffer.
    *
    * @param src The array to copy into the buffer.
-   * 
+   *
    * @exception BufferOverflowException If there is insufficient space in this
    * buffer for the remaining <code>byte</code>s in the source array.
    * @exception ReadOnlyBufferException If this buffer is read-only.
@@ -243,7 +243,7 @@ public abstract class ByteBuffer extends Buffer
       throw new UnsupportedOperationException ();
 
     checkIfReadOnly();
-    
+
     return backing_buffer;
   }
 
@@ -260,7 +260,7 @@ public abstract class ByteBuffer extends Buffer
       throw new UnsupportedOperationException ();
 
     checkIfReadOnly();
-    
+
     return array_offset;
   }
 
@@ -283,8 +283,8 @@ public abstract class ByteBuffer extends Buffer
     int multiplier = 1;
     for (int i = position() + 1; i < limit(); ++i)
       {
-	  multiplier *= 31;
-	  hashCode += (get(i) + 30)*multiplier;
+          multiplier *= 31;
+          hashCode += (get(i) + 30)*multiplier;
       }
     return hashCode;
   }
@@ -313,32 +313,32 @@ public abstract class ByteBuffer extends Buffer
     int num = Math.min(remaining(), other.remaining());
     int pos_this = position();
     int pos_other = other.position();
-    
+
     for (int count = 0; count < num; count++)
       {
         byte a = get(pos_this++);
-	byte b = other.get(pos_other++);
-      	 
-	if (a == b)
-	  continue;
-      	   
-	if (a < b)
-	  return -1;
-      	   
-	return 1;
+        byte b = other.get(pos_other++);
+
+        if (a == b)
+          continue;
+
+        if (a < b)
+          return -1;
+
+        return 1;
       }
-      
+
     return remaining() - other.remaining();
   }
 
   /**
    * Returns the byte order of this buffer.
-   */  
+   */
   public final ByteOrder order ()
   {
     return endian;
   }
-  
+
   /**
    * Modifies this buffer's byte order.
    */
@@ -347,7 +347,7 @@ public abstract class ByteBuffer extends Buffer
     this.endian = endian;
     return this;
   }
-  
+
   /**
    * Reads the <code>byte</code> at this buffer's current position,
    * and then increments the position.
@@ -361,7 +361,7 @@ public abstract class ByteBuffer extends Buffer
    * Writes the <code>byte</code> at this buffer's current position,
    * and then increments the position.
    *
-   * @exception BufferOverflowException If there no remaining 
+   * @exception BufferOverflowException If there no remaining
    * <code>byte</code>s in this buffer.
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
@@ -374,7 +374,7 @@ public abstract class ByteBuffer extends Buffer
    * than the buffer's limit.
    */
   public abstract byte get (int index);
-  
+
   /**
    * Absolute put method.
    *
@@ -386,7 +386,7 @@ public abstract class ByteBuffer extends Buffer
 
   /**
    * Compacts this buffer.
-   * 
+   *
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
   public abstract ByteBuffer compact ();
@@ -419,32 +419,32 @@ public abstract class ByteBuffer extends Buffer
    * buffer's content.
    */
   public abstract ByteBuffer asReadOnlyBuffer ();
- 
+
   /**
    * Creates a view of this byte buffer as a short buffer.
    */
   public abstract ShortBuffer asShortBuffer ();
-  
+
   /**
    * Creates a view of this byte buffer as a char buffer.
    */
   public abstract CharBuffer asCharBuffer ();
-  
+
   /**
    * Creates a view of this byte buffer as an integer buffer.
    */
   public abstract IntBuffer asIntBuffer ();
-  
+
   /**
    * Creates a view of this byte buffer as a long buffer.
    */
   public abstract LongBuffer asLongBuffer ();
-  
+
   /**
    * Creates a view of this byte buffer as a float buffer.
    */
   public abstract FloatBuffer asFloatBuffer ();
-  
+
   /**
    * Creates a view of this byte buffer as a double buffer.
    */
@@ -457,7 +457,7 @@ public abstract class ByteBuffer extends Buffer
    * remaining in this buffer.
    */
   public abstract char getChar ();
-  
+
   /**
    * Relative put method for writing a character value.
    *
@@ -465,7 +465,7 @@ public abstract class ByteBuffer extends Buffer
    * not smaller than its limit.
    */
   public abstract ByteBuffer putChar (char value);
-  
+
   /**
    * Absolute get method for reading a character value.
    *
@@ -473,7 +473,7 @@ public abstract class ByteBuffer extends Buffer
    * remaining in this buffer
    */
   public abstract char getChar (int index);
-  
+
   /**
    * Absolute put method for writing a character value.
    *
@@ -481,7 +481,7 @@ public abstract class ByteBuffer extends Buffer
    * than the buffer's limit, minus one.
    */
   public abstract ByteBuffer putChar (int index, char value);
-  
+
   /**
    * Relative get method for reading a short value.
    *
@@ -489,7 +489,7 @@ public abstract class ByteBuffer extends Buffer
    * than the buffer's limit, minus one.
    */
   public abstract short getShort ();
-  
+
   /**
    * Relative put method for writing a short value.
    *
@@ -497,7 +497,7 @@ public abstract class ByteBuffer extends Buffer
    * not smaller than its limit.
    */
   public abstract ByteBuffer putShort (short value);
-  
+
   /**
    * Absolute get method for reading a short value.
    *
@@ -505,7 +505,7 @@ public abstract class ByteBuffer extends Buffer
    * remaining in this buffer
    */
   public abstract short getShort (int index);
- 
+
   /**
    * Absolute put method for writing a short value.
    *
@@ -513,7 +513,7 @@ public abstract class ByteBuffer extends Buffer
    * than the buffer's limit, minus one.
    */
   public abstract ByteBuffer putShort (int index, short value);
-  
+
   /**
    * Relative get method for reading an integer value.
    *
@@ -521,7 +521,7 @@ public abstract class ByteBuffer extends Buffer
    * remaining in this buffer.
    */
   public abstract int getInt ();
-  
+
   /**
    * Relative put method for writing an integer value.
    *
@@ -529,7 +529,7 @@ public abstract class ByteBuffer extends Buffer
    * not smaller than its limit.
    */
   public abstract ByteBuffer putInt (int value);
-  
+
   /**
    * Absolute get method for reading an integer value.
    *
@@ -537,7 +537,7 @@ public abstract class ByteBuffer extends Buffer
    * than the buffer's limit, minus three.
    */
   public abstract int getInt (int index);
-  
+
   /**
    * Absolute put method for writing an integer value.
    *
@@ -545,7 +545,7 @@ public abstract class ByteBuffer extends Buffer
    * than the buffer's limit, minus three.
    */
   public abstract ByteBuffer putInt (int index, int value);
-  
+
   /**
    * Relative get method for reading a long value.
    *
@@ -553,7 +553,7 @@ public abstract class ByteBuffer extends Buffer
    * remaining in this buffer.
    */
   public abstract long getLong ();
-  
+
   /**
    * Relative put method for writing a long value.
    *
@@ -561,7 +561,7 @@ public abstract class ByteBuffer extends Buffer
    * not smaller than its limit.
    */
   public abstract ByteBuffer putLong (long value);
-  
+
   /**
    * Absolute get method for reading a long value.
    *
@@ -569,7 +569,7 @@ public abstract class ByteBuffer extends Buffer
    * than the buffer's limit, minus seven.
    */
   public abstract long getLong (int index);
-  
+
   /**
    * Absolute put method for writing a float value.
    *
@@ -577,7 +577,7 @@ public abstract class ByteBuffer extends Buffer
    * than the buffer's limit, minus seven.
    */
   public abstract ByteBuffer putLong (int index, long value);
-  
+
   /**
    * Relative get method for reading a float value.
    *
@@ -585,7 +585,7 @@ public abstract class ByteBuffer extends Buffer
    * remaining in this buffer.
    */
   public abstract float getFloat ();
-  
+
   /**
    * Relative put method for writing a float value.
    *
@@ -593,7 +593,7 @@ public abstract class ByteBuffer extends Buffer
    * remaining in this buffer.
    */
   public abstract ByteBuffer putFloat (float value);
-  
+
   /**
    * Absolute get method for reading a float value.
    *
@@ -601,7 +601,7 @@ public abstract class ByteBuffer extends Buffer
    * than the buffer's limit, minus three.
    */
   public abstract float getFloat (int index);
-  
+
   /**
    * Relative put method for writing a float value.
    *
@@ -609,7 +609,7 @@ public abstract class ByteBuffer extends Buffer
    * than the buffer's limit, minus three.
    */
   public abstract ByteBuffer putFloat (int index, float value);
-  
+
   /**
    * Relative get method for reading a double value.
    *
@@ -617,7 +617,7 @@ public abstract class ByteBuffer extends Buffer
    * remaining in this buffer.
    */
   public abstract double getDouble ();
-  
+
   /**
    * Relative put method for writing a double value.
    *
@@ -625,7 +625,7 @@ public abstract class ByteBuffer extends Buffer
    * not smaller than its limit.
    */
   public abstract ByteBuffer putDouble (double value);
-  
+
   /**
    * Absolute get method for reading a double value.
    *
@@ -633,7 +633,7 @@ public abstract class ByteBuffer extends Buffer
    * than the buffer's limit, minus seven.
    */
   public abstract double getDouble (int index);
-  
+
   /**
    * Absolute put method for writing a double value.
    *
@@ -648,8 +648,8 @@ public abstract class ByteBuffer extends Buffer
   public String toString ()
   {
     return getClass ().getName () +
-	    "[pos=" + position () +
-	    " lim=" + limit () +
-	    " cap=" + capacity () + "]";
+            "[pos=" + position () +
+            " lim=" + limit () +
+            " cap=" + capacity () + "]";
   }
 }

@@ -50,7 +50,7 @@ import org.omg.CosNaming.NamingContext;
 /**
  * Iterates over bindings, obtaining values first from the binding list and then
  * from the binding iterator.
- * 
+ *
  * @author Audrius Meskauskas
  */
 public class ListBindingsEnumeration extends GiopNamingEnumeration implements
@@ -60,10 +60,10 @@ public class ListBindingsEnumeration extends GiopNamingEnumeration implements
    * The naming service, to resolve the objects.
    */
   NamingContext service;
-  
+
   /**
    * Create the new enumeration
-   * 
+   *
    * @param bh
    *          holder, containing the first portion of the bindings
    * @param bih
@@ -75,19 +75,19 @@ public class ListBindingsEnumeration extends GiopNamingEnumeration implements
    *          the naming service, used to obtain the objects, bound to the
    *          names.
    */
-  public ListBindingsEnumeration(BindingListHolder bh, 
-                                 BindingIteratorHolder bih, int batchSize, 
+  public ListBindingsEnumeration(BindingListHolder bh,
+                                 BindingIteratorHolder bih, int batchSize,
                                  NamingContext aService)
   {
     super(bh, bih, batchSize);
     service = aService;
   }
-  
+
   /**
    * Convert from the CORBA binding into the javax.naming binding. As the CORBA
    * naming service binding does not contain the object itself, this method
    * makes the additional calls to the naming service.
-   * 
+   *
    * @param binding
    *          the binding to convert
    * @return the value, that must be returned by the {@link #next()}.
@@ -102,7 +102,7 @@ public class ListBindingsEnumeration extends GiopNamingEnumeration implements
         if (i < binding.binding_name.length - 1)
           name.append('/');
       }
-    
+
     try
       {
         Object object = service.resolve(binding.binding_name);

@@ -45,7 +45,7 @@ import javax.print.attribute.PrintRequestAttribute;
 
 
 /**
- * The <code>SheetCollate</code> printing attribute specifies 
+ * The <code>SheetCollate</code> printing attribute specifies
  * whether or not the sheets of each copy in a print job have to be
  * in sequence.
  * <p>
@@ -58,7 +58,7 @@ import javax.print.attribute.PrintRequestAttribute;
  * <p>
  * <b>IPP Compatibility:</b> SheetCollate is not an IPP 1.1 attribute.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
@@ -71,7 +71,7 @@ public final class SheetCollate extends EnumSyntax
    * The sheets of the different copies are uncollated.
    */
   public static final SheetCollate UNCOLLATED = new SheetCollate(0);
-  
+
   /**
    * The sheets of the different copies are collated.
    */
@@ -79,10 +79,10 @@ public final class SheetCollate extends EnumSyntax
 
 
   private static final String[] stringTable = { "uncollated", "collated" };
-  
-  private static final SheetCollate[] enumValueTable = { UNCOLLATED, 
-                                                         COLLATED };  
-  
+
+  private static final SheetCollate[] enumValueTable = { UNCOLLATED,
+                                                         COLLATED };
+
   /**
    * Creates a <code>SheetCollate</code> object.
    *
@@ -112,7 +112,7 @@ public final class SheetCollate extends EnumSyntax
   {
     return "sheet-collate";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.

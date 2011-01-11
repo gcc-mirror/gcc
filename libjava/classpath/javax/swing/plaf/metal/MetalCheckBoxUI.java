@@ -75,10 +75,10 @@ public class MetalCheckBoxUI
       instance = new MetalCheckBoxUI();
     return instance;
   }
-  
+
   /**
    * Returns the prefix for properties defined in the {@link UIDefaults} table.
-   * 
+   *
    * @return The property prefix (<code>"CheckBox."</code>).
    */
   public String getPropertyPrefix()
@@ -86,4 +86,3 @@ public class MetalCheckBoxUI
     return "CheckBox.";
   }
 }
-

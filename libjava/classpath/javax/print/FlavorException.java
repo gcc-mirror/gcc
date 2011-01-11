@@ -44,18 +44,18 @@ package javax.print;
  * provide further information of printing errors if unsupported
  * document flavors are involved.
  * <p>
- * There exists no <code>PrintException</code> class implementing this 
- * interface. Providing this extension in <code>PrintException</code> 
+ * There exists no <code>PrintException</code> class implementing this
+ * interface. Providing this extension in <code>PrintException</code>
  * subclasses is left to the concrete print service implementation.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public interface FlavorException
 {
   /**
    * Returns the unsupported document flavors.
-   * 
+   *
    * @return The unsupported document flavors.
    */
   DocFlavor[] getUnsupportedFlavors();

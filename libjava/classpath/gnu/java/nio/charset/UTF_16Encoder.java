@@ -1,4 +1,4 @@
-/* UTF_16Encoder.java -- 
+/* UTF_16Encoder.java --
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -68,8 +68,8 @@ final class UTF_16Encoder extends CharsetEncoder
            byteOrder == BIG_ENDIAN
              ? new byte[] { (byte) 0xFF, (byte) 0xFD }
              : new byte[] { (byte) 0xFD, (byte) 0xFF });
-    this.byteOrder = (byteOrder == BIG_ENDIAN) ? 
-	ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN;
+    this.byteOrder = (byteOrder == BIG_ENDIAN) ?
+        ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN;
     this.useByteOrderMark = useByteOrderMark;
     this.needsByteOrderMark = useByteOrderMark;
   }
@@ -84,11 +84,11 @@ final class UTF_16Encoder extends CharsetEncoder
     if (needsByteOrderMark)
       {
         if (out.remaining () < 2)
-	    {
-		out.order(originalBO);
-		return CoderResult.OVERFLOW;
-	    }
-        out.putChar (BYTE_ORDER_MARK);	
+            {
+                out.order(originalBO);
+                return CoderResult.OVERFLOW;
+            }
+        out.putChar (BYTE_ORDER_MARK);
         needsByteOrderMark = false;
       }
 
@@ -118,15 +118,15 @@ final class UTF_16Encoder extends CharsetEncoder
             else
               {
                 if (out.remaining () < 2)
-		  {
-		    out.order(originalBO);
-		    return CoderResult.OVERFLOW;
-		  }
+                  {
+                    out.order(originalBO);
+                    return CoderResult.OVERFLOW;
+                  }
                 out.putChar (c);
                 inPos++;
               }
           }
-	out.order(originalBO);
+        out.order(originalBO);
         return CoderResult.UNDERFLOW;
       }
     finally

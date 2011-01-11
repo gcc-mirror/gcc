@@ -77,7 +77,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
  *      a default value of <code>mykey</code> shall be used when this option is
  *      omitted from the command line.
  *      <p></dd>
- *      
+ *
  *      <dt>-keypass PASSWORD</dt>
  *      <dd>Use this option to specify the password which the tool will use to
  *      unlock the <i>Key Entry</i> associated with the designated <i>Alias</i>.
@@ -86,12 +86,12 @@ import javax.security.auth.callback.UnsupportedCallbackException;
  *      <i>Key Entry</i> using the same password protecting the key store. If
  *      this fails, you will then be prompted to provide a password.
  *      <p></dd>
- *      
+ *
  *      <dt>-new PASSWORD</dt>
  *      <dd>The new, and different, password which will be used to protect the
  *      private key material of the designated Key Entry.
  *      <p></dd>
- *      
+ *
  *      <dt>-storetype STORE_TYPE</dt>
  *      <dd>Use this option to specify the type of the key store to use. The
  *      default value, if this option is omitted, is that of the property
@@ -99,7 +99,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
  *      obtained by invoking the {@link java.security.KeyStore#getDefaultType()}
  *      static method.
  *      <p></dd>
- *      
+ *
  *      <dt>-keystore URL</dt>
  *      <dd>Use this option to specify the location of the key store to use.
  *      The default value is a file {@link java.net.URL} referencing the file
@@ -112,13 +112,13 @@ import javax.security.auth.callback.UnsupportedCallbackException;
  *      name (with absolute or relative path-name) of a key store --as if the
  *      protocol was <code>file:</code>.
  *      <p></dd>
- *      
+ *
  *      <dt>-storepass PASSWORD</dt>
  *      <dd>Use this option to specify the password protecting the key store. If
  *      this option is omitted from the command line, you will be prompted to
  *      provide a password.
  *      <p></dd>
- *      
+ *
  *      <dt>-provider PROVIDER_CLASS_NAME</dt>
  *      <dd>A fully qualified class name of a Security Provider to add to the
  *      current list of Security Providers already installed in the JVM in-use.
@@ -126,7 +126,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
  *      added to the runtime --i.e. it was not already installed-- then the tool
  *      will attempt to removed this Security Provider before exiting.
  *      <p></dd>
- *      
+ *
  *      <dt>-v</dt>
  *      <dd>Use this option to enable more verbose output.</dd>
  * </dl>
@@ -317,7 +317,7 @@ class KeyPasswdCmd extends Command
 
   /**
    * Set the new password to use for protecting Alias's private key.
-   * 
+   *
    * @param password the new key password. if <code>null</code> prompt the
    *          user to provide one. When prompting, the password is entered twice
    *          and compared for a match.

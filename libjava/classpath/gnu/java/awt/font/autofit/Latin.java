@@ -103,7 +103,7 @@ class Latin
               hints.alignStrongPoints(dim);
             if (hints.doAlignWeakPoints())
               hints.alignWeakPoints(dim);
-            
+
          }
       }
     // FreeType does a save call here. I guess that's not needed as we operate
@@ -407,7 +407,7 @@ class Latin
                   dist += 54;
                 else
                   dist += delta;
-                
+
               }
             else
               {
@@ -969,7 +969,7 @@ class Latin
         blue.flags = 0;
         if (isTopBlue(bb))
           blue.flags |= LatinBlue.FLAG_TOP;
-        // The following flag is used later to adjust y and x scales in 
+        // The following flag is used later to adjust y and x scales in
         // order to optimize the pixel grid alignment of the top small
         // letters.
         if (bb == SMALL_TOP)
@@ -1043,7 +1043,7 @@ class Latin
         last = point;
         boolean passed = false;
         boolean onEdge = false;
-        while (true)    
+        while (true)
           {
             int u, v;
             if (onEdge)
@@ -1099,7 +1099,7 @@ class Latin
             point = point.getNext();
           }
       }
-    
+
   }
 
   private boolean isTopBlue(int b)
@@ -1276,7 +1276,7 @@ class Latin
 
         // Debug: Print out all edges.
         // System.err.println("edge# " + e + ": " + edge);
-      }        
+      }
   }
 
   private void computeBlueEdges(GlyphHints hints, LatinMetrics metrics)
@@ -1297,7 +1297,7 @@ class Latin
         // System.err.println("checking edge: " + edge);
         Width bestBlue = null;
         int bestDist = Fixed.mul16(metrics.unitsPerEm / 40, scale);
-        
+
         if (bestDist > 64 / 2)
           bestDist = 64 / 2;
         for (int bb = 0; bb < BLUE_MAX; bb++)

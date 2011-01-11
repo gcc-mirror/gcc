@@ -1,4 +1,4 @@
-/* ElGamalSender.java -- 
+/* ElGamalSender.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -51,7 +51,7 @@ import javax.crypto.interfaces.DHPublicKey;
 /**
  * This implementation is the sender's part of the ElGamal key agreement
  * exchange (A in [HAC]).
- * 
+ *
  * @see ElGamalKeyAgreement
  */
 public class ElGamalSender

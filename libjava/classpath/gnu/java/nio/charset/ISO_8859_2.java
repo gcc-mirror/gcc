@@ -48,7 +48,7 @@ public final class ISO_8859_2 extends ByteCharset
    * This is the lookup table for this encoding
    * Note: ranges 0-1F and 7f-97 aren't defined in the spec file aron used.
    */
-    private static final char[]	lookup =
+    private static final char[] lookup =
     {
       0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,
       0x0008, 0x0009, 0x000A, 0x000B, 0x000C, 0x000D, 0x000E, 0x000F,
@@ -82,28 +82,27 @@ public final class ISO_8859_2 extends ByteCharset
       0x010D, 0x00E9, 0x0119, 0x00EB, 0x011B, 0x00ED, 0x00EE, 0x010F,
       0x0111, 0x0144, 0x0148, 0x00F3, 0x00F4, 0x0151, 0x00F6, 0x00F7,
       0x0159, 0x016F, 0x00FA, 0x0171, 0x00FC, 0x00FD, 0x0163, 0x02D9
-    }; 
+    };
 
   public ISO_8859_2()
   {
       super("ISO-8859-2", new String[] {
-	  "ISO8859_2",
-	  "8859_2", 
-	  "ibm-912_P100-1995",
-	  "ibm-912", 
-	  "iso_8859_2",
-	  "iso8859_2", 
-	  "iso-8859-2", 
-	  "ISO_8859-2:1987", 
-	  "latin2", 
-	  "csISOLatin2",
-	  "iso-ir-101",
-	  "l2", 
-	  "cp912",
-	  "912", 
-	  "windows-28592"
+          "ISO8859_2",
+          "8859_2",
+          "ibm-912_P100-1995",
+          "ibm-912",
+          "iso_8859_2",
+          "iso8859_2",
+          "iso-8859-2",
+          "ISO_8859-2:1987",
+          "latin2",
+          "csISOLatin2",
+          "iso-ir-101",
+          "l2",
+          "cp912",
+          "912",
+          "windows-28592"
       }, lookup);
  }
-  
-} // class ISO_8859_2
 
+} // class ISO_8859_2

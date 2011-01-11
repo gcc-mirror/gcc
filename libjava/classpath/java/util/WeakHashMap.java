@@ -86,7 +86,7 @@ import java.lang.ref.WeakReference;
  * @since 1.2
  * @status updated to 1.4 (partial 1.5)
  */
-public class WeakHashMap<K,V> extends AbstractMap<K,V> 
+public class WeakHashMap<K,V> extends AbstractMap<K,V>
 {
   // WARNING: WeakHashMap is a CORE class in the bootstrap cycle. See the
   // comments in vm/reference/java/lang/Runtime for implications of this fact.
@@ -704,12 +704,12 @@ public class WeakHashMap<K,V> extends AbstractMap<K,V>
     while (next != bucket)
       {
          if (next == null) throw new InternalError("WeakHashMap in incosistent state");
-         prev = next; 
+         prev = next;
          next = prev.next;
       }
     if (prev == null)
       buckets[slot] = bucket.next;
-    else 
+    else
       prev.next = bucket.next;
 
     size--;

@@ -45,7 +45,7 @@ import java.io.OutputStream;
 /**
  * A filtered output stream that transforms data written to it with a
  * {@link Cipher} before sending it to the underlying output stream.
- * 
+ *
  * @author Casey Marshall (csm@gnu.org)
  */
 public class CipherOutputStream extends FilterOutputStream
@@ -56,7 +56,7 @@ public class CipherOutputStream extends FilterOutputStream
   /**
    * Create a new cipher output stream. The cipher argument must have already
    * been initialized.
-   * 
+   *
    * @param out The sink for transformed data.
    * @param cipher The cipher to transform data with.
    */
@@ -82,7 +82,7 @@ public class CipherOutputStream extends FilterOutputStream
    * This method will first invoke the {@link Cipher#doFinal()} method of the
    * underlying {@link Cipher}, and writes the output of that method to the
    * sink output stream.
-   * 
+   *
    * @throws IOException If an I/O error occurs, or if an error is caused by
    *           finalizing the transformation.
    */
@@ -114,7 +114,7 @@ public class CipherOutputStream extends FilterOutputStream
 
   /**
    * Write a single byte to the output stream.
-   * 
+   *
    * @param b The next byte.
    * @throws IOException If an I/O error occurs, or if the underlying cipher is
    *           not in the correct state to transform data.
@@ -126,7 +126,7 @@ public class CipherOutputStream extends FilterOutputStream
 
   /**
    * Write a byte array to the output stream.
-   * 
+   *
    * @param buf The next bytes.
    * @throws IOException If an I/O error occurs, or if the underlying cipher is
    *           not in the correct state to transform data.
@@ -138,7 +138,7 @@ public class CipherOutputStream extends FilterOutputStream
 
   /**
    * Write a portion of a byte array to the output stream.
-   * 
+   *
    * @param buf The next bytes.
    * @param off The offset in the byte array to start.
    * @param len The number of bytes to write.

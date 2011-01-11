@@ -39,7 +39,7 @@ import org.objectweb.asm.util.attrs.ASMStackMapTableAttribute;
 
 /**
  * An abstract visitor.
- * 
+ *
  * @author Eric Bruneton
  */
 public abstract class AbstractVisitor {
@@ -124,7 +124,7 @@ public abstract class AbstractVisitor {
 
     /**
      * Returns the text printed by this visitor.
-     * 
+     *
      * @return the text printed by this visitor.
      */
     public List getText() {
@@ -133,7 +133,7 @@ public abstract class AbstractVisitor {
 
     /**
      * Appends a quoted string to a given buffer.
-     * 
+     *
      * @param buf the buffer where the string must be added.
      * @param s the string to be added.
      */
@@ -168,7 +168,7 @@ public abstract class AbstractVisitor {
 
     /**
      * Prints the given string tree.
-     * 
+     *
      * @param pw the writer to be used to print the tree.
      * @param l a string tree, i.e., a string list that can contain other string
      *        lists, and so on recursively.
@@ -186,7 +186,7 @@ public abstract class AbstractVisitor {
 
     /**
      * Returns the default {@link ASMifiable} prototypes.
-     * 
+     *
      * @return the default {@link ASMifiable} prototypes.
      */
     public static Attribute[] getDefaultAttributes() {

@@ -49,8 +49,8 @@ public final class OBJ_ADAPTER
   extends SystemException
   implements Serializable
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = -1516541344234786928L;
 

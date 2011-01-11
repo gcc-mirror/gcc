@@ -79,7 +79,7 @@ public class JApplet extends Applet
   protected AccessibleContext accessibleContext;
 
   private static final long serialVersionUID = 7269359214497372587L;
-  
+
   protected JRootPane rootPane;
 
   /**
@@ -196,7 +196,7 @@ public class JApplet extends Applet
   {
     super.processKeyEvent(e);
   }
-  
+
   public void remove(Component comp)
   {
     // If we're removing the root pane, use super.remove. Otherwise

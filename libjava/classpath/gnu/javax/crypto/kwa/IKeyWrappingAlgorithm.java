@@ -71,7 +71,7 @@ public interface IKeyWrappingAlgorithm
 
   /**
    * Returns the canonical name of this Key Wrapping Algorithm.
-   * 
+   *
    * @return the canonical name of this Key Wrapping Algorithm.
    */
   String name();
@@ -79,7 +79,7 @@ public interface IKeyWrappingAlgorithm
   /**
    * Initializes this instance with the designated algorithm specific
    * attributes.
-   * 
+   *
    * @param attributes a map of name-to-value pairs the Key Wrapping Algorithm
    *          must use for its setup.
    * @throws InvalidKeyException if an exception is encountered while seting up
@@ -89,7 +89,7 @@ public interface IKeyWrappingAlgorithm
 
   /**
    * Wraps the designated plain text bytes.
-   * 
+   *
    * @param in the input byte array containing the plain text.
    * @param inOffset the offset into <code>in</code> where the first byte of
    *          the plain text (key material) to wrap is located.
@@ -110,7 +110,7 @@ public interface IKeyWrappingAlgorithm
 
   /**
    * Wraps the designated plain text bytes.
-   * 
+   *
    * @param in the input byte array containing the plain text.
    * @param inOffset the offset into <code>in</code> where the first byte of
    *          the plain text (key material) to wrap is located.
@@ -121,7 +121,7 @@ public interface IKeyWrappingAlgorithm
 
   /**
    * Unwraps the designated cipher text bytes.
-   * 
+   *
    * @param in the input byte array containing the cipher text.
    * @param inOffset the offset into <code>in</code> where the first byte of
    *          the cipher text (already wrapped key material) to unwrap is
@@ -145,7 +145,7 @@ public interface IKeyWrappingAlgorithm
 
   /**
    * Unwraps the designated cipher text bytes.
-   * 
+   *
    * @param in the input byte array containing the cipher text.
    * @param inOffset the offset into <code>in</code> where the first byte of
    *          the cipher text (already wrapped key material) to unwrap is

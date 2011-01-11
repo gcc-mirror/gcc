@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -70,66 +70,66 @@ public class SentenceBreakIterator extends BaseBreakIterator
 
     while (iter.getIndex() < end)
       {
-	char c = iter.current();
-	if (c == CharacterIterator.DONE)
-	  break;
-	int type = Character.getType(c);
+        char c = iter.current();
+        if (c == CharacterIterator.DONE)
+          break;
+        int type = Character.getType(c);
 
-	char n = iter.next();
-	if (n == CharacterIterator.DONE)
-	  break;
+        char n = iter.next();
+        if (n == CharacterIterator.DONE)
+          break;
 
-	// Always break after paragraph separator.
-	if (type == Character.PARAGRAPH_SEPARATOR)
-	  break;
+        // Always break after paragraph separator.
+        if (type == Character.PARAGRAPH_SEPARATOR)
+          break;
 
-	if (c == '!' || c == '?')
-	  {
-	    // Skip close punctuation.
-	    while (n != CharacterIterator.DONE
-		   && Character.getType(n) == Character.END_PUNCTUATION)
-	      n = iter.next();
-	    // Skip (java) space, line and paragraph separators.
-	    while (n != CharacterIterator.DONE && Character.isWhitespace(n))
-	      n = iter.next();
+        if (c == '!' || c == '?')
+          {
+            // Skip close punctuation.
+            while (n != CharacterIterator.DONE
+                   && Character.getType(n) == Character.END_PUNCTUATION)
+              n = iter.next();
+            // Skip (java) space, line and paragraph separators.
+            while (n != CharacterIterator.DONE && Character.isWhitespace(n))
+              n = iter.next();
 
-	    // There's always a break somewhere after `!' or `?'.
-	    break;
-	  }
+            // There's always a break somewhere after `!' or `?'.
+            break;
+          }
 
-	if (c == '.')
-	  {
-	    int save = iter.getIndex();
-	    // Skip close punctuation.
-	    while (n != CharacterIterator.DONE
-		   && Character.getType(n) == Character.END_PUNCTUATION)
-	      n = iter.next();
-	    // Skip (java) space, line and paragraph separators.
-	    // We keep count because we need at least one for this period to
-	    // represent a terminator.
-	    int spcount = 0;
-	    while (n != CharacterIterator.DONE && Character.isWhitespace(n))
-	      {
-		n = iter.next();
-		++spcount;
-	      }
-	    if (spcount > 0)
-	      {
-		int save2 = iter.getIndex();
-		// Skip over open puncutation.
-		while (n != CharacterIterator.DONE
-		       && Character.getType(n) == Character.START_PUNCTUATION)
-		  n = iter.next();
-		// Next character must not be lower case.
-		if (n == CharacterIterator.DONE
-		    || ! Character.isLowerCase(n))
-		  {
-		    iter.setIndex(save2);
-		    break;
-		  }
-	      }
-	    iter.setIndex(save);
-	  }
+        if (c == '.')
+          {
+            int save = iter.getIndex();
+            // Skip close punctuation.
+            while (n != CharacterIterator.DONE
+                   && Character.getType(n) == Character.END_PUNCTUATION)
+              n = iter.next();
+            // Skip (java) space, line and paragraph separators.
+            // We keep count because we need at least one for this period to
+            // represent a terminator.
+            int spcount = 0;
+            while (n != CharacterIterator.DONE && Character.isWhitespace(n))
+              {
+                n = iter.next();
+                ++spcount;
+              }
+            if (spcount > 0)
+              {
+                int save2 = iter.getIndex();
+                // Skip over open puncutation.
+                while (n != CharacterIterator.DONE
+                       && Character.getType(n) == Character.START_PUNCTUATION)
+                  n = iter.next();
+                // Next character must not be lower case.
+                if (n == CharacterIterator.DONE
+                    || ! Character.isLowerCase(n))
+                  {
+                    iter.setIndex(save2);
+                    break;
+                  }
+              }
+            iter.setIndex(save);
+          }
       }
 
     return iter.getIndex();
@@ -143,86 +143,86 @@ public class SentenceBreakIterator extends BaseBreakIterator
 
     while (iter.getIndex() >= start)
       {
-	char c = iter.previous();
-	if (c == CharacterIterator.DONE)
-	  break;
+        char c = iter.previous();
+        if (c == CharacterIterator.DONE)
+          break;
 
-	char n = iter.previous();
-	if (n == CharacterIterator.DONE)
-	  break;
-	iter.next();
-	int nt = Character.getType(n);
+        char n = iter.previous();
+        if (n == CharacterIterator.DONE)
+          break;
+        iter.next();
+        int nt = Character.getType(n);
 
-	if (! Character.isLowerCase(c)
-	    && (nt == Character.START_PUNCTUATION
-		|| Character.isWhitespace(n)))
-	  {
-	    int save = iter.getIndex();
-	    int save_nt = nt;
-	    char save_n = n;
-	    // Skip open punctuation.
-	    while (n != CharacterIterator.DONE
-		   && Character.getType(n) == Character.START_PUNCTUATION)
-	      n = iter.previous();
-	    if (n == CharacterIterator.DONE)
-	      break;
-	    if (Character.isWhitespace(n))
-	      {
-		// Must have at least one (java) space after the `.'.
-		int save2 = iter.getIndex();
-		while (n != CharacterIterator.DONE
-		       && Character.isWhitespace(n))
-		  n = iter.previous();
-		// Skip close punctuation.
-		while (n != CharacterIterator.DONE
-		       && Character.getType(n) == Character.END_PUNCTUATION)
-		  n = iter.previous();
-		if (n == CharacterIterator.DONE || n == '.')
-		  {
-		    // Communicate location of actual end.
-		    period = iter.getIndex();
-		    iter.setIndex(save2);
-		    break;
-		  }
-	      }
-	    iter.setIndex(save);
-	    nt = save_nt;
-	    n = save_n;
-	  }
+        if (! Character.isLowerCase(c)
+            && (nt == Character.START_PUNCTUATION
+                || Character.isWhitespace(n)))
+          {
+            int save = iter.getIndex();
+            int save_nt = nt;
+            char save_n = n;
+            // Skip open punctuation.
+            while (n != CharacterIterator.DONE
+                   && Character.getType(n) == Character.START_PUNCTUATION)
+              n = iter.previous();
+            if (n == CharacterIterator.DONE)
+              break;
+            if (Character.isWhitespace(n))
+              {
+                // Must have at least one (java) space after the `.'.
+                int save2 = iter.getIndex();
+                while (n != CharacterIterator.DONE
+                       && Character.isWhitespace(n))
+                  n = iter.previous();
+                // Skip close punctuation.
+                while (n != CharacterIterator.DONE
+                       && Character.getType(n) == Character.END_PUNCTUATION)
+                  n = iter.previous();
+                if (n == CharacterIterator.DONE || n == '.')
+                  {
+                    // Communicate location of actual end.
+                    period = iter.getIndex();
+                    iter.setIndex(save2);
+                    break;
+                  }
+              }
+            iter.setIndex(save);
+            nt = save_nt;
+            n = save_n;
+          }
 
-	if (nt == Character.PARAGRAPH_SEPARATOR)
-	  {
-	    // Communicate location of actual end.
-	    period = iter.getIndex();
-	    break;
-	  }
-	else if (Character.isWhitespace(n)
-		 || nt == Character.END_PUNCTUATION)
-	  {
-	    int save = iter.getIndex();
-	    // Skip (java) space, line and paragraph separators.
-	    while (n != CharacterIterator.DONE
-		   && Character.isWhitespace(n))
-	      n = iter.previous();
-	    // Skip close punctuation.
-	    while (n != CharacterIterator.DONE
-		   && Character.getType(n) == Character.END_PUNCTUATION)
-	      n = iter.previous();
-	    int here = iter.getIndex();
-	    iter.setIndex(save);
-	    if (n == CharacterIterator.DONE || n == '!' || n == '?')
-	      {
-		// Communicate location of actual end.
-		period = here;
-		break;
-	      }
-	  }
-	else if (n == '!' || n == '?')
-	  {
-	    // Communicate location of actual end.
-	    period = iter.getIndex();
-	    break;
-	  }
+        if (nt == Character.PARAGRAPH_SEPARATOR)
+          {
+            // Communicate location of actual end.
+            period = iter.getIndex();
+            break;
+          }
+        else if (Character.isWhitespace(n)
+                 || nt == Character.END_PUNCTUATION)
+          {
+            int save = iter.getIndex();
+            // Skip (java) space, line and paragraph separators.
+            while (n != CharacterIterator.DONE
+                   && Character.isWhitespace(n))
+              n = iter.previous();
+            // Skip close punctuation.
+            while (n != CharacterIterator.DONE
+                   && Character.getType(n) == Character.END_PUNCTUATION)
+              n = iter.previous();
+            int here = iter.getIndex();
+            iter.setIndex(save);
+            if (n == CharacterIterator.DONE || n == '!' || n == '?')
+              {
+                // Communicate location of actual end.
+                period = here;
+                break;
+              }
+          }
+        else if (n == '!' || n == '?')
+          {
+            // Communicate location of actual end.
+            period = iter.getIndex();
+            break;
+          }
       }
 
     return iter.getIndex();

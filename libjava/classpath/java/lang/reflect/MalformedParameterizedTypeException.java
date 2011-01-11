@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package java.lang.reflect;
 
-/** 
+/**
  * This exception class is thrown when one of the reflection
  * methods encountered an invalid parameterized type within
  * the metadata of a class.  One possible reason for this
@@ -47,9 +47,9 @@ package java.lang.reflect;
  *
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
- * @since 1.5 
+ * @since 1.5
  */
-public class MalformedParameterizedTypeException 
+public class MalformedParameterizedTypeException
   extends RuntimeException
 {
   private static final long serialVersionUID = -5696557788586220964L;

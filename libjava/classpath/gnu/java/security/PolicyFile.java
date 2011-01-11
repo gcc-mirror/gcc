@@ -154,7 +154,7 @@ public final class PolicyFile extends Policy
   // Added to cut redundant AccessController.doPrivileged calls
   private static GetPropertyAction prop = new GetPropertyAction("file.separator");
   private static final String fs = (String) AccessController.doPrivileged(prop);
-  
+
   private static final String DEFAULT_POLICY =
     (String) AccessController.doPrivileged(prop.setParameters("java.home"))
     + fs + "lib" + fs + "security" + fs + "java.policy";
@@ -536,7 +536,7 @@ public final class PolicyFile extends Policy
                 if (clazz == null)
                   {
                     currentPerms.add(new UnresolvedPermission(className,
-		      null, null, (Certificate[]) currentCerts.toArray(new Certificate[currentCerts.size()])));
+                      null, null, (Certificate[]) currentCerts.toArray(new Certificate[currentCerts.size()])));
                     continue;
                   }
                 try
@@ -558,7 +558,7 @@ public final class PolicyFile extends Policy
                 if (clazz == null)
                   {
                     currentPerms.add(new UnresolvedPermission(className,
-		      target, null, (Certificate[]) currentCerts.toArray(new Certificate[currentCerts.size()])));
+                      target, null, (Certificate[]) currentCerts.toArray(new Certificate[currentCerts.size()])));
                     continue;
                   }
                 try
@@ -601,7 +601,7 @@ public final class PolicyFile extends Policy
             if (clazz == null)
               {
                 currentPerms.add(new UnresolvedPermission(className,
-		  target, action, (Certificate[]) currentCerts.toArray(new Certificate[currentCerts.size()])));
+                  target, action, (Certificate[]) currentCerts.toArray(new Certificate[currentCerts.size()])));
                 continue;
               }
             else

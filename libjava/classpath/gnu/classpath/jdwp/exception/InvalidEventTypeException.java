@@ -53,7 +53,7 @@ public class InvalidEventTypeException
   public InvalidEventTypeException (byte kind)
   {
     super (JdwpConstants.Error.INVALID_EVENT_TYPE,
-	   "invalid event type (" + kind + ")");
+           "invalid event type (" + kind + ")");
   }
 
   public InvalidEventTypeException (Throwable t)

@@ -46,14 +46,14 @@ import gnu.java.beans.encoder.elements.Element;
 
 /** <p><code>Root</code> provides a simple interface to a tree of
  * objects.</p>
- * 
+ *
  * <p>Using an instance of this class a logical representation of
  * the real object tree that is serialized can be built. When the
  * actual data should be written as XML <code>Root</code> and
  * {@link gnu.java.beans.encoder.elements.Element} class can provide
  * context information which is used to write the best fitting
  * XML representation.</p>
- *   
+ *
  * @author Robert Schuster (robertschuster@fsfe.org)
  */
 public class Root
@@ -61,7 +61,7 @@ public class Root
   private Stack parents = new Stack();
 
   private Element rootElement, current;
-  
+
   private boolean started;
 
   public Root()
@@ -70,10 +70,10 @@ public class Root
   }
 
   /** <p>Adds another child element to the tree.</p>
-   * 
+   *
    * <p>The new element automatically becomes the current
    * element.</p>
-   * 
+   *
    * @param elem The new child element.
    */
   public void addChild(Element elem)
@@ -88,7 +88,7 @@ public class Root
    * <p>Marks that the end of the current element
    * is reached and that no more childs are added to
    * it.</p>
-   * 
+   *
    * <p>The behavior is to return to the nearest parent
    * element.</p>
    */
@@ -100,7 +100,7 @@ public class Root
   /**
    * <p>Goes back to the nearest parent element but
    * deletes the just created child.</p>
-   * 
+   *
    * <p>This is used if something went wrong while
    * processing the child element's {@link java.beans.Expression}
    * or {@link java.beans.Statement}.</p>
@@ -117,9 +117,9 @@ public class Root
    * <p>Traverses the elements in the object tree
    * and creates their XML representation in the output
    * stream of the given {@link Writer}.</p>
-   * 
+   *
    * <p>Finally the <code>Writer</code> is flushed.</p>
-   *  
+   *
    * @param writer The Writer instance that generates the XML representation.
    */
   public void traverse(Writer writer)
@@ -130,16 +130,16 @@ public class Root
         rootElement.writeStart(writer);
       }
     started = true;
-    
+
     traverse(writer, rootElement.iterator());
-    
+
     rootElement.clear();
-    
+
     writer.flush();
   }
 
   /** Writes the closing element and closes the {@link Writer}
-   * 
+   *
    * @param writer The Writer instance that generates the XML representation.
    */
   public void close(Writer writer)
@@ -149,7 +149,7 @@ public class Root
   }
 
   /** Recursively traverses the object tree.
-   * 
+   *
    * @param writer The Writer instance that generates the XML representation.
    * @param ite An Iterator returning Element instances.
    */
@@ -163,19 +163,19 @@ public class Root
         traverse(writer, e.iterator());
 
         e.writeEnd(writer);
-        
+
         e.clear();
       }
   }
 
   /** <p>A special Element implementation that represents the
    * encoder's context.</p>
-   * 
+   *
    * <p>This element is written only once per Writer.</p>
-   * 
+   *
    * <p>It is assumed that this element is never empty to simplify
    * the implementation.</p>
-   * 
+   *
    * @author Robert Schuster (robertschuster@fsfe.org);
    *
    */
@@ -187,7 +187,7 @@ public class Root
                    new String[] { System.getProperty("java.version"),
                                  XMLEncoder.class.getName() }, false);
     }
-    
+
     public void writeEnd(Writer writer)
     {
       writer.writeEnd(false);

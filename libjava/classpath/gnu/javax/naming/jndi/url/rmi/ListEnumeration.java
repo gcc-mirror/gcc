@@ -46,7 +46,7 @@ import javax.naming.NamingEnumeration;
 /**
  * Iterates over name class pairs, obtaining values first from the binding list
  * and then from the binding iterator.
- * 
+ *
  * @author Audrius Meskauskas
  */
 public class ListEnumeration extends RmiNamingEnumeration implements
@@ -54,7 +54,7 @@ public class ListEnumeration extends RmiNamingEnumeration implements
 {
   /**
    * Create the new enumeration
-   * 
+   *
    * @param bindings
    *          the array of the binding names, returned by the RMI registry.
    */
@@ -62,11 +62,11 @@ public class ListEnumeration extends RmiNamingEnumeration implements
   {
     super(bindings);
   }
-  
+
   /**
    * Convert from the binding name into the {@link NameClassPair} that this
-   * enumeration should return. 
-   * 
+   * enumeration should return.
+   *
    * @param binding
    *          the binding to convert
    * @return the value, that must be returned by the {@link #next()}.
@@ -75,6 +75,6 @@ public class ListEnumeration extends RmiNamingEnumeration implements
   {
     NameClassPair pair = new NameClassPair(binding, Remote.class.getName());
     return pair;
-  }  
-  
+  }
+
 }

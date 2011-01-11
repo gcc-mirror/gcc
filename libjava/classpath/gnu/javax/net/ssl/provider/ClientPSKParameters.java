@@ -1,4 +1,4 @@
-/* ClientPSKParameters.java -- 
+/* ClientPSKParameters.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -73,7 +73,7 @@ public class ClientPSKParameters extends ExchangeKeys implements Builder, Constr
     buffer.put(idBuf);
     buffer.rewind();
   }
-  
+
   /* (non-Javadoc)
    * @see gnu.javax.net.ssl.provider.Builder#buffer()
    */
@@ -89,13 +89,13 @@ public class ClientPSKParameters extends ExchangeKeys implements Builder, Constr
   {
     return (buffer.getShort(0) & 0xFFFF) + 2;
   }
-  
+
   public String identity()
   {
     Charset utf8 = Charset.forName("UTF-8");
     return utf8.decode((ByteBuffer) buffer.duplicate().position(2).limit(length())).toString();
   }
-  
+
   public @Override String toString()
   {
     return toString(null);

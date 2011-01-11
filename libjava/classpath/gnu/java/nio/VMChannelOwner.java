@@ -50,7 +50,7 @@ interface VMChannelOwner
 {
   /**
    * Return the underlying platform-specific Channel instance.
-   * 
+   *
    * @return The platform channel object.
    */
   VMChannel getVMChannel();

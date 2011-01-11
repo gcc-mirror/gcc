@@ -1,4 +1,4 @@
-/* XMLSchemaValidatorHandler.java -- 
+/* XMLSchemaValidatorHandler.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -260,7 +260,7 @@ final class XMLSchemaValidatorHandler
           }
       }
     // TODO 5, 6, 7
-    
+
     // parent
     if (!context.isEmpty())
       {
@@ -300,7 +300,7 @@ final class XMLSchemaValidatorHandler
         XMLSchemaAttributeTypeInfo attTypeInfo =
           new XMLSchemaAttributeTypeInfo(schema, attDecl, true);
         attributes.add(attTypeInfo);
-        
+
         atts2.addAttribute(attUri, attLocalName, attQName, attType, attValue);
         atts2.setDeclared(count, declared);
         atts2.setSpecified(count, true);
@@ -363,7 +363,7 @@ final class XMLSchemaValidatorHandler
         contentHandler.processingInstruction(target, data);
       }
   }
-  
+
   public void skippedEntity(String name)
     throws SAXException
   {
@@ -389,6 +389,5 @@ final class XMLSchemaValidatorHandler
       return Type.ANY_TYPE;
     return (SimpleType) typeLibrary.createDatatype(localName);
   }
-  
-}
 
+}

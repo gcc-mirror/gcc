@@ -1,4 +1,4 @@
-/* HashPrintServiceAttributeSet.java -- 
+/* HashPrintServiceAttributeSet.java --
    Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -47,7 +47,7 @@ public class HashPrintServiceAttributeSet extends HashAttributeSet
   implements Serializable, PrintServiceAttributeSet
 {
   private static final long serialVersionUID = 6642904616179203070L;
-  
+
   /**
    * Creates an empty <code>HashPrintServiceAttributeSet</code> object.
    */
@@ -55,7 +55,7 @@ public class HashPrintServiceAttributeSet extends HashAttributeSet
   {
     super(PrintServiceAttribute.class);
   }
-  
+
   /**
    * Creates a <code>HashPrintServiceAttributeSet</code> object with the given
    * attribute in it.
@@ -68,7 +68,7 @@ public class HashPrintServiceAttributeSet extends HashAttributeSet
   {
     super(attribute, PrintServiceAttribute.class);
   }
-  
+
   /**
    * Creates a <code>HashPrintServiceAttributeSet</code> object with the given
    * attributes in it.
@@ -83,12 +83,12 @@ public class HashPrintServiceAttributeSet extends HashAttributeSet
   {
     super(attributes, PrintServiceAttribute.class);
   }
-  
+
   /**
    * Creates a <code>HashPrintServiceAttributeSet</code> object with the attributes
    * of the given attributes set in it.
    *
-   * @param attributes the attributes set to put into the set. If 
+   * @param attributes the attributes set to put into the set. If
    * <code>null</code> an empty set is created.
    * @exception ClassCastException if any element of attributes is not
    * an instance of <code>PrintServiceAttribute</code>

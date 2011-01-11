@@ -737,11 +737,11 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
                     advanceHead(h, hn);
                     continue;
                 }
-		QNode t = tail;      // Ensure consistent read for tail
+                QNode t = tail;      // Ensure consistent read for tail
                 if (t == h)
                     return;
-		QNode tn = t.next;
-		if (t != tail)
+                QNode tn = t.next;
+                if (t != tail)
                     continue;
                 if (tn != null) {
                     advanceTail(t, tn);
@@ -808,9 +808,9 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
     public void put(E o) throws InterruptedException {
         if (o == null) throw new NullPointerException();
         if (transferer.transfer(o, false, 0) == null) {
-	    Thread.interrupted();
+            Thread.interrupted();
             throw new InterruptedException();
-	}
+        }
     }
 
     /**
@@ -857,7 +857,7 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
         Object e = transferer.transfer(null, false, 0);
         if (e != null)
             return (E)e;
-	Thread.interrupted();
+        Thread.interrupted();
         throw new InterruptedException();
     }
 

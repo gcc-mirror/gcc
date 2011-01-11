@@ -162,7 +162,7 @@ public class CellRendererPane extends Container implements Accessible
    *        painting
    */
   public void paintComponent(Graphics graphics, Component c,
-                             Container p, int x, int y, int w, int h, 
+                             Container p, int x, int y, int w, int h,
                              boolean shouldValidate)
   {
     // reparent c

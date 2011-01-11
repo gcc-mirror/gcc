@@ -52,7 +52,7 @@ import javax.swing.plaf.ComponentUI;
  */
 public class BasicCheckBoxMenuItemUI extends BasicMenuItemUI
 {
-  
+
   /**
    * Creates a new BasicCheckBoxMenuItemUI object.
    */
@@ -60,7 +60,7 @@ public class BasicCheckBoxMenuItemUI extends BasicMenuItemUI
   {
     super();
   }
-  
+
   /**
    * Factory method to create a BasicCheckBoxMenuItemUI for the given {@link
    * JComponent}, which should be a JCheckBoxMenuItem

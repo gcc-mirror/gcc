@@ -60,15 +60,15 @@ public interface ObjectReferenceFactory
    * activated. The derived {@link ObjectReferenceTemplate} interface assumes
    * the object must be connected to the POA that is specific to that
    * template (name can be obtained).
-   * 
-   * If the object with this objectId already exists in the given context, it 
+   *
+   * If the object with this objectId already exists in the given context, it
    * is found and returned; a new object is <i>not</i> created.
-   * 
+   *
    * @param repositoryId the repository id of the object being created, defines
    * the type of the object.
-   * 
+   *
    * @param objectId the byte array, defining the identity of the object.
-   * 
+   *
    * @return The created corba object.
    */
   Object make_object(String repositoryId, byte[] objectId);

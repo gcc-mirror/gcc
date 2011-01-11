@@ -138,10 +138,10 @@ protected class AccessibleAWTCheckbox
   public void itemStateChanged(ItemEvent event)
   {
     firePropertyChange(ACCESSIBLE_STATE_PROPERTY,
-		       state ? null : AccessibleState.CHECKED,
+                       state ? null : AccessibleState.CHECKED,
                        state ? AccessibleState.CHECKED : null);
   }
-  
+
   /**
    * Returns an implementation of the <code>AccessibleAction</code>
    * interface for this accessible object.  In this case, the
@@ -156,7 +156,7 @@ protected class AccessibleAWTCheckbox
   {
     return this;
   }
-  
+
   /**
    * Returns an implementation of the <code>AccessibleValue</code>
    * interface for this accessible object.  In this case, the
@@ -171,8 +171,8 @@ protected class AccessibleAWTCheckbox
   {
     return this;
   }
-  
-  /* 
+
+  /*
    * The following methods are implemented in the JDK (up to
    * 1.5) as stubs.  We do likewise here.
    */
@@ -277,7 +277,7 @@ protected class AccessibleAWTCheckbox
   {
     return null;
   }
-  
+
   /**
    * Returns the role of this accessible object.
    *
@@ -285,11 +285,11 @@ protected class AccessibleAWTCheckbox
    *         which describes this object.
    * @see javax.accessibility.AccessibleRole
    */
-  public AccessibleRole getAccessibleRole() 
+  public AccessibleRole getAccessibleRole()
   {
     return AccessibleRole.CHECK_BOX;
   }
-  
+
   /**
    * Returns the state set of this accessible object.
    *
@@ -319,7 +319,7 @@ protected class AccessibleAWTCheckbox
   * Initializes a new instance of <code>Checkbox</code> with no label,
   * an initial state of off, and that is not part of any checkbox group.
   */
-public 
+public
 Checkbox()
 {
   this("", false, null);
@@ -464,10 +464,10 @@ setState(boolean state)
     {
       this.state = state;
       if (peer != null)
-	{
-	  CheckboxPeer cp = (CheckboxPeer) peer;
-	  cp.setState (state);
-	}
+        {
+          CheckboxPeer cp = (CheckboxPeer) peer;
+          cp.setState (state);
+        }
     }
 }
 
@@ -608,9 +608,9 @@ dispatchEventImpl(AWTEvent e)
       ItemEvent ie = (ItemEvent) e;
       int itemState = ie.getStateChange();
       setState(itemState == ItemEvent.SELECTED ? true : false);
-      if (item_listeners != null 
-	  || (eventMask & AWTEvent.ITEM_EVENT_MASK) != 0)
-	processEvent(e);
+      if (item_listeners != null
+          || (eventMask & AWTEvent.ITEM_EVENT_MASK) != 0)
+        processEvent(e);
     }
   else
     super.dispatchEventImpl(e);

@@ -266,7 +266,7 @@ public final class Handshake implements Constructed
 
     /**
      * Convert a raw handshake type value to a type enum value.
-     * 
+     *
      * @return The corresponding enum value for the raw integer value.
      * @throws IllegalArgumentException If the value is not a known handshake
      *  type.

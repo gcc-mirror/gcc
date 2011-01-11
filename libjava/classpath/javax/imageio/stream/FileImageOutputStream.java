@@ -49,7 +49,7 @@ import java.io.RandomAccessFile;
 public class FileImageOutputStream extends ImageOutputStreamImpl
 {
   private RandomAccessFile file;
-  
+
   public FileImageOutputStream(File file)
     throws FileNotFoundException, IOException
   {
@@ -92,7 +92,7 @@ public class FileImageOutputStream extends ImageOutputStreamImpl
     throws IOException
   {
     checkClosed();
-    
+
     setBitOffset(0);
     return file.read();
   }
@@ -101,7 +101,7 @@ public class FileImageOutputStream extends ImageOutputStreamImpl
     throws IOException
   {
     checkClosed();
-    
+
     setBitOffset(0);
     return file.read(data, offset, len);
   }
@@ -117,7 +117,7 @@ public class FileImageOutputStream extends ImageOutputStreamImpl
     throws IOException
   {
     checkClosed();
-    
+
     flushBits();
     file.write(data, offset, len);
   }
@@ -126,7 +126,7 @@ public class FileImageOutputStream extends ImageOutputStreamImpl
     throws IOException
   {
     checkClosed();
-    
+
     // FIXME: Flush pending bits.
     file.write(value);
   }

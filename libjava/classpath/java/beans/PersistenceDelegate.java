@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -40,12 +40,12 @@ package java.beans;
 /** <p>A <code>PersistenceDelegate</code> describes how a another object
  * has to constructed and transformed in order to create a complete
  * replicate.</p>
- * 
+ *
  * <p>For custom classes you will need to implement
  * <code>PersistenceDelegate</code> in a way that is suitable for them.
  * To make use of the implementation you have to register it with an
  * {@link Encoder} using the {Encoder#setPersistenceDelegate} method.</p>
- * 
+ *
  * @author Robert Schuster (robertschuster@fsfe.org)
  * @since 1.4
  */
@@ -60,7 +60,7 @@ public abstract class PersistenceDelegate
         type = type.getSuperclass();
 
         PersistenceDelegate pd = out.getPersistenceDelegate(type);
-        
+
         pd.initialize(type, oldInstance, newInstance, out);
       }
   }

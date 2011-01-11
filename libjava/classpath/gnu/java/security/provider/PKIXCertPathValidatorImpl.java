@@ -91,7 +91,7 @@ import java.util.logging.Logger;
  * See <a href="http://www.ietf.org/rfc/rfc3280.txt">RFC 3280: Internet X.509
  * Public Key Infrastructure Certificate and Certificate Revocation List (CRL)
  * Profile</a>.
- * 
+ *
  * @author Casey Marshall (rsdio@metastatic.org)
  */
 public class PKIXCertPathValidatorImpl
@@ -403,7 +403,7 @@ public class PKIXCertPathValidatorImpl
    * <li>The CRL is signed by a certificate in the given cert stores, and that
    * cert is signed by one of the certificates in the path.</li>
    * </ol>
-   * 
+   *
    * @param crl The CRL being checked.
    * @param path The path this CRL is being checked against.
    * @param now The value to use as 'now'.

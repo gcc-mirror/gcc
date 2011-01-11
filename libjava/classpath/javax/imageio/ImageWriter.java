@@ -76,7 +76,7 @@ public abstract class ImageWriter
   implements ImageTranscoder
 {
   private boolean aborted;
-  
+
   /**
    * All locales available for localization of warning messages, or
    * null if localization is not supported.
@@ -138,7 +138,7 @@ public abstract class ImageWriter
     if (output == null)
       throw new IllegalStateException("no output set");
   }
-  
+
   /**
    * Request that writing be aborted.  The unwritten portions of the
    * destination image will be undefined.
@@ -392,8 +392,8 @@ public abstract class ImageWriter
    * is null
    */
   public abstract IIOMetadata convertImageMetadata (IIOMetadata inData,
-		                                    ImageTypeSpecifier imageType,
-				                    ImageWriteParam param);
+                                                    ImageTypeSpecifier imageType,
+                                                    ImageWriteParam param);
 
   /**
    * Convert IIOMetadata from an input stream format, returning an
@@ -412,7 +412,7 @@ public abstract class ImageWriter
    * @exception IllegalArgumentException if inData is null
    */
   public abstract IIOMetadata convertStreamMetadata (IIOMetadata inData,
-					             ImageWriteParam param);
+                                                     ImageWriteParam param);
 
   /**
    * Releases any resources allocated to this object.  Subsequent
@@ -425,7 +425,7 @@ public abstract class ImageWriter
   {
     // The default implementation is empty. Subclasses have to overwrite it.
   }
-  
+
   /**
    * Retrieve the available locales.  Return null if no locales are
    * available or a clone of availableLocales.
@@ -504,7 +504,7 @@ public abstract class ImageWriter
    */
   public int getNumThumbnailsSupported (ImageTypeSpecifier imageType,
                                         ImageWriteParam param,
-		                        IIOMetadata streamMetadata,
+                                        IIOMetadata streamMetadata,
                                         IIOMetadata imageMetadata)
   {
     return 0;
@@ -553,9 +553,9 @@ public abstract class ImageWriter
    * if the size is unknown (insufficient information was provided)
    */
   public Dimension[] getPreferredThumbnailSizes (ImageTypeSpecifier imageType,
-		                                 ImageWriteParam param,
-						 IIOMetadata streamMetadata,
-						 IIOMetadata imageMetadata)
+                                                 ImageWriteParam param,
+                                                 IIOMetadata streamMetadata,
+                                                 IIOMetadata imageMetadata)
   {
     return null;
   }
@@ -568,14 +568,14 @@ public abstract class ImageWriter
   {
     if (progressListeners != null)
       {
-	Iterator it = progressListeners.iterator();
+        Iterator it = progressListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOWriteProgressListener listener =
-	      (IIOWriteProgressListener) it.next();
-	    listener.imageComplete(this);
-	  }
+        while (it.hasNext())
+          {
+            IIOWriteProgressListener listener =
+              (IIOWriteProgressListener) it.next();
+            listener.imageComplete(this);
+          }
       }
   }
 
@@ -591,14 +591,14 @@ public abstract class ImageWriter
   {
     if (progressListeners != null)
       {
-	Iterator it = progressListeners.iterator();
+        Iterator it = progressListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOWriteProgressListener listener =
-	      (IIOWriteProgressListener) it.next();
-	    listener.imageProgress(this, percentageDone);
-	  }
+        while (it.hasNext())
+          {
+            IIOWriteProgressListener listener =
+              (IIOWriteProgressListener) it.next();
+            listener.imageProgress(this, percentageDone);
+          }
       }
   }
 
@@ -614,14 +614,14 @@ public abstract class ImageWriter
   {
     if (progressListeners != null)
       {
-	Iterator it = progressListeners.iterator();
+        Iterator it = progressListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOWriteProgressListener listener =
-	      (IIOWriteProgressListener) it.next();
-	    listener.imageStarted(this, imageIndex);
-	  }
+        while (it.hasNext())
+          {
+            IIOWriteProgressListener listener =
+              (IIOWriteProgressListener) it.next();
+            listener.imageStarted(this, imageIndex);
+          }
       }
   }
 
@@ -634,14 +634,14 @@ public abstract class ImageWriter
   {
     if (progressListeners != null)
       {
-	Iterator it = progressListeners.iterator();
+        Iterator it = progressListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOWriteProgressListener listener =
-	      (IIOWriteProgressListener) it.next();
-	    listener.thumbnailComplete(this);
-	  }
+        while (it.hasNext())
+          {
+            IIOWriteProgressListener listener =
+              (IIOWriteProgressListener) it.next();
+            listener.thumbnailComplete(this);
+          }
       }
   }
 
@@ -657,14 +657,14 @@ public abstract class ImageWriter
   {
     if (progressListeners != null)
       {
-	Iterator it = progressListeners.iterator();
+        Iterator it = progressListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOWriteProgressListener listener =
-	      (IIOWriteProgressListener) it.next();
-	    listener.thumbnailProgress(this, percentageDone);
-	  }
+        while (it.hasNext())
+          {
+            IIOWriteProgressListener listener =
+              (IIOWriteProgressListener) it.next();
+            listener.thumbnailProgress(this, percentageDone);
+          }
       }
   }
 
@@ -682,14 +682,14 @@ public abstract class ImageWriter
   {
     if (progressListeners != null)
       {
-	Iterator it = progressListeners.iterator();
+        Iterator it = progressListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOWriteProgressListener listener =
-	      (IIOWriteProgressListener) it.next();
-	    listener.thumbnailStarted(this, imageIndex, thumbnailIndex);
-	  }
+        while (it.hasNext())
+          {
+            IIOWriteProgressListener listener =
+              (IIOWriteProgressListener) it.next();
+            listener.thumbnailStarted(this, imageIndex, thumbnailIndex);
+          }
       }
   }
 
@@ -707,14 +707,14 @@ public abstract class ImageWriter
   {
      if (warningListeners != null)
       {
-	Iterator it = warningListeners.iterator();
+        Iterator it = warningListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOWriteWarningListener listener =
-	      (IIOWriteWarningListener) it.next();
-	    listener.warningOccurred(this, imageIndex, warning);
-	  }
+        while (it.hasNext())
+          {
+            IIOWriteWarningListener listener =
+              (IIOWriteWarningListener) it.next();
+            listener.warningOccurred(this, imageIndex, warning);
+          }
       }
   }
 
@@ -741,8 +741,8 @@ public abstract class ImageWriter
    * not a String
    */
   protected void processWarningOccurred(int imageIndex,
-					String baseName,
-					String keyword)
+                                        String baseName,
+                                        String keyword)
   {
     if (baseName == null || keyword == null)
       throw new IllegalArgumentException ("null argument");
@@ -751,22 +751,22 @@ public abstract class ImageWriter
 
     try
       {
-	b = ResourceBundle.getBundle(baseName, getLocale());
+        b = ResourceBundle.getBundle(baseName, getLocale());
       }
     catch (MissingResourceException e)
       {
-	throw new IllegalArgumentException ("no resource bundle found");
+        throw new IllegalArgumentException ("no resource bundle found");
       }
 
     Object str = null;
 
     try
       {
-	str = b.getObject(keyword);
+        str = b.getObject(keyword);
       }
     catch (MissingResourceException e)
       {
-	throw new IllegalArgumentException ("no results found for keyword");
+        throw new IllegalArgumentException ("no results found for keyword");
       }
 
     if (! (str instanceof String))
@@ -776,14 +776,14 @@ public abstract class ImageWriter
 
     if (warningListeners != null)
       {
-	Iterator it = warningListeners.iterator();
+        Iterator it = warningListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOWriteWarningListener listener =
-	      (IIOWriteWarningListener) it.next();
-	    listener.warningOccurred(this, imageIndex, warning);
-	  }
+        while (it.hasNext())
+          {
+            IIOWriteWarningListener listener =
+              (IIOWriteWarningListener) it.next();
+            listener.warningOccurred(this, imageIndex, warning);
+          }
       }
   }
 
@@ -791,18 +791,18 @@ public abstract class ImageWriter
    * Notifies all installed write progress listeners that image
    * loading has been aborted by calling their writeAborted methods.
    */
-  protected void processWriteAborted() 
+  protected void processWriteAborted()
   {
     if (progressListeners != null)
       {
-	Iterator it = progressListeners.iterator();
+        Iterator it = progressListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOWriteProgressListener listener =
-	      (IIOWriteProgressListener) it.next();
-	    listener.writeAborted(this);
-	  }
+        while (it.hasNext())
+          {
+            IIOWriteProgressListener listener =
+              (IIOWriteProgressListener) it.next();
+            listener.writeAborted(this);
+          }
       }
   }
 
@@ -813,7 +813,7 @@ public abstract class ImageWriter
   {
     if (progressListeners != null)
       {
-	progressListeners.clear();
+        progressListeners.clear();
       }
   }
 
@@ -824,7 +824,7 @@ public abstract class ImageWriter
   {
     if (progressListeners != null)
       {
-	progressListeners.clear();
+        progressListeners.clear();
       }
   }
 
@@ -839,7 +839,7 @@ public abstract class ImageWriter
       return;
     if (progressListeners != null)
       {
-	progressListeners.remove(listener);
+        progressListeners.remove(listener);
       }
   }
   /**
@@ -853,7 +853,7 @@ public abstract class ImageWriter
       return;
     if (warningListeners != null)
       {
-	warningListeners.remove(listener);
+        warningListeners.remove(listener);
       }
   }
   /**
@@ -867,7 +867,7 @@ public abstract class ImageWriter
     removeAllIIOWriteProgressListeners();
     clearAbortRequest();
   }
-  
+
   /**
    * Set the current locale or use the default locale.
    *
@@ -877,16 +877,16 @@ public abstract class ImageWriter
   {
     if (locale != null)
       {
-	// Check if its a valid locale.
-	boolean found = false;
+        // Check if its a valid locale.
+        boolean found = false;
 
-	if (availableLocales != null)
-	  for (int i = availableLocales.length - 1; i >= 0; --i)
-	    if (availableLocales[i].equals(locale))
-	      found = true;
+        if (availableLocales != null)
+          for (int i = availableLocales.length - 1; i >= 0; --i)
+            if (availableLocales[i].equals(locale))
+              found = true;
 
-	if (! found)
-	  throw new IllegalArgumentException("looale not available");
+        if (! found)
+          throw new IllegalArgumentException("looale not available");
       }
 
     this.locale = locale;
@@ -908,20 +908,20 @@ public abstract class ImageWriter
   {
     if (output != null)
       {
-	// Check if its a valid output object.
-	boolean found = false;
-	Class[] types = null;
+        // Check if its a valid output object.
+        boolean found = false;
+        Class[] types = null;
 
-	if (originatingProvider != null)
-	  types = originatingProvider.getOutputTypes();
-        
-	if (types != null)
-	  for (int i = types.length - 1; i >= 0; --i)
+        if (originatingProvider != null)
+          types = originatingProvider.getOutputTypes();
+
+        if (types != null)
+          for (int i = types.length - 1; i >= 0; --i)
             if (types[i].isInstance(output))
               found = true;
 
-	if (! found)
-	  throw new IllegalArgumentException("output type not available");
+        if (! found)
+          throw new IllegalArgumentException("output type not available");
       }
 
     this.output = output;

@@ -54,35 +54,35 @@ import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.FileChooserUI;
 
 /**
- * A UI delegate that that coordinates multiple {@link FileChooserUI} 
- * instances, one from the primary look and feel, and one or more from the 
+ * A UI delegate that that coordinates multiple {@link FileChooserUI}
+ * instances, one from the primary look and feel, and one or more from the
  * auxiliary look and feel(s).
- * 
+ *
  * @see UIManager#addAuxiliaryLookAndFeel(LookAndFeel)
  */
-public class MultiFileChooserUI extends FileChooserUI 
+public class MultiFileChooserUI extends FileChooserUI
 {
 
   /** A list of references to the actual component UIs. */
   protected Vector uis;
-    
+
   /**
    * Creates a new <code>MultiFileChooserUI</code> instance.
-   * 
+   *
    * @see #createUI(JComponent)
    */
-  public MultiFileChooserUI() 
+  public MultiFileChooserUI()
   {
     uis = new Vector();
   }
-  
+
   /**
-   * Creates a delegate object for the specified component.  If any auxiliary 
+   * Creates a delegate object for the specified component.  If any auxiliary
    * look and feels support this component, a <code>MultiFileChooserUI</code> is
    * returned, otherwise the UI from the default look and feel is returned.
-   * 
+   *
    * @param target  the component.
-   * 
+   *
    * @see MultiLookAndFeel#createUIs(ComponentUI, Vector, JComponent)
    */
   public static ComponentUI createUI(JComponent target)
@@ -90,11 +90,11 @@ public class MultiFileChooserUI extends FileChooserUI
     MultiFileChooserUI mui = new MultiFileChooserUI();
     return MultiLookAndFeel.createUIs(mui, mui.uis, target);
   }
-  
+
   /**
-   * Calls the {@link ComponentUI#installUI(JComponent)} method for all 
+   * Calls the {@link ComponentUI#installUI(JComponent)} method for all
    * the UI delegates managed by this <code>MultiFileChooserUI</code>.
-   * 
+   *
    * @param c  the component.
    */
   public void installUI(JComponent c)
@@ -108,9 +108,9 @@ public class MultiFileChooserUI extends FileChooserUI
   }
 
   /**
-   * Calls the {@link ComponentUI#uninstallUI(JComponent)} method for all 
+   * Calls the {@link ComponentUI#uninstallUI(JComponent)} method for all
    * the UI delegates managed by this <code>MultiFileChooserUI</code>.
-   * 
+   *
    * @param c  the component.
    */
   public void uninstallUI(JComponent c)
@@ -122,39 +122,39 @@ public class MultiFileChooserUI extends FileChooserUI
       ui.uninstallUI(c);
     }
   }
-  
+
   /**
    * Returns an array containing the UI delegates managed by this
-   * <code>MultiFileChooserUI</code>.  The first item in the array is always 
+   * <code>MultiFileChooserUI</code>.  The first item in the array is always
    * the UI delegate from the installed default look and feel.
-   * 
+   *
    * @return An array of UI delegates.
    */
   public ComponentUI[] getUIs()
   {
     return MultiLookAndFeel.uisToArray(uis);
   }
-  
+
   /**
-   * Calls the {@link ComponentUI#contains(JComponent, int, int)} method for all 
-   * the UI delegates managed by this <code>MultiFileChooserUI</code>, 
-   * returning the result for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * Calls the {@link ComponentUI#contains(JComponent, int, int)} method for all
+   * the UI delegates managed by this <code>MultiFileChooserUI</code>,
+   * returning the result for the UI delegate from the primary look and
+   * feel.
+   *
    * @param c  the component.
    * @param x  the x-coordinate.
    * @param y  the y-coordinate.
-   * 
+   *
    * @return <code>true</code> if the specified (x, y) coordinate falls within
    *         the bounds of the component as rendered by the UI delegate in the
-   *         primary look and feel, and <code>false</code> otherwise. 
+   *         primary look and feel, and <code>false</code> otherwise.
    */
-  public boolean contains(JComponent c, int x, int y) 
+  public boolean contains(JComponent c, int x, int y)
   {
     boolean result = false;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ComponentUI ui = (ComponentUI) iterator.next();
         result = ui.contains(c, x, y);
@@ -167,11 +167,11 @@ public class MultiFileChooserUI extends FileChooserUI
       }
     return result;
   }
-  
+
   /**
-   * Calls the {@link ComponentUI#update(Graphics, JComponent)} method for all 
+   * Calls the {@link ComponentUI#update(Graphics, JComponent)} method for all
    * the UI delegates managed by this <code>MultiFileChooserUI</code>.
-   * 
+   *
    * @param g  the graphics device.
    * @param c  the component.
    */
@@ -186,9 +186,9 @@ public class MultiFileChooserUI extends FileChooserUI
   }
 
   /**
-   * Calls the <code>paint(Graphics, JComponent)</code> method for all the UI 
+   * Calls the <code>paint(Graphics, JComponent)</code> method for all the UI
    * delegates managed by this <code>MultiFileChooserUI</code>.
-   * 
+   *
    * @param g  the graphics device.
    * @param c  the component.
    */
@@ -201,24 +201,24 @@ public class MultiFileChooserUI extends FileChooserUI
       ui.paint(g, c);
     }
   }
-  
+
   /**
    * Calls the {@link ComponentUI#getPreferredSize(JComponent)} method for all
-   * the UI delegates managed by this <code>MultiFileChooserUI</code>, 
-   * returning the preferred size for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * the UI delegates managed by this <code>MultiFileChooserUI</code>,
+   * returning the preferred size for the UI delegate from the primary look and
+   * feel.
+   *
    * @param c  the component.
-   * 
-   * @return The preferred size returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The preferred size returned by the UI delegate from the primary
+   *         look and feel.
    */
   public Dimension getPreferredSize(JComponent c)
   {
     Dimension result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ComponentUI ui = (ComponentUI) iterator.next();
         result = ui.getPreferredSize(c);
@@ -231,24 +231,24 @@ public class MultiFileChooserUI extends FileChooserUI
       }
     return result;
   }
-  
+
   /**
    * Calls the {@link ComponentUI#getMinimumSize(JComponent)} method for all
-   * the UI delegates managed by this <code>MultiFileChooserUI</code>, 
-   * returning the minimum size for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * the UI delegates managed by this <code>MultiFileChooserUI</code>,
+   * returning the minimum size for the UI delegate from the primary look and
+   * feel.
+   *
    * @param c  the component.
-   * 
-   * @return The minimum size returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The minimum size returned by the UI delegate from the primary
+   *         look and feel.
    */
   public Dimension getMinimumSize(JComponent c)
   {
     Dimension result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ComponentUI ui = (ComponentUI) iterator.next();
         result = ui.getMinimumSize(c);
@@ -261,24 +261,24 @@ public class MultiFileChooserUI extends FileChooserUI
       }
     return result;
   }
-    
+
   /**
    * Calls the {@link ComponentUI#getMaximumSize(JComponent)} method for all
-   * the UI delegates managed by this <code>MultiFileChooserUI</code>, 
-   * returning the maximum size for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * the UI delegates managed by this <code>MultiFileChooserUI</code>,
+   * returning the maximum size for the UI delegate from the primary look and
+   * feel.
+   *
    * @param c  the component.
-   * 
-   * @return The maximum size returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The maximum size returned by the UI delegate from the primary
+   *         look and feel.
    */
   public Dimension getMaximumSize(JComponent c)
   {
     Dimension result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ComponentUI ui = (ComponentUI) iterator.next();
         result = ui.getMaximumSize(c);
@@ -291,24 +291,24 @@ public class MultiFileChooserUI extends FileChooserUI
       }
     return result;
   }
-  
+
   /**
    * Calls the {@link ComponentUI#getAccessibleChildrenCount(JComponent)} method
-   * for all the UI delegates managed by this <code>MultiFileChooserUI</code>, 
-   * returning the count for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * for all the UI delegates managed by this <code>MultiFileChooserUI</code>,
+   * returning the count for the UI delegate from the primary look and
+   * feel.
+   *
    * @param c  the component.
-   * 
-   * @return The count returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The count returned by the UI delegate from the primary
+   *         look and feel.
    */
   public int getAccessibleChildrenCount(JComponent c)
   {
     int result = 0;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ComponentUI ui = (ComponentUI) iterator.next();
         result = ui.getAccessibleChildrenCount(c);
@@ -321,25 +321,25 @@ public class MultiFileChooserUI extends FileChooserUI
       }
     return result;
   }
-  
+
   /**
    * Calls the {@link ComponentUI#getAccessibleChild(JComponent, int)} method
-   * for all the UI delegates managed by this <code>MultiFileChooserUI</code>, 
-   * returning the child for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * for all the UI delegates managed by this <code>MultiFileChooserUI</code>,
+   * returning the child for the UI delegate from the primary look and
+   * feel.
+   *
    * @param c  the component
    * @param i  the child index.
-   * 
-   * @return The child returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The child returned by the UI delegate from the primary
+   *         look and feel.
    */
   public Accessible getAccessibleChild(JComponent c, int i)
   {
     Accessible result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ComponentUI ui = (ComponentUI) iterator.next();
         result = ui.getAccessibleChild(c, i);
@@ -352,24 +352,24 @@ public class MultiFileChooserUI extends FileChooserUI
       }
     return result;
   }
-  
+
   /**
    * Calls the {@link FileChooserUI#getAcceptAllFileFilter(JFileChooser)} method
-   * for all the UI delegates managed by this <code>MultiFileChooserUI</code>, 
-   * returning the filter for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * for all the UI delegates managed by this <code>MultiFileChooserUI</code>,
+   * returning the filter for the UI delegate from the primary look and
+   * feel.
+   *
    * @param chooser  the file chooser.
-   * 
-   * @return The filter returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The filter returned by the UI delegate from the primary
+   *         look and feel.
    */
-  public FileFilter getAcceptAllFileFilter(JFileChooser chooser) 
+  public FileFilter getAcceptAllFileFilter(JFileChooser chooser)
   {
     FileFilter result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         FileChooserUI ui = (FileChooserUI) iterator.next();
         result = ui.getAcceptAllFileFilter(chooser);
@@ -385,21 +385,21 @@ public class MultiFileChooserUI extends FileChooserUI
 
   /**
    * Calls the {@link FileChooserUI#getFileView(JFileChooser)} method
-   * for all the UI delegates managed by this <code>MultiFileChooserUI</code>, 
-   * returning the view for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * for all the UI delegates managed by this <code>MultiFileChooserUI</code>,
+   * returning the view for the UI delegate from the primary look and
+   * feel.
+   *
    * @param chooser  the file chooser.
-   * 
-   * @return The view returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The view returned by the UI delegate from the primary
+   *         look and feel.
    */
-  public FileView getFileView(JFileChooser chooser) 
+  public FileView getFileView(JFileChooser chooser)
   {
     FileView result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         FileChooserUI ui = (FileChooserUI) iterator.next();
         result = ui.getFileView(chooser);
@@ -415,21 +415,21 @@ public class MultiFileChooserUI extends FileChooserUI
 
   /**
    * Calls the {@link FileChooserUI#getApproveButtonText(JFileChooser)} method
-   * for all the UI delegates managed by this <code>MultiFileChooserUI</code>, 
-   * returning the text for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * for all the UI delegates managed by this <code>MultiFileChooserUI</code>,
+   * returning the text for the UI delegate from the primary look and
+   * feel.
+   *
    * @param chooser  the file chooser.
-   * 
-   * @return The text returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The text returned by the UI delegate from the primary
+   *         look and feel.
    */
-  public String getApproveButtonText(JFileChooser chooser) 
+  public String getApproveButtonText(JFileChooser chooser)
   {
     String result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         FileChooserUI ui = (FileChooserUI) iterator.next();
         result = ui.getApproveButtonText(chooser);
@@ -445,21 +445,21 @@ public class MultiFileChooserUI extends FileChooserUI
 
   /**
    * Calls the {@link FileChooserUI#getDialogTitle(JFileChooser)} method
-   * for all the UI delegates managed by this <code>MultiFileChooserUI</code>, 
-   * returning the title for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * for all the UI delegates managed by this <code>MultiFileChooserUI</code>,
+   * returning the title for the UI delegate from the primary look and
+   * feel.
+   *
    * @param chooser  the file chooser.
-   * 
-   * @return The title returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The title returned by the UI delegate from the primary
+   *         look and feel.
    */
-  public String getDialogTitle(JFileChooser chooser) 
+  public String getDialogTitle(JFileChooser chooser)
   {
     String result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         FileChooserUI ui = (FileChooserUI) iterator.next();
         result = ui.getDialogTitle(chooser);
@@ -474,13 +474,13 @@ public class MultiFileChooserUI extends FileChooserUI
   }
 
   /**
-   * Calls the {@link FileChooserUI#rescanCurrentDirectory(JFileChooser)} 
-   * method for all the UI delegates managed by this 
+   * Calls the {@link FileChooserUI#rescanCurrentDirectory(JFileChooser)}
+   * method for all the UI delegates managed by this
    * <code>MultiFileChooserUI</code>.
-   * 
+   *
    * @param chooser  the file chooser.
    */
-  public void rescanCurrentDirectory(JFileChooser chooser) 
+  public void rescanCurrentDirectory(JFileChooser chooser)
   {
     Iterator iterator = uis.iterator();
     while (iterator.hasNext())
@@ -491,14 +491,14 @@ public class MultiFileChooserUI extends FileChooserUI
   }
 
   /**
-   * Calls the {@link FileChooserUI#ensureFileIsVisible(JFileChooser, File)} 
-   * method for all the UI delegates managed by this 
+   * Calls the {@link FileChooserUI#ensureFileIsVisible(JFileChooser, File)}
+   * method for all the UI delegates managed by this
    * <code>MultiFileChooserUI</code>.
-   * 
+   *
    * @param chooser  the file chooser.
    * @param file  the file.
    */
-  public void ensureFileIsVisible(JFileChooser chooser, File file) 
+  public void ensureFileIsVisible(JFileChooser chooser, File file)
   {
     Iterator iterator = uis.iterator();
     while (iterator.hasNext())

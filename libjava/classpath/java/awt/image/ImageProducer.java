@@ -45,25 +45,25 @@ package java.awt.image;
  * resizing the image.
  *
  * @see ImageConsumer
- * @author C. Brian Jones (cbj@gnu.org) 
+ * @author C. Brian Jones (cbj@gnu.org)
  */
 public interface ImageProducer
 {
     /**
      * Used to register an <code>ImageConsumer</code> with this
-     * <code>ImageProducer</code>.  
+     * <code>ImageProducer</code>.
      */
     void addConsumer(ImageConsumer ic);
 
     /**
      * Used to determine if the given <code>ImageConsumer</code> is
-     * already registered with this <code>ImageProducer</code>.  
+     * already registered with this <code>ImageProducer</code>.
      */
     boolean isConsumer(ImageConsumer ic);
 
     /**
      * Used to remove an <code>ImageConsumer</code> from the list of
-     * registered consumers for this <code>ImageProducer</code>.  
+     * registered consumers for this <code>ImageProducer</code>.
      */
     void removeConsumer(ImageConsumer ic);
 
@@ -71,15 +71,14 @@ public interface ImageProducer
      * Used to register an <code>ImageConsumer</code> with this
      * <code>ImageProducer</code> and then immediately start
      * reconstruction of the image data to be delivered to all
-     * registered consumers.  
+     * registered consumers.
      */
     void startProduction(ImageConsumer ic);
 
     /**
      * Used to register an <code>ImageConsumer</code> with this
      * <code>ImageProducer</code> and then request that this producer
-     * resend the image data in the order top-down, left-right.  
+     * resend the image data in the order top-down, left-right.
      */
     void requestTopDownLeftRightResend(ImageConsumer ic);
 }
-

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -48,42 +48,42 @@ package java.beans;
  **/
 
 public class BeanDescriptor extends FeatureDescriptor {
-	Class<?> beanClass;
-	Class<?> customizerClass;
+        Class<?> beanClass;
+        Class<?> customizerClass;
 
-	/** Create a new BeanDescriptor with the given beanClass and
-	 ** no customizer class.
-	 ** @param beanClass the class of the Bean.
-	 **/
-	public BeanDescriptor(Class<?> beanClass) {
-		this(beanClass,null);
-	}
+        /** Create a new BeanDescriptor with the given beanClass and
+         ** no customizer class.
+         ** @param beanClass the class of the Bean.
+         **/
+        public BeanDescriptor(Class<?> beanClass) {
+                this(beanClass,null);
+        }
 
-	/** Create a new BeanDescriptor with the given bean class and
-	 ** customizer class.
-	 ** @param beanClass the class of the Bean.
-	 ** @param customizerClass the class of the Bean's Customizer.
-	 **/
-	public BeanDescriptor(Class<?> beanClass, Class<?> customizerClass) {
-		this.beanClass = beanClass;
-		this.customizerClass = customizerClass;
+        /** Create a new BeanDescriptor with the given bean class and
+         ** customizer class.
+         ** @param beanClass the class of the Bean.
+         ** @param customizerClass the class of the Bean's Customizer.
+         **/
+        public BeanDescriptor(Class<?> beanClass, Class<?> customizerClass) {
+                this.beanClass = beanClass;
+                this.customizerClass = customizerClass;
 
-		// Set the FeatureDescriptor programmatic name.
-		String name = beanClass.getName();
-		int lastInd = name.lastIndexOf('.');
-		if (lastInd != -1)
-		  name = name.substring(lastInd + 1);
+                // Set the FeatureDescriptor programmatic name.
+                String name = beanClass.getName();
+                int lastInd = name.lastIndexOf('.');
+                if (lastInd != -1)
+                  name = name.substring(lastInd + 1);
 
-		setName(name);
-	}
+                setName(name);
+        }
 
-	/** Get the Bean's class. **/
-	public Class<?> getBeanClass() {
-		return beanClass;
-	}
+        /** Get the Bean's class. **/
+        public Class<?> getBeanClass() {
+                return beanClass;
+        }
 
-	/** Get the Bean's customizer's class. **/
-	public Class<?> getCustomizerClass() {
-		return customizerClass;
-	}
+        /** Get the Bean's customizer's class. **/
+        public Class<?> getCustomizerClass() {
+                return customizerClass;
+        }
 }

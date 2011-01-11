@@ -56,7 +56,7 @@ public interface DataContentHandler
    * by preference.
    */
   DataFlavor[] getTransferDataFlavors();
-  
+
   /**
    * Returns an object representing the data to be transferred.
    * @param df the flavor representing the requested type
@@ -64,14 +64,14 @@ public interface DataContentHandler
    */
   Object getTransferData(DataFlavor df, DataSource ds)
     throws UnsupportedFlavorException, IOException;
-  
+
   /**
    * Returns an object representing the data in its most preferred form.
    * @param ds the data source of the data to be converted
    */
   Object getContent(DataSource ds)
     throws IOException;
-  
+
   /**
    * Writes the object as a stream of bytes.
    * @param obj the object to convert
@@ -80,6 +80,5 @@ public interface DataContentHandler
    */
   void writeTo(Object obj, String mimeType, OutputStream os)
     throws IOException;
-  
-}
 
+}

@@ -1,4 +1,4 @@
-/* IPublicKeyring.java -- 
+/* IPublicKeyring.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -43,7 +43,7 @@ import java.security.cert.Certificate;
 /**
  * An interface for keyrings that contain trusted (by the owner) public
  * credentials (incl. certificates).
- * 
+ *
  * @see IKeyring
  */
 public interface IPublicKeyring
@@ -52,7 +52,7 @@ public interface IPublicKeyring
   /**
    * Tests if this keyring contains a certificate entry with the specified
    * <code>alias</code>.
-   * 
+   *
    * @param alias The alias of the certificate to check.
    * @return <code>true</code> if this keyring contains a certificate entry
    *         that has the given <code>alias</code>; <code>false</code>
@@ -63,7 +63,7 @@ public interface IPublicKeyring
   /**
    * Returns a certificate that has the given <code>alias</code>, or
    * <code>null</code> if this keyring has no such entry.
-   * 
+   *
    * @param alias The alias of the certificate to find.
    * @return The certificate with the designated <code>alias</code>, or
    *         <code>null</code> if none found.
@@ -74,7 +74,7 @@ public interface IPublicKeyring
    * Adds a certificate in this keyring, with the given <code>alias</code>.
    * <p>
    * What happens if there is already a certificate entry with this alias?
-   * 
+   *
    * @param alias The alias of this certificate entry.
    * @param cert The certificate.
    */

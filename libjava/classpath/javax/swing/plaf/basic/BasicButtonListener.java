@@ -131,7 +131,7 @@ public class BasicButtonListener
   {
     // Do nothing here.
   }
-  
+
   public void propertyChange(PropertyChangeEvent e)
   {
     // Store the TextLayout for this in a client property for speed-up
@@ -166,31 +166,31 @@ public class BasicButtonListener
    *
    * @param b the button to check
    */
-  protected void checkOpacity(AbstractButton b) 
-  {    
+  protected void checkOpacity(AbstractButton b)
+  {
     b.setOpaque(b.isContentAreaFilled());
   }
-  
-  public void focusGained(FocusEvent e) 
-  {    
+
+  public void focusGained(FocusEvent e)
+  {
     if (e.getSource() instanceof AbstractButton)
       {
         AbstractButton button = (AbstractButton) e.getSource();
         if (button.isFocusPainted())
-          button.repaint();   
+          button.repaint();
       }
   }
-  
+
   public void focusLost(FocusEvent e)
   {
     if (e.getSource() instanceof AbstractButton)
       {
         AbstractButton button = (AbstractButton) e.getSource();
         if (button.isFocusPainted())
-          button.repaint();   
+          button.repaint();
       }
   }
-  
+
   public void installKeyboardActions(JComponent c)
   {
     ButtonUI ui = ((AbstractButton) c).getUI();
@@ -198,7 +198,7 @@ public class BasicButtonListener
       {
         // Install InputMap.
         BasicButtonUI basicUI = (BasicButtonUI) ui;
-        String prefix = basicUI.getPropertyPrefix(); 
+        String prefix = basicUI.getPropertyPrefix();
         InputMap focusInputMap =
           (InputMap) UIManager.get(prefix + "focusInputMap");
         SwingUtilities.replaceUIInputMap(c, JComponent.WHEN_FOCUSED,
@@ -212,11 +212,11 @@ public class BasicButtonListener
           }
         SwingUtilities.replaceUIActionMap(c, am);
       }
-    
-    c.getActionMap().put("pressed", 
-                         new AbstractAction() 
+
+    c.getActionMap().put("pressed",
+                         new AbstractAction()
                          {
-                           public void actionPerformed(ActionEvent e)          
+                           public void actionPerformed(ActionEvent e)
                            {
                              AbstractButton button = (AbstractButton) e.getSource();
                              ButtonModel model = button.getModel();
@@ -225,11 +225,11 @@ public class BasicButtonListener
                              model.setPressed(true);
                            }
                          });
-    
-    c.getActionMap().put("released", 
-                         new AbstractAction() 
+
+    c.getActionMap().put("released",
+                         new AbstractAction()
                          {
-                           public void actionPerformed(ActionEvent e)          
+                           public void actionPerformed(ActionEvent e)
                            {
                              AbstractButton button = (AbstractButton) e.getSource();
                              ButtonModel model = button.getModel();
@@ -237,7 +237,7 @@ public class BasicButtonListener
                              model.setPressed(false);
                              model.setArmed(false);
                            }
-                       });    
+                       });
   }
 
   /**
@@ -259,23 +259,23 @@ public class BasicButtonListener
     SwingUtilities.replaceUIActionMap(c, null);
     SwingUtilities.replaceUIInputMap(c, JComponent.WHEN_FOCUSED, null);
   }
-  
+
   public void stateChanged(ChangeEvent e)
   {
     // Need to repaint when the button state changes.
     ((AbstractButton) e.getSource()).repaint();
   }
-  
+
   public void mouseMoved(MouseEvent e)
   {
     // Nothing to do here.
   }
-  
+
   public void mouseDragged(MouseEvent e)
   {
     // Nothing to do here.
   }
-  
+
   public void mouseClicked(MouseEvent e)
   {
     // Nothing to do here.
@@ -305,7 +305,7 @@ public class BasicButtonListener
   }
 
   /**
-   * Accept a mouse release event and set the button's 
+   * Accept a mouse release event and set the button's
    * "pressed" property to <code>true</code>, if the model
    * is armed. If the model is not armed, ignore the event.
    *

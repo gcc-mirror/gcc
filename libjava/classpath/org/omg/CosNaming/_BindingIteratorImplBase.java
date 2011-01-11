@@ -116,7 +116,7 @@ public abstract class _BindingIteratorImplBase
         out = rh.createReply();
       }
     else
-      throw new BAD_OPERATION(method, Minor.Method, 
+      throw new BAD_OPERATION(method, Minor.Method,
         CompletionStatus.COMPLETED_MAYBE);
 
     return out;

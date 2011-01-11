@@ -42,15 +42,15 @@ import java.io.Serializable;
 
 /**
  * Means that some IDL identifier has a wrong syntax.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public final class INV_IDENT
   extends SystemException
   implements Serializable
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 4399295047946553530L;
 

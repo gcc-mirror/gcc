@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -44,10 +44,10 @@ package java.io;
  */
 
 /**
-  * This class is the common superclass of output stream classes that 
+  * This class is the common superclass of output stream classes that
   * filter the output they write.  These classes typically transform the
   * data in some way prior to writing it out to another underlying
-  * <code>OutputStream</code>.  This class simply overrides all the 
+  * <code>OutputStream</code>.  This class simply overrides all the
   * methods in <code>OutputStream</code> to redirect them to the
   * underlying stream.  Subclasses provide actual filtering.
   *
@@ -141,10 +141,9 @@ public class FilterOutputStream extends OutputStream
   public void write(byte[] buf, int offset, int len) throws IOException
   {
     // Don't do checking here, per Java Lang Spec.
-    for (int i=0; i < len; i++) 
+    for (int i=0; i < len; i++)
       write(buf[offset + i]);
 
   }
 
 } // class FilterOutputStream
-

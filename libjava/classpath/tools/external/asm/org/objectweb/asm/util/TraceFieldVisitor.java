@@ -36,7 +36,7 @@ import org.objectweb.asm.FieldVisitor;
 /**
  * A {@link FieldVisitor} that prints a disassembled view of the fields it
  * visits.
- * 
+ *
  * @author Eric Bruneton
  */
 public class TraceFieldVisitor extends TraceAbstractVisitor implements

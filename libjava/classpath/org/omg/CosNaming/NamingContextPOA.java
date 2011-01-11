@@ -63,8 +63,8 @@ import org.omg.PortableServer.Servant;
 /**
  * The naming service servant. After implementing the abstract methods the
  * instance of this class can be connected to an ORB using POA.
- * 
- * @since 1.4 
+ *
+ * @since 1.4
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */

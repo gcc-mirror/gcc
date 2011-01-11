@@ -94,5 +94,5 @@ public class TeeReader
   {
     return false;
   }
-  
+
 }

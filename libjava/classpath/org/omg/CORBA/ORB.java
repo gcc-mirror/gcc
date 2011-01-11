@@ -62,12 +62,12 @@ import java.util.Properties;
  * A central class in CORBA implementation, responsible for sending and handling
  * remote invocations. ORB also works as a factory for creating instances of
  * certain CORBA classes.
- * 
+ *
  * Despite the core library contains the fully working CORBA implementation, it
  * also provides a simple way to plug-in the alternative CORBA support. This is
  * done by replacing the ORB. The alternative ORB can be specified via
  * properties, passed to ORB.Init(...).
- * 
+ *
  * When creating an ORB instance, the class name is searched in the following
  * locations:
  * <p>
@@ -77,7 +77,7 @@ import java.util.Properties;
  * 4. The orb.properties file located in the user.home directory (if any).<br>
  * 5. The orb.properties file located in the java.home/lib directory (if any).
  * </p>
- * 
+ *
  * The supported properties are: <table border="1">
  * <tr>
  * <td> org.omg.CORBA.ORBClass</td>
@@ -99,7 +99,7 @@ import java.util.Properties;
  * <td>org.omg.CORBA.ORBid</td>
  * <td>Specifies the name (ORB Id) of this ORB. The ORB Id is later accessible
  * by {@link ObjectReferenceTemplate#orb_id}. The default value includes the
- * hashcode of the ORB instance that is normally different for each ORB. 
+ * hashcode of the ORB instance that is normally different for each ORB.
  * </td>
  * </tr>
  * <tr>
@@ -126,16 +126,16 @@ import java.util.Properties;
  * currently instantiated. Serves as a replacement of the proprietary
  * property com.sun.CORBA.connection.ORBSocketFactoryClass. To have multiple
  * types of sockets, instantiate several ORB's with this property each time
- * set to the different value. 
+ * set to the different value.
  * The factory must implement gnu.CORBA.interfaces.SocketFactory.
  * </td>
  * </tr>
- * </table> 
+ * </table>
  * <p>The command line accepts the same properties as a keys. When
  * specifying in the command line, the prefix org.omg.CORBA can be omitted, for
  * instance<code> -ORBInitRef NameService=IOR:aabbccdd....</code>
  * </p>
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public abstract class ORB
@@ -155,20 +155,20 @@ public abstract class ORB
    */
   private static final String RESTRICTED_ORB =
     "org.omg.CORBA.ORBSingletonClass";
-  
+
   private static final String LISTENER_PORT =
     OrbFocused.LISTENER_PORT;
-  
+
   /**
    * The class, implementing the default fully functional ORB.
    */
   private static final String DEFAULT_FUNCTIONAL_ORB =
     gnu.CORBA.Poa.ORB_1_4.class.getName();
-  
+
   private static final String DEFAULT_FOCUSED_ORB =
     gnu.CORBA.OrbFocused.class.getName();
-  
-  // There is no need for name of the default restricted ORB as it is 
+
+  // There is no need for name of the default restricted ORB as it is
   // singleton and it is more effectively referred directly.
 
   /**
@@ -282,7 +282,7 @@ public abstract class ORB
   {
     throw new NO_IMPLEMENT();
   }
-  
+
   /**
    * The support for {@link DynAny} and derived interfaces
    * has never been implemented in Sun's java releases,
@@ -371,7 +371,7 @@ public abstract class ORB
   {
     throw new NO_IMPLEMENT();
   }
-  
+
   /**
    * The support for {@link DynUnion} and derived interfaces
    * has never been implemented in Sun's java releases,
@@ -529,7 +529,7 @@ public abstract class ORB
    */
   public abstract Request get_next_response()
                                      throws WrongTransaction;
- 
+
   /**
    * Create a new CDR output stream, where the parameter values can be written
    * during the method invocation.
@@ -844,10 +844,10 @@ public abstract class ORB
   {
     String ocn = applet.getParameter(FUNCTIONAL_ORB);
     String lp = applet.getParameter(LISTENER_PORT);
-    
+
     if (ocn==null && lp!=null)
       ocn = DEFAULT_FOCUSED_ORB;
-    
+
     ORB orb = createORB(props, ocn);
     orb.set_parameters(applet, props);
 
@@ -856,18 +856,18 @@ public abstract class ORB
 
   /**
    * Creates the working instance of ORB for a standalone application.
-   * 
+   *
    * By default the built-in fully functional ORB is returned. The ORB class is
    * found as described in the header of this class.
-   * 
+   *
    * @param args the parameters, passed to the applications
    * <code>main(String[] args)</code> method, may be <code>null</code>. The
    * parameter -org.omg.CORBA.ORBClass <class name> if present, defines the used
    * ORB implementation class. If this property is not present, the ORB class is
    * found as described in the class header.
-   * 
+   *
    * @param props application specific properties, may be <code>null</code>.
-   * 
+   *
    * @return a newly created functional derivative of this abstract class.
    */
   public static ORB init(String[] args, Properties props)
@@ -901,9 +901,9 @@ public abstract class ORB
 
   /**
    * List the initially available CORBA objects (services).
-   * 
+   *
    * @return a list of services.
-   * 
+   *
    * @see #resolve_initial_references(String)
    */
   public abstract String[] list_initial_services();
@@ -1018,28 +1018,28 @@ public abstract class ORB
    * using the <code>narrow(Object)</code> method of its helper.
    * </p><p>
    * This function supports the following input formats:<br>
-   * 1. IOR reference (<b>ior:</b>nnnnn ..), usually computer generated.<br> 
+   * 1. IOR reference (<b>ior:</b>nnnnn ..), usually computer generated.<br>
    * 2. <b>corbaloc:</b>[<b>iiop</b>][version.subversion<b>@</b>]<b>:</b>host[<b>:</b>port]<b>/</b><i>key</i>
    * defines similar information as IOR reference, but is more human readable.
    * This type of reference may also contain multiple addresses (see
    * OMG documentation for complete format).<br>
    * 3. <b>corbaloc:rir:/</b><i>name</i> defines internal reference on this
-   * ORB that is resolved using {@link #resolve_initial_references}, passing 
+   * ORB that is resolved using {@link #resolve_initial_references}, passing
    * the given <i>name</i> as parameter.<br>
    * 4. <b>corbaname:rir:#</b><i>name</i> states that the given <i>name</i>
    * must be resolved using the naming service, default for this ORB.<br>
    * 5. <b>corbaname:</b>[<b>iiop</b>][version.subversion<b>@</b>]<b>:</b>host[<b>:</b>port]<b>#</b><i>name</i>
    * states that the <i>name</i> must be resolved using the naming service
-   * that runs on the given host at the given port. The ORB expects to find 
-   * there the {@link org.omg.CosNaming.NamingContext} under the key 
+   * that runs on the given host at the given port. The ORB expects to find
+   * there the {@link org.omg.CosNaming.NamingContext} under the key
    * "NameService.<br>
-   * 7. file://[file name] Read the object definition string from the 
+   * 7. file://[file name] Read the object definition string from the
    * file system<br>
    * 8. http://[url] Read the object definition string from the provided
    * url.<br>
    * 9. ftp://[url] Read the object definition string from the provided
    * url.<br>
-   * 
+   *
    * <p>The default port is always 2809. The default iiop version is 1.0
    * that now may not always be supported, so we would recommend to specify
    * the version explicitly.</p>
@@ -1047,29 +1047,29 @@ public abstract class ORB
    * The examples of the corbaloc and corbaname addresses:<br>
    * corbaname:rir:#xobj - ask local naming service for "xobj".<br>
    * corbaname:rir:/NameService#xobj - same (long form).<br>
-   * corbaname:iiop:1.2@localhost:900#xobj - same, assuming that the naming 
+   * corbaname:iiop:1.2@localhost:900#xobj - same, assuming that the naming
    * service runs at port 900 on the local host and supports iiop 1.2.<br>
-   * corbaname:iiop:localhost#xobj - same, assuming that the naming 
+   * corbaname:iiop:localhost#xobj - same, assuming that the naming
    * service runs at port 2809 on the local host and supports iiop 1.0.<br>
    * corbaloc::gnu.xxx.yy/Prod/TradingService - the object exists on the
-   * host gnu.xxx.yy, port 2809 having the key "Prod/TradingService". Its ORB 
+   * host gnu.xxx.yy, port 2809 having the key "Prod/TradingService". Its ORB
    * supports iiop 1.0.<br>
    * corbaloc::gnu.xxx.yy/Prod/TradingService:801 - the object exists on the
-   * host gnu.xxx.yy, port 801 having the key "Prod/TradingService". Its ORB 
+   * host gnu.xxx.yy, port 801 having the key "Prod/TradingService". Its ORB
    * supports iiop 1.0 (iiop keyword ommitted).<br>
    * corbaloc:iiop:1.1@gnu.xxx.yy/Prod/TradingService - the object exists on the
-   * host gnu.xxx.yy, port 801 having the key "Prod/TradingService". Its ORB 
+   * host gnu.xxx.yy, port 801 having the key "Prod/TradingService". Its ORB
    * supports iiop 1.1.<br>
    * corbaloc:rir:/NameService - the default naming service.
    *
    * @param IOR the object IOR representation string.
    *
    * @return the found CORBA object.
-   * 
+   *
    * @throws BAD_PARAM if the string being parsed is invalid.
    * @throws DATA_CONVERSION if the string being parsed contains unsupported
    * prefix or protocol.
-   * 
+   *
    * @see #object_to_string(org.omg.CORBA.Object)
    */
   public abstract Object string_to_object(String IOR);
@@ -1146,7 +1146,7 @@ public abstract class ORB
 
     if (orb_cn == null)
       orb_cn = checkFile(property, "java.home", "lib");
-    
+
     return orb_cn;
   }
 
@@ -1189,7 +1189,7 @@ public abstract class ORB
 
   /**
    * Create ORB when its name is possibly known.
-   * 
+   *
    * @param props properties, possibly containing the ORB name.
    * @param orbClassName the direct ORB class name, overriding other possible
    * locations, or null if not specified.

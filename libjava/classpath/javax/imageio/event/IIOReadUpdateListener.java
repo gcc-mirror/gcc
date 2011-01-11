@@ -47,7 +47,7 @@ public interface IIOReadUpdateListener extends EventListener
 {
   /**
    * Reports that a given region of the image has been updated.
-   * 
+   *
    * @param source the <code>ImageReader</code> object calling this method
    * @param image the BufferedImage being updated
    * @param minX the X coordinate of the leftmost updated column of pixels
@@ -64,7 +64,7 @@ public interface IIOReadUpdateListener extends EventListener
 
   /**
    * Reports that the current read operation has completed a progressive pass.
-   * 
+   *
    * @param source the <code>ImageReader</code> object calling this method
    * @param image the BufferedImage being updated
    */
@@ -72,7 +72,7 @@ public interface IIOReadUpdateListener extends EventListener
 
   /**
    * Reports that the current read operation is about to begin a progressive pass.
-   * 
+   *
    * @param source the <code>ImageReader</code> object calling this method
    * @param image the BufferedImage being updated
    * @param pass the numer of the pass that is about to begin, starting with 0
@@ -90,7 +90,7 @@ public interface IIOReadUpdateListener extends EventListener
 
   /**
    * Reports that the current thumbnail read operation has completed a progressive pass.
-   * 
+   *
    * @param source the <code>ImageReader</code> object calling this method
    * @param image the BufferedImage being updated
    */
@@ -98,7 +98,7 @@ public interface IIOReadUpdateListener extends EventListener
 
   /**
    * Reports that the current thumbnail read operation is about to begin a progressive pass.
-   * 
+   *
    * @param source the <code>ImageReader</code> object calling this method
    * @param image the BufferedImage being updated
    * @param pass the numer of the pass that is about to begin, starting with 0

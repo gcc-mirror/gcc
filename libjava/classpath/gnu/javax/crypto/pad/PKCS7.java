@@ -1,4 +1,4 @@
-/* PKCS7.java -- 
+/* PKCS7.java --
  Copyright (C) 2001, 2002, 2006 Free Software Foundation, Inc.
 
  This file is a part of GNU Classpath.
@@ -69,7 +69,7 @@ public final class PKCS7
 
   /**
    * Trivial package-private constructor for use by the <i>Factory</i> class.
-   * 
+   *
    * @see PadFactory
    */
   PKCS7()

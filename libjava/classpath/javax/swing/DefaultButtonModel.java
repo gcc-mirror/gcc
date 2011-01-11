@@ -331,7 +331,7 @@ public class DefaultButtonModel implements ButtonModel, Serializable
     // if this call does not represent a CHANGE in state, then return
     if ((a && isArmed()) || (!a && !isArmed()))
       return;
-    
+
     // cannot change ARMED state unless button is enabled
     if (!isEnabled())
       return;
@@ -427,7 +427,7 @@ public class DefaultButtonModel implements ButtonModel, Serializable
     // if this call does not represent a CHANGE in state, then return
     if (r == isRollover())
       return;
-    
+
     // cannot set ROLLOVER property unless button is enabled
     if (!isEnabled())
       return;
@@ -452,7 +452,7 @@ public class DefaultButtonModel implements ButtonModel, Serializable
     // if this call does not represent a CHANGE in state, then return
     if ((s && isSelected()) || (!s && !isSelected()))
       return;
-    
+
     // make the change
     if (s)
       stateMask = stateMask | SELECTED;
@@ -556,7 +556,7 @@ public class DefaultButtonModel implements ButtonModel, Serializable
    * <code>true</code> at a time.
    *
    * @param g The new "group" property (<code>null</code> permitted).
-   * 
+   *
    * @see #getGroup()
    */
   public void setGroup(ButtonGroup g)
@@ -568,7 +568,7 @@ public class DefaultButtonModel implements ButtonModel, Serializable
    * Returns the current value of the model's "group" property.
    *
    * @return The value of the "group" property
-   * 
+   *
    * @see #setGroup(ButtonGroup)
    */
   public ButtonGroup getGroup()

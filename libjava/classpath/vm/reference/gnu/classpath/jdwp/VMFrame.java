@@ -44,8 +44,8 @@ import gnu.classpath.jdwp.value.Value;
 
 /**
  * Reference implementation of VM hooks for JDWP Frame access.
- * 
- * @author aluchko 
+ *
+ * @author aluchko
  */
 
 public class VMFrame
@@ -54,22 +54,22 @@ public class VMFrame
    * Returns the size of a frame ID over JDWP
    */
   public static final int SIZE = 8;
-  
+
   //The thread this frame resides in
   private Thread thread;
 
   // The object this frame resides in
   private Object obj;
-  
+
   // The current location of this frame
   private Location loc;
-  
+
   // id of this frame
   private long id;
-  
+
   /**
    * Create a new VMFrame object.
-   * 
+   *
    * @param thr a Thread, the thread this frame is in
    * @param frame_id a long, the jframeID of this frame
    * @param frame_loc a Location, the location of this frame
@@ -83,7 +83,7 @@ public class VMFrame
     loc = frame_loc;
     obj = frame_obj;
   }
-  
+
   /**
    * Gets the current location of the frame.
    */
@@ -94,18 +94,18 @@ public class VMFrame
 
   /**
    * Returns the value of the variable in the given slot.
-   * 
+   *
    * @param slot the slot containing the variable
    */
   public native Value getValue(int slot, byte sig);
 
   /**
-   * Assigns the given variable to the given value. 
+   * Assigns the given variable to the given value.
    * @param slot The slot which contains the variable
    * @param value The value to assign the variable to
    */
   public native void setValue(int slot, Value value);
-  
+
   /**
    * Get the thread this frame is in.
    */

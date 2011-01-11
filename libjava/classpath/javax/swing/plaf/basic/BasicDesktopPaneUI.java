@@ -94,7 +94,7 @@ public class BasicDesktopPaneUI extends DesktopPaneUI
     public boolean isEnabled()
     {
       if (desktop.getSelectedFrame() != null)
-	return desktop.getSelectedFrame().isClosable();
+        return desktop.getSelectedFrame().isClosable();
       return false;
     }
   }
@@ -133,7 +133,7 @@ public class BasicDesktopPaneUI extends DesktopPaneUI
     public boolean isEnabled()
     {
       if (desktop.getSelectedFrame() != null)
-	return desktop.getSelectedFrame().isMaximizable();
+        return desktop.getSelectedFrame().isMaximizable();
       return false;
     }
   }
@@ -172,7 +172,7 @@ public class BasicDesktopPaneUI extends DesktopPaneUI
     public boolean isEnabled()
     {
       if (desktop.getSelectedFrame() != null)
-	return desktop.getSelectedFrame().isIconifiable();
+        return desktop.getSelectedFrame().isIconifiable();
       return false;
     }
   }
@@ -191,23 +191,23 @@ public class BasicDesktopPaneUI extends DesktopPaneUI
      */
     public void actionPerformed(ActionEvent e)
     {
-      // This is supposed to set the next selected frame. 
+      // This is supposed to set the next selected frame.
       JInternalFrame[] frames = desktop.getAllFrames();
       if (frames.length == 0)
-	return;
+        return;
 
       JInternalFrame sFrame = frames[0];
       if (desktop.getSelectedFrame() != null)
-	sFrame = desktop.getSelectedFrame();
+        sFrame = desktop.getSelectedFrame();
 
       int i = 0;
       for (; i < frames.length; i++)
-	if (frames[i] == sFrame)
-	  break;
+        if (frames[i] == sFrame)
+          break;
 
-      // FIXME: Navigate actions go reverse too.	  
+      // FIXME: Navigate actions go reverse too.
       if (i == frames.length)
-	i = 0;
+        i = 0;
 
       desktop.setSelectedFrame(frames[i]);
     }
@@ -399,11 +399,11 @@ public class BasicDesktopPaneUI extends DesktopPaneUI
   {
     if (c instanceof JDesktopPane)
       {
-	desktop = (JDesktopPane) c;
+        desktop = (JDesktopPane) c;
 
-	installDefaults();
-	installDesktopManager();
-	installKeyboardActions();
+        installDefaults();
+        installDesktopManager();
+        installKeyboardActions();
       }
   }
 

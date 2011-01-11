@@ -88,7 +88,7 @@ public class DSSKeyPairPKCS8Codec
   /**
    * Returns the PKCS#8 ASN.1 <i>PrivateKeyInfo</i> representation of a DSA
    * private key. The ASN.1 specification is as follows:
-   * 
+   *
    * <pre>
    *   PrivateKeyInfo ::= SEQUENCE {
    *     version              INTEGER, -- MUST be 0
@@ -107,7 +107,7 @@ public class DSSKeyPairPKCS8Codec
    *     g   INTEGER
    *   }
    * </pre>
-   * 
+   *
    * @return the DER encoded form of the ASN.1 representation of the
    *         <i>PrivateKeyInfo</i> field in an X.509 certificate.
    * @throw InvalidParameterException if an error occurs during the marshalling

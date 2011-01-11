@@ -50,8 +50,8 @@ public final class NO_IMPLEMENT
   extends SystemException
   implements Serializable
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 3519190655657192112L;
 

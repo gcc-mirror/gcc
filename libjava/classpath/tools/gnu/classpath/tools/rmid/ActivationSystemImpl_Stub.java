@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -59,23 +59,23 @@ import java.rmi.UnexpectedException;
 
 /**
  * This class delegates its method calls to the remote RMI object, referenced
- * by {@link RemoteRef}. 
+ * by {@link RemoteRef}.
  *
  * It is normally generated with rmic.
  */
-public final class ActivationSystemImpl_Stub 
+public final class ActivationSystemImpl_Stub
     extends RemoteStub
     implements ActivationMonitor, Activator, ActivationSystem
 {
     /**
-     * Use serialVersionUID for interoperability 
+     * Use serialVersionUID for interoperability
      */
     private static final long serialVersionUID = 2;
-    
+
     /**
      * The explaining message for {@ling UnexpectedException}.
      */
-    private static final String exception_message = 
+    private static final String exception_message =
       "undeclared checked exception";
 
      /* All remote methods, invoked by this stub: */
@@ -96,8 +96,8 @@ public final class ActivationSystemImpl_Stub
     private static final Object[] NO_ARGS = new Object[0];
     static
       {
-        final Class[]  NO_ARGSc = new Class[0];      
-        try 
+        final Class[]  NO_ARGSc = new Class[0];
+        try
           {
              met_setActivationGroupDesc =
                ActivationSystem.class.getMethod("setActivationGroupDesc", new Class[]
@@ -174,20 +174,20 @@ public final class ActivationSystemImpl_Stub
                "ActivationSystemImpl_Stub class initialization failed");
              err.initCause(nex);
              throw err;
-          }  
+          }
       }
-    
+
     /**
      * Create the instance for _ActivationSystemImpl_Stub that forwards method calls to the
      * remote object.
      *
      * @para the reference to the remote object.
      */
-    public ActivationSystemImpl_Stub(RemoteRef reference) 
+    public ActivationSystemImpl_Stub(RemoteRef reference)
     {
        super(reference);
-    }    
-    
+    }
+
     /* Methods */
   /** @inheritDoc */
   public ActivationGroupDesc setActivationGroupDesc(ActivationGroupID p0,
@@ -216,7 +216,7 @@ public final class ActivationSystemImpl_Stub
         throw uex;
       }
   }
-   
+
   /** @inheritDoc */
   public void inactiveGroup(ActivationGroupID p0, long p1)
       throws UnknownGroupException, RemoteException
@@ -241,7 +241,7 @@ public final class ActivationSystemImpl_Stub
         throw uex;
       }
   }
-   
+
   /** @inheritDoc */
   public void unregisterObject(ActivationID p0) throws ActivationException,
       UnknownObjectException, RemoteException
@@ -266,7 +266,7 @@ public final class ActivationSystemImpl_Stub
         throw uex;
       }
   }
-   
+
   /** @inheritDoc */
   public ActivationDesc getActivationDesc(ActivationID p0)
       throws ActivationException, UnknownObjectException, RemoteException
@@ -292,7 +292,7 @@ public final class ActivationSystemImpl_Stub
         throw uex;
       }
   }
-   
+
   /** @inheritDoc */
   public ActivationDesc setActivationDesc(ActivationID p0, ActivationDesc p1)
       throws ActivationException, UnknownObjectException,
@@ -320,7 +320,7 @@ public final class ActivationSystemImpl_Stub
         throw uex;
       }
   }
-   
+
   /** @inheritDoc */
   public void shutdown() throws RemoteException
   {
@@ -343,7 +343,7 @@ public final class ActivationSystemImpl_Stub
         throw uex;
       }
   }
-   
+
   /** @inheritDoc */
   public MarshalledObject activate(ActivationID p0, boolean p1)
       throws ActivationException, UnknownObjectException, RemoteException
@@ -370,7 +370,7 @@ public final class ActivationSystemImpl_Stub
         throw uex;
       }
   }
-   
+
   /** @inheritDoc */
   public ActivationMonitor activeGroup(ActivationGroupID p0,
                                        ActivationInstantiator p1, long p2)
@@ -398,7 +398,7 @@ public final class ActivationSystemImpl_Stub
         throw uex;
       }
   }
-   
+
   /** @inheritDoc */
   public ActivationGroupID registerGroup(ActivationGroupDesc p0)
       throws ActivationException, RemoteException
@@ -424,7 +424,7 @@ public final class ActivationSystemImpl_Stub
         throw uex;
       }
   }
-   
+
   /** @inheritDoc */
   public ActivationGroupDesc getActivationGroupDesc(ActivationGroupID p0)
       throws ActivationException, UnknownGroupException, RemoteException
@@ -450,7 +450,7 @@ public final class ActivationSystemImpl_Stub
         throw uex;
       }
   }
-   
+
   /** @inheritDoc */
   public void activeObject(ActivationID p0, MarshalledObject p1)
       throws UnknownObjectException, RemoteException
@@ -475,7 +475,7 @@ public final class ActivationSystemImpl_Stub
         throw uex;
       }
   }
-   
+
   /** @inheritDoc */
   public ActivationID registerObject(ActivationDesc p0)
       throws ActivationException, UnknownGroupException, RemoteException
@@ -501,7 +501,7 @@ public final class ActivationSystemImpl_Stub
         throw uex;
       }
   }
-   
+
   /** @inheritDoc */
   public void inactiveObject(ActivationID p0) throws UnknownObjectException,
       RemoteException
@@ -526,7 +526,7 @@ public final class ActivationSystemImpl_Stub
         throw uex;
       }
   }
-   
+
   /** @inheritDoc */
   public void unregisterGroup(ActivationGroupID p0) throws ActivationException,
       UnknownGroupException, RemoteException
@@ -551,6 +551,6 @@ public final class ActivationSystemImpl_Stub
         throw uex;
       }
   }
-   
-    
+
+
 }

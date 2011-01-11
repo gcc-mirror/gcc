@@ -1,4 +1,4 @@
-/* CniPrintStream.java - PrintStream that emits CNI declarations 
+/* CniPrintStream.java - PrintStream that emits CNI declarations
  Copyright (C) 2006 Free Software Foundation, Inc.
 
  This file is part of GNU Classpath.
@@ -125,7 +125,7 @@ public class CniPrintStream
     // Add the plain class name; we'll handle it when
     // we process namespaces.
     allClasses.add(name);
-    return name; 
+    return name;
   }
 
   // Print the C++ form of TYPE, mangling C++ keywords.
@@ -142,9 +142,9 @@ public class CniPrintStream
       }
     if (type.getSort() == Type.OBJECT)
       {
-	print("::");
+        print("::");
         printName(getClassName(type));
-	print(" *");
+        print(" *");
       }
     else
       {
@@ -166,9 +166,9 @@ public class CniPrintStream
     String[] parts = name.split("::|/");
     for (int i = 0; i < parts.length; i++)
       {
-	if (i != 0)
-	  out.print("::");
-	out.print(Keywords.getCxxName(parts[i]));
+        if (i != 0)
+          out.print("::");
+        out.print(Keywords.getCxxName(parts[i]));
       }
   }
 

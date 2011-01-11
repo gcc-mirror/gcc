@@ -1,4 +1,4 @@
-/* CoderResult.java -- 
+/* CoderResult.java --
    Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -47,7 +47,7 @@ import java.util.HashMap;
  * @since 1.4
  */
 public class CoderResult
-{ 
+{
   private static final int TYPE_MALFORMED  = 0;
   private static final int TYPE_OVERFLOW   = 1;
   private static final int TYPE_UNDERFLOW  = 2;
@@ -57,7 +57,7 @@ public class CoderResult
     = new CoderResult (TYPE_OVERFLOW, 0);
   public static final CoderResult UNDERFLOW
     = new CoderResult (TYPE_UNDERFLOW, 0);
-  
+
   private static final String[] names
     = { "MALFORMED", "OVERFLOW", "UNDERFLOW", "UNMAPPABLE" };
 
@@ -126,7 +126,7 @@ public class CoderResult
   {
     return malformedCache.get (length);
   }
-    
+
   public void throwException ()
     throws CharacterCodingException
   {
@@ -152,7 +152,7 @@ public class CoderResult
   public static CoderResult unmappableForLength (int length)
   {
     return unmappableCache.get (length);
-  }    
+  }
 
   private abstract static class Cache
   {

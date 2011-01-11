@@ -119,7 +119,7 @@ public final class StackTraceElement implements Serializable
    * @param fileName the name of the file, null if unknown
    * @param lineNumber the line in the file, negative if unknown, or -2
    * if this method is native
-   * 
+   *
    * @since 1.5
    */
   public StackTraceElement(String className, String methodName, String fileName,

@@ -1,4 +1,4 @@
-/* GnomeXPathExpression.java - 
+/* GnomeXPathExpression.java -
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -78,9 +78,9 @@ implements XPathExpression
   {
     return doEvaluate (expr, contextNode, type, result);
   }
-  
+
   private native Object doEvaluate (Object expr, Node contextNode,
                                     short type, Object result)
     throws XPathException, DOMException;
-    
+
 }

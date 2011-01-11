@@ -77,7 +77,7 @@ public class JWindow extends Window implements Accessible, RootPaneContainer
   }
 
   private static final long serialVersionUID = 5420698392125238833L;
-  
+
   protected JRootPane rootPane;
 
   /**

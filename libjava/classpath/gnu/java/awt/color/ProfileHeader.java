@@ -57,7 +57,7 @@ public class ProfileHeader
   /**
    * Mapping from ICC Profile signatures to ColorSpace types
    */
-  private static final int[] csTypeMap = 
+  private static final int[] csTypeMap =
                                          {
                                            ICC_Profile.icSigXYZData,
                                            ColorSpace.TYPE_XYZ,
@@ -119,7 +119,7 @@ public class ProfileHeader
   /**
    * Mapping of ICC class signatures to profile class constants
    */
-  private static final int[] classMap = 
+  private static final int[] classMap =
                                         {
                                           ICC_Profile.icSigInputClass,
                                           ICC_Profile.CLASS_INPUT,
@@ -194,7 +194,7 @@ public class ProfileHeader
   {
     ByteBuffer buf = ByteBuffer.wrap(data);
 
-    // Get size (the sign bit shouldn't matter. 	
+    // Get size (the sign bit shouldn't matter.
     // A valid profile can never be +2Gb)
     size = buf.getInt(ICC_Profile.icHdrSize);
 
@@ -211,8 +211,8 @@ public class ProfileHeader
     for (int i = 0; i < classMap.length; i += 2)
       if (classMap[i] == classSig)
         {
-	  profileClass = classMap[i + 1];
-	  break;
+          profileClass = classMap[i + 1];
+          break;
         }
 
     // get the data color space
@@ -221,8 +221,8 @@ public class ProfileHeader
     for (int i = 0; i < csTypeMap.length; i += 2)
       if (csTypeMap[i] == csSig)
         {
-	  colorSpace = csTypeMap[i + 1];
-	  break;
+          colorSpace = csTypeMap[i + 1];
+          break;
         }
 
     // get the profile color space (PCS), must be xyz or lab except
@@ -231,19 +231,19 @@ public class ProfileHeader
     profileColorSpace = -1;
     if (profileClass != ICC_Profile.CLASS_DEVICELINK)
       {
-	if (pcsSig == ICC_Profile.icSigXYZData)
-	  profileColorSpace = ColorSpace.TYPE_XYZ;
-	if (pcsSig == ICC_Profile.icSigLabData)
-	  profileColorSpace = ColorSpace.TYPE_Lab;
+        if (pcsSig == ICC_Profile.icSigXYZData)
+          profileColorSpace = ColorSpace.TYPE_XYZ;
+        if (pcsSig == ICC_Profile.icSigLabData)
+          profileColorSpace = ColorSpace.TYPE_Lab;
       }
     else
       {
-	for (int i = 0; i < csTypeMap.length; i += 2)
-	  if (csTypeMap[i] == pcsSig)
-	    {
-	      profileColorSpace = csTypeMap[i + 1];
-	      break;
-	    }
+        for (int i = 0; i < csTypeMap.length; i += 2)
+          if (csTypeMap[i] == pcsSig)
+            {
+              profileColorSpace = csTypeMap[i + 1];
+              break;
+            }
       }
 
     // creation timestamp
@@ -266,7 +266,7 @@ public class ProfileHeader
     System.arraycopy(data, ICC_Profile.icHdrAttributes, attributes, 0, 8);
     // rendering intent
     intent = buf.getInt(ICC_Profile.icHdrRenderingIntent);
-    // illuminant info 
+    // illuminant info
     illuminant = new byte[12];
     System.arraycopy(data, ICC_Profile.icHdrIlluminant, illuminant, 0, 12);
     // Creator signature
@@ -321,13 +321,13 @@ public class ProfileHeader
                  (short) (majorVersion << 8 | minorVersion));
     for (int i = 1; i < classMap.length; i += 2)
       if (profileClass == classMap[i])
-	buf.putInt(ICC_Profile.icHdrDeviceClass, classMap[i - 1]);
+        buf.putInt(ICC_Profile.icHdrDeviceClass, classMap[i - 1]);
     for (int i = 1; i < csTypeMap.length; i += 2)
       if (csTypeMap[i] == colorSpace)
-	buf.putInt(ICC_Profile.icHdrColorSpace, csTypeMap[i - 1]);
+        buf.putInt(ICC_Profile.icHdrColorSpace, csTypeMap[i - 1]);
     for (int i = 1; i < csTypeMap.length; i += 2)
       if (csTypeMap[i] == profileColorSpace)
-	buf.putInt(ICC_Profile.icHdrPcs, csTypeMap[i - 1]);
+        buf.putInt(ICC_Profile.icHdrPcs, csTypeMap[i - 1]);
 
     System.arraycopy(timestamp, 0, data, ICC_Profile.icHdrDate,
                      timestamp.length);

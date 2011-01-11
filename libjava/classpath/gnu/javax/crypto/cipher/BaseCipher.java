@@ -1,4 +1,4 @@
-/* BaseCipher.java -- 
+/* BaseCipher.java --
    Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -72,7 +72,7 @@ public abstract class BaseCipher
 
   /**
    * Trivial constructor for use by concrete subclasses.
-   * 
+   *
    * @param name the canonical name prefix of this instance.
    * @param defaultBlockSize the default block size in bytes.
    * @param defaultKeySize the default key size in bytes.

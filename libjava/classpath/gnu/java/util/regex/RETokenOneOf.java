@@ -59,7 +59,7 @@ final class RETokenOneOf extends REToken
   // the basic part /2-7a-c/ is stored in the ArrayList options, and
   // the additional part /[f-k][m-z]&&[^p-v][st]/ is stored in the
   // ArrayList addition in the following order (Reverse Polish Notation):
-  //           -- The matching result of the basic part is assumed here. 
+  //           -- The matching result of the basic part is assumed here.
   //    [f-k]  -- REToken
   //    "|"    -- or
   //    [m-z]  -- REToken
@@ -80,7 +80,7 @@ final class RETokenOneOf extends REToken
   //      \D --> new RETokenOneOf("0123456789",true, ..)
 
     RETokenOneOf (int subIndex, String optionsStr, boolean negative,
-		  boolean insens)
+                  boolean insens)
   {
     super (subIndex);
     options = new ArrayList < REToken > ();
@@ -97,7 +97,7 @@ final class RETokenOneOf extends REToken
   }
 
   RETokenOneOf (int subIndex, List < REToken > options,
-		List < Object > addition, boolean negative)
+                List < Object > addition, boolean negative)
   {
     super (subIndex);
     this.options = options;
@@ -114,8 +114,8 @@ final class RETokenOneOf extends REToken
     int x;
   for (REToken t:options)
       {
-	if ((x = t.getMinimumLength ()) < min)
-	  min = x;
+        if ((x = t.getMinimumLength ()) < min)
+          min = x;
       }
     return min;
   }
@@ -128,8 +128,8 @@ final class RETokenOneOf extends REToken
     int x;
   for (REToken t:options)
       {
-	if ((x = t.getMaximumLength ()) > max)
-	  max = x;
+        if ((x = t.getMaximumLength ()) > max)
+          max = x;
       }
     return max;
   }
@@ -149,13 +149,13 @@ final class RETokenOneOf extends REToken
     boolean tryOnly;
     if (addition == null)
       {
-	tryMatch = mymatch;
-	tryOnly = false;
+        tryMatch = mymatch;
+        tryOnly = false;
       }
     else
       {
-	tryMatch = (REMatch) mymatch.clone ();
-	tryOnly = true;
+        tryMatch = (REMatch) mymatch.clone ();
+        tryOnly = true;
       }
     boolean b = negative ?
       matchN (input, tryMatch, tryOnly) : matchP (input, tryMatch, tryOnly);
@@ -166,36 +166,36 @@ final class RETokenOneOf extends REToken
     stack.push (new Boolean (b));
   for (Object obj:addition)
       {
-	if (obj instanceof REToken)
-	  {
-	    b = ((REToken) obj).match (input, (REMatch) mymatch.clone ());
-	    stack.push (new Boolean (b));
-	  }
-	else if (obj instanceof Boolean)
-	  {
-	    stack.push ((Boolean) obj);
-	  }
-	else if (obj.equals ("|"))
-	  {
-	    b = stack.pop ();
-	    b = stack.pop () || b;
-	    stack.push (new Boolean (b));
-	  }
-	else if (obj.equals ("&"))
-	  {
-	    b = stack.pop ();
-	    b = stack.pop () && b;
-	    stack.push (new Boolean (b));
-	  }
-	else
-	  {
-	    throw new RuntimeException ("Invalid object found");
-	  }
+        if (obj instanceof REToken)
+          {
+            b = ((REToken) obj).match (input, (REMatch) mymatch.clone ());
+            stack.push (new Boolean (b));
+          }
+        else if (obj instanceof Boolean)
+          {
+            stack.push ((Boolean) obj);
+          }
+        else if (obj.equals ("|"))
+          {
+            b = stack.pop ();
+            b = stack.pop () || b;
+            stack.push (new Boolean (b));
+          }
+        else if (obj.equals ("&"))
+          {
+            b = stack.pop ();
+            b = stack.pop () && b;
+            stack.push (new Boolean (b));
+          }
+        else
+          {
+            throw new RuntimeException ("Invalid object found");
+          }
       }
     if (stack.pop ())
       {
-	++mymatch.index;
-	return next (input, mymatch);
+        ++mymatch.index;
+        return next (input, mymatch);
       }
     return false;
   }
@@ -207,12 +207,12 @@ final class RETokenOneOf extends REToken
 
   for (REToken tk:options)
       {
-	REMatch tryMatch = (REMatch) mymatch.clone ();
-	if (tk.match (input, tryMatch))
-	  {			// match was successful
-	    return false;
-	  }			// is a match
-      }				// try next option
+        REMatch tryMatch = (REMatch) mymatch.clone ();
+        if (tk.match (input, tryMatch))
+          {                     // match was successful
+            return false;
+          }                     // is a match
+      }                         // try next option
 
     if (tryOnly)
       return true;
@@ -224,17 +224,17 @@ final class RETokenOneOf extends REToken
   {
   for (REToken tk:options)
       {
-	REMatch tryMatch = (REMatch) mymatch.clone ();
-	if (tk.match (input, tryMatch))
-	  {			// match was successful
-	    if (tryOnly)
-	      return true;
-	    if (next (input, tryMatch))
-	      {
-		mymatch.assignFrom (tryMatch);
-		return true;
-	      }
-	  }
+        REMatch tryMatch = (REMatch) mymatch.clone ();
+        if (tk.match (input, tryMatch))
+          {                     // match was successful
+            if (tryOnly)
+              return true;
+            if (next (input, tryMatch))
+              {
+                mymatch.assignFrom (tryMatch);
+                return true;
+              }
+          }
       }
     return false;
   }
@@ -244,8 +244,8 @@ final class RETokenOneOf extends REToken
     REMatch newMatch = findMatch (input, mymatch);
     if (newMatch != null)
       {
-	mymatch.assignFrom (newMatch);
-	return true;
+        mymatch.assignFrom (newMatch);
+        return true;
       }
     return false;
   }
@@ -263,32 +263,32 @@ final class RETokenOneOf extends REToken
   }
 
   private REMatch findMatch (CharIndexed input, REMatch mymatch,
-			     int optionIndex)
+                             int optionIndex)
   {
     for (int i = optionIndex; i < options.size (); i++)
       {
-	REToken tk = options.get (i);
-	tk = (REToken) tk.clone ();
-	tk.chain (getNext ());
-	REMatch tryMatch = (REMatch) mymatch.clone ();
-	if (tryMatch.backtrackStack == null)
-	  {
-	    tryMatch.backtrackStack = new BacktrackStack ();
-	  }
-	boolean stackPushed = false;
-	if (i + 1 < options.size ())
-	  {
-	    tryMatch.backtrackStack.push (new BacktrackStack.
-					  Backtrack (this, input, mymatch,
-						     i + 1));
-	    stackPushed = true;
-	  }
-	if (tk.match (input, tryMatch))
-	  {
-	    return tryMatch;
-	  }
-	if (stackPushed)
-	  tryMatch.backtrackStack.pop ();
+        REToken tk = options.get (i);
+        tk = (REToken) tk.clone ();
+        tk.chain (getNext ());
+        REMatch tryMatch = (REMatch) mymatch.clone ();
+        if (tryMatch.backtrackStack == null)
+          {
+            tryMatch.backtrackStack = new BacktrackStack ();
+          }
+        boolean stackPushed = false;
+        if (i + 1 < options.size ())
+          {
+            tryMatch.backtrackStack.push (new BacktrackStack.
+                                          Backtrack (this, input, mymatch,
+                                                     i + 1));
+            stackPushed = true;
+          }
+        if (tk.match (input, tryMatch))
+          {
+            return tryMatch;
+          }
+        if (stackPushed)
+          tryMatch.backtrackStack.pop ();
       }
     return null;
   }
@@ -308,12 +308,12 @@ final class RETokenOneOf extends REToken
     tk.chain (null);
     while (true)
       {
-	if (numRepeats >= max)
-	  break;
-	m = tk.findMatch (input, m);
-	if (m == null)
-	  break;
-	numRepeats++;
+        if (numRepeats >= max)
+          break;
+        m = tk.findMatch (input, m);
+        if (m == null)
+          break;
+        numRepeats++;
       }
     return numRepeats;
   }
@@ -323,9 +323,9 @@ final class RETokenOneOf extends REToken
     os.append (negative ? "[^" : "(?:");
     for (int i = 0; i < options.size (); i++)
       {
-	if (!negative && (i > 0))
-	  os.append ('|');
-	options.get (i).dumpAll (os);
+        if (!negative && (i > 0))
+          os.append ('|');
+        options.get (i).dumpAll (os);
       }
     os.append (negative ? ']' : ')');
   }

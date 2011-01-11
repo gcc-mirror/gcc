@@ -46,7 +46,7 @@ import java.util.NoSuchElementException;
  * It returns the elements of the first Enumeration until it has
  * no more elements and then returns the elements of the second
  * Enumeration.<br>
- * 
+ *
  * In the default case:
  * <pre>
  * doubleEnum = new DoubleEnumeration(enum1, enum2);
@@ -67,7 +67,7 @@ public class DoubleEnumeration<T> implements Enumeration<T>
 {
   /**
    * This is true as long as one of the enumerations has more
-   * elements.  
+   * elements.
    * Only valid when hasChecked is true.
    * Set in <code>hasMoreElements()</code>
    */

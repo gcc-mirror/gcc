@@ -58,7 +58,7 @@ public interface ImageInputStream
   void setByteOrder(ByteOrder order);
 
   ByteOrder getByteOrder();
-  
+
   int read()
     throws IOException;
 
@@ -156,7 +156,7 @@ public interface ImageInputStream
    *
    * <p>The {@linkplain #getBitOffset() bit offset} is set to zero
    * before any data is read.
-   * 
+   *
    * @throws EOFException if the input stream ends before all two
    * bytes were read.
    *
@@ -178,7 +178,7 @@ public interface ImageInputStream
    *
    * <p>The {@linkplain #getBitOffset() bit offset} is set to zero
    * before any data is read.
-   * 
+   *
    * <p>This method does the same as {@link #readChar()}.
    *
    * @throws EOFException if the input stream ends before all two
@@ -202,7 +202,7 @@ public interface ImageInputStream
    *
    * <p>The {@linkplain #getBitOffset() bit offset} is set to zero
    * before any data is read.
-   * 
+   *
    * <p>This method does the same as {@link #readUnsignedShort()}.
    *
    * @throws EOFException if the input stream ends before all two
@@ -224,7 +224,7 @@ public interface ImageInputStream
    *
    * <p>The {@linkplain #getBitOffset() bit offset} is set to zero
    * before any data is read.
-   * 
+   *
    * @throws EOFException if the input stream ends before all four
    * bytes were read.
    *
@@ -245,7 +245,7 @@ public interface ImageInputStream
    *
    * <p>The {@linkplain #getBitOffset() bit offset} is set to zero
    * before any data is read.
-   * 
+   *
    * @throws EOFException if the input stream ends before all four
    * bytes were read.
    *
@@ -266,7 +266,7 @@ public interface ImageInputStream
    *
    * <p>The {@linkplain #getBitOffset() bit offset} is set to zero
    * before any data is read.
-   * 
+   *
    * @throws EOFException if the input stream ends before all eight
    * bytes were read.
    *
@@ -286,7 +286,7 @@ public interface ImageInputStream
    *
    * <p>The {@linkplain #getBitOffset() bit offset} is set to zero
    * before any data is read.
-   * 
+   *
    * @throws EOFException if the input stream ends before all four
    * bytes were read.
    *
@@ -306,7 +306,7 @@ public interface ImageInputStream
    *
    * <p>The {@linkplain #getBitOffset() bit offset} is set to zero
    * before any data is read.
-   * 
+   *
    * @throws EOFException if the input stream ends before all eight
    * bytes were read.
    *
@@ -331,7 +331,7 @@ public interface ImageInputStream
    *
    * <p>The {@linkplain #getBitOffset() bit offset} is set to zero
    * before any data is read.
-   * 
+   *
    * @param b an array for storing the read values.
    *
    * @param offset the index of the first element in <code>b</code>
@@ -364,7 +364,7 @@ public interface ImageInputStream
    *
    * <p>The {@linkplain #getBitOffset() bit offset} is set to zero
    * before any data is read.
-   * 
+   *
    * @param b an array for storing the read values.
    *
    * @throws NullPointerException if <code>b</code> is
@@ -391,7 +391,7 @@ public interface ImageInputStream
    *
    * <p>The {@linkplain #getBitOffset() bit offset} is set to zero
    * before any data is read.
-   * 
+   *
    * @param s an array for storing the read values.
    *
    * @param offset the index of the first element in <code>s</code>
@@ -427,7 +427,7 @@ public interface ImageInputStream
    *
    * <p>The {@linkplain #getBitOffset() bit offset} is set to zero
    * before any data is read.
-   * 
+   *
    * @param c an array for storing the read values.
    *
    * @param offset the index of the first element in <code>c</code>
@@ -463,7 +463,7 @@ public interface ImageInputStream
    *
    * <p>The {@linkplain #getBitOffset() bit offset} is set to zero
    * before any data is read.
-   * 
+   *
    * @param i an array for storing the read values.
    *
    * @param offset the index of the first element in <code>i</code>
@@ -499,7 +499,7 @@ public interface ImageInputStream
    *
    * <p>The {@linkplain #getBitOffset() bit offset} is set to zero
    * before any data is read.
-   * 
+   *
    * @param l an array for storing the read values.
    *
    * @param offset the index of the first element in <code>l</code>
@@ -535,7 +535,7 @@ public interface ImageInputStream
    *
    * <p>The {@linkplain #getBitOffset() bit offset} is set to zero
    * before any data is read.
-   * 
+   *
    * @param d an array for storing the read values.
    *
    * @param offset the index of the first element in <code>d</code>
@@ -572,7 +572,7 @@ public interface ImageInputStream
    *
    * <p>The {@linkplain #getBitOffset() bit offset} is set to zero
    * before any data is read.
-   * 
+   *
    * @param d an array for storing the read values.
    *
    * @param offset the index of the first element in <code>d</code>

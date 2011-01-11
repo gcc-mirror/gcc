@@ -1,4 +1,4 @@
-/* ApplyImportsNode.java -- 
+/* ApplyImportsNode.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -59,7 +59,7 @@ final class ApplyImportsNode
       ret.next = next.clone(stylesheet);
     return ret;
   }
-  
+
   void doApply(Stylesheet stylesheet, QName mode,
              Node context, int pos, int len,
              Node parent, Node nextSibling)
@@ -80,4 +80,3 @@ final class ApplyImportsNode
   }
 
 }
-

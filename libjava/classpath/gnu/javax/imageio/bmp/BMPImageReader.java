@@ -51,101 +51,98 @@ public class BMPImageReader extends ImageReader {
     private BMPDecoder decoder;
 
     protected BMPImageReader(ImageReaderSpi originatingProvider){
-	super(originatingProvider);
-	infoHeader = null;
-	fileHeader = null;
-	decoder = null;
+        super(originatingProvider);
+        infoHeader = null;
+        fileHeader = null;
+        decoder = null;
     }
 
-    private void validateIndex(int imageIndex) 
-	throws IndexOutOfBoundsException {
-	if (imageIndex != 0) 
-	    throw new IndexOutOfBoundsException("Invalid image index.");
+    private void validateIndex(int imageIndex)
+        throws IndexOutOfBoundsException {
+        if (imageIndex != 0)
+            throw new IndexOutOfBoundsException("Invalid image index.");
     }
 
     public void setInput(Object input) {
-	super.setInput(input);
+        super.setInput(input);
     }
 
-    public void setInput(Object input, 
-			 boolean seekForwardOnly, 
-			 boolean ignoreMetadata) {
-	super.setInput(input, seekForwardOnly, ignoreMetadata);
+    public void setInput(Object input,
+                         boolean seekForwardOnly,
+                         boolean ignoreMetadata) {
+        super.setInput(input, seekForwardOnly, ignoreMetadata);
     }
-	
+
     public void setInput(Object input, boolean isStreamable) {
-	super.setInput(input, isStreamable);
-	
-	if (!(input instanceof ImageInputStream))
-	    throw new IllegalArgumentException("Input not an ImageInputStream.");
+        super.setInput(input, isStreamable);
+
+        if (!(input instanceof ImageInputStream))
+            throw new IllegalArgumentException("Input not an ImageInputStream.");
     }
 
     private void checkStream() throws IOException {
-	if (!(input instanceof ImageInputStream)) 
-	    throw new IllegalStateException("Input not an ImageInputStream.");
-	if(input == null)
-	    throw new IllegalStateException("No input stream.");
+        if (!(input instanceof ImageInputStream))
+            throw new IllegalStateException("Input not an ImageInputStream.");
+        if(input == null)
+            throw new IllegalStateException("No input stream.");
 
     }
 
     private void readHeaders() throws IOException, IIOException {
-	if(fileHeader != null)
-	    return;
+        if(fileHeader != null)
+            return;
 
-	checkStream();
+        checkStream();
 
-	fileHeader = new BMPFileHeader((ImageInputStream)input);
-	infoHeader = new BMPInfoHeader((ImageInputStream)input);
-	decoder = BMPDecoder.getDecoder(fileHeader, infoHeader);
+        fileHeader = new BMPFileHeader((ImageInputStream)input);
+        infoHeader = new BMPInfoHeader((ImageInputStream)input);
+        decoder = BMPDecoder.getDecoder(fileHeader, infoHeader);
     }
-    
+
     public int getWidth(int imageIndex) throws IOException {
-	validateIndex(imageIndex);
-	readHeaders();
-	return infoHeader.getWidth();
+        validateIndex(imageIndex);
+        readHeaders();
+        return infoHeader.getWidth();
     }
 
     public int getHeight(int imageIndex) throws IOException {
-	validateIndex(imageIndex);
-	readHeaders();
-	return infoHeader.getHeight();
+        validateIndex(imageIndex);
+        readHeaders();
+        return infoHeader.getHeight();
     }
 
     public Iterator getImageTypes(int imageIndex){
-	validateIndex(imageIndex);
-	return null;
+        validateIndex(imageIndex);
+        return null;
     }
 
     /**
      * Returns the number of images. BMP files can only contain a single one.
      */
     public int getNumImages(boolean allowSearch){
-	return 1;
+        return 1;
     }
 
 
     // FIXME: Support metadata
     public IIOMetadata getImageMetadata(int imageIndex){
-	validateIndex(imageIndex);
-	return null;
+        validateIndex(imageIndex);
+        return null;
     }
 
     // FIXME: Support metadata
     public IIOMetadata getStreamMetadata(){
-	return null;
+        return null;
     }
 
     /**
-     * Reads the image indexed by imageIndex and returns it as 
+     * Reads the image indexed by imageIndex and returns it as
      * a complete BufferedImage, using a supplied ImageReadParam.
-    */	      
-    public BufferedImage read(int imageIndex, ImageReadParam param) 
-	throws IOException, IIOException {
-	validateIndex(imageIndex);
-	readHeaders();
-	return decoder.decode((ImageInputStream)input);
+    */
+    public BufferedImage read(int imageIndex, ImageReadParam param)
+        throws IOException, IIOException {
+        validateIndex(imageIndex);
+        readHeaders();
+        return decoder.decode((ImageInputStream)input);
     }
 }
-
-
-

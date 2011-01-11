@@ -98,7 +98,7 @@ public class BasicMenuUI extends BasicMenuItemUI
           defaultManager.setSelectedPath(newPath);
       }
     }
-    
+
   }
 
   protected ChangeListener changeListener;
@@ -233,7 +233,7 @@ public class BasicMenuUI extends BasicMenuItemUI
    */
   protected void installDefaults()
   {
-    
+
     LookAndFeel.installBorder(menuItem, "Menu.border");
     LookAndFeel.installColorsAndFont(menuItem, "Menu.background",
                                      "Menu.foreground", "Menu.font");
@@ -502,9 +502,9 @@ public class BasicMenuUI extends BasicMenuItemUI
     {
       JMenu menu = (JMenu) menuItem;
       if (menu.isTopLevelMenu())
-	((JMenuBar) menu.getParent()).setSelected(menu);
+        ((JMenuBar) menu.getParent()).setSelected(menu);
       else
-	((JPopupMenu) menu.getParent()).setSelected(menu);
+        ((JPopupMenu) menu.getParent()).setSelected(menu);
     }
   }
 

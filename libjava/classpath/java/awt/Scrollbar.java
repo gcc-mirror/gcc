@@ -343,7 +343,7 @@ public class Scrollbar extends Component implements Accessible, Adjustable
   {
     if (visibleAmount <= 0)
       visibleAmount = 1;
-    
+
     if (maximum <= minimum)
       maximum = minimum + 1;
 
@@ -352,7 +352,7 @@ public class Scrollbar extends Component implements Accessible, Adjustable
 
     if (visibleAmount > maximum - minimum)
       visibleAmount = maximum - minimum;
-    
+
     // According to documentation, the actual maximum
     // value is (maximum - visibleAmount)
     if (value > maximum - visibleAmount)
@@ -367,7 +367,7 @@ public class Scrollbar extends Component implements Accessible, Adjustable
     this.value = value;
     this.visibleAmount = visibleAmount;
     this.minimum = minimum;
-    this.maximum = maximum;      
+    this.maximum = maximum;
   }
 
   /**
@@ -419,13 +419,13 @@ public class Scrollbar extends Component implements Accessible, Adjustable
   {
     if (lineIncrement < 0)
       throw new IllegalArgumentException("Unit increment less than zero.");
-    
+
     if (lineIncrement == 0)
       lineIncrement = 1;
-         
+
    if (lineIncrement == this.lineIncrement)
       return;
-    
+
     this.lineIncrement = lineIncrement;
 
     ScrollbarPeer peer = (ScrollbarPeer) getPeer();
@@ -485,7 +485,7 @@ public class Scrollbar extends Component implements Accessible, Adjustable
 
     if (pageIncrement == 0)
       pageIncrement = 1;
-    
+
     if (pageIncrement == this.pageIncrement)
       return;
 
@@ -570,25 +570,25 @@ public class Scrollbar extends Component implements Accessible, Adjustable
    */
   void dispatchEventImpl(AWTEvent e)
   {
-    if (e.id <= AdjustmentEvent.ADJUSTMENT_LAST 
-	&& e.id >= AdjustmentEvent.ADJUSTMENT_FIRST)
+    if (e.id <= AdjustmentEvent.ADJUSTMENT_LAST
+        && e.id >= AdjustmentEvent.ADJUSTMENT_FIRST)
       {
-	AdjustmentEvent ae = (AdjustmentEvent) e;
-	boolean adjusting = ae.getValueIsAdjusting();
-	if (adjusting)
-	  setValueIsAdjusting(true);
-	try
-	  {
-	    setValue(((AdjustmentEvent) e).getValue());
-	    if (adjustment_listeners != null 
-		|| (eventMask & AWTEvent.ADJUSTMENT_EVENT_MASK) != 0)
-	      processEvent(e);
-	  }
-	finally
-	  {
-	    if (adjusting)
-	      setValueIsAdjusting(false);
-	  }
+        AdjustmentEvent ae = (AdjustmentEvent) e;
+        boolean adjusting = ae.getValueIsAdjusting();
+        if (adjusting)
+          setValueIsAdjusting(true);
+        try
+          {
+            setValue(((AdjustmentEvent) e).getValue());
+            if (adjustment_listeners != null
+                || (eventMask & AWTEvent.ADJUSTMENT_EVENT_MASK) != 0)
+              processEvent(e);
+          }
+        finally
+          {
+            if (adjusting)
+              setValueIsAdjusting(false);
+          }
       }
     else
       super.dispatchEventImpl(e);
@@ -710,11 +710,11 @@ public class Scrollbar extends Component implements Accessible, Adjustable
     {
       AccessibleStateSet states = super.getAccessibleStateSet();
       if (getOrientation() == HORIZONTAL)
-	states.add(AccessibleState.HORIZONTAL);
+        states.add(AccessibleState.HORIZONTAL);
       else
-	states.add(AccessibleState.VERTICAL);
+        states.add(AccessibleState.VERTICAL);
       if (getValueIsAdjusting())
-	states.add(AccessibleState.BUSY);
+        states.add(AccessibleState.BUSY);
       return states;
     }
 
@@ -809,7 +809,7 @@ public class Scrollbar extends Component implements Accessible, Adjustable
     /* Create the context if this is the first request */
     if (accessibleContext == null)
       accessibleContext = new AccessibleAWTScrollBar();
-    
+
     return accessibleContext;
   }
 }

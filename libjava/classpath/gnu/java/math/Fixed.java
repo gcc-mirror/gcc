@@ -45,7 +45,7 @@ public final class Fixed
 {
 
   /**
-   * Private constructor to avoid instantiation. 
+   * Private constructor to avoid instantiation.
    */
   private Fixed()
   {
@@ -138,7 +138,7 @@ public final class Fixed
   /**
    * Returns the fixed point value <code>a</code> with <code>n</code> digits
    * as float.
-   * 
+   *
    * @param n the number of digits
    * @param a the fixed point value
    *
@@ -152,7 +152,7 @@ public final class Fixed
   /**
    * Returns the fixed point value <code>a</code> with <code>n</code> digits
    * as double.
-   * 
+   *
    * @param n the number of digits
    * @param a the fixed point value
    *
@@ -194,7 +194,7 @@ public final class Fixed
   /**
    * Returns the integer value of the specified fixed point value
    * <code>a</code>. This simply cuts of the digits (== floor(a)).
-   * 
+   *
    * @param n the number of digits
    * @param a the fixed point value
    *

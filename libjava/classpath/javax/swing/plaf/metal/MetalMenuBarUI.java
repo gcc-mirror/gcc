@@ -49,7 +49,7 @@ import javax.swing.plaf.basic.BasicMenuBarUI;
 
 /**
  * A UI implementation for MenuBar in the Metal Look &amp; Feel.
- * 
+ *
  * @author Roman Kennke (kennke@aicas.com)
  *
  * @since 1.5
@@ -84,7 +84,7 @@ public class MetalMenuBarUI extends BasicMenuBarUI
       {
         MetalUtils.paintGradient(g, 0, 0, c.getWidth(), height,
                                  SwingConstants.VERTICAL, "MenuBar.gradient");
-        
+
         paint(g, c);
       }
     else

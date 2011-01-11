@@ -1,4 +1,4 @@
-/* EntityDeclarationImpl.java -- 
+/* EntityDeclarationImpl.java --
    Copyright (C) 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -159,6 +159,5 @@ public class EntityDeclarationImpl
         throw e2;
       }
   }
-  
-}
 
+}

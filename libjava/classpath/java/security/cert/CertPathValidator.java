@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -129,7 +129,7 @@ public class CertPathValidator {
   /**
    * Returns an instance of the given validator from the first provider that
    * implements it.
-   * 
+   *
    * @param algorithm The name of the algorithm to get.
    * @return The new instance.
    * @throws NoSuchAlgorithmException If no installed provider implements the
@@ -158,7 +158,7 @@ public class CertPathValidator {
 
   /**
    * Returns an instance of the given validator from the named provider.
-   * 
+   *
    * @param algorithm The name of the algorithm to get.
    * @param provider The name of the provider from which to get the
    *          implementation.
@@ -184,7 +184,7 @@ public class CertPathValidator {
 
   /**
    * Returns an instance of the given validator from the given provider.
-   * 
+   *
    * @param algorithm The name of the algorithm to get.
    * @param provider The provider from which to get the implementation.
    * @return The new instance.

@@ -40,7 +40,7 @@ import org.objectweb.asm.Opcodes;
 /**
  * A {@link ClassAdapter} that renames fields and methods, and removes debug
  * info.
- * 
+ *
  * @author Eric Bruneton
  */
 public class ClassOptimizer extends ClassAdapter {

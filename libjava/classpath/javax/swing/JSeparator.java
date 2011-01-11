@@ -58,7 +58,7 @@ public class JSeparator extends JComponent implements SwingConstants,
   protected class AccessibleJSeparator extends AccessibleJComponent
   {
     private static final long serialVersionUID = 916332890553201095L;
-  
+
     /**
      * Creates a new <code>AccessibleJSeparator</code> instance.
      */
@@ -79,7 +79,7 @@ public class JSeparator extends JComponent implements SwingConstants,
   }
 
   private static final long serialVersionUID = 125301223445282357L;
-  
+
   /** The orientation of the JSeparator. */
   private transient int orientation = HORIZONTAL;
 
@@ -94,9 +94,9 @@ public class JSeparator extends JComponent implements SwingConstants,
   /**
    * Creates a new <code>JSeparator</code> object with the given orientation.
    *
-   * @param orientation  the orientation (either {@link #HORIZONTAL} or 
+   * @param orientation  the orientation (either {@link #HORIZONTAL} or
    *     {@link #VERTICAL}).
-   *     
+   *
    * @throws IllegalArgumentException if <code>orientation</code> is not
    *     one of the specified values.
    */
@@ -139,8 +139,8 @@ public class JSeparator extends JComponent implements SwingConstants,
   }
 
   /**
-   * Returns the suffix (<code>"SeparatorUI"</code> in this case) used to 
-   * determine the class name for a UI delegate that can provide the look and 
+   * Returns the suffix (<code>"SeparatorUI"</code> in this case) used to
+   * determine the class name for a UI delegate that can provide the look and
    * feel for a <code>JSeparator</code>.
    *
    * @return <code>"SeparatorUI"</code>.
@@ -154,7 +154,7 @@ public class JSeparator extends JComponent implements SwingConstants,
    * Returns the orientation of the <code>JSeparator</code>.
    *
    * @return The orientation (one of {@link #HORIZONTAL} and {@link #VERTICAL}).
-   * 
+   *
    * @see #setOrientation(int)
    */
   public int getOrientation()
@@ -163,16 +163,16 @@ public class JSeparator extends JComponent implements SwingConstants,
   }
 
   /**
-   * Sets the orientation for the <code>JSeparator</code> and sends a 
-   * {@link PropertyChangeEvent} (with the property name 
+   * Sets the orientation for the <code>JSeparator</code> and sends a
+   * {@link PropertyChangeEvent} (with the property name
    * <code>orientation</code>) to all registered listeners.
    *
-   * @param orientation  the orientation (either {@link #HORIZONTAL} or 
+   * @param orientation  the orientation (either {@link #HORIZONTAL} or
    *     {@link #VERTICAL}).
-   *     
+   *
    * @throws IllegalArgumentException if <code>orientation</code> is not
    *     one of the specified values.
-   *     
+   *
    * @see #getOrientation()
    */
   public void setOrientation(int orientation)
@@ -205,14 +205,14 @@ public class JSeparator extends JComponent implements SwingConstants,
    * Returns the object that provides accessibility features for this
    * <code>JSeparator</code> component.
    *
-   * @return The accessible context (an instance of 
+   * @return The accessible context (an instance of
    *     {@link AccessibleJSeparator}).
    */
   public AccessibleContext getAccessibleContext()
   {
     if (accessibleContext == null)
       accessibleContext = new AccessibleJSeparator();
-    
+
     return accessibleContext;
   }
 }

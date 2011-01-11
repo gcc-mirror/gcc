@@ -45,12 +45,12 @@ import javax.print.attribute.ResolutionSyntax;
 
 
 /**
- * The <code>PrinterResolution</code> printing attribute specifies a 
- * resolution supported by a print service or to be used by a print job. 
+ * The <code>PrinterResolution</code> printing attribute specifies a
+ * resolution supported by a print service or to be used by a print job.
  * <p>
  * <b>IPP Compatibility:</b> PrinterResolution is an IPP 1.1 attribute.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
@@ -74,20 +74,20 @@ public final class PrinterResolution extends ResolutionSyntax
   {
     super(crossFeedResolution, feedResolution, units);
   }
-  
+
   /**
    * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
   {
     if(! (obj instanceof PrinterResolution))
       return false;
-    
+
     return super.equals(obj);
   }
 

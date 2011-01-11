@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -43,7 +43,7 @@ package java.sql;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
-public class SQLException extends Exception 
+public class SQLException extends Exception
 {
   static final long serialVersionUID = 2135244094396331484L;
 
@@ -75,7 +75,7 @@ public class SQLException extends Exception
   {
     super(message);
     this.SQLState = SQLState;
-    this.vendorCode = vendorCode;  
+    this.vendorCode = vendorCode;
   }
 
   /**
@@ -100,7 +100,7 @@ public class SQLException extends Exception
    */
   public SQLException(String message)
   {
-    this(message, null, 0);  
+    this(message, null, 0);
   }
 
   /**
@@ -110,7 +110,7 @@ public class SQLException extends Exception
    */
   public SQLException()
   {
-    this(null, null, 0);  
+    this(null, null, 0);
   }
 
   /**
@@ -126,7 +126,7 @@ public class SQLException extends Exception
   }
 
   /**
-   * This method returns the vendor specific error code associated with 
+   * This method returns the vendor specific error code associated with
    * this error.
    *
    * @return The vendor specific error code associated with this error.
@@ -139,7 +139,7 @@ public class SQLException extends Exception
   /**
    * This method returns the exception that is chained to this object.
    *
-   * @return The exception chained to this object, which may be 
+   * @return The exception chained to this object, which may be
    *         <code>null</code>.
    */
   public SQLException getNextException()

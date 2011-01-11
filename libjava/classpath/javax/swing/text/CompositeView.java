@@ -309,7 +309,7 @@ public abstract class CompositeView
    *         listed valid values
    */
   public Shape modelToView(int p1, Position.Bias b1,
-			   int p2, Position.Bias b2, Shape a)
+                           int p2, Position.Bias b2, Shape a)
     throws BadLocationException
   {
     // TODO: This is most likely not 100% ok, figure out what else is to
@@ -346,7 +346,7 @@ public abstract class CompositeView
    * of the caret when navigating around the document with the arrow keys. This
    * is a convenience method for {@link #getNextNorthSouthVisualPositionFrom}
    * and {@link #getNextEastWestVisualPositionFrom}.
-   * 
+   *
    * @param pos
    *          the model position to start search from
    * @param b
@@ -662,7 +662,7 @@ public abstract class CompositeView
     // This limitation is described as PR 27345.
     int index = getViewIndex(pos, b);
     View v = null;
-    
+
     if (index == -1)
       return pos;
 
@@ -673,7 +673,7 @@ public abstract class CompositeView
         // provided.
         if (index <= 0)
           return pos;
-        
+
         v = getView(index - 1);
         break;
       case SOUTH:
@@ -681,13 +681,13 @@ public abstract class CompositeView
         // provided.
         if (index >= getViewCount() - 1)
           return pos;
-        
+
         v = getView(index + 1);
         break;
       default:
           throw new IllegalArgumentException();
     }
-    
+
     return v.getNextVisualPositionFrom(pos, b, a, direction, biasRet);
   }
 
@@ -738,9 +738,9 @@ public abstract class CompositeView
     //
     // This limitation is described as PR 27346.
     int index;
-    
+
     View v = null;
-    
+
     switch (direction)
     {
       case EAST:
@@ -749,7 +749,7 @@ public abstract class CompositeView
         // provided.
         if (index == -1)
           return pos;
-        
+
         v  = getView(index);
         break;
       case WEST:
@@ -758,13 +758,13 @@ public abstract class CompositeView
         // provided.
         if (index == -1)
           return pos;
-        
+
         v  = getView(index);
         break;
       default:
         throw new IllegalArgumentException();
     }
-    
+
     return v.getNextVisualPositionFrom(pos,
                                        b,
                                        a,

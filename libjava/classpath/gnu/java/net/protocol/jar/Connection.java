@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -73,13 +73,13 @@ public final class Connection extends JarURLConnection
   private JarFile jar_file;
   private JarEntry jar_entry;
   private URL jar_url;
-  
+
   public static class JarFileCache
   {
     private static Hashtable<URL, JarFile> cache
       = new Hashtable<URL, JarFile>();
     private static final int READBUFSIZE = 4*1024;
-    
+
     public static synchronized JarFile get (URL url, boolean useCaches)
        throws IOException
     {
@@ -92,31 +92,31 @@ public final class Connection extends JarURLConnection
         }
 
       if ("file".equals (url.getProtocol()))
-	{
-	  String fn = url.getFile();
-	  fn = gnu.java.net.protocol.file.Connection.unquote(fn);
-	  File f = new File (fn);
-	  jf = new JarFile (f, true, ZipFile.OPEN_READ);
-	}
+        {
+          String fn = url.getFile();
+          fn = gnu.java.net.protocol.file.Connection.unquote(fn);
+          File f = new File (fn);
+          jf = new JarFile (f, true, ZipFile.OPEN_READ);
+        }
       else
-	{
-	  URLConnection urlconn = url.openConnection();
-	  InputStream is = urlconn.getInputStream();
-	  byte[] buf = new byte [READBUFSIZE];
-	  File f = File.createTempFile ("cache", "jar");
-	  FileOutputStream fos = new FileOutputStream (f); 
-	  int len = 0;
-	  
-	  while ((len = is.read (buf)) != -1)
-	    {
-	      fos.write (buf, 0, len);
-	    }
-	  
-	  fos.close();
-	  // Always verify the Manifest, open read only and delete when done.
-	  jf = new JarFile (f, true,
-			    ZipFile.OPEN_READ | ZipFile.OPEN_DELETE);
-	}
+        {
+          URLConnection urlconn = url.openConnection();
+          InputStream is = urlconn.getInputStream();
+          byte[] buf = new byte [READBUFSIZE];
+          File f = File.createTempFile ("cache", "jar");
+          FileOutputStream fos = new FileOutputStream (f);
+          int len = 0;
+
+          while ((len = is.read (buf)) != -1)
+            {
+              fos.write (buf, 0, len);
+            }
+
+          fos.close();
+          // Always verify the Manifest, open read only and delete when done.
+          jf = new JarFile (f, true,
+                            ZipFile.OPEN_READ | ZipFile.OPEN_DELETE);
+        }
 
       if (useCaches)
         cache.put (url, jf);
@@ -140,7 +140,7 @@ public final class Connection extends JarURLConnection
     jar_url = getJarFileURL();
     jar_file = JarFileCache.get (jar_url, useCaches);
     String entry_name = getEntryName();
-    
+
     if (entry_name != null
         && !entry_name.equals (""))
       {
@@ -160,7 +160,7 @@ public final class Connection extends JarURLConnection
 
     if (! doInput)
       throw new ProtocolException("Can't open InputStream if doInput is false");
-    
+
     return jar_file.getInputStream (jar_entry);
   }
 
@@ -179,26 +179,26 @@ public final class Connection extends JarURLConnection
   {
     try
       {
-	if (!connected)
-	  connect();
+        if (!connected)
+          connect();
 
-	if (field.equals("content-type"))
+        if (field.equals("content-type"))
           return guessContentTypeFromName(getJarEntry().getName());
-	else if (field.equals("content-length"))
+        else if (field.equals("content-length"))
           return Long.toString(getJarEntry().getSize());
-	else if (field.equals("last-modified"))
-	  {
-	    // Both creating and manipulating dateFormat need synchronization.
-	    synchronized (Connection.class)
-	      {
-		if (dateFormat == null)
-		  dateFormat = new SimpleDateFormat
-		    ("EEE, dd MMM yyyy hh:mm:ss 'GMT'",
-		     new Locale ("En", "Us", "Unix"));
+        else if (field.equals("last-modified"))
+          {
+            // Both creating and manipulating dateFormat need synchronization.
+            synchronized (Connection.class)
+              {
+                if (dateFormat == null)
+                  dateFormat = new SimpleDateFormat
+                    ("EEE, dd MMM yyyy hh:mm:ss 'GMT'",
+                     new Locale ("En", "Us", "Unix"));
 
-        	return dateFormat.format(new Date(getJarEntry().getTime()));
-	      }
-	  }
+                return dateFormat.format(new Date(getJarEntry().getTime()));
+              }
+          }
       }
     catch (IOException e)
       {
@@ -222,11 +222,11 @@ public final class Connection extends JarURLConnection
 
     try
       {
-	return getJarEntry().getTime();
+        return getJarEntry().getTime();
       }
     catch (IOException e)
       {
-	return -1;
+        return -1;
       }
   }
 }

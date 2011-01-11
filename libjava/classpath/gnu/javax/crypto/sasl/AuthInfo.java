@@ -1,4 +1,4 @@
-/* AuthInfo.java -- 
+/* AuthInfo.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -110,7 +110,7 @@ public class AuthInfo
    * factories, one at a time, and attempts to return a new instance of the
    * provider for the designated mechanism. It stops at the first factory
    * returning a non-null provider.
-   * 
+   *
    * @param mechanism the name of a SASL mechanism.
    * @return an implementation that provides {@link IAuthInfoProvider} for that
    *         mechanism; or <code>null</code> if none found.

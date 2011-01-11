@@ -1,4 +1,4 @@
-/* DateTimeType.java -- 
+/* DateTimeType.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -213,7 +213,7 @@ final class DateTimeType
         throw new DatatypeException(len, "invalid dateTime value");
       }
   }
-  
+
   public Object createValue(String value, ValidationContext context) {
     int len = value.length();
     int state = 0;
@@ -330,6 +330,5 @@ final class DateTimeType
         return null;
       }
   }
-  
-}
 
+}

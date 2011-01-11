@@ -40,9 +40,9 @@ package org.omg.PortableInterceptor;
 
 /**
  * Defines the operations, applicable to the IORInterceptor_3_0.
- * 
- * @since 1.5 
- * 
+ *
+ * @since 1.5
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public interface IORInterceptor_3_0Operations
@@ -50,12 +50,12 @@ public interface IORInterceptor_3_0Operations
 {
   /**
    * This method is invoked on all registered IORInterceptor_3_0 instances when
-   * the state of the adapter manager changes. 
-   * 
+   * the state of the adapter manager changes.
+   *
    * @param adapterManagerId the Id of the adapter manager that has changed the
-   * state. The same value is returned by 
+   * state. The same value is returned by
    * {@link IORInfoOperations#manager_id()}.
-   * 
+   *
    * @param adapterState the new state of the adapter manager, one of the
    * {@link HOLDING#value}, {@link DISCARDING#value}, {@link INACTIVE#value}
    * or {@link NON_EXISTENT#value}.
@@ -69,7 +69,7 @@ public interface IORInterceptor_3_0Operations
    * is when POA is destroyed. In this case, the method is invoked passing the
    * single element array witn the reference template of the POA being destroyed
    * and the {@link NON_EXISTENT#value} state.
-   * 
+   *
    * @param adapters identifies the object adapters that have changed they
    * state.
    * @param adaptersState the new state of the adapters, one of the

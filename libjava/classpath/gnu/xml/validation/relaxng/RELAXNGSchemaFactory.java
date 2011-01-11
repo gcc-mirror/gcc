@@ -1,4 +1,4 @@
-/* RelaxNGSchemaFactory.java -- 
+/* RelaxNGSchemaFactory.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -75,7 +75,7 @@ public class RELAXNGSchemaFactory
   public void setResourceResolver(LSResourceResolver resourceResolver)
   {
     this.resourceResolver = resourceResolver;
-  }  
+  }
 
   public ErrorHandler getErrorHandler()
   {
@@ -84,7 +84,7 @@ public class RELAXNGSchemaFactory
 
   public void setErrorHandler(ErrorHandler errorHandler)
   {
-    this.errorHandler = errorHandler;    
+    this.errorHandler = errorHandler;
   }
 
   public boolean isSchemaLanguageSupported(String schemaLanguage)
@@ -159,5 +159,5 @@ public class RELAXNGSchemaFactory
         throw e2;
       }
   }
-  
+
 }

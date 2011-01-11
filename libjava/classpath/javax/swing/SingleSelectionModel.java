@@ -51,19 +51,19 @@ public interface SingleSelectionModel
 {
   /**
    * Returns the selected index or <code>-1</code> if there is no selection.
-   * 
+   *
    * @return The selected index.
-   * 
+   *
    * @see #setSelectedIndex(int)
    */
   int getSelectedIndex();
 
   /**
-   * Sets the selected index and, if this is different to the previous 
+   * Sets the selected index and, if this is different to the previous
    * selection, sends a {@link ChangeEvent} to all registered listeners.
-   * 
+   *
    * @param index  the index (use <code>-1</code> to represent no selection).
-   * 
+   *
    * @see #getSelectedIndex()
    * @see #clearSelection
    */
@@ -72,14 +72,14 @@ public interface SingleSelectionModel
   /**
    * Clears the selection by setting the selected index to <code>-1</code> and
    * sends a {@link ChangeEvent} to all registered listeners.  If the selected
-   * index is already <code>-1</code>, this method does nothing.  
+   * index is already <code>-1</code>, this method does nothing.
    */
   void clearSelection();
 
   /**
    * Returns <code>true</code> if there is a selection, and <code>false</code>
-   * otherwise.  
-   * 
+   * otherwise.
+   *
    * @return A boolean.
    */
   boolean isSelected();

@@ -74,24 +74,24 @@ public class InetAddress implements Serializable
     byte[] addr;
     try
       {
-	addr = VMInetAddress.lookupInaddrAny();
+        addr = VMInetAddress.lookupInaddrAny();
       }
     catch (UnknownHostException e)
       {
-	// Make one up and hope it works.
-	addr = new byte[] {0, 0, 0, 0};
+        // Make one up and hope it works.
+        addr = new byte[] {0, 0, 0, 0};
       }
     try
       {
-	ANY_IF = getByAddress(addr);
+        ANY_IF = getByAddress(addr);
       }
     catch (UnknownHostException e)
       {
-	throw (InternalError) new InternalError().initCause(e);
+        throw (InternalError) new InternalError().initCause(e);
       }
     ANY_IF.hostName = ANY_IF.getHostName();
   }
-  
+
   /**
    * Stores static localhost address object.
    */
@@ -100,13 +100,13 @@ public class InetAddress implements Serializable
   {
     try
       {
-	LOCALHOST = getByAddress("localhost", new byte[] {127, 0, 0, 1});
+        LOCALHOST = getByAddress("localhost", new byte[] {127, 0, 0, 1});
       }
     catch (UnknownHostException e)
       {
-	throw (InternalError) new InternalError().initCause(e);
+        throw (InternalError) new InternalError().initCause(e);
       }
-  }    
+  }
 
   /**
    * The Serialized Form specifies that an int 'address' is saved/restored.
@@ -158,7 +158,7 @@ public class InetAddress implements Serializable
    * <p>This method cannot be abstract for backward compatibility reasons. By
    * default it always throws {@link UnsupportedOperationException} unless
    * overridden.</p>
-   * 
+   *
    * @return true if mulitcast, false if not
    *
    * @since 1.1
@@ -174,7 +174,7 @@ public class InetAddress implements Serializable
    * <p>This method cannot be abstract for backward compatibility reasons. By
    * default it always throws {@link UnsupportedOperationException} unless
    * overridden.</p>
-   * 
+   *
    * @since 1.4
    */
   public boolean isAnyLocalAddress()
@@ -188,7 +188,7 @@ public class InetAddress implements Serializable
    * <p>This method cannot be abstract for backward compatibility reasons. By
    * default it always throws {@link UnsupportedOperationException} unless
    * overridden.</p>
-   * 
+   *
    * @since 1.4
    */
   public boolean isLoopbackAddress()
@@ -202,7 +202,7 @@ public class InetAddress implements Serializable
    * <p>This method cannot be abstract for backward compatibility reasons. By
    * default it always throws {@link UnsupportedOperationException} unless
    * overridden.</p>
-   * 
+   *
    * @since 1.4
    */
   public boolean isLinkLocalAddress()
@@ -216,7 +216,7 @@ public class InetAddress implements Serializable
    * <p>This method cannot be abstract for backward compatibility reasons. By
    * default it always throws {@link UnsupportedOperationException} unless
    * overridden.</p>
-   * 
+   *
    * @since 1.4
    */
   public boolean isSiteLocalAddress()
@@ -230,7 +230,7 @@ public class InetAddress implements Serializable
    * <p>This method cannot be abstract for backward compatibility reasons. By
    * default it always throws {@link UnsupportedOperationException} unless
    * overridden.</p>
-   * 
+   *
    * @since 1.4
    */
   public boolean isMCGlobal()
@@ -244,7 +244,7 @@ public class InetAddress implements Serializable
    * <p>This method cannot be abstract for backward compatibility reasons. By
    * default it always throws {@link UnsupportedOperationException} unless
    * overridden.</p>
-   * 
+   *
    * @since 1.4
    */
   public boolean isMCNodeLocal()
@@ -258,7 +258,7 @@ public class InetAddress implements Serializable
    * <p>This method cannot be abstract for backward compatibility reasons. By
    * default it always throws {@link UnsupportedOperationException} unless
    * overridden.</p>
-   * 
+   *
    * @since 1.4
    */
   public boolean isMCLinkLocal()
@@ -272,7 +272,7 @@ public class InetAddress implements Serializable
    * <p>This method cannot be abstract for backward compatibility reasons. By
    * default it always throws {@link UnsupportedOperationException} unless
    * overridden.</p>
-   * 
+   *
    * @since 1.4
    */
   public boolean isMCSiteLocal()
@@ -287,7 +287,7 @@ public class InetAddress implements Serializable
    * <p>This method cannot be abstract for backward compatibility reasons. By
    * default it always throws {@link UnsupportedOperationException} unless
    * overridden.</p>
-   * 
+   *
    * @since 1.4
    */
   public boolean isMCOrgLocal()
@@ -316,17 +316,17 @@ public class InetAddress implements Serializable
   {
     try
       {
-	return ResolverCache.getHostByAddr(addr);
+        return ResolverCache.getHostByAddr(addr);
       }
     catch (UnknownHostException e)
       {
-	return getHostAddress();
+        return getHostAddress();
       }
   }
 
   /**
    * Returns the canonical hostname represented by this InetAddress
-   * 
+   *
    * @since 1.4
    */
   public String getCanonicalHostName()
@@ -337,13 +337,13 @@ public class InetAddress implements Serializable
     if (sm != null)
       {
         try
-	  {
+          {
             sm.checkConnect(hostname, -1);
-	  }
-	catch (SecurityException e)
-	  {
-	    return getHostAddress();
-	  }
+          }
+        catch (SecurityException e)
+          {
+            return getHostAddress();
+          }
       }
 
     return hostname;
@@ -367,7 +367,7 @@ public class InetAddress implements Serializable
    * <p>This method cannot be abstract for backward compatibility reasons. By
    * default it always throws {@link UnsupportedOperationException} unless
    * overridden.</p>
-   * 
+   *
    * @return The IP address of this object in String form
    *
    * @since 1.0.2
@@ -425,7 +425,7 @@ public class InetAddress implements Serializable
 
     for (int i = 0; i < addr.length; i++)
       if (addr[i] != addr2[i])
-	return false;
+        return false;
 
     return true;
   }
@@ -481,18 +481,18 @@ public class InetAddress implements Serializable
 
     if (addr.length == 16)
       {
-	for (int i = 0; i < 12; i++)
-	  {
-	    if (addr[i] != (i < 10 ? 0 : (byte) 0xFF))
-	      return new Inet6Address(addr, host);
-	  }
-	  
-	byte[] ip4addr = new byte[4];
-	ip4addr[0] = addr[12];
-	ip4addr[1] = addr[13];
-	ip4addr[2] = addr[14];
-	ip4addr[3] = addr[15];
-	return new Inet4Address(ip4addr, host);
+        for (int i = 0; i < 12; i++)
+          {
+            if (addr[i] != (i < 10 ? 0 : (byte) 0xFF))
+              return new Inet6Address(addr, host);
+          }
+
+        byte[] ip4addr = new byte[4];
+        ip4addr[0] = addr[12];
+        ip4addr[1] = addr[13];
+        ip4addr[2] = addr[14];
+        ip4addr[3] = addr[15];
+        return new Inet4Address(ip4addr, host);
       }
 
     throw new UnknownHostException("IP address has illegal length");
@@ -515,14 +515,14 @@ public class InetAddress implements Serializable
     byte[] address = VMInetAddress.aton(literal);
     if (address == null)
       return null;
-    
+
     try
       {
-	return getByAddress(address);
+        return getByAddress(address);
       }
     catch (UnknownHostException e)
       {
-	throw (InternalError) new InternalError().initCause(e);
+        throw (InternalError) new InternalError().initCause(e);
       }
   }
 
@@ -534,7 +534,7 @@ public class InetAddress implements Serializable
    * default.  This method is equivalent to returning the first element in
    * the InetAddress array returned from GetAllByName.
    *
-   * @param hostname The name of the desired host, or null for the local 
+   * @param hostname The name of the desired host, or null for the local
    * loopback address.
    *
    * @return The address of the host as an InetAddress object.
@@ -612,11 +612,11 @@ public class InetAddress implements Serializable
     String hostname = VMInetAddress.getLocalHostname();
     try
       {
-	return getByName(hostname);
+        return getByName(hostname);
       }
     catch (SecurityException e)
       {
-	return LOCALHOST;
+        return LOCALHOST;
       }
   }
 

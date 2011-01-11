@@ -44,7 +44,7 @@ import java.io.IOException;
 
 /**
  * Wrapper for an float value.
- * 
+ *
  * @author Kyle Galloway <kgallowa@redhat.com>
  */
 public final class FloatValue
@@ -55,7 +55,7 @@ public final class FloatValue
 
   /**
    * Create a new FloatValue from an float
-   * 
+   *
    * @param value the float to wrap
    */
   public FloatValue(float value)
@@ -63,20 +63,20 @@ public final class FloatValue
     super(JdwpConstants.Tag.FLOAT);
     _value = value;
   }
-  
+
   /**
    * Get the value held in this Value
-   * 
+   *
    * @return the value represented by this Value object
    */
   public float getValue()
   {
     return _value;
   }
-  
+
   /**
    * Return an object representing this type
-   * 
+   *
    * @return an Object represntation of this value
    */
   @Override
@@ -87,7 +87,7 @@ public final class FloatValue
 
   /**
    * Write the wrapped float to the given DataOutputStream.
-   * 
+   *
    * @param os the output stream to write to
    */
   @Override
@@ -97,4 +97,3 @@ public final class FloatValue
     os.writeFloat(_value);
   }
 }
-

@@ -1,4 +1,4 @@
-/* FullSyntaxBuilder.java -- 
+/* FullSyntaxBuilder.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -97,7 +97,7 @@ class FullSyntaxBuilder
     defineAttrs.add("name");
     defineAttrs.add("combine");
     Set nsAttrs = Collections.singleton("ns");
-    
+
     VOCABULARY.put("element", elementAttrs);
     VOCABULARY.put("attribute", elementAttrs);
     VOCABULARY.put("group", Collections.EMPTY_SET);
@@ -164,10 +164,10 @@ class FullSyntaxBuilder
   {
     urls = new HashSet();
     refCount = 1;
-    
+
     doc.normalizeDocument(); // Normalize XML document
     transform(doc); // Apply transformation rules to provide simple syntax
-    
+
     // 4.18. grammar element
     Element p = doc.getDocumentElement();
     Element grammar =
@@ -248,7 +248,7 @@ class FullSyntaxBuilder
       }
 
     transform2(p); // Apply second stage transformation rules
-    
+
     Grammar ret = parseGrammar(grammar);
     datatypeLibraries = null; // free datatype libraries cache
     return ret;
@@ -463,7 +463,7 @@ class FullSyntaxBuilder
                     !"grammar".equals(eName))
                   throw new GrammarException("included element is not " +
                                              "a grammar");
-                
+
                 transform(element);
                 urls.remove(href);
                 // handle components
@@ -513,9 +513,9 @@ class FullSyntaxBuilder
                   }
                 // transform to div element
                 Document doc = include.getOwnerDocument();
-                Element includeDiv = 
+                Element includeDiv =
                   doc.createElementNS(XMLConstants.RELAXNG_NS_URI, "div");
-                Element grammarDiv = 
+                Element grammarDiv =
                   doc.createElementNS(XMLConstants.RELAXNG_NS_URI, "div");
                 // XXX copy include non-href attributes (none defined?)
                 element = (Element) doc.importNode(element, true);
@@ -849,7 +849,7 @@ class FullSyntaxBuilder
                   }
               }
           }
-        
+
         break;
       case Node.TEXT_NODE:
       case Node.CDATA_SECTION_NODE:
@@ -935,7 +935,7 @@ class FullSyntaxBuilder
             Node grammar = grammar2;
             if ("parentRef".equals(elementName))
               grammar = grammar1;
-            
+
             String name = ((Element) node).getAttribute("name");
             if (name != null)
               throw new GrammarException("no name attribute on " +
@@ -1240,7 +1240,7 @@ class FullSyntaxBuilder
       }
     node.appendChild(child);
   }
-  
+
   private static Element getFirstChildElement(Node node)
   {
     Node ctx = node.getFirstChild();
@@ -1485,7 +1485,7 @@ class FullSyntaxBuilder
     value.value = node.getTextContent();
     return value;
   }
-  
+
   ListPattern parseList(Element node)
     throws GrammarException
   {

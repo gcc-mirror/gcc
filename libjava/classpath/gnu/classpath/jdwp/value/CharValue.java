@@ -44,7 +44,7 @@ import java.io.IOException;
 
 /**
  * Wrapper for an char value.
- * 
+ *
  * @author Kyle Galloway <kgallowa@redhat.com>
  */
 public final class CharValue
@@ -55,7 +55,7 @@ public final class CharValue
 
   /**
    * Create a new CharValue from an char
-   * 
+   *
    * @param value the char to wrap
    */
   public CharValue(char value)
@@ -63,20 +63,20 @@ public final class CharValue
     super(JdwpConstants.Tag.CHAR);
     _value = value;
   }
-  
+
   /**
    * Get the value held in this Value
-   * 
+   *
    * @return the value represented by this Value object
    */
   public char getValue()
   {
     return _value;
   }
-  
+
   /**
    * Return an object representing this type
-   * 
+   *
    * @return an Object represntation of this value
    */
   @Override
@@ -87,7 +87,7 @@ public final class CharValue
 
   /**
    * Write the wrapped char to the given DataOutputStream.
-   * 
+   *
    * @param os the output stream to write to
    */
   @Override
@@ -97,4 +97,3 @@ public final class CharValue
     os.writeChar(_value);
   }
 }
-

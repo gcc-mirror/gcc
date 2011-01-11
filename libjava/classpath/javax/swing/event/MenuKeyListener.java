@@ -46,23 +46,23 @@ import java.util.EventListener;
  */
 public interface MenuKeyListener extends EventListener {
 
-	/**
-	 * Menu key pressed
-	 * @param event Menu Key Event
-	 */
-	void menuKeyPressed(MenuKeyEvent event);
+        /**
+         * Menu key pressed
+         * @param event Menu Key Event
+         */
+        void menuKeyPressed(MenuKeyEvent event);
 
-	/**
-	 * Menu key released
-	 * @param event Menu Key Event
-	 */
-	void menuKeyReleased(MenuKeyEvent event);
+        /**
+         * Menu key released
+         * @param event Menu Key Event
+         */
+        void menuKeyReleased(MenuKeyEvent event);
 
-	/**
-	 * Menu key typed
-	 * @param event Menu Key Event
-	 */
-	void menuKeyTyped(MenuKeyEvent event);
+        /**
+         * Menu key typed
+         * @param event Menu Key Event
+         */
+        void menuKeyTyped(MenuKeyEvent event);
 
 
 } // MenuKeyListener

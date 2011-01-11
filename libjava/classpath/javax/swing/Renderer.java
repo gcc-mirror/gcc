@@ -46,7 +46,7 @@ import java.awt.Component;
  * javax.swing.tree.TreeCellRenderer}.
  *
  * @specnote This interface is not used and exists only for compatibility.
- *           
+ *
  * @author Andrew Selkirk
  */
 public interface Renderer

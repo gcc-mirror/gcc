@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -45,8 +45,8 @@ package java.io;
 
 /**
  * This interface has one method which is used for filtering filenames
- * returned in a directory listing.  It is currently used by the 
- * <code>File.list(FilenameFilter)</code> method and by the filename 
+ * returned in a directory listing.  It is currently used by the
+ * <code>File.list(FilenameFilter)</code> method and by the filename
  * dialog in AWT.
  * <p>
  * The method in this interface determines if a particular file should
@@ -73,4 +73,3 @@ public interface FilenameFilter
   boolean accept(File dir, String name);
 
 } // interface FilenameFilter
-

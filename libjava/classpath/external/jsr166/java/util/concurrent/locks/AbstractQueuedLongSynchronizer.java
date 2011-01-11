@@ -892,10 +892,10 @@ public abstract class AbstractQueuedLongSynchronizer
      * @throws InterruptedException if the current thread is interrupted
      */
     public final boolean tryAcquireNanos(long arg, long nanosTimeout) throws InterruptedException {
-	if (Thread.interrupted())
-	    throw new InterruptedException();
-	return tryAcquire(arg) ||
-	    doAcquireNanos(arg, nanosTimeout);
+        if (Thread.interrupted())
+            throw new InterruptedException();
+        return tryAcquire(arg) ||
+            doAcquireNanos(arg, nanosTimeout);
     }
 
     /**
@@ -971,10 +971,10 @@ public abstract class AbstractQueuedLongSynchronizer
      * @throws InterruptedException if the current thread is interrupted
      */
     public final boolean tryAcquireSharedNanos(long arg, long nanosTimeout) throws InterruptedException {
-	if (Thread.interrupted())
-	    throw new InterruptedException();
-	return tryAcquireShared(arg) >= 0 ||
-	    doAcquireSharedNanos(arg, nanosTimeout);
+        if (Thread.interrupted())
+            throw new InterruptedException();
+        return tryAcquireShared(arg) >= 0 ||
+            doAcquireSharedNanos(arg, nanosTimeout);
     }
 
     /**

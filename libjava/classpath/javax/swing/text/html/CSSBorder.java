@@ -308,7 +308,7 @@ class CSSBorder
     // Right border.
     paintBorderLine(g, x + width - right / 2, y, x + width - right / 2,
                     y + height, topStyle, right, rightColor, true);
-    
+
   }
 
   private void paintBorderLine(Graphics g, int x1, int y1, int x2, int y2,

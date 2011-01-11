@@ -196,10 +196,10 @@ public class ConcurrentHashMap<K, V> extends AbstractMap<K, V>
             this.value = value;
         }
 
-	@SuppressWarnings("unchecked")
-	static final <K,V> HashEntry<K,V>[] newArray(int i) {
-	    return new HashEntry[i];
-	}
+        @SuppressWarnings("unchecked")
+        static final <K,V> HashEntry<K,V>[] newArray(int i) {
+            return new HashEntry[i];
+        }
     }
 
     /**
@@ -287,9 +287,9 @@ public class ConcurrentHashMap<K, V> extends AbstractMap<K, V>
             setTable(HashEntry.<K,V>newArray(initialCapacity));
         }
 
-	@SuppressWarnings("unchecked")
+        @SuppressWarnings("unchecked")
         static final <K,V> Segment<K,V>[] newArray(int i) {
-	    return new Segment[i];
+            return new Segment[i];
         }
 
         /**
@@ -775,7 +775,7 @@ public class ConcurrentHashMap<K, V> extends AbstractMap<K, V>
      * @throws NullPointerException if the specified key is null
      */
     public boolean containsKey(Object key) {
-        int hash = hash(key.hashCode()); 
+        int hash = hash(key.hashCode());
         return segmentFor(hash).containsKey(key, hash);
     }
 
@@ -915,7 +915,7 @@ public class ConcurrentHashMap<K, V> extends AbstractMap<K, V>
      * @throws NullPointerException if the specified key is null
      */
     public V remove(Object key) {
-	int hash = hash(key.hashCode());
+        int hash = hash(key.hashCode());
         return segmentFor(hash).remove(key, hash, null);
     }
 
@@ -1107,16 +1107,16 @@ public class ConcurrentHashMap<K, V> extends AbstractMap<K, V>
     }
 
     final class KeyIterator
-	extends HashIterator
-	implements Iterator<K>, Enumeration<K>
+        extends HashIterator
+        implements Iterator<K>, Enumeration<K>
     {
         public K next()        { return super.nextEntry().key; }
         public K nextElement() { return super.nextEntry().key; }
     }
 
     final class ValueIterator
-	extends HashIterator
-	implements Iterator<V>, Enumeration<V>
+        extends HashIterator
+        implements Iterator<V>, Enumeration<V>
     {
         public V next()        { return super.nextEntry().value; }
         public V nextElement() { return super.nextEntry().value; }
@@ -1127,7 +1127,7 @@ public class ConcurrentHashMap<K, V> extends AbstractMap<K, V>
      * setValue changes to the underlying map.
      */
     final class WriteThroughEntry
-	extends AbstractMap.SimpleEntry<K,V>
+        extends AbstractMap.SimpleEntry<K,V>
     {
         WriteThroughEntry(K k, V v) {
             super(k,v);
@@ -1142,7 +1142,7 @@ public class ConcurrentHashMap<K, V> extends AbstractMap<K, V>
          * removed in which case the put will re-establish). We do not
          * and cannot guarantee more.
          */
-	public V setValue(V value) {
+        public V setValue(V value) {
             if (value == null) throw new NullPointerException();
             V v = super.setValue(value);
             ConcurrentHashMap.this.put(getKey(), value);
@@ -1151,8 +1151,8 @@ public class ConcurrentHashMap<K, V> extends AbstractMap<K, V>
     }
 
     final class EntryIterator
-	extends HashIterator
-	implements Iterator<Entry<K,V>>
+        extends HashIterator
+        implements Iterator<Entry<K,V>>
     {
         public Map.Entry<K,V> next() {
             HashEntry<K,V> e = super.nextEntry();

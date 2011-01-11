@@ -107,15 +107,15 @@ public class SrgbConverter implements ColorSpaceConverter
     float[] out = new float[3];
     for (int i = 0; i < 3; i++)
       {
-	if (temp[i] < 0)
-	  temp[i] = 0.0f;
-	if (temp[i] > 1)
-	  temp[i] = 1.0f;
-	if (temp[i] <= 0.00304f)
-	  out[i] = temp[i] * 12.92f;
-	else
-	  out[i] = 1.055f * ((float) Math.exp((1 / 2.4) * Math.log(temp[i])))
-	           - 0.055f;
+        if (temp[i] < 0)
+          temp[i] = 0.0f;
+        if (temp[i] > 1)
+          temp[i] = 1.0f;
+        if (temp[i] <= 0.00304f)
+          out[i] = temp[i] * 12.92f;
+        else
+          out[i] = 1.055f * ((float) Math.exp((1 / 2.4) * Math.log(temp[i])))
+                   - 0.055f;
       }
     return out;
   }
@@ -132,9 +132,9 @@ public class SrgbConverter implements ColorSpaceConverter
     float[] out = new float[3];
     for (int i = 0; i < 3; i++)
       if (in[i] <= 0.03928f)
-	temp[i] = in[i] / 12.92f;
+        temp[i] = in[i] / 12.92f;
       else
-	temp[i] = (float) Math.exp(2.4 * Math.log((in[i] + 0.055) / 1.055));
+        temp[i] = (float) Math.exp(2.4 * Math.log((in[i] + 0.055) / 1.055));
 
     /*
      * Note: The numbers which were used to calculate this only had four

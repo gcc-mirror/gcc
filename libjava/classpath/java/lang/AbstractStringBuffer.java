@@ -169,13 +169,13 @@ abstract class AbstractStringBuffer
         /* If the StringBuffer's value just grew, then we know that
            value is newly allocated and the region between count and
            newLength is filled with '\0'.  */
-	count = newLength;
+        count = newLength;
       }
     else
       {
-	/* The StringBuffer's value doesn't need to grow.  However,
-	   we should clear out any cruft that may exist.  */
-	while (count < newLength)
+        /* The StringBuffer's value doesn't need to grow.  However,
+           we should clear out any cruft that may exist.  */
+        while (count < newLength)
           value[count++] = '\0';
       }
   }
@@ -244,7 +244,7 @@ abstract class AbstractStringBuffer
    * @see System#arraycopy(Object, int, Object, int, int)
    */
   public void getChars(int srcOffset, int srcEnd,
-		       char[] dst, int dstOffset)
+                       char[] dst, int dstOffset)
   {
     if (srcOffset < 0 || srcEnd > count || srcEnd < srcOffset)
       throw new StringIndexOutOfBoundsException();
@@ -316,10 +316,10 @@ abstract class AbstractStringBuffer
       return append("null");
     synchronized (stringBuffer)
       {
-	int len = stringBuffer.count;
-	ensureCapacity(count + len);
-	VMSystem.arraycopy(stringBuffer.value, 0, value, count, len);
-	count += len;
+        int len = stringBuffer.count;
+        ensureCapacity(count + len);
+        VMSystem.arraycopy(stringBuffer.value, 0, value, count, len);
+        count += len;
       }
     return this;
   }
@@ -420,9 +420,9 @@ abstract class AbstractStringBuffer
       seq = "null";
     if (end - start > 0)
       {
-	ensureCapacity_unsynchronized(count + end - start);
-	for (; start < end; ++start)
-	  value[count++] = seq.charAt(start);
+        ensureCapacity_unsynchronized(count + end - start);
+        for (; start < end; ++start)
+          value[count++] = seq.charAt(start);
       }
     return this;
   }
@@ -907,9 +907,9 @@ abstract class AbstractStringBuffer
     // If we save more than 1/4 of the buffer, shrink.
     if (wouldSave > 200 || wouldSave * 4 > value.length)
       {
-	char[] newValue = new char[count];
-	VMSystem.arraycopy(value, 0, newValue, 0, count);
-	value = newValue;
+        char[] newValue = new char[count];
+        VMSystem.arraycopy(value, 0, newValue, 0, count);
+        value = newValue;
       }
   }
 
@@ -933,23 +933,23 @@ abstract class AbstractStringBuffer
     int count = 0;
     while (start < end)
       {
-	char base = value[start];
-	if (base < Character.MIN_HIGH_SURROGATE
-	    || base > Character.MAX_HIGH_SURROGATE
-	    || start == end
-	    || start == count
-	    || value[start + 1] < Character.MIN_LOW_SURROGATE
-	    || value[start + 1] > Character.MAX_LOW_SURROGATE)
-	  {
-	    // Nothing.
-	  }
-	else
-	  {
-	    // Surrogate pair.
-	    ++start;
-	  }
-	++start;
-	++count;
+        char base = value[start];
+        if (base < Character.MIN_HIGH_SURROGATE
+            || base > Character.MAX_HIGH_SURROGATE
+            || start == end
+            || start == count
+            || value[start + 1] < Character.MIN_LOW_SURROGATE
+            || value[start + 1] > Character.MAX_LOW_SURROGATE)
+          {
+            // Nothing.
+          }
+        else
+          {
+            // Surrogate pair.
+            ++start;
+          }
+        ++start;
+        ++count;
       }
     return count;
   }
@@ -969,22 +969,22 @@ abstract class AbstractStringBuffer
   {
     while (codePoints > 0)
       {
-	char base = value[start];
-	if (base < Character.MIN_HIGH_SURROGATE
-	    || base > Character.MAX_HIGH_SURROGATE
-	    || start == count
-	    || value[start + 1] < Character.MIN_LOW_SURROGATE
-	    || value[start + 1] > Character.MAX_LOW_SURROGATE)
-	  {
-	    // Nothing.
-	  }
-	else
-	  {
-	    // Surrogate pair.
-	    ++start;
-	  }
-	++start;
-	--codePoints;
+        char base = value[start];
+        if (base < Character.MIN_HIGH_SURROGATE
+            || base > Character.MAX_HIGH_SURROGATE
+            || start == count
+            || value[start + 1] < Character.MIN_LOW_SURROGATE
+            || value[start + 1] > Character.MAX_LOW_SURROGATE)
+          {
+            // Nothing.
+          }
+        else
+          {
+            // Surrogate pair.
+            ++start;
+          }
+        ++start;
+        --codePoints;
       }
     return start;
   }

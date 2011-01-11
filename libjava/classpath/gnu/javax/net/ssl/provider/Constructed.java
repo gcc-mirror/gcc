@@ -40,9 +40,9 @@ package gnu.javax.net.ssl.provider;
 
 /**
  * The base interface to SSL constructed types.
- * 
+ *
  * <p><b>Contract for ByteBuffer-based constructed types:</b>
- * 
+ *
  * <p>Most implementations of this interface supported by this library
  * take a "view" of an underlying ByteBuffer. The general contract of
  * such classes is that they <em>will not</em> modify the position or
@@ -54,12 +54,12 @@ package gnu.javax.net.ssl.provider;
  * the object, so the limit isn't useful in such cases. Of course, if the
  * limit is set to something other than the object's length, it must be
  * larger than the object length).
- * 
+ *
  * <p>Setter methods (usually in a class that implements the {@link Builder}
  * interface) may modify the limit, but the general contract remains that
  * the position remain at zero, and that the limit be at least as large as
  * the object length.
- * 
+ *
  * <p>Thus, very often the code will use <em>absolute</em> getters and setters
  * for primitive types, or it will use the {@link java.nio.ByteBuffer#duplicate()}
  * method, and sometimes the {@link java.nio.ByteBuffer#slice()} method, and

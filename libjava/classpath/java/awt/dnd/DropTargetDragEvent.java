@@ -89,10 +89,10 @@ public class DropTargetDragEvent extends DropTargetEvent
                          | DnDConstants.ACTION_COPY_OR_MOVE
                          | DnDConstants.ACTION_LINK
                          | DnDConstants.ACTION_REFERENCE;
-    
+
     if (~(srcActions ^ srcActionsMask) != 0)
       throw new IllegalArgumentException ();
-    
+
     this.dropAction = dropAction;
     this.srcActions = srcActions;
     this.location = location;
@@ -107,12 +107,12 @@ public class DropTargetDragEvent extends DropTargetEvent
   {
     return context.getCurrentDataFlavors ();
   }
-  
+
   public List<DataFlavor> getCurrentDataFlavorsAsList ()
   {
     return context.getCurrentDataFlavorsAsList ();
   }
-  
+
   public int getDropAction()
   {
     return dropAction & ((DropTargetContext) source).getTargetActions();
@@ -137,12 +137,12 @@ public class DropTargetDragEvent extends DropTargetEvent
   {
     context.rejectDrag ();
   }
-  
+
   /**
    * TODO
-   * 
+   *
    * @return
-   * 
+   *
    * @since 1.5
    */
   public Transferable getTransferable()

@@ -60,7 +60,7 @@ import gnu.classpath.Pointer;
  * A GdkPixbuf is 'on-screen' and the gdk cannot draw to it,
  * this is used for the other constructors (and other createImage methods), and
  * corresponds to the Image implementations returned by the Toolkit.createImage
- * methods, and is basically immutable. 
+ * methods, and is basically immutable.
  *
  * @author Sven de Marothy
  */
@@ -79,7 +79,7 @@ public class GtkImage extends Image
   boolean isLoaded;
 
   /**
-   * Pointer to the GdkPixbuf - 
+   * Pointer to the GdkPixbuf -
    * don't change the name without changing the native code.
    */
   Pointer pixbuf;
@@ -102,7 +102,7 @@ public class GtkImage extends Image
   /*
    * The 32-bit AABBGGRR format the GDK uses.
    */
-  static ColorModel nativeModel = new DirectColorModel(32, 
+  static ColorModel nativeModel = new DirectColorModel(32,
                                                        0x000000FF,
                                                        0x0000FF00,
                                                        0x00FF0000,
@@ -116,7 +116,7 @@ public class GtkImage extends Image
   /**
    * Lock that should be held for all gdkpixbuf operations. We don't use
    * the global gdk_threads_enter/leave functions in most places since
-   * most gdkpixbuf operations can be done in parallel to drawing and 
+   * most gdkpixbuf operations can be done in parallel to drawing and
    * manipulating gtk widgets.
    */
   static Object pixbufLock = new Object();
@@ -170,8 +170,8 @@ public class GtkImage extends Image
 
   /**
    * Constructs a GtkImage from an ImageProducer. Asynchronity is handled in
-   * the following manner: 
-   * A GtkImageConsumer gets the image data, and calls setImage() when 
+   * the following manner:
+   * A GtkImageConsumer gets the image data, and calls setImage() when
    * completely finished. The GtkImage is not considered loaded until the
    * GtkImageConsumer is completely finished. We go for all "all or nothing".
    */
@@ -215,7 +215,7 @@ public class GtkImage extends Image
               throw new IllegalArgumentException("Couldn't load image: "
                                                  + filename);
           }
-      } 
+      }
     catch(IOException e)
       {
         IllegalArgumentException iae;
@@ -269,7 +269,7 @@ public class GtkImage extends Image
         int n = 0;
 
         while ((n = bis.read(buf)) != -1)
-          baos.write(buf, 0, n); 
+          baos.write(buf, 0, n);
         bis.close();
       }
     catch(IOException e)
@@ -361,8 +361,8 @@ public class GtkImage extends Image
   /**
    * Callback from the image consumer.
    */
-  public void setImage(int width, int height, 
-		       int[] pixels, Hashtable<?,?> properties)
+  public void setImage(int width, int height,
+                       int[] pixels, Hashtable<?,?> properties)
   {
     this.width = width;
     this.height = height;
@@ -392,12 +392,12 @@ public class GtkImage extends Image
 
     return width;
   }
-  
+
   public synchronized int getHeight (ImageObserver observer)
   {
     if (addObserver(observer))
       return -1;
-    
+
     return height;
   }
 
@@ -405,7 +405,7 @@ public class GtkImage extends Image
   {
     if (addObserver(observer))
       return UndefinedProperty;
-    
+
     Object value = props.get (name);
     return (value == null) ? UndefinedProperty : value;
   }
@@ -426,7 +426,7 @@ public class GtkImage extends Image
         else
           return null;
       }
-    return new MemoryImageSource(width, height, nativeModel, pixels, 
+    return new MemoryImageSource(width, height, nativeModel, pixels,
                                  0, width);
   }
 
@@ -438,7 +438,7 @@ public class GtkImage extends Image
     throw new IllegalAccessError("This method only works for off-screen"
                                  +" Images.");
   }
-  
+
   /**
    * Returns a scaled instance of this pixbuf.
    */
@@ -454,7 +454,7 @@ public class GtkImage extends Image
   }
 
   /**
-   * If the image is loaded and comes from an ImageProducer, 
+   * If the image is loaded and comes from an ImageProducer,
    * regenerate the image from there.
    *
    * I have no idea if this is ever actually used. Since GtkImage can't be
@@ -468,9 +468,9 @@ public class GtkImage extends Image
         observers = new Vector<ImageObserver>();
         isLoaded = false;
         synchronized(pixbufLock)
-	  {
-	    freePixbuf();
-	  }
+          {
+            freePixbuf();
+          }
         source.startProduction(new GtkImageConsumer(this, source));
       }
   }
@@ -510,7 +510,7 @@ public class GtkImage extends Image
    */
   private void deliver()
   {
-    int flags = ImageObserver.HEIGHT | 
+    int flags = ImageObserver.HEIGHT |
       ImageObserver.WIDTH |
       ImageObserver.PROPERTIES |
       ImageObserver.ALLBITS;
@@ -522,7 +522,7 @@ public class GtkImage extends Image
 
     observers = null;
   }
-  
+
   /**
    * Adds an observer, if we need to.
    * @return true if an observer was added.

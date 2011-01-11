@@ -1,4 +1,4 @@
-/* GnuDHKeyPairGenerator.java -- 
+/* GnuDHKeyPairGenerator.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -214,7 +214,7 @@ public class GnuDHKeyPairGenerator
 
   /**
    * Fills the designated byte array with random data.
-   * 
+   *
    * @param buffer the byte array to fill with random data.
    */
   private void nextRandomBytes(byte[] buffer)

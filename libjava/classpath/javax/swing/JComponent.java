@@ -105,7 +105,7 @@ public abstract class JComponent extends Container implements Serializable
 {
   private static final long serialVersionUID = -7908749299918704233L;
 
-  /** 
+  /**
    * The accessible context of this <code>JComponent</code>.
    */
   protected AccessibleContext accessibleContext;
@@ -114,7 +114,7 @@ public abstract class JComponent extends Container implements Serializable
    * Basic accessibility support for <code>JComponent</code> derived
    * widgets.
    */
-  public abstract class AccessibleJComponent 
+  public abstract class AccessibleJComponent
     extends AccessibleAWTContainer
     implements AccessibleExtendedComponent
   {
@@ -123,7 +123,7 @@ public abstract class JComponent extends Container implements Serializable
      * fires appropriate PropertyChangeEvents to listeners registered with
      * the AccessibleJComponent.
      */
-    protected class AccessibleFocusHandler 
+    protected class AccessibleFocusHandler
       implements FocusListener
     {
       /**
@@ -168,7 +168,7 @@ public abstract class JComponent extends Container implements Serializable
      * from the JComponent and fires appropriate PropertyChangeEvents to
      * interested listeners on the AccessibleJComponent.
      */
-    protected class AccessibleContainerHandler 
+    protected class AccessibleContainerHandler
       implements ContainerListener
     {
       /**
@@ -464,7 +464,7 @@ public abstract class JComponent extends Container implements Serializable
       else if (border instanceof TitledBorder)
         {
           TitledBorder titled = (TitledBorder) border;
-          title = titled.getTitle(); 
+          title = titled.getTitle();
         }
       return title;
     }
@@ -489,7 +489,7 @@ public abstract class JComponent extends Container implements Serializable
      */
     public String getTitledBorderText()
     {
-      return getBorderTitle(getBorder()); 
+      return getBorderTitle(getBorder());
     }
 
     /**
@@ -536,29 +536,29 @@ public abstract class JComponent extends Container implements Serializable
    */
   float alignmentY = -1.0F;
 
-  /** 
+  /**
    * The border painted around this component.
-   * 
+   *
    * @see #paintBorder
    */
   Border border;
 
   /**
    * The popup menu for the component.
-   * 
+   *
    * @see #getComponentPopupMenu()
    * @see #setComponentPopupMenu(JPopupMenu)
    */
   JPopupMenu componentPopupMenu;
-   
+
   /**
    * A flag that controls whether the {@link #getComponentPopupMenu()} method
    * looks to the component's parent when the <code>componentPopupMenu</code>
    * field is <code>null</code>.
    */
   boolean inheritsPopupMenu;
-  
-  /** 
+
+  /**
    * <p>Whether to double buffer this component when painting. This flag
    * should generally be <code>true</code>, to ensure good painting
    * performance.</p>
@@ -587,7 +587,7 @@ public abstract class JComponent extends Container implements Serializable
    */
   int debugGraphicsOptions;
 
-  /** 
+  /**
    * <p>This property controls two independent behaviors simultaneously.</p>
    *
    * <p>First, it controls whether to fill the background of this widget
@@ -616,9 +616,9 @@ public abstract class JComponent extends Container implements Serializable
    */
   boolean opaque = false;
 
-  /** 
+  /**
    * The user interface delegate for this component. Event delivery and
-   * repainting of the component are usually delegated to this object. 
+   * repainting of the component are usually delegated to this object.
    *
    * @see #setUI
    * @see #getUIClassID
@@ -630,7 +630,7 @@ public abstract class JComponent extends Container implements Serializable
    * A hint to the focus system that this component should or should not
    * get focus. If this is <code>false</code>, swing will not try to
    * request focus on this component; if <code>true</code>, swing might
-   * try to request focus, but the request might fail. Thus it is only 
+   * try to request focus, but the request might fail. Thus it is only
    * a hint guiding swing's behavior.
    *
    * @see #requestFocus()
@@ -653,7 +653,7 @@ public abstract class JComponent extends Container implements Serializable
 
   /**
    * Indicates whether the current paint call is already double buffered or
-   * not. 
+   * not.
    */
   static boolean paintingDoubleBuffered = false;
 
@@ -675,14 +675,14 @@ public abstract class JComponent extends Container implements Serializable
    */
   private VetoableChangeSupport vetoableChangeSupport;
 
-  /** 
+  /**
    * Storage for "client properties", which are key/value pairs associated
    * with this component by a "client", such as a user application or a
    * layout manager. This is lazily constructed when the component gets its
    * first client property.
    */
   private Hashtable clientProperties;
-  
+
   private InputMap inputMap_whenFocused;
   private InputMap inputMap_whenAncestorOfFocused;
   private ComponentInputMap inputMap_whenInFocusedWindow;
@@ -717,12 +717,12 @@ public abstract class JComponent extends Container implements Serializable
 
   /**
    * The default locale of the component.
-   * 
+   *
    * @see #getDefaultLocale
    * @see #setDefaultLocale
    */
   private static Locale defaultLocale;
-  
+
   public static final String TOOL_TIP_TEXT_KEY = "ToolTipText";
 
   /**
@@ -734,7 +734,7 @@ public abstract class JComponent extends Container implements Serializable
   public static final int UNDEFINED_CONDITION = -1;
 
   /**
-   * Constant used to indicate that an action should be performed only when 
+   * Constant used to indicate that an action should be performed only when
    * the component has focus.
    *
    * @see #registerKeyboardAction(ActionListener, KeyStroke, int)
@@ -742,7 +742,7 @@ public abstract class JComponent extends Container implements Serializable
   public static final int WHEN_FOCUSED = 0;
 
   /**
-   * Constant used to indicate that an action should be performed only when 
+   * Constant used to indicate that an action should be performed only when
    * the component is an ancestor of the component which has focus.
    *
    * @see #registerKeyboardAction(ActionListener, KeyStroke, int)
@@ -750,7 +750,7 @@ public abstract class JComponent extends Container implements Serializable
   public static final int WHEN_ANCESTOR_OF_FOCUSED_COMPONENT = 1;
 
   /**
-   * Constant used to indicate that an action should be performed only when 
+   * Constant used to indicate that an action should be performed only when
    * the component is in the window which has focus.
    *
    * @see #registerKeyboardAction(ActionListener, KeyStroke, int)
@@ -796,7 +796,7 @@ public abstract class JComponent extends Container implements Serializable
 
   /**
    * Helper to lazily construct and return the client properties table.
-   * 
+   *
    * @return The current client properties table
    *
    * @see #clientProperties
@@ -861,7 +861,7 @@ public abstract class JComponent extends Container implements Serializable
    * Unregister an <code>AncestorListener</code>.
    *
    * @param listener The listener to unregister
-   * 
+   *
    * @see #addAncestorListener
    */
   public void removeAncestorListener(AncestorListener listener)
@@ -911,22 +911,22 @@ public abstract class JComponent extends Container implements Serializable
   }
 
   /**
-   * Returns all registered {@link EventListener}s of the given 
+   * Returns all registered {@link EventListener}s of the given
    * <code>listenerType</code>.
    *
-   * @param listenerType the class of listeners to filter (<code>null</code> 
+   * @param listenerType the class of listeners to filter (<code>null</code>
    *                     not permitted).
-   *                     
+   *
    * @return An array of registered listeners.
-   * 
+   *
    * @throws ClassCastException if <code>listenerType</code> does not implement
    *                            the {@link EventListener} interface.
-   * @throws NullPointerException if <code>listenerType</code> is 
+   * @throws NullPointerException if <code>listenerType</code> is
    *                              <code>null</code>.
-   *                            
+   *
    * @see #getAncestorListeners()
    * @see #listenerList
-   * 
+   *
    * @since 1.3
    */
   public <T extends EventListener> T[] getListeners(Class<T> listenerType)
@@ -953,14 +953,14 @@ public abstract class JComponent extends Container implements Serializable
   /**
    * Return all registered <code>VetoableChangeListener</code> objects.
    *
-   * @return An array of the <code>VetoableChangeListener</code> objects 
-   *     registered with this component (possibly empty but never 
+   * @return An array of the <code>VetoableChangeListener</code> objects
+   *     registered with this component (possibly empty but never
    *     <code>null</code>).
-   * 
+   *
    * @since 1.4
    */
   public VetoableChangeListener[] getVetoableChangeListeners()
-  {    
+  {
     return vetoableChangeSupport == null ? new VetoableChangeListener[0]
         : vetoableChangeSupport.getVetoableChangeListeners();
   }
@@ -1004,7 +1004,7 @@ public abstract class JComponent extends Container implements Serializable
   {
     super.firePropertyChange(property, oldValue, newValue);
   }
-  
+
   /**
    * Fires a property change for a primitive boolean property.
    *
@@ -1081,7 +1081,7 @@ public abstract class JComponent extends Container implements Serializable
 
   /**
    * Set the value of the {@link #border} property.
-   *   
+   *
    * @param newBorder The new value of the property
    *
    * @see #getBorder
@@ -1257,7 +1257,7 @@ public abstract class JComponent extends Container implements Serializable
    */
   public Dimension getMaximumSize()
   {
-    Dimension size = null; 
+    Dimension size = null;
     if (isMaximumSizeSet())
       size = super.getMaximumSize();
     else
@@ -1287,7 +1287,7 @@ public abstract class JComponent extends Container implements Serializable
    */
   public Dimension getMinimumSize()
   {
-    Dimension size = null; 
+    Dimension size = null;
     if (isMinimumSizeSet())
       size = super.getMinimumSize();
     else
@@ -1317,7 +1317,7 @@ public abstract class JComponent extends Container implements Serializable
    */
   public Dimension getPreferredSize()
   {
-    Dimension size = null; 
+    Dimension size = null;
     if (isPreferredSizeSet())
       size = super.getPreferredSize();
     else
@@ -1335,7 +1335,7 @@ public abstract class JComponent extends Container implements Serializable
    *
    * @return The current value of the property, or <code>null</code>
    * if none has been set.
-   * 
+   *
    * @deprecated See {@link java.awt.FocusTraversalPolicy}
    */
   public Component getNextFocusableComponent()
@@ -1362,11 +1362,11 @@ public abstract class JComponent extends Container implements Serializable
     KeyStroke[] ks2;
     if (inputMap_whenFocused != null)
       ks0 = inputMap_whenFocused.keys();
-    else 
+    else
       ks0 = new KeyStroke[0];
     if (inputMap_whenAncestorOfFocused != null)
       ks1 = inputMap_whenAncestorOfFocused.keys();
-    else 
+    else
       ks1 = new KeyStroke[0];
     if (inputMap_whenInFocusedWindow != null)
       ks2 = inputMap_whenInFocusedWindow.keys();
@@ -1428,7 +1428,7 @@ public abstract class JComponent extends Container implements Serializable
 
   /**
    * Return the location at which the <code>toolTipText</code> property should
-   * be displayed, when triggered by a particular mouse event. 
+   * be displayed, when triggered by a particular mouse event.
    *
    * @param event The event the tooltip is being presented in response to
    *
@@ -1496,31 +1496,31 @@ public abstract class JComponent extends Container implements Serializable
   {
     return getToolTipText();
   }
-  
+
   /**
    * Returns the flag that controls whether or not the component inherits its
    * parent's popup menu when no popup menu is specified for this component.
-   * 
+   *
    * @return A boolean.
-   * 
+   *
    * @since 1.5
-   * 
+   *
    * @see #setInheritsPopupMenu(boolean)
    */
   public boolean getInheritsPopupMenu()
   {
-    return inheritsPopupMenu; 
+    return inheritsPopupMenu;
   }
-  
+
   /**
    * Sets the flag that controls whether or not the component inherits its
    * parent's popup menu when no popup menu is specified for this component.
    * This is a bound property with the property name 'inheritsPopupMenu'.
-   * 
+   *
    * @param inherit  the new flag value.
-   * 
+   *
    * @since 1.5
-   * 
+   *
    * @see #getInheritsPopupMenu()
    */
   public void setInheritsPopupMenu(boolean inherit)
@@ -1531,17 +1531,17 @@ public abstract class JComponent extends Container implements Serializable
         this.firePropertyChange("inheritsPopupMenu", ! inherit, inherit);
       }
   }
-  
+
   /**
-   * Returns the popup menu for this component.  If the popup menu is 
+   * Returns the popup menu for this component.  If the popup menu is
    * <code>null</code> AND the {@link #getInheritsPopupMenu()} method returns
    * <code>true</code>, this method will return the parent's popup menu (if it
    * has one).
-   * 
+   *
    * @return The popup menu (possibly <code>null</code>.
-   * 
+   *
    * @since 1.5
-   * 
+   *
    * @see #setComponentPopupMenu(JPopupMenu)
    * @see #getInheritsPopupMenu()
    */
@@ -1549,7 +1549,7 @@ public abstract class JComponent extends Container implements Serializable
   {
     if (componentPopupMenu == null && getInheritsPopupMenu())
       {
-        Container parent = getParent(); 
+        Container parent = getParent();
         if (parent instanceof JComponent)
           return ((JComponent) parent).getComponentPopupMenu();
         else
@@ -1560,13 +1560,13 @@ public abstract class JComponent extends Container implements Serializable
   }
 
   /**
-   * Sets the popup menu for this component (this is a bound property with 
+   * Sets the popup menu for this component (this is a bound property with
    * the property name 'componentPopupMenu').
-   * 
+   *
    * @param popup  the popup menu (<code>null</code> permitted).
    *
    * @since 1.5
-   * 
+   *
    * @see #getComponentPopupMenu()
    */
   public void setComponentPopupMenu(JPopupMenu popup)
@@ -1578,7 +1578,7 @@ public abstract class JComponent extends Container implements Serializable
         firePropertyChange("componentPopupMenu", old, popup);
       }
   }
-  
+
   /**
    * Return the top level ancestral container (usually a {@link
    * java.awt.Window} or {@link java.applet.Applet}) which this component is
@@ -1689,7 +1689,7 @@ public abstract class JComponent extends Container implements Serializable
   }
 
   /**
-   * Return the current value of the {@link #opaque} property. 
+   * Return the current value of the {@link #opaque} property.
    *
    * @return The current property value
    */
@@ -2149,7 +2149,7 @@ public abstract class JComponent extends Container implements Serializable
 
     // The component that is finally triggered for painting.
     JComponent paintRoot = this;
-    
+
     // Stores the component and all its parents. This will be used to limit
     // the actually painted components in paintChildren by setting
     // the field paintChild.
@@ -2200,7 +2200,7 @@ public abstract class JComponent extends Container implements Serializable
                     else if (jc.isPartiallyObscured(i, paintX, paintY, paintW,
                                                     paintH))
                       updatePaintRoot = true;
-                      
+
                   }
               }
             if (updatePaintRoot)
@@ -2430,27 +2430,27 @@ public abstract class JComponent extends Container implements Serializable
    * A variant of {@link
    * #registerKeyboardAction(ActionListener,String,KeyStroke,int)} which
    * provides <code>null</code> for the command name.
-   * 
+   *
    * @param act  the action listener to notify when the keystroke occurs.
    * @param stroke  the key stroke.
-   * @param cond  the condition (one of {@link #WHEN_FOCUSED}, 
-   *     {@link #WHEN_IN_FOCUSED_WINDOW} and 
+   * @param cond  the condition (one of {@link #WHEN_FOCUSED},
+   *     {@link #WHEN_IN_FOCUSED_WINDOW} and
    *     {@link #WHEN_ANCESTOR_OF_FOCUSED_COMPONENT}).
    */
   public void registerKeyboardAction(ActionListener act,
-                                     KeyStroke stroke, 
+                                     KeyStroke stroke,
                                      int cond)
   {
     registerKeyboardAction(act, null, stroke, cond);
   }
 
-  /* 
+  /*
    * There is some charmingly undocumented behavior sun seems to be using
    * to simulate the old register/unregister keyboard binding API. It's not
    * clear to me why this matters, but we shall endeavour to follow suit.
    *
    * Two main thing seem to be happening when you do registerKeyboardAction():
-   * 
+   *
    *  - no actionMap() entry gets created, just an entry in inputMap()
    *
    *  - the inputMap() entry is a proxy class which invokes the the
@@ -2470,7 +2470,7 @@ public abstract class JComponent extends Container implements Serializable
     ActionListener target;
     String bindingCommandName;
 
-    public ActionListenerProxy(ActionListener li, 
+    public ActionListenerProxy(ActionListener li,
                                String cmd)
     {
       target = li;
@@ -2487,7 +2487,7 @@ public abstract class JComponent extends Container implements Serializable
     }
   }
 
-  
+
   /**
    * An obsolete method to register a keyboard action on this component.
    * You should use <code>getInputMap</code> and <code>getActionMap</code>
@@ -2507,9 +2507,9 @@ public abstract class JComponent extends Container implements Serializable
    * @see #getConditionForKeyStroke
    * @see #resetKeyboardActions
    */
-  public void registerKeyboardAction(ActionListener act, 
+  public void registerKeyboardAction(ActionListener act,
                                      String cmd,
-                                     KeyStroke stroke, 
+                                     KeyStroke stroke,
                                      int cond)
   {
     ActionListenerProxy proxy = new ActionListenerProxy(act, cmd);
@@ -2519,12 +2519,12 @@ public abstract class JComponent extends Container implements Serializable
 
   /**
    * Sets the input map for the given condition.
-   * 
-   * @param condition  the condition (one of {@link #WHEN_FOCUSED}, 
-   *     {@link #WHEN_IN_FOCUSED_WINDOW} and 
+   *
+   * @param condition  the condition (one of {@link #WHEN_FOCUSED},
+   *     {@link #WHEN_IN_FOCUSED_WINDOW} and
    *     {@link #WHEN_ANCESTOR_OF_FOCUSED_COMPONENT}).
    * @param map  the map.
-   * 
+   *
    * @throws IllegalArgumentException if <code>condition</code> is not one of
    *     the specified values.
    */
@@ -2543,12 +2543,12 @@ public abstract class JComponent extends Container implements Serializable
 
       case WHEN_IN_FOCUSED_WINDOW:
         if (map != null && !(map instanceof ComponentInputMap))
-            throw new 
-              IllegalArgumentException("WHEN_IN_FOCUSED_WINDOW " + 
+            throw new
+              IllegalArgumentException("WHEN_IN_FOCUSED_WINDOW " +
                                        "InputMap must be a ComponentInputMap");
         inputMap_whenInFocusedWindow = (ComponentInputMap)map;
         break;
-        
+
       case UNDEFINED_CONDITION:
       default:
         throw new IllegalArgumentException();
@@ -2558,13 +2558,13 @@ public abstract class JComponent extends Container implements Serializable
   /**
    * Returns the input map associated with this component for the given
    * state/condition.
-   * 
-   * @param condition  the state (one of {@link #WHEN_FOCUSED}, 
-   *     {@link #WHEN_ANCESTOR_OF_FOCUSED_COMPONENT} and 
+   *
+   * @param condition  the state (one of {@link #WHEN_FOCUSED},
+   *     {@link #WHEN_ANCESTOR_OF_FOCUSED_COMPONENT} and
    *     {@link #WHEN_IN_FOCUSED_WINDOW}).
-   * 
+   *
    * @return The input map.
-   * @throws IllegalArgumentException if <code>condition</code> is not one of 
+   * @throws IllegalArgumentException if <code>condition</code> is not one of
    *             the specified values.
    * @since 1.3
    */
@@ -2590,17 +2590,17 @@ public abstract class JComponent extends Container implements Serializable
 
       case UNDEFINED_CONDITION:
       default:
-        throw new IllegalArgumentException("Invalid 'condition' argument: " 
+        throw new IllegalArgumentException("Invalid 'condition' argument: "
                                            + condition);
       }
   }
 
   /**
-   * Returns the input map associated with this component for the 
+   * Returns the input map associated with this component for the
    * {@link #WHEN_FOCUSED} state.
-   * 
+   *
    * @return The input map.
-   * 
+   *
    * @since 1.3
    * @see #getInputMap(int)
    */
@@ -2634,19 +2634,19 @@ public abstract class JComponent extends Container implements Serializable
    *     #WHEN_ANCESTOR_OF_FOCUSED_COMPONENT}, {@link #WHEN_FOCUSED}, or {@link
    *     #WHEN_IN_FOCUSED_WINDOW}
    *
-   * @see #registerKeyboardAction(ActionListener, KeyStroke, int)   
-   * @see #unregisterKeyboardAction   
+   * @see #registerKeyboardAction(ActionListener, KeyStroke, int)
+   * @see #unregisterKeyboardAction
    * @see #resetKeyboardActions
    */
   public int getConditionForKeyStroke(KeyStroke ks)
   {
-    if (inputMap_whenFocused != null 
+    if (inputMap_whenFocused != null
         && inputMap_whenFocused.get(ks) != null)
       return WHEN_FOCUSED;
-    else if (inputMap_whenAncestorOfFocused != null 
+    else if (inputMap_whenAncestorOfFocused != null
              && inputMap_whenAncestorOfFocused.get(ks) != null)
       return WHEN_ANCESTOR_OF_FOCUSED_COMPONENT;
-    else if (inputMap_whenInFocusedWindow != null 
+    else if (inputMap_whenInFocusedWindow != null
              && inputMap_whenInFocusedWindow.get(ks) != null)
       return WHEN_IN_FOCUSED_WINDOW;
     else
@@ -2655,7 +2655,7 @@ public abstract class JComponent extends Container implements Serializable
 
   /**
    * Get the ActionListener (typically an {@link Action} object) which is
-   * associated with a particular keystroke. 
+   * associated with a particular keystroke.
    *
    * @param ks The keystroke to retrieve the action of
    *
@@ -2711,10 +2711,10 @@ public abstract class JComponent extends Container implements Serializable
     //    Note: Input maps for disabled components are skipped.
     // 4. The WHEN_IN_FOCUSED_WINDOW maps of all the enabled components in
     //    the focused window are searched.
-    
+
     KeyStroke keyStroke = KeyStroke.getKeyStrokeForEvent(e);
     boolean pressed = e.getID() == KeyEvent.KEY_PRESSED;
-    
+
     if (processKeyBinding(keyStroke, e, WHEN_FOCUSED, pressed))
       {
         // This is step 1 from above comment.
@@ -2728,37 +2728,37 @@ public abstract class JComponent extends Container implements Serializable
         e.consume();
         return;
       }
-    
+
     // This is step 3 from above comment.
-    Container current = getParent();    
+    Container current = getParent();
     while (current != null)
-      { 
+      {
         // If current is a JComponent, see if it handles the event in its
         // WHEN_ANCESTOR_OF_FOCUSED_COMPONENT maps.
-        if ((current instanceof JComponent) && 
-            ((JComponent)current).processKeyBinding 
+        if ((current instanceof JComponent) &&
+            ((JComponent)current).processKeyBinding
             (keyStroke, e,WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, pressed))
           {
             e.consume();
             return;
-          }     
-        
+          }
+
         // Stop when we've tried a top-level container and it didn't handle it
         if (current instanceof Window || current instanceof Applet)
-          break;        
-        
+          break;
+
         // Move up the hierarchy
         current = current.getParent();
       }
-    
+
     // Current being null means the JComponent does not currently have a
-    // top-level ancestor, in which case we don't need to check 
+    // top-level ancestor, in which case we don't need to check
     // WHEN_IN_FOCUSED_WINDOW bindings.
     if (current == null || e.isConsumed())
       return;
-    
+
     // This is step 4 from above comment.  KeyboardManager maintains mappings
-    // related to WHEN_IN_FOCUSED_WINDOW bindings so that we don't have to 
+    // related to WHEN_IN_FOCUSED_WINDOW bindings so that we don't have to
     // traverse the containment hierarchy each time.
     if (KeyboardManager.getManager().processKeyStroke(current, keyStroke, e))
       e.consume();
@@ -2781,7 +2781,7 @@ public abstract class JComponent extends Container implements Serializable
               {
                 if (cmd instanceof ActionListenerProxy)
                   act = (Action) cmd;
-                else 
+                else
                   act = getActionMap().get(cmd);
               }
           }
@@ -2806,7 +2806,7 @@ public abstract class JComponent extends Container implements Serializable
       }
     return false;
   }
-  
+
   /**
    * Remove a keyboard action registry.
    *
@@ -2899,7 +2899,7 @@ public abstract class JComponent extends Container implements Serializable
   }
 
   /**
-   * Queue a an invalidation and revalidation of this component, using 
+   * Queue a an invalidation and revalidation of this component, using
    * {@link RepaintManager#addInvalidComponent}.
    */
   public void revalidate()
@@ -2925,7 +2925,7 @@ public abstract class JComponent extends Container implements Serializable
   }
 
   /**
-   * Calls <code>scrollRectToVisible</code> on the component's parent. 
+   * Calls <code>scrollRectToVisible</code> on the component's parent.
    * Components which can service this call should override.
    *
    * @param r The rectangle to make visible
@@ -3069,7 +3069,7 @@ public abstract class JComponent extends Container implements Serializable
   }
 
   /**
-   * Set the specified component to be the next component in the 
+   * Set the specified component to be the next component in the
    * focus cycle, overriding the {@link FocusTraversalPolicy} for
    * this component.
    *
@@ -3151,7 +3151,7 @@ public abstract class JComponent extends Container implements Serializable
    * background.
    *
    * @param isOpaque if true, paint all pixels. If false, expect the clean
-   * background. 
+   * background.
    *
    * @see ComponentUI#update
    */
@@ -3192,8 +3192,8 @@ public abstract class JComponent extends Container implements Serializable
   }
 
   /**
-   * Call {@link #paint}. 
-   * 
+   * Call {@link #paint}.
+   *
    * @param g The graphics context to paint into
    */
   public void update(Graphics g)
@@ -3258,12 +3258,12 @@ public abstract class JComponent extends Container implements Serializable
   }
 
   /**
-   * Returns the locale used as the default for all new components.  The 
+   * Returns the locale used as the default for all new components.  The
    * default value is {@link Locale#getDefault()} (that is, the platform
    * default locale).
-   * 
+   *
    * @return The locale (never <code>null</code>).
-   * 
+   *
    * @see #setDefaultLocale(Locale)
    */
   public static Locale getDefaultLocale()
@@ -3272,19 +3272,19 @@ public abstract class JComponent extends Container implements Serializable
       defaultLocale = Locale.getDefault();
     return defaultLocale;
   }
-  
+
   /**
    * Sets the locale to be used as the default for all new components.  If this
    * is set to <code>null</code>, the {@link #getDefaultLocale()} method will
    * return the platform default locale.
-   * 
+   *
    * @param l  the locale (<code>null</code> permitted).
    */
   public static void setDefaultLocale(Locale l)
   {
     defaultLocale = l;
   }
-  
+
   /**
    * Returns the currently set input verifier for this component.
    *
@@ -3357,7 +3357,7 @@ public abstract class JComponent extends Container implements Serializable
    * by look and feel implementations.
    *
    * You should not use this method directly. Instead you are strongly
-   * encouraged to call {@link #requestFocus()} or 
+   * encouraged to call {@link #requestFocus()} or
    * {@link #requestFocusInWindow()} instead.
    *
    * @param temporary if the focus change is temporary
@@ -3406,7 +3406,7 @@ public abstract class JComponent extends Container implements Serializable
    * by look and feel implementations.
    *
    * You should not use this method directly. Instead you are strongly
-   * encouraged to call {@link #requestFocus()} or 
+   * encouraged to call {@link #requestFocus()} or
    * {@link #requestFocusInWindow()} instead.
    *
    * @param temporary if the focus change is temporary
@@ -3470,7 +3470,7 @@ public abstract class JComponent extends Container implements Serializable
    * has changed.
    *
    * This method is called before the component is actually removed from
-   * its parent, so the parent is still visible through 
+   * its parent, so the parent is still visible through
    * {@link Component#getParent}.
    */
   public void removeNotify()
@@ -3478,7 +3478,7 @@ public abstract class JComponent extends Container implements Serializable
     super.removeNotify();
 
     KeyboardManager.getManager().clearBindingsForComp(this);
-    
+
     // Notify ancestor listeners.
     fireAncestorEvent(this, AncestorEvent.ANCESTOR_REMOVED);
 
@@ -3727,7 +3727,7 @@ public abstract class JComponent extends Container implements Serializable
         jc.fireAncestorEvent(ancestor, id);
       }
   }
-  
+
   /**
    * This is the method that gets called when the WHEN_IN_FOCUSED_WINDOW map
    * is changed.
@@ -3743,26 +3743,26 @@ public abstract class JComponent extends Container implements Serializable
     InputMap curr = getInputMap(WHEN_IN_FOCUSED_WINDOW);
     while (curr != null && curr != changed)
       curr = curr.getParent();
-    
+
     // If curr is null then changed is not in the hierarchy
     if (curr == null)
       return;
-    
+
     // Now we have to update the keyboard manager's hashtable
     KeyboardManager km = KeyboardManager.getManager();
-    
-    // This is a poor strategy, should be improved.  We currently 
+
+    // This is a poor strategy, should be improved.  We currently
     // delete all the old bindings for the component and then register
     // the current bindings.
     km.clearBindingsForComp(changed.getComponent());
-    km.registerEntireMap((ComponentInputMap) 
+    km.registerEntireMap((ComponentInputMap)
                          getInputMap(WHEN_IN_FOCUSED_WINDOW));
   }
 
   /**
    * Helper method for
    * {@link LookAndFeel#installProperty(JComponent, String, Object)}.
-   * 
+   *
    * @param propertyName the name of the property
    * @param value the value of the property
    *

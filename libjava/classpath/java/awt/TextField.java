@@ -54,13 +54,13 @@ import javax.accessibility.AccessibleStateSet;
  */
 public class TextField extends TextComponent
 {
-  
+
   /**
    * The number used to generate the name returned by getName.
    */
   private static transient long next_textfield_number;
 
-  
+
   private static final long serialVersionUID = -2966288784432217853L;
 
 
@@ -127,7 +127,7 @@ public class TextField extends TextComponent
   public TextField(String text, int columns)
   {
     super(text);
-  
+
     if (columns < 0)
       this.columns = 0;
     else
@@ -165,7 +165,7 @@ public class TextField extends TextComponent
   }
 
   /**
-   * Returns the character that is echoed to the screen when a text 
+   * Returns the character that is echoed to the screen when a text
    * field is protected (such as when a password is being entered).
    *
    * @return The echo character for this text field.
@@ -192,7 +192,7 @@ public class TextField extends TextComponent
    *
    * @param echoChar The new echo character.
    *
-   * @deprecated This method is deprecated in favor of 
+   * @deprecated This method is deprecated in favor of
    * <code>setEchoChar()</code>
    */
   public void setEchoCharacter(char echoChar)
@@ -259,14 +259,14 @@ public class TextField extends TextComponent
    *
    * @param columns The number of columns to get the minimum size for.
    *
-   * @deprecated This method is deprecated in favor of 
+   * @deprecated This method is deprecated in favor of
    * <code>getMinimumSize(int)</code>.
    */
   public Dimension minimumSize(int columns)
   {
     if (isMinimumSizeSet())
       return new Dimension(minSize);
-    
+
     TextFieldPeer peer = (TextFieldPeer) getPeer ();
     if (peer == null)
       return new Dimension(getWidth(), getHeight());
@@ -300,7 +300,7 @@ public class TextField extends TextComponent
    *
    * @return The preferred size for this text field.
    *
-   * @deprecated This method is deprecated in favor of 
+   * @deprecated This method is deprecated in favor of
    * <code>getPreferredSize()</code>.
    */
   public Dimension preferredSize()
@@ -314,18 +314,18 @@ public class TextField extends TextComponent
    *
    * @param columns The number of columns to get the preferred size for.
    *
-   * @deprecated This method is deprecated in favor of 
+   * @deprecated This method is deprecated in favor of
    * <code>getPreferredSize(int)</code>.
    */
   public Dimension preferredSize(int columns)
   {
     if (isPreferredSizeSet())
       return new Dimension(prefSize);
-    
+
     TextFieldPeer peer = (TextFieldPeer) getPeer ();
     if (peer == null)
       return new Dimension (getWidth(), getHeight());
-    
+
     return peer.getPreferredSize (columns);
   }
 
@@ -387,7 +387,7 @@ public class TextField extends TextComponent
    * are enabled on this object.  This will be true if any listeners
    * are registered, or if action events were specifically enabled
    * using <code>enableEvents()</code>.
-   * 
+   *
    * @param event The event to process.
    */
   protected void processActionEvent(ActionEvent event)
@@ -398,10 +398,10 @@ public class TextField extends TextComponent
 
   void dispatchEventImpl(AWTEvent e)
   {
-    if (e.id <= ActionEvent.ACTION_LAST 
+    if (e.id <= ActionEvent.ACTION_LAST
         && e.id >= ActionEvent.ACTION_FIRST
-        && (action_listeners != null 
-	    || (eventMask & AWTEvent.ACTION_EVENT_MASK) != 0))
+        && (action_listeners != null
+            || (eventMask & AWTEvent.ACTION_EVENT_MASK) != 0))
       processEvent(e);
     else
       super.dispatchEventImpl(e);
@@ -446,7 +446,7 @@ public class TextField extends TextComponent
   {
     return (ActionListener[]) getListeners (ActionListener.class);
   }
-  
+
   /**
    * Generate a unique name for this <code>TextField</code>.
    *
@@ -469,13 +469,13 @@ public class TextField extends TextComponent
     protected AccessibleAWTTextField()
     {
     }
-    
+
     public AccessibleStateSet getAccessibleStateSet()
     {
       return super.getAccessibleStateSet();
     }
   }
-  
+
   public AccessibleContext getAccessibleContext()
   {
     return new AccessibleAWTTextField();

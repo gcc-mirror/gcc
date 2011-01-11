@@ -67,9 +67,9 @@ class OutputWindow
   {
     while (len-- > 0)
       {
-	window[window_end++] = window[rep_start++];
-	window_end &= WINDOW_MASK;
-	rep_start &= WINDOW_MASK;
+        window[window_end++] = window[rep_start++];
+        window_end &= WINDOW_MASK;
+        rep_start &= WINDOW_MASK;
       }
   }
 
@@ -82,18 +82,18 @@ class OutputWindow
     int border = WINDOW_SIZE - len;
     if (rep_start <= border && window_end < border)
       {
-	if (len <= dist)
-	  {
-	    System.arraycopy(window, rep_start, window, window_end, len);
-	    window_end += len;
-	  }
-	else
-	  {
-	    /* We have to copy manually, since the repeat pattern overlaps.
-	     */
-	    while (len-- > 0)
-	      window[window_end++] = window[rep_start++];
-	  }
+        if (len <= dist)
+          {
+            System.arraycopy(window, rep_start, window, window_end, len);
+            window_end += len;
+          }
+        else
+          {
+            /* We have to copy manually, since the repeat pattern overlaps.
+             */
+            while (len-- > 0)
+              window[window_end++] = window[rep_start++];
+          }
       }
     else
       slowRepeat(rep_start, len, dist);
@@ -101,16 +101,16 @@ class OutputWindow
 
   public int copyStored(StreamManipulator input, int len)
   {
-    len = Math.min(Math.min(len, WINDOW_SIZE - window_filled), 
-		   input.getAvailableBytes());
+    len = Math.min(Math.min(len, WINDOW_SIZE - window_filled),
+                   input.getAvailableBytes());
     int copied;
 
     int tailLen = WINDOW_SIZE - window_end;
     if (len > tailLen)
       {
-	copied = input.copyBytes(window, window_end, tailLen);
-	if (copied == tailLen)
-	  copied += input.copyBytes(window, 0, len - tailLen);
+        copied = input.copyBytes(window, window_end, tailLen);
+        if (copied == tailLen)
+          copied += input.copyBytes(window, 0, len - tailLen);
       }
     else
       copied = input.copyBytes(window, window_end, len);
@@ -127,8 +127,8 @@ class OutputWindow
 
     if (len > WINDOW_SIZE)
       {
-	offset += len - WINDOW_SIZE;
-	len = WINDOW_SIZE;
+        offset += len - WINDOW_SIZE;
+        len = WINDOW_SIZE;
       }
     System.arraycopy(dict, offset, window, 0, len);
     window_end = len & WINDOW_MASK;
@@ -157,10 +157,10 @@ class OutputWindow
 
     if (tailLen > 0)
       {
-	System.arraycopy(window, WINDOW_SIZE - tailLen,
-			 output, offset, tailLen);
-	offset += tailLen;
-	len = copy_end;
+        System.arraycopy(window, WINDOW_SIZE - tailLen,
+                         output, offset, tailLen);
+        offset += tailLen;
+        len = copy_end;
       }
     System.arraycopy(window, copy_end - len, output, offset, len);
     window_filled -= copied;
@@ -173,6 +173,3 @@ class OutputWindow
     window_filled = window_end = 0;
   }
 }
-
-
-

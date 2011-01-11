@@ -1,4 +1,4 @@
-/* PortableRemoteObjectDelegateImpl.java -- 
+/* PortableRemoteObjectDelegateImpl.java --
    Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -65,7 +65,7 @@ import org.omg.PortableServer.POAManagerPackage.State;
 
 /**
  * Implements PortableRemoteObjectDelegate.
- * 
+ *
  * @author Wu Gansha (gansha.wu@intel.com) (stub)
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org) (implementation)
  */
@@ -78,15 +78,15 @@ public class PortableRemoteObjectDelegateImpl
    * communication using the same communications runtime as for the passed
    * <code>a_source</code> parameter. The a_target is connected to the same
    * ORB (and, if applicable, to the same POA) as the a_source.
-   * 
+   *
    * @param a_target the target to connect to ORB, must be an instance of either
    * {@link ObjectImpl} (Stubs and old-style ties) or {@link Servant} (POA-bases
    * ties).
-   * 
+   *
    * @param a_source the object, providing the connection information, must be
    * an instance of either {@link ObjectImpl} (Stubs and old-style ties) or
    * {@link Servant} (POA-bases ties).
-   * 
+   *
    * @throws RemoteException if the target is already connected to another ORB.
    */
   public void connect(Remote a_target, Remote a_source)
@@ -196,13 +196,13 @@ public class PortableRemoteObjectDelegateImpl
   /**
    * Narrow the given object to the instance of the given class. The currently
    * supported narrowing types are:
-   * 
+   *
    * 1. Simple widening conversion.<br>
    * 2. ObjectImpl -> RMI interface.<br>
    * 3. ObjectImpl -> ObjectImpl.<br>
    * 4. Tie -> Remote (implementation)<br>
    * 5. Remote (implementation) -> Tie.<br>
-   * 
+   *
    * The narrowing has sense only for derived classes.
    */
   public Object narrow(Object narrowFrom, Class narrowTo)
@@ -278,7 +278,7 @@ public class PortableRemoteObjectDelegateImpl
 
     return narrowed;
   }
-  
+
   /**
    * Get the Stub class name for the name, representing the given interface.
    */
@@ -295,7 +295,7 @@ public class PortableRemoteObjectDelegateImpl
         + interf.substring(p + 1) + "_Stub";
     return stubClassName;
   }
-  
+
   /**
    * Get stub for the given implementation, searching by class name pattern. The
    * found stub must implement Remote for this method to succeed.

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package java.util;
 
-/** 
+/**
  * <p>
  * The <code>Formattable</code> interface is used to provide customised
  * formatting to arbitrary objects via the {@link Formatter}.  The
@@ -54,7 +54,7 @@ package java.util;
  *
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
- * @since 1.5 
+ * @since 1.5
  */
 public interface Formattable
 {
@@ -88,5 +88,5 @@ public interface Formattable
    *                                between it and the arguments.
    */
   public void formatTo(Formatter formatter, int flags, int width,
-		       int precision);
+                       int precision);
 }

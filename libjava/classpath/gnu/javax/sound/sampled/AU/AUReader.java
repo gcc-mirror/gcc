@@ -55,11 +55,11 @@ public class AUReader extends AudioFileReader
 {
   private static class AUHeader
   {
-    // Magic number identifying the file. '.snd' 
+    // Magic number identifying the file. '.snd'
     private static final int MAGIC = 0x2e736e64;
-    
+
     public static final int SIZE = 24; // size of the header
-    
+
     // Encoding types
     public static final int ULAW = 1; // 8-bit u-law
     public static final int PCM8 = 2; // 8-bit PCM
@@ -68,10 +68,10 @@ public class AUReader extends AudioFileReader
     public static final int PCM32 = 5; // 32-bit PCM
     public static final int IEEE32 = 6; // 32-bit IEEE f.p.
     public static final int IEEE64 = 7; // 64-bit IEEE f.p.
-    public static final int G721 = 23; 
-    public static final int G722 = 24; 
-    public static final int G723 = 25; 
-    public static final int G723_5BIT = 26; 
+    public static final int G721 = 23;
+    public static final int G722 = 24;
+    public static final int G723 = 25;
+    public static final int G723_5BIT = 26;
     public static final int ALAW = 27; // 8-bit a-law
 
     // Header data.
@@ -90,56 +90,56 @@ public class AUReader extends AudioFileReader
       ByteBuffer buf = ByteBuffer.wrap(hdr);
 
       if( buf.getInt() != MAGIC )
-	throw new UnsupportedAudioFileException("Not an AU format audio file.");
-      headerSize = buf.getInt(); 
-      fileSize = buf.getInt(); 
-      encoding = buf.getInt(); 
+        throw new UnsupportedAudioFileException("Not an AU format audio file.");
+      headerSize = buf.getInt();
+      fileSize = buf.getInt();
+      encoding = buf.getInt();
       sampleRate = buf.getInt();
-      channels = buf.getInt(); 
+      channels = buf.getInt();
 
       switch(encoding)
-	{
-	case ULAW: 
-	case PCM8: 
-	case ALAW: 
-	  sampleSizeInBits = 8;
-	  break;
-	case PCM16:
-	  sampleSizeInBits = 16;
-	  break;
-	case PCM24:
-	  sampleSizeInBits = 24;
-	  break;
-	case PCM32:
-	  sampleSizeInBits = 32;
-	  break;
-	default:   // other types exist but are not supported. Yet.
-	  throw new UnsupportedAudioFileException("Unsupported encoding.");
-	}
+        {
+        case ULAW:
+        case PCM8:
+        case ALAW:
+          sampleSizeInBits = 8;
+          break;
+        case PCM16:
+          sampleSizeInBits = 16;
+          break;
+        case PCM24:
+          sampleSizeInBits = 24;
+          break;
+        case PCM32:
+          sampleSizeInBits = 32;
+          break;
+        default:   // other types exist but are not supported. Yet.
+          throw new UnsupportedAudioFileException("Unsupported encoding.");
+        }
     }
 
   public AudioFormat getAudioFormat()
     {
       AudioFormat.Encoding encType = AudioFormat.Encoding.PCM_SIGNED;
       if(encoding == 1)
-	encType = AudioFormat.Encoding.ULAW;
+        encType = AudioFormat.Encoding.ULAW;
       if(encoding == 27)
-	encType = AudioFormat.Encoding.ALAW;
-      
-      return new AudioFormat(encType, 
-			     (float)sampleRate, 
-			     sampleSizeInBits, 
-			     channels, 
-			     (sampleSizeInBits >> 3) * channels, 
-			     (float)sampleRate, 
-			     true);
+        encType = AudioFormat.Encoding.ALAW;
+
+      return new AudioFormat(encType,
+                             (float)sampleRate,
+                             sampleSizeInBits,
+                             channels,
+                             (sampleSizeInBits >> 3) * channels,
+                             (float)sampleRate,
+                             true);
     }
 
   public AudioFileFormat getAudioFileFormat()
     {
-      return new AudioFileFormat(new AUFormatType(), 
-				 getAudioFormat(), 
-				 AudioSystem.NOT_SPECIFIED);
+      return new AudioFileFormat(new AUFormatType(),
+                                 getAudioFormat(),
+                                 AudioSystem.NOT_SPECIFIED);
     }
   }
 
@@ -160,8 +160,8 @@ public class AUReader extends AudioFileReader
   public AudioFileFormat getAudioFileFormat(InputStream stream)
     throws IOException, UnsupportedAudioFileException
   {
-    if(!stream.markSupported()) 
-      throw new IOException("Stream must support marking.");    
+    if(!stream.markSupported())
+      throw new IOException("Stream must support marking.");
 
     stream.mark(25);
     AUHeader header = new AUHeader(stream);
@@ -169,10 +169,10 @@ public class AUReader extends AudioFileReader
 
     return header.getAudioFileFormat();
   }
-  
+
   public AudioFileFormat getAudioFileFormat(URL url)
     throws IOException, UnsupportedAudioFileException
-  {        
+  {
     return getAudioFileFormat(new BufferedInputStream(url.openStream()));
   }
 
@@ -198,8 +198,8 @@ public class AUReader extends AudioFileReader
     if( header.headerSize > AUHeader.SIZE )
       stream.skip(header.headerSize - AUHeader.SIZE);
 
-    return new AudioInputStream(stream, header.getAudioFormat(), 
-				AudioSystem.NOT_SPECIFIED);
+    return new AudioInputStream(stream, header.getAudioFormat(),
+                                AudioSystem.NOT_SPECIFIED);
   }
 
   public AudioInputStream getAudioInputStream(URL url)
@@ -208,4 +208,3 @@ public class AUReader extends AudioFileReader
     return getAudioInputStream(new BufferedInputStream(url.openStream()));
   }
 }
-

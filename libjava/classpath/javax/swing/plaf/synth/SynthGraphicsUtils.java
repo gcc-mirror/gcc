@@ -91,10 +91,10 @@ public class SynthGraphicsUtils
    * Lays out a label and (if non-null) an icon. The calculated coordinates are
    * then stored in <code>viewR</code>, <code>iconR</code> and
    * <code>textR</code>.
-   *   
+   *
    * The alignment and position parameters may be one of the alignment or
    * position constants defined in {@link javax.swing.SwingConstants}.
-   * 
+   *
    * @param ctx the synth context, identifies the current region
    * @param fm the font metrics to use to fetch the text measures
    * @param text the text to lay out, may be <code>null</code>
@@ -123,7 +123,7 @@ public class SynthGraphicsUtils
   /**
    * Returns the width of the string <code>text</code> for the specified font
    * and font metrics.
-   * 
+   *
    * @param ctx identifies the current region
    * @param font the font
    * @param fm the font metrics to use

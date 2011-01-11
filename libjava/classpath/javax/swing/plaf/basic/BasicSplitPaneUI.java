@@ -89,7 +89,7 @@ public class BasicSplitPaneUI extends SplitPaneUI
     // 3 components at a time.
     // LEFT/TOP = 0
     // RIGHT/BOTTOM = 1
-    // DIVIDER = 2    
+    // DIVIDER = 2
 
     /**
      * This array contains the components in the JSplitPane. The  left/top
@@ -338,7 +338,7 @@ public class BasicSplitPaneUI extends SplitPaneUI
           // Layout divider.
           loc += sizes[0];
           setComponentToSize(components[2], sizes[2], loc, insets, dims);
-          // Layout component#2. 
+          // Layout component#2.
           loc += sizes[2];
           setComponentToSize(components[1], sizes[1], loc, insets, dims);
         }
@@ -483,7 +483,7 @@ public class BasicSplitPaneUI extends SplitPaneUI
      */
     protected void setComponentToSize(Component c, int size, int location,
                                       Insets insets, Dimension containerSize)
-    { 
+    {
       if (insets != null)
         {
           if (axis == SwingConstants.HORIZONTAL)
@@ -752,7 +752,7 @@ public class BasicSplitPaneUI extends SplitPaneUI
 
           tmpSizes[0] += newSpace / 2;
           tmpSizes[1] += newSpace / 2;
-      
+
           layoutManager.setSizes(tmpSizes);
         }
       else if (e.getPropertyName().equals(JSplitPane.ORIENTATION_PROPERTY))
@@ -986,12 +986,12 @@ public class BasicSplitPaneUI extends SplitPaneUI
 
   /**
    * Returns the input map for the specified condition.
-   * 
+   *
    * @param condition  the condition.
-   * 
+   *
    * @return The input map.
    */
-  InputMap getInputMap(int condition) 
+  InputMap getInputMap(int condition)
   {
     if (condition == JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
       return (InputMap) UIManager.get("SplitPane.ancestorInputMap");
@@ -1000,12 +1000,12 @@ public class BasicSplitPaneUI extends SplitPaneUI
 
   /**
    * Returns the action map for the {@link JSplitPane}.  All sliders share
-   * a single action map which is created the first time this method is 
+   * a single action map which is created the first time this method is
    * called, then stored in the UIDefaults table for subsequent access.
-   * 
+   *
    * @return The shared action map.
    */
-  ActionMap getActionMap() 
+  ActionMap getActionMap()
   {
     ActionMap map = (ActionMap) UIManager.get("SplitPane.actionMap");
 
@@ -1020,18 +1020,18 @@ public class BasicSplitPaneUI extends SplitPaneUI
 
   /**
    * Creates the action map shared by all {@link JSlider} instances.
-   * This method is called once by {@link #getActionMap()} when it 
-   * finds no action map in the UIDefaults table...after the map is 
-   * created, it gets added to the defaults table so that subsequent 
-   * calls to {@link #getActionMap()} will return the same shared 
+   * This method is called once by {@link #getActionMap()} when it
+   * finds no action map in the UIDefaults table...after the map is
+   * created, it gets added to the defaults table so that subsequent
+   * calls to {@link #getActionMap()} will return the same shared
    * instance.
-   * 
+   *
    * @return The action map.
    */
   ActionMap createActionMap()
   {
     ActionMap map = new ActionMapUIResource();
-    map.put("toggleFocus", 
+    map.put("toggleFocus",
             new AbstractAction("toggleFocus") {
               public void actionPerformed(ActionEvent event)
               {
@@ -1039,7 +1039,7 @@ public class BasicSplitPaneUI extends SplitPaneUI
               }
             }
     );
-    map.put("startResize", 
+    map.put("startResize",
             new AbstractAction("startResize") {
               public void actionPerformed(ActionEvent event)
               {
@@ -1047,7 +1047,7 @@ public class BasicSplitPaneUI extends SplitPaneUI
               }
             }
     );
-    map.put("selectMax", 
+    map.put("selectMax",
             new AbstractAction("selectMax") {
               public void actionPerformed(ActionEvent event)
               {
@@ -1055,7 +1055,7 @@ public class BasicSplitPaneUI extends SplitPaneUI
               }
             }
     );
-    map.put("selectMin", 
+    map.put("selectMin",
             new AbstractAction("selectMin") {
               public void actionPerformed(ActionEvent event)
               {
@@ -1063,7 +1063,7 @@ public class BasicSplitPaneUI extends SplitPaneUI
               }
             }
     );
-    map.put("negativeIncrement", 
+    map.put("negativeIncrement",
             new AbstractAction("negativeIncrement") {
               public void actionPerformed(ActionEvent event)
               {
@@ -1074,7 +1074,7 @@ public class BasicSplitPaneUI extends SplitPaneUI
               }
             }
     );
-    map.put("positiveIncrement", 
+    map.put("positiveIncrement",
             new AbstractAction("positiveIncrement") {
               public void actionPerformed(ActionEvent event)
               {
@@ -1092,7 +1092,7 @@ public class BasicSplitPaneUI extends SplitPaneUI
                 // FIXME: implement this
               }
             }
-    );    
+    );
     map.put("focusOutForward",
             new AbstractAction("focusOutForward") {
               public void actionPerformed(ActionEvent event)
@@ -1100,7 +1100,7 @@ public class BasicSplitPaneUI extends SplitPaneUI
                 // FIXME: implement this
               }
             }
-    );    
+    );
     return map;
   }
 
@@ -1112,7 +1112,7 @@ public class BasicSplitPaneUI extends SplitPaneUI
   {
     InputMap keyMap = getInputMap(
         JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-    SwingUtilities.replaceUIInputMap(splitPane, 
+    SwingUtilities.replaceUIInputMap(splitPane,
         JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, keyMap);
     ActionMap map = getActionMap();
     SwingUtilities.replaceUIActionMap(splitPane, map);
@@ -1124,7 +1124,7 @@ public class BasicSplitPaneUI extends SplitPaneUI
   protected void uninstallKeyboardActions()
   {
     SwingUtilities.replaceUIActionMap(splitPane, null);
-    SwingUtilities.replaceUIInputMap(splitPane, 
+    SwingUtilities.replaceUIInputMap(splitPane,
         JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, null);
   }
 

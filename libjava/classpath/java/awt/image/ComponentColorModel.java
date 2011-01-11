@@ -54,7 +54,7 @@ public class ComponentColorModel extends ColorModel
       sum += values[i];
     return sum;
   }
-  
+
   // Create an appropriate array of bits, given a colorspace (ie, number of
   // bands), size of the storage data type, and presence of an alpha band.
   private static int[] findBits(ColorSpace colorSpace, int transferType,
@@ -67,28 +67,28 @@ public class ComponentColorModel extends ColorModel
       bits = new int[colorSpace.getNumComponents()];
 
     Arrays.fill(bits, DataBuffer.getDataTypeSize(transferType));
-    
+
     return bits;
   }
 
   public ComponentColorModel(ColorSpace colorSpace, int[] bits,
-			     boolean hasAlpha,
-			     boolean isAlphaPremultiplied,
-			     int transparency, int transferType)
+                             boolean hasAlpha,
+                             boolean isAlphaPremultiplied,
+                             int transparency, int transferType)
   {
     super(sum(bits), bits, colorSpace, hasAlpha, isAlphaPremultiplied,
-	  transparency, transferType);
+          transparency, transferType);
   }
 
   /**
    * Construct a new ComponentColorModel.
-   * 
+   *
    * This constructor makes all bits of each sample significant, so for a
    * transferType of DataBuffer.BYTE, the bits per sample is 8, etc.  If
    * both hasAlpha and isAlphaPremultiplied are true, color samples are
    * assumed to be premultiplied by the alpha component.  Transparency may be
-   * one of OPAQUE, BITMASK, or TRANSLUCENT. 
-   * 
+   * one of OPAQUE, BITMASK, or TRANSLUCENT.
+   *
    * @param colorSpace The colorspace for this color model.
    * @param hasAlpha True if there is an alpha component.
    * @param isAlphaPremultiplied True if colors are already multiplied by
@@ -98,10 +98,10 @@ public class ComponentColorModel extends ColorModel
    * @since 1.4
    */
   public ComponentColorModel(ColorSpace colorSpace,
-			     boolean hasAlpha,
-			     boolean isAlphaPremultiplied,
-			     int transparency, int transferType)
-  {	
+                             boolean hasAlpha,
+                             boolean isAlphaPremultiplied,
+                             int transparency, int transferType)
+  {
     this(colorSpace, findBits(colorSpace, transferType, hasAlpha), hasAlpha,
          isAlphaPremultiplied, transparency, transferType);
   }
@@ -117,7 +117,7 @@ public class ComponentColorModel extends ColorModel
     if (getNumComponents()>1) throw new IllegalArgumentException();
     return (int) getRGBFloat(pixel)[0];
   }
-  
+
   public int getBlue(int pixel)
   {
     if (getNumComponents()>1) throw new IllegalArgumentException();
@@ -131,7 +131,7 @@ public class ComponentColorModel extends ColorModel
     if (shift >= 0) return pixel << shift;
     return pixel >> (-shift);
   }
-   
+
   public int getRGB(int pixel)
   {
     float[] rgb = getRGBFloat(pixel);
@@ -143,7 +143,7 @@ public class ComponentColorModel extends ColorModel
 
   /* Note, it's OK to pass a to large array to toRGB(). Extra
      elements are ignored. */
-  
+
   private float[] getRGBFloat(int pixel)
   {
     float[] data = { pixel };
@@ -154,20 +154,20 @@ public class ComponentColorModel extends ColorModel
   {
     DataBuffer buffer =
     Buffers.createBufferFromData(transferType, inData,
-				 getNumComponents());
+                                 getNumComponents());
     int colors = getNumColorComponents();
     float[] data = new float[colors];
-    
+
     // FIXME: unpremultiply data that is premultiplied
     for (int i=0; i<colors; i++)
       {
-	float maxValue = (1<<getComponentSize(i))-1;
-	data[i] = buffer.getElemFloat(i)/maxValue; 
+        float maxValue = (1<<getComponentSize(i))-1;
+        data[i] = buffer.getElemFloat(i)/maxValue;
       }
     float[] rgb = cspace.toRGB(data);
     return rgb;
   }
-  
+
   public int getRed(Object inData)
   {
     return (int) getRGBFloat(inData)[0]*255;
@@ -187,7 +187,7 @@ public class ComponentColorModel extends ColorModel
   {
     DataBuffer buffer =
       Buffers.createBufferFromData(transferType, inData,
-				   getNumComponents());
+                                   getNumComponents());
     int shift = 8 - getComponentSize(getNumColorComponents());
     int alpha = buffer.getElem(getNumColorComponents());
     if (shift >= 0) return alpha << shift;
@@ -200,7 +200,7 @@ public class ComponentColorModel extends ColorModel
        avoid bits spilling over from one bit field to
        another. But, if we assume that floats are in the [0.0,
        1.0] range, this will never happen anyway. */
-    
+
     /* Remember to multiply BEFORE casting to int, otherwise, decimal
        point data will be lost. */
     int ret =
@@ -234,30 +234,30 @@ public class ComponentColorModel extends ColorModel
     // Convert from rgb to color space components.
     float[] data = cspace.fromRGB(rgbFloats);
     DataBuffer buffer = Buffers.createBuffer(transferType, pixel,
-					     getNumComponents());
+                                             getNumComponents());
     int numColors = getNumColorComponents();
-    
+
     if (hasAlpha())
       {
-	float alpha = ((rgb >> 24)&0xff)/255.0F;
-	
-	/* If color model has alpha and should be premultiplied, multiply
-	   color space components with alpha value. */
-	if (isAlphaPremultiplied()) {
-	  for (int i=0; i<numColors; i++)
-	    data[i] *= alpha;
-	}
-	// Scale the alpha sample to the correct number of bits.
-	alpha *= (1<<(bits[numColors]-1));
-	// Arrange the alpha sample in the output array.
-	buffer.setElemFloat(numColors, alpha);
+        float alpha = ((rgb >> 24)&0xff)/255.0F;
+
+        /* If color model has alpha and should be premultiplied, multiply
+           color space components with alpha value. */
+        if (isAlphaPremultiplied()) {
+          for (int i=0; i<numColors; i++)
+            data[i] *= alpha;
+        }
+        // Scale the alpha sample to the correct number of bits.
+        alpha *= (1<<(bits[numColors]-1));
+        // Arrange the alpha sample in the output array.
+        buffer.setElemFloat(numColors, alpha);
       }
     for (int i=0; i<numColors; i++)
       {
-	// Scale the color samples to the correct number of bits.
-	float value = data[i]*(1<<(bits[i]-1));
-	// Arrange the color samples in the output array.
-	buffer.setElemFloat(i, value);
+        // Scale the color samples to the correct number of bits.
+        float value = data[i]*(1<<(bits[i]-1));
+        // Arrange the color samples in the output array.
+        buffer.setElemFloat(i, value);
       }
     return Buffers.getData(buffer);
   }
@@ -274,7 +274,7 @@ public class ComponentColorModel extends ColorModel
   public int[] getComponents(Object pixel, int[] components, int offset)
   {
     DataBuffer buffer = Buffers.createBuffer(transferType, pixel,
-					     getNumComponents());
+                                             getNumComponents());
     int numComponents = getNumComponents();
 
     if (components == null)
@@ -295,7 +295,7 @@ public class ComponentColorModel extends ColorModel
   public Object getDataElements(int[] components, int offset, Object obj)
   {
     DataBuffer buffer = Buffers.createBuffer(transferType, obj,
-					     getNumComponents());
+                                             getNumComponents());
     int numComponents = getNumComponents();
 
     for (int i=0; i<numComponents; i++)
@@ -305,7 +305,7 @@ public class ComponentColorModel extends ColorModel
   }
 
   public ColorModel coerceData(WritableRaster raster,
-			       boolean isAlphaPremultiplied) {
+                               boolean isAlphaPremultiplied) {
     if (this.isAlphaPremultiplied == isAlphaPremultiplied || !hasAlpha())
       return this;
 
@@ -313,7 +313,7 @@ public class ComponentColorModel extends ColorModel
        assumptions we can make due to the specific type of the
        color model. */
     coerceDataWorker(raster, isAlphaPremultiplied);
-    
+
     return new ComponentColorModel(cspace, hasAlpha, isAlphaPremultiplied,
                                    transparency, transferType);
   }
@@ -383,7 +383,7 @@ public class ComponentColorModel extends ColorModel
 
   public boolean isCompatibleSampleModel(SampleModel sm)
   {
-    return 
+    return
       (sm instanceof ComponentSampleModel) &&
       super.isCompatibleSampleModel(sm);
   }
@@ -391,7 +391,7 @@ public class ComponentColorModel extends ColorModel
   public WritableRaster getAlphaRaster(WritableRaster raster)
   {
     if (!hasAlpha()) return null;
-    
+
     SampleModel sm = raster.getSampleModel();
     int[] alphaBand = { sm.getNumBands() - 1 };
     SampleModel alphaModel = sm.createSubsetSampleModel(alphaBand);
@@ -399,7 +399,7 @@ public class ComponentColorModel extends ColorModel
     Point origin = new Point(0, 0);
     return Raster.createWritableRaster(alphaModel, buffer, origin);
   }
-    
+
   public boolean equals(Object obj)
   {
     if (!(obj instanceof ComponentColorModel)) return false;

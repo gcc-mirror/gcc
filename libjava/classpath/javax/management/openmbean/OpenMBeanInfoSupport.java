@@ -47,7 +47,7 @@ import javax.management.MBeanNotificationInfo;
 import javax.management.MBeanOperationInfo;
 
 /**
- * Describes an open management bean. 
+ * Describes an open management bean.
  *
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
@@ -97,16 +97,16 @@ public class OpenMBeanInfoSupport
    *                             is not assignable to the equivalent
    *                             <code>MBeanXXXInfo</code> class.
    */
-  public OpenMBeanInfoSupport(String name, String desc, 
-			      OpenMBeanAttributeInfo[] attribs,
-			      OpenMBeanConstructorInfo[] cons, 
-			      OpenMBeanOperationInfo[] ops,
-			      MBeanNotificationInfo[] notifs)
+  public OpenMBeanInfoSupport(String name, String desc,
+                              OpenMBeanAttributeInfo[] attribs,
+                              OpenMBeanConstructorInfo[] cons,
+                              OpenMBeanOperationInfo[] ops,
+                              MBeanNotificationInfo[] notifs)
   {
     super(name, desc, (MBeanAttributeInfo[]) attribs,
-	  (MBeanConstructorInfo[]) cons,
-	  (MBeanOperationInfo[]) ops,
-	  notifs);
+          (MBeanConstructorInfo[]) cons,
+          (MBeanOperationInfo[]) ops,
+          notifs);
   }
 
   /**
@@ -116,7 +116,7 @@ public class OpenMBeanInfoSupport
    *
    * @param obj the object to compare.
    * @return true if the object is a {@link OpenMBeanInfo}
-   *         instance, 
+   *         instance,
    *         <code>className.equals(object.getClassName())</code>
    *         and each info class has an equal in the other object.
    */
@@ -149,12 +149,12 @@ public class OpenMBeanInfoSupport
   public int hashCode()
   {
     if (hashCode == null)
-      hashCode = 
-	Integer.valueOf(getClassName().hashCode() + 
-			new HashSet<MBeanAttributeInfo>(Arrays.asList(getAttributes())).hashCode() +
-			new HashSet<MBeanConstructorInfo>(Arrays.asList(getConstructors())).hashCode() +
-			new HashSet<MBeanNotificationInfo>(Arrays.asList(getNotifications())).hashCode() +
-			new HashSet<MBeanOperationInfo>(Arrays.asList(getOperations())).hashCode());
+      hashCode =
+        Integer.valueOf(getClassName().hashCode() +
+                        new HashSet<MBeanAttributeInfo>(Arrays.asList(getAttributes())).hashCode() +
+                        new HashSet<MBeanConstructorInfo>(Arrays.asList(getConstructors())).hashCode() +
+                        new HashSet<MBeanNotificationInfo>(Arrays.asList(getNotifications())).hashCode() +
+                        new HashSet<MBeanOperationInfo>(Arrays.asList(getOperations())).hashCode());
     return hashCode.intValue();
   }
 
@@ -179,12 +179,12 @@ public class OpenMBeanInfoSupport
   {
     if (string == null)
       string = getClass().getName()
-	+ "[className=" + getClassName() 
-	+ ",attributes=" + Arrays.toString(getAttributes())
-	+ ",constructors=" + Arrays.toString(getConstructors())
-	+ ",notifications=" + Arrays.toString(getNotifications())
-	+ ",operations=" + Arrays.toString(getOperations())
-	+ "]";
+        + "[className=" + getClassName()
+        + ",attributes=" + Arrays.toString(getAttributes())
+        + ",constructors=" + Arrays.toString(getConstructors())
+        + ",notifications=" + Arrays.toString(getNotifications())
+        + ",operations=" + Arrays.toString(getOperations())
+        + "]";
     return string;
   }
 

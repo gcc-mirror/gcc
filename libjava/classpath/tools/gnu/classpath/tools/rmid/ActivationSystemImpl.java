@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -61,7 +61,7 @@ import java.rmi.activation.UnknownObjectException;
 
 /**
  * Implements the rmid activation system.
- * 
+ *
  * @author Audrius Meskauskas (audriusa@bioinformatics.org)
  */
 public class ActivationSystemImpl extends ActivationSystemTransient implements
@@ -71,15 +71,15 @@ public class ActivationSystemImpl extends ActivationSystemTransient implements
    * Use for interoperability.
    */
   private static final long serialVersionUID = 1;
-  
+
   /**
    * The singleton instance of this class.
    */
   public static ActivationSystemImpl singleton2;
-  
+
   /**
    * Obtain the singleton instance of this class.
-   * 
+   *
    * @param folder the folder, where the activation system will keep its files.
    * @param cold do the cold start if true, hot (usual) if false.
    */
@@ -88,11 +88,11 @@ public class ActivationSystemImpl extends ActivationSystemTransient implements
     if (singleton2 == null)
       singleton2 = new ActivationSystemImpl(folder, cold);
     return singleton2;
-  }  
-  
+  }
+
   /**
    * Creates the group with transient maps.
-   * 
+   *
    * @param folder
    *          the folder, where the activation system will keep its files.
    * @param cold
@@ -106,8 +106,8 @@ public class ActivationSystemImpl extends ActivationSystemTransient implements
         new File(folder, "asi_objects.data"), cold);
     ((PersistentBidiHashTable) descriptions).init(
         new File(folder, "asi_groups.data"),  cold);
-  }  
-  
+  }
+
   /** @inheritDoc */
   public MarshalledObject activate(ActivationID id, boolean force)
       throws ActivationException, UnknownObjectException, RemoteException
@@ -190,12 +190,12 @@ public class ActivationSystemImpl extends ActivationSystemTransient implements
 
   /**
    * This method saves the state of the activation system and then
-   * terminates in 10 seconds. 
+   * terminates in 10 seconds.
    */
   public void shutdown() throws RemoteException
   {
     super.shutdown();
-    System.out.println("Shutdown command received. Will terminate in 10 s");    
+    System.out.println("Shutdown command received. Will terminate in 10 s");
     Persistent.timer.schedule(new Persistent.ExitTask(), 10000);
   }
 
@@ -215,9 +215,9 @@ public class ActivationSystemImpl extends ActivationSystemTransient implements
 
   /**
    * Read the object from the input stream.
-   * 
+   *
    * @param in the stream to read from
-   * 
+   *
    * @throws IOException if thrown by the stream
    * @throws ClassNotFoundException
    */
@@ -226,10 +226,10 @@ public class ActivationSystemImpl extends ActivationSystemTransient implements
   {
     // Read no fields.
   }
-  
+
   /**
    * Write the object to the output stream.
-   * 
+   *
    * @param out the stream to write int
    * @throws IOException if thrown by the stream
    * @throws ClassNotFoundException
@@ -238,6 +238,6 @@ public class ActivationSystemImpl extends ActivationSystemTransient implements
       ClassNotFoundException
   {
     // Write no fields.
-  }  
-  
+  }
+
 }

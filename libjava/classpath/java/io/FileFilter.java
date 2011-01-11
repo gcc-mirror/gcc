@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -40,14 +40,14 @@ package java.io;
 
 /**
  * This interface has one method which is used for filtering pathnames
- * returned in a pathname listing.  It is currently used by the 
+ * returned in a pathname listing.  It is currently used by the
  * <code>File.listFiles(FileFilter)</code> method.
  * <p>
  * The method in this interface determines if a particular pathname should
  * or should not be included in the pathname listing.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
- * 
+ *
  * @see File#listFiles(java.io.FileFilter)
  */
 public interface FileFilter
@@ -58,7 +58,7 @@ public interface FileFilter
    *
    * @param pathname The pathname to test
    *
-   * @return <code>true</code> if the path should be included in the list, 
+   * @return <code>true</code> if the path should be included in the list,
    * <code>false</code> otherwise.
    */
   boolean accept(File pathname);

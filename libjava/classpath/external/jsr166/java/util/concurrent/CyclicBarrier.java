@@ -152,7 +152,7 @@ public class CyclicBarrier {
      */
     private void breakBarrier() {
         generation.broken = true;
-	count = parties;
+        count = parties;
         trip.signalAll();
     }
 
@@ -179,7 +179,7 @@ public class CyclicBarrier {
            if (index == 0) {  // tripped
                boolean ranAction = false;
                try {
-		   final Runnable command = barrierCommand;
+                   final Runnable command = barrierCommand;
                    if (command != null)
                        command.run();
                    ranAction = true;
@@ -201,13 +201,13 @@ public class CyclicBarrier {
                 } catch (InterruptedException ie) {
                     if (g == generation && ! g.broken) {
                         breakBarrier();
-			throw ie;
-		    } else {
-			// We're about to finish waiting even if we had not
-			// been interrupted, so this interrupt is deemed to
-			// "belong" to subsequent execution.
-			Thread.currentThread().interrupt();
-		    }
+                        throw ie;
+                    } else {
+                        // We're about to finish waiting even if we had not
+                        // been interrupted, so this interrupt is deemed to
+                        // "belong" to subsequent execution.
+                        Thread.currentThread().interrupt();
+                    }
                 }
 
                 if (g.broken)

@@ -52,7 +52,7 @@ public interface GenericDeclaration
    * Returns a <code>TypeVariable</code> object for each type variable
    * declared by this entity, in order of declaration.  An empty array
    * is returned if no type variables are declared.
-   * 
+   *
    * @return an array of <code>TypeVariable</code> objects.
    * @throws GenericSignatureFormatError if the signature format within the
    *         class file does not conform to that specified in the 3rd edition

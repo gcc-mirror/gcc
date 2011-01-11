@@ -41,9 +41,9 @@ package javax.naming;
 /**
  * This exception is thrown in response to the attempt to destroy the non
  * empty context. Only empty contexts (without bindings) can be destroyed.
- * 
+ *
  * @see Context#destroySubcontext
- */ 
+ */
 public class ContextNotEmptyException extends NamingException
 {
   private static final long serialVersionUID = 1090963683348219877L;

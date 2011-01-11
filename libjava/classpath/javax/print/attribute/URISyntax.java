@@ -1,4 +1,4 @@
-/* URISyntax.java -- 
+/* URISyntax.java --
    Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -41,9 +41,9 @@ import java.io.Serializable;
 import java.net.URI;
 
 /**
- * <code>URISyntax</code> is the abstract base class of all attribute 
+ * <code>URISyntax</code> is the abstract base class of all attribute
  * classes having an Uniform Resource Identifier URI as value.
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public abstract class URISyntax
@@ -73,7 +73,7 @@ public abstract class URISyntax
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

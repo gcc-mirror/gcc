@@ -58,7 +58,7 @@ public abstract class Signer extends Identity
   /**
    * Constructs a new instance of <code>Signer</code> with the specified
    * identity name.
-   * 
+   *
    * @param name
    *          the name of the identity to use.
    */
@@ -70,7 +70,7 @@ public abstract class Signer extends Identity
   /**
    * Constructs a new instance of <code>Signer</code> with the specified
    * identity name and {@link IdentityScope}.
-   * 
+   *
    * @param name
    *          the name of the the identity to use.
    * @param scope
@@ -86,7 +86,7 @@ public abstract class Signer extends Identity
 
   /**
    * Returns the private key of this <code>Signer</code>.
-   * 
+   *
    * @returns the private key of this <code>Signer</code>.
    * @throws SecurityException
    *           if a {@link SecurityManager} is installed which disallows this
@@ -103,7 +103,7 @@ public abstract class Signer extends Identity
 
   /**
    * Specifies the {@link KeyPair} associated with this <code>Signer</code>.
-   * 
+   *
    * @param pair
    *          the {@link KeyPair} to use.
    * @throws InvalidParameterException

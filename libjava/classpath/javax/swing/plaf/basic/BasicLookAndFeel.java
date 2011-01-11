@@ -96,7 +96,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
    * are targetted at a menu/submenu/menubar or not. If not,
    * the MenuSelectionManager is messaged to close the currently opened menus,
    * if any.
-   * 
+   *
    * @author Roman Kennke (kennke@aicas.com)
    */
   private class PopupHelper implements AWTEventListener
@@ -227,9 +227,9 @@ public abstract class BasicLookAndFeel extends LookAndFeel
   }
 
   /**
-   * Creates and returns a new instance of the default resources for this look 
+   * Creates and returns a new instance of the default resources for this look
    * and feel.
-   * 
+   *
    * @return The UI defaults.
    */
   public UIDefaults getDefaults()
@@ -247,9 +247,9 @@ public abstract class BasicLookAndFeel extends LookAndFeel
   }
 
   /**
-   * Populates the <code>defaults</code> table with mappings between class IDs 
+   * Populates the <code>defaults</code> table with mappings between class IDs
    * and fully qualified class names for the UI delegates.
-   * 
+   *
    * @param defaults  the defaults table (<code>null</code> not permitted).
    */
   protected void initClassDefaults(UIDefaults defaults)
@@ -314,7 +314,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
    * {@link #loadSystemColors(UIDefaults, String[], boolean)}. If the
    * look and feel is a native look and feel, these defaults may be overridden
    * by the corresponding SystemColor constants.
-   * 
+   *
    * @param defaults  the defaults table (<code>null</code> not permitted).
    */
   protected void initSystemColorDefaults(UIDefaults defaults)
@@ -365,7 +365,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
    *        <code>false</code>
    * @param useNative when <code>true</code>, installs the values of the
    *        SystemColor constants, when <code>false</code>, install the values
-   *        from <code>systemColors</code> 
+   *        from <code>systemColors</code>
    */
   protected void loadSystemColors(UIDefaults defaults, String[] systemColors,
                                   boolean useNative)
@@ -479,19 +479,19 @@ public abstract class BasicLookAndFeel extends LookAndFeel
   protected void initComponentDefaults(UIDefaults defaults)
   {
     Object[] uiDefaults;
-    
+
     Color highLight = new Color(249, 247, 246);
     Color light = new Color(239, 235, 231);
     Color shadow = new Color(139, 136, 134);
     Color darkShadow = new Color(16, 16, 16);
-    
+
     uiDefaults = new Object[] {
 
       "AbstractUndoableEdit.undoText", "Undo",
       "AbstractUndoableEdit.redoText", "Redo",
       "Button.background", new ColorUIResource(Color.LIGHT_GRAY),
       "Button.border",
-      new UIDefaults.LazyValue() 
+      new UIDefaults.LazyValue()
       {
         public Object createValue(UIDefaults table)
         {
@@ -528,7 +528,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
           return BasicIconFactory.getCheckBoxIcon();
         }
       },
-      "CheckBox.checkIcon", 
+      "CheckBox.checkIcon",
       new UIDefaults.LazyValue()
       {
         public Object createValue(UIDefaults def)
@@ -549,7 +549,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       "CheckBoxMenuItem.background", new ColorUIResource(light),
       "CheckBoxMenuItem.border", new BasicBorders.MarginBorder(),
       "CheckBoxMenuItem.borderPainted", Boolean.FALSE,
-      "CheckBoxMenuItem.checkIcon", 
+      "CheckBoxMenuItem.checkIcon",
       new UIDefaults.LazyValue()
       {
         public Object createValue(UIDefaults def)
@@ -637,7 +637,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       "EditorPane.font", new FontUIResource("Serif", Font.PLAIN, 12),
       "EditorPane.foreground", new ColorUIResource(Color.black),
       "EditorPane.inactiveForeground", new ColorUIResource(Color.gray),
-      "EditorPane.focusInputMap", new UIDefaults.LazyInputMap(new Object[] {            
+      "EditorPane.focusInputMap", new UIDefaults.LazyInputMap(new Object[] {
                 KeyStroke.getKeyStroke("shift UP"), "selection-up",
                 KeyStroke.getKeyStroke("ctrl RIGHT"), "caret-next-word",
                 KeyStroke.getKeyStroke("shift ctrl LEFT"), "selection-previous-word",
@@ -782,21 +782,21 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       "InternalFrame.border",
       new UIDefaults.LazyValue()
       {
-	public Object createValue(UIDefaults table)
-	{
-	  Color lineColor = new Color(238, 238, 238);
-	  Border inner = BorderFactory.createLineBorder(lineColor, 1);
-	  Color shadowInner = new Color(184, 207, 229);
-	  Color shadowOuter = new Color(122, 138, 153);
-	  Border outer = BorderFactory.createBevelBorder(BevelBorder.RAISED,
-							 Color.WHITE,
-							 Color.WHITE,
-							 shadowOuter,
-							 shadowInner);
-	  Border border = new BorderUIResource.CompoundBorderUIResource(outer,
-									inner);
-	  return border;
-	}
+        public Object createValue(UIDefaults table)
+        {
+          Color lineColor = new Color(238, 238, 238);
+          Border inner = BorderFactory.createLineBorder(lineColor, 1);
+          Color shadowInner = new Color(184, 207, 229);
+          Color shadowOuter = new Color(122, 138, 153);
+          Border outer = BorderFactory.createBevelBorder(BevelBorder.RAISED,
+                                                         Color.WHITE,
+                                                         Color.WHITE,
+                                                         shadowOuter,
+                                                         shadowInner);
+          Border border = new BorderUIResource.CompoundBorderUIResource(outer,
+                                                                        inner);
+          return border;
+        }
       },
       "InternalFrame.borderColor", new ColorUIResource(light),
       "InternalFrame.borderDarkShadow", new ColorUIResource(Color.BLACK),
@@ -1459,60 +1459,60 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       "TextPane.foreground", new ColorUIResource(Color.black),
       "TextPane.inactiveForeground", new ColorUIResource(Color.gray),
       "TextPane.focusInputMap", new UIDefaults.LazyInputMap(new Object[] {
-          KeyStroke.getKeyStroke("shift UP"), "selection-up", 
-          KeyStroke.getKeyStroke("ctrl RIGHT"), "caret-next-word", 
-          KeyStroke.getKeyStroke("shift ctrl LEFT"), "selection-previous-word", 
-          KeyStroke.getKeyStroke("shift KP_UP"), "selection-up", 
-          KeyStroke.getKeyStroke("DOWN"), "caret-down", 
-          KeyStroke.getKeyStroke("shift ctrl T"), "previous-link-action", 
-          KeyStroke.getKeyStroke("ctrl LEFT"), "caret-previous-word", 
-          KeyStroke.getKeyStroke("CUT"), "cut-to-clipboard", 
-          KeyStroke.getKeyStroke("END"), "caret-end-line", 
-          KeyStroke.getKeyStroke("shift PAGE_UP"), "selection-page-up", 
-          KeyStroke.getKeyStroke("KP_UP"), "caret-up", 
-          KeyStroke.getKeyStroke("DELETE"), "delete-next", 
-          KeyStroke.getKeyStroke("ctrl HOME"), "caret-begin", 
-          KeyStroke.getKeyStroke("shift LEFT"), "selection-backward", 
-          KeyStroke.getKeyStroke("ctrl END"), "caret-end", 
-          KeyStroke.getKeyStroke("BACK_SPACE"), "delete-previous", 
-          KeyStroke.getKeyStroke("shift ctrl RIGHT"), "selection-next-word", 
-          KeyStroke.getKeyStroke("LEFT"), "caret-backward", 
-          KeyStroke.getKeyStroke("KP_LEFT"), "caret-backward", 
-          KeyStroke.getKeyStroke("shift KP_RIGHT"), "selection-forward", 
-          KeyStroke.getKeyStroke("ctrl SPACE"), "activate-link-action", 
-          KeyStroke.getKeyStroke("ctrl H"), "delete-previous", 
-          KeyStroke.getKeyStroke("ctrl BACK_SLASH"), "unselect", 
-          KeyStroke.getKeyStroke("ENTER"), "insert-break", 
-          KeyStroke.getKeyStroke("shift HOME"), "selection-begin-line", 
-          KeyStroke.getKeyStroke("RIGHT"), "caret-forward", 
-          KeyStroke.getKeyStroke("shift ctrl PAGE_UP"), "selection-page-left", 
-          KeyStroke.getKeyStroke("shift DOWN"), "selection-down", 
-          KeyStroke.getKeyStroke("PAGE_DOWN"), "page-down", 
-          KeyStroke.getKeyStroke("shift KP_LEFT"), "selection-backward", 
-          KeyStroke.getKeyStroke("shift ctrl O"), "toggle-componentOrientation", 
-          KeyStroke.getKeyStroke("ctrl X"), "cut-to-clipboard", 
-          KeyStroke.getKeyStroke("shift ctrl PAGE_DOWN"), "selection-page-right", 
-          KeyStroke.getKeyStroke("ctrl C"), "copy-to-clipboard", 
-          KeyStroke.getKeyStroke("ctrl KP_RIGHT"), "caret-next-word", 
-          KeyStroke.getKeyStroke("shift END"), "selection-end-line", 
-          KeyStroke.getKeyStroke("ctrl KP_LEFT"), "caret-previous-word", 
-          KeyStroke.getKeyStroke("HOME"), "caret-begin-line", 
-          KeyStroke.getKeyStroke("ctrl V"), "paste-from-clipboard", 
-          KeyStroke.getKeyStroke("KP_DOWN"), "caret-down", 
-          KeyStroke.getKeyStroke("ctrl A"), "select-all", 
-          KeyStroke.getKeyStroke("shift RIGHT"), "selection-forward", 
-          KeyStroke.getKeyStroke("shift ctrl END"), "selection-end", 
-          KeyStroke.getKeyStroke("COPY"), "copy-to-clipboard", 
-          KeyStroke.getKeyStroke("shift ctrl KP_LEFT"), "selection-previous-word", 
-          KeyStroke.getKeyStroke("ctrl T"), "next-link-action", 
-          KeyStroke.getKeyStroke("shift KP_DOWN"), "selection-down", 
-          KeyStroke.getKeyStroke("TAB"), "insert-tab", 
-          KeyStroke.getKeyStroke("UP"), "caret-up", 
-          KeyStroke.getKeyStroke("shift ctrl HOME"), "selection-begin", 
-          KeyStroke.getKeyStroke("shift PAGE_DOWN"), "selection-page-down", 
-          KeyStroke.getKeyStroke("KP_RIGHT"), "caret-forward", 
-          KeyStroke.getKeyStroke("shift ctrl KP_RIGHT"), "selection-next-word", 
-          KeyStroke.getKeyStroke("PAGE_UP"), "page-up", 
+          KeyStroke.getKeyStroke("shift UP"), "selection-up",
+          KeyStroke.getKeyStroke("ctrl RIGHT"), "caret-next-word",
+          KeyStroke.getKeyStroke("shift ctrl LEFT"), "selection-previous-word",
+          KeyStroke.getKeyStroke("shift KP_UP"), "selection-up",
+          KeyStroke.getKeyStroke("DOWN"), "caret-down",
+          KeyStroke.getKeyStroke("shift ctrl T"), "previous-link-action",
+          KeyStroke.getKeyStroke("ctrl LEFT"), "caret-previous-word",
+          KeyStroke.getKeyStroke("CUT"), "cut-to-clipboard",
+          KeyStroke.getKeyStroke("END"), "caret-end-line",
+          KeyStroke.getKeyStroke("shift PAGE_UP"), "selection-page-up",
+          KeyStroke.getKeyStroke("KP_UP"), "caret-up",
+          KeyStroke.getKeyStroke("DELETE"), "delete-next",
+          KeyStroke.getKeyStroke("ctrl HOME"), "caret-begin",
+          KeyStroke.getKeyStroke("shift LEFT"), "selection-backward",
+          KeyStroke.getKeyStroke("ctrl END"), "caret-end",
+          KeyStroke.getKeyStroke("BACK_SPACE"), "delete-previous",
+          KeyStroke.getKeyStroke("shift ctrl RIGHT"), "selection-next-word",
+          KeyStroke.getKeyStroke("LEFT"), "caret-backward",
+          KeyStroke.getKeyStroke("KP_LEFT"), "caret-backward",
+          KeyStroke.getKeyStroke("shift KP_RIGHT"), "selection-forward",
+          KeyStroke.getKeyStroke("ctrl SPACE"), "activate-link-action",
+          KeyStroke.getKeyStroke("ctrl H"), "delete-previous",
+          KeyStroke.getKeyStroke("ctrl BACK_SLASH"), "unselect",
+          KeyStroke.getKeyStroke("ENTER"), "insert-break",
+          KeyStroke.getKeyStroke("shift HOME"), "selection-begin-line",
+          KeyStroke.getKeyStroke("RIGHT"), "caret-forward",
+          KeyStroke.getKeyStroke("shift ctrl PAGE_UP"), "selection-page-left",
+          KeyStroke.getKeyStroke("shift DOWN"), "selection-down",
+          KeyStroke.getKeyStroke("PAGE_DOWN"), "page-down",
+          KeyStroke.getKeyStroke("shift KP_LEFT"), "selection-backward",
+          KeyStroke.getKeyStroke("shift ctrl O"), "toggle-componentOrientation",
+          KeyStroke.getKeyStroke("ctrl X"), "cut-to-clipboard",
+          KeyStroke.getKeyStroke("shift ctrl PAGE_DOWN"), "selection-page-right",
+          KeyStroke.getKeyStroke("ctrl C"), "copy-to-clipboard",
+          KeyStroke.getKeyStroke("ctrl KP_RIGHT"), "caret-next-word",
+          KeyStroke.getKeyStroke("shift END"), "selection-end-line",
+          KeyStroke.getKeyStroke("ctrl KP_LEFT"), "caret-previous-word",
+          KeyStroke.getKeyStroke("HOME"), "caret-begin-line",
+          KeyStroke.getKeyStroke("ctrl V"), "paste-from-clipboard",
+          KeyStroke.getKeyStroke("KP_DOWN"), "caret-down",
+          KeyStroke.getKeyStroke("ctrl A"), "select-all",
+          KeyStroke.getKeyStroke("shift RIGHT"), "selection-forward",
+          KeyStroke.getKeyStroke("shift ctrl END"), "selection-end",
+          KeyStroke.getKeyStroke("COPY"), "copy-to-clipboard",
+          KeyStroke.getKeyStroke("shift ctrl KP_LEFT"), "selection-previous-word",
+          KeyStroke.getKeyStroke("ctrl T"), "next-link-action",
+          KeyStroke.getKeyStroke("shift KP_DOWN"), "selection-down",
+          KeyStroke.getKeyStroke("TAB"), "insert-tab",
+          KeyStroke.getKeyStroke("UP"), "caret-up",
+          KeyStroke.getKeyStroke("shift ctrl HOME"), "selection-begin",
+          KeyStroke.getKeyStroke("shift PAGE_DOWN"), "selection-page-down",
+          KeyStroke.getKeyStroke("KP_RIGHT"), "caret-forward",
+          KeyStroke.getKeyStroke("shift ctrl KP_RIGHT"), "selection-next-word",
+          KeyStroke.getKeyStroke("PAGE_UP"), "page-up",
           KeyStroke.getKeyStroke("PASTE"), "paste-from-clipboard"
       }),
       "TextPane.margin", new InsetsUIResource(3, 3, 3, 3),

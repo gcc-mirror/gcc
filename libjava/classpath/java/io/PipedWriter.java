@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -38,16 +38,16 @@ exception statement from your version. */
 
 package java.io;
 
-// NOTE: This implementation is very similar to that of PipedOutputStream. 
-// If you fix a bug in here, chances are you should make a similar change to 
+// NOTE: This implementation is very similar to that of PipedOutputStream.
+// If you fix a bug in here, chances are you should make a similar change to
 // the PipedOutputStream code.
 
 /**
-  * This class writes its chars to a <code>PipedReader</code> to 
+  * This class writes its chars to a <code>PipedReader</code> to
   * which it is connected.
   * <p>
   * It is highly recommended that a <code>PipedWriter</code> and its
-  * connected <code>PipedReader</code> be in different threads.  If 
+  * connected <code>PipedReader</code> be in different threads.  If
   * they are in the same thread, read and write operations could deadlock
   * the thread.
   *
@@ -55,17 +55,17 @@ package java.io;
   */
 public class PipedWriter extends Writer
 {
-  /** Target PipedReader to which this is connected. Null only if this 
+  /** Target PipedReader to which this is connected. Null only if this
     * Writer hasn't been connected yet. */
   PipedReader sink;
-  
+
   /** Set to true if close() has been called on this Writer. */
   boolean closed;
 
   /** Buffer used to implement single-argument write */
   char[] read_buf = new char[1];
-  
-  /** 
+
+  /**
     * Create an unconnected PipedWriter.  It must be connected
     * to a <code>PipedReader</code> using the <code>connect</code>
     * method prior to writing any data or an exception will be thrown.
@@ -81,7 +81,7 @@ public class PipedWriter extends Writer
     *
     * @param sink The <code>PipedReader</code> to connect this stream to.
     *
-    * @exception IOException If <code>sink</code> has already been connected 
+    * @exception IOException If <code>sink</code> has already been connected
     *                        to a different PipedWriter.
     */
   public PipedWriter(PipedReader sink) throws IOException
@@ -90,7 +90,7 @@ public class PipedWriter extends Writer
   }
 
   /**
-    * Connects this object to the specified <code>PipedReader</code> 
+    * Connects this object to the specified <code>PipedReader</code>
     * object.  This stream will then be ready for writing.
     *
     * @param sink The <code>PipedReader</code> to connect this stream to
@@ -106,25 +106,25 @@ public class PipedWriter extends Writer
   }
 
   /**
-    * Write a single char of date to the stream.  Note that this method will 
-    * block if the <code>PipedReader</code> to which this object is 
+    * Write a single char of date to the stream.  Note that this method will
+    * block if the <code>PipedReader</code> to which this object is
     * connected has a full buffer.
     *
     * @param b The char of data to be written, passed as an <code>int</code>.
     *
     * @exception IOException If the stream has not been connected or has
     *                        been closed.
-    */  
+    */
   public void write(int b) throws IOException
   {
     read_buf[0] = (char) (b & 0xffff);
     sink.receive (read_buf, 0, 1);
   }
-  
+
   /**
     * This method writes <code>len</code> chars of data from the char array
     * <code>buf</code> starting at index <code>offset</code> in the array
-    * to the stream.  Note that this method will block if the  
+    * to the stream.  Note that this method will block if the
     * <code>PipedReader</code> to which this object is connected has
     * a buffer that cannot hold all of the chars to be written.
     *
@@ -141,7 +141,7 @@ public class PipedWriter extends Writer
       throw new IOException ("Not connected");
     if (closed)
       throw new IOException ("Pipe closed");
-      
+
     sink.receive(buffer, offset, len);
   }
 
@@ -158,7 +158,7 @@ public class PipedWriter extends Writer
     if (closed)
       throw new IOException ("Pipe closed");
   }
-  
+
   /**
     * This method closes this stream so that no more data can be written
     * to it. Any further attempts to write to this stream may throw an
@@ -171,12 +171,12 @@ public class PipedWriter extends Writer
     // A close call on an unconnected PipedWriter has no effect.
     if (sink != null)
       {
-	closed = true;
-	// Notify any waiting readers that the stream is now closed.
-	synchronized (sink)
-	{	  
-	  sink.notifyAll();
-	}
+        closed = true;
+        // Notify any waiting readers that the stream is now closed.
+        synchronized (sink)
+        {
+          sink.notifyAll();
+        }
       }
   }
 }

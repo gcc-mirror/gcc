@@ -1,4 +1,4 @@
-/* DomHTMLSelectElement.java -- 
+/* DomHTMLSelectElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -60,7 +60,7 @@ public class DomHTMLSelectElement
   {
     super(owner, namespaceURI, name);
   }
-  
+
   public String getType()
   {
     return getHTMLAttribute("type");
@@ -95,7 +95,7 @@ public class DomHTMLSelectElement
         option.setSelected(i == selectedIndex);
       }
   }
-  
+
   public String getValue()
   {
     return getHTMLAttribute("value");
@@ -105,7 +105,7 @@ public class DomHTMLSelectElement
   {
     setHTMLAttribute("value", value);
   }
-  
+
   public int getLength()
   {
     return getIntHTMLAttribute("length");
@@ -129,7 +129,7 @@ public class DomHTMLSelectElement
     ret.evaluate();
     return ret;
   }
-  
+
   public boolean getDisabled()
   {
     return getBooleanHTMLAttribute("disabled");
@@ -139,7 +139,7 @@ public class DomHTMLSelectElement
   {
     setBooleanHTMLAttribute("disabled", disabled);
   }
-  
+
   public boolean getMultiple()
   {
     return getBooleanHTMLAttribute("multiple");
@@ -149,7 +149,7 @@ public class DomHTMLSelectElement
   {
     setBooleanHTMLAttribute("multiple", multiple);
   }
-  
+
   public String getName()
   {
     return getHTMLAttribute("name");
@@ -159,7 +159,7 @@ public class DomHTMLSelectElement
   {
     setHTMLAttribute("name", name);
   }
-  
+
   public int getSize()
   {
     return getIntHTMLAttribute("size");
@@ -169,7 +169,7 @@ public class DomHTMLSelectElement
   {
     setIntHTMLAttribute("size", size);
   }
-  
+
   public int getTabIndex()
   {
     return getIntHTMLAttribute("tabindex");
@@ -206,6 +206,5 @@ public class DomHTMLSelectElement
   {
     dispatchUIEvent("focus");
   }
-  
-}
 
+}

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -45,61 +45,61 @@ import java.util.Arrays;
 
 class ConnectionRunnerPool
 {
-  
-  public static 
+
+  public static
     class ConnectionRunner extends Thread{
       private UnicastConnection conn;
       private volatile boolean exiting = false;
-      
+
       public ConnectionRunner(ThreadGroup group, String id){
         super(group, id);
       }
-      
+
       public synchronized void run(){
         while(!exiting){
-	  if(conn == null)
-	    try{
-	      wait();
-	    }catch(InterruptedException e){
-	      continue;
-	    }
-	  else{
-	    conn.run();
-	    conn = null;
-	    synchronized(ConnectionRunnerPool.class){
-	      freelist.add(this);
-	      if(freelist.size() == 1)
-		ConnectionRunnerPool.class.notifyAll();
-	    }
-	  }    
+          if(conn == null)
+            try{
+              wait();
+            }catch(InterruptedException e){
+              continue;
+            }
+          else{
+            conn.run();
+            conn = null;
+            synchronized(ConnectionRunnerPool.class){
+              freelist.add(this);
+              if(freelist.size() == 1)
+                ConnectionRunnerPool.class.notifyAll();
+            }
+          }
         }
       }
-      
+
       public synchronized void dispatch(UnicastConnection conn){
         this.conn = conn;
         notify();
       }
-      
+
       void exit(){
         exiting = true;
         if(conn != null)
-	  try{
-	    join(500);
-	  }catch(InterruptedException e){}
+          try{
+            join(500);
+          }catch(InterruptedException e){}
         interrupt();
       }
-      
+
     }
-  
+
   // Should this value equal to number of CPU?
   private static int size = 5;
   private static int max_size = 10;
-  
+
   // Package-private to avoid a trampoline.
   static ArrayList freelist;
-  
+
   private static ThreadGroup group = new ThreadGroup("pool");
-  
+
   static {
     ConnectionRunner[] pools = new ConnectionRunner[size];
     for(int i = 0; i < pools.length; i++){
@@ -109,42 +109,42 @@ class ConnectionRunnerPool
     }
     freelist = new ArrayList(Arrays.asList(pools));
   }
-  
+
   public static void setSize(int size_){
     size = size_;
   }
-  
+
   public static void setMaxSize(int size){
     max_size = size;
   }
-  
+
   private static synchronized ConnectionRunner getConnectionRunner()
   {
     if(freelist.size() == 0){
       if(size < max_size){
-	++size;
-	ConnectionRunner a = new ConnectionRunner(group, Integer.toString(size));
-	a.start();
-	freelist.add(a);
+        ++size;
+        ConnectionRunner a = new ConnectionRunner(group, Integer.toString(size));
+        a.start();
+        freelist.add(a);
       }else
-	while(freelist.size() == 0)
-	  try{
-	    ConnectionRunnerPool.class.wait();
-	  }catch(InterruptedException e){}
+        while(freelist.size() == 0)
+          try{
+            ConnectionRunnerPool.class.wait();
+          }catch(InterruptedException e){}
     }
-    
+
     // always let the first in pool most busy or other scheduling plan??
     ConnectionRunner a = (ConnectionRunner)freelist.get(0);
     freelist.remove(a);
     return a;
   }
-  
+
   public static void dispatchConnection(UnicastConnection conn)
   {
     ConnectionRunner r = getConnectionRunner();
     r.dispatch(conn);
   }
-  
+
   public static void exit()
   {
     Thread[] list = new Thread[group.activeCount()];
@@ -152,5 +152,5 @@ class ConnectionRunnerPool
     for(int i = 0; i < list.length; i++)
       ((ConnectionRunner)list[i]).exit();
   }
-  
+
 }

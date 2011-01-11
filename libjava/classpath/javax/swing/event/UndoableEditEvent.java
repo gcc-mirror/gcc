@@ -47,7 +47,7 @@ import javax.swing.undo.UndoableEdit;
  * @author Andrew Selkirk
  * @author Ronald Veldema
  */
-public class UndoableEditEvent extends EventObject 
+public class UndoableEditEvent extends EventObject
 {
 
   private static final long serialVersionUID = 4418044561759134484L;
@@ -62,19 +62,19 @@ public class UndoableEditEvent extends EventObject
    * @param source TODO
    * @param edit TODO
    */
-  public UndoableEditEvent(Object source, UndoableEdit edit) 
+  public UndoableEditEvent(Object source, UndoableEdit edit)
   {
     super(source);
     this.edit = edit;
-  } 
+  }
 
   /**
    * getEdit
    * @return UndoableEdit
    */
-  public UndoableEdit getEdit() 
+  public UndoableEdit getEdit()
   {
     return edit;
   }
 
-} 
+}

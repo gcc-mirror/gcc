@@ -239,23 +239,23 @@ public class XToolkit
   protected ButtonPeer createButton(Button target)
   {
     checkHeadLess("No ButtonPeer can be created in an headless" +
-    		      "graphics environment.");
-    
+                      "graphics environment.");
+
     return new SwingButtonPeer(target);
   }
 
   protected TextFieldPeer createTextField(TextField target)
   {
     checkHeadLess("No TextFieldPeer can be created in an headless " +
-    		      "graphics environment.");
-    
+                      "graphics environment.");
+
     return new SwingTextFieldPeer(target);
   }
 
   protected LabelPeer createLabel(Label target)
   {
     checkHeadLess("No LabelPeer can be created in an headless graphics " +
-    		      "environment.");
+                      "environment.");
     return new SwingLabelPeer(target);
   }
 
@@ -269,7 +269,7 @@ public class XToolkit
   {
     checkHeadLess("No CheckboxPeer can be created in an headless graphics " +
                   "environment.");
-    
+
     return new SwingCheckboxPeer(target);
   }
 
@@ -288,8 +288,8 @@ public class XToolkit
   protected TextAreaPeer createTextArea(TextArea target)
   {
     checkHeadLess("No TextAreaPeer can be created in an headless graphics " +
-    		      "environment.");
-    
+                      "environment.");
+
     return new SwingTextAreaPeer(target);
   }
 
@@ -518,7 +518,7 @@ public class XToolkit
   /**
    * Creates an image that is returned when calls to createImage() yields an
    * error.
-   * 
+   *
    * @return an image that is returned when calls to createImage() yields an
    *         error
    */
@@ -660,7 +660,7 @@ public class XToolkit
       {
         if(message == null)
           message = "This method cannot be called in headless mode.";
-      
+
         throw new HeadlessException(message);
       }
   }

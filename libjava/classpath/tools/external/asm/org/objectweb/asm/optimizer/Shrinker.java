@@ -44,7 +44,7 @@ import org.objectweb.asm.ClassWriter;
 
 /**
  * A class file shrinker utility.
- * 
+ *
  * @author Eric Bruneton
  */
 public class Shrinker {

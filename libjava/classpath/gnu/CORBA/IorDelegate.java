@@ -152,18 +152,18 @@ public class IorDelegate extends SimpleDelegate
    * request to the new direction. The ReplyHeader.LOCATION_FORWARD_PERM will
    * cause additionally to remember the new location by this delegate, so
    * subsequent calls will be immediately delivered to the new target.
-   * 
+   *
    * @param target the target object.
    * @param output the output stream, previously returned by
    * {@link #request(org.omg.CORBA.Object, String, boolean)}.
-   * 
+   *
    * @return the input stream, to read the response from or null for a one-way
    * request.
-   * 
+   *
    * @throws SystemException if the SystemException has been thrown on the
    * remote side (the exact type and the minor code matches the data of the
    * remote exception that has been thrown).
-   * 
+   *
    * @throws org.omg.CORBA.portable.ApplicationException as specified.
    * @throws org.omg.CORBA.portable.RemarshalException as specified.
    */

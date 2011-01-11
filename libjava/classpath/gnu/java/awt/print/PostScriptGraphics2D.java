@@ -126,7 +126,7 @@ class PostScriptGraphics2D extends Graphics2D
   private double Y = pageY;
   private boolean gradientOn = false;
 
-  /** 
+  /**
    * Constructor
    *
    */
@@ -162,74 +162,74 @@ class PostScriptGraphics2D extends Graphics2D
    * If Pageable is non-null, it will print that, otherwise it will use
    * the supplied printable and pageFormat.
    */
-  public SpooledDocument spoolPostScript(Printable printable, 
-					 PageFormat pageFormat,
-					 Pageable pageable)
+  public SpooledDocument spoolPostScript(Printable printable,
+                                         PageFormat pageFormat,
+                                         Pageable pageable)
     throws PrinterException
   {
-    try 
+    try
       {
-	// spool to a temporary file
-	File temp = File.createTempFile("cpspool", ".ps");
-	temp.deleteOnExit();
-	
-	out = new PrintWriter(new BufferedWriter
-			      (new OutputStreamWriter
-			       (new FileOutputStream(temp), 
-				"ISO8859_1"), 1000000));
-	
-	writePSHeader();
-	
-	if(pageable != null)
-	  {
-	    for(int index = 0; index < pageable.getNumberOfPages(); index++)
-	      spoolPage(out, pageable.getPrintable(index),
-			pageable.getPageFormat(index), index);
-	  }
-	else
-	  {
-	    int index = 0;
-	    while(spoolPage(out, printable, pageFormat, index++) ==
-		  Printable.PAGE_EXISTS)
+        // spool to a temporary file
+        File temp = File.createTempFile("cpspool", ".ps");
+        temp.deleteOnExit();
+
+        out = new PrintWriter(new BufferedWriter
+                              (new OutputStreamWriter
+                               (new FileOutputStream(temp),
+                                "ISO8859_1"), 1000000));
+
+        writePSHeader();
+
+        if(pageable != null)
+          {
+            for(int index = 0; index < pageable.getNumberOfPages(); index++)
+              spoolPage(out, pageable.getPrintable(index),
+                        pageable.getPageFormat(index), index);
+          }
+        else
+          {
+            int index = 0;
+            while(spoolPage(out, printable, pageFormat, index++) ==
+                  Printable.PAGE_EXISTS)
               ;
-	  }
-	out.println("%%Trailer");
-	out.println("%%EOF");
-	out.close();
-	return new SpooledDocument( temp );
-      } 
-    catch (IOException e) 
+          }
+        out.println("%%Trailer");
+        out.println("%%EOF");
+        out.close();
+        return new SpooledDocument( temp );
+      }
+    catch (IOException e)
       {
-	PrinterException pe = new PrinterException();
-	pe.initCause(e);
-	throw pe;
+        PrinterException pe = new PrinterException();
+        pe.initCause(e);
+        throw pe;
       }
   }
 
   //--------------------------------------------------------------------------
 
-  /** 
+  /**
    * Write the postscript file header,
-   * setup the page format and transforms. 
+   * setup the page format and transforms.
    */
   private void writePSHeader()
   {
-    out.println("%!PS-Adobe-3.0");      
+    out.println("%!PS-Adobe-3.0");
     out.println("%%Title: "+printerJob.getJobName());
     out.println("%%Creator: GNU Classpath ");
     out.println("%%DocumentData: Clean8Bit");
 
     out.println("%%DocumentNeededResources: font Times-Roman Helvetica Courier");
     out.println("%%EndComments");
-    
+
     out.println("%%BeginProlog");
     out.println("%%EndProlog");
     out.println("%%BeginSetup");
-    
+
     out.println("%%EndFeature");
     setupFonts();
     out.println("%%EndSetup");
- 
+
     // set default fonts and colors
     setFont( new Font("Dialog", Font.PLAIN, 12) );
     currentColor = Color.white;
@@ -268,9 +268,9 @@ class PostScriptGraphics2D extends Graphics2D
    * PAGE_EXISTS if it was.
    */
   public int spoolPage(PrintWriter out,
-		       Printable printable, 
-		       PageFormat pageFormat, 
-		       int index) throws IOException, PrinterException
+                       Printable printable,
+                       PageFormat pageFormat,
+                       int index) throws IOException, PrinterException
   {
     out.println("%%BeginPageSetup");
 
@@ -282,23 +282,23 @@ class PostScriptGraphics2D extends Graphics2D
       out.println( "%%Orientation: Portrait" );
     else
       {
-	out.println( "%%Orientation: Landscape" );
-	double t = pageX;
-	pageX = pageY;
-	pageY = t;
+        out.println( "%%Orientation: Landscape" );
+        double t = pageX;
+        pageX = pageY;
+        pageY = t;
       }
-      
+
     setClip(0, 0, (int)pageX, (int)pageY);
 
     out.println("gsave % first save");
-    
+
     // 595x842; 612x792 respectively
     out.println("<< /PageSize [" +pageX + " "+pageY+ "] >> setpagedevice");
 
     if( pageFormat.getOrientation() != PageFormat.LANDSCAPE )
       {
-	pageTransform.translate(pageX, 0);
-	pageTransform.scale(-1.0, 1.0);
+        pageTransform.translate(pageX, 0);
+        pageTransform.scale(-1.0, 1.0);
       }
 
     // save the original CTM
@@ -312,7 +312,7 @@ class PostScriptGraphics2D extends Graphics2D
 
     if( printable.print(this, pageFormat, index) == Printable.NO_SUCH_PAGE )
       return Printable.NO_SUCH_PAGE;
-    
+
     out.println("grestore");
     out.println("showpage");
 
@@ -417,7 +417,7 @@ class PostScriptGraphics2D extends Graphics2D
     setStroke(currentStroke);
   }
 
-  //--------------- Image drawing ------------------------------------------   
+  //--------------- Image drawing ------------------------------------------
   public boolean drawImage(Image img, int x, int y, Color bgcolor,
                            ImageObserver observer)
   {
@@ -425,7 +425,7 @@ class PostScriptGraphics2D extends Graphics2D
     int h = img.getHeight(null);
 
     return drawImage(img, x, y, x + w, y + h, 0, 0, w - 1, h - 1, bgcolor,
-		     observer);
+                     observer);
   }
 
   public boolean drawImage(Image img, int dx1, int dy1, int dx2, int dy2,
@@ -439,31 +439,31 @@ class PostScriptGraphics2D extends Graphics2D
     // swap X and Y's
     if (sx1 > sx2)
       {
-	n = sx1;
-	sx1 = sx2;
-	sx2 = n;
-	flipx = ! flipx;
+        n = sx1;
+        sx1 = sx2;
+        sx2 = n;
+        flipx = ! flipx;
       }
     if (sy1 > sy2)
       {
-	n = sy1;
-	sy1 = sy2;
-	sy2 = n;
-	flipy = ! flipy;
+        n = sy1;
+        sy1 = sy2;
+        sy2 = n;
+        flipy = ! flipy;
       }
     if (dx1 > dx2)
       {
-	n = dx1;
-	dx1 = dx2;
-	dx2 = n;
-	flipx = ! flipx;
+        n = dx1;
+        dx1 = dx2;
+        dx2 = n;
+        flipx = ! flipx;
       }
     if (dy1 > dy2)
       {
-	n = dy1;
-	dy1 = dy2;
-	dy2 = n;
-	flipy = ! flipy;
+        n = dy1;
+        dy1 = dy2;
+        dy2 = n;
+        flipy = ! flipy;
       }
     n = 0;
     int sw = sx2 - sx1; // source width
@@ -487,28 +487,28 @@ class PostScriptGraphics2D extends Graphics2D
     PixelGrabber pg = new PixelGrabber(img, sx1, sy1, sw, sh, pixels, 0, sw);
     try
       {
-	pg.grabPixels();
+        pg.grabPixels();
       }
     catch (InterruptedException e)
       {
-	System.err.println("interrupted waiting for pixels!");
-	return (false);
+        System.err.println("interrupted waiting for pixels!");
+        return (false);
       }
 
     if ((pg.getStatus() & ImageObserver.ABORT) != 0)
       {
-	System.err.println("image fetch aborted or errored");
-	return (false);
+        System.err.println("image fetch aborted or errored");
+        return (false);
       }
 
     for (int j = 0; j < sh; j++)
       {
-	for (int i = 0; i < sw; i++)
-	  {
-	    out.print(colorTripleHex(new Color(pixels[j * sw + i])));
-	    if (((++n) % 11) == 0)
-	      out.println();
-	  }
+        for (int i = 0; i < sw; i++)
+          {
+            out.print(colorTripleHex(new Color(pixels[j * sw + i])));
+            if (((++n) % 11) == 0)
+              out.println();
+          }
       }
 
     out.println();
@@ -522,7 +522,7 @@ class PostScriptGraphics2D extends Graphics2D
                            ImageObserver observer)
   {
     return drawImage(img, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2, null,
-		     observer);
+                     observer);
   }
 
   public boolean drawImage(Image img, int x, int y, ImageObserver observer)
@@ -531,18 +531,18 @@ class PostScriptGraphics2D extends Graphics2D
   }
 
   public boolean drawImage(Image img, int x, int y, int width, int height,
-			   Color bgcolor, ImageObserver observer)
+                           Color bgcolor, ImageObserver observer)
   {
     int sw = img.getWidth(null);
     int sh = img.getHeight(null);
     return drawImage(img, x, y, x + width, y + height, /* destination */
-		     0, 0, sw - 1, sh - 1, /* source */
-		     bgcolor, observer);
+                     0, 0, sw - 1, sh - 1, /* source */
+                     bgcolor, observer);
     // correct?
   }
 
   public boolean drawImage(Image img, int x, int y, int width, int height,
-			   ImageObserver observer)
+                           ImageObserver observer)
   {
     return drawImage(img, x, y, width, height, null, observer);
   }
@@ -602,8 +602,8 @@ class PostScriptGraphics2D extends Graphics2D
 
     if( currentFontIsPS )
       {
-	drawStringPSFont(str, x, y);
-	return;
+        drawStringPSFont(str, x, y);
+        return;
       }
 
     TextLayout text = new TextLayout(str, currentFont, getFontRenderContext());
@@ -626,22 +626,22 @@ class PostScriptGraphics2D extends Graphics2D
     popCTM();
     pushCTM();
 
-    double[] test = 
+    double[] test =
       {
-	pageTransform.getScaleX(), pageTransform.getShearY(),
-	pageTransform.getShearX(), pageTransform.getScaleY(),
-	pageTransform.getTranslateX(),
-	-pageTransform.getTranslateY() + pageY
+        pageTransform.getScaleX(), pageTransform.getShearY(),
+        pageTransform.getShearX(), pageTransform.getScaleY(),
+        pageTransform.getTranslateX(),
+        -pageTransform.getTranslateY() + pageY
       };
 
-    double[] test2 = 
+    double[] test2 =
       {
-	currentTransform.getScaleX(),
-	currentTransform.getShearY(),
-	-currentTransform.getShearX(),
-	-currentTransform.getScaleY(),
-	currentTransform.getTranslateX(),
-	currentTransform.getTranslateY()
+        currentTransform.getScaleX(),
+        currentTransform.getShearY(),
+        -currentTransform.getShearX(),
+        -currentTransform.getScaleY(),
+        currentTransform.getTranslateX(),
+        currentTransform.getTranslateY()
       };
 
     AffineTransform total = new AffineTransform(test);
@@ -673,43 +673,43 @@ class PostScriptGraphics2D extends Graphics2D
 
     while (! pi.isDone())
       {
-	switch (pi.currentSegment(coords))
-	  {
-	  case PathIterator.SEG_MOVETO:
-	    out.println((coords[0]) + " " + (Y - coords[1]) + " moveto");
-	    cx = coords[0];
-	    cy = coords[1];
-	    break;
-	  case PathIterator.SEG_LINETO:
-	    out.println((coords[0]) + " " + (Y - coords[1]) + " lineto");
-	    cx = coords[0];
-	    cy = coords[1];
-	    break;
-	  case PathIterator.SEG_QUADTO:
-	    // convert to cubic bezier points
-	    float x1 = (cx + 2 * coords[0]) / 3;
-	    float y1 = (cy + 2 * coords[1]) / 3;
-	    float x2 = (2 * coords[2] + coords[0]) / 3;
-	    float y2 = (2 * coords[3] + coords[1]) / 3;
+        switch (pi.currentSegment(coords))
+          {
+          case PathIterator.SEG_MOVETO:
+            out.println((coords[0]) + " " + (Y - coords[1]) + " moveto");
+            cx = coords[0];
+            cy = coords[1];
+            break;
+          case PathIterator.SEG_LINETO:
+            out.println((coords[0]) + " " + (Y - coords[1]) + " lineto");
+            cx = coords[0];
+            cy = coords[1];
+            break;
+          case PathIterator.SEG_QUADTO:
+            // convert to cubic bezier points
+            float x1 = (cx + 2 * coords[0]) / 3;
+            float y1 = (cy + 2 * coords[1]) / 3;
+            float x2 = (2 * coords[2] + coords[0]) / 3;
+            float y2 = (2 * coords[3] + coords[1]) / 3;
 
-	    out.print((x1) + " " + (Y - y1) + " ");
-	    out.print((x2) + " " + (Y - y2) + " ");
-	    out.println((coords[2]) + " " + (Y - coords[3]) + " curveto");
-	    cx = coords[2];
-	    cy = coords[3];
-	    break;
-	  case PathIterator.SEG_CUBICTO:
-	    out.print((coords[0]) + " " + (Y - coords[1]) + " ");
-	    out.print((coords[2]) + " " + (Y - coords[3]) + " ");
-	    out.println((coords[4]) + " " + (Y - coords[5]) + " curveto");
-	    cx = coords[4];
-	    cy = coords[5];
-	    break;
-	  case PathIterator.SEG_CLOSE:
-	    out.println("closepath");
-	    break;
-	  }
-	pi.next();
+            out.print((x1) + " " + (Y - y1) + " ");
+            out.print((x2) + " " + (Y - y2) + " ");
+            out.println((coords[2]) + " " + (Y - coords[3]) + " curveto");
+            cx = coords[2];
+            cy = coords[3];
+            break;
+          case PathIterator.SEG_CUBICTO:
+            out.print((coords[0]) + " " + (Y - coords[1]) + " ");
+            out.print((coords[2]) + " " + (Y - coords[3]) + " ");
+            out.println((coords[4]) + " " + (Y - coords[5]) + " curveto");
+            cx = coords[4];
+            cy = coords[5];
+            break;
+          case PathIterator.SEG_CLOSE:
+            out.println("closepath");
+            break;
+          }
+        pi.next();
       }
     out.println("fill");
 
@@ -851,7 +851,7 @@ class PostScriptGraphics2D extends Graphics2D
 
     try
       {
-	out.close();
+        out.close();
       }
     catch (Exception e)
       {
@@ -877,43 +877,43 @@ class PostScriptGraphics2D extends Graphics2D
 
     while (! pi.isDone())
       {
-	switch (pi.currentSegment(coords))
-	  {
-	  case PathIterator.SEG_MOVETO:
-	    out.println(coords[0] + " " + (coords[1]) + " moveto");
-	    cx = coords[0];
-	    cy = coords[1];
-	    break;
-	  case PathIterator.SEG_LINETO:
-	    out.println(coords[0] + " " + (coords[1]) + " lineto");
-	    cx = coords[0];
-	    cy = coords[1];
-	    break;
-	  case PathIterator.SEG_QUADTO:
-	    // convert to cubic bezier points
-	    float x1 = (cx + 2 * coords[0]) / 3;
-	    float y1 = (cy + 2 * coords[1]) / 3;
-	    float x2 = (2 * coords[2] + coords[0]) / 3;
-	    float y2 = (2 * coords[3] + coords[1]) / 3;
+        switch (pi.currentSegment(coords))
+          {
+          case PathIterator.SEG_MOVETO:
+            out.println(coords[0] + " " + (coords[1]) + " moveto");
+            cx = coords[0];
+            cy = coords[1];
+            break;
+          case PathIterator.SEG_LINETO:
+            out.println(coords[0] + " " + (coords[1]) + " lineto");
+            cx = coords[0];
+            cy = coords[1];
+            break;
+          case PathIterator.SEG_QUADTO:
+            // convert to cubic bezier points
+            float x1 = (cx + 2 * coords[0]) / 3;
+            float y1 = (cy + 2 * coords[1]) / 3;
+            float x2 = (2 * coords[2] + coords[0]) / 3;
+            float y2 = (2 * coords[3] + coords[1]) / 3;
 
-	    out.print(x1 + " " + (Y - y1) + " ");
-	    out.print(x2 + " " + (Y - y2) + " ");
-	    out.println(coords[2] + " " + (Y - coords[3]) + " curveto");
-	    cx = coords[2];
-	    cy = coords[3];
-	    break;
-	  case PathIterator.SEG_CUBICTO:
-	    out.print(coords[0] + " " + coords[1] + " ");
-	    out.print(coords[2] + " " + coords[3] + " ");
-	    out.println(coords[4] + " " + coords[5] + " curveto");
-	    cx = coords[4];
-	    cy = coords[5];
-	    break;
-	  case PathIterator.SEG_CLOSE:
-	    out.println("closepath");
-	    break;
-	  }
-	pi.next();
+            out.print(x1 + " " + (Y - y1) + " ");
+            out.print(x2 + " " + (Y - y2) + " ");
+            out.println(coords[2] + " " + (Y - coords[3]) + " curveto");
+            cx = coords[2];
+            cy = coords[3];
+            break;
+          case PathIterator.SEG_CUBICTO:
+            out.print(coords[0] + " " + coords[1] + " ");
+            out.print(coords[2] + " " + coords[3] + " ");
+            out.println(coords[4] + " " + coords[5] + " curveto");
+            cx = coords[4];
+            cy = coords[5];
+            break;
+          case PathIterator.SEG_CLOSE:
+            out.println("closepath");
+            break;
+          }
+        pi.next();
       }
   }
 
@@ -923,8 +923,8 @@ class PostScriptGraphics2D extends Graphics2D
   {
     clipShape = s;
     out.println("% clip INACTIVE");
-    //	writeShape(s);
-    //	out.println("clip");
+    //  writeShape(s);
+    //  out.println("clip");
   }
 
   /** Strokes the outline of a Shape using the
@@ -946,7 +946,7 @@ class PostScriptGraphics2D extends Graphics2D
     out.println("% drawGlyphVector");
     Shape s = gv.getOutline();
     drawStringShape(AffineTransform.getTranslateInstance(x, y)
-		    .createTransformedShape(s));
+                    .createTransformedShape(s));
   }
 
   /** Renders the text of the specified iterator,
@@ -971,17 +971,17 @@ class PostScriptGraphics2D extends Graphics2D
     out.println("% fill");
     if (! gradientOn)
       {
-	writeShape(s);
-	out.println("fill");
+        writeShape(s);
+        out.println("fill");
       }
     else
       {
-	out.println("gsave");
-	writeShape(s);
-	out.println("clip");
-	writeGradient();
-	out.println("shfill");
-	out.println("grestore");
+        out.println("gsave");
+        writeShape(s);
+        out.println("clip");
+        writeGradient();
+        out.println("shfill");
+        out.println("grestore");
       }
   }
 
@@ -1011,10 +1011,10 @@ class PostScriptGraphics2D extends Graphics2D
   {
     out.println("% getFontRenderContext()");
 
-    double[] scaling = 
+    double[] scaling =
       {
-	pageTransform.getScaleX(), 0, 0,
-	-pageTransform.getScaleY(), 0, 0
+        pageTransform.getScaleX(), 0, 0,
+        -pageTransform.getScaleY(), 0, 0
       };
 
     return (new FontRenderContext(new AffineTransform(scaling), false, true));
@@ -1050,15 +1050,15 @@ class PostScriptGraphics2D extends Graphics2D
     return currentTransform;
   }
 
-  /** 
-   * Checks whether or not the specified Shape intersects 
-   * the specified Rectangle, which is in device space. 
+  /**
+   * Checks whether or not the specified Shape intersects
+   * the specified Rectangle, which is in device space.
    */
   public boolean hit(Rectangle rect, Shape s, boolean onStroke)
   {
     Rectangle2D.Double r = new Rectangle2D.Double(rect.getX(), rect.getY(),
-						  rect.getWidth(),
-						  rect.getHeight());
+                                                  rect.getWidth(),
+                                                  rect.getHeight());
     return s.intersects(r);
   }
 
@@ -1082,13 +1082,13 @@ class PostScriptGraphics2D extends Graphics2D
     gradientOn = false;
     if (paint instanceof Color)
       {
-	setColor((Color) paint);
-	return;
+        setColor((Color) paint);
+        return;
       }
     if (paint instanceof GradientPaint)
       {
-	gradientOn = true;
-	return;
+        gradientOn = true;
+        return;
       }
   }
 
@@ -1096,13 +1096,13 @@ class PostScriptGraphics2D extends Graphics2D
   private String colorTriple(Color c)
   {
     return (((double) c.getRed() / 255.0) + " "
-	    + ((double) c.getGreen() / 255.0) + " "
-	    + ((double) c.getBlue() / 255.0));
+            + ((double) c.getGreen() / 255.0) + " "
+            + ((double) c.getBlue() / 255.0));
   }
 
   /**
    * Get a nonsperated hex RGB triple, eg FFFFFF = white
-   * used by writeGradient and drawImage 
+   * used by writeGradient and drawImage
    */
   private String colorTripleHex(Color c)
   {
@@ -1135,11 +1135,11 @@ class PostScriptGraphics2D extends Graphics2D
 
     // get number of repetitions
     while (x + n * dx < pageY && y + n * dy < pageX && x + n * dx > 0
-	   && y + n * dy > 0)
+           && y + n * dy > 0)
       n++;
 
     out.println("<<"); // start
-    out.println("/ShadingType 2"); // gradient fill 
+    out.println("/ShadingType 2"); // gradient fill
     out.println("/ColorSpace [ /DeviceRGB ]"); // RGB colors
     out.print("/Coords [");
     out.print(x + " " + y + " " + (x + n * dx) + " " + (y + n * dy) + " ");
@@ -1152,17 +1152,17 @@ class PostScriptGraphics2D extends Graphics2D
     out.println("/BitsPerSample 8");
     out.println("/Size [ " + (1 + n) + " ]");
     out.print("/DataSource < " + colorTripleHex(paint.getColor1()) + " "
-	      + colorTripleHex(paint.getColor2()) + " ");
+              + colorTripleHex(paint.getColor2()) + " ");
     for (; n > 1; n--)
       if (paint.isCyclic())
-	{
-	  if ((n % 2) == 1)
-	    out.print(colorTripleHex(paint.getColor1()) + " ");
-	  else
-	    out.print(colorTripleHex(paint.getColor2()) + " ");
-	}
+        {
+          if ((n % 2) == 1)
+            out.print(colorTripleHex(paint.getColor1()) + " ");
+          else
+            out.print(colorTripleHex(paint.getColor2()) + " ");
+        }
       else
-	out.print(colorTripleHex(paint.getColor2()) + " ");
+        out.print(colorTripleHex(paint.getColor2()) + " ");
     out.println(">");
     out.println(">>");
     out.println(">>");
@@ -1181,7 +1181,7 @@ class PostScriptGraphics2D extends Graphics2D
     /* we don't allow the changing of rendering hints. */
   }
 
-  /** 
+  /**
    * Sets the Stroke for the Graphics2D context. BasicStroke fully implemented.
    */
   public void setStroke(Stroke s)
@@ -1195,53 +1195,53 @@ class PostScriptGraphics2D extends Graphics2D
     out.println("% setStroke()");
     try
       {
-	// set the line width
-	out.println(bs.getLineWidth() + " setlinewidth");
+        // set the line width
+        out.println(bs.getLineWidth() + " setlinewidth");
 
-	// set the line dash
-	float[] dashArray = bs.getDashArray();
-	if (dashArray != null)
-	  {
-	    out.print("[ ");
-	    for (int i = 0; i < dashArray.length; i++)
-	      out.print(dashArray[i] + " ");
-	    out.println("] " + bs.getDashPhase() + " setdash");
-	  }
-	else
-	  out.println("[] 0 setdash"); // set solid
+        // set the line dash
+        float[] dashArray = bs.getDashArray();
+        if (dashArray != null)
+          {
+            out.print("[ ");
+            for (int i = 0; i < dashArray.length; i++)
+              out.print(dashArray[i] + " ");
+            out.println("] " + bs.getDashPhase() + " setdash");
+          }
+        else
+          out.println("[] 0 setdash"); // set solid
 
-	// set the line cap
-	switch (bs.getEndCap())
-	  {
-	  case BasicStroke.CAP_BUTT:
-	    out.println("0 setlinecap");
-	    break;
-	  case BasicStroke.CAP_ROUND:
-	    out.println("1 setlinecap");
-	    break;
-	  case BasicStroke.CAP_SQUARE:
-	    out.println("2 setlinecap");
-	    break;
-	  }
+        // set the line cap
+        switch (bs.getEndCap())
+          {
+          case BasicStroke.CAP_BUTT:
+            out.println("0 setlinecap");
+            break;
+          case BasicStroke.CAP_ROUND:
+            out.println("1 setlinecap");
+            break;
+          case BasicStroke.CAP_SQUARE:
+            out.println("2 setlinecap");
+            break;
+          }
 
-	// set the line join
-	switch (bs.getLineJoin())
-	  {
-	  case BasicStroke.JOIN_BEVEL:
-	    out.println("2 setlinejoin");
-	    break;
-	  case BasicStroke.JOIN_MITER:
-	    out.println("0 setlinejoin");
-	    out.println(bs.getMiterLimit() + " setmiterlimit");
-	    break;
-	  case BasicStroke.JOIN_ROUND:
-	    out.println("1 setlinejoin");
-	    break;
-	  }
+        // set the line join
+        switch (bs.getLineJoin())
+          {
+          case BasicStroke.JOIN_BEVEL:
+            out.println("2 setlinejoin");
+            break;
+          case BasicStroke.JOIN_MITER:
+            out.println("0 setlinejoin");
+            out.println(bs.getMiterLimit() + " setmiterlimit");
+            break;
+          case BasicStroke.JOIN_ROUND:
+            out.println("1 setlinejoin");
+            break;
+          }
       }
     catch (Exception e)
       {
-	out.println("% Exception in setStroke()");
+        out.println("% Exception in setStroke()");
       }
   }
 

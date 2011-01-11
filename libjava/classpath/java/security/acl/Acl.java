@@ -50,7 +50,7 @@ import java.util.Enumeration;
  * denied, the ACL treats it as if it were never granted or denied.  If
  * both a <code>Principal</code> and a <code>Group</code> to which the
  * <code>Principal</code> belongs have an ACL entry, the permissions for
- * the individual <code>Principal</code> take precedence over the 
+ * the individual <code>Principal</code> take precedence over the
  * permissions of the <code>Group</code> if there is a conflict.
  * <p>
  * Additionally, the ACL interface extends the <code>Owner</code> interface
@@ -94,7 +94,7 @@ public interface Acl extends Owner
    *
    * @exception NotOwnerException If the caller is not an owner of this ACL.
    */
-  boolean addEntry(Principal caller, AclEntry entry) 
+  boolean addEntry(Principal caller, AclEntry entry)
     throws NotOwnerException;
 
   /**

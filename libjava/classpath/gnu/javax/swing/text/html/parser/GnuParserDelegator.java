@@ -53,8 +53,8 @@ import javax.swing.text.html.parser.TagElement;
 /**
  * This parser delegator uses the different DTD ({@link HTML_401Swing}).
  * It is derived from the ParserDelegator for the compatibility reasons.
- * 
- * @author Audrius Meskauskas (AudriusA@Bioinformatics.org) 
+ *
+ * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class GnuParserDelegator extends ParserDelegator implements Serializable
 {
@@ -121,7 +121,7 @@ public class GnuParserDelegator extends ParserDelegator implements Serializable
    */
   private static final long serialVersionUID = -1276686502624777206L;
 
-  private DTD theDtd; 
+  private DTD theDtd;
 
   /**
    * The callback.
@@ -135,10 +135,10 @@ public class GnuParserDelegator extends ParserDelegator implements Serializable
    * This is package-private to avoid an accessor method.
    */
   gnuParser gnu;
-  
+
   /**
    * Create the parser that uses the given DTD to parse the document.
-   * 
+   *
    * @param theDtd the DTD
    */
   public GnuParserDelegator(DTD theDtd)
@@ -150,7 +150,7 @@ public class GnuParserDelegator extends ParserDelegator implements Serializable
   /**
    * Parses the HTML document, calling methods of the provided callback. This
    * method must be multithread - safe.
-   * 
+   *
    * @param reader The reader to read the HTML document from
    * @param a_callback The callback that is notifyed about the presence of HTML
    *          elements in the document.

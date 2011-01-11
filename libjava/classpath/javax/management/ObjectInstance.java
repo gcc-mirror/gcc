@@ -110,7 +110,7 @@ public class ObjectInstance
       return false;
     ObjectInstance i = (ObjectInstance) obj;
     return (i.getClassName().equals(className) &&
-	    i.getObjectName().equals(name));
+            i.getObjectName().equals(name));
   }
 
   /**

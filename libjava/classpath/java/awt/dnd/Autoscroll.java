@@ -67,4 +67,3 @@ public interface Autoscroll
   void autoscroll (Point location);
 
 } // interface Autoscroll
-

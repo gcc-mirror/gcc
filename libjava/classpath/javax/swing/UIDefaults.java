@@ -129,8 +129,8 @@ public class UIDefaults extends Hashtable<Object, Object>
     {
       final String className = s;
       inner = new LazyValue()
-        { 
-          public Object createValue(UIDefaults table) 
+        {
+          public Object createValue(UIDefaults table)
           {
             try
               {
@@ -152,11 +152,11 @@ public class UIDefaults extends Hashtable<Object, Object>
       final String className = c;
       final String methodName = m;
       inner = new LazyValue()
-        { 
-          public Object createValue(UIDefaults table) 
+        {
+          public Object createValue(UIDefaults table)
           {
-            try 
-              {                
+            try
+              {
                 return Class
                   .forName(className)
                   .getMethod(methodName, new Class[] {})
@@ -169,7 +169,7 @@ public class UIDefaults extends Hashtable<Object, Object>
           }
         };
     }
-    
+
     public ProxyLazyValue(String c, Object[] os)
     {
       final String className = c;
@@ -178,20 +178,20 @@ public class UIDefaults extends Hashtable<Object, Object>
       for (int i = 0; i < objs.length; ++i)
         {
           clss[i] = objs[i].getClass();
-        }      
+        }
       inner = new LazyValue()
-        { 
-          public Object createValue(UIDefaults table) 
-          {            
+        {
+          public Object createValue(UIDefaults table)
+          {
             try
               {
                 return Class
                   .forName(className)
                   .getConstructor(clss)
                   .newInstance(objs);
-	      }
+              }
             catch (Exception e)
-	      {
+              {
                 return null;
               }
           }
@@ -205,14 +205,14 @@ public class UIDefaults extends Hashtable<Object, Object>
       final Object[] objs = os;
       final Class[] clss = new Class[objs.length];
       for (int i = 0; i < objs.length; ++i)
-	{
+        {
           clss[i] = objs[i].getClass();
-	}
+        }
       inner = new LazyValue()
-        { 
-	  public Object createValue(UIDefaults table)
-	  {
-            try 
+        {
+          public Object createValue(UIDefaults table)
+          {
+            try
               {
                 return Class
                   .forName(className)
@@ -226,7 +226,7 @@ public class UIDefaults extends Hashtable<Object, Object>
           }
         };
     }
-    
+
     public Object createValue(UIDefaults table)
     {
       return inner.createValue(table);
@@ -257,7 +257,7 @@ public class UIDefaults extends Hashtable<Object, Object>
   public UIDefaults(Object[] entries)
   {
     this();
-    
+
     for (int i = 0; (2 * i + 1) < entries.length; ++i)
       put(entries[2 * i], entries[2 * i + 1]);
   }
@@ -293,14 +293,14 @@ public class UIDefaults extends Hashtable<Object, Object>
         String keyString = (String) key;
         ListIterator i = bundles.listIterator(0);
         while (i.hasNext())
-	  {
+          {
             String bundle_name = (String) i.next();
             ResourceBundle res =
               ResourceBundle.getBundle(bundle_name, loc);
             if (res != null)
               {
-                try 
-                  {                    
+                try
+                  {
                     obj = res.getObject(keyString);
                     break;
                   }
@@ -329,7 +329,7 @@ public class UIDefaults extends Hashtable<Object, Object>
     else if (obj instanceof ActiveValue)
       {
         return ((ActiveValue) obj).createValue(this);
-      }    
+      }
 
     return obj;
   }
@@ -582,7 +582,7 @@ public class UIDefaults extends Hashtable<Object, Object>
    *
    * @param key the key to the requested entry
    *
-   * @return The boolean entry for <code>key</code> or <code>false</code> if no 
+   * @return The boolean entry for <code>key</code> or <code>false</code> if no
    *         such entry exists.
    */
   public boolean getBoolean(Object key)
@@ -612,7 +612,7 @@ public class UIDefaults extends Hashtable<Object, Object>
    * @return the insets entry for <code>key</code> or null if no such entry
    *     exists
    */
-  public Insets getInsets(Object key) 
+  public Insets getInsets(Object key)
   {
     Object o = get(key);
     return o instanceof Insets ? (Insets) o : null;
@@ -627,7 +627,7 @@ public class UIDefaults extends Hashtable<Object, Object>
    * @return the boolean entry for <code>key</code> or null if no such entry
    *     exists
    */
-  public Insets getInsets(Object key, Locale locale) 
+  public Insets getInsets(Object key, Locale locale)
   {
     Object o = get(key, locale);
     return o instanceof Insets ? (Insets) o : null;
@@ -641,7 +641,7 @@ public class UIDefaults extends Hashtable<Object, Object>
    * @return the dimension entry for <code>key</code> or null if no such entry
    *     exists
    */
-  public Dimension getDimension(Object key) 
+  public Dimension getDimension(Object key)
   {
     Object o = get(key);
     return o instanceof Dimension ? (Dimension) o : null;
@@ -656,7 +656,7 @@ public class UIDefaults extends Hashtable<Object, Object>
    * @return the boolean entry for <code>key</code> or null if no such entry
    *     exists
    */
-  public Dimension getDimension(Object key, Locale locale) 
+  public Dimension getDimension(Object key, Locale locale)
   {
     Object o = get(key, locale);
     return o instanceof Dimension ? (Dimension) o : null;
@@ -677,7 +677,7 @@ public class UIDefaults extends Hashtable<Object, Object>
     String className = (String) get(id);
     if (className == null)
       return null;
-    try 
+    try
       {
         if (loader == null)
           loader = ClassLoader.getSystemClassLoader();
@@ -733,7 +733,7 @@ public class UIDefaults extends Hashtable<Object, Object>
 
     Method factory;
 
-    try 
+    try
       {
         factory = cls.getMethod ("createUI", new Class[] { JComponent.class } );
       }
@@ -749,14 +749,14 @@ public class UIDefaults extends Hashtable<Object, Object>
       }
     catch (java.lang.reflect.InvocationTargetException ite)
       {
-        getUIError ("InvocationTargetException ("+ ite.getTargetException() 
-		    +") calling createUI(...) on " + cls.toString ());
-        return null;        
+        getUIError ("InvocationTargetException ("+ ite.getTargetException()
+                    +") calling createUI(...) on " + cls.toString ());
+        return null;
       }
     catch (Exception e)
       {
         getUIError ("exception calling createUI(...) on " + cls.toString ());
-        return null;        
+        return null;
       }
   }
 
@@ -800,7 +800,7 @@ public class UIDefaults extends Hashtable<Object, Object>
    * @param newValue the new value
    */
   protected void firePropertyChange(String property,
-				    Object oldValue, Object newValue)
+                                    Object oldValue, Object newValue)
   {
     propertyChangeSupport.firePropertyChange(property, oldValue, newValue);
   }

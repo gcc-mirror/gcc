@@ -7,7 +7,7 @@
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2, or (at your option)
    any later version.
- 
+
    GNU Classpath is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -16,7 +16,7 @@
    You should have received a copy of the GNU General Public License
    along with GNU Classpath; see the file COPYING.  If not, write to the
    Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA. 
+   02111-1307 USA.
 
    Linking this library statically or dynamically with other modules is
    making a combined work based on this library.  Thus, the terms and
@@ -53,7 +53,7 @@ import gnu.classpath.tools.NotifyingInputStreamReader;
 import gnu.classpath.tools.MalformedInputListener;
 import gnu.classpath.tools.MalformedInputEvent;
 
-   class IgnoredFileParseException extends ParseException 
+   class IgnoredFileParseException extends ParseException
    {
       // marker exception
    }
@@ -63,18 +63,18 @@ import gnu.classpath.tools.MalformedInputEvent;
       abstract int match(char[] source, int index) throws ParseException;
 
       int process(Parser parser, char[] source, int startIndex, int endIndex) throws ParseException, IOException {
-	 return endIndex;
+         return endIndex;
       }
 
       int getEndIndex(char[] source, int endIndex) throws ParseException {
-	 return endIndex;
+         return endIndex;
       }
    }
 
    abstract class BlockSourceComponent extends SourceComponent {
 
       int getEndIndex(char[] source, int endIndex) throws ParseException {
-	 return Parser.skipExpression(source, endIndex, 1, '\0');
+         return Parser.skipExpression(source, endIndex, 1, '\0');
       }
 
    }
@@ -83,27 +83,27 @@ import gnu.classpath.tools.MalformedInputEvent;
 
       int match(char[] source, int index) {
 
-	 int rc=index;
-	 int slen=source.length;
-	 while (rc<slen && Parser.WHITESPACE.indexOf(source[rc])>=0) ++rc;
+         int rc=index;
+         int slen=source.length;
+         while (rc<slen && Parser.WHITESPACE.indexOf(source[rc])>=0) ++rc;
 
-	 return (rc!=index) ? rc : -1;
+         return (rc!=index) ? rc : -1;
       }
    }
 
    class BracketClose extends SourceComponent {
 
       int match(char[] source, int index) {
-	 if (source[index]=='}') {
-	    return index+1;
-	 }
-	 else {
-	    return -1;
-	 }
+         if (source[index]=='}') {
+            return index+1;
+         }
+         else {
+            return -1;
+         }
       }
 
-     int process(Parser parser, char[] source, int startIndex, int endIndex) 
-       throws ParseException, IOException 
+     int process(Parser parser, char[] source, int startIndex, int endIndex)
+       throws ParseException, IOException
      {
        parser.classClosed();
        return endIndex;
@@ -113,24 +113,24 @@ import gnu.classpath.tools.MalformedInputEvent;
    class CommentComponent extends SourceComponent {
 
       int match(char[] source, int index) throws ParseException {
-	 if (index+1<source.length && source[index]=='/' && source[index+1]=='*') {
-	    for (index+=2; index+1<source.length; ++index) {
-	       if (source[index]=='*' && source[index+1]=='/')
-		  return index+2;
-	    }
-	    throw new ParseException("unexpected end of input");
-	 }
-	 return -1;
+         if (index+1<source.length && source[index]=='/' && source[index+1]=='*') {
+            for (index+=2; index+1<source.length; ++index) {
+               if (source[index]=='*' && source[index+1]=='/')
+                  return index+2;
+            }
+            throw new ParseException("unexpected end of input");
+         }
+         return -1;
       }
 
       int process(Parser parser, char[] source, int startIndex, int endIndex) {
 
-	 if (source[startIndex+0]=='/' 
-	     && source[startIndex+1]=='*' 
-	     && source[startIndex+2]=='*') {
+         if (source[startIndex+0]=='/'
+             && source[startIndex+1]=='*'
+             && source[startIndex+2]=='*') {
 
-	    parser.setLastComment(new String(source, startIndex, endIndex-startIndex));
-	 }
+            parser.setLastComment(new String(source, startIndex, endIndex-startIndex));
+         }
          else if (null == parser.getBoilerplateComment() && Main.getInstance().isCopyLicenseText()) {
             String boilerplateComment = new String(source, startIndex + 2, endIndex-startIndex - 4);
             if (boilerplateComment.toLowerCase().indexOf("copyright") >= 0) {
@@ -138,22 +138,22 @@ import gnu.classpath.tools.MalformedInputEvent;
             }
          }
 
-	 return endIndex;
+         return endIndex;
       }
    }
 
    class SlashSlashCommentComponent extends SourceComponent {
 
       int match(char[] source, int index) {
-	 if (index+1<source.length && source[index]=='/' && source[index+1]=='/') {
-	    index+=2;
-	    while (index<source.length && source[index]!='\n')
-	       ++index;
-	    return index;
-	 }
-	 else {
-	    return -1;
-	 }
+         if (index+1<source.length && source[index]=='/' && source[index+1]=='/') {
+            index+=2;
+            while (index<source.length && source[index]!='\n')
+               ++index;
+            return index;
+         }
+         else {
+            return -1;
+         }
       }
    }
 
@@ -176,120 +176,120 @@ import gnu.classpath.tools.MalformedInputEvent;
    class ImportComponent extends SourceComponent {
 
       int match(char[] source, int index) {
-	 if (index+7<source.length) {
-	    if (source[index+0]=='i' 
-		&& source[index+1]=='m'
-		&& source[index+2]=='p'
-		&& source[index+3]=='o'
-		&& source[index+4]=='r'
-		&& source[index+5]=='t'
-		&& Parser.WHITESPACE.indexOf(source[index+6])>=0) {
+         if (index+7<source.length) {
+            if (source[index+0]=='i'
+                && source[index+1]=='m'
+                && source[index+2]=='p'
+                && source[index+3]=='o'
+                && source[index+4]=='r'
+                && source[index+5]=='t'
+                && Parser.WHITESPACE.indexOf(source[index+6])>=0) {
 
-	       for (index+=7; index<source.length && source[index]!=';'; ++index)
-		  ;
+               for (index+=7; index<source.length && source[index]!=';'; ++index)
+                  ;
 
-	       return index+1;
-	    }
-	 }
-	 return -1;
+               return index+1;
+            }
+         }
+         return -1;
       }
 
       int process(Parser parser, char[] source, int startIndex, int endIndex) throws ParseException, IOException {
-	 String importString=new String(source,startIndex+7,endIndex-startIndex-7-1).trim();
-	 parser.importEncountered(importString);     
-	 return endIndex;
+         String importString=new String(source,startIndex+7,endIndex-startIndex-7-1).trim();
+         parser.importEncountered(importString);
+         return endIndex;
       }
    }
 
    class PackageComponent extends SourceComponent {
 
       int match(char[] source, int index) {
-	 if (index+10<source.length) {
-	    if (source[index+0]=='p' 
-		&& source[index+1]=='a'
-		&& source[index+2]=='c'
-		&& source[index+3]=='k'
-		&& source[index+4]=='a'
-		&& source[index+5]=='g'
-		&& source[index+6]=='e'
-		&& Parser.WHITESPACE.indexOf(source[index+7])>=0) {
+         if (index+10<source.length) {
+            if (source[index+0]=='p'
+                && source[index+1]=='a'
+                && source[index+2]=='c'
+                && source[index+3]=='k'
+                && source[index+4]=='a'
+                && source[index+5]=='g'
+                && source[index+6]=='e'
+                && Parser.WHITESPACE.indexOf(source[index+7])>=0) {
 
-	       for (index+=7; index<source.length && source[index]!=';'; ++index)
-		  ;
+               for (index+=7; index<source.length && source[index]!=';'; ++index)
+                  ;
 
-	       return index+1;
-	    }
-	 }
-	 return -1;
+               return index+1;
+            }
+         }
+         return -1;
       }
 
       int process(Parser parser, char[] source, int startIndex, int endIndex) {
-	 String packageName=new String(source,startIndex+8,endIndex-startIndex-8-1).trim();
-	 parser.packageOpened(packageName);
-	 return endIndex;
+         String packageName=new String(source,startIndex+8,endIndex-startIndex-8-1).trim();
+         parser.packageOpened(packageName);
+         return endIndex;
       }
    }
 
    class FieldComponent extends SourceComponent {
 
       int match(char[] source, int index) throws ParseException {
-	 boolean isField=false;
-	 final int STATE_NORMAL=1;
-	 final int STATE_SLASHC=2;
-	 final int STATE_STARC=3;
-	 final int STATE_FIELDVAL=4;
-	 final int STATE_STRING=5;
-	 final int STATE_SINGLEQUOTED=6;
-	 final int STATE_STRING_BS=7;
-	 final int STATE_SINGLEQUOTED_BS=8;
+         boolean isField=false;
+         final int STATE_NORMAL=1;
+         final int STATE_SLASHC=2;
+         final int STATE_STARC=3;
+         final int STATE_FIELDVAL=4;
+         final int STATE_STRING=5;
+         final int STATE_SINGLEQUOTED=6;
+         final int STATE_STRING_BS=7;
+         final int STATE_SINGLEQUOTED_BS=8;
 
-	 int state=STATE_NORMAL;
+         int state=STATE_NORMAL;
          int prevState=STATE_NORMAL;
 
          int fieldValueLevel = 0;
 
-	 for (; index<source.length && !isField; ++index) {
-	    if (state==STATE_STARC) {
-	       if (index<source.length-1 && source[index]=='*' && source[index+1]=='/') {
-		  ++index;
-		  state=prevState;
-	       }
-	    }
-	    else if (state==STATE_SLASHC) {
-	       if (source[index]=='\n') {
-		  state=prevState;
-	       }
-	    }
-	    else if (state==STATE_STRING) {
-	       if (source[index]=='\\') {
-		  state=STATE_STRING_BS;
-	       }
-	       else if (source[index]=='\"') {
-		  state=prevState;
-	       }
-	    }
-	    else if (state==STATE_STRING_BS) {
+         for (; index<source.length && !isField; ++index) {
+            if (state==STATE_STARC) {
+               if (index<source.length-1 && source[index]=='*' && source[index+1]=='/') {
+                  ++index;
+                  state=prevState;
+               }
+            }
+            else if (state==STATE_SLASHC) {
+               if (source[index]=='\n') {
+                  state=prevState;
+               }
+            }
+            else if (state==STATE_STRING) {
+               if (source[index]=='\\') {
+                  state=STATE_STRING_BS;
+               }
+               else if (source[index]=='\"') {
+                  state=prevState;
+               }
+            }
+            else if (state==STATE_STRING_BS) {
                state=STATE_STRING;
             }
-	    else if (state==STATE_SINGLEQUOTED) {
-	       if (source[index]=='\\') {
-		  state=STATE_SINGLEQUOTED_BS;
-	       }
-	       else if (source[index]=='\'') {
-		  state=prevState;
-	       }
-	    }
-	    else if (state==STATE_SINGLEQUOTED_BS) {
+            else if (state==STATE_SINGLEQUOTED) {
+               if (source[index]=='\\') {
+                  state=STATE_SINGLEQUOTED_BS;
+               }
+               else if (source[index]=='\'') {
+                  state=prevState;
+               }
+            }
+            else if (state==STATE_SINGLEQUOTED_BS) {
                state=STATE_SINGLEQUOTED;
             }
             else if (state==STATE_FIELDVAL) {
                if (source[index]=='/') {
                   if (index<source.length-1 && source[index+1]=='*') {
-                     state=STATE_STARC; 
+                     state=STATE_STARC;
                      ++index;
                   }
                   else if (index<source.length-1 && source[index+1]=='/') {
-                     state=STATE_SLASHC; 
+                     state=STATE_SLASHC;
                      ++index;
                   }
                }
@@ -310,102 +310,102 @@ import gnu.classpath.tools.MalformedInputEvent;
                   break;
                }
             }
-	    else switch (source[index]) {
-	    case '/': 
-	       if (index<source.length-1 && source[index+1]=='*') {
-		  state=STATE_STARC; 
-		  ++index;
-	       }
-	       else if (index<source.length-1 && source[index+1]=='/') {
-		  state=STATE_SLASHC; 
-		  ++index;
-	       }
-	       break;
-	    case '{':  // class
-	    case '(':  // method
-	       return -1;
-	    case '=':  // field
+            else switch (source[index]) {
+            case '/':
+               if (index<source.length-1 && source[index+1]=='*') {
+                  state=STATE_STARC;
+                  ++index;
+               }
+               else if (index<source.length-1 && source[index+1]=='/') {
+                  state=STATE_SLASHC;
+                  ++index;
+               }
+               break;
+            case '{':  // class
+            case '(':  // method
+               return -1;
+            case '=':  // field
                state=STATE_FIELDVAL;
                prevState=state;
                continue;
-	    case ';':  // field
-	       isField=true;
-	       break;
-	    }
-	    if (isField) break;
-	 }
-	 if (!isField || index==source.length) {
-	    return -1;
-	 }
+            case ';':  // field
+               isField=true;
+               break;
+            }
+            if (isField) break;
+         }
+         if (!isField || index==source.length) {
+            return -1;
+         }
 
-	 //System.err.println("char is "+source[index]);
+         //System.err.println("char is "+source[index]);
 
-	 if (source[index]!=';') {
-	    index=Parser.skipExpression(source, index, 0, ';');
-	 }
-	 return index+1;
+         if (source[index]!=';') {
+            index=Parser.skipExpression(source, index, 0, ';');
+         }
+         return index+1;
       }
 
       int process(Parser parser, char[] source, int startIndex, int endIndex) {
 
-	 //Debug.log(9,"found package statement: \""+str+"\"");
-	 //Debug.log(9,"found function component: '"+str+"'");
-	 //xxx(new FieldDocImpl(ctx.classDoc, ctx.classDoc.containingPackage(), 0, false, false));
+         //Debug.log(9,"found package statement: \""+str+"\"");
+         //Debug.log(9,"found function component: '"+str+"'");
+         //xxx(new FieldDocImpl(ctx.classDoc, ctx.classDoc.containingPackage(), 0, false, false));
 
-	 // Ignore superfluous semicoli after class definition
-	 if (endIndex-startIndex<=1) return endIndex;
+         // Ignore superfluous semicoli after class definition
+         if (endIndex-startIndex<=1) return endIndex;
 
-	 //assert (parser.ctx!=null);
-	 Collection fields=FieldDocImpl.createFromSource(parser.ctx.classDoc, 
-							 parser.ctx.classDoc.containingPackage(), 
-							 source, startIndex, endIndex);
+         //assert (parser.ctx!=null);
+         Collection fields=FieldDocImpl.createFromSource(parser.ctx.classDoc,
+                                                         parser.ctx.classDoc.containingPackage(),
+                                                         source, startIndex, endIndex);
 
-	 for (Iterator it=fields.iterator(); it.hasNext(); ) {
-	    FieldDocImpl field=(FieldDocImpl)it.next();
-	    boolean fieldHasSerialTag=!field.isTransient() && !field.isStatic(); //field.hasSerialTag();
-	    if ((field.isIncluded() || fieldHasSerialTag) && parser.getAddComments()) {
-	       field.setRawCommentText(parser.getLastComment());
-	    }
+         for (Iterator it=fields.iterator(); it.hasNext(); ) {
+            FieldDocImpl field=(FieldDocImpl)it.next();
+            boolean fieldHasSerialTag=!field.isTransient() && !field.isStatic(); //field.hasSerialTag();
+            if ((field.isIncluded() || fieldHasSerialTag) && parser.getAddComments()) {
+               field.setRawCommentText(parser.getLastComment());
+            }
             parser.ctx.fieldList.add(field);
-	    if (field.isIncluded()) {
-	       parser.ctx.filteredFieldList.add(field);
-	    }
-	    if (fieldHasSerialTag) {
-	       parser.ctx.sfieldList.add(field);
-	    }
-	 }
+            if (field.isIncluded()) {
+               parser.ctx.filteredFieldList.add(field);
+            }
+            if (fieldHasSerialTag) {
+               parser.ctx.sfieldList.add(field);
+            }
+         }
 
-	 parser.setLastComment(null);
-	 return endIndex;
+         parser.setLastComment(null);
+         return endIndex;
       }
-   
+
 
    }
 
    class FunctionComponent extends BlockSourceComponent {
 
       int getEndIndex(char[] source, int endIndex) throws ParseException {
-	 if (source[endIndex-1]==';') {
-	    return endIndex;
-	 }
-	 else {
-	    return super.getEndIndex(source, endIndex);
-	 }
+         if (source[endIndex-1]==';') {
+            return endIndex;
+         }
+         else {
+            return super.getEndIndex(source, endIndex);
+         }
       }
 
       int process(Parser parser, char[] source, int startIndex, int endIndex) throws IOException, ParseException {
 
-	 //ctx.fieldList.add(FieldDocImpl.createFromSource(source, startIndex, endIndex));
+         //ctx.fieldList.add(FieldDocImpl.createFromSource(source, startIndex, endIndex));
 
-	 //System.out.println("function match '"+new String(source,startIndex,endIndex-startIndex)+"'");
-	 ExecutableMemberDocImpl execDoc=MethodDocImpl.createFromSource(parser.ctx.classDoc, 
-									parser.ctx.classDoc.containingPackage(), 
-									source, startIndex, endIndex);
+         //System.out.println("function match '"+new String(source,startIndex,endIndex-startIndex)+"'");
+         ExecutableMemberDocImpl execDoc=MethodDocImpl.createFromSource(parser.ctx.classDoc,
+                                                                        parser.ctx.classDoc.containingPackage(),
+                                                                        source, startIndex, endIndex);
 
-	 if (parser.getAddComments())
-	    execDoc.setRawCommentText(parser.getLastComment());
+         if (parser.getAddComments())
+            execDoc.setRawCommentText(parser.getLastComment());
 
-	 parser.setLastComment(null);
+         parser.setLastComment(null);
 
          if (execDoc.isMethod()) {
             parser.ctx.methodList.add(execDoc);
@@ -420,117 +420,117 @@ import gnu.classpath.tools.MalformedInputEvent;
             }
          }
 
-	 if (execDoc.isMethod() 
-		  && (execDoc.name().equals("readObject")
-		      || execDoc.name().equals("writeObject")
-		      || execDoc.name().equals("readExternal")
-		      || execDoc.name().equals("writeExternal")
-		      || execDoc.name().equals("readResolve"))) {
+         if (execDoc.isMethod()
+                  && (execDoc.name().equals("readObject")
+                      || execDoc.name().equals("writeObject")
+                      || execDoc.name().equals("readExternal")
+                      || execDoc.name().equals("writeExternal")
+                      || execDoc.name().equals("readResolve"))) {
            // FIXME: add readExternal here?
 
-	    parser.ctx.maybeSerMethodList.add(execDoc);
-	 }
+            parser.ctx.maybeSerMethodList.add(execDoc);
+         }
 
-	 return endIndex;
+         return endIndex;
       }
 
       int match(char[] source, int index) {
-	 boolean isFunc=false;
-	 final int STATE_NORMAL=1;
-	 final int STATE_SLASHC=2;
-	 final int STATE_STARC=3;
-	 int state=STATE_NORMAL;
-	 for (; index<source.length && !isFunc; ++index) {
-	    if (state==STATE_STARC) {
-	       if (source[index]=='*' && source[index+1]=='/') {
-		  ++index;
-		  state=STATE_NORMAL;
-	       }
-	    }
-	    else if (state==STATE_SLASHC) {
-	       if (source[index]=='\n') {
-		  state=STATE_NORMAL;
-	       }
-	    }
-	    else switch (source[index]) {
-	    case '/': 
-	       if (source[index+1]=='*') {
-		  state=STATE_STARC; 
-		  ++index;
-	       }
-	       else if (source[index+1]=='/') {
-		  state=STATE_SLASHC; 
-		  ++index;
-	       }
-	       break;
-	    case '=':  // field
-	    case ';':  // field
-	    case '{':  // class
-	       return -1;
-	    case '(':
-	       isFunc=true;
-	       break;
-	    }
-	    if (isFunc) break;
-	 }
-	 if (!isFunc || index==source.length)
-	    return -1;
+         boolean isFunc=false;
+         final int STATE_NORMAL=1;
+         final int STATE_SLASHC=2;
+         final int STATE_STARC=3;
+         int state=STATE_NORMAL;
+         for (; index<source.length && !isFunc; ++index) {
+            if (state==STATE_STARC) {
+               if (source[index]=='*' && source[index+1]=='/') {
+                  ++index;
+                  state=STATE_NORMAL;
+               }
+            }
+            else if (state==STATE_SLASHC) {
+               if (source[index]=='\n') {
+                  state=STATE_NORMAL;
+               }
+            }
+            else switch (source[index]) {
+            case '/':
+               if (source[index+1]=='*') {
+                  state=STATE_STARC;
+                  ++index;
+               }
+               else if (source[index+1]=='/') {
+                  state=STATE_SLASHC;
+                  ++index;
+               }
+               break;
+            case '=':  // field
+            case ';':  // field
+            case '{':  // class
+               return -1;
+            case '(':
+               isFunc=true;
+               break;
+            }
+            if (isFunc) break;
+         }
+         if (!isFunc || index==source.length)
+            return -1;
 
-	 for (; index<source.length && (state!=STATE_NORMAL || (source[index]!='{' && source[index]!=';')); ++index)
-	    if (state==STATE_SLASHC && source[index]=='\n') {
-	       state=STATE_NORMAL;
-	    }
-	    else if (index<source.length-1) {
-	       if (state==STATE_STARC) {
-		  if (source[index]=='*' && source[index+1]=='/') {
-		     state=STATE_NORMAL;
-		  }
-	       }
-	       else {
-		  if (source[index]=='/' && source[index+1]=='*') {
-		     state=STATE_STARC;
-		  }
-		  else if (source[index]=='/' && source[index+1]=='/') {
-		     state=STATE_SLASHC;
-		  }
-	       }
-	    }
-	 return index+1;
+         for (; index<source.length && (state!=STATE_NORMAL || (source[index]!='{' && source[index]!=';')); ++index)
+            if (state==STATE_SLASHC && source[index]=='\n') {
+               state=STATE_NORMAL;
+            }
+            else if (index<source.length-1) {
+               if (state==STATE_STARC) {
+                  if (source[index]=='*' && source[index+1]=='/') {
+                     state=STATE_NORMAL;
+                  }
+               }
+               else {
+                  if (source[index]=='/' && source[index+1]=='*') {
+                     state=STATE_STARC;
+                  }
+                  else if (source[index]=='/' && source[index+1]=='/') {
+                     state=STATE_SLASHC;
+                  }
+               }
+            }
+         return index+1;
       }
-   
+
 
    }
 
    class StaticBlockComponent extends BlockSourceComponent {
 
       int process(Parser parser, char[] source, int startIndex, int endIndex) {
-	 //Debug.log(9,"found package statement: \""+str+"\"");
-	 //Debug.log(9,"found function component: '"+str+"'");
-	 parser.setLastComment(null);
-	 return endIndex;
+         //Debug.log(9,"found package statement: \""+str+"\"");
+         //Debug.log(9,"found function component: '"+str+"'");
+         parser.setLastComment(null);
+         return endIndex;
       }
-   
+
       int match(char[] source, int index) {
-	 if (source[index]=='{') return index+1;
+         if (source[index]=='{') return index+1;
 
-	 if (index+7<source.length) {
-	    if (source[index+0]=='s' 
-		&& source[index+1]=='t'
-		&& source[index+2]=='a'
-		&& source[index+3]=='t'
-		&& source[index+4]=='i'
-		&& source[index+5]=='c') {
+         if (index+7<source.length) {
+            if (source[index+0]=='s'
+                && source[index+1]=='t'
+                && source[index+2]=='a'
+                && source[index+3]=='t'
+                && source[index+4]=='i'
+                && source[index+5]=='c') {
 
-	       for (index+=6; index<source.length && Parser.WHITESPACE.indexOf(source[index])>=0; ++index)
-		  ;
+               for (index+=6; index<source.length && Parser.WHITESPACE.indexOf(source[index])>=0; ++index)
+                  ;
 
-	       if (index<source.length && source[index]=='{')
-		  return index+1;
-	       else
-		  return -1;
-	    }
-	 }
-	 return -1;
+               if (index<source.length && source[index]=='{')
+                  return index+1;
+               else
+                  return -1;
+            }
+         }
+         return -1;
       }
 
    }
@@ -538,9 +538,9 @@ import gnu.classpath.tools.MalformedInputEvent;
    class ClassComponent extends SourceComponent {
 
       int match(char[] source, int index) {
-	 boolean isClass=false;
-	 for (; index<source.length && !isClass; ++index) {
-	    switch (source[index]) {
+         boolean isClass=false;
+         for (; index<source.length && !isClass; ++index) {
+            switch (source[index]) {
             case '/':  // possible comment
                if (index<source.length-1) {
                   char c = source[index+1];
@@ -564,70 +564,70 @@ import gnu.classpath.tools.MalformedInputEvent;
                    ++ index;
                }
                if (index<source.length && source[index]=='(') {
-		   int parLevel = 1;
+                   int parLevel = 1;
                    index += 1;
-                   while (index<source.length && parLevel>0) { 
-		       if (source[index] == '(')
+                   while (index<source.length && parLevel>0) {
+                       if (source[index] == '(')
                           ++ parLevel;
-		       if (source[index] == ')')
-			  -- parLevel;
+                       if (source[index] == ')')
+                          -- parLevel;
                        ++ index;
-		       if (parLevel==0)
-		           break;
-                   } 
+                       if (parLevel==0)
+                           break;
+                   }
                }
                break;
-	    case '=':  // field
-	    case ';':  // field
-	    case '(':  // function
-	       return -1;
-	    case '{':
-	       isClass=true;
-	       break;
-	    }
-	    if (isClass) break;
-	 }
-	 if (!isClass || index>=source.length)
-	    return -1;
+            case '=':  // field
+            case ';':  // field
+            case '(':  // function
+               return -1;
+            case '{':
+               isClass=true;
+               break;
+            }
+            if (isClass) break;
+         }
+         if (!isClass || index>=source.length)
+            return -1;
 
-	 return index+1;
+         return index+1;
       }
 
       int process(Parser parser, char[] source, int startIndex, int endIndex) throws ParseException, IOException {
 
-	 parser.classOpened(source, startIndex, endIndex);
-	 if (parser.getAddComments())
-	    parser.ctx.classDoc.setRawCommentText(parser.getLastComment());
-	 parser.setLastComment(null);
-	 if (parser.ctx.classDoc.isEnum())
-	   {
-	     int depth = 0;
-	     for (int a = endIndex; a < source.length; ++a)
-	     {
-	       Debug.log(9, "Enum skipping " + a);
-	       if (source[a] == '{')
-		 {
-		   Debug.log(1, "Found inner { in enum");
-		   ++depth;
-		 }
-	       if (source[a] == '}')
-		 {
-		   if (depth > 0)
-		     {
-		       Debug.log(1, "Found inner } in enum");
-		       --depth;
-		     }
-		   else
-		     {
-		       Debug.log(1, "Found enum }");
-		       parser.classClosed();
-		       return a + 1;
-		     }
-		 }
-	     }
-	   }
-	 int rc=parser.parse(source, endIndex, parser.getClassLevelComponents());
-	 return rc;
+         parser.classOpened(source, startIndex, endIndex);
+         if (parser.getAddComments())
+            parser.ctx.classDoc.setRawCommentText(parser.getLastComment());
+         parser.setLastComment(null);
+         if (parser.ctx.classDoc.isEnum())
+           {
+             int depth = 0;
+             for (int a = endIndex; a < source.length; ++a)
+             {
+               Debug.log(9, "Enum skipping " + a);
+               if (source[a] == '{')
+                 {
+                   Debug.log(1, "Found inner { in enum");
+                   ++depth;
+                 }
+               if (source[a] == '}')
+                 {
+                   if (depth > 0)
+                     {
+                       Debug.log(1, "Found inner } in enum");
+                       --depth;
+                     }
+                   else
+                     {
+                       Debug.log(1, "Found enum }");
+                       parser.classClosed();
+                       return a + 1;
+                     }
+                 }
+             }
+           }
+         int rc=parser.parse(source, endIndex, parser.getClassLevelComponents());
+         return rc;
       }
 
    }
@@ -649,36 +649,36 @@ public class Parser {
       int state=STATE_NORMAL;
       int prev=0;
       for (; !((level==0 && state==STATE_NORMAL && (delimiter=='\0' || source[endIndex]==delimiter))) && endIndex<source.length; ++endIndex) {
-	 int c=source[endIndex];
-	 if (state==STATE_NORMAL) {
-	    if (c=='}') --level;
-	    else if (c=='{') ++level;
-	    else if (c=='/' && prev=='/') { state=STATE_SLASHC; c=0; }
-	    else if (c=='*' && prev=='/') { state=STATE_STARC; c=0; }
-	    else if (c=='\'' && prev!='\\') { state=STATE_CHAR; c=0; }
-	    else if (c=='\"' && prev!='\\') { state=STATE_STRING; c=0; }
-	 }
-	 else if (state==STATE_SLASHC) {
-	    if (c=='\n') state=STATE_NORMAL;
-	 }
-	 else if (state==STATE_CHAR) {
-	    if (c=='\'' && prev!='\\') state=STATE_NORMAL;
-	    else if (c=='\\' && prev=='\\') c=0;
-	 }
-	 else if (state==STATE_STRING) {
-	    if (c=='\"' && prev!='\\') state=STATE_NORMAL;
-	    else if (c=='\\' && prev=='\\') c=0;
-	 }
-	 else {
-	    if (c=='/' && prev=='*') { state=STATE_NORMAL; c=0; }
-	 }
-	 prev=c;
+         int c=source[endIndex];
+         if (state==STATE_NORMAL) {
+            if (c=='}') --level;
+            else if (c=='{') ++level;
+            else if (c=='/' && prev=='/') { state=STATE_SLASHC; c=0; }
+            else if (c=='*' && prev=='/') { state=STATE_STARC; c=0; }
+            else if (c=='\'' && prev!='\\') { state=STATE_CHAR; c=0; }
+            else if (c=='\"' && prev!='\\') { state=STATE_STRING; c=0; }
+         }
+         else if (state==STATE_SLASHC) {
+            if (c=='\n') state=STATE_NORMAL;
+         }
+         else if (state==STATE_CHAR) {
+            if (c=='\'' && prev!='\\') state=STATE_NORMAL;
+            else if (c=='\\' && prev=='\\') c=0;
+         }
+         else if (state==STATE_STRING) {
+            if (c=='\"' && prev!='\\') state=STATE_NORMAL;
+            else if (c=='\\' && prev=='\\') c=0;
+         }
+         else {
+            if (c=='/' && prev=='*') { state=STATE_NORMAL; c=0; }
+         }
+         prev=c;
       }
       if (level>0)
-	 throw new ParseException("Unexpected end of source.");
+         throw new ParseException("Unexpected end of source.");
       else {
-	 String rc=new String(source, orgEndIndex, endIndex-orgEndIndex);
-	 return endIndex;
+         String rc=new String(source, orgEndIndex, endIndex-orgEndIndex);
+         return endIndex;
       }
    }
 
@@ -693,13 +693,13 @@ public class Parser {
 
    public static final boolean isWhitespace(char c) {
       return (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '');
-      //return WHITESPACE.indexOf(c)>=0; 
+      //return WHITESPACE.indexOf(c)>=0;
    }
 
    private int currentLine;
 
-   static char[] loadFile(final File file, String encoding) 
-      throws IOException 
+   static char[] loadFile(final File file, String encoding)
+      throws IOException
    {
       InputStream in = new FileInputStream(file);
       NotifyingInputStreamReader notifyingInput
@@ -733,30 +733,30 @@ public class Parser {
    public Parser() {
       try {
 
-	 sourceLevelComponents=new SourceComponent[] {
-	    new Whitespace(),
-	    new CommentComponent(),
-	    new SlashSlashCommentComponent(),
-	    new PackageComponent(),
-	    new EmptyStatementComponent(),
-	    new ImportComponent(),
-	    new ClassComponent(),
-	 };
+         sourceLevelComponents=new SourceComponent[] {
+            new Whitespace(),
+            new CommentComponent(),
+            new SlashSlashCommentComponent(),
+            new PackageComponent(),
+            new EmptyStatementComponent(),
+            new ImportComponent(),
+            new ClassComponent(),
+         };
 
-	 classLevelComponents=new SourceComponent[] {
-	    new Whitespace(),
-	    new BracketClose(),
-	    new CommentComponent(),
-	    new SlashSlashCommentComponent(),
-	    new FunctionComponent(),
-	    new StaticBlockComponent(),
-	    new ImportComponent(),
-	    new ClassComponent(),
-	    new FieldComponent(),
-	 };
+         classLevelComponents=new SourceComponent[] {
+            new Whitespace(),
+            new BracketClose(),
+            new CommentComponent(),
+            new SlashSlashCommentComponent(),
+            new FunctionComponent(),
+            new StaticBlockComponent(),
+            new ImportComponent(),
+            new ClassComponent(),
+            new FieldComponent(),
+         };
       }
       catch (Exception e) {
-	 e.printStackTrace();
+         e.printStackTrace();
       }
    }
 
@@ -766,8 +766,8 @@ public class Parser {
 
    static Set processedFiles = new HashSet();
 
-   ClassDocImpl processSourceFile(File file, boolean addComments, 
-                                  String encoding, String expectedPackageName) 
+   ClassDocImpl processSourceFile(File file, boolean addComments,
+                                  String encoding, String expectedPackageName)
       throws IOException, ParseException
    {
      //System.err.println("Processing " + file + "...");
@@ -785,9 +785,9 @@ public class Parser {
       }
 
       processedFiles.add(file);
-         
+
       Debug.log(1,"Processing file "+file);
-      
+
       contextStack.clear();
       ctx=null;
 
@@ -795,7 +795,7 @@ public class Parser {
       importedStringList.clear();
       importedPackagesList.clear();
       importedStatementList.clear();
-      
+
       currentLine = 1;
 
       char[] source = loadFile(file, encoding);
@@ -805,52 +805,52 @@ public class Parser {
 
          ClassDoc[] importedClasses=(ClassDoc[])importedClassesList.toArray(new ClassDoc[0]);
          PackageDoc[] importedPackages=(PackageDoc[])importedPackagesList.toArray(new PackageDoc[0]);
-         
+
          if (Main.DESCEND_IMPORTED) {
             for (int i=0; i<importedClasses.length; ++i) {
                Main.getRootDoc().scheduleClass(currentClass, importedClasses[i].qualifiedName());
             }
          }
-       
-         
+
+
            if (contextStack.size()>0) {
-	     Debug.log(1,"-->contextStack not empty! size is "+contextStack.size());
+             Debug.log(1,"-->contextStack not empty! size is "+contextStack.size());
            }
-         
+
          return outerClass;
       }
       catch (IgnoredFileParseException ignore) {
-	Debug.log(1, "File ignored: " + ignore);
+        Debug.log(1, "File ignored: " + ignore);
          return null;
       }
    }
-      
+
    int parse(char[] source, int index, SourceComponent[] componentTypes) throws ParseException, IOException {
 
       while (index<source.length) {
 
-	 int match=-1;
-	 int i=0;
-	 for (; i<componentTypes.length; ++i) {
-	    if ((match=componentTypes[i].match(source, index))>=0) {
-	      //Debug.log(1,componentTypes[i].getClass().getName()+" ("+match+"/"+source.length+")");
-	       break;
-	    }
-	 }
+         int match=-1;
+         int i=0;
+         for (; i<componentTypes.length; ++i) {
+            if ((match=componentTypes[i].match(source, index))>=0) {
+              //Debug.log(1,componentTypes[i].getClass().getName()+" ("+match+"/"+source.length+")");
+               break;
+            }
+         }
 
-	 if (i<componentTypes.length) {
-	    int endIndex=componentTypes[i].getEndIndex(source, match);
-	    Debug.log(9, "Processing " + new String(source,index,endIndex-index) + " with " + componentTypes[i]);
-	    index=componentTypes[i].process(this, source, index, endIndex);
-	    if (index<0) {
-	      //Debug.log(9,"exiting parse because of "+componentTypes[i].getClass().getName()+" (\""+new String(source, index, endIndex-index)+"\")");
-	       return endIndex;
-	    }
-	 }
-	 else {
-	   //Debug.log(9,"index="+index+", source.length()="+source.length);
-	    throw new ParseException("unmatched input in line "+currentLine+": "+new String(source, index, Math.min(50,source.length-index)));
-	 }
+         if (i<componentTypes.length) {
+            int endIndex=componentTypes[i].getEndIndex(source, match);
+            Debug.log(9, "Processing " + new String(source,index,endIndex-index) + " with " + componentTypes[i]);
+            index=componentTypes[i].process(this, source, index, endIndex);
+            if (index<0) {
+              //Debug.log(9,"exiting parse because of "+componentTypes[i].getClass().getName()+" (\""+new String(source, index, endIndex-index)+"\")");
+               return endIndex;
+            }
+         }
+         else {
+           //Debug.log(9,"index="+index+", source.length()="+source.length);
+            throw new ParseException("unmatched input in line "+currentLine+": "+new String(source, index, Math.min(50,source.length-index)));
+         }
 
       }
       //Debug.log(9,"exiting parse normally, index="+index+" source.length="+source.length);
@@ -860,22 +860,22 @@ public class Parser {
    private static int countNewLines(String source) {
       int i=0;
       int rc=0;
-      while ((i=source.indexOf('\n',i)+1)>0) 
-	 ++rc;
+      while ((i=source.indexOf('\n',i)+1)>0)
+         ++rc;
       return rc;
    }
 
-   public void processSourceDir(File dir, String encoding, String expectedPackageName) 
-      throws IOException, ParseException 
+   public void processSourceDir(File dir, String encoding, String expectedPackageName)
+      throws IOException, ParseException
    {
       Debug.log(9,"Processing "+dir.getParentFile().getName()+"."+dir.getName());
       File[] files=dir.listFiles();
       if (null!=files) {
-	 for (int i=0; i<files.length; ++i) {
-	    if (files[i].getName().toLowerCase().endsWith(".java")) {
-	       processSourceFile(files[i], true, encoding, expectedPackageName);
-	    }
-	 }
+         for (int i=0; i<files.length; ++i) {
+            if (files[i].getName().toLowerCase().endsWith(".java")) {
+               processSourceFile(files[i], true, encoding, expectedPackageName);
+            }
+         }
       }
    }
 
@@ -903,14 +903,14 @@ public class Parser {
       }
 
       if (currentPackageName != null)
-	 importedStatementList.add(currentPackageName + ".*");
+         importedStatementList.add(currentPackageName + ".*");
       importedStatementList.add("java.lang.*");
 
       ClassDocImpl classDoc
-	 = ClassDocImpl.createInstance((ctx!=null)?(ctx.classDoc):null, currentPackage, 
-				       null,
-				       (PackageDoc[])importedPackagesList.toArray(new PackageDoc[0]),
-				       source, startIndex, endIndex,
+         = ClassDocImpl.createInstance((ctx!=null)?(ctx.classDoc):null, currentPackage,
+                                       null,
+                                       (PackageDoc[])importedPackagesList.toArray(new PackageDoc[0]),
+                                       source, startIndex, endIndex,
                                        importedStatementList);
 
       if (ctx != null) {
@@ -921,9 +921,9 @@ public class Parser {
       }
 
       if (importedClassesList.isEmpty()) {
-	 for (Iterator it=importedStringList.iterator(); it.hasNext(); ) {
-	    importedClassesList.add(new ClassDocProxy((String)it.next(), classDoc));
-	 }
+         for (Iterator it=importedStringList.iterator(); it.hasNext(); ) {
+            importedClassesList.add(new ClassDocProxy((String)it.next(), classDoc));
+         }
       }
       classDoc.setImportedClasses((ClassDoc[])importedClassesList.toArray(new ClassDoc[0]));
 
@@ -936,7 +936,7 @@ public class Parser {
       }
 
       if (classDoc.superclass()!=null)
-	 referencedClassesList.add(classDoc.superclass());
+         referencedClassesList.add(classDoc.superclass());
 
       Debug.log(1,"classOpened "+classDoc+", adding superclass "+classDoc.superclass());
       Debug.log(1,"Pushing " + ctx);
@@ -952,9 +952,9 @@ public class Parser {
    }
 
    void classClosed() throws ParseException, IOException {
-      ctx.classDoc.setFields((FieldDoc[])toArray(ctx.fieldList, 
+      ctx.classDoc.setFields((FieldDoc[])toArray(ctx.fieldList,
                                                              new FieldDoc[0]));
-      ctx.classDoc.setFilteredFields((FieldDoc[])toArray(ctx.filteredFieldList, 
+      ctx.classDoc.setFilteredFields((FieldDoc[])toArray(ctx.filteredFieldList,
                                                                      new FieldDoc[0]));
       ctx.classDoc.setSerializableFields((FieldDoc[])toArray(ctx.sfieldList, new FieldDoc[0]));
       ctx.classDoc.setMethods((MethodDoc[])toArray(ctx.methodList, new MethodDoc[0]));
@@ -968,11 +968,11 @@ public class Parser {
       ctx.classDoc.setBoilerplateComment(boilerplateComment);
 
       Main.getRootDoc().addClassDoc(ctx.classDoc);
-      
+
       if (Main.DESCEND_INTERFACES) {
-	 for (int i=0; i<ctx.classDoc.interfaces().length; ++i) {
-	    Main.getRootDoc().scheduleClass(ctx.classDoc, ctx.classDoc.interfaces()[i].qualifiedName());
-	 }
+         for (int i=0; i<ctx.classDoc.interfaces().length; ++i) {
+            Main.getRootDoc().scheduleClass(ctx.classDoc, ctx.classDoc.interfaces()[i].qualifiedName());
+         }
       }
 
       Debug.log(1,"classClosed: "+ctx.classDoc);
@@ -982,29 +982,29 @@ public class Parser {
       ClassDoc[] referencedClasses=(ClassDoc[])referencedClassesList.toArray(new ClassDoc[0]);
 
       if (Main.DESCEND_SUPERCLASS) {
-	 for (int i=0; i<referencedClasses.length; ++i) {
-	    Main.getRootDoc().scheduleClass(currentClass, referencedClasses[i].qualifiedName());
-	 }
+         for (int i=0; i<referencedClasses.length; ++i) {
+            Main.getRootDoc().scheduleClass(currentClass, referencedClasses[i].qualifiedName());
+         }
       }
    }
-   
+
    Context      ctx             = null;
    Stack        contextStack    = new Stack();
    class Context {
       Context(ClassDocImpl classDoc) { this.classDoc=classDoc; }
       ClassDocImpl      classDoc                 = null;
-      List	        fieldList                = new LinkedList();
-      List	        filteredFieldList        = new LinkedList();
-      List	        sfieldList               = new LinkedList();
-      List	        methodList               = new LinkedList();
-      List	        filteredMethodList       = new LinkedList();
+      List              fieldList                = new LinkedList();
+      List              filteredFieldList        = new LinkedList();
+      List              sfieldList               = new LinkedList();
+      List              methodList               = new LinkedList();
+      List              filteredMethodList       = new LinkedList();
       List              maybeSerMethodList       = new LinkedList();
-      List	        constructorList          = new LinkedList();
-      List	        filteredConstructorList  = new LinkedList();
+      List              constructorList          = new LinkedList();
+      List              filteredConstructorList  = new LinkedList();
       List              innerClassesList         = new LinkedList();
       List              filteredInnerClassesList = new LinkedList();
    }
-   
+
    File currentFile = null;
    String lastComment = null;
    String expectedPackageName = null;
@@ -1028,17 +1028,17 @@ public class Parser {
    void packageOpened(String packageName) {
       currentPackageName = packageName;
    }
-   
+
    void importEncountered(String importString) throws ParseException, IOException {
       //Debug.log(9,"importing '"+importString+"'");
 
       importedStatementList.add(importString);
 
       if (importString.endsWith(".*")) {
-	 importedPackagesList.add(Main.getRootDoc().findOrCreatePackageDoc(importString.substring(0,importString.length()-2)));
+         importedPackagesList.add(Main.getRootDoc().findOrCreatePackageDoc(importString.substring(0,importString.length()-2)));
       }
       else {
-	 importedStringList.add(importString);
+         importedStringList.add(importString);
       }
    }
 

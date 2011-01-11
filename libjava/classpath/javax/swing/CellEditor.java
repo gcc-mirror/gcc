@@ -53,17 +53,17 @@ public interface CellEditor
 {
   /**
    * Returns the current value for the <code>CellEditor</code>.
-   * 
+   *
    * @return The value.
    */
   Object getCellEditorValue();
 
   /**
-   * Returns <code>true</code> if the specified event makes the editor 
+   * Returns <code>true</code> if the specified event makes the editor
    * editable, and <code>false</code> otherwise.
-   * 
+   *
    * @param event  the event.
-   * 
+   *
    * @return A boolean.
    */
   boolean isCellEditable(EventObject event);
@@ -76,10 +76,10 @@ public interface CellEditor
   boolean shouldSelectCell(EventObject event);
 
   /**
-   * Signals to the <code>CellEditor</code> that it should stop editing, 
+   * Signals to the <code>CellEditor</code> that it should stop editing,
    * accepting the current cell value, and returns <code>true</code> if the
    * editor actually stops editing, and <code>false</code> otherwise.
-   * 
+   *
    * @return A boolean.
    */
   boolean stopCellEditing();
@@ -90,17 +90,17 @@ public interface CellEditor
   void cancelCellEditing();
 
   /**
-   * Registers a listener to receive {@link ChangeEvent} notifications from the 
+   * Registers a listener to receive {@link ChangeEvent} notifications from the
    * <code>CellEditor</code>.
-   * 
+   *
    * @param listener  the listener.
    */
   void addCellEditorListener(CellEditorListener listener);
 
   /**
-   * Deregisters a listener so that it no longer receives {@link ChangeEvent} 
+   * Deregisters a listener so that it no longer receives {@link ChangeEvent}
    * notifications from the <code>CellEditor</code>.
-   * 
+   *
    * @param listener  the listener.
    */
   void removeCellEditorListener(CellEditorListener listener);

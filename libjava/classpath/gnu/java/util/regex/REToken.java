@@ -58,7 +58,7 @@ abstract class REToken implements Serializable, Cloneable
     }
     catch (CloneNotSupportedException e)
     {
-      throw new Error ();	// doesn't happen
+      throw new Error ();       // doesn't happen
     }
   }
 
@@ -96,15 +96,15 @@ abstract class REToken implements Serializable, Cloneable
   {
     if (!fake)
       {
-	setHitEnd (input, mymatch);
+        setHitEnd (input, mymatch);
       }
     REMatch m = matchThis (input, mymatch);
     if (m == null)
       return false;
     if (next (input, m))
       {
-	mymatch.assignFrom (m);
-	return true;
+        mymatch.assignFrom (m);
+        return true;
       }
     return false;
   }
@@ -188,7 +188,7 @@ abstract class REToken implements Serializable, Cloneable
   boolean chain (REToken token)
   {
     next = token;
-    return true;		// Token was accepted
+    return true;                // Token was accepted
   }
 
   abstract void dump (CPStringBuilder os);

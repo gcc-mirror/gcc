@@ -1,4 +1,4 @@
-/* DocumentName.java -- 
+/* DocumentName.java --
    Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -48,15 +48,15 @@ import javax.print.attribute.TextSyntax;
  * The <code>DocumentName</code> printing attribute specifies a document name.
  * <p>
  * The document name may be different than the name of the job. It must not be
- * unique across multiple documents in the same print job. Normally, an 
- * application provides the document name for the user by using e.g. the file 
+ * unique across multiple documents in the same print job. Normally, an
+ * application provides the document name for the user by using e.g. the file
  * name or a name generated automatically by the application.
  * </p>
  * <p>
  * <b>IPP Compatibility:</b> DocumentName is an IPP 1.1 attribute.
  * </p>
  * @see javax.print.attribute.standard.JobName
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class DocumentName extends TextSyntax
@@ -83,7 +83,7 @@ public final class DocumentName extends TextSyntax
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

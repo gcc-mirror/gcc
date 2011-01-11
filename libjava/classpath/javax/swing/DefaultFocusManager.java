@@ -49,7 +49,7 @@ import java.util.Stack;
  *
  * @author Andrew Selkirk
  */
-public class DefaultFocusManager extends FocusManager 
+public class DefaultFocusManager extends FocusManager
 {
 
   /**
@@ -65,9 +65,9 @@ public class DefaultFocusManager extends FocusManager
     // TODO
   } // DefaultFocusManager()
 
-	/**
+        /**
    * processKeyEvent
-   * 
+   *
    * @param component
    *          TODO
    * @param event
@@ -80,7 +80,7 @@ public class DefaultFocusManager extends FocusManager
 
   /**
    * focusNextComponent
-   * 
+   *
    * @param component
    *          TODO
    */
@@ -91,7 +91,7 @@ public class DefaultFocusManager extends FocusManager
 
   /**
    * focusPreviousComponent
-   * 
+   *
    * @param component
    *          TODO
    */
@@ -102,7 +102,7 @@ public class DefaultFocusManager extends FocusManager
 
   /**
    * getFirstComponent
-   * 
+   *
    * @param container
    *          TODO
    * @return Component
@@ -114,7 +114,7 @@ public class DefaultFocusManager extends FocusManager
 
   /**
    * getLastComponent
-   * 
+   *
    * @param container
    *          TODO
    * @return Component
@@ -126,7 +126,7 @@ public class DefaultFocusManager extends FocusManager
 
   /**
    * getComponentBefore
-   * 
+   *
    * @param container
    *          TODO
    * @param component
@@ -140,7 +140,7 @@ public class DefaultFocusManager extends FocusManager
 
   /**
    * getComponentAfter
-   * 
+   *
    * @param container
    *          TODO
    * @param component
@@ -154,7 +154,7 @@ public class DefaultFocusManager extends FocusManager
 
   /**
    * compareTabOrder
-   * 
+   *
    * @param component1
    *          TODO
    * @param component2

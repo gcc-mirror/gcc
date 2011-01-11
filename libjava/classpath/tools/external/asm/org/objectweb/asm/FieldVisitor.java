@@ -33,14 +33,14 @@ package org.objectweb.asm;
  * A visitor to visit a Java field. The methods of this interface must be called
  * in the following order: ( <tt>visitAnnotation</tt> |
  * <tt>visitAttribute</tt> )* <tt>visitEnd</tt>.
- * 
+ *
  * @author Eric Bruneton
  */
 public interface FieldVisitor {
 
     /**
      * Visits an annotation of the field.
-     * 
+     *
      * @param desc the class descriptor of the annotation class.
      * @param visible <tt>true</tt> if the annotation is visible at runtime.
      * @return a non null visitor to visit the annotation values.
@@ -49,7 +49,7 @@ public interface FieldVisitor {
 
     /**
      * Visits a non standard attribute of the field.
-     * 
+     *
      * @param attr an attribute.
      */
     void visitAttribute(Attribute attr);

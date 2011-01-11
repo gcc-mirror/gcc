@@ -59,7 +59,7 @@ public class GtkPanelPeer extends GtkContainerPeer
 
     if (id == MouseEvent.MOUSE_PRESSED)
       awtComponent.requestFocusInWindow();
-    
+
     super.handleEvent(event);
   }
 

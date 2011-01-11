@@ -53,35 +53,35 @@ import javax.swing.plaf.TreeUI;
 import javax.swing.tree.TreePath;
 
 /**
- * A UI delegate that that coordinates multiple {@link TreeUI} 
- * instances, one from the primary look and feel, and one or more from the 
+ * A UI delegate that that coordinates multiple {@link TreeUI}
+ * instances, one from the primary look and feel, and one or more from the
  * auxiliary look and feel(s).
- * 
+ *
  * @see UIManager#addAuxiliaryLookAndFeel(LookAndFeel)
  */
-public class MultiTreeUI extends TreeUI 
+public class MultiTreeUI extends TreeUI
 {
 
   /** A list of references to the actual component UIs. */
   protected Vector uis;
-    
+
   /**
    * Creates a new <code>MultiTreeUI</code> instance.
-   * 
+   *
    * @see #createUI(JComponent)
    */
-  public MultiTreeUI() 
+  public MultiTreeUI()
   {
     uis = new Vector();
   }
-  
+
   /**
-   * Creates a delegate object for the specified component.  If any auxiliary 
+   * Creates a delegate object for the specified component.  If any auxiliary
    * look and feels support this component, a <code>MultiTreeUI</code> is
    * returned, otherwise the UI from the default look and feel is returned.
-   * 
+   *
    * @param target  the component.
-   * 
+   *
    * @see MultiLookAndFeel#createUIs(ComponentUI, Vector, JComponent)
    */
   public static ComponentUI createUI(JComponent target)
@@ -89,11 +89,11 @@ public class MultiTreeUI extends TreeUI
     MultiTreeUI mui = new MultiTreeUI();
     return MultiLookAndFeel.createUIs(mui, mui.uis, target);
   }
-  
+
   /**
-   * Calls the {@link ComponentUI#installUI(JComponent)} method for all 
+   * Calls the {@link ComponentUI#installUI(JComponent)} method for all
    * the UI delegates managed by this <code>MultiTreeUI</code>.
-   * 
+   *
    * @param c  the component.
    */
   public void installUI(JComponent c)
@@ -107,9 +107,9 @@ public class MultiTreeUI extends TreeUI
   }
 
   /**
-   * Calls the {@link ComponentUI#uninstallUI(JComponent)} method for all 
+   * Calls the {@link ComponentUI#uninstallUI(JComponent)} method for all
    * the UI delegates managed by this <code>MultiTreeUI</code>.
-   * 
+   *
    * @param c  the component.
    */
   public void uninstallUI(JComponent c)
@@ -121,39 +121,39 @@ public class MultiTreeUI extends TreeUI
       ui.uninstallUI(c);
     }
   }
-  
+
   /**
    * Returns an array containing the UI delegates managed by this
-   * <code>MultiTreeUI</code>.  The first item in the array is always 
+   * <code>MultiTreeUI</code>.  The first item in the array is always
    * the UI delegate from the installed default look and feel.
-   * 
+   *
    * @return An array of UI delegates.
    */
   public ComponentUI[] getUIs()
   {
     return MultiLookAndFeel.uisToArray(uis);
   }
-  
+
   /**
-   * Calls the {@link ComponentUI#contains(JComponent, int, int)} method for all 
-   * the UI delegates managed by this <code>MultiTreeUI</code>, 
-   * returning the result for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * Calls the {@link ComponentUI#contains(JComponent, int, int)} method for all
+   * the UI delegates managed by this <code>MultiTreeUI</code>,
+   * returning the result for the UI delegate from the primary look and
+   * feel.
+   *
    * @param c  the component.
    * @param x  the x-coordinate.
    * @param y  the y-coordinate.
-   * 
+   *
    * @return <code>true</code> if the specified (x, y) coordinate falls within
    *         the bounds of the component as rendered by the UI delegate in the
-   *         primary look and feel, and <code>false</code> otherwise. 
+   *         primary look and feel, and <code>false</code> otherwise.
    */
-  public boolean contains(JComponent c, int x, int y) 
+  public boolean contains(JComponent c, int x, int y)
   {
     boolean result = false;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ComponentUI ui = (ComponentUI) iterator.next();
         result = ui.contains(c, x, y);
@@ -166,11 +166,11 @@ public class MultiTreeUI extends TreeUI
       }
     return result;
   }
-  
+
   /**
-   * Calls the {@link ComponentUI#update(Graphics, JComponent)} method for all 
+   * Calls the {@link ComponentUI#update(Graphics, JComponent)} method for all
    * the UI delegates managed by this <code>MultiTreeUI</code>.
-   * 
+   *
    * @param g  the graphics device.
    * @param c  the component.
    */
@@ -185,9 +185,9 @@ public class MultiTreeUI extends TreeUI
   }
 
   /**
-   * Calls the <code>paint(Graphics, JComponent)</code> method for all the UI 
+   * Calls the <code>paint(Graphics, JComponent)</code> method for all the UI
    * delegates managed by this <code>MultiTreeUI</code>.
-   * 
+   *
    * @param g  the graphics device.
    * @param c  the component.
    */
@@ -200,24 +200,24 @@ public class MultiTreeUI extends TreeUI
       ui.paint(g, c);
     }
   }
-  
+
   /**
    * Calls the {@link ComponentUI#getPreferredSize(JComponent)} method for all
-   * the UI delegates managed by this <code>MultiTreeUI</code>, 
-   * returning the preferred size for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * the UI delegates managed by this <code>MultiTreeUI</code>,
+   * returning the preferred size for the UI delegate from the primary look and
+   * feel.
+   *
    * @param c  the component.
-   * 
-   * @return The preferred size returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The preferred size returned by the UI delegate from the primary
+   *         look and feel.
    */
   public Dimension getPreferredSize(JComponent c)
   {
     Dimension result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ComponentUI ui = (ComponentUI) iterator.next();
         result = ui.getPreferredSize(c);
@@ -230,24 +230,24 @@ public class MultiTreeUI extends TreeUI
       }
     return result;
   }
- 
+
   /**
    * Calls the {@link ComponentUI#getMinimumSize(JComponent)} method for all
-   * the UI delegates managed by this <code>MultiTreeUI</code>, 
-   * returning the minimum size for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * the UI delegates managed by this <code>MultiTreeUI</code>,
+   * returning the minimum size for the UI delegate from the primary look and
+   * feel.
+   *
    * @param c  the component.
-   * 
-   * @return The minimum size returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The minimum size returned by the UI delegate from the primary
+   *         look and feel.
    */
   public Dimension getMinimumSize(JComponent c)
   {
     Dimension result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ComponentUI ui = (ComponentUI) iterator.next();
         result = ui.getMinimumSize(c);
@@ -260,24 +260,24 @@ public class MultiTreeUI extends TreeUI
       }
     return result;
   }
-  
+
   /**
    * Calls the {@link ComponentUI#getMaximumSize(JComponent)} method for all
-   * the UI delegates managed by this <code>MultiTreeUI</code>, 
-   * returning the maximum size for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * the UI delegates managed by this <code>MultiTreeUI</code>,
+   * returning the maximum size for the UI delegate from the primary look and
+   * feel.
+   *
    * @param c  the component.
-   * 
-   * @return The maximum size returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The maximum size returned by the UI delegate from the primary
+   *         look and feel.
    */
   public Dimension getMaximumSize(JComponent c)
   {
     Dimension result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ComponentUI ui = (ComponentUI) iterator.next();
         result = ui.getMaximumSize(c);
@@ -290,24 +290,24 @@ public class MultiTreeUI extends TreeUI
       }
     return result;
   }
-  
+
   /**
    * Calls the {@link ComponentUI#getAccessibleChildrenCount(JComponent)} method
-   * for all the UI delegates managed by this <code>MultiTreeUI</code>, 
-   * returning the count for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * for all the UI delegates managed by this <code>MultiTreeUI</code>,
+   * returning the count for the UI delegate from the primary look and
+   * feel.
+   *
    * @param c  the component.
-   * 
-   * @return The count returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The count returned by the UI delegate from the primary
+   *         look and feel.
    */
   public int getAccessibleChildrenCount(JComponent c)
   {
     int result = 0;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ComponentUI ui = (ComponentUI) iterator.next();
         result = ui.getAccessibleChildrenCount(c);
@@ -320,25 +320,25 @@ public class MultiTreeUI extends TreeUI
       }
     return result;
   }
-  
+
   /**
    * Calls the {@link ComponentUI#getAccessibleChild(JComponent, int)} method
-   * for all the UI delegates managed by this <code>MultiTreeUI</code>, 
-   * returning the child for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * for all the UI delegates managed by this <code>MultiTreeUI</code>,
+   * returning the child for the UI delegate from the primary look and
+   * feel.
+   *
    * @param c  the component
    * @param i  the child index.
-   * 
-   * @return The child returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The child returned by the UI delegate from the primary
+   *         look and feel.
    */
   public Accessible getAccessibleChild(JComponent c, int i)
   {
     Accessible result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ComponentUI ui = (ComponentUI) iterator.next();
         result = ui.getAccessibleChild(c, i);
@@ -351,24 +351,24 @@ public class MultiTreeUI extends TreeUI
       }
     return result;
   }
-  
+
   /**
    * Calls the {@link TreeUI#getPathBounds(JTree, TreePath)} method
-   * for all the UI delegates managed by this <code>MultiTreeUI</code>, 
-   * returning the bounds for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * for all the UI delegates managed by this <code>MultiTreeUI</code>,
+   * returning the bounds for the UI delegate from the primary look and
+   * feel.
+   *
    * @param tree  the tree component.
-   * 
-   * @return The bounds returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The bounds returned by the UI delegate from the primary
+   *         look and feel.
    */
-  public Rectangle getPathBounds(JTree tree, TreePath path) 
+  public Rectangle getPathBounds(JTree tree, TreePath path)
   {
     Rectangle result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         TreeUI ui = (TreeUI) iterator.next();
         result = ui.getPathBounds(tree, path);
@@ -384,21 +384,21 @@ public class MultiTreeUI extends TreeUI
 
   /**
    * Calls the {@link TreeUI#getPathForRow(JTree, int)} method
-   * for all the UI delegates managed by this <code>MultiTreeUI</code>, 
-   * returning the path for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * for all the UI delegates managed by this <code>MultiTreeUI</code>,
+   * returning the path for the UI delegate from the primary look and
+   * feel.
+   *
    * @param tree  the tree component.
-   * 
-   * @return The path returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The path returned by the UI delegate from the primary
+   *         look and feel.
    */
-  public TreePath getPathForRow(JTree tree, int row) 
+  public TreePath getPathForRow(JTree tree, int row)
   {
     TreePath result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         TreeUI ui = (TreeUI) iterator.next();
         result = ui.getPathForRow(tree, row);
@@ -414,21 +414,21 @@ public class MultiTreeUI extends TreeUI
 
   /**
    * Calls the {@link TreeUI#getRowForPath(JTree, TreePath)} method
-   * for all the UI delegates managed by this <code>MultiTreeUI</code>, 
-   * returning the row index for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * for all the UI delegates managed by this <code>MultiTreeUI</code>,
+   * returning the row index for the UI delegate from the primary look and
+   * feel.
+   *
    * @param tree  the tree component.
-   * 
-   * @return The row index returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The row index returned by the UI delegate from the primary
+   *         look and feel.
    */
-  public int getRowForPath(JTree tree, TreePath path) 
+  public int getRowForPath(JTree tree, TreePath path)
   {
     int result = 0;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         TreeUI ui = (TreeUI) iterator.next();
         result = ui.getRowForPath(tree, path);
@@ -439,26 +439,26 @@ public class MultiTreeUI extends TreeUI
         TreeUI ui = (TreeUI) iterator.next();
         /* int ignored = */ ui.getRowForPath(tree, path);
       }
-    return result;  
+    return result;
   }
 
   /**
    * Calls the {@link TreeUI#getRowCount(JTree)} method
-   * for all the UI delegates managed by this <code>MultiTreeUI</code>, 
-   * returning the count for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * for all the UI delegates managed by this <code>MultiTreeUI</code>,
+   * returning the count for the UI delegate from the primary look and
+   * feel.
+   *
    * @param tree  the tree component.
-   * 
-   * @return The count returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The count returned by the UI delegate from the primary
+   *         look and feel.
    */
-  public int getRowCount(JTree tree) 
+  public int getRowCount(JTree tree)
   {
     int result = 0;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         TreeUI ui = (TreeUI) iterator.next();
         result = ui.getRowCount(tree);
@@ -469,26 +469,26 @@ public class MultiTreeUI extends TreeUI
         TreeUI ui = (TreeUI) iterator.next();
         /* int ignored = */ ui.getRowCount(tree);
       }
-    return result;  
+    return result;
   }
 
   /**
    * Calls the {@link TreeUI#getClosestPathForLocation(JTree, int, int)} method
-   * for all the UI delegates managed by this <code>MultiTreeUI</code>, 
-   * returning the path for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * for all the UI delegates managed by this <code>MultiTreeUI</code>,
+   * returning the path for the UI delegate from the primary look and
+   * feel.
+   *
    * @param tree  the tree component.
-   * 
-   * @return The path returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The path returned by the UI delegate from the primary
+   *         look and feel.
    */
-  public TreePath getClosestPathForLocation(JTree tree, int x, int y) 
+  public TreePath getClosestPathForLocation(JTree tree, int x, int y)
   {
     TreePath result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         TreeUI ui = (TreeUI) iterator.next();
         result = ui.getClosestPathForLocation(tree, x, y);
@@ -499,26 +499,26 @@ public class MultiTreeUI extends TreeUI
         TreeUI ui = (TreeUI) iterator.next();
         /* TreePath ignored = */ ui.getClosestPathForLocation(tree, x, y);
       }
-    return result;  
+    return result;
   }
 
   /**
    * Calls the {@link TreeUI#isEditing(JTree)} method for all
-   * the UI delegates managed by this <code>MultiTreeUI</code>, 
-   * returning the result for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * the UI delegates managed by this <code>MultiTreeUI</code>,
+   * returning the result for the UI delegate from the primary look and
+   * feel.
+   *
    * @param tree  the tree component.
-   * 
-   * @return The result returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The result returned by the UI delegate from the primary
+   *         look and feel.
    */
-  public boolean isEditing(JTree tree) 
+  public boolean isEditing(JTree tree)
   {
     boolean result = false;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         TreeUI ui = (TreeUI) iterator.next();
         result = ui.isEditing(tree);
@@ -534,21 +534,21 @@ public class MultiTreeUI extends TreeUI
 
   /**
    * Calls the {@link TreeUI#stopEditing(JTree)} method for all
-   * the UI delegates managed by this <code>MultiTreeUI</code>, 
-   * returning the result for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * the UI delegates managed by this <code>MultiTreeUI</code>,
+   * returning the result for the UI delegate from the primary look and
+   * feel.
+   *
    * @param tree  the tree component.
-   * 
-   * @return The result returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The result returned by the UI delegate from the primary
+   *         look and feel.
    */
-  public boolean stopEditing(JTree tree) 
+  public boolean stopEditing(JTree tree)
   {
     boolean result = false;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         TreeUI ui = (TreeUI) iterator.next();
         result = ui.stopEditing(tree);
@@ -563,12 +563,12 @@ public class MultiTreeUI extends TreeUI
   }
 
   /**
-   * Calls the {@link TreeUI#cancelEditing(JTree)} method for 
+   * Calls the {@link TreeUI#cancelEditing(JTree)} method for
    * all the UI delegates managed by this <code>MultiTreeUI</code>.
-   * 
+   *
    * @param tree  the tree component.
    */
-  public void cancelEditing(JTree tree) 
+  public void cancelEditing(JTree tree)
   {
     Iterator iterator = uis.iterator();
     while (iterator.hasNext())
@@ -579,13 +579,13 @@ public class MultiTreeUI extends TreeUI
   }
 
   /**
-   * Calls the {@link TreeUI#startEditingAtPath(JTree, TreePath)} method for 
+   * Calls the {@link TreeUI#startEditingAtPath(JTree, TreePath)} method for
    * all the UI delegates managed by this <code>MultiTreeUI</code>.
-   * 
+   *
    * @param tree  the tree component.
    * @param path  the path.
    */
-  public void startEditingAtPath(JTree tree, TreePath path) 
+  public void startEditingAtPath(JTree tree, TreePath path)
   {
     Iterator iterator = uis.iterator();
     while (iterator.hasNext())
@@ -597,21 +597,21 @@ public class MultiTreeUI extends TreeUI
 
   /**
    * Calls the {@link TreeUI#getEditingPath(JTree)} method for all
-   * the UI delegates managed by this <code>MultiTreeUI</code>, 
-   * returning the path for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * the UI delegates managed by this <code>MultiTreeUI</code>,
+   * returning the path for the UI delegate from the primary look and
+   * feel.
+   *
    * @param tree  the tree component.
-   * 
-   * @return The path returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The path returned by the UI delegate from the primary
+   *         look and feel.
    */
-  public TreePath getEditingPath(JTree tree) 
+  public TreePath getEditingPath(JTree tree)
   {
     TreePath result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         TreeUI ui = (TreeUI) iterator.next();
         result = ui.getEditingPath(tree);
@@ -622,7 +622,7 @@ public class MultiTreeUI extends TreeUI
         TreeUI ui = (TreeUI) iterator.next();
         /* TreePath ignored = */ ui.getEditingPath(tree);
       }
-    return result;  
+    return result;
   }
 
 }

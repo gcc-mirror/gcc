@@ -85,7 +85,7 @@ public interface MouseListener extends EventListener
    */
   void mouseEntered(MouseEvent event);
 
-  /** 
+  /**
    * This method is called when the mouse exits a component.
    *
    * @param event the <code>MouseEvent</code> for the exit

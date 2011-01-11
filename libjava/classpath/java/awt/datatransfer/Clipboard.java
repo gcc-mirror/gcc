@@ -111,43 +111,43 @@ public class Clipboard
    * @exception IllegalStateException If the clipboard is currently unavailable
    */
   public synchronized void setContents(Transferable contents,
-				       ClipboardOwner owner)
+                                       ClipboardOwner owner)
   {
     Transferable oldContents = getContents(null);
     this.contents = contents;
     if (this.owner != owner)
       {
-	ClipboardOwner oldOwner = this.owner;
-	this.owner = owner;
-	if (oldOwner != null)
-	  oldOwner.lostOwnership(this, oldContents);
+        ClipboardOwner oldOwner = this.owner;
+        this.owner = owner;
+        if (oldOwner != null)
+          oldOwner.lostOwnership(this, oldContents);
       }
 
     FlavorListener[] fs = getFlavorListeners();
     if (fs.length > 0)
       {
-	// We are a bit optimistic here. We assume DataFlavors will be
-	// given in the same order. If the number of flavors is
-	// different or the order of the DataFlavors in the list then
-	// fire a change event.
-	boolean newFlavors = ((contents != null && oldContents == null)
-			      || (contents == null && oldContents != null));
-	if (!newFlavors && contents != null && oldContents != null)
-	  {
-	    DataFlavor[] df1 = contents.getTransferDataFlavors();
-	    DataFlavor[] df2 = oldContents.getTransferDataFlavors();
-	    newFlavors = df1.length != df2.length;
-	    
-	    for (int i = 0; !newFlavors && i < df1.length; i++)
-	      newFlavors = !df1[i].equals(df2[i]);
-	  }
+        // We are a bit optimistic here. We assume DataFlavors will be
+        // given in the same order. If the number of flavors is
+        // different or the order of the DataFlavors in the list then
+        // fire a change event.
+        boolean newFlavors = ((contents != null && oldContents == null)
+                              || (contents == null && oldContents != null));
+        if (!newFlavors && contents != null && oldContents != null)
+          {
+            DataFlavor[] df1 = contents.getTransferDataFlavors();
+            DataFlavor[] df2 = oldContents.getTransferDataFlavors();
+            newFlavors = df1.length != df2.length;
 
-	if (newFlavors)
-	  {
-	    FlavorEvent e = new FlavorEvent(this);
-	    for (int i = 0; i < fs.length; i++)
-	      fs[i].flavorsChanged(e);
-	  }
+            for (int i = 0; !newFlavors && i < df1.length; i++)
+              newFlavors = !df1[i].equals(df2[i]);
+          }
+
+        if (newFlavors)
+          {
+            FlavorEvent e = new FlavorEvent(this);
+            for (int i = 0; i < fs.length; i++)
+              fs[i].flavorsChanged(e);
+          }
       }
   }
 
@@ -165,7 +165,7 @@ public class Clipboard
     DataFlavor[] fs = getAvailableDataFlavors();
     for (int i = 0; i < fs.length; i++)
       if (flavor.equals(fs[i]))
-	return true;
+        return true;
 
     return false;
   }
@@ -187,7 +187,7 @@ public class Clipboard
 
     synchronized(listeners)
       {
-	listeners.add(listener);
+        listeners.add(listener);
       }
   }
 
@@ -198,7 +198,7 @@ public class Clipboard
 
     synchronized(listeners)
       {
-	listeners.remove(listener);
+        listeners.remove(listener);
       }
   }
 
@@ -206,8 +206,8 @@ public class Clipboard
   {
     synchronized(listeners)
       {
-	return (FlavorListener[])
-	  listeners.toArray(new FlavorListener[listeners.size()]);
+        return (FlavorListener[])
+          listeners.toArray(new FlavorListener[listeners.size()]);
       }
   }
 }

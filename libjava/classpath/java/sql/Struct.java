@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -41,12 +41,12 @@ package java.sql;
 import java.util.Map;
 
 /**
- * This interface implements the standard type mapping for a SQL 
+ * This interface implements the standard type mapping for a SQL
  * structured type.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
-public interface Struct 
+public interface Struct
 {
   /**
    * This method returns the name of the SQL structured type for this

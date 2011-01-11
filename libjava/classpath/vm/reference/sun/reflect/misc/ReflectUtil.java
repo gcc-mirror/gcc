@@ -53,7 +53,7 @@ public class ReflectUtil
 
   /**
    * Check if the current thread is allowed to access the package of
-   * the declaringClass. 
+   * the declaringClass.
    *
    * @param declaringClass class name to check access to
    * @throws SecurityException if permission is denied
@@ -64,15 +64,15 @@ public class ReflectUtil
     SecurityManager sm;
     if ((sm = System.getSecurityManager()) != null)
       {
-	while (declaringClass.isArray())
-	  declaringClass = declaringClass.getComponentType();
-	String name = declaringClass.getName();
-	int i = name.lastIndexOf('.');
-	if (i != -1) // if declaringClass is a member of a package
-	  {
-	    name = name.substring(0, i);
-	    sm.checkPackageAccess(name);
-	  }
+        while (declaringClass.isArray())
+          declaringClass = declaringClass.getComponentType();
+        String name = declaringClass.getName();
+        int i = name.lastIndexOf('.');
+        if (i != -1) // if declaringClass is a member of a package
+          {
+            name = name.substring(0, i);
+            sm.checkPackageAccess(name);
+          }
       }
   }
 

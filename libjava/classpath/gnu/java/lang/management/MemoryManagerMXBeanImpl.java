@@ -42,7 +42,7 @@ import java.lang.management.MemoryManagerMXBean;
 import javax.management.NotCompliantMBeanException;
 
 /**
- * Provides access to information about one of the memory 
+ * Provides access to information about one of the memory
  * managers used by the current invocation of the
  * virtual machine.  An instance of this bean for each memory
  * manager is obtained by calling

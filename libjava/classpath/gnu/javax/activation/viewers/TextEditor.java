@@ -104,7 +104,7 @@ public class TextEditor extends TextArea
                 {
                     try
                     {
-                        
+
                         out.close();
                     }
                     catch (IOException e)
@@ -115,5 +115,5 @@ public class TextEditor extends TextArea
             }
         }
     }
-    
+
 }

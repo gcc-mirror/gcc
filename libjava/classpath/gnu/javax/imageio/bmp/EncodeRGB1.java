@@ -56,7 +56,7 @@ public class EncodeRGB1
 
   /**
    * Constructs an instance of this class.
-   * 
+   *
    * @param fh - the file header to use.
    * @param ih - the info header to use.
    */
@@ -70,7 +70,7 @@ public class EncodeRGB1
 
   /**
    * The image encoder.
-   * 
+   *
    * @param o - the image output stream
    * @param streamMetadata - metadata associated with this stream, or
    * null
@@ -101,13 +101,13 @@ public class EncodeRGB1
                                            infoHeader.biHeight, bitmap, 0,
                                            infoHeader.biWidth);
         pg.grabPixels();
-        
+
         for (j = 0; j < size; j++)
           {
             value = bitmap[rowIndex];
 
             rgb[0] = (byte) (value & 0xFF);
-            
+
             o.write(rgb);
             if (rowCount == infoHeader.biWidth)
               {

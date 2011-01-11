@@ -1,4 +1,4 @@
-/* DatatypeConstants.java -- 
+/* DatatypeConstants.java --
    Copyright (C) 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -52,7 +52,7 @@ public final class DatatypeConstants
   {
     // to prevent instantiation
   }
-  
+
   /**
    * Typesafe enumerated class representing the six fields of the
    * <a href='Duration.html'>Duration</a> class.
@@ -73,94 +73,94 @@ public final class DatatypeConstants
     {
       return id;
     }
-    
+
     public String toString()
     {
       return name;
     }
-    
+
   }
 
   /**
    * Value for January.
    */
   public static final int JANUARY = 1;
-  
+
   /**
    * Value for February.
    */
   public static final int FEBRUARY = 2;
-  
+
   /**
    * Value for March.
    */
   public static final int MARCH = 3;
-  
+
   /**
    * Value for April.
    */
   public static final int APRIL = 4;
-  
+
   /**
    * Value for May.
    */
   public static final int MAY = 5;
-  
+
   /**
    * Value for June.
    */
   public static final int JUNE = 6;
-  
+
   /**
    * Value for July.
    */
   public static final int JULY = 7;
-  
+
   /**
    * Value for August.
    */
   public static final int AUGUST = 8;
-  
+
   /**
    * Value for September.
    */
   public static final int SEPTEMBER = 9;
-  
+
   /**
    * Value for October.
    */
   public static final int OCTOBER = 10;
-  
+
   /**
    * Value for November.
    */
   public static final int NOVEMBER = 11;
-  
+
   /**
    * Value for December.
    */
   public static final int DECEMBER = 12;
-  
+
   /**
    * Comparison result.
    */
   public static final int LESSER = -1;
-  
+
   /**
    * Comparison result.
    */
   public static final int EQUAL = 0;
-  
+
   /**
    * Comparison result.
    */
   public static final int GREATER = 1;
-  
+
   /**
    * Comparison result.
    */
   public static final int INDETERMINATE = 2;
-  
+
   /**
    * Comparison result.
    */
@@ -170,27 +170,27 @@ public final class DatatypeConstants
    * Constant that represents the years field.
    */
   public static final Field YEARS = new Field(1, "YEARS");
-  
+
   /**
    * Constant that represents the months field.
    */
   public static final Field MONTHS = new Field(2, "MONTHS");
-  
+
   /**
    * Constant that represents the days field.
    */
   public static final Field DAYS = new Field(3, "DAYS");
-  
+
   /**
    * Constant that represents the hours field.
    */
   public static final Field HOURS = new Field(4, "HOURS");
-  
+
   /**
    * Constant that represents the minutes field.
    */
   public static final Field MINUTES = new Field(5, "MINUTES");
-  
+
   /**
    * Constant that represents the seconds field.
    */
@@ -200,52 +200,52 @@ public final class DatatypeConstants
    * The qualified-name for the <code>dateTime</code> data type.
    */
   public static final QName DATETIME = new QName ("http://www.w3.org/2001/XMLSchema#dateTime", "");
-  
+
   /**
    * The qualified-name for the <code>time</code> data type.
    */
   public static final QName TIME = new QName ("http://www.w3.org/2001/XMLSchema#time", "");
-  
+
   /**
    * The qualified-name for the <code>date</code> data type.
    */
   public static final QName DATE = new QName ("http://www.w3.org/2001/XMLSchema#date", "");
-  
+
   /**
    * The qualified-name for the <code>gYearMonth</code> data type.
    */
   public static final QName GYEARMONTH = new QName ("http://www.w3.org/2001/XMLSchema#gYearMonth", "");
-  
+
   /**
    * The qualified-name for the <code>gMonthDay</code> data type.
    */
   public static final QName GMONTHDAY = new QName ("http://www.w3.org/2001/XMLSchema#gMonthDay", "");
-  
+
   /**
    * The qualified-name for the <code>gYear</code> data type.
    */
   public static final QName GYEAR = new QName ("http://www.w3.org/2001/XMLSchema#gYear", "");
-  
+
   /**
    * The qualified-name for the <code>gMonth</code> data type.
    */
   public static final QName GMONTH = new QName ("http://www.w3.org/2001/XMLSchema#gMonth", "");
-  
+
   /**
    * The qualified-name for the <code>gDay</code> data type.
    */
   public static final QName GDAY = new QName ("http://www.w3.org/2001/XMLSchema#gDay", "");
-  
+
   /**
    * The qualified-name for the <code>duration</code> data type.
    */
   public static final QName DURATION = new QName ("http://www.w3.org/2001/XMLSchema#duration", "");
-  
+
   /**
    * The qualified-name for the <code>dayTimeDuration</code> data type.
    */
   public static final QName DURATION_DAYTIME = new QName ("http://www.w3.org/2001/XMLSchema#dayTimeDuration", "");
-  
+
   /**
    * The qualified-name for the <code>yearMonthDuration</code> data type.
    */
@@ -255,10 +255,10 @@ public final class DatatypeConstants
    * XML Schema maximum timezone offset, in minutes.
    */
   public static final int MAX_TIMEZONE_OFFSET = -840;
-  
+
   /**
    * XML Schema minimum timezone offset, in minutes.
    */
   public static final int MIN_TIMEZONE_OFFSET = 840;
-  
+
 }

@@ -51,7 +51,7 @@ public class JdwpConstants
     public static final int MAJOR = 1;
     public static final int MINOR = 4;
   }
-  
+
   ////////////////////////////////////////
   //           Commands/Sets            //
   ////////////////////////////////////////
@@ -77,7 +77,7 @@ public class JdwpConstants
       public static final byte CAPABILITIES = 12;
       public static final byte CLASS_PATHS = 13;
       public static final byte DISPOSE_OBJECTS = 14;
-      public static final byte HOLD_EVENTS = 15; 
+      public static final byte HOLD_EVENTS = 15;
       public static final byte RELEASE_EVENTS = 16;
       public static final byte CAPABILITIES_NEW = 17;
       public static final byte REDEFINE_CLASSES = 18;
@@ -94,7 +94,7 @@ public class JdwpConstants
       public static final byte CLASS_LOADER= 2;
       public static final byte MODIFIERS = 3;
       public static final byte FIELDS = 4;
-      public static final byte METHODS = 5; 
+      public static final byte METHODS = 5;
       public static final byte GET_VALUES = 6;
       public static final byte SOURCE_FILE = 7;
       public static final byte NESTED_TYPES = 8;
@@ -587,7 +587,7 @@ public class JdwpConstants
     public static final byte METHOD_ENTRY = 40;
     public static final byte METHOD_EXIT = 41;
     public static final byte VM_INIT = 90;
-    public static final byte VM_DEATH = 99;    
+    public static final byte VM_DEATH = 99;
     public static final byte VM_DISCONNECTED = 100;
 
     public static final byte VM_START = VM_INIT;
@@ -617,7 +617,7 @@ public class JdwpConstants
     public static final byte THREAD_ONLY = 3;
 
     /**
-     * For class prepare events, restricts generated events 
+     * For class prepare events, restricts generated events
      * to be the preparation of the given reference type and any
      * subtypes.
      *
@@ -647,7 +647,7 @@ public class JdwpConstants
     /**
      * Restricts reported events to those for classes whose name does not
      * match the given restricted regular expression.
-     * 
+     *
      * For class prepare events, the prepared class name is matched.
      * For class unload events, the unloaded class name is matched.
      * For other events, the class name of the event's location is matched.
@@ -682,7 +682,7 @@ public class JdwpConstants
     /**
      * Restricts reported step events to those which satisfy depth and
      * size constraints.
-     * 
+     *
      * May be used with step event kinds only.
      */
     public static final byte STEP = 10;

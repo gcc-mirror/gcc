@@ -185,7 +185,7 @@ public class SwingButtonPeer
         par = button.getParent();
       return par;
     }
-    
+
     /**
      * Handles focus events by forwarding it to
      * <code>processFocusEvent()</code>.
@@ -232,7 +232,7 @@ public class SwingButtonPeer
       for (int i = 0; i < l.length; ++i)
         l[i].actionPerformed(ev);
     }
-    
+
   }
 
   /**

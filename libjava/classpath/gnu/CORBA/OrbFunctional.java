@@ -184,7 +184,7 @@ public class OrbFunctional extends OrbRestricted
 
     /**
      * Perform a single serving step.
-     * 
+     *
      * @throws java.lang.Exception
      */
     void tick()
@@ -251,19 +251,19 @@ public class OrbFunctional extends OrbRestricted
    * for a free port.
    */
   public static int DEFAULT_INITIAL_PORT = 1126;
-  
+
   /**
    * When trying to open the socket on a random port, start of the interval to
    * try.
    */
   public static int RANDOM_PORT_FROM = 1024;
-  
+
   /**
    * When trying to open the socket on a random port, end of the interval to
    * try.
    */
   public static int RANDOM_PORT_TO = 4024;
-  
+
   /**
    * The number of attempts to try when opening random port.
    */
@@ -296,18 +296,18 @@ public class OrbFunctional extends OrbRestricted
    * The string, defining the naming service initial reference.
    */
   public static final String NAME_SERVICE = "NameService";
-  
+
   /**
    * Defines the ORB ID that is accessible by IOR interceptors.
    */
   public static final String ORB_ID = "org.omg.CORBA.ORBid";
-  
-  
+
+
   /**
    * Defines the SERVER ID that is accessible by IOR interceptors.
    */
   public static final String SERVER_ID = "org.omg.CORBA.ServerId";
-  
+
   /**
    * The if the client has once opened a socket, it should start sending the
    * message header in a given time. Otherwise the server will close the socket.
@@ -331,7 +331,7 @@ public class OrbFunctional extends OrbRestricted
    */
   public static String AFTER_RECEIVING =
     "gnu.classpath.CORBA.TOUT_AFTER_RECEIVING";
-  
+
   /**
    * The server waits for this duration after the potentially transient error
    * during its servicing cycle.
@@ -366,7 +366,7 @@ public class OrbFunctional extends OrbRestricted
    * received task. We make it 40 minutes.
    */
   public int TOUT_AFTER_RECEIVING = 40 * 60 * 1000;
-  
+
   /**
    * The server waits for this duration after the potentially transient error
    * during its servicing cycle.
@@ -381,17 +381,17 @@ public class OrbFunctional extends OrbRestricted
    * seven seconds.
    */
   public static int TANDEM_REQUESTS = 7000;
-  
+
   /**
    * The Id of this ORB.
    */
   public String orb_id = "orb_"+hashCode();
-  
+
   /**
    * The Id of this Server. This field is defined static to ensure it has
    * the same value over all ORB's in this machine.
    */
-  public static String server_id = "server_"+OrbFunctional.class.hashCode(); 
+  public static String server_id = "server_"+OrbFunctional.class.hashCode();
 
   /**
    * The map of the already conncted objects.
@@ -440,7 +440,7 @@ public class OrbFunctional extends OrbRestricted
    * The port, on that the name service is expected to be running.
    */
   private int ns_port = 900;
-  
+
   /**
    * The name parser.
    */
@@ -468,7 +468,7 @@ public class OrbFunctional extends OrbRestricted
    * exceeding this limit, the NO_RESOURCES is thrown back to the client.
    */
   private int MAX_RUNNING_THREADS = 256;
-  
+
   /**
    * The producer of the client and server sockets for this ORB.
    */
@@ -516,9 +516,9 @@ public class OrbFunctional extends OrbRestricted
   /**
    * Get the currently free port, starting from the initially set port and going
    * up max 20 steps, then trying to bind into any free address.
-   * 
+   *
    * @return the currently available free port.
-   * 
+   *
    * @throws NO_RESOURCES if the server socked cannot be opened on the local
    * host.
    */
@@ -595,7 +595,7 @@ public class OrbFunctional extends OrbRestricted
    * on this port first. It the port is busy, or if more objects are connected,
    * the subsequent object will receive a larger port values, skipping
    * unavailable ports, if required. The change applies globally.
-   * 
+   *
    * @param a_Port a port, on that the server is listening for requests.
    */
   public static void setPort(int a_Port)
@@ -988,17 +988,17 @@ public class OrbFunctional extends OrbRestricted
         CollocatedOrbs.unregisterOrb(this);
       }
   }
-  
+
   /**
    * Start the server in a new thread, if not already running. This method is
-   * used to ensure that the objects being transfered will be served from the 
+   * used to ensure that the objects being transfered will be served from the
    * remote side, if required. If the ORB is started using this method, it
    * starts as a daemon thread.
    */
   public void ensureRunning()
   {
     final OrbFunctional THIS = this;
-    
+
     if (!running)
       {
         Thread t = new Thread()
@@ -1039,9 +1039,9 @@ public class OrbFunctional extends OrbRestricted
    * representation. The object can (an usually is) located on a remote
    * computer, possibly running a different (not necessary java) CORBA
    * implementation.
-   * 
+   *
    * @param an_ior the object IOR representation string.
-   * 
+   *
    * @return the found CORBA object.
    * @see object_to_string(org.omg.CORBA.Object)
    */
@@ -1049,7 +1049,7 @@ public class OrbFunctional extends OrbRestricted
   {
     return nameParser.corbaloc(an_ior, this);
   }
-  
+
   /**
    * Convert ior reference to CORBA object.
    */
@@ -1106,10 +1106,10 @@ public class OrbFunctional extends OrbRestricted
   /**
    * Find and return the object, that must be previously connected to this ORB.
    * Return null if no such object is available.
-   * 
+   *
    * @param key the object key.
    * @param port the port where the object is connected.
-   * 
+   *
    * @return the connected object, null if none.
    */
   protected org.omg.CORBA.Object find_connected_object(byte[] key, int port)
@@ -1126,9 +1126,9 @@ public class OrbFunctional extends OrbRestricted
   /**
    * Set the ORB parameters. This method is normally called from
    * {@link #init(Applet, Properties)}.
-   * 
+   *
    * @param app the current applet.
-   * 
+   *
    * @param props application specific properties, passed as the second
    * parameter in {@link #init(Applet, Properties)}. Can be <code>null</code>.
    */
@@ -1184,11 +1184,11 @@ public class OrbFunctional extends OrbRestricted
   /**
    * Set the ORB parameters. This method is normally called from
    * {@link #init(String[], Properties)}.
-   * 
+   *
    * @param para the parameters, that were passed as the parameters to the
    * <code>main(String[] args)</code> method of the current standalone
    * application.
-   * 
+   *
    * @param props application specific properties that were passed as a second
    * parameter in {@link init(String[], Properties)}). Can be <code>null</code>.
    */
@@ -1433,11 +1433,11 @@ public class OrbFunctional extends OrbRestricted
 
   /**
    * A single servicing step, when the client socket is alrady open.
-   * 
+   *
    * Normally, each task matches a single remote invocation. However under
    * frequent tandem submissions the same task may span over several
    * invocations.
-   * 
+   *
    * @param service the opened client socket.
    * @param no_resources if true, the "NO RESOURCES" exception is thrown to the
    * client.
@@ -1555,12 +1555,12 @@ public class OrbFunctional extends OrbRestricted
                 catch (SystemException ex)
                   {
                     sysEx = ex;
-                    
+
                     org.omg.CORBA.portable.OutputStream ech = handler.createExceptionReply();
-                    
+
                     rh_reply.service_context = UnknownExceptionCtxHandler.addExceptionContext(
                       rh_reply.service_context, ex, ech);
-                    
+
                     ObjectCreator.writeSystemException(ech, ex);
                   }
                 catch (Exception except)
@@ -1620,7 +1620,7 @@ public class OrbFunctional extends OrbRestricted
       }
     finally
       {
-        try 
+        try
           {
             if (service!=null && !service.isClosed())
               service.close();
@@ -1631,7 +1631,7 @@ public class OrbFunctional extends OrbRestricted
           }
       }
   }
-  
+
   /**
    * Set the ORB parameters from the properties that were accumulated
    * from several locations.
@@ -1658,7 +1658,7 @@ public class OrbFunctional extends OrbRestricted
               TOUT_AFTER_RECEIVING =
                 Integer.parseInt(props.getProperty(AFTER_RECEIVING));
             if (props.containsKey(SERVER_ERROR_PAUSE))
-              TWAIT_SERVER_ERROR_PAUSE = 
+              TWAIT_SERVER_ERROR_PAUSE =
                 Integer.parseInt(props.getProperty(SERVER_ERROR_PAUSE));
           }
         catch (NumberFormatException ex)
@@ -1668,7 +1668,7 @@ public class OrbFunctional extends OrbRestricted
               "'"
             );
           }
-        
+
         if (props.containsKey(SocketFactory.PROPERTY))
           {
             String factory = null;
@@ -1676,7 +1676,7 @@ public class OrbFunctional extends OrbRestricted
               {
                 factory = props.getProperty(SocketFactory.PROPERTY);
                 if (factory!=null)
-                  socketFactory = (SocketFactory) 
+                  socketFactory = (SocketFactory)
                     ObjectCreator.forName(factory).newInstance();
               }
             catch (Exception ex)
@@ -1686,13 +1686,13 @@ public class OrbFunctional extends OrbRestricted
                 throw p;
               }
           }
-        
+
         if (props.containsKey(ORB_ID))
           orb_id = props.getProperty(ORB_ID);
-        
+
         if (props.containsKey(SERVER_ID))
           server_id = props.getProperty(SERVER_ID);
-        
+
         Enumeration en = props.elements();
         while (en.hasMoreElements())
           {
@@ -1781,14 +1781,14 @@ public class OrbFunctional extends OrbRestricted
     running = false;
     super.finalize();
   }
-  
+
   /**
    * Get the number of objects that are connected to this ORB.
-   * 
+   *
    * @return the number of objects, connected to this ORB.
    */
   public int countConnectedObjects()
-  { 
+  {
     return connected_objects.size();
   }
 }

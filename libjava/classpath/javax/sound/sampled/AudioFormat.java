@@ -140,7 +140,7 @@ public class AudioFormat
   /**
    * Create a new audio format, given various attributes of it.
    * The properties map for this format will be empty.
-   * 
+   *
    * @param encoding the encoding for this format
    * @param sampleRate the sample rate
    * @param sampleSizeInBits the sample size, in bits
@@ -150,8 +150,8 @@ public class AudioFormat
    * @param bigEndian true if the data is stored big-endian
    */
   public AudioFormat(Encoding encoding, float sampleRate, int sampleSizeInBits,
-		     int channels, int frameSize, float frameRate,
-		     boolean bigEndian)
+                     int channels, int frameSize, float frameRate,
+                     boolean bigEndian)
   {
     this.encoding = encoding;
     this.sampleRate = sampleRate;
@@ -178,8 +178,8 @@ public class AudioFormat
    * @param properties a map describing properties of this format
    */
   public AudioFormat(Encoding encoding, float sampleRate, int sampleSizeInBits,
-		     int channels, int frameSize, float frameRate,
-		     boolean bigEndian, Map<String, Object> properties)
+                     int channels, int frameSize, float frameRate,
+                     boolean bigEndian, Map<String, Object> properties)
   {
     this.encoding = encoding;
     this.sampleRate = sampleRate;
@@ -198,7 +198,7 @@ public class AudioFormat
    * bits and the number of channels, unless one of those is
    * AudioSystem#NOT_SPECIFIED.  The frame rate will be the same as the sample
    * rate, and the properties map will be empty.
-   * 
+   *
    * @param sampleRate the sample rate
    * @param sampleSizeInBits the sample size, in bits
    * @param channels the number of channels
@@ -206,7 +206,7 @@ public class AudioFormat
    * @param bigEndian true if the data is stored big-endian
    */
   public AudioFormat(float sampleRate, int sampleSizeInBits,
-		     int channels, boolean signed, boolean bigEndian)
+                     int channels, boolean signed, boolean bigEndian)
   {
     this.encoding = signed ? Encoding.PCM_SIGNED : Encoding.PCM_UNSIGNED;
     this.sampleRate = sampleRate;
@@ -257,7 +257,7 @@ public class AudioFormat
 
   /**
    * Given a key, return a property associated with this format;
-   * or null if this property is not set. 
+   * or null if this property is not set.
    * @param key the name of the property
    * @return the value of the property, or null if the property is not set
    */
@@ -318,7 +318,7 @@ public class AudioFormat
   }
 
   /**
-   * Return a read-only Map holding the properties associated with 
+   * Return a read-only Map holding the properties associated with
    * this format.
    */
   public Map<String, Object> properties()
@@ -332,24 +332,24 @@ public class AudioFormat
   public String toString()
   {
     CPStringBuilder result = new CPStringBuilder();
-    
+
     // usually at least encoding should be somewhat specified
     result.append(encoding);
-    
+
     if (sampleRate != AudioSystem.NOT_SPECIFIED)
       {
         result.append(" ");
         result.append(sampleRate);
         result.append(" Hz");
       }
-    
+
     if (sampleSizeInBits != AudioSystem.NOT_SPECIFIED)
       {
         result.append(" ");
         result.append(sampleSizeInBits);
         result.append(" bits");
       }
-    
+
     if (channels != AudioSystem.NOT_SPECIFIED)
       {
         result.append(" ");
@@ -357,10 +357,10 @@ public class AudioFormat
         result.append(" channel");
         if (channels > 1) result.append("s");
       }
-    
+
     if (sampleSizeInBits > 8)
       result.append(bigEndian ? " big endian" : " little endian");
-    
+
     return result.toString();
   }
 }

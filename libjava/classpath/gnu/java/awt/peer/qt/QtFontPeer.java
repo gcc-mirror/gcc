@@ -103,17 +103,17 @@ public class QtFontPeer extends ClasspathFontPeer
     return metrics.canDisplay( c );
   }
 
-  public int canDisplayUpTo (Font font, CharacterIterator i, 
-			     int start, int limit)
+  public int canDisplayUpTo (Font font, CharacterIterator i,
+                             int start, int limit)
   {
     int index = start;
     char c = i.setIndex( index );
     while( index <= limit )
       {
-	if(!canDisplay(font, c))
-	  return index;
-	index++;
-	c = i.next();
+        if(!canDisplay(font, c))
+          return index;
+        index++;
+        c = i.next();
       }
     return -1;
   }
@@ -149,23 +149,23 @@ public class QtFontPeer extends ClasspathFontPeer
   }
 
   public GlyphVector createGlyphVector (Font font,
-					FontRenderContext frc,
-					CharacterIterator ci)
+                                        FontRenderContext frc,
+                                        CharacterIterator ci)
   {
     throw new UnsupportedOperationException();
   }
 
-  public GlyphVector createGlyphVector (Font font, 
-					FontRenderContext ctx, 
-					int[] glyphCodes)
+  public GlyphVector createGlyphVector (Font font,
+                                        FontRenderContext ctx,
+                                        int[] glyphCodes)
   {
     throw new UnsupportedOperationException();
   }
 
-  public GlyphVector layoutGlyphVector (Font font, 
-					FontRenderContext frc, 
-					char[] chars, int start, 
-					int limit, int flags)
+  public GlyphVector layoutGlyphVector (Font font,
+                                        FontRenderContext frc,
+                                        char[] chars, int start,
+                                        int limit, int flags)
   {
     throw new UnsupportedOperationException();
   }
@@ -180,16 +180,16 @@ public class QtFontPeer extends ClasspathFontPeer
     throw new UnsupportedOperationException();
   }
 
-  public LineMetrics getLineMetrics (Font font, 
-				     CharacterIterator ci, 
-				     int begin, int limit, 
-				     FontRenderContext rc)
+  public LineMetrics getLineMetrics (Font font,
+                                     CharacterIterator ci,
+                                     int begin, int limit,
+                                     FontRenderContext rc)
   {
     throw new UnsupportedOperationException();
   }
 
-  public Rectangle2D getMaxCharBounds (Font font, 
-				       FontRenderContext rc)
+  public Rectangle2D getMaxCharBounds (Font font,
+                                       FontRenderContext rc)
   {
     throw new UnsupportedOperationException();
   }

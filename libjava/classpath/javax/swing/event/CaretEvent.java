@@ -43,14 +43,14 @@ import java.util.EventObject;
  * CaretEvent
  * @author Andrew Selkirk
  */
-public abstract class CaretEvent extends EventObject 
+public abstract class CaretEvent extends EventObject
 {
 
   /**
    * CaretEvent constructor
    * @param source Source object
    */
-  public CaretEvent(Object source) 
+  public CaretEvent(Object source)
   {
     super(source);
   }
@@ -67,4 +67,4 @@ public abstract class CaretEvent extends EventObject
    */
   public abstract int getMark();
 
-} 
+}

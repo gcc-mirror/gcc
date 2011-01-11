@@ -49,7 +49,7 @@ import java.awt.Window;
  * are three listeners, for three types of events: WindowListeners deal with
  * the lifecycle of a window, WindowStateListeners deal with window state
  * like maximization, and WindowFocusListeners deal with focus switching to
- * or from a window. 
+ * or from a window.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @see WindowAdapter

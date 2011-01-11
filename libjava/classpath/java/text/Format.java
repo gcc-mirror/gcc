@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -44,16 +44,16 @@ import java.io.Serializable;
 
 /**
  * This class is the abstract superclass of classes that format and parse
- * data to/from <code>Strings</code>.  It is guaranteed that any 
+ * data to/from <code>Strings</code>.  It is guaranteed that any
  * <code>String</code> produced by a concrete subclass of <code>Format</code>
  * will be parseable by that same subclass.
  * <p>
  * In addition to implementing the abstract methods in this class, subclasses
- * should provide static factory methods of the form 
+ * should provide static factory methods of the form
  * <code>getInstance()</code> and <code>getInstance(Locale)</code> if the
  * subclass loads different formatting/parsing schemes based on locale.
  * These subclasses should also implement a static method called
- * <code>getAvailableLocales()</code> which returns an array of 
+ * <code>getAvailableLocales()</code> which returns an array of
  * available locales in the current runtime environment.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
@@ -69,13 +69,13 @@ public abstract class Format implements Serializable, Cloneable
   public static class Field extends AttributedCharacterIterator.Attribute
   {
     static final long serialVersionUID = 276966692217360283L;
-   
+
     protected Field(String name)
     {
       super(name);
     }
   }
-  
+
   /**
    * This method initializes a new instance of <code>Format</code>.
    * It performs no actions, but acts as a default constructor for
@@ -87,13 +87,13 @@ public abstract class Format implements Serializable, Cloneable
 
   /**
    * This method formats an <code>Object</code> into a <code>String</code>.
-   * 
+   *
    * @param obj The <code>Object</code> to format.
    *
    * @return The formatted <code>String</code>.
    *
    * @exception IllegalArgumentException If the <code>Object</code>
-   * cannot be formatted. 
+   * cannot be formatted.
    */
   public final String format(Object obj) throws IllegalArgumentException
   {
@@ -109,19 +109,19 @@ public abstract class Format implements Serializable, Cloneable
    * @param obj The <code>Object</code> to format.
    * @param sb The <code>StringBuffer</code> to append to.
    * @param pos The desired <code>FieldPosition</code>, which is also
-   *            updated by this call. 
+   *            updated by this call.
    *
    * @return The updated <code>StringBuffer</code>.
    *
    * @exception IllegalArgumentException If the <code>Object</code>
-   * cannot be formatted. 
+   * cannot be formatted.
    */
   public abstract StringBuffer format (Object obj, StringBuffer sb,
-				       FieldPosition pos)
+                                       FieldPosition pos)
     throws IllegalArgumentException;
 
   /**
-   * This method parses a <code>String</code> and converts the parsed 
+   * This method parses a <code>String</code> and converts the parsed
    * contents into an <code>Object</code>.
    *
    * @param str The <code>String</code> to parse.
@@ -136,21 +136,21 @@ public abstract class Format implements Serializable, Cloneable
     Object result = parseObject (str, pos);
     if (result == null)
       {
-	int index = pos.getErrorIndex();
-	if (index < 0)
-	  index = pos.getIndex();
-	throw new ParseException("parseObject failed", index);
+        int index = pos.getErrorIndex();
+        if (index < 0)
+          index = pos.getIndex();
+        throw new ParseException("parseObject failed", index);
       }
     return result;
   }
 
   /**
    * This method parses a <code>String</code> and converts the parsed
-   * contents into an <code>Object</code>. 
+   * contents into an <code>Object</code>.
    *
    * @param str The <code>String</code> to parse.
    * @param pos The starting parse index on input, the ending parse
-   *            index on output. 
+   *            index on output.
    *
    * @return The parsed <code>Object</code>, or <code>null</code> in
    *         case of error.
@@ -171,11 +171,11 @@ public abstract class Format implements Serializable, Cloneable
   {
     try
       {
-	return super.clone ();
+        return super.clone ();
       }
     catch (CloneNotSupportedException e)
       {
-	return null;
+        return null;
       }
   }
 }

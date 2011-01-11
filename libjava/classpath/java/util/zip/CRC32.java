@@ -71,15 +71,15 @@ public class CRC32 implements Checksum
     int[] crc_table = new int[256];
     for (int n = 0; n < 256; n++)
       {
-	int c = n;
-	for (int k = 8;  --k >= 0; )
-	  {
-	    if ((c & 1) != 0)
-	      c = 0xedb88320 ^ (c >>> 1);
-	    else
-	      c = c >>> 1;
-	  }
-	crc_table[n] = c;
+        int c = n;
+        for (int k = 8;  --k >= 0; )
+          {
+            if ((c & 1) != 0)
+              c = 0xedb88320 ^ (c >>> 1);
+            else
+              c = c >>> 1;
+          }
+        crc_table[n] = c;
       }
     return crc_table;
   }
@@ -98,7 +98,7 @@ public class CRC32 implements Checksum
   public void reset () { crc = 0; }
 
   /**
-   * Updates the checksum with the int bval. 
+   * Updates the checksum with the int bval.
    *
    * @param bval (the byte is taken as the lower 8 bits of bval)
    */

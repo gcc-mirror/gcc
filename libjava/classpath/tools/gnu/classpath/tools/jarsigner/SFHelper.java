@@ -122,7 +122,7 @@ public class SFHelper
    * Writes the contents of the <code>.SF</code> file to the designated JAR
    * output stream. Line-endings are platform-independent and consist of the
    * 2-codepoint sequence <code>0x0D</code> and <code>0x0A</code>.
-   * 
+   *
    * @param jar the JAR output stream to write a <code>.SF</code> file to.
    * @throws IOException if an I/O related exception occurs during the process.
    */
@@ -153,7 +153,7 @@ public class SFHelper
    *   contentType     ContentType,
    *   content     [0] EXPLICIT ANY DEFINED BY contentType OPTIONAL
    * }
-   * 
+   *
    * ContentType ::= OBJECT IDENTIFIER
    * </pre>
    * <p>
@@ -171,9 +171,9 @@ public class SFHelper
    *   crls         [1] IMPLICIT CertificateRevocationLists OPTIONAL,
    *   signerInfos      SignerInfos
    * }
-   * 
+   *
    * DigestAlgorithmIdentifiers ::= SET OF DigestAlgorithmIdentifier
-   * 
+   *
    * SignerInfos ::= SET OF SignerInfo
    * </pre>
    * <p>
@@ -189,18 +189,18 @@ public class SFHelper
    *   encryptedDigest               EncryptedDigest,
    *   unauthenticatedAttributes [1] IMPLICIT Attributes OPTIONAL
    * }
-   * 
+   *
    * EncryptedDigest ::= OCTET STRING
    * </pre>
-   * 
+   *
    * @param jar the JAR output stream to write a <code>.DSA</code> file to.
    * @param signerKey the private key to sign with.
    * @param certificates the possibly null signer certificate chain.
    * @param internalSF if <code>true</code> then include the .SF file contents
-   * in the signed .DSA file; otherwise don't. 
+   * in the signed .DSA file; otherwise don't.
    * @throws IOException if an I/O related exception occurs during the process.
-   * @throws CRLException 
-   * @throws CertificateEncodingException 
+   * @throws CRLException
+   * @throws CertificateEncodingException
    */
   void writeDSA(JarOutputStream jar, PrivateKey signerKey,
                 Certificate[] certificates, boolean internalSF)
@@ -335,7 +335,7 @@ public class SFHelper
   {
     if (this.state != STARTED)
       throw new IllegalStateException(Messages.getString("SFHelper.10")); //$NON-NLS-1$
-      
+
     String name = entry.getName();
     InputStream jeis = jar.getInputStream(entry);
     String hash = util.hashStream(jeis);
@@ -396,7 +396,7 @@ public class SFHelper
   /**
    * Given an X.509 certificate this method returns the string representation of
    * the Issuer Distinguished Name.
-   * 
+   *
    * @param cert an X.509 certificate.
    * @return the string representation of the Issuer's DN.
    */
@@ -424,7 +424,7 @@ public class SFHelper
   /**
    * Given an X.509 certificate this method returns the string representation of
    * the Subject Distinguished Name.
-   * 
+   *
    * @param cert an X.509 certificate.
    * @return the string representation of the Subject's DN.
    */
@@ -450,9 +450,9 @@ public class SFHelper
   }
 
   /**
-   * Given an X.509 certificate this method returns the end validity date of 
+   * Given an X.509 certificate this method returns the end validity date of
    * this certificate.
-   * 
+   *
    * @param cert an X.509 certificate.
    * @return the date when this certificate stops being valid.
    */
@@ -472,7 +472,7 @@ public class SFHelper
   /**
    * Given an X.509 certificate this method returns the start validity date of
    * this certificate.
-   * 
+   *
    * @param cert an X.509 certificate.
    * @return the date when this certificate starts being valid.
    */

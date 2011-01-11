@@ -83,7 +83,7 @@ public abstract class InputStream
     if (isObject)
       return read_Object();
     else
-      return read_value();      
+      return read_value();
   }
 
   /**

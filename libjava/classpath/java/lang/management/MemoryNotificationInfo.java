@@ -74,7 +74,7 @@ import javax.management.openmbean.SimpleType;
  * {@link #from(javax.management.openmbean.CompositeData)} method may be
  * used to unwrap the value and obtain an instance of this class.
  * </p>
- * 
+ *
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
  */
@@ -87,7 +87,7 @@ public class MemoryNotificationInfo
    * threshold again before another notification is emitted.  The value is
    * <code>java.management.memory.threshold.exceeded</code>.
    */
-  public static final String MEMORY_THRESHOLD_EXCEEDED = 
+  public static final String MEMORY_THRESHOLD_EXCEEDED =
     "java.management.memory.threshold.exceeded";
 
   /**
@@ -153,9 +153,9 @@ public class MemoryNotificationInfo
    * <tr><td>committed</td><td>java.lang.Long</td></tr>
    * <tr><td>max</td><td>java.lang.Long</td></tr>
    * </table>
-   * 
+   *
    * @param data the composite data structure to take values from.
-   * @return a new instance containing the values from the 
+   * @return a new instance containing the values from the
    *         composite data structure, or <code>null</code>
    *         if the data structure was also <code>null</code>.
    * @throws IllegalArgumentException if the composite data structure
@@ -172,8 +172,8 @@ public class MemoryNotificationInfo
     ThreadInfo.checkAttribute(type, "count", SimpleType.LONG);
     MemoryUsage usage = MemoryUsage.from((CompositeData) data.get("usage"));
     return new MemoryNotificationInfo(((String) data.get("poolName")),
-				      usage,
-				      ((Long) data.get("count")).longValue());
+                                      usage,
+                                      ((Long) data.get("count")).longValue());
   }
 
   /**
@@ -212,4 +212,3 @@ public class MemoryNotificationInfo
   }
 
 }
-

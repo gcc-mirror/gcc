@@ -1,4 +1,4 @@
-/* IBlockCipher.java -- 
+/* IBlockCipher.java --
    Copyright (C) 2001, 2002, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -88,21 +88,21 @@ public interface IBlockCipher
 
   /**
    * Returns the canonical name of this instance.
-   * 
+   *
    * @return the canonical name of this instance.
    */
   String name();
 
   /**
    * Returns the default value, in bytes, of the algorithm's block size.
-   * 
+   *
    * @return the default value, in bytes, of the algorithm's block size.
    */
   int defaultBlockSize();
 
   /**
    * Returns the default value, in bytes, of the algorithm's key size.
-   * 
+   *
    * @return the default value, in bytes, of the algorithm's key size.
    */
   int defaultKeySize();
@@ -110,7 +110,7 @@ public interface IBlockCipher
   /**
    * Returns an {@link Iterator} over the supported block sizes. Each element
    * returned by this object is an {@link Integer}.
-   * 
+   *
    * @return an {@link Iterator} over the supported block sizes.
    */
   Iterator blockSizes();
@@ -118,14 +118,14 @@ public interface IBlockCipher
   /**
    * Returns an {@link Iterator} over the supported key sizes. Each element
    * returned by this object is an {@link Integer}.
-   * 
+   *
    * @return an {@link Iterator} over the supported key sizes.
    */
   Iterator keySizes();
 
   /**
    * Returns a clone of this instance.
-   * 
+   *
    * @return a clone copy of this instance.
    */
   Object clone();
@@ -133,7 +133,7 @@ public interface IBlockCipher
   /**
    * Initialises the algorithm with designated attributes. Permissible names and
    * values are described in the class documentation above.
-   * 
+   *
    * @param attributes a set of name-value pairs that describes the desired
    *          future behaviour of this instance.
    * @exception InvalidKeyException if the key data is invalid.
@@ -145,7 +145,7 @@ public interface IBlockCipher
 
   /**
    * Returns the currently set block size for this instance.
-   * 
+   *
    * @return the current block size for this instance.
    * @exception IllegalStateException if the instance is not initialised.
    */
@@ -159,7 +159,7 @@ public interface IBlockCipher
 
   /**
    * Encrypts exactly one block of plaintext.
-   * 
+   *
    * @param in the plaintext.
    * @param inOffset index of <code>in</code> from which to start considering
    *          data.
@@ -172,7 +172,7 @@ public interface IBlockCipher
 
   /**
    * Decrypts exactly one block of ciphertext.
-   * 
+   *
    * @param in the plaintext.
    * @param inOffset index of <code>in</code> from which to start considering
    *          data.
@@ -187,7 +187,7 @@ public interface IBlockCipher
    * A <i>correctness</i> test that consists of basic symmetric encryption /
    * decryption test(s) for all supported block and key sizes, as well as one
    * (1) variable key Known Answer Test (KAT).
-   * 
+   *
    * @return <code>true</code> if the implementation passes simple
    *         <i>correctness</i> tests. Returns <code>false</code> otherwise.
    */

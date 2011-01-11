@@ -43,9 +43,9 @@ import java.io.Serializable;
 /**
  * Means that the ORB cannot convert between the marshalled and
  * native data representation.
- * 
+ *
  * In GNU Classpath, this exception may have the following minor codes:
- * 
+ *
  * <table border="1">
  * <tr>
  * <td>Hex</td>
@@ -62,16 +62,16 @@ import java.io.Serializable;
  * local or remote resource (file or network), but this resource is not
  * reacheable.</td>
  * </tr>
- * </table> 
- * 
+ * </table>
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public final class DATA_CONVERSION
   extends SystemException
   implements Serializable
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1874869932271600956L;
 

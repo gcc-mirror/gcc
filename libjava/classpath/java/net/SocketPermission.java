@@ -127,9 +127,9 @@ public final class SocketPermission extends Permission implements Serializable
   /**
    * An IP address (IPv4 or IPv6).  Will be set if and only if this
    * object was initialized with a single literal IP address.
-   */  
+   */
   private transient InetAddress address = null;
-  
+
   /**
    * A range of ports.
    */
@@ -199,39 +199,39 @@ public final class SocketPermission extends Permission implements Serializable
     boolean colon_allowed = true;
     for (int i = 0; i < hostport.length(); i++)
       {
-	if (hostport.charAt(i) == ':')
-	  {
-	    if (!colon_allowed)
-	      throw new IllegalArgumentException("Ambiguous hostport part");
-	    colons++;
-	    colon_allowed = false;
-	  }
-	else
-	  colon_allowed = true;
+        if (hostport.charAt(i) == ':')
+          {
+            if (!colon_allowed)
+              throw new IllegalArgumentException("Ambiguous hostport part");
+            colons++;
+            colon_allowed = false;
+          }
+        else
+          colon_allowed = true;
       }
 
     switch (colons)
       {
       case 0:
       case 1:
-	// a hostname or IPv4 address
-	return hostport;
-	
+        // a hostname or IPv4 address
+        return hostport;
+
       case 7:
-	// an IPv6 address with no ports
-	return "[" + hostport + "]";
+        // an IPv6 address with no ports
+        return "[" + hostport + "]";
 
       case 8:
-	// an IPv6 address with ports
-	int last_colon = hostport.lastIndexOf(':');
-	return "[" + hostport.substring(0, last_colon) + "]"
-	  + hostport.substring(last_colon);
+        // an IPv6 address with ports
+        int last_colon = hostport.lastIndexOf(':');
+        return "[" + hostport.substring(0, last_colon) + "]"
+          + hostport.substring(last_colon);
 
       default:
-	throw new IllegalArgumentException("Ambiguous hostport part");
+        throw new IllegalArgumentException("Ambiguous hostport part");
       }
   }
-  
+
   /**
    * Parse the hostport argument to the constructor.
    */
@@ -241,90 +241,90 @@ public final class SocketPermission extends Permission implements Serializable
     String host, ports;
     if (hostport.charAt(0) == '[')
       {
-	// host is a bracketed IPv6 address
-	int end = hostport.indexOf("]");
-	if (end == -1)
-	  throw new IllegalArgumentException("Unmatched '['");
-	host = hostport.substring(1, end);
+        // host is a bracketed IPv6 address
+        int end = hostport.indexOf("]");
+        if (end == -1)
+          throw new IllegalArgumentException("Unmatched '['");
+        host = hostport.substring(1, end);
 
-	address = InetAddress.getByLiteral(host);
-	if (address == null)
-	  throw new IllegalArgumentException("Bad IPv6 address");
+        address = InetAddress.getByLiteral(host);
+        if (address == null)
+          throw new IllegalArgumentException("Bad IPv6 address");
 
-	if (end == hostport.length() - 1)
-	  ports = "";
-	else if (hostport.charAt(end + 1) == ':')
-	  ports = hostport.substring(end + 2);
-	else
-	  throw new IllegalArgumentException("Bad character after ']'");
+        if (end == hostport.length() - 1)
+          ports = "";
+        else if (hostport.charAt(end + 1) == ':')
+          ports = hostport.substring(end + 2);
+        else
+          throw new IllegalArgumentException("Bad character after ']'");
       }
     else
       {
-	// host is a hostname or IPv4 address
-	int sep = hostport.indexOf(":");
-	if (sep == -1)
-	  {
-	    host = hostport;
-	    ports = "";
-	  }
-	else
-	  {
-	    host = hostport.substring(0, sep);
-	    ports = hostport.substring(sep + 1);
-	  }
+        // host is a hostname or IPv4 address
+        int sep = hostport.indexOf(":");
+        if (sep == -1)
+          {
+            host = hostport;
+            ports = "";
+          }
+        else
+          {
+            host = hostport.substring(0, sep);
+            ports = hostport.substring(sep + 1);
+          }
 
-	address = InetAddress.getByLiteral(host);
-	if (address == null)
-	  {
-	    if (host.lastIndexOf('*') > 0)
-	      throw new IllegalArgumentException("Bad hostname");
+        address = InetAddress.getByLiteral(host);
+        if (address == null)
+          {
+            if (host.lastIndexOf('*') > 0)
+              throw new IllegalArgumentException("Bad hostname");
 
-	    hostname = host;
-	  }
+            hostname = host;
+          }
       }
 
     // Parse and validate the ports
     if (ports.length() == 0)
       {
-	minport = MIN_PORT;
-	maxport = MAX_PORT;
+        minport = MIN_PORT;
+        maxport = MAX_PORT;
       }
     else
       {
-	int sep = ports.indexOf("-");
-	if (sep == -1)
-	  {
-	    // a single port
-	    minport = maxport = Integer.parseInt(ports);
-	  }
-	else
-	  {
-	    if (ports.indexOf("-", sep + 1) != -1)
-	      throw new IllegalArgumentException("Unexpected '-'");
+        int sep = ports.indexOf("-");
+        if (sep == -1)
+          {
+            // a single port
+            minport = maxport = Integer.parseInt(ports);
+          }
+        else
+          {
+            if (ports.indexOf("-", sep + 1) != -1)
+              throw new IllegalArgumentException("Unexpected '-'");
 
-	    if (sep == 0)
-	      {
-		// an upper bound
-		minport = MIN_PORT;
-		maxport = Integer.parseInt(ports.substring(1));
-	      }
-	    else if (sep == ports.length() - 1)
-	      {
-		// a lower bound
-		minport =
-		  Integer.parseInt(ports.substring(0, ports.length() - 1));
-		maxport = MAX_PORT;
-	      }
-	    else
-	      {
-		// a range with two bounds
-		minport = Integer.parseInt(ports.substring(0, sep));
-		maxport = Integer.parseInt(ports.substring(sep + 1));
-	      }
-	  }
+            if (sep == 0)
+              {
+                // an upper bound
+                minport = MIN_PORT;
+                maxport = Integer.parseInt(ports.substring(1));
+              }
+            else if (sep == ports.length() - 1)
+              {
+                // a lower bound
+                minport =
+                  Integer.parseInt(ports.substring(0, ports.length() - 1));
+                maxport = MAX_PORT;
+              }
+            else
+              {
+                // a range with two bounds
+                minport = Integer.parseInt(ports.substring(0, sep));
+                maxport = Integer.parseInt(ports.substring(sep + 1));
+              }
+          }
       }
   }
-  
+
   /**
    * Parse the actions argument to the constructor.
    */
@@ -334,18 +334,18 @@ public final class SocketPermission extends Permission implements Serializable
 
     boolean resolve_needed = false;
     boolean resolve_present = false;
-    
+
     StringTokenizer t = new StringTokenizer(actionstring, ",");
     while (t.hasMoreTokens())
       {
-	String action = t.nextToken();
-	action = action.trim().toLowerCase();
-	setAction(action);
+        String action = t.nextToken();
+        action = action.trim().toLowerCase();
+        setAction(action);
 
-	if (action.equals("resolve"))
-	  resolve_present = true;
-	else
-	  resolve_needed = true;
+        if (action.equals("resolve"))
+          resolve_present = true;
+        else
+          resolve_needed = true;
       }
 
     if (resolve_needed && !resolve_present)
@@ -359,11 +359,11 @@ public final class SocketPermission extends Permission implements Serializable
   {
     for (int i = 0; i < ACTIONS.length; i++)
       {
-	if (action.equals(ACTIONS[i]))
-	  {
-	    actionmask |= 1 << i;
-	    return;
-	  }
+        if (action.equals(ACTIONS[i]))
+          {
+            actionmask |= 1 << i;
+            return;
+          }
       }
     throw new IllegalArgumentException("Unknown action " + action);
   }
@@ -389,23 +389,23 @@ public final class SocketPermission extends Permission implements Serializable
       return false;
 
     if (p.actionmask != actionmask ||
-	p.minport != minport ||
-	p.maxport != maxport)
+        p.minport != minport ||
+        p.maxport != maxport)
       return false;
 
     if (address != null)
       {
-	if (p.address == null)
-	  return false;
-	else
-	  return p.address.equals(address);
+        if (p.address == null)
+          return false;
+        else
+          return p.address.equals(address);
       }
     else
       {
-	if (p.hostname == null)
-	  return false;
-	else
-	  return p.hostname.equals(hostname);
+        if (p.hostname == null)
+          return false;
+        else
+          return p.hostname.equals(hostname);
       }
   }
 
@@ -437,12 +437,12 @@ public final class SocketPermission extends Permission implements Serializable
 
     for (int i = 0; i < ACTIONS.length; i++)
       {
-	if ((actionmask & (1 << i)) != 0)
-	  {
-	    if (sb.length() != 0)
-	      sb.append(",");
-	    sb.append(ACTIONS[i]);
-	  }
+        if ((actionmask & (1 << i)) != 0)
+          {
+            if (sb.length() != 0)
+              sb.append(",");
+            sb.append(ACTIONS[i]);
+          }
       }
 
     return sb.toString();
@@ -471,11 +471,11 @@ public final class SocketPermission extends Permission implements Serializable
 
     try
       {
-	return InetAddress.getAllByName(hostname);
+        return InetAddress.getAllByName(hostname);
       }
     catch (UnknownHostException e)
       {
-	return new InetAddress[0];
+        return new InetAddress[0];
       }
   }
 
@@ -491,18 +491,18 @@ public final class SocketPermission extends Permission implements Serializable
       return null;
     try
       {
-	return InetAddress.getByName(hostname).internalGetCanonicalHostName();
+        return InetAddress.getByName(hostname).internalGetCanonicalHostName();
       }
     catch (UnknownHostException e)
       {
-	return null;
+        return null;
       }
   }
-  
+
   /**
    * Returns true if the permission object passed it is implied by the
    * this permission.  This will be true if:
-   * 
+   *
    * <ul>
    * <li>The argument is of type <code>SocketPermission</code></li>
    * <li>The actions list of the argument are in this object's actions</li>
@@ -511,7 +511,7 @@ public final class SocketPermission extends Permission implements Serializable
    * </ul>
    *
    * <p>The argument's hostname will be a subset of this object's hostname if:</p>
-   * 
+   *
    * <ul>
    * <li>The argument's hostname or IP address is equal to this object's.</li>
    * <li>The argument's canonical hostname is equal to this object's.</li>
@@ -538,10 +538,10 @@ public final class SocketPermission extends Permission implements Serializable
     // imply it. This is not part of the spec, but it seems necessary.
     if (p.hostname != null && p.hostname.length() == 0)
       return false;
-    
+
     // Next check the actions
     if ((p.actionmask & actionmask) != p.actionmask)
-	return false;
+        return false;
 
     // Then check the ports
     if ((p.minport < minport) || (p.maxport > maxport))
@@ -554,49 +554,49 @@ public final class SocketPermission extends Permission implements Serializable
     // IP address which one of p's IP addresses is equal to.
     if (address != null)
       {
-	InetAddress[] addrs = p.getAddresses();
-	for (int i = 0; i < addrs.length; i++)
-	  {
-	    if (address.equals(addrs[i]))
-	      return true;
-	  }
+        InetAddress[] addrs = p.getAddresses();
+        for (int i = 0; i < addrs.length; i++)
+          {
+            if (address.equals(addrs[i]))
+              return true;
+          }
       }
 
     // Return true if this object is a wildcarded domain that
     // p's canonical name matches.
     if (hostname != null && hostname.charAt(0) == '*')
       {
-	p_canon = p.getCanonicalHostName();
-	if (p_canon != null && p_canon.endsWith(hostname.substring(1)))
-	  return true;
-	
+        p_canon = p.getCanonicalHostName();
+        if (p_canon != null && p_canon.endsWith(hostname.substring(1)))
+          return true;
+
       }
 
     // Return true if this one of this object's IP addresses
     // is equal to one of p's.
     if (address == null)
       {
-	InetAddress[] addrs = p.getAddresses();
-	InetAddress[] p_addrs = p.getAddresses();
+        InetAddress[] addrs = p.getAddresses();
+        InetAddress[] p_addrs = p.getAddresses();
 
-	for (int i = 0; i < addrs.length; i++)
-	  {
-	    for (int j = 0; j < p_addrs.length; j++)
-	      {
-		if (addrs[i].equals(p_addrs[j]))
-		  return true;
-	      }
-	  }
+        for (int i = 0; i < addrs.length; i++)
+          {
+            for (int j = 0; j < p_addrs.length; j++)
+              {
+                if (addrs[i].equals(p_addrs[j]))
+                  return true;
+              }
+          }
       }
 
     // Return true if this object's canonical name equals p's.
     String canon = getCanonicalHostName();
     if (canon != null)
       {
-	if (p_canon == null)
-	  p_canon = p.getCanonicalHostName();
-	if (p_canon != null && canon.equals(p_canon))
-	  return true;
+        if (p_canon == null)
+          p_canon = p.getCanonicalHostName();
+        if (p_canon != null && canon.equals(p_canon))
+          return true;
       }
 
     // Didn't make it

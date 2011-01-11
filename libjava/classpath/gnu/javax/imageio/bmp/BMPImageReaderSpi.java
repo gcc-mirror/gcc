@@ -48,15 +48,15 @@ public class BMPImageReaderSpi extends ImageReaderSpi {
     static final String vendorName = "GNU";
     static final String version = "0.1";
     static final String readerClassName =
-	"gnu.javax.imageio.bmp.BMPImageReader";
+        "gnu.javax.imageio.bmp.BMPImageReader";
     static final String[] names = { "Microsoft Windows BMP" };
     static final String[] suffixes = { ".bmp", ".bm" };
     static final String[] MIMETypes = {
-	"image/bmp",
-	"image/x-windows-bmp"};
-    static final String[] writerSpiNames = 
+        "image/bmp",
+        "image/x-windows-bmp"};
+    static final String[] writerSpiNames =
     { "gnu.javax.imageio.bmp.BMPImageWriterSpi" };
-    
+
     static final boolean supportsStandardStreamMetadataFormat = false;
     static final String nativeStreamMetadataFormatName = null;
     static final String nativeStreamMetadataFormatClassName = null;
@@ -67,50 +67,50 @@ public class BMPImageReaderSpi extends ImageReaderSpi {
     static final String nativeImageMetadataFormatClassName = null;
     static final String[] extraImageMetadataFormatNames = null;
     static final String[] extraImageMetadataFormatClassNames = null;
-    
+
     public BMPImageReaderSpi() {
-	super(vendorName, version,
-	      names, suffixes, MIMETypes,
-	      readerClassName,
-	      STANDARD_INPUT_TYPE, // Accept ImageInputStreams
-	      writerSpiNames,
-	      supportsStandardStreamMetadataFormat,
-	      nativeStreamMetadataFormatName,
-	      nativeStreamMetadataFormatClassName,
-	      extraStreamMetadataFormatNames,
-	      extraStreamMetadataFormatClassNames,
-	      supportsStandardImageMetadataFormat,
-	      nativeImageMetadataFormatName,
-	      nativeImageMetadataFormatClassName,
-	      extraImageMetadataFormatNames,
-	      extraImageMetadataFormatClassNames);
+        super(vendorName, version,
+              names, suffixes, MIMETypes,
+              readerClassName,
+              STANDARD_INPUT_TYPE, // Accept ImageInputStreams
+              writerSpiNames,
+              supportsStandardStreamMetadataFormat,
+              nativeStreamMetadataFormatName,
+              nativeStreamMetadataFormatClassName,
+              extraStreamMetadataFormatNames,
+              extraStreamMetadataFormatClassNames,
+              supportsStandardImageMetadataFormat,
+              nativeImageMetadataFormatName,
+              nativeImageMetadataFormatClassName,
+              extraImageMetadataFormatNames,
+              extraImageMetadataFormatClassNames);
     }
-    
+
     public String getDescription(Locale locale) {
-	return "Microsoft BMP v3";
+        return "Microsoft BMP v3";
     }
-    
+
     public boolean canDecodeInput(Object input)
-	throws IOException {
-	if (!(input instanceof ImageInputStream)) 
-	    return false;
+        throws IOException {
+        if (!(input instanceof ImageInputStream))
+            return false;
 
-	ImageInputStream in = (ImageInputStream)input;
-	boolean retval;
+        ImageInputStream in = (ImageInputStream)input;
+        boolean retval;
 
-	in.mark();
-	try {
-	    new BMPFileHeader(in);
-	    retval = true;
-	} catch(BMPException e){
-	    retval = false;
-	}
-	in.reset();
+        in.mark();
+        try {
+            new BMPFileHeader(in);
+            retval = true;
+        } catch(BMPException e){
+            retval = false;
+        }
+        in.reset();
 
-	return retval;
+        return retval;
     }
-    
+
     public ImageReader createReaderInstance(Object extension) {
-	return new BMPImageReader(this);
+        return new BMPImageReader(this);
     }
 }

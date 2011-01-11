@@ -80,7 +80,7 @@ import org.omg.CosNaming.NamingContextPackage.NotFound;
  * to the existing naming service. When listing bindings, it uses the
  * {@link Context#BATCHSIZE} property to determine, how many bindings should
  * be returned at once (the process is transparend)
- * 
+ *
  * @author Audrius Meskauskas (audriusa@Bioinformatics.org)
  */
 public class GiopNamingServiceURLContext extends CorbalocParser implements
@@ -95,7 +95,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
 
   /**
    * The object request broker, used to access the naming service. This field
-   * is only initialised when the context is constructed from the URL. 
+   * is only initialised when the context is constructed from the URL.
    */
   ORB orb;
 
@@ -125,7 +125,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
   /**
    * Creates a new naming context that uses naming service, represented by the
    * given CORBA object.
-   * 
+   *
    * @param props
    *          the environment table.
    * @param aFactory
@@ -143,7 +143,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
     properties = props;
     howMany = getBatchSize();
   }
-  
+
   public NamingContextExt getService(String address)
   {
     org.omg.CORBA.Object nsObject = orb.string_to_object(address);
@@ -199,7 +199,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
    * Give the specified name for the specified object. The passed name must not
    * be already bound to some other object. The components of the name are
    * mapped into the components of the CORBA name.
-   * 
+   *
    * @param name
    *          the name that will be given to the object (in the scope of this
    *          context).
@@ -220,7 +220,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
   /**
    * Give the specified name for the specified object. The passed name must not
    * be already bound to some other object.
-   * 
+   *
    * @param name
    *          the name that will be given to the object (in the scope of this
    *          context).
@@ -237,7 +237,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
   {
     try
       {
-        String[] n = split(name); 
+        String[] n = split(name);
         org.omg.CORBA.Object object = (org.omg.CORBA.Object) obj;
         getService(n[0]).bind(transformer.toName(n[1]), object);
       }
@@ -264,7 +264,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
    * can be called several times, but after it has been once invoked, it is not
    * allowed to call any other method of this context. This method destroys
    * the ORB, if we have one.
-   * 
+   *
    * @throws NamingException
    */
   public void close() throws NamingException
@@ -295,7 +295,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
    * Creates the new naming subcontext and binds it to the current (this)
    * context. The returned object will wrap around the newly created CORBA
    * subcontext
-   * 
+   *
    * @param subContext
    *          the name of the new context being created
    * @return the newly created context, bound to the instance of the context on
@@ -316,7 +316,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
    * Creates the new naming subcontext and binds it to the current (this)
    * context. The returned object will wrap around the newly created CORBA
    * subcontext
-   * 
+   *
    * @param subContext
    *          the name of the new context being created
    * @return the newly created context, bound to the instance of the context on
@@ -360,7 +360,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
    * Removes the naming subcontext from this naming context. Returns without
    * action if such subcontext does not exist. The context being destroyed must
    * be empty.
-   * 
+   *
    * @param subContext
    *          the name of the subcontext beig removed.
    * @throws ContextNotEmptyException
@@ -376,7 +376,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
    * Removes the naming subcontext from this naming context. Returns without
    * action if such subcontext does not exist. The context being destroyed must
    * be empty.
-   * 
+   *
    * @param subContext
    *          the name of the subcontext beig removed.
    * @throws ContextNotEmptyException
@@ -419,7 +419,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
    * bound object. The behaviour in the case if the bindings are added or
    * removed later is not defined. The contents of the subcontexts are not
    * included.
-   * 
+   *
    * @param name
    *          the name of the subcontext
    * @return the enumeration over the names, known for the given subcontext.
@@ -437,7 +437,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
    * bound object. The behaviour in the case if the bindings are added or
    * removed later is not defined. The contents of the subcontexts are not
    * included.
-   * 
+   *
    * @param name
    *          the name of the subcontext
    * @return the enumeration over the names, known for the given subcontext.
@@ -449,7 +449,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
     BindingListHolder bl = new BindingListHolder();
 
     NamingContext subcontext;
-    
+
     String [] n = split(name);
     NamingContextExt service = getService(n[0]);
 
@@ -479,7 +479,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
    * {@link Binding}, providing also information about the class of the bound
    * object. The behaviour in the case if the bindings are added or removed
    * later is not defined. The contents of the subcontexts are not included.
-   * 
+   *
    * @param name
    *          the name of the subcontext
    * @return the enumeration over the names, known for the given subcontext.
@@ -496,7 +496,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
    * {@link Binding}, providing also information about the class of the bound
    * object. The behaviour in the case if the bindings are added or removed
    * later is not defined. The contents of the subcontexts are not included.
-   * 
+   *
    * @param name
    *          the name of the subcontext
    * @return the enumeration over the names, known for the given subcontext.
@@ -508,7 +508,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
     BindingListHolder bl = new BindingListHolder();
 
     NamingContext subcontext;
-    
+
     String [] n = split(name);
     NamingContextExt service = getService(n[0]);
 
@@ -535,7 +535,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
   /**
    * Gets the previously named object by name. If the passed name is empty, the
    * method should return a cloned instance of this naming context.
-   * 
+   *
    * @param name
    *          the name of the object being searched in this context
    * @return the named object
@@ -550,7 +550,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
   /**
    * Gets the previously named object by name. If the passed name is empty, the
    * method should return a cloned instance of this naming context.
-   * 
+   *
    * @param name
    *          the name of the object being searched in this context
    * @return the named object
@@ -598,7 +598,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
   /**
    * Give the specified name for the specified object. Unlike bind, this method
    * silently replaces the existing binding for this name, if one exists.
-   * 
+   *
    * @param name
    *          the name that will be given to the object (in the scope of this
    *          context).
@@ -617,7 +617,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
   /**
    * Give the specified name for the specified object. Unlike bind, this method
    * silently replaces the existing binding for this name, if one exists.
-   * 
+   *
    * @param name
    *          the name that will be given to the object (in the scope of this
    *          context).
@@ -655,7 +655,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
   /**
    * Renames the existing binding, removing the existing and giving the new name
    * for the same object.
-   * 
+   *
    * @param oldName
    *          the existing name of the known object
    * @param newName
@@ -675,7 +675,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
   /**
    * Renames the existing binding, removing the existing and giving the new name
    * for the same object.
-   * 
+   *
    * @param oldName
    *          the existing name of the known object
    * @param newName
@@ -697,7 +697,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
    * returns without action if the name is not bound to an object in the
    * terminal context, but throws {@link NameNotFoundException} if one of the
    * intermadiate contexts does not exist.
-   * 
+   *
    * @param name
    *          the name to be removed
    * @throws NameNotFoundException
@@ -716,7 +716,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
    * returns without action if the name is not bound to an object in the
    * terminal context, but throws {@link NameNotFoundException} if one of the
    * intermadiate contexts does not exist.
-   * 
+   *
    * @param name
    *          the name to be removed
    * @throws NameNotFoundException
@@ -752,7 +752,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
    * Add new environment property to the environment of this context. Both name
    * and value of the new property must not be null. If the property is already
    * defined, is current value is replaced by the propVal.
-   * 
+   *
    * @param key
    *          the name of the new property
    * @param value
@@ -773,7 +773,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
    * Returns the environment, associated with this naming context. The returned
    * table should never be modified by the caller. Use {@link #addToEnvironment}
    * and {@link #removeFromEnvironment} to modify the environement, if needed.
-   * 
+   *
    * @return the table, representing the environment of this context
    * @throws NamingException
    */
@@ -785,7 +785,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
   /**
    * Removes the property with the given name from the environment. Returns
    * without action if this property is not defined.
-   * 
+   *
    * @param propName
    *          the name of the property being removed.
    * @return the value of the property that has been removed or null if the
@@ -801,7 +801,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
    * Convert the {@link Name} into array of the name components, required to the
    * CORBA naming service. First the string representation is obtained, then
    * it is converted using parsing rules of the CORBA name.
-   * 
+   *
    * @param name
    *          then name to convert
    * @return the converted array of components.
@@ -814,7 +814,7 @@ public class GiopNamingServiceURLContext extends CorbalocParser implements
   /**
    * Get the batch size from the environment properties. The batch size is used
    * for listing operations.
-   * 
+   *
    * @return the batch size, or some default value if not specified.
    */
   public int getBatchSize()

@@ -46,7 +46,7 @@ import java.util.PropertyPermission;
 class AppletSecurityManager extends SecurityManager
 {
   private boolean plugin;
-  
+
   AppletSecurityManager(boolean plugin)
   {
     this.plugin = plugin;
@@ -63,19 +63,19 @@ class AppletSecurityManager extends SecurityManager
     // to be able to execute "addr2line" to get proper stack traces.
     if (permission instanceof FilePermission)
       return;
-    
+
     // FIXME: we need to restrict this.
     if (permission instanceof SecurityPermission)
       return;
-    
+
     // FIXME: is this really needed ?
     if (permission instanceof PropertyPermission)
       return;
-    
+
     // Needed to allow to access AWT event queue.
     if (permission.getName().equals("accessEventQueue"))
       return;
-    
+
     // Needed to create a class loader for each codebase.
     if (permission.getName().equals("createClassLoader"))
       return;
@@ -83,12 +83,12 @@ class AppletSecurityManager extends SecurityManager
     // FIXME: we need to allow access to codebase here.
 
     if (permission instanceof SocketPermission      // for net access
-	|| permission instanceof RuntimePermission) // for checkWrite(FileDescriptor)
+        || permission instanceof RuntimePermission) // for checkWrite(FileDescriptor)
       return;
 
     if (! plugin && permission.getName().equals("exitVM"))
       return;
-    
+
     // Reject all other permissions.
     throw new SecurityException();
   }

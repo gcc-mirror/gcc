@@ -1,4 +1,4 @@
-/* MeteredInputStream.java -- 
+/* MeteredInputStream.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -59,7 +59,7 @@ final class MeteredInputStream
 
   /**
    * Tests if the number of bytes read has reached the limit.
-   * 
+   *
    * @return True if the limit has been reached.
    */
   public boolean limitReached()

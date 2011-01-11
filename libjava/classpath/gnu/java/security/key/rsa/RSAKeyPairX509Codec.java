@@ -97,14 +97,14 @@ public class RSAKeyPairX509Codec
    * <p>
    * The <i>subjectPublicKey</i> field, which is a BIT STRING, contains the
    * DER-encoded form of the RSA public key defined as:
-   * 
+   *
    * <pre>
    *   RSAPublicKey ::= SEQUENCE {
    *     modulus         INTEGER, -- n
    *     publicExponent  INTEGER  -- e
    *   }
    * </pre>
-   * 
+   *
    * @param key the {@link PublicKey} instance to encode. MUST be an instance of
    *          {@link GnuRSAPublicKey}.
    * @return the ASN.1 representation of the <i>SubjectPublicKeyInfo</i> in an

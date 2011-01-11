@@ -54,22 +54,22 @@ import javax.swing.plaf.ComponentUI;
  */
 public class BasicToggleButtonUI extends BasicButtonUI
 {
-  
+
   /**
    * Returns a UI delegate for the specified component.
-   * 
-   * @param component  the component (should be an instance of 
+   *
+   * @param component  the component (should be an instance of
    *     {@link JToggleButton}).
-   *     
+   *
    * @return An instance of <code>BasicToggleButtonUI</code>.
    */
   public static ComponentUI createUI(JComponent component)
   {
     return new BasicToggleButtonUI();
-  }    
+  }
 
   /**
-   * Returns the prefix for entries in the {@link UIManager} defaults table 
+   * Returns the prefix for entries in the {@link UIManager} defaults table
    * (<code>"ToggleButton."</code> in this case).
    *
    * @return <code>"ToggleButton."</code>
@@ -80,14 +80,14 @@ public class BasicToggleButtonUI extends BasicButtonUI
   }
 
   /**
-   * Paint the component, which is an {@link AbstractButton}, according to 
+   * Paint the component, which is an {@link AbstractButton}, according to
    * its current state.
    *
    * @param g The graphics context to paint with
    * @param c The component to paint the state of
    */
   public void paint(Graphics g, JComponent c)
-  {      
+  {
     AbstractButton b = (AbstractButton) c;
 
     Rectangle tr = new Rectangle();
@@ -102,13 +102,13 @@ public class BasicToggleButtonUI extends BasicButtonUI
       SwingUtilities.calculateInnerArea(b, vr);
     else
       vr = SwingUtilities.getLocalBounds(b);
-    String text = SwingUtilities.layoutCompoundLabel(c, g.getFontMetrics(f), 
-        b.getText(), currentIcon(b), b.getVerticalAlignment(), 
-        b.getHorizontalAlignment(), b.getVerticalTextPosition(), 
-        b.getHorizontalTextPosition(), vr, ir, tr, b.getIconTextGap() 
+    String text = SwingUtilities.layoutCompoundLabel(c, g.getFontMetrics(f),
+        b.getText(), currentIcon(b), b.getVerticalAlignment(),
+        b.getHorizontalAlignment(), b.getVerticalTextPosition(),
+        b.getHorizontalTextPosition(), vr, ir, tr, b.getIconTextGap()
         + defaultTextShiftOffset);
 
-    if ((b.getModel().isArmed() && b.getModel().isPressed()) 
+    if ((b.getModel().isArmed() && b.getModel().isPressed())
         || b.isSelected())
       paintButtonPressed(g, b);
 

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -43,7 +43,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * This filter stream is used to decompress a "GZIP" format stream. 
+ * This filter stream is used to decompress a "GZIP" format stream.
  * The "GZIP" format is described in RFC 1952.
  *
  * @author John Leuner
@@ -86,11 +86,11 @@ public class GZIPInputStream
   /**
    * The CRC-32 checksum value for uncompressed data.
    */
-  protected CRC32 crc; 
+  protected CRC32 crc;
 
   /**
    * Indicates whether or not the end of the stream has been reached.
-   */  
+   */
   protected boolean eos;
 
   /**
@@ -101,7 +101,7 @@ public class GZIPInputStream
   /**
    * Creates a GZIPInputStream with the default buffer size.
    *
-   * @param in The stream to read compressed data from 
+   * @param in The stream to read compressed data from
    *           (in GZIP format).
    *
    * @throws IOException if an error occurs during an I/O operation.
@@ -115,7 +115,7 @@ public class GZIPInputStream
   /**
    * Creates a GZIPInputStream with the specified buffer size.
    *
-   * @param in The stream to read compressed data from 
+   * @param in The stream to read compressed data from
    *           (in GZIP format).
    * @param size The size of the buffer to use.
    *
@@ -204,7 +204,7 @@ public class GZIPInputStream
       throw new IOException("Error in GZIP header, bad magic code");
     headCRC.update(magic);
     headCRC.update(magic2);
-    
+
     /* 2. Check the compression type (must be 8) */
     int CM = in.read();
     if (CM != Deflater.DEFLATED)
@@ -216,32 +216,32 @@ public class GZIPInputStream
     if (flags < 0)
       throw new EOFException("Early EOF in GZIP header");
     headCRC.update(flags);
-    
+
     /*    This flag byte is divided into individual bits as follows:
-	  
-	  bit 0   FTEXT
-	  bit 1   FHCRC
-	  bit 2   FEXTRA
-	  bit 3   FNAME
-	  bit 4   FCOMMENT
-	  bit 5   reserved
-	  bit 6   reserved
-	  bit 7   reserved
+
+          bit 0   FTEXT
+          bit 1   FHCRC
+          bit 2   FEXTRA
+          bit 3   FNAME
+          bit 4   FCOMMENT
+          bit 5   reserved
+          bit 6   reserved
+          bit 7   reserved
     */
-    
-    /* 3.1 Check the reserved bits are zero */    
+
+    /* 3.1 Check the reserved bits are zero */
     if ((flags & 0xd0) != 0)
       throw new IOException("Reserved flag bits in GZIP header != 0");
-    
+
     /* 4.-6. Skip the modification time, extra flags, and OS type */
     for (int i=0; i< 6; i++)
     {
       int readByte = in.read();
       if (readByte < 0)
-	throw new EOFException("Early EOF in GZIP header");
+        throw new EOFException("Early EOF in GZIP header");
       headCRC.update(readByte);
     }
-    
+
     /* 7. Read extra field */
     if ((flags & FEXTRA) != 0)
     {
@@ -249,39 +249,39 @@ public class GZIPInputStream
       for (int i=0; i< 2; i++)
       {
         int readByte = in.read();
-	if (readByte < 0)
-	  throw new EOFException("Early EOF in GZIP header");
-	headCRC.update(readByte);
+        if (readByte < 0)
+          throw new EOFException("Early EOF in GZIP header");
+        headCRC.update(readByte);
       }
       if (in.read() < 0 || in.read() < 0)
-	throw new EOFException("Early EOF in GZIP header");
-	
+        throw new EOFException("Early EOF in GZIP header");
+
       int len1, len2, extraLen;
       len1 = in.read();
       len2 = in.read();
       if ((len1 < 0) || (len2 < 0))
-	throw new EOFException("Early EOF in GZIP header");
+        throw new EOFException("Early EOF in GZIP header");
       headCRC.update(len1);
       headCRC.update(len2);
 
       extraLen = (len1 << 8) | len2;
       for (int i = 0; i < extraLen;i++)
       {
-	int readByte = in.read();
-	if (readByte < 0)
-	  throw new EOFException("Early EOF in GZIP header");
-	headCRC.update(readByte);
+        int readByte = in.read();
+        if (readByte < 0)
+          throw new EOFException("Early EOF in GZIP header");
+        headCRC.update(readByte);
       }
     }
-    
+
     /* 8. Read file name */
     if ((flags & FNAME) != 0)
     {
       int readByte;
       while ( (readByte = in.read()) > 0)
-	headCRC.update(readByte);
+        headCRC.update(readByte);
       if (readByte < 0)
-	throw new EOFException("Early EOF in GZIP file name");
+        throw new EOFException("Early EOF in GZIP file name");
       headCRC.update(readByte);
     }
 
@@ -296,7 +296,7 @@ public class GZIPInputStream
         throw new EOFException("Early EOF in GZIP comment");
       headCRC.update(readByte);
     }
-    
+
     /* 10. Read header CRC */
     if ((flags & FHCRC) != 0)
     {
@@ -304,16 +304,16 @@ public class GZIPInputStream
       int crcval = in.read();
       if (crcval < 0)
         throw new EOFException("Early EOF in GZIP header");
-	
+
       tempByte = in.read();
       if (tempByte < 0)
         throw new EOFException("Early EOF in GZIP header");
-	
+
       crcval = (crcval << 8) | tempByte;
       if (crcval != ((int) headCRC.getValue() & 0xffff))
         throw new IOException("Header CRC value mismatch");
     }
-    
+
     readGZIPHeader = true;
     //System.err.println("Read GZIP header");
   }
@@ -330,7 +330,7 @@ public class GZIPInputStream
     {
       int count = in.read(footer, 8-needed, needed);
       if (count <= 0)
-	throw new EOFException("Early EOF in GZIP footer");
+        throw new EOFException("Early EOF in GZIP footer");
       needed -= count; //Jewel Jan 16
     }
 
@@ -338,9 +338,9 @@ public class GZIPInputStream
       | ((footer[2] & 0xff) << 16) | (footer[3] << 24);
     if (crcval != (int) crc.getValue())
       throw new IOException("GZIP crc sum mismatch, theirs \""
-			    + Integer.toHexString(crcval)
-			    + "\" and ours \""
-			    + Integer.toHexString( (int) crc.getValue()));
+                            + Integer.toHexString(crcval)
+                            + "\" and ours \""
+                            + Integer.toHexString( (int) crc.getValue()));
 
     int total = (footer[4] & 0xff) | ((footer[5] & 0xff) << 8)
       | ((footer[6] & 0xff) << 16) | (footer[7] << 24);

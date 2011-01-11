@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -44,15 +44,15 @@ package java.io;
  */
 
 /**
-  * This class is the common superclass of output character stream classes 
+  * This class is the common superclass of output character stream classes
   * that filter the output they write.  These classes typically transform the
   * data in some way prior to writing it out to another underlying
-  * <code>Writer</code>.  This class simply overrides all the 
+  * <code>Writer</code>.  This class simply overrides all the
   * methods in <code>Writer</code> to redirect them to the
   * underlying stream.  Subclasses provide actual filtering.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Tom Tromey (tromey@cygnus.com) 
+  * @author Tom Tromey (tromey@cygnus.com)
   */
 public abstract class FilterWriter extends Writer
 {
@@ -132,7 +132,7 @@ public abstract class FilterWriter extends Writer
     * starting at position <code>offset</code>.
     *
     * @param str The <code>String</code> that is to be written
-    * @param offset The character offset into the <code>String</code> 
+    * @param offset The character offset into the <code>String</code>
     * to start writing from
     * @param len The number of chars to write
     *
@@ -144,4 +144,3 @@ public abstract class FilterWriter extends Writer
   }
 
 } // class FilterWriter
-

@@ -38,13 +38,13 @@ exception statement from your version. */
 package gnu.classpath;
 
 /**
- * A type used to indicate special data used by native code that should not 
+ * A type used to indicate special data used by native code that should not
  * be marked by the garbage collector.
  */
 public final class Pointer64 extends Pointer
 {
    final long data;
-   
+
    public Pointer64(long data)
    {
      this.data = data;

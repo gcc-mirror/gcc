@@ -37,7 +37,7 @@ exception statement from your version. */
 
 
 package javax.naming.event;
- 
+
 /**
  * @author Warren Levy (warrenl@redhat.com)
  * @date June 1, 2001

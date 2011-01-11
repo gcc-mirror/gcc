@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -43,7 +43,7 @@ import java.io.OutputStream;
 /**
  * This interface specified methods for accessing a SQL BLOB (Binary Large
  * OBject) type.
- * 
+ *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @since 1.2
  */
@@ -51,7 +51,7 @@ public interface Blob
 {
   /**
    * This method returns the number of bytes in this <code>Blob</code>.
-   * 
+   *
    * @return The number of bytes in this <code>Blob</code>.
    * @exception SQLException If an error occurs.
    */
@@ -60,7 +60,7 @@ public interface Blob
   /**
    * This method returns up to the requested bytes of this <code>Blob</code>
    * as a <code>byte</code> array.
-   * 
+   *
    * @param start The index into this <code>Blob</code> to start returning
    *              bytes from.
    * @param count The requested number of bytes to return.
@@ -72,7 +72,7 @@ public interface Blob
   /**
    * This method returns a stream that will read the bytes of this
    * <code>Blob</code>.
-   * 
+   *
    * @return A stream that will read the bytes of this <code>Blob</code>.
    * @exception SQLException If an error occurs.
    */
@@ -82,7 +82,7 @@ public interface Blob
    * This method returns the index into this <code>Blob</code> at which the
    * first instance of the specified bytes occur. The searching starts at the
    * specified index into this <code>Blob</code>.
-   * 
+   *
    * @param pattern The byte pattern to search for.
    * @param start The index into this <code>Blob</code> to start searching for
    *              the pattern.
@@ -97,7 +97,7 @@ public interface Blob
    * first instance of the specified pattern occurs. The searching starts at the
    * specified index into this <code>Blob</code>. The bytes in the specified
    * <code>Blob</code> are used as the search pattern.
-   * 
+   *
    * @param pattern The <code>Blob</code> containing the byte pattern to
    *                search for.
    * @param start The index into this <code>Blob</code> to start searching for
@@ -111,7 +111,7 @@ public interface Blob
   /**
    * Writes the specified data into this <code>Blob</code>, starting at the
    * specified index.
-   * 
+   *
    * @param start The index at which the writing starts.
    * @param bytes The data to write.
    * @exception SQLException If an error occurs.
@@ -122,7 +122,7 @@ public interface Blob
   /**
    * Writes a portion of the specified data into this <code>Blob</code>,
    * starting at the specified index.
-   * 
+   *
    * @param startWrite The index into this <code>Blob</code> at which writing
    *                   starts.
    * @param bytes The data to write a portion of.
@@ -137,7 +137,7 @@ public interface Blob
   /**
    * Returns a binary stream that writes into this <code>Blob</code>,
    * starting at the specified index.
-   * 
+   *
    * @param start The index at which the writing starts.
    * @return A binary stream to write into this <code>Blob</code>.
    * @exception SQLException If an error occurs.
@@ -148,7 +148,7 @@ public interface Blob
   /**
    * Truncates this <code>Blob</code> to be at most the specified number of
    * bytes long.
-   * 
+   *
    * @param count The length this <code>Blob</code> is truncated to.
    * @exception SQLException If an error occurs.
    * @since 1.4

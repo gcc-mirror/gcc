@@ -80,7 +80,7 @@ import javax.swing.JComponent;
  *
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class ComponentUI 
+public abstract class ComponentUI
 {
   /**
    * Constructs a new UI delegate.
@@ -89,8 +89,8 @@ public abstract class ComponentUI
   {
     // Nothing to do here.
   }
-  
-  
+
+
   /**
    * Sets up the specified component so it conforms the the design
    * guidelines of the implemented look and feel. When the look and
@@ -145,8 +145,8 @@ public abstract class ComponentUI
   {
     // The default implementation does not change any properties.
   }
-  
-  
+
+
   /**
    * Paints the component according to the design guidelines
    * of the look and feel. Most subclasses will want to override
@@ -162,8 +162,8 @@ public abstract class ComponentUI
     // Nothing is done here. This method is meant to be overridden by
     // subclasses.
   }
-  
-  
+
+
   /**
    * Fills the specified component with its background color
    * (unless the <code>opaque</code> property is <code>false</code>)
@@ -192,7 +192,7 @@ public abstract class ComponentUI
       }
     paint(g, c);
   }
-   
+
   /**
    * Determines the preferred size of a component. The default
    * implementation returns <code>null</code>, which means that
@@ -209,8 +209,8 @@ public abstract class ComponentUI
   {
     return null;
   }
-  
-  
+
+
   /**
    * Determines the minimum size of a component. The default
    * implementation calls {@link #getPreferredSize}, but subclasses
@@ -265,7 +265,7 @@ public abstract class ComponentUI
    *        inside its parent.
    */
   public boolean contains(JComponent c, int x, int y)
-  {    
+  {
     /* JComponent.contains calls the ui delegate for hit
      * testing. Therefore, endless mutual recursion would result if we
      * called c.contains(x, y) here.
@@ -282,8 +282,8 @@ public abstract class ComponentUI
     return (x >= 0) && (x < c.getWidth())
       && (y >= 0) && (y < c.getHeight());
   }
-  
-  
+
+
   /**
    * Creates a delegate object for the specified component.  Users
    * should use the <code>createUI</code> method of a suitable
@@ -298,7 +298,7 @@ public abstract class ComponentUI
       "javax.swing.plaf.ComponentUI does not implement createUI; call "
       + "createUI on a subclass.");
   }
-  
+
 
   /**
    * Counts the number of accessible children in the component.  The

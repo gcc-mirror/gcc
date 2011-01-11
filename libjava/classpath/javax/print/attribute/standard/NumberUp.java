@@ -1,4 +1,4 @@
-/* NumberUp.java -- 
+/* NumberUp.java --
    Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -44,24 +44,24 @@ import javax.print.attribute.PrintJobAttribute;
 import javax.print.attribute.PrintRequestAttribute;
 
 /**
- * The <code>NumberUp</code> printing attribute specifies the number of pages 
+ * The <code>NumberUp</code> printing attribute specifies the number of pages
  * to be arranged upon a single media sheet.
  * <p>
- * <b>Note:</b> The effect of this attribute on jobs with multiple documents 
- * is controlled by the job attribute 
+ * <b>Note:</b> The effect of this attribute on jobs with multiple documents
+ * is controlled by the job attribute
  * {@link javax.print.attribute.standard.MultipleDocumentHandling}.
  * </p>
  * <p>
  * <b>IPP Compatibility:</b> NumberUp is an IPP 1.1 attribute.
  * </p>
- * 
+ *
  * @author Michael Koch
  */
 public final class NumberUp extends IntegerSyntax
   implements DocAttribute, PrintJobAttribute, PrintRequestAttribute
 {
   private static final long serialVersionUID = -3040436486786527811L;
-  
+
   /**
    * Creates a <code>NumberUp</code> object.
    *
@@ -74,13 +74,13 @@ public final class NumberUp extends IntegerSyntax
   {
     super(value);
   }
-  
+
   /**
    * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

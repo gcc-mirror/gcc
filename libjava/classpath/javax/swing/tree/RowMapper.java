@@ -41,7 +41,7 @@ package javax.swing.tree;
  * RowMapper public interface
  * @author Andrew Selkirk
  */
-public interface RowMapper 
+public interface RowMapper
 {
 
   /**
@@ -51,4 +51,4 @@ public interface RowMapper
    */
   int[] getRowsForPaths(TreePath[] path);
 
-} 
+}

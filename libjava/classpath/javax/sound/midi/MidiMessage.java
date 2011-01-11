@@ -40,7 +40,7 @@ package javax.sound.midi;
 
 /**
  * The base class for all MIDI messages.
- * 
+ *
  * @author Anthony Green (green@redhat.com)
  * @since 1.3
  *
@@ -51,15 +51,15 @@ public abstract class MidiMessage implements Cloneable
    * MIDI message data.
    */
   protected byte data[];
-  
+
   /**
    * The total length of the MIDI message.
    */
   protected int length;
-  
+
   /**
    * MidiMessage contructor.
-   * 
+   *
    * @param data a valid MIDI message
    */
   protected MidiMessage(byte[] data)
@@ -67,59 +67,59 @@ public abstract class MidiMessage implements Cloneable
     this.data = data;
     this.length = data.length;
   }
-  
+
   /**
    * Set the complete MIDI message.
-   * 
+   *
    * @param data The complete MIDI message.
    * @param length The length of the MIDI message.
    * @throws InvalidMidiDataException Thrown when the MIDI message is invalid.
    */
-  protected void setMessage(byte[] data, int length) 
+  protected void setMessage(byte[] data, int length)
     throws InvalidMidiDataException
   {
     this.data = new byte[length];
     System.arraycopy(data, 0, this.data, 0, length);
     this.length = length;
   }
-  
+
   /**
    * Get the MIDI message data.
-   * 
+   *
    * @return an array containing the MIDI message data
    */
   public byte[] getMessage()
   {
     byte copy[] = new byte[length];
     System.arraycopy(data, 0, copy, 0, length);
-    return copy;    
+    return copy;
   }
-  
+
   /**
    * Get the status byte of the MIDI message (as an int)
-   * 
+   *
    * @return the status byte of the MIDI message (as an int), or zero if the message length is zero.
    */
   public int getStatus()
   {
     if (length > 0)
       return (data[0] & 0xff);
-    else 
+    else
       return 0;
   }
-  
+
   /**
    * Get the length of the MIDI message.
-   * 
+   *
    * @return the length of the MIDI messsage
    */
   public int getLength()
   {
     return length;
   }
-  
+
   /* Create a clone of this object.
-   * 
+   *
    * @see java.lang.Object#clone()
    */
   public abstract Object clone();

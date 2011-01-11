@@ -83,7 +83,7 @@ public final class JarURLLoader extends URLLoader
       {
         jarfile =
           ((JarURLConnection) baseJarURL.openConnection()).getJarFile();
-        
+
         Manifest manifest;
         Attributes attributes;
         String classPathString;
@@ -124,12 +124,12 @@ public final class JarURLLoader extends URLLoader
         else if ((manifest = jarfile.getManifest()) != null
                  && (attributes = manifest.getMainAttributes()) != null
                  && ((classPathString
-                      = attributes.getValue(Attributes.Name.CLASS_PATH)) 
+                      = attributes.getValue(Attributes.Name.CLASS_PATH))
                      != null))
           {
             this.classPath = new ArrayList<URLLoader>();
             StringTokenizer st = new StringTokenizer(classPathString, " ");
-            while (st.hasMoreElements ()) 
+            while (st.hasMoreElements ())
               {
                 String e = st.nextToken ();
                 try

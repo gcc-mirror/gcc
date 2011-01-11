@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -43,17 +43,17 @@ import java.net.Socket;
 import java.rmi.server.RMISocketFactory;
 
 public class RMIDefaultSocketFactory
-	extends RMISocketFactory {
+        extends RMISocketFactory {
 
 public RMIDefaultSocketFactory() {
 }
 
 public Socket createSocket(String host, int port) throws IOException {
-	return (new Socket(host, port));
+        return (new Socket(host, port));
 }
 
 public ServerSocket createServerSocket(int port) throws IOException {
-	return (new ServerSocket(port));
+        return (new ServerSocket(port));
 }
 
 }

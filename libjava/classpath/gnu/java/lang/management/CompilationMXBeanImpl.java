@@ -44,7 +44,7 @@ import java.lang.management.CompilationMXBean;
 import javax.management.NotCompliantMBeanException;
 
 /**
- * Provides access to information about the JIT 
+ * Provides access to information about the JIT
  * compiler of the virtual machine, if one exists.
  * Instances of this bean are obtained by calling
  * {@link ManagementFactory#getCompilationMXBean()},
@@ -66,7 +66,7 @@ public final class CompilationMXBeanImpl
   /**
    * Constant for compilation time support.
    */
-  private static final String COMPILATION_TIME_SUPPORT = 
+  private static final String COMPILATION_TIME_SUPPORT =
     "gnu.java.lang.management.CompilationTimeSupport";
 
   /**
@@ -87,7 +87,7 @@ public final class CompilationMXBeanImpl
   {
     return SystemProperties.getProperty(COMPILER_NAME);
   }
-  
+
   public boolean isCompilationTimeMonitoringSupported()
   {
     return SystemProperties.getProperty(COMPILATION_TIME_SUPPORT) != null;
@@ -99,7 +99,7 @@ public final class CompilationMXBeanImpl
       return VMCompilationMXBeanImpl.getTotalCompilationTime();
     else
       throw new UnsupportedOperationException("Compilation time monitoring "
-					      + "is not supported");
+                                              + "is not supported");
   }
 
 }

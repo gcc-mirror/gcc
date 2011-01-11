@@ -1,4 +1,4 @@
-/* ARG_IN.java -- 
+/* ARG_IN.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -39,10 +39,10 @@ package org.omg.CORBA;
 
 /**
  * This simple interface defines just one constant, normally used
- * to mark the parameter as an "output parameter". 
- * 
+ * to mark the parameter as an "output parameter".
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
- * 
+ *
  * @see NamedValue
  */
 public interface ARG_OUT

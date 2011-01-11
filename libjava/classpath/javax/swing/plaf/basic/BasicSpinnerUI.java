@@ -173,7 +173,7 @@ public class BasicSpinnerUI extends SpinnerUI
     if (e instanceof JSpinner.DefaultEditor)
       {
         JSpinner.DefaultEditor de = (JSpinner.DefaultEditor) e;
-        de.getTextField().setBorder(null);  
+        de.getTextField().setBorder(null);
       }
     spinner.setLayout(createLayout());
     spinner.setOpaque(true);
@@ -199,36 +199,36 @@ public class BasicSpinnerUI extends SpinnerUI
   {
     c.addMouseListener(new MouseAdapter()
         {
-	  public void mousePressed(MouseEvent evt)
-	  {
-	    if (! spinner.isEnabled())
-	      return;
-	    increment();
-	    timer.setInitialDelay(500);
-	    timer.start();
-	  }
+          public void mousePressed(MouseEvent evt)
+          {
+            if (! spinner.isEnabled())
+              return;
+            increment();
+            timer.setInitialDelay(500);
+            timer.start();
+          }
 
-	  public void mouseReleased(MouseEvent evt)
-	  {
-	    timer.stop();
-	  }
+          public void mouseReleased(MouseEvent evt)
+          {
+            timer.stop();
+          }
 
-	  void increment()
-	  {
-	    Object next = BasicSpinnerUI.this.spinner.getNextValue();
-	    if (next != null)
-	      BasicSpinnerUI.this.spinner.getModel().setValue(next);
-	  }
+          void increment()
+          {
+            Object next = BasicSpinnerUI.this.spinner.getNextValue();
+            if (next != null)
+              BasicSpinnerUI.this.spinner.getModel().setValue(next);
+          }
 
-	  volatile boolean mouseDown;
-	  Timer timer = new Timer(50,
-	                          new ActionListener()
-	      {
-		public void actionPerformed(ActionEvent event)
-		{
-		  increment();
-		}
-	      });
+          volatile boolean mouseDown;
+          Timer timer = new Timer(50,
+                                  new ActionListener()
+              {
+                public void actionPerformed(ActionEvent event)
+                {
+                  increment();
+                }
+              });
         });
   }
 
@@ -239,36 +239,36 @@ public class BasicSpinnerUI extends SpinnerUI
   {
     c.addMouseListener(new MouseAdapter()
         {
-	  public void mousePressed(MouseEvent evt)
-	  {
-	    if (! spinner.isEnabled())
-	      return;
-	    decrement();
-	    timer.setInitialDelay(500);
-	    timer.start();
-	  }
+          public void mousePressed(MouseEvent evt)
+          {
+            if (! spinner.isEnabled())
+              return;
+            decrement();
+            timer.setInitialDelay(500);
+            timer.start();
+          }
 
-	  public void mouseReleased(MouseEvent evt)
-	  {
-	    timer.stop();
-	  }
+          public void mouseReleased(MouseEvent evt)
+          {
+            timer.stop();
+          }
 
-	  void decrement()
-	  {
-	    Object prev = BasicSpinnerUI.this.spinner.getPreviousValue();
-	    if (prev != null)
-	      BasicSpinnerUI.this.spinner.getModel().setValue(prev);
-	  }
+          void decrement()
+          {
+            Object prev = BasicSpinnerUI.this.spinner.getPreviousValue();
+            if (prev != null)
+              BasicSpinnerUI.this.spinner.getModel().setValue(prev);
+          }
 
-	  volatile boolean mouseDown;
-	  Timer timer = new Timer(50,
-	                          new ActionListener()
-	      {
-		public void actionPerformed(ActionEvent event)
-		{
-		  decrement();
-		}
-	      });
+          volatile boolean mouseDown;
+          Timer timer = new Timer(50,
+                                  new ActionListener()
+              {
+                public void actionPerformed(ActionEvent event)
+                {
+                  decrement();
+                }
+              });
         });
   }
 
@@ -384,7 +384,7 @@ public class BasicSpinnerUI extends SpinnerUI
           Dimension e = prefSize(editor);
           Dimension n = prefSize(next);
           Dimension p = prefSize(previous);
-	  Dimension s = parent.getSize();
+          Dimension s = parent.getSize();
 
           int x = l2r ? i.left : i.right;
           int y = i.top;

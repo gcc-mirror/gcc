@@ -32,7 +32,7 @@ package org.objectweb.asm;
 /**
  * A label represents a position in the bytecode of a method. Labels are used
  * for jump, goto, and switch instructions, and for try catch blocks.
- * 
+ *
  * @author Eric Bruneton
  */
 public class Label {
@@ -136,7 +136,7 @@ public class Label {
      * from the start of the method's bytecode. <i>This method is intended for
      * {@link Attribute} sub classes, and is normally not needed by class
      * generators or adapters.</i>
-     * 
+     *
      * @return the offset corresponding to this label.
      * @throws IllegalStateException if this label is not resolved yet.
      */
@@ -152,7 +152,7 @@ public class Label {
      * position of the label is known, the offset is computed and written
      * directly. Otherwise, a null offset is written and a new forward reference
      * is declared for this label.
-     * 
+     *
      * @param owner the code writer that calls this method.
      * @param out the bytecode of the method.
      * @param source the position of first byte of the bytecode instruction that
@@ -190,7 +190,7 @@ public class Label {
      * for a true forward reference, i.e. only if this label is not resolved
      * yet. For backward references, the offset of the reference can be, and
      * must be, computed and stored directly.
-     * 
+     *
      * @param sourcePosition the position of the referencing instruction. This
      *        position will be used to compute the offset of this forward
      *        reference.
@@ -222,7 +222,7 @@ public class Label {
      * when this label is added to the bytecode of the method, i.e. when its
      * position becomes known. This method fills in the blanks that where left
      * in the bytecode by each forward reference previously added to this label.
-     * 
+     *
      * @param owner the code writer that calls this method.
      * @param position the position of this label in the bytecode.
      * @param data the bytecode of the method.
@@ -290,7 +290,7 @@ public class Label {
 
     /**
      * Returns a string representation of this label.
-     * 
+     *
      * @return a string representation of this label.
      */
     public String toString() {

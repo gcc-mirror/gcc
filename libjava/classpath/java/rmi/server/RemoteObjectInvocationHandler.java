@@ -60,7 +60,7 @@ import java.util.Hashtable;
  * user program. Such instances are automatically created and returned by
  * {@link Registry} or {@link UnicastRemoteObject} methods if the remote
  * reference is known but the corresponding stub class is not accessible.
- * 
+ *
  * @see Registry#lookup
  *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
@@ -72,32 +72,32 @@ public class RemoteObjectInvocationHandler extends RemoteObject implements
    * Use the jdk 1.5 SUID for interoperability.
    */
   static final long serialVersionUID = 2L;
-  
+
   /**
    * The RMI method hash codes, computed once as described in the section 8.3
    * of the Java Remote Method Invocation (RMI) Specification.
    */
   static Hashtable methodHashCodes = new Hashtable();
-  
+
   /**
    * The empty class array to define parameters of .hashCode and .toString.
    */
   static final Class[] noArgsC = new Class[0];
-  
+
   /**
    * The class array to define parameters of .equals
    */
   static final Class[] anObjectC = new Class[] { Object.class };
-  
+
   /**
    * The empty object array to replace null when no args are passed.
    */
   static final Object[] noArgs = new Object[0];
-  
+
   /**
    * Construct the remote invocation handler that forwards calls to the given
    * remote object.
-   * 
+   *
    * @param reference the reference to the remote object where the method
    * calls should be forwarded.
    */
@@ -121,7 +121,7 @@ public class RemoteObjectInvocationHandler extends RemoteObject implements
    * <li>All other methods are converted to remote calls and forwarded to the
    * remote reference. </li>
    * </ul>
-   * 
+   *
    * @param proxyInstance
    *          the instance of the proxy stub
    * @param method
@@ -148,7 +148,7 @@ public class RemoteObjectInvocationHandler extends RemoteObject implements
         throw new IllegalAccessException(name + " does not implement "
                                          + Remote.class.getName());
       }
-    
+
     if (parameters == null)
       parameters = noArgs;
 

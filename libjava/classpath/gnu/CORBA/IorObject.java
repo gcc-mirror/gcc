@@ -83,7 +83,7 @@ public class IorObject
     _set_delegate(new IorDelegate(orb, ior));
     id = new String[] { ior.Id };
   }
-  
+
   /**
    * Get the IOR of this object.
    */

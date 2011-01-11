@@ -1,4 +1,4 @@
-/* NoSuchUserException.java -- 
+/* NoSuchUserException.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -57,7 +57,7 @@ public class NoSuchUserException
    * Constructs a <code>NoSuchUserException</code> with the specified detail
    * message. In the case of this exception, the detail message designates the
    * offending username.
-   * 
+   *
    * @param arg the detail message, which in this case is the username.
    */
   public NoSuchUserException(String arg)

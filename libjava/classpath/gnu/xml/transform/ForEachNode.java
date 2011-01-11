@@ -1,4 +1,4 @@
-/* ForEachNode.java -- 
+/* ForEachNode.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -97,25 +97,25 @@ final class ForEachNode
         //System.err.println(toString() + ": " + context+" -> "+ret);
         if (ret instanceof Collection)
           {
-	    /* Suppression is safe, as we know context produces Collection<Node> */
-	    @SuppressWarnings("unchecked")
-	      Collection<Node> ns = (Collection<Node>) ret;
+            /* Suppression is safe, as we know context produces Collection<Node> */
+            @SuppressWarnings("unchecked")
+              Collection<Node> ns = (Collection<Node>) ret;
             List<Node> list = new ArrayList<Node>(ns);
-	    if (!sortKeys.isEmpty())
-	      {
-		for (SortKey sortKey : sortKeys)
-		  {
-		    sortKey.init(stylesheet, mode, context, pos, len, parent,
-				 nextSibling);
-		  }
-		Collections.sort(list, new XSLComparator(sortKeys));
-	      }
-	    else
+            if (!sortKeys.isEmpty())
+              {
+                for (SortKey sortKey : sortKeys)
+                  {
+                    sortKey.init(stylesheet, mode, context, pos, len, parent,
+                                 nextSibling);
+                  }
+                Collections.sort(list, new XSLComparator(sortKeys));
+              }
+            else
               Collections.sort(list, documentOrderComparator);
             // Perform children for each node
             int l = list.size();
             int p = 1;
-	    for (Node node : list)
+            for (Node node : list)
               {
                 stylesheet.current = node;
                 children.apply(stylesheet, mode,
@@ -139,8 +139,8 @@ final class ForEachNode
       return true;
     for (Iterator<SortKey> i = sortKeys.iterator(); i.hasNext(); )
       {
-	if (i.next().references(var))
-	  return true;
+        if (i.next().references(var))
+          return true;
       }
     return super.references(var);
   }
@@ -155,5 +155,5 @@ final class ForEachNode
     buf.append(']');
     return buf.toString();
   }
-  
+
 }

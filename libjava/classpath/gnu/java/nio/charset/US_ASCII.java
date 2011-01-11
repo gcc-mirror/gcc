@@ -1,4 +1,4 @@
-/* US_ASCII.java -- 
+/* US_ASCII.java --
    Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -58,7 +58,7 @@ final class US_ASCII extends Charset
      * http://java.sun.com/j2se/1.5.0/docs/guide/intl/encoding.doc.html
      */
     super ("US-ASCII", new String[] {
-        /* These names are provided by 
+        /* These names are provided by
          * http://www.iana.org/assignments/character-sets
          */
         "iso-ir-6",
@@ -108,7 +108,7 @@ final class US_ASCII extends Charset
         return (char)b;
       }
     };
-    
+
     // Package-private to avoid a trampoline constructor.
     Decoder (Charset cs)
     {

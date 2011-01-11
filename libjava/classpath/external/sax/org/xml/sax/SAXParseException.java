@@ -19,12 +19,12 @@ package org.xml.sax;
  * in the original XML document, as if it came from a {@link Locator}
  * object.  Note that although the application
  * will receive a SAXParseException as the argument to the handlers
- * in the {@link org.xml.sax.ErrorHandler ErrorHandler} interface, 
- * the application is not actually required to throw the exception; 
- * instead, it can simply read the information in it and take a 
+ * in the {@link org.xml.sax.ErrorHandler ErrorHandler} interface,
+ * the application is not actually required to throw the exception;
+ * instead, it can simply read the information in it and take a
  * different action.</p>
  *
- * <p>Since this exception is a subclass of {@link org.xml.sax.SAXException 
+ * <p>Since this exception is a subclass of {@link org.xml.sax.SAXException
  * SAXException}, it inherits the ability to wrap another exception.</p>
  *
  * @since SAX 1.0
@@ -35,8 +35,8 @@ package org.xml.sax;
  * @see org.xml.sax.ErrorHandler
  */
 public class SAXParseException extends SAXException {
-    
-    
+
+
     //////////////////////////////////////////////////////////////////////
     // Constructors.
     //////////////////////////////////////////////////////////////////////
@@ -55,16 +55,16 @@ public class SAXParseException extends SAXException {
      * @see org.xml.sax.Locator
      */
     public SAXParseException (String message, Locator locator) {
-	super(message);
-	if (locator != null) {
-	    init(locator.getPublicId(), locator.getSystemId(),
-		 locator.getLineNumber(), locator.getColumnNumber());
-	} else {
-	    init(null, null, -1, -1);
-	}
+        super(message);
+        if (locator != null) {
+            init(locator.getPublicId(), locator.getSystemId(),
+                 locator.getLineNumber(), locator.getColumnNumber());
+        } else {
+            init(null, null, -1, -1);
+        }
     }
-    
-    
+
+
     /**
      * Wrap an existing exception in a SAXParseException.
      *
@@ -81,17 +81,17 @@ public class SAXParseException extends SAXException {
      * @see org.xml.sax.Locator
      */
     public SAXParseException (String message, Locator locator,
-			      Exception e) {
-	super(message, e);
-	if (locator != null) {
-	    init(locator.getPublicId(), locator.getSystemId(),
-		 locator.getLineNumber(), locator.getColumnNumber());
-	} else {
-	    init(null, null, -1, -1);
-	}
+                              Exception e) {
+        super(message, e);
+        if (locator != null) {
+            init(locator.getPublicId(), locator.getSystemId(),
+                 locator.getLineNumber(), locator.getColumnNumber());
+        } else {
+            init(null, null, -1, -1);
+        }
     }
-    
-    
+
+
     /**
      * Create a new SAXParseException.
      *
@@ -114,13 +114,13 @@ public class SAXParseException extends SAXException {
      *                     cause the error or warning.
      */
     public SAXParseException (String message, String publicId, String systemId,
-			      int lineNumber, int columnNumber)
+                              int lineNumber, int columnNumber)
     {
-	super(message);
-	init(publicId, systemId, lineNumber, columnNumber);
+        super(message);
+        init(publicId, systemId, lineNumber, columnNumber);
     }
-    
-    
+
+
     /**
      * Create a new SAXParseException with an embedded exception.
      *
@@ -146,10 +146,10 @@ public class SAXParseException extends SAXException {
      * @param e Another exception to embed in this one.
      */
     public SAXParseException (String message, String publicId, String systemId,
-			      int lineNumber, int columnNumber, Exception e)
+                              int lineNumber, int columnNumber, Exception e)
     {
-	super(message, e);
-	init(publicId, systemId, lineNumber, columnNumber);
+        super(message, e);
+        init(publicId, systemId, lineNumber, columnNumber);
     }
 
 
@@ -164,15 +164,15 @@ public class SAXParseException extends SAXException {
      * @param columnNumber The column number of the error, or -1.
      */
     private void init (String publicId, String systemId,
-		       int lineNumber, int columnNumber)
+                       int lineNumber, int columnNumber)
     {
-	this.publicId = publicId;
-	this.systemId = systemId;
-	this.lineNumber = lineNumber;
-	this.columnNumber = columnNumber;
+        this.publicId = publicId;
+        this.systemId = systemId;
+        this.lineNumber = lineNumber;
+        this.columnNumber = columnNumber;
     }
-    
-    
+
+
     /**
      * Get the public identifier of the entity where the exception occurred.
      *
@@ -182,10 +182,10 @@ public class SAXParseException extends SAXException {
      */
     public String getPublicId ()
     {
-	return this.publicId;
+        return this.publicId;
     }
-    
-    
+
+
     /**
      * Get the system identifier of the entity where the exception occurred.
      *
@@ -198,10 +198,10 @@ public class SAXParseException extends SAXException {
      */
     public String getSystemId ()
     {
-	return this.systemId;
+        return this.systemId;
     }
-    
-    
+
+
     /**
      * The line number of the end of the text where the exception occurred.
      *
@@ -213,10 +213,10 @@ public class SAXParseException extends SAXException {
      */
     public int getLineNumber ()
     {
-	return this.lineNumber;
+        return this.lineNumber;
     }
-    
-    
+
+
     /**
      * The column number of the end of the text where the exception occurred.
      *
@@ -228,10 +228,10 @@ public class SAXParseException extends SAXException {
      */
     public int getColumnNumber ()
     {
-	return this.columnNumber;
+        return this.columnNumber;
     }
-    
-    
+
+
     //////////////////////////////////////////////////////////////////////
     // Internal state.
     //////////////////////////////////////////////////////////////////////
@@ -240,7 +240,7 @@ public class SAXParseException extends SAXException {
     /**
      * @serial The public identifier, or null.
      * @see #getPublicId
-     */    
+     */
     private String publicId;
 
 
@@ -263,7 +263,7 @@ public class SAXParseException extends SAXException {
      * @see #getColumnNumber
      */
     private int columnNumber;
-    
+
 }
 
 // end of SAXParseException.java

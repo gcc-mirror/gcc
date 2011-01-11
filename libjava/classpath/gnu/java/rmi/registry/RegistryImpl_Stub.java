@@ -45,11 +45,11 @@ public final class RegistryImpl_Stub
     implements java.rmi.registry.Registry
 {
     private static final long serialVersionUID = 2L;
-    
+
     private static final long interfaceHash = 4905912898345647071L;
-    
+
     private static boolean useNewInvoke;
-    
+
     private static final java.rmi.server.Operation[] operations = {
         new java.rmi.server.Operation("void bind(java.lang.String, java.rmi.Remote)"),
         new java.rmi.server.Operation("java.lang.String[] list()"),
@@ -57,13 +57,13 @@ public final class RegistryImpl_Stub
         new java.rmi.server.Operation("void rebind(java.lang.String, java.rmi.Remote)"),
         new java.rmi.server.Operation("void unbind(java.lang.String)")
     };
-    
+
     private static java.lang.reflect.Method $method_bind_0;
     private static java.lang.reflect.Method $method_list_1;
     private static java.lang.reflect.Method $method_lookup_2;
     private static java.lang.reflect.Method $method_rebind_3;
     private static java.lang.reflect.Method $method_unbind_4;
-    
+
     static {
         try {
             java.rmi.server.RemoteRef.class.getMethod("invoke", new java.lang.Class[] { java.rmi.Remote.class, java.lang.reflect.Method.class, java.lang.Object[].class, long.class });
@@ -73,20 +73,20 @@ public final class RegistryImpl_Stub
             $method_lookup_2 = gnu.java.rmi.registry.RegistryImpl.class.getMethod("lookup", new java.lang.Class[] {java.lang.String.class});
             $method_rebind_3 = gnu.java.rmi.registry.RegistryImpl.class.getMethod("rebind", new java.lang.Class[] {java.lang.String.class, java.rmi.Remote.class});
             $method_unbind_4 = gnu.java.rmi.registry.RegistryImpl.class.getMethod("unbind", new java.lang.Class[] {java.lang.String.class});
-            
+
         }
         catch (java.lang.NoSuchMethodException e) {
             useNewInvoke = false;
         }
     }
-    
+
     public RegistryImpl_Stub() {
         super();
     }
     public RegistryImpl_Stub(java.rmi.server.RemoteRef ref) {
         super(ref);
     }
-    
+
     public void bind(java.lang.String $param_0, java.rmi.Remote $param_1) throws java.rmi.AccessException, java.rmi.AlreadyBoundException, java.rmi.RemoteException {
         try {
             if (useNewInvoke) {
@@ -127,7 +127,7 @@ public final class RegistryImpl_Stub
             throw new java.rmi.UnexpectedException("undeclared checked exception", e);
         }
     }
-    
+
     public java.lang.String[] list() throws java.rmi.AccessException, java.rmi.RemoteException {
         try {
             if (useNewInvoke) {
@@ -167,7 +167,7 @@ public final class RegistryImpl_Stub
             throw new java.rmi.UnexpectedException("undeclared checked exception", e);
         }
     }
-    
+
     public java.rmi.Remote lookup(java.lang.String $param_0) throws java.rmi.AccessException, java.rmi.NotBoundException, java.rmi.RemoteException {
         try {
             if (useNewInvoke) {
@@ -211,7 +211,7 @@ public final class RegistryImpl_Stub
             throw new java.rmi.UnexpectedException("undeclared checked exception", e);
         }
     }
-    
+
     public void rebind(java.lang.String $param_0, java.rmi.Remote $param_1) throws java.rmi.AccessException, java.rmi.RemoteException {
         try {
             if (useNewInvoke) {
@@ -249,7 +249,7 @@ public final class RegistryImpl_Stub
             throw new java.rmi.UnexpectedException("undeclared checked exception", e);
         }
     }
-    
+
     public void unbind(java.lang.String $param_0) throws java.rmi.AccessException, java.rmi.NotBoundException, java.rmi.RemoteException {
         try {
             if (useNewInvoke) {
@@ -289,5 +289,5 @@ public final class RegistryImpl_Stub
             throw new java.rmi.UnexpectedException("undeclared checked exception", e);
         }
     }
-    
+
 }

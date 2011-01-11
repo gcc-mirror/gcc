@@ -1,4 +1,4 @@
-/* BaseHash.java -- 
+/* BaseHash.java --
    Copyright (C) 2001, 2002, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -61,7 +61,7 @@ public abstract class BaseHash
 
   /**
    * Trivial constructor for use by concrete subclasses.
-   * 
+   *
    * @param name the canonical name prefix of this instance.
    * @param hashSize the block size of the output in bytes.
    * @param blockSize the block size of the internal transform.
@@ -156,7 +156,7 @@ public abstract class BaseHash
   /**
    * Returns the byte array to use as padding before completing a hash
    * operation.
-   * 
+   *
    * @return the bytes to pad the remaining bytes in the buffer before
    *         completing a hash operation.
    */
@@ -164,7 +164,7 @@ public abstract class BaseHash
 
   /**
    * Constructs the result from the contents of the current context.
-   * 
+   *
    * @return the output of the completed hash operation.
    */
   protected abstract byte[] getResult();
@@ -174,7 +174,7 @@ public abstract class BaseHash
 
   /**
    * The block digest transformation per se.
-   * 
+   *
    * @param in the <i>blockSize</i> long block, as an array of bytes to digest.
    * @param offset the index where the data to digest is located within the
    *          input buffer.

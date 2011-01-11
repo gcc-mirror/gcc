@@ -1,4 +1,4 @@
-/* SaslEncodingException.java -- 
+/* SaslEncodingException.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -56,7 +56,7 @@ public class SaslEncodingException
   /**
    * Constructs a <code>SaslEncodingException</code> with the specified detail
    * message.
-   * 
+   *
    * @param s the detail message.
    */
   public SaslEncodingException(String s)

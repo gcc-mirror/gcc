@@ -135,7 +135,7 @@ public class MouseWheelEvent extends MouseEvent
    * @param wheelRotation the number of rotation "clicks"
    * @throws IllegalArgumentException if source is null
    * @see MouseEvent#MouseEvent(Component, int, long, int, int, int, int,
-   *      boolean) 
+   *      boolean)
    */
   public MouseWheelEvent(Component source, int id, long when, int modifiers,
                          int x, int y, int clickCount, boolean popupTrigger,

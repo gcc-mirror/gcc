@@ -1,4 +1,4 @@
-/* EnvelopeEntry.java -- 
+/* EnvelopeEntry.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -80,7 +80,7 @@ public abstract class EnvelopeEntry
 
   /**
    * Adds an entry to this envelope.
-   * 
+   *
    * @param entry The entry to add.
    */
   public void add(Entry entry)
@@ -102,7 +102,7 @@ public abstract class EnvelopeEntry
 
   /**
    * Tests if this envelope contains a primitive entry with the given alias.
-   * 
+   *
    * @param alias The alias to test.
    * @return True if this envelope (or one of the contained envelopes) contains
    *         a primitive entry with the given alias.
@@ -133,7 +133,7 @@ public abstract class EnvelopeEntry
 
   /**
    * Tests if this envelope contains the given entry.
-   * 
+   *
    * @param entry The entry to test.
    * @return True if this envelope contains the given entry.
    */
@@ -156,7 +156,7 @@ public abstract class EnvelopeEntry
 
   /**
    * Returns a copy of all entries this envelope contains.
-   * 
+   *
    * @return All contained entries.
    */
   public List getEntries()
@@ -167,7 +167,7 @@ public abstract class EnvelopeEntry
   /**
    * Gets all primitive entries that have the given alias. If there are any
    * masked entries that contain the given alias, they will be returned as well.
-   * 
+   *
    * @param alias The alias of the entries to get.
    * @return A list of all primitive entries that have the given alias.
    */
@@ -214,7 +214,7 @@ public abstract class EnvelopeEntry
   /**
    * Returns the list of all aliases contained by this envelope, separated by a
    * semicolon (';').
-   * 
+   *
    * @return The list of aliases.
    */
   public String getAliasList()
@@ -228,7 +228,7 @@ public abstract class EnvelopeEntry
 
   /**
    * Removes the specified entry.
-   * 
+   *
    * @param entry The entry.
    * @return True if an entry was removed.
    */
@@ -280,7 +280,7 @@ public abstract class EnvelopeEntry
 
   /**
    * Removes all primitive entries that have the specified alias.
-   * 
+   *
    * @param alias The alias of the entries to remove.
    * @return <code>true</code> if <code>alias</code> was present and was
    *         successfully trmoved. Returns <code>false</code> if

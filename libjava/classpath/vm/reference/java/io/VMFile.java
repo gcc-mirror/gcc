@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -61,7 +61,7 @@ final class VMFile
         System.loadLibrary("javaio");
       }
   }
-  
+
   /*
    * This native method does the actual work of getting the last file
    * modification time.  It also does the existence check to avoid the
@@ -120,38 +120,38 @@ final class VMFile
    * Gets the total bytes of the filesystem named by path.
    */
   public static native long getTotalSpace(String path);
-  
+
   /**
    * Gets the total free bytes of the filesystem named by path.
    */
   public static native long getFreeSpace(String path);
-  
+
   /**
    * Gets the available bytes of the filesystem named by path.
    */
   public static native long getUsableSpace(String path);
-  
+
   /**
    * Set the read permission of the file.
    */
   public static synchronized native boolean setReadable(String path,
-                                           		boolean readable,
-                                           		boolean ownerOnly);
-  
+                                                        boolean readable,
+                                                        boolean ownerOnly);
+
   /**
    * Set the write permission of the file.
    */
   public static synchronized native boolean setWritable(String path,
                                                         boolean writable,
                                                         boolean ownerOnly);
-  
+
   /**
    * Set the execute permission of the file.
    */
   public static synchronized native boolean setExecutable(String path,
                                                           boolean executable,
                                                           boolean ownerOnly);
-  
+
   /*
    * This native method does the actual check of whether or not a file
    * is a plain file or not.  It also handles the existence check to
@@ -163,7 +163,7 @@ final class VMFile
    * This native method checks file permissions for writing
    */
   static synchronized native boolean canWrite(String path);
-  
+
   /**
    * This methods checks if a directory can be written to.
    */
@@ -178,7 +178,7 @@ final class VMFile
    * This native method checks file permissions for execution
    */
   static synchronized native boolean canExecute(String path);
-  
+
   /*
    * This method does the actual check of whether or not a file is a
    * directory or not.  It also handle the existence check to eliminate
@@ -193,7 +193,7 @@ final class VMFile
   {
     return canWriteDirectory(path.getAbsolutePath());
   }
-  
+
   /**
    * This method returns an array of filesystem roots.  Some operating systems
    * have volume oriented filesystem.  This method provides a mechanism for
@@ -207,9 +207,9 @@ final class VMFile
    */
   static File[] listRoots()
   {
-	File[] roots = new File[1];
-	roots[0] = new File("/");
-	return roots;
+        File[] roots = new File[1];
+        roots[0] = new File("/");
+        return roots;
   }
 
   /**
@@ -225,8 +225,8 @@ final class VMFile
    */
   static boolean isHidden(String path)
   {
-	// FIXME: this only works on UNIX
-	return getName(path).startsWith(".");
+        // FIXME: this only works on UNIX
+        return getName(path).startsWith(".");
   }
 
   /**
@@ -238,14 +238,14 @@ final class VMFile
    */
   static String getName(String path)
   {
-	int pos = PlatformHelper.lastIndexOfSeparator(path);
-	if (pos == -1)
-	  return path;
-	
-	if (PlatformHelper.endWithSeparator(path))
-	  return "";
-	
-	return path.substring(pos + File.separator.length());
+        int pos = PlatformHelper.lastIndexOfSeparator(path);
+        if (pos == -1)
+          return path;
+
+        if (PlatformHelper.endWithSeparator(path))
+          return "";
+
+        return path.substring(pos + File.separator.length());
   }
 
   /**
@@ -260,7 +260,7 @@ final class VMFile
    */
   static String getAbsolutePath(String path)
   {
-    if (File.separatorChar == '\\' 
+    if (File.separatorChar == '\\'
       && path.length() > 0 && path.charAt (0) == '\\')
       {
         // On Windows, even if the path starts with a '\\' it is not
@@ -274,8 +274,8 @@ final class VMFile
              || (path.charAt (0) >= 'A' && path.charAt (0) <= 'Z')))
       {
         // On Windows, a process has a current working directory for
-        // each drive and a path like "G:foo\bar" would mean the 
-        // absolute path "G:\wombat\foo\bar" if "\wombat" is the 
+        // each drive and a path like "G:foo\bar" would mean the
+        // absolute path "G:\wombat\foo\bar" if "\wombat" is the
         // working directory on the G drive.
         String drvDir = null;
         try
@@ -288,7 +288,7 @@ final class VMFile
           }
 
         // Note: this would return "C:\\." for the path "C:.", if "\"
-        // is the working folder on the C drive, but this is 
+        // is the working folder on the C drive, but this is
         // consistent with what Sun's JRE 1.4.1.01 actually returns!
         if (path.length() > 2)
           return drvDir + '\\' + path.substring (2, path.length());
@@ -341,7 +341,7 @@ final class VMFile
     throws MalformedURLException
   {
     // On Win32, Sun's JDK returns URLs of the form "file:/c:/foo/bar.txt",
-    // while on UNIX, it returns URLs of the form "file:/foo/bar.txt". 
+    // while on UNIX, it returns URLs of the form "file:/foo/bar.txt".
     if (File.separatorChar == '\\')
       return new URL ("file:/" + file.getAbsolutePath().replace ('\\', '/')
                       + (file.isDirectory() ? "/" : ""));
@@ -358,7 +358,7 @@ final class VMFile
    * "." and "..", and symbolic links.
    * <p>
    * Note that this method, unlike the other methods which return path
-   * names, can throw an IOException.  This is because native method 
+   * names, can throw an IOException.  This is because native method
    * might be required in order to resolve the canonical path
    *
    * @exception IOException If an error occurs

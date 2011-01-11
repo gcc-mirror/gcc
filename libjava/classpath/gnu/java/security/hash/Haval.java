@@ -1,4 +1,4 @@
-/* Haval.java -- 
+/* Haval.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -105,7 +105,7 @@ public class Haval
   /**
    * Calls the constructor with two arguments using the designated output size,
    * and {@link #HAVAL_3_ROUND} for the value of number of rounds.
-   * 
+   *
    * @param size the output size in bytes of this instance.
    * @throws IllegalArgumentException if the designated output size is invalid.
    * @see #HAVAL_128_BIT
@@ -125,7 +125,7 @@ public class Haval
    * <code>20</code>, <code>24</code>, <code>28</code> and
    * <code>32</code>. Valid values for <code>rounds</code> are in the range
    * <code>3..5</code> inclusive.
-   * 
+   *
    * @param size the output size in bytes of this instance.
    * @param rounds the number of rounds to apply when transforming data.
    * @throws IllegalArgumentException if the designated output size is invalid,
@@ -160,7 +160,7 @@ public class Haval
 
   /**
    * Private constructor for cloning purposes.
-   * 
+   *
    * @param md the instance to clone.
    */
   private Haval(Haval md)

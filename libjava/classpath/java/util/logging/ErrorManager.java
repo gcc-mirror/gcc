@@ -82,7 +82,7 @@ public class ErrorManager
    */
   public static final int CLOSE_FAILURE = 3;
 
-    
+
   /**
    * Indicates that there was a problem upon opening
    * an output stream.
@@ -146,7 +146,7 @@ public class ErrorManager
        * widespread acceptance. See Classpath bug #2944.
        */
       if (everUsed)
-	return;
+        return;
 
       everUsed = true;
     }
@@ -191,4 +191,3 @@ public class ErrorManager
       ex.printStackTrace();
   }
 }
-

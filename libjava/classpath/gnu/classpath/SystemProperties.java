@@ -75,31 +75,31 @@ public class SystemProperties
     // Set base URL if not already set.
     if (defaultProperties.get("gnu.classpath.home.url") == null)
       defaultProperties.put("gnu.classpath.home.url",
-			    "file://"
-			    + Configuration.CLASSPATH_HOME
-	                    + "/lib");
+                            "file://"
+                            + Configuration.CLASSPATH_HOME
+                            + "/lib");
 
     // Set short name if not already set.
     if (defaultProperties.get("gnu.classpath.vm.shortname") == null)
       {
-	String value = defaultProperties.getProperty("java.vm.name");
-	int index = value.lastIndexOf(' ');
-	if (index != -1)
-	  value = value.substring(index + 1);
-	defaultProperties.put("gnu.classpath.vm.shortname", value);
+        String value = defaultProperties.getProperty("java.vm.name");
+        int index = value.lastIndexOf(' ');
+        if (index != -1)
+          value = value.substring(index + 1);
+        defaultProperties.put("gnu.classpath.vm.shortname", value);
       }
 
     // Network properties
     if (defaultProperties.get("http.agent") == null)
       {
-	String userAgent = ("gnu-classpath/"
-	                    + defaultProperties.getProperty("gnu.classpath.version")
-	                    + " ("
-	                    + defaultProperties.getProperty("gnu.classpath.vm.shortname")
-	                    + "/"
-	                    + defaultProperties.getProperty("java.vm.version")
-	                    + ")");
-	 defaultProperties.put("http.agent", userAgent);
+        String userAgent = ("gnu-classpath/"
+                            + defaultProperties.getProperty("gnu.classpath.version")
+                            + " ("
+                            + defaultProperties.getProperty("gnu.classpath.vm.shortname")
+                            + "/"
+                            + defaultProperties.getProperty("java.vm.version")
+                            + ")");
+         defaultProperties.put("http.agent", userAgent);
       }
 
     // 8859_1 is a safe default encoding to use when not explicitly set
@@ -160,7 +160,7 @@ public class SystemProperties
   /**
    * Removes the supplied system property and its current value.
    * If the specified property does not exist, nothing happens.
-   * 
+   *
    * @throws NullPointerException if the property name is null.
    * @return the value of the removed property, or null if no
    *         such property exists.

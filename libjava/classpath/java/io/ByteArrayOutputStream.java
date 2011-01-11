@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -63,12 +63,12 @@ package java.io;
   * <p>
   * Note that this class also has methods that convert the byte array
   * buffer to a <code>String</code> using either the system default or an
-  * application specified character encoding.  Thus it can handle 
+  * application specified character encoding.  Thus it can handle
   * multibyte character encodings.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   * @author Tom Tromey (tromey@cygnus.com)
-  * @date September 24, 1998 
+  * @date September 24, 1998
   */
 public class ByteArrayOutputStream extends OutputStream
 {
@@ -130,7 +130,7 @@ public class ByteArrayOutputStream extends OutputStream
    * This method returns a byte array containing the bytes that have been
    * written to this stream so far.  This array is a copy of the valid
    * bytes in the internal buffer and its length is equal to the number of
-   * valid bytes, not necessarily to the the length of the current 
+   * valid bytes, not necessarily to the the length of the current
    * internal buffer.  Note that since this method allocates a new array,
    * it should be used with caution when the internal buffer is very large.
    */
@@ -158,7 +158,7 @@ public class ByteArrayOutputStream extends OutputStream
   /**
    * Returns the bytes in the internal array as a <code>String</code>.  The
    * bytes in the buffer are converted to characters using the specified
-   * encoding. 
+   * encoding.
    *
    * @param enc The name of the character encoding to use
    *
@@ -184,7 +184,7 @@ public class ByteArrayOutputStream extends OutputStream
    * methods which use a true character encoding.
    *
    * @param hibyte The high eight bits to use for each character in
-   * the <code>String</code> 
+   * the <code>String</code>
    *
    * @return A <code>String</code> containing the data written to this
    * stream so far
@@ -201,12 +201,12 @@ public class ByteArrayOutputStream extends OutputStream
   {
     if (count + add > buf.length)
       {
-	int newlen = buf.length * 2;
-	if (count + add > newlen)
-	  newlen = count + add;
-	byte[] newbuf = new byte[newlen];
-	System.arraycopy(buf, 0, newbuf, 0, count);
-	buf = newbuf;
+        int newlen = buf.length * 2;
+        if (count + add > newlen)
+          newlen = count + add;
+        byte[] newbuf = new byte[newlen];
+        System.arraycopy(buf, 0, newbuf, 0, count);
+        buf = newbuf;
       }
   }
 
@@ -223,7 +223,7 @@ public class ByteArrayOutputStream extends OutputStream
   }
 
   /**
-   * This method writes <code>len</code> bytes from the passed in array 
+   * This method writes <code>len</code> bytes from the passed in array
    * <code>buf</code> starting at index <code>offset</code> into the
    * internal buffer.
    *
@@ -276,7 +276,7 @@ public class ByteArrayOutputStream extends OutputStream
   {
     int r
       = Integer.getInteger ("gnu.java.io.ByteArrayOutputStream.initialBufferSize",
-			    DEFAULT_INITIAL_BUFFER_SIZE).intValue ();
+                            DEFAULT_INITIAL_BUFFER_SIZE).intValue ();
     if (r <= 0)
       r = DEFAULT_INITIAL_BUFFER_SIZE;
     initial_buffer_size = r;

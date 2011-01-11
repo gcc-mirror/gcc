@@ -1,4 +1,4 @@
-/* XsltFilter.java -- 
+/* XsltFilter.java --
    Copyright (C) 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -49,8 +49,8 @@ import org.xml.sax.ext.LexicalHandler;
 
 
 /**
- * Packages an XSLT transform as a pipeline component. 
- * Note that all DTD events (callbacks to DeclHandler and DTDHandler 
+ * Packages an XSLT transform as a pipeline component.
+ * Note that all DTD events (callbacks to DeclHandler and DTDHandler
  * interfaces) are discarded, although XSLT transforms may be set up to
  * use the LexicalHandler to write DTDs with only an external subset.
  * Not every XSLT engine will necessarily be usable with this filter,
@@ -72,59 +72,59 @@ final public class XsltFilter extends EventFilter
      * or ErrorHandler support.
      *
      * @param stylesheet URI for the stylesheet specifying the
-     *	XSLT transform
+     *  XSLT transform
      * @param next provides the ContentHandler and LexicalHandler
-     *	to receive XSLT output.
+     *  to receive XSLT output.
      * @exception SAXException if the stylesheet can't be parsed
      * @exception IOException if there are difficulties
-     *	bootstrapping the XSLT engine, such as it not supporting
-     *	SAX well enough to use this way.
+     *  bootstrapping the XSLT engine, such as it not supporting
+     *  SAX well enough to use this way.
      */
     public XsltFilter (String stylesheet, EventConsumer next)
     throws SAXException, IOException
     {
-	// First, get a transformer with the stylesheet preloaded
-	TransformerFactory	tf = null;
-	TransformerHandler	th;
+        // First, get a transformer with the stylesheet preloaded
+        TransformerFactory      tf = null;
+        TransformerHandler      th;
 
-	try {
-	    SAXTransformerFactory	stf;
+        try {
+            SAXTransformerFactory       stf;
 
-	    tf = TransformerFactory.newInstance ();
-	    if (!tf.getFeature (SAXTransformerFactory.FEATURE)	// sax inputs
-		    || !tf.getFeature (SAXResult.FEATURE)	// sax outputs
-		    || !tf.getFeature (StreamSource.FEATURE)	// stylesheet
-		    )
-		throw new IOException ("XSLT factory ("
-		    + tf.getClass ().getName ()
-		    + ") does not support SAX");
-	    stf = (SAXTransformerFactory) tf;
-	    th = stf.newTransformerHandler (new StreamSource (stylesheet));
-	} catch (TransformerConfigurationException e) {
-	    throw new IOException ("XSLT factory ("
-		+ (tf == null
-			? "none available"
-			: tf.getClass ().getName ())
-		+ ") configuration error, "
-		+ e.getMessage ()
-		);
-	}
+            tf = TransformerFactory.newInstance ();
+            if (!tf.getFeature (SAXTransformerFactory.FEATURE)  // sax inputs
+                    || !tf.getFeature (SAXResult.FEATURE)       // sax outputs
+                    || !tf.getFeature (StreamSource.FEATURE)    // stylesheet
+                    )
+                throw new IOException ("XSLT factory ("
+                    + tf.getClass ().getName ()
+                    + ") does not support SAX");
+            stf = (SAXTransformerFactory) tf;
+            th = stf.newTransformerHandler (new StreamSource (stylesheet));
+        } catch (TransformerConfigurationException e) {
+            throw new IOException ("XSLT factory ("
+                + (tf == null
+                        ? "none available"
+                        : tf.getClass ().getName ())
+                + ") configuration error, "
+                + e.getMessage ()
+                );
+        }
 
-	// Hook its outputs up to the pipeline ...
-	SAXResult		out = new SAXResult ();
+        // Hook its outputs up to the pipeline ...
+        SAXResult               out = new SAXResult ();
 
-	out.setHandler (next.getContentHandler ());
-	try {
-	    LexicalHandler	lh;
-	    lh = (LexicalHandler) next.getProperty (LEXICAL_HANDLER);
-	    out.setLexicalHandler (lh);
-	} catch (Exception e) {
-	    // ignore
-	}
-	th.setResult (out);
+        out.setHandler (next.getContentHandler ());
+        try {
+            LexicalHandler      lh;
+            lh = (LexicalHandler) next.getProperty (LEXICAL_HANDLER);
+            out.setLexicalHandler (lh);
+        } catch (Exception e) {
+            // ignore
+        }
+        th.setResult (out);
 
-	// ... and make sure its inputs look like ours.
-	setContentHandler (th);
-	setProperty (LEXICAL_HANDLER, th);
+        // ... and make sure its inputs look like ours.
+        setContentHandler (th);
+        setProperty (LEXICAL_HANDLER, th);
     }
 }

@@ -1,4 +1,4 @@
-/* TransformerOutputProperties.java -- 
+/* TransformerOutputProperties.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -54,7 +54,7 @@ import javax.xml.transform.OutputKeys;
 class TransformerOutputProperties
   extends Properties
 {
-  
+
   final Properties defaultProperties;
   final Stylesheet stylesheet;
   boolean dirty;
@@ -170,7 +170,7 @@ class TransformerOutputProperties
       "yes".equals(getProperty(OutputKeys.STANDALONE));
     stylesheet.outputPublicId = getProperty(OutputKeys.DOCTYPE_PUBLIC);
     stylesheet.outputSystemId = getProperty(OutputKeys.DOCTYPE_SYSTEM);
-    StringTokenizer st = 
+    StringTokenizer st =
       new StringTokenizer(getProperty(OutputKeys.CDATA_SECTION_ELEMENTS));
     Collection acc = new LinkedHashSet();
     while (st.hasMoreTokens())
@@ -184,4 +184,3 @@ class TransformerOutputProperties
   }
 
 }
-

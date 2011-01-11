@@ -41,7 +41,7 @@ package gnu.java.beans.encoder.elements;
 import gnu.java.beans.encoder.Writer;
 
 /** Generates an XML element denoting the setting of a list's element.
- * 
+ *
  * @author Robert Schuster (robertschuster@fsfe.org)
  *
  */
@@ -52,5 +52,5 @@ public class List_Set extends Element
   {
     writer.write("object", "set");
   }
-  
+
 }

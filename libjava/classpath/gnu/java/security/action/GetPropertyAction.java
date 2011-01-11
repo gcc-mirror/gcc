@@ -57,7 +57,7 @@ public class GetPropertyAction implements PrivilegedAction<String>
   public GetPropertyAction()
   {
   }
-  
+
   public GetPropertyAction(String propName)
   {
     setParameters(propName);
@@ -67,12 +67,12 @@ public class GetPropertyAction implements PrivilegedAction<String>
   {
     setParameters(propName, defaultValue);
   }
-  
+
   public String run()
   {
     return System.getProperty(name, value);
   }
-  
+
   public GetPropertyAction setParameters(String propName)
   {
     this.name = propName;

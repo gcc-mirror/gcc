@@ -55,7 +55,7 @@ public class MimeTypeParseException
   public MimeTypeParseException()
   {
   }
-  
+
   /**
    * MimeTypeParseException with the specified detail message.
    * @param message the exception message
@@ -79,6 +79,5 @@ public class MimeTypeParseException
          .append(token)
          .toString());
   }
-  
-}
 
+}

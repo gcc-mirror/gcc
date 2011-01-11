@@ -71,12 +71,12 @@ opaque Extensions&lt;0..2^16-1&gt;;</pre>
 public class CertificateStatusRequest extends Value implements Iterable<byte[]>
 {
   private ByteBuffer buffer;
-  
+
   public CertificateStatusRequest(final ByteBuffer buffer)
   {
     this.buffer = buffer;
   }
-  
+
   public CertificateStatusRequest(CertificateStatusType type,
                                   List<byte[]> responderIdList,
                                   byte[] requestExtensions)
@@ -106,12 +106,12 @@ public class CertificateStatusRequest extends Value implements Iterable<byte[]>
     int l = 3 + (buffer.getShort(1) & 0xFFFF);
     return l + (buffer.getShort(l) & 0xFFFF) + 2;
   }
-  
+
   public ByteBuffer buffer()
   {
     return (ByteBuffer) buffer.duplicate().limit(length());
   }
-  
+
   public CertificateStatusType statusType()
   {
     int x = buffer.get(0) & 0xFF;
@@ -132,7 +132,7 @@ public class CertificateStatusRequest extends Value implements Iterable<byte[]>
       }
     return n;
   }
-  
+
   public byte[] responderId(int index)
   {
     int len = buffer.getShort(1) & 0xFFFF;
@@ -152,7 +152,7 @@ public class CertificateStatusRequest extends Value implements Iterable<byte[]>
       }
     throw new IndexOutOfBoundsException();
   }
-  
+
   public byte[] requestExtensions()
   {
     int l = 2 + (buffer.getShort(0) & 0xFFFF);
@@ -161,19 +161,19 @@ public class CertificateStatusRequest extends Value implements Iterable<byte[]>
     ((ByteBuffer) buffer.duplicate().position(ll+2)).get(b);
     return b;
   }
-  
+
   public void setStatusType(CertificateStatusType type)
   {
     buffer.put(0, (byte) type.value);
   }
-  
+
   public void setRequestIdListLength(int newLength)
   {
     if (newLength < 0 || newLength > 0xFFFF)
       throw new IllegalArgumentException("length out of range");
     buffer.putShort(1, (short) newLength);
   }
-  
+
   public void putRequestId(int index, byte[] id)
   {
     if (id.length > 0xFFFF)
@@ -192,7 +192,7 @@ public class CertificateStatusRequest extends Value implements Iterable<byte[]>
     buffer.putShort(i, (short) id.length);
     ((ByteBuffer) buffer.duplicate().position(i)).put(id);
   }
-  
+
   public void setRequestExtensions(int index, byte[] ext)
   {
     if (ext.length > 0xFFFF)
@@ -201,17 +201,17 @@ public class CertificateStatusRequest extends Value implements Iterable<byte[]>
     buffer.putShort(off, (short) ext.length);
     ((ByteBuffer) buffer.duplicate().position(off+2)).put(ext);
   }
-  
+
   public Iterator<byte[]> iterator()
   {
     return new ResponderIdIterator();
   }
-  
+
   public String toString()
   {
     return toString(null);
   }
-  
+
   public String toString(String prefix)
   {
     StringWriter str = new StringWriter();
@@ -237,16 +237,16 @@ public class CertificateStatusRequest extends Value implements Iterable<byte[]>
     out.print("} CertificateStatus;");
     return str.toString();
   }
-  
+
   public class ResponderIdIterator implements Iterator<byte[]>
   {
     private int index;
-    
+
     public ResponderIdIterator()
     {
       index = 0;
     }
-    
+
     public byte[] next() throws NoSuchElementException
     {
       try
@@ -258,12 +258,12 @@ public class CertificateStatusRequest extends Value implements Iterable<byte[]>
           throw new NoSuchElementException();
         }
     }
-    
+
     public boolean hasNext()
     {
       return index < size();
     }
-    
+
     public void remove()
     {
       throw new UnsupportedOperationException();

@@ -77,7 +77,7 @@ public class IIOInputStream extends InputStream
 
   public int read() throws IOException
   {
-    return is.read();    
+    return is.read();
   }
 
   public int read(byte[] b) throws IOException

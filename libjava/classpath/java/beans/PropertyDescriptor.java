@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -100,7 +100,7 @@ public class PropertyDescriptor extends FeatureDescriptor
      **             starting with a lowercase letter (e.g. fooManChu
      **             instead of FooManChu).
      ** @param beanClass the class the get and set methods live in.
-     ** @exception IntrospectionException if the methods are not found 
+     ** @exception IntrospectionException if the methods are not found
      **            or invalid.
      **/
     public PropertyDescriptor(String name, Class<?> beanClass)
@@ -126,7 +126,7 @@ public class PropertyDescriptor extends FeatureDescriptor
                 "Cannot find a " + caps + " method");
         }
 
-        // finally check the methods compatibility        
+        // finally check the methods compatibility
         propertyType = checkMethods(getMethod, setMethod);
     }
 
@@ -154,7 +154,7 @@ public class PropertyDescriptor extends FeatureDescriptor
      ** @param beanClass the class the get and set methods live in.
      ** @param getMethodName the name of the get method or <code>null</code> if the property is write-only.
      ** @param setMethodName the name of the set method or <code>null</code> if the property is read-only.
-     ** @exception IntrospectionException if the methods are not found 
+     ** @exception IntrospectionException if the methods are not found
      **            or invalid.
      **/
     public PropertyDescriptor(
@@ -188,13 +188,13 @@ public class PropertyDescriptor extends FeatureDescriptor
      **<br>
      ** It is possible to call this method with both <code>Method</code> arguments
      ** being <code>null</code>. In such a case the property type is <code>null</code>.
-     ** 
+     **
      ** @param name the programmatic name of the property, usually
      **             starting with a lowercase letter (e.g. fooManChu
      **             instead of FooManChu).
      ** @param readMethod the read method or <code>null</code> if the property is write-only.
      ** @param writeMethod the write method or <code>null</code> if the property is read-only.
-     ** @exception IntrospectionException if the methods are not found 
+     ** @exception IntrospectionException if the methods are not found
      **            or invalid.
      **/
     public PropertyDescriptor(
@@ -234,7 +234,7 @@ public class PropertyDescriptor extends FeatureDescriptor
      * <br/>
      * It is legal to set the read and the write method to <code>null</code>
      * or provide method which have been declared in distinct classes.
-     * 
+     *
      * @param readMethod The new method to be used or <code>null</code>.
      * @throws IntrospectionException If the given method is invalid.
      * @since 1.2
@@ -262,7 +262,7 @@ public class PropertyDescriptor extends FeatureDescriptor
      * <br/>
      * It is legal to set the read and the write method to <code>null</code>
      * or provide method which have been declared in distinct classes.
-     * 
+     *
      * @param writeMethod The new method to be used or <code>null</code>.
      * @throws IntrospectionException If the given method is invalid.
      * @since 1.2
@@ -338,7 +338,7 @@ public class PropertyDescriptor extends FeatureDescriptor
     /** Set the PropertyEditor class.  If the class does not implement
      ** the PropertyEditor interface, you will likely get an exception
      ** late in the game.
-     ** @param propertyEditorClass the PropertyEditor class for this 
+     ** @param propertyEditorClass the PropertyEditor class for this
      **        class to use.
      **/
     public void setPropertyEditorClass(Class<?> propertyEditorClass)
@@ -510,7 +510,7 @@ public class PropertyDescriptor extends FeatureDescriptor
      * <br/>
      * For compatibility this has to be noted:<br/>
      * The two methods are allowed to be defined in two distinct classes and may both be null.
-     * 
+     *
      * @param readMethod The new read method to check.
      * @param writeMethod The new write method to check.
      * @return The common property type of the two method.
@@ -566,7 +566,7 @@ public class PropertyDescriptor extends FeatureDescriptor
                 }
 
                 /* note: the check whether both method are defined in related classes makes sense but is not
-                 * done in the JDK. 
+                 * done in the JDK.
                  * I leave this code here in case someone at Sun decides to add that functionality in later versions (rschuster)
                 if ((!readMethod
                     .getDeclaringClass()
@@ -659,7 +659,7 @@ public class PropertyDescriptor extends FeatureDescriptor
         {
             return false;
         }
-        
+
     }
 
 }

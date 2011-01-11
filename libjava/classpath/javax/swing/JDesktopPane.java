@@ -329,13 +329,13 @@ public class JDesktopPane extends JLayeredPane implements Accessible
     int count = 0;
 
     for (int i = 0; i < components.length; i++)
-	if (components[i] instanceof JInternalFrame)
-	  count++;
-	  
+        if (components[i] instanceof JInternalFrame)
+          count++;
+
     JInternalFrame[] value = new JInternalFrame[count];
     for (int i = 0, j = 0; i < components.length && j != count; i++)
       if (components[i] instanceof JInternalFrame)
-	value[j++] = (JInternalFrame) components[i];
+        value[j++] = (JInternalFrame) components[i];
     return value;
   }
 
@@ -343,7 +343,7 @@ public class JDesktopPane extends JLayeredPane implements Accessible
    * Returns the object that provides accessibility features for this
    * <code>JDesktopPane</code> component.
    *
-   * @return The accessible context (an instance of 
+   * @return The accessible context (an instance of
    *     {@link AccessibleJDesktopPane}).
    */
   public AccessibleContext getAccessibleContext()
@@ -357,7 +357,7 @@ public class JDesktopPane extends JLayeredPane implements Accessible
   /**
    * Helper method for
    * {@link LookAndFeel#installProperty(JComponent, String, Object)}.
-   * 
+   *
    * @param propertyName the name of the property
    * @param value the value of the property
    *

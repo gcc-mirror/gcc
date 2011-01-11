@@ -53,13 +53,13 @@ public class SpooledDocument implements Doc
 
   public SpooledDocument(File file)
   {
-    try 
+    try
       {
-	fis = new FileInputStream(file);
+        fis = new FileInputStream(file);
       }
-    catch (FileNotFoundException ffne) 
+    catch (FileNotFoundException ffne)
       {
-	// Shouldn't happen.
+        // Shouldn't happen.
       }
   }
 
@@ -77,7 +77,7 @@ public class SpooledDocument implements Doc
   {
     return fis;
   }
-  
+
   public Reader getReaderForText()
   {
     return new InputStreamReader(fis);

@@ -56,7 +56,7 @@ import javax.swing.plaf.basic.BasicLookAndFeel;
 
 /**
  * A custom look and feel that is designed to look similar across different
- * operating systems.  To install this look and feel, add the following code 
+ * operating systems.  To install this look and feel, add the following code
  * (or something similar) near the start of your application:</p>
  * <pre>
  * try
@@ -69,12 +69,12 @@ import javax.swing.plaf.basic.BasicLookAndFeel;
  * }</pre>
  */
 public class MetalLookAndFeel extends BasicLookAndFeel
-{          
+{
   private static final long serialVersionUID = 6680646159193457980L;
-  
+
   /** The current theme. */
   private static MetalTheme theme;
-  
+
   /**
    * Creates a new instance of the Metal look and feel.
    */
@@ -95,7 +95,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    * Returns <code>false</code> to indicate that this look and feel does not
    * attempt to emulate the look and feel of native applications on the host
    * platform.
-   * 
+   *
    * @return <code>false</code>.
    */
   public boolean isNativeLookAndFeel()
@@ -106,7 +106,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   /**
    * Returns <code>true</code> to indicate that this look and feel is supported
    * on all platforms.
-   * 
+   *
    * @return <code>true</code>.
    */
   public boolean isSupportedLookAndFeel()
@@ -117,7 +117,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   /**
    * Returns a string describing the look and feel.  In this case, the method
    * returns "Metal look and feel".
-   * 
+   *
    * @return A string describing the look and feel.
    */
   public String getDescription()
@@ -127,7 +127,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
   /**
    * Returns the look and feel identifier.
-   * 
+   *
    * @return "MetalLookAndFeel".
    */
   public String getID()
@@ -137,7 +137,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
   /**
    * Returns the look and feel name.
-   * 
+   *
    * @return "MetalLookAndFeel".
    */
   public String getName()
@@ -156,7 +156,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
   /**
    * Returns the accelerator foreground color from the installed theme.
-   * 
+   *
    * @return The accelerator foreground color.
    */
   public static ColorUIResource getAcceleratorForeground()
@@ -167,9 +167,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   }
 
   /**
-   * Returns the accelerator selected foreground color from the installed 
+   * Returns the accelerator selected foreground color from the installed
    * theme.
-   * 
+   *
    * @return The accelerator selected foreground color.
    */
   public static ColorUIResource getAcceleratorSelectedForeground()
@@ -181,7 +181,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
   /**
    * Returns the color black from the installed theme.
-   * 
+   *
    * @return The color black.
    */
   public static ColorUIResource getBlack()
@@ -193,7 +193,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
   /**
    * Returns the control color from the installed theme.
-   * 
+   *
    * @return The control color.
    */
   public static ColorUIResource getControl()
@@ -206,7 +206,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   /**
    * Returns the color used for dark shadows on controls, from the installed
    * theme.
-   * 
+   *
    * @return The color used for dark shadows on controls.
    */
   public static ColorUIResource getControlDarkShadow()
@@ -218,7 +218,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
   /**
    * Returns the color used for disabled controls, from the installed theme.
-   * 
+   *
    * @return The color used for disabled controls.
    */
   public static ColorUIResource getControlDisabled()
@@ -231,7 +231,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   /**
    * Returns the color used to draw highlights for controls, from the installed
    * theme.
-   * 
+   *
    * @return The color used to draw highlights for controls.
    */
   public static ColorUIResource getControlHighlight()
@@ -242,9 +242,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   }
 
   /**
-   * Returns the color used to display control info, from the installed 
+   * Returns the color used to display control info, from the installed
    * theme.
-   * 
+   *
    * @return The color used to display control info.
    */
   public static ColorUIResource getControlInfo()
@@ -257,7 +257,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   /**
    * Returns the color used to draw shadows for controls, from the installed
    * theme.
-   * 
+   *
    * @return The color used to draw shadows for controls.
    */
   public static ColorUIResource getControlShadow()
@@ -269,7 +269,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
   /**
    * Returns the color used for text on controls, from the installed theme.
-   * 
+   *
    * @return The color used for text on controls.
    */
   public static ColorUIResource getControlTextColor()
@@ -281,7 +281,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
   /**
    * Returns the font used for text on controls, from the installed theme.
-   * 
+   *
    * @return The font used for text on controls.
    */
   public static FontUIResource getControlTextFont()
@@ -292,9 +292,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   }
 
   /**
-   * Returns the color used for the desktop background, from the installed 
+   * Returns the color used for the desktop background, from the installed
    * theme.
-   * 
+   *
    * @return The color used for the desktop background.
    */
   public static ColorUIResource getDesktopColor()
@@ -305,9 +305,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   }
 
   /**
-   * Returns the color used to draw focus highlights, from the installed 
+   * Returns the color used to draw focus highlights, from the installed
    * theme.
-   * 
+   *
    * @return The color used to draw focus highlights.
    */
   public static ColorUIResource getFocusColor()
@@ -320,7 +320,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   /**
    * Returns the color used to draw highlighted text, from the installed
    * theme.
-   * 
+   *
    * @return The color used to draw highlighted text.
    */
   public static ColorUIResource getHighlightedTextColor()
@@ -333,7 +333,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   /**
    * Returns the color used to draw text on inactive controls, from the
    * installed theme.
-   * 
+   *
    * @return The color used to draw text on inactive controls.
    */
   public static ColorUIResource getInactiveControlTextColor()
@@ -346,7 +346,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   /**
    * Returns the color used to draw inactive system text, from the installed
    * theme.
-   * 
+   *
    * @return The color used to draw inactive system text.
    */
   public static ColorUIResource getInactiveSystemTextColor()
@@ -358,9 +358,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
   /**
    * Returns the background color for menu items, from the installed theme.
-   * 
+   *
    * @return The background color for menu items.
-   * 
+   *
    * @see #getMenuSelectedBackground()
    */
   public static ColorUIResource getMenuBackground()
@@ -373,9 +373,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   /**
    * Returns the foreground color for disabled menu items, from the installed
    * theme.
-   * 
+   *
    * @return The foreground color for disabled menu items.
-   * 
+   *
    * @see #getMenuForeground()
    */
   public static ColorUIResource getMenuDisabledForeground()
@@ -387,9 +387,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
   /**
    * Returns the foreground color for menu items, from the installed theme.
-   * 
+   *
    * @return The foreground color for menu items.
-   * 
+   *
    * @see #getMenuDisabledForeground()
    * @see #getMenuSelectedForeground()
    */
@@ -403,9 +403,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   /**
    * Returns the background color for selected menu items, from the installed
    * theme.
-   * 
+   *
    * @return The background color for selected menu items.
-   * 
+   *
    * @see #getMenuBackground()
    */
   public static ColorUIResource getMenuSelectedBackground()
@@ -418,9 +418,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   /**
    * Returns the foreground color for selected menu items, from the installed
    * theme.
-   * 
+   *
    * @return The foreground color for selected menu items.
-   * 
+   *
    * @see #getMenuForeground()
    */
   public static ColorUIResource getMenuSelectedForeground()
@@ -432,7 +432,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
   /**
    * Returns the font used for text in menus, from the installed theme.
-   * 
+   *
    * @return The font used for text in menus.
    */
   public static FontUIResource getMenuTextFont()
@@ -444,7 +444,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
   /**
    * Returns the primary color for controls, from the installed theme.
-   * 
+   *
    * @return The primary color for controls.
    */
   public static ColorUIResource getPrimaryControl()
@@ -455,9 +455,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   }
 
   /**
-   * Returns the primary color for the dark shadow on controls, from the 
+   * Returns the primary color for the dark shadow on controls, from the
    * installed theme.
-   * 
+   *
    * @return The primary color for the dark shadow on controls.
    */
   public static ColorUIResource getPrimaryControlDarkShadow()
@@ -468,9 +468,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   }
 
   /**
-   * Returns the primary color for the highlight on controls, from the 
+   * Returns the primary color for the highlight on controls, from the
    * installed theme.
-   * 
+   *
    * @return The primary color for the highlight on controls.
    */
   public static ColorUIResource getPrimaryControlHighlight()
@@ -481,9 +481,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   }
 
   /**
-   * Returns the primary color for the information on controls, from the 
+   * Returns the primary color for the information on controls, from the
    * installed theme.
-   * 
+   *
    * @return The primary color for the information on controls.
    */
   public static ColorUIResource getPrimaryControlInfo()
@@ -496,7 +496,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   /**
    * Returns the primary color for the shadow on controls, from the installed
    * theme.
-   * 
+   *
    * @return The primary color for the shadow on controls.
    */
   public static ColorUIResource getPrimaryControlShadow()
@@ -508,7 +508,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
   /**
    * Returns the background color for separators, from the installed theme.
-   * 
+   *
    * @return The background color for separators.
    */
   public static ColorUIResource getSeparatorBackground()
@@ -520,7 +520,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
   /**
    * Returns the foreground color for separators, from the installed theme.
-   * 
+   *
    * @return The foreground color for separators.
    */
   public static ColorUIResource getSeparatorForeground()
@@ -532,7 +532,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
   /**
    * Returns the font used for sub text, from the installed theme.
-   * 
+   *
    * @return The font used for sub text.
    */
   public static FontUIResource getSubTextFont()
@@ -544,7 +544,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
   /**
    * Returns the color used for system text, from the installed theme.
-   * 
+   *
    * @return The color used for system text.
    */
   public static ColorUIResource getSystemTextColor()
@@ -556,7 +556,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
   /**
    * Returns the font used for system text, from the installed theme.
-   * 
+   *
    * @return The font used for system text.
    */
   public static FontUIResource getSystemTextFont()
@@ -568,7 +568,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
   /**
    * Returns the color used to highlight text, from the installed theme.
-   * 
+   *
    * @return The color used to highlight text.
    */
   public static ColorUIResource getTextHighlightColor()
@@ -580,7 +580,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
   /**
    * Returns the color used to display user text, from the installed theme.
-   * 
+   *
    * @return The color used to display user text.
    */
   public static ColorUIResource getUserTextColor()
@@ -592,7 +592,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
   /**
    * Returns the font used for user text, obtained from the current theme.
-   * 
+   *
    * @return The font used for user text.
    */
   public static FontUIResource getUserTextFont()
@@ -604,7 +604,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
   /**
    * Returns the color used for white, from the installed theme.
-   * 
+   *
    * @return The color used for white.
    */
   public static ColorUIResource getWhite()
@@ -616,7 +616,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
   /**
    * Returns the window background color, from the installed theme.
-   * 
+   *
    * @return The window background color.
    */
   public static ColorUIResource getWindowBackground()
@@ -628,7 +628,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
   /**
    * Returns the window title background color, from the installed theme.
-   * 
+   *
    * @return The window title background color.
    */
   public static ColorUIResource getWindowTitleBackground()
@@ -640,9 +640,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
   /**
    * Returns the window title font from the current theme.
-   * 
+   *
    * @return The window title font.
-   * 
+   *
    * @see MetalTheme
    */
   public static FontUIResource getWindowTitleFont()
@@ -654,7 +654,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
   /**
    * Returns the window title foreground color, from the installed theme.
-   * 
+   *
    * @return The window title foreground color.
    */
   public static ColorUIResource getWindowTitleForeground()
@@ -665,9 +665,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   }
 
   /**
-   * Returns the background color for an inactive window title, from the 
+   * Returns the background color for an inactive window title, from the
    * installed theme.
-   * 
+   *
    * @return The background color for an inactive window title.
    */
   public static ColorUIResource getWindowTitleInactiveBackground()
@@ -678,9 +678,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   }
 
   /**
-   * Returns the foreground color for an inactive window title, from the 
+   * Returns the foreground color for an inactive window title, from the
    * installed theme.
-   * 
+   *
    * @return The foreground color for an inactive window title.
    */
   public static ColorUIResource getWindowTitleInactiveForeground()
@@ -691,17 +691,17 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   }
 
   /**
-   * Sets the current theme for the look and feel.  Note that the theme must be 
-   * set <em>before</em> the look and feel is installed.  To change the theme 
-   * for an already running application that is using the 
-   * {@link MetalLookAndFeel}, first set the theme with this method, then 
-   * create a new instance of {@link MetalLookAndFeel} and install it in the 
+   * Sets the current theme for the look and feel.  Note that the theme must be
+   * set <em>before</em> the look and feel is installed.  To change the theme
+   * for an already running application that is using the
+   * {@link MetalLookAndFeel}, first set the theme with this method, then
+   * create a new instance of {@link MetalLookAndFeel} and install it in the
    * usual way (see {@link UIManager#setLookAndFeel(LookAndFeel)}).
-   * 
+   *
    * @param theme  the theme (<code>null</code> not permitted).
-   * 
+   *
    * @throws NullPointerException if <code>theme</code> is <code>null</code>.
-   * 
+   *
    * @see #getCurrentTheme()
    */
   public static void setCurrentTheme(MetalTheme theme)
@@ -934,7 +934,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "EditorPane.inactiveForeground",  getInactiveSystemTextColor(),
       "EditorPane.selectionBackground", getTextHighlightColor(),
       "EditorPane.selectionForeground", getHighlightedTextColor(),
-      
+
       "FormattedTextField.background", getWindowBackground(),
       "FormattedTextField.border",
       new BorderUIResource(MetalBorders.getTextFieldBorder()),
@@ -946,15 +946,15 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "FormattedTextField.selectionBackground", getTextHighlightColor(),
       "FormattedTextField.selectionForeground", getHighlightedTextColor(),
 
-      "FileChooser.upFolderIcon", 
+      "FileChooser.upFolderIcon",
           MetalIconFactory.getFileChooserUpFolderIcon(),
-      "FileChooser.listViewIcon", 
+      "FileChooser.listViewIcon",
           MetalIconFactory.getFileChooserListViewIcon(),
-      "FileChooser.newFolderIcon", 
+      "FileChooser.newFolderIcon",
           MetalIconFactory.getFileChooserNewFolderIcon(),
-      "FileChooser.homeFolderIcon", 
+      "FileChooser.homeFolderIcon",
           MetalIconFactory.getFileChooserHomeFolderIcon(),
-      "FileChooser.detailsViewIcon", 
+      "FileChooser.detailsViewIcon",
           MetalIconFactory.getFileChooserDetailViewIcon(),
       "FileChooser.fileNameLabelMnemonic", new Integer(78),
       "FileChooser.filesOfTypeLabelMnemonic", new Integer(84),
@@ -974,15 +974,15 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "InternalFrame.borderLight", getControlHighlight(),
       "InternalFrame.borderShadow", getControlShadow(),
       "InternalFrame.icon", MetalIconFactory.getInternalFrameDefaultMenuIcon(),
-      "InternalFrame.closeIcon", 
+      "InternalFrame.closeIcon",
         MetalIconFactory.getInternalFrameCloseIcon(16),
       "InternalFrame.closeSound", "sounds/FrameClose.wav",
       "InternalFrame.inactiveTitleBackground", getWindowTitleInactiveBackground(),
       "InternalFrame.inactiveTitleForeground", getWindowTitleInactiveForeground(),
-      "InternalFrame.maximizeIcon", 
+      "InternalFrame.maximizeIcon",
         MetalIconFactory.getInternalFrameMaximizeIcon(16),
       "InternalFrame.maximizeSound", "sounds/FrameMaximize.wav",
-      "InternalFrame.iconifyIcon", 
+      "InternalFrame.iconifyIcon",
         MetalIconFactory.getInternalFrameMinimizeIcon(16),
       "InternalFrame.minimizeSound", "sounds/FrameMinimize.wav",
       "InternalFrame.paletteBorder", new MetalBorders.PaletteBorder(),
@@ -1002,7 +1002,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "List.foreground", getUserTextColor(),
       "List.selectionBackground", getTextHighlightColor(),
       "List.selectionForeground", getHighlightedTextColor(),
-      "List.focusCellHighlightBorder", 
+      "List.focusCellHighlightBorder",
         new LineBorderUIResource(MetalLookAndFeel.getFocusColor()),
 
       "Menu.acceleratorFont", new FontUIResource("Dialog", Font.PLAIN, 10),
@@ -1047,7 +1047,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "OptionPane.informationSound", "sounds/OptionPaneInformation.wav",
       "OptionPane.questionSound", "sounds/OptionPaneQuestion.wav",
       "OptionPane.warningSound", "sounds/OptionPaneWarning.wav",
-      "OptionPane.errorDialog.border.background", new ColorUIResource(153, 51, 51), 
+      "OptionPane.errorDialog.border.background", new ColorUIResource(153, 51, 51),
       "OptionPane.errorDialog.titlePane.background", new ColorUIResource(255, 153, 153),
       "OptionPane.errorDialog.titlePane.foreground", new ColorUIResource(51, 0, 0),
       "OptionPane.errorDialog.titlePane.shadow", new ColorUIResource(204, 102, 102),
@@ -1114,16 +1114,16 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "RadioButtonMenuItem.background", getMenuBackground(),
       "RadioButtonMenuItem.border", new MetalBorders.MenuItemBorder(),
       "RadioButtonMenuItem.borderPainted", Boolean.TRUE,
-      "RadioButtonMenuItem.checkIcon", 
+      "RadioButtonMenuItem.checkIcon",
         MetalIconFactory.getRadioButtonMenuItemIcon(),
       "RadioButtonMenuItem.commandSound", "sounds/MenuItemCommand.wav",
       "RadioButtonMenuItem.disabledForeground", getMenuDisabledForeground(),
       "RadioButtonMenuItem.font", getMenuTextFont(),
       "RadioButtonMenuItem.foreground", getMenuForeground(),
       "RadioButtonMenuItem.margin", new InsetsUIResource(2, 2, 2, 2),
-      "RadioButtonMenuItem.selectionBackground", 
+      "RadioButtonMenuItem.selectionBackground",
         MetalLookAndFeel.getMenuSelectedBackground(),
-      "RadioButtonMenuItem.selectionForeground", 
+      "RadioButtonMenuItem.selectionForeground",
         MetalLookAndFeel.getMenuSelectedForeground(),
 
       "ScrollBar.allowsAbsolutePositioning", Boolean.TRUE,
@@ -1154,12 +1154,12 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "Slider.focusInsets", new InsetsUIResource(0, 0, 0, 0),
       "Slider.foreground", getPrimaryControlShadow(),
       "Slider.highlight", getControlHighlight(),
-      "Slider.horizontalThumbIcon", 
+      "Slider.horizontalThumbIcon",
       MetalIconFactory.getHorizontalSliderThumbIcon(),
       "Slider.majorTickLength", new Integer(6),
       "Slider.shadow", getControlShadow(),
       "Slider.trackWidth", new Integer(7),
-      "Slider.verticalThumbIcon", 
+      "Slider.verticalThumbIcon",
       MetalIconFactory.getVerticalSliderThumbIcon(),
 
       "Spinner.arrowButtonInsets", new InsetsUIResource(0, 0, 0, 0),
@@ -1197,7 +1197,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       // new properties in OceanTheme:
       // TabbedPane.contentAreaColor
       // TabbedPane.unselectedBackground
-      
+
       "Table.background", getWindowBackground(),
       "Table.focusCellBackground", getWindowBackground(),
       "Table.focusCellForeground", getControlTextColor(),
@@ -1235,7 +1235,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "TextField.selectionBackground", getTextHighlightColor(),
       "TextField.selectionForeground", getHighlightedTextColor(),
       "TextField.shadow", getControlShadow(),
-     
+
       "TextPane.background", getWindowBackground(),
       "TextPane.caretForeground", getUserTextColor(),
       "TextPane.font", new FontUIResource("Dialog", Font.PLAIN, 12),
@@ -1341,7 +1341,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    * an instance of {@link OceanTheme}.
    *
    * @return The current theme (never <code>null</code>).
-   * 
+   *
    * @see #setCurrentTheme(MetalTheme)
    */
   public static MetalTheme getCurrentTheme()

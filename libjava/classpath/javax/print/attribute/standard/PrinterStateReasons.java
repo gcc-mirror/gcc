@@ -49,15 +49,15 @@ import javax.print.attribute.Attribute;
 import javax.print.attribute.PrintServiceAttribute;
 
 /**
- * The <code>PrinterStateReasons</code> attribute provides the set of 
- * additional informations available about the current state of the printer 
+ * The <code>PrinterStateReasons</code> attribute provides the set of
+ * additional informations available about the current state of the printer
  * device.
  * <p>
  * The attribute is basically a map with <code>PrinterStateReason</code>
- * objects as keys associated with their severity level as 
- * <code>Severity</code> instances. The IPP keyword value can be 
+ * objects as keys associated with their severity level as
+ * <code>Severity</code> instances. The IPP keyword value can be
  * constructed as follows: <br>
- * <code>reason.toString() + '-' + severity.toString()</code> 
+ * <code>reason.toString() + '-' + severity.toString()</code>
  * </p>
  * <p>
  * <b>IPP Compatibility:</b> PrinterStateReasons is an IPP 1.1 attribute.
@@ -65,7 +65,7 @@ import javax.print.attribute.PrintServiceAttribute;
  * @see javax.print.attribute.standard.PrinterState
  * @see javax.print.attribute.standard.PrinterStateReason
  * @see javax.print.attribute.standard.Severity
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
@@ -77,7 +77,7 @@ public final class PrinterStateReasons
 
   /**
    * Constructs an empty <code>PrinterStateReasons</code> attribute.
-   */  
+   */
   public PrinterStateReasons()
   {
     super();
@@ -86,10 +86,10 @@ public final class PrinterStateReasons
   /**
    * Constructs an empty <code>PrinterStateReasons</code> attribute
    * with the given initial capacity and load factor.
-   * 
+   *
    * @param initialCapacity the intial capacity.
    * @param loadFactor the load factor of the underlying HashMap.
-   * 
+   *
    * @throws IllegalArgumentException if initialCapacity &lt; 0
    * @throws IllegalArgumentException if initialCapacity or loadFactor &lt; 0
    */
@@ -101,9 +101,9 @@ public final class PrinterStateReasons
   /**
    * Constructs an empty <code>PrinterStateReasons</code> attribute
    * with the given initial capacity and the default load factor.
-   * 
+   *
    * @param initialCapacity the intial capacity.
-   * 
+   *
    * @throws IllegalArgumentException if initialCapacity &lt; 0
    */
   public PrinterStateReasons(int initialCapacity)
@@ -114,13 +114,13 @@ public final class PrinterStateReasons
   /**
    * Constructs a <code>PrinterStateReasons</code> attribute
    * with the given content of the map.
-   * 
-   * @param map the map for the initial values with the same 
+   *
+   * @param map the map for the initial values with the same
    * <code>PrinterStateReason</code> to <code>Severity</code> mappings.
-   * 
+   *
    * @throws NullPointerException if map or any key/value is <code>null</code>.
-   * @throws ClassCastException if values of map are not of type 
-   * <code>PrinterStateReason</code> and keys are not of type 
+   * @throws ClassCastException if values of map are not of type
+   * <code>PrinterStateReason</code> and keys are not of type
    * <code>Severity</code>.
    */
   public PrinterStateReasons(Map<PrinterStateReason,Severity> map)
@@ -135,7 +135,7 @@ public final class PrinterStateReasons
   /**
    * Constructs an unmodifiable view of the contained printer state reasons
    * associated with the given severity level.
-   * 
+   *
    * @param severity the severity level for the constructed set.
    * @return The set of printer state reasons.
    */
@@ -143,7 +143,7 @@ public final class PrinterStateReasons
   {
     if (severity == null)
       throw new NullPointerException("severity is null");
-    
+
     HashSet set = new HashSet();
     Iterator it = entrySet().iterator();
     while (it.hasNext())
@@ -152,35 +152,35 @@ public final class PrinterStateReasons
         if (entry.getValue().equals(severity))
           set.add(entry.getKey());
       }
-    
+
     return Collections.unmodifiableSet(set);
   }
-  
+
   /**
    * Puts the given reason object associated with the given severity object
    * into the set.
-   * 
+   *
    * @param reason the reason of type <code>PrinterStateReason</code>.
    * @param severity the severity of the reason of type <code>Severity</code>.
-   * 
-   * @return The previously associated severity of the reason or 
+   *
+   * @return The previously associated severity of the reason or
    * <code>null</code> if the reason object was not in the map before.
-   * 
+   *
    * @throws NullPointerException if any of the values is <code>null</code>.
-   * @throws ClassCastException if reason is not a 
-   * <code>PrinterStateReason</code> and severity is not a 
+   * @throws ClassCastException if reason is not a
+   * <code>PrinterStateReason</code> and severity is not a
    * <code>Severity</code> instance.
    */
   public Severity put(PrinterStateReason reason,Severity severity)
   {
     if (reason == null)
-      throw new NullPointerException("reason is null");    
+      throw new NullPointerException("reason is null");
     if (severity == null)
       throw new NullPointerException("severity is null");
-    
+
     return super.put(reason, severity);
-  }   
-  
+  }
+
   /**
    * Returns category of this class.
    *

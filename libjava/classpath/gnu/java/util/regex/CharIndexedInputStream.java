@@ -45,7 +45,7 @@ import java.io.InputStream;
 class CharIndexedInputStream implements CharIndexed
 {
   private static final int BUFFER_INCREMENT = 1024;
-  private static final int UNKNOWN = Integer.MAX_VALUE;	// value for end
+  private static final int UNKNOWN = Integer.MAX_VALUE; // value for end
 
   private BufferedInputStream br;
 
@@ -78,22 +78,22 @@ class CharIndexedInputStream implements CharIndexed
   {
     if (end == 1)
       return false;
-    end--;			// closer to end
+    end--;                      // closer to end
 
     try
     {
       if (index != -1)
-	{
-	  br.reset ();
-	}
+        {
+          br.reset ();
+        }
       int i = br.read ();
       br.mark (bufsize);
       if (i == -1)
-	{
-	  end = 1;
-	  cached = OUT_OF_BOUNDS;
-	  return false;
-	}
+        {
+          end = 1;
+          cached = OUT_OF_BOUNDS;
+          return false;
+        }
       cached = (char) i;
       index = 1;
     } catch (IOException e)
@@ -109,62 +109,62 @@ class CharIndexedInputStream implements CharIndexed
   {
     if (index == 0)
       {
-	return cached;
+        return cached;
       }
     else if (index >= end)
       {
-	return OUT_OF_BOUNDS;
+        return OUT_OF_BOUNDS;
       }
     else if (index == -1)
       {
-	return lookBehind[0];
+        return lookBehind[0];
       }
     else if (index == -2)
       {
-	return lookBehind[1];
+        return lookBehind[1];
       }
     else if (index < -2)
       {
-	return OUT_OF_BOUNDS;
+        return OUT_OF_BOUNDS;
       }
     else if (index >= bufsize)
       {
-	// Allocate more space in the buffer.
-	try
-	{
-	  while (bufsize <= index)
-	    bufsize += BUFFER_INCREMENT;
-	  br.reset ();
-	  br.mark (bufsize);
-	  br.skip (index - 1);
-	}
-	catch (IOException e)
-	{
-	}
+        // Allocate more space in the buffer.
+        try
+        {
+          while (bufsize <= index)
+            bufsize += BUFFER_INCREMENT;
+          br.reset ();
+          br.mark (bufsize);
+          br.skip (index - 1);
+        }
+        catch (IOException e)
+        {
+        }
       }
     else if (this.index != index)
       {
-	try
-	{
-	  br.reset ();
-	  br.skip (index - 1);
-	}
-	catch (IOException e)
-	{
-	}
+        try
+        {
+          br.reset ();
+          br.skip (index - 1);
+        }
+        catch (IOException e)
+        {
+        }
       }
     char ch = OUT_OF_BOUNDS;
 
     try
     {
       int i = br.read ();
-      this.index = index + 1;	// this.index is index of next pos relative to charAt(0)
+      this.index = index + 1;   // this.index is index of next pos relative to charAt(0)
       if (i == -1)
-	{
-	  // set flag that next should fail next time?
-	  end = index;
-	  return ch;
-	}
+        {
+          // set flag that next should fail next time?
+          end = index;
+          return ch;
+        }
       ch = (char) i;
     } catch (IOException ie)
     {

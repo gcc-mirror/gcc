@@ -1,4 +1,4 @@
-/* VMSelector.java -- 
+/* VMSelector.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -50,7 +50,7 @@ public final class VMSelector
         System.loadLibrary ("javanio");
       }
   }
-  
+
   // A timeout value of 0 means block forever.
   static native int select (int[] read, int[] write,
                                         int[] except, long timeout)

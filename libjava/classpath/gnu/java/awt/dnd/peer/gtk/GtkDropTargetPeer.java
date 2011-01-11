@@ -52,7 +52,7 @@ public class GtkDropTargetPeer
   {
     super(null);
   }
-  
+
   public void addDropTarget(DropTarget target)
   {
     // FIXME: Not Implemented

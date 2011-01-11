@@ -72,7 +72,7 @@ import javax.swing.plaf.metal.MetalIconFactory;
 
 
 /**
- * A UI delegate for the {@link JFileChooser} component under the 
+ * A UI delegate for the {@link JFileChooser} component under the
  * {@link BasicLookAndFeel}.
  */
 public class BasicFileChooserUI extends FileChooserUI
@@ -89,7 +89,7 @@ public class BasicFileChooserUI extends FileChooserUI
     {
       // Nothing to do here.
     }
-    
+
     /**
      * Returns <code>true</code> always, as all files are accepted by this
      * filter.
@@ -116,7 +116,7 @@ public class BasicFileChooserUI extends FileChooserUI
 
   /**
    * Handles a user action to approve the dialog selection.
-   * 
+   *
    * @see BasicFileChooserUI#getApproveSelectionAction()
    */
   protected class ApproveSelectionAction extends AbstractAction
@@ -131,7 +131,7 @@ public class BasicFileChooserUI extends FileChooserUI
 
     /**
      * Sets the current selection and closes the dialog.
-     * 
+     *
      * @param e  the action event.
      */
     public void actionPerformed(ActionEvent e)
@@ -159,8 +159,8 @@ public class BasicFileChooserUI extends FileChooserUI
       else
         {
           File f = new File(filechooser.getCurrentDirectory(), getFileName());
-	  if ( selectedDir != null )
-	    f = selectedDir;
+          if ( selectedDir != null )
+            f = selectedDir;
           if (filechooser.isTraversable(f))
             {
               filechooser.setCurrentDirectory(f);
@@ -212,7 +212,7 @@ public class BasicFileChooserUI extends FileChooserUI
     }
 
     /**
-     * Retrieves the icon associated with the specified file/directory, if 
+     * Retrieves the icon associated with the specified file/directory, if
      * there is one.
      *
      * @param f  the file/directory.
@@ -225,8 +225,8 @@ public class BasicFileChooserUI extends FileChooserUI
     }
 
     /**
-     * Returns a description of the given file/directory.  In this 
-     * implementation, the description is the same as the name returned by 
+     * Returns a description of the given file/directory.  In this
+     * implementation, the description is the same as the name returned by
      * {@link #getName(File)}.
      *
      * @param f  the file/directory.
@@ -249,11 +249,11 @@ public class BasicFileChooserUI extends FileChooserUI
     {
       Icon val = getCachedIcon(f);
       if (val != null)
-	return val;
+        return val;
       if (filechooser.isTraversable(f))
-	val = directoryIcon;
+        val = directoryIcon;
       else
-	val = fileIcon;
+        val = fileIcon;
       cacheIcon(f, val);
       return val;
     }
@@ -287,9 +287,9 @@ public class BasicFileChooserUI extends FileChooserUI
     public String getTypeDescription(File f)
     {
       if (filechooser.isTraversable(f))
-	return dirDescText;
+        return dirDescText;
       else
-	return fileDescText;
+        return fileDescText;
     }
 
     /**
@@ -308,7 +308,7 @@ public class BasicFileChooserUI extends FileChooserUI
 
   /**
    * Handles an action to cancel the file chooser.
-   * 
+   *
    * @see BasicFileChooserUI#getCancelSelectionAction()
    */
   protected class CancelSelectionAction extends AbstractAction
@@ -338,7 +338,7 @@ public class BasicFileChooserUI extends FileChooserUI
   /**
    * An action to handle changes to the parent directory (for example, via
    * a click on the "up folder" button).
-   * 
+   *
    * @see BasicFileChooserUI#getChangeToParentDirectoryAction()
    */
   protected class ChangeToParentDirectoryAction extends AbstractAction
@@ -366,7 +366,7 @@ public class BasicFileChooserUI extends FileChooserUI
 
   /**
    * A mouse listener that handles double-click events.
-   * 
+   *
    * @see BasicFileChooserUI#createDoubleClickListener(JFileChooser, JList)
    */
   protected class DoubleClickListener extends MouseAdapter
@@ -392,7 +392,7 @@ public class BasicFileChooserUI extends FileChooserUI
 
     /**
      * Handles a mouse click event.
-     * 
+     *
      * @param e  the event.
      */
     public void mouseClicked(MouseEvent e)
@@ -422,7 +422,7 @@ public class BasicFileChooserUI extends FileChooserUI
           String path = p.toString();
           File f = fsv.createFileObject(path);
           filechooser.setSelectedFile(f);
-          
+
           if (filechooser.isMultiSelectionEnabled())
             {
               int[] inds = list.getSelectedIndices();
@@ -431,7 +431,7 @@ public class BasicFileChooserUI extends FileChooserUI
                 allFiles[i] = (File) list.getModel().getElementAt(inds[i]);
               filechooser.setSelectedFiles(allFiles);
             }
-          
+
           if (filechooser.isTraversable(f))
             {
               setDirectorySelected(true);
@@ -444,18 +444,18 @@ public class BasicFileChooserUI extends FileChooserUI
             }
           lastSelected = path;
           parentPath = f.getParent();
-	    
+
           if (f.isFile())
             setFileName(f.getName());
-          else if (filechooser.getFileSelectionMode() != 
-		   JFileChooser.FILES_ONLY)
+          else if (filechooser.getFileSelectionMode() !=
+                   JFileChooser.FILES_ONLY)
             setFileName(path);
         }
     }
 
     /**
      * Handles a mouse entered event (NOT IMPLEMENTED).
-     * 
+     *
      * @param e  the mouse event.
      */
     public void mouseEntered(MouseEvent e)
@@ -465,9 +465,9 @@ public class BasicFileChooserUI extends FileChooserUI
   }
 
   /**
-   * An action that changes the file chooser to display the user's home 
-   * directory. 
-   * 
+   * An action that changes the file chooser to display the user's home
+   * directory.
+   *
    * @see BasicFileChooserUI#getGoHomeAction()
    */
   protected class GoHomeAction extends AbstractAction
@@ -497,7 +497,7 @@ public class BasicFileChooserUI extends FileChooserUI
 
   /**
    * An action that handles the creation of a new folder/directory.
-   * 
+   *
    * @see BasicFileChooserUI#getNewFolderAction()
    */
   protected class NewFolderAction extends AbstractAction
@@ -519,12 +519,12 @@ public class BasicFileChooserUI extends FileChooserUI
     {
       try
         {
-	  filechooser.getFileSystemView().createNewFolder(filechooser
-	                                                  .getCurrentDirectory());
+          filechooser.getFileSystemView().createNewFolder(filechooser
+                                                          .getCurrentDirectory());
         }
       catch (IOException ioe)
         {
-	  return;
+          return;
         }
       filechooser.rescanCurrentDirectory();
       filechooser.repaint();
@@ -533,7 +533,7 @@ public class BasicFileChooserUI extends FileChooserUI
 
   /**
    * A listener for selection events in the file list.
-   * 
+   *
    * @see BasicFileChooserUI#createListSelectionListener(JFileChooser)
    */
   protected class SelectionListener implements ListSelectionListener
@@ -556,24 +556,24 @@ public class BasicFileChooserUI extends FileChooserUI
       JList list = (JList) e.getSource();
       Object f = list.getSelectedValue();
       if (f == null)
-	return;
+        return;
       File file = filechooser.getFileSystemView().createFileObject(f.toString());
       if (! filechooser.isTraversable(file))
-	{
-	  selectedDir = null;
-	  filechooser.setSelectedFile(file);
-	}
+        {
+          selectedDir = null;
+          filechooser.setSelectedFile(file);
+        }
       else
-	{
-	  selectedDir = file;
-	  filechooser.setSelectedFile(null);
-	}
+        {
+          selectedDir = file;
+          filechooser.setSelectedFile(null);
+        }
     }
   }
 
   /**
    * DOCUMENT ME!
-   * 
+   *
    * @see BasicFileChooserUI#getUpdateAction()
    */
   protected class UpdateAction extends AbstractAction
@@ -722,46 +722,46 @@ public class BasicFileChooserUI extends FileChooserUI
   // FIXME: describe what is contained in the bottom panel
   /** The bottom panel. */
   JPanel bottomPanel;
-  
+
   /** The close panel. */
   JPanel closePanel;
 
   /** Text box that displays file name */
   JTextField entry;
-    
+
   /** Current parent path */
   String parentPath;
-  
+
   /**
    * The action for the 'approve' button.
    * @see #getApproveSelectionAction()
    */
   private ApproveSelectionAction approveSelectionAction;
-  
+
   /**
    * The action for the 'cancel' button.
    * @see #getCancelSelectionAction()
    */
   private CancelSelectionAction cancelSelectionAction;
-  
+
   /**
    * The action for the 'go home' control button.
    * @see #getGoHomeAction()
    */
   private GoHomeAction goHomeAction;
-  
+
   /**
    * The action for the 'up folder' control button.
    * @see #getChangeToParentDirectoryAction()
    */
   private ChangeToParentDirectoryAction changeToParentDirectoryAction;
-  
+
   /**
    * The action for the 'new folder' control button.
    * @see #getNewFolderAction()
    */
   private NewFolderAction newFolderAction;
-  
+
   /**
    * The action for ???.  // FIXME: what is this?
    * @see #getUpdateAction()
@@ -774,7 +774,7 @@ public class BasicFileChooserUI extends FileChooserUI
    * the directory on "Open" when in that mode.
    */
   private File selectedDir;
-  
+
   // -- end private --
 
   /**
@@ -810,7 +810,7 @@ public class BasicFileChooserUI extends FileChooserUI
 
   /**
    * Installs the UI for the specified component.
-   * 
+   *
    * @param c  the component (should be a {@link JFileChooser}).
    */
   public void installUI(JComponent c)
@@ -825,7 +825,7 @@ public class BasicFileChooserUI extends FileChooserUI
         installDefaults(fc);
         installComponents(fc);
         installListeners(fc);
-        
+
         File path = filechooser.getCurrentDirectory();
         if (path != null)
           parentPath = path.getParent();
@@ -834,7 +834,7 @@ public class BasicFileChooserUI extends FileChooserUI
 
   /**
    * Uninstalls this UI from the given component.
-   * 
+   *
    * @param c  the component (should be a {@link JFileChooser}).
    */
   public void uninstallUI(JComponent c)
@@ -868,7 +868,7 @@ public class BasicFileChooserUI extends FileChooserUI
     if (parentFiles.size() == 0)
       return;
 
-  }  
+  }
 
   /**
    * Creates and install the subcomponents for the file chooser.
@@ -996,9 +996,9 @@ public class BasicFileChooserUI extends FileChooserUI
 
     directoryOpenButtonText = "Open";
     directoryOpenButtonToolTipText = "Open selected directory";
-    directoryOpenButtonMnemonic 
+    directoryOpenButtonMnemonic
         = new Integer((String) UIManager.get("FileChooser.directoryOpenButtonMnemonic")).intValue();
-    
+
     helpButtonText = "Help";
     helpButtonToolTipText = "FileChooser help";
     helpButtonMnemonic = new Integer((String) UIManager.get("FileChooser.helpButtonMnemonic")).intValue();
@@ -1010,7 +1010,7 @@ public class BasicFileChooserUI extends FileChooserUI
     saveButtonText = "Save";
     saveButtonToolTipText = "Save selected file";
     saveButtonMnemonic = new Integer((String) UIManager.get("FileChooser.saveButtonMnemonic")).intValue();
-  
+
     updateButtonText = "Update";
     updateButtonToolTipText = "Update directory listing";
     updateButtonMnemonic = new Integer((String) UIManager.get("FileChooser.updateButtonMnemonic")).intValue();
@@ -1041,7 +1041,7 @@ public class BasicFileChooserUI extends FileChooserUI
 
     saveButtonText = null;
     saveButtonToolTipText = null;
-    
+
     updateButtonText = null;
     updateButtonToolTipText = null;
   }
@@ -1067,9 +1067,9 @@ public class BasicFileChooserUI extends FileChooserUI
   /**
    * Creates a listener to handle changes to the properties of the given
    * file chooser component.
-   * 
+   *
    * @param fc  the file chooser component.
-   * 
+   *
    * @return A new listener.
    */
   public PropertyChangeListener createPropertyChangeListener(JFileChooser fc)
@@ -1080,7 +1080,7 @@ public class BasicFileChooserUI extends FileChooserUI
 
   /**
    * Returns the current file name.
-   * 
+   *
    * @return The current file name.
    */
   public String getFileName()
@@ -1092,7 +1092,7 @@ public class BasicFileChooserUI extends FileChooserUI
    * Returns the current directory name.
    *
    * @return The directory name.
-   * 
+   *
    * @see #setDirectoryName(String)
    */
   public String getDirectoryName()
@@ -1105,12 +1105,12 @@ public class BasicFileChooserUI extends FileChooserUI
    * Sets the file name.
    *
    * @param filename  the file name.
-   * 
+   *
    * @see #getFileName()
    */
   public void setFileName(String filename)
   {
-    // FIXME:  it might be the case that this method provides an access 
+    // FIXME:  it might be the case that this method provides an access
     // point for the JTextField (or whatever) a subclass is using...
     //this.filename = filename;
   }
@@ -1119,7 +1119,7 @@ public class BasicFileChooserUI extends FileChooserUI
    * Sets the directory name (NOT IMPLEMENTED).
    *
    * @param dirname  the directory name.
-   * 
+   *
    * @see #getDirectoryName()
    */
   public void setDirectoryName(String dirname)
@@ -1149,7 +1149,7 @@ public class BasicFileChooserUI extends FileChooserUI
   }
 
   /**
-   * Returns the {@link JFileChooser} component that this UI delegate 
+   * Returns the {@link JFileChooser} component that this UI delegate
    * represents.
    *
    * @return The component represented by this UI delegate.
@@ -1184,7 +1184,7 @@ public class BasicFileChooserUI extends FileChooserUI
   /**
    * Returns the tool tip text for the approve (open/save) button.  This first
    * checks the file chooser to see if a value has been explicitly set - if
-   * not, a default value appropriate for the type of file chooser is 
+   * not, a default value appropriate for the type of file chooser is
    * returned.
    *
    * @param fc  the file chooser.
@@ -1236,7 +1236,7 @@ public class BasicFileChooserUI extends FileChooserUI
   }
 
   /**
-   * Returns <code>true</code> if a directory is selected, and 
+   * Returns <code>true</code> if a directory is selected, and
    * <code>false</code> otherwise.
    *
    * @return A boolean.
@@ -1295,7 +1295,7 @@ public class BasicFileChooserUI extends FileChooserUI
    * @param fc  the file chooser component.
    *
    * @return The file view.
-   * 
+   *
    * @see JFileChooser#getFileView()
    */
   public FileView getFileView(JFileChooser fc)
@@ -1309,7 +1309,7 @@ public class BasicFileChooserUI extends FileChooserUI
    * @param fc  the file chooser (<code>null</code> not permitted).
    *
    * @return The dialog title.
-   * 
+   *
    * @see JFileChooser#getDialogTitle()
    */
   public String getDialogTitle(JFileChooser fc)
@@ -1326,7 +1326,7 @@ public class BasicFileChooserUI extends FileChooserUI
    * @param fc  the file chooser (<code>null</code> not permitted).
    *
    * @return The approve button mnemonic.
-   * 
+   *
    * @see JFileChooser#getApproveButtonMnemonic()
    */
   public int getApproveButtonMnemonic(JFileChooser fc)
@@ -1345,7 +1345,7 @@ public class BasicFileChooserUI extends FileChooserUI
    * @param fc  the file chooser (<code>null</code> not permitted).
    *
    * @return The approve button text.
-   * 
+   *
    * @see JFileChooser#getApproveButtonText()
    */
   public String getApproveButtonText(JFileChooser fc)
@@ -1362,7 +1362,7 @@ public class BasicFileChooserUI extends FileChooserUI
   }
 
   /**
-   * Creates and returns a new action that will be used with the "new folder" 
+   * Creates and returns a new action that will be used with the "new folder"
    * button.
    *
    * @return A new instance of {@link NewFolderAction}.
@@ -1375,7 +1375,7 @@ public class BasicFileChooserUI extends FileChooserUI
   }
 
   /**
-   * Creates and returns a new action that will be used with the "home folder" 
+   * Creates and returns a new action that will be used with the "home folder"
    * button.
    *
    * @return A new instance of {@link GoHomeAction}.
@@ -1426,7 +1426,7 @@ public class BasicFileChooserUI extends FileChooserUI
   /**
    * Returns the update action (an instance of {@link UpdateAction}).
    *
-   * @return An action. 
+   * @return An action.
    */
   public Action getUpdateAction()
   {

@@ -44,14 +44,14 @@ import javax.print.event.PrintJobAttributeListener;
 import javax.print.event.PrintJobListener;
 
 /**
- * <code>DocPrintJob</code> represents a print job which supports printing 
- * of a single document. 
+ * <code>DocPrintJob</code> represents a print job which supports printing
+ * of a single document.
  * <p>
- * An instance can be obtained from every <code>PrintService</code> available 
- * by calling the {@link javax.print.PrintService#createPrintJob()} method. 
+ * An instance can be obtained from every <code>PrintService</code> available
+ * by calling the {@link javax.print.PrintService#createPrintJob()} method.
  * A print job is bound to the print service it is created from.
  * </p>
- *  
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public interface DocPrintJob
@@ -63,62 +63,62 @@ public interface DocPrintJob
    * If the given attribute set is empty no changes will be reported.
    * If the set is <code>null</code> all attributes are monitored.
    * </p>
-   * 
+   *
    * @param listener the listener to register.
    * @param attributes the attributes to observe.
-   * 
+   *
    * @see #removePrintJobAttributeListener(PrintJobAttributeListener)
    */
   void addPrintJobAttributeListener(PrintJobAttributeListener listener,
-				    PrintJobAttributeSet attributes);
+                                    PrintJobAttributeSet attributes);
 
   /**
    * Registers a listener for events occuring during processing
    * of this print job.
-   * 
+   *
    * @param listener the listener to add, if <code>null</code> nothing is done.
-   * 
+   *
    * @see #removePrintJobListener(PrintJobListener)
    */
   void addPrintJobListener(PrintJobListener listener);
 
   /**
-   * Returns the print job's attributes. 
+   * Returns the print job's attributes.
    * <p>
-   * The returned set of attributes is a snapshot at the time of calling this 
+   * The returned set of attributes is a snapshot at the time of calling this
    * method and will not be updated if changes to the print job's attributes
    * happens. To monitor changes register a print job listener.
    * </p>
-   * 
-   * @return The attributes of this print job, 
+   *
+   * @return The attributes of this print job,
    * may be empty but never <code>null</code>.
    */
   PrintJobAttributeSet getAttributes();
 
   /**
    * Returns the <code>PrintService</code> object this print job is bound to.
-   * 
+   *
    * @return The print service.
    */
   PrintService getPrintService();
 
   /**
    * Prints a document with the specified print job attributes.
-   * 
+   *
    * <p>
-   * If the doc flavor provided by the <code>Doc</code> implementation is 
-   * not supported by this print service a <code>PrintException</code> 
+   * If the doc flavor provided by the <code>Doc</code> implementation is
+   * not supported by this print service a <code>PrintException</code>
    * implementing the <code>FlavorException</code> interface will be thrown.
    * </p>
-   * 
+   *
    * @param doc the document to print
-   * @param attributes the job attributes to use. If <code>null</code> the 
+   * @param attributes the job attributes to use. If <code>null</code> the
    * default attribute values of the print service will be used.
-   * 
-   * @throws PrintException if an error occurs. The thrown exception may 
-   * implement refining print exception interface to provide more detail of 
+   *
+   * @throws PrintException if an error occurs. The thrown exception may
+   * implement refining print exception interface to provide more detail of
    * the error.
-   * 
+   *
    * @see AttributeException
    * @see FlavorException
    */
@@ -127,21 +127,21 @@ public interface DocPrintJob
   /**
    * Removes the given listener from the listeners registered for changes
    * in their provided attribute set during processing of this print job.
-   * 
+   *
    * @param listener the listener to remove, if <code>null</code> or not
    * registered nothing will be done.
-   * 
+   *
    * @see #addPrintJobAttributeListener(PrintJobAttributeListener, PrintJobAttributeSet)
-   */  
+   */
   void removePrintJobAttributeListener(PrintJobAttributeListener listener);
 
   /**
-   * Removes the given listener from the listeners registered for events 
+   * Removes the given listener from the listeners registered for events
    * occuring during processing of this print job.
-   * 
+   *
    * @param listener the listener to remove, if <code>null</code> or not
    * registered nothing will be done.
-   * 
+   *
    * @see #addPrintJobListener(PrintJobListener)
    */
   void removePrintJobListener(PrintJobListener listener);

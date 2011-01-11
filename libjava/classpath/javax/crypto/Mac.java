@@ -111,7 +111,7 @@ public class Mac implements Cloneable
   /**
    * Create an instance of the named algorithm from the first provider with an
    * appropriate implementation.
-   * 
+   *
    * @param algorithm The name of the algorithm.
    * @return An appropriate Mac instance, if the specified algorithm is
    *         implemented by a provider.
@@ -141,7 +141,7 @@ public class Mac implements Cloneable
 
   /**
    * Create an instance of the named algorithm from the named provider.
-   * 
+   *
    * @param algorithm The name of the algorithm.
    * @param provider The name of the provider.
    * @return An appropriate Mac instance, if the specified algorithm is
@@ -166,7 +166,7 @@ public class Mac implements Cloneable
 
   /**
    * Create an instance of the named algorithm from a provider.
-   * 
+   *
    * @param algorithm The name of the algorithm.
    * @param provider The provider.
    * @return An appropriate Mac instance, if the specified algorithm is
@@ -417,7 +417,7 @@ public class Mac implements Cloneable
       throw new IllegalStateException ("not initialized");
     macSpi.engineUpdate(buffer);
   }
-  
+
   /**
    * Clone this instance, if the underlying implementation supports it.
    *

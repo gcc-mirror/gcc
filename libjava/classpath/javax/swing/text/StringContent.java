@@ -54,15 +54,15 @@ import javax.swing.undo.UndoableEdit;
  * An implementation of the <code>AbstractDocument.Content</code>
  * interface useful for small documents or debugging. The character
  * content is a simple character array. It's not really efficient.
- * 
+ *
  * <p>Do not use this class for large size.</p>
  */
-public final class StringContent 
+public final class StringContent
   implements AbstractDocument.Content, Serializable
 {
   /**
    * Stores a reference to a mark that can be resetted to the original value
-   * after a mark has been moved. This is used for undoing actions. 
+   * after a mark has been moved. This is used for undoing actions.
    */
   private class UndoPosRef
   {
@@ -102,7 +102,7 @@ public final class StringContent
    * the actual offset of the position. This is pulled out of the
    * GapContentPosition object so that the mark and position can be handled
    * independently, and most important, so that the StickyPosition can
-   * be garbage collected while we still hold a reference to the Mark object. 
+   * be garbage collected while we still hold a reference to the Mark object.
    */
   private class Mark
   {
@@ -148,7 +148,7 @@ public final class StringContent
   private class InsertUndo extends AbstractUndoableEdit
   {
     private int start;
-    
+
     private int length;
 
     private String redoContent;
@@ -177,7 +177,7 @@ public final class StringContent
           throw new CannotUndoException();
         }
     }
-    
+
     public void redo()
     {
       super.redo();
@@ -303,8 +303,8 @@ public final class StringContent
 
   /**
    * Creates a new instance containing the string "\n".
-   * 
-   * @param initialLength  the initial length of the underlying character 
+   *
+   * @param initialLength  the initial length of the underlying character
    *                       array used to store the content.
    */
   public StringContent(int initialLength)
@@ -337,10 +337,10 @@ public final class StringContent
    * Creates a position reference for the character at the given offset.  The
    * position offset will be automatically updated when new characters are
    * inserted into or removed from the content.
-   * 
+   *
    * @param offset  the character offset.
-   * 
-   * @throws BadLocationException if offset is outside the bounds of the 
+   *
+   * @throws BadLocationException if offset is outside the bounds of the
    *         content.
    */
   public Position createPosition(int offset) throws BadLocationException
@@ -351,26 +351,26 @@ public final class StringContent
     StickyPosition sp = new StickyPosition(offset);
     return sp;
   }
-  
+
   /**
    * Returns the length of the string content, including the '\n' character at
    * the end.
-   * 
+   *
    * @return The length of the string content.
    */
   public int length()
   {
     return count;
   }
-  
+
   /**
-   * Inserts <code>str</code> at the given position and returns an 
+   * Inserts <code>str</code> at the given position and returns an
    * {@link UndoableEdit} that enables undo/redo support.
-   * 
-   * @param where  the insertion point (must be less than 
+   *
+   * @param where  the insertion point (must be less than
    *               <code>length()</code>).
    * @param str  the string to insert (<code>null</code> not permitted).
-   * 
+   *
    * @return An object that can undo the insertion.
    */
   public UndoableEdit insertString(int where, String str)
@@ -402,23 +402,23 @@ public final class StringContent
     InsertUndo iundo = new InsertUndo(where, insert.length);
     return iundo;
   }
-  
+
   /**
-   * Removes the specified range of characters and returns an 
+   * Removes the specified range of characters and returns an
    * {@link UndoableEdit} that enables undo/redo support.
-   * 
+   *
    * @param where  the starting index.
    * @param nitems  the number of characters.
-   * 
+   *
    * @return An object that can undo the removal.
-   * 
+   *
    * @throws BadLocationException if the character range extends outside the
    *         bounds of the content OR includes the last character.
    */
   public UndoableEdit remove(int where, int nitems) throws BadLocationException
   {
     checkLocation(where, nitems + 1);
-    RemoveUndo rundo = new RemoveUndo(where, new String(this.content, where, 
+    RemoveUndo rundo = new RemoveUndo(where, new String(this.content, where,
         nitems));
 
     replace(where, nitems, EMPTY);
@@ -464,15 +464,15 @@ public final class StringContent
   }
 
   /**
-   * Returns a new <code>String</code> containing the characters in the 
+   * Returns a new <code>String</code> containing the characters in the
    * specified range.
-   * 
+   *
    * @param where  the start index.
    * @param len  the number of characters.
-   * 
+   *
    * @return A string.
-   * 
-   * @throws BadLocationException if the requested range of characters extends 
+   *
+   * @throws BadLocationException if the requested range of characters extends
    *         outside the bounds of the content.
    */
   public String getString(int where, int len) throws BadLocationException
@@ -482,21 +482,21 @@ public final class StringContent
     checkLocation(where, len);
     return new String(this.content, where, len);
   }
-  
+
   /**
-   * Updates <code>txt</code> to contain a direct reference to the underlying 
+   * Updates <code>txt</code> to contain a direct reference to the underlying
    * character array.
-   * 
+   *
    * @param where  the index of the first character.
    * @param len  the number of characters.
-   * @param txt  a carrier for the return result (<code>null</code> not 
+   * @param txt  a carrier for the return result (<code>null</code> not
    *             permitted).
-   *             
-   * @throws BadLocationException if the requested character range is not 
+   *
+   * @throws BadLocationException if the requested character range is not
    *                              within the bounds of the content.
    * @throws NullPointerException if <code>txt</code> is <code>null</code>.
    */
-  public void getChars(int where, int len, Segment txt) 
+  public void getChars(int where, int len, Segment txt)
     throws BadLocationException
   {
     if (where + len > count)
@@ -523,13 +523,13 @@ public final class StringContent
       }
   }
 
-  /** 
+  /**
    * A utility method that checks the validity of the specified character
    * range.
-   * 
+   *
    * @param where  the first character in the range.
    * @param len  the number of characters in the range.
-   * 
+   *
    * @throws BadLocationException if the specified range is not within the
    *         bounds of the content.
    */
@@ -567,4 +567,3 @@ public final class StringContent
       }
   }
 }
-

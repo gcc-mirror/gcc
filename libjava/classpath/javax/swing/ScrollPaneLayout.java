@@ -50,15 +50,15 @@ import javax.swing.border.Border;
 
 /**
  * ScrollPaneLayout
- * @author	Andrew Selkirk
- * @version	1.0
+ * @author      Andrew Selkirk
+ * @version     1.0
  */
 public class ScrollPaneLayout
   implements LayoutManager, ScrollPaneConstants, Serializable
 {
   private static final long serialVersionUID = -4480022884523193743L;
 
-  public static class UIResource extends ScrollPaneLayout 
+  public static class UIResource extends ScrollPaneLayout
     implements javax.swing.plaf.UIResource
   {
     public UIResource()
@@ -81,10 +81,10 @@ public class ScrollPaneLayout
 
   public ScrollPaneLayout()
   {
-	// Nothing to do here.
+        // Nothing to do here.
   }
 
-  public void syncWithScrollPane(JScrollPane scrollPane) 
+  public void syncWithScrollPane(JScrollPane scrollPane)
   {
     viewport = scrollPane.getViewport();
     rowHead = scrollPane.getRowHeader();
@@ -96,7 +96,7 @@ public class ScrollPaneLayout
     lowerLeft = scrollPane.getCorner(LOWER_LEFT_CORNER);
     lowerRight = scrollPane.getCorner(LOWER_RIGHT_CORNER);
     upperLeft = scrollPane.getCorner(UPPER_LEFT_CORNER);
-    upperRight = scrollPane.getCorner(UPPER_RIGHT_CORNER);    
+    upperRight = scrollPane.getCorner(UPPER_RIGHT_CORNER);
   }
 
   /**
@@ -108,7 +108,7 @@ public class ScrollPaneLayout
    * @return the newComponent
    */
   protected Component addSingletonComponent(Component oldComponent,
-                                            Component newComponent) 
+                                            Component newComponent)
   {
     if (oldComponent != null && oldComponent != newComponent)
       oldComponent.getParent().remove(oldComponent);
@@ -116,7 +116,7 @@ public class ScrollPaneLayout
   }
 
   /**
-   * Add the specified component to the layout. 
+   * Add the specified component to the layout.
    * @param key must be one of VIEWPORT, VERTICAL_SCROLLBAR,
    * HORIZONTAL_SCROLLBAR, ROW_HEADER, COLUMN_HEADER,
    * LOWER_RIGHT_CORNER, LOWER_LEFT_CORNER, UPPER_RIGHT_CORNER,
@@ -124,7 +124,7 @@ public class ScrollPaneLayout
    * @param component the Component to add
    * @throws IllegalArgumentException if key is not as above
    */
-  public void addLayoutComponent(String key, Component component) 
+  public void addLayoutComponent(String key, Component component)
   {
     if (key == VIEWPORT)
       viewport = (JViewport) component;
@@ -148,7 +148,7 @@ public class ScrollPaneLayout
       throw new IllegalArgumentException();
   }
 
-  public void removeLayoutComponent(Component component) 
+  public void removeLayoutComponent(Component component)
   {
     if (component == viewport)
       viewport = null;
@@ -174,7 +174,7 @@ public class ScrollPaneLayout
   {
     return vsbPolicy;
   }
-  
+
   /**
    * Sets the vertical scrollbar policy.
    * @param policy must be one of VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -184,7 +184,7 @@ public class ScrollPaneLayout
    */
   public void setVerticalScrollBarPolicy(int policy)
   {
-    if (policy != VERTICAL_SCROLLBAR_AS_NEEDED && 
+    if (policy != VERTICAL_SCROLLBAR_AS_NEEDED &&
         policy != VERTICAL_SCROLLBAR_NEVER &&
         policy != VERTICAL_SCROLLBAR_ALWAYS)
       throw new IllegalArgumentException("Illegal Scrollbar Policy");
@@ -200,12 +200,12 @@ public class ScrollPaneLayout
    * Sets the horizontal scrollbar policy.
    * @param policy must be one of HORIZONTAL_SCROLLBAR_AS_NEEDED,
    * HORIZONTAL_SCROLLBAR_NEVER, HORIZONTAL_SCROLLBAR_ALWAYS.
-   * @throws IllegalArgumentException if policy is not one of the valid 
+   * @throws IllegalArgumentException if policy is not one of the valid
    * JScrollbar policies.
    */
   public void setHorizontalScrollBarPolicy(int policy)
   {
-    if (policy != HORIZONTAL_SCROLLBAR_AS_NEEDED && 
+    if (policy != HORIZONTAL_SCROLLBAR_AS_NEEDED &&
         policy != HORIZONTAL_SCROLLBAR_NEVER &&
         policy != HORIZONTAL_SCROLLBAR_ALWAYS)
       throw new IllegalArgumentException("Illegal Scrollbar Policy");
@@ -256,7 +256,7 @@ public class ScrollPaneLayout
     return null;
   }
 
-  public Dimension preferredLayoutSize(Container parent) 
+  public Dimension preferredLayoutSize(Container parent)
   {
     // Sun's implementation simply throws a ClassCastException if
     // parent is no JScrollPane, so do we.
@@ -343,7 +343,7 @@ public class ScrollPaneLayout
    *     | c3 |    h scrollbar     | c4 |
    *     +----+--------------------+----+ y4
    *    x1   x2                   x3   x4
-   *   
+   *
    */
   public void layoutContainer(Container parent)
   {
@@ -352,11 +352,11 @@ public class ScrollPaneLayout
     JScrollPane sc = (JScrollPane) parent;
     JViewport viewport = sc.getViewport();
     Component view = viewport.getView();
-    
+
     // If there is no view in the viewport, there is no work to be done.
     if (view == null)
       return;
-    
+
     Dimension viewSize = viewport.getView().getPreferredSize();
 
     int x1 = 0, x2 = 0, x3 = 0, x4 = 0;
@@ -388,43 +388,43 @@ public class ScrollPaneLayout
 
     int vsbPolicy = sc.getVerticalScrollBarPolicy();
     int hsbPolicy = sc.getHorizontalScrollBarPolicy();
-    
+
     int vsWidth = 0;
     int hsHeight = 0;
 
-    boolean showVsb = 
+    boolean showVsb =
       (vsb != null)
       && ((vsbPolicy == VERTICAL_SCROLLBAR_ALWAYS)
-          || (vsbPolicy == VERTICAL_SCROLLBAR_AS_NEEDED 
+          || (vsbPolicy == VERTICAL_SCROLLBAR_AS_NEEDED
               && viewSize.height > (y4 - y2)));
-    
+
     if (showVsb)
       vsWidth = vsb.getPreferredSize().width;
-    
+
     // The horizontal scroll bar may become necessary if the vertical scroll
     // bar appears, reducing the space, left for the component.
-    
-    boolean showHsb = 
+
+    boolean showHsb =
       (hsb != null)
       && ((hsbPolicy == HORIZONTAL_SCROLLBAR_ALWAYS)
-          || (hsbPolicy == HORIZONTAL_SCROLLBAR_AS_NEEDED 
+          || (hsbPolicy == HORIZONTAL_SCROLLBAR_AS_NEEDED
               && viewSize.width > (x4 - x2 - vsWidth)));
-    
+
     if (showHsb)
       hsHeight = hsb.getPreferredSize().height;
-    
+
     // If the horizontal scroll bar appears, and the vertical scroll bar
     // was not necessary assuming that there is no horizontal scroll bar,
     // the vertical scroll bar may become necessary because the horizontal
     // scroll bar reduces the vertical space for the component.
     if (!showVsb)
       {
-        showVsb = 
+        showVsb =
           (vsb != null)
           && ((vsbPolicy == VERTICAL_SCROLLBAR_ALWAYS)
-              || (vsbPolicy == VERTICAL_SCROLLBAR_AS_NEEDED 
+              || (vsbPolicy == VERTICAL_SCROLLBAR_AS_NEEDED
                   && viewSize.height > (y4 - y2)));
-    
+
         if (showVsb)
           vsWidth = vsb.getPreferredSize().width;
       }
@@ -482,7 +482,7 @@ public class ScrollPaneLayout
    * @deprecated As of Swing 1.1 replaced by
    *     {@link javax.swing.JScrollPane#getViewportBorderBounds}.
    */
-  public Rectangle getViewportBorderBounds(JScrollPane scrollPane) 
+  public Rectangle getViewportBorderBounds(JScrollPane scrollPane)
   {
     return null;
   }

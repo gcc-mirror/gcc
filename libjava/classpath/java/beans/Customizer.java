@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -67,20 +67,20 @@ package java.beans;
  **/
 
 public interface Customizer {
-	/** Set the object to Customize.  This will always be a
-	 ** Bean that had a BeanDescriptor indicating this
-	 ** Customizer.
-	 ** @param bean the Bean to customize.
-	 **/
-	void setObject(Object bean);
+        /** Set the object to Customize.  This will always be a
+         ** Bean that had a BeanDescriptor indicating this
+         ** Customizer.
+         ** @param bean the Bean to customize.
+         **/
+        void setObject(Object bean);
 
-	/** Add a PropertyChangeListener.
-	 ** @param l the PropertyChangeListener to add.
-	 **/
-	void addPropertyChangeListener(PropertyChangeListener l);
+        /** Add a PropertyChangeListener.
+         ** @param l the PropertyChangeListener to add.
+         **/
+        void addPropertyChangeListener(PropertyChangeListener l);
 
-	/** Remove a PropertyChangeListener.
-	 ** @param l the PropertyChangeListener to remove.
-	 **/
-	void removePropertyChangeListener(PropertyChangeListener l);
+        /** Remove a PropertyChangeListener.
+         ** @param l the PropertyChangeListener to remove.
+         **/
+        void removePropertyChangeListener(PropertyChangeListener l);
 }

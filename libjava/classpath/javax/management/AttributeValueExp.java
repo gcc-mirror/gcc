@@ -101,7 +101,7 @@ public class AttributeValueExp
    */
   public ValueExp apply(ObjectName name)
     throws BadStringOperationException, BadBinaryOpValueExpException,
-	   BadAttributeValueExpException, InvalidApplicationException
+           BadAttributeValueExpException, InvalidApplicationException
   {
     Object val = getAttribute(name);
     if (val == null || !(val instanceof String))
@@ -123,27 +123,27 @@ public class AttributeValueExp
   {
     try
       {
-	return QueryEval.getMBeanServer().getAttribute(name, attr);
+        return QueryEval.getMBeanServer().getAttribute(name, attr);
       }
     catch (NullPointerException e)
       {
-	return null;
+        return null;
       }
     catch (MBeanException e)
       {
-	return null;
+        return null;
       }
     catch (AttributeNotFoundException e)
       {
-	return null;
+        return null;
       }
     catch (InstanceNotFoundException e)
       {
-	return null;
+        return null;
       }
     catch (ReflectionException e)
       {
-	return null;
+        return null;
       }
   }
 

@@ -39,14 +39,14 @@ exception statement from your version. */
 package javax.naming;
 
 /**
- * <code>Binding</code> represents the name-object mapping of a 
+ * <code>Binding</code> represents the name-object mapping of a
  * binding in a context.
  * <p>
  * Bindings are mappings of a name to an object and this class is used to
  * specify such mappings. The bindings of a context are retrieved by the
  * <code>Context#listBindings()</code> methods.
  * </p>
- * 
+ *
  * @author Tom Tromey (tromey@redhat.com)
  * @since 1.3
  */
@@ -56,7 +56,7 @@ public class Binding extends NameClassPair
 
   /**
    * Constructs an instance with the given name and object.
-   * 
+   *
    * @param name the name of the binding relative to the target context
    * (may not be <code>null</code>)
    * @param obj the bound object
@@ -68,9 +68,9 @@ public class Binding extends NameClassPair
   }
 
   /**
-   * Constructs an instance with the given name and object and a 
+   * Constructs an instance with the given name and object and a
    * flag indicating if the name is relative to the target context.
-   * 
+   *
    * @param name the name of the binding relative to the target context
    * (may not be <code>null</code>)
    * @param obj the bound object
@@ -84,7 +84,7 @@ public class Binding extends NameClassPair
 
   /**
    * Constructs an instance with the given name, classname and object.
-   * 
+   *
    * @param name the name of the binding relative to the target context
    * (may not be <code>null</code>)
    * @param className the classname to set (maybe <code>null</code>)
@@ -97,9 +97,9 @@ public class Binding extends NameClassPair
   }
 
   /**
-   * Constructs an instance with the given name, classname, object and a 
+   * Constructs an instance with the given name, classname, object and a
    * flag indicating if the name is relative to the target context.
-   * 
+   *
    * @param name the name of the binding relative to the target context
    * (may not be <code>null</code>)
    * @param className the classname to set (maybe <code>null</code>)
@@ -107,7 +107,7 @@ public class Binding extends NameClassPair
    * @param obj the bound object
    */
   public Binding (String name, String className, Object obj,
-		  boolean isRelative)
+                  boolean isRelative)
   {
     super (name, className, isRelative);
     boundObj = obj;
@@ -119,7 +119,7 @@ public class Binding extends NameClassPair
    * Returns the classname if set explicitly. If not and the bound object is
    * not <code>null</code> the classname of the bound object is used.
    * </p>
-   * 
+   *
    * @return The fully qualified classname (may be <code>null</code>).
    */
   public String getClassName ()
@@ -150,7 +150,7 @@ public class Binding extends NameClassPair
 
   /**
    * Returns the string representation.
-   * @return The string as given by the NameClassPair superclass plus 
+   * @return The string as given by the NameClassPair superclass plus
    * the bound objects string representation seperated by a colon.
    */
   public String toString ()

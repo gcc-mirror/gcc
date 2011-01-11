@@ -1,4 +1,4 @@
-/* GnomeXMLReader.java - 
+/* GnomeXMLReader.java -
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -83,7 +83,7 @@ implements XMLReader
 
   private static final String FEATURES_PREFIX =
     "http://xml.org/sax/features/";
-  
+
   private static final List RECOGNIZED_FEATURES =
     Arrays.asList (new String[]
                    {
@@ -100,10 +100,10 @@ implements XMLReader
                    "use-entity-resolver2",
                    "validation"
                    });
-  
+
   private static final String PROPERTIES_PREFIX =
     "http://xml.org/sax/properties/";
-  
+
   private static final List RECOGNIZED_PROPERTIES =
     Arrays.asList (new String[]
                    {
@@ -671,7 +671,7 @@ implements XMLReader
       {
       }
   }
-  
+
   private void startDocument (boolean standalone)
     throws SAXException
   {

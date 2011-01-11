@@ -49,7 +49,7 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
-public class BMPInfoHeader 
+public class BMPInfoHeader
 {
     /** Size of the bitmap info header */
   protected int biSize;
@@ -97,7 +97,7 @@ public class BMPInfoHeader
 
     /**
      * Creates the header from an input stream, which is not closed.
-     * 
+     *
      * @param in - the image input stream
      * @throws IOException if an I/O error occured.
      * @throws BMPException if the header was invalid
@@ -126,10 +126,10 @@ public class BMPInfoHeader
     biClrUsed = buf.getInt();
     biClrImportant = buf.getInt();
   }
-    
+
   /**
    * Creates the info header from an output stream, which is not closed.
-   * 
+   *
    * @param out - the image output stream
    * @param im - the image
    * @param param - the image write param.
@@ -139,12 +139,12 @@ public class BMPInfoHeader
   {
     RenderedImage img = im.getRenderedImage();
     ColorModel cMod = img.getColorModel();
-    
+
     biSize = SIZE;
     biWidth = img.getWidth();
     biHeight = img.getHeight();
     biPlanes = 1;
-    
+
     if (param != null && param.canWriteCompressed())
       {
         String compType = param.getCompressionType();
@@ -167,9 +167,9 @@ public class BMPInfoHeader
     else
       {
         biBitCount = (short) cMod.getPixelSize();
-        biCompression = BI_RGB;        
+        biCompression = BI_RGB;
       }
-    
+
     biXPelsPerMeter = 0x0;
     biYPelsPerMeter = 0x0;
     biClrUsed = 0;
@@ -188,13 +188,13 @@ public class BMPInfoHeader
     out.write(intToDWord(biClrUsed));
     out.write(intToDWord(biClrImportant));
   }
-  
+
   /**
    * Converts an int to a word, where the return value is stored in a
    * 2-byte array.
-   * 
+   *
    * @param val - the value to convert
-   * @return the array 
+   * @return the array
    */
   private byte[] intToWord(int val)
   {
@@ -207,9 +207,9 @@ public class BMPInfoHeader
   /**
    * Converts an int to a double word, where the return value is
    * stored in a 4-byte array.
-   * 
+   *
    * @param val - the value to convert
-   * @return the array  
+   * @return the array
    */
   private byte[] intToDWord(int val)
   {
@@ -221,7 +221,7 @@ public class BMPInfoHeader
     return b;
   }
 
-  
+
   public void setBitCount(short bitcount) throws BMPException
   {
     switch (bitcount)

@@ -56,7 +56,7 @@ import javax.naming.OperationNotSupportedException;
 public class BasicAttribute implements Attribute
 {
   private static final long serialVersionUID = 6743528196119291326L;
-  
+
   /** The ID of this attribute.  */
   protected String attrID;
   /** True if this attribute's values are ordered.  */
@@ -126,8 +126,8 @@ public class BasicAttribute implements Attribute
   {
     for (int i = 0; i < values.size (); ++i)
       {
-	if (equals (val, values.get (i)))
-	  return true;
+        if (equals (val, values.get (i)))
+          return true;
       }
 
     return false;
@@ -140,29 +140,29 @@ public class BasicAttribute implements Attribute
     BasicAttribute b = (BasicAttribute) obj;
 
     if (ordered != b.ordered
-	|| ! attrID.equals (b.attrID)
-	|| values.size () != b.values.size ())
+        || ! attrID.equals (b.attrID)
+        || values.size () != b.values.size ())
       return false;
 
     for (int i = 0; i < values.size (); ++i)
       {
-	boolean ok = false;
-	if (ordered)
-	  ok = equals (values.get (i), b.values.get (i));
-	else
-	  {
-	    for (int j = 0; j < b.values.size (); ++j)
-	      {
-		if (equals (values.get (i), b.values.get (j)))
-		  {
-		    ok = true;
-		    break;
-		  }
-	      }
-	  }
+        boolean ok = false;
+        if (ordered)
+          ok = equals (values.get (i), b.values.get (i));
+        else
+          {
+            for (int j = 0; j < b.values.size (); ++j)
+              {
+                if (equals (values.get (i), b.values.get (j)))
+                  {
+                    ok = true;
+                    break;
+                  }
+              }
+          }
 
-	if (! ok)
-	  return false;
+        if (! ok)
+          return false;
       }
 
     return true;
@@ -210,19 +210,19 @@ public class BasicAttribute implements Attribute
     int val = attrID.hashCode ();
     for (int i = 0; i < values.size (); ++i)
       {
-	Object o = values.get (i);
-	if (o == null)
-	  {
-	    // Nothing.
-	  }
-	else if (o instanceof Object[])
-	  {
-	    Object[] a = (Object[]) o;
-	    for (int j = 0; j < a.length; ++j)
-	      val += a[j].hashCode ();
-	  }
-	else
-	  val += o.hashCode ();
+        Object o = values.get (i);
+        if (o == null)
+          {
+            // Nothing.
+          }
+        else if (o instanceof Object[])
+          {
+            Object[] a = (Object[]) o;
+            for (int j = 0; j < a.length; ++j)
+              val += a[j].hashCode ();
+          }
+        else
+          val += o.hashCode ();
       }
 
     return val;
@@ -242,11 +242,11 @@ public class BasicAttribute implements Attribute
   {
     for (int i = 0; i < values.size (); ++i)
       {
-	if (equals (val, values.get (i)))
-	  {
-	    values.remove (i);
-	    return true;
-	  }
+        if (equals (val, values.get (i)))
+          {
+            values.remove (i);
+            return true;
+          }
       }
 
     return false;
@@ -281,27 +281,27 @@ public class BasicAttribute implements Attribute
 
     if (one instanceof Object[])
       {
-	if (! (two instanceof Object[]))
-	  return false;
+        if (! (two instanceof Object[]))
+          return false;
 
-	Object[] aone = (Object[]) one;
-	Object[] atwo = (Object[]) two;
+        Object[] aone = (Object[]) one;
+        Object[] atwo = (Object[]) two;
 
-	if (aone.length != atwo.length)
-	  return false;
+        if (aone.length != atwo.length)
+          return false;
 
-	for (int i = 0; i < aone.length; ++i)
-	  {
-	    if (! aone[i].equals (atwo[i]))
-	      return false;
-	  }
+        for (int i = 0; i < aone.length; ++i)
+          {
+            if (! aone[i].equals (atwo[i]))
+              return false;
+          }
 
-	return true;
+        return true;
       }
 
     return one.equals (two);
   }
-  
+
   private void readObject(ObjectInputStream s)
     throws IOException, ClassNotFoundException
   {
@@ -317,9 +317,9 @@ public class BasicAttribute implements Attribute
     s.defaultWriteObject();
     s.writeInt(values.size());
     for (int i=0; i < values.size(); i++)
-      s.writeObject(values.get(i));    
+      s.writeObject(values.get(i));
   }
-  
+
   // Used when enumerating this attribute.
   private class BasicAttributeEnumeration implements NamingEnumeration
   {
@@ -351,7 +351,7 @@ public class BasicAttribute implements Attribute
     public Object nextElement () throws NoSuchElementException
     {
       if (where == values.size ())
-	throw new NoSuchElementException ("no more elements");
+        throw new NoSuchElementException ("no more elements");
       return values.get (where++);
     }
   }

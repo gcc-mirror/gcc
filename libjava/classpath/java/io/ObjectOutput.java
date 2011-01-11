@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -41,7 +41,7 @@ package java.io;
 /**
   * This interface extends <code>DataOutput</code> to provide the additional
   * facility of writing object instances to a stream.  It also adds some
-  * additional methods to make the interface more 
+  * additional methods to make the interface more
   * <code>OutputStream</code> like.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
@@ -64,7 +64,7 @@ public interface ObjectOutput extends DataOutput
     * output stream.
     *
     * @param buf The array of bytes to write.
-    * 
+    *
     * @exception IOException If an error occurs.
     */
   void write(byte[] buf) throws IOException;
@@ -79,7 +79,7 @@ public interface ObjectOutput extends DataOutput
     *
     * @exception IOException If an error occurs.
     */
-  void write(byte[] buf, int offset, int len) 
+  void write(byte[] buf, int offset, int len)
     throws IOException;
 
   /**
@@ -108,4 +108,3 @@ public interface ObjectOutput extends DataOutput
   void close() throws IOException;
 
 } // interface ObjectOutput
-

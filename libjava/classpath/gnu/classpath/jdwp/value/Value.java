@@ -49,50 +49,50 @@ import java.nio.ByteBuffer;
 
 /**
  * Superclass for all JDWP Values.
- * 
+ *
  * @author Kyle Galloway <kgallowa@redhat.com>
  */
 public abstract class Value
 {
   // A Tag representing the type of this value
   private byte _tag;
-  
+
   /**
    * Create a new value of type tag.
-   * 
+   *
    * @param tag the type of the value
-   */ 
+   */
   protected Value(byte tag)
   {
     _tag = tag;
   }
-  
+
   /**
    * Get the tag for this Value
-   * 
+   *
    * @return the byte tag of this Value
    */
   public byte getTag()
   {
     return _tag;
   }
-  
+
   /**
-   * Calls the dervied classes writeValue method to write its value to the 
+   * Calls the dervied classes writeValue method to write its value to the
    * DataOutputStream.
-   * 
+   *
    * @param os write the value here
    * @throws IOException
-   */  
+   */
   public void writeUntagged(DataOutputStream os)
     throws IOException
   {
     write(os);
   }
-  
+
   /**
    * Will write the given object as a tagged value to the DataOutputStream.
-   * 
+   *
    * @param os write the value here
    * @param obj the Object to write
    * @throws IOException
@@ -103,27 +103,27 @@ public abstract class Value
     os.write (_tag);
     write(os);
   }
-  
+
   /**
    * This method must write the value to the DataOutputStream in a manner
    * appropriate for the type of the value.
-   * 
+   *
    * @param os DataOutputStream to write to
    * @throws IOException
    */
   protected abstract void write(DataOutputStream os)
     throws IOException;
-  
+
   /**
    * Returns an object representing this type
-   * 
+   *
    * @return an Object represntation of this value
    */
   protected abstract Object getObject();
-    
+
   /**
    * Get an untagged object from the ByteBuffer
-   * 
+   *
    * @param bb the ByteBuffer to extract the value from
    * @param type a Class representing the type
    * @return an Object from the ByteBuffer of the type of the Class parameter
@@ -136,10 +136,10 @@ public abstract class Value
     Value val = ValueFactory.createFromUntagged(bb, type);
     return val.getObject();
   }
-  
+
   /**
    * Get an untagged object from the ByteBuffer
-   * 
+   *
    * @param bb the ByteBuffer to extract the value from
    * @param tag a byte tag representing the type
    * @return an Object from the ByteBuffer of the type of the Class parameter

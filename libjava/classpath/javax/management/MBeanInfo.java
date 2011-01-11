@@ -78,7 +78,7 @@ import java.util.Arrays;
  * instance of this class, as part of implementing the
  * {@link DynamicMBean#getMBeanInfo()} method of {@link DynamicMBean}.
  * </p>
- * 
+ *
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
  */
@@ -93,7 +93,7 @@ public class MBeanInfo
 
   /**
    * A description of the bean.
-   * 
+   *
    * @serial The bean's description.
    */
   private String description;
@@ -155,8 +155,8 @@ public class MBeanInfo
    *               or <code>null</code>.
    */
   public MBeanInfo(String name, String desc, MBeanAttributeInfo[] attribs,
-		   MBeanConstructorInfo[] cons, MBeanOperationInfo[] ops,
-		   MBeanNotificationInfo[] notifs)
+                   MBeanConstructorInfo[] cons, MBeanOperationInfo[] ops,
+                   MBeanNotificationInfo[] notifs)
   {
     className = name;
     description = desc;
@@ -199,11 +199,11 @@ public class MBeanInfo
     MBeanInfo clone = null;
     try
       {
-	clone = (MBeanInfo) super.clone();
+        clone = (MBeanInfo) super.clone();
       }
     catch (CloneNotSupportedException e)
       {
-	/* This won't happen as we implement Cloneable */
+        /* This won't happen as we implement Cloneable */
       }
     return clone;
   }
@@ -218,7 +218,7 @@ public class MBeanInfo
    *
    * @param obj the object to compare.
    * @return true if the object is a {@link MBeanInfo}
-   *         instance, 
+   *         instance,
    *         <code>className.equals(object.getClassName())</code>,
    *         <code>description.equals(object.getDescription())</code>
    *         and the corresponding elements of the arrays are
@@ -234,37 +234,37 @@ public class MBeanInfo
     MBeanAttributeInfo[] attr = o.getAttributes();
     for (int a = 0; a < attributes.length; ++a)
       {
-	if (a == attr.length)
-	  return true;
-	if (!(attributes[a].equals(attr[a])))
-	  return false;
+        if (a == attr.length)
+          return true;
+        if (!(attributes[a].equals(attr[a])))
+          return false;
       }
     MBeanConstructorInfo[] cons = o.getConstructors();
     for (int a = 0; a < constructors.length; ++a)
       {
-	if (a == cons.length)
-	  return true;
-	if (!(constructors[a].equals(cons[a])))
-	  return false;
+        if (a == cons.length)
+          return true;
+        if (!(constructors[a].equals(cons[a])))
+          return false;
       }
     MBeanOperationInfo[] ops = o.getOperations();
     for (int a = 0; a < operations.length; ++a)
       {
-	if (a == ops.length)
-	  return true;
-	if (!(operations[a].equals(ops[a])))
-	  return false;
+        if (a == ops.length)
+          return true;
+        if (!(operations[a].equals(ops[a])))
+          return false;
       }
     MBeanNotificationInfo[] notifs = o.getNotifications();
     for (int a = 0; a < notifications.length; ++a)
       {
-	if (a == notifs.length)
-	  return true;
-	if (!(notifications[a].equals(notifs[a])))
-	  return false;
+        if (a == notifs.length)
+          return true;
+        if (!(notifications[a].equals(notifs[a])))
+          return false;
       }
     return (className.equals(o.getClassName()) &&
-	    description.equals(o.getDescription()));
+            description.equals(o.getDescription()));
   }
 
   /**
@@ -389,13 +389,13 @@ public class MBeanInfo
   {
     if (string == null)
       string = getClass().getName()
-	+ "[name=" + className 
-	+ ",desc=" + description 
-	+ ",attributes=" + Arrays.toString(attributes)
-	+ ",constructors=" + Arrays.toString(constructors)
-	+ ",operations=" + Arrays.toString(operations)
-	+ ",notifications=" + Arrays.toString(notifications)
-	+ "]";
+        + "[name=" + className
+        + ",desc=" + description
+        + ",attributes=" + Arrays.toString(attributes)
+        + ",constructors=" + Arrays.toString(constructors)
+        + ",operations=" + Arrays.toString(operations)
+        + ",notifications=" + Arrays.toString(notifications)
+        + "]";
     return string;
   }
 

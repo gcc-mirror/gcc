@@ -67,7 +67,7 @@ import org.objectweb.asm.Type;
  * represents the type u2; otherwise ulocalvar represents the type u4. If the
  * maximum size of the operand stack is 65535 or less, then <code>ustack</code>
  * represents the type u2; otherwise ustack represents the type u4.
- * 
+ *
  * <pre>
  * stack_map { // attribute StackMapTable
  *   u2 attribute_name_index;
@@ -76,7 +76,7 @@ import org.objectweb.asm.Type;
  *   stack_map_frame entries[number_of_entries];
  * }
  * </pre>
- * 
+ *
  * Each stack_map_frame structure specifies the type state at a particular byte
  * code offset. Each frame type specifies (explicitly or implicitly) a value,
  * offset_delta, that is used to calulate the actual byte code offset at which
@@ -97,7 +97,7 @@ import org.objectweb.asm.Type;
  * <br> <br> The stack_map_frame structure consists of a one-byte tag followed
  * by zero or more bytes, giving more information, depending upon the tag. <br>
  * <br> A stack map frame may belong to one of several frame types
- * 
+ *
  * <pre>
  * union stack_map_frame {
  *   same_frame;
@@ -108,65 +108,65 @@ import org.objectweb.asm.Type;
  *   full_frame;
  * }
  * </pre>
- * 
+ *
  * The frame type same_frame is represented by tags in the range [0-63]. If the
  * frame type is same_frame, it means the frame has exactly the same locals as
  * the previous stack map frame and that the number of stack items is zero. The
  * offset_delta value for the frame is the value of the tag field, frame_type.
  * The form of such a frame is then:
- * 
+ *
  * <pre>
  * same_frame {
  *   u1 frame_type = SAME;  // 0-63
  * }
  * </pre>
- * 
+ *
  * The frame type same_locals_1_stack_item_frame is represented by tags in the
  * range [64, 127]. If the frame_type is same_locals_1_stack_item_frame, it
  * means the frame has exactly the same locals as the previous stack map frame
  * and that the number of stack items is 1. The offset_delta value for the frame
  * is the value (frame_type - 64). There is a verification_type_info following
  * the frame_type for the one stack item. The form of such a frame is then:
- * 
+ *
  * <pre>
  * same_locals_1_stack_item_frame {
  *   u1 frame_type = SAME_LOCALS_1_STACK_ITEM;  // 64-127
  *    verification_type_info stack[1];
  * }
  * </pre>
- * 
+ *
  * Tags in the range [128-247] are reserved for future use. <br> <br> The frame
  * type chop_frame is represented by tags in the range [248-250]. If the
  * frame_type is chop_frame, it means that the current locals are the same as
  * the locals in the previous frame, except that the k last locals are absent.
  * The value of k is given by the formula 251-frame_type. <br> <br> The form of
  * such a frame is then:
- * 
+ *
  * <pre>
  * chop_frame {
  *   u1 frame_type=CHOP;  // 248-250
  *   uoffset offset_delta;
  * }
  * </pre>
- * 
+ *
  * The frame type same_frame_extended is represented by the tag value 251. If
  * the frame type is same_frame_extended, it means the frame has exactly the
  * same locals as the previous stack map frame and that the number of stack
  * items is zero. The form of such a frame is then:
- * 
+ *
  * <pre>
  * same_frame_extended {
  *   u1 frame_type = SAME_FRAME_EXTENDED;  // 251
  *   uoffset offset_delta;
  * }
  * </pre>
- * 
+ *
  * The frame type append_frame is represented by tags in the range [252-254]. If
  * the frame_type is append_frame, it means that the current locals are the same
  * as the locals in the previous frame, except that k additional locals are
  * defined. The value of k is given by the formula frame_type-251. <br> <br> The
  * form of such a frame is then:
- * 
+ *
  * <pre>
  * append_frame {
  *   u1 frame_type =APPEND;  // 252-254
@@ -174,7 +174,7 @@ import org.objectweb.asm.Type;
  *   verification_type_info locals[frame_type -251];
  * }
  * </pre>
- * 
+ *
  * The 0th entry in locals represents the type of the first additional local
  * variable. If locals[M] represents local variable N, then locals[M+1]
  * represents local variable N+1 if locals[M] is one of Top_variable_info,
@@ -185,7 +185,7 @@ import org.objectweb.asm.Type;
  * variable whose index is greater than the maximum number of local variables
  * for the method. <br> <br> The frame type full_frame is represented by the tag
  * value 255. The form of such a frame is then:
- * 
+ *
  * <pre>
  * full_frame {
  *   u1 frame_type = FULL_FRAME;  // 255
@@ -196,7 +196,7 @@ import org.objectweb.asm.Type;
  *   verification_type_info stack[number_of_stack_items];
  * }
  * </pre>
- * 
+ *
  * The 0th entry in locals represents the type of local variable 0. If locals[M]
  * represents local variable N, then locals[M+1] represents local variable N+1
  * if locals[M] is one of Top_variable_info, Integer_variable_info,
@@ -222,7 +222,7 @@ import org.objectweb.asm.Type;
  * or more bytes, giving more information about the tag. Each
  * verification_type_info structure specifies the verification type of one or
  * two locations.
- * 
+ *
  * <pre>
  * union verification_type_info {
  *   Top_variable_info;
@@ -236,119 +236,119 @@ import org.objectweb.asm.Type;
  *   Uninitialized_variable_info;
  * }
  * </pre>
- * 
+ *
  * The Top_variable_info type indicates that the local variable has the
  * verification type top (T.)
- * 
+ *
  * <pre>
  * Top_variable_info {
  *   u1 tag = ITEM_Top; // 0
  * }
  * </pre>
- * 
+ *
  * The Integer_variable_info type indicates that the location contains the
  * verification type int.
- * 
+ *
  * <pre>
  * Integer_variable_info {
  *   u1 tag = ITEM_Integer; // 1
  * }
  * </pre>
- * 
+ *
  * The Float_variable_info type indicates that the location contains the
  * verification type float.
- * 
+ *
  * <pre>
  * Float_variable_info {
  *   u1 tag = ITEM_Float; // 2
  * }
  * </pre>
- * 
+ *
  * The Long_variable_info type indicates that the location contains the
  * verification type long. If the location is a local variable, then:
- * 
+ *
  * <ul> <li>It must not be the local variable with the highest index.</li>
  * <li>The next higher numbered local variable contains the verification type
  * T.</li> </ul>
- * 
+ *
  * If the location is an operand stack entry, then:
- * 
+ *
  * <ul> <li>The current location must not be the topmost location of the
  * operand stack.</li> <li>the next location closer to the top of the operand
  * stack contains the verification type T.</li> </ul>
- * 
+ *
  * This structure gives the contents of two locations in the operand stack or in
  * the local variables.
- * 
+ *
  * <pre>
  * Long_variable_info {
  *   u1 tag = ITEM_Long; // 4
  * }
  * </pre>
- * 
+ *
  * The Double_variable_info type indicates that the location contains the
  * verification type double. If the location is a local variable, then:
- * 
+ *
  * <ul> <li>It must not be the local variable with the highest index.</li>
  * <li>The next higher numbered local variable contains the verification type
  * T. <li> </ul>
- * 
+ *
  * If the location is an operand stack entry, then:
- * 
+ *
  * <ul> <li>The current location must not be the topmost location of the
  * operand stack.</li> <li>the next location closer to the top of the operand
  * stack contains the verification type T.</li> </ul>
- * 
+ *
  * This structure gives the contents of two locations in in the operand stack or
  * in the local variables.
- * 
+ *
  * <pre>
  * Double_variable_info {
  *   u1 tag = ITEM_Double; // 3
  * }
  * </pre>
- * 
+ *
  * The Null_variable_info type indicates that location contains the verification
  * type null.
- * 
+ *
  * <pre>
  * Null_variable_info {
  *   u1 tag = ITEM_Null; // 5
  * }
  * </pre>
- * 
+ *
  * The UninitializedThis_variable_info type indicates that the location contains
  * the verification type uninitializedThis.
- * 
+ *
  * <pre>
  * UninitializedThis_variable_info {
  *   u1 tag = ITEM_UninitializedThis; // 6
  * }
  * </pre>
- * 
+ *
  * The Object_variable_info type indicates that the location contains an
  * instance of the class referenced by the constant pool entry.
- * 
+ *
  * <pre>
  * Object_variable_info {
  *   u1 tag = ITEM_Object; // 7
  *   u2 cpool_index;
  * }
  * </pre>
- * 
+ *
  * The Uninitialized_variable_info indicates that the location contains the
  * verification type uninitialized(offset). The offset item indicates the offset
  * of the new instruction that created the object being stored in the location.
- * 
+ *
  * <pre>
  * Uninitialized_variable_info {
  *   u1 tag = ITEM_Uninitialized // 8
  *   uoffset offset;
  * }
  * </pre>
- * 
+ *
  * @see "ClassFileFormat-Java6.fm Page 138 Friday, April 15, 2005 3:22 PM"
- * 
+ *
  * @author Eugene Kuleshov
  */
 public class StackMapTableAttribute extends Attribute {
@@ -786,7 +786,7 @@ public class StackMapTableAttribute extends Attribute {
 
     /**
      * Use method signature and access flags to resolve initial locals state.
-     * 
+     *
      * @param className name of the method's owner class.
      * @param access access flags of the method.
      * @param methodName name of the method.

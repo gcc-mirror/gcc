@@ -130,19 +130,19 @@ public class OceanTheme extends DefaultMetalTheme
 
   /**
    * Returns the OceanTheme's color for disabled menu foreground,
-   * 
+   *
    */
   public ColorUIResource getMenuDisabledForeground()
   {
     return INACTIVE_CONTROL_TEXT;
   }
 
-  
+
   /**
    * Returns the OceanTheme's color for black, the RGB value
    * (51, 51, 51).
    *
-   * @return Returns the OceanTheme's value for black 
+   * @return Returns the OceanTheme's value for black
    */
   protected ColorUIResource getBlack()
   {
@@ -157,7 +157,7 @@ public class OceanTheme extends DefaultMetalTheme
   {
     return PRIMARY1;
   }
-  
+
   /**
    * Return the OceanTheme's value for primary 2, the RGB value
    * (163, 184, 204).
@@ -166,7 +166,7 @@ public class OceanTheme extends DefaultMetalTheme
   {
     return PRIMARY2;
   }
-  
+
   /**
    * Return the OceanTheme's value for primary 1, the RGB value
    * (184, 207, 229).

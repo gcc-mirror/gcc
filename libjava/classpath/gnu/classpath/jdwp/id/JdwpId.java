@@ -119,7 +119,7 @@ public abstract class JdwpId
   /**
    * Compares two object ids for equality. Two object ids
    * are equal if they point to the same type and contain to
-   * the same id number. 
+   * the same id number.
    */
   public boolean equals (JdwpId id)
   {

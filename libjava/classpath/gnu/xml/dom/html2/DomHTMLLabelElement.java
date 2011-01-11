@@ -1,4 +1,4 @@
-/* DomHTMLLabelElement.java -- 
+/* DomHTMLLabelElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -70,7 +70,7 @@ public class DomHTMLLabelElement
   {
     setHTMLAttribute("accesskey", accessKey);
   }
-  
+
   public String getHtmlFor()
   {
     return getHTMLAttribute("for");
@@ -80,6 +80,5 @@ public class DomHTMLLabelElement
   {
     setHTMLAttribute("for", htmlFor);
   }
-  
-}
 
+}

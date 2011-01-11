@@ -1,4 +1,4 @@
-/* ListSimpleType.java -- 
+/* ListSimpleType.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -56,7 +56,7 @@ public class ListSimpleType
    * The type of the items in this list (atomic or union).
    */
   public final SimpleType itemType;
-  
+
   public ListSimpleType(QName name, Set facets,
                         int fundamentalFacets, SimpleType baseType,
                         Annotation annotation, SimpleType itemType)
@@ -64,7 +64,7 @@ public class ListSimpleType
     super(name, LIST, facets, fundamentalFacets, baseType, annotation);
     this.itemType = itemType;
   }
-  
+
   public void checkValid(String value, ValidationContext context)
     throws DatatypeException
   {
@@ -78,6 +78,5 @@ public class ListSimpleType
         itemType.checkValid(token, context);
       }
   }
-  
-}
 
+}

@@ -53,7 +53,7 @@ import javax.accessibility.AccessibleSelection;
 import javax.accessibility.AccessibleStateSet;
 
 /**
-  * This is the superclass of all menu AWT widgets. 
+  * This is the superclass of all menu AWT widgets.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
@@ -204,7 +204,7 @@ public abstract class MenuComponent implements Serializable
       name = generateName();
     return name;
   }
-  
+
   /**
    * Subclasses should override this to return unique component names like
    * "menuitem0".
@@ -230,13 +230,13 @@ public abstract class MenuComponent implements Serializable
 
   /**
    * Returns the parent of this component.
-   * 
+   *
    * @return the parent of this component
    */
   public MenuContainer getParent()
   {
     return parent;
-  } 
+  }
 
   /**
    * Sets the parent of this component.
@@ -365,7 +365,7 @@ public abstract class MenuComponent implements Serializable
   /**
    * Processes the specified event.  In this class, this method simply
    * calls one of the more specific event handlers.
-   * 
+   *
    * @param event the event to process
    */
   protected void processEvent(AWTEvent event)
@@ -505,7 +505,7 @@ public abstract class MenuComponent implements Serializable
      * Please note that this method depends on a correctly implemented
      * version of the <code>getBounds()</code> method.  Subclasses
      * must provide the bounding rectangle via <code>getBounds()</code>
-     * in order for this method to work.  
+     * in order for this method to work.
      *
      * @param point the point to check against this component
      * @return true if the point is within this component
@@ -530,7 +530,7 @@ public abstract class MenuComponent implements Serializable
      * As the existence of children can not be determined from
      * this abstract class, the implementation of this method
      * is left to subclasses.
-     * 
+     *
      * @param point the point at which the returned accessible
      *        is located
      * @return null
@@ -901,7 +901,7 @@ public abstract class MenuComponent implements Serializable
      * Please note that this method depends on a correctly implemented
      * version of the <code>getBounds()</code> method.  Subclasses
      * must provide the bounding rectangle via <code>getBounds()</code>
-     * in order for this method to work.  
+     * in order for this method to work.
      *
      * @return the location of the component, relative to its parent
      *
@@ -940,7 +940,7 @@ public abstract class MenuComponent implements Serializable
      * Please note that this method depends on a correctly implemented
      * version of the <code>getBounds()</code> method.  Subclasses
      * must provide the bounding rectangle via <code>getBounds()</code>
-     * in order for this method to work.  
+     * in order for this method to work.
      *
      * @return the size of the component
      *
@@ -1103,7 +1103,7 @@ public abstract class MenuComponent implements Serializable
      * which don't support multiple selections.  Concrete implementations should
      * override this with a more appopriate and efficient implementation, which
      * properly takes into account the ability of the component to support multiple
-     * selections. 
+     * selections.
      */
     public void selectAllAccessibleSelection()
     {
@@ -1122,7 +1122,7 @@ public abstract class MenuComponent implements Serializable
      * <br />
      * This abstract class knows nothing about how the component
      * is drawn on screen, so this method simply ignores the supplied
-     * color and continues to use the default system color.   
+     * color and continues to use the default system color.
      * Concrete subclasses which handle the drawing of an onscreen
      * menu component should override this method and provide
      * the appropriate information.
@@ -1246,7 +1246,7 @@ public abstract class MenuComponent implements Serializable
      * Please note that this method depends on a correctly implemented
      * version of the <code>getBounds()</code> method.  Subclasses
      * must provide the bounding rectangle via <code>getBounds()</code>
-     * in order for this method to work.  
+     * in order for this method to work.
      *
      * @param point the location of the component, relative to its parent
      *
@@ -1264,7 +1264,7 @@ public abstract class MenuComponent implements Serializable
      * Please note that this method depends on a correctly implemented
      * version of the <code>getBounds()</code> method.  Subclasses
      * must provide the bounding rectangle via <code>getBounds()</code>
-     * in order for this method to work.  
+     * in order for this method to work.
      *
      * @param size the new size of the component
      *

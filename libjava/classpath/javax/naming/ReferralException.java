@@ -39,7 +39,7 @@ exception statement from your version. */
 package javax.naming;
 
 import java.util.Hashtable;
- 
+
 /**
  * @author Warren Levy (warrenl@redhat.com)
  * @date June 14, 2001
@@ -48,7 +48,7 @@ import java.util.Hashtable;
 public abstract class ReferralException extends NamingException
 {
   private static final long serialVersionUID = -2881363844695698876L;
-  
+
   protected ReferralException ()
   {
     super ();

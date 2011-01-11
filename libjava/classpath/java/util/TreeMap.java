@@ -446,7 +446,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
    * (or equal to, if <code>inclusive</code> is true) <code>toKey</code>.
    * The returned map is backed by the original, so changes in one appear
    * in the other. The submap will throw an {@link IllegalArgumentException}
-   * for any attempt to access or add an element beyond the specified cutoff. 
+   * for any attempt to access or add an element beyond the specified cutoff.
    *
    * @param toKey the cutoff point
    * @param inclusive true if the cutoff point should be included.
@@ -459,8 +459,8 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
    */
   public NavigableMap<K, V> headMap(K toKey, boolean inclusive)
   {
-    return new SubMap((K)(Object)nil, inclusive 
-		      ? successor(getNode(toKey)).key : toKey);
+    return new SubMap((K)(Object)nil, inclusive
+                      ? successor(getNode(toKey)).key : toKey);
   }
 
   /**
@@ -641,7 +641,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
    * <code>toKey</code>. The returned map is backed by the original, so
    * changes in one appear in the other. The submap will throw an
    * {@link IllegalArgumentException} for any attempt to access or add an
-   * element beyond the specified cutoffs. 
+   * element beyond the specified cutoffs.
    *
    * @param fromKey the low cutoff point
    * @param fromInclusive true if the low cutoff point should be included.
@@ -655,10 +655,10 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
    * @throws IllegalArgumentException if fromKey is greater than toKey
    */
   public NavigableMap<K, V> subMap(K fromKey, boolean fromInclusive,
-				   K toKey, boolean toInclusive)
+                                   K toKey, boolean toInclusive)
   {
     return new SubMap(fromInclusive ? fromKey : successor(getNode(fromKey)).key,
-		      toInclusive ? successor(getNode(toKey)).key : toKey);
+                      toInclusive ? successor(getNode(toKey)).key : toKey);
   }
 
   /**
@@ -701,7 +701,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
   public NavigableMap<K, V> tailMap(K fromKey, boolean inclusive)
   {
     return new SubMap(inclusive ? fromKey : successor(getNode(fromKey)).key,
-		      (K)(Object)nil);
+                      (K)(Object)nil);
   }
 
   /**
@@ -873,9 +873,9 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
   {
     if (count == 0)
       {
-	root = nil;
-	size = 0;
-	return;
+        root = nil;
+        size = 0;
+        return;
       }
 
     // We color every row of nodes black, except for the overflow nodes.
@@ -1601,7 +1601,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     {
       Entry<K,V> n = TreeMap.this.ceilingEntry(key);
       if (n != null && keyInRange(n.getKey()))
-	return n;
+        return n;
       return null;
     }
 
@@ -1609,9 +1609,9 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     {
       K found = TreeMap.this.ceilingKey(key);
       if (keyInRange(found))
-	return found;
+        return found;
       else
-	return null;
+        return null;
     }
 
     public NavigableSet<K> descendingKeySet()
@@ -1622,10 +1622,10 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     public NavigableMap<K,V> descendingMap()
     {
       if (descendingMap == null)
-	descendingMap = new DescendingMap(this);
+        descendingMap = new DescendingMap(this);
       return descendingMap;
     }
-    
+
     public void clear()
     {
       Node next = lowestGreaterThan(minKey, true);
@@ -1674,7 +1674,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     {
       Node<K,V> node = lowestGreaterThan(minKey, true);
       if (node == nil || ! keyInRange(node.key))
-	return null;
+        return null;
       return node;
     }
 
@@ -1690,7 +1690,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     {
       Entry<K,V> n = TreeMap.this.floorEntry(key);
       if (n != null && keyInRange(n.getKey()))
-	return n;
+        return n;
       return null;
     }
 
@@ -1698,9 +1698,9 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     {
       K found = TreeMap.this.floorKey(key);
       if (keyInRange(found))
-	return found;
+        return found;
       else
-	return null;
+        return null;
     }
 
     public V get(Object key)
@@ -1719,8 +1719,8 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     {
       if (!keyInRange(toKey))
         throw new IllegalArgumentException("Key outside submap range");
-      return new SubMap(minKey, (inclusive ? 
-				 successor(getNode(toKey)).key : toKey));
+      return new SubMap(minKey, (inclusive ?
+                                 successor(getNode(toKey)).key : toKey));
     }
 
     public Set<K> keySet()
@@ -1736,7 +1736,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     {
       Entry<K,V> n = TreeMap.this.higherEntry(key);
       if (n != null && keyInRange(n.getKey()))
-	return n;
+        return n;
       return null;
     }
 
@@ -1744,9 +1744,9 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     {
       K found = TreeMap.this.higherKey(key);
       if (keyInRange(found))
-	return found;
+        return found;
       else
-	return null;
+        return null;
     }
 
     public Entry<K,V> lastEntry()
@@ -1766,7 +1766,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     {
       Entry<K,V> n = TreeMap.this.lowerEntry(key);
       if (n != null && keyInRange(n.getKey()))
-	return n;
+        return n;
       return null;
     }
 
@@ -1774,9 +1774,9 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     {
       K found = TreeMap.this.lowerKey(key);
       if (keyInRange(found))
-	return found;
+        return found;
       else
-	return null;
+        return null;
     }
 
     public NavigableSet<K> navigableKeySet()
@@ -1785,14 +1785,14 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
         // Create an AbstractSet with custom implementations of those methods
         // that can be overriden easily and efficiently.
         this.nKeys = new SubMap.NavigableKeySet();
-      return this.nKeys;    
+      return this.nKeys;
     }
 
     public Entry<K,V> pollFirstEntry()
     {
       Entry<K,V> e = firstEntry();
       if (e != null)
-	removeNode((Node<K,V>) e);
+        removeNode((Node<K,V>) e);
       return e;
     }
 
@@ -1800,7 +1800,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     {
       Entry<K,V> e = lastEntry();
       if (e != null)
-	removeNode((Node<K,V>) e);
+        removeNode((Node<K,V>) e);
       return e;
     }
 
@@ -1837,25 +1837,25 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     }
 
     public NavigableMap<K,V> subMap(K fromKey, boolean fromInclusive,
-				    K toKey, boolean toInclusive)
+                                    K toKey, boolean toInclusive)
     {
       if (! keyInRange(fromKey) || ! keyInRange(toKey))
         throw new IllegalArgumentException("key outside range");
-      return new SubMap(fromInclusive ? fromKey : successor(getNode(fromKey)).key, 
-			toInclusive ? successor(getNode(toKey)).key : toKey);
+      return new SubMap(fromInclusive ? fromKey : successor(getNode(fromKey)).key,
+                        toInclusive ? successor(getNode(toKey)).key : toKey);
     }
 
     public SortedMap<K, V> tailMap(K fromKey)
     {
       return tailMap(fromKey, true);
     }
-    
+
     public NavigableMap<K,V> tailMap(K fromKey, boolean inclusive)
     {
       if (! keyInRange(fromKey))
         throw new IllegalArgumentException("key outside range");
       return new SubMap(inclusive ? fromKey : successor(getNode(fromKey)).key,
-			maxKey);
+                        maxKey);
     }
 
     public Collection<V> values()
@@ -1884,47 +1884,47 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
         };
       return this.values;
     }
-    
+
     private class KeySet
       extends AbstractSet<K>
     {
       public int size()
       {
-	return SubMap.this.size();
+        return SubMap.this.size();
       }
-      
+
       public Iterator<K> iterator()
       {
-	Node first = lowestGreaterThan(minKey, true);
-	Node max = lowestGreaterThan(maxKey, false);
-	return new TreeIterator(KEYS, first, max);
+        Node first = lowestGreaterThan(minKey, true);
+        Node max = lowestGreaterThan(maxKey, false);
+        return new TreeIterator(KEYS, first, max);
       }
-      
+
       public void clear()
       {
-	SubMap.this.clear();
+        SubMap.this.clear();
       }
-      
+
       public boolean contains(Object o)
       {
-	if (! keyInRange((K) o))
-	  return false;
-	return getNode((K) o) != nil;
+        if (! keyInRange((K) o))
+          return false;
+        return getNode((K) o) != nil;
       }
-      
+
       public boolean remove(Object o)
       {
-	if (! keyInRange((K) o))
-	  return false;
-	Node n = getNode((K) o);
-	if (n != nil)
-	  {
-	    removeNode(n);
-	    return true;
-	  }
-	return false;
+        if (! keyInRange((K) o))
+          return false;
+        Node n = getNode((K) o);
+        if (n != nil)
+          {
+            removeNode(n);
+            return true;
+          }
+        return false;
       }
-      
+
     } // class SubMap.KeySet
 
     private final class NavigableKeySet
@@ -1934,91 +1934,91 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
 
       public K ceiling(K k)
       {
-	return SubMap.this.ceilingKey(k);
+        return SubMap.this.ceilingKey(k);
       }
-      
+
       public Comparator<? super K> comparator()
       {
-	return comparator;
+        return comparator;
       }
-      
+
       public Iterator<K> descendingIterator()
       {
-	return descendingSet().iterator();
+        return descendingSet().iterator();
       }
-      
+
       public NavigableSet<K> descendingSet()
       {
-	return new DescendingSet(this);
+        return new DescendingSet(this);
       }
-      
+
       public K first()
       {
-	return SubMap.this.firstKey();
+        return SubMap.this.firstKey();
       }
-      
+
       public K floor(K k)
       {
-	return SubMap.this.floorKey(k);
+        return SubMap.this.floorKey(k);
       }
-      
+
       public SortedSet<K> headSet(K to)
       {
-	return headSet(to, false);
+        return headSet(to, false);
       }
 
       public NavigableSet<K> headSet(K to, boolean inclusive)
       {
-	return SubMap.this.headMap(to, inclusive).navigableKeySet();
+        return SubMap.this.headMap(to, inclusive).navigableKeySet();
       }
 
       public K higher(K k)
       {
-	return SubMap.this.higherKey(k);
+        return SubMap.this.higherKey(k);
       }
 
       public K last()
       {
-	return SubMap.this.lastKey();
+        return SubMap.this.lastKey();
       }
 
       public K lower(K k)
       {
-	return SubMap.this.lowerKey(k);
+        return SubMap.this.lowerKey(k);
       }
 
       public K pollFirst()
       {
-	return SubMap.this.pollFirstEntry().getKey();
+        return SubMap.this.pollFirstEntry().getKey();
       }
 
       public K pollLast()
       {
-	return SubMap.this.pollLastEntry().getKey();
+        return SubMap.this.pollLastEntry().getKey();
       }
 
       public SortedSet<K> subSet(K from, K to)
       {
-	return subSet(from, true, to, false);
+        return subSet(from, true, to, false);
       }
-      
+
       public NavigableSet<K> subSet(K from, boolean fromInclusive,
-				    K to, boolean toInclusive)
+                                    K to, boolean toInclusive)
       {
-	return SubMap.this.subMap(from, fromInclusive,
-				  to, toInclusive).navigableKeySet();
+        return SubMap.this.subMap(from, fromInclusive,
+                                  to, toInclusive).navigableKeySet();
       }
 
       public SortedSet<K> tailSet(K from)
       {
-	return tailSet(from, true);
+        return tailSet(from, true);
       }
-      
+
       public NavigableSet<K> tailSet(K from, boolean inclusive)
       {
-	return SubMap.this.tailMap(from, inclusive).navigableKeySet();
+        return SubMap.this.tailMap(from, inclusive).navigableKeySet();
       }
-      
+
   } // class SubMap.NavigableKeySet
 
   /**
@@ -2027,54 +2027,54 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
   private class EntrySet
     extends AbstractSet<Entry<K,V>>
   {
-    
+
     public int size()
     {
       return SubMap.this.size();
     }
-    
+
     public Iterator<Map.Entry<K,V>> iterator()
     {
       Node first = lowestGreaterThan(minKey, true);
       Node max = lowestGreaterThan(maxKey, false);
       return new TreeIterator(ENTRIES, first, max);
     }
-    
+
     public void clear()
     {
       SubMap.this.clear();
     }
-    
+
     public boolean contains(Object o)
     {
       if (! (o instanceof Map.Entry))
-	return false;
+        return false;
       Map.Entry<K,V> me = (Map.Entry<K,V>) o;
       K key = me.getKey();
       if (! keyInRange(key))
-	return false;
+        return false;
       Node<K,V> n = getNode(key);
       return n != nil && AbstractSet.equals(me.getValue(), n.value);
     }
-    
+
     public boolean remove(Object o)
     {
       if (! (o instanceof Map.Entry))
-	return false;
+        return false;
       Map.Entry<K,V> me = (Map.Entry<K,V>) o;
       K key = me.getKey();
       if (! keyInRange(key))
-	return false;
+        return false;
       Node<K,V> n = getNode(key);
       if (n != nil && AbstractSet.equals(me.getValue(), n.value))
-	{
-	  removeNode(n);
-	  return true;
-	}
+        {
+          removeNode(n);
+          return true;
+        }
       return false;
     }
   } // class SubMap.EntrySet
-    
+
     private final class NavigableEntrySet
       extends EntrySet
       implements NavigableSet<Entry<K,V>>
@@ -2082,103 +2082,103 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
 
       public Entry<K,V> ceiling(Entry<K,V> e)
       {
-	return SubMap.this.ceilingEntry(e.getKey());
+        return SubMap.this.ceilingEntry(e.getKey());
       }
-      
+
       public Comparator<? super Entry<K,V>> comparator()
       {
-	return new Comparator<Entry<K,V>>()
-	  {
-	    public int compare(Entry<K,V> t1, Entry<K,V> t2)
-	      {
-		return comparator.compare(t1.getKey(), t2.getKey());
-	      }
-	  };
+        return new Comparator<Entry<K,V>>()
+          {
+            public int compare(Entry<K,V> t1, Entry<K,V> t2)
+              {
+                return comparator.compare(t1.getKey(), t2.getKey());
+              }
+          };
       }
-      
+
       public Iterator<Entry<K,V>> descendingIterator()
       {
-	return descendingSet().iterator();
+        return descendingSet().iterator();
       }
-      
+
       public NavigableSet<Entry<K,V>> descendingSet()
       {
-	return new DescendingSet(this);
+        return new DescendingSet(this);
       }
-      
+
       public Entry<K,V> first()
       {
-	return SubMap.this.firstEntry();
+        return SubMap.this.firstEntry();
       }
-      
+
       public Entry<K,V> floor(Entry<K,V> e)
       {
-	return SubMap.this.floorEntry(e.getKey());
+        return SubMap.this.floorEntry(e.getKey());
       }
-      
+
       public SortedSet<Entry<K,V>> headSet(Entry<K,V> to)
       {
-	return headSet(to, false);
+        return headSet(to, false);
       }
 
       public NavigableSet<Entry<K,V>> headSet(Entry<K,V> to, boolean inclusive)
       {
-	return (NavigableSet<Entry<K,V>>)
-	  SubMap.this.headMap(to.getKey(), inclusive).entrySet();
+        return (NavigableSet<Entry<K,V>>)
+          SubMap.this.headMap(to.getKey(), inclusive).entrySet();
       }
 
       public Entry<K,V> higher(Entry<K,V> e)
       {
-	return SubMap.this.higherEntry(e.getKey());
+        return SubMap.this.higherEntry(e.getKey());
       }
 
       public Entry<K,V> last()
       {
-	return SubMap.this.lastEntry();
+        return SubMap.this.lastEntry();
       }
 
       public Entry<K,V> lower(Entry<K,V> e)
       {
-	return SubMap.this.lowerEntry(e.getKey());
+        return SubMap.this.lowerEntry(e.getKey());
       }
 
       public Entry<K,V> pollFirst()
       {
-	return SubMap.this.pollFirstEntry();
+        return SubMap.this.pollFirstEntry();
       }
 
       public Entry<K,V> pollLast()
       {
-	return SubMap.this.pollLastEntry();
+        return SubMap.this.pollLastEntry();
       }
 
       public SortedSet<Entry<K,V>> subSet(Entry<K,V> from, Entry<K,V> to)
       {
-	return subSet(from, true, to, false);
+        return subSet(from, true, to, false);
       }
-      
+
       public NavigableSet<Entry<K,V>> subSet(Entry<K,V> from, boolean fromInclusive,
-					     Entry<K,V> to, boolean toInclusive)
+                                             Entry<K,V> to, boolean toInclusive)
       {
-	return (NavigableSet<Entry<K,V>>)
-	  SubMap.this.subMap(from.getKey(), fromInclusive,
-			     to.getKey(), toInclusive).entrySet();
+        return (NavigableSet<Entry<K,V>>)
+          SubMap.this.subMap(from.getKey(), fromInclusive,
+                             to.getKey(), toInclusive).entrySet();
       }
 
       public SortedSet<Entry<K,V>> tailSet(Entry<K,V> from)
       {
-	return tailSet(from, true);
+        return tailSet(from, true);
       }
-      
+
       public NavigableSet<Entry<K,V>> tailSet(Entry<K,V> from, boolean inclusive)
       {
-	return (NavigableSet<Entry<K,V>>)
-	  SubMap.this.tailMap(from.getKey(), inclusive).navigableKeySet();
+        return (NavigableSet<Entry<K,V>>)
+          SubMap.this.tailMap(from.getKey(), inclusive).navigableKeySet();
       }
-      
+
   } // class SubMap.NavigableEntrySet
 
-} // class SubMap  
+} // class SubMap
 
   /**
    * Returns the entry associated with the least or lowest key
@@ -2326,7 +2326,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
    * <code>null</code> if there is no such key.
    *
    * @param key the key relative to the returned entry.
-   * @return the entry with the least key greater than 
+   * @return the entry with the least key greater than
    *         the given key, or <code>null</code> if there is
    *         no such key.
    * @throws ClassCastException if the specified key can not
@@ -2385,7 +2385,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
    * <code>null</code> if there is no such key.
    *
    * @param key the key relative to the returned entry.
-   * @return the entry with the greatest key less than 
+   * @return the entry with the greatest key less than
    *         the given key, or <code>null</code> if there is
    *         no such key.
    * @throws ClassCastException if the specified key can not
@@ -2473,7 +2473,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     Entry<K,V> e = lastEntry();
     if (e != null)
       removeNode((Node<K,V>)e);
-    return e;    
+    return e;
   }
 
   /**
@@ -2524,7 +2524,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     {
       this.map = map;
     }
-      
+
     public Map.Entry<DK,DV> ceilingEntry(DK key)
     {
       return map.floorEntry(key);
@@ -2549,7 +2549,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     {
       return map.containsKey(o);
     }
-    
+
     public boolean containsValue(Object o)
     {
       return map.containsValue(o);
@@ -2568,9 +2568,9 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     public Set<Entry<DK,DV>> entrySet()
     {
       if (entries == null)
-	entries =
-	  new DescendingSet<Entry<DK,DV>>((NavigableSet<Entry<DK,DV>>)
-					  map.entrySet());
+        entries =
+          new DescendingSet<Entry<DK,DV>>((NavigableSet<Entry<DK,DV>>)
+                                          map.entrySet());
       return entries;
     }
 
@@ -2632,7 +2632,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     public Set<DK> keySet()
     {
       if (keys == null)
-	keys = new DescendingSet<DK>(map.navigableKeySet());
+        keys = new DescendingSet<DK>(map.navigableKeySet());
       return keys;
     }
 
@@ -2664,7 +2664,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     public NavigableSet<DK> navigableKeySet()
     {
       if (nKeys == null)
-	nKeys = new DescendingSet<DK>(map.navigableKeySet());
+        nKeys = new DescendingSet<DK>(map.navigableKeySet());
       return nKeys;
     }
 
@@ -2704,10 +2704,10 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     }
 
     public NavigableMap<DK,DV> subMap(DK fromKey, boolean fromInclusive,
-				      DK toKey, boolean toInclusive)
+                                      DK toKey, boolean toInclusive)
     {
       return new DescendingMap(map.subMap(fromKey, fromInclusive,
-					  toKey, toInclusive));
+                                          toKey, toInclusive));
     }
 
     public SortedMap<DK,DV> tailMap(DK fromKey)
@@ -2726,11 +2726,11 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
       final Iterator<Entry<DK,DV>> it = entrySet().iterator();
       while (it.hasNext())
       {
-	final Entry<DK,DV> e = it.next();
+        final Entry<DK,DV> e = it.next();
         r.append(e.getKey());
         r.append('=');
         r.append(e.getValue());
-	r.append(", ");
+        r.append(", ");
       }
       r.replace(r.length() - 2, r.length(), "}");
       return r.toString();
@@ -2742,53 +2742,53 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
         // Create an AbstractCollection with custom implementations of those
         // methods that can be overriden easily and efficiently.
         values = new AbstractCollection()
-	  {
-	    public int size()
-	    {
-	      return DescendingMap.this.size();
-	    }
-	    
-	    public Iterator<DV> iterator()
-	    {
-	      return new Iterator<DV>()
-		{	  
-		  /** The last Entry returned by a next() call. */
-		  private Entry<DK,DV> last;
-		  
-		  /** The next entry that should be returned by next(). */
-		  private Entry<DK,DV> next = firstEntry();
-		  
-		  public boolean hasNext()
-		  {
-		    return next != null;
-		  }
+          {
+            public int size()
+            {
+              return DescendingMap.this.size();
+            }
 
-		  public DV next()
-		  {
-		    if (next == null)
-		      throw new NoSuchElementException();
-		    last = next;
-		    next = higherEntry(last.getKey());
-		    
-		    return last.getValue();
-		  }
+            public Iterator<DV> iterator()
+            {
+              return new Iterator<DV>()
+                {
+                  /** The last Entry returned by a next() call. */
+                  private Entry<DK,DV> last;
 
-		  public void remove()
-		  {
-		    if (last == null)
-		      throw new IllegalStateException();
-		    
-		    DescendingMap.this.remove(last.getKey());
-		    last = null;
-		  }
-		};
-	    }
-	    
-	    public void clear()
-	    {
-	      DescendingMap.this.clear();
-	    }
-	  };
+                  /** The next entry that should be returned by next(). */
+                  private Entry<DK,DV> next = firstEntry();
+
+                  public boolean hasNext()
+                  {
+                    return next != null;
+                  }
+
+                  public DV next()
+                  {
+                    if (next == null)
+                      throw new NoSuchElementException();
+                    last = next;
+                    next = higherEntry(last.getKey());
+
+                    return last.getValue();
+                  }
+
+                  public void remove()
+                  {
+                    if (last == null)
+                      throw new IllegalStateException();
+
+                    DescendingMap.this.remove(last.getKey());
+                    last = null;
+                  }
+                };
+            }
+
+            public void clear()
+            {
+              DescendingMap.this.clear();
+            }
+          };
       return values;
     }
 
@@ -2815,17 +2815,17 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     {
       TreeMap.this.clear();
     }
-    
+
     public boolean contains(Object o)
     {
       return containsKey(o);
     }
-    
+
     public boolean remove(Object key)
     {
       Node<K,V> n = getNode((K) key);
       if (n == nil)
-	return false;
+        return false;
       removeNode(n);
       return true;
     }
@@ -2912,10 +2912,10 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     }
 
     public NavigableSet<K> subSet(K from, boolean fromInclusive,
-				  K to, boolean toInclusive)
+                                  K to, boolean toInclusive)
     {
       return subMap(from, fromInclusive,
-		    to, toInclusive).navigableKeySet();
+                    to, toInclusive).navigableKeySet();
     }
 
     public SortedSet<K> tailSet(K from)
@@ -2959,7 +2959,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     {
       this.set = set;
     }
-    
+
     public boolean add(D e)
     {
       return set.add(e);
@@ -3048,38 +3048,38 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     public Iterator<D> iterator()
     {
       return new Iterator<D>()
-	{
-	  	  
-	  /** The last element returned by a next() call. */
-	  private D last;
-		  
-	  /** The next element that should be returned by next(). */
-	  private D next = first();
-		  
-	  public boolean hasNext()
-	  {
-	    return next != null;
-	  }
+        {
 
-	  public D next()
-	  {
-	    if (next == null)
-	      throw new NoSuchElementException();
-	    last = next;
-	    next = higher(last);
-		    
-	    return last;
-	  }
+          /** The last element returned by a next() call. */
+          private D last;
 
-	  public void remove()
-	  {
-	    if (last == null)
-	      throw new IllegalStateException();
-	    
-	    DescendingSet.this.remove(last);
-	    last = null;
-	  }
-	};
+          /** The next element that should be returned by next(). */
+          private D next = first();
+
+          public boolean hasNext()
+          {
+            return next != null;
+          }
+
+          public D next()
+          {
+            if (next == null)
+              throw new NoSuchElementException();
+            last = next;
+            next = higher(last);
+
+            return last;
+          }
+
+          public void remove()
+          {
+            if (last == null)
+              throw new IllegalStateException();
+
+            DescendingSet.this.remove(last);
+            last = null;
+          }
+        };
     }
 
     public D last()
@@ -3128,10 +3128,10 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     }
 
     public NavigableSet<D> subSet(D from, boolean fromInclusive,
-				  D to, boolean toInclusive)
+                                  D to, boolean toInclusive)
     {
       return new DescendingSet(set.subSet(from, fromInclusive,
-					  to, toInclusive));
+                                          to, toInclusive));
     }
 
     public SortedSet<D> tailSet(D from)
@@ -3164,12 +3164,12 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
       final Iterator<D> it = iterator();
       while (it.hasNext())
       {
-	final D o = it.next();
-	if (o == this)
-	  r.append("<this>");
-	else
-	  r.append(o);
-	r.append(", ");
+        final D o = it.next();
+        if (o == this)
+          r.append("<this>");
+        else
+          r.append(o);
+        r.append(", ");
       }
       r.replace(r.length() - 2, r.length(), "]");
       return r.toString();
@@ -3184,12 +3184,12 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     {
       return size;
     }
-    
+
     public Iterator<Map.Entry<K,V>> iterator()
     {
       return new TreeIterator(ENTRIES);
     }
-    
+
     public void clear()
     {
       TreeMap.this.clear();
@@ -3198,68 +3198,68 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     public boolean contains(Object o)
     {
       if (! (o instanceof Map.Entry))
-	return false;
+        return false;
       Map.Entry<K,V> me = (Map.Entry<K,V>) o;
       Node<K,V> n = getNode(me.getKey());
       return n != nil && AbstractSet.equals(me.getValue(), n.value);
     }
-    
+
     public boolean remove(Object o)
     {
       if (! (o instanceof Map.Entry))
-	return false;
+        return false;
       Map.Entry<K,V> me = (Map.Entry<K,V>) o;
       Node<K,V> n = getNode(me.getKey());
       if (n != nil && AbstractSet.equals(me.getValue(), n.value))
-	{
-	  removeNode(n);
-	  return true;
-	}
+        {
+          removeNode(n);
+          return true;
+        }
       return false;
     }
   }
-  
+
   private final class NavigableEntrySet
     extends EntrySet
     implements NavigableSet<Entry<K,V>>
   {
-    
+
     public Entry<K,V> ceiling(Entry<K,V> e)
     {
       return ceilingEntry(e.getKey());
     }
-      
+
     public Comparator<? super Entry<K,V>> comparator()
     {
       return new Comparator<Entry<K,V>>()
-	{
-	  public int compare(Entry<K,V> t1, Entry<K,V> t2)
-	  {
-	    return comparator.compare(t1.getKey(), t2.getKey());
-	  }
-	};
+        {
+          public int compare(Entry<K,V> t1, Entry<K,V> t2)
+          {
+            return comparator.compare(t1.getKey(), t2.getKey());
+          }
+        };
     }
-    
+
     public Iterator<Entry<K,V>> descendingIterator()
     {
       return descendingSet().iterator();
     }
-    
+
     public NavigableSet<Entry<K,V>> descendingSet()
     {
       return new DescendingSet(this);
     }
-    
+
     public Entry<K,V> first()
     {
       return firstEntry();
     }
-      
+
     public Entry<K,V> floor(Entry<K,V> e)
     {
       return floorEntry(e.getKey());
     }
-      
+
     public SortedSet<Entry<K,V>> headSet(Entry<K,V> to)
     {
       return headSet(to, false);
@@ -3269,7 +3269,7 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     {
       return (NavigableSet<Entry<K,V>>) headMap(to.getKey(), inclusive).entrySet();
     }
-    
+
     public Entry<K,V> higher(Entry<K,V> e)
     {
       return higherEntry(e.getKey());
@@ -3299,24 +3299,24 @@ public class TreeMap<K, V> extends AbstractMap<K, V>
     {
       return subSet(from, true, to, false);
     }
-    
+
     public NavigableSet<Entry<K,V>> subSet(Entry<K,V> from, boolean fromInclusive,
-					   Entry<K,V> to, boolean toInclusive)
+                                           Entry<K,V> to, boolean toInclusive)
     {
       return (NavigableSet<Entry<K,V>>) subMap(from.getKey(), fromInclusive,
-					       to.getKey(), toInclusive).entrySet();
+                                               to.getKey(), toInclusive).entrySet();
     }
 
     public SortedSet<Entry<K,V>> tailSet(Entry<K,V> from)
     {
       return tailSet(from, true);
     }
-    
+
     public NavigableSet<Entry<K,V>> tailSet(Entry<K,V> from, boolean inclusive)
     {
       return (NavigableSet<Entry<K,V>>) tailMap(from.getKey(), inclusive).navigableKeySet();
     }
-    
+
   } // class NavigableEntrySet
 
 } // class TreeMap

@@ -47,11 +47,11 @@ package gnu.java.util.regex;
  * <P>
  * Note that this makes UncheckedRE dangerous if constructed with
  * dynamic data.  Do not use UncheckedRE unless you are completely sure
- * that all input being passed to it contains valid, well-formed 
+ * that all input being passed to it contains valid, well-formed
  * regular expressions for the syntax specified.
  *
  * @author <A HREF="mailto:wes@cacas.org">Wes Biggs</A>
- * @see gnu.java.util.regex.RE 
+ * @see gnu.java.util.regex.RE
  * @since gnu.regexp 1.1.4
  */
 
@@ -105,7 +105,7 @@ public final class UncheckedRE extends RE
     try
     {
       initialize (pattern, cflags, syntax, 0, 0);
-    } 
+    }
     catch (REException e)
     {
       throw new RuntimeException (e.getMessage ());

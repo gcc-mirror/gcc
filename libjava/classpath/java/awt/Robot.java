@@ -92,7 +92,7 @@ public class Robot
 
     // createRobot will throw AWTException if XTest is not supported.
     peer = tk.createRobot (GraphicsEnvironment.getLocalGraphicsEnvironment ()
-			   .getDefaultScreenDevice ());
+                           .getDefaultScreenDevice ());
   }
 
   /**
@@ -113,7 +113,7 @@ public class Robot
 
     if (screen.getType () != GraphicsDevice.TYPE_RASTER_SCREEN)
       throw new IllegalArgumentException ("Robot: graphics"
-					  + " device is not a screen");
+                                          + " device is not a screen");
 
     SecurityManager sm = System.getSecurityManager ();
     if (sm != null)
@@ -159,10 +159,10 @@ public class Robot
   public void mousePress (int buttons)
   {
     if ((buttons & InputEvent.BUTTON1_MASK) == 0
-	&& (buttons & InputEvent.BUTTON2_MASK) == 0
-	&& (buttons & InputEvent.BUTTON3_MASK) == 0)
+        && (buttons & InputEvent.BUTTON2_MASK) == 0
+        && (buttons & InputEvent.BUTTON3_MASK) == 0)
       throw new IllegalArgumentException ("Robot: mousePress:"
-					  + " invalid button mask");
+                                          + " invalid button mask");
 
     peer.mousePress (buttons);
 
@@ -190,10 +190,10 @@ public class Robot
   public void mouseRelease(int buttons)
   {
     if ((buttons & InputEvent.BUTTON1_MASK) == 0
-	&& (buttons & InputEvent.BUTTON2_MASK) == 0
-	&& (buttons & InputEvent.BUTTON3_MASK) == 0)
+        && (buttons & InputEvent.BUTTON2_MASK) == 0
+        && (buttons & InputEvent.BUTTON3_MASK) == 0)
       throw new IllegalArgumentException ("Robot: mouseRelease:"
-					  + " invalid button mask");
+                                          + " invalid button mask");
 
     peer.mouseRelease (buttons);
 
@@ -245,7 +245,7 @@ public class Robot
   /**
    * Release a key.
    *
-   * @param keycode key to release, a {@link java.awt.event.KeyEvent} VK_ 
+   * @param keycode key to release, a {@link java.awt.event.KeyEvent} VK_
    *                constant
    *
    * @exception IllegalArgumentException if keycode is not a valid key
@@ -304,10 +304,10 @@ public class Robot
 
     BufferedImage bufferedImage =
       new BufferedImage (screenRect.width, screenRect.height,
-			 BufferedImage.TYPE_INT_ARGB);
+                         BufferedImage.TYPE_INT_ARGB);
 
     bufferedImage.setRGB (0, 0, screenRect.width, screenRect.height,
-			  pixels, 0, screenRect.width);
+                          pixels, 0, screenRect.width);
 
     return bufferedImage;
   }
@@ -377,11 +377,11 @@ public class Robot
 
     try
       {
-	Thread.sleep (ms);
+        Thread.sleep (ms);
       }
     catch (InterruptedException e)
       {
-	System.err.println ("Robot: delay interrupted");
+        System.err.println ("Robot: delay interrupted");
       }
   }
 
@@ -393,19 +393,19 @@ public class Robot
   {
     if (EventQueue.isDispatchThread ())
       throw new IllegalThreadStateException ("Robot: waitForIdle called from "
-					     + "the event dispatch thread");
+                                             + "the event dispatch thread");
 
     try
       {
-	EventQueue.invokeAndWait (new Runnable () { public void run () { } });
+        EventQueue.invokeAndWait (new Runnable () { public void run () { } });
       }
     catch (InterruptedException e)
       {
-	System.err.println ("Robot: waitForIdle interrupted");
+        System.err.println ("Robot: waitForIdle interrupted");
       }
     catch (InvocationTargetException e)
       {
-	System.err.println ("Robot: waitForIdle cannot invoke target");
+        System.err.println ("Robot: waitForIdle cannot invoke target");
       }
   }
 
@@ -417,7 +417,7 @@ public class Robot
   public String toString ()
   {
     return getClass ().getName ()
-	+ "[ autoDelay = " + autoDelay + ", autoWaitForIdle = "
-	+ waitForIdle + " ]";
+        + "[ autoDelay = " + autoDelay + ", autoWaitForIdle = "
+        + waitForIdle + " ]";
   }
 }

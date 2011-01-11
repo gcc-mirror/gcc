@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -58,7 +58,7 @@ public interface Activator
    * identifier, determines the object activation group and initiates object
    * recreation either via {@link ActivationInstantiator} or via
    * {@link Class#newInstance()}.
-   * 
+   *
    * @param id the identifier of the object to activate.
    * @param force if true, the activator always contacts the group to obtain the
    *          reference. If false, it may return the cached value.

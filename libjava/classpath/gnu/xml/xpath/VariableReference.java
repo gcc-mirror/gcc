@@ -1,4 +1,4 @@
-/* VariableReference.java -- 
+/* VariableReference.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -98,5 +98,5 @@ public class VariableReference
     buf.append(name.getLocalPart());
     return buf.toString();
   }
-  
+
 }

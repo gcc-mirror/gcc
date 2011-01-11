@@ -42,4 +42,3 @@ public interface LightweightPeer extends ComponentPeer
 {
 
 } // interface LightweightPeer
-

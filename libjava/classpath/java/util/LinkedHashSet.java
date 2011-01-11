@@ -62,7 +62,7 @@ import java.io.Serializable;
  * without needing the overhead of <code>TreeSet</code>.
  * <p>
  *
- * Under ideal circumstances (no collisions), LinkedHashSet offers O(1) 
+ * Under ideal circumstances (no collisions), LinkedHashSet offers O(1)
  * performance on most operations.  In the worst case (all elements map
  * to the same hash code -- very unlikely), most operations are O(n).
  * <p>

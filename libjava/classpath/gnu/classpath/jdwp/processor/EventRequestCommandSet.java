@@ -1,7 +1,7 @@
 /* EventRequestCommandSet.java -- class to implement the EventRequest Command
    Set
    Copyright (C) 2005, 2007 Free Software Foundation
- 
+
 This file is part of GNU Classpath.
 
 GNU Classpath is free software; you can redistribute it and/or modify
@@ -70,7 +70,7 @@ import java.nio.ByteBuffer;
 
 /**
  * A class representing the EventRequest Command Set.
- * 
+ *
  * @author Aaron Luchko <aluchko@redhat.com>
  */
 public class EventRequestCommandSet
@@ -93,7 +93,7 @@ public class EventRequestCommandSet
             executeClearAllBreakpoints(bb, os);
             break;
           default:
-            throw new NotImplementedException("Command " + command + 
+            throw new NotImplementedException("Command " + command +
               " not found in EventRequest Reference Command Set.");
           }
       }
@@ -116,24 +116,24 @@ public class EventRequestCommandSet
 
     switch (eventKind)
       {
-	case JdwpConstants.EventKind.FIELD_ACCESS:
-	if (!VMVirtualMachine.canWatchFieldAccess)
-	  {
-	    String msg = "watching field accesses is not supported";
-	    throw new NotImplementedException(msg);
-	  }
-	break;
+        case JdwpConstants.EventKind.FIELD_ACCESS:
+        if (!VMVirtualMachine.canWatchFieldAccess)
+          {
+            String msg = "watching field accesses is not supported";
+            throw new NotImplementedException(msg);
+          }
+        break;
 
-	case JdwpConstants.EventKind.FIELD_MODIFICATION:
-	if (!VMVirtualMachine.canWatchFieldModification)
-	  {
-	    String msg = "watching field modifications is not supported";
-	    throw new NotImplementedException(msg);
-	  }
-	break;
+        case JdwpConstants.EventKind.FIELD_MODIFICATION:
+        if (!VMVirtualMachine.canWatchFieldModification)
+          {
+            String msg = "watching field modifications is not supported";
+            throw new NotImplementedException(msg);
+          }
+        break;
 
       default:
-	// okay
+        // okay
       }
 
     EventRequest eventReq = new EventRequest(eventKind, suspendPolicy);

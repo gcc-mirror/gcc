@@ -46,23 +46,23 @@ import java.util.EventListener;
  */
 public interface MenuListener extends EventListener {
 
-	/**
-	 * Menu canceled
-	 * @param event Menu Event
-	 */
-	void menuCanceled(MenuEvent event);
+        /**
+         * Menu canceled
+         * @param event Menu Event
+         */
+        void menuCanceled(MenuEvent event);
 
-	/**
-	 * Menu deselected
-	 * @param event Menu Event
-	 */
-	void menuDeselected(MenuEvent event);
+        /**
+         * Menu deselected
+         * @param event Menu Event
+         */
+        void menuDeselected(MenuEvent event);
 
-	/**
-	 * Menu selected
-	 * @param event Menu Event
-	 */
-	void menuSelected(MenuEvent event);
+        /**
+         * Menu selected
+         * @param event Menu Event
+         */
+        void menuSelected(MenuEvent event);
 
 
 } // MenuListener

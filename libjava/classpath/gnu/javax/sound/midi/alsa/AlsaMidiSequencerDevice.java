@@ -53,7 +53,7 @@ import javax.sound.midi.Transmitter;
 
 /**
  * The ALSA MIDI sequencer device.  This is a singleton device.
- * 
+ *
  * @author green@redhat.com
  *
  */
@@ -61,16 +61,16 @@ public class AlsaMidiSequencerDevice implements Sequencer
 {
   // The singleton instance.
   public final static AlsaMidiSequencerDevice instance = new AlsaMidiSequencerDevice();
-  
+
   // A pointer to a native chunk of memory
   private long nativeState;
-  
+
   // The sequence to process
   private Sequence sequence;
-  
+
   /**
    * A private constructor.  There should only be one instance of this
-   * device. 
+   * device.
    */
   private AlsaMidiSequencerDevice()
   {
@@ -79,14 +79,14 @@ public class AlsaMidiSequencerDevice implements Sequencer
 
   /**
    * Return the sequencer singleton.
-   * 
+   *
    * @return the sequencer singleton
    */
   public static AlsaMidiSequencerDevice getInstance()
   {
     return instance;
   }
-  
+
   /* (non-Javadoc)
    * @see javax.sound.midi.Sequencer#setSequence(javax.sound.midi.Sequence)
    */
@@ -438,23 +438,23 @@ public class AlsaMidiSequencerDevice implements Sequencer
       // Check to see if we're open already.
       if (nativeState != 0)
         return;
-     
+
       nativeState = open_();
     }
   }
 
   /**
    * Allocate the native state object, and open the sequencer.
-   * 
+   *
    * @return a long representation of a pointer to the nativeState.
    */
   private native long open_();
-  
+
   /**
    * Close the sequencer and free the native state object.
    */
   private native void close_(long nativeState);
-  
+
   /* (non-Javadoc)
    * @see javax.sound.midi.MidiDevice#close()
    */

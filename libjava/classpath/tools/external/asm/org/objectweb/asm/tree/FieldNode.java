@@ -35,7 +35,7 @@ import org.objectweb.asm.FieldVisitor;
 
 /**
  * A node that represents a field.
- * 
+ *
  * @author Eric Bruneton
  */
 public class FieldNode extends MemberNode implements FieldVisitor {
@@ -70,7 +70,7 @@ public class FieldNode extends MemberNode implements FieldVisitor {
 
     /**
      * Constructs a new {@link FieldNode}.
-     * 
+     *
      * @param access the field's access flags (see
      *        {@link org.objectweb.asm.Opcodes}). This parameter also indicates
      *        if the field is synthetic and/or deprecated.
@@ -98,7 +98,7 @@ public class FieldNode extends MemberNode implements FieldVisitor {
 
     /**
      * Makes the given class visitor visit this field.
-     * 
+     *
      * @param cv a class visitor.
      */
     public void accept(final ClassVisitor cv) {

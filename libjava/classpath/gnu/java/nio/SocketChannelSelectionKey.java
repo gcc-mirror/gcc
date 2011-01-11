@@ -1,4 +1,4 @@
-/* SocketChannelSelectionKey.java -- 
+/* SocketChannelSelectionKey.java --
    Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -49,7 +49,7 @@ public final class SocketChannelSelectionKey
   {
     super (channel, selector);
   }
-    
+
   // FIXME don't use file descriptor integers
   public int getNativeFD()
   {

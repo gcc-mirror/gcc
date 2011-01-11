@@ -42,15 +42,15 @@ import java.io.Serializable;
 
 /**
  * Means errors, related to the interface repository.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public final class INTF_REPOS
   extends SystemException
   implements Serializable
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 722572694720671863L;
 

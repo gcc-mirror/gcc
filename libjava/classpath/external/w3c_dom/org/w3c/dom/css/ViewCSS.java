@@ -16,28 +16,28 @@ import org.w3c.dom.Element;
 import org.w3c.dom.views.AbstractView;
 
 /**
- *  This interface represents a CSS view. The <code>getComputedStyle</code> 
- * method provides a read only access to the computed values of an element. 
- * <p> The expectation is that an instance of the <code>ViewCSS</code> 
- * interface can be obtained by using binding-specific casting methods on an 
- * instance of the <code>AbstractView</code> interface. 
- * <p> Since a computed style is related to an <code>Element</code> node, if 
- * this element is removed from the document, the associated 
- * <code>CSSStyleDeclaration</code> and <code>CSSValue</code> related to 
- * this declaration are no longer valid. 
+ *  This interface represents a CSS view. The <code>getComputedStyle</code>
+ * method provides a read only access to the computed values of an element.
+ * <p> The expectation is that an instance of the <code>ViewCSS</code>
+ * interface can be obtained by using binding-specific casting methods on an
+ * instance of the <code>AbstractView</code> interface.
+ * <p> Since a computed style is related to an <code>Element</code> node, if
+ * this element is removed from the document, the associated
+ * <code>CSSStyleDeclaration</code> and <code>CSSValue</code> related to
+ * this declaration are no longer valid.
  * <p>See also the <a href='http://www.w3.org/TR/2000/REC-DOM-Level-2-Style-20001113'>Document Object Model (DOM) Level 2 Style Specification</a>.
  * @since DOM Level 2
  */
 public interface ViewCSS extends AbstractView {
     /**
-     *  This method is used to get the computed style as it is defined in [<a href='http://www.w3.org/TR/1998/REC-CSS2-19980512'>CSS2</a>]. 
-     * @param elt  The element whose style is to be computed. This parameter 
-     *   cannot be null. 
-     * @param pseudoElt  The pseudo-element or <code>null</code> if none. 
-     * @return  The computed style. The <code>CSSStyleDeclaration</code> is 
-     *   read-only and contains only absolute values. 
+     *  This method is used to get the computed style as it is defined in [<a href='http://www.w3.org/TR/1998/REC-CSS2-19980512'>CSS2</a>].
+     * @param elt  The element whose style is to be computed. This parameter
+     *   cannot be null.
+     * @param pseudoElt  The pseudo-element or <code>null</code> if none.
+     * @return  The computed style. The <code>CSSStyleDeclaration</code> is
+     *   read-only and contains only absolute values.
      */
-    public CSSStyleDeclaration getComputedStyle(Element elt, 
+    public CSSStyleDeclaration getComputedStyle(Element elt,
                                                 String pseudoElt);
 
 }

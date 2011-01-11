@@ -205,8 +205,8 @@ public class ActionEvent extends AWTEvent
   public String paramString()
   {
     CPStringBuilder s = new CPStringBuilder(id == ACTION_PERFORMED
-					    ? "ACTION_PERFORMED,cmd="
-					    : "unknown type,cmd=");
+                                            ? "ACTION_PERFORMED,cmd="
+                                            : "unknown type,cmd=");
     s.append(actionCommand).append(",when=").append(when).append(",modifiers");
     int len = s.length();
     s.setLength(len + 1);
@@ -225,4 +225,4 @@ public class ActionEvent extends AWTEvent
     s.setCharAt(len, '=');
     return s.toString();
   }
-} // class ActionEvent 
+} // class ActionEvent

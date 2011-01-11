@@ -1104,7 +1104,7 @@ public class KeyEvent extends InputEvent
    */
   private boolean isProxyActive;
 
-
+
   /**
    * Initializes a new instance of <code>KeyEvent</code> with the specified
    * information. Note that an invalid id leads to unspecified results.

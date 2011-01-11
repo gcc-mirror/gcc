@@ -47,6 +47,5 @@ public interface TextFieldPeer extends TextComponentPeer
   Dimension getMinimumSize(int len);
   Dimension getPreferredSize(int len);
   void setEchoChar(char echo_char);
-  void setEchoCharacter(char echo_char);  
-} // interface TextFieldPeer 
-
+  void setEchoCharacter(char echo_char);
+} // interface TextFieldPeer

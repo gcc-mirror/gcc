@@ -1,4 +1,4 @@
-/* DomHTMLHRElement.java -- 
+/* DomHTMLHRElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -64,7 +64,7 @@ public class DomHTMLHRElement
   {
     setHTMLAttribute("align", align);
   }
-  
+
   public boolean getNoShade()
   {
     return getBooleanHTMLAttribute("noshade");
@@ -74,7 +74,7 @@ public class DomHTMLHRElement
   {
     setBooleanHTMLAttribute("noshade", noShade);
   }
-  
+
   public String getSize()
   {
     return getHTMLAttribute("size");
@@ -84,7 +84,7 @@ public class DomHTMLHRElement
   {
     setHTMLAttribute("size", size);
   }
-  
+
   public String getWidth()
   {
     return getHTMLAttribute("width");
@@ -94,6 +94,5 @@ public class DomHTMLHRElement
   {
     setHTMLAttribute("width", width);
   }
-  
-}
 
+}

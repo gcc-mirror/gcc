@@ -1,4 +1,4 @@
-/* CharacterAttributeTranslator.java -- 
+/* CharacterAttributeTranslator.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -56,7 +56,7 @@ public class CharacterAttributeTranslator
    * Maps color name to its hex encoding.
    */
   private static final HashMap colorMap = new HashMap();
-  static 
+  static
   {
     colorMap.put("aqua" , "#00FFFF");
     colorMap.put("blue" , "#0000FF");
@@ -75,11 +75,11 @@ public class CharacterAttributeTranslator
     colorMap.put("white" , "#FFFFFF");
     colorMap.put("yellow" , "#FFFF00");
   }
-  
+
   /**
    * Convert the color string represenation into java.awt.Color. The valid
    * values are like "aqua" , "#00FFFF" or "rgb(1,6,44)".
-   * 
+   *
    * @param colorName the color to convert.
    * @return the matching java.awt.color
    */
@@ -118,74 +118,74 @@ public class CharacterAttributeTranslator
         return null;
       }
   }
-  
+
   /**
    * Translate the HTML character attribute to the Swing style constant.
-   * 
+   *
    * @param charAttr the character attributes of the html tag
    * @param t the html tag itself
    * @param a the attribute set where the translated attributes will be stored
-   * 
+   *
    * @return true if some attributes were translated, false otherwise.
    */
-  public static boolean translateTag(MutableAttributeSet charAttr, 
-				     Tag t, MutableAttributeSet a)
+  public static boolean translateTag(MutableAttributeSet charAttr,
+                                     Tag t, MutableAttributeSet a)
   {
     if(t == Tag.FONT)
       {
-        Object color = a.getAttribute(Attribute.COLOR); 
-	if(color != null)
-	  {
-	    Color c = getColor(color.toString());
-	    if( c == null )
-	      return false;
-	    charAttr.addAttribute(StyleConstants.Foreground, c);
-	    return true;
-	  }
+        Object color = a.getAttribute(Attribute.COLOR);
+        if(color != null)
+          {
+            Color c = getColor(color.toString());
+            if( c == null )
+              return false;
+            charAttr.addAttribute(StyleConstants.Foreground, c);
+            return true;
+          }
 
-	if(a.getAttribute(Attribute.SIZE) != null)
-	  {
-	    // FIXME
-	    //	    charAttr.addAttribute(StyleConstants.FontSize, 
-	    //				  new java.lang.Integer(72));
-	    return true;
-	  }
+        if(a.getAttribute(Attribute.SIZE) != null)
+          {
+            // FIXME
+            //      charAttr.addAttribute(StyleConstants.FontSize,
+            //                            new java.lang.Integer(72));
+            return true;
+          }
       }
 
     if( t == Tag.B )
       {
-	charAttr.addAttribute(StyleConstants.Bold, Boolean.TRUE);
-	return true;
+        charAttr.addAttribute(StyleConstants.Bold, Boolean.TRUE);
+        return true;
       }
 
     if( t == Tag.I )
       {
-	charAttr.addAttribute(StyleConstants.Italic, Boolean.TRUE);
-	return true;
+        charAttr.addAttribute(StyleConstants.Italic, Boolean.TRUE);
+        return true;
       }
 
     if( t == Tag.U )
       {
-	charAttr.addAttribute(StyleConstants.Underline, Boolean.TRUE);
-	return true;
+        charAttr.addAttribute(StyleConstants.Underline, Boolean.TRUE);
+        return true;
       }
 
     if( t == Tag.STRIKE )
       {
-	charAttr.addAttribute(StyleConstants.StrikeThrough, Boolean.TRUE);
-	return true;
+        charAttr.addAttribute(StyleConstants.StrikeThrough, Boolean.TRUE);
+        return true;
       }
 
     if( t == Tag.SUP )
       {
-	charAttr.addAttribute(StyleConstants.Superscript, Boolean.TRUE);
-	return true;
+        charAttr.addAttribute(StyleConstants.Superscript, Boolean.TRUE);
+        return true;
       }
 
     if( t == Tag.SUB )
       {
-	charAttr.addAttribute(StyleConstants.Subscript, Boolean.TRUE);
-	return true;
+        charAttr.addAttribute(StyleConstants.Subscript, Boolean.TRUE);
+        return true;
       }
     return false;
   }

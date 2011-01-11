@@ -49,7 +49,7 @@ import javax.sound.midi.Soundbank;
 /**
  * The SoundbankReader abstract class defines the methods to be provided
  * by a soundbank file reader.
- * 
+ *
  * @author Anthony Green (green@redhat.com)
  * @since 1.3
  *
@@ -58,37 +58,37 @@ public abstract class SoundbankReader
 {
   /**
    * Get a Soundbank from the given URL.
-   * 
+   *
    * @param url from which to read the Soundbank
-   * 
+   *
    * @return the Soundbank object
-   * 
+   *
    * @throws InvalidMidiDataException if the data provided by url cannot be recognized
    * @throws IOException if the data provided by url cannot be read
    */
   public abstract Soundbank getSoundbank(URL url)
     throws InvalidMidiDataException, IOException;
-  
+
   /**
    * Get a Soundbank from the given InputStream.
-   * 
+   *
    * @param stream from which to read the Soundbank
-   * 
+   *
    * @return the Soundbank object
-   * 
+   *
    * @throws InvalidMidiDataException if the data provided by InputStream cannot be recognized
    * @throws IOException if the data provided by InputStream cannot be read
    */
   public abstract Soundbank getSoundbank(InputStream stream)
     throws InvalidMidiDataException, IOException;
-  
+
   /**
    * Get a Soundbank from the given File.
-   * 
+   *
    * @param file from which to read the Soundbank
-   * 
+   *
    * @return the Soundbank object
-   * 
+   *
    * @throws InvalidMidiDataException if the data provided by File cannot be recognized
    * @throws IOException if the data provided by File cannot be read
    */

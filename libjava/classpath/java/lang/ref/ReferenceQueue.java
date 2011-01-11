@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -55,9 +55,9 @@ public class ReferenceQueue<T>
   /**
    * This is a linked list of references.  If this is null, the list is
    * empty.  Otherwise this points to the first reference on the queue.
-   * The first reference will point to the next reference via the 
+   * The first reference will point to the next reference via the
    * <code>nextOnQueue</code> field.  The last reference will point to
-   * itself (not to null, since <code>nextOnQueue</code> is used to 
+   * itself (not to null, since <code>nextOnQueue</code> is used to
    * determine if a reference is enqueued).
    */
   private Reference<? extends T> first;
@@ -80,15 +80,15 @@ public class ReferenceQueue<T>
    * immediately.  The reference will be dequeued.
    *
    * @return a reference on the queue, if there is one,
-   * <code>null</code> otherwise.  
+   * <code>null</code> otherwise.
    */
   public Reference<? extends T> poll()
-  { 
+  {
     return dequeue();
   }
 
   /**
-   * This is called by reference to enqueue itself on this queue.  
+   * This is called by reference to enqueue itself on this queue.
    * @param ref the reference that should be enqueued.
    * @return true if successful, false if not.
    */
@@ -119,7 +119,7 @@ public class ReferenceQueue<T>
       {
         if (first == null)
           return null;
-  
+
         Reference<? extends T> result = first;
         first = (first == first.nextOnQueue) ? null : first.nextOnQueue;
         result.nextOnQueue = null;
@@ -132,8 +132,8 @@ public class ReferenceQueue<T>
    * until a reference is enqueued.
    * @param timeout the timeout period in milliseconds, <code>0</code> means
    * wait forever.
-   * @return the reference removed from the queue, or 
-   * <code>null</code> if timeout period expired.  
+   * @return the reference removed from the queue, or
+   * <code>null</code> if timeout period expired.
    * @exception InterruptedException if the wait was interrupted.
    */
   public Reference<? extends T> remove(long timeout)
@@ -147,13 +147,13 @@ public class ReferenceQueue<T>
 
     return dequeue();
   }
-    
+
 
   /**
    * Removes a reference from the queue, blocking until a reference is
    * enqueued.
    *
-   * @return the reference removed from the queue.  
+   * @return the reference removed from the queue.
    * @exception InterruptedException if the wait was interrupted.
    */
   public Reference<? extends T> remove()

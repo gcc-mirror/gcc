@@ -1,4 +1,4 @@
-/* EventConsumer.java -- 
+/* EventConsumer.java --
    Copyright (C) 1999,2000,2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -75,7 +75,7 @@ public interface EventConsumer
      * @return The value of that property, if it is defined.
      *
      * @exception SAXNotRecognizedException Thrown if the particular
-     *	pipeline stage does not understand the specified identifier.
+     *  pipeline stage does not understand the specified identifier.
      */
     public Object getProperty (String id)
     throws SAXNotRecognizedException;

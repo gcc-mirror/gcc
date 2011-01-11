@@ -1,4 +1,4 @@
-/* IMode.java -- 
+/* IMode.java --
    Copyright (C) 2001, 2002, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -110,7 +110,7 @@ public interface IMode
    * A convenience method. Effectively invokes the <code>encryptBlock()</code>
    * or <code>decryptBlock()</code> method depending on the operational state
    * of the instance.
-   * 
+   *
    * @param in the plaintext.
    * @param inOffset index of <code>in</code> from which to start considering
    *          data.

@@ -48,7 +48,7 @@ import javax.swing.Icon;
 /**
  * A concrete implementation of {@link FileSystemView} that is appropriate for
  * Unix-like systems.
- * 
+ *
  * @see FileSystemView#getFileSystemView()
  */
 class UnixFileSystemView extends FileSystemView
@@ -58,18 +58,18 @@ class UnixFileSystemView extends FileSystemView
 
   /**
    * Creates a new folder with a unique name in the specified directory and
-   * returns a {@link File} object representing the new directory.  The name 
-   * of the new folder is <code>NewFolder</code> or, if a directory or file 
-   * with that name already exists, <code>NewFolder.n</code> where 
-   * <code>n</code> is the lowest integer greater than zero that results in 
+   * returns a {@link File} object representing the new directory.  The name
+   * of the new folder is <code>NewFolder</code> or, if a directory or file
+   * with that name already exists, <code>NewFolder.n</code> where
+   * <code>n</code> is the lowest integer greater than zero that results in
    * a unique directory name.
    *
-   * @param containingDir  the directory to contain the new folder 
+   * @param containingDir  the directory to contain the new folder
    *                       (<code>null</code> not permitted).
    *
    * @return A {@link File} object representing the new directory.
    *
-   * @throws IOException if an exception occurs while creating the new 
+   * @throws IOException if an exception occurs while creating the new
    *                     directory.
    */
   public File createNewFolder(File containingDir) throws IOException
@@ -80,22 +80,22 @@ class UnixFileSystemView extends FileSystemView
                       + NEW_FOLDER_NAME;
     while (f == null)
       {
-	String full = filename;
-	if (count > 0)
-	  full += "." + (count++);
-	f = new File(full);
-	if (f.isDirectory() || f.isFile())
-	  {
-	    count++;
-	    f = null;
-	  }
+        String full = filename;
+        if (count > 0)
+          full += "." + (count++);
+        f = new File(full);
+        if (f.isDirectory() || f.isFile())
+          {
+            count++;
+            f = null;
+          }
       }
     f.mkdir();
     return f;
   }
 
   /**
-   * Returns an array containing the file system root. 
+   * Returns an array containing the file system root.
    *
    * @return An array containing the file system root.
    */
@@ -105,12 +105,12 @@ class UnixFileSystemView extends FileSystemView
   }
 
   /**
-   * Returns the name of a file as it would be displayed by the underlying 
+   * Returns the name of a file as it would be displayed by the underlying
    * system.
    *
    * @param f  the file.
    *
-   * @return the name of a file as it would be displayed by the underlying 
+   * @return the name of a file as it would be displayed by the underlying
    *         system
    */
   public String getSystemDisplayName(File f)
@@ -137,7 +137,7 @@ class UnixFileSystemView extends FileSystemView
   }
 
   /**
-   * Returns the icon that would be displayed for the given file by the 
+   * Returns the icon that would be displayed for the given file by the
    * underlying system.  This method is NOT YET IMPLEMENTED.
    *
    * @param f  the file.
@@ -152,7 +152,7 @@ class UnixFileSystemView extends FileSystemView
   }
 
   /**
-   * Returns the description of a file that would be displayed by the 
+   * Returns the description of a file that would be displayed by the
    * underlying system.  This method is NOT YET IMPLEMENTED.
    *
    * @param f  the file.

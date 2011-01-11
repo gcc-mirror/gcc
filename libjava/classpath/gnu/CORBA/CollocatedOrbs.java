@@ -51,33 +51,33 @@ import java.util.ArrayList;
  * between two independent ORBs, instantiated via ORB.init. The call to the
  * object, obtained via IOR reference from the ORB where it was locally
  * connected is always local anyway.
- * 
+ *
  * For security reasons it may be sensible to keep this class and all support
  * package private.
- * 
+ *
  * @author Audrius Meskauskas
  */
 class CollocatedOrbs
 {
   /**
    * This field is used in automated Classpath specific testing to disable
-   * the direct calls. 
+   * the direct calls.
    */
   static boolean DIRECT_CALLS_ALLOWED = true;
-  
+
    /**
     * Containts the references of the all running GNU Classpath ORBs in the
     * local virtual machine. GNU Classpath ORBs register themselves here when
-    * created and unregister when either ORB.destroy is called or in the 
+    * created and unregister when either ORB.destroy is called or in the
     * finalizer.
     */
    private static ArrayList orbs = new ArrayList();
-   
+
    /**
     * The address of the local host.
     */
    static String localHost;
-   
+
    static
     {
       try
@@ -89,10 +89,10 @@ class CollocatedOrbs
           throw new InternalError("Local host is not accessible:" + ex);
         }
     }
-   
+
    /**
      * Register the new ORB
-     * 
+     *
      * @param orb the orb to register
      */
   static void registerOrb(OrbFunctional orb)
@@ -104,11 +104,11 @@ class CollocatedOrbs
           orbs.add(orb);
         }
   }
-  
+
    /**
      * Unregister the ORB. The ORB will no longer be reacheable locally but may
      * be reacheable via network as if it would be remote.
-     * 
+     *
      * @param orb the orb to unregister
      */
   static void unregisterOrb(OrbFunctional orb)
@@ -120,11 +120,11 @@ class CollocatedOrbs
           orbs.remove(orb);
         }
   }
-  
+
   /**
    * Search the possibly local object. If the IOR is not local or none of the
    * found ORBs of this virtual machine knows about it, null is returned.
-   * 
+   *
    * @param ior the IOR to search
    * @return the found local CORBA object or null in not found.
    */
@@ -156,5 +156,5 @@ class CollocatedOrbs
       }
     return null;
   }
-  
+
 }

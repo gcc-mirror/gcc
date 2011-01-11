@@ -47,7 +47,7 @@ import java.io.IOException;
 
 /**
  * "Notification of a class unload in the target VM" -- JDWP 1.4.2
- * 
+ *
  * @author Kyle Galloway (kgallowa@redhat.com)
  */
 public class ClassUnloadEvent
@@ -58,7 +58,7 @@ public class ClassUnloadEvent
 
   /**
    * Constructs a new <code>ClassUnloadEvent</code>
-   * 
+   *
    * @param signature the signature reported from the VM
    */
   public ClassUnloadEvent(String signature)
@@ -70,7 +70,7 @@ public class ClassUnloadEvent
   /**
    * Returns a specific filtering parameter for this event. Class is the only
    * valid type.
-   * 
+   *
    * @param type the type of parameter desired
    * @returns the desired parameter or <code>null</code>
    */
@@ -82,10 +82,10 @@ public class ClassUnloadEvent
 
   /**
    * Writes the event to the given stream
-   * 
+   *
    * @param outStream the output stream to write the event to
    */
-  protected void _writeData(DataOutputStream outStream) 
+  protected void _writeData(DataOutputStream outStream)
     throws IOException
   {
     VMIdManager idm = VMIdManager.getDefault();

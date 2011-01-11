@@ -86,13 +86,13 @@ import java.math.BigDecimal;
  * from the given {@link java.io.InputStream}. The primitive types are aligned
  * on they natural boundaries by implementing the abstract method
  * {@link #align(int boundary)}.
- * 
+ *
  * The same class also implements {@link org.omg.CORBA.DataInputStream} to read
  * the object content in a user defined way.
- * 
+ *
  * TODO This class uses 16 bits per Unicode character only, as it was until jdk
  * 1.4 inclusive.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public abstract class AbstractCdrInput
@@ -173,7 +173,7 @@ public abstract class AbstractCdrInput
 
   /**
    * Creates the stream. The stream reads Big Endian by default.
-   * 
+   *
    * @param readFrom a stream to read CORBA input from.
    */
   public AbstractCdrInput(java.io.InputStream readFrom)
@@ -194,7 +194,7 @@ public abstract class AbstractCdrInput
   /**
    * Set the Big Endian or Little Endian encoding. The stream reads Big Endian
    * by default.
-   * 
+   *
    * @param use_big_endian if true, the stream expect the multi-byte data in
    * the form "most significant byte first" (Big Endian). This is the
    * java standard.
@@ -207,7 +207,7 @@ public abstract class AbstractCdrInput
 
   /**
    * Get the used encoding.
-   * 
+   *
    * @return true for Big Endian, false for Little Endian.
    */
   public boolean isBigEndian()
@@ -228,7 +228,7 @@ public abstract class AbstractCdrInput
 
   /**
    * Set the input stream that receives the CORBA input.
-   * 
+   *
    * @param readFrom the stream.
    */
   public void setInputStream(java.io.InputStream readFrom)
@@ -249,7 +249,7 @@ public abstract class AbstractCdrInput
 
   /**
    * Set the orb, associated with this stream.
-   * 
+   *
    * @param an_orb
    */
   public void setOrb(ORB an_orb)
@@ -323,7 +323,7 @@ public abstract class AbstractCdrInput
 
   /**
    * Return the associated {@link ORB}.
-   * 
+   *
    * @return the associated {@link ORB} or null is no such is set.
    */
   public ORB orb()
@@ -393,14 +393,14 @@ public abstract class AbstractCdrInput
    * plain (not a string-encoded) IOR profile without the heading endian
    * indicator. The responsible method for reading such data is
    * {@link IOR.read_no_endian}.
-   * 
+   *
    * The returned object is usually casted into the given type using the .narrow
    * method of its helper, despite in some cases the direct cast would also
    * work.
-   * 
+   *
    * The null objects are recognised from the empty profile set. For such
    * objects, null is returned.
-   * 
+   *
    * @return the loaded and constructed object.
    */
   public org.omg.CORBA.Object read_Object()
@@ -991,7 +991,7 @@ public abstract class AbstractCdrInput
    * Read a singe byte string. The method firs reads the byte array and then
    * calls a constructor to create a string from this array. The character
    * encoding, if previously set, is taken into consideration.
-   * 
+   *
    * @return a loaded string.
    */
   public String read_string()
@@ -1195,7 +1195,7 @@ public abstract class AbstractCdrInput
   /**
    * Reads the string in wide character format (ussually UTF-16, Unicode). Takes
    * the currently set charset into consideration.
-   * 
+   *
    * If the native (UTF-16) encoding is used of the GIOP protocol is before 1.2,
    * delegates functionality to "plain" {@link #read_wstring_UTF_16}.
    */
@@ -1239,7 +1239,7 @@ public abstract class AbstractCdrInput
       {
         int p = 0;
         int n = read_long();
-        
+
         if (n<0)
           {
             MARSHAL m = new MARSHAL("Negative string size");
@@ -1336,9 +1336,9 @@ public abstract class AbstractCdrInput
    * Read the object that is an instance of the given class. The current
    * implementation delegates functionality to the parameterless
    * {@link readObject()}.
-   * 
+   *
    * @param klass a class of that this object the instance is.
-   * 
+   *
    * @return the returned object.
    */
   public org.omg.CORBA.Object read_Object(Class klass)
@@ -1348,11 +1348,11 @@ public abstract class AbstractCdrInput
 
   /**
    * Read a value type structure from the stream.
-   * 
+   *
    * OMG specification states the writing format is outside the scope of GIOP
    * definition. This implementation uses java serialization mechanism, calling
    * {@link ObjectInputStream#readObject}
-   * 
+   *
    * @return an value type structure, unmarshaled from the stream
    */
   public Serializable read_Value()
@@ -1363,11 +1363,11 @@ public abstract class AbstractCdrInput
   /**
    * Read the abstract interface. An abstract interface can be either CORBA
    * value type or CORBA object and is returned as an abstract java.lang.Object.
-   * 
+   *
    * As specified in OMG specification, this reads a single boolean and then
    * delegates either to {@link #read_Object()} (for false) or to
    * {@link #read_Value()} (for true).
-   * 
+   *
    * @return an abstract interface, unmarshaled from the stream
    */
   public java.lang.Object read_Abstract()
@@ -1402,11 +1402,11 @@ public abstract class AbstractCdrInput
   /**
    * If required, allocate or resize the char array to fit the newly read
    * values.
-   * 
+   *
    * @param holder_value the existing char array, may be null.
    * @param offset the required offset to read.
    * @param length the length of the new sequence.
-   * 
+   *
    * @return the allocated or resized array, same array if no such operations
    * are required.
    */
@@ -1450,11 +1450,11 @@ public abstract class AbstractCdrInput
 
   /**
    * If required, allocate or resize the int array to fit the newly read values.
-   * 
+   *
    * @param holder_value the existing int array, may be null.
    * @param offset the required offset to read.
    * @param length the length of the new sequence.
-   * 
+   *
    * @return the allocated or resized array, same array if no such operations
    * are required.
    */
@@ -1487,11 +1487,11 @@ public abstract class AbstractCdrInput
   /**
    * If required, allocate or resize the float array to fit the newly read
    * values.
-   * 
+   *
    * @param holder_value the existing float array, may be null.
    * @param offset the required offset to read.
    * @param length the length of the new sequence.
-   * 
+   *
    * @return the allocated or resized array, same array if no such operations
    * are required.
    */
@@ -1524,11 +1524,11 @@ public abstract class AbstractCdrInput
   /**
    * If required, allocate or resize the double array to fit the newly read
    * values.
-   * 
+   *
    * @param holder_value the existing double array, may be null.
    * @param offset the required offset to read.
    * @param length the length of the new sequence.
-   * 
+   *
    * @return the allocated or resized array, same array if no such operations
    * are required.
    */
@@ -1568,11 +1568,11 @@ public abstract class AbstractCdrInput
   /**
    * If required, allocate or resize the short array to fit the newly read
    * values.
-   * 
+   *
    * @param holder_value the existing short array, may be null.
    * @param offset the required offset to read.
    * @param length the length of the new sequence.
-   * 
+   *
    * @return the allocated or resized array, same array if no such operations
    * are required.
    */
@@ -1605,11 +1605,11 @@ public abstract class AbstractCdrInput
   /**
    * If required, allocate or resize the byte array to fit the newly read
    * values.
-   * 
+   *
    * @param holder_value the existing byte array, may be null.
    * @param offset the required offset to read.
    * @param length the length of the new sequence.
-   * 
+   *
    * @return the allocated or resized array, same array if no such operations
    * are required.
    */
@@ -1656,11 +1656,11 @@ public abstract class AbstractCdrInput
   /**
    * If required, allocate or resize the array of longs to fit the newly read
    * values.
-   * 
+   *
    * @param holder_value the existing array, may be null.
    * @param offset the required offset to read.
    * @param length the length of the new sequence.
-   * 
+   *
    * @return the allocated or resized array, same array if no such operations
    * are required.
    */
@@ -1693,11 +1693,11 @@ public abstract class AbstractCdrInput
   /**
    * If required, allocate or resize the array of booleans to fit the newly read
    * values.
-   * 
+   *
    * @param holder_value the existing array of booleans, may be null.
    * @param offset the required offset to read.
    * @param length the length of the new sequence.
-   * 
+   *
    * @return the allocated or resized array, same array if no such operations
    * are required.
    */
@@ -1733,11 +1733,11 @@ public abstract class AbstractCdrInput
   /**
    * If required, allocate or resize the array of Anys to fit the newly read
    * values.
-   * 
+   *
    * @param holder_value the existing array of Anys, may be null.
    * @param offset the required offset to read.
    * @param length the length of the new sequence.
-   * 
+   *
    * @return the allocated or resized array, same array if no such operations
    * are required.
    */
@@ -1758,7 +1758,7 @@ public abstract class AbstractCdrInput
   /**
    * This method is required to represent the DataInputStream as a value type
    * object.
-   * 
+   *
    * @return a single entity "IDL:omg.org/CORBA/DataInputStream:1.0", always.
    */
   public String[] _truncatable_ids()

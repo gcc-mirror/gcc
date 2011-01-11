@@ -60,25 +60,25 @@ public class SessionImpl extends Session
   byte[] privateDataSalt;
   SealedObject sealedPrivateData;
   MaxFragmentLength maxLength;
-  
+
   transient PrivateData privateData;
-  
+
   public SessionImpl()
   {
     super();
     privateData = new PrivateData();
   }
-  
+
   SecureRandom random ()
   {
     return random;
   }
-  
+
   public String getProtocol()
   {
     return version.toString();
   }
-  
+
   public void prepare(char[] passwd) throws SSLException
   {
     try
@@ -111,7 +111,7 @@ public class SessionImpl extends Session
         throw new SSLException(nspe);
       }
   }
-  
+
   public void repair(char[] passwd) throws SSLException
   {
     try
@@ -136,14 +136,14 @@ public class SessionImpl extends Session
         throw new SSLException(nsae);
       }
   }
-  
+
   public SealedObject privateData() throws SSLException
   {
     if (privateData == null)
       throw new SSLException("this session has not been prepared");
     return sealedPrivateData;
   }
-  
+
   public void setPrivateData(SealedObject so) throws SSLException
   {
     this.sealedPrivateData = so;
@@ -153,37 +153,37 @@ public class SessionImpl extends Session
   {
     applicationBufferSize = size;
   }
-  
+
   void setRandom(SecureRandom random)
   {
     this.random = random;
   }
-  
+
   void setTruncatedMac(boolean truncatedMac)
   {
     this.truncatedMac = truncatedMac;
   }
-  
+
   void setId(Session.ID id)
   {
     this.sessionId = id;
   }
-  
+
   void setLocalCertificates(java.security.cert.Certificate[] chain)
   {
     this.localCerts = chain;
   }
-  
+
   void setPeerCertificates(java.security.cert.Certificate[] chain)
   {
     this.peerCerts = chain;
   }
-  
+
   void setPeerVerified(boolean peerVerified)
   {
     this.peerVerified = peerVerified;
   }
-  
+
   static class PrivateData implements Serializable
   {
     static final long serialVersionUID = -8040597659545984581L;

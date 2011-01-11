@@ -1,4 +1,4 @@
-/* SRP6KeyAgreement.java -- 
+/* SRP6KeyAgreement.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -66,23 +66,23 @@ import java.math.BigInteger;
  *  A,B  Public ephemeral values
  *  x    Private key (derived from p and s)
  *  v    Password verifier
- * 
+ *
  *  The host stores passwords using the following formula:
  *  x = H(s | H(I &quot;:&quot; p))           (s is chosen randomly)
  *  v = g&circ;x                         (computes password verifier)
- * 
+ *
  *  The host then keeps {I, s, v} in its password database.
- * 
+ *
  *  The authentication protocol itself goes as follows:
  *  User -&gt; Host:  I, A = g&circ;a         (identifies self, a = random number)
  *  Host -&gt; User:  s, B = 3v + g&circ;b    (sends salt, b = random number)
- * 
+ *
  *  Both:  u = H(A, B)
- * 
+ *
  *  User:  x = H(s, p)               (user enters password)
  *  User:  S = (B - 3g&circ;x) &circ; (a + ux) (computes session key)
  *  User:  K = H(S)
- * 
+ *
  *  Host:  S = (Av&circ;u) &circ; b            (computes session key)
  *  Host:  K = H(S)
  * </pre>

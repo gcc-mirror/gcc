@@ -46,7 +46,7 @@ import javax.swing.table.TableColumnModel;
  * TableColumnModelEvent
  * @author Andrew Selkirk
  */
-public class TableColumnModelEvent extends EventObject 
+public class TableColumnModelEvent extends EventObject
 {
 
   /**
@@ -65,7 +65,7 @@ public class TableColumnModelEvent extends EventObject
    * @param from From index
    * @param to To index
    */
-  public TableColumnModelEvent(TableColumnModel source, int from, int to) 
+  public TableColumnModelEvent(TableColumnModel source, int from, int to)
   {
     super(source);
     fromIndex = from;
@@ -76,16 +76,16 @@ public class TableColumnModelEvent extends EventObject
    * getFromIndex.
    * @return From index
    */
-  public int getFromIndex() 
+  public int getFromIndex()
   {
     return fromIndex;
-  } 
+  }
 
   /**
-   * getToIndex. 
+   * getToIndex.
    * @return To index
    */
-  public int getToIndex() 
+  public int getToIndex()
   {
     return toIndex;
   }

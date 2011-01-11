@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -54,32 +54,32 @@ package java.beans;
  */
 
 public interface Visibility {
-	/**
-	 * Tells whether the Bean can run without a GUI or not.
-	 * @return false if Bean can run without a GUI, else true.
-	 */
-	boolean needsGui();
+        /**
+         * Tells whether the Bean can run without a GUI or not.
+         * @return false if Bean can run without a GUI, else true.
+         */
+        boolean needsGui();
 
-	/**
-	 * Tells whether Bean is trying not to use the GUI.
-	 * If needsGui() is true, this method should always return false.
-	 * @return true if definitely not using GUI, otherwise false.
-	 */
-	boolean avoidingGui();
+        /**
+         * Tells whether Bean is trying not to use the GUI.
+         * If needsGui() is true, this method should always return false.
+         * @return true if definitely not using GUI, otherwise false.
+         */
+        boolean avoidingGui();
 
-	/**
-	 * Tells the Bean not to use GUI methods.
-	 * If needsGUI() is false, then after this method is called,
-	 * avoidingGui() should return true.
-	 */
-	void dontUseGui();
+        /**
+         * Tells the Bean not to use GUI methods.
+         * If needsGUI() is false, then after this method is called,
+         * avoidingGui() should return true.
+         */
+        void dontUseGui();
 
-	/**
-	 * Tells the Bean it may use the GUI.
-	 * The Bean is not required to use the GUI in this case, it is
-	 * merely being <EM>permitted</EM> to use it.  If needsGui() is
-	 * false, avoidingGui() may return true or false after this method
-	 * is called.
-	 */
-	void okToUseGui();
+        /**
+         * Tells the Bean it may use the GUI.
+         * The Bean is not required to use the GUI in this case, it is
+         * merely being <EM>permitted</EM> to use it.  If needsGui() is
+         * false, avoidingGui() may return true or false after this method
+         * is called.
+         */
+        void okToUseGui();
 }

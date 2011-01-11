@@ -119,29 +119,29 @@ public class MemoryUsage
    *                                  above.
    */
   public MemoryUsage(long init, long used, long committed,
-		     long maximum)
+                     long maximum)
   {
     if (init < -1)
       throw new IllegalArgumentException("Initial value of "
-					 + init + " is too small.");
+                                         + init + " is too small.");
     if (used < 0)
       throw new IllegalArgumentException("Used value of "
-					 + used + " is too small.");
+                                         + used + " is too small.");
     if (committed < 0)
       throw new IllegalArgumentException("Committed value of "
-					 + committed + " is too small.");
+                                         + committed + " is too small.");
     if (committed < used)
       throw new IllegalArgumentException("Committed value of "
-					 + committed + " is below "
-					 + used + ", the amount used.");
+                                         + committed + " is below "
+                                         + used + ", the amount used.");
     if (maximum < -1)
       throw new IllegalArgumentException("Maximum value of "
-					 + maximum + " is too small.");
+                                         + maximum + " is too small.");
     if (maximum != -1 && maximum < committed)
-      throw new IllegalArgumentException("Maximum value of " 
-					 + maximum + " is below "
-					 + committed + ", the amount "
-					 + "committed.");
+      throw new IllegalArgumentException("Maximum value of "
+                                         + maximum + " is below "
+                                         + committed + ", the amount "
+                                         + "committed.");
     this.init = init;
     this.used = used;
     this.committed = committed;
@@ -165,9 +165,9 @@ public class MemoryUsage
    * <p>
    * All should have the type, <code>java.lang.Long</code>.
    * </p>
-   * 
+   *
    * @param data the composite data structure to take values from.
-   * @return a new instance containing the values from the 
+   * @return a new instance containing the values from the
    *         composite data structure, or <code>null</code>
    *         if the data structure was also <code>null</code>.
    * @throws IllegalArgumentException if the composite data structure
@@ -185,9 +185,9 @@ public class MemoryUsage
     ThreadInfo.checkAttribute(type, "Committed", SimpleType.LONG);
     ThreadInfo.checkAttribute(type, "Max", SimpleType.LONG);
     return new MemoryUsage(((Long) data.get("Init")).longValue(),
-			   ((Long) data.get("Used")).longValue(),
-			   ((Long) data.get("Committed")).longValue(),
-			   ((Long) data.get("Max")).longValue());
+                           ((Long) data.get("Used")).longValue(),
+                           ((Long) data.get("Committed")).longValue(),
+                           ((Long) data.get("Max")).longValue());
   }
 
   /**
@@ -217,7 +217,7 @@ public class MemoryUsage
 
   /**
    * Returns the maximum amount of memory available for this
-   * pool (in bytes).  This amount is not guaranteed to 
+   * pool (in bytes).  This amount is not guaranteed to
    * actually be usable.  This method may return -1, if the
    * value is undefined.
    *
@@ -262,4 +262,3 @@ public class MemoryUsage
   }
 
 }
-  

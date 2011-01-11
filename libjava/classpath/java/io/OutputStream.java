@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,10 +39,10 @@ exception statement from your version. */
 package java.io;
 
 /**
-  * This abstract class forms the base of the hierarchy of classes that 
+  * This abstract class forms the base of the hierarchy of classes that
   * write output as a stream of bytes.  It provides a common set of methods
   * for writing bytes to stream.  Subclasses implement and/or extend these
-  * methods to write bytes in a particular manner or to a particular 
+  * methods to write bytes in a particular manner or to a particular
   * destination such as a file on disk or network connection.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
@@ -65,7 +65,7 @@ public abstract class OutputStream implements Closeable, Flushable
    * Subclasses must provide an implementation of this abstract method
    *
    * @param b The byte to be written to the output stream, passed as
-   *          the low eight bits of an <code>int</code> 
+   *          the low eight bits of an <code>int</code>
    *
    * @exception IOException If an error occurs
    */
@@ -98,7 +98,7 @@ public abstract class OutputStream implements Closeable, Flushable
    * @param b The array of bytes to write from
    * @param off The index into the array to start writing from
    * @param len The number of bytes to write
-   * 
+   *
    * @exception IOException If an error occurs
    */
   public void write (byte[] b, int off, int len)

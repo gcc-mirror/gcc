@@ -38,16 +38,16 @@ exception statement from your version. */
 
 package java.util;
 
-/** 
+/**
  * Thrown when the a format specification for a {@link Formatter}
  * refers to an argument that is non-existent, or an argument index
  * references a non-existent argument.
  *
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
- * @since 1.5 
+ * @since 1.5
  */
-public class MissingFormatArgumentException 
+public class MissingFormatArgumentException
   extends IllegalFormatException
 {
   private static final long serialVersionUID = 19190115L;
@@ -71,8 +71,8 @@ public class MissingFormatArgumentException
    */
   public MissingFormatArgumentException(String s)
   {
-    super("The specification, " + s + 
-	  ", refers to a non-existent argument.");
+    super("The specification, " + s +
+          ", refers to a non-existent argument.");
     if (s == null)
       throw new NullPointerException("The specification is null.");
     this.s = s;

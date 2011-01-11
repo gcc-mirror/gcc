@@ -362,7 +362,7 @@ public abstract class FontMetrics implements java.io.Serializable
       rc = gRC;
     return font.getLineMetrics(chars, begin, limit, rc);
   }
-  
+
   /**
    * Returns the bounds of the largest character in a Graphics context.
    * @param context the Graphics context object.

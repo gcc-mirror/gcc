@@ -43,7 +43,7 @@ import javax.management.MBeanConstructorInfo;
 import javax.management.MBeanParameterInfo;
 
 /**
- * Describes a constructor for an open management bean.  
+ * Describes a constructor for an open management bean.
  *
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
@@ -89,7 +89,7 @@ public class OpenMBeanConstructorInfoSupport
    *                             {@link javax.management.MBeanParameterInfo}
    */
   public OpenMBeanConstructorInfoSupport(String name, String desc,
-					 OpenMBeanParameterInfo[] sig)
+                                         OpenMBeanParameterInfo[] sig)
   {
     super(name, desc, (MBeanParameterInfo[]) sig);
     if (name == null)
@@ -100,7 +100,7 @@ public class OpenMBeanConstructorInfoSupport
       throw new IllegalArgumentException("The name may not be the empty string.");
     if (desc.length() == 0)
       throw new IllegalArgumentException("The description may not be the " +
-					 "empty string.");
+                                         "empty string.");
   }
 
   /**
@@ -110,7 +110,7 @@ public class OpenMBeanConstructorInfoSupport
    *
    * @param obj the object to compare.
    * @return true if the object is a {@link OpenMBeanParameterInfo}
-   *         instance, 
+   *         instance,
    *         <code>name.equals(object.getName())</code>,
    *         and <code>signature.equals(object.getSignature())</code>.
    */
@@ -140,8 +140,8 @@ public class OpenMBeanConstructorInfoSupport
   public int hashCode()
   {
     if (hashCode == null)
-      hashCode = Integer.valueOf(getName().hashCode() + 
-				 Arrays.asList(getSignature()).hashCode());
+      hashCode = Integer.valueOf(getName().hashCode() +
+                                 Arrays.asList(getSignature()).hashCode());
     return hashCode.intValue();
   }
 
@@ -165,9 +165,9 @@ public class OpenMBeanConstructorInfoSupport
   {
     if (string == null)
       string = getClass().getName()
-	+ "[name=" + getName() 
-	+ ",signature=" + Arrays.toString(getSignature())
-	+ "]";
+        + "[name=" + getName()
+        + ",signature=" + Arrays.toString(getSignature())
+        + "]";
     return string;
   }
 

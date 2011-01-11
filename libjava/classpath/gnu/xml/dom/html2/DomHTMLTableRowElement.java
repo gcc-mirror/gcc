@@ -1,4 +1,4 @@
-/* DomHTMLTableRowElement.java -- 
+/* DomHTMLTableRowElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -134,7 +134,7 @@ public class DomHTMLTableRowElement
   {
     setHTMLAttribute("align", align);
   }
-  
+
   public String getBgColor()
   {
     return getHTMLAttribute("bgcolor");
@@ -144,7 +144,7 @@ public class DomHTMLTableRowElement
   {
     setHTMLAttribute("bgcolor", bgColor);
   }
-  
+
   public String getCh()
   {
     return getHTMLAttribute("char");
@@ -154,7 +154,7 @@ public class DomHTMLTableRowElement
   {
     setHTMLAttribute("char", ch);
   }
-  
+
   public String getChOff()
   {
     return getHTMLAttribute("charoff");
@@ -164,7 +164,7 @@ public class DomHTMLTableRowElement
   {
     setHTMLAttribute("charoff", chOff);
   }
-  
+
   public String getVAlign()
   {
     return getHTMLAttribute("valign");
@@ -199,9 +199,9 @@ public class DomHTMLTableRowElement
       }
     removeChild(ref);
   }
-  
+
   Node getCell(final int index)
-  { 
+  {
     int i = 0;
     for (Node ctx = getFirstChild(); ctx != null;
          ctx = ctx.getNextSibling())
@@ -224,6 +224,5 @@ public class DomHTMLTableRowElement
       }
     return null;
   }
-  
-}
 
+}

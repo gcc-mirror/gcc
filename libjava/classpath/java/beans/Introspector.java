@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -94,7 +94,7 @@ import java.util.Vector;
  *
  *
  * <STRONG>Properties:</STRONG><P>
- * 
+ *
  * <OL>
  * <LI>If there is a <CODE>public boolean isXXX()</CODE>
  *     method, then XXX is a read-only boolean property.
@@ -167,7 +167,7 @@ import java.util.Vector;
  * not the case in general.<P>
  *
  * <STRONG>Methods:</STRONG><P>
- * 
+ *
  * Any public methods (including those which were used
  * for Properties or Events) are used as Methods.
  *
@@ -176,18 +176,18 @@ import java.util.Vector;
  * @see java.beans.BeanInfo
  */
 public class Introspector {
-  
+
   public static final int USE_ALL_BEANINFO = 1;
   public static final int IGNORE_IMMEDIATE_BEANINFO = 2;
   public static final int IGNORE_ALL_BEANINFO = 3;
 
   static String[] beanInfoSearchPath = {"gnu.java.beans.info"};
-  static Hashtable<Class<?>,BeanInfo> beanInfoCache = 
+  static Hashtable<Class<?>,BeanInfo> beanInfoCache =
     new Hashtable<Class<?>,BeanInfo>();
-  
+
   private Introspector() {}
-  
-  /** 
+
+  /**
    * Get the BeanInfo for class <CODE>beanClass</CODE>,
    * first by looking for explicit information, next by
    * using standard design patterns to determine
@@ -196,32 +196,32 @@ public class Introspector {
    * @param beanClass the class to get BeanInfo about.
    * @return the BeanInfo object representing the class.
    */
-  public static BeanInfo getBeanInfo(Class<?> beanClass) 
-    throws IntrospectionException 
+  public static BeanInfo getBeanInfo(Class<?> beanClass)
+    throws IntrospectionException
   {
     BeanInfo cachedInfo;
-    synchronized(beanClass) 
+    synchronized(beanClass)
       {
-	cachedInfo = beanInfoCache.get(beanClass);
-	if(cachedInfo != null) 
-	  {
-	    return cachedInfo;
-	  }
-	cachedInfo = getBeanInfo(beanClass,null);
-	beanInfoCache.put(beanClass,cachedInfo);
-	return cachedInfo;
+        cachedInfo = beanInfoCache.get(beanClass);
+        if(cachedInfo != null)
+          {
+            return cachedInfo;
+          }
+        cachedInfo = getBeanInfo(beanClass,null);
+        beanInfoCache.put(beanClass,cachedInfo);
+        return cachedInfo;
       }
   }
-  
+
   /**
    * Returns a {@BeanInfo} instance for the given Bean class where a flag
    * controls the usage of explicit BeanInfo class to retrieve that
    * information.
-   * 
+   *
    * <p>You have three options:</p>
    * <p>With {@link #USE_ALL_BEANINFO} the result is the same as
    * {@link #getBeanInfo(Class)}.</p>
-   * 
+   *
    * <p>Calling the method with <code>flag</code> set to
    * {@link #IGNORE_IMMEDIATE_BEANINFO} will let it use all
    * explicit BeanInfo classes for the beans superclasses
@@ -232,17 +232,17 @@ public class Introspector {
    * {@link BeanInfo.getEventSetDescriptors} and
    * {@link BeanInfo.getPropertyDescriptors}.)
    * </p>
-   * 
+   *
    * <p>When the method is called with <code>flag</code< set to
    * {@link #IGNORE_ALL_BEANINFO} all the bean data is retrieved
    * by inspecting the class.</p>
-   * 
+   *
    * <p>Note: Any unknown value for <code>flag</code> is interpreted
    * as {@link #IGNORE_ALL_BEANINFO}</p>.
-   * 
+   *
    * @param beanClass The class whose BeanInfo should be returned.
    * @param flag Controls the usage of explicit <code>BeanInfo</code> classes.
-   * @return A BeanInfo object describing the class. 
+   * @return A BeanInfo object describing the class.
    * @throws IntrospectionException If something goes wrong while retrieving
    *    the bean data.
    */
@@ -251,7 +251,7 @@ public class Introspector {
   {
     IntrospectionIncubator ii;
     BeanInfoEmbryo infoEmbryo;
-    
+
     switch(flag)
     {
       case USE_ALL_BEANINFO:
@@ -259,24 +259,24 @@ public class Introspector {
       case IGNORE_IMMEDIATE_BEANINFO:
         Class superclass = beanClass.getSuperclass();
         ExplicitInfo explicit = new ExplicitInfo(superclass, null);
-        
+
         ii = new IntrospectionIncubator();
         if (explicit.explicitEventSetDescriptors != null)
           ii.setEventStopClass(superclass);
-        
+
         if (explicit.explicitMethodDescriptors != null)
           ii.setMethodStopClass(superclass);
-        
+
         if (explicit.explicitPropertyDescriptors != null)
           ii.setPropertyStopClass(superclass);
-        
+
         ii.addMethods(beanClass.getMethods());
 
         infoEmbryo = ii.getBeanInfoEmbryo();
         merge(infoEmbryo, explicit);
 
         infoEmbryo.setBeanDescriptor(new BeanDescriptor(beanClass, null));
-        
+
         return infoEmbryo.getBeanInfo();
       case IGNORE_ALL_BEANINFO:
       default:
@@ -284,7 +284,7 @@ public class Introspector {
         ii.addMethods(beanClass.getMethods());
         infoEmbryo = ii.getBeanInfoEmbryo();
         infoEmbryo.setBeanDescriptor(new BeanDescriptor(beanClass, null));
-        
+
         return infoEmbryo.getBeanInfo();
     }
   }
@@ -298,11 +298,11 @@ public class Introspector {
   {
     beanInfoCache.clear();
 
-	// Clears all the intermediate ExplicitInfo instances which
-	// have been created.
-	// This makes sure we have to retrieve stuff like BeanDescriptors
-	// again. (Remember that FeatureDescriptor can be modified by the user.)
-	ExplicitInfo.flushCaches();
+        // Clears all the intermediate ExplicitInfo instances which
+        // have been created.
+        // This makes sure we have to retrieve stuff like BeanDescriptors
+        // again. (Remember that FeatureDescriptor can be modified by the user.)
+        ExplicitInfo.flushCaches();
   }
 
   /**
@@ -317,62 +317,62 @@ public class Introspector {
   {
     synchronized (clz)
       {
-	beanInfoCache.remove(clz);
+        beanInfoCache.remove(clz);
       }
   }
 
   /** Adds all explicity given bean info data to the introspected
    * data.
-   * 
+   *
    * @param infoEmbryo Bean info data retrieved by introspection.
    * @param explicit Bean info data retrieved by BeanInfo classes.
    */
   private static void merge(BeanInfoEmbryo infoEmbryo, ExplicitInfo explicit)
   {
     PropertyDescriptor[] p = explicit.explicitPropertyDescriptors;
-    if(p!=null) 
+    if(p!=null)
       {
-    for(int i=0;i<p.length;i++) 
+    for(int i=0;i<p.length;i++)
       {
-        if(!infoEmbryo.hasProperty(p[i])) 
+        if(!infoEmbryo.hasProperty(p[i]))
           {
         infoEmbryo.addProperty(p[i]);
           }
       }
-    
+
     // -1 should be used to denote a missing default property but
     // for robustness reasons any value below zero is discarded.
     // Not doing so would let Classpath fail where the JDK succeeds.
-    if(explicit.defaultProperty > -1) 
+    if(explicit.defaultProperty > -1)
       {
         infoEmbryo.setDefaultPropertyName(p[explicit.defaultProperty].getName());
       }
       }
     EventSetDescriptor[] e = explicit.explicitEventSetDescriptors;
-    if(e!=null) 
+    if(e!=null)
       {
-    for(int i=0;i<e.length;i++) 
+    for(int i=0;i<e.length;i++)
       {
-        if(!infoEmbryo.hasEvent(e[i])) 
+        if(!infoEmbryo.hasEvent(e[i]))
           {
         infoEmbryo.addEvent(e[i]);
           }
       }
-    
+
     // -1 should be used to denote a missing default event but
     // for robustness reasons any value below zero is discarded.
     // Not doing so would let Classpath fail where the JDK succeeds.
-    if(explicit.defaultEvent > -1) 
+    if(explicit.defaultEvent > -1)
       {
         infoEmbryo.setDefaultEventName(e[explicit.defaultEvent].getName());
       }
       }
     MethodDescriptor[] m = explicit.explicitMethodDescriptors;
-    if(m!=null) 
+    if(m!=null)
       {
-    for(int i=0;i<m.length;i++) 
+    for(int i=0;i<m.length;i++)
       {
-        if(!infoEmbryo.hasMethod(m[i])) 
+        if(!infoEmbryo.hasMethod(m[i]))
           {
         infoEmbryo.addMethod(m[i]);
           }
@@ -381,10 +381,10 @@ public class Introspector {
 
     infoEmbryo.setAdditionalBeanInfo(explicit.explicitBeanInfo);
     infoEmbryo.setIcons(explicit.im);
-    
+
   }
-  
-  /** 
+
+  /**
    * Get the BeanInfo for class <CODE>beanClass</CODE>,
    * first by looking for explicit information, next by
    * using standard design patterns to determine
@@ -395,8 +395,8 @@ public class Introspector {
    * @param stopClass the class to stop at.
    * @return the BeanInfo object representing the class.
    */
-  public static BeanInfo getBeanInfo(Class<?> beanClass, Class<?> stopClass) 
-    throws IntrospectionException 
+  public static BeanInfo getBeanInfo(Class<?> beanClass, Class<?> stopClass)
+    throws IntrospectionException
   {
     ExplicitInfo explicit = new ExplicitInfo(beanClass, stopClass);
 
@@ -405,11 +405,11 @@ public class Introspector {
     ii.setEventStopClass(explicit.eventStopClass);
     ii.setMethodStopClass(explicit.methodStopClass);
     ii.addMethods(beanClass.getMethods());
-    
+
     BeanInfoEmbryo currentInfo = ii.getBeanInfoEmbryo();
-    
+
     merge(currentInfo, explicit);
-    
+
     //  Sets the info's BeanDescriptor to the one we extracted from the
     // explicit BeanInfo instance(s) if they contained one. Otherwise we
     // create the BeanDescriptor from scratch.
@@ -417,33 +417,33 @@ public class Introspector {
     // the user to modify the instance while it is cached. However this is how
     // the RI does it.
     currentInfo.setBeanDescriptor(
-        (explicit.explicitBeanDescriptor == null ? 
+        (explicit.explicitBeanDescriptor == null ?
             new BeanDescriptor(beanClass, null) :
-            explicit.explicitBeanDescriptor));    
+            explicit.explicitBeanDescriptor));
     return currentInfo.getBeanInfo();
   }
-  
-  /** 
+
+  /**
    * Get the search path for BeanInfo classes.
    *
    * @return the BeanInfo search path.
    */
-  public static String[] getBeanInfoSearchPath() 
+  public static String[] getBeanInfoSearchPath()
   {
     return beanInfoSearchPath;
   }
-  
-  /** 
+
+  /**
    * Set the search path for BeanInfo classes.
    * @param beanInfoSearchPath the new BeanInfo search
    *        path.
    */
-  public static void setBeanInfoSearchPath(String[] beanInfoSearchPath) 
+  public static void setBeanInfoSearchPath(String[] beanInfoSearchPath)
   {
     Introspector.beanInfoSearchPath = beanInfoSearchPath;
   }
-  
-  /** 
+
+  /**
    * A helper method to convert a name to standard Java
    * naming conventions: anything with two capitals as the
    * first two letters remains the same, otherwise the
@@ -453,80 +453,80 @@ public class Introspector {
    * @param name the name to decapitalize.
    * @return the decapitalized name.
    */
-  public static String decapitalize(String name) 
+  public static String decapitalize(String name)
   {
-    try 
+    try
       {
-      if(!Character.isUpperCase(name.charAt(0))) 
-	{
-	  return name;
-	} 
-      else 
-	{
-	try 
-	  {
-	  if(Character.isUpperCase(name.charAt(1))) 
-	    {
-	      return name;
-	    } 
-	  else 
-	    {
-	      char[] c = name.toCharArray();
-	      c[0] = Character.toLowerCase(c[0]);
-	      return new String(c);
-	    }
-	  } 
-	catch(StringIndexOutOfBoundsException E) 
-	  {
-	    char[] c = new char[1];
-	    c[0] = Character.toLowerCase(name.charAt(0));
-	    return new String(c);
-	  }
-	}
-      } 
-    catch(StringIndexOutOfBoundsException E) 
+      if(!Character.isUpperCase(name.charAt(0)))
+        {
+          return name;
+        }
+      else
+        {
+        try
+          {
+          if(Character.isUpperCase(name.charAt(1)))
+            {
+              return name;
+            }
+          else
+            {
+              char[] c = name.toCharArray();
+              c[0] = Character.toLowerCase(c[0]);
+              return new String(c);
+            }
+          }
+        catch(StringIndexOutOfBoundsException E)
+          {
+            char[] c = new char[1];
+            c[0] = Character.toLowerCase(name.charAt(0));
+            return new String(c);
+          }
+        }
+      }
+    catch(StringIndexOutOfBoundsException E)
       {
-	return name;
-      } 
-    catch(NullPointerException E) 
+        return name;
+      }
+    catch(NullPointerException E)
       {
-	return null;
+        return null;
       }
   }
 
-  static BeanInfo copyBeanInfo(BeanInfo b) 
+  static BeanInfo copyBeanInfo(BeanInfo b)
   {
     java.awt.Image[] icons = new java.awt.Image[4];
-    for(int i=1;i<=4;i++) 
+    for(int i=1;i<=4;i++)
       {
-	icons[i-1] = b.getIcon(i);
+        icons[i-1] = b.getIcon(i);
       }
 
     return new ExplicitBeanInfo(b.getBeanDescriptor(),
-				b.getAdditionalBeanInfo(),
-				b.getPropertyDescriptors(),
-				b.getDefaultPropertyIndex(),
-				b.getEventSetDescriptors(),
-				b.getDefaultEventIndex(),
-				b.getMethodDescriptors(),
-				icons);
+                                b.getAdditionalBeanInfo(),
+                                b.getPropertyDescriptors(),
+                                b.getDefaultPropertyIndex(),
+                                b.getEventSetDescriptors(),
+                                b.getDefaultEventIndex(),
+                                b.getMethodDescriptors(),
+                                icons);
   }
 }
 
-class ExplicitInfo 
+class ExplicitInfo
 {
   BeanDescriptor explicitBeanDescriptor;
   BeanInfo[] explicitBeanInfo;
-  
+
   PropertyDescriptor[] explicitPropertyDescriptors;
   EventSetDescriptor[] explicitEventSetDescriptors;
   MethodDescriptor[] explicitMethodDescriptors;
-  
+
   int defaultProperty;
   int defaultEvent;
-  
+
   java.awt.Image[] im = new java.awt.Image[4];
-  
+
   Class propertyStopClass;
   Class eventStopClass;
   Class methodStopClass;
@@ -534,119 +534,119 @@ class ExplicitInfo
   static Hashtable explicitBeanInfos = new Hashtable();
   static Vector emptyBeanInfos = new Vector();
 
-  ExplicitInfo(Class beanClass, Class stopClass) 
+  ExplicitInfo(Class beanClass, Class stopClass)
   {
-    while(beanClass != null && !beanClass.equals(stopClass)) 
+    while(beanClass != null && !beanClass.equals(stopClass))
       {
 
-	BeanInfo explicit = findExplicitBeanInfo(beanClass);
-	
+        BeanInfo explicit = findExplicitBeanInfo(beanClass);
 
-	if(explicit != null) 
-	  {
 
-	    if(explicitBeanDescriptor == null) 
-	      {
-		explicitBeanDescriptor = explicit.getBeanDescriptor();
-	      }
+        if(explicit != null)
+          {
 
-	    if(explicitBeanInfo == null) 
-	      {
-		explicitBeanInfo = explicit.getAdditionalBeanInfo();
-	      }
+            if(explicitBeanDescriptor == null)
+              {
+                explicitBeanDescriptor = explicit.getBeanDescriptor();
+              }
 
-	    if(explicitPropertyDescriptors == null) 
-	      {
-		if(explicit.getPropertyDescriptors() != null) 
-		  {
-		    explicitPropertyDescriptors = explicit.getPropertyDescriptors();
-		    defaultProperty = explicit.getDefaultPropertyIndex();
-		    propertyStopClass = beanClass;
-		  }
-	      }
+            if(explicitBeanInfo == null)
+              {
+                explicitBeanInfo = explicit.getAdditionalBeanInfo();
+              }
 
-	    if(explicitEventSetDescriptors == null) 
-	      {
-		if(explicit.getEventSetDescriptors() != null) 
-		  {
-		    explicitEventSetDescriptors = explicit.getEventSetDescriptors();
-		    defaultEvent = explicit.getDefaultEventIndex();
-		    eventStopClass = beanClass;
-		  }
-	      }
+            if(explicitPropertyDescriptors == null)
+              {
+                if(explicit.getPropertyDescriptors() != null)
+                  {
+                    explicitPropertyDescriptors = explicit.getPropertyDescriptors();
+                    defaultProperty = explicit.getDefaultPropertyIndex();
+                    propertyStopClass = beanClass;
+                  }
+              }
 
-	    if(explicitMethodDescriptors == null) 
-	      {
-		if(explicit.getMethodDescriptors() != null) 
-		  {
-		    explicitMethodDescriptors = explicit.getMethodDescriptors();
-		    methodStopClass = beanClass;
-		  }
-	      }
+            if(explicitEventSetDescriptors == null)
+              {
+                if(explicit.getEventSetDescriptors() != null)
+                  {
+                    explicitEventSetDescriptors = explicit.getEventSetDescriptors();
+                    defaultEvent = explicit.getDefaultEventIndex();
+                    eventStopClass = beanClass;
+                  }
+              }
 
-	    if(im[0] == null && im[1] == null 
-	       && im[2] == null && im[3] == null) 
-	      {
-		im[0] = explicit.getIcon(0);
-		im[1] = explicit.getIcon(1);
-		im[2] = explicit.getIcon(2);
-		im[3] = explicit.getIcon(3);
-	      }
-	  }
-	beanClass = beanClass.getSuperclass();
+            if(explicitMethodDescriptors == null)
+              {
+                if(explicit.getMethodDescriptors() != null)
+                  {
+                    explicitMethodDescriptors = explicit.getMethodDescriptors();
+                    methodStopClass = beanClass;
+                  }
+              }
+
+            if(im[0] == null && im[1] == null
+               && im[2] == null && im[3] == null)
+              {
+                im[0] = explicit.getIcon(0);
+                im[1] = explicit.getIcon(1);
+                im[2] = explicit.getIcon(2);
+                im[3] = explicit.getIcon(3);
+              }
+          }
+        beanClass = beanClass.getSuperclass();
       }
 
-    if(propertyStopClass == null) 
+    if(propertyStopClass == null)
       {
-	propertyStopClass = stopClass;
+        propertyStopClass = stopClass;
       }
 
-    if(eventStopClass == null) 
+    if(eventStopClass == null)
       {
-	eventStopClass = stopClass;
+        eventStopClass = stopClass;
       }
 
-    if(methodStopClass == null) 
+    if(methodStopClass == null)
       {
-	methodStopClass = stopClass;
+        methodStopClass = stopClass;
       }
   }
-  
+
   /** Throws away all cached data and makes sure we re-instantiate things
     * like BeanDescriptors again.
     */
   static void flushCaches() {
-	explicitBeanInfos.clear();
-	emptyBeanInfos.clear();
+        explicitBeanInfos.clear();
+        emptyBeanInfos.clear();
   }
-  
-  static BeanInfo findExplicitBeanInfo(Class beanClass) 
+
+  static BeanInfo findExplicitBeanInfo(Class beanClass)
   {
     BeanInfo retval = (BeanInfo)explicitBeanInfos.get(beanClass);
-    if(retval != null) 
+    if(retval != null)
       {
-	return retval;
-      } 
-    else if(emptyBeanInfos.indexOf(beanClass) != -1) 
+        return retval;
+      }
+    else if(emptyBeanInfos.indexOf(beanClass) != -1)
       {
-	return null;
-      } 
-    else 
+        return null;
+      }
+    else
       {
-	retval = reallyFindExplicitBeanInfo(beanClass);
-	if(retval != null) 
-	  {
-	    explicitBeanInfos.put(beanClass,retval);
-	  } 
-	else 
-	  {
-	    emptyBeanInfos.addElement(beanClass);
-	  }
-	return retval;
+        retval = reallyFindExplicitBeanInfo(beanClass);
+        if(retval != null)
+          {
+            explicitBeanInfos.put(beanClass,retval);
+          }
+        else
+          {
+            emptyBeanInfos.addElement(beanClass);
+          }
+        return retval;
       }
   }
-  
-  static BeanInfo reallyFindExplicitBeanInfo(Class beanClass) 
+
+  static BeanInfo reallyFindExplicitBeanInfo(Class beanClass)
   {
     ClassLoader beanClassLoader = beanClass.getClassLoader();
     BeanInfo beanInfo;
@@ -654,25 +654,25 @@ class ExplicitInfo
     beanInfo = getBeanInfo(beanClassLoader, beanClass.getName() + "BeanInfo");
     if (beanInfo == null)
       {
-	String newName;
-	newName = ClassHelper.getTruncatedClassName(beanClass) + "BeanInfo";
+        String newName;
+        newName = ClassHelper.getTruncatedClassName(beanClass) + "BeanInfo";
 
-	for(int i = 0; i < Introspector.beanInfoSearchPath.length; i++) 
-	  {
-	    if (Introspector.beanInfoSearchPath[i].equals("")) 
-	      beanInfo = getBeanInfo(beanClassLoader, newName);
-	    else 
-	      beanInfo = getBeanInfo(beanClassLoader,
-				     Introspector.beanInfoSearchPath[i] + "."
-				     + newName);
+        for(int i = 0; i < Introspector.beanInfoSearchPath.length; i++)
+          {
+            if (Introspector.beanInfoSearchPath[i].equals(""))
+              beanInfo = getBeanInfo(beanClassLoader, newName);
+            else
+              beanInfo = getBeanInfo(beanClassLoader,
+                                     Introspector.beanInfoSearchPath[i] + "."
+                                     + newName);
 
-		// Returns the beanInfo if it exists and the described class matches
-		// the one we searched.
-	    if (beanInfo != null && beanInfo.getBeanDescriptor() != null &&
-			beanInfo.getBeanDescriptor().getBeanClass() == beanClass)
+                // Returns the beanInfo if it exists and the described class matches
+                // the one we searched.
+            if (beanInfo != null && beanInfo.getBeanDescriptor() != null &&
+                        beanInfo.getBeanDescriptor().getBeanClass() == beanClass)
 
-	      return beanInfo;
-	  }
+              return beanInfo;
+          }
       }
 
     return beanInfo;
@@ -686,20 +686,20 @@ class ExplicitInfo
   {
     try
       {
-	return (BeanInfo) Class.forName(infoName, true, cl).newInstance();
+        return (BeanInfo) Class.forName(infoName, true, cl).newInstance();
       }
     catch (ClassNotFoundException cnfe)
       {
-	return null;
+        return null;
       }
     catch (IllegalAccessException iae)
       {
-	return null;
+        return null;
       }
     catch (InstantiationException ie)
       {
-	return null;
+        return null;
       }
   }
-  
+
 }

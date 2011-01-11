@@ -64,7 +64,7 @@ public class GtkCursor extends Cursor
   {
     return image;
   }
-  
+
   Point getHotspot()
   {
     return hotspot;

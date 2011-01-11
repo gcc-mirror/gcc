@@ -1,5 +1,5 @@
 /* Naming.java --
-   Copyright (c) 1996, 1997, 1998, 1999, 2004, 2006  
+   Copyright (c) 1996, 1997, 1998, 1999, 2004, 2006
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -65,7 +65,7 @@ import java.rmi.registry.Registry;
  * </p>
  * <p>
  * RMI services are registered using one of these names, and the same name
- * is later used by the client to lookup the service and access its methods. 
+ * is later used by the client to lookup the service and access its methods.
  * Registries can be shared by multiple services, or a service can create
  * its own registry using <code>createRegistry()</code>.
  * </p>
@@ -87,15 +87,15 @@ public final class Naming
   }
 
   /**
-   * Looks for the remote object that is associated with the named service. 
+   * Looks for the remote object that is associated with the named service.
    * Name and location is given in form of a URL without a scheme:
-   * 
+   *
    * <pre>
    * //host:port/service-name
    * </pre>
-   * 
+   *
    * The port is optional.
-   * 
+   *
    * @param name the service name and location
    * @return Remote-object that implements the named service
    * @throws NotBoundException if no object implements the service
@@ -112,7 +112,7 @@ public final class Naming
 
   /**
    * Try to bind the given object to the given service name.
-   * 
+   *
    * @param name
    * @param obj
    * @throws AlreadyBoundException
@@ -129,7 +129,7 @@ public final class Naming
 
   /**
    * Remove a binding for a given service name.
-   * 
+   *
    * @param name
    * @throws RemoteException
    * @throws NotBoundException
@@ -146,7 +146,7 @@ public final class Naming
   /**
    * Forces the binding between the given Remote-object and the given service
    * name, even if there was already an object bound to this name.
-   * 
+   *
    * @param name
    * @param obj
    * @throws RemoteException
@@ -162,7 +162,7 @@ public final class Naming
 
   /**
    * Lists all services at the named registry.
-   * 
+   *
    * @param name url that specifies the registry
    * @return list of services at the name registry
    * @throws RemoteException
@@ -190,7 +190,7 @@ public final class Naming
    * Parses the supplied URL and converts it to use the HTTP protocol. From an
    * RMI perspective, the scheme is irrelevant and we want to be able to create
    * a URL for which a handler is available.
-   * 
+   *
    * @param name the URL in String form.
    * @throws MalformedURLException if the URL is invalid.
    */
@@ -216,7 +216,7 @@ public final class Naming
 
   /**
    * Checks that the URL contains a name, and removes any leading slashes.
-   * 
+   *
    * @param url the URL to check.
    * @throws MalformedURLException if no name is specified.
    */

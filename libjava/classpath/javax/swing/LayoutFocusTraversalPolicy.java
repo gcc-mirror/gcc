@@ -45,10 +45,10 @@ import java.util.Comparator;
 /**
  * @author Graydon Hoare
  * @author Michael Koch
- * 
+ *
  * @since 1.4
  */
-public class LayoutFocusTraversalPolicy 
+public class LayoutFocusTraversalPolicy
   extends SortingFocusTraversalPolicy
   implements Serializable
 {
@@ -59,7 +59,7 @@ public class LayoutFocusTraversalPolicy
     {
       // Do nothing here.
     }
-    
+
     public int compare(Object o1, Object o2)
     {
       Component comp1 = (Component) o1;
@@ -69,19 +69,19 @@ public class LayoutFocusTraversalPolicy
       int y1 = comp1.getY();
       int x2 = comp2.getX();
       int y2 = comp2.getY();
-      
+
       if (x1 == x2 && y1 == y2)
-	return 0;
-      
+        return 0;
+
       if ((y1 < y2) || ((y1 == y2) && (x1 < x2)))
-	return -1;
+        return -1;
 
       return 1;
     }
   }
 
   private static final long serialVersionUID = 4312146927238881442L;
-  
+
   public LayoutFocusTraversalPolicy()
   {
     super(new LayoutComparator());

@@ -1,4 +1,4 @@
-/* DocAttribute.java -- 
+/* DocAttribute.java --
    Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,20 +38,20 @@ exception statement from your version. */
 package javax.print.attribute;
 
 /**
- * Marker interface for all attribute classes describing attributes of 
- * a {@link javax.print.Doc} object. 
+ * Marker interface for all attribute classes describing attributes of
+ * a {@link javax.print.Doc} object.
  * <p>
- * Instances of implementing attribute classes may be collected in a 
- * {@link javax.print.attribute.DocAttributeSet}. 
+ * Instances of implementing attribute classes may be collected in a
+ * {@link javax.print.attribute.DocAttributeSet}.
  * </p><p>
  * Attributes attached to a {@link javax.print.Doc} instance specify how the
- * data should be printed. 
- * For example {@link javax.print.attribute.standard.Chromaticity} can be 
+ * data should be printed.
+ * For example {@link javax.print.attribute.standard.Chromaticity} can be
  * used to specify that a doc should be printed in color or monochrome.
  * </p>
- * 
+ *
  * @see javax.print.attribute.DocAttributeSet
- * 
+ *
  * @author Michael Koch  (konqueror@gmx.de)
  */
 public interface DocAttribute extends Attribute

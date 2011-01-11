@@ -291,7 +291,7 @@ public final class StringBuilder
    * @return this <code>StringBuilder</code>
    */
   public StringBuilder append(CharSequence seq, int start,
-			      int end)
+                              int end)
   {
     super.append(seq, start, end);
     return this;
@@ -487,7 +487,7 @@ public final class StringBuilder
    * @throws StringIndexOutOfBoundsException if any index is out of bounds
    */
   public StringBuilder insert(int offset,
-			      char[] str, int str_offset, int len)
+                              char[] str, int str_offset, int len)
   {
     super.insert(offset, str, str_offset, len);
     return this;
@@ -556,7 +556,7 @@ public final class StringBuilder
    * or end are out of bounds
    */
   public StringBuilder insert(int offset, CharSequence sequence,
-			      int start, int end)
+                              int start, int end)
   {
     super.insert(offset, sequence, start, end);
     return this;

@@ -77,7 +77,7 @@ public interface ComponentPeer
    *
    * @return a bitwise ORed set of ImageObserver flags
    */
-  int checkImage(Image img, int width, int height, 
+  int checkImage(Image img, int width, int height,
                  ImageObserver ob);
 
   /**
@@ -187,7 +187,7 @@ public interface ComponentPeer
 
   /**
    * Handles the given event. This is called from
-   * {@link Component#dispatchEvent(AWTEvent)} to give the peer a chance to 
+   * {@link Component#dispatchEvent(AWTEvent)} to give the peer a chance to
    * react to events for the component.
    *
    * @param e the event
@@ -203,7 +203,7 @@ public interface ComponentPeer
   /**
    * Returns <code>true</code> if the component can receive keyboard input
    * focus. This is called from {@link Component#isFocusTraversable()}.
-   * 
+   *
    * @specnote Part of the earlier 1.1 API, replaced by isFocusable().
    */
   boolean isFocusTraversable();
@@ -247,7 +247,7 @@ public interface ComponentPeer
    *         receives updates)
    */
   boolean prepareImage(Image img, int width, int height,
-			      ImageObserver ob);
+                              ImageObserver ob);
 
   void print(Graphics graphics);
 
@@ -267,7 +267,7 @@ public interface ComponentPeer
    * Requests that this component receives the focus. This is called from
    * {@link Component#requestFocus()}.
    *
-   * @specnote Part of the earlier 1.1 API, apparently replaced by argument 
+   * @specnote Part of the earlier 1.1 API, apparently replaced by argument
    *           form of the same method.
    */
   void requestFocus();
@@ -369,7 +369,7 @@ public interface ComponentPeer
    */
   void show();
 
-  /** 
+  /**
    * Get the graphics configuration of the component. The color model
    * of the component can be derived from the configuration.
    *
@@ -476,10 +476,10 @@ public interface ComponentPeer
    * @since 1.2
    */
   void destroyBuffers();
-  
+
   /**
    * Get the bounds of this component peer.
-   * 
+   *
    * @return component peer bounds
    * @since 1.5
    */
@@ -487,15 +487,15 @@ public interface ComponentPeer
 
   /**
    * Reparent this component under another container.
-   * 
+   *
    * @param parent
    * @since 1.5
    */
   void reparent(ContainerPeer parent);
-  
+
   /**
    * Set the bounds of this component peer.
-   * 
+   *
    * @param x the new x co-ordinate
    * @param y the new y co-ordinate
    * @param width the new width
@@ -504,10 +504,10 @@ public interface ComponentPeer
    * @since 1.5
    */
   void setBounds (int x, int y, int width, int height, int z);
-  
+
   /**
    * Check if this component supports being reparented.
-   * 
+   *
    * @return true if this component can be reparented,
    * false otherwise.
    * @since 1.5

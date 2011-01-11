@@ -1,4 +1,4 @@
-/* ShortViewBufferImpl.java -- 
+/* ShortViewBufferImpl.java --
    Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -50,20 +50,20 @@ final class ShortViewBufferImpl extends ShortBuffer
   {
     super (capacity, capacity, 0, -1, bb.isDirect() ?
            VMDirectByteBuffer.adjustAddress(bb.address, bb.position()):null,
-	   null, 0);
+           null, 0);
     this.bb = bb;
     this.offset = bb.position();
     this.readOnly = bb.isReadOnly();
     this.endian = bb.order();
   }
-  
+
   public ShortViewBufferImpl (ByteBuffer bb, int offset, int capacity,
-			      int limit, int position, int mark,
-			      boolean readOnly, ByteOrder endian)
+                              int limit, int position, int mark,
+                              boolean readOnly, ByteOrder endian)
   {
     super (capacity, limit, position, mark, bb.isDirect() ?
            VMDirectByteBuffer.adjustAddress(bb.address, offset):null,
-	   null, 0);
+           null, 0);
     this.bb = bb;
     this.offset = offset;
     this.readOnly = readOnly;
@@ -104,7 +104,7 @@ final class ShortViewBufferImpl extends ShortBuffer
     position(p + 1);
     return this;
   }
-  
+
   public ShortBuffer put (int index, short value)
   {
     ByteBufferHelper.putShort(bb, (index << 1) + offset, value, endian);
@@ -116,26 +116,26 @@ final class ShortViewBufferImpl extends ShortBuffer
     if (position () > 0)
       {
         int count = limit () - position ();
-	bb.shiftDown(offset, offset + 2 * position(), 2 * count);
+        bb.shiftDown(offset, offset + 2 * position(), 2 * count);
         position (count);
         limit (capacity ());
       }
     else
       {
-	position(limit());
-	limit(capacity());
+        position(limit());
+        limit(capacity());
       }
     return this;
   }
-  
+
   public ShortBuffer slice ()
   {
     // Create a sliced copy of this object that shares its content.
     return new ShortViewBufferImpl (bb, (position () << 1) + offset,
-				    remaining(), remaining(), 0, -1,
-				    readOnly, endian);
+                                    remaining(), remaining(), 0, -1,
+                                    readOnly, endian);
   }
-  
+
   ShortBuffer duplicate (boolean readOnly)
   {
     int pos = position();
@@ -143,9 +143,9 @@ final class ShortViewBufferImpl extends ShortBuffer
     int mark = position();
     position(pos);
     return new ShortViewBufferImpl (bb, offset, capacity(), limit(),
-				    pos, mark, readOnly, endian);
+                                    pos, mark, readOnly, endian);
   }
-  
+
   public ShortBuffer duplicate ()
   {
     return duplicate(readOnly);
@@ -160,12 +160,12 @@ final class ShortViewBufferImpl extends ShortBuffer
   {
     return readOnly;
   }
-  
+
   public boolean isDirect ()
   {
     return bb.isDirect ();
   }
-  
+
   public ByteOrder order ()
   {
     return endian;

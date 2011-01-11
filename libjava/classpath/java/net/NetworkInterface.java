@@ -59,12 +59,12 @@ import java.util.Vector;
 public final class NetworkInterface
 {
   private final VMNetworkInterface netif;
-  
+
   private NetworkInterface(VMNetworkInterface netif)
     {
     this.netif = netif;
     }
-  
+
   /** Creates an NetworkInterface instance which
    * represents any interface in the system. Its only
    * address is <code>0.0.0.0/0.0.0.0</code>. This
@@ -74,7 +74,7 @@ public final class NetworkInterface
   {
     return new NetworkInterface(new VMNetworkInterface());
   }
-  
+
   /**
    * Returns the name of the network interface
    *
@@ -109,16 +109,16 @@ public final class NetworkInterface
     for (Enumeration<InetAddress> addresses = inetAddresses.elements();
          addresses.hasMoreElements();)
       {
-	InetAddress addr = addresses.nextElement();
-	try
-	  {
-	    s.checkConnect(addr.getHostAddress(), -1);
-	    tmpInetAddresses.add(addr);
-	  }
-	catch (SecurityException e)
-	  {
-	    // Ignore.
-	  }
+        InetAddress addr = addresses.nextElement();
+        try
+          {
+            s.checkConnect(addr.getHostAddress(), -1);
+            tmpInetAddresses.add(addr);
+          }
+        catch (SecurityException e)
+          {
+            // Ignore.
+          }
       }
 
     return tmpInetAddresses.elements();
@@ -138,7 +138,7 @@ public final class NetworkInterface
    * Returns an network interface by name
    *
    * @param name The name of the interface to return
-   * 
+   *
    * @return a <code>NetworkInterface</code> object representing the interface,
    * or null if there is no interface with that name.
    *
@@ -187,14 +187,14 @@ public final class NetworkInterface
    * Return an <code>Enumeration</code> of all available network interfaces
    *
    * @return all interfaces
-   * 
+   *
    * @exception SocketException If an error occurs
    */
   public static Enumeration<NetworkInterface> getNetworkInterfaces()
     throws SocketException
   {
     VMNetworkInterface[] netifs = VMNetworkInterface.getVMInterfaces();
-    Vector<NetworkInterface> networkInterfaces = 
+    Vector<NetworkInterface> networkInterfaces =
       new Vector<NetworkInterface>(netifs.length);
     for (int i = 0; i < netifs.length; i++)
       {
@@ -217,7 +217,7 @@ public final class NetworkInterface
       return false;
 
     NetworkInterface tmp = (NetworkInterface) obj;
-    
+
     if (netif.name == null)
       return tmp.netif.name == null;
 
@@ -234,10 +234,10 @@ public final class NetworkInterface
   {
     // FIXME: hash correctly
     int hc = netif.addresses.hashCode();
-    
+
     if (netif.name != null)
       hc += netif.name.hashCode();
-    
+
     return hc;
   }
 
@@ -253,7 +253,7 @@ public final class NetworkInterface
     String separator = SystemProperties.getProperty("line.separator");
 
     result = new CPStringBuilder();
-    
+
     result.append("name: ");
     result.append(getDisplayName());
     result.append(" (").append(getName()).append(") addresses:");
@@ -261,8 +261,8 @@ public final class NetworkInterface
 
     for (Iterator it = netif.addresses.iterator(); it.hasNext(); )
       {
-	InetAddress address = (InetAddress) it.next();
-	result.append(address.toString()).append(";").append(separator);
+        InetAddress address = (InetAddress) it.next();
+        result.append(address.toString()).append(";").append(separator);
       }
 
     return result.toString();

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -37,21 +37,21 @@ exception statement from your version. */
 
 package java.io;
 
-// NOTE: This implementation is very similar to that of PipedReader.  If you 
-// fix a bug in here, chances are you should make a similar change to the 
+// NOTE: This implementation is very similar to that of PipedReader.  If you
+// fix a bug in here, chances are you should make a similar change to the
 // PipedReader code.
 
 /**
   * An input stream that reads its bytes from an output stream
-  * to which it is connected. 
+  * to which it is connected.
   * <p>
   * Data is read and written to an internal buffer.  It is highly recommended
-  * that the <code>PipedInputStream</code> and connected 
+  * that the <code>PipedInputStream</code> and connected
   * <code>PipedOutputStream</code>
-  * be part of different threads.  If they are not, the read and write 
+  * be part of different threads.  If they are not, the read and write
   * operations could deadlock their thread.
   *
-  * @specnote The JDK implementation appears to have some undocumented 
+  * @specnote The JDK implementation appears to have some undocumented
   *           functionality where it keeps track of what thread is writing
   *           to pipe and throws an IOException if that thread susequently
   *           dies. This behaviour seems dubious and unreliable - we don't
@@ -61,7 +61,7 @@ package java.io;
   */
 public class PipedInputStream extends InputStream
 {
-  /** PipedOutputStream to which this is connected. Null only if this 
+  /** PipedOutputStream to which this is connected. Null only if this
     * InputStream hasn't been connected yet. */
   PipedOutputStream source;
 
@@ -86,7 +86,7 @@ public class PipedInputStream extends InputStream
 
   /**
     * The index into buffer where the next byte from the connected
-    * <code>PipedOutputStream</code> will be written. If this variable is 
+    * <code>PipedOutputStream</code> will be written. If this variable is
     * equal to <code>out</code>, then the buffer is full. If set to < 0,
     * the buffer is empty.
     */
@@ -101,8 +101,8 @@ public class PipedInputStream extends InputStream
   private byte[] read_buf = new byte[1];
 
   /**
-    * Creates a new <code>PipedInputStream</code> that is not connected to a 
-    * <code>PipedOutputStream</code>.  It must be connected before bytes can 
+    * Creates a new <code>PipedInputStream</code> that is not connected to a
+    * <code>PipedOutputStream</code>.  It must be connected before bytes can
     * be read from this stream.
     */
   public PipedInputStream()
@@ -114,24 +114,24 @@ public class PipedInputStream extends InputStream
    * Creates a new <code>PipedInputStream</code> of the given size that is not
    * connected to a <code>PipedOutputStream</code>.
    * It must be connected before bytes can be read from this stream.
-   * 
+   *
    * @since 1.6
    * @since IllegalArgumentException If pipeSize <= 0.
    */
-  public PipedInputStream(int pipeSize) throws IllegalArgumentException 
+  public PipedInputStream(int pipeSize) throws IllegalArgumentException
   {
     if (pipeSize <= 0)
       throw new IllegalArgumentException("pipeSize must be > 0");
-    
+
     this.buffer = new byte[pipeSize];
   }
-  
+
   /**
     * This constructor creates a new <code>PipedInputStream</code> and connects
-    * it to the passed in <code>PipedOutputStream</code>. The stream is then 
+    * it to the passed in <code>PipedOutputStream</code>. The stream is then
     * ready for reading.
     *
-    * @param source The <code>PipedOutputStream</code> to connect this 
+    * @param source The <code>PipedOutputStream</code> to connect this
     * stream to
     *
     * @exception IOException If <code>source</code> is already connected.
@@ -147,7 +147,7 @@ public class PipedInputStream extends InputStream
    * size and connects it to the passed in <code>PipedOutputStream</code>.
    * The stream is then ready for reading.
    *
-   * @param source The <code>PipedOutputStream</code> to connect this 
+   * @param source The <code>PipedOutputStream</code> to connect this
    * stream to
    *
    * @since 1.6
@@ -159,30 +159,30 @@ public class PipedInputStream extends InputStream
    this(pipeSize);
    connect(source);
  }
-  
+
   /**
-    * This method connects this stream to the passed in 
+    * This method connects this stream to the passed in
     * <code>PipedOutputStream</code>.
     * This stream is then ready for reading.  If this stream is already
     * connected or has been previously closed, then an exception is thrown
     *
     * @param source The <code>PipedOutputStream</code> to connect this stream to
     *
-    * @exception IOException If this PipedInputStream or <code>source</code> 
+    * @exception IOException If this PipedInputStream or <code>source</code>
     *                        has been connected already.
     */
   public void connect(PipedOutputStream source) throws IOException
   {
-    // The JDK (1.3) does not appear to check for a previously closed 
+    // The JDK (1.3) does not appear to check for a previously closed
     // connection here.
-    
+
     if (this.source != null || source.sink != null)
       throw new IOException ("Already connected");
-    
+
     source.sink = this;
     this.source = source;
   }
-  
+
   /**
   * This method receives a byte of input from the source PipedOutputStream.
   * If the internal circular buffer is full, this method blocks.
@@ -210,7 +210,7 @@ public class PipedInputStream extends InputStream
     * @specnote This code should be in PipedOutputStream.write, but we
     *           put it here in order to support that bizarre recieve(int)
     *           method.
-    */  
+    */
   synchronized void receive(byte[] buf, int offset, int len)
     throws IOException
   {
@@ -219,59 +219,59 @@ public class PipedInputStream extends InputStream
 
     int bufpos = offset;
     int copylen;
-    
+
     while (len > 0)
       {
         try
-	  {
-	    while (in == out)
-	      {
-		// The pipe is full. Wake up any readers and wait for them.
-		notifyAll();
-		wait();
-		// The pipe could have been closed while we were waiting.
-	        if (closed)
-		  throw new IOException ("Pipe closed");
-	      }
-	  }
-	catch (InterruptedException ix)
-	  {
+          {
+            while (in == out)
+              {
+                // The pipe is full. Wake up any readers and wait for them.
+                notifyAll();
+                wait();
+                // The pipe could have been closed while we were waiting.
+                if (closed)
+                  throw new IOException ("Pipe closed");
+              }
+          }
+        catch (InterruptedException ix)
+          {
             throw new InterruptedIOException ();
-	  }
+          }
 
-	if (in < 0) // The pipe is empty.
-	  in = 0;
-	
-	// Figure out how many bytes from buf can be copied without 
-	// overrunning out or going past the length of the buffer.
-	if (in < out)
-	  copylen = Math.min (len, out - in);
-	else
-	  copylen = Math.min (len, buffer.length - in);
+        if (in < 0) // The pipe is empty.
+          in = 0;
 
-	// Copy bytes until the pipe is filled, wrapping if necessary.
-	System.arraycopy(buf, bufpos, buffer, in, copylen);
-	len -= copylen;
-	bufpos += copylen;
-	in += copylen;
-	if (in == buffer.length)
-	  in = 0;
+        // Figure out how many bytes from buf can be copied without
+        // overrunning out or going past the length of the buffer.
+        if (in < out)
+          copylen = Math.min (len, out - in);
+        else
+          copylen = Math.min (len, buffer.length - in);
+
+        // Copy bytes until the pipe is filled, wrapping if necessary.
+        System.arraycopy(buf, bufpos, buffer, in, copylen);
+        len -= copylen;
+        bufpos += copylen;
+        in += copylen;
+        if (in == buffer.length)
+          in = 0;
       }
     // Notify readers that new data is in the pipe.
     notifyAll();
   }
-  
+
   /**
     * This method reads one byte from the stream.
     * -1 is returned to indicated that no bytes can be read
     * because the end of the stream was reached.  If the stream is already
     * closed, a -1 will again be returned to indicate the end of the stream.
-    * 
+    *
     * <p>This method will block if no byte is available to be read.</p>
     *
     * @return the value of the read byte value, or -1 of the end of the stream
     * was reached
-    * 
+    *
     * @throws IOException if an error occured
     */
   public int read() throws IOException
@@ -285,14 +285,14 @@ public class PipedInputStream extends InputStream
     int r = read(read_buf, 0, 1);
     return r != -1 ? (read_buf[0] & 0xff) : -1;
   }
-  
+
   /**
     * This method reads bytes from the stream into a caller supplied buffer.
-    * It starts storing bytes at position <code>offset</code> into the 
+    * It starts storing bytes at position <code>offset</code> into the
     * buffer and
-    * reads a maximum of <code>len</code> bytes.  Note that this method 
+    * reads a maximum of <code>len</code> bytes.  Note that this method
     * can actually
-    * read fewer than <code>len</code> bytes.  The actual number of bytes 
+    * read fewer than <code>len</code> bytes.  The actual number of bytes
     * read is
     * returned.  A -1 is returned to indicated that no bytes can be read
     * because the end of the stream was reached - ie close() was called on the
@@ -306,7 +306,7 @@ public class PipedInputStream extends InputStream
     *
     * @exception IOException If <code>close()</code> was called on this Piped
     *                        InputStream.
-    */  
+    */
   public synchronized int read(byte[] buf, int offset, int len)
     throws IOException
   {
@@ -319,61 +319,61 @@ public class PipedInputStream extends InputStream
     if (len == 0)
       return 0;
 
-    // If the buffer is empty, wait until there is something in the pipe 
+    // If the buffer is empty, wait until there is something in the pipe
     // to read.
     try
       {
-	while (in < 0)
-	  {
-	    if (source.closed)
-	      return -1;
-	    wait();
-	  }
+        while (in < 0)
+          {
+            if (source.closed)
+              return -1;
+            wait();
+          }
       }
     catch (InterruptedException ix)
       {
         throw new InterruptedIOException();
       }
-    
+
     int total = 0;
     int copylen;
-    
+
     while (true)
       {
-	// Figure out how many bytes from the pipe can be copied without 
-	// overrunning in or going past the length of buf.
-	if (out < in)
-	  copylen = Math.min (len, in - out);
-	else
-	  copylen = Math.min (len, buffer.length - out);
+        // Figure out how many bytes from the pipe can be copied without
+        // overrunning in or going past the length of buf.
+        if (out < in)
+          copylen = Math.min (len, in - out);
+        else
+          copylen = Math.min (len, buffer.length - out);
 
         System.arraycopy (buffer, out, buf, offset, copylen);
-	offset += copylen;
-	len -= copylen;
-	out += copylen;
-	total += copylen;
-	
-	if (out == buffer.length)
-	  out = 0;
-	
-	if (out == in)
-	  {
-	    // Pipe is now empty.
-	    in = -1;
-	    out = 0;
-	  }
+        offset += copylen;
+        len -= copylen;
+        out += copylen;
+        total += copylen;
+
+        if (out == buffer.length)
+          out = 0;
+
+        if (out == in)
+          {
+            // Pipe is now empty.
+            in = -1;
+            out = 0;
+          }
 
         // If output buffer is filled or the pipe is empty, we're done.
-	if (len == 0 || in == -1)
-	  {
-	    // Notify any waiting outputstream that there is now space
-	    // to write.
-	    notifyAll();
-	    return total;
-	  }
+        if (len == 0 || in == -1)
+          {
+            // Notify any waiting outputstream that there is now space
+            // to write.
+            notifyAll();
+            return total;
+          }
       }
   }
-  
+
   /**
     * This method returns the number of bytes that can be read from this stream
     * before blocking could occur.  This is the number of bytes that are
@@ -384,12 +384,12 @@ public class PipedInputStream extends InputStream
     * @return The number of bytes that can be read before blocking might occur
     *
     * @exception IOException If an error occurs
-    */  
+    */
   public synchronized int available() throws IOException
   {
-    // The JDK 1.3 implementation does not appear to check for the closed or 
+    // The JDK 1.3 implementation does not appear to check for the closed or
     // unconnected stream conditions here.
-    
+
     if (in < 0)
       return 0;
     else if (out < in)
@@ -397,7 +397,7 @@ public class PipedInputStream extends InputStream
     else
       return (buffer.length - out) + in;
   }
-  
+
   /**
   * This methods closes the stream so that no more data can be read
   * from it.
@@ -411,4 +411,3 @@ public class PipedInputStream extends InputStream
     notifyAll();
   }
 }
-

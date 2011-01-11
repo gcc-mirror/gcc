@@ -248,7 +248,7 @@ public final class Array
       throw new NullPointerException();
     throw new IllegalArgumentException();
   }
-  
+
   /**
    * Gets an element of a byte array.
    *
@@ -422,11 +422,11 @@ public final class Array
   {
     if (array instanceof Object[])
       {
-	// Too bad the API won't let us throw the easier ArrayStoreException!
-	if (value != null
-	    && ! array.getClass().getComponentType().isInstance(value))
-	  throw new IllegalArgumentException();
-	((Object[]) array)[index] = value;
+        // Too bad the API won't let us throw the easier ArrayStoreException!
+        if (value != null
+            && ! array.getClass().getComponentType().isInstance(value))
+          throw new IllegalArgumentException();
+        ((Object[]) array)[index] = value;
       }
     else if (value instanceof Byte)
       setByte(array, index, ((Byte) value).byteValue());

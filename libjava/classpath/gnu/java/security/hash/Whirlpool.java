@@ -1,4 +1,4 @@
-/* Whirlpool.java -- 
+/* Whirlpool.java --
    Copyright (C) 2001, 2002, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -548,7 +548,7 @@ public final class Whirlpool
     // so far. hence the minimal number of bytes added to the message proper
     // are 33 (1 for the 1-bit followed by the 0-bits and the encoding of
     // the count framed in a 256-bit block). our formula is then:
-    //		count + 33 + padding = 0 (mod BLOCK_SIZE)
+    //          count + 33 + padding = 0 (mod BLOCK_SIZE)
     int n = (int)((count + 33) % BLOCK_SIZE);
     int padding = n == 0 ? 33 : BLOCK_SIZE - n + 33;
     byte[] result = new byte[padding];

@@ -1,4 +1,4 @@
-/* XMLInputFactory.java -- 
+/* XMLInputFactory.java --
    Copyright (C) 2005,2006,2009  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -132,7 +132,7 @@ public abstract class XMLInputFactory
   /**
    * Property used to control namespace support.
    */
-  public static final String IS_NAMESPACE_AWARE = 
+  public static final String IS_NAMESPACE_AWARE =
     "javax.xml.stream.isNamespaceAware";
 
   /**
@@ -352,7 +352,7 @@ public abstract class XMLInputFactory
   public abstract XMLEventReader createXMLEventReader(String systemId,
                                                       Reader reader)
     throws XMLStreamException;
-  
+
   /**
    * Creates a new event reader.
    */
@@ -449,4 +449,3 @@ public abstract class XMLInputFactory
   public abstract XMLEventAllocator getEventAllocator();
 
 }
-

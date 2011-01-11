@@ -423,32 +423,32 @@ public class Throwable implements Serializable
     Throwable cause = getCause();
     while (cause != null)
       {
-	// Cause start first line
+        // Cause start first line
         sb.append("Caused by: ");
 
         // Cause stacktrace
         StackTraceElement[] parentStack = stack;
         stack = cause.getStackTrace();
-	if (parentStack == null || parentStack.length == 0)
-	  stackTraceStringBuffer(sb, cause.toString(), stack, 0);
-	else
-	  {
-	    int equal = 0; // Count how many of the last stack frames are equal
-	    int frame = stack.length-1;
-	    int parentFrame = parentStack.length-1;
-	    while (frame > 0 && parentFrame > 0)
-	      {
-		if (stack[frame].equals(parentStack[parentFrame]))
-		  {
-		    equal++;
-		    frame--;
-		    parentFrame--;
-		  }
-		else
-		  break;
-	      }
-	    stackTraceStringBuffer(sb, cause.toString(), stack, equal);
-	  }
+        if (parentStack == null || parentStack.length == 0)
+          stackTraceStringBuffer(sb, cause.toString(), stack, 0);
+        else
+          {
+            int equal = 0; // Count how many of the last stack frames are equal
+            int frame = stack.length-1;
+            int parentFrame = parentStack.length-1;
+            while (frame > 0 && parentFrame > 0)
+              {
+                if (stack[frame].equals(parentStack[parentFrame]))
+                  {
+                    equal++;
+                    frame--;
+                    parentFrame--;
+                  }
+                else
+                  break;
+              }
+            stackTraceStringBuffer(sb, cause.toString(), stack, equal);
+          }
         cause = cause.getCause();
       }
 
@@ -458,7 +458,7 @@ public class Throwable implements Serializable
   // Adds to the given StringBuffer a line containing the name and
   // all stacktrace elements minus the last equal ones.
   private static void stackTraceStringBuffer(CPStringBuilder sb, String name,
-					StackTraceElement[] stack, int equal)
+                                        StackTraceElement[] stack, int equal)
   {
     String nl = StaticData.nl;
     // (finish) first line
@@ -468,24 +468,24 @@ public class Throwable implements Serializable
     // The stacktrace
     if (stack == null || stack.length == 0)
       {
-	sb.append("   <<No stacktrace available>>");
-	sb.append(nl);
+        sb.append("   <<No stacktrace available>>");
+        sb.append(nl);
       }
     else
       {
-	for (int i = 0; i < stack.length-equal; i++)
-	  {
-	    sb.append("   at ");
-	    sb.append(stack[i] == null ? "<<Unknown>>" : stack[i].toString());
-	    sb.append(nl);
-	  }
-	if (equal > 0)
-	  {
-	    sb.append("   ...");
-	    sb.append(equal);
-	    sb.append(" more");
-	    sb.append(nl);
-	  }
+        for (int i = 0; i < stack.length-equal; i++)
+          {
+            sb.append("   at ");
+            sb.append(stack[i] == null ? "<<Unknown>>" : stack[i].toString());
+            sb.append(nl);
+          }
+        if (equal > 0)
+          {
+            sb.append("   ...");
+            sb.append(equal);
+            sb.append(" more");
+            sb.append(nl);
+          }
       }
   }
 
@@ -518,12 +518,12 @@ public class Throwable implements Serializable
   {
     if (stackTrace == null)
       if (vmState == null)
-	stackTrace = new StackTraceElement[0];
-      else 
-	{
-	  stackTrace = vmState.getStackTrace(this);
-	  vmState = null; // No longer needed
-	}
+        stackTrace = new StackTraceElement[0];
+      else
+        {
+          stackTrace = vmState.getStackTrace(this);
+          vmState = null; // No longer needed
+        }
 
     return stackTrace;
   }
@@ -548,9 +548,9 @@ public class Throwable implements Serializable
 
     while (--i >= 0)
       {
-	st[i] = stackTrace[i];
-	if (st[i] == null)
-	  throw new NullPointerException("Element " + i + " null");
+        st[i] = stackTrace[i];
+        if (st[i] == null)
+          throw new NullPointerException("Element " + i + " null");
       }
 
     this.stackTrace = st;

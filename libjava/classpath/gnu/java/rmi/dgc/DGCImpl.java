@@ -68,12 +68,12 @@ public class DGCImpl
    * The DGCImpl extends UnicastServerRef and not UnicastRemoteObject, because
    * UnicastRemoteObject must exportObject automatically.
    */
-  
+
   /**
    * Use the serial version UID for interoperability.
    */
   private static final long serialVersionUID = 1;
-  
+
   /**
    * Protects the array of object Id's for the scheduled period of time
    * (lease). After the time expires, the protector is automatically discarded,
@@ -87,11 +87,11 @@ public class DGCImpl
      * multiple references that are stored to collection.
      */
     Collection[] references;
-    
+
     /**
      * Create the new instance of the reference protector that protects the
      * given array of ids and exists for the given period of time.
-     *  
+     *
      * @param ids the ids to protect.
      */
     RefProtector(ObjID[] ids, long timeToLive)
@@ -101,11 +101,11 @@ public class DGCImpl
         {
           references[i] = UnicastServer.getExported(ids[i]);
         }
-      
+
       // Schedule the existence.
       LeaseRenewingTask.timer.schedule(this, timeToLive);
     }
-    
+
     /**
      * Break all links, ensuring easy collection of the references by the gc.
      */
@@ -118,16 +118,16 @@ public class DGCImpl
         }
     }
   }
- 
+
   /**
    * This defauld lease value is used if the lease value, passed to the
    * {@link #dirty} is equal to zero.
    */
   static final long LEASE_VALUE = 600000L;
-  
+
   /**
    * Create the new DGC implementation.
-   * 
+   *
    * @throws RemoteException if the super constructor throws or the
    * socket factory fails.
    */
@@ -138,7 +138,7 @@ public class DGCImpl
 
   /**
    * Mark the given objects referecnes as used on the client side.
-   * 
+   *
    * @param ids the ids of the used objects.
    * @param sequenceNum the number of the call (used to detect and discard late
    *          calls).
@@ -147,17 +147,17 @@ public class DGCImpl
    */
   public Lease dirty(ObjID[] ids, long sequenceNum, Lease lease)
       throws RemoteException
-  { 
+  {
     // We do not fill in VMID because in this implementation it is not used.
     long leaseValue = lease.getValue();
-    
+
     // Grant the maximal default lease time if the passed value is zero.
     if (leaseValue <= 0)
       leaseValue = LEASE_VALUE;
-    
+
     // Create (and shedule of the given existence) the new reference
     // protector.
-    new RefProtector(ids, leaseValue);    
+    new RefProtector(ids, leaseValue);
 
     lease = new Lease(lease.getVMID(), leaseValue);
     return lease;
@@ -165,7 +165,7 @@ public class DGCImpl
 
   /**
    * Mark the given objects as no longer used on the client side.
-   * 
+   *
    * @param ids the ids of the objects that are no longer used.
    * @param sequenceNum the number of the call (used to detect and discard late
    *          calls)

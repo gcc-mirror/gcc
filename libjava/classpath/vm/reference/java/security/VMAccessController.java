@@ -205,8 +205,8 @@ final class VMAccessController
             && method.equals ("doPrivileged"))
           {
             // If there was a call to doPrivileged with a supplied context,
-            // return that context. If using JAAS doAs*, it should be 
-	    // a context with a SubjectDomainCombiner
+            // return that context. If using JAAS doAs*, it should be
+            // a context with a SubjectDomainCombiner
             LinkedList l = (LinkedList) contexts.get();
             if (l != null)
               context = (AccessControlContext) l.getFirst();
@@ -214,7 +214,7 @@ final class VMAccessController
           }
 
         // subject to getProtectionDomain RuntimePermission
-	ProtectionDomain domain = clazz.getProtectionDomain();
+        ProtectionDomain domain = clazz.getProtectionDomain();
 
         if (domain == null)
           continue;

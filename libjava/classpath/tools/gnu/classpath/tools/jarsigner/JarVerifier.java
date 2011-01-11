@@ -243,7 +243,7 @@ public class JarVerifier
    * <p>
    * This method, uses the contents of the corresponding <code>.SF</code> file
    * to compute and verify the hashes of the manifest entries in the JAR file.
-   * 
+   *
    * @param alias the name of the signature file; i.e. the name to use for both
    *          the .SF and .DSA files.
    * @return <code>true</code> if all the entries in the corresponding

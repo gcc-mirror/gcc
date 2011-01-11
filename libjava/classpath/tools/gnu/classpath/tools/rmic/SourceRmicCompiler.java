@@ -46,7 +46,7 @@ import gnu.classpath.tools.rmic.AbstractMethodGenerator;
 /**
  * RMI stub source code generator, required to support java.rmi.*
  *
- * @author Audrius Meskauskas (AudriusA@Bioinformatics.org) 
+ * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class SourceRmicCompiler extends SourceGiopRmicCompiler
 {
@@ -55,10 +55,10 @@ public class SourceRmicCompiler extends SourceGiopRmicCompiler
    * garbage generation.
    */
   public boolean addZeroSizeObjecArray;
-  
+
   /**
    * Generate a RMI stub.
-   * 
+   *
    * @return the string, containing the text of the generated stub.
    */
   public String generateStub()
@@ -89,7 +89,7 @@ public class SourceRmicCompiler extends SourceGiopRmicCompiler
     else
       {
         vars.put("#zeroSizeObjecArray","");
-        vars.put("#zeroSizeClassArray","");        
+        vars.put("#zeroSizeClassArray","");
       }
 
     String output = replaceAll(template, vars);
@@ -102,17 +102,17 @@ public class SourceRmicCompiler extends SourceGiopRmicCompiler
   protected AbstractMethodGenerator createMethodGenerator(Method m)
   {
     return new RmiMethodGenerator(m, this);
-  } 
-  
+  }
+
   /**
    * Get the stub method declarations.
    */
   public String getStubMethodDeclarations()
   {
     StringBuilder b = new StringBuilder();
-    
+
     Iterator iter = methods.iterator();
-     
+
     while (iter.hasNext())
       {
         RmiMethodGenerator method = (RmiMethodGenerator) iter.next();
@@ -125,7 +125,7 @@ public class SourceRmicCompiler extends SourceGiopRmicCompiler
       }
     return b.toString();
   }
-  
+
   /**
    * Get stub method initializations. These must be done in a try-catch
    * statement to catch {@link NoSuchMethodException}.
@@ -133,9 +133,9 @@ public class SourceRmicCompiler extends SourceGiopRmicCompiler
   public String getStubMethodInitializations()
   {
     StringBuilder b = new StringBuilder();
-    
+
     Iterator iter = methods.iterator();
-     
+
     while (iter.hasNext())
       {
         RmiMethodGenerator method = (RmiMethodGenerator) iter.next();
@@ -147,7 +147,7 @@ public class SourceRmicCompiler extends SourceGiopRmicCompiler
         b.append(".class.getMethod(");
         b.append('"');
         b.append(method.method.getName());
-        b.append("\", ");        
+        b.append("\", ");
         if (method.method.getParameterTypes().length == 0)
           b.append("NO_ARGSc);");
         else
@@ -177,7 +177,7 @@ public class SourceRmicCompiler extends SourceGiopRmicCompiler
   public String convertStubName(String name)
   {
     return name;
-  }  
+  }
 
   /**
    * Override to do nothing.

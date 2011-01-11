@@ -57,7 +57,7 @@ import org.omg.IOP.CodecPackage.TypeMismatch;
 /**
  * The local {@link Codec} implementation for ENCODING_CDR_ENCAPS
  * encoding. This is a local implementation; the remote side should
- * have its own Codec of this kind. 
+ * have its own Codec of this kind.
  *
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
@@ -66,8 +66,8 @@ public class CdrEncapsCodecImpl
   extends LocalObject
   implements Codec
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1;
 

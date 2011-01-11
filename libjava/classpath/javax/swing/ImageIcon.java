@@ -90,7 +90,7 @@ public class ImageIcon
 
     /**
      * Returns the accessible state for the <code>ImageIcon</code>.  To
-     * match the reference implementation, this method always returns 
+     * match the reference implementation, this method always returns
      * <code>null</code>.
      *
      * @return <code>null</code>.
@@ -138,7 +138,7 @@ public class ImageIcon
 
     /**
      * Returns the accessible child at index <code>i</code>, which is
-     * <code>null</code> in this case because an {@link ImageIcon} has no 
+     * <code>null</code> in this case because an {@link ImageIcon} has no
      * children.
      *
      * @param i the index of the child to be fetched
@@ -151,12 +151,12 @@ public class ImageIcon
     }
 
     /**
-     * Returns the locale of this object.  To match the reference 
+     * Returns the locale of this object.  To match the reference
      * implementation, this method always returns <code>null</code>.
      *
      * @return <code>null</code>.
      */
-    public Locale getLocale() 
+    public Locale getLocale()
       throws IllegalComponentStateException
     {
       // refer to Sun's bug report 4269253
@@ -168,7 +168,7 @@ public class ImageIcon
      * <code>description</code> property of the underlying {@link ImageIcon}.
      *
      * @return The description (possibly <code>null</code>).
-     * 
+     *
      * @see #setAccessibleIconDescription(String)
      */
     public String getAccessibleIconDescription()
@@ -177,11 +177,11 @@ public class ImageIcon
     }
 
     /**
-     * Sets the accessible icon description.  This sets the 
+     * Sets the accessible icon description.  This sets the
      * <code>description</code> property of the underlying {@link ImageIcon}.
      *
      * @param newDescr the description (<code>null</code> permitted).
-     * 
+     *
      * @see #getAccessibleIconDescription()
      */
     public void setAccessibleIconDescription(String newDescr)
@@ -190,7 +190,7 @@ public class ImageIcon
     }
 
     /**
-     * Returns the icon height. This returns the <code>iconHeight</code> 
+     * Returns the icon height. This returns the <code>iconHeight</code>
      * property of the underlying {@link ImageIcon}.
      *
      * @return The icon height.
@@ -199,9 +199,9 @@ public class ImageIcon
     {
       return getIconHeight();
     }
-    
+
     /**
-     * Returns the icon width. This returns the <code>iconWidth</code> property 
+     * Returns the icon width. This returns the <code>iconWidth</code> property
      * of the underlying {@link ImageIcon}.
      *
      * @return The icon width.
@@ -217,7 +217,7 @@ public class ImageIcon
   /** A dummy Component that is used in the MediaTracker. */
   protected static final Component component = new Component()
   {
-    // No need to implement this. 
+    // No need to implement this.
   };
 
   /** The MediaTracker used to monitor the loading of images. */
@@ -243,7 +243,7 @@ public class ImageIcon
   {
     // Nothing to do here.
   }
- 
+
   /**
    * Constructs an ImageIcon given a filename.  The icon's description
    * is initially set to the filename itself.  A filename of "" means
@@ -277,7 +277,7 @@ public class ImageIcon
   {
     this(imageData, null);
   }
-  
+
   /**
    * Creates an ImageIcon from the given byte array and sets the given
    * description.
@@ -332,7 +332,7 @@ public class ImageIcon
   {
     return observer;
   }
-  
+
   /**
    * Sets the ImageObserver that will be used for all Image
    * operations. Can be set to null (the default) when no observer is
@@ -459,7 +459,7 @@ public class ImageIcon
    * Returns the object that provides accessibility features for this
    * <code>ImageIcon</code> instance.
    *
-   * @return The accessible context (an instance of 
+   * @return The accessible context (an instance of
    *     {@link AccessibleImageIcon}).
    */
   public AccessibleContext getAccessibleContext()

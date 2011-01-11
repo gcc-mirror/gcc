@@ -1,4 +1,4 @@
-/* DurationType.java -- 
+/* DurationType.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -103,7 +103,7 @@ final class DurationType
         }
       return 0;
     }
-    
+
   }
 
   static final int[] CONSTRAINING_FACETS = {
@@ -170,7 +170,7 @@ final class DurationType
         throw new DatatypeException(i, "illegal duration value");
       }
   }
-  
+
   public Object createValue(String value, ValidationContext context) {
     boolean negative = false;
     int days = 0, months = 0, years = 0;
@@ -236,4 +236,3 @@ final class DurationType
   }
 
 }
-

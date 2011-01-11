@@ -90,10 +90,10 @@ public class DHKeyPairX509Codec
    *     q  INTEGER  -- factor of p-1
    *   }
    * </pre>
-   * 
+   *
    * <p>The <i>subjectPublicKey</i> field, which is a BIT STRING, contains the
    * DER-encoded form of the DH public key as an INTEGER.</p>
-   * 
+   *
    * <pre>
    *       DHPublicKey ::= INTEGER -- public key, y = g^x mod p
    * </pre>
@@ -104,7 +104,7 @@ public class DHKeyPairX509Codec
    * parameter. RFC-2631 DOES NOT allow for an <i>optional</i> value for that
    * parameter, hence we replace such null values with <code>0</code>, and do
    * the reverse in the corresponding decode method.
-   * 
+   *
    * @param key the {@link PublicKey} instance to encode. MUST be an instance of
    *          {@link GnuDHPublicKey}.
    * @return the DER-encoded form of the ASN.1 representation of the

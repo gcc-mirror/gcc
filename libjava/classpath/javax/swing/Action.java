@@ -44,9 +44,9 @@ import java.beans.PropertyChangeListener;
  * Provides a convenient central point of control for some task
  * that can be triggered by more than one control in a Swing user interface
  * (for example, a menu item and a toolbar button).
- * 
+ *
  * @see AbstractButton#setAction(Action)
- * 
+ *
  * @author Ronald Veldema (rveldema@cs.vu.nl)
  * @author Andrew Selkirk
  */
@@ -96,23 +96,23 @@ public interface Action extends ActionListener {
 
   /**
    * Returns the value associated with the specified key.
-   * 
+   *
    * @param key  the key (not <code>null</code>).
-   * 
-   * @return The value associated with the specified key, or 
+   *
+   * @return The value associated with the specified key, or
    *         <code>null</code> if the key is not found.
    */
   Object getValue(String key);
 
   /**
-   * Sets the value associated with the specified key and sends a 
-   * {@link java.beans.PropertyChangeEvent} to all registered listeners.  
-   * The standard keys are defined in this interface: {@link #NAME}, 
-   * {@link #SHORT_DESCRIPTION}, {@link #LONG_DESCRIPTION}, 
-   * {@link #SMALL_ICON}, {@link #ACTION_COMMAND_KEY}, 
-   * {@link #ACCELERATOR_KEY} and {@link #MNEMONIC_KEY}. Any existing value 
-   * associated with the key will be overwritten.  
-   * 
+   * Sets the value associated with the specified key and sends a
+   * {@link java.beans.PropertyChangeEvent} to all registered listeners.
+   * The standard keys are defined in this interface: {@link #NAME},
+   * {@link #SHORT_DESCRIPTION}, {@link #LONG_DESCRIPTION},
+   * {@link #SMALL_ICON}, {@link #ACTION_COMMAND_KEY},
+   * {@link #ACCELERATOR_KEY} and {@link #MNEMONIC_KEY}. Any existing value
+   * associated with the key will be overwritten.
+   *
    * @param key  the key (not <code>null</code>).
    * @param value  the value (<code>null</code> permitted).
    */
@@ -120,16 +120,16 @@ public interface Action extends ActionListener {
 
   /**
    * Returns the flag that indicates whether or not this action is enabled.
-   * 
+   *
    * @return The flag.
    */
   boolean isEnabled();
 
   /**
    * Sets the flag that indicates whether or not this action is enabled.  If
-   * the value changes, a {@link java.beans.PropertyChangeEvent} is sent to 
+   * the value changes, a {@link java.beans.PropertyChangeEvent} is sent to
    * all registered listeners.
-   * 
+   *
    * @param b  the new value of the flag.
    */
   void setEnabled(boolean b);
@@ -137,15 +137,15 @@ public interface Action extends ActionListener {
   /**
    * Registers a listener to receive notification whenever one of the
    * action's properties is modified.
-   * 
+   *
    * @param listener  the listener.
    */
   void addPropertyChangeListener(PropertyChangeListener listener);
 
   /**
    * Deregisters a listener so that it no longer receives notification of
-   * changes to the action's properties. 
-   * 
+   * changes to the action's properties.
+   *
    * @param listener  the listener.
    */
   void removePropertyChangeListener(PropertyChangeListener listener);

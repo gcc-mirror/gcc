@@ -1,4 +1,4 @@
-/* IDRefsType.java -- 
+/* IDRefsType.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -82,6 +82,5 @@ final class IDRefsType
   {
     return ID_TYPE_IDREFS;
   }
-  
-}
 
+}

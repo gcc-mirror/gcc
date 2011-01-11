@@ -1,6 +1,6 @@
-/* DefaultTreeModel.java -- 
+/* DefaultTreeModel.java --
    Copyright (C) 2002, 2004, 2005, 2006, Free Software Foundation, Inc.
- 
+
 This file is part of GNU Classpath.
 
 GNU Classpath is free software; you can redistribute it and/or modify
@@ -49,7 +49,7 @@ import javax.swing.event.TreeModelListener;
 
 /**
  * DefaultTreeModel
- * 
+ *
  * @author Andrew Selkirk
  */
 public class DefaultTreeModel
@@ -74,7 +74,7 @@ public class DefaultTreeModel
 
   /**
    * Constructor DefaultTreeModel where any node can have children.
-   * 
+   *
    * @param root the tree root.
    */
   public DefaultTreeModel(TreeNode root)
@@ -85,9 +85,9 @@ public class DefaultTreeModel
   /**
    * Create the DefaultTreeModel that may check if the nodes can have
    * children or not.
-   * 
+   *
    * @param aRoot the tree root.
-   * @param asksAllowsChildren if true, each node is asked if it can have 
+   * @param asksAllowsChildren if true, each node is asked if it can have
    * children. If false, the model does not care about this, supposing, that
    * any node can have children.
    */
@@ -101,7 +101,7 @@ public class DefaultTreeModel
 
   /**
    * writeObject
-   * 
+   *
    * @param obj the object.
    * @exception IOException TODO
    */
@@ -112,7 +112,7 @@ public class DefaultTreeModel
 
   /**
    * readObject
-   * 
+   *
    * @param value0 TODO
    * @exception IOException TODO
    * @exception ClassNotFoundException TODO
@@ -125,7 +125,7 @@ public class DefaultTreeModel
 
   /**
    * asksAllowsChildren
-   * 
+   *
    * @return boolean
    */
   public boolean asksAllowsChildren()
@@ -135,7 +135,7 @@ public class DefaultTreeModel
 
   /**
    * setAsksAllowsChildren
-   * 
+   *
    * @param value TODO
    */
   public void setAsksAllowsChildren(boolean value)
@@ -145,7 +145,7 @@ public class DefaultTreeModel
 
   /**
    * setRoot
-   * 
+   *
    * @param root the root node.
    */
   public void setRoot(TreeNode root)
@@ -155,7 +155,7 @@ public class DefaultTreeModel
 
   /**
    * getRoot
-   * 
+   *
    * @return Object
    */
   public Object getRoot()
@@ -165,7 +165,7 @@ public class DefaultTreeModel
 
   /**
    * getIndexOfChild
-   * 
+   *
    * @param parent TODO
    * @param child TODO
    * @return int
@@ -182,7 +182,7 @@ public class DefaultTreeModel
 
   /**
    * getChild
-   * 
+   *
    * @param node TODO
    * @param idx TODO
    * @return Object
@@ -197,7 +197,7 @@ public class DefaultTreeModel
 
   /**
    * getChildCount
-   * 
+   *
    * @param node TODO
    * @return int
    */
@@ -214,7 +214,7 @@ public class DefaultTreeModel
    * {@link #asksAllowsChildren} is true, then this checks if the TreeNode
    * allows children, otherwise it returns the TreeNode's <code>leaf</code>
    * property.
-   * 
+   *
    * @param node the node to check
    *
    * @return boolean <code>true</code> if the node is a leaf node,
@@ -275,7 +275,7 @@ public class DefaultTreeModel
    * changed. It will fire the events, necessary to update the layout caches and
    * repaint the tree. The tree will <i>not</i> be properly refreshed if you
    * call the JTree.repaint instead.
-   * 
+   *
    * @param node - the tree node, from which the tree nodes have changed
    *          (inclusive). If you do not know this node, call {@link #reload()}
    *          instead.
@@ -296,14 +296,14 @@ public class DefaultTreeModel
   }
 
   /**
-   * Messaged when the user has altered the value for the item 
-   * identified by path to newValue. If newValue signifies a truly new 
+   * Messaged when the user has altered the value for the item
+   * identified by path to newValue. If newValue signifies a truly new
    * value the model should post a treeNodesChanged event.
-   * This sets the user object of the TreeNode identified by 
-   * path and posts a node changed. If you use custom user objects 
-   * in the TreeModel you're going to need to subclass this and set 
+   * This sets the user object of the TreeNode identified by
+   * path and posts a node changed. If you use custom user objects
+   * in the TreeModel you're going to need to subclass this and set
    * the user object of the changed node to something meaningful.
-   * 
+   *
    * @param path - path to the node that the user has altered
    * @param newValue - the new value from the TreeCellEditor
    */
@@ -314,7 +314,7 @@ public class DefaultTreeModel
       {
         ((MutableTreeNode) node).setUserObject(newValue);
         int[] ci = null;
-        Object[] c = null; 
+        Object[] c = null;
         Object[] parentPath = path.getPath();
         if (path.getPathCount() > 1)
           {
@@ -327,17 +327,17 @@ public class DefaultTreeModel
             c[0] = node;
             parentPath = path.getParentPath().getPath();
           }
-        
+
         fireTreeNodesChanged(this, parentPath, ci, c);
       }
     }
 
   /**
    * Invoked this to insert newChild at location index in parents children.
-   * This will then message nodesWereInserted to create the appropriate event. 
-   * This is the preferred way to add children as it will create the 
+   * This will then message nodesWereInserted to create the appropriate event.
+   * This is the preferred way to add children as it will create the
    * appropriate event.
-   * 
+   *
    * @param newChild is the node to add to the parent's children
    * @param parent is the parent of the newChild
    * @param index is the index of the newChild
@@ -353,10 +353,10 @@ public class DefaultTreeModel
   }
 
   /**
-   * Message this to remove node from its parent. This will message 
-   * nodesWereRemoved to create the appropriate event. This is the preferred 
+   * Message this to remove node from its parent. This will message
+   * nodesWereRemoved to create the appropriate event. This is the preferred
    * way to remove a node as it handles the event creation for you.
-   * 
+   *
    * @param node to be removed
    */
   public void removeNodeFromParent(MutableTreeNode node)
@@ -373,7 +373,7 @@ public class DefaultTreeModel
   /**
    * Invoke this method after you've changed how node is to be represented
    * in the tree.
-   * 
+   *
    * @param node that was changed
    */
   public void nodeChanged(TreeNode node)
@@ -387,10 +387,10 @@ public class DefaultTreeModel
   }
 
   /**
-   * Invoke this method after you've inserted some TreeNodes 
-   * into node. childIndices should be the index of the new elements and must 
+   * Invoke this method after you've inserted some TreeNodes
+   * into node. childIndices should be the index of the new elements and must
    * be sorted in ascending order.
-   * 
+   *
    * @param parent that had a child added to
    * @param childIndices of the children added
    */
@@ -403,26 +403,26 @@ public class DefaultTreeModel
   }
 
   /**
-   * Invoke this method after you've removed some TreeNodes from node. 
-   * childIndices should be the index of the removed elements and 
-   * must be sorted in ascending order. And removedChildren should be the 
+   * Invoke this method after you've removed some TreeNodes from node.
+   * childIndices should be the index of the removed elements and
+   * must be sorted in ascending order. And removedChildren should be the
    * array of the children objects that were removed.
-   * 
+   *
    * @param parent that had a child added to
    * @param childIndices of the children added
    * @param removedChildren are all the children removed from parent.
    */
-  public void nodesWereRemoved(TreeNode parent, int[] childIndices, 
+  public void nodesWereRemoved(TreeNode parent, int[] childIndices,
                                Object[] removedChildren)
   {
-    fireTreeNodesRemoved(this, getPathToRoot(parent), childIndices, 
+    fireTreeNodesRemoved(this, getPathToRoot(parent), childIndices,
                          removedChildren);
   }
 
   /**
-   * Invoke this method after you've changed how the children identified by 
+   * Invoke this method after you've changed how the children identified by
    * childIndices are to be represented in the tree.
-   * 
+   *
    * @param node that is the parent of the children that changed in a tree.
    * @param childIndices are the child nodes that changed.
    */
@@ -435,9 +435,9 @@ public class DefaultTreeModel
   }
 
   /**
-   * Invoke this method if you've totally changed the children of node and 
+   * Invoke this method if you've totally changed the children of node and
    * its childrens children. This will post a treeStructureChanged event.
-   * 
+   *
    * @param node that had its children and grandchildren changed.
    */
   public void nodeStructureChanged(TreeNode node)
@@ -456,10 +456,10 @@ public class DefaultTreeModel
   }
 
   /**
-   * Builds the parents of node up to and including the root node, where 
-   * the original node is the last element in the returned array. The 
+   * Builds the parents of node up to and including the root node, where
+   * the original node is the last element in the returned array. The
    * length of the returned array gives the node's depth in the tree.
-   * 
+   *
    * @param node - the TreeNode to get the path for
    * @return TreeNode[] - the path from node to the root
    */
@@ -469,14 +469,14 @@ public class DefaultTreeModel
   }
 
   /**
-   * Builds the parents of node up to and including the root node, where 
-   * the original node is the last element in the returned array. The 
+   * Builds the parents of node up to and including the root node, where
+   * the original node is the last element in the returned array. The
    * length of the returned array gives the node's depth in the tree.
-   * 
+   *
    * @param node - the TreeNode to get the path for
-   * @param depth - an int giving the number of steps already taken 
+   * @param depth - an int giving the number of steps already taken
    * towards the root (on recursive calls), used to size the returned array
-   * @return an array of TreeNodes giving the path from the root to the 
+   * @return an array of TreeNodes giving the path from the root to the
    * specified node
    */
   protected TreeNode[] getPathToRoot(TreeNode node, int depth)
@@ -485,7 +485,7 @@ public class DefaultTreeModel
       {
         if (depth == 0)
           return null;
-        
+
         return new TreeNode[depth];
       }
 
@@ -496,7 +496,7 @@ public class DefaultTreeModel
 
   /**
    * Registers a listere to the model.
-   * 
+   *
    * @param listener the listener to add
    */
   public void addTreeModelListener(TreeModelListener listener)
@@ -506,7 +506,7 @@ public class DefaultTreeModel
 
   /**
    * Removes a listener from the model.
-   * 
+   *
    * @param listener the listener to remove
    */
   public void removeTreeModelListener(TreeModelListener listener)
@@ -516,9 +516,9 @@ public class DefaultTreeModel
 
   /**
    * Returns all registered <code>TreeModelListener</code> listeners.
-   * 
+   *
    * @return an array of listeners.
-   * 
+   *
    * @since 1.4
    */
   public TreeModelListener[] getTreeModelListeners()
@@ -528,10 +528,10 @@ public class DefaultTreeModel
   }
 
   /**
-   * Notifies all listeners that have registered interest for notification 
-   * on this event type. The event instance is lazily created using the parameters 
+   * Notifies all listeners that have registered interest for notification
+   * on this event type. The event instance is lazily created using the parameters
    * passed into the fire method.
-   * 
+   *
    * @param source the node being changed
    * @param path the path to the root node
    * @param childIndices the indices of the changed elements
@@ -551,7 +551,7 @@ public class DefaultTreeModel
 
   /**
    * fireTreeNodesInserted
-   * 
+   *
    * @param source the node where new nodes got inserted
    * @param path the path to the root node
    * @param childIndices the indices of the new elements
@@ -570,7 +570,7 @@ public class DefaultTreeModel
 
   /**
    * fireTreeNodesRemoved
-   * 
+   *
    * @param source the node where nodes got removed-
    * @param path the path to the root node
    * @param childIndices the indices of the removed elements
@@ -589,7 +589,7 @@ public class DefaultTreeModel
 
   /**
    * fireTreeStructureChanged
-   * 
+   *
    * @param source the node where the model has changed
    * @param path the path to the root node
    * @param childIndices the indices of the affected elements

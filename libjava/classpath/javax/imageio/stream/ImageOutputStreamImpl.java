@@ -221,20 +221,20 @@ public abstract class ImageOutputStreamImpl extends ImageInputStreamImpl
     for(int i = 0; i < len; ++len)
       writeDouble(data[offset + i]);
   }
-  
+
   public void writeFloat(float value)
     throws IOException
   {
     writeInt(Float.floatToIntBits(value));
   }
-  
+
   public void writeFloats(float[] data, int offset, int len)
     throws IOException
   {
     for(int i = 0; i < len; ++len)
       writeFloat(data[offset + i]);
   }
-  
+
   public void writeInt(int value)
     throws IOException
   {
@@ -252,17 +252,17 @@ public abstract class ImageOutputStreamImpl extends ImageInputStreamImpl
         buffer[2] = ((byte) (value >> 8));
         buffer[3] = ((byte) value);
       }
-    
+
     write(buffer, 0, 4);
   }
-  
+
   public void writeInts(int[] data, int offset, int len)
     throws IOException
   {
     for(int i = 0; i < len; ++len)
       writeInt(data[offset + i]);
   }
-  
+
   public void writeLong(long value)
     throws IOException
   {
@@ -288,17 +288,17 @@ public abstract class ImageOutputStreamImpl extends ImageInputStreamImpl
         buffer[6] = ((byte) (value >> 8));
         buffer[7] = ((byte) value);
       }
-    
+
     write(buffer, 0, 8);
   }
-  
+
   public void writeLongs(long[] data, int offset, int len)
     throws IOException
   {
     for(int i = 0; i < len; ++len)
       writeLong(data[offset + i]);
   }
-  
+
   public void writeShort(int value)
     throws IOException
   {
@@ -312,17 +312,17 @@ public abstract class ImageOutputStreamImpl extends ImageInputStreamImpl
         buffer[0] = ((byte) (value >> 8));
         buffer[1] = ((byte) value);
       }
-    
+
     write(buffer, 0, 2);
   }
-  
+
   public void writeShorts(short[] data, int offset, int len)
     throws IOException
   {
     for(int i = 0; i < len; ++len)
       writeShort(data[offset + i]);
   }
-  
+
   public void writeUTF(String value)
     throws IOException
   {
@@ -367,7 +367,7 @@ public abstract class ImageOutputStreamImpl extends ImageInputStreamImpl
             buf[pos++] = (byte) (0x80 | (0x3f & c));
           }
       }
-    
+
     writeShort (sum);
     write(buf, 0, sum);
   }

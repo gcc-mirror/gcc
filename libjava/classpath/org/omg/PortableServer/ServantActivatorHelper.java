@@ -115,24 +115,24 @@ public abstract class ServantActivatorHelper
         throw bad;
       }
   }
-  
+
   /**
    * Narrow the given object to the ServantActivator. For the objects that are
    * always local, this operation does not differ from the ordinary
    * {@link #narrow} (ClassCastException will be thrown if narrowing something
    * different). See OMG issue 4158.
-   * 
+   *
    * @param obj the object to cast.
-   * 
+   *
    * @return the casted ServantActivator.
-   * 
-   * @since 1.5 
+   *
+   * @since 1.5
    */
   public static ServantActivator unchecked_narrow(org.omg.CORBA.Object obj)
   {
     return narrow(obj);
-  }  
-  
+  }
+
 
   /**
    * This should read the servant activator, but it cannot be transferred

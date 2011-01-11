@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -69,7 +69,7 @@ public final class VMPlainDatagramSocketImpl
         System.loadLibrary("javanet");
       }
   }
-  
+
   /**
    * Binds this socket to a particular port and interface
    *
@@ -78,9 +78,9 @@ public final class VMPlainDatagramSocketImpl
    * @param addr the address to bind to
    *
    * @throws SocketException If an error occurs
-   */  
+   */
   static native void bind(PlainDatagramSocketImpl socket, int port,
-                          InetAddress addr) 
+                          InetAddress addr)
     throws SocketException;
 
   /**
@@ -127,7 +127,7 @@ public final class VMPlainDatagramSocketImpl
    *
    * @param socket the socket object
    * @param addr the address to send to
-   * @param port the port to send to 
+   * @param port the port to send to
    * @param buf the buffer to send
    * @param offset the offset of the data in the buffer to send
    * @param len the length of the data to send

@@ -47,23 +47,23 @@ import java.util.EventListener;
  */
 public interface AncestorListener extends EventListener {
 
-	/**
-	 * Ancestor Added
-	 * @param event Ancestor Event
-	 */
-	void ancestorAdded(AncestorEvent event);
+        /**
+         * Ancestor Added
+         * @param event Ancestor Event
+         */
+        void ancestorAdded(AncestorEvent event);
 
-	/**
-	 * Ancestor Removed
-	 * @param event Ancestor Event
-	 */
-	void ancestorRemoved(AncestorEvent event);
+        /**
+         * Ancestor Removed
+         * @param event Ancestor Event
+         */
+        void ancestorRemoved(AncestorEvent event);
 
-	/**
-	 * Ancestor Moved
-	 * @param event Ancestor Event
-	 */
-	void ancestorMoved(AncestorEvent event);
+        /**
+         * Ancestor Moved
+         * @param event Ancestor Event
+         */
+        void ancestorMoved(AncestorEvent event);
 
 
 } // AncestorListener

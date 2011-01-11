@@ -1,4 +1,4 @@
-/* OutgoingMessage.java -- 
+/* OutgoingMessage.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -70,7 +70,7 @@ public class OutgoingMessage
   /**
    * Returns the encoded form of the current message including the 4-byte length
    * header.
-   * 
+   *
    * @throws KeyAgreementException if an encoding size constraint is violated.
    */
   public byte[] toByteArray() throws KeyAgreementException
@@ -89,7 +89,7 @@ public class OutgoingMessage
   /**
    * Returns the encoded form of the current message excluding the 4-byte length
    * header.
-   * 
+   *
    * @throws KeyAgreementException if an encoding size constraint is violated.
    */
   public byte[] wrap() throws KeyAgreementException
@@ -114,7 +114,7 @@ public class OutgoingMessage
    * <pre>
    * key --&gt; 4-byte-length || 1-byte-type-and-format || encoded-key-bytes
    * </pre>
-   * 
+   *
    * @param k the public key to encode.
    * @throws KeyAgreementException if an encoding size constraint is violated.
    */
@@ -137,7 +137,7 @@ public class OutgoingMessage
    * <pre>
    * key --&gt; 4-byte-length || 1-byte-type-and-format || encoded-key-bytes
    * </pre>
-   * 
+   *
    * @param k the private key to encode.
    * @throws KeyAgreementException if an encoding size constraint is violated.
    */
@@ -148,7 +148,7 @@ public class OutgoingMessage
 
   /**
    * Encodes an MPI into the message.
-   * 
+   *
    * @param val the MPI to encode.
    * @throws KeyAgreementException if an encoding size constraint is violated.
    */
@@ -165,7 +165,7 @@ public class OutgoingMessage
 
   /**
    * Encodes a string into the message.
-   * 
+   *
    * @param s the string to encode.
    * @throws KeyAgreementException if the UTF8 encoding is not supported on this
    *           platform, or if an encoding size constraint is violated.

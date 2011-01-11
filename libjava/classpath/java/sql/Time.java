@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -145,16 +145,16 @@ public class Time extends java.util.Date
   {
     try
       {
-	java.util.Date d = (java.util.Date) sdf.parseObject(str);
+        java.util.Date d = (java.util.Date) sdf.parseObject(str);
 
-	if (d == null)
-	  throw new IllegalArgumentException(str);
-	else
-	  return new Time(d.getTime());
+        if (d == null)
+          throw new IllegalArgumentException(str);
+        else
+          return new Time(d.getTime());
       }
     catch (ParseException e)
       {
-	throw new IllegalArgumentException(str);
+        throw new IllegalArgumentException(str);
       }
   }
 
@@ -178,7 +178,7 @@ public class Time extends java.util.Date
 
   /**
    * This method initializes a new instance of this class with the
-   * specified time value representing the number of milliseconds since 
+   * specified time value representing the number of milliseconds since
    * Jan 1, 1970 at 12:00 midnight GMT.
    *
    * @param date The time value to intialize this <code>Time</code> to.
@@ -199,4 +199,3 @@ public class Time extends java.util.Date
   }
 
 }
-

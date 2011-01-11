@@ -1,4 +1,4 @@
-/* GnomeNamedNodeMap.java - 
+/* GnomeNamedNodeMap.java -
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -78,7 +78,7 @@ implements NamedNodeMap
     throws DOMException;
 
   public native Node item (int index);
-  
+
   public native int getLength ();
 
   public native Node getNamedItemNS (String namespaceURI, String localName);
@@ -88,5 +88,5 @@ implements NamedNodeMap
 
   public native Node removeNamedItemNS (String namespaceURI,
                                         String localName);
-  
+
 }

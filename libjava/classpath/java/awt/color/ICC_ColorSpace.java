@@ -212,7 +212,7 @@ public class ICC_ColorSpace extends ColorSpace
    */
   public float getMinValue(int idx)
   {
-    // FIXME: Not 100% certain of this. 
+    // FIXME: Not 100% certain of this.
     if (type == ColorSpace.TYPE_Lab && (idx == 1 || idx == 2))
       return -128f;
 
@@ -236,10 +236,10 @@ public class ICC_ColorSpace extends ColorSpace
       return 1 + 32767 / 32768f;
     else if (type == ColorSpace.TYPE_Lab)
       {
-	if (idx == 0)
-	  return 100;
-	if (idx == 1 || idx == 2)
-	  return 127;
+        if (idx == 0)
+          return 100;
+        if (idx == 1 || idx == 2)
+          return 127;
       }
     if (idx < 0 || idx >= nComponents)
       throw new IllegalArgumentException();
@@ -255,28 +255,28 @@ public class ICC_ColorSpace extends ColorSpace
     switch (profile.isPredefined())
       {
       case CS_sRGB:
-	converter = new SrgbConverter();
-	break;
+        converter = new SrgbConverter();
+        break;
       case CS_CIEXYZ:
-	converter = new CieXyzConverter();
-	break;
+        converter = new CieXyzConverter();
+        break;
       case CS_GRAY:
-	converter = new GrayScaleConverter();
-	break;
+        converter = new GrayScaleConverter();
+        break;
       case CS_LINEAR_RGB:
-	converter = new LinearRGBConverter();
-	break;
+        converter = new LinearRGBConverter();
+        break;
       case CS_PYCC:
-	converter = new PyccConverter();
-	break;
+        converter = new PyccConverter();
+        break;
       default:
-	if (profile instanceof ICC_ProfileRGB)
-	  converter = new RgbProfileConverter((ICC_ProfileRGB) profile);
-	else if (profile instanceof ICC_ProfileGray)
-	  converter = new GrayProfileConverter((ICC_ProfileGray) profile);
-	else
-	  converter = new ClutProfileConverter(profile);
-	break;
+        if (profile instanceof ICC_ProfileRGB)
+          converter = new RgbProfileConverter((ICC_ProfileRGB) profile);
+        else if (profile instanceof ICC_ProfileGray)
+          converter = new GrayProfileConverter((ICC_ProfileGray) profile);
+        else
+          converter = new ClutProfileConverter(profile);
+        break;
       }
     return converter;
   }
@@ -293,8 +293,8 @@ public class ICC_ColorSpace extends ColorSpace
     invDiffMinMax = diffMinMax = null;
     for (int i = 0; i < nComponents; i++)
       {
-	minVal[i] = getMinValue(i);
-	maxVal[i] = getMaxValue(i);
+        minVal[i] = getMinValue(i);
+        maxVal[i] = getMaxValue(i);
       }
     needScaleInit = true;
   }

@@ -40,7 +40,7 @@ package javax.sound.midi;
 
 /**
  * A short MIDI message that is no longer than 3 bytes long.
- * 
+ *
  * @author Anthony Green (green@redhat.com)
  * @since 1.3
  *
@@ -51,91 +51,91 @@ public class ShortMessage extends MidiMessage
    * Status byte for Time Code message.
    */
   public static final int MIDI_TIME_CODE = 0xF1;
- 
+
   /**
-   * Status byte for Song Position Pointer message. 
+   * Status byte for Song Position Pointer message.
    */
   public static final int SONG_POSITION_POINTER = 0xF2;
-  
+
   /**
    * Status byte for Song Select message.
    */
   public static final int SONG_SELECT = 0xF3;
-  
+
   /**
-   * Status byte for Tune Request message. 
+   * Status byte for Tune Request message.
    */
   public static final int TUNE_REQUEST = 0xF6;
-  
+
   /**
    * Status byte for End Of Exclusive message.
    */
   public static final int END_OF_EXCLUSIVE = 0xF7;
-  
+
   /**
-   * Status byte for Timing Clock message. 
+   * Status byte for Timing Clock message.
    */
   public static final int TIMING_CLOCK = 0xF8;
-  
+
   /**
-   * Status byte for Start message. 
+   * Status byte for Start message.
    */
   public static final int START = 0xFA;
-  
+
   /**
-   * Status byte for Continue message. 
+   * Status byte for Continue message.
    */
-  public static final int CONTINUE = 0xFB; 
-  
+  public static final int CONTINUE = 0xFB;
+
   /**
-   * Status byte for Stop message. 
+   * Status byte for Stop message.
    */
-  public static final int STOP = 0xFC; 
-  
+  public static final int STOP = 0xFC;
+
   /**
    * Status byte for Active Sensing message.
    */
-  public static final int ACTIVE_SENSING = 0xFE; 
-  
+  public static final int ACTIVE_SENSING = 0xFE;
+
   /**
    * Status byte for System Reset message.
    */
-  public static final int SYSTEM_RESET = 0xFF; 
-  
+  public static final int SYSTEM_RESET = 0xFF;
+
   /**
    * Status nibble for Note Off message.
    */
-  public static final int NOTE_OFF = 0x80; 
-  
+  public static final int NOTE_OFF = 0x80;
+
   /**
    * Status nibble for Note On message.
    */
-  public static final int NOTE_ON = 0x90; 
-  
+  public static final int NOTE_ON = 0x90;
+
   /**
    * Status nibble for Poly Pressure message.
    */
-  public static final int POLY_PRESSURE = 0xA0; 
-  
+  public static final int POLY_PRESSURE = 0xA0;
+
   /**
    * Status nibble for Control Change message.
    */
-  public static final int CONTROL_CHANGE = 0xB0; 
-  
+  public static final int CONTROL_CHANGE = 0xB0;
+
   /**
    * Status nibble for Program Change message.
    */
-  public static final int PROGRAM_CHANGE = 0xC0; 
-  
+  public static final int PROGRAM_CHANGE = 0xC0;
+
   /**
    * Statue nibble for Channel Pressure message.
    */
   public static final int CHANNEL_PRESSURE = 0xD0;
-  
+
   /**
    * Status nibble for Pitch Bend message.
    */
-  public static final int PITCH_BEND = 0xE0; 
+  public static final int PITCH_BEND = 0xE0;
 
   // Create and initialize a default, arbitrary message.
   private static byte[] defaultMessage;
@@ -144,25 +144,25 @@ public class ShortMessage extends MidiMessage
     defaultMessage = new byte[1];
     defaultMessage[0] = (byte) STOP;
   }
-  
+
   /**
    * Create a short MIDI message.
-   * 
+   *
    * The spec requires that this represent a valid MIDI message, but doesn't
    * specify what it should be.  We've chosen the STOP message for our
    * implementation.
    */
   public ShortMessage()
   {
-    this(defaultMessage);   
+    this(defaultMessage);
   }
-  
+
   /**
    * Create a short MIDI message.
-   * 
+   *
    * The data argument should be a valid MIDI message.  Unfortunately the spec
    * does not allow us to throw an InvalidMidiDataException if data is invalid.
-   * 
+   *
    * @param data the message data
    */
   protected ShortMessage(byte[] data)
@@ -171,8 +171,8 @@ public class ShortMessage extends MidiMessage
   }
 
   /**
-   * Set the MIDI message. 
-   * 
+   * Set the MIDI message.
+   *
    * @param status the status byte for this message
    * @param data1 the first data byte for this message
    * @param data2 the second data byte for this message
@@ -189,19 +189,19 @@ public class ShortMessage extends MidiMessage
     if (length > 1)
     {
       if (data1 < 0 || data1 > 127)
-        throw new InvalidMidiDataException("data1 (" + data1 
+        throw new InvalidMidiDataException("data1 (" + data1
                                            + ") must be between 0 and 127.");
       data[1] = (byte) data1;
       if (length > 2)
       {
         if (data2 < 0 || data2 > 127)
-          throw new InvalidMidiDataException("data2 (" + data2 
+          throw new InvalidMidiDataException("data2 (" + data2
                                              + ") must be between 0 and 127.");
         data[2] = (byte) data2;
       }
     }
   }
-  
+
   public void setMessage(int command, int channel, int data1, int data2)
     throws InvalidMidiDataException
   {
@@ -209,10 +209,10 @@ public class ShortMessage extends MidiMessage
     // It currently assumes command and channel are valid values.
     setMessage(command + channel, data1, data2);
   }
-  
+
   /**
    * Set the MIDI message to one that requires no data bytes.
-   * 
+   *
    * @param status the status byte for this message
    * @throws InvalidMidiDataException if status is bad, or requires data
    */
@@ -227,10 +227,10 @@ public class ShortMessage extends MidiMessage
     setMessage(status, 0, 0);
   }
 
-  
+
   /**
    * Return the number of data bytes needed for a given MIDI status byte.
-   * 
+   *
    * @param status the status byte for a short MIDI message
    * @return the number of data bytes needed for this status byte
    * @throws InvalidMidiDataException if status is an invalid status byte
@@ -238,27 +238,27 @@ public class ShortMessage extends MidiMessage
   protected final int getDataLength(int status) throws InvalidMidiDataException
   {
     int originalStatus = status;
-    
+
     if ((status & 0xF0) != 0xF0)
       status &= 0xF0;
-    
+
     switch (status)
     {
-    case NOTE_OFF:  
-    case NOTE_ON:  
-    case POLY_PRESSURE:  
-    case CONTROL_CHANGE:  
+    case NOTE_OFF:
+    case NOTE_ON:
+    case POLY_PRESSURE:
+    case CONTROL_CHANGE:
     case PITCH_BEND:
     case SONG_POSITION_POINTER:
       return 2;
-        
+
     case PROGRAM_CHANGE:
     case CHANNEL_PRESSURE:
     case SONG_SELECT:
     case 0xF5:  // FIXME: unofficial bus select.  Not in spec??
       return 1;
-      
-    case TUNE_REQUEST: 
+
+    case TUNE_REQUEST:
     case END_OF_EXCLUSIVE:
     case TIMING_CLOCK:
     case START:
@@ -267,39 +267,39 @@ public class ShortMessage extends MidiMessage
     case ACTIVE_SENSING:
     case SYSTEM_RESET:
       return 0;
-      
+
     default:
-      throw new InvalidMidiDataException("Invalid status: 0x" 
+      throw new InvalidMidiDataException("Invalid status: 0x"
                                          + Integer.toHexString(originalStatus));
     }
   }
-  
+
   /**
-   * Get the channel information from this MIDI message, assuming it is a 
+   * Get the channel information from this MIDI message, assuming it is a
    * MIDI channel message.
-   * 
+   *
    * @return the MIDI channel for this message
    */
   public int getChannel()
   {
     return data[0] & 0x0F;
   }
-  
+
   /**
    * Get the command nibble from this MIDI message, assuming it is a MIDI
    * channel message.
-   * 
+   *
    * @return the MIDI command for this message
    */
   public int getCommand()
   {
     return data[0] & 0xF0;
   }
-  
+
   /**
-   * Get the first data byte from this message, assuming it exists, and 
+   * Get the first data byte from this message, assuming it exists, and
    * zero otherwise.
-   * 
+   *
    * @return the first data byte or zero if none exists.
    */
   public int getData1()
@@ -309,11 +309,11 @@ public class ShortMessage extends MidiMessage
     else
       return 0;
   }
-  
+
   /**
-   * Get the second data byte from this message, assuming it exists, and 
+   * Get the second data byte from this message, assuming it exists, and
    * zero otherwise.
-   * 
+   *
    * @return the second date byte or zero if none exists.
    */
   public int getData2()
@@ -323,7 +323,7 @@ public class ShortMessage extends MidiMessage
     else
       return 0;
   }
-  
+
   /* Create a deep-copy clone of this object.
    * @see java.lang.Object#clone()
    */

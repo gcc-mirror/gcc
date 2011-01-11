@@ -107,11 +107,11 @@ public class ServiceRegistry
    */
   private IdentityHashMap[] constraints;
 
-  
+
   /**
    * Constructs a <code>ServiceRegistry</code> for the specified
    * service categories.
-   * 
+   *
    * @param categories the categories to support
    *
    * @throws IllegalArgumentException if <code>categories</code> is
@@ -475,8 +475,8 @@ public class ServiceRegistry
         return deregisterServiceProvider(provider, i);
     throw new IllegalArgumentException();
   }
-  
-  
+
+
   /**
    * De-registers a provider from all service categories it
    * implements.
@@ -704,7 +704,7 @@ public class ServiceRegistry
     provs = providers[catid];
     if (provs == null)
       return Collections.EMPTY_LIST.iterator();
-    
+
     result = new ArrayList(provs.size());
     for (Iterator iter = provs.iterator(); iter.hasNext();)
       {
@@ -728,7 +728,7 @@ public class ServiceRegistry
 
                 if (o1 == o2)
                   return 0;
-                
+
                 s = (Set) cons.get(o1);
                 if (s != null && s.contains(o2))
                   return -1;  // o1 < o2
@@ -749,7 +749,7 @@ public class ServiceRegistry
   /**
    * Returns one of the service providers that is a subclass of the
    * specified class.
-   * 
+   *
    * @param providerClass a class to search for.
    */
   public synchronized <T> T getServiceProviderByClass(Class<T> providerClass)
@@ -764,7 +764,7 @@ public class ServiceRegistry
       {
         if (!categories[cat].isAssignableFrom(providerClass))
           continue;
-        
+
         LinkedList provs = providers[cat];
         if (provs == null)
           continue;
@@ -959,4 +959,3 @@ public class ServiceRegistry
     boolean filter(Object provider);
   }
 }
-

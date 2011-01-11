@@ -34,7 +34,7 @@ package org.objectweb.asm;
  * {@link MethodVisitor}. This class can be used as a super class to quickly
  * implement usefull method adapter classes, just by overriding the necessary
  * methods.
- * 
+ *
  * @author Eric Bruneton
  */
 public class MethodAdapter implements MethodVisitor {
@@ -46,7 +46,7 @@ public class MethodAdapter implements MethodVisitor {
 
     /**
      * Constructs a new {@link MethodAdapter} object.
-     * 
+     *
      * @param mv the code visitor to which this adapter must delegate calls.
      */
     public MethodAdapter(final MethodVisitor mv) {

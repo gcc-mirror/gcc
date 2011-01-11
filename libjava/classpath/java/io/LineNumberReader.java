@@ -151,22 +151,22 @@ public class LineNumberReader extends BufferedReader
 
     synchronized (lock)
       {
-	// This is basically the same as BufferedReader.mark.
-	// However, if the previous character was a '\r', we need to
-	// save that 'r', in case the next character is a '\n'.
-	if (pos + readLimit > limit)
-	  {
-	    int saveCR = matchedNewLine ? 1 : 0;
-	    char[] old_buffer = buffer;
-	    if (readLimit > limit)
-	      buffer = new char[saveCR + readLimit];
-	    int copy_start = pos - saveCR;
-	    savedLineNumber = lineNumber;
-	    limit -= copy_start;
-	    System.arraycopy(old_buffer, copy_start, buffer, 0, limit);
-	    pos = saveCR;
-	  }
-	markPos = pos;
+        // This is basically the same as BufferedReader.mark.
+        // However, if the previous character was a '\r', we need to
+        // save that 'r', in case the next character is a '\n'.
+        if (pos + readLimit > limit)
+          {
+            int saveCR = matchedNewLine ? 1 : 0;
+            char[] old_buffer = buffer;
+            if (readLimit > limit)
+              buffer = new char[saveCR + readLimit];
+            int copy_start = pos - saveCR;
+            savedLineNumber = lineNumber;
+            limit -= copy_start;
+            System.arraycopy(old_buffer, copy_start, buffer, 0, limit);
+            pos = saveCR;
+          }
+        markPos = pos;
       }
   }
 
@@ -185,11 +185,11 @@ public class LineNumberReader extends BufferedReader
   {
     synchronized (lock)
       {
-	if (markPos < 0)
-	  throw new IOException("mark never set or invalidated");
-	lineNumber = savedLineNumber;
-	pos = markPos;
-	matchedNewLine = (markPos > 0 && buffer[markPos-1] == '\r');
+        if (markPos < 0)
+          throw new IOException("mark never set or invalidated");
+        lineNumber = savedLineNumber;
+        pos = markPos;
+        matchedNewLine = (markPos > 0 && buffer[markPos-1] == '\r');
       }
   }
 
@@ -237,24 +237,24 @@ public class LineNumberReader extends BufferedReader
   {
     synchronized (lock)
       {
-	skipRedundantLF();
-	if (pos >= limit && fill() < 0)
-	  return -1;
-	char ch = buffer[pos++];
-	
-	if ((matchedNewLine = (ch == '\r')) || ch == '\n')
-	  {
-	    lineNumber++;
-	    return '\n';
-	  }
-	matchedNewLine = false;
-	return (int) ch;
+        skipRedundantLF();
+        if (pos >= limit && fill() < 0)
+          return -1;
+        char ch = buffer[pos++];
+
+        if ((matchedNewLine = (ch == '\r')) || ch == '\n')
+          {
+            lineNumber++;
+            return '\n';
+          }
+        matchedNewLine = false;
+        return (int) ch;
       }
   }
 
   /**
     * This method reads chars from a stream and stores them into a caller
-    * supplied buffer.  It starts storing data at index <code>offset</code> into   
+    * supplied buffer.  It starts storing data at index <code>offset</code> into
     * the buffer and attemps to read <code>len</code> chars.  This method can
     * return before reading the number of chars requested.  The actual number
     * of chars read is returned as an int.  A -1 is returned to indicated the
@@ -288,37 +288,37 @@ public class LineNumberReader extends BufferedReader
 
     if (count <= 0)
       {
-	if (count < 0)
-	  throw new IndexOutOfBoundsException();
-	return 0;
+        if (count < 0)
+          throw new IndexOutOfBoundsException();
+        return 0;
       }
 
     synchronized (lock)
       {
-	if (pos >= limit && fill() < 0)
-	  return -1;
-	
-	int start_offset = offset;
-	boolean matched = matchedNewLine;
-	
-	while (count-- > 0 && pos < limit)
-	  {
-	    char ch = buffer[pos++];
-	    if (ch == '\r')
-	      {
-		lineNumber++;
-		matched = true;
-	      }
-	    else if (ch == '\n' && !matched)
-	      lineNumber++;
-	    else
-	      matched = false;
+        if (pos >= limit && fill() < 0)
+          return -1;
 
-	    buf[offset++] = ch;
-	  }
+        int start_offset = offset;
+        boolean matched = matchedNewLine;
 
-	matchedNewLine = matched;
-	return offset - start_offset;
+        while (count-- > 0 && pos < limit)
+          {
+            char ch = buffer[pos++];
+            if (ch == '\r')
+              {
+                lineNumber++;
+                matched = true;
+              }
+            else if (ch == '\n' && !matched)
+              lineNumber++;
+            else
+              matched = false;
+
+            buf[offset++] = ch;
+          }
+
+        matchedNewLine = matched;
+        return offset - start_offset;
       }
   }
 
@@ -326,20 +326,20 @@ public class LineNumberReader extends BufferedReader
   {
     if (pos > 0 && matchedNewLine)
       {
-	if (pos < limit)
-	  { // fast case
-	    if (buffer[pos] == '\n')
-	      pos++;
-	  }
-	else
-	  { // check whether the next buffer begins with '\n'.
-	    // in that case kill the '\n'.
-	    if (fill() <= 0)
-	      return;
-	    if (buffer[pos] == '\n')
-	      pos++;
-	  }
-	matchedNewLine = true;
+        if (pos < limit)
+          { // fast case
+            if (buffer[pos] == '\n')
+              pos++;
+          }
+        else
+          { // check whether the next buffer begins with '\n'.
+            // in that case kill the '\n'.
+            if (fill() <= 0)
+              return;
+            if (buffer[pos] == '\n')
+              pos++;
+          }
+        matchedNewLine = true;
       }
   }
 
@@ -414,4 +414,3 @@ public class LineNumberReader extends BufferedReader
     return skipped;
   }
 }
-

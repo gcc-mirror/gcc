@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -50,13 +50,13 @@ public final class DefaultProxySelector
   extends ProxySelector
 {
   private static final List<Proxy> proxies = new ArrayList<Proxy>();
-  
+
   static
   {
     // The default proxy selector supports only direct connections.
     proxies.add(Proxy.NO_PROXY);
   }
-  
+
   public DefaultProxySelector()
   {
     // Do nothing by default.
@@ -69,7 +69,7 @@ public final class DefaultProxySelector
 
     // Do nothing by default.
   }
-  
+
   public List<Proxy> select(URI uri)
   {
     if (uri == null)

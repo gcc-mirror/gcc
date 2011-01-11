@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -40,37 +40,37 @@ package java.security.cert;
 import java.util.Set;
 
 /**
-	Public interface for the X.509 Extension.
+        Public interface for the X.509 Extension.
 
-	This is used for X.509 v3 Certificates and CRL v2 (Certificate
-	Revocation Lists) for managing attributes assoicated with
-	Certificates, for managing the hierarchy of certificates,
-	and for managing the distribution of CRL. This extension
-	format is used to define private extensions.
+        This is used for X.509 v3 Certificates and CRL v2 (Certificate
+        Revocation Lists) for managing attributes assoicated with
+        Certificates, for managing the hierarchy of certificates,
+        and for managing the distribution of CRL. This extension
+        format is used to define private extensions.
 
-	Each extensions for a certificate or CRL must be marked
-	either critical or non-critical. If the certificate/CRL 
-	system encounters a critical extension not recognized then 
-	it must reject the certificate. A non-critical extension
-	may be just ignored if not recognized.
+        Each extensions for a certificate or CRL must be marked
+        either critical or non-critical. If the certificate/CRL
+        system encounters a critical extension not recognized then
+        it must reject the certificate. A non-critical extension
+        may be just ignored if not recognized.
 
 
-	The ASN.1 definition for this class is: 
+        The ASN.1 definition for this class is:
 
-	 Extensions  ::=  SEQUENCE SIZE (1..MAX) OF Extension
+         Extensions  ::=  SEQUENCE SIZE (1..MAX) OF Extension
 
-	 Extension  ::=  SEQUENCE  {
-	     extnId        OBJECT IDENTIFIER,
-	     critical      BOOLEAN DEFAULT FALSE,
-	     extnValue     OCTET STRING
-	                   -- contains a DER encoding of a value
-	                   -- of the type registered for use with
-	                   -- the extnId object identifier value
-	 }
- 	
-	@author Mark Benvenuto
+         Extension  ::=  SEQUENCE  {
+             extnId        OBJECT IDENTIFIER,
+             critical      BOOLEAN DEFAULT FALSE,
+             extnValue     OCTET STRING
+                           -- contains a DER encoding of a value
+                           -- of the type registered for use with
+                           -- the extnId object identifier value
+         }
 
-	@since 1.2
+        @author Mark Benvenuto
+
+        @since 1.2
 */
 public interface X509Extension
 {
@@ -79,12 +79,12 @@ public interface X509Extension
      Returns true if the certificate contains a critical extension
      that is not supported.
 
-     @return true if has unsupported extension, false otherwise	
+     @return true if has unsupported extension, false otherwise
   */
   boolean hasUnsupportedCriticalExtension();
 
   /**
-     Returns a set of the CRITICAL extension OIDs from the 
+     Returns a set of the CRITICAL extension OIDs from the
      certificate/CRL that the object implementing this interface
      manages.
 
@@ -94,7 +94,7 @@ public interface X509Extension
   Set<String> getCriticalExtensionOIDs();
 
   /**
-     Returns a set of the NON-CRITICAL extension OIDs from the 
+     Returns a set of the NON-CRITICAL extension OIDs from the
      certificate/CRL that the object implementing this interface
      manages.
 

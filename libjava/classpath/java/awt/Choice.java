@@ -135,7 +135,7 @@ public class Choice extends Component
     {
       return AccessibleRole.COMBO_BOX;
     }
-	  
+
     /**
      * Returns the number of actions associated with this accessible
      * object.  In this case, it is the number of choices available.
@@ -162,7 +162,7 @@ public class Choice extends Component
     {
       return (String) pItems.get(i);
     }
-	  
+
     /**
      * Executes the action with the specified id.  In this case,
      * calling this method provides the same behaviour as would
@@ -175,8 +175,8 @@ public class Choice extends Component
     public boolean doAccessibleAction(int i)
     {
       if (i < 0 || i >= pItems.size())
-	return false;
-	    
+        return false;
+
       Choice.this.select( i );
 
       return true;
@@ -248,14 +248,14 @@ public class Choice extends Component
     if (peer != null)
       ((ChoicePeer) peer).add(item, getItemCount() - 1);
 
-    if (selectedIndex == -1) 
+    if (selectedIndex == -1)
       select( 0 );
   }
 
   /**
    * Adds the specified item to this choice box.
    *
-   * This method is oboslete since Java 2 platform 1.1. Please use 
+   * This method is oboslete since Java 2 platform 1.1. Please use
    * {@link #add(String)} instead.
    *
    * @param item The item to add.
@@ -307,7 +307,7 @@ public class Choice extends Component
     int index = pItems.indexOf(item);
     if (index == -1)
       throw new IllegalArgumentException ("item \""
-					  + item + "\" not found in Choice");
+                                          + item + "\" not found in Choice");
     remove(index);
   }
 
@@ -327,15 +327,15 @@ public class Choice extends Component
 
     if( getItemCount() == 0 )
       selectedIndex = -1;
-    else 
+    else
       {
-	if( selectedIndex > index ) 
-	  selectedIndex--;
-	else if( selectedIndex == index )
-	  selectedIndex = 0;
+        if( selectedIndex > index )
+          selectedIndex--;
+        else if( selectedIndex == index )
+          selectedIndex = 0;
 
-	if( peer != null )
-	  ((ChoicePeer)peer).select( selectedIndex );
+        if( peer != null )
+          ((ChoicePeer)peer).select( selectedIndex );
       }
   }
 
@@ -346,13 +346,13 @@ public class Choice extends Component
   {
     if (getItemCount() <= 0)
       return;
-  
+
     pItems.removeAllElements ();
 
     if (peer != null)
       {
-	ChoicePeer cp = (ChoicePeer) peer;
-	cp.removeAll ();
+        ChoicePeer cp = (ChoicePeer) peer;
+        cp.removeAll ();
       }
 
     selectedIndex = -1;
@@ -367,8 +367,8 @@ public class Choice extends Component
   public synchronized String getSelectedItem()
   {
     return (selectedIndex == -1
-	    ? null
-	    : ((String)pItems.elementAt(selectedIndex)));
+            ? null
+            : ((String)pItems.elementAt(selectedIndex)));
   }
 
   /**
@@ -409,11 +409,11 @@ public class Choice extends Component
     if ((index < 0) || (index >= getItemCount()))
       throw new IllegalArgumentException("Bad index: " + index);
 
-    if( selectedIndex == index ) 
+    if( selectedIndex == index )
       return;
 
     selectedIndex = index;
-    if( peer != null ) 
+    if( peer != null )
       ((ChoicePeer)peer).select( index );
   }
 
@@ -482,9 +482,9 @@ public class Choice extends Component
   {
     super.dispatchEventImpl(e);
 
-    if( e.id <= ItemEvent.ITEM_LAST && e.id >= ItemEvent.ITEM_FIRST && 
-	( item_listeners != null || 
-	  ( eventMask & AWTEvent.ITEM_EVENT_MASK ) != 0 ) )
+    if( e.id <= ItemEvent.ITEM_LAST && e.id >= ItemEvent.ITEM_FIRST &&
+        ( item_listeners != null ||
+          ( eventMask & AWTEvent.ITEM_EVENT_MASK ) != 0 ) )
       processEvent(e);
   }
 
@@ -551,7 +551,7 @@ public class Choice extends Component
       accessibleContext = new AccessibleAWTChoice();
     return accessibleContext;
   }
-  
+
   /**
    * Generate a unique name for this <code>Choice</code>.
    *
@@ -566,4 +566,4 @@ public class Choice extends Component
   {
     return next_choice_number++;
   }
-} // class Choice 
+} // class Choice

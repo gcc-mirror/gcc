@@ -40,17 +40,17 @@ package javax.swing;
 import java.util.Arrays;
 
 /**
- * A sequence of values that represent the dimensions (widths or heights) of 
+ * A sequence of values that represent the dimensions (widths or heights) of
  * some collection of items (for example, the widths of the columns in a table).
- * 
- * @author	Andrew Selkirk
+ *
+ * @author      Andrew Selkirk
  */
 public class SizeSequence
 {
   // TODO: Sun's API specification for this class contains an implementation
   // note regarding the encoding for the element sizes.  We currently use the
   // simple size encoding but we should look at improving this.
-  
+
   /** Storage for the element sizes. */
   private int[] sizes;
 
@@ -63,9 +63,9 @@ public class SizeSequence
   }
 
   /**
-   * Creates a new <code>SizeSequence</code> instance with the specified number 
+   * Creates a new <code>SizeSequence</code> instance with the specified number
    * of elements, each having a size of 0.
-   * 
+   *
    * @param numEntries  the number of elements.
    */
   public SizeSequence(int numEntries)
@@ -76,7 +76,7 @@ public class SizeSequence
   /**
    * Creates a new <code>SizeSequence</code> instance with the specified number
    * of elements all having the same size (<code>value</code>).
-   * 
+   *
    * @param numEntries  the number of elements.
    * @param value  the value for each element.
    */
@@ -87,9 +87,9 @@ public class SizeSequence
   }
 
   /**
-   * Creates a new <code>SizeSequence</code> instance using the specified 
+   * Creates a new <code>SizeSequence</code> instance using the specified
    * element sizes.
-   * 
+   *
    * @param sizes  the element sizes (<code>null</code> not permitted).
    */
   public SizeSequence(int[] sizes)
@@ -99,7 +99,7 @@ public class SizeSequence
 
   /**
    * Sets the size of the element at the specified index.
-   * 
+   *
    * @param index  the index.
    * @param size  the size.
    */
@@ -111,16 +111,16 @@ public class SizeSequence
 
   /**
    * Returns the index of the element that contains the specified position.
-   * 
+   *
    * @param position  the position.
-   * 
+   *
    * @return The index of the element that contains the specified position.
    */
   public int getIndex(int position)
   {
     int i = 0;
-    int runningTotal = 0;  
-    while (i < sizes.length && position >= runningTotal + sizes[i]) 
+    int runningTotal = 0;
+    while (i < sizes.length && position >= runningTotal + sizes[i])
       {
         runningTotal += sizes[i];
         i++;
@@ -131,9 +131,9 @@ public class SizeSequence
   /**
    * Returns the size of the specified element, or 0 if the element index is
    * outside the defined range.
-   * 
+   *
    * @param index  the element index.
-   * 
+   *
    * @return The size of the specified element, or 0 if the element index is
    *     outside the defined range.
    */
@@ -146,7 +146,7 @@ public class SizeSequence
 
   /**
    * Sets the sizes for the elements in the sequence.
-   * 
+   *
    * @param sizes  the element sizes (<code>null</code> not permitted).
    */
   public void setSizes(int[] sizes)
@@ -156,7 +156,7 @@ public class SizeSequence
 
   /**
    * Returns an array containing the sizes for all the elements in the sequence.
-   * 
+   *
    * @return The element sizes.
    */
   public int[] getSizes()
@@ -166,9 +166,9 @@ public class SizeSequence
 
   /**
    * Returns the position of the specified element.
-   * 
+   *
    * @param index  the element index.
-   * 
+   *
    * @return The position.
    */
   public int getPosition(int index)
@@ -186,7 +186,7 @@ public class SizeSequence
    * Inserts new entries into the sequence at the <code>start</code> position.
    * There are <code>length</code> new entries each having the specified
    * <code>value</code>.
-   * 
+   *
    * @param start  the start element.
    * @param length  the number of elements to insert.
    * @param value  the size for each of the new elements.
@@ -197,7 +197,7 @@ public class SizeSequence
     System.arraycopy(sizes, 0, newSizes, 0, start);
     for (int i = start; i < start + length; i++)
       newSizes[i] = value;
-    System.arraycopy(sizes, start, newSizes, start + length, 
+    System.arraycopy(sizes, start, newSizes, start + length,
                      sizes.length - start);
     sizes = newSizes;
   }
@@ -205,7 +205,7 @@ public class SizeSequence
   /**
    * Removes the element(s) at index <code>start</code> (the number of elements
    * removed is <code>length</code>).
-   * 
+   *
    * @param start  the index of the first element to remove.
    * @param length  the number of elements to remove.
    */
@@ -218,7 +218,7 @@ public class SizeSequence
 
     int[] newSizes = new int[sizes.length - length];
     System.arraycopy(sizes, 0, newSizes, 0, start);
-    System.arraycopy(sizes, start + length, newSizes, start, 
+    System.arraycopy(sizes, start + length, newSizes, start,
                      sizes.length - start - length);
     sizes = newSizes;
   }

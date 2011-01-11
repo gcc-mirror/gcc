@@ -225,7 +225,7 @@ public class SecurityManager
    *  are from system classes</li>
    * <li>A check of <code>java.security.AllPermission</code> succeeds.</li>
    * </ul>
-   * 
+   *
    * @return the most recent non-system ClassLoader on the execution stack
    * @deprecated use {@link #checkPermission(Permission)} instead
    */
@@ -248,7 +248,7 @@ public class SecurityManager
    *  are from system classes</li>
    * <li>A check of <code>java.security.AllPermission</code> succeeds.</li>
    * </ul>
-   * 
+   *
    * @return the most recent non-system Class on the execution stack
    * @deprecated use {@link #checkPermission(Permission)} instead
    */
@@ -287,7 +287,7 @@ public class SecurityManager
    *  are from system classes</li>
    * <li>A check of <code>java.security.AllPermission</code> succeeds.</li>
    * </ul>
-   * 
+   *
    * @return the index of the most recent non-system Class on the stack
    * @deprecated use {@link #checkPermission(Permission)} instead
    */
@@ -432,8 +432,8 @@ public class SecurityManager
    */
   public void checkAccess(Thread thread)
   {
-    if (thread.getThreadGroup() != null 
-	&& thread.getThreadGroup().parent == null)
+    if (thread.getThreadGroup() != null
+        && thread.getThreadGroup().parent == null)
       checkPermission(new RuntimePermission("modifyThread"));
   }
 
@@ -1062,10 +1062,10 @@ public class SecurityManager
 
     String list = (String)AccessController.doPrivileged(new PrivilegedAction()
       {
-	public Object run()
+        public Object run()
         {
-	  return Security.getProperty(restriction);
-	}
+          return Security.getProperty(restriction);
+        }
       });
 
     if (list == null || list.equals(""))
@@ -1076,12 +1076,12 @@ public class SecurityManager
     StringTokenizer st = new StringTokenizer(list, ",");
     while (st.hasMoreTokens())
       {
-	if (packageNamePlusDot.startsWith(st.nextToken()))
-	  {
-	    Permission p = new RuntimePermission(permission + packageName);
-	    checkPermission(p);
-	    return;
-	  }
+        if (packageNamePlusDot.startsWith(st.nextToken()))
+          {
+            Permission p = new RuntimePermission(permission + packageName);
+            checkPermission(p);
+            return;
+          }
       }
   }
 }

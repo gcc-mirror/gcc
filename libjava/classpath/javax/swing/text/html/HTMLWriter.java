@@ -1,4 +1,4 @@
-/* HTMLWriter.java -- 
+/* HTMLWriter.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -76,7 +76,7 @@ public class HTMLWriter
   /**
    * We keep a reference of the HTMLDocument passed by the construct.
    */
-  private HTMLDocument htmlDoc = null; 
+  private HTMLDocument htmlDoc = null;
 
   /**
    * Used to keep track of which embedded has been written out.
@@ -84,10 +84,10 @@ public class HTMLWriter
   private HashSet<HTML.Tag> openEmbeddedTagHashSet = null;
 
   private String new_line_str = "" + NEWLINE;
-    
+
   private char[] html_entity_char_arr = {'<',    '>',    '&',     '"'};
 
-  private String[] html_entity_escape_str_arr = {"&lt;", "&gt;", "&amp;", 
+  private String[] html_entity_escape_str_arr = {"&lt;", "&gt;", "&amp;",
                                                  "&quot;"};
 
   // variables used to output Html Fragment
@@ -137,7 +137,7 @@ public class HTMLWriter
     doc_len_remaining = len;
     htmlFragmentParentHashSet = new HashSet<Element>();
   } // public HTMLWriter(Writer writer, HTMLDocument doc, int pos, int len)
-    
+
   /**
    * Call this method to start outputing HTML.
    *
@@ -155,7 +155,7 @@ public class HTMLWriter
         // Normal traversal.
         traverse(rootElem);
       } // if(doc_pos == -1 && doc_len == -1)
-    else    
+    else
       {
         // Html fragment traversal.
         if (doc_pos == -1 || doc_len == -1)
@@ -164,7 +164,7 @@ public class HTMLWriter
 
         startElem = htmlDoc.getCharacterElement(doc_pos);
 
-        int start_offset = startElem.getStartOffset(); 
+        int start_offset = startElem.getStartOffset();
 
         // Positions before start_offset will not be traversed, and thus
         // will not be counted.
@@ -206,7 +206,7 @@ public class HTMLWriter
       } // for(int i = 0; i < tag_arr.length; i++)
 
   } // public void write() throws IOException, BadLocationException
-  
+
   /**
    * Writes all the attributes in the attrSet, except for attrbutes with
    * keys of <code>javax.swing.text.html.HTML.Tag</code>,
@@ -226,7 +226,7 @@ public class HTMLWriter
       {
         Object key = attrNameEnum.nextElement();
         Object value = attrSet.getAttribute(key);
-            
+
         // HTML.Attribute.ENDTAG is an instance, not a class.
         if (!((key instanceof HTML.Tag) || (key instanceof StyleConstants)
           || (key == HTML.Attribute.ENDTAG)))
@@ -240,7 +240,7 @@ public class HTMLWriter
           } // if(!((key instanceof HTML.Tag) || (key instanceof
             //   StyleConstants) || (key == HTML.Attribute.ENDTAG)))
       } // while(attrNameEnum.hasMoreElements())
-        
+
   } // protected void writeAttributes(AttributeSet attrSet) throws IOException
 
   /**
@@ -266,10 +266,10 @@ public class HTMLWriter
       {
         writeRaw("</" + elem_name + ">");
       } // if(isBlockTag(attrSet))
-        
+
   } // protected void emptyTag(Element paramElem)
     //   throws IOException, BadLocationException
-    
+
   /**
    * Determines if it is a block tag or not.
    *
@@ -326,7 +326,7 @@ public class HTMLWriter
     writeAttributes(attrSet);
     writeRaw(">");
 
-    Document tempDocument = 
+    Document tempDocument =
       (Document) attrSet.getAttribute(StyleConstants.ModelAttribute);
 
     writeRaw(tempDocument.getText(0, tempDocument.getLength()));
@@ -528,9 +528,9 @@ public class HTMLWriter
   /**
    * Closes out an unwanted embedded tag. The tags from the
    *  openEmbededTagHashSet not found in attrSet will be written out.
-   * 
+   *
    *  @param attrSet the AttributeSet of the element to write out
-   * 
+   *
    *  @throws IOException on any I/O exceptions
    */
   protected void closeOutUnwantedEmbeddedTags(AttributeSet attrSet)
@@ -542,7 +542,7 @@ public class HTMLWriter
     for (int i = 0; i < tag_arr.length; i++)
       {
         HTML.Tag key = tag_arr[i];
-            
+
         if (!attrSet.isDefined(key))
           {
             writeRaw("</" + key.toString() + ">");
@@ -592,10 +592,10 @@ public class HTMLWriter
 
   } // protected void output(char[] chars, int off, int len)
     //   throws IOException
- 
+
   //-------------------------------------------------------------------------
   // private methods
-  
+
   /**
    * The main method used to traverse through the elements.
    *
@@ -627,7 +627,7 @@ public class HTMLWriter
         else if (matchNameAttribute(attrSet, HTML.Tag.IMPLIED))
           {
             int child_elem_count = currElem.getElementCount();
-                
+
             if (child_elem_count > 0)
               {
                 for (int i = 0; i < child_elem_count; i++)
@@ -665,7 +665,7 @@ public class HTMLWriter
                 indent();
                 writeRaw("<title>");
 
-                String title_str = 
+                String title_str =
                   (String) htmlDoc.getProperty(HTMLDocument.TitleProperty);
 
                 if (title_str != null)
@@ -726,7 +726,7 @@ public class HTMLWriter
             else
               {
                 emptyTag(currElem);
-              } // else 
+              } // else
             } // else
           } // else
 
@@ -842,7 +842,7 @@ public class HTMLWriter
             } // else if(matchNameAttribute(attrSet, HTML.Tag.IMPLIED))
         } // if(synthesizedElement(paramElem))
       else
-        { 
+        {
             // NOTE: 20061030 - fchoong - the isLeaf() condition seems to
             // generate the closest behavior to the RI.
             if (paramElem.isLeaf())
@@ -880,7 +880,7 @@ public class HTMLWriter
                   indent();
                   writeRaw("<title>");
 
-                  String title_str = 
+                  String title_str =
                     (String) htmlDoc.getProperty(HTMLDocument.TitleProperty);
 
                   if (title_str != null)
@@ -941,7 +941,7 @@ public class HTMLWriter
               else
                 {
                   emptyTag(currElem);
-                } // else 
+                } // else
             } // else
         } // else
 

@@ -48,7 +48,7 @@ import java.util.HashMap;
  * in a method whose signature is <tt>void m ()</tt>, the invalid instruction
  * IRETURN, or the invalid sequence IADD L2I will <i>not</i> be detected by
  * this code adapter.
- * 
+ *
  * @author Eric Bruneton
  */
 public class CheckMethodAdapter extends MethodAdapter {
@@ -304,7 +304,7 @@ public class CheckMethodAdapter extends MethodAdapter {
 
     /**
      * Constructs a new {@link CheckMethodAdapter} object.
-     * 
+     *
      * @param cv the code visitor to which this adapter must delegate calls.
      */
     public CheckMethodAdapter(final MethodVisitor cv) {
@@ -622,7 +622,7 @@ public class CheckMethodAdapter extends MethodAdapter {
 
     /**
      * Checks that the type of the given opcode is equal to the given type.
-     * 
+     *
      * @param opcode the opcode to be checked.
      * @param type the expected opcode type.
      */
@@ -634,7 +634,7 @@ public class CheckMethodAdapter extends MethodAdapter {
 
     /**
      * Checks that the given value is a signed byte.
-     * 
+     *
      * @param value the value to be checked.
      * @param msg an message to be used in case of error.
      */
@@ -647,7 +647,7 @@ public class CheckMethodAdapter extends MethodAdapter {
 
     /**
      * Checks that the given value is a signed short.
-     * 
+     *
      * @param value the value to be checked.
      * @param msg an message to be used in case of error.
      */
@@ -660,7 +660,7 @@ public class CheckMethodAdapter extends MethodAdapter {
 
     /**
      * Checks that the given value is an unsigned short.
-     * 
+     *
      * @param value the value to be checked.
      * @param msg an message to be used in case of error.
      */
@@ -674,7 +674,7 @@ public class CheckMethodAdapter extends MethodAdapter {
     /**
      * Checks that the given value is an {@link Integer}, a{@link Float}, a
      * {@link Long}, a {@link Double} or a {@link String}.
-     * 
+     *
      * @param cst the value to be checked.
      */
     static void checkConstant(final Object cst) {
@@ -688,7 +688,7 @@ public class CheckMethodAdapter extends MethodAdapter {
 
     /**
      * Checks that the given string is a valid Java identifier.
-     * 
+     *
      * @param name the string to be checked.
      * @param msg a message to be used in case of error.
      */
@@ -698,7 +698,7 @@ public class CheckMethodAdapter extends MethodAdapter {
 
     /**
      * Checks that the given substring is a valid Java identifier.
-     * 
+     *
      * @param name the string to be checked.
      * @param start index of the first character of the identifier (inclusive).
      * @param end index of the last character of the identifier (exclusive). -1
@@ -733,7 +733,7 @@ public class CheckMethodAdapter extends MethodAdapter {
     /**
      * Checks that the given string is a valid Java identifier or is equal to
      * '&lt;init&gt;' or '&lt;clinit&gt;'.
-     * 
+     *
      * @param name the string to be checked.
      * @param msg a message to be used in case of error.
      */
@@ -763,7 +763,7 @@ public class CheckMethodAdapter extends MethodAdapter {
 
     /**
      * Checks that the given string is a valid internal class name.
-     * 
+     *
      * @param name the string to be checked.
      * @param msg a message to be used in case of error.
      */
@@ -773,7 +773,7 @@ public class CheckMethodAdapter extends MethodAdapter {
 
     /**
      * Checks that the given substring is a valid internal class name.
-     * 
+     *
      * @param name the string to be checked.
      * @param start index of the first character of the identifier (inclusive).
      * @param end index of the last character of the identifier (exclusive). -1
@@ -813,7 +813,7 @@ public class CheckMethodAdapter extends MethodAdapter {
 
     /**
      * Checks that the given string is a valid type descriptor.
-     * 
+     *
      * @param desc the string to be checked.
      * @param canBeVoid <tt>true</tt> if <tt>V</tt> can be considered valid.
      */
@@ -826,7 +826,7 @@ public class CheckMethodAdapter extends MethodAdapter {
 
     /**
      * Checks that a the given substring is a valid type descriptor.
-     * 
+     *
      * @param desc the string to be checked.
      * @param start index of the first character of the identifier (inclusive).
      * @param canBeVoid <tt>true</tt> if <tt>V</tt> can be considered valid.
@@ -890,7 +890,7 @@ public class CheckMethodAdapter extends MethodAdapter {
 
     /**
      * Checks that the given string is a valid method descriptor.
-     * 
+     *
      * @param desc the string to be checked.
      */
     static void checkMethodDesc(final String desc) {
@@ -919,7 +919,7 @@ public class CheckMethodAdapter extends MethodAdapter {
     /**
      * Checks that the given label is not null. This method can also check that
      * the label has been visited.
-     * 
+     *
      * @param label the label to be checked.
      * @param checkVisited <tt>true</tt> to check that the label has been
      *        visited.

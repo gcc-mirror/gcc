@@ -40,53 +40,53 @@ package javax.print.attribute.standard;
 import javax.print.attribute.EnumSyntax;
 
 /**
- * <code>MediaName</code> is a subclass of the <code>Media</code> printing 
- * attribute and provides selection of media to be used by the means of 
- * defined names. The class pre-defines commonly available media names. 
- * This media type enumeration may be used in alternative to 
+ * <code>MediaName</code> is a subclass of the <code>Media</code> printing
+ * attribute and provides selection of media to be used by the means of
+ * defined names. The class pre-defines commonly available media names.
+ * This media type enumeration may be used in alternative to
  * MediaSizeName/MediaTray.
  * <p>
  * <b>IPP Compatibility:</b> MediaName is not an IPP 1.1 attribute on its own.
  * It provides parts of the <code>media</code> attribute type values.
  * </p>
- * 
+ *
  * @author Sven de Marothy
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public class MediaName extends Media
 {
   private static final long serialVersionUID = 4653117714524155448L;
-  
+
   /**
    * The North American letter white medium.
    */
   public static final MediaName NA_LETTER_WHITE = new MediaName(0);
-  
+
   /**
    * The North American letter transparent medium.
    */
   public static final MediaName NA_LETTER_TRANSPARENT = new MediaName(1);
-  
+
   /**
    * The ISO A4 white medium.
    */
   public static final MediaName ISO_A4_WHITE = new MediaName(2);
-  
+
   /**
-   * The ISO A4 transparent medium. 
+   * The ISO A4 transparent medium.
    */
   public static final MediaName ISO_A4_TRANSPARENT = new MediaName(3);
 
-  private static final String[] stringTable = { "na-letter-white", 
-                                                "na-letter-transparent", 
+  private static final String[] stringTable = { "na-letter-white",
+                                                "na-letter-transparent",
                                                 "iso-a4-white",
                                                 "iso-a4-transparent" };
-  
-  private static final MediaName[] enumValueTable = { NA_LETTER_WHITE, 
-                                                      NA_LETTER_TRANSPARENT, 
-                                                      ISO_A4_WHITE, 
-                                                      ISO_A4_TRANSPARENT };  
-  
+
+  private static final MediaName[] enumValueTable = { NA_LETTER_WHITE,
+                                                      NA_LETTER_TRANSPARENT,
+                                                      ISO_A4_WHITE,
+                                                      ISO_A4_TRANSPARENT };
+
   /**
    * Creates a <code>MediaName</code> object.
    *
@@ -96,7 +96,7 @@ public class MediaName extends Media
   {
     super( i );
   }
- 
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.
@@ -118,4 +118,3 @@ public class MediaName extends Media
     return enumValueTable;
   }
 }
-

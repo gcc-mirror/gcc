@@ -44,7 +44,7 @@ import javax.swing.JInternalFrame;
 
 /**
  * An event that indicates a change to a {@link JInternalFrame} component.
- * 
+ *
  * @author Andrew Selkirk
  */
 public class InternalFrameEvent extends AWTEvent
@@ -98,12 +98,12 @@ public class InternalFrameEvent extends AWTEvent
 
   /**
    * Creates a new <code>JInternalFrameEvent</code> instance.
-   * 
+   *
    * @param source  the source of this event (<code>null</code> not permitted).
    * @param id  the event ID of this event (see the constants defined by this
    *     class).
-   *     
-   * @throws IllegalArgumentException if <code>source</code> is 
+   *
+   * @throws IllegalArgumentException if <code>source</code> is
    *     <code>null</code>.
    */
   public InternalFrameEvent(JInternalFrame source, int id)
@@ -114,23 +114,23 @@ public class InternalFrameEvent extends AWTEvent
   /**
    * Returns the <code>JInternalFrame</code> component that is the source for
    * this event.
-   * 
+   *
    * @return The source.
-   * 
+   *
    * @since 1.3
    */
   public JInternalFrame getInternalFrame()
   {
     return (JInternalFrame) source;
   }
-  
+
   /**
-   * Returns a string that indicates the event id.  This is used by the 
+   * Returns a string that indicates the event id.  This is used by the
    * {@link #toString()} method.
-   * 
+   *
    * @return A string that indicates the event id.
    */
-  public String paramString() 
+  public String paramString()
   {
     switch (id) {
       case INTERNAL_FRAME_ACTIVATED:

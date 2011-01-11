@@ -39,7 +39,7 @@ package javax.swing.tree;
 
 /**
  * MutableTreeNode public interface
- 
+
  * @author Andrew Selkirk
  */
 public interface MutableTreeNode extends TreeNode
@@ -79,7 +79,7 @@ public interface MutableTreeNode extends TreeNode
   void remove(MutableTreeNode node);
 
   /**
-   * Sets a user object, the data represented by the node. 
+   * Sets a user object, the data represented by the node.
    *
    * @param object the data
    */

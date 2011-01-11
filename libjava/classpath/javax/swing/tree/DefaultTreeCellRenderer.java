@@ -1,6 +1,6 @@
-/* DefaultTreeCellRenderer.java 
+/* DefaultTreeCellRenderer.java
  Copyright (C) 2002, 2004, 2006, Free Software Foundation, Inc.
- 
+
  This file is part of GNU Classpath.
 
  GNU Classpath is free software; you can redistribute it and/or modify
@@ -54,7 +54,7 @@ import javax.swing.plaf.UIResource;
 
 /**
  * A default implementation of the {@link TreeCellRenderer} interface.
- * 
+ *
  * @author Andrew Selkirk
  */
 public class DefaultTreeCellRenderer
@@ -79,62 +79,62 @@ public class DefaultTreeCellRenderer
 
   /**
    * The icon used to represent non-leaf nodes that are closed.
-   * 
+   *
    * @see #setClosedIcon(Icon)
    */
   protected transient Icon closedIcon;
 
   /**
    * The icon used to represent leaf nodes.
-   * 
+   *
    * @see #setLeafIcon(Icon)
    */
   protected transient Icon leafIcon;
 
   /**
    * The icon used to represent non-leaf nodes that are open.
-   * 
+   *
    * @see #setOpenIcon(Icon)
    */
   protected transient Icon openIcon;
 
   /**
    * The color used for text in selected cells.
-   * 
+   *
    * @see #setTextSelectionColor(Color)
    */
   protected Color textSelectionColor;
 
   /**
    * The color used for text in non-selected cells.
-   * 
+   *
    * @see #setTextNonSelectionColor(Color)
    */
   protected Color textNonSelectionColor;
 
   /**
    * The background color for selected cells.
-   * 
+   *
    * @see #setBackgroundSelectionColor(Color)
    */
   protected Color backgroundSelectionColor;
 
   /**
    * The background color for non-selected cells.
-   * 
+   *
    * @see #setBackgroundNonSelectionColor(Color)
    */
   protected Color backgroundNonSelectionColor;
 
   /**
    * The border color for selected tree cells.
-   * 
+   *
    * @see #setBorderSelectionColor(Color)
    */
   protected Color borderSelectionColor;
 
   /**
-   * Creates a new tree cell renderer with defaults appropriate for the 
+   * Creates a new tree cell renderer with defaults appropriate for the
    * current {@link LookAndFeel}.
    */
   public DefaultTreeCellRenderer()
@@ -154,9 +154,9 @@ public class DefaultTreeCellRenderer
 
   /**
    * Returns the default icon for non-leaf tree cells that are open (expanded).
-   * The icon is fetched from the defaults table for the current 
+   * The icon is fetched from the defaults table for the current
    * {@link LookAndFeel} using the key <code>Tree.openIcon</code>.
-   * 
+   *
    * @return The default icon.
    */
   public Icon getDefaultOpenIcon()
@@ -165,10 +165,10 @@ public class DefaultTreeCellRenderer
   }
 
   /**
-   * Returns the default icon for non-leaf tree cells that are closed (not 
-   * expanded).  The icon is fetched from the defaults table for the current 
+   * Returns the default icon for non-leaf tree cells that are closed (not
+   * expanded).  The icon is fetched from the defaults table for the current
    * {@link LookAndFeel} using the key <code>Tree.closedIcon</code>.
-   * 
+   *
    * @return The default icon.
    */
   public Icon getDefaultClosedIcon()
@@ -177,10 +177,10 @@ public class DefaultTreeCellRenderer
   }
 
   /**
-   * Returns the default icon for leaf tree cells.  The icon is fetched from 
-   * the defaults table for the current {@link LookAndFeel} using the key 
+   * Returns the default icon for leaf tree cells.  The icon is fetched from
+   * the defaults table for the current {@link LookAndFeel} using the key
    * <code>Tree.leafIcon</code>.
-   * 
+   *
    * @return The default icon.
    */
   public Icon getDefaultLeafIcon()
@@ -191,9 +191,9 @@ public class DefaultTreeCellRenderer
   /**
    * Sets the icon to be displayed for non-leaf nodes that are open (expanded).
    * Set this to <code>null</code> if no icon is required.
-   * 
+   *
    * @param icon  the icon (<code>null</code> permitted).
-   * 
+   *
    * @see #getOpenIcon()
    */
   public void setOpenIcon(Icon icon)
@@ -202,11 +202,11 @@ public class DefaultTreeCellRenderer
   }
 
   /**
-   * Returns the icon displayed for non-leaf nodes that are open (expanded).  
+   * Returns the icon displayed for non-leaf nodes that are open (expanded).
    * The default value is initialised from the {@link LookAndFeel}.
-   * 
+   *
    * @return The open icon (possibly <code>null</code>).
-   * 
+   *
    * @see #setOpenIcon(Icon)
    */
   public Icon getOpenIcon()
@@ -215,11 +215,11 @@ public class DefaultTreeCellRenderer
   }
 
   /**
-   * Sets the icon to be displayed for non-leaf nodes that are closed.  Set 
+   * Sets the icon to be displayed for non-leaf nodes that are closed.  Set
    * this to <code>null</code> if no icon is required.
-   * 
+   *
    * @param icon  the icon (<code>null</code> permitted).
-   * 
+   *
    * @see #getClosedIcon()
    */
   public void setClosedIcon(Icon icon)
@@ -228,11 +228,11 @@ public class DefaultTreeCellRenderer
   }
 
   /**
-   * Returns the icon displayed for non-leaf nodes that are closed.  The 
+   * Returns the icon displayed for non-leaf nodes that are closed.  The
    * default value is initialised from the {@link LookAndFeel}.
-   * 
+   *
    * @return The closed icon (possibly <code>null</code>).
-   * 
+   *
    * @see #setClosedIcon(Icon)
    */
   public Icon getClosedIcon()
@@ -241,11 +241,11 @@ public class DefaultTreeCellRenderer
   }
 
   /**
-   * Sets the icon to be displayed for leaf nodes.  Set this to 
+   * Sets the icon to be displayed for leaf nodes.  Set this to
    * <code>null</code> if no icon is required.
-   * 
+   *
    * @param icon  the icon (<code>null</code> permitted).
-   * 
+   *
    * @see #getLeafIcon()
    */
   public void setLeafIcon(Icon icon)
@@ -254,11 +254,11 @@ public class DefaultTreeCellRenderer
   }
 
   /**
-   * Returns the icon displayed for leaf nodes.  The default value is 
+   * Returns the icon displayed for leaf nodes.  The default value is
    * initialised from the {@link LookAndFeel}.
-   * 
+   *
    * @return The leaf icon (possibly <code>null</code>).
-   * 
+   *
    * @see #setLeafIcon(Icon)
    */
   public Icon getLeafIcon()
@@ -268,9 +268,9 @@ public class DefaultTreeCellRenderer
 
   /**
    * Sets the text color for tree cells that are selected.
-   * 
+   *
    * @param c  the color (<code>null</code> permitted).
-   * 
+   *
    * @see #getTextSelectionColor()
    */
   public void setTextSelectionColor(Color c)
@@ -282,9 +282,9 @@ public class DefaultTreeCellRenderer
    * Returns the text color for tree cells that are selected.
    * The default value is obtained from the {@link LookAndFeel} defaults
    * table using the key <code>Tree.selectionForeground</code>.
-   * 
+   *
    * @return The text color for tree cells that are selected.
-   * 
+   *
    * @see #setTextSelectionColor(Color)
    */
   public Color getTextSelectionColor()
@@ -294,9 +294,9 @@ public class DefaultTreeCellRenderer
 
   /**
    * Sets the text color for tree cells that are not selected.
-   * 
+   *
    * @param c  the color (<code>null</code> permitted).
-   * 
+   *
    * @see #getTextNonSelectionColor()
    */
   public void setTextNonSelectionColor(Color c)
@@ -308,9 +308,9 @@ public class DefaultTreeCellRenderer
    * Returns the text color for tree cells that are not selected.
    * The default value is obtained from the {@link LookAndFeel} defaults
    * table using the key <code>Tree.selectionForeground</code>.
-   * 
+   *
    * @return The background color for tree cells that are not selected.
-   * 
+   *
    * @see #setTextgroundNonSelectionColor(Color)
    */
   public Color getTextNonSelectionColor()
@@ -320,9 +320,9 @@ public class DefaultTreeCellRenderer
 
   /**
    * Sets the background color for tree cells that are selected.
-   * 
+   *
    * @param c  the color (<code>null</code> permitted).
-   * 
+   *
    * @see #getBackgroundSelectionColor()
    */
   public void setBackgroundSelectionColor(Color c)
@@ -334,9 +334,9 @@ public class DefaultTreeCellRenderer
    * Returns the background color for tree cells that are selected.
    * The default value is obtained from the {@link LookAndFeel} defaults
    * table using the key <code>Tree.selectionBackground</code>.
-   * 
+   *
    * @return The background color for tree cells that are selected.
-   * 
+   *
    * @see #setBackgroundSelectionColor(Color)
    */
   public Color getBackgroundSelectionColor()
@@ -346,9 +346,9 @@ public class DefaultTreeCellRenderer
 
   /**
    * Sets the background color for tree cells that are not selected.
-   * 
+   *
    * @param c  the color (<code>null</code> permitted).
-   * 
+   *
    * @see #getBackgroundNonSelectionColor()
    */
   public void setBackgroundNonSelectionColor(Color c)
@@ -360,9 +360,9 @@ public class DefaultTreeCellRenderer
    * Returns the background color for tree cells that are not selected.
    * The default value is obtained from the {@link LookAndFeel} defaults
    * table using the key <code>Tree.textBackground</code>.
-   * 
+   *
    * @return The background color for tree cells that are not selected.
-   * 
+   *
    * @see #setBackgroundNonSelectionColor(Color)
    */
   public Color getBackgroundNonSelectionColor()
@@ -372,9 +372,9 @@ public class DefaultTreeCellRenderer
 
   /**
    * Sets the border color for tree cells that are selected.
-   * 
+   *
    * @param c  the color (<code>null</code> permitted).
-   * 
+   *
    * @see #getBorderSelectionColor()
    */
   public void setBorderSelectionColor(Color c)
@@ -386,9 +386,9 @@ public class DefaultTreeCellRenderer
    * Returns the border color for tree cells that are selected.
    * The default value is obtained from the {@link LookAndFeel} defaults
    * table using the key <code>Tree.selectionBorderColor</code>.
-   * 
+   *
    * @return The border color for tree cells that are selected.
-   * 
+   *
    * @see #setBorderSelectionColor(Color)
    */
   public Color getBorderSelectionColor()
@@ -398,9 +398,9 @@ public class DefaultTreeCellRenderer
 
   /**
    * Sets the font.
-   * 
+   *
    * @param f the font.
-   * 
+   *
    * @see #getFont()
    */
   public void setFont(Font f)
@@ -412,7 +412,7 @@ public class DefaultTreeCellRenderer
 
   /**
    * Sets the background color.
-   * 
+   *
    * @param c the color.
    */
   public void setBackground(Color c)
@@ -425,7 +425,7 @@ public class DefaultTreeCellRenderer
   /**
    * Returns a component (in fact <code>this</code>) that can be used to
    * render a tree cell with the specified state.
-   * 
+   *
    * @param tree  the tree that the cell belongs to.
    * @param val  the cell value.
    * @param selected  indicates whether or not the cell is selected.
@@ -433,7 +433,7 @@ public class DefaultTreeCellRenderer
    * @param leaf  indicates whether or not the cell is a leaf in the tree.
    * @param row  the row index.
    * @param hasFocus  indicates whether or not the cell has the focus.
-   * 
+   *
    * @return <code>this</code>.
    */
   public Component getTreeCellRendererComponent(JTree tree, Object val,
@@ -461,7 +461,7 @@ public class DefaultTreeCellRenderer
       {
         super.setBackground(getBackgroundSelectionColor());
         setForeground(getTextSelectionColor());
-        
+
         if (hasFocus)
           setBorderSelectionColor(UIManager.getLookAndFeelDefaults().
                                   getColor("Tree.selectionBorderColor"));
@@ -480,9 +480,9 @@ public class DefaultTreeCellRenderer
 
   /**
    * Returns the current font.
-   * 
+   *
    * @return The current font.
-   * 
+   *
    * @see #setFont(Font)
    */
   public Font getFont()
@@ -492,7 +492,7 @@ public class DefaultTreeCellRenderer
 
   /**
    * Paints the value. The background is filled based on selected.
-   * 
+   *
    * @param g the graphics device.
    */
   public void paint(Graphics g)
@@ -504,25 +504,25 @@ public class DefaultTreeCellRenderer
     else
       {
         bgColor = getBackgroundNonSelectionColor();
-	if (bgColor == null)
+        if (bgColor == null)
           bgColor = getBackground();
       }
     // Paint background.
     int xOffset = -1;
     if (bgColor != null)
       {
-	xOffset = getXOffset();
-	g.setColor(bgColor);
-	g.fillRect(xOffset, 0, getWidth() - xOffset, getHeight());
+        xOffset = getXOffset();
+        g.setColor(bgColor);
+        g.fillRect(xOffset, 0, getWidth() - xOffset, getHeight());
       }
 
     if (hasFocus)
       {
         if (drawsFocusBorderAroundIcon)
           xOffset = 0;
-	else if (xOffset == -1)
+        else if (xOffset == -1)
           xOffset = getXOffset();
-	paintFocus(g, xOffset, 0, getWidth() - xOffset, getHeight());
+        paintFocus(g, xOffset, 0, getWidth() - xOffset, getHeight());
       }
     super.paint(g);
   }
@@ -536,7 +536,7 @@ public class DefaultTreeCellRenderer
     if (col != null)
       {
         g.setColor(col);
-	g.drawRect(x, y, w - 1, h - 1);
+        g.drawRect(x, y, w - 1, h - 1);
       }
   }
 
@@ -557,7 +557,7 @@ public class DefaultTreeCellRenderer
 
   /**
    * Returns the preferred size of the cell.
-   * 
+   *
    * @return The preferred size of the cell.
    */
   public Dimension getPreferredSize()
@@ -565,7 +565,7 @@ public class DefaultTreeCellRenderer
     Dimension size = super.getPreferredSize();
     size.width += 3;
     return size;
-  } 
+  }
 
   /**
    * For performance reasons, this method is overridden to do nothing.
@@ -573,7 +573,7 @@ public class DefaultTreeCellRenderer
   public void validate()
   {
     // Overridden for performance reasons.
-  } 
+  }
 
   /**
    * For performance reasons, this method is overridden to do nothing.
@@ -581,11 +581,11 @@ public class DefaultTreeCellRenderer
   public void revalidate()
   {
     // Overridden for performance reasons.
-  } 
+  }
 
   /**
    * For performance reasons, this method is overridden to do nothing.
-   * 
+   *
    * @param tm ignored
    * @param x coordinate of the region to mark as dirty
    * @param y coordinate of the region to mark as dirty
@@ -595,26 +595,26 @@ public class DefaultTreeCellRenderer
   public void repaint(long tm, int x, int y, int width, int height)
   {
     // Overridden for performance reasons.
-  } 
+  }
 
   /**
    * For performance reasons, this method is overridden to do nothing.
-   * 
+   *
    * @param area  the area to repaint.
    */
   public void repaint(Rectangle area)
   {
     // Overridden for performance reasons.
-  } 
+  }
 
   /**
    * For performance reasons, this method is overridden to do nothing.
-   * 
+   *
    * @param name  the property name.
    * @param oldValue  the old value.
    * @param newValue  the new value.
    */
-  protected void firePropertyChange(String name, Object oldValue, 
+  protected void firePropertyChange(String name, Object oldValue,
                                     Object newValue)
   {
     // Overridden for performance reasons.
@@ -622,7 +622,7 @@ public class DefaultTreeCellRenderer
 
   /**
    * For performance reasons, this method is overridden to do nothing.
-   * 
+   *
    * @param name  the property name.
    * @param oldValue  the old value.
    * @param newValue  the new value.
@@ -634,7 +634,7 @@ public class DefaultTreeCellRenderer
 
   /**
    * For performance reasons, this method is overridden to do nothing.
-   * 
+   *
    * @param name  the property name.
    * @param oldValue  the old value.
    * @param newValue  the new value.
@@ -646,7 +646,7 @@ public class DefaultTreeCellRenderer
 
   /**
    * For performance reasons, this method is overridden to do nothing.
-   * 
+   *
    * @param name  the property name.
    * @param oldValue  the old value.
    * @param newValue  the new value.
@@ -654,11 +654,11 @@ public class DefaultTreeCellRenderer
   public void firePropertyChange(String name, short oldValue, short newValue)
   {
     // Overridden for performance reasons.
-  } 
+  }
 
   /**
    * For performance reasons, this method is overridden to do nothing.
-   * 
+   *
    * @param name  the property name.
    * @param oldValue  the old value.
    * @param newValue  the new value.
@@ -670,7 +670,7 @@ public class DefaultTreeCellRenderer
 
   /**
    * For performance reasons, this method is overridden to do nothing.
-   * 
+   *
    * @param name  the property name.
    * @param oldValue  the old value.
    * @param newValue  the new value.
@@ -682,7 +682,7 @@ public class DefaultTreeCellRenderer
 
   /**
    * For performance reasons, this method is overridden to do nothing.
-   * 
+   *
    * @param name  the property name.
    * @param oldValue  the old value.
    * @param newValue  the new value.
@@ -694,7 +694,7 @@ public class DefaultTreeCellRenderer
 
   /**
    * For performance reasons, this method is overridden to do nothing.
-   * 
+   *
    * @param name  the property name.
    * @param oldValue  the old value.
    * @param newValue  the new value.
@@ -706,15 +706,15 @@ public class DefaultTreeCellRenderer
 
   /**
    * For performance reasons, this method is overridden to do nothing.
-   * 
+   *
    * @param name  the property name.
    * @param oldValue  the old value.
    * @param newValue  the new value.
    */
-  public void firePropertyChange(String name, boolean oldValue, 
+  public void firePropertyChange(String name, boolean oldValue,
                                  boolean newValue)
   {
     //  Overridden for performance reasons.
-  } 
+  }
 
-} 
+}

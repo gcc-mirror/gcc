@@ -74,7 +74,7 @@ public abstract class NameComponentHelper
       {
         BAD_OPERATION bad = new BAD_OPERATION("Name component expected");
         bad.initCause(ex);
-        bad.minor = Minor.Any;        
+        bad.minor = Minor.Any;
         throw bad;
       }
   }
@@ -113,7 +113,7 @@ public abstract class NameComponentHelper
   public static TypeCode type()
   {
     ORB orb = OrbRestricted.Singleton;
-    
+
     StructMember[] members = new StructMember[ 2 ];
     TypeCode member;
     member = orb.create_string_tc(0);

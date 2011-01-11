@@ -61,8 +61,8 @@ public abstract class AbstractSelectionKey extends SelectionKey
   {
     if (isValid())
       {
-	((AbstractSelector) selector()).cancelKey(this);
-	cancelled = true;
+        ((AbstractSelector) selector()).cancelKey(this);
+        cancelled = true;
       }
   }
 

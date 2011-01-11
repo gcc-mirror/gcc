@@ -1,4 +1,4 @@
-/* DomIterator.java -- 
+/* DomIterator.java --
    Copyright (C) 1999, 2000, 2001, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -50,21 +50,21 @@ import org.w3c.dom.traversal.NodeIterator;
  * <p> "NodeIterator" implementation, usable with any L2 DOM which
  * supports MutationEvents. </p>
  *
- * @author David Brownell 
+ * @author David Brownell
  */
 public final class DomIterator
   implements NodeIterator, EventListener
 {
-  
+
   private Node reference;
   private boolean right;
   private boolean done;
-  
+
   private final Node root;
   private final int whatToShow;
   private final NodeFilter filter;
   private final boolean expandEntityReferences;
-  
+
   /**
    * Constructs and initializes an iterator.
    */
@@ -73,22 +73,22 @@ public final class DomIterator
                         NodeFilter filter,
                         boolean entityReferenceExpansion)
   {
-    if (!root.isSupported("MutationEvents", "2.0")) 
+    if (!root.isSupported("MutationEvents", "2.0"))
       {
         throw new DomDOMException(DOMException.NOT_SUPPORTED_ERR,
                         "Iterator needs mutation events", root, 0);
       }
-	
+
     this.root = root;
     this.whatToShow = whatToShow;
     this.filter = filter;
     this.expandEntityReferences = entityReferenceExpansion;
-    
+
     // start condition:  going right, seen nothing yet.
     reference = null;
     right = true;
-    
-    EventTarget	target = (EventTarget) root;
+
+    EventTarget target = (EventTarget) root;
     target.addEventListener("DOMNodeRemoved", this, false);
   }
 
@@ -100,7 +100,7 @@ public final class DomIterator
    */
   public void detach()
   {
-    EventTarget	target = (EventTarget) root;
+    EventTarget target = (EventTarget) root;
     target.removeEventListener("DOMNodeRemoved", this, false);
     done = true;
   }
@@ -114,7 +114,7 @@ public final class DomIterator
   {
     return expandEntityReferences;
   }
-    
+
   /**
    * <b>DOM L2</b>
    * Returns the filter provided during construction.
@@ -123,7 +123,7 @@ public final class DomIterator
   {
     return filter;
   }
-    
+
   /**
    * <b>DOM L2</b>
    * Returns the root of the tree this is iterating through.
@@ -132,7 +132,7 @@ public final class DomIterator
   {
     return root;
   }
-    
+
   /**
    * <b>DOM L2</b>
    * Returns the mask of flags provided during construction.
@@ -141,7 +141,7 @@ public final class DomIterator
   {
     return whatToShow;
   }
-    
+
   /**
    * <b>DOM L2</b>
    * Returns the next node in a forward iteration, masked and filtered.
@@ -228,7 +228,7 @@ public final class DomIterator
       }
     return leaf;
   }
-    
+
   //
   // Returns the immediate successor in a forward (or backward)
   // document order walk, sans filtering ... except that it knows
@@ -253,13 +253,13 @@ public final class DomIterator
       {
         return here.getFirstChild();
       }
-    
+
     // There's no way up or sideways from the root, so if we
     // couldn't move down to a child, there's nowhere to go.
     //
     if (here == root)
       return null;
-    
+
     //
     // Siblings ... if forward, we visit them, if backwards
     // we visit their children first.
@@ -284,7 +284,7 @@ public final class DomIterator
           }
         return next;
       }
-	
+
     //
     // We can't go down or lateral -- it's up, then.  The logic is
     // the converse of what's above:  backwards is easy (the parent
@@ -295,7 +295,7 @@ public final class DomIterator
       {
         return next;
       }
-    
+
     Node temp = null;
     while (next != null
            && next != root
@@ -303,7 +303,7 @@ public final class DomIterator
       {
         next = next.getParentNode();
       }
-    
+
     // If we have exceeded the root node then stop traversing.
     if (next == root.getParentNode())
       {
@@ -324,7 +324,7 @@ public final class DomIterator
   {
     MutationEvent event;
     Node ancestor, removed;
-    
+
     if (reference == null
         || !"DOMNodeRemoved".equals(e.getType())
         || e.getEventPhase() != Event.BUBBLING_PHASE)
@@ -372,10 +372,9 @@ search:
           }
         return;
       }
-	
+
     // The current DOM WD talks about a special case here;
     // I've not yet seen it.
     }
-  
-}
 
+}

@@ -42,15 +42,15 @@ import java.io.Serializable;
 
 /**
  * Means an internal failure in the ORB.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public final class INTERNAL
   extends SystemException
   implements Serializable
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 3771336866139357605L;
 

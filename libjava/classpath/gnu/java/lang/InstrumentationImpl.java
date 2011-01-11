@@ -66,7 +66,7 @@ public final class InstrumentationImpl implements Instrumentation
   private ArrayList<ClassFileTransformer> transformers =
     new ArrayList<ClassFileTransformer>();
 
-  
+
   InstrumentationImpl()
   {
   }
@@ -76,7 +76,7 @@ public final class InstrumentationImpl implements Instrumentation
    * to the instrumentation. Each time a class is defined
    * or redefined, the <code>transform</code> method of the
    * <code>transformer</code> object is called.
-   * 
+   *
    * @param transformer the transformer to add
    * @throws NullPointerException if transformer is null
    */
@@ -89,11 +89,11 @@ public final class InstrumentationImpl implements Instrumentation
         transformers.add(transformer);
       }
   }
-  
+
   /**
    * Removes the given transformer from the set of transformers
    * this Instrumentation object has.
-   * 
+   *
    * @param transformer the transformer to remove
    * @return true if the transformer was found and removed, false if
    * the transformer was not found
@@ -103,8 +103,8 @@ public final class InstrumentationImpl implements Instrumentation
   {
     if (transformer == null)
       throw new NullPointerException();
-    
-    boolean result; 
+
+    boolean result;
     synchronized (transformers)
       {
         result = transformers.remove(transformer);
@@ -114,22 +114,22 @@ public final class InstrumentationImpl implements Instrumentation
 
   /**
    * Returns if the current JVM supports class redefinition
-   * 
+   *
    * @return true if the current JVM supports class redefinition
    */
   public boolean isRedefineClassesSupported()
   {
     return VMInstrumentationImpl.isRedefineClassesSupported();
   }
-    
+
   /**
    * Redefine classes present in the definitions array, with
    * the corresponding class files.
    *
    * @param definitions an array of classes to redefine
-   * 
-   * @throws ClassNotFoundException if a class cannot be found 
-   * @throws UnmodifiableClassException if a class cannot be modified 
+   *
+   * @throws ClassNotFoundException if a class cannot be found
+   * @throws UnmodifiableClassException if a class cannot be modified
    * @throws UnsupportedOperationException if the JVM does not support
    * redefinition or the redefinition made unsupported changes
    * @throws ClassFormatError if a class file is not valid
@@ -139,7 +139,7 @@ public final class InstrumentationImpl implements Instrumentation
    * are unsupported
    * @throws ClassCircularityError if circularity occured with the new
    * classes
-   * @throws LinkageError if a linkage error occurs 
+   * @throws LinkageError if a linkage error occurs
    * @throws NullPointerException if the definitions array is null, or any
    * of its element
    *
@@ -153,14 +153,14 @@ public final class InstrumentationImpl implements Instrumentation
   {
     if (!isRedefineClassesSupported())
       throw new UnsupportedOperationException();
-    
+
     VMInstrumentationImpl.redefineClasses(this, definitions);
   }
 
 
   /**
    * Get all the classes loaded by the JVM.
-   * 
+   *
    * @return an array containing all the classes loaded by the JVM. The array
    * is empty if no class is loaded.
    */
@@ -171,9 +171,9 @@ public final class InstrumentationImpl implements Instrumentation
 
   /**
    * Get all the classes loaded by a given class loader
-   * 
+   *
    * @param loader the loader
-   * 
+   *
    * @return an array containing all the classes loaded by the given loader.
    * The array is empty if no class was loaded by the loader.
    */
@@ -184,7 +184,7 @@ public final class InstrumentationImpl implements Instrumentation
 
   /**
    * Get the size of an object.
-   * 
+   *
    * @param objectToSize the object
    * @return the size of the object
    * @throws NullPointerException if objectToSize is null.
@@ -207,12 +207,12 @@ public final class InstrumentationImpl implements Instrumentation
    * @param protectionDomain the protection domain of the class being defined
    * or redefined
    * @param classfileBuffer the input byte buffer in class file format
-   * 
+   *
    * @return the new class file
    */
   public byte[] callTransformers(ClassLoader loader, String className,
-				 Class<?> classBeingRedefined, ProtectionDomain protectionDomain, 
-				 byte[] classfileBuffer)
+                                 Class<?> classBeingRedefined, ProtectionDomain protectionDomain,
+                                 byte[] classfileBuffer)
   {
     byte[] newBuffer = null;
     byte[] oldBuffer = classfileBuffer;
@@ -227,13 +227,13 @@ public final class InstrumentationImpl implements Instrumentation
               {
                 newBuffer = current.transform(loader, className,
                   classBeingRedefined, protectionDomain, oldBuffer);
-	      }
-	    catch (IllegalClassFormatException ignored)
-	      {
+              }
+            catch (IllegalClassFormatException ignored)
+              {
                 //IGNORED
-	      }
+              }
             if (newBuffer != null)
-      	      oldBuffer = newBuffer;
+              oldBuffer = newBuffer;
           }
       }
     return oldBuffer;

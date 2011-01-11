@@ -48,11 +48,11 @@ import org.omg.CORBA.TCKind;
 public class StringTypeCode
   extends PrimitiveTypeCode
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1;
-  
+
   private int len = 0;
 
   /**

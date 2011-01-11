@@ -109,10 +109,10 @@ public class GtkGenericPeer
     this.awtWidget = awtWidget;
   }
 
-  protected void postActionEvent (String command, int mods) 
+  protected void postActionEvent (String command, int mods)
   {
-    q().postEvent (new ActionEvent (awtWidget, ActionEvent.ACTION_PERFORMED, 
-				  command, mods));
+    q().postEvent (new ActionEvent (awtWidget, ActionEvent.ACTION_PERFORMED,
+                                  command, mods));
   }
 
   // Return a unique integer for use in the native state mapping
@@ -123,7 +123,7 @@ public class GtkGenericPeer
     // Let's assume this will never wrap.
     return next_native_state++;
   }
-  
+
   /**
    * Helper method to set Font for Gtk Widget.
    */

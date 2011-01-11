@@ -46,7 +46,7 @@ import gnu.classpath.jdwp.id.ReferenceTypeId;
 /**
  * Restricts reported exceptions by their class and whether they are caught
  * or uncaught.
- * 
+ *
  * This modifier can be used with exception event kinds only.
  *
  * @author Keith Seitz  (keiths@redhat.com)
@@ -67,7 +67,7 @@ public class ExceptionOnlyFilter
    * @throws InvalidClassException if refid is invalid
    */
   public ExceptionOnlyFilter (ReferenceTypeId refId, boolean caught,
-			      boolean uncaught)
+                              boolean uncaught)
     throws InvalidClassException
   {
     if (refId != null && refId.getReference().get() == null)
@@ -88,10 +88,10 @@ public class ExceptionOnlyFilter
     return _refId;
   }
 
-  
+
   /**
    * Does the given event match the filter?
-   * 
+   *
    * @param event the <code>Event</code> to scrutinize
    */
   public boolean matches(Event event)
@@ -103,7 +103,7 @@ public class ExceptionOnlyFilter
       {
         try
           {
-            Class klass 
+            Class klass
               = (Class) event.getParameter(Event.EVENT_EXCEPTION_CLASS);
             classMatch = klass == _refId.getType();
           }
@@ -112,12 +112,12 @@ public class ExceptionOnlyFilter
             classMatch = false;
           }
       }
-    
+
     // check against the caught and uncaught options
-    Boolean caught 
+    Boolean caught
       = (Boolean) event.getParameter(Event.EVENT_EXCEPTION_CAUGHT);
 
     return classMatch && ((caught.booleanValue()) ? _caught : _uncaught);
   }
-  
+
 }

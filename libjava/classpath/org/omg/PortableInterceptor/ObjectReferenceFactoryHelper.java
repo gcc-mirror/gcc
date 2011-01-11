@@ -61,7 +61,7 @@ public abstract class ObjectReferenceFactoryHelper
 {
   /**
    * Get the type code of the {@link ObjectReferenceFactory}.
-   * 
+   *
    * @return value type code with the agreed id, named "ObjectReferenceFactory",
    *         abstract, no members, no base type.
    */

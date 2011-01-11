@@ -112,7 +112,7 @@ public abstract class InvalidNameHelper
    */
   public static TypeCode type()
   {
-    return OrbRestricted.Singleton.create_struct_tc(id(), 
+    return OrbRestricted.Singleton.create_struct_tc(id(),
       "InvalidName", new StructMember[0]);
   }
 

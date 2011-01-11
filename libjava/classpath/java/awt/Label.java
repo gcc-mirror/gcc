@@ -1,5 +1,5 @@
 /* Label.java -- Java label widget
-   Copyright (C) 1999, 2000, 2002, 2004, 2005, 2006,  Free Software 
+   Copyright (C) 1999, 2000, 2002, 2004, 2005, 2006,  Free Software
    Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -76,7 +76,7 @@ public class Label extends Component implements Accessible
 
   /**
    * @serial Indicates the alignment of the text within this label's window.
-   * This is one of the constants in this class.  The default value is 
+   * This is one of the constants in this class.  The default value is
    * <code>LEFT</code>.
    */
   private int alignment;
@@ -211,7 +211,7 @@ public class Label extends Component implements Accessible
   protected String paramString()
   {
     return ("text=" + getText() + ",alignment=" +
-  	  getAlignment() + "," + super.paramString());
+          getAlignment() + "," + super.paramString());
   }
 
   /**
@@ -280,7 +280,7 @@ public class Label extends Component implements Accessible
   {
     return "label" + getUniqueLong();
   }
-  
+
   /**
    * The number used to generate the name returned by getName.
    */
@@ -292,4 +292,3 @@ public class Label extends Component implements Accessible
   }
 
 }
-

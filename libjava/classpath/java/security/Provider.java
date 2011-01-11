@@ -48,7 +48,7 @@ import java.util.Properties;
  * Providers are installed by name and version number. See the static
  * initializer of the {@link java.security.Security} class for the default
  * security providers installed by this class library.
- * 
+ *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
 public abstract class Provider
@@ -99,7 +99,7 @@ public abstract class Provider
 
   /**
    * This method retunrs the version number of this <code>Provider</code>.
-   * 
+   *
    * @return The <code>Provider</code>'s version number.
    */
   public double getVersion()
@@ -126,7 +126,7 @@ public abstract class Provider
    * <code>name</code> is this provider's name. For the default implementation
    * this translates into a {@link SecurityManager#checkPermission(Permission)}
    * for a <code>SecurityPermission("putProviderProperty." + name)</code>.
-   * 
+   *
    * @param key The property key.
    * @param value The property value.
    * @return The previous value of the specified property (<code>key</code>),
@@ -162,7 +162,7 @@ public abstract class Provider
    * <code>name</code> is this provider's name. For the default implementation
    * this translates into a {@link SecurityManager#checkPermission(Permission)}
    * for a <code>SecurityPermission("removeProviderProperty." + name)</code>.
-   * 
+   *
    * @param key The key to remove
    * @return The previous value for this key, or <code>null</code> if no
    * previous value.
@@ -206,7 +206,7 @@ public abstract class Provider
   public String toString()
   {
     return (getClass().getName() + ": name=" + getName() + " version=" +
-	    version);
+            version);
   }
 
   private Object toCanonicalKey(Object key)

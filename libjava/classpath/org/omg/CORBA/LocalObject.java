@@ -250,21 +250,21 @@ public class LocalObject
   {
     throw new NO_IMPLEMENT(INAPPROPRIATE);
   }
-  
+
   /**
    * This method is called from <code>rmic</code> generated stubs if the
    * {@link Util#isLocal}, called passing <code>this</code> as parameter,
    * returns true. If the method returns null, the requested method is then
    * invoked on <code>this</code>. Else it is invoked on the returned object,
    * casting it into the interface that the local object implements. In this
-   * case, the generated stub also later calls 
+   * case, the generated stub also later calls
    * {@link #_servant_postinvoke(ServantObject)}, passing that returned target
    * as parameter.
-   * 
+   *
    * @param operation the name of the method being invoked.
-   * @param expectedType the interface that the returned servant 
+   * @param expectedType the interface that the returned servant
    * object must implement.
-   * 
+   *
    * @throws NO_IMPLEMENT always. If used, the method must be overridden.
    */
   @SuppressWarnings("unchecked") // Needed for API compatibility
@@ -272,28 +272,28 @@ public class LocalObject
   {
     throw new NO_IMPLEMENT(INAPPROPRIATE);
   }
-  
-  
+
+
   /**
    * This method is called from <code>rmic</code> generated stubs if the
    * {@link Util#isLocal}, called passing <code>this</code> as parameter,
    * returns true, and the {@link #_servant_preinvoke} return non-null object.
    * The stub then invokes the requrested method on that returned object and
    * later calls _servant_postinvoke, passing that returned target as parameter.
-   * 
+   *
    * @param servant the object that has served as the invocation target for the
    * current operation.
    */
   public void _servant_postinvoke(ServantObject servant)
   {
   }
-  
+
   /**
-   * Invokes the operation. This method takes the OutputStream that was previously 
-   * returned by a {@link #_request(String)} and returns an InputStream which 
+   * Invokes the operation. This method takes the OutputStream that was previously
+   * returned by a {@link #_request(String)} and returns an InputStream which
    * contains the reply. Up till jdk 1.5 inclusive this method is marked as
    * unimplemented.
-   * 
+   *
    * @throws NO_IMPLEMENT always.
    */
   public InputStream _invoke(OutputStream output)
@@ -301,23 +301,23 @@ public class LocalObject
   {
     throw new NO_IMPLEMENT(INAPPROPRIATE);
   }
-  
+
   /**
    * While it may look that this should return true, the jdk 1.5 API states
    * that it must throw NO_IMPLEMENT instead. The rmi stubs do not call this
    * method to check if the object is local; they call {@link Util#isLocal}
-   * instead (passing <code>this</code> as parameter).  
-   * 
+   * instead (passing <code>this</code> as parameter).
+   *
    * @return never.
-   * 
+   *
    * @throws NO_IMPLEMENT always.
    */
   public boolean _is_local()
   {
     throw new NO_IMPLEMENT(INAPPROPRIATE);
   }
-  
-  
+
+
   /**
    * This method is not appropriate for the local objects and just
    * throws an exception.
@@ -326,31 +326,31 @@ public class LocalObject
    */
   public ORB _orb()
   {
-    throw new NO_IMPLEMENT(INAPPROPRIATE);    
+    throw new NO_IMPLEMENT(INAPPROPRIATE);
   }
-  
+
   /**
    * This method is not appropriate for the local objects and just
    * throws an exception.
    *
    * @throws NO_IMPLEMENT, always.
    */
-  public void _releaseReply(InputStream input) 
+  public void _releaseReply(InputStream input)
   {
-    throw new NO_IMPLEMENT(INAPPROPRIATE);    
+    throw new NO_IMPLEMENT(INAPPROPRIATE);
   }
-  
+
   /**
    * This method is not appropriate for the local objects and just
    * throws an exception.
    *
    * @throws NO_IMPLEMENT, always.
    */
-  public OutputStream _request(String operation, boolean responseExpected) 
+  public OutputStream _request(String operation, boolean responseExpected)
   {
-    throw new NO_IMPLEMENT(INAPPROPRIATE);    
+    throw new NO_IMPLEMENT(INAPPROPRIATE);
   }
-  
+
   /**
    * This method is not appropriate for the local objects and just
    * throws an exception.

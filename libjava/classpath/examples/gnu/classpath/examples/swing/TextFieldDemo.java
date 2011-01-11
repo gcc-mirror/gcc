@@ -58,7 +58,7 @@ import javax.swing.text.LayeredHighlighter.LayerPainter;
 /**
  * A simple textfield demo showing various textfields in different states.
  */
-public class TextFieldDemo 
+public class TextFieldDemo
   extends JPanel
   implements ActionListener
 {
@@ -118,7 +118,7 @@ public class TextFieldDemo
         }
     }
   }
-  
+
   static class DemoHighlightPainter
   extends LayerPainter
   {
@@ -167,14 +167,14 @@ public class TextFieldDemo
 
       return bounds;
     }
-    
+
   }
 
   /**
    * The left aligned textfields and state buttons.
    */
   Compound compound1;
-  
+
   /**
    * The right aligned textfields and state buttons.
    */
@@ -195,7 +195,7 @@ public class TextFieldDemo
    * Some miscellaneous textfield demos.
    */
   Compound compound6;
-  
+
   /**
    * Some textfields with custom borders.
    */
@@ -204,20 +204,20 @@ public class TextFieldDemo
   /**
    * Creates a new demo instance.
    */
-  public TextFieldDemo() 
+  public TextFieldDemo()
   {
     super();
     createContent();
   }
-  
+
   /**
    * When the demo is run independently, the frame is displayed, so we should
-   * initialise the content panel (including the demo content and a close 
+   * initialise the content panel (including the demo content and a close
    * button).  But when the demo is run as part of the Swing activity board,
    * only the demo content panel is used, the frame itself is never displayed,
    * so we can avoid this step.
    */
-  void initFrameContent() 
+  void initFrameContent()
   {
     JPanel closePanel = new JPanel();
     JButton closeButton = new JButton("Close");
@@ -230,11 +230,11 @@ public class TextFieldDemo
   /**
    * Returns a panel with the demo content.  The panel
    * uses a BorderLayout(), and the BorderLayout.SOUTH area
-   * is empty, to allow callers to add controls to the 
+   * is empty, to allow callers to add controls to the
    * bottom of the panel if they want to (a close button is
    * added if this demo is being run as a standalone demo).
-   */       
-  private void createContent() 
+   */
+  private void createContent()
   {
     setLayout(new BorderLayout());
     JPanel panel = new JPanel(new GridLayout(7, 1));
@@ -245,13 +245,13 @@ public class TextFieldDemo
     panel.add(createCustomColorPanel2());
     panel.add(createCustomBordersPanel());
     panel.add(createMiscPanel());
-    
+
     // Put everything in a scroll pane to make it neccessary
     // to reach the bottom inner panels if the screen is to small.
     add(new JScrollPane(panel));
   }
-    
-  private JPanel createLeftAlignedPanel() 
+
+  private JPanel createLeftAlignedPanel()
   {
     compound1 = createTextFieldCompound("Left aligned", 1);
 
@@ -261,16 +261,16 @@ public class TextFieldDemo
                                           new Font("Dialog", Font.ITALIC, 12),
                                           new Font("Dialog", Font.BOLD, 14)
                              });
-    
+
     return compound1.panel;
   }
-  
+
   private Compound createTextFieldCompound(String title, int actionCommandNo)
   {
     Compound compound = new Compound();
     compound.panel = new JPanel(new BorderLayout());
     compound.panel.setBorder(BorderFactory.createTitledBorder(title));
-    
+
     compound.textFieldPanel = new JPanel();
     compound.textFieldPanel.setLayout(new BoxLayout(compound.textFieldPanel, BoxLayout.X_AXIS));
 
@@ -295,7 +295,7 @@ public class TextFieldDemo
     return compound;
   }
 
-  private JPanel createRightAlignedPanel() 
+  private JPanel createRightAlignedPanel()
   {
     compound2 = createTextFieldCompound("Right aligned", 2);
 
@@ -305,11 +305,11 @@ public class TextFieldDemo
                                            new Font("Dialog", Font.ITALIC, 12),
                                            new Font("Dialog", Font.BOLD, 14)
                               });
-    
+
     return compound2.panel;
   }
 
-  private JPanel createCenteredPanel() 
+  private JPanel createCenteredPanel()
   {
     compound3 = createTextFieldCompound("Centered", 3);
 
@@ -319,7 +319,7 @@ public class TextFieldDemo
                                            new Font("Dialog", Font.ITALIC, 12),
                                            new Font("Dialog", Font.BOLD, 14)
                               });
-        
+
     return compound3.panel;
   }
 
@@ -339,11 +339,11 @@ public class TextFieldDemo
     compound4.textfield3.setForeground(Color.RED);
     compound4.textfield3.setBackground(Color.YELLOW);
     compound4.textFieldPanel.add(compound4.textfield3);
-    
+
     return compound4.panel;
-    
+
   }
-  
+
   private JPanel createCustomColorPanel2()
   {
     compound5 = createTextFieldCompound("Custom colors II", 5);
@@ -359,12 +359,12 @@ public class TextFieldDemo
     compound5.textfield3 = new JTextField("custom selection color");
     compound5.textfield3.setSelectionColor(Color.BLACK);
     compound5.textFieldPanel.add(compound5.textfield3);
-    
+
     return compound5.panel;
-    
+
   }
 
-  private JPanel createMiscPanel() 
+  private JPanel createMiscPanel()
   {
     compound6 = createTextFieldCompound("Miscellaneous", 6);
 
@@ -392,8 +392,8 @@ public class TextFieldDemo
 
     return compound6.panel;
   }
-  
-  private JPanel createCustomBordersPanel() 
+
+  private JPanel createCustomBordersPanel()
   {
     compound7 = createTextFieldCompound("Custom borders", 7);
 
@@ -415,7 +415,7 @@ public class TextFieldDemo
     return compound7.panel;
   }
 
-  public void actionPerformed(ActionEvent e) 
+  public void actionPerformed(ActionEvent e)
   {
     if (e.getActionCommand().equals("CLOSE"))
       {
@@ -476,7 +476,7 @@ public class TextFieldDemo
         compound4.textfield1.setEditable(editable);
         compound4.textfield2.setEditable(editable);
         compound4.textfield3.setEditable(editable);
-      } 
+      }
     else if (e.getActionCommand().equals("ENABLED5"))
       {
         boolean enabled = compound5.enabled.isSelected();
@@ -521,7 +521,7 @@ public class TextFieldDemo
       }
   }
 
-  public static void main(String[] args) 
+  public static void main(String[] args)
   {
     SwingUtilities.invokeLater
     (new Runnable()
@@ -557,16 +557,16 @@ public class TextFieldDemo
   static class Compound
   {
     JTextField textfield1;
-    JTextField textfield2;  
+    JTextField textfield2;
     JTextField textfield3;
     JCheckBox enabled;
     JCheckBox editable;
     JPanel textFieldPanel;
     JPanel panel;
-    
+
     /** Creates and initializes the textfields with the same text and
      * alignment but with a different font.
-     * 
+     *
      * @param title The text for the textfields.
      * @param align The alignment for the textfields.
      * @param fonts The fonts to be used for the textfields.
@@ -582,13 +582,13 @@ public class TextFieldDemo
       textfield2.setHorizontalAlignment(align);
       textfield2.setFont(fonts[1]);
       textFieldPanel.add(textfield2);
-      
+
       textfield3 = new JTextField(title);
       textfield3.setHorizontalAlignment(align);
       textfield3.setFont(fonts[2]);
       textFieldPanel.add(textfield3);
     }
-    
+
   }
-  
+
 }

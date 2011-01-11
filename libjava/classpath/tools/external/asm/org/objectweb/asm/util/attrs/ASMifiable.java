@@ -33,17 +33,17 @@ import java.util.Map;
 
 /**
  * An attribute that can print the ASM code to create an equivalent attribute.
- * 
+ *
  * Implementation should print the ASM code that generates attribute data
  * structures for current attribute state.
- * 
+ *
  * @author Eugene Kuleshov
  */
 public interface ASMifiable {
 
     /**
      * Prints the ASM code to create an attribute equal to this attribute.
-     * 
+     *
      * @param buf A buffer used for printing Java code.
      * @param varName name of the variable in a printed code used to store
      *        attribute instance.

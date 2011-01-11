@@ -1,4 +1,4 @@
-/* ServerPSKParameters.java -- 
+/* ServerPSKParameters.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -59,12 +59,12 @@ import java.nio.charset.Charset;
 public class ServerPSKParameters implements Builder, Constructed, ServerKeyExchangeParams
 {
   private ByteBuffer buffer;
-  
+
   public ServerPSKParameters(ByteBuffer buffer)
   {
     this.buffer = buffer.duplicate().order(ByteOrder.BIG_ENDIAN);
   }
-  
+
   public ServerPSKParameters(String identityHint)
   {
     Charset utf8 = Charset.forName("UTF-8");
@@ -74,7 +74,7 @@ public class ServerPSKParameters implements Builder, Constructed, ServerKeyExcha
     buffer.put(identityHintBuffer);
     buffer.rewind();
   }
-  
+
   public KeyExchangeAlgorithm algorithm()
   {
     return KeyExchangeAlgorithm.PSK;
@@ -95,7 +95,7 @@ public class ServerPSKParameters implements Builder, Constructed, ServerKeyExcha
   {
     return (buffer.getShort(0) & 0xFFFF) + 2;
   }
-  
+
   public String identityHint()
   {
     Charset utf8 = Charset.forName("UTF-8");

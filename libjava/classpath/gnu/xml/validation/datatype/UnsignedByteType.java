@@ -1,4 +1,4 @@
-/* UnsignedByteType.java -- 
+/* UnsignedByteType.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -105,7 +105,7 @@ final class UnsignedByteType
         throw new DatatypeException(i, "invalid unsigned byte value");
       }
   }
-  
+
   public Object createValue(String literal, ValidationContext context) {
     try
       {
@@ -116,6 +116,5 @@ final class UnsignedByteType
         return null;
       }
   }
-  
-}
 
+}

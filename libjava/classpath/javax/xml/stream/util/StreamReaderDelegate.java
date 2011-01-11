@@ -1,4 +1,4 @@
-/* StreamReaderDelegate.java -- 
+/* StreamReaderDelegate.java --
    Copyright (C) 2005,2006,2009  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -404,6 +404,5 @@ public class StreamReaderDelegate
       return parent.getProperty(name);
     throw new IllegalArgumentException();
   }
-  
-}
 
+}

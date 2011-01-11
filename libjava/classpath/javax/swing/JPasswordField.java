@@ -48,7 +48,7 @@ import javax.swing.text.Document;
 
 /**
  * class JPasswordField
- * 
+ *
  * @author Andrew Selkirk
  * @author Lillian Angel
  * @version 1.0
@@ -72,7 +72,7 @@ public class JPasswordField extends JTextField
 
     /**
      * getAccessibleRole
-     * 
+     *
      * @return AccessibleRole
      */
     public AccessibleRole getAccessibleRole()
@@ -96,7 +96,7 @@ public class JPasswordField extends JTextField
 
   /**
    * Creates a <code>JPasswordField</code> object.
-   * 
+   *
    * @param text the initial text
    */
   public JPasswordField(String text)
@@ -106,7 +106,7 @@ public class JPasswordField extends JTextField
 
   /**
    * Creates a <code>JPasswordField</code> object.
-   * 
+   *
    * @param columns the number of columns
    */
   public JPasswordField(int columns)
@@ -116,7 +116,7 @@ public class JPasswordField extends JTextField
 
   /**
    * Creates a <code>JPasswordField</code> object.
-   * 
+   *
    * @param text the initial text
    * @param columns the number of columns
    */
@@ -127,7 +127,7 @@ public class JPasswordField extends JTextField
 
   /**
    * Creates a <code>JPasswordField</code> object.
-   * 
+   *
    * @param document the document to use
    * @param text the initial text
    * @param columns the number of columns
@@ -139,9 +139,9 @@ public class JPasswordField extends JTextField
 
   /**
    * writeObject
-   * 
+   *
    * @param stream the stream to write to
-   * 
+   *
    * @exception IOException if an error occurs
    */
   private void writeObject(ObjectOutputStream stream) throws IOException
@@ -151,7 +151,7 @@ public class JPasswordField extends JTextField
 
   /**
    * Returns the <code>UIClassID</code>
-   * 
+   *
    * @return the string "PasswordFieldUI"
    */
   public String getUIClassID()
@@ -161,7 +161,7 @@ public class JPasswordField extends JTextField
 
   /**
    * getEchoChar
-   * 
+   *
    * @return the echo char
    */
   public char getEchoChar()
@@ -171,7 +171,7 @@ public class JPasswordField extends JTextField
 
   /**
    * setEchoChar
-   * 
+   *
    * @param echo the echo char
    */
   public void setEchoChar(char echo)
@@ -180,9 +180,9 @@ public class JPasswordField extends JTextField
   }
 
   /**
-   * Returns true if this JPasswordField has a character set for echoing. 
+   * Returns true if this JPasswordField has a character set for echoing.
    * A character is considered to be set if the echo character is not 0.
-   * 
+   *
    * @return <code>true</code> if the echo char is set,
    * <code>false</code> otherwise.
    */
@@ -210,11 +210,11 @@ public class JPasswordField extends JTextField
   }
 
   /**
-   * Returns the text contained in this TextComponent. If the 
+   * Returns the text contained in this TextComponent. If the
    * underlying document is null, will give a NullPointerException.
-   * 
+   *
    * @return String
-   * 
+   *
    * @deprecated
    */
   public String getText()
@@ -231,15 +231,15 @@ public class JPasswordField extends JTextField
   }
 
   /**
-   * Fetches a portion of the text represented by the component. 
-   * Returns an empty string if length is 0. If the 
+   * Fetches a portion of the text represented by the component.
+   * Returns an empty string if length is 0. If the
    * underlying document is null, will give a NullPointerException.
-   * 
+   *
    * @param offset TODO
    * @param length TODO
-   * 
+   *
    * @return String
-   * 
+   *
    * @exception BadLocationException TODO
    *
    * @deprecated
@@ -250,11 +250,11 @@ public class JPasswordField extends JTextField
   }
 
   /**
-   * Returns the text contained in this TextComponent. If the underlying 
-   * document is null, will give a NullPointerException. 
-   * For stronger security, it is recommended that the returned character 
+   * Returns the text contained in this TextComponent. If the underlying
+   * document is null, will give a NullPointerException.
+   * For stronger security, it is recommended that the returned character
    * array be cleared after use by setting each character to zero.
-   * 
+   *
    * @return char[]
    */
   public char[] getPassword()
@@ -263,11 +263,11 @@ public class JPasswordField extends JTextField
   }
 
   /**
-   * Returns a string representation of this JPasswordField. This method is 
-   * intended to be used only for debugging purposes, 
-   * and the content and format of the returned string may vary between 
+   * Returns a string representation of this JPasswordField. This method is
+   * intended to be used only for debugging purposes,
+   * and the content and format of the returned string may vary between
    * implementations. The returned string may be empty but may not be null.
-   * 
+   *
    * @return String
    */
   protected String paramString()
@@ -284,7 +284,7 @@ public class JPasswordField extends JTextField
 
   /**
    * getAccessibleContext
-   * 
+   *
    * @return the <code>AccessibleContext</code> object
    */
   public AccessibleContext getAccessibleContext()

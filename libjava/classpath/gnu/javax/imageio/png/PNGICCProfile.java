@@ -49,14 +49,14 @@ import java.util.zip.Deflater;
 /**
  * A PNG iCCP (ICC Profile) chunk.
  */
-public class PNGICCProfile extends PNGChunk 
-{ 
+public class PNGICCProfile extends PNGChunk
+{
   private String name;
   private ICC_Profile profile;
   // A generic profile name to use "ICC Profile"
   private static final byte[] genericName = new byte[]
   { 0x49, 0x43, 0x43, 0x20, 0x50, 0x72, 0x6f, 0x66, 0x69, 0x6c, 0x65 };
-  
+
   protected PNGICCProfile( int type, byte[] data, int crc ) throws PNGException
   {
     super( type, data, crc );
@@ -66,23 +66,23 @@ public class PNGICCProfile extends PNGChunk
 
     try
       {
-	name = new String(data, 0, i, "8859_1");
+        name = new String(data, 0, i, "8859_1");
       }
     catch(UnsupportedEncodingException e)
       {
-	name = ""; // shouldn't really happen.
+        name = ""; // shouldn't really happen.
       }
     if( data[i++] != 0 )
       throw new PNGException("Can't handle nonzero compression types with iCCP chunks.");
     try
       {
-	ByteArrayInputStream bos = new ByteArrayInputStream( data, i, 
-							     data.length - i );
-	profile = ICC_Profile.getInstance( new InflaterInputStream( bos ) );
+        ByteArrayInputStream bos = new ByteArrayInputStream( data, i,
+                                                             data.length - i );
+        profile = ICC_Profile.getInstance( new InflaterInputStream( bos ) );
       }
     catch(IOException ioe)
       {
-	throw new PNGException("Couldn't read iCCP profile chunk.");
+        throw new PNGException("Couldn't read iCCP profile chunk.");
       }
     System.out.println("Got profile:"+profile);
   }

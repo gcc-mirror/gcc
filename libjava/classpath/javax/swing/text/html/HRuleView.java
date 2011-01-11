@@ -55,15 +55,15 @@ class HRuleView extends InlineView
 {
   /**
    * The null view, indicating, that nothing should be painted ahead the
-   * breaking point. 
+   * breaking point.
    */
   View nullView;
-  
+
   /**
    * The height of the horizontal dash area.
    */
   static int HEIGHT = 4;
-  
+
   /**
    * The imaginary invisible view that stays after end of line after the
    * breaking procedure. It occupies on character.
@@ -74,7 +74,7 @@ class HRuleView extends InlineView
      * The break offset that becomes the views start offset.
      */
     int breakOffset;
-    
+
     /**
      * Return the end offset that is always one char after the break offset.
      */
@@ -82,7 +82,7 @@ class HRuleView extends InlineView
     {
       return breakOffset + 1;
     }
-    
+
     /**
      * Return the start offset that has been passed in a constructor.
      */
@@ -90,10 +90,10 @@ class HRuleView extends InlineView
     {
       return breakOffset;
     }
-     
+
     /**
      * Create the new instance of this view.
-     * 
+     *
      * @param element the element (inherited from the HR view)
      * @param offset the position where the HR view has been broken
      */
@@ -103,7 +103,7 @@ class HRuleView extends InlineView
       breakOffset = offset;
     }
   }
-  
+
   /**
    * Creates the new HR view.
    */
@@ -120,11 +120,11 @@ class HRuleView extends InlineView
   public int getBreakWeight(int axis, float pos, float len)
   {
     if (axis == X_AXIS && ((getEndOffset() - getStartOffset()) > 1))
-      return ForcedBreakWeight;      
+      return ForcedBreakWeight;
     else
-      return BadBreakWeight;      
+      return BadBreakWeight;
   }
-  
+
   /**
    * Draws the double line, upped black and the lower light gray.
    */
@@ -143,7 +143,7 @@ class HRuleView extends InlineView
 
     g.setColor(Color.black);
     g.drawLine(x, y++, w, h++);
-    g.setColor(Color.lightGray);    
+    g.setColor(Color.lightGray);
     g.drawLine(x, y, w, h);
   }
 
@@ -160,7 +160,7 @@ class HRuleView extends InlineView
     else
       return this;
   }
-  
+
   /**
    * Returns the width of the container for the horizontal axis and the
    * thickness of the dash area for the vertical axis.
@@ -176,7 +176,7 @@ class HRuleView extends InlineView
           return 640;
       }
     else
-      return HEIGHT;     
+      return HEIGHT;
   }
 
   /**

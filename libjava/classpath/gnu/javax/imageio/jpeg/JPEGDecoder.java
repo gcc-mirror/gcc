@@ -68,7 +68,7 @@ public class JPEGDecoder
   BufferedImage image;
   int width;
   int height;
-  
+
   byte marker;
 
   /**
@@ -100,7 +100,7 @@ public class JPEGDecoder
     {
       return height;
     }
-    
+
     public int getWidth()
     {
         return width;
@@ -333,7 +333,7 @@ public class JPEGDecoder
                   {
                     for (int i = 0; i < 64; i++)
                       quantData[i] = jpegStream.readByte();
-                  
+
                   }
                 else if ((byte) (quantSpecs >> 4) == 1)
                   // Precision 16 bit.
@@ -370,7 +370,7 @@ public class JPEGDecoder
             byte endSpectralSelection = jpegStream.readByte();
             byte successiveApproximation = jpegStream.readByte();
 
-            int mcuIndex = 0; 
+            int mcuIndex = 0;
             int mcuTotalIndex = 0;
             // This loops through until a MarkerTagFound exception is
             // found, if the marker tag is a RST (Restart Marker) it
@@ -541,7 +541,7 @@ public class JPEGDecoder
             throw new JPEGException("Unsupported Codec Type: Extended "
                                     + "Sequential DCT JPEG's Not-Supported");
             //case JPEGMarker.SOF2:
-            //	throw new JPEGException("Unsupported Codec Type: Progressive DCT JPEG's Not-Supported");
+            //  throw new JPEGException("Unsupported Codec Type: Progressive DCT JPEG's Not-Supported");
           case JPEGMarker.SOF3:
             throw new JPEGException("Unsupported Codec Type:"
                                     + " Lossless (sequential)");

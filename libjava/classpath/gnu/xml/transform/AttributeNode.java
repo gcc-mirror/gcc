@@ -1,4 +1,4 @@
-/* AttributeNode.java -- 
+/* AttributeNode.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -61,7 +61,7 @@ final class AttributeNode
   final TemplateNode name;
   final TemplateNode namespace;
   final Node source;
-  
+
   AttributeNode(TemplateNode name,
                 TemplateNode namespace, Node source)
   {
@@ -98,10 +98,10 @@ final class AttributeNode
                fragment, null);
     // Use XPath string-value of fragment
     String nameValue = Expr.stringValue(fragment);
-  
+
     String namespaceValue = null;
     if (namespace != null)
-      {  
+      {
         // Create a document fragment to hold the namespace
         fragment = doc.createDocumentFragment();
         // Apply namespace to the fragment
@@ -113,7 +113,7 @@ final class AttributeNode
         if (namespaceValue.length() == 0)
           namespaceValue = null;
       }
-    
+
     String prefix = getPrefix(nameValue);
     if (namespaceValue == null)
       {
@@ -230,7 +230,7 @@ final class AttributeNode
       return true;
     return super.references(var);
   }
-  
+
   public String toString()
   {
     CPStringBuilder buf = new CPStringBuilder("attribute");
@@ -240,5 +240,5 @@ final class AttributeNode
     buf.append(']');
     return buf.toString();
   }
-  
+
 }

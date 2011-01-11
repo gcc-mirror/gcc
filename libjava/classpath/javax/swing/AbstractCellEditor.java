@@ -69,7 +69,7 @@ public abstract class AbstractCellEditor
   /**
    * Creates a new instance of AbstractCellEditor.
    */
-  public AbstractCellEditor() 
+  public AbstractCellEditor()
   {
     listenerList = new EventListenerList();
     changeEvent = new ChangeEvent(this);
@@ -85,10 +85,10 @@ public abstract class AbstractCellEditor
    * @return <code>true</code> if the cell is editable using
    *     <code>event</code>, <code>false</code> if it's not
    */
-  public boolean isCellEditable(EventObject event) 
+  public boolean isCellEditable(EventObject event)
   {
     return true;
-  } 
+  }
 
   /**
    * Returns <code>true</code> if the editing cell should be selected,
@@ -101,7 +101,7 @@ public abstract class AbstractCellEditor
    * @return <code>true</code> if the editing cell should be selected,
    *     <code>false</code> otherwise
    */
-  public boolean shouldSelectCell(EventObject event) 
+  public boolean shouldSelectCell(EventObject event)
   {
     return true;
   }
@@ -113,7 +113,7 @@ public abstract class AbstractCellEditor
    * @return <code>true</code> if editing has been stopped successfully,
    *     <code>false</code>otherwise
    */
-  public boolean stopCellEditing() 
+  public boolean stopCellEditing()
   {
     fireEditingStopped();
     return true;
@@ -123,10 +123,10 @@ public abstract class AbstractCellEditor
    * Stop editing the cell and do not accept any partial value that has
    * been entered into the cell.
    */
-  public void cancelCellEditing() 
+  public void cancelCellEditing()
   {
     fireEditingCanceled();
-  } 
+  }
 
   /**
    * Adds a CellEditorListener to the list of CellEditorListeners of this
@@ -149,7 +149,7 @@ public abstract class AbstractCellEditor
   {
     listenerList.remove(CellEditorListener.class, listener);
   }
-	
+
   /**
    * Returns the list of CellEditorListeners that have been registered
    * in this CellEditor.

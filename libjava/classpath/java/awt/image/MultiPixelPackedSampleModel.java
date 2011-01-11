@@ -65,14 +65,14 @@ public class MultiPixelPackedSampleModel extends SampleModel
    *   <li>{@link DataBuffer#TYPE_USHORT};</li>
    *   <li>{@link DataBuffer#TYPE_INT};</li>
    * </ul>
-   * 
+   *
    * @param dataType  the data type.
    * @param w  the width (in pixels).
    * @param h  the height (in pixels).
    * @param numberOfBits  the number of bits per pixel (must be a power of 2).
    */
   public MultiPixelPackedSampleModel(int dataType, int w, int h,
-				     int numberOfBits)
+                                     int numberOfBits)
   {
     this(dataType, w, h, numberOfBits, 0, 0);
   }
@@ -85,35 +85,35 @@ public class MultiPixelPackedSampleModel extends SampleModel
    *   <li>{@link DataBuffer#TYPE_USHORT};</li>
    *   <li>{@link DataBuffer#TYPE_INT};</li>
    * </ul>
-   * 
+   *
    * @param dataType  the data type.
    * @param w  the width (in pixels).
    * @param h  the height (in pixels).
    * @param numberOfBits  the number of bits per pixel (must be a power of 2).
-   * @param scanlineStride  the number of data elements from a pixel on one 
+   * @param scanlineStride  the number of data elements from a pixel on one
    *     row to the corresponding pixel in the next row.
    * @param dataBitOffset  the offset to the first data bit.
    */
   public MultiPixelPackedSampleModel(int dataType, int w, int h,
-				     int numberOfBits, int scanlineStride,
-				     int dataBitOffset)
+                                     int numberOfBits, int scanlineStride,
+                                     int dataBitOffset)
   {
     super(dataType, w, h, 1);
 
     switch (dataType)
       {
       case DataBuffer.TYPE_BYTE:
-	elemBits = 8;
-	break;
+        elemBits = 8;
+        break;
       case DataBuffer.TYPE_USHORT:
-	elemBits = 16;
-	break;
+        elemBits = 16;
+        break;
       case DataBuffer.TYPE_INT:
-	elemBits = 32;
-	break;
+        elemBits = 32;
+        break;
       default:
-	throw new IllegalArgumentException("MultiPixelPackedSampleModel"
-					   + " unsupported dataType");
+        throw new IllegalArgumentException("MultiPixelPackedSampleModel"
+                                           + " unsupported dataType");
       }
 
     this.dataBitOffset = dataBitOffset;
@@ -121,13 +121,13 @@ public class MultiPixelPackedSampleModel extends SampleModel
     this.numberOfBits = numberOfBits;
     if (numberOfBits > elemBits)
       throw new RasterFormatException("MultiPixelPackedSampleModel pixel size"
-				      + " larger than dataType");
+                                      + " larger than dataType");
     switch (numberOfBits)
       {
       case 1: case 2: case 4: case 8: case 16: case 32: break;
       default:
-	throw new RasterFormatException("MultiPixelPackedSampleModel pixel"
-					+ " size not 2^n bits");
+        throw new RasterFormatException("MultiPixelPackedSampleModel pixel"
+                                        + " size not 2^n bits");
       }
     numElems = elemBits / numberOfBits;
 
@@ -136,7 +136,7 @@ public class MultiPixelPackedSampleModel extends SampleModel
       scanlineStride = ((dataBitOffset + w * numberOfBits) - 1) / elemBits + 1;
     this.scanlineStride = scanlineStride;
 
-    
+
     sampleSize = new int[1];
     sampleSize[0] = numberOfBits;
 
@@ -144,9 +144,9 @@ public class MultiPixelPackedSampleModel extends SampleModel
     bitOffsets = new int[numElems];
     for (int i=0; i < numElems; i++)
       {
-	bitOffsets[numElems - i- 1] = numberOfBits * i;
-	bitMasks[numElems - i - 1] = ((1 << numberOfBits) - 1) << 
-	    bitOffsets[numElems - i - 1];
+        bitOffsets[numElems - i- 1] = numberOfBits * i;
+        bitMasks[numElems - i - 1] = ((1 << numberOfBits) - 1) <<
+            bitOffsets[numElems - i - 1];
       }
   }
 
@@ -154,10 +154,10 @@ public class MultiPixelPackedSampleModel extends SampleModel
    * Creates a new <code>MultiPixelPackedSample</code> model with the same
    * data type and bits per pixel as this model, but with the specified
    * dimensions.
-   * 
+   *
    * @param w  the width (in pixels).
    * @param h  the height (in pixels).
-   * 
+   *
    * @return The new sample model.
    */
   public SampleModel createCompatibleSampleModel(int w, int h)
@@ -172,7 +172,7 @@ public class MultiPixelPackedSampleModel extends SampleModel
    * Creates a DataBuffer for holding pixel data in the format and
    * layout described by this SampleModel. The returned buffer will
    * consist of one single bank.
-   * 
+   *
    * @return A new data buffer.
    */
   public DataBuffer createDataBuffer()
@@ -186,7 +186,7 @@ public class MultiPixelPackedSampleModel extends SampleModel
   /**
    * Returns the number of data elements required to transfer a pixel in the
    * get/setDataElements() methods.
-   * 
+   *
    * @return <code>1</code>.
    */
   public int getNumDataElements()
@@ -195,29 +195,29 @@ public class MultiPixelPackedSampleModel extends SampleModel
   }
 
   /**
-   * Returns an array containing the size (in bits) of the samples in each 
+   * Returns an array containing the size (in bits) of the samples in each
    * band.  The <code>MultiPixelPackedSampleModel</code> class supports only
-   * one band, so this method returns an array with length <code>1</code>. 
-   * 
-   * @return An array containing the size (in bits) of the samples in band zero. 
-   *     
+   * one band, so this method returns an array with length <code>1</code>.
+   *
+   * @return An array containing the size (in bits) of the samples in band zero.
+   *
    * @see #getSampleSize(int)
    */
   public int[] getSampleSize()
   {
     return (int[]) sampleSize.clone();
   }
-  
+
   /**
    * Returns the size of the samples in the specified band.  Note that the
    * <code>MultiPixelPackedSampleModel</code> supports only one band -- this
    * method ignored the <code>band</code> argument, and always returns the size
    * of band zero.
-   * 
+   *
    * @param band  the band (this parameter is ignored).
-   * 
+   *
    * @return The size of the samples in band zero.
-   * 
+   *
    * @see #getSampleSize()
    */
   public int getSampleSize(int band)
@@ -227,12 +227,12 @@ public class MultiPixelPackedSampleModel extends SampleModel
 
   /**
    * Returns the index in the data buffer that stores the pixel at (x, y).
-   * 
+   *
    * @param x  the x-coordinate.
    * @param y  the y-coordinate.
-   * 
+   *
    * @return The index in the data buffer that stores the pixel at (x, y).
-   * 
+   *
    * @see #getBitOffset(int)
    */
   public int getOffset(int x, int y)
@@ -241,11 +241,11 @@ public class MultiPixelPackedSampleModel extends SampleModel
   }
 
   /**
-   * The bit offset (within an element in the data buffer) of the pixels with 
+   * The bit offset (within an element in the data buffer) of the pixels with
    * the specified x-coordinate.
-   * 
+   *
    * @param x  the x-coordinate.
-   * 
+   *
    * @return The bit offset.
    */
   public int getBitOffset(int x)
@@ -255,7 +255,7 @@ public class MultiPixelPackedSampleModel extends SampleModel
 
   /**
    * Returns the offset to the first data bit.
-   * 
+   *
    * @return The offset to the first data bit.
    */
   public int getDataBitOffset()
@@ -266,7 +266,7 @@ public class MultiPixelPackedSampleModel extends SampleModel
   /**
    * Returns the number of data elements from a pixel in one row to the
    * corresponding pixel in the next row.
-   * 
+   *
    * @return The scanline stride.
    */
   public int getScanlineStride()
@@ -276,14 +276,14 @@ public class MultiPixelPackedSampleModel extends SampleModel
 
   /**
    * Returns the number of bits per pixel.
-   * 
+   *
    * @return The number of bits per pixel.
    */
   public int getPixelBitStride()
   {
     return numberOfBits;
   }
-  
+
   /**
    * Returns the transfer type, which is one of the following (depending on
    * the number of bits per sample for this model):
@@ -292,7 +292,7 @@ public class MultiPixelPackedSampleModel extends SampleModel
    *   <li>{@link DataBuffer#TYPE_USHORT};</li>
    *   <li>{@link DataBuffer#TYPE_INT};</li>
    * </ul>
-   * 
+   *
    * @return The transfer type.
    */
   public int getTransferType()
@@ -310,12 +310,12 @@ public class MultiPixelPackedSampleModel extends SampleModel
    * only supports a single band, this overridden implementation just returns
    * a new instance of <code>MultiPixelPackedSampleModel</code>, with the same
    * attributes as this instance.
-   * 
+   *
    * @param bands  the bands to include in the subset (this is ignored, except
    *     that if it is non-<code>null</code> a check is made to ensure that the
    *     array length is equal to <code>1</code>).
-   *     
-   * @throws RasterFormatException if <code>bands</code> is not 
+   *
+   * @throws RasterFormatException if <code>bands</code> is not
    *     <code>null</code> and <code>bands.length != 1</code>.
    */
   public SampleModel createSubsetSampleModel(int[] bands)
@@ -323,7 +323,7 @@ public class MultiPixelPackedSampleModel extends SampleModel
     if (bands != null && bands.length != 1)
       throw new RasterFormatException("MultiPixelPackedSampleModel only"
           + " supports one band");
-    return new MultiPixelPackedSampleModel(dataType, width, height, 
+    return new MultiPixelPackedSampleModel(dataType, width, height,
         numberOfBits, scanlineStride, dataBitOffset);
   }
 
@@ -334,15 +334,15 @@ public class MultiPixelPackedSampleModel extends SampleModel
    * array obj, since there is only one band.  If obj is null, a new array of
    * getTransferType() is created.
    *
-   * @param x The x-coordinate of the pixel rectangle to store in 
+   * @param x The x-coordinate of the pixel rectangle to store in
    *     <code>obj</code>.
-   * @param y The y-coordinate of the pixel rectangle to store in 
+   * @param y The y-coordinate of the pixel rectangle to store in
    *     <code>obj</code>.
-   * @param obj The primitive array to store the pixels into or null to force 
+   * @param obj The primitive array to store the pixels into or null to force
    *     creation.
    * @param data The DataBuffer that is the source of the pixel data.
    * @return The primitive array containing the pixel data.
-   * @see java.awt.image.SampleModel#getDataElements(int, int, Object, 
+   * @see java.awt.image.SampleModel#getDataElements(int, int, Object,
    *     DataBuffer)
    */
   public Object getDataElements(int x, int y, Object obj, DataBuffer data)
@@ -351,17 +351,17 @@ public class MultiPixelPackedSampleModel extends SampleModel
     switch (getTransferType())
       {
         case DataBuffer.TYPE_BYTE:
-          if (obj == null) 
+          if (obj == null)
             obj = new byte[1];
           ((byte[]) obj)[0] = (byte) pixel;
           return obj;
         case DataBuffer.TYPE_USHORT:
-          if (obj == null) 
+          if (obj == null)
             obj = new short[1];
           ((short[]) obj)[0] = (short) pixel;
           return obj;
         case DataBuffer.TYPE_INT:
-          if (obj == null) 
+          if (obj == null)
             obj = new int[1];
           ((int[]) obj)[0] = pixel;
           return obj;
@@ -372,42 +372,42 @@ public class MultiPixelPackedSampleModel extends SampleModel
   }
 
   /**
-   * Returns an array (of length 1) containing the sample for the pixel at 
-   * (x, y) in the specified data buffer.  If <code>iArray</code> is not 
-   * <code>null</code>, it will be populated with the sample value and 
-   * returned as the result of this function (this avoids allocating a new 
+   * Returns an array (of length 1) containing the sample for the pixel at
+   * (x, y) in the specified data buffer.  If <code>iArray</code> is not
+   * <code>null</code>, it will be populated with the sample value and
+   * returned as the result of this function (this avoids allocating a new
    * array instance).
-   * 
+   *
    * @param x  the x-coordinate of the pixel.
    * @param y  the y-coordinate of the pixel.
-   * @param iArray  an array to populate with the sample values and return as 
+   * @param iArray  an array to populate with the sample values and return as
    *     the result (if <code>null</code>, a new array will be allocated).
    * @param data  the data buffer (<code>null</code> not permitted).
-   * 
+   *
    * @return An array containing the pixel sample value.
-   * 
+   *
    * @throws NullPointerException if <code>data</code> is <code>null</code>.
    */
   public int[] getPixel(int x, int y, int[] iArray, DataBuffer data)
   {
-    if (iArray == null) 
+    if (iArray == null)
       iArray = new int[1];
     iArray[0] = getSample(x, y, 0, data);
     return iArray;
   }
 
   /**
-   * Returns the sample value for the pixel at (x, y) in the specified data 
+   * Returns the sample value for the pixel at (x, y) in the specified data
    * buffer.
-   * 
+   *
    * @param x  the x-coordinate of the pixel.
    * @param y  the y-coordinate of the pixel.
-   * @param b  the band (in the range <code>0</code> to 
+   * @param b  the band (in the range <code>0</code> to
    *     <code>getNumBands() - 1</code>).
    * @param data  the data buffer (<code>null</code> not permitted).
-   * 
+   *
    * @return The sample value.
-   * 
+   *
    * @throws NullPointerException if <code>data</code> is <code>null</code>.
    */
   public int getSample(int x, int y, int b, DataBuffer data)
@@ -418,7 +418,7 @@ public class MultiPixelPackedSampleModel extends SampleModel
     int samples = data.getElem(offset);
     return (samples & bitMasks[pos]) >>> bitOffsets[pos];
   }
-  
+
   /**
    * Set the pixel at x, y to the value in the first element of the primitive
    * array obj.
@@ -472,17 +472,17 @@ public class MultiPixelPackedSampleModel extends SampleModel
   }
 
   /**
-   * Sets the sample value for the pixel at (x, y) in the specified data 
-   * buffer to the specified value. 
-   * 
+   * Sets the sample value for the pixel at (x, y) in the specified data
+   * buffer to the specified value.
+   *
    * @param x  the x-coordinate of the pixel.
    * @param y  the y-coordinate of the pixel.
    * @param iArray  the sample value (<code>null</code> not permitted).
    * @param data  the data buffer (<code>null</code> not permitted).
-   * 
-   * @throws NullPointerException if either <code>iArray</code> or 
+   *
+   * @throws NullPointerException if either <code>iArray</code> or
    *     <code>data</code> is <code>null</code>.
-   *     
+   *
    * @see #setSample(int, int, int, int, DataBuffer)
    */
   public void setPixel(int x, int y, int[] iArray, DataBuffer data)
@@ -491,16 +491,16 @@ public class MultiPixelPackedSampleModel extends SampleModel
   }
 
   /**
-   * Sets the sample value for a band for the pixel at (x, y) in the 
-   * specified data buffer. 
-   * 
+   * Sets the sample value for a band for the pixel at (x, y) in the
+   * specified data buffer.
+   *
    * @param x  the x-coordinate of the pixel.
    * @param y  the y-coordinate of the pixel.
-   * @param b  the band (in the range <code>0</code> to 
+   * @param b  the band (in the range <code>0</code> to
    *     <code>getNumBands() - 1</code>).
    * @param s  the sample value.
    * @param data  the data buffer (<code>null</code> not permitted).
-   * 
+   *
    * @throws NullPointerException if <code>data</code> is <code>null</code>.
    */
   public void setSample(int x, int y, int b, int s, DataBuffer data)
@@ -516,13 +516,13 @@ public class MultiPixelPackedSampleModel extends SampleModel
     sample |= s;
     data.setElem(offset, sample);
   }
-  
+
   /**
-   * Tests this sample model for equality with an arbitrary object.  This 
+   * Tests this sample model for equality with an arbitrary object.  This
    * method returns <code>true</code> if and only if:
    * <ul>
    *   <li><code>obj</code> is not <code>null</code>;
-   *   <li><code>obj</code> is an instance of 
+   *   <li><code>obj</code> is an instance of
    *       <code>MultiPixelPackedSampleModel</code>;
    *   <li>both models have the same:
    *     <ul>
@@ -535,17 +535,17 @@ public class MultiPixelPackedSampleModel extends SampleModel
    *     </ul>
    *   </li>
    * </ul>
-   * 
+   *
    * @param obj  the object (<code>null</code> permitted)
-   * 
+   *
    * @return <code>true</code> if this model is equal to <code>obj</code>, and
    *     <code>false</code> otherwise.
    */
-  public boolean equals(Object obj) 
+  public boolean equals(Object obj)
   {
-    if (this == obj) 
+    if (this == obj)
       return true;
-    if (! (obj instanceof MultiPixelPackedSampleModel)) 
+    if (! (obj instanceof MultiPixelPackedSampleModel))
       return false;
     MultiPixelPackedSampleModel that = (MultiPixelPackedSampleModel) obj;
     if (this.dataType != that.dataType)
@@ -562,10 +562,10 @@ public class MultiPixelPackedSampleModel extends SampleModel
       return false;
     return true;
   }
-  
+
   /**
    * Returns a hash code for this <code>MultiPixelPackedSampleModel</code>.
-   * 
+   *
    * @return A hash code.
    */
   public int hashCode()
@@ -580,7 +580,7 @@ public class MultiPixelPackedSampleModel extends SampleModel
     result = 37 * result + dataBitOffset;
     return result;
   }
-  
+
   /**
    * Creates a String with some information about this SampleModel.
    * @return A String describing this SampleModel.
@@ -596,7 +596,7 @@ public class MultiPixelPackedSampleModel extends SampleModel
     {
       result.append(", mask[").append(i).append("]=0x").append(Integer.toHexString(bitMasks[i]));
     }
-    
+
     result.append("]");
     return result.toString();
   }

@@ -45,11 +45,11 @@ import java.rmi.RemoteException;
 /**
  * A delegate, implementing the functionality, provided by the
  * {@link PortableRemoteObject}.
- * 
+ *
  * The default delegate can be altered by setting the system property
  * "javax.rmi.CORBA.PortableRemoteObjectClass" to the name of the alternative
  * class that must implement {@link PortableRemoteObjectDelegate}.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public interface PortableRemoteObjectDelegate
@@ -66,12 +66,12 @@ public interface PortableRemoteObjectDelegate
    * {@link Stub#connect} if it is a stub or by associating its tie with an ORB
    * if it is an implementation object.
    * </p>
-   * 
+   *
    * @param target the target object that may be either an RMI/IDL stub or an
    * exported RMI/IDL implementation object
    * @param source the source object may also be either an RMI/IDL stub or an
    * exported RMI/IDL implementation object.
-   * 
+   *
    * @throws RemoteException if the target is already connected to another ORB.
    */
   void connect(Remote target, Remote source)
@@ -83,9 +83,9 @@ public interface PortableRemoteObjectDelegate
    * non-daemon thread that prevents jre from terminating until all objects are
    * unexported. Also, such object cannot be collected by garbage collector.
    * This is usually impemented via {@link Util#unexportObject}
-   * 
+   *
    * @param obj the object to export.
-   * 
+   *
    * @throws RemoteException
    */
   void exportObject(Remote obj)
@@ -95,13 +95,13 @@ public interface PortableRemoteObjectDelegate
    * Narrows the passed object to conform to the given interface or IDL type.
    * This method may return different instance and cannot be replaced by the
    * direct cast.
-   * 
+   *
    * @param narrowFrom an object to narrow.
    * @param narrowTo a type to that the object must be narrowed.
-   * 
+   *
    * @return On success, an object of type narrowTo or null, if narrowFrom =
    * null.
-   * 
+   *
    * @throws ClassCastException if no narrowing is possible.
    */
   Object narrow(Object narrowFrom, Class narrowTo)
@@ -112,10 +112,10 @@ public interface PortableRemoteObjectDelegate
    * used to access that server object (target). If the target is connected, the
    * returned stub is also connected to the same ORB. If the target is
    * unconnected, the returned stub is unconnected.
-   * 
+   *
    * @param obj a server side object.
    * @return a stub object that can be used to access that server object.
-   * 
+   *
    * @throws NoSuchObjectException if a stub cannot be located for the given
    * target.
    */
@@ -126,9 +126,9 @@ public interface PortableRemoteObjectDelegate
    * Deregister a currently exported server object from the ORB runtimes. The
    * object to becomes available for garbage collection. This is usually
    * impemented via {@link Util#unexportObject}
-   * 
+   *
    * @param obj the object to unexport.
-   * 
+   *
    * @throws NoSuchObjectException if the passed object is not currently
    * exported.
    */

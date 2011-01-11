@@ -110,16 +110,16 @@ public class gnuPOA
 {
   /**
    * The object reference template, associated with this POA.
-   * 
+   *
    * @since 1.5
    */
   class RefTemplate implements ObjectReferenceTemplate
   {
-    /** 
-     * Use serialVersionUID for interoperability. 
+    /**
+     * Use serialVersionUID for interoperability.
      */
     private static final long serialVersionUID = 1;
-    
+
     RefTemplate()
     {
       // The adapter name is computed once.
@@ -140,12 +140,12 @@ public class gnuPOA
       for (int i = 0; i < m_adapter_name.length; i++)
         m_adapter_name[i] = (String) names.get(m_adapter_name.length - i - 1);
     }
-    
+
     /**
      * The adapter name
      */
     final String[] m_adapter_name;
-    
+
     /**
      * Get the name of this POA.
      */
@@ -186,24 +186,24 @@ public class gnuPOA
       return ref_template_ids;
     }
   }
-  
-  /** 
-   * Use serialVersionUID for interoperability. 
+
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1;
-  
+
   /**
    * The adapter reference template.
    */
   ObjectReferenceTemplate refTemplate;
-  
+
   /**
    * The reference template repository ids. Defined outside the class as it
    * cannot have static members.
    */
-  final static String[] ref_template_ids = 
+  final static String[] ref_template_ids =
     new String[] { ObjectReferenceTemplateHelper.id() };
-  
+
   /**
    * The active object map, mapping between object keys, objects and servants.
    */
@@ -287,7 +287,7 @@ public class gnuPOA
    * necessity of the frequent checks.
    */
   public final boolean retain_servant;
-  
+
   /**
    * The object reference factory, used to create the new object
    * references.
@@ -339,7 +339,7 @@ public class gnuPOA
     retain_servant = applies(ServantRetentionPolicyValue.RETAIN);
 
     validatePolicies(a_policies);
-    
+
     refTemplate = new RefTemplate();
   }
 
@@ -538,16 +538,16 @@ public class gnuPOA
    * Generate the Object Id for the given servant and add the servant to the
    * Active Object Map using this Id a a key. If the servant activator is set,
    * its incarnate method will be called.
-   * 
+   *
    * @param a_servant a servant that would serve the object with the returned
    * Object Id. If null is passed, under apporoprate policies the servant
    * activator is invoked.
-   * 
+   *
    * @return the generated objert Id for the given servant.
-   * 
+   *
    * @throws ServantAlreadyActive if this servant is already in the Active
    * Object Map and the UNIQUE_ID policy applies.
-   * 
+   *
    * @throws WrongPolicy if the required policies SYSTEM_ID and RETAIN do not
    * apply to this POA.
    */
@@ -589,12 +589,12 @@ public class gnuPOA
    * Add the given servant to the Active Object Map as a servant for the object
    * with the provided Object Id. If the servant activator is set, its incarnate
    * method will be called.
-   * 
+   *
    * @param an_Object_Id an object id for the given object.
    * @param a_servant a servant that will serve the object with the given Object
    * Id. If null is passed, under apporoprate policies the servant activator is
    * invoked.
-   * 
+   *
    * @throws ObjectAlreadyActive if the given object id is already in the Active
    * Object Map.
    * @throws ServantAlreadyActive if the UNIQUE_ID policy applies and this
@@ -659,13 +659,13 @@ public class gnuPOA
 
   /**
    * Locate the servant for this object Id and connect it to ORB.
-   * 
+   *
    * @param an_Object_Id the object id.
    * @param a_servant the servant (may be null).
    * @param exists an existing active object map entry.
    * @param use_forwarding allow to throw the gnuForwardRequest if the activator
    * throws ForwardRequest.
-   * 
+   *
    * @throws OBJ_ADAPTER minor 4 if the servant cannot be located (the required
    * servant manager may be missing).
    */
@@ -1054,12 +1054,12 @@ public class gnuPOA
 
   /**
    * Returns the servant that is serving this object.
-   * 
+   *
    * @return if the RETAIN policy applies and the object is in the Active Object
    * Map, the method returns the servant, associated with this object.
    * Otherwise, if the USE_DEFAULT_SERVANT policy applies, the method returns
    * the default servant (if one was set).
-   * 
+   *
    * @throws ObjectNotActive if none of the conditions above are satisfied.
    * @throws WrongAdapter if the object reference was not created with this POA.
    * @throws WrongPolicy. This method requires either RETAIN or
@@ -1076,7 +1076,7 @@ public class gnuPOA
           {
             String object;
             if (the_Object == null)
-              object = "null passed"; 
+              object = "null passed";
             else if (the_Object instanceof gnuServantObject)
               {
                 gnuServantObject gs = (gnuServantObject) the_Object;
@@ -1123,7 +1123,7 @@ public class gnuPOA
    * executing a request on the default servant, the method returns the ObjectId
    * associated with the current invocation. </li>
    * </ul>
-   * 
+   *
    * @throws ServantNotActive in all cases, not listed in the list above.
    * @throws WrongPolicy The method requres USE_DEFAULT_SERVANT policy or a
    * combination of the RETAIN policy and either the UNIQUE_ID or
@@ -1182,12 +1182,12 @@ public class gnuPOA
    * this case, if the servant activator is set, the
    * {@link ServantActivatorOperations#incarnate} method will be called.
    * </p>
-   * 
+   *
    * @throws ServantNotActive if the servant is inactive and no
    * IMPLICIT_ACTIVATION policy applies.
    * @throws WrongPolicy This method needs the RETAIN policy and either the
    * UNIQUE_ID or IMPLICIT_ACTIVATION policies.
-   * 
+   *
    * @return the object, exposing the given servant in the context of this POA.
    */
   public org.omg.CORBA.Object servant_to_reference(Servant the_Servant)
@@ -1237,15 +1237,15 @@ public class gnuPOA
   /**
    * Incarnate in cases when request forwarding is not expected because the
    * servant must be provided by the servant activator.
-   * 
+   *
    * @param x the aom entry, where the object is replaced by value, returned by
    * servant activator (if not null).
-   * 
+   *
    * @param object_key the object key.
-   * 
+   *
    * @param a_servant the servant that was passed as a parameter in the
    * activation method.
-   * 
+   *
    * @param use_forwarding if true, the gnuForwardRequest is throw under the
    * forwarding exception (for remote client). Otherwise, the request is
    * internally redirected (for local invocation).
@@ -1415,14 +1415,14 @@ public class gnuPOA
    * The remote invocation on the target, belonging to the POA that is currently
    * destroyed return the remote exception ({@link TRANSIENT}, minor code 4).
    * </p>
-   * 
+   *
    * @param etherealize_objects if true, and POA has RETAIN policy, and the
    * servant manager is available, the servant manager method
    * {@link ServantActivatorOperations#etherealize} is called for each <i>active</i>
    * object in the Active Object Map. This method should not try to access POA
    * being destroyed. If <code>destroy</code> is called multiple times before
    * the destruction completes, the etherialization should be invoked only once.
-   * 
+   *
    * @param wait_for_completion if true, the method waits till the POA being
    * destroyed completes all current requests and etherialization. If false, the
    * method returns immediately.
@@ -1669,7 +1669,7 @@ public class gnuPOA
       }
     return h;
   }
-  
+
   /**
    * Recursively searches for the given key in the POA tree.
    * @param ior_key the key, ecapsulating both object
@@ -1748,7 +1748,7 @@ public class gnuPOA
     else
       return null;
   }
-  
+
   /**
    * Recursively searches for the given servant in the POA tree.
    */
@@ -1768,7 +1768,7 @@ public class gnuPOA
       }
     return h;
   }
-  
+
   /**
    * Get the object reference template of this POA.
    * Instantiate a singleton instance, if required.
@@ -1777,15 +1777,15 @@ public class gnuPOA
   {
     if (refTemplate == null)
       refTemplate = new RefTemplate();
-    
+
     return refTemplate;
   }
-  
+
   public ObjectReferenceFactory getReferenceFactory()
   {
     return m_object_factory;
   }
-  
+
   public void setReferenceFactory(ObjectReferenceFactory factory)
   {
     m_object_factory = factory;

@@ -67,10 +67,10 @@ final class RETokenIndependent extends REToken
     boolean b = re.match (input, mymatch);
     if (b)
       {
-	// Once we have found a match, we do not see other possible matches.
-	if (mymatch.backtrackStack != null)
-	  mymatch.backtrackStack.clear ();
-	return mymatch;
+        // Once we have found a match, we do not see other possible matches.
+        if (mymatch.backtrackStack != null)
+          mymatch.backtrackStack.clear ();
+        return mymatch;
 
       }
     return null;

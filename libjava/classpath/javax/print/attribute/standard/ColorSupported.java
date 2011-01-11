@@ -43,7 +43,7 @@ import javax.print.attribute.PrintServiceAttribute;
 
 
 /**
- * The <code>ColorSupported</code> printing attribute specifies if a 
+ * The <code>ColorSupported</code> printing attribute specifies if a
  * printing device is capable of color printing.
  * <p>
  * This attributes just tells if a printer device supports color printing
@@ -56,7 +56,7 @@ import javax.print.attribute.PrintServiceAttribute;
  * in the Java Print Service API. The IPP boolean value true corresponds
  * to <code>SUPPORTED</code> and "false" to <code>NOT_SUPPORTED</code>.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class ColorSupported extends EnumSyntax
@@ -66,17 +66,17 @@ public final class ColorSupported extends EnumSyntax
 
   /** The printer does not support printing in color. */
   public static final ColorSupported NOT_SUPPORTED = new ColorSupported(0);
-  
+
   /** The printer supports printing in color. */
   public static final ColorSupported SUPPORTED = new ColorSupported(1);
 
   private static final String[] stringTable = { "not-supported", "supported" };
   private static final ColorSupported[] enumValueTable = { NOT_SUPPORTED,
                                                           SUPPORTED };
-  
+
   /**
    * Constructs a <code>ColorSupported</code> object.
-   * 
+   *
    * @param value the enum value
    */
   protected ColorSupported(int value)
@@ -103,7 +103,7 @@ public final class ColorSupported extends EnumSyntax
   {
     return "color-supported";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.

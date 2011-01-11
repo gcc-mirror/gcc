@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -45,7 +45,7 @@ import java.text.SimpleDateFormat;
 /**
  * This class is a wrapper around java.util.Date to allow the JDBC
  * driver to identify the value as a SQL Timestamp.  Note that this
- * class also adds an additional field for nano-seconds, and so 
+ * class also adds an additional field for nano-seconds, and so
  * is not completely identical to <code>java.util.Date</code> as
  * the <code>java.sql.Date</code> and <code>java.sql.Time</code>
  * classes are.
@@ -74,7 +74,7 @@ public class Timestamp extends java.util.Date
    * date in JDBC format into a Java date.
    *
    * @param str The string to parse.
-   * @return The resulting <code>java.sql.Timestamp</code> value. 
+   * @return The resulting <code>java.sql.Timestamp</code> value.
    */
   public static Timestamp valueOf(String str)
   {
@@ -82,18 +82,18 @@ public class Timestamp extends java.util.Date
     int dot = str.indexOf('.');
     if (dot != -1)
       {
-	if (str.lastIndexOf('.') != dot)
-	  throw new IllegalArgumentException(str);
+        if (str.lastIndexOf('.') != dot)
+          throw new IllegalArgumentException(str);
 
-	int len = str.length() - dot - 1;
-	if (len < 1 || len > 9)
-	  throw new IllegalArgumentException(str);
+        int len = str.length() - dot - 1;
+        if (len < 1 || len > 9)
+          throw new IllegalArgumentException(str);
 
-	nanos = Integer.parseInt(str.substring(dot + 1));
-	for (int i = len; i < 9; i++)
-	  nanos *= 10;
-	
-	str = str.substring(0, dot);
+        nanos = Integer.parseInt(str.substring(dot + 1));
+        for (int i = len; i < 9; i++)
+          nanos *= 10;
+
+        str = str.substring(0, dot);
 
       }
 
@@ -101,20 +101,20 @@ public class Timestamp extends java.util.Date
       {
         java.util.Date d;
         synchronized (dateFormat)
-	  {
-	    d = (java.util.Date) dateFormat.parseObject(str);
-	  }
+          {
+            d = (java.util.Date) dateFormat.parseObject(str);
+          }
 
-	if (d == null)
-	  throw new IllegalArgumentException(str);
+        if (d == null)
+          throw new IllegalArgumentException(str);
 
-	Timestamp ts = new Timestamp(d.getTime() + nanos / 1000000);
-	ts.nanos = nanos;
-	return ts;
+        Timestamp ts = new Timestamp(d.getTime() + nanos / 1000000);
+        ts.nanos = nanos;
+        return ts;
       }
     catch (ParseException e)
       {
-	throw new IllegalArgumentException(str);
+        throw new IllegalArgumentException(str);
       }
   }
 
@@ -131,7 +131,7 @@ public class Timestamp extends java.util.Date
    * @param nanos The nanosecond value for this Timestamp (0 to 999,999,9999)
    * @deprecated
    */
-  public Timestamp(int year, int month, int day, int hour, int minute, 
+  public Timestamp(int year, int month, int day, int hour, int minute,
     int second, int nanos)
   {
     super(year, month, day, hour, minute, second);
@@ -140,7 +140,7 @@ public class Timestamp extends java.util.Date
 
   /**
    * This method initializes a new instance of this class with the
-   * specified time value representing the number of milliseconds since 
+   * specified time value representing the number of milliseconds since
    * Jan 1, 1970 at 12:00 midnight GMT.
    *
    * @param date The time value to intialize this <code>Time</code> to.
@@ -152,7 +152,7 @@ public class Timestamp extends java.util.Date
   }
 
   /**
-   * Return the value of this Timestamp as the number of milliseconds 
+   * Return the value of this Timestamp as the number of milliseconds
    * since Jan 1, 1970 at 12:00 midnight GMT.
    */
   public long getTime()
@@ -170,13 +170,13 @@ public class Timestamp extends java.util.Date
     synchronized (dateFormat)
       {
         sbuf.setLength(0);
-	dateFormat.format(this, sbuf, null);
-	sbuf.append('.');
-	decimalFormat.format(nanos, sbuf, null);
-	int end = sbuf.length() - 1;
-	while (end > 20 && sbuf.charAt(end) == '0')
-	  end--;
-	return sbuf.substring(0, end + 1);
+        dateFormat.format(this, sbuf, null);
+        sbuf.append('.');
+        decimalFormat.format(nanos, sbuf, null);
+        int end = sbuf.length() - 1;
+        while (end > 20 && sbuf.charAt(end) == '0')
+          end--;
+        return sbuf.substring(0, end + 1);
       }
   }
 
@@ -280,7 +280,7 @@ public class Timestamp extends java.util.Date
 
   /**
    * Compares this <code>Timestamp</code> to another one.
-   * 
+   *
    * @param ts The other Timestamp.
    * @return <code>0</code>, if both <code>Timestamp</code>'s represent exactly
    *         the same date, a negative value if this <code>Timestamp</code> is
@@ -302,7 +302,7 @@ public class Timestamp extends java.util.Date
    * <code>compareTo(Timestamp)</code>, but it may throw a
    * <code>ClassCastException</code>, if the specified object is not of type
    * <code>Timestamp</code>.
-   * 
+   *
    * @param obj The object to compare with.
    * @return <code>0</code>, if both <code>Timestamp</code>'s represent exactly
    *         the same date, a negative value if this <code>Timestamp</code> is

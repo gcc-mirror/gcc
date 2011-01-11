@@ -47,7 +47,7 @@ import java.net.Socket;
 /**
  * The default socket factory that forges "plain" server and client sockets. The
  * class can be replaced by setting the gnu.CORBA.SocketFactory property.
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class DefaultSocketFactory

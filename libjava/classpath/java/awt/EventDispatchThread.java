@@ -65,8 +65,8 @@ class EventDispatchThread extends Thread
           System.getProperty("gnu.awt.dispatchthread.priority");
         if (priorityString != null)
           {
-            priority = Integer.parseInt(priorityString); 
-          }      
+            priority = Integer.parseInt(priorityString);
+          }
       }
     catch (NumberFormatException ex)
       {
@@ -83,25 +83,25 @@ class EventDispatchThread extends Thread
     while (true)
       {
         try
-	{
-	  AWTEvent evt = queue.getNextEvent();
+        {
+          AWTEvent evt = queue.getNextEvent();
           queue.dispatchEvent(evt);
-	}
+        }
         catch (ThreadDeath death)
         {
           // If someone wants to kill us, let them.
           return;
         }
-	catch (InterruptedException ie)
-	{
-	  // We are interrupted when we should finish executing
-	  return;
-	}
-	catch (Throwable x)
-	{
-	  System.err.println("Exception during event dispatch:");
-	  x.printStackTrace(System.err);
-	}
+        catch (InterruptedException ie)
+        {
+          // We are interrupted when we should finish executing
+          return;
+        }
+        catch (Throwable x)
+        {
+          System.err.println("Exception during event dispatch:");
+          x.printStackTrace(System.err);
+        }
       }
   }
 }

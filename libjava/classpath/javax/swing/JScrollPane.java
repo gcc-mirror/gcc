@@ -1,4 +1,4 @@
-/* JScrollPane.java -- 
+/* JScrollPane.java --
    Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -146,7 +146,7 @@ public class JScrollPane extends JComponent
   }
 
   private static final long serialVersionUID = 5203525440012340014L;
-  
+
   protected JViewport columnHeader;
   protected JViewport rowHeader;
 
@@ -171,9 +171,9 @@ public class JScrollPane extends JComponent
     return columnHeader;
   }
 
-  public Component getCorner(String key) 
+  public Component getCorner(String key)
   {
-    if (getComponentOrientation() 
+    if (getComponentOrientation()
         == ComponentOrientation.LEFT_TO_RIGHT)
       {
         if (key == LOWER_LEADING_CORNER)
@@ -185,7 +185,7 @@ public class JScrollPane extends JComponent
         else if (key == UPPER_TRAILING_CORNER)
           key = UPPER_RIGHT_CORNER;
       }
-    else if (getComponentOrientation() 
+    else if (getComponentOrientation()
              == ComponentOrientation.RIGHT_TO_LEFT)
       {
         if (key == LOWER_LEADING_CORNER)
@@ -261,14 +261,14 @@ public class JScrollPane extends JComponent
         else
           {
             Rectangle b = getViewport().getBounds();
-            return new Rectangle(b.x - i.left, 
+            return new Rectangle(b.x - i.left,
                                  b.y - i.top,
-                                 b.width + i.left + i.right, 
+                                 b.width + i.left + i.right,
                                  b.height + i.top + i.bottom);
           }
       }
   }
-  
+
   public boolean isWheelScrollingEnabled()
   {
     return wheelScrollingEnabled;
@@ -310,7 +310,7 @@ public class JScrollPane extends JComponent
   {
     if (columnHeader == h)
       return;
-    
+
     JViewport old = columnHeader;
     removeNonNull(old);
     columnHeader = h;
@@ -329,7 +329,7 @@ public class JScrollPane extends JComponent
 
   public void setCorner(String key, Component c)
   {
-    if (getComponentOrientation() 
+    if (getComponentOrientation()
         == ComponentOrientation.LEFT_TO_RIGHT)
       {
         if (key == LOWER_LEADING_CORNER)
@@ -341,7 +341,7 @@ public class JScrollPane extends JComponent
         else if (key == UPPER_TRAILING_CORNER)
           key = UPPER_RIGHT_CORNER;
       }
-    else if (getComponentOrientation() 
+    else if (getComponentOrientation()
              == ComponentOrientation.RIGHT_TO_LEFT)
       {
         if (key == LOWER_LEADING_CORNER)
@@ -401,11 +401,11 @@ public class JScrollPane extends JComponent
   {
     if (horizontalScrollBarPolicy == h)
       return;
-    
+
     if (h != HORIZONTAL_SCROLLBAR_AS_NEEDED
         && h != HORIZONTAL_SCROLLBAR_NEVER
         && h != HORIZONTAL_SCROLLBAR_ALWAYS)
-      throw new IllegalArgumentException("unknown horizontal scrollbar policy");    
+      throw new IllegalArgumentException("unknown horizontal scrollbar policy");
 
     int old = horizontalScrollBarPolicy;
     horizontalScrollBarPolicy = h;
@@ -428,7 +428,7 @@ public class JScrollPane extends JComponent
   {
     if (rowHeader == v)
       return;
-    
+
     JViewport old = rowHeader;
     removeNonNull(old);
     rowHeader = v;
@@ -449,7 +449,7 @@ public class JScrollPane extends JComponent
   {
     if (verticalScrollBar == v)
       return;
-    
+
     JScrollBar old = verticalScrollBar;
     removeNonNull(old);
     verticalScrollBar = v;
@@ -462,12 +462,12 @@ public class JScrollPane extends JComponent
   {
     if (verticalScrollBarPolicy == v)
       return;
-    
+
     if (v != VERTICAL_SCROLLBAR_AS_NEEDED
         && v != VERTICAL_SCROLLBAR_NEVER
         && v != VERTICAL_SCROLLBAR_ALWAYS)
-      throw new IllegalArgumentException("unknown vertical scrollbar policy");    
-    
+      throw new IllegalArgumentException("unknown vertical scrollbar policy");
+
     int old = verticalScrollBarPolicy;
     verticalScrollBarPolicy = v;
     firePropertyChange("verticalScrollBarPolicy", old, v);
@@ -479,7 +479,7 @@ public class JScrollPane extends JComponent
   {
     if (wheelScrollingEnabled == b)
       return;
-    
+
     boolean old = wheelScrollingEnabled;
     wheelScrollingEnabled = b;
     firePropertyChange("wheelScrollingEnabled", old, b);
@@ -490,7 +490,7 @@ public class JScrollPane extends JComponent
   {
     if (viewport == v)
       return;
-    
+
     JViewport old = viewport;
     removeNonNull(old);
     viewport = v;
@@ -510,20 +510,20 @@ public class JScrollPane extends JComponent
   {
     if (viewportBorder == b)
       return;
-    
+
     Border old = viewportBorder;
     viewportBorder = b;
     firePropertyChange("viewportBorder", old, b);
     sync();
   }
-    
+
   public void setViewportView(Component view)
   {
     if (getViewport() == null)
       {
         setViewport(createViewport());
       }
-	
+
     if (view != null)
       {
         getViewport().setView(view);
@@ -541,7 +541,7 @@ public class JScrollPane extends JComponent
    * policy is set to {@link #VERTICAL_SCROLLBAR_AS_NEEDED} and
    * {@link #HORIZONTAL_SCROLLBAR_AS_NEEDED}.
    */
-  public JScrollPane() 
+  public JScrollPane()
   {
     this(null);
   }
@@ -553,10 +553,10 @@ public class JScrollPane extends JComponent
    *
    * @param view the component that is embedded inside the JScrollPane
    */
-  public JScrollPane(Component view) 
+  public JScrollPane(Component view)
   {
-    this(view, 
-         VERTICAL_SCROLLBAR_AS_NEEDED, 
+    this(view,
+         VERTICAL_SCROLLBAR_AS_NEEDED,
          HORIZONTAL_SCROLLBAR_AS_NEEDED);
   }
 
@@ -574,7 +574,7 @@ public class JScrollPane extends JComponent
    * @see ScrollPaneConstants#VERTICAL_SCROLLBAR_AS_NEEDED
    * @see ScrollPaneConstants#VERTICAL_SCROLLBAR_NEVER
    */
-  public JScrollPane(int vsbPolicy, int hsbPolicy) 
+  public JScrollPane(int vsbPolicy, int hsbPolicy)
   {
     this(null, vsbPolicy, hsbPolicy);
   }
@@ -594,7 +594,7 @@ public class JScrollPane extends JComponent
    * @see ScrollPaneConstants#VERTICAL_SCROLLBAR_AS_NEEDED
    * @see ScrollPaneConstants#VERTICAL_SCROLLBAR_NEVER
    */
-  public JScrollPane(Component view, int vsbPolicy, int hsbPolicy) 
+  public JScrollPane(Component view, int vsbPolicy, int hsbPolicy)
   {
     wheelScrollingEnabled = true;
     setVerticalScrollBarPolicy(vsbPolicy);
@@ -610,7 +610,7 @@ public class JScrollPane extends JComponent
     updateUI();
   }
 
-  
+
   public JScrollBar createHorizontalScrollBar()
   {
     return new ScrollBar(SwingConstants.HORIZONTAL);
@@ -620,7 +620,7 @@ public class JScrollPane extends JComponent
   {
     return new ScrollBar(SwingConstants.VERTICAL);
   }
-    
+
   protected JViewport createViewport()
   {
     return new JViewport();
@@ -630,11 +630,11 @@ public class JScrollPane extends JComponent
   {
     return "ScrollPaneUI";
   }
-  
+
   public void updateUI()
   {
     setUI((ScrollPaneUI) UIManager.getUI(this));
-  }  
+  }
 
   /**
    * This method returns the scrollpane's UI delegate.
@@ -656,7 +656,7 @@ public class JScrollPane extends JComponent
     super.setUI(ui);
   }
 
-  protected class ScrollBar 
+  protected class ScrollBar
     extends JScrollBar
     implements UIResource
   {
@@ -675,7 +675,7 @@ public class JScrollPane extends JComponent
       else
         {
           Scrollable s = (Scrollable) view;
-          return s.getScrollableBlockIncrement(JScrollPane.this.getViewport().getViewRect(), 
+          return s.getScrollableBlockIncrement(JScrollPane.this.getViewport().getViewRect(),
                                                this.getOrientation(),
                                                direction);
         }
@@ -689,7 +689,7 @@ public class JScrollPane extends JComponent
       else
         {
           Scrollable s = (Scrollable) view;
-          return s.getScrollableUnitIncrement(JScrollPane.this.getViewport().getViewRect(), 
+          return s.getScrollableUnitIncrement(JScrollPane.this.getViewport().getViewRect(),
                                               this.getOrientation(),
                                               direction);
         }

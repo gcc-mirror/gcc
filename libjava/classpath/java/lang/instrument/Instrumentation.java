@@ -50,22 +50,22 @@ package java.lang.instrument;
  */
 public interface Instrumentation
 {
-  
+
   /**
    * Adds a <code>ClassFileTransformer</class> object
    * to the instrumentation. Each time a class is defined
    * or redefined, the <code>transform</code> method of the
    * <code>transformer</code> object is called.
-   * 
+   *
    * @param transformer the transformer to add
    * @throws NullPointerException if transformer is null
    */
   void addTransformer(ClassFileTransformer transformer);
-  
+
   /**
    * Removes the given transformer from the set of transformers
    * this Instrumentation object has.
-   * 
+   *
    * @param transformer the transformer to remove
    * @return true if the transformer was found and removed, false if
    * the transformer was not found
@@ -75,7 +75,7 @@ public interface Instrumentation
 
   /**
    * Returns if the current JVM supports class redefinition
-   * 
+   *
    * @return true if the current JVM supports class redefinition
    */
   boolean isRedefineClassesSupported();
@@ -85,9 +85,9 @@ public interface Instrumentation
    * the corresponding class files.
    *
    * @param definitions an array of classes to redefine
-   * 
-   * @throws ClassNotFoundException if a class cannot be found 
-   * @throws UnmodifiableClassException if a class cannot be modified 
+   *
+   * @throws ClassNotFoundException if a class cannot be found
+   * @throws UnmodifiableClassException if a class cannot be modified
    * @throws UnsupportedOperationException if the JVM does not support
    * redefinition or the redefinition made unsupported changes
    * @throws ClassFormatError if a class file is not valid
@@ -97,7 +97,7 @@ public interface Instrumentation
    * are unsupported
    * @throws ClassCircularityError if circularity occured with the new
    * classes
-   * @throws LinkageError if a linkage error occurs 
+   * @throws LinkageError if a linkage error occurs
    * @throws NullPointerException if the definitions array is null, or any
    * of its element
    *
@@ -112,7 +112,7 @@ public interface Instrumentation
 
   /**
    * Get all the classes loaded by the JVM.
-   * 
+   *
    * @return an array containing all the classes loaded by the JVM. The array
    * is empty if no class is loaded.
    */
@@ -120,9 +120,9 @@ public interface Instrumentation
 
   /**
    * Get all the classes loaded by a given class loader
-   * 
+   *
    * @param loader the loader
-   * 
+   *
    * @return an array containing all the classes loaded by the given loader.
    * The array is empty if no class was loaded by the loader.
    */
@@ -130,7 +130,7 @@ public interface Instrumentation
 
   /**
    * Get the size of an object. It contains the size of all fields.
-   * 
+   *
    * @param objectToSize the object
    * @return the size of the object
    * @throws NullPointerException if objectToSize is null.

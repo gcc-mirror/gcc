@@ -62,11 +62,11 @@ import org.omg.CORBA.ORB;
 public class ErrorMessage
   extends MessageHeader
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1;
-  
+
   /**
    * Create a new error message, setting the message field
    * to the {@link MESSAGE_ERROR} and the version number to
@@ -83,7 +83,7 @@ public class ErrorMessage
    *
    * @param ior the IOR address (host and port, other fields
    * are not used).
-   * 
+   *
    * @param orb the ORB, sending the error message.
    */
   public void send(IOR ior, ORB orb)
@@ -91,7 +91,7 @@ public class ErrorMessage
     try
       {
         Socket socket;
-        
+
         if (orb instanceof OrbFunctional)
           socket = ((OrbFunctional) orb).socketFactory.createClientSocket(
             ior.Internet.host, ior.Internet.port);

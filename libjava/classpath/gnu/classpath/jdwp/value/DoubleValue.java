@@ -44,7 +44,7 @@ import java.io.IOException;
 
 /**
  * Wrapper for an double value.
- * 
+ *
  * @author Kyle Galloway <kgallowa@redhat.com>
  */
 public final class DoubleValue
@@ -55,7 +55,7 @@ public final class DoubleValue
 
   /**
    * Create a new DoubleValue from an double
-   * 
+   *
    * @param value the double to wrap
    */
   public DoubleValue(double value)
@@ -63,20 +63,20 @@ public final class DoubleValue
     super(JdwpConstants.Tag.DOUBLE);
     _value = value;
   }
-  
+
   /**
    * Get the value held in this Value
-   * 
+   *
    * @return the value represented by this Value object
    */
   public double getValue()
   {
     return _value;
   }
-  
+
   /**
    * Return an object representing this type
-   * 
+   *
    * @return an Object represntation of this value
    */
   @Override
@@ -87,7 +87,7 @@ public final class DoubleValue
 
   /**
    * Write the wrapped double to the given DataOutputStream.
-   * 
+   *
    * @param os the output stream to write to
    */
   @Override
@@ -97,4 +97,3 @@ public final class DoubleValue
     os.writeDouble(_value);
   }
 }
-

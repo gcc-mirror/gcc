@@ -1,4 +1,4 @@
-/* UNSUPPORTED_POLICY.java -- 
+/* UNSUPPORTED_POLICY.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -39,17 +39,17 @@ package org.omg.CORBA;
 
 /**
  * Holds a single constant, specifying, that
- * while the requested {@link Policy} is valid, it is not supported by 
- * this ORB. One of the PolicyErrorCodes, others being 
+ * while the requested {@link Policy} is valid, it is not supported by
+ * this ORB. One of the PolicyErrorCodes, others being
  * {@link UNSUPPORTED_POLICY_VALUE}, {@link BAD_POLICY},
  * {@link BAD_POLICY_TYPE}, {@link BAD_POLICY_VALUE}.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public interface UNSUPPORTED_POLICY
 {
   /**
-   * States that while the requested {@link Policy} is valid, 
+   * States that while the requested {@link Policy} is valid,
    * it is not supported by this ORB.
    */
   short value = 1;

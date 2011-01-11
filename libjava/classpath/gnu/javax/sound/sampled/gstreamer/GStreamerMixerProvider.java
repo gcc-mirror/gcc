@@ -43,20 +43,20 @@ import javax.sound.sampled.spi.MixerProvider;
 
 /**
  * Concrete provider class for GStreamerMixer.
- * 
+ *
  * @author Mario Torre
  */
 public class GStreamerMixerProvider
     extends MixerProvider
 {
-  private static final GStreamerMixer mixer = new GStreamerMixer(); 
-  
+  private static final GStreamerMixer mixer = new GStreamerMixer();
+
   @Override
   public Mixer getMixer(Info info)
   {
-    if (info.equals(mixer.getMixerInfo())) 
+    if (info.equals(mixer.getMixerInfo()))
       return mixer;
-    
+
     throw new
       IllegalArgumentException("This provider cannot handle a mixer or type: "
                                + info.getName());

@@ -53,7 +53,7 @@ import java.nio.MappedByteBuffer;
 /**
  * Native interface to support configuring of channel to run in a non-blocking
  * manner and support scatter/gather io operations.
- * 
+ *
  * @author Michael Barker <mike@middlesoft.co.uk>
  *
  */
@@ -61,12 +61,12 @@ public final class VMChannel
 {
   /**
    * Our reference implementation uses an integer to store the native
-   * file descriptor. Implementations without such support 
+   * file descriptor. Implementations without such support
    */
   private final State nfd;
-  
+
   private Kind kind;
-  
+
   public VMChannel()
   {
     // XXX consider adding security check here, so only Classpath
@@ -74,14 +74,14 @@ public final class VMChannel
     this.nfd = new State();
     kind = Kind.OTHER;
   }
-  
+
   /**
    * This constructor is used by the POSIX reference implementation;
    * other virtual machines need not support it.
-   * 
+   *
    * <strong>Important:</strong> do not call this in library code that is
    * not specific to Classpath's reference implementation.
-   * 
+   *
    * @param native_fd The native file descriptor integer.
    * @throws IOException
    */
@@ -90,7 +90,7 @@ public final class VMChannel
     this();
     this.nfd.setNativeFD(native_fd);
   }
-  
+
   public State getState()
   {
     return nfd;
@@ -105,62 +105,62 @@ public final class VMChannel
       }
     initIDs();
   }
-  
+
   public static VMChannel getStdin() throws IOException
   {
     return new VMChannel(stdin_fd());
   }
-  
+
   public static VMChannel getStdout() throws IOException
   {
     return new VMChannel(stdout_fd());
   }
-  
+
   public static VMChannel getStderr() throws IOException
   {
     return new VMChannel(stderr_fd());
   }
-  
+
   private static native int stdin_fd();
   private static native int stdout_fd();
   private static native int stderr_fd();
-  
+
   /**
    * Set the file descriptor to have the required blocking
    * setting.
-   * 
+   *
    * @param blocking The blocking flag to set.
    */
   public void setBlocking(boolean blocking) throws IOException
   {
     setBlocking(nfd.getNativeFD(), blocking);
   }
-  
+
   private static native void setBlocking(int fd, boolean blocking)
     throws IOException;
-  
+
   public int available() throws IOException
   {
     return available(nfd.getNativeFD());
   }
-  
+
   private static native int available(int native_fd) throws IOException;
 
   /**
    * Reads a byte buffer directly using the supplied file descriptor.
-   * 
+   *
    * @param dst Direct Byte Buffer to read to.
    * @return Number of bytes read.
-   * @throws IOException If an error occurs or dst is not a direct buffers. 
+   * @throws IOException If an error occurs or dst is not a direct buffers.
    */
   public int read(ByteBuffer dst)
     throws IOException
   {
     return read(nfd.getNativeFD(), dst);
   }
-  
+
   private static native int read(int fd, ByteBuffer dst) throws IOException;
-  
+
   /**
    * Read a single byte.
    *
@@ -171,19 +171,19 @@ public final class VMChannel
   {
     return read(nfd.getNativeFD());
   }
-  
+
   private static native int read(int fd) throws IOException;
-  
+
   /**
    * Reads into byte buffers directly using the supplied file descriptor.
    * Assumes that the buffer list contains DirectBuffers.  Will perform a
    * scattering read.
-   * 
+   *
    * @param dsts An array direct byte buffers.
    * @param offset Index of the first buffer to read to.
    * @param length The number of buffers to read to.
    * @return Number of bytes read.
-   * @throws IOException If an error occurs or the dsts are not direct buffers. 
+   * @throws IOException If an error occurs or the dsts are not direct buffers.
    */
   public long readScattering(ByteBuffer[] dsts, int offset, int length)
     throws IOException
@@ -193,11 +193,11 @@ public final class VMChannel
 
     return readScattering(nfd.getNativeFD(), dsts, offset, length);
   }
-  
+
   private static native long readScattering(int fd, ByteBuffer[] dsts,
                                             int offset, int length)
     throws IOException;
-  
+
   /**
    * Receive a datagram on this channel, returning the host address
    * that sent the datagram.
@@ -228,18 +228,18 @@ public final class VMChannel
         int port = hostPort.getShort() & 0xFFFF;
         return new InetSocketAddress(Inet6Address.getByAddress(addr), port);
       }
-    
+
     throw new SocketException("host address received with invalid length: "
                               + hostlen);
   }
-  
+
   private static native int receive (int fd, ByteBuffer dst, ByteBuffer address)
     throws IOException;
 
   /**
    * Writes from a direct byte bufer using the supplied file descriptor.
    * Assumes the buffer is a DirectBuffer.
-   * 
+   *
    * @param src The source buffer.
    * @return Number of bytes written.
    * @throws IOException
@@ -248,14 +248,14 @@ public final class VMChannel
   {
     return write(nfd.getNativeFD(), src);
   }
-  
+
   private native int write(int fd, ByteBuffer src) throws IOException;
 
   /**
    * Writes from byte buffers directly using the supplied file descriptor.
    * Assumes the that buffer list constains DirectBuffers.  Will perform
    * as gathering write.
-   * 
+   *
    * @param srcs
    * @param offset
    * @param length
@@ -267,13 +267,13 @@ public final class VMChannel
   {
     if (offset + length > srcs.length)
       throw new IndexOutOfBoundsException("offset + length > srcs.length");
-    
+
     // A gathering write is limited to 16 buffers; when writing, ensure
     // that we have at least one buffer with something in it in the 16
     // buffer window starting at offset.
     while (!srcs[offset].hasRemaining() && offset < srcs.length)
       offset++;
-    
+
     // There are no buffers with anything to write.
     if (offset == srcs.length)
       return 0;
@@ -285,11 +285,11 @@ public final class VMChannel
 
     return writeGathering(nfd.getNativeFD(), srcs, offset, length);
   }
-  
+
   private native long writeGathering(int fd, ByteBuffer[] srcs,
                                      int offset, int length)
     throws IOException;
-  
+
   /**
    * Send a datagram to the given address.
    *
@@ -311,15 +311,15 @@ public final class VMChannel
     else
       throw new SocketException("unrecognized inet address type");
   }
-  
+
   // Send to an IPv4 address.
   private static native int send(int fd, ByteBuffer src, byte[] addr, int port)
     throws IOException;
-  
+
   // Send to an IPv6 address.
   private static native int send6(int fd, ByteBuffer src, byte[] addr, int port)
     throws IOException;
-  
+
   /**
    * Write a single byte.
    *
@@ -330,13 +330,13 @@ public final class VMChannel
   {
     write(nfd.getNativeFD(), b);
   }
-  
+
   private static native void write(int fd, int b) throws IOException;
-  
+
   private native static void initIDs();
 
   // Network (socket) specific methods.
-  
+
   /**
    * Create a new socket. This method will initialize the native file
    * descriptor state of this instance.
@@ -356,7 +356,7 @@ public final class VMChannel
       kind = Kind.SOCK_DGRAM;
     nfd.setNativeFD(socket(stream));
   }
-  
+
   /**
    * Create a new socket, returning the native file descriptor.
    *
@@ -382,7 +382,7 @@ public final class VMChannel
     int fd;
 
     InetAddress addr = saddr.getAddress();
- 
+
     // Translates an IOException into a SocketException to conform
     // to the throws clause.
     try
@@ -402,13 +402,13 @@ public final class VMChannel
                       timeout);
     throw new SocketException("unsupported internet address");
   }
-  
+
   private static native boolean connect(int fd, byte[] addr, int port, int timeout)
     throws SocketException;
-  
+
   private static native boolean connect6(int fd, byte[] addr, int port, int timeout)
     throws SocketException;
-  
+
   /**
    * Disconnect this channel, if it is a datagram socket. Disconnecting
    * a datagram channel will disassociate it from any address, so the
@@ -424,9 +424,9 @@ public final class VMChannel
       throw new IOException("can only disconnect datagram channels");
     disconnect(nfd.getNativeFD());
   }
-  
+
   private static native void disconnect(int fd) throws IOException;
-  
+
   public InetSocketAddress getLocalAddress() throws IOException
   {
     if (!nfd.isValid())
@@ -451,7 +451,7 @@ public final class VMChannel
       }
     throw new SocketException("invalid address length");
   }
-  
+
   private static native int getsockname(int fd, ByteBuffer name)
     throws IOException;
 
@@ -486,7 +486,7 @@ public final class VMChannel
       }
     throw new SocketException("invalid address length");
   }
-  
+
   /*
    * The format here is the peer address, followed by the port number.
    * The returned value is the length of the peer address; thus, there
@@ -494,7 +494,7 @@ public final class VMChannel
    */
   private static native int getpeername(int fd, ByteBuffer name)
     throws IOException;
-  
+
   /**
    * Accept an incoming connection, returning a new VMChannel, or null
    * if the channel is nonblocking and no connection is pending.
@@ -509,17 +509,17 @@ public final class VMChannel
       return null;
     return new VMChannel(new_fd);
   }
-  
+
   private static native int accept(int native_fd) throws IOException;
 
   // File-specific methods.
-  
+
   /**
    * Open a file at PATH, initializing the native state to operate on
    * that open file.
-   * 
+   *
    * @param path The absolute file path.
-   * @throws IOException If the file cannot be opened, or if this 
+   * @throws IOException If the file cannot be opened, or if this
    *  channel was previously initialized.
    */
   public void openFile(String path, int mode) throws IOException
@@ -530,25 +530,25 @@ public final class VMChannel
     nfd.setNativeFD(fd);
     kind = Kind.FILE;
   }
-  
+
   private static native int open(String path, int mode) throws IOException;
-  
+
   public long position() throws IOException
   {
     if (kind != Kind.FILE)
       throw new IOException("not a file");
     return position(nfd.getNativeFD());
   }
-  
+
   private static native long position(int fd) throws IOException;
-  
+
   public void seek(long pos) throws IOException
   {
     if (kind != Kind.FILE)
       throw new IOException("not a file");
     seek(nfd.getNativeFD(), pos);
   }
-  
+
   private static native void seek(int fd, long pos) throws IOException;
 
   public void truncate(long length) throws IOException
@@ -557,9 +557,9 @@ public final class VMChannel
       throw new IOException("not a file");
     truncate(nfd.getNativeFD(), length);
   }
-  
+
   private static native void truncate(int fd, long len) throws IOException;
-  
+
   public boolean lock(long pos, long len, boolean shared, boolean wait)
     throws IOException
   {
@@ -567,27 +567,27 @@ public final class VMChannel
       throw new IOException("not a file");
     return lock(nfd.getNativeFD(), pos, len, shared, wait);
   }
-  
+
   private static native boolean lock(int fd, long pos, long len,
                                      boolean shared, boolean wait)
     throws IOException;
-  
+
   public void unlock(long pos, long len) throws IOException
   {
     if (kind != Kind.FILE)
       throw new IOException("not a file");
     unlock(nfd.getNativeFD(), pos, len);
   }
-  
+
   private static native void unlock(int fd, long pos, long len) throws IOException;
-  
+
   public long size() throws IOException
   {
     if (kind != Kind.FILE)
       throw new IOException("not a file");
     return size(nfd.getNativeFD());
   }
-  
+
   private static native long size(int fd) throws IOException;
 
   public MappedByteBuffer map(char mode, long position, int size)
@@ -597,22 +597,22 @@ public final class VMChannel
       throw new IOException("not a file");
     return map(nfd.getNativeFD(), mode, position, size);
   }
-  
+
   private static native MappedByteBuffer map(int fd, char mode,
                                              long position, int size)
     throws IOException;
-  
+
   public boolean flush(boolean metadata) throws IOException
   {
     if (kind != Kind.FILE)
       throw new IOException("not a file");
     return flush(nfd.getNativeFD(), metadata);
   }
-  
+
   private static native boolean flush(int fd, boolean metadata) throws IOException;
-  
+
   // Close.
-  
+
   /**
    * Close this socket. The socket is also automatically closed when this
    * object is finalized.
@@ -624,13 +624,13 @@ public final class VMChannel
   {
     nfd.close();
   }
-  
+
   static native void close(int native_fd) throws IOException;
-  
+
   /**
    * <p>Provides a simple mean for the JNI code to find out whether the
    * current thread was interrupted by a call to Thread.interrupt().</p>
-   * 
+   *
    * @return
    */
   static boolean isThreadInterrupted()
@@ -639,15 +639,15 @@ public final class VMChannel
   }
 
   // Inner classes.
-  
+
   /**
    * A wrapper for a native file descriptor integer. This tracks the state
-   * of an open file descriptor, and ensures that 
-   * 
+   * of an open file descriptor, and ensures that
+   *
    * This class need not be fully supported by virtual machines; if a
    * virtual machine does not use integer file descriptors, or does and
    * wishes to hide that, then the methods of this class may be stubbed out.
-   * 
+   *
    * System-specific classes that depend on access to native file descriptor
    * integers SHOULD declare this fact.
    */
@@ -656,31 +656,31 @@ public final class VMChannel
     private int native_fd;
     private boolean valid;
     private boolean closed;
-    
+
     State()
     {
       native_fd = -1;
       valid = false;
       closed = false;
     }
-    
+
     public boolean isValid()
     {
       return valid;
     }
-    
+
     public boolean isClosed()
     {
       return closed;
     }
-    
+
     public int getNativeFD() throws IOException
     {
       if (!valid)
         throw new IOException("invalid file descriptor");
       return native_fd;
     }
-    
+
     void setNativeFD(final int native_fd) throws IOException
     {
       if (valid)
@@ -688,7 +688,7 @@ public final class VMChannel
       this.native_fd = native_fd;
       valid = true;
     }
-    
+
     public void close() throws IOException
     {
       if (!valid)
@@ -703,7 +703,7 @@ public final class VMChannel
           closed = true;
         }
     }
-    
+
     public String toString()
     {
       if (closed)
@@ -712,7 +712,7 @@ public final class VMChannel
         return "<<invalid>>";
       return String.valueOf(native_fd);
     }
-    
+
     protected void finalize() throws Throwable
     {
       try
@@ -726,7 +726,7 @@ public final class VMChannel
         }
     }
   }
-  
+
   /**
    * An enumeration of possible kinds of channel.
    */
@@ -734,16 +734,16 @@ public final class VMChannel
   {
     /** A streaming (TCP) socket. */
     static final Kind SOCK_STREAM = new Kind();
-    
+
     /** A datagram (UDP) socket. */
     static final Kind SOCK_DGRAM = new Kind();
-    
+
     /** A file. */
     static final Kind FILE = new Kind();
-    
+
     /** Something else; not a socket or file. */
     static final Kind OTHER = new Kind();
-    
+
     private Kind() { }
   }
 }

@@ -1,4 +1,4 @@
-/* DomHTMLBaseFontElement.java -- 
+/* DomHTMLBaseFontElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -64,7 +64,7 @@ public class DomHTMLBaseFontElement
   {
     setHTMLAttribute("color", color);
   }
-  
+
   public String getFace()
   {
     return getHTMLAttribute("face");
@@ -74,7 +74,7 @@ public class DomHTMLBaseFontElement
   {
     setHTMLAttribute("face", face);
   }
-  
+
   public int getSize()
   {
     return getIntHTMLAttribute("size");
@@ -84,6 +84,5 @@ public class DomHTMLBaseFontElement
   {
     setIntHTMLAttribute("size", size);
   }
-  
-}
 
+}

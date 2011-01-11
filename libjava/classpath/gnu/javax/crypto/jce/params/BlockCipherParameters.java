@@ -1,4 +1,4 @@
-/* BlockCipherParameters.java -- 
+/* BlockCipherParameters.java --
    Copyright (C) 2002, 2003, 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -74,7 +74,7 @@ public class BlockCipherParameters
    *    keySize              INTEGER,
    *    initializationVector OCTET STRING OPTIONAL }
    * </pre>
-   * 
+   *
    * @return The parameters, encoded an an ASN.1 DER sequence.
    * @throws java.io.IOException If encoding these parameters fails.
    */

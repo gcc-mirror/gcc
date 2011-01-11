@@ -70,7 +70,7 @@ public class Util
    * <pre>
    * toString(ba, 0, ba.length);
    * </pre>
-   * 
+   *
    * @param ba the byte array to convert.
    * @return a string of hexadecimal characters (two for each byte) representing
    *         the designated input byte array.
@@ -84,7 +84,7 @@ public class Util
    * Returns a string of hexadecimal digits from a byte array, starting at
    * <code>offset</code> and consisting of <code>length</code> bytes. Each
    * byte is converted to 2 hex symbols; zero(es) included.
-   * 
+   *
    * @param ba the byte array to convert.
    * @param offset the index from which to start considering the bytes to
    *          convert.
@@ -114,7 +114,7 @@ public class Util
    * <pre>
    * toReversedString(ba, 0, ba.length);
    * </pre>
-   * 
+   *
    * @param ba the byte array to convert.
    * @return a string of hexadecimal characters (two for each byte) representing
    *         the designated input byte array.
@@ -131,7 +131,7 @@ public class Util
    * <p>
    * The byte array is treated as a large little-endian integer, and is returned
    * as a large big-endian integer.
-   * 
+   *
    * @param ba the byte array to convert.
    * @param offset the index from which to start considering the bytes to
    *          convert.
@@ -156,7 +156,7 @@ public class Util
    * <p>
    * Returns a byte array from a string of hexadecimal digits.
    * </p>
-   * 
+   *
    * @param s a string of hexadecimal ASCII characters
    * @return the decoded byte array from the input hexadecimal string.
    */
@@ -179,7 +179,7 @@ public class Util
    * Returns a byte array from a string of hexadecimal digits, interpreting them
    * as a large big-endian integer and returning it as a large little-endian
    * integer.
-   * 
+   *
    * @param s a string of hexadecimal ASCII characters
    * @return the decoded byte array from the input hexadecimal string.
    */
@@ -201,7 +201,7 @@ public class Util
   /**
    * Returns a number from <code>0</code> to <code>15</code> corresponding
    * to the designated hexadecimal digit.
-   * 
+   *
    * @param c a hexadecimal ASCII symbol.
    */
   public static int fromDigit(char c)
@@ -219,7 +219,7 @@ public class Util
   /**
    * Returns a string of 8 hexadecimal digits (most significant digit first)
    * corresponding to the unsigned integer <code>n</code>.
-   * 
+   *
    * @param n the unsigned integer to convert.
    * @return a hexadecimal string 8-character long.
    */
@@ -260,7 +260,7 @@ public class Util
   /**
    * Returns a string of 16 hexadecimal digits (most significant digit first)
    * corresponding to the unsigned long <code>n</code>.
-   * 
+   *
    * @param n the unsigned long to convert.
    * @return a hexadecimal string 16-character long.
    */
@@ -280,7 +280,7 @@ public class Util
    * escape character is inserted before every pair of bytes. Useful to
    * externalise byte arrays that will be constructed later from such strings;
    * eg. s-box values.
-   * 
+   *
    * @throws ArrayIndexOutOfBoundsException if the length is odd.
    */
   public static String toUnicodeString(byte[] ba)
@@ -293,7 +293,7 @@ public class Util
    * escape character is inserted before every pair of bytes. Useful to
    * externalise byte arrays that will be constructed later from such strings;
    * eg. s-box values.
-   * 
+   *
    * @throws ArrayIndexOutOfBoundsException if the length is odd.
    */
   public static final String toUnicodeString(byte[] ba, int offset, int length)
@@ -324,7 +324,7 @@ public class Util
    * escape character is inserted before every pair of bytes. Useful to
    * externalise integer arrays that will be constructed later from such
    * strings; eg. s-box values.
-   * 
+   *
    * @throws ArrayIndexOutOfBoundsException if the length is not a multiple of
    *           4.
    */
@@ -376,7 +376,7 @@ public class Util
    * If <code>offset</code> and <code>length</code> are omitted, the whole
    * array is used. If <code>m</code> is omitted, nothing is prepended to each
    * line.
-   * 
+   *
    * @param data the byte array to be dumped.
    * @param offset the offset within <i>data</i> to start from.
    * @param length the number of bytes to dump.
@@ -433,7 +433,7 @@ public class Util
   /**
    * Returns a string of 2 hexadecimal digits (most significant digit first)
    * corresponding to the lowest 8 bits of <code>n</code>.
-   * 
+   *
    * @param n the byte value to convert.
    * @return a string of 2 hex characters representing the input.
    */
@@ -449,7 +449,7 @@ public class Util
    * '.' (dot) shall be used instead of "+' (plus).
    * <p>
    * Used by SASL password file manipulation primitives.
-   * 
+   *
    * @param buffer an arbitrary sequence of bytes to represent in Base-64.
    * @return unpadded (without the '=' character(s)) Base-64 representation of
    *         the input.
@@ -525,7 +525,7 @@ public class Util
    * <p>
    * Converts a string representing the encoding of some bytes in Base-64 to
    * their original form.
-   * 
+   *
    * @param str the Base-64 encoded representation of some byte(s).
    * @return the bytes represented by the <code>str</code>.
    * @throws NumberFormatException if <code>str</code> is <code>null</code>,
@@ -597,7 +597,7 @@ public class Util
    * Treats the input as the MSB representation of a number, and discards
    * leading zero elements. For efficiency, the input is simply returned if no
    * leading zeroes are found.
-   * 
+   *
    * @param n the {@link BigInteger} to trim.
    * @return the byte array representation of the designated {@link BigInteger}
    *         with no leading 0-bytes.
@@ -618,7 +618,7 @@ public class Util
 
   /**
    * Returns a hexadecimal dump of the trimmed bytes of a {@link BigInteger}.
-   * 
+   *
    * @param x the {@link BigInteger} to display.
    * @return the string representation of the designated {@link BigInteger}.
    */

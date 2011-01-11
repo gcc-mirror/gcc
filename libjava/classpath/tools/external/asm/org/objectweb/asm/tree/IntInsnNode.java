@@ -33,7 +33,7 @@ import org.objectweb.asm.MethodVisitor;
 
 /**
  * A node that represents an instruction with a single int operand.
- * 
+ *
  * @author Eric Bruneton
  */
 public class IntInsnNode extends AbstractInsnNode {
@@ -45,7 +45,7 @@ public class IntInsnNode extends AbstractInsnNode {
 
     /**
      * Constructs a new {@link IntInsnNode}.
-     * 
+     *
      * @param opcode the opcode of the instruction to be constructed. This
      *        opcode must be BIPUSH, SIPUSH or NEWARRAY.
      * @param operand the operand of the instruction to be constructed.
@@ -57,7 +57,7 @@ public class IntInsnNode extends AbstractInsnNode {
 
     /**
      * Sets the opcode of this instruction.
-     * 
+     *
      * @param opcode the new instruction opcode. This opcode must be BIPUSH,
      *        SIPUSH or NEWARRAY.
      */

@@ -60,16 +60,16 @@ import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
 
 
 /**
- * The title pane for a {@link JInternalFrame} (see 
- * {@link MetalInternalFrameUI#createNorthPane(JInternalFrame)}).  This can 
- * be displayed in two styles: one for regular internal frames, and the other 
+ * The title pane for a {@link JInternalFrame} (see
+ * {@link MetalInternalFrameUI#createNorthPane(JInternalFrame)}).  This can
+ * be displayed in two styles: one for regular internal frames, and the other
  * for "palette" style internal frames.
  */
-public class MetalInternalFrameTitlePane extends BasicInternalFrameTitlePane 
+public class MetalInternalFrameTitlePane extends BasicInternalFrameTitlePane
 {
- 
+
   /**
-   * A property change handler that listens for changes to the 
+   * A property change handler that listens for changes to the
    * <code>JInternalFrame.isPalette</code> property and updates the title
    * pane as appropriate.
    */
@@ -83,11 +83,11 @@ public class MetalInternalFrameTitlePane extends BasicInternalFrameTitlePane
     {
       super();
     }
-    
+
     /**
      * Handles <code>JInternalFrame.isPalette</code> property changes, with all
      * other property changes being passed to the superclass.
-     * 
+     *
      * @param e  the event.
      */
     public void propertyChange(PropertyChangeEvent e)
@@ -111,7 +111,7 @@ public class MetalInternalFrameTitlePane extends BasicInternalFrameTitlePane
 
   /**
    * A layout manager for the title pane.
-   * 
+   *
    * @see #createLayout()
    */
   private class MetalTitlePaneLayout implements LayoutManager
@@ -176,8 +176,8 @@ public class MetalInternalFrameTitlePane extends BasicInternalFrameTitlePane
         }
 
       Dimension titlePreferredSize = title.getPreferredSize();
-      title.setBounds(insets.left + 5, insets.top, 
-              Math.min(titlePreferredSize.width, loc - insets.left - 10), 
+      title.setBounds(insets.left + 5, insets.top,
+              Math.min(titlePreferredSize.width, loc - insets.left - 10),
               height);
 
     }
@@ -224,26 +224,26 @@ public class MetalInternalFrameTitlePane extends BasicInternalFrameTitlePane
 
   /** A flag indicating whether the title pane uses the palette style. */
   protected boolean isPalette;
-  
-  /** 
+
+  /**
    * The icon used for the close button - this is fetched from the look and
-   * feel defaults using the key <code>InternalFrame.paletteCloseIcon</code>. 
+   * feel defaults using the key <code>InternalFrame.paletteCloseIcon</code>.
    */
   protected Icon paletteCloseIcon;
-  
+
   /**
-   * The height of the title pane when <code>isPalette</code> is 
-   * <code>true</code>.  This value is fetched from the look and feel defaults 
+   * The height of the title pane when <code>isPalette</code> is
+   * <code>true</code>.  This value is fetched from the look and feel defaults
    * using the key <code>InternalFrame.paletteTitleHeight</code>.
    */
   protected int paletteTitleHeight;
-   
+
   /** The label used to display the title for the internal frame. */
   JLabel title;
-  
+
   /**
    * Creates a new title pane for the specified frame.
-   * 
+   *
    * @param f  the internal frame.
    */
   public MetalInternalFrameTitlePane(JInternalFrame f)
@@ -251,7 +251,7 @@ public class MetalInternalFrameTitlePane extends BasicInternalFrameTitlePane
     super(f);
     isPalette = false;
   }
-  
+
   /**
    * Fetches the colors used in the title pane.
    */
@@ -262,21 +262,21 @@ public class MetalInternalFrameTitlePane extends BasicInternalFrameTitlePane
     selectedTitleColor = MetalLookAndFeel.getWindowTitleBackground();
     notSelectedTextColor = MetalLookAndFeel.getInactiveControlTextColor();
     notSelectedTitleColor = MetalLookAndFeel.getWindowTitleInactiveBackground();
-    
+
     paletteTitleHeight = UIManager.getInt("InternalFrame.paletteTitleHeight");
     paletteCloseIcon = UIManager.getIcon("InternalFrame.paletteCloseIcon");
     minIcon = MetalIconFactory.getInternalFrameAltMaximizeIcon(16);
 
-    title = new JLabel(frame.getTitle(), 
-            MetalIconFactory.getInternalFrameDefaultMenuIcon(), 
+    title = new JLabel(frame.getTitle(),
+            MetalIconFactory.getInternalFrameDefaultMenuIcon(),
             SwingConstants.LEFT);
   }
-  
+
   /**
    * Clears the colors used for the title pane.
    */
   protected void uninstallDefaults()
-  {  
+  {
     super.uninstallDefaults();
     selectedTextColor = null;
     selectedTitleColor = null;
@@ -286,14 +286,14 @@ public class MetalInternalFrameTitlePane extends BasicInternalFrameTitlePane
     minIcon = null;
     title = null;
   }
-  
+
   /**
    * Calls the super class to create the buttons, then calls
-   * <code>setBorderPainted(false)</code> and 
+   * <code>setBorderPainted(false)</code> and
    * <code>setContentAreaFilled(false)</code> for each button.
    */
   protected void createButtons()
-  { 
+  {
     super.createButtons();
     closeButton.setBorderPainted(false);
     closeButton.setContentAreaFilled(false);
@@ -302,7 +302,7 @@ public class MetalInternalFrameTitlePane extends BasicInternalFrameTitlePane
     maxButton.setBorderPainted(false);
     maxButton.setContentAreaFilled(false);
   }
-  
+
   /**
    * Overridden to do nothing.
    */
@@ -310,21 +310,21 @@ public class MetalInternalFrameTitlePane extends BasicInternalFrameTitlePane
   {
     // do nothing
   }
-  
+
   /**
    * Overridden to do nothing.
    */
   protected void showSystemMenu()
   {
-      // do nothing    
+      // do nothing
   }
-  
+
   /**
    * Adds the sub components of the title pane.
    */
   protected void addSubComponents()
   {
-    // FIXME:  this method is probably overridden to only add the required 
+    // FIXME:  this method is probably overridden to only add the required
     // buttons
     add(title);
     add(closeButton);
@@ -335,19 +335,19 @@ public class MetalInternalFrameTitlePane extends BasicInternalFrameTitlePane
   /**
    * Creates a new instance of <code>MetalTitlePaneLayout</code> (not part of
    * the public API).
-   * 
+   *
    * @return A new instance of <code>MetalTitlePaneLayout</code>.
    */
   protected LayoutManager createLayout()
   {
     return new MetalTitlePaneLayout();
   }
-  
+
   /**
    * Draws the title pane in the palette style.
-   * 
+   *
    * @param g  the graphics device.
-   * 
+   *
    * @see #paintComponent(Graphics)
    */
   public void paintPalette(Graphics g)
@@ -362,22 +362,22 @@ public class MetalInternalFrameTitlePane extends BasicInternalFrameTitlePane
                                  SwingConstants.VERTICAL,
                                  "InternalFrame.activeTitleGradient");
       }
-    MetalUtils.fillMetalPattern(this, g, b.x + 4, b.y + 2, b.width 
+    MetalUtils.fillMetalPattern(this, g, b.x + 4, b.y + 2, b.width
             - paletteCloseIcon.getIconWidth() - 13, b.height - 5,
-            MetalLookAndFeel.getPrimaryControlHighlight(), 
+            MetalLookAndFeel.getPrimaryControlHighlight(),
             MetalLookAndFeel.getBlack());
-    
+
     // draw a line separating the title pane from the frame content
     Dimension d = getSize();
     g.setColor(MetalLookAndFeel.getPrimaryControlDarkShadow());
     g.drawLine(0, d.height - 1, d.width - 1, d.height - 1);
-    
+
     g.setColor(savedColor);
   }
 
   /**
    * Paints a representation of the current state of the internal frame.
-   * 
+   *
    * @param g  the graphics device.
    */
   public void paintComponent(Graphics g)
@@ -394,13 +394,13 @@ public class MetalInternalFrameTitlePane extends BasicInternalFrameTitlePane
           g.setColor(MetalLookAndFeel.getPrimaryControlDarkShadow());
         else
           g.setColor(MetalLookAndFeel.getControlDarkShadow());
-        
+
         // put a dot in each of the top corners
         g.drawLine(0, 0, 0, 0);
         g.drawLine(d.width - 1, 0, d.width - 1, 0);
-        
+
         g.drawLine(0, d.height - 1, d.width - 1, d.height - 1);
-        
+
         // draw the metal pattern
         if (UIManager.get("InternalFrame.activeTitleGradient") != null
             && frame.isSelected())
@@ -415,22 +415,22 @@ public class MetalInternalFrameTitlePane extends BasicInternalFrameTitlePane
         int endX = startX;
         if (iconButton.isVisible())
           endX = Math.max(iconButton.getX(), endX);
-        else if (maxButton.isVisible()) 
+        else if (maxButton.isVisible())
           endX = Math.max(maxButton.getX(), endX);
         else if (closeButton.isVisible())
           endX = Math.max(closeButton.getX(), endX);
         endX -= 7;
         if (endX > startX)
-          MetalUtils.fillMetalPattern(this, g, startX, 3, endX - startX, 
+          MetalUtils.fillMetalPattern(this, g, startX, 3, endX - startX,
               getHeight() - 6, Color.white, Color.gray);
       }
     g.setColor(savedColor);
   }
-  
+
   /**
-   * Sets the flag that controls whether the title pane is drawn in the 
+   * Sets the flag that controls whether the title pane is drawn in the
    * palette style or the regular style.
-   *  
+   *
    * @param b  the new value of the flag.
    */
   public void setPalette(boolean b)
@@ -444,15 +444,14 @@ public class MetalInternalFrameTitlePane extends BasicInternalFrameTitlePane
     else
       closeButton.setIcon(closeIcon);
   }
-  
+
   /**
    * Creates and returns a property change handler for the title pane.
-   * 
+   *
    * @return The property change handler.
    */
   protected PropertyChangeListener createPropertyChangeListener()
   {
-    return new MetalInternalFrameTitlePanePropertyChangeHandler();   
+    return new MetalInternalFrameTitlePanePropertyChangeHandler();
   }
 }
-

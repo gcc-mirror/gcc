@@ -817,8 +817,8 @@ public final class Long extends Number implements Comparable<Long>
     long val = 0;
     while (index < len)
       {
-	if (val < 0 || val > max)
-	  throw new NumberFormatException();
+        if (val < 0 || val > max)
+          throw new NumberFormatException();
 
         ch = Character.digit(str.charAt(index++), radix);
         val = val * radix + ch;

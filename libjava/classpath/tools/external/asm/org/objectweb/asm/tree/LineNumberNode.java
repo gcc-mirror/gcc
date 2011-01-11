@@ -34,7 +34,7 @@ import org.objectweb.asm.MethodVisitor;
 
 /**
  * A node that represents a line number declaration.
- * 
+ *
  * @author Eric Bruneton
  */
 public class LineNumberNode {
@@ -52,7 +52,7 @@ public class LineNumberNode {
 
     /**
      * Constructs a new {@link LineNumberNode}.
-     * 
+     *
      * @param line a line number. This number refers to the source file from
      *        which the class was compiled.
      * @param start the first instruction corresponding to this line number.
@@ -64,7 +64,7 @@ public class LineNumberNode {
 
     /**
      * Makes the given visitor visit this line number declaration.
-     * 
+     *
      * @param mv a method visitor.
      */
     public void accept(final MethodVisitor mv) {

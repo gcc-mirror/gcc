@@ -48,7 +48,7 @@ import javax.swing.event.ChangeListener;
  * The data model that is used in all kinds of buttons.
  */
 public interface ButtonModel extends ItemSelectable
-{  
+{
 
   /**
    * Returns <code>true</code> if the button is armed, <code>false</code>
@@ -56,7 +56,7 @@ public interface ButtonModel extends ItemSelectable
    *
    * A button is armed, when the user has pressed the mouse over it, but has
    * not yet released the mouse.
-   * 
+   *
    * @return <code>true</code> if the button is armed, <code>false</code>
    *         otherwise
    *
@@ -145,7 +145,7 @@ public interface ButtonModel extends ItemSelectable
    *
    * An <code>ActionEvent</code> is usually fired when the user clicks on a
    * button.
-   * 
+   *
    * @param l the action listener to add
    *
    * @see #removeActionListener(ActionListener)
@@ -225,7 +225,7 @@ public interface ButtonModel extends ItemSelectable
   /**
    * Returns the keyboard mnemonic for the button. This specifies a shortcut
    * or accelerator key that can be used to activate the button.
-   * 
+   *
    * @return the keyboard mnemonic for the button
    *
    * @see #setMnemonic(int)
@@ -235,7 +235,7 @@ public interface ButtonModel extends ItemSelectable
   /**
    * Sets the keyboard mnemonic for the button. This specifies a shortcut
    * or accelerator key that can be used to activate the button.
-   * 
+   *
    * @param key the keyboard mnemonic for the button
    *
    * @see #getMnemonic()
@@ -276,7 +276,7 @@ public interface ButtonModel extends ItemSelectable
    * Some kinds of buttons (e.g. toggle buttons, check boxes, radio buttons)
    * can be in one of two states: selected or unselected. The selected state
    * is usually toggled by clicking on the button.
-   * 
+   *
    * @param b <code>true</code> if the button is selected, <code>false</code>
    *        otherwise
    *
@@ -291,7 +291,7 @@ public interface ButtonModel extends ItemSelectable
    * Some kinds of buttons (e.g. toggle buttons, check boxes, radio buttons)
    * can be in one of two states: selected or unselected. The selected state
    * is usually toggled by clicking on the button.
-   * 
+   *
    * @return <code>true</code> if the button is selected, <code>false</code>
    *         otherwise
    *

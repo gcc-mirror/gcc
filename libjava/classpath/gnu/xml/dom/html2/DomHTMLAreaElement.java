@@ -1,4 +1,4 @@
-/* DomHTMLAreaElement.java -- 
+/* DomHTMLAreaElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -64,7 +64,7 @@ public class DomHTMLAreaElement
   {
     setHTMLAttribute("accesskey", accessKey);
   }
-  
+
   public String getAlt()
   {
     return getHTMLAttribute("alt");
@@ -74,7 +74,7 @@ public class DomHTMLAreaElement
   {
     setHTMLAttribute("alt", alt);
   }
-  
+
   public String getCoords()
   {
     return getHTMLAttribute("coords");
@@ -84,7 +84,7 @@ public class DomHTMLAreaElement
   {
     setHTMLAttribute("coords", coords);
   }
-  
+
   public String getHref()
   {
     return getHTMLAttribute("href");
@@ -94,7 +94,7 @@ public class DomHTMLAreaElement
   {
     setHTMLAttribute("href", href);
   }
-  
+
   public boolean getNoHref()
   {
     return getBooleanHTMLAttribute("nohref");
@@ -104,7 +104,7 @@ public class DomHTMLAreaElement
   {
     setBooleanHTMLAttribute("nohref", nohref);
   }
-  
+
   public String getShape()
   {
     return getHTMLAttribute("shape");
@@ -114,7 +114,7 @@ public class DomHTMLAreaElement
   {
     setHTMLAttribute("shape", shape);
   }
-  
+
   public int getTabIndex()
   {
     return getIntHTMLAttribute("tabindex");
@@ -124,7 +124,7 @@ public class DomHTMLAreaElement
   {
     setIntHTMLAttribute("tabindex", tabIndex);
   }
-  
+
   public String getTarget()
   {
     return getHTMLAttribute("target");
@@ -134,6 +134,5 @@ public class DomHTMLAreaElement
   {
     setHTMLAttribute("target", target);
   }
-  
-}
 
+}

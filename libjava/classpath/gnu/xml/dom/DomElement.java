@@ -1,4 +1,4 @@
-/* DomElement.java -- 
+/* DomElement.java --
    Copyright (C) 1999,2000,2001,2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -51,7 +51,7 @@ import org.w3c.dom.TypeInfo;
 /**
  * <p> "Element" implementation.
  *
- * @author David Brownell 
+ * @author David Brownell
  * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  */
 public class DomElement
@@ -81,7 +81,7 @@ public class DomElement
    *
    * @param owner The document with which this node is associated
    * @param namespaceURI Combined with the local part of the name,
-   *	this is used to uniquely identify a type of element
+   *    this is used to uniquely identify a type of element
    * @param name Name of this element, which may include a prefix
    */
   protected DomElement(DomDocument owner, String namespaceURI, String name)
@@ -99,18 +99,18 @@ public class DomElement
    * <p>
    * With this constructor, the prefix and local part are given explicitly
    * rather than being computed.  This allows them to be explicitly set to
-   * {@code null} as required by {@link Document#createElement(String)}.   
+   * {@code null} as required by {@link Document#createElement(String)}.
    * </p>
    *
    * @param owner The document with which this node is associated
    * @param namespaceURI Combined with the local part of the name,
-   *	this is used to uniquely identify a type of element
+   *    this is used to uniquely identify a type of element
    * @param name Name of this element, which may include a prefix
    * @param prefix the namespace prefix of the name.  May be {@code null}.
    * @param localName the local part of the name.  May be {@code null}.
    */
   protected DomElement(DomDocument owner, String namespaceURI, String name,
-		       String prefix, String localName)
+                       String prefix, String localName)
   {
     super(ELEMENT_NODE, owner, namespaceURI, name, prefix, localName);
   }
@@ -263,7 +263,7 @@ public class DomElement
    * <b>DOM L1</b>
    * Modifies an existing attribute to have the specified value,
    * or creates a new one with that value.  The name used is the
-   * nodeName value. 
+   * nodeName value.
    */
   public void setAttribute(String name, String value)
   {
@@ -476,7 +476,7 @@ public class DomElement
       }
     return super.lookupNamespaceURI(prefix);
   }
-  
+
   public String getBaseURI()
   {
     if (attributes != null)
@@ -490,7 +490,7 @@ public class DomElement
       }
     return super.getBaseURI();
   }
-  
+
   public TypeInfo getSchemaTypeInfo()
   {
     // DTD implementation
@@ -509,7 +509,7 @@ public class DomElement
     Attr attr = (Attr) attrs.getNamedItem(name);
     setIdAttributeNode(attr, isId);
   }
-  
+
   public void setIdAttributeNode(Attr attr, boolean isId)
   {
     if (readonly)
@@ -578,5 +578,5 @@ public class DomElement
       }
     return true;
   }
-  
+
 }

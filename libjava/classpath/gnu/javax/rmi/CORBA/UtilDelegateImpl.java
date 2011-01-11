@@ -95,7 +95,7 @@ import javax.transaction.TransactionRolledbackException;
 
 /**
  * The implementation of UtilDelegate.
- * 
+ *
  * @author Wu Gansha (gansha.wu@intel.com) (stub)
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org) (implementation)
  */
@@ -191,7 +191,7 @@ public class UtilDelegateImpl
    * pair has not been previously registered using {@link #registerTarget},
    * this method tries to locate a tie class by the name pattern. If this
    * succeeds, the tie-target pair is also registered.
-   * 
+   *
    * @return the Tie.
    */
   public Tie getTie(Remote target)
@@ -331,7 +331,7 @@ public class UtilDelegateImpl
 
   /**
    * Checks if the given stub is local.
-   * 
+   *
    * @param stub a stub to check.
    * @return true if the stub is local, false otherwise.
    */
@@ -354,7 +354,7 @@ public class UtilDelegateImpl
    * Load the class. The method uses class loaders from the call stact first. If
    * this fails, the further behaviour depends on the System Property
    * "java.rmi.server.useCodebaseOnly" with default value "false".
-   * 
+   *
    * <ul>
    * <li>Try the current thread context class loader first.</li>
    * <li>If remoteCodebase is non-null and useCodebaseOnly is "false" then call
@@ -364,12 +364,12 @@ public class UtilDelegateImpl
    * <li>If a class is still not successfully loaded and the loader != null
    * then try Class.forName(className, false, loader). </li>
    * </ul>
-   * 
+   *
    * @param className the name of the class.
    * @param remoteCodebase the codebase.
    * @param loader the class loader.
    * @return the loaded class.
-   * 
+   *
    * @throws ClassNotFoundException of the class cannot be loaded.
    */
   public Class loadClass(String className, String remoteCodebase,
@@ -574,14 +574,14 @@ public class UtilDelegateImpl
    * <td>{@link UnexpectedException}</td>
    * </tr>
    * </table>
-   * 
+   *
    * @param ex an exception that was thrown on a server side implementation.
-   * 
+   *
    * @return the corresponding RemoteException unless it is a RuntimeException.
-   * 
+   *
    * @throws RuntimeException the passed exception if it is an instance of
    * RuntimeException.
-   * 
+   *
    * @specnote It is the same behavior, as in Suns implementations 1.4.0-1.5.0.
    */
   public RemoteException wrapException(Throwable ex)
@@ -607,10 +607,10 @@ public class UtilDelegateImpl
    * {@link #writeRemoteObject}. The written data contains discriminator,
    * defining, that was written. Another method that writes the same content is
    * {@link org.omg.CORBA_2_3.portable.OutputStream#write_abstract_interface(java.lang.Object)}.
-   * 
+   *
    * @param output a stream to write to, must be
    * {@link org.omg.CORBA_2_3.portable.OutputStream}.
-   * 
+   *
    * @param object an object to write, must be CORBA object, Remote
    */
   public void writeAbstractObject(OutputStream output, Object object)
@@ -627,7 +627,7 @@ public class UtilDelegateImpl
    * method writes CORBA object, value type or value box. For value types Null
    * is written with the abstract interface, its typecode having repository id
    * "IDL:omg.org/CORBA/AbstractBase:1.0" and the empty string name.
-   * 
+   *
    * @param output the object to write.
    * @param object the java object that must be written in the form of the CORBA
    * {@link Any}.
@@ -715,7 +715,7 @@ public class UtilDelegateImpl
    * possible. This method is used in write_value(..) method group in
    * {@link org.omg.CORBA_2_3.portable.OutputStream} and also may be called
    * directly from generated Stubs and Ties.
-   * 
+   *
    * @param output a stream to write to, must be
    * org.omg.CORBA_2_3.portable.OutputStream
    * @param object an object to write.

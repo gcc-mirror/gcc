@@ -43,9 +43,9 @@ import java.io.Serializable;
 /**
  * Means that the ORB has reached some general resource limitation like maximal
  * number of the opened connections.
- * 
+ *
  * In GNU Classpath, this exception may have the following minor codes:
- * 
+ *
  * <table border="1">
  * <tr>
  * <td>Hex</td>
@@ -72,8 +72,8 @@ import java.io.Serializable;
  * if turned on, prevents malicios client from knocking the server out by
  * suddenly submitting a very large number of requests. </td>
  * </tr>
- * </table> 
- * 
+ * </table>
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public final class NO_RESOURCES
@@ -88,7 +88,7 @@ public final class NO_RESOURCES
   /**
    * Creates a NO_RESOURCES with the default minor code of 0, completion state
    * COMPLETED_NO and the given explaining message.
-   * 
+   *
    * @param message the explaining message.
    */
   public NO_RESOURCES(String message)
@@ -108,7 +108,7 @@ public final class NO_RESOURCES
   /**
    * Creates a NO_RESOURCES exception with the specified minor code and
    * completion status.
-   * 
+   *
    * @param a_minor additional error code.
    * @param a_completed the method completion status.
    */
@@ -119,7 +119,7 @@ public final class NO_RESOURCES
 
   /**
    * Created NO_RESOURCES exception, providing full information.
-   * 
+   *
    * @param a_reason explaining message.
    * @param a_minor additional error code (the "minor").
    * @param a_completed the method completion status.

@@ -1,4 +1,4 @@
-/* RenderableImage.java -- 
+/* RenderableImage.java --
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,7 +45,7 @@ import java.util.Vector;
 public interface RenderableImage
 {
   String HINTS_OBSERVED = "HINTS_OBSERVED";
-  
+
   Vector<RenderableImage> getSources();
   Object getProperty(String name);
   String[] getPropertyNames();
@@ -59,4 +59,3 @@ public interface RenderableImage
   RenderedImage createRendering(RenderContext context);
 
 } // interface RenderableImage
-

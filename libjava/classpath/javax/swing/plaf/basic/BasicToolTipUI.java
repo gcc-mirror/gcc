@@ -80,7 +80,7 @@ public class BasicToolTipUI extends ToolTipUI
           BasicHTML.updateRenderer(tip, text);
         }
     }
-    
+
   }
 
   /** The shared instance of BasicToolTipUI used for all ToolTips. */
@@ -103,7 +103,7 @@ public class BasicToolTipUI extends ToolTipUI
   }
 
   /**
-   * This method creates a new BasicToolTip UI for the given 
+   * This method creates a new BasicToolTip UI for the given
    * JComponent.
    *
    * @param c The JComponent to create a UI for.
@@ -245,10 +245,10 @@ public class BasicToolTipUI extends ToolTipUI
     if (view != null)
       view.paint(g, paintR);
     else
-      g.drawString(text, paintR.x + 3, paintR.y + ascent); 
+      g.drawString(text, paintR.x + 3, paintR.y + ascent);
 
     g.setFont(oldFont);
-    g.setColor(saved);   
+    g.setColor(saved);
   }
 
   /**

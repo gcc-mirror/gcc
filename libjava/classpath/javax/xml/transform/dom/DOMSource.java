@@ -1,4 +1,4 @@
-/* DOMSource.java -- 
+/* DOMSource.java --
    Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -42,7 +42,7 @@ import org.w3c.dom.Node;
 
 /**
  * An XML source specified as a W3C DOM node context.
- * 
+ *
  * @author (a href='mailto:dog@gnu.org'>Chris Burdess</a)
  */
 public class DOMSource

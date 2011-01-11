@@ -1,4 +1,4 @@
-/* Namespace.java -- 
+/* Namespace.java --
    Copyright (C) 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -58,6 +58,5 @@ public interface Namespace
    * Indicates whether this event declares the default namespace.
    */
   boolean isDefaultNamespaceDeclaration();
-  
-}
 
+}

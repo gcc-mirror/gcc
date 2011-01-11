@@ -33,7 +33,7 @@ package org.objectweb.asm;
  * An empty {@link ClassVisitor} that delegates to another {@link ClassVisitor}.
  * This class can be used as a super class to quickly implement usefull class
  * adapter classes, just by overriding the necessary methods.
- * 
+ *
  * @author Eric Bruneton
  */
 public class ClassAdapter implements ClassVisitor {
@@ -45,7 +45,7 @@ public class ClassAdapter implements ClassVisitor {
 
     /**
      * Constructs a new {@link ClassAdapter} object.
-     * 
+     *
      * @param cv the class visitor to which this adapter must delegate calls.
      */
     public ClassAdapter(final ClassVisitor cv) {

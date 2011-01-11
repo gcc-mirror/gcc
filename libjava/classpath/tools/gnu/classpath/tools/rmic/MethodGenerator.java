@@ -46,7 +46,7 @@ import java.util.Properties;
 /**
  * Keeps information about the single method and generates the code fragments,
  * related to that method.
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (audriusa@Bioinformatics.org)
  */
 public class MethodGenerator implements AbstractMethodGenerator
@@ -60,13 +60,13 @@ public class MethodGenerator implements AbstractMethodGenerator
    * The parent code generator.
    */
   SourceGiopRmicCompiler rmic;
-  
+
   /**
-   * The previous method in the list, null for the first element. 
+   * The previous method in the list, null for the first element.
    * Used to avoid repretetive inclusion of the same hash code label.
    */
   MethodGenerator previous = null;
-  
+
   /**
    * The hash character position.
    */
@@ -74,7 +74,7 @@ public class MethodGenerator implements AbstractMethodGenerator
 
   /**
    * Create the new method generator for the given method.
-   * 
+   *
    * @param aMethod
    *          the related method.
    * @param aRmic
@@ -86,10 +86,10 @@ public class MethodGenerator implements AbstractMethodGenerator
     method = aMethod;
     rmic = aRmic;
   }
-  
+
   /**
    * Get the method name.
-   * 
+   *
    * @return the name of the method.
    */
   public String getGiopMethodName()
@@ -105,7 +105,7 @@ public class MethodGenerator implements AbstractMethodGenerator
 
   /**
    * Get the method parameter declaration.
-   * 
+   *
    * @return the string - method parameter declaration.
    */
   public String getArgumentList()
@@ -127,7 +127,7 @@ public class MethodGenerator implements AbstractMethodGenerator
   /**
    * Get the method parameter list only (no type declarations). This is used to
    * generate the method invocations statement.
-   * 
+   *
    * @return the string - method parameter list.
    */
   public String getArgumentNames()
@@ -147,7 +147,7 @@ public class MethodGenerator implements AbstractMethodGenerator
 
   /**
    * Get the list of exceptions, thrown by this method.
-   * 
+   *
    * @return the list of exceptions.
    */
   public String getThrows()
@@ -167,7 +167,7 @@ public class MethodGenerator implements AbstractMethodGenerator
 
   /**
    * Generate this method for the Stub class.
-   * 
+   *
    * @return the method body for the stub class.
    */
   public String generateStubMethod()
@@ -177,7 +177,7 @@ public class MethodGenerator implements AbstractMethodGenerator
     Properties vars = new Properties(rmic.vars);
     vars.put("#return_type", rmic.name(method.getReturnType()));
     vars.put("#method_name", method.getName());
-    vars.put("#giop_method_name", getGiopMethodName());    
+    vars.put("#giop_method_name", getGiopMethodName());
     vars.put("#argument_list", getArgumentList());
     vars.put("#argument_names", getArgumentNames());
 
@@ -204,15 +204,15 @@ public class MethodGenerator implements AbstractMethodGenerator
                                           rmic));
         templateName = "StubMethod.jav";
       }
-    
-    String template = rmic.getResource(templateName);        
+
+    String template = rmic.getResource(templateName);
     String generated = rmic.replaceAll(template, vars);
     return generated;
   }
-  
+
   /**
    * Generate this method handling fragment for the Tie class.
-   * 
+   *
    * @return the fragment to handle this method for the Tie class.
    */
   public String generateTieMethod()
@@ -222,12 +222,12 @@ public class MethodGenerator implements AbstractMethodGenerator
     Properties vars = new Properties(rmic.vars);
     vars.put("#return_type", rmic.name(method.getReturnType()));
     vars.put("#method_name", method.getName());
-    vars.put("#giop_method_name", getGiopMethodName());    
+    vars.put("#giop_method_name", getGiopMethodName());
     vars.put("#argument_list", getArgumentList());
     vars.put("#argument_names", getArgumentNames());
 
     vars.put("#argument_write", getStubParaWriteStatement());
-    
+
     if (previous == null || previous.getHashChar()!=getHashChar())
       vars.put("#hashCodeLabel","    case '"+getHashChar()+"':");
     else
@@ -247,11 +247,11 @@ public class MethodGenerator implements AbstractMethodGenerator
     String template = rmic.getResource(templateName);
     String generated = rmic.replaceAll(template, vars);
     return generated;
-  }  
-  
+  }
+
   /**
    * Generate sentences for Reading and Defining Arguments.
-   * 
+   *
    * @return the sequence of sentences for reading and defining arguments.
    */
   public String getRda()
@@ -275,7 +275,7 @@ public class MethodGenerator implements AbstractMethodGenerator
 
   /**
    * Get the write statement for writing parameters inside the stub.
-   * 
+   *
    * @return the write statement.
    */
   public String getStubParaWriteStatement()
@@ -291,7 +291,7 @@ public class MethodGenerator implements AbstractMethodGenerator
       }
     return b.toString();
   }
-  
+
   /**
    * Get the hash char.
    */

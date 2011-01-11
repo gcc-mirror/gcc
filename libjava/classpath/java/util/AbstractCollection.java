@@ -441,11 +441,11 @@ public abstract class AbstractCollection<E>
     while (hasNext)
       {
         Object o = itr.next();
-	if (o == this)
-	  r.append("<this>");
-	else
-	  r.append(o);
-	hasNext = itr.hasNext();
+        if (o == this)
+          r.append("<this>");
+        else
+          r.append(o);
+        hasNext = itr.hasNext();
         if (hasNext)
           r.append(", ");
       }

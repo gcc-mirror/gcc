@@ -188,7 +188,7 @@ public class BeanContextSupport extends BeanContextChildSupport
 
   /**
    * Construct a BeanContextSupport instance.
-   * 
+   *
    * @param peer  the bean context peer (<code>null</code> permitted).
    */
   public BeanContextSupport(BeanContext peer)
@@ -198,9 +198,9 @@ public class BeanContextSupport extends BeanContextChildSupport
 
   /**
    * Construct a BeanContextSupport instance.
-   * 
+   *
    * @param peer  the bean context peer (<code>null</code> permitted).
-   * @param locale  the locale (<code>null</code> permitted, equivalent to 
+   * @param locale  the locale (<code>null</code> permitted, equivalent to
    *     the default locale).
    */
   public BeanContextSupport (BeanContext peer, Locale locale)
@@ -210,9 +210,9 @@ public class BeanContextSupport extends BeanContextChildSupport
 
   /**
    * Construct a BeanContextSupport instance.
-   * 
+   *
    * @param peer  the bean context peer (<code>null</code> permitted).
-   * @param locale  the locale (<code>null</code> permitted, equivalent to 
+   * @param locale  the locale (<code>null</code> permitted, equivalent to
    *     the default locale).
    * @param dtime  a flag indicating whether or not the bean context is in
    *     design time mode.
@@ -224,9 +224,9 @@ public class BeanContextSupport extends BeanContextChildSupport
 
   /**
    * Construct a BeanContextSupport instance.
-   * 
+   *
    * @param peer  the bean context peer (<code>null</code> permitted).
-   * @param locale  the locale (<code>null</code> permitted, equivalent to 
+   * @param locale  the locale (<code>null</code> permitted, equivalent to
    *     the default locale).
    * @param dtime  a flag indicating whether or not the bean context is in
    *     design time mode.
@@ -248,7 +248,7 @@ public class BeanContextSupport extends BeanContextChildSupport
    * <p>
    * Add a child to the bean context.  A child can be a simple
    * <code>Object</code>, a <code>BeanContextChild</code>
-   * or another <code>BeanContext</code>.  
+   * or another <code>BeanContext</code>.
    * </p>
    * <p>
    * The children of a <code>BeanContext</code> form a set.  As
@@ -272,7 +272,7 @@ public class BeanContextSupport extends BeanContextChildSupport
    * then its ability to use a GUI is set based on that of
    * this context.
    * </p>
-   * <p> 
+   * <p>
    * A <code>BeanContextMembershipEvent</code> is fired when the
    * child is successfully added to the bean context.
    * </p>
@@ -290,55 +290,55 @@ public class BeanContextSupport extends BeanContextChildSupport
   {
     synchronized (globalHierarchyLock)
       {
-	if (targetChild == null)
-	  throw new IllegalArgumentException();
+        if (targetChild == null)
+          throw new IllegalArgumentException();
 
-	BCSChild child;
-	synchronized (children)
-	  {
-	    if (children.containsKey(targetChild)
-		|| ! validatePendingAdd(targetChild))
-	      return false;
-	    child = createBCSChild(targetChild, beanContextChildPeer);
-	    children.put(targetChild, child);
-	  }
-	synchronized (targetChild)
-	  {
-	    BeanContextChild bcChild = null;
-	    if (targetChild instanceof BeanContextChild)
-	      bcChild = (BeanContextChild) targetChild;
-	    if (targetChild instanceof BeanContextProxy)
-	      bcChild = ((BeanContextProxy) targetChild).getBeanContextProxy();
-	    if (bcChild != null)
-	      try
-		{
-		  bcChild.setBeanContext(this);
-		  bcChild.addVetoableChangeListener("beanContext", this);
-		  bcChild.addPropertyChangeListener("beanContext", this);
-		}
-	      catch (PropertyVetoException e)
-		{
-		  synchronized (children)
-		    {
-		      children.remove(targetChild);
-		    }
-		  throw new IllegalStateException("The child refused to " +
-						  "associate itself with " +
-						  "this context.", e);
-		}
-	    if (targetChild instanceof Visibility)
-	      {
-		Visibility visibleChild = (Visibility) targetChild;
-		if (okToUseGui)
-		  visibleChild.okToUseGui();
-		else
-		  visibleChild.dontUseGui();
-	      }
-	    childJustAddedHook(targetChild, child);
-	  }
-	fireChildrenAdded(new BeanContextMembershipEvent(this,
-							 new Object[]{ targetChild }));
-	return true;
+        BCSChild child;
+        synchronized (children)
+          {
+            if (children.containsKey(targetChild)
+                || ! validatePendingAdd(targetChild))
+              return false;
+            child = createBCSChild(targetChild, beanContextChildPeer);
+            children.put(targetChild, child);
+          }
+        synchronized (targetChild)
+          {
+            BeanContextChild bcChild = null;
+            if (targetChild instanceof BeanContextChild)
+              bcChild = (BeanContextChild) targetChild;
+            if (targetChild instanceof BeanContextProxy)
+              bcChild = ((BeanContextProxy) targetChild).getBeanContextProxy();
+            if (bcChild != null)
+              try
+                {
+                  bcChild.setBeanContext(this);
+                  bcChild.addVetoableChangeListener("beanContext", this);
+                  bcChild.addPropertyChangeListener("beanContext", this);
+                }
+              catch (PropertyVetoException e)
+                {
+                  synchronized (children)
+                    {
+                      children.remove(targetChild);
+                    }
+                  throw new IllegalStateException("The child refused to " +
+                                                  "associate itself with " +
+                                                  "this context.", e);
+                }
+            if (targetChild instanceof Visibility)
+              {
+                Visibility visibleChild = (Visibility) targetChild;
+                if (okToUseGui)
+                  visibleChild.okToUseGui();
+                else
+                  visibleChild.dontUseGui();
+              }
+            childJustAddedHook(targetChild, child);
+          }
+        fireChildrenAdded(new BeanContextMembershipEvent(this,
+                                                         new Object[]{ targetChild }));
+        return true;
       }
   }
 
@@ -415,7 +415,7 @@ public class BeanContextSupport extends BeanContextChildSupport
 
   /**
    * Called when a child is deserialized.
-   * 
+   *
    * @param child the deserialized child.
    * @param bcsc the deserialized context wrapper for the child.
    */
@@ -489,16 +489,16 @@ public class BeanContextSupport extends BeanContextChildSupport
   }
 
   /**
-   * Deserializes objects (written by {@link #serialize(ObjectOutputStream, 
+   * Deserializes objects (written by {@link #serialize(ObjectOutputStream,
    * Collection)}) and adds them to the specified collection.
-   * 
+   *
    * @param ois  the input stream (<code>null</code> not permitted).
    * @param coll  the collection to add the objects to (<code>null</code> not
    *     permitted).
-   *     
+   *
    * @throws ClassNotFoundException
    * @throws IOException
-   * 
+   *
    * @see #serialize(ObjectOutputStream, Collection)
    */
   protected final void deserialize (ObjectInputStream ois, Collection coll)
@@ -548,9 +548,9 @@ public class BeanContextSupport extends BeanContextChildSupport
 
   /**
    * Returns the bean context peer.
-   * 
+   *
    * @return The bean context peer.
-   * 
+   *
    * @see BeanContextChildSupport#beanContextChildPeer
    */
   public BeanContext getBeanContextPeer()
@@ -560,11 +560,11 @@ public class BeanContextSupport extends BeanContextChildSupport
 
   /**
    * Returns the {@link BeanContextChild} implementation for the given child.
-   * 
+   *
    * @param child  the child (<code>null</code> permitted).
-   * 
+   *
    * @return The bean context child.
-   * 
+   *
    * @throws IllegalArgumentException if <code>child</code> implements both
    *     the {@link BeanContextChild} and {@link BeanContextProxy} interfaces.
    */
@@ -573,7 +573,7 @@ public class BeanContextSupport extends BeanContextChildSupport
     if (child == null)
       return null;
     if (child instanceof BeanContextChild && child instanceof BeanContextProxy)
-      throw new IllegalArgumentException("Child cannot implement " 
+      throw new IllegalArgumentException("Child cannot implement "
           + "BeanContextChild and BeanContextProxy simultaneously.");
     if (child instanceof BeanContextChild)
       return (BeanContextChild) child;
@@ -583,89 +583,89 @@ public class BeanContextSupport extends BeanContextChildSupport
   }
 
   /**
-   * Returns <code>child</code> as an instance of 
-   * {@link BeanContextMembershipListener}, or <code>null</code> if 
+   * Returns <code>child</code> as an instance of
+   * {@link BeanContextMembershipListener}, or <code>null</code> if
    * <code>child</code> does not implement that interface.
-   * 
+   *
    * @param child  the child (<code>null</code> permitted).
-   * 
+   *
    * @return The child cast to {@link BeanContextMembershipListener}.
    */
-  protected static final BeanContextMembershipListener 
+  protected static final BeanContextMembershipListener
       getChildBeanContextMembershipListener(Object child)
   {
-    if (child instanceof BeanContextMembershipListener) 
+    if (child instanceof BeanContextMembershipListener)
       return (BeanContextMembershipListener) child;
-    else 
+    else
       return null;
   }
 
   /**
-   * Returns <code>child</code> as an instance of 
+   * Returns <code>child</code> as an instance of
    * {@link PropertyChangeListener}, or <code>null</code> if <code>child</code>
    * does not implement that interface.
-   * 
+   *
    * @param child  the child (<code>null</code> permitted).
-   * 
+   *
    * @return The child cast to {@link PropertyChangeListener}.
    */
   protected static final PropertyChangeListener getChildPropertyChangeListener(
       Object child)
   {
-    if (child instanceof PropertyChangeListener) 
+    if (child instanceof PropertyChangeListener)
       return (PropertyChangeListener) child;
-    else 
+    else
       return null;
   }
 
   /**
-   * Returns <code>child</code> as an instance of {@link Serializable}, or 
-   * <code>null</code> if <code>child</code> does not implement that 
+   * Returns <code>child</code> as an instance of {@link Serializable}, or
+   * <code>null</code> if <code>child</code> does not implement that
    * interface.
-   * 
+   *
    * @param child  the child (<code>null</code> permitted).
-   * 
+   *
    * @return The child cast to {@link Serializable}.
    */
   protected static final Serializable getChildSerializable(Object child)
   {
-    if (child instanceof Serializable) 
+    if (child instanceof Serializable)
       return (Serializable) child;
-    else 
+    else
       return null;
   }
 
   /**
-   * Returns <code>child</code> as an instance of 
+   * Returns <code>child</code> as an instance of
    * {@link VetoableChangeListener}, or <code>null</code> if <code>child</code>
    * does not implement that interface.
-   * 
+   *
    * @param child  the child (<code>null</code> permitted).
-   * 
+   *
    * @return The child cast to {@link VetoableChangeListener}.
    */
   protected static final VetoableChangeListener getChildVetoableChangeListener(
       Object child)
   {
-    if (child instanceof VetoableChangeListener) 
+    if (child instanceof VetoableChangeListener)
       return (VetoableChangeListener) child;
-    else 
+    else
       return null;
   }
 
   /**
    * Returns <code>child</code> as an instance of {@link Visibility}, or
    * <code>null</code> if <code>child</code> does not implement that interface.
-   * 
+   *
    * @param child  the child (<code>null</code> permitted).
-   * 
+   *
    * @return The child cast to {@link Visibility}.
    */
   protected static final Visibility getChildVisibility(Object child)
   {
-    if (child instanceof Visibility) 
+    if (child instanceof Visibility)
       return (Visibility) child;
-    else 
+    else
       return null;
   }
 
@@ -715,11 +715,11 @@ public class BeanContextSupport extends BeanContextChildSupport
   }
 
   /**
-   * Returns <code>true</code> if the <code>BeanContext</code> is in 
+   * Returns <code>true</code> if the <code>BeanContext</code> is in
    * design time mode, and <code>false</code> if it is in runtime mode.
-   * 
+   *
    * @return A boolean.
-   * 
+   *
    * @see #setDesignTime(boolean)
    */
   public boolean isDesignTime()
@@ -810,15 +810,15 @@ public class BeanContextSupport extends BeanContextChildSupport
     Iterator i = temp.iterator();
     synchronized (globalHierarchyLock)
       {
-	synchronized (children)
-	  {
-	    while (i.hasNext())
-	      {
-		BCSChild bcs = (BCSChild) i.next();
-		childDeserializedHook(bcs.getTargetChild(), bcs);
-		children.put(bcs.getTargetChild(), bcs);
-	      }
-	  }
+        synchronized (children)
+          {
+            while (i.hasNext())
+              {
+                BCSChild bcs = (BCSChild) i.next();
+                childDeserializedHook(bcs.getTargetChild(), bcs);
+                children.put(bcs.getTargetChild(), bcs);
+              }
+          }
       }
   }
 
@@ -854,7 +854,7 @@ public class BeanContextSupport extends BeanContextChildSupport
    * <code>PropertyChangeListener</code> and
    * <code>VetoableChangeListener</code> for "beanContext" events.
    * </p>
-   * <p> 
+   * <p>
    * A <code>BeanContextMembershipEvent</code> is fired when the
    * child is successfully removed from the bean context.
    * </p>
@@ -874,47 +874,47 @@ public class BeanContextSupport extends BeanContextChildSupport
   {
     synchronized (globalHierarchyLock)
       {
-	if (targetChild == null)
-	  throw new IllegalArgumentException();
+        if (targetChild == null)
+          throw new IllegalArgumentException();
 
-	BCSChild child;
-	synchronized (children)
-	  {
-	    if (!children.containsKey(targetChild)
-		|| !validatePendingRemove(targetChild))
-	      return false;
-	    child = (BCSChild) children.remove(targetChild);
-	  }
-	synchronized (targetChild)
-	  {
-	    BeanContextChild bcChild = null;
-	    if (targetChild instanceof BeanContextChild)
-	      bcChild = (BeanContextChild) targetChild;
-	    if (targetChild instanceof BeanContextProxy)
-	      bcChild = ((BeanContextProxy) targetChild).getBeanContextProxy();
-	    if (bcChild != null)
-	      try
-		{
-		  if (callChildSetBC)
-		    bcChild.setBeanContext(null);
-		  bcChild.removeVetoableChangeListener("beanContext", this);
-		  bcChild.removePropertyChangeListener("beanContext", this);
-		}
-	      catch (PropertyVetoException e)
-		{
-		  synchronized (children)
-		    {
-		      children.put(targetChild, child);
-		    }
-		  throw new IllegalStateException("The child refused to " +
-						  "disassociate itself with " +
-						  "this context.", e);
-		}
-	    childJustRemovedHook(targetChild, child);
-	  }
-	fireChildrenRemoved(new BeanContextMembershipEvent(this,
-							 new Object[]{ targetChild }));
-	return true;
+        BCSChild child;
+        synchronized (children)
+          {
+            if (!children.containsKey(targetChild)
+                || !validatePendingRemove(targetChild))
+              return false;
+            child = (BCSChild) children.remove(targetChild);
+          }
+        synchronized (targetChild)
+          {
+            BeanContextChild bcChild = null;
+            if (targetChild instanceof BeanContextChild)
+              bcChild = (BeanContextChild) targetChild;
+            if (targetChild instanceof BeanContextProxy)
+              bcChild = ((BeanContextProxy) targetChild).getBeanContextProxy();
+            if (bcChild != null)
+              try
+                {
+                  if (callChildSetBC)
+                    bcChild.setBeanContext(null);
+                  bcChild.removeVetoableChangeListener("beanContext", this);
+                  bcChild.removePropertyChangeListener("beanContext", this);
+                }
+              catch (PropertyVetoException e)
+                {
+                  synchronized (children)
+                    {
+                      children.put(targetChild, child);
+                    }
+                  throw new IllegalStateException("The child refused to " +
+                                                  "disassociate itself with " +
+                                                  "this context.", e);
+                }
+            childJustRemovedHook(targetChild, child);
+          }
+        fireChildrenRemoved(new BeanContextMembershipEvent(this,
+                                                         new Object[]{ targetChild }));
+        return true;
       }
   }
 
@@ -940,14 +940,14 @@ public class BeanContextSupport extends BeanContextChildSupport
 
   /**
    * Writes the items in the collection to the specified output stream.  Items
-   * in the collection that are not instances of {@link Serializable} 
+   * in the collection that are not instances of {@link Serializable}
    * (this includes <code>null</code>) are simply ignored.
-   * 
+   *
    * @param oos  the output stream (<code>null</code> not permitted).
    * @param coll  the collection (<code>null</code> not permitted).
-   * 
+   *
    * @throws IOException
-   * 
+   *
    * @see #deserialize(ObjectInputStream, Collection)
    */
   protected final void serialize(ObjectOutputStream oos, Collection coll)
@@ -969,15 +969,15 @@ public class BeanContextSupport extends BeanContextChildSupport
   }
 
   /**
-   * Sets the flag that indicates whether or not the 
+   * Sets the flag that indicates whether or not the
    * <code>BeanContext</code> is in design mode.  If the flag changes
    * value, a {@link PropertyChangeEvent} (with the property name 'designMode')
    * is sent to registered listeners.  Note that the property name used here
    * does NOT match the specification in the {@link DesignMode} interface, we
    * match the reference implementation instead - see bug parade entry 4295174.
-   * 
+   *
    * @param dtime  the new value for the flag.
-   * 
+   *
    * @see #isDesignTime()
    */
   public void setDesignTime(boolean dtime)
@@ -1011,7 +1011,7 @@ public class BeanContextSupport extends BeanContextChildSupport
 
   /**
    * Returns an array containing the children of this <code>BeanContext</code>.
-   * 
+   *
    * @return An array containing the children.
    */
   public Object[] toArray()
@@ -1023,11 +1023,11 @@ public class BeanContextSupport extends BeanContextChildSupport
   }
 
   /**
-   * Populates, then returns, the supplied array with the children of this 
-   * <code>BeanContext</code>.  If the array is too short to hold the 
-   * children, a new array is allocated and returned.  If the array is too 
+   * Populates, then returns, the supplied array with the children of this
+   * <code>BeanContext</code>.  If the array is too short to hold the
+   * children, a new array is allocated and returned.  If the array is too
    * long, it is padded with <code>null</code> items at the end.
-   * 
+   *
    * @param array  an array to populate (<code>null</code> not permitted).
    */
   public Object[] toArray(Object[] array)
@@ -1072,7 +1072,7 @@ public class BeanContextSupport extends BeanContextChildSupport
   {
     synchronized (children)
       {
-	serialize(oos, children.values());
+        serialize(oos, children.values());
       }
   }
 

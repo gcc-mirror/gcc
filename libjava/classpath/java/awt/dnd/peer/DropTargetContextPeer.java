@@ -45,11 +45,11 @@ import java.awt.dnd.InvalidDnDOperationException;
 
 
 /**
- * Used to control state of recipient protocol from the 
+ * Used to control state of recipient protocol from the
  * <code>DropTargetListener</code>.  Occurs when a <code>Component</code>
- * with an associated <code>DropTarget</code> and visible geometry is first 
+ * with an associated <code>DropTarget</code> and visible geometry is first
  * intersected by a logical cursor.
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public interface DropTargetContextPeer

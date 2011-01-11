@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -53,7 +53,7 @@ import java.util.ResourceBundle;
 import java.util.ServiceLoader;
 
 /**
- * This class is a container for the symbols used by 
+ * This class is a container for the symbols used by
  * <code>DecimalFormat</code> to format numbers and currency
  * for a particular locale.  These are
  * normally handled automatically, but an application can override
@@ -79,7 +79,7 @@ public class DecimalFormatSymbols implements Cloneable, Serializable
       }
     catch(CloneNotSupportedException e)
       {
-	return null;
+        return null;
       }
   }
 
@@ -110,13 +110,13 @@ public class DecimalFormatSymbols implements Cloneable, Serializable
   {
     if (bundle != null)
       {
-	try
-	  {
-	    return bundle.getString(name);
-	  }
-	catch (MissingResourceException x)
-	  {
-	  }
+        try
+          {
+            return bundle.getString(name);
+          }
+        catch (MissingResourceException x)
+          {
+          }
       }
     return def;
   }
@@ -127,13 +127,13 @@ public class DecimalFormatSymbols implements Cloneable, Serializable
     String r = null;
     if (bundle != null)
       {
-	try
-	  {
-	    r = bundle.getString(name);
-	  }
-	catch (MissingResourceException x)
-	  {
-	  }
+        try
+          {
+            r = bundle.getString(name);
+          }
+        catch (MissingResourceException x)
+          {
+          }
       }
     if (r == null || r.length() < 1)
       return def;
@@ -163,12 +163,12 @@ public class DecimalFormatSymbols implements Cloneable, Serializable
 
     try
       {
-	res = ResourceBundle.getBundle("gnu.java.locale.LocaleInformation",
-		loc, ClassLoader.getSystemClassLoader());
+        res = ResourceBundle.getBundle("gnu.java.locale.LocaleInformation",
+                loc, ClassLoader.getSystemClassLoader());
       }
     catch (MissingResourceException x)
       {
-	res = null;
+        res = null;
       }
     locale = loc;
     currency = Currency.getInstance("XXX");
@@ -176,15 +176,15 @@ public class DecimalFormatSymbols implements Cloneable, Serializable
     intlCurrencySymbol = "XXX";
     try
       {
-	Currency localeCurrency = Currency.getInstance(loc);
-	if (localeCurrency != null)
-	  {
-	    setCurrency(localeCurrency);
-	  }
+        Currency localeCurrency = Currency.getInstance(loc);
+        if (localeCurrency != null)
+          {
+            setCurrency(localeCurrency);
+          }
       }
     catch(IllegalArgumentException exception)
       {
-	/* Locale has an invalid currency */
+        /* Locale has an invalid currency */
       }
     decimalSeparator = safeGetChar (res, "decimalSeparator", '.');
     digit = safeGetChar (res, "digit", '#');
@@ -193,11 +193,11 @@ public class DecimalFormatSymbols implements Cloneable, Serializable
     infinity = safeGetString (res, "infinity", "\u221e");
     try
       {
-	monetarySeparator = safeGetChar (res, "monetarySeparator", '.');
+        monetarySeparator = safeGetChar (res, "monetarySeparator", '.');
       }
     catch (MissingResourceException x)
       {
-	monetarySeparator = decimalSeparator;
+        monetarySeparator = decimalSeparator;
       }
     minusSign = safeGetChar (res, "minusSign", '-');
     NaN = safeGetString (res, "NaN", "\ufffd");
@@ -227,19 +227,19 @@ public class DecimalFormatSymbols implements Cloneable, Serializable
       return false;
     DecimalFormatSymbols dfs = (DecimalFormatSymbols) obj;
     return (currencySymbol.equals(dfs.currencySymbol)
-	    && decimalSeparator == dfs.decimalSeparator
-	    && digit == dfs.digit
-	    && exponential == dfs.exponential
-	    && groupingSeparator == dfs.groupingSeparator
-	    && infinity.equals(dfs.infinity)
-	    && intlCurrencySymbol.equals(dfs.intlCurrencySymbol)
-	    && minusSign == dfs.minusSign
-	    && monetarySeparator == dfs.monetarySeparator
-	    && NaN.equals(dfs.NaN)
-	    && patternSeparator == dfs.patternSeparator
-	    && percent == dfs.percent
-	    && perMill == dfs.perMill
-	    && zeroDigit == dfs.zeroDigit);
+            && decimalSeparator == dfs.decimalSeparator
+            && digit == dfs.digit
+            && exponential == dfs.exponential
+            && groupingSeparator == dfs.groupingSeparator
+            && infinity.equals(dfs.infinity)
+            && intlCurrencySymbol.equals(dfs.intlCurrencySymbol)
+            && minusSign == dfs.minusSign
+            && monetarySeparator == dfs.monetarySeparator
+            && NaN.equals(dfs.NaN)
+            && patternSeparator == dfs.patternSeparator
+            && percent == dfs.percent
+            && perMill == dfs.perMill
+            && zeroDigit == dfs.zeroDigit);
   }
 
   /**
@@ -281,7 +281,7 @@ public class DecimalFormatSymbols implements Cloneable, Serializable
    * format pattern string.
    *
    * @return The character used to represent a digit in a format
-   * pattern string. 
+   * pattern string.
    */
   public char getDigit ()
   {
@@ -503,7 +503,7 @@ public class DecimalFormatSymbols implements Cloneable, Serializable
    * used for the currency attribute, and the currency symbol
    * is set to the corresponding value from this instance.
    * Otherwise, the currency attribute is set to null and the
-   * symbol is left unmodified. 
+   * symbol is left unmodified.
    *
    * @param currencyCode The new international currency symbol.
    */
@@ -512,11 +512,11 @@ public class DecimalFormatSymbols implements Cloneable, Serializable
     intlCurrencySymbol = currencyCode;
     try
       {
-	currency = Currency.getInstance(currencyCode);
+        currency = Currency.getInstance(currencyCode);
       }
     catch (IllegalArgumentException exception)
       {
-	currency = null;
+        currency = null;
       }
     if (currency != null)
       {
@@ -538,7 +538,7 @@ public class DecimalFormatSymbols implements Cloneable, Serializable
    * This method sets the character used for the decimal point in currency
    * values.
    *
-   * @param decimalSep The decimal point character used in currency values. 
+   * @param decimalSep The decimal point character used in currency values.
    */
   public void setMonetaryDecimalSeparator (char decimalSep)
   {
@@ -547,7 +547,7 @@ public class DecimalFormatSymbols implements Cloneable, Serializable
 
   /**
    * This method sets the string used to represent the NaN (not a
-   * number) value. 
+   * number) value.
    *
    * @param nan The string used to represent NaN
    */
@@ -692,10 +692,10 @@ public class DecimalFormatSymbols implements Cloneable, Serializable
     if (serialVersionOnStream < 1)
       {
         monetarySeparator = decimalSeparator;
-	exponential = 'E';
+        exponential = 'E';
       }
     if (serialVersionOnStream < 2)
-	locale = Locale.getDefault();
+        locale = Locale.getDefault();
 
     serialVersionOnStream = 2;
   }
@@ -707,7 +707,7 @@ public class DecimalFormatSymbols implements Cloneable, Serializable
    * {@link java.text.spi.DecimalFormatSymbolsProvider} instances.
    * This is equivalent to calling
    * <code>getInstance(Locale.getDefault())</code>.
-   * 
+   *
    * @return a {@link DecimalFormatSymbols} instance for the default
    *         locale.
    * @since 1.6
@@ -722,7 +722,7 @@ public class DecimalFormatSymbols implements Cloneable, Serializable
    * specified locale obtained from either the runtime itself
    * or one of the installed
    * {@link java.text.spi.DecimalFormatSymbolsProvider} instances.
-   * 
+   *
    * @param locale the locale for which an instance should be
    *               returned.
    * @return a {@link DecimalFormatSymbols} instance for the specified
@@ -735,30 +735,30 @@ public class DecimalFormatSymbols implements Cloneable, Serializable
   {
     try
       {
-	if (!locale.equals(Locale.ROOT))
-	  ResourceBundle.getBundle("gnu.java.locale.LocaleInformation",
-				   locale,
-				   ClassLoader.getSystemClassLoader());
-	return new DecimalFormatSymbols(locale);	
+        if (!locale.equals(Locale.ROOT))
+          ResourceBundle.getBundle("gnu.java.locale.LocaleInformation",
+                                   locale,
+                                   ClassLoader.getSystemClassLoader());
+        return new DecimalFormatSymbols(locale);
       }
     catch (MissingResourceException x)
       {
-	/* This means runtime support for the locale
-	 * is not available, so we check providers. */
+        /* This means runtime support for the locale
+         * is not available, so we check providers. */
       }
     for (DecimalFormatSymbolsProvider p :
-	   ServiceLoader.load(DecimalFormatSymbolsProvider.class))
+           ServiceLoader.load(DecimalFormatSymbolsProvider.class))
       {
-	for (Locale loc : p.getAvailableLocales())
-	  {
-	    if (loc.equals(locale))
-	      {
-		DecimalFormatSymbols syms = p.getInstance(locale);
-		if (syms != null)
-		  return syms;
-		break;
-	      }
-	  }
+        for (Locale loc : p.getAvailableLocales())
+          {
+            if (loc.equals(locale))
+              {
+                DecimalFormatSymbols syms = p.getInstance(locale);
+                if (syms != null)
+                  return syms;
+                break;
+              }
+          }
       }
     return getInstance(LocaleHelper.getFallbackLocale(locale));
   }

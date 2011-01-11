@@ -37,7 +37,7 @@ import org.objectweb.asm.Type;
  * An extended {@link BasicVerifier} that performs more precise verifications.
  * This verifier computes exact class types, instead of using a single "object
  * reference" type (as done in the {@link BasicVerifier}).
- * 
+ *
  * @author Eric Bruneton
  * @author Bing Ran
  */
@@ -73,7 +73,7 @@ public class SimpleVerifier extends BasicVerifier {
     /**
      * Constructs a new {@link SimpleVerifier} to verify a specific class. This
      * class will not be loaded into the JVM since it may be incorrect.
-     * 
+     *
      * @param currentClass the class that is verified.
      * @param currentSuperClass the super class of the class that is verified.
      * @param isInterface if the class that is verified is an interface.
@@ -89,7 +89,7 @@ public class SimpleVerifier extends BasicVerifier {
     /**
      * Constructs a new {@link SimpleVerifier} to verify a specific class. This
      * class will not be loaded into the JVM since it may be incorrect.
-     * 
+     *
      * @param currentClass the class that is verified.
      * @param currentSuperClass the super class of the class that is verified.
      * @param currentClassInterfaces the interfaces implemented by the class

@@ -50,7 +50,7 @@ package java.lang.management;
  */
 public interface CompilationMXBean
 {
-  
+
   /**
    * Returns the name of the Just-In-Time (JIT) compiler.
    *

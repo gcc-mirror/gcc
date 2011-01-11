@@ -1,4 +1,4 @@
-/* JCheckBox.java -- 
+/* JCheckBox.java --
    Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -74,7 +74,7 @@ public class JCheckBox extends JToggleButton implements Accessible
 
     /**
      * Returns the accessble role of <code>JCheckBox</code>,
-     * {@link AccessibleRole#CHECK_BOX}. 
+     * {@link AccessibleRole#CHECK_BOX}.
      */
     public AccessibleRole getAccessibleRole()
     {
@@ -86,7 +86,7 @@ public class JCheckBox extends JToggleButton implements Accessible
 
   public static final String BORDER_PAINTED_FLAT_CHANGED_PROPERTY =
     "borderPaintedFlat";
-  
+
   private boolean borderPaintedFlat;
 
   private void init()
@@ -94,7 +94,7 @@ public class JCheckBox extends JToggleButton implements Accessible
     borderPainted = false;
     contentAreaFilled = false;
   }
-  
+
   public JCheckBox()
   {
     this(null, null, false);
@@ -106,25 +106,25 @@ public class JCheckBox extends JToggleButton implements Accessible
   }
 
   public JCheckBox(Icon icon)
-  { 
+  {
     this(null, icon, false);
-  }    
-  
+  }
+
   public JCheckBox(Icon icon, boolean selected)
-  { 
+  {
     this(null, icon, selected);
-  }    
-  
+  }
+
   public JCheckBox(String text)
   {
     this(text, null, false);
   }
-      
+
   public JCheckBox(String text, boolean selected)
   {
     this(text, null, selected);
   }
-      
+
   public JCheckBox(String text, Icon icon)
   {
     this(text, icon, false);
@@ -145,7 +145,7 @@ public class JCheckBox extends JToggleButton implements Accessible
   {
     return "CheckBoxUI";
   }
-  
+
   protected  String paramString()
   {
     return super.paramString() + ",borderPaintedFlat=" + borderPaintedFlat;

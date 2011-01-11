@@ -159,7 +159,7 @@ public class PopupFactory
         Dimension rootSize = root.getSize();
         if (x >= rootLoc.x && y > rootLoc.y
             && (x - rootLoc.x) + contentsSize.width < rootSize.width
-            && (y - rootLoc.y) + contentsSize.height < rootSize.height)      
+            && (y - rootLoc.y) + contentsSize.height < rootSize.height)
           popup = new Popup.LightweightPopup(owner, contents, x, y);
         else
           popup = new Popup.JWindowPopup(owner, contents, x, y);

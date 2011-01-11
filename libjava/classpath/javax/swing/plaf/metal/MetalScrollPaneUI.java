@@ -71,12 +71,12 @@ public class MetalScrollPaneUI
   {
     return new MetalScrollPaneUI();
   }
-  
+
   /**
-   * Configures the specified component appropriate for the look and feel. 
-   * This method is invoked when the ComponentUI instance is being installed 
-   * as the UI delegate on the specified component. This method should 
-   * completely configure the component for the look and feel, 
+   * Configures the specified component appropriate for the look and feel.
+   * This method is invoked when the ComponentUI instance is being installed
+   * as the UI delegate on the specified component. This method should
+   * completely configure the component for the look and feel,
    * including the following:
    * 1. Install any default property values for color, fonts, borders,
    * icons, opacity, etc. on the component. Whenever possible, property
@@ -87,8 +87,8 @@ public class MetalScrollPaneUI
    * 5. Create/install a PropertyChangeListener on the component in order
    * to detect and respond to component property changes appropriately.
    * 6. Install keyboard UI (mnemonics, traversal, etc.) on the component.
-   * 7. Initialize any appropriate instance data. 
-   * 
+   * 7. Initialize any appropriate instance data.
+   *
    * @param c - the component to install the ui on
    */
   public void installUI(JComponent c)
@@ -101,11 +101,11 @@ public class MetalScrollPaneUI
   }
 
   /**
-   * Reverses configuration which was done on the specified component 
-   * during installUI. This method is invoked when this UIComponent 
-   * instance is being removed as the UI delegate for the specified 
-   * component. This method should undo the configuration performed in 
-   * installUI, being careful to leave the JComponent instance in a 
+   * Reverses configuration which was done on the specified component
+   * during installUI. This method is invoked when this UIComponent
+   * instance is being removed as the UI delegate for the specified
+   * component. This method should undo the configuration performed in
+   * installUI, being careful to leave the JComponent instance in a
    * clean state (no extraneous listeners, look-and-feel-specific property
    *  objects, etc.). This should include the following:
    *  1. Remove any UI-set borders from the component.
@@ -113,8 +113,8 @@ public class MetalScrollPaneUI
    *  3. Remove any UI-added sub-components from the component.
    *  4. Remove any UI-added event/property listeners from the component.
    *  5. Remove any UI-installed keyboard UI from the component.
-   *  6. Nullify any allocated instance data objects to allow for GC. 
-   *  
+   *  6. Nullify any allocated instance data objects to allow for GC.
+   *
    *  @param c - the component to uninstall the ui on
    */
   public void uninstallUI(JComponent c)
@@ -128,17 +128,17 @@ public class MetalScrollPaneUI
 
   /**
    * Installs listeners on scrollPane
-   * 
+   *
    * @param scrollPane - the component to install the listeners on
    */
   public void installListeners(JScrollPane scrollPane)
   {
     super.installListeners(scrollPane);
   }
-  
+
   /**
    * Uninstalls listeners on scrollPane
-   * 
+   *
    * @param scrollPane - the component to uninstall the listeners on
    */
   public void uninstallListeners(JScrollPane scrollPane)
@@ -148,7 +148,7 @@ public class MetalScrollPaneUI
 
   /**
    * TODO
-   * 
+   *
    * @return TODO
    */
   protected PropertyChangeListener createScrollBarSwapListener()

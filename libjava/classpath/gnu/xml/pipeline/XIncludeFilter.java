@@ -1,4 +1,4 @@
-/* XIncludeFilter.java -- 
+/* XIncludeFilter.java --
    Copyright (C) 2001,2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -40,8 +40,8 @@ package gnu.xml.pipeline;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL; 
-import java.net.URLConnection; 
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Hashtable;
 import java.util.Stack;
 import java.util.Vector;
@@ -77,7 +77,7 @@ import gnu.xml.util.Resolver;
  * currently supported.
  *
  * <li> DTDs are not supported in included files, since the SAX DTD events
- * must have completely preceded any included file. 
+ * must have completely preceded any included file.
  * The CR explicitly allows the DTD related portions of the infoset to
  * grow as an effect of including XML documents.
  *
@@ -101,33 +101,33 @@ import gnu.xml.util.Resolver;
  */
 public class XIncludeFilter extends EventFilter implements Locator
 {
-    private Hashtable		extEntities = new Hashtable (5, 5);
-    private int			ignoreCount;
-    private Stack		uris = new Stack ();
-    private Locator		locator;
-    private Vector		inclusions = new Vector (5, 5);
-    private boolean		savingPrefixes;
+    private Hashtable           extEntities = new Hashtable (5, 5);
+    private int                 ignoreCount;
+    private Stack               uris = new Stack ();
+    private Locator             locator;
+    private Vector              inclusions = new Vector (5, 5);
+    private boolean             savingPrefixes;
 
     /**
      */
     public XIncludeFilter (EventConsumer next)
     throws SAXException
     {
-	super (next);
-	setContentHandler (this);
-	// DTDHandler callbacks pass straight through
-	setProperty (DECL_HANDLER, this);
-	setProperty (LEXICAL_HANDLER, this);
+        super (next);
+        setContentHandler (this);
+        // DTDHandler callbacks pass straight through
+        setProperty (DECL_HANDLER, this);
+        setProperty (LEXICAL_HANDLER, this);
     }
 
     private void fatal (SAXParseException e) throws SAXException
     {
-	ErrorHandler		eh;
-	
-	eh = getErrorHandler ();
-	if (eh != null)
-	    eh.fatalError (e);
-	throw e;
+        ErrorHandler            eh;
+
+        eh = getErrorHandler ();
+        if (eh != null)
+            eh.fatalError (e);
+        throw e;
     }
 
     /**
@@ -135,29 +135,29 @@ public class XIncludeFilter extends EventFilter implements Locator
      */
     public void setDocumentLocator (Locator locator)
     {
-	this.locator = locator;
-	super.setDocumentLocator (this);
+        this.locator = locator;
+        super.setDocumentLocator (this);
     }
 
     /** Used for proxy locator; do not call directly. */
     public String getSystemId ()
-	{ return (locator == null) ? null : locator.getSystemId (); }
+        { return (locator == null) ? null : locator.getSystemId (); }
     /** Used for proxy locator; do not call directly. */
     public String getPublicId ()
-	{ return (locator == null) ? null : locator.getPublicId (); }
+        { return (locator == null) ? null : locator.getPublicId (); }
     /** Used for proxy locator; do not call directly. */
     public int getLineNumber ()
-	{ return (locator == null) ? -1 : locator.getLineNumber (); }
+        { return (locator == null) ? -1 : locator.getLineNumber (); }
     /** Used for proxy locator; do not call directly. */
     public int getColumnNumber ()
-	{ return (locator == null) ? -1 : locator.getColumnNumber (); }
+        { return (locator == null) ? -1 : locator.getColumnNumber (); }
 
     /**
      * Assigns the flag controlling the setting of the SAX2
      * <em>namespace-prefixes</em> flag.
      */
     public void setSavingPrefixes (boolean flag)
-	{ savingPrefixes = flag; }
+        { savingPrefixes = flag; }
 
     /**
      * Returns the flag controlling the setting of the SAX2
@@ -166,49 +166,49 @@ public class XIncludeFilter extends EventFilter implements Locator
      * information that can be useful.
      */
     public boolean isSavingPrefixes ()
-	{ return savingPrefixes; }
+        { return savingPrefixes; }
 
     //
     // Two mechanisms are interacting here.
-    // 
-    //	- XML Base implies a stack of base URIs, updated both by
-    //	  "real entity" boundaries and element boundaries.
     //
-    //	- Active "Real Entities" (for document and general entities,
-    //	  and by xincluded files) are tracked to prevent circular
-    //	  inclusions.
+    //  - XML Base implies a stack of base URIs, updated both by
+    //    "real entity" boundaries and element boundaries.
+    //
+    //  - Active "Real Entities" (for document and general entities,
+    //    and by xincluded files) are tracked to prevent circular
+    //    inclusions.
     //
     private String addMarker (String uri)
     throws SAXException
     {
-	if (locator != null && locator.getSystemId () != null)
-	    uri = locator.getSystemId ();
+        if (locator != null && locator.getSystemId () != null)
+            uri = locator.getSystemId ();
 
-	// guard against InputSource objects without system IDs
-	if (uri == null)
-	    fatal (new SAXParseException ("Entity URI is unknown", locator));
+        // guard against InputSource objects without system IDs
+        if (uri == null)
+            fatal (new SAXParseException ("Entity URI is unknown", locator));
 
-	try {
-	    URL	url = new URL (uri);
+        try {
+            URL url = new URL (uri);
 
-	    uri = url.toString ();
-	    if (inclusions.contains (uri))
-		fatal (new SAXParseException (
-			"XInclude, circular inclusion", locator));
-	    inclusions.addElement (uri);
-	    uris.push (url);
-	} catch (IOException e) {
-	    // guard against illegal relative URIs (Xerces)
-	    fatal (new SAXParseException ("parser bug: relative URI",
-		locator, e));
-	}
-	return uri;
+            uri = url.toString ();
+            if (inclusions.contains (uri))
+                fatal (new SAXParseException (
+                        "XInclude, circular inclusion", locator));
+            inclusions.addElement (uri);
+            uris.push (url);
+        } catch (IOException e) {
+            // guard against illegal relative URIs (Xerces)
+            fatal (new SAXParseException ("parser bug: relative URI",
+                locator, e));
+        }
+        return uri;
     }
 
     private void pop (String uri)
     {
-	inclusions.removeElement (uri);
-	uris.pop ();
+        inclusions.removeElement (uri);
+        uris.pop ();
     }
 
     //
@@ -216,66 +216,66 @@ public class XIncludeFilter extends EventFilter implements Locator
     //
     public void startDocument () throws SAXException
     {
-	ignoreCount = 0;
-	addMarker (null);
-	super.startDocument ();
+        ignoreCount = 0;
+        addMarker (null);
+        super.startDocument ();
     }
 
     public void endDocument () throws SAXException
     {
-	inclusions.setSize (0);
-	extEntities.clear ();
-	uris.setSize (0);
-	super.endDocument ();
+        inclusions.setSize (0);
+        extEntities.clear ();
+        uris.setSize (0);
+        super.endDocument ();
     }
 
     //
     // External general entity boundaries get both treatments.
     //
     public void externalEntityDecl (String name,
-    	String publicId, String systemId)
+        String publicId, String systemId)
     throws SAXException
     {
-	if (name.charAt (0) == '%')
-	    return;
-	try {
-	    URL	url = new URL (locator.getSystemId ());
-	    systemId = new URL (url, systemId).toString ();
-	} catch (IOException e) {
-	    // what could we do?
-	}
-	extEntities.put (name, systemId);
+        if (name.charAt (0) == '%')
+            return;
+        try {
+            URL url = new URL (locator.getSystemId ());
+            systemId = new URL (url, systemId).toString ();
+        } catch (IOException e) {
+            // what could we do?
+        }
+        extEntities.put (name, systemId);
     }
 
     public void startEntity (String name)
     throws SAXException
     {
-	if (ignoreCount != 0) {
-	    ignoreCount++;
-	    return;
-	}
+        if (ignoreCount != 0) {
+            ignoreCount++;
+            return;
+        }
 
-	String	uri = (String) extEntities.get (name);
-	if (uri != null)
-	    addMarker (uri);
-	super.startEntity (name);
+        String  uri = (String) extEntities.get (name);
+        if (uri != null)
+            addMarker (uri);
+        super.startEntity (name);
     }
 
     public void endEntity (String name)
     throws SAXException
     {
-	if (ignoreCount != 0) {
-	    if (--ignoreCount != 0)
-		return;
-	}
+        if (ignoreCount != 0) {
+            if (--ignoreCount != 0)
+                return;
+        }
 
-	String	uri = (String) extEntities.get (name);
+        String  uri = (String) extEntities.get (name);
 
-	if (uri != null)
-	    pop (uri);
-	super.endEntity (name);
+        if (uri != null)
+            pop (uri);
+        super.endEntity (name);
     }
-    
+
     //
     // element boundaries only affect the base URI stack,
     // unless they're XInclude elements.
@@ -284,103 +284,103 @@ public class XIncludeFilter extends EventFilter implements Locator
     startElement (String uri, String localName, String qName, Attributes atts)
     throws SAXException
     {
-	if (ignoreCount != 0) {
-	    ignoreCount++;
-	    return;
-	}
+        if (ignoreCount != 0) {
+            ignoreCount++;
+            return;
+        }
 
-	URL	baseURI = (URL) uris.peek ();
-	String	base;
+        URL     baseURI = (URL) uris.peek ();
+        String  base;
 
-	base = atts.getValue ("http://www.w3.org/XML/1998/namespace", "base");
-	if (base == null)
-	    uris.push (baseURI);
-	else {
-	    URL		url;
+        base = atts.getValue ("http://www.w3.org/XML/1998/namespace", "base");
+        if (base == null)
+            uris.push (baseURI);
+        else {
+            URL         url;
 
-	    if (base.indexOf ('#') != -1)
-		fatal (new SAXParseException (
-		    "xml:base with fragment: " + base,
-		    locator));
+            if (base.indexOf ('#') != -1)
+                fatal (new SAXParseException (
+                    "xml:base with fragment: " + base,
+                    locator));
 
-	    try {
-		baseURI = new URL (baseURI, base);
-		uris.push (baseURI);
-	    } catch (Exception e) {
-		fatal (new SAXParseException (
-		    "xml:base with illegal uri: " + base,
-		    locator, e));
-	    }
-	}
+            try {
+                baseURI = new URL (baseURI, base);
+                uris.push (baseURI);
+            } catch (Exception e) {
+                fatal (new SAXParseException (
+                    "xml:base with illegal uri: " + base,
+                    locator, e));
+            }
+        }
 
-	if (!"http://www.w3.org/2001/XInclude".equals (uri)) {
-	    super.startElement (uri, localName, qName, atts);
-	    return;
-	}
+        if (!"http://www.w3.org/2001/XInclude".equals (uri)) {
+            super.startElement (uri, localName, qName, atts);
+            return;
+        }
 
-	if ("include".equals (localName)) {
-	    String	href = atts.getValue ("href");
-	    String	parse = atts.getValue ("parse");
-	    String	encoding = atts.getValue ("encoding");
-	    URL		url = (URL) uris.peek ();
-	    SAXParseException	x = null;
+        if ("include".equals (localName)) {
+            String      href = atts.getValue ("href");
+            String      parse = atts.getValue ("parse");
+            String      encoding = atts.getValue ("encoding");
+            URL         url = (URL) uris.peek ();
+            SAXParseException   x = null;
 
-	    if (href == null)
-		fatal (new SAXParseException (
-		    "XInclude missing href",
-		    locator));
-	    if (href.indexOf ('#') != -1)
-		fatal (new SAXParseException (
-		    "XInclude with fragment: " + href,
-		    locator));
+            if (href == null)
+                fatal (new SAXParseException (
+                    "XInclude missing href",
+                    locator));
+            if (href.indexOf ('#') != -1)
+                fatal (new SAXParseException (
+                    "XInclude with fragment: " + href,
+                    locator));
 
-	    if (parse == null || "xml".equals (parse))
-		x = xinclude (url, href);
-	    else if ("text".equals (parse))
-		x = readText (url, href, encoding);
-	    else
-		fatal (new SAXParseException (
-		    "unknown XInclude parsing mode: " + parse,
-		    locator));
-	    if (x == null) {
-		// strip out all child content
-		ignoreCount++;
-		return;
-	    }
+            if (parse == null || "xml".equals (parse))
+                x = xinclude (url, href);
+            else if ("text".equals (parse))
+                x = readText (url, href, encoding);
+            else
+                fatal (new SAXParseException (
+                    "unknown XInclude parsing mode: " + parse,
+                    locator));
+            if (x == null) {
+                // strip out all child content
+                ignoreCount++;
+                return;
+            }
 
-	    // FIXME the 17-Sept-2002 CR of XInclude says we "must"
-	    // use xi:fallback elements to handle resource errors,
-	    // if they exist.
-	    fatal (x);
+            // FIXME the 17-Sept-2002 CR of XInclude says we "must"
+            // use xi:fallback elements to handle resource errors,
+            // if they exist.
+            fatal (x);
 
-	} else if ("fallback".equals (localName)) {
-	    fatal (new SAXParseException (
-		"illegal top level XInclude 'fallback' element",
-		locator));
-	} else {
-	    ErrorHandler	eh = getErrorHandler ();
+        } else if ("fallback".equals (localName)) {
+            fatal (new SAXParseException (
+                "illegal top level XInclude 'fallback' element",
+                locator));
+        } else {
+            ErrorHandler        eh = getErrorHandler ();
 
-	    // CR doesn't say this is an error
-	    if (eh != null)
-		eh.warning (new SAXParseException (
-		    "unrecognized toplevel XInclude element: " + localName,
-		    locator));
-	    super.startElement (uri, localName, qName, atts);
-	}
+            // CR doesn't say this is an error
+            if (eh != null)
+                eh.warning (new SAXParseException (
+                    "unrecognized toplevel XInclude element: " + localName,
+                    locator));
+            super.startElement (uri, localName, qName, atts);
+        }
     }
 
     public void endElement (String uri, String localName, String qName)
     throws SAXException
     {
-	if (ignoreCount != 0) {
-	    if (--ignoreCount != 0)
-		return;
-	}
+        if (ignoreCount != 0) {
+            if (--ignoreCount != 0)
+                return;
+        }
 
-	uris.pop ();
-	if (!("http://www.w3.org/2001/XInclude".equals (uri)
-		&& "include".equals (localName)))
-	    super.endElement (uri, localName, qName);
+        uris.pop ();
+        if (!("http://www.w3.org/2001/XInclude".equals (uri)
+                && "include".equals (localName)))
+            super.endElement (uri, localName, qName);
     }
 
     //
@@ -389,66 +389,66 @@ public class XIncludeFilter extends EventFilter implements Locator
     public void characters (char ch [], int start, int length)
     throws SAXException
     {
-	if (ignoreCount == 0)
-	    super.characters (ch, start, length);
+        if (ignoreCount == 0)
+            super.characters (ch, start, length);
     }
 
     public void processingInstruction (String target, String value)
     throws SAXException
     {
-	if (ignoreCount == 0)
-	    super.processingInstruction (target, value);
+        if (ignoreCount == 0)
+            super.processingInstruction (target, value);
     }
 
     public void ignorableWhitespace (char ch [], int start, int length)
     throws SAXException
     {
-	if (ignoreCount == 0)
-	    super.ignorableWhitespace (ch, start, length);
+        if (ignoreCount == 0)
+            super.ignorableWhitespace (ch, start, length);
     }
 
     public void comment (char ch [], int start, int length)
     throws SAXException
     {
-	if (ignoreCount == 0)
-	    super.comment (ch, start, length);
+        if (ignoreCount == 0)
+            super.comment (ch, start, length);
     }
 
     public void startCDATA () throws SAXException
     {
-	if (ignoreCount == 0)
-	    super.startCDATA ();
+        if (ignoreCount == 0)
+            super.startCDATA ();
     }
 
     public void endCDATA () throws SAXException
     {
-	if (ignoreCount == 0)
-	    super.endCDATA ();
+        if (ignoreCount == 0)
+            super.endCDATA ();
     }
 
     public void startPrefixMapping (String prefix, String uri)
     throws SAXException
     {
-	if (ignoreCount == 0)
-	    super.startPrefixMapping (prefix, uri);
+        if (ignoreCount == 0)
+            super.startPrefixMapping (prefix, uri);
     }
 
     public void endPrefixMapping (String prefix) throws SAXException
     {
-	if (ignoreCount == 0)
-	    super.endPrefixMapping (prefix);
+        if (ignoreCount == 0)
+            super.endPrefixMapping (prefix);
     }
 
     public void skippedEntity (String name) throws SAXException
     {
-	if (ignoreCount == 0)
-	    super.skippedEntity (name);
+        if (ignoreCount == 0)
+            super.skippedEntity (name);
     }
 
     // JDK 1.1 seems to need it to be done this way, sigh
     void setLocator (Locator l) { locator = l; }
     Locator getLocator () { return locator; }
-    
+
 
     //
     // for XIncluded entities, manage the current locator and
@@ -456,45 +456,45 @@ public class XIncludeFilter extends EventFilter implements Locator
     //
     private class Scrubber extends EventFilter
     {
-	Scrubber (EventFilter f)
-	throws SAXException
-	{
-	    // delegation passes to next in chain
-	    super (f);
+        Scrubber (EventFilter f)
+        throws SAXException
+        {
+            // delegation passes to next in chain
+            super (f);
 
-	    // process all content events
-	    super.setContentHandler (this);
-	    super.setProperty (LEXICAL_HANDLER, this);
+            // process all content events
+            super.setContentHandler (this);
+            super.setProperty (LEXICAL_HANDLER, this);
 
-	    // drop all DTD events
-	    super.setDTDHandler (null);
-	    super.setProperty (DECL_HANDLER, null);
-	}
+            // drop all DTD events
+            super.setDTDHandler (null);
+            super.setProperty (DECL_HANDLER, null);
+        }
 
-	// maintain proxy locator
-	// only one startDocument()/endDocument() pair per event stream
-	public void setDocumentLocator (Locator l)
-	    { setLocator (l); }
-	public void startDocument ()
-	    { }
-	public void endDocument ()
-	    { }
-	
-	private void reject (String message) throws SAXException
-	    { fatal (new SAXParseException (message, getLocator ())); }
-	
-	// only the DTD from the "base document" gets reported
-	public void startDTD (String root, String publicId, String systemId)
-	throws SAXException
-	    { reject ("XIncluded DTD: " + systemId); }
-	public void endDTD ()
-	throws SAXException
-	    { reject ("XIncluded DTD"); }
-	// ... so this should never happen
-	public void skippedEntity (String name) throws SAXException
-	    { reject ("XInclude skipped entity: " + name); }
+        // maintain proxy locator
+        // only one startDocument()/endDocument() pair per event stream
+        public void setDocumentLocator (Locator l)
+            { setLocator (l); }
+        public void startDocument ()
+            { }
+        public void endDocument ()
+            { }
 
-	// since we rejected DTDs, only builtin entities can be reported
+        private void reject (String message) throws SAXException
+            { fatal (new SAXParseException (message, getLocator ())); }
+
+        // only the DTD from the "base document" gets reported
+        public void startDTD (String root, String publicId, String systemId)
+        throws SAXException
+            { reject ("XIncluded DTD: " + systemId); }
+        public void endDTD ()
+        throws SAXException
+            { reject ("XIncluded DTD"); }
+        // ... so this should never happen
+        public void skippedEntity (String name) throws SAXException
+            { reject ("XInclude skipped entity: " + name); }
+
+        // since we rejected DTDs, only builtin entities can be reported
     }
 
     // <xi:include parse='xml' ...>
@@ -502,40 +502,40 @@ public class XIncludeFilter extends EventFilter implements Locator
     private SAXParseException xinclude (URL url, String href)
     throws SAXException
     {
-	XMLReader	helper;
-	Scrubber	scrubber;
-	Locator		savedLocator = locator;
+        XMLReader       helper;
+        Scrubber        scrubber;
+        Locator         savedLocator = locator;
 
-	// start with a parser acting just like our input
-	// modulo DTD-ish stuff (validation flag, entity resolver)
-	helper = XMLReaderFactory.createXMLReader ();
-	helper.setErrorHandler (getErrorHandler ());
-	helper.setFeature (FEATURE_URI + "namespace-prefixes", true);
+        // start with a parser acting just like our input
+        // modulo DTD-ish stuff (validation flag, entity resolver)
+        helper = XMLReaderFactory.createXMLReader ();
+        helper.setErrorHandler (getErrorHandler ());
+        helper.setFeature (FEATURE_URI + "namespace-prefixes", true);
 
-	// Set up the proxy locator and event filter.
-	scrubber = new Scrubber (this);
-	locator = null;
-	bind (helper, scrubber);
+        // Set up the proxy locator and event filter.
+        scrubber = new Scrubber (this);
+        locator = null;
+        bind (helper, scrubber);
 
-	// Merge the included document, except its DTD
-	try {
-	    url = new URL (url, href);
-	    href = url.toString ();
+        // Merge the included document, except its DTD
+        try {
+            url = new URL (url, href);
+            href = url.toString ();
 
-	    if (inclusions.contains (href))
-		fatal (new SAXParseException (
-			"XInclude, circular inclusion", locator));
+            if (inclusions.contains (href))
+                fatal (new SAXParseException (
+                        "XInclude, circular inclusion", locator));
 
-	    inclusions.addElement (href);
-	    uris.push (url);
-	    helper.parse (new InputSource (href));
-	    return null;
-	} catch (java.io.IOException e) {
-	    return new SAXParseException (href, locator, e);
-	} finally {
-	    pop (href);
-	    locator = savedLocator;
-	}
+            inclusions.addElement (href);
+            uris.push (url);
+            helper.parse (new InputSource (href));
+            return null;
+        } catch (java.io.IOException e) {
+            return new SAXParseException (href, locator, e);
+        } finally {
+            pop (href);
+            locator = savedLocator;
+        }
     }
 
     // <xi:include parse='text' ...>
@@ -543,37 +543,37 @@ public class XIncludeFilter extends EventFilter implements Locator
     private SAXParseException readText (URL url, String href, String encoding)
     throws SAXException
     {
-	InputStream	in = null;
+        InputStream     in = null;
 
-	try {
-	    URLConnection	conn;
-	    InputStreamReader	reader;
-	    char		buf [] = new char [4096];
-	    int			count;
+        try {
+            URLConnection       conn;
+            InputStreamReader   reader;
+            char                buf [] = new char [4096];
+            int                 count;
 
-	    url = new URL (url, href);
-	    conn = url.openConnection ();
-	    in = conn.getInputStream ();
-	    if (encoding == null)
-		encoding = Resolver.getEncoding (conn.getContentType ());
-	    if (encoding == null) {
-		ErrorHandler	eh = getErrorHandler ();
-		if (eh != null)
-		    eh.warning (new SAXParseException (
-			"guessing text encoding for URL: " + url,
-			locator));
-		reader = new InputStreamReader (in);
-	    } else
-		reader = new InputStreamReader (in, encoding);
+            url = new URL (url, href);
+            conn = url.openConnection ();
+            in = conn.getInputStream ();
+            if (encoding == null)
+                encoding = Resolver.getEncoding (conn.getContentType ());
+            if (encoding == null) {
+                ErrorHandler    eh = getErrorHandler ();
+                if (eh != null)
+                    eh.warning (new SAXParseException (
+                        "guessing text encoding for URL: " + url,
+                        locator));
+                reader = new InputStreamReader (in);
+            } else
+                reader = new InputStreamReader (in, encoding);
 
-	    while ((count = reader.read (buf, 0, buf.length)) != -1)
-		super.characters (buf, 0, count);
-	    in.close ();
-	    return null;
-	} catch (IOException e) {
-	    return new SAXParseException (
-		"can't XInclude text",
-		locator, e);
-	}
+            while ((count = reader.read (buf, 0, buf.length)) != -1)
+                super.characters (buf, 0, count);
+            in.close ();
+            return null;
+        } catch (IOException e) {
+            return new SAXParseException (
+                "can't XInclude text",
+                locator, e);
+        }
     }
 }

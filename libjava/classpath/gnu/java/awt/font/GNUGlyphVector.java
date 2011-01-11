@@ -113,7 +113,7 @@ public class GNUGlyphVector
     this.font = font;
     this.renderContext = renderContext;
     this.glyphs = glyphs;
-    
+
     fontSize = font.getSize2D();
     transform = font.getTransform(); // returns a modifiable copy
     //transform.concatenate(renderContext.getTransform());
@@ -156,7 +156,7 @@ public class GNUGlyphVector
     for (i = p = 0; i < glyphs.length; i++)
     {
       p += 2;
-      
+
       if ((transforms == null) || (tx = transforms[i]) == null)
         tx = this.transform;
       else
@@ -164,7 +164,7 @@ public class GNUGlyphVector
         tx = new AffineTransform(tx);
         tx.concatenate(this.transform);
       }
-      
+
       fontDelegate.getAdvance(glyphs[i], fontSize, tx,
                               renderContext.isAntiAliased(),
                               renderContext.usesFractionalMetrics(),
@@ -502,11 +502,11 @@ public class GNUGlyphVector
   {
     return layoutFlags;
   }
-  
-  
+
+
   /**
    * Returns the positions of a range of glyphs in this vector.
-   * 
+   *
    * @param firstGlyphIndex the index of the first glyph whose
    * position is retrieved.
    *
@@ -546,7 +546,7 @@ public class GNUGlyphVector
     return outPositions;
   }
 
-  
+
   private float getAscent()
   {
     return fontDelegate.getAscent(fontSize, transform,
@@ -561,7 +561,7 @@ public class GNUGlyphVector
     return fontDelegate.getDescent(fontSize, transform,
                                    renderContext.isAntiAliased(),
                                    renderContext.usesFractionalMetrics(),
-                                   /* horizontal */ true);    
+                                   /* horizontal */ true);
   }
 
 

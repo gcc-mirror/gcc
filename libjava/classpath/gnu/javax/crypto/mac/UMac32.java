@@ -1,4 +1,4 @@
-/* UMac32.java -- 
+/* UMac32.java --
    Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -160,7 +160,7 @@ public class UMac32
 
   /**
    * Private constructor for cloning purposes.
-   * 
+   *
    * @param that the instance to clone.
    */
   private UMac32(UMac32 that)
@@ -218,7 +218,7 @@ public class UMac32
    * (from an earlier invocation of this method). If a <i>Key Material</i> can
    * be used, but no <i>Nonce Material</i> is defined or previously
    * set/defined, then a default value of all-zeroes shall be used.
-   * 
+   *
    * @param attributes one or both of required parameters.
    * @throws InvalidKeyException the key material specified is not of the
    *           correct length.

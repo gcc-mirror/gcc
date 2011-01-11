@@ -62,7 +62,7 @@ import java.util.Arrays;
 
 /**
  * The GIOP message header.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class MessageHeader
@@ -159,7 +159,7 @@ public class MessageHeader
 
   /**
    * Create an empty message header, corresponding the given version.
-   * 
+   *
    * @param major the major message header version.
    * @param minor the minot message header version.
    */
@@ -187,7 +187,7 @@ public class MessageHeader
 
   /**
    * Set the encoding to use.
-   * 
+   *
    * @param use_big_endian if true (default), the Big Endian encoding is used.
    * If false, the Little Endian encoding is used.
    */
@@ -209,9 +209,9 @@ public class MessageHeader
 
   /**
    * Get the message type as string.
-   * 
+   *
    * @param type the message type as int (the field {@link message_type}).
-   * 
+   *
    * @return the message type as string.
    */
   public String getTypeString(int type)
@@ -228,7 +228,7 @@ public class MessageHeader
 
   /**
    * Creates reply header, matching the message header version number.
-   * 
+   *
    * @return one of {@link gnu.CORBA.GIOP.v1_0.ReplyHeader},
    * {@link gnu.CORBA.GIOP.v1_2.ReplyHeader}, etc - depending on the version
    * number in this header.
@@ -243,7 +243,7 @@ public class MessageHeader
 
   /**
    * Creates request header, matching the message header version number.
-   * 
+   *
    * @return one of {@link gnu.CORBA.GIOP.v1_0.RequestHeader},
    * {@link gnu.CORBA.GIOP.v1_2.RequestHeader}, etc - depending on the version
    * number in this header.
@@ -274,11 +274,11 @@ public class MessageHeader
 
   /**
    * Read the header from the stream.
-   * 
+   *
    * @param istream a stream to read from.
    * @throws MARSHAL if this is not a GIOP 1.0 header.
    */
-  public void read(java.io.InputStream istream) 
+  public void read(java.io.InputStream istream)
     throws MARSHAL, EOFException
   {
     try
@@ -336,7 +336,7 @@ public class MessageHeader
 
   /**
    * Get the short string summary of the message.
-   * 
+   *
    * @return a short message summary.
    */
   public String toString()
@@ -348,7 +348,7 @@ public class MessageHeader
 
   /**
    * Write the header to stream.
-   * 
+   *
    * @param out a stream to write into.
    */
   public void write(java.io.OutputStream out)
@@ -382,7 +382,7 @@ public class MessageHeader
 
   /**
    * Read data, followed by the message header. Handle fragmented messages.
-   * 
+   *
    * @param source the data source to read from.
    * @param service the socket on that the time outs are set. Can be null (no
    * timeouts are set).

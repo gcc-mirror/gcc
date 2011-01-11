@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -47,11 +47,11 @@ public final class GMP
 {
   private Pointer native_ptr;
   private int refCount = 1;
-  
+
   public GMP()
   {
     super();
-    
+
     natInitialize();
   }
 
@@ -59,30 +59,30 @@ public final class GMP
   {
     refCount++;
   }
-  
+
   private synchronized void releaseRef()
   {
     refCount--;
     if (refCount == 0)
       {
-	natFinalize();
-	native_ptr = null;
+        natFinalize();
+        native_ptr = null;
       }
   }
-  
+
   protected void finalize()
   {
     releaseRef();
   }
-  
-  
+
+
   public void fromByteArray(byte[] v)
   {
     acquireRef();
     natFromByteArray(v);
     releaseRef();
   }
-  
+
   public void fromBI(GMP x)
   {
     acquireRef();
@@ -91,14 +91,14 @@ public final class GMP
     x.releaseRef();
     releaseRef();
   }
-  
+
   public void fromLong(long n)
   {
     acquireRef();
     natFromLong(n);
     releaseRef();
   }
-  
+
   public int fromString(String s, int rdx)
   {
     acquireRef();
@@ -106,14 +106,14 @@ public final class GMP
     releaseRef();
     return result;
   }
-  
+
   public void fromSignedMagnitude(byte[] m, boolean isNegative)
   {
     acquireRef();
     natFromSignedMagnitude(m, isNegative);
     releaseRef();
   }
-  
+
   public String toString(int b)
   {
     acquireRef();
@@ -121,14 +121,14 @@ public final class GMP
     releaseRef();
     return result;
   }
-  
+
   public void toByteArray(byte[] r)
   {
     acquireRef();
     natToByteArray(r);
     releaseRef();
   }
-  
+
   public double doubleValue()
   {
     acquireRef();
@@ -136,7 +136,7 @@ public final class GMP
     releaseRef();
     return result;
   }
-  
+
   public int absIntValue()
   {
     acquireRef();
@@ -144,7 +144,7 @@ public final class GMP
     releaseRef();
     return result;
   }
-  
+
   public int compare(GMP x)
   {
     acquireRef();
@@ -154,7 +154,7 @@ public final class GMP
     releaseRef();
     return result;
   }
-  
+
   public void add(GMP x, GMP r)
   {
     acquireRef();
@@ -165,7 +165,7 @@ public final class GMP
     x.releaseRef();
     releaseRef();
   }
-  
+
   public void subtract(GMP x, GMP r)
   {
     acquireRef();
@@ -176,7 +176,7 @@ public final class GMP
     x.releaseRef();
     releaseRef();
   }
-  
+
   public void multiply(GMP x, GMP r)
   {
     acquireRef();
@@ -187,7 +187,7 @@ public final class GMP
     x.releaseRef();
     releaseRef();
   }
-  
+
   public void quotient(GMP x, GMP r)
   {
     acquireRef();
@@ -198,7 +198,7 @@ public final class GMP
     x.releaseRef();
     releaseRef();
   }
-  
+
   public void remainder(GMP x, GMP r)
   {
     acquireRef();
@@ -209,7 +209,7 @@ public final class GMP
     x.releaseRef();
     releaseRef();
   }
-  
+
   public void quotientAndRemainder(GMP x, GMP q, GMP r)
   {
     acquireRef();
@@ -222,7 +222,7 @@ public final class GMP
     x.releaseRef();
     releaseRef();
   }
-  
+
   public void modulo(GMP x, GMP r)
   {
     acquireRef();
@@ -233,7 +233,7 @@ public final class GMP
     x.releaseRef();
     releaseRef();
   }
-  
+
   public void pow(int n, GMP r)
   {
     acquireRef();
@@ -242,7 +242,7 @@ public final class GMP
     r.releaseRef();
     releaseRef();
   }
-  
+
   public void modPow(GMP e, GMP m, GMP r)
   {
     acquireRef();
@@ -255,7 +255,7 @@ public final class GMP
     e.releaseRef();
     releaseRef();
   }
-  
+
   public void modInverse(GMP m, GMP r)
   {
     acquireRef();
@@ -277,7 +277,7 @@ public final class GMP
     x.releaseRef();
     releaseRef();
   }
-  
+
   public void shiftLeft(int n, GMP r)
   {
     acquireRef();
@@ -286,7 +286,7 @@ public final class GMP
     r.releaseRef();
     releaseRef();
   }
-  
+
   public void shiftRight(int n, GMP r)
   {
     acquireRef();
@@ -295,7 +295,7 @@ public final class GMP
     r.releaseRef();
     releaseRef();
   }
-  
+
   public void abs(GMP r)
   {
     acquireRef();
@@ -304,7 +304,7 @@ public final class GMP
     r.releaseRef();
     releaseRef();
   }
-  
+
   public void negate(GMP r)
   {
     acquireRef();
@@ -313,7 +313,7 @@ public final class GMP
     r.releaseRef();
     releaseRef();
   }
-  
+
   public int bitLength()
   {
     acquireRef();
@@ -321,7 +321,7 @@ public final class GMP
     releaseRef();
     return result;
   }
-  
+
   public int bitCount()
   {
     acquireRef();
@@ -329,7 +329,7 @@ public final class GMP
     releaseRef();
     return result;
   }
-  
+
   public void and(GMP x, GMP r)
   {
     acquireRef();
@@ -340,7 +340,7 @@ public final class GMP
     x.releaseRef();
     releaseRef();
   }
-  
+
   public void or(GMP x, GMP r)
   {
     acquireRef();
@@ -351,7 +351,7 @@ public final class GMP
     x.releaseRef();
     releaseRef();
   }
-  
+
   public void xor(GMP x, GMP r)
   {
     acquireRef();
@@ -362,7 +362,7 @@ public final class GMP
     x.releaseRef();
     releaseRef();
   }
-  
+
   public void andNot(GMP x, GMP r)
   {
     acquireRef();
@@ -373,7 +373,7 @@ public final class GMP
     x.releaseRef();
     releaseRef();
   }
-  
+
   public void not(GMP r)
   {
     acquireRef();
@@ -382,7 +382,7 @@ public final class GMP
     r.releaseRef();
     releaseRef();
   }
-  
+
   public void flipBit(int n, GMP r)
   {
     acquireRef();
@@ -399,7 +399,7 @@ public final class GMP
     releaseRef();
     return result;
   }
-  
+
   public void setBit(int n, boolean setIt, GMP r)
   {
     acquireRef();
@@ -408,7 +408,7 @@ public final class GMP
     r.releaseRef();
     releaseRef();
   }
-  
+
   public int testPrimality(int certainty)
   {
     acquireRef();
@@ -416,7 +416,7 @@ public final class GMP
     releaseRef();
     return result;
   }
-  
+
   public int lowestSetBit()
   {
     acquireRef();
@@ -424,25 +424,25 @@ public final class GMP
     releaseRef();
     return result;
   }
-  
+
   // Native methods .........................................................
-  
+
   public static native void natInitializeLibrary();
-  
+
   private native void natInitialize();
   private native void natFinalize();
-  
+
   private native void natFromLong(long n);
   private native void natFromBI(Pointer x);
   private native void natFromByteArray(byte[] v);
   private native int natFromString(String s, int rdx);
   private native void natFromSignedMagnitude(byte[] m, boolean isNegative);
-  
+
   private native String natToString(int base);
   private native void natToByteArray(byte[] r);
   private native int natAbsIntValue();
   private native double natDoubleValue();
-  
+
   private native int natCompare(Pointer y);
   private native void natAdd(Pointer x, Pointer r);
   private native void natSubtract(Pointer x, Pointer r);

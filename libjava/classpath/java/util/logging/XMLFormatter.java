@@ -75,7 +75,7 @@ public class XMLFormatter
    */
   private static final String lineSep = SimpleFormatter.lineSep;
 
-    
+
   /**
    * A DateFormat for emitting time in the ISO 8601 format.
    * Since the API specification of SimpleDateFormat does not talk
@@ -129,29 +129,29 @@ public class XMLFormatter
       switch (c)
       {
       case '&':
-	buf.append("&amp;");
-	break;
+        buf.append("&amp;");
+        break;
 
       case '<':
-	buf.append("&lt;");
-	break;
+        buf.append("&lt;");
+        break;
 
       case '>':
-	buf.append("&gt;");
-	break;
+        buf.append("&gt;");
+        break;
 
       default:
-	if (((c >= 0x20) && (c <= 0x7e))
-	    || (c == /* line feed */ 10)
-	    || (c == /* carriage return */ 13))
-	  buf.append(c);
-	else
-	{
-	  buf.append("&#");
-	  buf.append((int) c);
-	  buf.append(';');
-	}
-	break;
+        if (((c >= 0x20) && (c <= 0x7e))
+            || (c == /* line feed */ 10)
+            || (c == /* carriage return */ 13))
+          buf.append(c);
+        else
+        {
+          buf.append("&#");
+          buf.append((int) c);
+          buf.append(';');
+        }
+        break;
       } /* switch (c) */
     } /* for i */
 
@@ -190,11 +190,11 @@ public class XMLFormatter
     Object[]        params = record.getParameters();
     ResourceBundle  bundle = record.getResourceBundle();
     String          message;
-    
+
     buf.append("<record>");
     buf.append(lineSep);
-    
-    
+
+
     appendTag(buf, 1, "date", iso8601.format(new Date(millis)));
     appendTag(buf, 1, "millis", millis);
     appendTag(buf, 1, "sequence", record.getSequenceNumber());
@@ -346,7 +346,7 @@ public class XMLFormatter
      */
     if (encoding == null)
       encoding = "UTF-8";
-    
+
     /* On Windows XP localized for Swiss German (this is one of
      * my [Sascha Brawer's] test machines), the default encoding
      * has the canonical name "windows-1252". The "historical" name

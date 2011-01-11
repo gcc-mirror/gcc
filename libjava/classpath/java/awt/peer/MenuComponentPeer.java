@@ -1,4 +1,4 @@
-/* MenuComponentPeer.java -- 
+/* MenuComponentPeer.java --
    Copyright (C) 1999 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -43,13 +43,12 @@ import java.awt.Font;
 public interface MenuComponentPeer
 {
   void dispose();
-  
+
   /**
    * Set the font on this menu component peer.
-   * 
+   *
    * @param font the new font
    * @since 1.5
    */
   void setFont (Font font);
 } // interface MenuComponentPeer
-

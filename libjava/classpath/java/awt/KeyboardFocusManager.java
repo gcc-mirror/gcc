@@ -423,7 +423,7 @@ public abstract class KeyboardFocusManager
   {
     if (focusOwner == null || focusOwner.focusable)
       setGlobalObject (currentPermanentFocusOwners, focusOwner,
-		       "permanentFocusOwner");
+                       "permanentFocusOwner");
   }
 
   /**
@@ -556,8 +556,8 @@ public abstract class KeyboardFocusManager
    * @see #DOWN_CYCLE_TRAVERSAL_KEYS
    */
   public void setDefaultFocusTraversalKeys (int id,
-					    Set<? extends AWTKeyStroke>
-					    keystrokes)
+                                            Set<? extends AWTKeyStroke>
+                                            keystrokes)
   {
     if (id != KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS &&
         id != KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS &&
@@ -668,7 +668,7 @@ public abstract class KeyboardFocusManager
    * {@link java.lang.ThreadGroup}) and {@link
    * #getGlobalCurrentFocusCycleRoot}.  This method does not actually
    * make <code>cycleRoot</code> the current focus cycle root.
-   * 
+   *
    * @param cycleRoot the focus cycle root to return from
    * getCurrentFocusCycleRoot and getGlobalCurrentFocusCycleRoot
    */
@@ -752,7 +752,7 @@ public abstract class KeyboardFocusManager
    * Nothing occurs if a null listener is supplied.  null is regarded as a valid property name.
    *
    * @param name the name of the property to handle change events for.
-   * @param l the listener to register for changes to the specified property. 
+   * @param l the listener to register for changes to the specified property.
    * @see KeyboardFocusManager#addPropertyChangeListener(java.beans.PropertyChangeListener)
    */
   public void addPropertyChangeListener(String name, PropertyChangeListener l)
@@ -819,7 +819,7 @@ public abstract class KeyboardFocusManager
    *
    * Nothing occurs if a null listener is supplied.
    *
-   * @param l the listener to register. 
+   * @param l the listener to register.
    * @see KeyboardFocusManager#addVetoableChangeListener(String, java.beans.VetoableChangeListener)
    */
   public void addVetoableChangeListener(VetoableChangeListener l)
@@ -870,7 +870,7 @@ public abstract class KeyboardFocusManager
    * Nothing occurs if a null listener is supplied.  null is regarded as a valid property name.
    *
    * @param name the name of the property to handle change events for.
-   * @param l the listener to register for changes to the specified property. 
+   * @param l the listener to register for changes to the specified property.
    * @see KeyboardFocusManager#addVetoableChangeListener(java.beans.VetoableChangeListener)
    */
   public void addVetoableChangeListener(String name, VetoableChangeListener l)
@@ -1070,7 +1070,7 @@ public abstract class KeyboardFocusManager
    * The actual dispatching is performed by calling
    * <code>redispatchEvent()</code>.  This avoids the infinite recursion
    * of dispatch requests which may occur if this method is called on
-   * the target component.  
+   * the target component.
    *
    * @param e the event to dispatch.
    * @return true if the event was dispatched.
@@ -1087,14 +1087,14 @@ public abstract class KeyboardFocusManager
    * within this manager (<code>dispatchEvent()</code>) and
    * the key event dispatchers should use this method to handle
    * dispatching rather than the dispatch method of the target
-   * component.  
+   * component.
    * <br />
    * <br />
    * <strong>
    * This method is not intended for general consumption, and is
    * only for the use of the aforementioned classes.
    * </strong>
-   * 
+   *
    * @param target the target component to which the event is
    *        dispatched.
    * @param e the event to dispatch.
@@ -1229,9 +1229,9 @@ public abstract class KeyboardFocusManager
    * However, in the case of a <code>Window</code>, the default
    * focus component becomes the focus owner and the focus cycle
    * root is not changed.
-   * 
+   *
    * @param comp the component used as part of the focus traversal.
-   */ 
+   */
   public abstract void upFocusCycle(Component comp);
 
   /**
@@ -1239,10 +1239,10 @@ public abstract class KeyboardFocusManager
    * If the supplied container is a focus cycle root, then this
    * becomes the current focus cycle root and the focus goes
    * to the default component of the specified container.
-   * Nothing happens for non-focus cycle root containers. 
-   * 
+   * Nothing happens for non-focus cycle root containers.
+   *
    * @param cont the container used as part of the focus traversal.
-   */ 
+   */
   public abstract void downFocusCycle(Container cont);
 
   /**
@@ -1433,7 +1433,7 @@ public abstract class KeyboardFocusManager
       }
   }
 
-  
+
   /**
    * Maps focus requests from heavyweight to lightweight components.
    */

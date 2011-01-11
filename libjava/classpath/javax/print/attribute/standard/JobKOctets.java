@@ -1,4 +1,4 @@
-/* JobKOctets.java -- 
+/* JobKOctets.java --
    Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -48,12 +48,12 @@ import javax.print.attribute.PrintRequestAttribute;
  * <p>
  * The supplied value has to be rounded up, so that a range between
  * 1 and 1024 octects is specified as 1 and a range between 1025 and
- * 2048 octects as 2, etc.  This attribute must not include a multiplication 
- * factor from the number of copies which maybe specified in a Copies 
+ * 2048 octects as 2, etc.  This attribute must not include a multiplication
+ * factor from the number of copies which maybe specified in a Copies
  * attribute.
  * </p>
  * <p>
- * This attribute belongs to a group of job size attributes which are 
+ * This attribute belongs to a group of job size attributes which are
  * describing the size of a job to be printed. The values supplied by
  * these attributes are intended to be used for routing and scheduling
  * of jobs on the print service. A client may specify these attributes.
@@ -66,17 +66,17 @@ import javax.print.attribute.PrintRequestAttribute;
  * </p>
  * @see javax.print.attribute.standard.JobMediaSheets
  * @see javax.print.attribute.standard.JobImpressions
- * 
+ *
  * @author Michael Koch
  */
 public final class JobKOctets extends IntegerSyntax
   implements PrintJobAttribute, PrintRequestAttribute
 {
   private static final long serialVersionUID = -8959710146498202869L;
-  
+
   /**
    * Creates a <code>JobKOctets</code> object.
-   * The value is in units of K (1024) octets rounded up to the next highest K. 
+   * The value is in units of K (1024) octets rounded up to the next highest K.
    *
    * @param value the number of K octets
    *
@@ -89,13 +89,13 @@ public final class JobKOctets extends IntegerSyntax
     if (value < 0)
       throw new IllegalArgumentException("value may not be less than 0");
   }
-  
+
   /**
    * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

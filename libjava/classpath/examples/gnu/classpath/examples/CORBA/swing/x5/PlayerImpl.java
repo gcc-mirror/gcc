@@ -47,8 +47,8 @@ import java.rmi.RemoteException;
  * The implementation of the PlayerCommunicator, providing the local
  * functionality. Apart remote methods, the class also defines some local
  * methods, needed for the co-ordinated work with the game user interface.
- * 
- * @author Audrius Meskauskas (AudriusA@Bioinformatics.org) 
+ *
+ * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class PlayerImpl
   implements Player, State
@@ -107,10 +107,10 @@ public class PlayerImpl
   /**
    * Called when we make the move. The PlayingTable is responsible for checking
    * the correctness of the move and detecting the victory.
-   * 
+   *
    * @param x x position of the new dot.
    * @param y y position of the new dot.
-   * 
+   *
    * @param victory array of two memebers, representing the endpoints of the
    * drawn line (victory detected) or null if no such yet exists.
    */
@@ -189,14 +189,14 @@ public class PlayerImpl
 
   /**
    * Receive the invitation to play from the patner or the game manager.
-   * 
+   *
    * @param address the address (host and port) of the remote partner.
    * @param youStart if true, the game manager instructs to start the game first
    * (another side is instructed to start the game second).
-   * 
+   *
    * Game server may also chat a little bit with both players, saying that the
    * game has started.
-   * 
+   *
    * @return true on success.
    */
   public boolean start_game(Player otherPlayer, boolean youStart)
@@ -232,7 +232,7 @@ public class PlayerImpl
   /**
    * Receive the chat message from the friend or challenge server (remote).
    * Possible at any state, always remote.
-   * 
+   *
    * @param color the color code, used to highlight the message.
    * @param text the message text.
    */
@@ -260,7 +260,7 @@ public class PlayerImpl
 
   /**
    * Receive friends move (possible at I_WAIT_FOR_YOUR_MOVE).
-   * 
+   *
    * @param x grid position.
    * @param y grid position.
    * @param victory if not a null, the friend thinks that it has won, the

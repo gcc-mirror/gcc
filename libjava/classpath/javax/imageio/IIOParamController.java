@@ -61,7 +61,7 @@ public interface IIOParamController
    *
    * @return true if the <code>IIOParam</code> has been modified,
    * false otherwise
-   * 
+   *
    * @exception IllegalArgumentException if param is null or is not an instance
    * of the correct class
    */

@@ -97,7 +97,7 @@ public class MethodHelper
       {
         out.print(Type.getReturnType(meth.desc));
         out.print(" ");
-	out.printName(realMethodName);
+        out.printName(realMethodName);
       }
     else
       {

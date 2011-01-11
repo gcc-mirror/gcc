@@ -43,7 +43,7 @@ import java.awt.Shape;
 
 /**
  * TextMeasurer is a small utility class for measuring the length of laid-out
- * text objects. 
+ * text objects.
  *
  * @author Sven de Marothy
  * @since 1.3
@@ -57,9 +57,9 @@ public final class TextMeasurer implements Cloneable
 
   /**
    * Creates a TextMeasurer from a given text in the form of an
-   * <code>AttributedCharacterIterator</code> and a 
+   * <code>AttributedCharacterIterator</code> and a
    * <code>FontRenderContext</code>.
-   */  
+   */
   public TextMeasurer (AttributedCharacterIterator text, FontRenderContext frc)
   {
     this.text = text;
@@ -139,22 +139,22 @@ public final class TextMeasurer implements Cloneable
    *
    * @param start - the starting index.
    * @param maxAdvance - the maximum advance allowed.
-   * @return the index of the first character beyond maxAdvance, or the 
+   * @return the index of the first character beyond maxAdvance, or the
    * index of the last character + 1.
    */
   public int getLineBreakIndex (int start, float maxAdvance)
-  {   
+  {
     if( start < 0 )
       throw new IllegalArgumentException("Start parameter must be > 0.");
 
     double remainingLength = getAdvanceBetween( start, numChars );
-    
+
     int guessOffset = (int)( ( (double)maxAdvance / (double)remainingLength)
-			     * ( (double)numChars - (double)start ) );
+                             * ( (double)numChars - (double)start ) );
     guessOffset += start;
     if( guessOffset > numChars )
       guessOffset = numChars;
-    
+
     double guessLength = getAdvanceBetween( start, guessOffset );
     boolean makeSmaller = ( guessLength > maxAdvance );
     int inc = makeSmaller ? -1 : 1;
@@ -162,19 +162,19 @@ public final class TextMeasurer implements Cloneable
 
     do
       {
-	guessOffset = guessOffset + inc;
-	if( guessOffset <= start || guessOffset > numChars )
-	  {
-	    keepGoing = false;
-	  }
-	else
-	  {
-	    guessLength = getAdvanceBetween( start, guessOffset );
-	    if( makeSmaller && ( guessLength <= maxAdvance) )	  
-	      keepGoing = false;
-	    if( !makeSmaller && ( guessLength >= maxAdvance) )
-	      keepGoing = false;
-	  }
+        guessOffset = guessOffset + inc;
+        if( guessOffset <= start || guessOffset > numChars )
+          {
+            keepGoing = false;
+          }
+        else
+          {
+            guessLength = getAdvanceBetween( start, guessOffset );
+            if( makeSmaller && ( guessLength <= maxAdvance) )
+              keepGoing = false;
+            if( !makeSmaller && ( guessLength >= maxAdvance) )
+              keepGoing = false;
+          }
       }
     while( keepGoing );
 

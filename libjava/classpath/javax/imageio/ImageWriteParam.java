@@ -46,118 +46,118 @@ import java.util.Locale;
  */
 public class ImageWriteParam extends IIOParam
 {
-  
-  /** 
+
+  /**
    * Can be passed to setTilingMode, setProgressiveMode and
    * setCompressionMode to disable feature.
    */
   public static final int MODE_DISABLED = 0;
-  
-  /** 
-   * Can be passed to setTilingMode, setProgressiveMode and 
+
+  /**
+   * Can be passed to setTilingMode, setProgressiveMode and
    * setCompressionMode to enable feature.
    */
   public static final int MODE_DEFAULT = 1;
-  
-  /** 
+
+  /**
    * Can be passed to setTilingMode, setCompressionMode to disable feature.
    */
   public static final int MODE_EXPLICIT = 2;
-  
-  /** 
-   * Can be passed to setTilingMode, setProgressiveMode and 
+
+  /**
+   * Can be passed to setTilingMode, setProgressiveMode and
    * setCompressionMode to enable feature.
    */
   public static final int MODE_COPY_FROM_METADATA = 3;
-  
+
   /**
    * True if tiling grid offset parameters can be set.
    */
   protected boolean canOffsetTiles;
-  
+
   /**
    * True if this writer can write images using compression.
    */
   protected boolean canWriteCompressed;
-  
+
   /**
    * True if images can be written as a progressive sequence
    * of increasing quality.
    */
   protected boolean canWriteProgressive;
-  
+
   /**
    * True if tile width and height parameters can be set.
    */
   protected boolean canWriteTiles;
-  
+
   /**
    * Controls compression settings, which must be set to one of the four
    * MODE_* values.
    */
   protected int compressionMode = MODE_COPY_FROM_METADATA;
-  
+
   /**
    * Contains the current compression quality setting.
    */
   protected float compressionQuality;
-  
+
   /**
    * Contains the name of the current compression type.
    */
   protected String compressionType;
-  
+
   /**
    * Array of the names of the available compression types.
    */
   protected String[] compressionTypes;
-  
+
   /**
    * Localizes compression type names and quality descriptions,
    * or null to use default Locale.
    */
   protected Locale locale;
-  
+
   /**
    * Preferred tile size range pairs.
    */
   protected Dimension[] preferredTileSizes;
-  
+
   /**
    * The mode controlling progressive encoding, which must
    * be set to one of the four MODE_* values, except
    * MODE_EXPLICIT.
    */
   protected int progressiveMode = MODE_COPY_FROM_METADATA;
-  
+
   /**
    * The amount by which the tile grid origin should be offset
    * horizontally from the image origin if tiling has been set.
    */
   protected int tileGridXOffset;
-  
+
   /**
    * The amount by which the tile grid origin should be offset
    * vertically from the image origin if tiling has been set.
    */
   protected int tileGridYOffset;
-  
+
   /**
    * The height of each tile if tiling has been set.
    */
   protected int tileHeight;
-  
+
   /**
    * The width of each tile if tiling has been set.
    */
   protected int tileWidth;
-  
+
   /**
    * The mode controlling tiling settings, which must be
    * set to one of the four MODE_* values.
    */
   protected int tilingMode;
-  
+
   /**
    * True if the tiling parameters have been specified.
    */
@@ -201,11 +201,11 @@ public class ImageWriteParam extends IIOParam
     if (getCompressionMode() != MODE_EXPLICIT)
       throw new IllegalStateException("compression mode is not MODE_EXPLICIT");
   }
-  
+
   private void checkCompressionTypesSet()
   {
     if (getCompressionType() == null
-	&& getCompressionTypes() != null)
+        && getCompressionTypes() != null)
       throw new IllegalStateException("no compression type set");
   }
 
@@ -213,9 +213,9 @@ public class ImageWriteParam extends IIOParam
   {
     if (! canWriteProgressive())
       throw new UnsupportedOperationException
-	("progressive output not supported");
+        ("progressive output not supported");
   }
-  
+
   private void checkSupportsTiling()
   {
     if (! canWriteTiles())
@@ -279,7 +279,7 @@ public class ImageWriteParam extends IIOParam
   {
     checkNotExplicitCompression();
     checkCompressionTypesSet();
-    
+
     return null;
   }
 
@@ -287,7 +287,7 @@ public class ImageWriteParam extends IIOParam
   {
     checkNotExplicitCompression();
     checkCompressionTypesSet();
-    
+
     return null;
   }
 
@@ -383,9 +383,9 @@ public class ImageWriteParam extends IIOParam
   {
     checkSupportsCompression();
     checkMode(mode);
-    
+
     compressionMode = mode;
-    
+
     if (mode == MODE_EXPLICIT)
       unsetCompression();
   }
@@ -409,17 +409,17 @@ public class ImageWriteParam extends IIOParam
 
     if (types == null)
       throw new UnsupportedOperationException("no settable compression types");
-    
+
     if (compressionType == null)
       this.compressionType = null;
 
     for (int i = types.length - 1; i >= 0; --i)
       if (types[i].equals(compressionType))
-	{
-	  this.compressionType = compressionType;
-	  return;
-	}
-    
+        {
+          this.compressionType = compressionType;
+          return;
+        }
+
     throw new IllegalArgumentException("unknown compression type");
   }
 
@@ -427,18 +427,18 @@ public class ImageWriteParam extends IIOParam
   {
     checkSupportsProgressiveEncoding();
     checkMode(mode);
-    
+
     progressiveMode = mode;
   }
 
   public void setTiling(int tileWidth, int tileHeight,
-		        int tileGridXOffset, int tileGridYOffset)
+                        int tileGridXOffset, int tileGridYOffset)
   {
     checkNotExplicitTiling();
 
     if (! canOffsetTiles
-	&& tileGridXOffset != 0
-	&& tileGridYOffset != 0)
+        && tileGridXOffset != 0
+        && tileGridYOffset != 0)
       throw new UnsupportedOperationException("tile offsets not supported");
 
     if (tileWidth < 0 || tileHeight < 0)
@@ -446,18 +446,18 @@ public class ImageWriteParam extends IIOParam
 
     if (preferredTileSizes != null)
       {
-	boolean found = false;
+        boolean found = false;
 
-	for (int i = 0; i < preferredTileSizes.length; i += 2)
-	  {
-	    if (tileWidth >= preferredTileSizes[i].width
-		&& tileWidth <= preferredTileSizes[i + 1].width
-		&& tileHeight >= preferredTileSizes[i].height
-		&& tileHeight <= preferredTileSizes[i + 1].height)
-	      found = true;
-	  }
+        for (int i = 0; i < preferredTileSizes.length; i += 2)
+          {
+            if (tileWidth >= preferredTileSizes[i].width
+                && tileWidth <= preferredTileSizes[i + 1].width
+                && tileHeight >= preferredTileSizes[i].height
+                && tileHeight <= preferredTileSizes[i + 1].height)
+              found = true;
+          }
 
-	if (! found)
+        if (! found)
           throw new IllegalArgumentException("illegal tile size");
       }
 
@@ -478,7 +478,7 @@ public class ImageWriteParam extends IIOParam
   public void unsetCompression()
   {
     checkNotExplicitCompression();
-    
+
     compressionType = null;
     compressionQuality = 1.0F;
   }
@@ -486,7 +486,7 @@ public class ImageWriteParam extends IIOParam
   public void unsetTiling()
   {
     checkNotExplicitTiling();
-    
+
     tileWidth = 0;
     tileHeight = 0;
     tileGridXOffset = 0;

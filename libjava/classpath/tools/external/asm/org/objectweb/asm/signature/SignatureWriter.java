@@ -31,7 +31,7 @@ package org.objectweb.asm.signature;
 
 /**
  * A signature visitor that generates signatures in string format.
- * 
+ *
  * @author Thomas Hallgren
  * @author Eric Bruneton
  */
@@ -174,7 +174,7 @@ public class SignatureWriter implements SignatureVisitor {
 
     /**
      * Returns the signature that was built by this signature writer.
-     * 
+     *
      * @return the signature that was built by this signature writer.
      */
     public String toString() {

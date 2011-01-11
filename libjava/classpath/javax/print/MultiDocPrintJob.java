@@ -42,36 +42,35 @@ import javax.print.attribute.PrintRequestAttributeSet;
 
 
 /**
- * <code>MultiDocPrintJob</code> represents a print job which supports 
+ * <code>MultiDocPrintJob</code> represents a print job which supports
  * printing of multiple documents as one print job.
  * <p>
  * An instance can be obtained from every <code>MultiDocPrintService</code>
- * available by calling the 
- * {@link javax.print.MultiDocPrintService#createMultiDocPrintJob()} method. 
+ * available by calling the
+ * {@link javax.print.MultiDocPrintService#createMultiDocPrintJob()} method.
  * A print job is bound to the print service it is created from.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public interface MultiDocPrintJob extends DocPrintJob
 {
   /**
-   * Prints the documents supplied in the given <code>MultiDoc</code> object 
+   * Prints the documents supplied in the given <code>MultiDoc</code> object
    * as one print job with the given printing attributes.
-   * 
-   * @param multiDoc the documents to print. Every document must have a 
+   *
+   * @param multiDoc the documents to print. Every document must have a
    * flavor supported by the bound print service.
-   * @param attributes the printing attributes to apply to the print job. If 
+   * @param attributes the printing attributes to apply to the print job. If
    * <code>null</code> the default attribute values will be used.
-   * 
-   * @throws PrintException if an error occurs. The thrown exception may 
-   * implement refining print exception interface to provide more detail of 
+   *
+   * @throws PrintException if an error occurs. The thrown exception may
+   * implement refining print exception interface to provide more detail of
    * the error.
-   * 
+   *
    * @see FlavorException
    * @see AttributeException
    */
   void print(MultiDoc multiDoc, PrintRequestAttributeSet attributes)
     throws PrintException;
 }
- 

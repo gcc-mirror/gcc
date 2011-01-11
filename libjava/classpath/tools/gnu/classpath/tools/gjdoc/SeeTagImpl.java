@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -16,7 +16,7 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU Classpath; see the file COPYING.  If not, write to the
 Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-02111-1307 USA. 
+02111-1307 USA.
 
 Linking this library statically or dynamically with other modules is
 making a combined work based on this library.  Thus, the terms and
@@ -70,8 +70,8 @@ public class SeeTagImpl extends AbstractTagImpl implements SeeTag {
 
       int labelNdx=text.indexOf(';');
       if (labelNdx>=0) {
-	 label="";
-	 return;
+         label="";
+         return;
       }
 
       for (int i=0; i<text.length(); ++i) {
@@ -90,37 +90,37 @@ public class SeeTagImpl extends AbstractTagImpl implements SeeTag {
       }
 
       if (labelNdx<0 || labelNdx>=text.length()) {
-	 reference=text.trim();
-	 label="";
+         reference=text.trim();
+         label="";
       }
       else {
-	 reference=text.substring(0,labelNdx).trim();
-	 label=text.substring(labelNdx).trim();
-      }  
+         reference=text.substring(0,labelNdx).trim();
+         label=text.substring(labelNdx).trim();
+      }
 
       int mspecNdx=reference.indexOf('#');
       String referencedFqName;
       if (mspecNdx<0) {
-	 referencedFqName=reference;
+         referencedFqName=reference;
       }
       else {
-	 referencedFqName=reference.substring(0,mspecNdx);
-	 referencedMemberName=reference.substring(mspecNdx+1); 
+         referencedFqName=reference.substring(0,mspecNdx);
+         referencedMemberName=reference.substring(mspecNdx+1);
      }
 
       // the following is in contradiction to the api docs, but
       // conform to sun javadoc: return fully qualified classname
       // with referencedClassName().
       if (referencedFqName.trim().length()>0) {
-	 referencedClassName=referencedFqName;
-	 if (contextClass==null)
-	    referencedClass=Main.getRootDoc().classNamed(referencedFqName);
-	 else
-	    referencedClass=contextClass.findClass(referencedFqName);
+         referencedClassName=referencedFqName;
+         if (contextClass==null)
+            referencedClass=Main.getRootDoc().classNamed(referencedFqName);
+         else
+            referencedClass=contextClass.findClass(referencedFqName);
       }
       else {
-	 referencedClassName="";
-	 referencedClass=contextClass;
+         referencedClassName="";
+         referencedClass=contextClass;
       }
 
       if (referencedClass==null) {
@@ -130,13 +130,13 @@ public class SeeTagImpl extends AbstractTagImpl implements SeeTag {
       if (referencedClass!=null && !referencedClass.isIncluded()) referencedClass=null;
 
       if (referencedClass!=null) {
-	 referencedPackage=referencedClass.containingPackage();
-	 referencedClassName=referencedClass.qualifiedName();
+         referencedPackage=referencedClass.containingPackage();
+         referencedClassName=referencedClass.qualifiedName();
 
-	 if (referencedMemberName!=null) {
+         if (referencedMemberName!=null) {
 
-	    if (referencedMemberName.indexOf('(')<0) {
-	       referencedMember=((ClassDocImpl)referencedClass).findFieldRec(referencedMemberName);
+            if (referencedMemberName.indexOf('(')<0) {
+               referencedMember=((ClassDocImpl)referencedClass).findFieldRec(referencedMemberName);
                if (null == referencedMember) {
                   MethodDoc[] methods = ((ClassDocImpl)referencedClass).methods();
                   for (int i=0; i<methods.length; ++i) {
@@ -156,19 +156,19 @@ public class SeeTagImpl extends AbstractTagImpl implements SeeTag {
                else {
                   referencedClass = referencedMember.containingClass();
                }
-	    }
-	    else {
-	       referencedMember=((ClassDocImpl)referencedClass).findExecutableRec(referencedMemberName);
+            }
+            else {
+               referencedMember=((ClassDocImpl)referencedClass).findExecutableRec(referencedMemberName);
                if (referencedMember==null) {
                   //System.err.println("cannot find member for '"+referencedMemberName+"'");
                   referencedClass = null;
                }
-	    }
-	 }
+            }
+         }
       }
       /*
       else {
-	 System.err.println("class not found: '"+referencedFqName + "' in context class " + contextClass + " in " + this);
+         System.err.println("class not found: '"+referencedFqName + "' in context class " + contextClass + " in " + this);
       }
       */
    }

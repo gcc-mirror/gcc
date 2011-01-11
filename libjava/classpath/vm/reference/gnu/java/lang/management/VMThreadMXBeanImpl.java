@@ -40,7 +40,7 @@ package gnu.java.lang.management;
 import java.lang.management.ThreadInfo;
 
 /**
- * Provides access to information about the threads 
+ * Provides access to information about the threads
  * of the virtual machine.  An instance of this bean is
  * obtained by calling
  * {@link ManagementFactory#getThreadMXBean()}.
@@ -87,13 +87,13 @@ final class VMThreadMXBeanImpl
     filled = group.enumerate(threadList);
     while (filled == arraySize)
       {
-	arraySize *= 2;
-	threadList = new Thread[arraySize];
-	filled = group.enumerate(threadList);
+        arraySize *= 2;
+        threadList = new Thread[arraySize];
+        filled = group.enumerate(threadList);
       }
     return threadList;
   }
-  
+
   /**
    * Returns the id of all live threads at the time of execution.
    *
@@ -141,8 +141,8 @@ final class VMThreadMXBeanImpl
     int daemonCount = 0;
     for (int a = 0; a < filled; ++a)
       {
-	if (threadList[a].isDaemon())
-	  ++daemonCount;
+        if (threadList[a].isDaemon())
+          ++daemonCount;
       }
     return daemonCount;
   }
@@ -205,7 +205,7 @@ final class VMThreadMXBeanImpl
    * @return the corresponding <code>ThreadInfo</code>.
    */
   static native ThreadInfo getThreadInfoForId(long id, int maxDepth);
-  
+
   /**
    * Returns the number of nanoseconds of user time
    * the specified thread has used in total.   This is
@@ -217,7 +217,7 @@ final class VMThreadMXBeanImpl
    *         the thread.
    */
   static native long getThreadUserTime(long id);
-  
+
   /**
    * Returns the total number of threads that have
    * been started over the lifetime of the virtual

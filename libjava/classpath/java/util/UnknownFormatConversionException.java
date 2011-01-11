@@ -38,15 +38,15 @@ exception statement from your version. */
 
 package java.util;
 
-/** 
+/**
  * Thrown when a {@link Formatter} is supplied with an
  * unknown conversion.
  *
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
- * @since 1.5 
+ * @since 1.5
  */
-public class UnknownFormatConversionException 
+public class UnknownFormatConversionException
   extends IllegalFormatException
 {
   private static final long serialVersionUID = 19060418L;

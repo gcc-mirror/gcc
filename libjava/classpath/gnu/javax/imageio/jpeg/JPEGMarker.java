@@ -172,7 +172,7 @@ public class JPEGMarker
    * Quantization Table.
    */
   public final static byte DQT = (byte) 0xdb;
- 
+
   /**
    * Start of Scan.
    */

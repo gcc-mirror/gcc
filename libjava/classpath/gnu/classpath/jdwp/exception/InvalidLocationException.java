@@ -52,7 +52,7 @@ public class InvalidLocationException
   public InvalidLocationException (/*something*/)
   {
     super (JdwpConstants.Error.INVALID_LOCATION,
-	   "invalid location (" + "something" + ")");
+           "invalid location (" + "something" + ")");
   }
 
   public InvalidLocationException (Throwable t)

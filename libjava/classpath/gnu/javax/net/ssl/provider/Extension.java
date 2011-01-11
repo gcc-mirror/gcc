@@ -46,13 +46,13 @@ import java.nio.ByteOrder;
 
 /**
  * An SSL hello extension.
- * 
+ *
  * <pre>
  * struct {
  *   ExtensionType extension_type;
  *   opaque extension_data<0..2^16-1>;
  * } Extension;</pre>
- * 
+ *
  * @author csm@gnu.org
  */
 public final class Extension implements Builder, Constructed
@@ -70,7 +70,7 @@ public final class Extension implements Builder, Constructed
   {
     this.buffer = buffer.duplicate().order(ByteOrder.BIG_ENDIAN);
   }
-  
+
   public Extension(final Type type, final Value value)
   {
     ByteBuffer valueBuffer = value.buffer();
@@ -89,7 +89,7 @@ public final class Extension implements Builder, Constructed
   {
     return (buffer.getShort (2) & 0xFFFF) + 4;
   }
-  
+
   public ByteBuffer buffer()
   {
     return (ByteBuffer) buffer.duplicate().limit(length());
@@ -107,20 +107,20 @@ public final class Extension implements Builder, Constructed
     ((ByteBuffer) buffer.duplicate ().position (4)).get (value);
     return value;
   }
-  
+
   public ByteBuffer valueBuffer()
   {
     int len = buffer.getShort(2) & 0xFFFF;
     return ((ByteBuffer) buffer.duplicate().position(4).limit(len+4)).slice();
   }
-  
+
   public Value value()
   {
     switch (type ())
       {
         case SERVER_NAME:
           return new ServerNameList(valueBuffer());
-          
+
         case MAX_FRAGMENT_LENGTH:
           switch (valueBuffer().get() & 0xFF)
             {
@@ -131,32 +131,32 @@ public final class Extension implements Builder, Constructed
               default:
                 throw new IllegalArgumentException("invalid max_fragment_len");
             }
-          
+
         case TRUNCATED_HMAC:
           return new TruncatedHMAC();
 
         case CLIENT_CERTIFICATE_URL:
           return new CertificateURL(valueBuffer());
-          
+
         case TRUSTED_CA_KEYS:
           return new TrustedAuthorities(valueBuffer());
-          
+
         case STATUS_REQUEST:
           return new CertificateStatusRequest(valueBuffer());
-          
+
         case SRP:
         case CERT_TYPE:
       }
     return new UnresolvedExtensionValue(valueBuffer());
   }
-  
+
   public void setLength (final int newLength)
   {
     if (newLength < 0 || newLength > 65535)
       throw new IllegalArgumentException ("length is out of bounds");
     buffer.putShort (2, (short) newLength);
   }
-  
+
   public void setType (final Type type)
   {
     buffer.putShort(0, (short) type.getValue());
@@ -166,14 +166,14 @@ public final class Extension implements Builder, Constructed
   {
     setValue (value, 0, value.length);
   }
-  
+
   public void setValue (final byte[] value, final int offset, final int length)
   {
     if (length != length ())
       throw new IllegalArgumentException ("length is different than claimed length");
     ((ByteBuffer) buffer.duplicate().position(4)).put(value, offset, length);
   }
-  
+
   public String toString()
   {
     return toString(null);
@@ -233,13 +233,13 @@ public final class Extension implements Builder, Constructed
           default: return null;
         }
     }
-    
+
     public int getValue()
     {
       return value;
     }
   }
-  
+
   public static abstract class Value implements Builder, Constructed
   {
   }

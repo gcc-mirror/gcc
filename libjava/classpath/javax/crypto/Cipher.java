@@ -163,7 +163,7 @@ public class Cipher
    * The installed providers are tried in order for an implementation, and the
    * first appropriate instance is returned. If no installed provider can
    * provide the implementation, an appropriate exception is thrown.
-   * 
+   *
    * @param transformation The transformation to create.
    * @return An appropriate cipher for this transformation.
    * @throws NoSuchAlgorithmException If no installed provider can supply the
@@ -201,7 +201,7 @@ public class Cipher
   /**
    * Creates a new cipher instance for the given transformation and the named
    * provider.
-   * 
+   *
    * @param transformation The transformation to create.
    * @param provider The name of the provider to use.
    * @return An appropriate cipher for this transformation.
@@ -228,7 +228,7 @@ public class Cipher
   /**
    * Creates a new cipher instance for a given transformation from a given
    * provider.
-   * 
+   *
    * @param transformation The transformation to create.
    * @param provider The provider to use.
    * @return An appropriate cipher for this transformation.

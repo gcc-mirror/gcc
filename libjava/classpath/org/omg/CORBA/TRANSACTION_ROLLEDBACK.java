@@ -50,7 +50,7 @@ public final class TRANSACTION_ROLLEDBACK
   extends SystemException
   implements Serializable
 {
-  /** 
+  /**
    * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = -343903462439281571L;

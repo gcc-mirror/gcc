@@ -1,4 +1,4 @@
-/* NumberOfInterveningJobs.java -- 
+/* NumberOfInterveningJobs.java --
    Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -43,19 +43,19 @@ import javax.print.attribute.PrintJobAttribute;
 
 /**
  * The <code>NumberOfInterveningJobs</code> printing attribute provides
- * the number of jobs ahead in the print service queue before the 
+ * the number of jobs ahead in the print service queue before the
  * requested job.
  * <p>
  * <b>IPP Compatibility:</b> NumberOfInterveningJobs is an IPP 1.1 attribute.
  * </p>
- * 
+ *
  * @author Michael Koch
  */
 public final class NumberOfInterveningJobs extends IntegerSyntax
   implements PrintJobAttribute
 {
   private static final long serialVersionUID = 2568141124844982746L;
-  
+
   /**
    * Creates a <code>NumberOfInterveningJobs</code> object.
    *
@@ -70,13 +70,13 @@ public final class NumberOfInterveningJobs extends IntegerSyntax
     if (value < 0)
       throw new IllegalArgumentException("value may not be less than 0");
   }
-  
+
   /**
    * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

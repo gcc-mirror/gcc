@@ -60,7 +60,7 @@ public abstract class BaseKeyWrappingAlgorithm
 
   /**
    * Protected constructor.
-   * 
+   *
    * @param name the key wrapping algorithm canonical name.
    */
   protected BaseKeyWrappingAlgorithm(String name)

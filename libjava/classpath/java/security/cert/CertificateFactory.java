@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -88,7 +88,7 @@ public class CertificateFactory
   /**
    * Returns an instance of a <code>CertificateFactory</code> representing the
    * specified certificate factory type.
-   * 
+   *
    * @param type The type of certificate factory to create.
    * @return A <code>CertificateFactory</code> of the desired type.
    * @throws CertificateException If the type of certificate factory is not
@@ -118,7 +118,7 @@ public class CertificateFactory
   /**
    * Returns an instance of a <code>CertificateFactory</code> representing the
    * specified certificate factory type from the named provider.
-   * 
+   *
    * @param type The type of certificate factory to create.
    * @param provider The name of the provider to use.
    * @return A <code>CertificateFactory</code> for the desired type.
@@ -130,7 +130,7 @@ public class CertificateFactory
    *           <code>type</code> is an empty string.
    */
   public static final CertificateFactory getInstance(String type,
-                                                     String provider) 
+                                                     String provider)
     throws CertificateException, NoSuchProviderException
   {
     if (provider == null)
@@ -144,7 +144,7 @@ public class CertificateFactory
   /**
    * Returns an instance of a <code>CertificateFactory</code> representing the
    * specified certificate factory type from the designated provider.
-   * 
+   *
    * @param type The type of certificate factory to create.
    * @param provider The provider from which to get the implementation.
    * @return A <code>CertificateFactory</code> for the desired type.
@@ -213,10 +213,10 @@ public class CertificateFactory
    * Ex: A X.509 CertificateFactory should return X509Certificate.
    *
    * <p>For X.509 certificates, the certificate in inStream must be
-   * DER encoded and supplied in binary or printable (Base64) 
-   * encoding. If the certificate is in Base64 encoding, it must be 
-   * bounded by -----BEGINCERTIFICATE-----, and 
-   * -----END CERTIFICATE-----. 
+   * DER encoded and supplied in binary or printable (Base64)
+   * encoding. If the certificate is in Base64 encoding, it must be
+   * bounded by -----BEGINCERTIFICATE-----, and
+   * -----END CERTIFICATE-----.
    *
    * @param inStream An input stream containing the certificate data.
    * @return A certificate initialized from the decoded InputStream data.
@@ -230,16 +230,16 @@ public class CertificateFactory
   }
 
   /**
-   * Returns a collection of certificates that were read from the 
-   * input stream. It may be empty, have only one, or have 
+   * Returns a collection of certificates that were read from the
+   * input stream. It may be empty, have only one, or have
    * multiple certificates.
    *
    * For a X.509 certificate factory, the stream may contain a
-   * single DER encoded certificate or a PKCS#7 certificate 
-   * chain. This is a PKCS#7 <I>SignedData</I> object with the 
-   * most significant field being <I>certificates</I>. If no 
+   * single DER encoded certificate or a PKCS#7 certificate
+   * chain. This is a PKCS#7 <I>SignedData</I> object with the
+   * most significant field being <I>certificates</I>. If no
    * CRLs are present, then an empty collection is returned.
-	 *
+         *
    * @param inStream An input stream containing the certificate data.
    * @return A collection of certificates initialized from the decoded
    *   InputStream data.
@@ -278,8 +278,8 @@ public class CertificateFactory
    * from the InputStream.
    *
    * <p>For a X.509 certificate factory, the stream may contain a
-   * single DER encoded CRL or a PKCS#7 CRL set. This is a 
-   * PKCS#7 <I>SignedData</I> object with the most significant 
+   * single DER encoded CRL or a PKCS#7 CRL set. This is a
+   * PKCS#7 <I>SignedData</I> object with the most significant
    * field being <I>crls</I>. If no CRLs are present, then an
    * empty collection is returned.
    *

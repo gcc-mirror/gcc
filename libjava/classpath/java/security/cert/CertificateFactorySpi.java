@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -47,15 +47,15 @@ import java.util.List;
 /**
    CertificateFactorySpi is the abstract class Service Provider
    Interface (SPI) for the CertificateFactory class. A provider
-   must implement all the abstract methods if they wish to 
+   must implement all the abstract methods if they wish to
    supply a certificate factory for a particular certificate
    type. Ex: X.509
-   
+
    Certificate factories are used to generate certificates and
    certificate revocation lists (CRL) from their encoding.
-   
+
    @since 1.2
-   
+
    @author Mark Benvenuto
  */
 public abstract class CertificateFactorySpi
@@ -85,10 +85,10 @@ public abstract class CertificateFactorySpi
      Ex: A X.509 CertificateFactory should return X509Certificate.
 
      For X.509 certificates, the certificate in inStream must be
-     DER encoded and supplied in binary or printable (Base64) 
-     encoding. If the certificate is in Base64 encoding, it must be 
-     bounded by -----BEGIN CERTIFICATE-----, and 
-     -----END CERTIFICATE-----. 
+     DER encoded and supplied in binary or printable (Base64)
+     encoding. If the certificate is in Base64 encoding, it must be
+     bounded by -----BEGIN CERTIFICATE-----, and
+     -----END CERTIFICATE-----.
 
      @param inStream an input stream containing the certificate data
 
@@ -100,19 +100,19 @@ public abstract class CertificateFactorySpi
     throws CertificateException;
 
   /**
-     Returns a collection of certificates that were read from the 
-     input stream. It may be empty, have only one, or have 
+     Returns a collection of certificates that were read from the
+     input stream. It may be empty, have only one, or have
      multiple certificates.
 
      For a X.509 certificate factory, the stream may contain a
-     single DER encoded certificate or a PKCS#7 certificate 
-     chain. This is a PKCS#7 <I>SignedData</I> object with the 
-     most significant field being <I>certificates</I>. If no 
+     single DER encoded certificate or a PKCS#7 certificate
+     chain. This is a PKCS#7 <I>SignedData</I> object with the
+     most significant field being <I>certificates</I>. If no
      CRLs are present, then an empty collection is returned.
-	
+
      @param inStream an input stream containing the certificates
 
-     @return a collection of certificates initialized with 
+     @return a collection of certificates initialized with
      the InputStream data.
 
      @throws CertificateException Certificate parsing error
@@ -145,14 +145,14 @@ public abstract class CertificateFactorySpi
      from the InputStream.
 
      For a X.509 certificate factory, the stream may contain a
-     single DER encoded CRL or a PKCS#7 CRL set. This is a 
-     PKCS#7 <I>SignedData</I> object with the most significant 
+     single DER encoded CRL or a PKCS#7 CRL set. This is a
+     PKCS#7 <I>SignedData</I> object with the most significant
      field being <I>crls</I>. If no CRLs are present, then an
      empty collection is returned.
 
      @param inStream an input stream containing the CRLs
 
-     @return a collection of CRLs initialized with 
+     @return a collection of CRLs initialized with
      the InputStream data.
 
      @throws CRLException CRL parsing error
@@ -222,4 +222,3 @@ public abstract class CertificateFactorySpi
     throw new UnsupportedOperationException("not implemented");
   }
 }
-

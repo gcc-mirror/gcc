@@ -40,7 +40,7 @@ package gnu.test;
 /**
  * Test does not have the required support to run.  For example,
  * Unsupported could be returned when a needed resource
- * (ie. multicasting) is not available.  
+ * (ie. multicasting) is not available.
  */
 public class Unsupported extends Result
 {

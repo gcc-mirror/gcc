@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -44,7 +44,7 @@ package java.io;
  */
 
 /**
- * This class permits a <code>String</code> to be read as a character 
+ * This class permits a <code>String</code> to be read as a character
  * input stream.
  * <p>
  * The mark/reset functionality in this class behaves differently than
@@ -53,7 +53,7 @@ package java.io;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Warren Levy (warrenl@cygnus.com)
- * @date October 19, 1998.  
+ * @date October 19, 1998.
  */
 public class StringReader extends Reader
 {
@@ -70,8 +70,8 @@ public class StringReader extends Reader
   private int count;
 
   /**
-   * Create a new <code>StringReader</code> that will read chars from the 
-   * passed in <code>String</code>.  This stream will read from the beginning 
+   * Create a new <code>StringReader</code> that will read chars from the
+   * passed in <code>String</code>.  This stream will read from the beginning
    * to the end of the <code>String</code>.
    *
    * @param buffer The <code>String</code> this stream will read from.
@@ -180,7 +180,7 @@ public class StringReader extends Reader
 
   /**
     * This method attempts to skip the requested number of chars in the
-    * input stream.  It does this by advancing the <code>pos</code> value by 
+    * input stream.  It does this by advancing the <code>pos</code> value by
     * the specified number of chars.  It this would exceed the length of the
     * buffer, then only enough chars are skipped to position the stream at
     * the end of the buffer.  The actual number of chars skipped is returned.
@@ -206,4 +206,3 @@ public class StringReader extends Reader
     }
   }
 }
-

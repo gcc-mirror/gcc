@@ -1,4 +1,4 @@
-/* GnomeXPathResult.java - 
+/* GnomeXPathResult.java -
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -69,7 +69,7 @@ implements XPathResult
   }
 
   private native void free (Object obj);
-  
+
   public native short getResultType ();
 
   public native double getNumberValue ()
@@ -130,5 +130,5 @@ implements XPathResult
           getSnapshotLength () + ']';
       }
   }
-  
+
 }

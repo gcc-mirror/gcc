@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -61,7 +61,7 @@ public class Response
 
   /**
    * The HTTP status code of the response.
-   */ 
+   */
   protected final int code;
 
   /**
@@ -114,7 +114,7 @@ public class Response
   /**
    * Returns the HTTP status code of the response.
    * @see #code
-   */ 
+   */
   public int getCode()
   {
     return code;
@@ -188,22 +188,22 @@ public class Response
   {
     return headers.getDateValue(name);
   }
-  
+
   /**
    * Tests whether this response indicates a redirection.
-   * 
+   *
    * @return <code>true</code> if, <code>false</code> otherwise.
    */
   public boolean isRedirect()
   {
     return (code != 304 && getCodeClass() == 3);
   }
-  
+
   /**
    * Tests whether this response indicates an error.
    * Errors are the response codes <code>4xx</code> - Client error and
    * <code>5xx</code> - Server error.
-   * 
+   *
    * @return <code>true</code> if, <code>false</code> otherwise.
    */
   public boolean isError()
@@ -221,4 +221,3 @@ public class Response
     return body;
   }
 }
-

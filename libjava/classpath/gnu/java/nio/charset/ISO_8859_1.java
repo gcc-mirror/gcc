@@ -1,4 +1,4 @@
-/* ISO_8859_1.java -- 
+/* ISO_8859_1.java --
    Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -58,7 +58,7 @@ final class ISO_8859_1 extends Charset
      * http://java.sun.com/j2se/1.5.0/docs/guide/intl/encoding.doc.html
      */
     super ("ISO-8859-1", new String[] {
-        /* These names are provided by 
+        /* These names are provided by
          * http://www.iana.org/assignments/character-sets
          */
         "iso-ir-100",
@@ -111,7 +111,7 @@ final class ISO_8859_1 extends Charset
         return (char)(b & 0xFF);
       }
     };
-    
+
     // Package-private to avoid a trampoline constructor.
     Decoder (Charset cs)
     {

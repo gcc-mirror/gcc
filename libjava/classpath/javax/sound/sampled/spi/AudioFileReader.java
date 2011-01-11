@@ -51,7 +51,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  * This abstract class defines the interface to audio file readers.
  * A concrete provider subclass will implement the methods declared
  * here.  These methods can be used to determine the format of
- * files, and to retrieve an AudioInputStream for a file. 
+ * files, and to retrieve an AudioInputStream for a file.
  * @since 1.3
  */
 public abstract class AudioFileReader
@@ -110,36 +110,36 @@ public abstract class AudioFileReader
 
   /**
    * Return an AudioInputStream for the given file.  The file is assumed
-   * to hold valid audio data.  
+   * to hold valid audio data.
    * @param file the file to read
    * @return an AudioInputStream for the file
    * @throws UnsupportedAudioFileException if the file's type is not
    * recognized
-   * @throws IOException if there is an error while reading the file 
+   * @throws IOException if there is an error while reading the file
    */
   public abstract AudioInputStream getAudioInputStream(File file)
     throws UnsupportedAudioFileException, IOException;
 
   /**
    * Return an AudioInputStream wrapping the given input stream.  The stream
-   * is assumed to hold valid audio data.  
+   * is assumed to hold valid audio data.
    * @param is the input stream to wrap
    * @return an AudioInputStream for the stream
    * @throws UnsupportedAudioFileException if the stream's type is not
    * recognized
-   * @throws IOException if there is an error while reading the stream 
+   * @throws IOException if there is an error while reading the stream
    */
   public abstract AudioInputStream getAudioInputStream(InputStream is)
     throws UnsupportedAudioFileException, IOException;
 
   /**
    * Return an AudioInputStream for the given URL.  The URL is assumed
-   * to hold valid audio data.  
+   * to hold valid audio data.
    * @param url the URL to read
    * @return an AudioInputStream for the URL
    * @throws UnsupportedAudioFileException if the URL's type is not
    * recognized
-   * @throws IOException if there is an error while reading the URL 
+   * @throws IOException if there is an error while reading the URL
    */
   public abstract AudioInputStream getAudioInputStream(URL url)
     throws UnsupportedAudioFileException, IOException;

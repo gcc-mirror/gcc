@@ -50,7 +50,7 @@ public class NIOSocketImpl extends PlainSocketImpl
 {
 
   private final SocketChannelImpl channel;
-  
+
   NIOSocketImpl(SocketChannelImpl channel) throws IOException
   {
     this.channel = channel;

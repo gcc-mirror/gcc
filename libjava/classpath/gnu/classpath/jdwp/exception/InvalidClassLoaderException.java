@@ -52,7 +52,7 @@ public class InvalidClassLoaderException
   public InvalidClassLoaderException (long id)
   {
     super (JdwpConstants.Error.INVALID_CLASS_LOADER,
-	   "invalid class loader (" + id + ")");
+           "invalid class loader (" + id + ")");
   }
 
   public InvalidClassLoaderException (Throwable t)

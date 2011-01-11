@@ -53,11 +53,11 @@ public class WeThrowThisException
   extends UserException
   implements IDLEntity
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1;
-  
+
   /**
    * Our specific field, transferred to client.
    */

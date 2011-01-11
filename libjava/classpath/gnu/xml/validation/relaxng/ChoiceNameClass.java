@@ -1,4 +1,4 @@
-/* ChoiceNameClass.java -- 
+/* ChoiceNameClass.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -54,6 +54,5 @@ class ChoiceNameClass
     return name1.matchesName(uri, localName) ||
       name2.matchesName(uri, localName);
   }
-  
-}
 
+}

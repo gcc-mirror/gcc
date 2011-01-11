@@ -46,9 +46,9 @@ import java.io.Serializable;
  * This interface extends the previous ValueHandler, supporting various stream
  * format versions. The {@link ValueHandler} can be casted into this interface
  * to access additional features.
- * 
+ *
  * @since 1.5
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public interface ValueHandlerMultiFormat
@@ -58,7 +58,7 @@ public interface ValueHandlerMultiFormat
    * Get the maximal supported version for the value types, supported by
    * this value handler. The versions are integer numbers, the currently valid
    * values being 1 and 2.
-   * 
+   *
    * These two versions differ in how the additional data, stored by the
    * writeObject method, are encoded.
    * <ul>
@@ -72,7 +72,7 @@ public interface ValueHandlerMultiFormat
    * </ul>
    * As the version number is part of the value type record, there is no need
    * to the format control during the reading.
-   * 
+   *
    * @return the maximal supported version.
    */
   byte getMaximumStreamFormatVersion();
@@ -80,13 +80,13 @@ public interface ValueHandlerMultiFormat
   /**
    * Write the value type to the output stream using the given format version.
    * The older method {@link ValueHandler#writeValue} always uses the version 1.
-   * 
+   *
    * @param output the stream, where the value should be written, must implement
    * {@link ValueOutputStream}.
    * @param value the value that should be written.
    * @param version the version of the format that must be used to write the
    * value.
-   * 
+   *
    * @throws BAD_PARAM if the version number is less than 1 or greater than the
    * maximal supported version.
    */

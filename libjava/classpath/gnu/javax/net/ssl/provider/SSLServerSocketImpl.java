@@ -1,4 +1,4 @@
-/* SSLServerSocketImpl.java -- 
+/* SSLServerSocketImpl.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -48,7 +48,7 @@ import javax.net.ssl.SSLServerSocket;
 public class SSLServerSocketImpl extends SSLServerSocket
 {
   private final SSLContextImpl contextImpl;
-  
+
   private boolean enableSessionCreation;
   private String[] enabledCipherSuites;
   private String[] enabledProtocols;
@@ -183,7 +183,7 @@ public class SSLServerSocketImpl extends SSLServerSocket
   {
     wantClientAuth = wantAuth;
   }
-  
+
   @Override public SSLSocketImpl accept() throws IOException
   {
     SSLSocketImpl socketImpl = new SSLSocketImpl(contextImpl, null, -1);

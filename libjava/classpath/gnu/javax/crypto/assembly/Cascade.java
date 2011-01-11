@@ -1,4 +1,4 @@
-/* Cascade.java -- 
+/* Cascade.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -100,7 +100,7 @@ public class Cascade
 
   /**
    * Returns the Least Common Multiple of two integers.
-   * 
+   *
    * @param a the first integer.
    * @param b the second integer.
    * @return the LCM of <code>abs(a)</code> and <code>abs(b)</code>.
@@ -114,7 +114,7 @@ public class Cascade
 
   /**
    * Adds to the end of the current chain, a designated {@link Stage}.
-   * 
+   *
    * @param stage the {@link Stage} to append to the chain.
    * @return a unique identifier for this stage, within this cascade.
    * @throws IllegalStateException if the instance is already initialised.
@@ -129,7 +129,7 @@ public class Cascade
 
   /**
    * Adds to the begining of the current chain, a designated {@link Stage}.
-   * 
+   *
    * @param stage the {@link Stage} to prepend to the chain.
    * @return a unique identifier for this stage, within this cascade.
    * @throws IllegalStateException if the instance is already initialised.
@@ -145,7 +145,7 @@ public class Cascade
   /**
    * Inserts a {@link Stage} into the current chain, at the specified index
    * (zero-based) position.
-   * 
+   *
    * @param stage the {@link Stage} to insert into the chain.
    * @return a unique identifier for this stage, within this cascade.
    * @throws IllegalArgumentException if the designated stage is already in the
@@ -187,7 +187,7 @@ public class Cascade
 
   /**
    * Returns the current number of stages in this chain.
-   * 
+   *
    * @return the current count of stages in this chain.
    */
   public int size()
@@ -199,7 +199,7 @@ public class Cascade
    * Returns an {@link Iterator} over the stages contained in this instance.
    * Each element of this iterator is a concrete implementation of a {@link
    * Stage}.
-   * 
+   *
    * @return an {@link Iterator} over the stages contained in this instance.
    *         Each element of the returned iterator is a concrete instance of a
    *         {@link Stage}.
@@ -216,7 +216,7 @@ public class Cascade
    * Returns the {@link Set} of supported block sizes for this
    * <code>Cascade</code> that are common to all of its chained stages. Each
    * element in the returned {@link Set} is an instance of {@link Integer}.
-   * 
+   *
    * @return a {@link Set} of supported block sizes common to all the stages of
    *         the chain.
    */
@@ -236,7 +236,7 @@ public class Cascade
 
   /**
    * Initialises the chain for operation with specific characteristics.
-   * 
+   *
    * @param attributes a set of name-value pairs that describes the desired
    *          future behaviour of this instance.
    * @throws IllegalStateException if the chain, or any of its stages, is
@@ -273,7 +273,7 @@ public class Cascade
 
   /**
    * Returns the currently set block size for the chain.
-   * 
+   *
    * @return the current block size for the chain.
    * @throws IllegalStateException if the instance is not initialised.
    */
@@ -302,7 +302,7 @@ public class Cascade
    * Processes exactly one block of <i>plaintext</i> (if initialised in the
    * {@link Direction#FORWARD} state) or <i>ciphertext</i> (if initialised in
    * the {@link Direction#REVERSED} state).
-   * 
+   *
    * @param in the plaintext.
    * @param inOffset index of <code>in</code> from which to start considering
    *          data.
@@ -332,7 +332,7 @@ public class Cascade
    * encryption / decryption test(s) for all supported block and key sizes of
    * underlying block cipher(s) wrapped by Mode leafs. The test also includes
    * one (1) variable key Known Answer Test (KAT) for each block cipher.
-   * 
+   *
    * @return <code>true</code> if the implementation passes simple
    *         <i>correctness</i> tests. Returns <code>false</code> otherwise.
    */

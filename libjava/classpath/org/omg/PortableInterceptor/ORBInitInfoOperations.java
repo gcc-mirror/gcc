@@ -69,9 +69,9 @@ public interface ORBInitInfoOperations
    * interceptor implements the extended {@link IORInterceptor_3_0} interface,
    * ORB will call its additional methods, defined in the
    * {@link IORInterceptor_3_0Operations}.
-   * 
+   *
    * @param interceptor the interceptor to register.
-   * 
+   *
    * @throws DuplicateName if the interceptor name is not an empty string and an
    * interceptor with this name is already registered with the ORB being
    * created.

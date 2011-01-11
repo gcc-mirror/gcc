@@ -1,4 +1,4 @@
-/* ReaderInputStream.java -- 
+/* ReaderInputStream.java --
    Copyright (C) 1999, 2000, 2001, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -124,7 +124,7 @@ public class ReaderInputStream
 
     String s = new String(c, 0, l);
     byte[] d = s.getBytes(encoding);
-    
+
     int available = d.length;
     int more = d.length - len;
     if (more > 0)
@@ -134,7 +134,7 @@ public class ReaderInputStream
         System.arraycopy(d, len, extra, 0, more);
         available -= more;
       }
-       
+
     System.arraycopy(d, 0, b, off, available);
     return available;
   }
@@ -232,6 +232,5 @@ public class ReaderInputStream
   {
     return getClass().getName() + "[" + reader + ", " + encoding + "]";
   }
-  
-}
 
+}

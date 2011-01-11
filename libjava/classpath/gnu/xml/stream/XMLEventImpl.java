@@ -1,4 +1,4 @@
-/* XMLEventImpl.java -- 
+/* XMLEventImpl.java --
    Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -136,7 +136,7 @@ public abstract class XMLEventImpl
   {
     return null;
   }
-  
+
   public abstract void writeAsEncodedUnicode(Writer writer)
     throws XMLStreamException;
 
@@ -192,8 +192,7 @@ public abstract class XMLEventImpl
             buf.append(c);
           }
       }
-    return (buf == null) ? text : buf.toString(); 
+    return (buf == null) ? text : buf.toString();
   }
 
 }
-

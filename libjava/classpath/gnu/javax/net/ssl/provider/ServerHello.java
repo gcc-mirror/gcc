@@ -74,7 +74,7 @@ public class ServerHello implements Handshake.Body
 
   protected ByteBuffer buffer;
   protected boolean disableExtensions;
-  
+
   // Constructor.
   // -------------------------------------------------------------------------
 
@@ -170,7 +170,7 @@ public class ServerHello implements Handshake.Body
       return 0;
     return buffer.getShort(offset) & 0xFFFF;
   }
-  
+
   public ExtensionList extensions ()
   {
     int offset = SESSID_OFFSET2 + (buffer.get (SESSID_OFFSET) & 0xFF) + 3;

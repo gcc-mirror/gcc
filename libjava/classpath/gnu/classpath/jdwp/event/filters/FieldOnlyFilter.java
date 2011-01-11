@@ -46,7 +46,7 @@ import gnu.classpath.jdwp.id.ReferenceTypeId;
 
 /**
  * Restricts reported events to those that occur for a given field.
- * 
+ *
  * This modifier can be used with field access and field modification event
  * kinds only.
  *
@@ -80,7 +80,7 @@ public class FieldOnlyFilter
   }
 
   /**
-   * Returns the class in which the field is declared 
+   * Returns the class in which the field is declared
    *
    * @return the class's id
    */

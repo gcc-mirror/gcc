@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -70,7 +70,7 @@ public abstract class BaseBreakIterator extends BreakIterator
 
   /**
    * Return the first boundary after <code>pos</code>.
-   * This has the side effect of setting the index of the 
+   * This has the side effect of setting the index of the
    * CharacterIterator.
    */
   public int following (int pos)
@@ -98,19 +98,19 @@ public abstract class BaseBreakIterator extends BreakIterator
     int r = iter.getIndex ();
     if (n > 0)
       {
-	while (n > 0 && r != DONE)
-	  {
-	    r = next ();
-	    --n;
-	  }
+        while (n > 0 && r != DONE)
+          {
+            r = next ();
+            --n;
+          }
       }
     else if (n < 0)
       {
-	while (n < 0 && r != DONE)
-	  {
-	    r = previous ();
-	    ++n;
-	  }
+        while (n < 0 && r != DONE)
+          {
+            r = previous ();
+            ++n;
+          }
       }
     return r;
   }
