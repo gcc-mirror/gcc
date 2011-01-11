@@ -1,3 +1,9 @@
+2011-01-11  Jeff Law  <law@redhat.com>
+
+	* PR tree-optimization/47086
+	* tree-ssa-loop-ivopts.c (find_givs_in_stmt_scev): Do not record
+	IVs from statements that might throw.
+
 2011-01-10  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/45375
