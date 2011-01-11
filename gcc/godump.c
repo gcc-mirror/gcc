@@ -715,13 +715,27 @@ go_output_typedef (struct godump_container *container, tree decl)
 static void
 go_output_var (struct godump_container *container, tree decl)
 {
+  bool is_valid;
+
   if (pointer_set_contains (container->decls_seen, decl)
       || pointer_set_contains (container->decls_seen, DECL_NAME (decl)))
     return;
   pointer_set_insert (container->decls_seen, decl);
   pointer_set_insert (container->decls_seen, DECL_NAME (decl));
-  if (!go_format_type (container, TREE_TYPE (decl), true, false))
+
+  is_valid = go_format_type (container, TREE_TYPE (decl), true, false);
+  if (is_valid
+      && htab_find_slot (container->type_hash,
+			 IDENTIFIER_POINTER (DECL_NAME (decl)),
+			 NO_INSERT) != NULL)
+    {
+      /* There is already a type with this name, probably from a
+	 struct tag.  Prefer the type to the variable.  */
+      is_valid = false;
+    }
+  if (!is_valid)
     fprintf (go_dump_file, "// ");
+
   fprintf (go_dump_file, "var _%s ",
 	   IDENTIFIER_POINTER (DECL_NAME (decl)));
   go_output_type (container);
