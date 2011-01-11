@@ -1316,13 +1316,15 @@ CHECK = \
 	MAKE="$(MAKE)"; \
 	export MAKE; \
 	rm -f $@-log; \
-	echo -n "$(@D) " >$@-log 2>&1; \
 	prefix=`if test "$(@D)" = "regexp"; then echo regexp-test; else dirname $(@D); fi`; \
 	test "$${prefix}" != "." || prefix="$(@D)"; \
-	$(srcdir)/testsuite/gotest --dejagnu=$(use_dejagnu) --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --prefix="libgo_$${prefix}" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" >>$@-log 2>&1; \
-	x=$$?; \
-	cat $@-log; \
-	exit $$x
+	if $(srcdir)/testsuite/gotest --dejagnu=$(use_dejagnu) --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --prefix="libgo_$${prefix}" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" >>$@-log 2>&1; then \
+	  echo "PASS: $(@D)"; \
+	else \
+	  echo "FAIL: $(@D)"; \
+	  cat $@-log; \
+	  exit 1; \
+	fi
 
 # Build all packages before checking any.
 CHECK_DEPS = libgo.la libgobegin.a \
