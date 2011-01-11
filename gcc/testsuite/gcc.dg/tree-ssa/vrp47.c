@@ -3,7 +3,7 @@
 /* Skip on S/390 and avr.  Lower values in BRANCH_COST lead to two conditional
    jumps when evaluating an && condition.  VRP is not able to optimize
    this.  */
-/* { dg-do compile { target { ! "mips*-*-* s390*-*-*  avr-*-*" } } } */
+/* { dg-do compile { target { ! "mips*-*-* s390*-*-*  avr-*-* mn10300-*-*" } } } */
 /* { dg-options "-O2 -fdump-tree-vrp -fdump-tree-dom" } */
 /* { dg-options "-O2 -fdump-tree-vrp -fdump-tree-dom -march=i586" { target { i?86-*-* && ilp32 } } } */
 

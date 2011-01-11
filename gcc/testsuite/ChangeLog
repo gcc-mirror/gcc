@@ -1,3 +1,7 @@
+2011-01-11  Richard Henderson  <rth@redhat.com>
+
+	* gcc-dg/tree-ssa/vrp47.c: Disable for mn10300 as well.
+
 2011-01-11  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/45721
