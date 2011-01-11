@@ -1,3 +1,9 @@
+2011-01-11  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR bootstrap/47215
+	* decl.c (java_init_decl_processing): Initialize
+	long_integer_type_node.
+
 2011-01-07  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR bootstrap/47215
