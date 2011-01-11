@@ -1,5 +1,5 @@
 /* Induction variable optimizations.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1100,6 +1100,12 @@ find_givs_in_stmt_scev (struct ivopts_data *data, gimple stmt, affine_iv *iv)
 
   if (contains_abnormal_ssa_name_p (iv->base)
       || contains_abnormal_ssa_name_p (iv->step))
+    return false;
+
+  /* If STMT could throw, then do not consider STMT as defining a GIV.  
+     While this will suppress optimizations, we can not safely delete this
+     GIV and associated statements, even if it appears it is not used.  */
+  if (stmt_could_throw_p (stmt))
     return false;
 
   return true;
