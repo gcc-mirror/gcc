@@ -1,3 +1,9 @@
+2011-01-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/45520
+	* tree.c (maybe_dummy_object): Check current_class_ref against
+	context, not current_class_type.
+
 2011-01-08  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/47078
