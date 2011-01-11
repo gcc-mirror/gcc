@@ -10,29 +10,18 @@ typedef void * PMETH;
 #else
 #include <objc/objc-runtime.h>
 typedef struct objc_method * PMETH;
+
+/* Missing from old NeXT objc headers... */
+#define _C_LNG_LNG  'q'
+#define _C_ULNG_LNG 'Q'
+#define _C_ATOM     '%'
+#define _C_BOOL     'B'
+
 #endif
 
 /* The NeXT headers do not define NULL.  */
 #ifndef NULL
 #define NULL 0
-#endif
-
-/* The NeXT runtimes do not include these functions (at least not through 
-   any public API).  They are required for the objc/execute/bf-* and bycopy-3. */
-
-/* Not sure why the following are missing from NeXT objc headers... */
-
-#ifndef _C_LNG_LNG
-#define _C_LNG_LNG  'q'
-#endif
-#ifndef _C_ULNG_LNG
-#define _C_ULNG_LNG 'Q'
-#endif
-#ifndef _C_ATOM
-#define _C_ATOM     '%'
-#endif
-#ifndef _C_BOOL
-#define _C_BOOL     'B'
 #endif
 
 #define _C_CONST        'r'
@@ -53,7 +42,8 @@ typedef struct objc_method * PMETH;
 #define _F_ONEWAY       0x10
 #define _F_GCINVISIBLE  0x20
 
-/* Functions available in the GNU runtime, emulated here for testing with NeXT.  */
+/* The NeXT runtimes do not include these functions (at least not through 
+   any public API).  They are required for the objc/execute/bf-* and bycopy-3. */
 
 struct objc_struct_layout
 {
