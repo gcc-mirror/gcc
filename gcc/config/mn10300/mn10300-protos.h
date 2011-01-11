@@ -27,7 +27,6 @@
 extern rtx   mn10300_legitimize_pic_address (rtx, rtx);
 extern int   mn10300_legitimate_pic_operand_p (rtx);
 extern bool  mn10300_function_value_regno_p (const unsigned int);
-extern void  mn10300_gen_multiple_store (int);
 extern int   mn10300_get_live_callee_saved_regs (void);
 extern bool  mn10300_hard_regno_mode_ok (unsigned int, Mmode);
 extern bool  mn10300_legitimate_constant_p (rtx);

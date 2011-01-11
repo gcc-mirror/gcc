@@ -689,51 +689,61 @@ F (rtx r)
 	                       (const_int -N*4)))
 	      (reg:SI R1))) */
 
-void
-mn10300_gen_multiple_store (int mask)
+static void
+mn10300_gen_multiple_store (unsigned int mask)
 {
-  if (mask != 0)
+  /* The order in which registers are stored, from SP-4 through SP-N*4.  */
+  static const unsigned int store_order[8] = {
+    /* e2, e3: never saved */
+    FIRST_EXTENDED_REGNUM + 4,
+    FIRST_EXTENDED_REGNUM + 5,
+    FIRST_EXTENDED_REGNUM + 6,
+    FIRST_EXTENDED_REGNUM + 7,
+    /* e0, e1, mdrq, mcrh, mcrl, mcvf: never saved. */
+    FIRST_DATA_REGNUM + 2,
+    FIRST_DATA_REGNUM + 3,
+    FIRST_ADDRESS_REGNUM + 2,
+    FIRST_ADDRESS_REGNUM + 3,
+    /* d0, d1, a0, a1, mdr, lir, lar: never saved.  */
+  };
+
+  rtx x, elts[9];
+  unsigned int i;
+  int count;
+
+  if (mask == 0)
+    return;
+
+  for (i = count = 0; i < ARRAY_SIZE(store_order); ++i)
     {
-      int i;
-      int count;
-      rtx par;
-      int pari;
+      unsigned regno = store_order[i];
 
-      /* Count how many registers need to be saved.  */
-      count = 0;
-      for (i = 0; i <= LAST_EXTENDED_REGNUM; i++)
-	if ((mask & (1 << i)) != 0)
-	  count += 1;
+      if (((mask >> regno) & 1) == 0)
+	continue;
 
-      /* We need one PARALLEL element to update the stack pointer and
-	 an additional element for each register that is stored.  */
-      par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (count + 1));
+      ++count;
+      x = plus_constant (stack_pointer_rtx, count * -4);
+      x = gen_frame_mem (SImode, x);
+      x = gen_rtx_SET (VOIDmode, x, gen_rtx_REG (SImode, regno));
+      elts[count] = F(x);
 
-      /* Create the instruction that updates the stack pointer.  */
-      XVECEXP (par, 0, 0)
-	= F (gen_rtx_SET (SImode,
-			  stack_pointer_rtx,
-			  gen_rtx_PLUS (SImode,
-					stack_pointer_rtx,
-					GEN_INT (-count * 4))));
-
-      /* Create each store.  */
-      pari = 1;
-      for (i = LAST_EXTENDED_REGNUM; i >= 0; i--)
-	if ((mask & (1 << i)) != 0)
-	  {
-	    rtx address = gen_rtx_PLUS (SImode,
-					stack_pointer_rtx,
-					GEN_INT (-pari * 4));
-	    XVECEXP(par, 0, pari)
-	      = F (gen_rtx_SET (VOIDmode,
-				gen_rtx_MEM (SImode, address),
-				gen_rtx_REG (SImode, i)));
-	    pari += 1;
-	  }
-
-      F (emit_insn (par));
+      /* Remove the register from the mask so that... */
+      mask &= ~(1u << regno);
     }
+
+  /* ... we can make sure that we didn't try to use a register
+     not listed in the store order.  */
+  gcc_assert (mask == 0);
+
+  /* Create the instruction that updates the stack pointer.  */
+  x = plus_constant (stack_pointer_rtx, count * -4);
+  x = gen_rtx_SET (VOIDmode, stack_pointer_rtx, x);
+  elts[0] = F(x);
+
+  /* We need one PARALLEL element to update the stack pointer and
+     an additional element for each register that is stored.  */
+  x = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (count + 1, elts));
+  F (emit_insn (x));
 }
 
 void
@@ -1273,27 +1283,19 @@ mn10300_store_multiple_operation (rtx op,
       || INTVAL (XEXP (elt, 1)) != -(count - 1) * 4)
     return 0;
 
-  /* Now go through the rest of the vector elements.  They must be
-     ordered so that the first instruction stores the highest-numbered
-     register to the highest stack slot and that subsequent instructions
-     store a lower-numbered register to the slot below.
-
-     LAST keeps track of the smallest-numbered register stored so far.
-     MASK is the set of stored registers.  */
-  last = LAST_EXTENDED_REGNUM + 1;
   mask = 0;
   for (i = 1; i < count; i++)
     {
-      /* Check that element i is a (set (mem M) R) and that R is valid.  */
+      /* Check that element i is a (set (mem M) R).  */
+      /* ??? Validate the register order a-la mn10300_gen_multiple_store.
+	 Remember: the ordering is *not* monotonic.  */
       elt = XVECEXP (op, 0, i);
       if (GET_CODE (elt) != SET
 	  || (! MEM_P (SET_DEST (elt)))
-	  || (! REG_P (SET_SRC (elt)))
-	  || REGNO (SET_SRC (elt)) >= last)
+	  || (! REG_P (SET_SRC (elt))))
 	return 0;
 
-      /* R was OK, so provisionally add it to MASK.  We return 0 in any
-	 case if the rest of the instruction has a flaw.  */
+      /* Remember which registers are to be saved.  */
       last = REGNO (SET_SRC (elt));
       mask |= (1 << last);
 
