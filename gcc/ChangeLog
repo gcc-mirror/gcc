@@ -1,5 +1,10 @@
 2011-01-11  Ian Lance Taylor  <iant@google.com>
 
+	* godump.c (go_output_var): Don't output the variable if there is
+	already a type with the same name.
+
+2011-01-11  Ian Lance Taylor  <iant@google.com>
+
 	* godump.c (go_format_type): Don't generate float80.
 
 2011-01-11  Richard Henderson  <rth@redhat.com>
