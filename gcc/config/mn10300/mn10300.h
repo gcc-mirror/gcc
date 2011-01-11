@@ -656,8 +656,6 @@ struct cum_arg
 #define ASM_OUTPUT_LABELREF(FILE, NAME) \
   asm_fprintf (FILE, "%U%s", (*targetm.strip_name_encoding) (NAME))
 
-#define ASM_PN_FORMAT "%s___%lu"
-
 /* This is how we tell the assembler that two symbols have the same value.  */
 
 #define ASM_OUTPUT_DEF(FILE,NAME1,NAME2) \
