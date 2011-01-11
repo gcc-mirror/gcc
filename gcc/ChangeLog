@@ -1,5 +1,11 @@
 2011-01-11  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/45235
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Do not mark
+	volatile MEMs as MEM_READONLY_P.
+
+2011-01-11  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/47239
 	* tree-ssa-ccp.c (get_value_from_alignment): Punt for FUNCTION_DECLs.
 

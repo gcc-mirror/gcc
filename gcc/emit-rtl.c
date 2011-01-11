@@ -1698,7 +1698,8 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
       base = get_base_address (base);
       if (base && DECL_P (base)
 	  && TREE_READONLY (base)
-	  && (TREE_STATIC (base) || DECL_EXTERNAL (base)))
+	  && (TREE_STATIC (base) || DECL_EXTERNAL (base))
+	  && !TREE_THIS_VOLATILE (base))
 	MEM_READONLY_P (ref) = 1;
 
       /* If this expression uses it's parent's alias set, mark it such
